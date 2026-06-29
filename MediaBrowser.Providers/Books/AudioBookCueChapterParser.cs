@@ -77,6 +77,6 @@ internal static class AudioBookCueChapterParser
             return 0;
         }
 
-        return ((minutes * 60L) + seconds) * TicksPerSecond + (frames * TicksPerFrame);
+        return (((minutes * 60L) + seconds) * TicksPerSecond) + (frames * TicksPerFrame);
     }
 }

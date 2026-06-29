@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Emby.Naming.Audio;
@@ -186,30 +187,164 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
             foreach (var resolvedItem in resolverResult)
             {
-                if (resolvedItem.Files.Count == 0 || resolvedItem.Extras.Count > 0 || resolvedItem.AlternateVersions.Count > 0)
-                {
-                    continue;
-                }
-
-                var firstMedia = resolvedItem.Files[0];
-
-                var libraryItem = new AudioBook
-                {
-                    Path = firstMedia.Path,
-                    IsInMixedFolder = isInMixedFolder,
-                    ProductionYear = resolvedItem.Year,
-                    Name = parseName ?
-                        resolvedItem.Name :
-                        Path.GetFileNameWithoutExtension(firstMedia.Path),
-                    AdditionalParts = resolvedItem.Files.Skip(1).Select(i => i.Path).ToArray()
-                };
-
-                result.Items.Add(libraryItem);
+                result.Items.AddRange(CreateAudioBookItems(resolvedItem, isInMixedFolder, parseName));
             }
 
             result.ExtraFiles.AddRange(files.Where(i => !ContainsFile(resolverResult, i)));
 
             return result;
+        }
+
+        private IEnumerable<BaseItem> CreateAudioBookItems(AudioBookInfo resolvedItem, bool isInMixedFolder, bool parseName)
+        {
+            if (resolvedItem.Files.Count == 0)
+            {
+                return Array.Empty<BaseItem>();
+            }
+
+            // Descriptive names that contain their own numbers (e.g. "04 Chapter 1") collide on the
+            // parsed chapter number and get split into alternate versions. A distinct order number on
+            // every file means they are really separate parts, so keep them together as one book.
+            if (resolvedItem.Extras.Count == 0)
+            {
+                var allParts = resolvedItem.Files.Concat(resolvedItem.AlternateVersions).ToList();
+                if (allParts.Count > 1 && HasDistinctTrackNumbers(allParts))
+                {
+                    return new[] { BuildStackedAudioBook(allParts, isInMixedFolder, parseName, resolvedItem) };
+                }
+            }
+
+            if (resolvedItem.Extras.Count > 0 || resolvedItem.AlternateVersions.Count > 0)
+            {
+                return Array.Empty<BaseItem>();
+            }
+
+            if (resolvedItem.Files.Count > 1 && !IsCoherentMultiPartBook(resolvedItem))
+            {
+                return resolvedItem.Files.Select(file => new AudioBook
+                {
+                    Path = file.Path,
+                    IsInMixedFolder = isInMixedFolder,
+                    ProductionYear = resolvedItem.Year,
+                    Name = Path.GetFileNameWithoutExtension(file.Path)
+                });
+            }
+
+            return new[] { BuildStackedAudioBook(resolvedItem.Files, isInMixedFolder, parseName, resolvedItem) };
+        }
+
+        private static AudioBook BuildStackedAudioBook(IReadOnlyList<AudioBookFileInfo> files, bool isInMixedFolder, bool parseName, AudioBookInfo resolvedItem)
+        {
+            var orderedFiles = files
+                .OrderBy(f => GetTrackNumber(f.Path) ?? int.MaxValue)
+                .ToList();
+            var firstMedia = orderedFiles[0];
+
+            return new AudioBook
+            {
+                Path = firstMedia.Path,
+                IsInMixedFolder = isInMixedFolder,
+                ProductionYear = resolvedItem.Year,
+                Name = parseName ?
+                    resolvedItem.Name :
+                    Path.GetFileNameWithoutExtension(firstMedia.Path),
+                AdditionalParts = orderedFiles.Skip(1).Select(i => i.Path).ToArray()
+            };
+        }
+
+        private static bool IsCoherentMultiPartBook(AudioBookInfo info)
+        {
+            var files = info.Files;
+            if (files.Count <= 1)
+            {
+                return true;
+            }
+
+            return HasSharedBaseName(files) || HasDistinctTrackNumbers(files);
+        }
+
+        private static bool HasSharedBaseName(IReadOnlyList<AudioBookFileInfo> files)
+        {
+            if (!files.All(f => f.ChapterNumber is not null || f.PartNumber is not null))
+            {
+                return false;
+            }
+
+            var baseName = GetComparableBaseName(files[0].Path);
+            if (baseName.Length == 0)
+            {
+                return false;
+            }
+
+            return files.All(f => string.Equals(GetComparableBaseName(f.Path), baseName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static bool HasDistinctTrackNumbers(IReadOnlyList<AudioBookFileInfo> files)
+        {
+            var seen = new HashSet<int>();
+            foreach (var file in files)
+            {
+                var number = GetTrackNumber(file.Path);
+                if (number is null || !seen.Add(number.Value))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static string GetComparableBaseName(string path)
+        {
+            var name = Path.GetFileNameWithoutExtension(path.AsSpan()).Trim();
+            var end = name.Length;
+            while (end > 0)
+            {
+                var c = name[end - 1];
+                if (char.IsDigit(c) || c == ' ' || c == '_' || c == '-' || c == '.' || c == '#')
+                {
+                    end--;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return name[..end].ToString();
+        }
+
+        private static int? GetTrackNumber(string path)
+        {
+            var name = Path.GetFileNameWithoutExtension(path.AsSpan()).Trim();
+            if (name.Length == 0)
+            {
+                return null;
+            }
+
+            var leading = 0;
+            while (leading < name.Length && char.IsDigit(name[leading]))
+            {
+                leading++;
+            }
+
+            if (leading > 0 && int.TryParse(name[..leading], NumberStyles.Integer, CultureInfo.InvariantCulture, out var leadingNumber))
+            {
+                return leadingNumber;
+            }
+
+            var trailing = name.Length;
+            while (trailing > 0 && char.IsDigit(name[trailing - 1]))
+            {
+                trailing--;
+            }
+
+            if (trailing < name.Length && int.TryParse(name[trailing..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var trailingNumber))
+            {
+                return trailingNumber;
+            }
+
+            return null;
         }
 
         private static bool ContainsFile(IEnumerable<AudioBookInfo> result, FileSystemMetadata file)
