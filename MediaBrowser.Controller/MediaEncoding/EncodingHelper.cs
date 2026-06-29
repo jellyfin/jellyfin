@@ -7349,14 +7349,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 readrate = 1;
                 inputModifier += " -re";
             }
-            else if (encodingOptions.EnableSegmentDeletion
-                && state.VideoStream is not null
+            else if (state.VideoStream is not null
                 && state.TranscodingType == TranscodingJobType.Hls
                 && IsCopyCodec(state.OutputVideoCodec)
                 && _mediaEncoder.EncoderVersion >= _minFFmpegReadrateOption)
             {
-                // Set an input read rate limit 10x for using SegmentDeletion with stream-copy
-                // to prevent ffmpeg from exiting prematurely (due to fast drive)
+                // Limit read rate for all HLS stream-copy jobs to prevent premature exit
+                // on fast drives, not just when segment deletion is enabled.
                 readrate = 10;
                 inputModifier += $" -readrate {readrate}";
             }
