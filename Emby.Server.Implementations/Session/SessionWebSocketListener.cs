@@ -232,9 +232,9 @@ namespace Emby.Server.Implementations.Session
                 {
                     await SendForceKeepAlive(webSocket).ConfigureAwait(false);
                 }
-                // Socket may be disposed/canceled between selection and send; treat as lost, don't crash the process.
                 catch (Exception exception) when (exception is WebSocketException or ObjectDisposedException or OperationCanceledException)
                 {
+                    // Socket may be disposed/canceled between selection and send; treat as lost, don't crash.
                     _logger.LogInformation(exception, "Error sending ForceKeepAlive message to WebSocket.");
                     lost.Add(webSocket);
                 }
