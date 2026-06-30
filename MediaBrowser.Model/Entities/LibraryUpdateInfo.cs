@@ -1,6 +1,6 @@
 #pragma warning disable CS1591
 
-using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -14,46 +14,46 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public LibraryUpdateInfo()
         {
-            FoldersAddedTo = Array.Empty<string>();
-            FoldersRemovedFrom = Array.Empty<string>();
-            ItemsAdded = Array.Empty<string>();
-            ItemsRemoved = Array.Empty<string>();
-            ItemsUpdated = Array.Empty<string>();
-            CollectionFolders = Array.Empty<string>();
+            FoldersAddedTo = [];
+            FoldersRemovedFrom = [];
+            ItemsAdded = [];
+            ItemsRemoved = [];
+            ItemsUpdated = [];
+            CollectionFolders = [];
         }
 
         /// <summary>
         /// Gets or sets the folders added to.
         /// </summary>
         /// <value>The folders added to.</value>
-        public string[] FoldersAddedTo { get; set; }
+        public IReadOnlyList<string> FoldersAddedTo { get; set; }
 
         /// <summary>
         /// Gets or sets the folders removed from.
         /// </summary>
         /// <value>The folders removed from.</value>
-        public string[] FoldersRemovedFrom { get; set; }
+        public IReadOnlyList<string> FoldersRemovedFrom { get; set; }
 
         /// <summary>
         /// Gets or sets the items added.
         /// </summary>
         /// <value>The items added.</value>
-        public string[] ItemsAdded { get; set; }
+        public IReadOnlyList<string> ItemsAdded { get; set; }
 
         /// <summary>
         /// Gets or sets the items removed.
         /// </summary>
         /// <value>The items removed.</value>
-        public string[] ItemsRemoved { get; set; }
+        public IReadOnlyList<string> ItemsRemoved { get; set; }
 
         /// <summary>
         /// Gets or sets the items updated.
         /// </summary>
         /// <value>The items updated.</value>
-        public string[] ItemsUpdated { get; set; }
+        public IReadOnlyList<string> ItemsUpdated { get; set; }
 
-        public string[] CollectionFolders { get; set; }
+        public IReadOnlyList<string> CollectionFolders { get; set; }
 
-        public bool IsEmpty => FoldersAddedTo.Length == 0 && FoldersRemovedFrom.Length == 0 && ItemsAdded.Length == 0 && ItemsRemoved.Length == 0 && ItemsUpdated.Length == 0 && CollectionFolders.Length == 0;
+        public bool IsEmpty => FoldersAddedTo.Count == 0 && FoldersRemovedFrom.Count == 0 && ItemsAdded.Count == 0 && ItemsRemoved.Count == 0 && ItemsUpdated.Count == 0 && CollectionFolders.Count == 0;
     }
 }
