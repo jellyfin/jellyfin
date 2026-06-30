@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Providers;
 using Microsoft.Extensions.Logging;
+using MediaBrowser.Controller.Extensions;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -104,6 +105,8 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var path = ConfigurationManager.ApplicationPaths.PeoplePath;
+
+            validFilename = SafeNameHelper.EnsureSafeName(path, validFilename);
 
             return string.IsNullOrEmpty(subFolderPrefix) ?
                 System.IO.Path.Combine(path, validFilename) :
