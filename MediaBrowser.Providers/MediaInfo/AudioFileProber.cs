@@ -172,7 +172,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private async Task SaveAudioBookChaptersAsync(AudioBook audioBook, Model.MediaInfo.MediaInfo mediaInfo, CancellationToken cancellationToken)
+        internal async Task SaveAudioBookChaptersAsync(AudioBook audioBook, Model.MediaInfo.MediaInfo mediaInfo, CancellationToken cancellationToken)
         {
             var libraryOptions = _libraryManager.GetLibraryOptions(audioBook);
 
@@ -741,7 +741,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return false;
         }
 
-        private async Task<(IReadOnlyList<ChapterInfo> Chapters, long TotalRunTimeTicks, long[] PartRunTimeTicks)> BuildMultiPartChaptersAsync(
+        internal async Task<(IReadOnlyList<ChapterInfo> Chapters, long TotalRunTimeTicks, long[] PartRunTimeTicks)> BuildMultiPartChaptersAsync(
             AudioBook audioBook,
             long firstPartTicks,
             CancellationToken cancellationToken)
@@ -790,7 +790,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return (chapters, cumulativeTicks, partTicks.ToArray());
         }
 
-        private static string StripLeadingTrackNumber(string name)
+        internal static string StripLeadingTrackNumber(string name)
         {
             var digitsEnd = 0;
             while (digitsEnd < name.Length && char.IsDigit(name[digitsEnd]))
