@@ -171,7 +171,7 @@ namespace Emby.Server.Implementations.Session
             {
                 await SendForceKeepAlive(webSocket).ConfigureAwait(false);
             }
-            catch (WebSocketException exception)
+            catch (Exception exception) when (exception is WebSocketException or ObjectDisposedException or OperationCanceledException)
             {
                 _logger.LogWarning(exception, "Cannot send ForceKeepAlive message to WebSocket {0}.", webSocket);
             }
@@ -232,7 +232,8 @@ namespace Emby.Server.Implementations.Session
                 {
                     await SendForceKeepAlive(webSocket).ConfigureAwait(false);
                 }
-                catch (WebSocketException exception)
+                // Socket may be disposed/canceled between selection and send; treat as lost, don't crash the process.
+                catch (Exception exception) when (exception is WebSocketException or ObjectDisposedException or OperationCanceledException)
                 {
                     _logger.LogInformation(exception, "Error sending ForceKeepAlive message to WebSocket.");
                     lost.Add(webSocket);
