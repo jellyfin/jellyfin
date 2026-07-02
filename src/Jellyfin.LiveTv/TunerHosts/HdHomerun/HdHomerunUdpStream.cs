@@ -80,7 +80,10 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             // Temporary code to reduce PR size. This will be updated by a future network pr.
             var localPort = GetUdpPortFromRange((49152, 65535));
 
-            Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
+            if (IsRollingChunkEnabled)
+            {
+                Directory.CreateDirectory(ChunkDirectory);
+            }
 
             Logger.LogInformation("Opening HDHR UDP Live stream from {Host}", uri.Host);
 
@@ -164,7 +167,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             {
                 try
                 {
-                    await CopyTo(udpClient, TempFilePath, openTaskCompletionSource, cancellationToken).ConfigureAwait(false);
+                    await CopyTo(udpClient, openTaskCompletionSource, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex) when (ex is OperationCanceledException || ex is TimeoutException)
                 {
@@ -180,17 +183,19 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
                 EnableStreamSharing = false;
             }
 
-            await DeleteTempFiles(TempFilePath).ConfigureAwait(false);
+            await DeleteChunks().ConfigureAwait(false);
         }
 
-        private async Task CopyTo(UdpClient udpClient, string file, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
+        private async Task CopyTo(UdpClient udpClient, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
-            var resolved = false;
+            bool resolved = false;
 
-            var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read);
-            await using (fileStream.ConfigureAwait(false))
+            FileStream fileStream = OpenInitialChunk();
+            try
             {
-                while (true)
+                var chunkOpenedAt = DateTime.UtcNow;
+
+                while (!cancellationToken.IsCancellationRequested)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     var res = await udpClient.ReceiveAsync(cancellationToken)
@@ -204,6 +209,13 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
                     if (read > 0)
                     {
                         await fileStream.WriteAsync(buffer.AsMemory(RtpHeaderBytes, read), cancellationToken).ConfigureAwait(false);
+
+                        if (ShouldRotateChunk(chunkOpenedAt))
+                        {
+                            var oldStream = fileStream;
+                            (fileStream, chunkOpenedAt) = RotateChunk();
+                            await oldStream.DisposeAsync().ConfigureAwait(false);
+                        }
                     }
 
                     if (!resolved)
@@ -213,6 +225,10 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
                         openTaskCompletionSource.TrySetResult(true);
                     }
                 }
+            }
+            finally
+            {
+                await fileStream.DisposeAsync().ConfigureAwait(false);
             }
         }
     }
