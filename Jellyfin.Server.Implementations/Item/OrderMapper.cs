@@ -38,6 +38,10 @@ public static class OrderMapper
                 jellyfinDbContext.UserData
                     .Where(w => w.UserId == query.User.Id && (w.ItemId == e.Id || w.Item!.PrimaryVersionId == e.Id))
                     .Max(f => f.LastPlayedDate),
+            (ItemSortBy.DatePlayed, null) => e =>
+                jellyfinDbContext.UserData
+                    .Where(w => w.ItemId == e.Id || w.Item!.PrimaryVersionId == e.Id)
+                    .Max(f => f.LastPlayedDate),
             (ItemSortBy.PlayCount, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.PlayCount,
             (ItemSortBy.IsFavoriteOrLiked, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).Select(f => (bool?)f.IsFavorite).FirstOrDefault() ?? false,
             (ItemSortBy.IsFolder, _) => e => e.IsFolder,

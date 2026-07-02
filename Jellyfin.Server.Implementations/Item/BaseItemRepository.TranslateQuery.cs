@@ -556,11 +556,15 @@ public sealed partial class BaseItemRepository
                         || (e.Type != seriesTypeName && inProgressIds.Contains(e.Id)))
                     : baseQuery.Where(e => inProgressIds.Contains(e.Id));
 
-                // When several versions of the same item are in progress, keep only the most recently played one.
+                // When several versions of the same item are in progress, keep only the most recently played one, use id as tiebreaker.
                 baseQuery = baseQuery.Where(e => e.Type == seriesTypeName || !context.BaseItems
                     .Where(s => s.Id != e.Id && (s.PrimaryVersionId ?? s.Id) == (e.PrimaryVersionId ?? e.Id))
-                    .Any(s => inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
-                        > inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)));
+                    .Any(s =>
+                        inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
+                            > inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)
+                        || (inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
+                                == inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)
+                            && s.Id.CompareTo(e.Id) < 0)));
             }
             else
             {

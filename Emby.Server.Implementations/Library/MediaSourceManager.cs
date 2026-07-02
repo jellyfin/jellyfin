@@ -451,25 +451,22 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            MediaSourceInfo resumeSource = null;
-            UserItemData resumeData = null;
             foreach (var source in sources)
             {
-                if (source.Id is null
-                    || !dataBySourceId.TryGetValue(source.Id, out var data)
-                    || data.PlaybackPositionTicks <= 0)
+                if (source.Id is not null
+                    && dataBySourceId.TryGetValue(source.Id, out var data)
+                    && data.PlaybackPositionTicks > 0)
                 {
-                    continue;
-                }
-
-                source.PlaybackPositionTicks = data.PlaybackPositionTicks;
-
-                if (resumeData is null || (data.LastPlayedDate ?? DateTime.MinValue) > (resumeData.LastPlayedDate ?? DateTime.MinValue))
-                {
-                    resumeSource = source;
-                    resumeData = data;
+                    source.PlaybackPositionTicks = data.PlaybackPositionTicks;
                 }
             }
+
+            // Reorder only for a resumable (in-progress) version;
+            // a completed version has no position to resume, so it must not be pulled to the front here.
+            var resumeSource = VersionPlaybackSelector.SelectMostRecentlyPlayed(
+                sources,
+                source => source.Id is not null ? dataBySourceId.GetValueOrDefault(source.Id) : null,
+                data => data.PlaybackPositionTicks > 0);
 
             if (resumeSource is not null && !video.PrimaryVersionId.HasValue && !ReferenceEquals(sources[0], resumeSource))
             {

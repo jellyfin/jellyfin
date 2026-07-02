@@ -329,21 +329,15 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var (primaryId, versions) in versionGroups)
             {
-                UserItemData? resumeData = null;
-                foreach (var version in versions)
-                {
-                    // Consider both in-progress and completed versions so a finished alternate still marks the primary as played.
-                    if (userDataByVersion.TryGetValue(version.Id, out var data)
-                        && (data.PlaybackPositionTicks > 0 || data.Played)
-                        && (resumeData is null || (data.LastPlayedDate ?? DateTime.MinValue) > (resumeData.LastPlayedDate ?? DateTime.MinValue)))
-                    {
-                        resumeData = data;
-                    }
-                }
+                // Consider both in-progress and completed versions so a finished alternate still marks the primary as played.
+                var resumeVersion = VersionPlaybackSelector.SelectMostRecentlyPlayed(
+                    versions,
+                    version => userDataByVersion.GetValueOrDefault(version.Id),
+                    data => data.PlaybackPositionTicks > 0 || data.Played);
 
-                if (resumeData is not null)
+                if (resumeVersion is not null)
                 {
-                    result[primaryId] = new VersionResumeData(resumeData);
+                    result[primaryId] = new VersionResumeData(resumeVersion.Id, userDataByVersion[resumeVersion.Id]);
                 }
             }
 

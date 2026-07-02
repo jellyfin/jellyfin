@@ -61,8 +61,12 @@ public sealed class AlternateVersionQueryTranslationTests : IDisposable
                 .Where(e => inProgressIds.Contains(e.Id))
                 .Where(e => !ctx.BaseItems
                     .Where(s => s.Id != e.Id && (s.PrimaryVersionId ?? s.Id) == (e.PrimaryVersionId ?? e.Id))
-                    .Any(s => inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
-                        > inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)))
+                    .Any(s =>
+                        inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
+                            > inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)
+                        || (inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
+                                == inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)
+                            && s.Id.CompareTo(e.Id) < 0)))
                 .Select(e => e.Id)
                 .ToList();
 
@@ -78,6 +82,46 @@ public sealed class AlternateVersionQueryTranslationTests : IDisposable
                 .ToList();
 
             Assert.Equal([otherId], notResumable);
+        }
+    }
+
+    [Fact]
+    public void ResumeFilter_TiedLastPlayedDate_KeepsSingleVersion()
+    {
+        Guid userId, primaryId, versionAId, versionBId;
+
+        using (var ctx = CreateDbContext())
+        {
+            (userId, primaryId, versionAId, versionBId) = SeedTiedVersions(ctx);
+        }
+
+        using (var ctx = CreateDbContext())
+        {
+            var inProgress = ctx.UserData
+                .Where(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0);
+
+            var seededIds = new[] { primaryId, versionAId, versionBId };
+            var inProgressIds = inProgress.Select(ud => ud.ItemId);
+
+            // The exact production dedup, including the Guid.CompareTo tie-break. This asserts the
+            // expression translates on SQLite and that two versions sharing an identical LastPlayedDate
+            // collapse to a single row instead of double-listing the item in Continue Watching.
+            var resumable = ctx.BaseItems
+                .Where(e => seededIds.Contains(e.Id))
+                .Where(e => inProgressIds.Contains(e.Id))
+                .Where(e => !ctx.BaseItems
+                    .Where(s => s.Id != e.Id && (s.PrimaryVersionId ?? s.Id) == (e.PrimaryVersionId ?? e.Id))
+                    .Any(s =>
+                        inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
+                            > inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)
+                        || (inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
+                                == inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)
+                            && s.Id.CompareTo(e.Id) < 0)))
+                .Select(e => e.Id)
+                .ToList();
+
+            var survivor = Assert.Single(resumable);
+            Assert.Contains(survivor, new[] { versionAId, versionBId });
         }
     }
 
@@ -134,6 +178,43 @@ public sealed class AlternateVersionQueryTranslationTests : IDisposable
 
         ctx.SaveChanges();
         return (user.Id, primary.Id, version.Id, other.Id);
+    }
+
+    private static (Guid UserId, Guid PrimaryId, Guid VersionAId, Guid VersionBId) SeedTiedVersions(JellyfinDbContext ctx)
+    {
+        var user = new User("test", "auth-provider", "reset-provider");
+        ctx.Users.Add(user);
+
+        var primary = new BaseItemEntity { Id = Guid.NewGuid(), Type = "MediaBrowser.Controller.Entities.Movies.Movie" };
+        var versionA = new BaseItemEntity { Id = Guid.NewGuid(), Type = "MediaBrowser.Controller.Entities.Movies.Movie", PrimaryVersionId = primary.Id };
+        var versionB = new BaseItemEntity { Id = Guid.NewGuid(), Type = "MediaBrowser.Controller.Entities.Movies.Movie", PrimaryVersionId = primary.Id };
+        ctx.BaseItems.AddRange(primary, versionA, versionB);
+
+        // Both versions in progress with the exact same LastPlayedDate - the tie that a strict '>' cannot break.
+        var tied = new DateTime(2026, 1, 2, 0, 0, 0, DateTimeKind.Utc);
+        ctx.UserData.Add(new UserData
+        {
+            ItemId = versionA.Id,
+            Item = versionA,
+            UserId = user.Id,
+            User = user,
+            CustomDataKey = versionA.Id.ToString("N"),
+            PlaybackPositionTicks = 1000,
+            LastPlayedDate = tied
+        });
+        ctx.UserData.Add(new UserData
+        {
+            ItemId = versionB.Id,
+            Item = versionB,
+            UserId = user.Id,
+            User = user,
+            CustomDataKey = versionB.Id.ToString("N"),
+            PlaybackPositionTicks = 2000,
+            LastPlayedDate = tied
+        });
+
+        ctx.SaveChanges();
+        return (user.Id, primary.Id, versionA.Id, versionB.Id);
     }
 
     private JellyfinDbContext CreateDbContext()

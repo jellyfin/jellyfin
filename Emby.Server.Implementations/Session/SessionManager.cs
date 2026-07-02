@@ -980,14 +980,17 @@ namespace Emby.Server.Implementations.Session
             {
                 _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None);
 
+                // A completed version marks every alternate version played and clears their resume points, so the
+                // whole movie leaves Continue Watching and reads as watched everywhere. (Per-version resume positions
+                // only persist while nothing has been completed yet.)
                 if (data.Played == true && item is Video playedVideo)
                 {
                     playedVideo.PropagatePlayedState(user, true);
                 }
             }
 
-            if ((!user.RememberAudioSelections && data.AudioStreamIndex.HasValue)
-                || (!user.RememberSubtitleSelections && data.SubtitleStreamIndex.HasValue))
+            if ((!user.RememberAudioSelections && info.AudioStreamIndex.HasValue)
+                || (!user.RememberSubtitleSelections && info.SubtitleStreamIndex.HasValue))
             {
                 _userDataManager.ResetPlaybackStreamSelections(user, item);
             }
@@ -1177,7 +1180,9 @@ namespace Emby.Server.Implementations.Session
 
             _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None);
 
-            // A completed version marks all of its alternate versions played; positions stay per-version.
+            // A completed version marks every alternate version played and clears their resume points, so the
+            // whole movie leaves Continue Watching and reads as watched everywhere. (Per-version resume positions
+            // only persist while nothing has been completed yet.)
             if (data.Played == true && item is Video playedVideo)
             {
                 playedVideo.PropagatePlayedState(user, true);

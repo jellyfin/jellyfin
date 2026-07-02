@@ -1272,8 +1272,9 @@ namespace Emby.Server.Implementations.Dto
                     // Match the per-user filtering of the media sources: versions the user cannot
                     // access are not selectable, so they must not count towards the badge either.
                     var mediaSourceCount = user is null
-                        ? video.MediaSourceCount
-                        : video.GetAllVersions().Count(v => v.Id.Equals(video.Id) || v.IsVisibleStandalone(user));
+                        || (!video.PrimaryVersionId.HasValue && video.LinkedAlternateVersions.Length == 0 && !video.HasLocalAlternateVersions)
+                            ? video.MediaSourceCount
+                            : video.GetAllVersions().Count(v => v.Id.Equals(video.Id) || v.IsVisibleStandalone(user));
                     if (mediaSourceCount != 1)
                     {
                         dto.MediaSourceCount = mediaSourceCount;

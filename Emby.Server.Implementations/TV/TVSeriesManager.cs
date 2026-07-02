@@ -262,19 +262,15 @@ namespace Emby.Server.Implementations.TV
                 return (null, null);
             }
 
-            Video? playedVersion = null;
-            DateTime? lastPlayedDate = null;
-            foreach (var version in lastWatchedVideo.GetAllVersions())
-            {
-                var data = _userDataManager.GetUserData(user, version);
-                if (data?.LastPlayedDate is { } date && (lastPlayedDate is null || date > lastPlayedDate))
-                {
-                    lastPlayedDate = date;
-                    playedVersion = version;
-                }
-            }
+            var versions = lastWatchedVideo.GetAllVersions();
+            var userDataByVersion = _userDataManager.GetUserDataBatch(versions, user);
 
-            return (playedVersion, lastPlayedDate);
+            var playedVersion = VersionPlaybackSelector.SelectMostRecentlyPlayed(
+                versions,
+                version => userDataByVersion.GetValueOrDefault(version.Id),
+                data => data.LastPlayedDate.HasValue);
+
+            return (playedVersion, playedVersion is null ? null : userDataByVersion[playedVersion.Id].LastPlayedDate);
         }
 
         /// <summary>
