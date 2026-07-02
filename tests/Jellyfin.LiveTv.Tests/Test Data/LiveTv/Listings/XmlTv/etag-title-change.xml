@@ -1,0 +1,17 @@
+<tv date="20221104">
+  <programme channel="3297" start="20221104130000 +0000" stop="20221104140000 +0000">
+    <title lang="en">Changed Program</title>
+    <sub-title lang="en">Base Episode</sub-title>
+    <desc lang="en">Base description.</desc>
+    <category lang="en">series</category>
+    <episode-num system="xmltv_ns">0 . 1 . </episode-num>
+    <episode-num system="dd_progid">EP123456789012</episode-num>
+    <rating system="VCHIP">
+      <value>TV-G</value>
+    </rating>
+    <star-rating>
+      <value>3/5</value>
+    </star-rating>
+    <icon src="https://domain.tld/base.png"/>
+  </programme>
+</tv>

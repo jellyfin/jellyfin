@@ -173,7 +173,29 @@ namespace Jellyfin.LiveTv.Listings
             var reader = new XmlTvReader(path, GetLanguage(info));
 
             return reader.GetProgrammes(channelId, startDateUtc, endDateUtc, cancellationToken)
-                        .Select(p => GetProgramInfo(p, info));
+                        .Select(p => GetProgramInfoWithEtag(p, info));
+        }
+
+        private ProgramInfo GetProgramInfoWithEtag(XmlTvProgram program, ListingsProviderInfo info)
+        {
+            var programInfo = GetProgramInfo(program, info);
+
+            if (XmlTvProgramEtag.TryCreate(programInfo, out var etag, out var reason))
+            {
+                programInfo.Etag = etag;
+            }
+            else
+            {
+                _logger.LogDebug(
+                    "Unable to create XMLTV program ETag for program {ProgramId} on channel {ChannelId} from {StartDate} to {EndDate}: {Reason}. The program will be treated as updated on each guide refresh.",
+                    programInfo.Id,
+                    programInfo.ChannelId,
+                    programInfo.StartDate,
+                    programInfo.EndDate,
+                    reason);
+            }
+
+            return programInfo;
         }
 
         private static ProgramInfo GetProgramInfo(XmlTvProgram program, ListingsProviderInfo info)
