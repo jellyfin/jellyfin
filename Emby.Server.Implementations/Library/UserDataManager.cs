@@ -312,7 +312,9 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public bool UpdatePlayState(BaseItem item, UserItemData data, long? reportedPositionTicks)
         {
+            var previousPositionTicks = data.PlaybackPositionTicks;
             var playedToCompletion = false;
+            var zeroedNearStart = false;
 
             var runtimeTicks = item.GetRunTimeTicksForPlayState();
 
@@ -328,6 +330,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     // ignore progress during the beginning
                     positionTicks = 0;
+                    zeroedNearStart = true;
                 }
                 else if (pctIn > _config.Configuration.MaxResumePct || positionTicks >= (runtimeTicks - TimeSpan.TicksPerSecond))
                 {
@@ -355,6 +358,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     // ignore progress during the beginning
                     positionTicks = 0;
+                    zeroedNearStart = true;
                 }
                 else if (remainingTimeInMinutes < _config.Configuration.MaxAudiobookResume || positionTicks >= runtimeTicks)
                 {
@@ -368,6 +372,11 @@ namespace Emby.Server.Implementations.Library
                 // If we don't know the runtime we'll just have to assume it was fully played
                 data.Played = playedToCompletion = true;
                 positionTicks = 0;
+            }
+
+            if (zeroedNearStart && previousPositionTicks > 0)
+            {
+                positionTicks = previousPositionTicks;
             }
 
             if (!item.SupportsPlayedStatus)
