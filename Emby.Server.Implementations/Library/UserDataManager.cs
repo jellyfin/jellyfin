@@ -247,6 +247,109 @@ namespace Emby.Server.Implementations.Library
             return result;
         }
 
+        /// <inheritdoc />
+        public VersionResumeData? GetResumeUserData(User user, BaseItem item)
+        {
+            return GetResumeUserDataBatch([item], user).GetValueOrDefault(item.Id);
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyDictionary<Guid, VersionResumeData> GetResumeUserDataBatch(IReadOnlyList<BaseItem> items, User user)
+        {
+            ArgumentNullException.ThrowIfNull(user);
+
+            var result = new Dictionary<Guid, VersionResumeData>();
+
+            // Candidate primaries: a directly queried version (PrimaryVersionId set) keeps its own data.
+            // Linked alternates are already known in memory; only the local-alternate existence check
+            // would otherwise hit the database (one query per item via Video.HasLocalAlternateVersions),
+            // so collect those ids and resolve them all in a single query below.
+            List<Video>? candidates = null;
+            List<Guid>? localProbeIds = null;
+            foreach (var item in items)
+            {
+                if (item is not Video video || video.PrimaryVersionId.HasValue)
+                {
+                    continue;
+                }
+
+                (candidates ??= []).Add(video);
+
+                if (video.LinkedAlternateVersions.Length == 0)
+                {
+                    (localProbeIds ??= []).Add(video.Id);
+                }
+            }
+
+            if (candidates is null)
+            {
+                return result;
+            }
+
+            HashSet<Guid>? withLocalAlternates = null;
+            if (localProbeIds is not null)
+            {
+                using var dbContext = _repository.CreateDbContext();
+                withLocalAlternates = dbContext.LinkedChildren
+                    .Where(lc => lc.ChildType == Jellyfin.Database.Implementations.Entities.LinkedChildType.LocalAlternateVersion
+                        && localProbeIds.Contains(lc.ParentId))
+                    .Select(lc => lc.ParentId)
+                    .Distinct()
+                    .ToHashSet();
+            }
+
+            List<(Guid PrimaryId, IReadOnlyList<Video> Versions)>? versionGroups = null;
+            List<BaseItem>? allVersions = null;
+
+            foreach (var video in candidates)
+            {
+                // Only items that actually have alternate versions aggregate over them.
+                if (video.LinkedAlternateVersions.Length == 0
+                    && (withLocalAlternates is null || !withLocalAlternates.Contains(video.Id)))
+                {
+                    continue;
+                }
+
+                var versions = video.GetAllVersions();
+                if (versions.Count < 2)
+                {
+                    continue;
+                }
+
+                (versionGroups ??= []).Add((video.Id, versions));
+                (allVersions ??= []).AddRange(versions);
+            }
+
+            if (versionGroups is null)
+            {
+                return result;
+            }
+
+            var userDataByVersion = GetUserDataBatch(allVersions!.DistinctBy(i => i.Id).ToList(), user);
+
+            foreach (var (primaryId, versions) in versionGroups)
+            {
+                UserItemData? resumeData = null;
+                foreach (var version in versions)
+                {
+                    // Consider both in-progress and completed versions so a finished alternate still marks the primary as played.
+                    if (userDataByVersion.TryGetValue(version.Id, out var data)
+                        && (data.PlaybackPositionTicks > 0 || data.Played)
+                        && (resumeData is null || (data.LastPlayedDate ?? DateTime.MinValue) > (resumeData.LastPlayedDate ?? DateTime.MinValue)))
+                    {
+                        resumeData = data;
+                    }
+                }
+
+                if (resumeData is not null)
+                {
+                    result[primaryId] = new VersionResumeData(resumeData);
+                }
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Gets the internal key.
         /// </summary>
@@ -281,6 +384,10 @@ namespace Emby.Server.Implementations.Library
             var dto = GetUserItemDataDto(userData, item.Id);
 
             item.FillUserDataDtoValues(dto, userData, itemDto, user, options);
+
+            // For an item with alternate versions, surface the most recently played version's resume point.
+            GetResumeUserData(user, item)?.ApplyTo(dto);
+
             return dto;
         }
 
@@ -384,6 +491,42 @@ namespace Emby.Server.Implementations.Library
             data.PlaybackPositionTicks = positionTicks;
 
             return playedToCompletion;
+        }
+
+        /// <inheritdoc />
+        public void ResetPlaybackStreamSelections(User user, BaseItem item)
+        {
+            ArgumentNullException.ThrowIfNull(user);
+            ArgumentNullException.ThrowIfNull(item);
+
+            using var dbContext = _repository.CreateDbContext();
+            var rows = dbContext.UserData
+                .Where(e => e.ItemId == item.Id && e.UserId == user.Id
+                            && (e.AudioStreamIndex != null || e.SubtitleStreamIndex != null))
+                .ToList();
+
+            if (rows.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var row in rows)
+            {
+                row.AudioStreamIndex = null;
+                row.SubtitleStreamIndex = null;
+            }
+
+            dbContext.SaveChanges();
+
+            var cacheKey = GetCacheKey(user.InternalId, item.Id);
+            if (_cache.TryGet(cacheKey, out var cached))
+            {
+                cached.AudioStreamIndex = null;
+                cached.SubtitleStreamIndex = null;
+                _cache.AddOrUpdate(cacheKey, cached);
+            }
+
+            item.UserData = dbContext.UserData.Where(e => e.ItemId == item.Id).AsNoTracking().ToArray();
         }
     }
 }

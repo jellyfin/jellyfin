@@ -568,25 +568,9 @@ namespace MediaBrowser.Controller.Entities
                         newPrimary.Name,
                         newPrimary.Id);
 
-                    // Reroute collection/playlist references from old primary to new primary
-                    await LibraryManager.RerouteLinkedChildReferencesAsync(oldPrimary.Id, newPrimary.Id).ConfigureAwait(false);
-
-                    // Transfer alternates from old primary to new primary
-                    var localAlternateIds = LibraryManager.GetLocalAlternateVersionIds(oldPrimary).ToHashSet();
-                    var allAlternateIds = localAlternateIds
-                        .Concat(LibraryManager.GetLinkedAlternateVersions(oldPrimary).Select(v => v.Id))
-                        .Distinct()
-                        .ToList();
-
-                    foreach (var altId in allAlternateIds)
-                    {
-                        if (LibraryManager.GetItemById(altId) is Video altVideo && !altVideo.Id.Equals(newPrimary.Id))
-                        {
-                            altVideo.SetPrimaryVersionId(newPrimary.Id);
-                            altVideo.OwnerId = localAlternateIds.Contains(altVideo.Id) ? newPrimary.Id : Guid.Empty;
-                            await altVideo.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
-                        }
-                    }
+                    // Transfer alternates from old primary to new primary and reroute
+                    // collection/playlist references.
+                    await VideoVersionManager.ReassignAlternatesAsync(oldPrimary, newPrimary, cancellationToken).ConfigureAwait(false);
 
                     // Clear alternate arrays so DeleteItem won't trigger promotion
                     oldPrimary.LocalAlternateVersions = [];
@@ -628,23 +612,10 @@ namespace MediaBrowser.Controller.Entities
                         newPrimary.Name,
                         newPrimary.Id);
 
-                    // First: update old primary's alternate items to point to new primary.
-                    // Order matters — update alternates FIRST so they don't get orphan-deleted
-                    // when old primary's arrays are cleared.
-                    var oldAlternateIds = LibraryManager.GetLocalAlternateVersionIds(oldPrimary)
-                        .Concat(LibraryManager.GetLinkedAlternateVersions(oldPrimary).Select(v => v.Id))
-                        .Distinct()
-                        .ToList();
-
-                    foreach (var altId in oldAlternateIds)
-                    {
-                        if (LibraryManager.GetItemById(altId) is Video altVideo && !altVideo.Id.Equals(newPrimary.Id))
-                        {
-                            altVideo.SetPrimaryVersionId(newPrimary.Id);
-                            altVideo.OwnerId = newPrimary.Id;
-                            await altVideo.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
-                        }
-                    }
+                    // First: re-point old primary's alternates at the new primary (and reroute
+                    // playlist/collection references). Order matters — update alternates FIRST so
+                    // they don't get orphan-deleted when old primary's arrays are cleared.
+                    await VideoVersionManager.ReassignAlternatesAsync(oldPrimary, newPrimary, cancellationToken).ConfigureAwait(false);
 
                     // Then: demote old primary — clear its arrays and set it as alternate of new primary
                     oldPrimary.LocalAlternateVersions = [];
@@ -652,9 +623,6 @@ namespace MediaBrowser.Controller.Entities
                     oldPrimary.SetPrimaryVersionId(newPrimary.Id);
                     oldPrimary.OwnerId = newPrimary.Id;
                     await oldPrimary.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
-
-                    // Re-route playlist/collection references from old primary to new primary
-                    await LibraryManager.RerouteLinkedChildReferencesAsync(oldPrimary.Id, newPrimary.Id).ConfigureAwait(false);
                 }
 
                 // After removing items, reattach any detached user data to remaining children

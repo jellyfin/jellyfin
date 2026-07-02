@@ -525,7 +525,9 @@ public class ItemPersistenceService : IItemPersistenceService
             if (item.Item is Video video)
             {
                 var existingLinkedChildren = (allLinkedChildrenByParent.GetValueOrDefault(video.Id) ?? new List<LinkedChildEntity>())
-                    .Where(e => (int)e.ChildType == 2 || (int)e.ChildType == 3)
+                    .Where(e => e.ChildType == DbLinkedChildType.LocalAlternateVersion
+                        || e.ChildType == DbLinkedChildType.LinkedAlternateVersion
+                        || e.ChildType == DbLinkedChildType.AutoLinkedAlternateVersion)
                     .ToList();
 
                 var newLinkedChildren = new List<(Guid ChildId, LinkedChildType Type)>();
@@ -557,7 +559,10 @@ public class ItemPersistenceService : IItemPersistenceService
                     {
                         if (linkedChild.ItemId.HasValue && !linkedChild.ItemId.Value.IsEmpty())
                         {
-                            newLinkedChildren.Add((linkedChild.ItemId.Value, LinkedChildType.LinkedAlternateVersion));
+                            var linkType = linkedChild.Type == LinkedChildType.AutoLinkedAlternateVersion
+                                ? LinkedChildType.AutoLinkedAlternateVersion
+                                : LinkedChildType.LinkedAlternateVersion;
+                            newLinkedChildren.Add((linkedChild.ItemId.Value, linkType));
                         }
                     }
                 }
