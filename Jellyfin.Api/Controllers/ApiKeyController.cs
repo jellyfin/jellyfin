@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Models.ApiKeyDtos;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Querying;
@@ -32,31 +34,31 @@ public class ApiKeyController : BaseJellyfinApiController
     /// Get all keys.
     /// </summary>
     /// <response code="200">Api keys retrieved.</response>
-    /// <returns>A <see cref="QueryResult{AuthenticationInfo}"/> with all keys.</returns>
+    /// <returns>A <see cref="QueryResult{AuthenticationInfoDto}"/> with all keys.</returns>
     [HttpGet("Keys")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<QueryResult<AuthenticationInfo>>> GetKeys()
+    public async Task<ActionResult<QueryResult<AuthenticationInfoDto>>> GetKeys()
     {
         var keys = await _authenticationManager.GetApiKeys().ConfigureAwait(false);
 
-        return new QueryResult<AuthenticationInfo>(keys);
+        return new QueryResult<AuthenticationInfoDto>(keys.Select(ToDto).ToList());
     }
 
     /// <summary>
     /// Create a new api key.
     /// </summary>
     /// <param name="app">Name of the app using the authentication key.</param>
-    /// <response code="204">Api key created.</response>
-    /// <returns>A <see cref="NoContentResult"/>.</returns>
+    /// <response code="200">Api key created.</response>
+    /// <returns>The created api key.</returns>
     [HttpPost("Keys")]
     [Authorize(Policy = Policies.RequiresElevation)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult> CreateKey([FromQuery, Required] string app)
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<AuthenticationInfoDto>> CreateKey([FromQuery, Required] string app)
     {
-        await _authenticationManager.CreateApiKey(app).ConfigureAwait(false);
+        var key = await _authenticationManager.CreateApiKey(app).ConfigureAwait(false);
 
-        return NoContent();
+        return ToDto(key);
     }
 
     /// <summary>
@@ -74,4 +76,12 @@ public class ApiKeyController : BaseJellyfinApiController
 
         return NoContent();
     }
+
+    private static AuthenticationInfoDto ToDto(AuthenticationInfo info)
+        => new()
+        {
+            AccessToken = info.AccessToken,
+            AppName = info.AppName,
+            DateCreated = info.DateCreated
+        };
 }
