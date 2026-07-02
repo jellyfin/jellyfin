@@ -729,5 +729,18 @@ namespace Jellyfin.Model.Tests
 
             Assert.Equal(expectedMethod, result.Method);
         }
+
+        [Theory]
+        [InlineData("Firefox", "mp4-hevc-aac-srt-15200k", TranscodeReason.VideoCodecNotSupported, "Transcode", "HLS.mp4")]
+        public async Task BuildVideoItemWithVideoTranscodeBitrateLimit(string deviceName, string mediaSource, TranscodeReason why, string transcodeMode, string transcodeProtocol)
+        {
+            var cappedOptions = await GetMediaOptions(deviceName, mediaSource);
+            cappedOptions.MaxBitrate = 20_000_000;
+            cappedOptions.VideoTranscodeBitrateLimit = 5_000_000;
+
+            var cappedStreamInfo = BuildVideoItemSimpleTest(cappedOptions, PlayMethod.Transcode, why, transcodeMode, transcodeProtocol);
+
+            Assert.True(cappedStreamInfo?.VideoBitrate <= cappedOptions.VideoTranscodeBitrateLimit);
+        }
     }
 }

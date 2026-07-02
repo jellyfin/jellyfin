@@ -160,6 +160,7 @@
  - [ThreeFive-O](https://github.com/ThreeFive-O)
  - [tjwalkr3](https://github.com/tjwalkr3)
  - [TrisMcC](https://github.com/TrisMcC)
+ - [Truman Miller](https://github.com/trumanmiller)
  - [trumblejoe](https://github.com/trumblejoe)
  - [TtheCreator](https://github.com/TtheCreator)
  - [twinkybot](https://github.com/twinkybot)

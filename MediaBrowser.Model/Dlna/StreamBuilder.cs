@@ -837,6 +837,22 @@ namespace MediaBrowser.Model.Dlna
             return playlistItem;
         }
 
+        private static int? GetVideoTranscodeBitrateLimit(MediaOptions options, StreamInfo playlistItem)
+        {
+            var maxBitrate = options.GetMaxBitrate(false);
+            var transcodeBitrateLimit = options.VideoTranscodeBitrateLimit;
+            if (!maxBitrate.HasValue
+                || !transcodeBitrateLimit.HasValue
+                || transcodeBitrateLimit <= 0
+                || maxBitrate.Value <= transcodeBitrateLimit.Value
+                || (playlistItem.TranscodeReasons & (VideoReasons | TranscodeReason.ContainerBitrateExceedsLimit)) == 0)
+            {
+                return maxBitrate;
+            }
+
+            return transcodeBitrateLimit.Value;
+        }
+
         private (TranscodingProfile? Profile, PlayMethod? PlayMethod) GetVideoTranscodeProfile(
             MediaSourceInfo item,
             MediaOptions options,
@@ -1118,7 +1134,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            var maxBitrateSetting = options.GetMaxBitrate(false);
+            var maxBitrateSetting = GetVideoTranscodeBitrateLimit(options, playlistItem);
             // Honor max rate
             if (maxBitrateSetting.HasValue)
             {
