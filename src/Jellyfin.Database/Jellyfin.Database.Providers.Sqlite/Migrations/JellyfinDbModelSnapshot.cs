@@ -1259,6 +1259,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int>("Bandwidth")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("DetectedAspectRatio")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("Height")
                         .HasColumnType("INTEGER");
 
