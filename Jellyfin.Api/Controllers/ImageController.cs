@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -50,6 +49,7 @@ public class ImageController : BaseJellyfinApiController
     private readonly ILogger<ImageController> _logger;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly IApplicationPaths _appPaths;
+    private readonly UploadHelper _uploadHelper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageController"/> class.
@@ -62,6 +62,7 @@ public class ImageController : BaseJellyfinApiController
     /// <param name="logger">Instance of the <see cref="ILogger{ImageController}"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
+    /// <param name="uploadHelper">The <see cref="UploadHelper"/> instance.</param>
     public ImageController(
         IUserManager userManager,
         ILibraryManager libraryManager,
@@ -70,7 +71,8 @@ public class ImageController : BaseJellyfinApiController
         IFileSystem fileSystem,
         ILogger<ImageController> logger,
         IServerConfigurationManager serverConfigurationManager,
-        IApplicationPaths appPaths)
+        IApplicationPaths appPaths,
+        UploadHelper uploadHelper)
     {
         _userManager = userManager;
         _libraryManager = libraryManager;
@@ -80,6 +82,7 @@ public class ImageController : BaseJellyfinApiController
         _logger = logger;
         _serverConfigurationManager = serverConfigurationManager;
         _appPaths = appPaths;
+        _uploadHelper = uploadHelper;
     }
 
     private static CryptoStream GetFromBase64Stream(Stream inputStream)
@@ -115,26 +118,30 @@ public class ImageController : BaseJellyfinApiController
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the image.");
         }
 
-        if (!TryGetImageExtensionFromContentType(Request.ContentType, out string? extension))
-        {
-            return BadRequest("Incorrect ContentType.");
-        }
-
         var stream = GetFromBase64Stream(Request.Body);
         await using (stream.ConfigureAwait(false))
         {
-            // Handle image/png; charset=utf-8
-            var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
+            var prefix = new byte[UploadHelper.MaxSniffBytes];
+            var prefixCount = await stream.ReadAtLeastAsync(prefix, prefix.Length, throwOnEndOfStream: false, HttpContext.RequestAborted).ConfigureAwait(false);
+
+            var mimeInfo = _uploadHelper.GetMimeInfo(new ArraySegment<byte>(prefix, 0, prefixCount), Request.ContentType);
+            if (mimeInfo is null)
+            {
+                return BadRequest("Incorrect ContentType.");
+            }
+
             var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
             if (user.ProfileImage is not null)
             {
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
 
+            var extension = "." + mimeInfo.Definition.File.Extensions.First();
             user.ProfileImage = new Database.Implementations.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + extension));
 
+            var payload = new PrefixedStream(prefix, prefixCount, stream);
             await _providerManager
-                .SaveImage(stream, mimeType, user.ProfileImage.Path)
+                .SaveImage(payload, mimeInfo.Definition.File.MimeType, user.ProfileImage.Path)
                 .ConfigureAwait(false);
             await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
 
@@ -360,17 +367,20 @@ public class ImageController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (!TryGetImageExtensionFromContentType(Request.ContentType, out _))
-        {
-            return BadRequest("Incorrect ContentType.");
-        }
-
         var stream = GetFromBase64Stream(Request.Body);
         await using (stream.ConfigureAwait(false))
         {
-            // Handle image/png; charset=utf-8
-            var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
-            await _providerManager.SaveImage(item, stream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
+            var prefix = new byte[UploadHelper.MaxSniffBytes];
+            var prefixCount = await stream.ReadAtLeastAsync(prefix, prefix.Length, throwOnEndOfStream: false, HttpContext.RequestAborted).ConfigureAwait(false);
+
+            var mimeInfo = _uploadHelper.GetMimeInfo(new ArraySegment<byte>(prefix, 0, prefixCount), Request.ContentType);
+            if (mimeInfo is null)
+            {
+                return BadRequest("Incorrect ContentType.");
+            }
+
+            var payload = new PrefixedStream(prefix, prefixCount, stream);
+            await _providerManager.SaveImage(item, payload, mimeInfo.Definition.File.MimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
             await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
             return NoContent();
@@ -404,17 +414,20 @@ public class ImageController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (!TryGetImageExtensionFromContentType(Request.ContentType, out _))
-        {
-            return BadRequest("Incorrect ContentType.");
-        }
-
         var stream = GetFromBase64Stream(Request.Body);
         await using (stream.ConfigureAwait(false))
         {
-            // Handle image/png; charset=utf-8
-            var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
-            await _providerManager.SaveImage(item, stream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
+            var prefix = new byte[UploadHelper.MaxSniffBytes];
+            var prefixCount = await stream.ReadAtLeastAsync(prefix, prefix.Length, throwOnEndOfStream: false, HttpContext.RequestAborted).ConfigureAwait(false);
+
+            var mimeInfo = _uploadHelper.GetMimeInfo(new ArraySegment<byte>(prefix, 0, prefixCount), Request.ContentType);
+            if (mimeInfo is null)
+            {
+                return BadRequest("Incorrect ContentType.");
+            }
+
+            var payload = new PrefixedStream(prefix, prefixCount, stream);
+            await _providerManager.SaveImage(item, payload, mimeInfo.Definition.File.MimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
             await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
             return NoContent();
@@ -1720,24 +1733,24 @@ public class ImageController : BaseJellyfinApiController
     [AcceptsImageFile]
     public async Task<ActionResult> UploadCustomSplashscreen()
     {
-        if (!TryGetImageExtensionFromContentType(Request.ContentType, out var extension))
-        {
-            return BadRequest("Incorrect ContentType.");
-        }
-
         var stream = GetFromBase64Stream(Request.Body);
         await using (stream.ConfigureAwait(false))
         {
-            var filePath = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + extension);
-            var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
-            brandingOptions.SplashscreenLocation = filePath;
-            _serverConfigurationManager.SaveConfiguration("branding", brandingOptions);
+            var prefix = new byte[UploadHelper.MaxSniffBytes];
+            var prefixCount = await stream.ReadAtLeastAsync(prefix, prefix.Length, throwOnEndOfStream: false, HttpContext.RequestAborted).ConfigureAwait(false);
 
-            var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
-            await using (fs.ConfigureAwait(false))
+            var mimeInfo = _uploadHelper.GetMimeInfo(new ArraySegment<byte>(prefix, 0, prefixCount), Request.ContentType);
+            if (mimeInfo is null)
             {
-                await stream.CopyToAsync(fs, CancellationToken.None).ConfigureAwait(false);
+                return BadRequest("Incorrect ContentType.");
             }
+
+            var filePathWithExtension = Path.Combine(_appPaths.DataPath, "splashscreen-upload." + mimeInfo.Definition.File.Extensions.First());
+            var payload = new PrefixedStream(prefix, prefixCount, stream);
+            await UploadHelper.WriteStreamToFile(payload, filePathWithExtension, HttpContext.RequestAborted).ConfigureAwait(false);
+            var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
+            brandingOptions.SplashscreenLocation = filePathWithExtension;
+            _serverConfigurationManager.SaveConfiguration("branding", brandingOptions);
 
             return NoContent();
         }
