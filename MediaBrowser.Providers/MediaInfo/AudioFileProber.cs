@@ -563,11 +563,21 @@ namespace MediaBrowser.Providers.MediaInfo
             var startIndex = currentStreams.Count == 0 ? 0 : (currentStreams.Select(i => i.Index).Max() + 1);
             var externalLyricFiles = _lyricResolver.GetExternalStreams(audio, startIndex, options.DirectoryService, false);
 
-            audio.LyricFiles = externalLyricFiles.Select(i => i.Path).Distinct().ToArray();
-            if (externalLyricFiles.Count > 0)
+            foreach (var externalLyricFile in externalLyricFiles)
             {
-                currentStreams.Add(externalLyricFiles[0]);
+                if (currentStreams.Any(i => string.Equals(i.Path, externalLyricFile.Path, StringComparison.Ordinal)))
+                {
+                    continue;
+                }
+
+                currentStreams.Add(externalLyricFile);
             }
+
+            audio.LyricFiles = currentStreams
+                .Where(i => i.Type == MediaStreamType.Lyric && i.IsExternal)
+                .Select(i => i.Path)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
         }
 
         private List<string> SplitWithCustomDelimiter(string val, char[] tagDelimiters, string[] whitelist)
