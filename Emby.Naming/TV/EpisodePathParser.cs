@@ -183,19 +183,62 @@ namespace Emby.Naming.TV
                     result.Success = result.EpisodeNumber.HasValue;
                 }
 
-                // Invalidate match when the season is 200 through 1927 or above 2500
-                // because it is an error unless the TV show is intentionally using false season numbers.
-                // It avoids erroneous parsing of something like "Series Special (1920x1080).mkv" as being season 1920 episode 1080.
-                if ((result.SeasonNumber >= 200 && result.SeasonNumber < 1928)
-                    || result.SeasonNumber > 2500)
+                // Invalidate obvious video dimension matches such as "1920x1080"
+                // so they don't get interpreted as season/episode numbers.
+                if (result.Success && LooksLikeVideoDimensions(name, match, result))
                 {
                     result.Success = false;
+                    result.SeasonNumber = null;
+                    result.EpisodeNumber = null;
+                    result.EndingEpisodeNumber = null;
                 }
 
                 result.IsByDate = expression.IsByDate;
             }
 
             return result;
+        }
+
+        private static bool LooksLikeVideoDimensions(string name, Match match, EpisodePathParserResult result)
+        {
+            if (!result.SeasonNumber.HasValue || !result.EpisodeNumber.HasValue)
+            {
+                return false;
+            }
+
+            var value = match.ValueSpan.ToString();
+
+            // Fast path: literal dimension token in the matched text.
+            if (value.Contains('x', StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            // Fallback: inspect the separator between the parsed season and episode values in the source text.
+            var seasonText = result.SeasonNumber.Value.ToString(CultureInfo.InvariantCulture);
+            var episodeText = result.EpisodeNumber.Value.ToString(CultureInfo.InvariantCulture);
+
+            var seasonIndex = value.IndexOf(seasonText, StringComparison.Ordinal);
+            if (seasonIndex < 0)
+            {
+                return false;
+            }
+
+            var episodeSearchStart = seasonIndex + seasonText.Length;
+            var episodeIndex = value.IndexOf(episodeText, episodeSearchStart, StringComparison.Ordinal);
+            if (episodeIndex < 0)
+            {
+                return false;
+            }
+
+            var separatorLength = episodeIndex - episodeSearchStart;
+            if (separatorLength != 1)
+            {
+                return false;
+            }
+
+            var separator = value[episodeSearchStart];
+            return separator == 'x' || separator == 'X';
         }
 
         private void FillAdditional(string path, EpisodePathParserResult info)
