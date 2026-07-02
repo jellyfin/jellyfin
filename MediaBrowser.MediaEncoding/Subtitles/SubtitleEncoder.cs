@@ -1092,6 +1092,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             var subtitleCodec = subtitleStream.Codec;
             var path = subtitleStream.Path;
+            var protocol = _mediaSourceManager.GetPathProtocol(path);
 
             if (path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
             {
@@ -1104,7 +1105,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
             }
 
-            var result = await DetectCharset(path, mediaSource.Protocol, cancellationToken).ConfigureAwait(false);
+            var result = await DetectCharset(path, protocol, cancellationToken).ConfigureAwait(false);
             var charset = result.Detected?.EncodingName ?? string.Empty;
 
             // UTF16 is automatically converted to UTF8 by FFmpeg, do not specify a character encoding
