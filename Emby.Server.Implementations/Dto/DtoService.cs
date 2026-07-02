@@ -169,9 +169,13 @@ namespace Emby.Server.Implementations.Dto
 
             // Batch-fetch user data for all items
             Dictionary<Guid, UserItemData>? userDataBatch = null;
+            IReadOnlyDictionary<Guid, VersionResumeData>? resumeDataBatch = null;
             if (user is not null && options.EnableUserData)
             {
                 userDataBatch = _userDataRepository.GetUserDataBatch(accessibleItems, user);
+
+                // For items with alternate versions, the most recently played version drives resume.
+                resumeDataBatch = _userDataRepository.GetResumeUserDataBatch(accessibleItems, user);
             }
 
             // Pre-compute collection folders once to avoid N+1 queries in CanDelete
@@ -250,7 +254,8 @@ namespace Emby.Server.Implementations.Dto
                     allCollectionFolders,
                     childCountBatch,
                     playedCountBatch,
-                    artistsBatch);
+                    artistsBatch,
+                    resumeDataBatch?.GetValueOrDefault(item.Id));
 
                 if (item is LiveTvChannel tvChannel)
                 {
@@ -311,7 +316,8 @@ namespace Emby.Server.Implementations.Dto
             List<Folder>? allCollectionFolders = null,
             Dictionary<Guid, int>? childCountBatch = null,
             Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null,
-            IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null)
+            IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null,
+            VersionResumeData? resumeData = null)
         {
             var dto = new BaseItemDto
             {
@@ -355,7 +361,8 @@ namespace Emby.Server.Implementations.Dto
                     options,
                     userData,
                     childCountBatch,
-                    playedCountBatch);
+                    playedCountBatch,
+                    resumeData);
             }
 
             if (item is IHasMediaSources
@@ -371,7 +378,7 @@ namespace Emby.Server.Implementations.Dto
                 AttachStudios(dto, item);
             }
 
-            AttachBasicFields(dto, item, owner, options, artistsBatch);
+            AttachBasicFields(dto, item, owner, options, artistsBatch, user);
 
             if (options.ContainsField(ItemFields.CanDelete))
             {
@@ -540,7 +547,8 @@ namespace Emby.Server.Implementations.Dto
             DtoOptions options,
             UserItemData? userData = null,
             Dictionary<Guid, int>? childCountBatch = null,
-            Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null)
+            Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null,
+            VersionResumeData? resumeData = null)
         {
             if (item.IsFolder)
             {
@@ -602,6 +610,9 @@ namespace Emby.Server.Implementations.Dto
                         // Use pre-fetched user data
                         dto.UserData = GetUserItemDataDto(userData, item.Id);
                         item.FillUserDataDtoValues(dto.UserData, userData, dto, user, options);
+
+                        // For items with alternate versions, the most recently played version drives resume.
+                        resumeData?.ApplyTo(dto.UserData);
                     }
                     else
                     {
@@ -945,7 +956,8 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="owner">The owner.</param>
         /// <param name="options">The options.</param>
         /// <param name="artistsBatch">Optional pre-fetched artist lookup shared across a batch of items.</param>
-        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem? owner, DtoOptions options, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null)
+        /// <param name="user">The user, for per-user values such as the accessible media source count.</param>
+        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem? owner, DtoOptions options, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null, User? user = null)
         {
             if (options.ContainsField(ItemFields.DateCreated))
             {
@@ -1259,7 +1271,12 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.ContainsField(ItemFields.MediaSourceCount))
                 {
-                    var mediaSourceCount = video.MediaSourceCount;
+                    // Match the per-user filtering of the media sources: versions the user cannot
+                    // access are not selectable, so they must not count towards the badge either.
+                    var mediaSourceCount = user is null
+                        || (!video.PrimaryVersionId.HasValue && video.LinkedAlternateVersions.Length == 0 && !video.HasLocalAlternateVersions)
+                            ? video.MediaSourceCount
+                            : video.GetAllVersions().Count(v => v.Id.Equals(video.Id) || v.IsVisibleStandalone(user));
                     if (mediaSourceCount != 1)
                     {
                         dto.MediaSourceCount = mediaSourceCount;

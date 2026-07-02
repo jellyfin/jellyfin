@@ -55,6 +55,11 @@ namespace MediaBrowser.Model.Dto
 
         public long? RunTimeTicks { get; set; }
 
+        /// <summary>
+        /// Gets or sets the playback position for this specific source.
+        /// </summary>
+        public long? PlaybackPositionTicks { get; set; }
+
         public bool ReadAtNativeFramerate { get; set; }
 
         public bool IgnoreDts { get; set; }

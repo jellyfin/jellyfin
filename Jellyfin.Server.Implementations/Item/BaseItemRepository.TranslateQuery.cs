@@ -513,13 +513,17 @@ public sealed partial class BaseItemRepository
         if (filter.IsResumable.HasValue)
         {
             var hasSeries = filter.IncludeItemTypes.Contains(BaseItemKind.Series);
+            var userId = filter.User!.Id;
+            var isResumable = filter.IsResumable.Value;
+            var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
 
+            // In-progress user data rows; alternate versions track their own progress.
+            var inProgress = context.UserData
+                .Where(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0);
+
+            IQueryable<Guid>? resumableSeriesIds = null;
             if (hasSeries)
             {
-                var userId = filter.User!.Id;
-                var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
-                var isResumable = filter.IsResumable.Value;
-
                 // Aggregate per series in a single GROUP BY pass, instead of three full scans.
                 var seriesEpisodeStats = context.BaseItems
                     .AsNoTracking()
@@ -535,26 +539,44 @@ public sealed partial class BaseItemRepository
 
                 // A series is resumable if it has an in-progress episode,
                 // or if it has both played and unplayed episodes (partially watched).
-                var resumableSeriesIds = seriesEpisodeStats
+                resumableSeriesIds = seriesEpisodeStats
                     .Where(s => s.HasInProgress || (s.HasPlayed && s.HasUnplayed))
                     .Select(s => s.SeriesId);
+            }
 
-                // Non-series items: resumable if PlaybackPositionTicks > 0
-                var resumableItemIds = context.UserData
-                    .Where(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0)
-                    .Select(ud => ud.ItemId);
+            if (isResumable)
+            {
+                // Resume queries surface the version that was actually played, which may be an alternate.
+                // Match each version on its own progress rather than coalescing onto the primary.
+                var inProgressIds = inProgress.Select(ud => ud.ItemId);
 
-                baseQuery = baseQuery.Where(e =>
-                    (e.Type == seriesTypeName && resumableSeriesIds.Contains(e.Id) == isResumable)
-                    || (e.Type != seriesTypeName && resumableItemIds.Contains(e.Id) == isResumable));
+                baseQuery = hasSeries
+                    ? baseQuery.Where(e =>
+                        (e.Type == seriesTypeName && resumableSeriesIds!.Contains(e.Id))
+                        || (e.Type != seriesTypeName && inProgressIds.Contains(e.Id)))
+                    : baseQuery.Where(e => inProgressIds.Contains(e.Id));
+
+                // When several versions of the same item are in progress, keep only the most recently played one, use id as tiebreaker.
+                baseQuery = baseQuery.Where(e => e.Type == seriesTypeName || !context.BaseItems
+                    .Where(s => s.Id != e.Id && (s.PrimaryVersionId ?? s.Id) == (e.PrimaryVersionId ?? e.Id))
+                    .Any(s =>
+                        inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
+                            > inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)
+                        || (inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
+                                == inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)
+                            && s.Id.CompareTo(e.Id) < 0)));
             }
             else
             {
-                var resumableItemIds = context.UserData
-                    .Where(ud => ud.UserId == filter.User!.Id && ud.PlaybackPositionTicks > 0)
-                    .Select(ud => ud.ItemId);
-                var isResumable = filter.IsResumable.Value;
-                baseQuery = baseQuery.Where(e => resumableItemIds.Contains(e.Id) == isResumable);
+                // Not-resumable queries operate on primaries only.
+                var resumableMovieIds = inProgress
+                    .Join(context.BaseItems, ud => ud.ItemId, bi => bi.Id, (ud, bi) => bi.PrimaryVersionId ?? bi.Id);
+
+                baseQuery = hasSeries
+                    ? baseQuery.Where(e =>
+                        (e.Type == seriesTypeName && !resumableSeriesIds!.Contains(e.Id))
+                        || (e.Type != seriesTypeName && !resumableMovieIds.Contains(e.Id)))
+                    : baseQuery.Where(e => !resumableMovieIds.Contains(e.Id));
             }
         }
 
@@ -741,10 +763,13 @@ public sealed partial class BaseItemRepository
         }
         else if (filter.OwnerIds.Length == 0 && filter.ExtraTypes.Length == 0 && !filter.IncludeOwnedItems)
         {
-            // Exclude alternate versions and owned non-extra items from general queries.
-            // Alternate versions have PrimaryVersionId set (pointing to their primary).
+            // Exclude owned non-extra items from general queries.
             // Extras (trailers, etc.) have OwnerId set but also have ExtraType set - keep those.
-            baseQuery = baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
+            // Alternate versions (PrimaryVersionId set) are normally excluded too, but resume queries
+            // keep them so the actually-played version can surface instead of collapsing onto the primary.
+            baseQuery = filter.IsResumable == true
+                ? baseQuery.Where(e => e.OwnerId == null || e.ExtraType != null)
+                : baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
         }
 
         if (filter.OwnerIds.Length > 0)
