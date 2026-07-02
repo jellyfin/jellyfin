@@ -387,7 +387,8 @@ public sealed partial class BaseItemRepository
 
         var baseQuery = context.BaseItems
             .AsNoTracking()
-            .Where(b => allDescendantIds.Contains(b.Id) && !b.IsFolder && !b.IsVirtualItem);
+            .Where(b => allDescendantIds.Contains(b.Id))
+            .Where(DescendantQueryHelper.IsCountableLeaf);
 
         return ApplyAccessFiltering(context, baseQuery, filter);
     }
@@ -507,7 +508,7 @@ public sealed partial class BaseItemRepository
 
         var leafItems = context.BaseItems
             .AsNoTracking()
-            .Where(b => !b.IsFolder && !b.IsVirtualItem);
+            .Where(DescendantQueryHelper.IsCountableLeaf);
         leafItems = ApplyAccessFiltering(context, leafItems, filter);
 
         var playedLeafItems = leafItems
