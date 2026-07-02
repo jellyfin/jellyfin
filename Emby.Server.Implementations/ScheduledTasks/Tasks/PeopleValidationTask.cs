@@ -4,9 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -21,7 +27,9 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     private readonly ILibraryManager _libraryManager;
     private readonly ILocalizationManager _localization;
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
+    private readonly IFileSystem _fileSystem;
     private readonly ILogger<PeopleValidationTask> _logger;
+    private readonly IItemTypeLookup _itemTypeLookup;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PeopleValidationTask" /> class.
@@ -29,13 +37,23 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="dbContextFactory">Instance of the <see cref="IDbContextFactory{TContext}"/> interface.</param>
+    /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{PeopleValidationTask}"/> interface.</param>
-    public PeopleValidationTask(ILibraryManager libraryManager, ILocalizationManager localization, IDbContextFactory<JellyfinDbContext> dbContextFactory, ILogger<PeopleValidationTask> logger)
+    /// <param name="itemTypeLookup">Instance of the <see cref="IItemTypeLookup"/> interface.</param>
+    public PeopleValidationTask(
+        ILibraryManager libraryManager,
+        ILocalizationManager localization,
+        IDbContextFactory<JellyfinDbContext> dbContextFactory,
+        IFileSystem fileSystem,
+        ILogger<PeopleValidationTask> logger,
+        IItemTypeLookup itemTypeLookup)
     {
         _libraryManager = libraryManager;
         _localization = localization;
         _dbContextFactory = dbContextFactory;
+        _fileSystem = fileSystem;
         _logger = logger;
+        _itemTypeLookup = itemTypeLookup;
     }
 
     /// <inheritdoc />
@@ -83,10 +101,11 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
             return;
         }
 
+        // Phase 1: Deduplicate and remove orphaned people (0-33%)
         var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
-            IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 2));
+            IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 3));
             var dupQuery = context.Peoples
                     .GroupBy(e => new { e.Name, e.PersonType })
                     .Where(e => e.Count() > 1)
@@ -141,9 +160,104 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
             subProgress.Report(100);
         }
 
-        IProgress<double> validateProgress = new Progress<double>((val) => progress.Report((val / 2) + 50));
+        // Phase 2: Validate people (33-66%). Runs after orphaned PeopleBaseItemMap entries are
+        // cleaned up above, so dead people are removed in a single pass instead of requiring a second run.
+        IProgress<double> validateProgress = new Progress<double>((val) => progress.Report((val / 3) + 33));
         await _libraryManager.ValidatePeopleAsync(validateProgress, cancellationToken).ConfigureAwait(false);
 
+        // Phase 3: Refresh images for people missing them (66-100%)
+        IProgress<double> refreshProgress = new Progress<double>((val) => progress.Report((val / 3) + 66));
+        await RefreshPeopleImagesAsync(refreshProgress, cancellationToken).ConfigureAwait(false);
+
         progress.Report(100);
+    }
+
+    private async Task RefreshPeopleImagesAsync(IProgress<double> progress, CancellationToken cancellationToken)
+    {
+        var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
+        var personTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
+
+        var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            const int PartitionSize = 100;
+
+            var numPeople = await context.BaseItems
+                .AsNoTracking()
+                .Where(b => b.Type == personTypeName)
+                .Where(b => b.DateLastRefreshed == null || b.DateLastRefreshed < thirtyDaysAgo)
+                .Where(b =>
+                    !b.Images!.Any(i => i.ImageType == ImageInfoImageType.Primary) ||
+                    string.IsNullOrEmpty(b.Overview))
+                .CountAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            _logger.LogDebug("Found {Count} people needing image/overview refresh", numPeople);
+
+            if (numPeople == 0)
+            {
+                progress.Report(100);
+                return;
+            }
+
+            var numComplete = 0;
+            var numRefreshed = 0;
+
+            await foreach (var entry in context.BaseItems
+                .AsNoTracking()
+                .Where(b => b.Type == personTypeName)
+                .Where(b => b.DateLastRefreshed == null || b.DateLastRefreshed < thirtyDaysAgo)
+                .Where(b =>
+                    !b.Images!.Any(i => i.ImageType == ImageInfoImageType.Primary) ||
+                    string.IsNullOrEmpty(b.Overview))
+                .OrderBy(b => b.Id)
+                .WithPartitionProgress(partition => _logger.LogDebug("Processing people partition {Partition}", partition))
+                .PartitionEagerAsync(PartitionSize, cancellationToken)
+                .WithCancellation(cancellationToken)
+                .ConfigureAwait(false))
+            {
+                if (await RefreshPersonAsync(entry.Id, cancellationToken).ConfigureAwait(false))
+                {
+                    numRefreshed++;
+                }
+
+                numComplete++;
+                progress.Report(100.0 * numComplete / numPeople);
+            }
+
+            _logger.LogInformation("Refreshed metadata for {Count} people missing images or overview", numRefreshed);
+        }
+    }
+
+    private async Task<bool> RefreshPersonAsync(Guid personId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (_libraryManager.GetItemById(personId) is not Person item)
+            {
+                return false;
+            }
+
+            var hasImage = item.HasImage(MediaBrowser.Model.Entities.ImageType.Primary);
+            var hasOverview = !string.IsNullOrEmpty(item.Overview);
+
+            var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+            {
+                ImageRefreshMode = hasImage ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default,
+                MetadataRefreshMode = hasOverview ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default
+            };
+
+            await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
+            return true;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error refreshing images for person {PersonId}", personId);
+            return false;
+        }
     }
 }
