@@ -1240,6 +1240,11 @@ namespace Emby.Server.Implementations.Dto
                     .ToArray();
             }
 
+            if (item is AudioBook audioBookItem && audioBookItem.AdditionalParts.Length != 0)
+            {
+                dto.PartCount = audioBookItem.AdditionalParts.Length + 1;
+            }
+
             // Add video info
             if (item is Video video)
             {
