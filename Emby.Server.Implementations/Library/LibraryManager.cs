@@ -1383,16 +1383,19 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
+        /// <inheritdoc />
         public async Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false)
         {
             ClearIgnoreRuleCache();
+            var refreshOptions = new MetadataRefreshOptions(new DirectoryService(_fileSystem));
+
             RootFolder.Children = null;
-            await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            await RootFolder.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
 
             // Start by just validating the children of the root, but go no further
             await RootFolder.ValidateChildren(
                 new Progress<double>(),
-                new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
+                refreshOptions,
                 recursive: false,
                 allowRemoveRoot: removeRoot,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -1400,11 +1403,11 @@ namespace Emby.Server.Implementations.Library
             var rootFolder = GetUserRootFolder();
             rootFolder.Children = null;
 
-            await rootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            await rootFolder.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
 
             await rootFolder.ValidateChildren(
                 new Progress<double>(),
-                new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
+                refreshOptions,
                 recursive: false,
                 allowRemoveRoot: removeRoot,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -3482,7 +3485,7 @@ namespace Emby.Server.Implementations.Library
             throw new InvalidOperationException("Unable to convert any images to local");
         }
 
-        public async Task AddVirtualFolder(string name, CollectionTypeOptions? collectionType, LibraryOptions options, bool refreshLibrary)
+        public Task AddVirtualFolder(string name, CollectionTypeOptions? collectionType, LibraryOptions options, bool refreshLibrary)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -3515,6 +3518,7 @@ namespace Emby.Server.Implementations.Library
 
             LibraryMonitor.Stop();
 
+            Task reconciliationTask = Task.CompletedTask;
             try
             {
                 Directory.CreateDirectory(virtualFolderPath);
@@ -3538,19 +3542,37 @@ namespace Emby.Server.Implementations.Library
             }
             finally
             {
-                await ValidateTopLibraryFolders(CancellationToken.None).ConfigureAwait(false);
+                // The on-disk side (directory + .collection marker + library options + shortcuts) is now complete.
+                // Reconciling the in-memory tree and the database scales with the number of already-configured libraries,
+                // so it runs off the request thread. The task is returned (rather than fire-and-forget) so callers that
+                // need the new folder to be resolvable once this completes - e.g. collection creation - can await it,
+                // while callers that only need a fast response (the HTTP API) can choose not to.
+                var shouldRefreshLibrary = refreshLibrary;
+                reconciliationTask = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await ValidateTopLibraryFolders(CancellationToken.None).ConfigureAwait(false);
 
-                if (refreshLibrary)
-                {
-                    StartScanInBackground();
-                }
-                else
-                {
-                    // Need to add a delay here or directory watchers may still pick up the changes
-                    await Task.Delay(1000).ConfigureAwait(false);
-                    LibraryMonitor.Start();
-                }
+                        if (shouldRefreshLibrary)
+                        {
+                            StartScanInBackground();
+                        }
+                        else
+                        {
+                            // Need to add a delay here or directory watchers may still pick up the changes
+                            await Task.Delay(1000).ConfigureAwait(false);
+                            LibraryMonitor.Start();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Background reconciliation after adding virtual folder {Name} failed.", name);
+                    }
+                });
             }
+
+            return reconciliationTask;
         }
 
         private async Task SavePeopleMetadataAsync(IEnumerable<PersonInfo> people, CancellationToken cancellationToken)

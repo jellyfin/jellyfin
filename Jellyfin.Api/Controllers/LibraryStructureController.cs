@@ -74,7 +74,7 @@ public class LibraryStructureController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult> AddVirtualFolder(
+    public ActionResult AddVirtualFolder(
         [FromQuery]
         [RegularExpression(@"^(?:\S(?:.*\S)?)$", ErrorMessage = "Library name cannot be empty or have leading/trailing spaces.")]
         string name,
@@ -90,7 +90,7 @@ public class LibraryStructureController : BaseJellyfinApiController
             libraryOptions.PathInfos = Array.ConvertAll(paths, i => new MediaPathInfo(i));
         }
 
-        await _libraryManager.AddVirtualFolder(name, collectionType, libraryOptions, refreshLibrary).ConfigureAwait(false);
+        _ = _libraryManager.AddVirtualFolder(name, collectionType, libraryOptions, refreshLibrary);
 
         return NoContent();
     }
