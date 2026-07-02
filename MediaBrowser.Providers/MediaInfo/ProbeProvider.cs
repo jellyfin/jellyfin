@@ -273,11 +273,10 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             // Only allow remote URLs in .strm files to prevent local file access
+            //   - check for a valid URI
+            //   - the URI scheme must not be 'file'
             if (Uri.TryCreate(shortcutPath, UriKind.Absolute, out var uri)
-                && (string.Equals(uri.Scheme, "http", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(uri.Scheme, "https", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(uri.Scheme, "rtsp", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(uri.Scheme, "rtp", StringComparison.OrdinalIgnoreCase)))
+                && !string.Equals(uri.Scheme, "file", StringComparison.OrdinalIgnoreCase))
             {
                 item.ShortcutPath = shortcutPath;
             }
