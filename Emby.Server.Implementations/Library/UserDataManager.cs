@@ -15,6 +15,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using Microsoft.EntityFrameworkCore;
+using Audio = MediaBrowser.Controller.Entities.Audio.Audio;
 using AudioBook = MediaBrowser.Controller.Entities.AudioBook;
 using Book = MediaBrowser.Controller.Entities.Book;
 
@@ -111,6 +112,16 @@ namespace Emby.Server.Implementations.Library
                 userData.PlayCount = userDataDto.PlayCount.Value;
             }
 
+            if (userDataDto.SkipCount.HasValue)
+            {
+                userData.SkipCount = userDataDto.SkipCount.Value;
+            }
+
+            if (userDataDto.LastSkippedDate.HasValue)
+            {
+                userData.LastSkippedDate = userDataDto.LastSkippedDate.Value;
+            }
+
             if (userDataDto.IsFavorite.HasValue)
             {
                 userData.IsFavorite = userDataDto.IsFavorite.Value;
@@ -154,6 +165,8 @@ namespace Emby.Server.Implementations.Library
                 PlaybackPositionTicks = dto.PlaybackPositionTicks,
                 PlayCount = dto.PlayCount,
                 Played = dto.Played,
+                SkipCount = dto.SkipCount,
+                LastSkippedDate = dto.LastSkippedDate,
                 Rating = dto.Rating,
                 UserId = userId,
                 SubtitleStreamIndex = dto.SubtitleStreamIndex,
@@ -172,6 +185,8 @@ namespace Emby.Server.Implementations.Library
                 PlaybackPositionTicks = dto.PlaybackPositionTicks,
                 PlayCount = dto.PlayCount,
                 Played = dto.Played,
+                SkipCount = dto.SkipCount,
+                LastSkippedDate = dto.LastSkippedDate,
                 Rating = dto.Rating,
                 SubtitleStreamIndex = dto.SubtitleStreamIndex,
             };
@@ -304,6 +319,8 @@ namespace Emby.Server.Implementations.Library
                 Rating = data.Rating,
                 Played = data.Played,
                 LastPlayedDate = data.LastPlayedDate,
+                SkipCount = data.SkipCount,
+                LastSkippedDate = data.LastSkippedDate,
                 ItemId = itemId,
                 Key = data.Key
             };
@@ -320,7 +337,7 @@ namespace Emby.Server.Implementations.Library
             var hasRuntime = runtimeTicks > 0;
 
             // If a position has been reported, and if we know the duration
-            if (positionTicks > 0 && hasRuntime && item is not AudioBook && item is not Book)
+            if (positionTicks > 0 && hasRuntime && item is not AudioBook && item is not Book && item is not Audio)
             {
                 var pctIn = decimal.Divide(positionTicks, runtimeTicks) * 100;
 
@@ -361,6 +378,29 @@ namespace Emby.Server.Implementations.Library
                     // mark as completed close to the end
                     positionTicks = 0;
                     data.Played = playedToCompletion = true;
+                }
+            }
+            else if (positionTicks > 0 && hasRuntime && item is Audio)
+            {
+                var pctIn = decimal.Divide(positionTicks, runtimeTicks) * 100;
+
+                if (pctIn < _config.Configuration.MinAudioResumePct)
+                {
+                    // Stopped too early to count as partially played; don't save the position.
+                    // Skip Count/Last is handled in SessionManager at stop time, since UpdatePlayState is also called during progress events.
+                    positionTicks = 0;
+                    data.PartiallyPlayed = false; // Skip
+                }
+                else if (pctIn > _config.Configuration.MaxAudioResumePct || positionTicks >= (runtimeTicks - TimeSpan.TicksPerSecond))
+                {
+                    // mark as completed close to the end
+                    positionTicks = 0;
+                    data.PartiallyPlayed = false; // Completed
+                    data.Played = playedToCompletion = true;
+                }
+                else
+                {
+                    data.PartiallyPlayed = true; // Partially played
                 }
             }
             else if (!hasRuntime)

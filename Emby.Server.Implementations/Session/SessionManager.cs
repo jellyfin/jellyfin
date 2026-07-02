@@ -39,6 +39,8 @@ using MediaBrowser.Model.SyncPlay;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Audio = MediaBrowser.Controller.Entities.Audio.Audio;
+using AudioBook = MediaBrowser.Controller.Entities.AudioBook;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 
 namespace Emby.Server.Implementations.Session
@@ -817,12 +819,16 @@ namespace Emby.Server.Implementations.Session
         {
             var data = _userDataManager.GetUserData(user, item);
 
-            data.PlayCount++;
-            data.LastPlayedDate = DateTime.UtcNow;
-
-            if (item.SupportsPlayedStatus && !item.SupportsPositionTicksResume)
+            // We won't manage Audio here but on OnPlaybackStopped
+            if (item is not Audio || item is AudioBook)
             {
-                data.Played = true;
+                data.PlayCount++;
+                data.LastPlayedDate = DateTime.UtcNow;
+
+                if (item.SupportsPlayedStatus && !item.SupportsPositionTicksResume)
+                {
+                    data.Played = true;
+                }
             }
 
             _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackStart, CancellationToken.None);
@@ -1138,6 +1144,26 @@ namespace Emby.Server.Implementations.Session
                 data.Played = item.SupportsPlayedStatus;
                 data.PlaybackPositionTicks = 0;
                 playedToCompletion = true;
+            }
+
+            // For Audio: PlayCount/Date and SkipCount/Date are managed here at stop time rather than at start time.
+            if (item is Audio and not AudioBook && positionTicks.HasValue)
+            {
+                var runtimeTicks = item.GetRunTimeTicksForPlayState();
+                if (playedToCompletion)
+                {
+                    data.PlayCount++;
+                    data.LastPlayedDate = DateTime.UtcNow;
+                }
+                else if (runtimeTicks > 0)
+                {
+                    var pctIn = decimal.Divide(positionTicks.Value, runtimeTicks) * 100;
+                    if (pctIn < _config.Configuration.MinAudioResumePct)
+                    {
+                        data.SkipCount++;
+                        data.LastSkippedDate = DateTime.UtcNow;
+                    }
+                }
             }
 
             _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None);
