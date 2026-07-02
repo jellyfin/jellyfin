@@ -1107,6 +1107,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var result = await DetectCharset(path, mediaSource.Protocol, cancellationToken).ConfigureAwait(false);
             var charset = result.Detected?.EncodingName ?? string.Empty;
 
+            // WebVTT must be UTF-8 per spec (https://www.w3.org/TR/webvtt1/#file-structure).
+            // However, users may save the file with a different encoding using a text editor.
+            // Only pass charenc when the detector is confident enough; low confidence likely
+            // means the file is valid UTF-8/ASCII and detection produced a false positive.
+            if (string.Equals(subtitleCodec, "webvtt", StringComparison.OrdinalIgnoreCase)
+                || path.EndsWith(".vtt", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogDebug("charset {0} detected for {Path}", charset, path);
+                return result.Detected?.Confidence >= 0.5f ? charset : string.Empty;
+            }
+
             // UTF16 is automatically converted to UTF8 by FFmpeg, do not specify a character encoding
             if ((path.EndsWith(".ass", StringComparison.Ordinal) || path.EndsWith(".ssa", StringComparison.Ordinal) || path.EndsWith(".srt", StringComparison.Ordinal))
                 && (string.Equals(charset, "utf-16le", StringComparison.OrdinalIgnoreCase)
@@ -1116,7 +1127,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
 
             _logger.LogDebug("charset {0} detected for {Path}", charset, path);
-
             return charset;
         }
 
