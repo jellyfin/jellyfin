@@ -335,6 +335,11 @@ namespace Emby.Server.Implementations.Playlists
             var children = playlist.GetManageableItems().ToList();
             var accessibleChildren = children.Where(c => c.Item2.IsVisible(user)).ToArray();
 
+            if (accessibleChildren.Length == 0)
+            {
+                return;
+            }
+
             var oldIndexAll = children.FindIndex(i => string.Equals(entryId, i.Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
             var oldIndexAccessible = accessibleChildren.FindIndex(i => string.Equals(entryId, i.Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
 
@@ -343,7 +348,7 @@ namespace Emby.Server.Implementations.Playlists
                 return;
             }
 
-            var newPriorItemIndex = Math.Max(newIndex - 1, 0);
+            var newPriorItemIndex = Math.Clamp(newIndex - 1, 0, accessibleChildren.Length - 1);
             var newPriorItemId = accessibleChildren[newPriorItemIndex].Item1.ItemId;
             var newPriorItemIndexOnAllChildren = children.FindIndex(c => c.Item1.ItemId.Equals(newPriorItemId));
             var adjustedNewIndex = DetermineAdjustedIndex(newPriorItemIndexOnAllChildren, newIndex);
