@@ -35,6 +35,7 @@ namespace MediaBrowser.Model.Configuration
             SeasonZeroDisplayName = "Specials";
 
             PreferNonstandardArtistsTag = false;
+            PreferOriginalReleaseDate = false;
             UseCustomTagDelimiters = false;
             CustomTagDelimiters = _defaultTagDelimiters;
             DelimiterWhitelist = Array.Empty<string>();
@@ -123,6 +124,9 @@ namespace MediaBrowser.Model.Configuration
 
         [DefaultValue(false)]
         public bool PreferNonstandardArtistsTag { get; set; }
+
+        [DefaultValue(false)]
+        public bool PreferOriginalReleaseDate { get; set; }
 
         [DefaultValue(false)]
         public bool UseCustomTagDelimiters { get; set; }
