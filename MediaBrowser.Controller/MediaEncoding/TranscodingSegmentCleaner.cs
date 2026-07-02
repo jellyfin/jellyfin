@@ -102,6 +102,19 @@ public class TranscodingSegmentCleaner : IDisposable
             var downloadPositionTicks = _job.DownloadPositionTicks ?? 0;
             var downloadPositionSeconds = Convert.ToInt64(TimeSpan.FromTicks(downloadPositionTicks).TotalSeconds);
 
+            // For live streams the client never reports a ticks-based position.
+            // Derive the current position from the highest segment index on disk instead.
+            if (downloadPositionSeconds == 0 && _segmentLength > 0)
+            {
+                downloadPositionSeconds = GetLiveSegmentPositionSeconds(_job);
+            }
+
+            _logger.LogDebug(
+                "Segment cleaner tick: downloadPositionSeconds={DownloadPositionSeconds}, segmentKeepSeconds={SegmentKeepSeconds}, segmentLength={SegmentLength}",
+                downloadPositionSeconds,
+                segmentKeepSeconds,
+                _segmentLength);
+
             if (downloadPositionSeconds > 0 && segmentKeepSeconds > 0 && downloadPositionSeconds > segmentKeepSeconds)
             {
                 var idxMaxToDelete = (downloadPositionSeconds - segmentKeepSeconds) / _segmentLength;
@@ -112,6 +125,39 @@ public class TranscodingSegmentCleaner : IDisposable
                 }
             }
         }
+        else
+        {
+            _logger.LogDebug("Segment cleaner tick: EnableSegmentDeletion=false, skipping");
+        }
+    }
+
+    private long GetLiveSegmentPositionSeconds(TranscodingJob job)
+    {
+        var path = job.Path;
+        if (string.IsNullOrEmpty(path))
+        {
+            return 0;
+        }
+
+        var directory = Path.GetDirectoryName(path);
+        if (string.IsNullOrEmpty(directory))
+        {
+            return 0;
+        }
+
+        var name = Path.GetFileNameWithoutExtension(path);
+        long maxIdx = -1;
+
+        foreach (var file in _fileSystem.GetFilePaths(directory))
+        {
+            var stem = Path.GetFileNameWithoutExtension(file);
+            if (long.TryParse(stem.Replace(name, string.Empty, StringComparison.Ordinal), out var idx) && idx > maxIdx)
+            {
+                maxIdx = idx;
+            }
+        }
+
+        return maxIdx < 0 ? 0 : (maxIdx + 1) * _segmentLength;
     }
 
     private async Task DeleteSegmentFiles(TranscodingJob job, long idxMin, long idxMax, int delayMs)
