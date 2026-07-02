@@ -955,6 +955,12 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetApiUrlForLocalAccess(IPAddress ipAddress = null, bool allowHttps = true)
         {
+            // CLI/env-var override takes precedence, same as GetSmartApiUrl.
+            if (!string.IsNullOrEmpty(PublishedServerUrl))
+            {
+                return PublishedServerUrl.Trim('/');
+            }
+
             // Default to loopback so published-server overrides can still apply when no
             // specific source IP is given (e.g. Live TV buffer file paths generated
             // server-side with no request context).
