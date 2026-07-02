@@ -12,7 +12,7 @@ using SubtitleFormat = Nikse.SubtitleEdit.Core.SubtitleFormats.SubtitleFormat;
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
     /// <summary>
-    /// SubStation Alpha subtitle parser.
+    /// Subtitle parser backed by the libse (Subtitle Edit) library.
     /// </summary>
     public class SubtitleEditParser : ISubtitleParser
     {
@@ -112,13 +112,39 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 try
                 {
                     var tempInstance = (SubtitleFormat)Activator.CreateInstance(type, true)!;
-                    var extension = tempInstance.Extension.TrimStart('.');
-                    if (!string.IsNullOrEmpty(extension))
+
+                    // Collect the primary extension and any alternate extensions defined by the format.
+                    // This is necessary because some formats report a different string via ffprobe than
+                    // their primary Extension — e.g. WebVTT has Extension=".vtt" but ffprobe reports
+                    // the codec as "webvtt", which libse exposes via AlternateExtensions.
+                    // Without indexing AlternateExtensions, a lookup for "webvtt" would fail and fall
+                    // through to a lossy libse VTT→VTT roundtrip that strips cue settings
+                    // (position, line, align, size), breaking subtitle positioning on clients like ExoPlayer.
+                    var extensions = new List<string>();
+
+                    var primaryExtension = tempInstance.Extension.TrimStart('.');
+                    if (!string.IsNullOrEmpty(primaryExtension))
+                    {
+                        extensions.Add(primaryExtension);
+                    }
+
+                    // AlternateExtensions returns an empty list by default; formats that override it
+                    // (e.g. WebVTT returning "webvtt") are registered here alongside the primary extension.
+                    foreach (var altExtension in tempInstance.AlternateExtensions)
+                    {
+                        var trimmed = altExtension.TrimStart('.');
+                        if (!string.IsNullOrEmpty(trimmed))
+                        {
+                            extensions.Add(trimmed);
+                        }
+                    }
+
+                    foreach (var ext in extensions)
                     {
                         // Store only the type, we will instantiate from it later
-                        if (!subtitleFormatTypes.TryGetValue(extension, out var subtitleFormatTypesForExtension))
+                        if (!subtitleFormatTypes.TryGetValue(ext, out var subtitleFormatTypesForExtension))
                         {
-                            subtitleFormatTypes[extension] = [type];
+                            subtitleFormatTypes[ext] = [type];
                         }
                         else
                         {
