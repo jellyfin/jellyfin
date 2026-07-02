@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
+using MediaBrowser.Controller.Extensions;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -90,6 +91,8 @@ namespace MediaBrowser.Controller.Entities
                 FileSystem.GetValidFilename(name).Trim().TrimEnd('.') :
                 name;
 
+            validName = SafeNameHelper.EnsureSafeName(
+                ConfigurationManager.ApplicationPaths.YearPath, validName);
             return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.YearPath, validName);
         }
 

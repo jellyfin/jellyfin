@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Microsoft.Extensions.Logging;
+using MediaBrowser.Controller.Extensions;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -85,6 +86,8 @@ namespace MediaBrowser.Controller.Entities.Audio
                 FileSystem.GetValidFilename(name).Trim().TrimEnd('.') :
                 name;
 
+            validName = SafeNameHelper.EnsureSafeName(
+                ConfigurationManager.ApplicationPaths.MusicGenrePath, validName);
             return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.MusicGenrePath, validName);
         }
 
