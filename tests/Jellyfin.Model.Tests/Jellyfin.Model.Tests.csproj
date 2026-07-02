@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../MediaBrowser.Model/MediaBrowser.Model.csproj" />
+    <ProjectReference Include="../../Emby.Server.Implementations/Emby.Server.Implementations.csproj" />
   </ItemGroup>
 
 </Project>
