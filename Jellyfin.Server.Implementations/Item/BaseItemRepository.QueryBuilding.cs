@@ -455,14 +455,29 @@ public sealed partial class BaseItemRepository
                 || (e.TopParentId.HasValue && allowedTagItemIds.Contains(e.TopParentId.Value)));
         }
 
-        // Exclude alternate versions (have PrimaryVersionId set) and owned non-extra items.
-        // Extras (trailers, etc.) have OwnerId set but also have ExtraType set — keep those.
-        if (!filter.IncludeOwnedItems)
+        return ApplyOwnedItemVisibilityFilter(baseQuery, filter);
+    }
+
+    private static IQueryable<BaseItemEntity> ApplyOwnedItemVisibilityFilter(
+        IQueryable<BaseItemEntity> baseQuery,
+        InternalItemsQuery filter)
+    {
+        if (filter.IncludeOwnedItems)
         {
-            baseQuery = baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
+            return baseQuery;
         }
 
-        return baseQuery;
+        // Additional parts are owned videos without a PrimaryVersionId. Keep them in
+        // resume queries while still excluding alternate versions.
+        if (filter.IsResumable == true)
+        {
+            return baseQuery.Where(e => e.PrimaryVersionId == null);
+        }
+
+        // Exclude alternate versions and owned non-extra items from general queries.
+        // Alternate versions have PrimaryVersionId set (pointing to their primary).
+        // Extras (trailers, etc.) have OwnerId set but also have ExtraType set - keep those.
+        return baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
     }
 
     /// <summary>
