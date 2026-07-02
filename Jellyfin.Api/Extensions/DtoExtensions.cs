@@ -34,6 +34,8 @@ public static class DtoExtensions
             case CollectionType.homevideos:
             case CollectionType.photos:
                 return [BaseItemKind.Video, BaseItemKind.Photo];
+            case CollectionType.folders:
+                return [];
             default:
                 return [BaseItemKind.Video, BaseItemKind.Audio, BaseItemKind.Photo, BaseItemKind.Movie, BaseItemKind.Series];
         }
