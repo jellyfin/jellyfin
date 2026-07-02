@@ -7,6 +7,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
@@ -79,6 +80,46 @@ public sealed partial class BaseItemRepository
             _getGenreValueTypes,
             [],
             _itemTypeLookup.MusicGenreTypes);
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetMediaStreamLanguages(InternalItemsQuery filter, MediaStreamType mediaStreamType)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+
+        if (!filter.Limit.HasValue)
+        {
+            filter.EnableTotalRecordCount = false;
+        }
+
+        using var context = _dbProvider.CreateDbContext();
+
+        return TranslateQuery(
+            context.BaseItems.Include(e => e.MediaStreams).Where(e => e.Id != EF.Constant(PlaceholderId)),
+            context,
+            new InternalItemsQuery(filter.User)
+            {
+                IncludeOwnedItems = filter.IncludeOwnedItems,
+                ExcludeItemTypes = filter.ExcludeItemTypes,
+                IncludeItemTypes = filter.IncludeItemTypes,
+                MediaTypes = filter.MediaTypes,
+                AncestorIds = filter.AncestorIds,
+                ItemIds = filter.ItemIds,
+                TopParentIds = filter.TopParentIds,
+                ParentId = filter.ParentId,
+                IsAiring = filter.IsAiring,
+                IsMovie = filter.IsMovie,
+                IsSports = filter.IsSports,
+                IsKids = filter.IsKids,
+                IsNews = filter.IsNews,
+                IsSeries = filter.IsSeries
+            })
+            .Where(e => e.MediaStreams != null)
+            .SelectMany(e => e.MediaStreams!)
+            .Where(e => e.StreamType == (MediaStreamTypeEntity)mediaStreamType)
+            .Select(s => string.IsNullOrEmpty(s.Language) ? "und" : s.Language) // und = undetermined
+            .Distinct()
+            .ToArray();
     }
 
     private string[] GetItemValueNames(IReadOnlyList<ItemValueType> itemValueTypes, IReadOnlyList<string> withItemTypes, IReadOnlyList<string> excludeItemTypes)

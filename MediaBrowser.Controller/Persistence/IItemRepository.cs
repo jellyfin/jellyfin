@@ -7,6 +7,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Persistence;
@@ -118,6 +119,14 @@ public interface IItemRepository
     /// </summary>
     /// <returns>The list of genre names.</returns>
     IReadOnlyList<string> GetGenreNames();
+
+    /// <summary>
+    /// Gets all language codes of the matching base items and the provided stream type.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <param name="mediaStreamType">The type of the media stream.</param>
+    /// <returns>List of language codes.</returns>
+    public IReadOnlyList<string> GetMediaStreamLanguages(InternalItemsQuery filter, MediaStreamType mediaStreamType);
 
     /// <summary>
     /// Gets all artist names.
