@@ -2073,7 +2073,14 @@ namespace MediaBrowser.Controller.Entities
 
             if (image is null)
             {
-                AddImage(GetImageInfo(file, type));
+                var newImage = GetImageInfo(file, type);
+                var maxSortOrder = ImageInfos
+                    .Where(i => i.Type == type)
+                    .Select(i => i.SortOrder)
+                    .DefaultIfEmpty(-1)
+                    .Max();
+                newImage.SortOrder = maxSortOrder + 1;
+                AddImage(newImage);
             }
             else
             {
@@ -2124,11 +2131,39 @@ namespace MediaBrowser.Controller.Entities
 
         public void RemoveImages(IEnumerable<ItemImageInfo> deletedImages)
         {
-            ImageInfos = ImageInfos.Except(deletedImages).ToArray();
+            var removed = deletedImages as IList<ItemImageInfo> ?? deletedImages.ToList();
+            if (removed.Count == 0)
+            {
+                return;
+            }
+
+            ImageInfos = ImageInfos.Except(removed).ToArray();
+
+            foreach (var typeGroup in removed.Select(i => i.Type).Distinct())
+            {
+                var orderedTypeImages = ImageInfos
+                    .Where(i => i.Type == typeGroup)
+                    .OrderBy(i => i.SortOrder)
+                    .ToList();
+
+                for (int i = 0; i < orderedTypeImages.Count; i++)
+                {
+                    orderedTypeImages[i].SortOrder = i;
+                }
+            }
         }
 
         public void AddImage(ItemImageInfo image)
         {
+            if (image.SortOrder == 0 && AllowsMultipleImages(image.Type))
+            {
+                image.SortOrder = ImageInfos
+                    .Where(i => i.Type == image.Type)
+                    .Select(i => i.SortOrder)
+                    .DefaultIfEmpty(-1)
+                    .Max() + 1;
+            }
+
             ImageInfos = [.. ImageInfos, image];
         }
 
@@ -2259,15 +2294,9 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentException("No image info for chapter images");
             }
 
-            // Yield return is more performant than LINQ Where on an Array
-            for (var i = 0; i < ImageInfos.Length; i++)
-            {
-                var imageInfo = ImageInfos[i];
-                if (imageInfo.Type == imageType)
-                {
-                    yield return imageInfo;
-                }
-            }
+            return ImageInfos
+                .Where(i => i.Type == imageType)
+                .OrderBy(i => i.SortOrder);
         }
 
         /// <summary>
@@ -2325,7 +2354,17 @@ namespace MediaBrowser.Controller.Entities
 
             if (newImageList.Count > 0)
             {
-                ImageInfos = ImageInfos.Concat(newImageList.Select(i => GetImageInfo(i, imageType))).ToArray();
+                var maxSortOrder = existingImages
+                    .Select(i => i.SortOrder)
+                    .DefaultIfEmpty(-1)
+                    .Max();
+
+                ImageInfos = ImageInfos.Concat(newImageList.Select(i =>
+                {
+                    var info = GetImageInfo(i, imageType);
+                    info.SortOrder = ++maxSortOrder;
+                    return info;
+                })).ToArray();
             }
 
             return imageUpdated || newImageList.Count > 0;
@@ -2384,13 +2423,48 @@ namespace MediaBrowser.Controller.Entities
 
             if (info1 is null || info2 is null)
             {
-                // Nothing to do
                 return Task.CompletedTask;
             }
 
+            if (index1 == index2)
+            {
+                return Task.CompletedTask;
+            }
+
+            // Backdrops use SortOrder-based swapping (no physical file swap needed)
+            if (type == ImageType.Backdrop)
+            {
+                return SwapBackdropSortOrderAsync(type, index1, index2);
+            }
+
+            // Other multi-image types (e.g. Chapter) use physical file swapping
+            return SwapFileImagesAsync(info1, info2);
+        }
+
+        private Task SwapBackdropSortOrderAsync(ImageType type, int index1, int index2)
+        {
+            var images = GetImages(type).ToList();
+
+            if (index1 >= images.Count || index2 >= images.Count)
+            {
+                return Task.CompletedTask;
+            }
+
+            (images[index1].SortOrder, images[index2].SortOrder) = (images[index2].SortOrder, images[index1].SortOrder);
+
+            var sortOrder = 0;
+            foreach (var image in images.OrderBy(i => i.SortOrder))
+            {
+                image.SortOrder = sortOrder++;
+            }
+
+            return UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None);
+        }
+
+        private Task SwapFileImagesAsync(ItemImageInfo info1, ItemImageInfo info2)
+        {
             if (!info1.IsLocalFile || !info2.IsLocalFile)
             {
-                // TODO: Not supported  yet
                 return Task.CompletedTask;
             }
 

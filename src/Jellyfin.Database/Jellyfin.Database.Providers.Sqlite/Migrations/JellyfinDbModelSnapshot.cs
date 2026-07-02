@@ -459,12 +459,15 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("Width")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ItemId", "ImageType");
+                    b.HasIndex("ItemId", "ImageType", "SortOrder");
 
                     b.ToTable("BaseItemImageInfos");
 
