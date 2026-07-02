@@ -680,10 +680,17 @@ namespace MediaBrowser.Providers.Manager
             return providers;
         }
 
-        protected virtual IEnumerable<IImageProvider> GetNonLocalImageProviders(BaseItem item, IEnumerable<IImageProvider> allImageProviders, ImageRefreshOptions options)
+        protected virtual IEnumerable<IImageProvider> GetNonLocalImageProviders(BaseItem item, IEnumerable<IImageProvider> allImageProviders, MetadataRefreshOptions options)
         {
             // Get providers to refresh
             var providers = allImageProviders.Where(i => i is not ILocalImageProvider);
+
+            // When identifying, run the provider the user picked first so the correct image is used.
+            if (!string.IsNullOrEmpty(options.SearchResult?.SearchProviderName))
+            {
+                providers = providers
+                    .OrderBy(i => string.Equals(i.Name, options.SearchResult.SearchProviderName, StringComparison.OrdinalIgnoreCase) ? 0 : 1);
+            }
 
             var dateLastImageRefresh = item.DateLastRefreshed;
 
