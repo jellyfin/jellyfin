@@ -173,7 +173,10 @@ public class MediaStreamRepository : IMediaStreamRepository
             if (!string.IsNullOrEmpty(dto.Language))
             {
                 var culture = _localization.FindLanguageInfo(dto.Language);
-                dto.LocalizedLanguage = culture?.DisplayName;
+                // Truncate at the first delimiter to avoid cluttered display names
+                dto.LocalizedLanguage = culture?.DisplayName is { } name
+                    ? name.Split([';', ','])[0].Trim()
+                    : null;
             }
 
             if (dto.Type is MediaStreamType.Audio)
