@@ -310,9 +310,10 @@ namespace MediaBrowser.Providers.Manager
                 providers = providers.Where(i => i.GetSupportedImages(item).Contains(query.ImageType.Value));
             }
 
-            var preferredLanguage = item.GetPreferredMetadataLanguage();
+            var preferredMetadataLanguage = item.GetPreferredMetadataLanguage();
+            var preferredImageLanguages = item.GetPreferredImageLanguages();
 
-            var tasks = providers.Select(i => GetImages(item, i, preferredLanguage, query.IncludeAllLanguages, cancellationToken, query.ImageType));
+            var tasks = providers.Select(i => GetImages(item, i, preferredMetadataLanguage, preferredImageLanguages, query.IncludeAllLanguages, cancellationToken, query.ImageType));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -324,7 +325,8 @@ namespace MediaBrowser.Providers.Manager
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="provider">The provider.</param>
-        /// <param name="preferredLanguage">The preferred language.</param>
+        /// <param name="preferredMetadataLanguage">The preferred language.</param>
+        /// <param name="preferredImageLanguages">The preferred image languages.</param>
         /// <param name="includeAllLanguages">Whether to include all languages in results.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="type">The type.</param>
@@ -332,12 +334,13 @@ namespace MediaBrowser.Providers.Manager
         private async Task<IEnumerable<RemoteImageInfo>> GetImages(
             BaseItem item,
             IRemoteImageProvider provider,
-            string preferredLanguage,
+            string preferredMetadataLanguage,
+            ImageLanguageOption[] preferredImageLanguages,
             bool includeAllLanguages,
             CancellationToken cancellationToken,
             ImageType? type = null)
         {
-            bool hasPreferredLanguage = !string.IsNullOrWhiteSpace(preferredLanguage);
+            string? originalLanguage = item.GetInheritedOriginalLanguage();
 
             try
             {
@@ -348,17 +351,14 @@ namespace MediaBrowser.Providers.Manager
                     result = result.Where(i => i.Type == type.Value);
                 }
 
-                if (!includeAllLanguages && hasPreferredLanguage)
+                if (includeAllLanguages)
                 {
-                    // Filter out languages that do not match the preferred languages.
-                    //
-                    // TODO: should exception case of "en" (English) eventually be removed?
-                    result = result.Where(i => string.IsNullOrWhiteSpace(i.Language) ||
-                                               string.Equals(preferredLanguage, i.Language, StringComparison.OrdinalIgnoreCase) ||
-                                               string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase));
+                    return result.OrderByLanguageDescending(preferredMetadataLanguage, preferredImageLanguages, originalLanguage);
                 }
 
-                return result.OrderByLanguageDescending(preferredLanguage);
+                result = FilterImagesByLanguage(result, preferredImageLanguages, originalLanguage, preferredMetadataLanguage);
+
+                return result.OrderByLanguageDescending(preferredMetadataLanguage, preferredImageLanguages, originalLanguage);
             }
             catch (OperationCanceledException)
             {
@@ -369,6 +369,46 @@ namespace MediaBrowser.Providers.Manager
                 _logger.LogError(ex, "{ProviderName} failed in GetImageInfos for type {ItemType} at {ItemPath}", provider.GetType().Name, item.GetType().Name, item.Path);
                 return Enumerable.Empty<RemoteImageInfo>();
             }
+        }
+
+        private static IEnumerable<RemoteImageInfo> FilterImagesByLanguage(
+            IEnumerable<RemoteImageInfo> images,
+            ImageLanguageOption[] preferredImageLanguages,
+            string? originalLanguage,
+            string preferredMetadataLanguage)
+        {
+            if (preferredImageLanguages.Length > 0)
+            {
+                var validLanguages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var opt in preferredImageLanguages)
+                {
+                    switch (opt.OptionType)
+                    {
+                        case ImageLanguageType.LanguageCode when !string.IsNullOrEmpty(opt.Language):
+                            validLanguages.Add(opt.Language);
+                            break;
+                        case ImageLanguageType.OriginalLanguage when !string.IsNullOrEmpty(originalLanguage):
+                            validLanguages.Add(originalLanguage);
+                            break;
+                    }
+                }
+
+                // Filter out languages that do not match the preferred image languages.
+                return images.Where(i => string.IsNullOrWhiteSpace(i.Language) ||
+                                           validLanguages.Contains(i.Language));
+            }
+
+            if (!string.IsNullOrWhiteSpace(preferredMetadataLanguage))
+            {
+                // Fallback to metadata language if no image languages configured
+                //
+                // TODO: should exception case of "en" (English) eventually be removed?
+                return images.Where(i => string.IsNullOrWhiteSpace(i.Language) ||
+                                           string.Equals(preferredMetadataLanguage, i.Language, StringComparison.OrdinalIgnoreCase) ||
+                                           string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase));
+            }
+
+            return images;
         }
 
         /// <inheritdoc/>
