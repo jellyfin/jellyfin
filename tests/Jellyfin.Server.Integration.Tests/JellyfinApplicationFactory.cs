@@ -9,6 +9,7 @@ using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -79,17 +80,19 @@ namespace Jellyfin.Server.Integration.Tests
             ILoggerFactory loggerFactory = new SerilogLoggerFactory();
 
             _disposableComponents.Add(loggerFactory);
+            var serverAddresses = new ServerAddressesFeature();
 
             // Create the app host and initialize it
             var appHost = new TestAppHost(
                 appPaths,
                 loggerFactory,
                 commandLineOpts,
-                startupConfig);
+                startupConfig,
+                serverAddresses);
             _disposableComponents.Add(appHost);
 
             builder.ConfigureServices(services => appHost.Init(services))
-                .ConfigureWebHostBuilder(appHost, startupConfig, appPaths, NullLogger.Instance)
+                .ConfigureWebHostBuilder(appHost, startupConfig, appPaths, NullLogger.Instance, serverAddresses)
                 .ConfigureAppConfiguration((context, builder) =>
                 {
                     builder
