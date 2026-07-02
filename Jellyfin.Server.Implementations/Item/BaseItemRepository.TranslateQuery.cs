@@ -179,12 +179,12 @@ public sealed partial class BaseItemRepository
             {
                 cleanedSearchTerm = $"%{cleanedSearchTerm.Trim('%')}%";
                 var likeSearchTerm = $"%{originalSearchTerm.Trim('%')}%";
-                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!, cleanedSearchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeSearchTerm)));
+                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!, cleanedSearchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeSearchTerm)) || (e.SortName != null && EF.Functions.Like(e.SortName, cleanedSearchTerm)));
             }
             else
             {
                 var likeSearchTerm = $"%{originalSearchTerm}%";
-                baseQuery = baseQuery.Where(e => e.CleanName!.Contains(cleanedSearchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeSearchTerm)));
+                baseQuery = baseQuery.Where(e => e.CleanName!.Contains(cleanedSearchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeSearchTerm)) || (e.SortName != null && e.SortName.Contains(cleanedSearchTerm)));
             }
         }
 

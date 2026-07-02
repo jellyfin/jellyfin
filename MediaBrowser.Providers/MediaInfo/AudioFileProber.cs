@@ -385,6 +385,36 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.ParentIndexNumber ??= trackDiscNumber;
             }
 
+            // Embedded sort tags (e.g. ID3 TSOT/TSOA/TSOP/TSO2): title, album, artist and album artist sort order.
+            // The title sort drives this item's sort name directly, while the album/artist sort values are stored on
+            // the song so the album and artist metadata services can aggregate them onto the MusicAlbum/MusicArtist.
+            var trackSortTitle = GetSanitizedStringTag(track.SortTitle, audio.Path);
+            var trackSortAlbum = GetSanitizedStringTag(track.SortAlbum, audio.Path);
+            var trackSortArtist = GetSanitizedStringTag(track.SortArtist, audio.Path)?.Split(InternalValueSeparator)[0];
+            var trackSortAlbumArtist = GetSanitizedStringTag(track.SortAlbumArtist, audio.Path)?.Split(InternalValueSeparator)[0];
+
+            if (!audio.LockedFields.Contains(MetadataField.Name)
+                && !string.IsNullOrEmpty(trackSortTitle)
+                && (options.ReplaceAllMetadata || string.IsNullOrEmpty(audio.ForcedSortName)))
+            {
+                audio.ForcedSortName = trackSortTitle;
+            }
+
+            if (options.ReplaceAllMetadata || string.IsNullOrEmpty(audio.SortAlbum))
+            {
+                audio.SortAlbum = trackSortAlbum;
+            }
+
+            if (options.ReplaceAllMetadata || string.IsNullOrEmpty(audio.SortArtist))
+            {
+                audio.SortArtist = trackSortArtist;
+            }
+
+            if (options.ReplaceAllMetadata || string.IsNullOrEmpty(audio.SortAlbumArtist))
+            {
+                audio.SortAlbumArtist = trackSortAlbumArtist;
+            }
+
             if (track.Date.HasValue)
             {
                 audio.PremiereDate = track.Date;
