@@ -74,6 +74,7 @@ namespace MediaBrowser.Model.Net
             new(".cbr", "application/vnd.comicbook-rar"),
             new(".cbt", "application/x-cbt"),
             new(".cbz", "application/vnd.comicbook+zip"),
+            new(".ttml", "application/ttml+xml"),
 
             // Type image
             new(".tbn", "image/jpeg"),
@@ -116,6 +117,7 @@ namespace MediaBrowser.Model.Net
             new("application/x-javascript", ".js"),
             new("application/xml", ".xml"),
             new("application/x-mpegURL", ".m3u8"),
+            new("application/ttml+xml", ".ttml"),
 
             // Type audio
             new("audio/aac", ".aac"),

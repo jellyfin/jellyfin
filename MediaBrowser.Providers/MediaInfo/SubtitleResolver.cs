@@ -1,7 +1,11 @@
+using System;
+using System.Collections.Generic;
 using Emby.Naming.Common;
+using Emby.Naming.ExternalFiles;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
@@ -35,6 +39,29 @@ namespace MediaBrowser.Providers.MediaInfo
                 namingOptions,
                 DlnaProfileType.Subtitle)
         {
+        }
+
+        /// <inheritdoc />
+        protected override bool TryAddManualStream(ICollection<MediaStream> mediaStreams, ExternalPathParserResult pathInfo, ref int startIndex)
+        {
+            // ttml is not supported by ffmpeg
+            if (pathInfo.Path.EndsWith(".ttml", StringComparison.OrdinalIgnoreCase))
+            {
+                var mediaStream = new MediaStream
+                {
+                    Type = MediaStreamType.Subtitle,
+                    Codec = "ttml",
+                    Index = startIndex++,
+                    IsDefault = pathInfo.IsDefault,
+                    IsForced = pathInfo.IsForced,
+                    IsHearingImpaired = pathInfo.IsHearingImpaired
+                };
+
+                mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
+                return true;
+            }
+
+            return base.TryAddManualStream(mediaStreams, pathInfo, ref startIndex);
         }
     }
 }
