@@ -41,6 +41,15 @@ namespace MediaBrowser.Model.IO
         void MoveDirectory(string source, string destination);
 
         /// <summary>
+        /// Moves a file to a new location.
+        /// </summary>
+        /// <param name="source">Source file.</param>
+        /// <param name="destination">Destination file.</param>
+        /// <param name="overwrite">Replace destination file if it already exists.</param>
+        /// <returns><c>true</c> if the specified file was moved; otherwise, <c>false</c>.</returns>
+        bool MoveFile(string source, string destination, bool overwrite);
+
+        /// <summary>
         /// Returns a <see cref="FileSystemMetadata" /> object for the specified file or directory path.
         /// </summary>
         /// <param name="path">A path to a file or directory.</param>
