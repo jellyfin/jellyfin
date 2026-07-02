@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -9,6 +10,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -36,7 +38,8 @@ public class SessionManagerTests
             Mock.Of<IServerApplicationHost>(),
             Mock.Of<IDeviceManager>(),
             Mock.Of<IMediaSourceManager>(),
-            Mock.Of<IHostApplicationLifetime>());
+            Mock.Of<IHostApplicationLifetime>(),
+            Mock.Of<IDbContextFactory<JellyfinDbContext>>());
 
         await Assert.ThrowsAsync(exceptionType, () => sessionManager.GetAuthorizationToken(
             new User("test", "default", "default"),
@@ -63,7 +66,8 @@ public class SessionManagerTests
             Mock.Of<IServerApplicationHost>(),
             Mock.Of<IDeviceManager>(),
             Mock.Of<IMediaSourceManager>(),
-            Mock.Of<IHostApplicationLifetime>());
+            Mock.Of<IHostApplicationLifetime>(),
+            Mock.Of<IDbContextFactory<JellyfinDbContext>>());
 
         await Assert.ThrowsAsync(exceptionType, () => sessionManager.AuthenticateNewSessionInternal(authenticationRequest, false));
     }
