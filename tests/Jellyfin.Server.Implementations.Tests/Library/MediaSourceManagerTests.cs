@@ -1,16 +1,24 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Castle.Components.DictionaryAdapter;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using Moq;
 using Xunit;
@@ -143,6 +151,178 @@ namespace Jellyfin.Server.Implementations.Tests.Library
 
             _mediaSourceManager.SetDefaultAudioAndSubtitleStreamIndices(_item, mediaInfo, _user);
             Assert.Equal(expectedIndex, mediaInfo.DefaultAudioStreamIndex);
+        }
+
+        [Fact]
+        public void SetDefaultAudioAndSubtitleStreamIndices_LiveTvChannel_RestoresRememberedSubtitleIndex()
+        {
+            var (manager, channel, user) = CreateLiveTvSubtitleTestContext(
+                savedSubtitleStreamIndex: 3,
+                configureUser: u =>
+                {
+                    u.RememberSubtitleSelections = true;
+                    u.SubtitleMode = SubtitlePlaybackMode.Default;
+                });
+
+            Assert.True(channel.EnableRememberingTrackSelections);
+
+            var mediaSource = CreateLiveTvMediaSourceWithSubtitles(
+                new MediaStream { Index = 3, Type = MediaStreamType.Subtitle, Codec = "DVBSUB", Language = "rum" });
+
+            manager.SetDefaultAudioAndSubtitleStreamIndices(channel, mediaSource, user);
+
+            Assert.Equal(3, mediaSource.DefaultSubtitleStreamIndex);
+        }
+
+        [Fact]
+        public void SetDefaultAudioAndSubtitleStreamIndices_LiveTvChannel_UsesGlobalLanguageWhenNoSavedSelection()
+        {
+            var (manager, channel, user) = CreateLiveTvSubtitleTestContext(
+                savedSubtitleStreamIndex: null,
+                configureUser: u =>
+                {
+                    u.RememberSubtitleSelections = true;
+                    u.SubtitleLanguagePreference = "rum";
+                    u.SubtitleMode = SubtitlePlaybackMode.Default;
+                });
+
+            var mediaSource = CreateLiveTvMediaSourceWithSubtitles(
+                new MediaStream { Index = 3, Type = MediaStreamType.Subtitle, Codec = "DVBSUB", Language = "dut" },
+                new MediaStream { Index = 4, Type = MediaStreamType.Subtitle, Codec = "DVBSUB", Language = "rum" });
+
+            manager.SetDefaultAudioAndSubtitleStreamIndices(channel, mediaSource, user);
+
+            Assert.Equal(4, mediaSource.DefaultSubtitleStreamIndex);
+        }
+
+        [Fact]
+        public void SetDefaultAudioAndSubtitleStreamIndices_VodDefaultMode_DoesNotApplyPreferredLanguage()
+        {
+            var (manager, channel, user) = CreateLiveTvSubtitleTestContext(
+                savedSubtitleStreamIndex: null,
+                configureUser: u =>
+                {
+                    u.SubtitleLanguagePreference = "rum";
+                    u.SubtitleMode = SubtitlePlaybackMode.Default;
+                });
+
+            var mediaSource = CreateLiveTvMediaSourceWithSubtitles(
+                new MediaStream { Index = 3, Type = MediaStreamType.Subtitle, Codec = "DVBSUB", Language = "rum" });
+            mediaSource.IsInfiniteStream = false;
+
+            manager.SetDefaultAudioAndSubtitleStreamIndices(channel, mediaSource, user);
+
+            Assert.Null(mediaSource.DefaultSubtitleStreamIndex);
+        }
+
+        [Fact]
+        public void SetDefaultAudioAndSubtitleStreamIndices_LiveTvChannel_FallsBackWhenSavedIndexInvalid()
+        {
+            var (manager, channel, user) = CreateLiveTvSubtitleTestContext(
+                savedSubtitleStreamIndex: 99,
+                configureUser: u =>
+                {
+                    u.RememberSubtitleSelections = true;
+                    u.SubtitleLanguagePreference = "rum";
+                    u.SubtitleMode = SubtitlePlaybackMode.Always;
+                });
+
+            var mediaSource = CreateLiveTvMediaSourceWithSubtitles(
+                new MediaStream { Index = 3, Type = MediaStreamType.Subtitle, Codec = "DVBSUB", Language = "dut" },
+                new MediaStream { Index = 4, Type = MediaStreamType.Subtitle, Codec = "DVBSUB", Language = "rum" });
+
+            manager.SetDefaultAudioAndSubtitleStreamIndices(channel, mediaSource, user);
+
+            Assert.Equal(4, mediaSource.DefaultSubtitleStreamIndex);
+        }
+
+        [Fact]
+        public void SetDefaultAudioAndSubtitleStreamIndices_LiveTvChannel_RememberedOff_DoesNotOverrideAlwaysWithLanguagePreference()
+        {
+            var (manager, channel, user) = CreateLiveTvSubtitleTestContext(
+                savedSubtitleStreamIndex: -1,
+                configureUser: u =>
+                {
+                    u.RememberSubtitleSelections = true;
+                    u.SubtitleLanguagePreference = "rum";
+                    u.SubtitleMode = SubtitlePlaybackMode.Always;
+                });
+
+            var mediaSource = CreateLiveTvMediaSourceWithSubtitles(
+                new MediaStream { Index = 4, Type = MediaStreamType.Subtitle, Codec = "DVBSUB", Language = "rum" });
+
+            manager.SetDefaultAudioAndSubtitleStreamIndices(channel, mediaSource, user);
+
+            Assert.Equal(4, mediaSource.DefaultSubtitleStreamIndex);
+        }
+
+        [Fact]
+        public void SetDefaultAudioAndSubtitleStreamIndices_LiveTvChannel_RememberedOff_StillHonoredWithoutLanguagePreference()
+        {
+            var (manager, channel, user) = CreateLiveTvSubtitleTestContext(
+                savedSubtitleStreamIndex: -1,
+                configureUser: u =>
+                {
+                    u.RememberSubtitleSelections = true;
+                    u.SubtitleLanguagePreference = null;
+                    u.SubtitleMode = SubtitlePlaybackMode.Always;
+                });
+
+            var mediaSource = CreateLiveTvMediaSourceWithSubtitles(
+                new MediaStream { Index = 4, Type = MediaStreamType.Subtitle, Codec = "DVBSUB", Language = "rum" });
+
+            manager.SetDefaultAudioAndSubtitleStreamIndices(channel, mediaSource, user);
+
+            Assert.Equal(-1, mediaSource.DefaultSubtitleStreamIndex);
+        }
+
+        private static (MediaSourceManager Manager, LiveTvChannel Channel, User User) CreateLiveTvSubtitleTestContext(
+            int? savedSubtitleStreamIndex,
+            Action<User>? configureUser = null)
+        {
+            var fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
+            fixture.Inject<IFileSystem>(fixture.Create<ManagedFileSystem>());
+
+            var channel = new LiveTvChannel
+            {
+                Id = Guid.NewGuid(),
+                Name = "TVR 1 HD",
+                ChannelType = ChannelType.TV,
+            };
+
+            var user = fixture.Create<User>();
+            configureUser?.Invoke(user);
+
+            var userData = new UserItemData { Key = channel.Id.ToString("N") };
+            if (savedSubtitleStreamIndex.HasValue)
+            {
+                userData.SubtitleStreamIndex = savedSubtitleStreamIndex.Value;
+            }
+
+            var userDataManager = fixture.Freeze<Mock<IUserDataManager>>();
+            userDataManager.Setup(m => m.GetUserData(user, channel)).Returns(userData);
+
+            var localizationManager = fixture.Freeze<Mock<ILocalizationManager>>();
+            localizationManager
+                .Setup(m => m.FindLanguageInfo(It.IsAny<string>()))
+                .Returns((string s) => string.IsNullOrEmpty(s)
+                    ? null
+                    : new CultureDto(s, s, s, new EditableList<string> { s }));
+            fixture.Inject(localizationManager.Object);
+
+            return (fixture.Create<MediaSourceManager>(), channel, user);
+        }
+
+        private static MediaSourceInfo CreateLiveTvMediaSourceWithSubtitles(params MediaStream[] subtitleStreams)
+        {
+            var streams = new List<MediaStream>
+            {
+                new() { Index = 1, Type = MediaStreamType.Video, Codec = "h264" },
+                new() { Index = 2, Type = MediaStreamType.Audio, Codec = "ac3", Language = "rum" },
+            };
+            streams.AddRange(subtitleStreams);
+
+            return new MediaSourceInfo { IsInfiniteStream = true, MediaStreams = streams };
         }
     }
 }

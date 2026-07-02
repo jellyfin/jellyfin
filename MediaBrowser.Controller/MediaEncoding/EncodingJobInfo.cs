@@ -104,7 +104,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool GenPtsInput => MediaSource.GenPtsInput;
 
-        public bool DiscardCorruptFramesInput => false;
+        public bool DiscardCorruptFramesInput => MediaSource?.IsInfiniteStream == true;
 
         public bool EnableFastSeekInput => false;
 
