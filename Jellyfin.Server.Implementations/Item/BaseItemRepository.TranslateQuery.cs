@@ -13,6 +13,7 @@ using System.Linq.Expressions;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Extensions;
 using Jellyfin.Database.Implementations.MatchCriteria;
 using Jellyfin.Extensions;
 using Jellyfin.Server.Implementations.Extensions;
@@ -168,23 +169,6 @@ public sealed partial class BaseItemRepository
             else
             {
                 excludeTags.Add("Kids");
-            }
-        }
-
-        if (!string.IsNullOrEmpty(filter.SearchTerm))
-        {
-            var cleanedSearchTerm = filter.SearchTerm.GetCleanValue();
-            var originalSearchTerm = filter.SearchTerm;
-            if (SearchWildcardTerms.Any(f => cleanedSearchTerm.Contains(f)))
-            {
-                cleanedSearchTerm = $"%{cleanedSearchTerm.Trim('%')}%";
-                var likeSearchTerm = $"%{originalSearchTerm.Trim('%')}%";
-                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!, cleanedSearchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeSearchTerm)));
-            }
-            else
-            {
-                var likeSearchTerm = $"%{originalSearchTerm}%";
-                baseQuery = baseQuery.Where(e => e.CleanName!.Contains(cleanedSearchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeSearchTerm)));
             }
         }
 
@@ -1217,6 +1201,13 @@ public sealed partial class BaseItemRepository
                 adjacentIds.Add(adjacentToId);
                 baseQuery = baseQuery.Where(e => adjacentIds.Contains(e.Id));
             }
+        }
+
+        // Apply full-text search AFTER all other filters
+        // This ensures FTS operates on an already-filtered dataset
+        if (!string.IsNullOrEmpty(filter.SearchTerm))
+        {
+            baseQuery = baseQuery.SearchFullText(context, filter.SearchTerm, filter.Limit, _logger, e => e.Name, e => e.CleanName, e => e.OriginalTitle);
         }
 
         return baseQuery;
