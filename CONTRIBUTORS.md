@@ -62,6 +62,7 @@
  - [h1nk](https://github.com/h1nk)
  - [hawken93](https://github.com/hawken93)
  - [HelloWorld017](https://github.com/HelloWorld017)
+ - [IDisposable](https://github.com/IDisposable)
  - [ikomhoog](https://github.com/ikomhoog)
  - [iwalton3](https://github.com/iwalton3)
  - [Jakob Kukla](https://github.com/jakobkukla)

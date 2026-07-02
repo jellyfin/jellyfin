@@ -160,7 +160,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         job.PingTimeout = timerDuration;
         job.LastPingDate = DateTime.UtcNow;
 
-        // Don't start the timer for playback checkins with progressive streaming
+        // Don't start the timer for playback check-ins with progressive streaming
         if (job.Type != TranscodingJobType.Progressive || !isProgressCheckIn)
         {
             job.StartKillTimer(OnTranscodeKillTimerStopped);

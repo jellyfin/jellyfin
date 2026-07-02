@@ -715,7 +715,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return GetCustomRatingForComparision();
+                return GetCustomRatingForComparison();
             }
         }
 
@@ -793,7 +793,7 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The remote trailers.</value>
         public IReadOnlyList<MediaUrl> RemoteTrailers { get; set; }
 
-        private string GetCustomRatingForComparision(HashSet<Guid> callstack = null)
+        private string GetCustomRatingForComparison(HashSet<Guid> callstack = null)
         {
             callstack ??= new();
             var customRating = CustomRating;
@@ -807,7 +807,7 @@ namespace MediaBrowser.Controller.Entities
             var parent = DisplayParent;
             if (parent is not null && !callstack.Contains(parent.Id))
             {
-                return parent.GetCustomRatingForComparision(callstack);
+                return parent.GetCustomRatingForComparison(callstack);
             }
 
             return null;
@@ -947,7 +947,7 @@ namespace MediaBrowser.Controller.Entities
                 // Remove from middle if surrounded by spaces
                 sortable = sortable.Replace(" " + search + " ", " ", StringComparison.Ordinal);
 
-                // Remove from end if preceeded by a space
+                // Remove from end if preceded by a space
                 if (sortable.EndsWith(" " + search, StringComparison.Ordinal))
                 {
                     sortable = sortable.Remove(sortable.Length - (search.Length + 1));

@@ -399,7 +399,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="items">Items to delete.</param>
         /// <param name="deleteSourceFiles">Whether to delete source media files on disk. Defaults to false.</param>
-        /// <remarks>In comparison to <see cref="DeleteItem(BaseItem, DeleteOptions, BaseItem, bool)"/> this method skips a lot of steps assuming there are no children to recusively delete nor does it define the special handling for channels and alike.</remarks>
+        /// <remarks>In comparison to <see cref="DeleteItem(BaseItem, DeleteOptions, BaseItem, bool)"/> this method skips a lot of steps assuming there are no children to recursively delete nor does it define the special handling for channels and alike.</remarks>
         public void DeleteItemsUnsafeFast(IReadOnlyCollection<BaseItem> items, bool deleteSourceFiles = false);
 
         /// <summary>

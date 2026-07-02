@@ -486,7 +486,7 @@ namespace Jellyfin.LiveTv
 
                     result.OriginalStreamId = streamId;
 
-                    _logger.LogInformation("Returning mediasource streamId {0}, mediaSource.Id {1}, mediaSource.LiveStreamId {2}", streamId, openedMediaSource.Id, openedMediaSource.LiveStreamId);
+                    _logger.LogInformation("Returning MediaSource streamId {0}, mediaSource.Id {1}, mediaSource.LiveStreamId {2}", streamId, openedMediaSource.Id, openedMediaSource.LiveStreamId);
 
                     return result;
                 }

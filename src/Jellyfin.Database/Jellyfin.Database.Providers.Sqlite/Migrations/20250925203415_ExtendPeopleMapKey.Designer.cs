@@ -407,7 +407,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                             IsRepeat = false,
                             IsSeries = false,
                             IsVirtualItem = false,
-                            Name = "This is a placeholder item for UserData that has been detacted from its original item",
+                            Name = "This is a placeholder item for UserData that has been detected from its original item",
                             Type = "PLACEHOLDER"
                         });
                 });

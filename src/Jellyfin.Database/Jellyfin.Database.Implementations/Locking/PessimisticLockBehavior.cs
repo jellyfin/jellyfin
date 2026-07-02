@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Database.Implementations.Locking;
 
 /// <summary>
-/// A locking behavior that will always block any operation while a write is requested. Mimicks the old SqliteRepository behavior.
+/// A locking behavior that will always block any operation while a write is requested. Mimics the old SqliteRepository behavior.
 /// </summary>
 public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
 {
@@ -239,7 +239,7 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
 
         public static void BeginWriteLock(ILogger logger, IDbCommand? command = null, [CallerMemberName] string? callerMemberName = null, [CallerLineNumber] int? callerNo = null)
         {
-            logger.LogTrace("Aquire Write {Caller}:{Line}", callerMemberName, callerNo);
+            logger.LogTrace("Acquire Write {Caller}:{Line}", callerMemberName, callerNo);
             if (!DatabaseLock.TryEnterWriteLock(TimeSpan.FromMilliseconds(1000)))
             {
                 var blockingQuery = _blockQuery;
@@ -258,14 +258,14 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
 
             _blockQuery = (command?.CommandText ?? "Transaction", Guid.NewGuid(), DateTimeOffset.Now, false);
 
-            logger.LogTrace("Write Aquired {Caller}:{Line}", callerMemberName, callerNo);
+            logger.LogTrace("Write Acquired {Caller}:{Line}", callerMemberName, callerNo);
         }
 
         public static void BeginReadLock(ILogger logger, [CallerMemberName] string? callerMemberName = null, [CallerLineNumber] int? callerNo = null)
         {
-            logger.LogTrace("Aquire Write {Caller}:{Line}", callerMemberName, callerNo);
+            logger.LogTrace("Acquire Read {Caller}:{Line}", callerMemberName, callerNo);
             DatabaseLock.EnterReadLock();
-            logger.LogTrace("Read Aquired {Caller}:{Line}", callerMemberName, callerNo);
+            logger.LogTrace("Read Acquired {Caller}:{Line}", callerMemberName, callerNo);
         }
 
         public static void EndWriteLock(ILogger logger, [CallerMemberName] string? callerMemberName = null, [CallerLineNumber] int? callerNo = null)

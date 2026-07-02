@@ -42,12 +42,12 @@ public sealed class JellyfinMigrationAttribute : Attribute
     }
 
     /// <summary>
-    /// Gets or Sets a value indicating whether the annoated migration should be executed on a fresh install.
+    /// Gets or Sets a value indicating whether the annotated migration should be executed on a fresh install.
     /// </summary>
     public bool RunMigrationOnSetup { get; set; }
 
     /// <summary>
-    /// Gets or Sets the stage the annoated migration should be executed at. Defaults to <see cref="JellyfinMigrationStageTypes.CoreInitialisation"/>.
+    /// Gets or Sets the stage the annotated migration should be executed at. Defaults to <see cref="JellyfinMigrationStageTypes.CoreInitialisation"/>.
     /// </summary>
     public JellyfinMigrationStageTypes Stage { get; set; } = JellyfinMigrationStageTypes.CoreInitialisation;
 

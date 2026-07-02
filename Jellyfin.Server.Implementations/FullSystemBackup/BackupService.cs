@@ -579,8 +579,8 @@ public class BackupService : IBackupService
     }
 
     /// <summary>
-    /// Windows is able to handle '/' as a path seperator in zip files
-    /// but linux isn't able to handle '\' as a path seperator in zip files,
+    /// Windows is able to handle '/' as a path separator in zip files
+    /// but linux isn't able to handle '\' as a path separator in zip files,
     /// So normalize to '/'.
     /// </summary>
     /// <param name="path">The path to normalize.</param>

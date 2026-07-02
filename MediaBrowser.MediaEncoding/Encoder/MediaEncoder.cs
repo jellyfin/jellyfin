@@ -690,7 +690,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + outputExtension);
             Directory.CreateDirectory(Path.GetDirectoryName(tempExtractPath));
 
-            // deint -> scale -> thumbnail -> tonemap.
+            // deinterlace -> scale -> thumbnail -> tonemap.
             // put the SW tonemap right after the thumbnail to do it only once to reduce cpu usage.
             var filters = new List<string>();
 

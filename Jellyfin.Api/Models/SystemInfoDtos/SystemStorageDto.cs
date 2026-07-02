@@ -6,7 +6,7 @@ using MediaBrowser.Model.System;
 namespace Jellyfin.Api.Models.SystemInfoDtos;
 
 /// <summary>
-/// Contains informations about the systems storage.
+/// Contains information about the systems storage.
 /// </summary>
 public record SystemStorageDto
 {
@@ -31,7 +31,7 @@ public record SystemStorageDto
     public required FolderStorageDto CacheFolder { get; set; }
 
     /// <summary>
-    /// Gets or sets the Storage information of the folder where logfiles are saved to.
+    /// Gets or sets the Storage information of the folder where log files are saved.
     /// </summary>
     public required FolderStorageDto LogFolder { get; set; }
 
@@ -46,7 +46,7 @@ public record SystemStorageDto
     public required FolderStorageDto TranscodingTempFolder { get; set; }
 
     /// <summary>
-    /// Gets or sets the storage informations of all libraries.
+    /// Gets or sets the storage information of all libraries.
     /// </summary>
     public required IReadOnlyCollection<LibraryStorageDto> Libraries { get; set; }
 

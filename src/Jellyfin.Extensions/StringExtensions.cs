@@ -13,7 +13,7 @@ namespace Jellyfin.Extensions
     {
         private static readonly Lazy<string> _transliteratorId = new(() =>
             Environment.GetEnvironmentVariable("JELLYFIN_TRANSLITERATOR_ID")
-            ?? "Any-Latin; Latin-Ascii; Lower; NFD; [:Nonspacing Mark:] Remove; [:Punctuation:] Remove;");
+            ?? "Any-Latin; Latin-Ascii; Lower; NFD; [:Nonspacing Mark:] Remove; [:Punctuation:] Remove;"); // cspell:disable-line
 
         private static readonly Lazy<Transliterator?> _transliterator = new(() =>
         {
@@ -30,7 +30,7 @@ namespace Jellyfin.Extensions
         // Matches non-conforming unicode chars
         // https://mnaoumov.wordpress.com/2014/06/14/stripping-invalid-characters-from-utf-16-strings/
 
-        [GeneratedRegex("([\ud800-\udbff](?![\udc00-\udfff]))|((?<![\ud800-\udbff])[\udc00-\udfff])|(�)")]
+        [GeneratedRegex("([\ud800-\udbff](?![\udc00-\udfff]))|((?<![\ud800-\udbff])[\udc00-\udfff])|(�)")] // cspell:disable-line
         private static partial Regex NonConformingUnicodeRegex();
 
         /// <summary>

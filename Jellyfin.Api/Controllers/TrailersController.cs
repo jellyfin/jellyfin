@@ -116,7 +116,7 @@ public class TrailersController : BaseJellyfinApiController
     /// <param name="studioIds">Optional. If specified, results will be filtered based on studio id. This allows multiple, pipe delimited.</param>
     /// <param name="genreIds">Optional. If specified, results will be filtered based on genre id. This allows multiple, pipe delimited.</param>
     /// <param name="audioLanguages">Optional. If specified, results will be filtered based on audio language. This allows multiple, comma delimited values.</param>
-    /// <param name="subtitleLanguages">Optional. If specified, results will be filtered based on subtitale language. This allows multiple, comma delimited values.</param>
+    /// <param name="subtitleLanguages">Optional. If specified, results will be filtered based on subtitle language. This allows multiple, comma delimited values.</param>
     /// <param name="enableTotalRecordCount">Optional. Enable the total record count.</param>
     /// <param name="enableImages">Optional, include image information in output.</param>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the trailers.</returns>

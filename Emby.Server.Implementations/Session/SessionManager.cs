@@ -1570,7 +1570,7 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// Authenticates the new session.
         /// </summary>
-        /// <param name="request">The authenticationrequest.</param>
+        /// <param name="request">The authentication request.</param>
         /// <returns>The authentication result.</returns>
         public Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request)
         {

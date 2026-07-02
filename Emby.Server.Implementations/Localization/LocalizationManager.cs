@@ -168,7 +168,7 @@ namespace Emby.Server.Implementations.Localization
         private async Task LoadCultures()
         {
             List<CultureDto> list = [];
-            Dictionary<string, string> iso6392BtoTdict = new Dictionary<string, string>();
+            Dictionary<string, string> iso6392BtoTDict = new Dictionary<string, string>();
 
             using var stream = _assembly.GetManifestResourceStream(CulturesPath);
             if (stream is null)
@@ -219,7 +219,7 @@ namespace Emby.Server.Implementations.Localization
 
                         // In cases where there are two TLN the first one is ISO 639-2/T and the second one is ISO 639-2/B
                         // We need ISO 639-2/T for the .NET cultures so we cultivate a dictionary for the translation B->T
-                        iso6392BtoTdict.TryAdd(parts[1], parts[0]);
+                        iso6392BtoTDict.TryAdd(parts[1], parts[0]);
                     }
 
                     list.Add(new CultureDto(name, displayname, twoCharName, threeLetterNames));
@@ -227,7 +227,7 @@ namespace Emby.Server.Implementations.Localization
 
                 _cultureCache.Clear();
                 _cultures = list;
-                _iso6392BtoT = iso6392BtoTdict.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+                _iso6392BtoT = iso6392BtoTDict.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
             }
         }
 

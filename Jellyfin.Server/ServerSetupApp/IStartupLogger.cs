@@ -32,7 +32,7 @@ public interface IStartupLogger : ILogger
     /// </summary>
     /// <param name="logger">Other logger to rely messages to.</param>
     /// <returns>A combined logger.</returns>
-    /// <typeparam name="TCategory">The logger cateogry.</typeparam>
+    /// <typeparam name="TCategory">The logger category.</typeparam>
     IStartupLogger<TCategory> With<TCategory>(ILogger logger);
 
     /// <summary>
@@ -40,14 +40,14 @@ public interface IStartupLogger : ILogger
     /// </summary>
     /// <param name="logEntry">Defines the log message that introduces the new group.</param>
     /// <returns>A new logger that can write to the group.</returns>
-    /// <typeparam name="TCategory">The logger cateogry.</typeparam>
+    /// <typeparam name="TCategory">The logger category.</typeparam>
     IStartupLogger<TCategory> BeginGroup<TCategory>(FormattableString logEntry);
 }
 
 /// <summary>
-/// Defines a logger that can be injected via DI to get a startup logger initialised with an logger framework connected <see cref="ILogger"/>.
+/// Defines a logger that can be injected via DI to get a startup logger initialized with an logger framework connected <see cref="ILogger"/>.
 /// </summary>
-/// <typeparam name="TCategory">The logger cateogry.</typeparam>
+/// <typeparam name="TCategory">The logger category.</typeparam>
 public interface IStartupLogger<TCategory> : IStartupLogger
 {
     /// <summary>

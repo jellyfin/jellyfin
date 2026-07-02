@@ -293,9 +293,9 @@ public class ItemUpdateController : BaseJellyfinApiController
         var addedTags = newTags.Except(currentTags).ToList();
         item.Tags = newTags;
 
-        if (item is Series rseries)
+        if (item is Series rSeries)
         {
-            foreach (var season in rseries.Children.OfType<Season>())
+            foreach (var season in rSeries.Children.OfType<Season>())
             {
                 if (!season.LockedFields.Contains(MetadataField.OfficialRating))
                 {

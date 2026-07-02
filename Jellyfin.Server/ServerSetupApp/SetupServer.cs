@@ -49,7 +49,7 @@ public sealed class SetupServer : IDisposable
     /// <summary>
     /// Initializes a new instance of the <see cref="SetupServer"/> class.
     /// </summary>
-    /// <param name="networkManagerFactory">The networkmanager.</param>
+    /// <param name="networkManagerFactory">The network manager.</param>
     /// <param name="applicationPaths">The application paths.</param>
     /// <param name="serverApplicationHostFactory">The servers application host.</param>
     /// <param name="loggerFactory">The logger factory.</param>
@@ -85,7 +85,7 @@ public sealed class SetupServer : IDisposable
     public bool IsAlive { get; internal set; }
 
     /// <summary>
-    /// Starts the Bind-All Setup aspcore server to provide a reflection on the current core setup.
+    /// Starts the Bind-All Setup ASP.NET Core server to provide a reflection on the current core setup.
     /// </summary>
     /// <returns>A Task.</returns>
     public async Task RunAsync()
@@ -101,12 +101,12 @@ public sealed class SetupServer : IDisposable
         _startupServer = Host.CreateDefaultBuilder(["hostBuilder:reloadConfigOnChange=false"])
             .UseConsoleLifetime()
             .UseSerilog()
-            .ConfigureServices(serv =>
+            .ConfigureServices(server =>
             {
-                serv.AddSingleton(this);
-                serv.AddHealthChecks()
+                server.AddSingleton(this);
+                server.AddHealthChecks()
                     .AddCheck<SetupHealthcheck>("StartupCheck");
-                serv.Configure<ForwardedHeadersOptions>(options =>
+                server.Configure<ForwardedHeadersOptions>(options =>
                 {
                     ApiServiceCollectionExtensions.ConfigureForwardHeaders(config, options);
                 });

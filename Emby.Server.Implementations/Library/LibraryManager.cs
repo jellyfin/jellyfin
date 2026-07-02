@@ -3506,10 +3506,10 @@ namespace Emby.Server.Implementations.Library
             var mediaPathInfos = options.PathInfos;
             if (mediaPathInfos is not null)
             {
-                var invalidpath = mediaPathInfos.FirstOrDefault(i => !Directory.Exists(i.Path));
-                if (invalidpath is not null)
+                var invalid_path = mediaPathInfos.FirstOrDefault(i => !Directory.Exists(i.Path));
+                if (invalid_path is not null)
                 {
-                    throw new ArgumentException("The specified path does not exist: " + invalidpath.Path + ".");
+                    throw new ArgumentException("The specified path does not exist: " + invalid_path.Path + ".");
                 }
             }
 
