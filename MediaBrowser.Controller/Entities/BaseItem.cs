@@ -2104,9 +2104,9 @@ namespace MediaBrowser.Controller.Entities
                 return;
             }
 
-            // Remove from file system
+            // Remove from file system - unless the file lives inside a plugin's data folder.
             var path = info.Path;
-            if (info.IsLocalFile && !string.IsNullOrWhiteSpace(path))
+            if (info.IsLocalFile && !string.IsNullOrWhiteSpace(path) && !IsPluginOwnedPath(path))
             {
                 FileSystem.DeleteFile(path);
             }
@@ -2115,6 +2115,25 @@ namespace MediaBrowser.Controller.Entities
             RemoveImage(info);
 
             await UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        private static bool IsPluginOwnedPath(string path)
+        {
+            var pluginsPath = ConfigurationManager?.ApplicationPaths?.PluginsPath;
+            if (string.IsNullOrEmpty(pluginsPath))
+            {
+                return false;
+            }
+
+            // Compare on canonical full paths so symlinks / trailing separators / relative segments don't sneak a plugin file past the check.
+            var fullPath = System.IO.Path.GetFullPath(path);
+            var fullPluginsPath = System.IO.Path.GetFullPath(pluginsPath);
+            if (!fullPluginsPath.EndsWith(System.IO.Path.DirectorySeparatorChar))
+            {
+                fullPluginsPath += System.IO.Path.DirectorySeparatorChar;
+            }
+
+            return fullPath.StartsWith(fullPluginsPath, StringComparison.OrdinalIgnoreCase);
         }
 
         public void RemoveImage(ItemImageInfo image)
