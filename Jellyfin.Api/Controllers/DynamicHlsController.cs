@@ -17,6 +17,7 @@ using Jellyfin.Extensions;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
@@ -461,6 +462,16 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool enableAudioVbrEncoding = true,
         [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
     {
+        var item = _libraryManager.GetItemById<BaseItem>(itemId);
+        if (item?.SourceType == SourceType.External)
+        {
+            var redirect = await _libraryManager.GetStreamRedirectAsync(item, HttpContext.RequestAborted).ConfigureAwait(false);
+            if (redirect is not null)
+            {
+                return new RedirectResult(redirect.RedirectUrl, permanent: false);
+            }
+        }
+
         var streamingRequest = new HlsVideoRequestDto
         {
             Id = itemId,
@@ -631,6 +642,16 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool enableAdaptiveBitrateStreaming = false,
         [FromQuery] bool enableAudioVbrEncoding = true)
     {
+        var item = _libraryManager.GetItemById<BaseItem>(itemId);
+        if (item?.SourceType == SourceType.External)
+        {
+            var redirect = await _libraryManager.GetStreamRedirectAsync(item, HttpContext.RequestAborted).ConfigureAwait(false);
+            if (redirect is not null)
+            {
+                return new RedirectResult(redirect.RedirectUrl, permanent: false);
+            }
+        }
+
         var streamingRequest = new HlsAudioRequestDto
         {
             Id = itemId,
