@@ -288,7 +288,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                     .Any(s => s.Type == MediaStreamType.Video || s.Type == MediaStreamType.Audio);
                 var processArgs = string.Format(
                     CultureInfo.InvariantCulture,
-                    "-dump_attachment:t \"\" -y {0} -i {1} {2}",
+                    "-dump_attachment:t \"\" -y {0} -skip_estimate_duration_from_pts 1 -i {1} {2}",
                     inputPath.EndsWith(".concat\"", StringComparison.OrdinalIgnoreCase) ? "-f concat -safe 0" : string.Empty,
                     inputPath,
                     hasVideoOrAudioStream ? "-t 0 -f null null" : string.Empty);
