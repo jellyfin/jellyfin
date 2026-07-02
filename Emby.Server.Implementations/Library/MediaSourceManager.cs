@@ -179,11 +179,18 @@ namespace Emby.Server.Implementations.Library
             var mediaSources = GetStaticMediaSources(item, enablePathSubstitution, user);
             ResolveSymlinkPaths(mediaSources, enablePathSubstitution);
 
-            // If file is strm or main media stream is missing, force a metadata refresh with remote probing
-            if (allowMediaProbe && mediaSources[0].Type != MediaSourceType.Placeholder
-                && (item.Path.EndsWith(".strm", StringComparison.OrdinalIgnoreCase)
-                    || (item.MediaType == MediaType.Video && mediaSources[0].MediaStreams.All(i => i.Type != MediaStreamType.Video))
-                    || (item.MediaType == MediaType.Audio && mediaSources[0].MediaStreams.All(i => i.Type != MediaStreamType.Audio))))
+            var mediaSource = mediaSources[0];
+            var isStrm = item.Path.EndsWith(".strm", StringComparison.OrdinalIgnoreCase);
+            var hasPersistedStreams = mediaSource.MediaStreams.Count > 0;
+            var hasPrimaryVideoStream = item.MediaType != MediaType.Video || mediaSource.MediaStreams.Any(i => i.Type == MediaStreamType.Video);
+            var hasPrimaryAudioStream = item.MediaType != MediaType.Audio || mediaSource.MediaStreams.Any(i => i.Type == MediaStreamType.Audio);
+            var shouldForceProbe = allowMediaProbe
+                && mediaSource.Type != MediaSourceType.Placeholder
+                && (!hasPrimaryVideoStream || !hasPrimaryAudioStream || (isStrm && !hasPersistedStreams));
+
+            // Respect existing media stream metadata for .strm items and only re-probe when no
+            // persisted streams exist yet or the primary media stream metadata is still missing.
+            if (shouldForceProbe)
             {
                 await item.RefreshMetadata(
                     new MetadataRefreshOptions(_directoryService)
