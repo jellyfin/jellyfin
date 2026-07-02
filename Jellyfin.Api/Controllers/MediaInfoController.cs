@@ -98,6 +98,7 @@ public class MediaInfoController : BaseJellyfinApiController
     /// <param name="userId">The user id.</param>
     /// <param name="maxStreamingBitrate">The maximum streaming bitrate.</param>
     /// <param name="startTimeTicks">The start time in ticks.</param>
+    /// <param name="videoStreamIndex">The video stream index.</param>
     /// <param name="audioStreamIndex">The audio stream index.</param>
     /// <param name="subtitleStreamIndex">The subtitle stream index.</param>
     /// <param name="maxAudioChannels">The maximum number of audio channels.</param>
@@ -121,6 +122,7 @@ public class MediaInfoController : BaseJellyfinApiController
         [FromQuery, ParameterObsolete] Guid? userId,
         [FromQuery, ParameterObsolete] int? maxStreamingBitrate,
         [FromQuery, ParameterObsolete] long? startTimeTicks,
+        [FromQuery, ParameterObsolete] int? videoStreamIndex,
         [FromQuery, ParameterObsolete] int? audioStreamIndex,
         [FromQuery, ParameterObsolete] int? subtitleStreamIndex,
         [FromQuery, ParameterObsolete] int? maxAudioChannels,
@@ -152,6 +154,7 @@ public class MediaInfoController : BaseJellyfinApiController
         userId = RequestHelpers.GetUserId(User, userId);
         maxStreamingBitrate ??= playbackInfoDto?.MaxStreamingBitrate;
         startTimeTicks ??= playbackInfoDto?.StartTimeTicks;
+        videoStreamIndex ??= playbackInfoDto?.VideoStreamIndex;
         audioStreamIndex ??= playbackInfoDto?.AudioStreamIndex;
         subtitleStreamIndex ??= playbackInfoDto?.SubtitleStreamIndex;
         maxAudioChannels ??= playbackInfoDto?.MaxAudioChannels;
@@ -199,6 +202,7 @@ public class MediaInfoController : BaseJellyfinApiController
                     maxStreamingBitrate ?? profile.MaxStreamingBitrate,
                     startTimeTicks ?? 0,
                     mediaSourceId ?? string.Empty,
+                    videoStreamIndex,
                     audioStreamIndex,
                     subtitleStreamIndex,
                     maxAudioChannels,
@@ -226,6 +230,7 @@ public class MediaInfoController : BaseJellyfinApiController
                     HttpContext,
                     new LiveStreamRequest
                     {
+                        VideoStreamIndex = videoStreamIndex,
                         AudioStreamIndex = audioStreamIndex,
                         DeviceProfile = playbackInfoDto?.DeviceProfile,
                         EnableDirectPlay = enableDirectPlay.Value,
@@ -256,6 +261,7 @@ public class MediaInfoController : BaseJellyfinApiController
     /// <param name="playSessionId">The play session id.</param>
     /// <param name="maxStreamingBitrate">The maximum streaming bitrate.</param>
     /// <param name="startTimeTicks">The start time in ticks.</param>
+    /// <param name="videoStreamIndex">The video stream index.</param>
     /// <param name="audioStreamIndex">The audio stream index.</param>
     /// <param name="subtitleStreamIndex">The subtitle stream index.</param>
     /// <param name="maxAudioChannels">The maximum number of audio channels.</param>
@@ -274,6 +280,7 @@ public class MediaInfoController : BaseJellyfinApiController
         [FromQuery] string? playSessionId,
         [FromQuery] int? maxStreamingBitrate,
         [FromQuery] long? startTimeTicks,
+        [FromQuery] int? videoStreamIndex,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? subtitleStreamIndex,
         [FromQuery] int? maxAudioChannels,
@@ -292,6 +299,7 @@ public class MediaInfoController : BaseJellyfinApiController
             PlaySessionId = playSessionId ?? openLiveStreamDto?.PlaySessionId,
             MaxStreamingBitrate = maxStreamingBitrate ?? openLiveStreamDto?.MaxStreamingBitrate,
             StartTimeTicks = startTimeTicks ?? openLiveStreamDto?.StartTimeTicks,
+            VideoStreamIndex = videoStreamIndex ?? openLiveStreamDto?.VideoStreamIndex,
             AudioStreamIndex = audioStreamIndex ?? openLiveStreamDto?.AudioStreamIndex,
             SubtitleStreamIndex = subtitleStreamIndex ?? openLiveStreamDto?.SubtitleStreamIndex,
             MaxAudioChannels = maxAudioChannels ?? openLiveStreamDto?.MaxAudioChannels,

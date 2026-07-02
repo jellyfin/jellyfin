@@ -709,6 +709,14 @@ namespace MediaBrowser.Model.Dlna
             }
 
             var videoStream = item.VideoStream;
+            if (options.VideoStreamIndex.HasValue)
+            {
+                var requestedVideoStream = item.GetMediaStream(MediaStreamType.Video, options.VideoStreamIndex.Value);
+                if (requestedVideoStream is not null)
+                {
+                    videoStream = requestedVideoStream;
+                }
+            }
 
             var bitrateLimitExceeded = IsBitrateLimitExceeded(item, options.GetMaxBitrate(false) ?? 0);
             var isEligibleForDirectPlay = options.EnableDirectPlay && (options.ForceDirectPlay || !bitrateLimitExceeded);
@@ -718,6 +726,14 @@ namespace MediaBrowser.Model.Dlna
             // Force transcode or remux for BD/DVD folders
             if (item.VideoType == VideoType.Dvd || item.VideoType == VideoType.BluRay)
             {
+                isEligibleForDirectPlay = false;
+            }
+
+            // A video stream other than the default one can only be honored by remuxing or transcoding,
+            // since direct play would deliver the original file containing every video stream.
+            if (videoStream is not null && videoStream.Index != item.VideoStream?.Index)
+            {
+                playlistItem.VideoStreamIndex = videoStream.Index;
                 isEligibleForDirectPlay = false;
             }
 
