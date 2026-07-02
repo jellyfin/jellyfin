@@ -500,6 +500,8 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             var info = GetItemLookupInfo<SeriesInfo>();
 
+            info.DisplayOrder = DisplayOrder;
+
             return info;
         }
 
