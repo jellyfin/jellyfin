@@ -52,6 +52,12 @@ namespace MediaBrowser.Controller.SyncPlay
         DateTime LastActivity { get; set; }
 
         /// <summary>
+        /// Gets the playback speed.
+        /// </summary>
+        /// <value>The playback speed.</value>
+        double PlaybackSpeed { get; }
+
+        /// <summary>
         /// Gets the play queue.
         /// </summary>
         /// <value>The play queue.</value>
@@ -217,5 +223,11 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="reason">The reason for the update.</param>
         /// <returns>The play queue update.</returns>
         PlayQueueUpdate GetPlayQueueUpdate(PlayQueueUpdateReason reason);
+
+        /// <summary>
+        /// Sets the playback speed.
+        /// </summary>
+        /// <param name="playbackSpeed">The new playback speed.</param>
+        void SetPlaybackSpeed(double playbackSpeed);
     }
 }

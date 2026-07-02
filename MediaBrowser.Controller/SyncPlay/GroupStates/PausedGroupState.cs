@@ -77,7 +77,8 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                 // In other words, LastActivity is in the future,
                 // when playback unpause is supposed to happen.
                 // Seek only if playback actually started.
-                context.PositionTicks += Math.Max(elapsedTime.Ticks, 0);
+                var elapsedTicks = Math.Max(elapsedTime.Ticks, 0);
+                context.PositionTicks += (long)(elapsedTicks * context.PlaybackSpeed);
 
                 var command = context.NewSyncPlayCommand(SendCommandType.Pause);
                 context.SendCommand(session, SyncPlayBroadcastType.AllGroup, command, cancellationToken);

@@ -16,7 +16,8 @@ namespace MediaBrowser.Model.SyncPlay
         /// <param name="command">The command.</param>
         /// <param name="positionTicks">The position ticks, for commands that require it.</param>
         /// <param name="emittedAt">The UTC time when this command has been emitted.</param>
-        public SendCommand(Guid groupId, Guid playlistItemId, DateTime when, SendCommandType command, long? positionTicks, DateTime emittedAt)
+        /// <param name="playbackSpeed">The playback speed, for commands that require it.</param>
+        public SendCommand(Guid groupId, Guid playlistItemId, DateTime when, SendCommandType command, long? positionTicks, DateTime emittedAt, double playbackSpeed)
         {
             GroupId = groupId;
             PlaylistItemId = playlistItemId;
@@ -24,6 +25,7 @@ namespace MediaBrowser.Model.SyncPlay
             Command = command;
             PositionTicks = positionTicks;
             EmittedAt = emittedAt;
+            PlaybackSpeed = playbackSpeed;
         }
 
         /// <summary>
@@ -61,5 +63,11 @@ namespace MediaBrowser.Model.SyncPlay
         /// </summary>
         /// <value>The UTC time when this command has been emitted.</value>
         public DateTime EmittedAt { get; }
+
+        /// <summary>
+        /// Gets the playback speed.
+        /// </summary>
+        /// <value>The playback speed.</value>
+        public double PlaybackSpeed { get; }
     }
 }
