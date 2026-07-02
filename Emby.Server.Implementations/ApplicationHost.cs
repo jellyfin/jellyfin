@@ -955,8 +955,10 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetApiUrlForLocalAccess(IPAddress ipAddress = null, bool allowHttps = true)
         {
-            // With an empty source, the port will be null
-            var smart = NetManager.GetBindAddress(ipAddress, out _, false);
+            // Default to loopback so published-server overrides can still apply when no
+            // specific source IP is given (e.g. Live TV buffer file paths generated
+            // server-side with no request context).
+            var smart = NetManager.GetBindAddress(ipAddress ?? IPAddress.Loopback, out _, false);
             var scheme = !allowHttps ? Uri.UriSchemeHttp : null;
             int? port = !allowHttps ? HttpPort : null;
             return GetLocalApiUrl(smart, scheme, port);
