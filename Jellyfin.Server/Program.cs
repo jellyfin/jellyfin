@@ -76,6 +76,45 @@ namespace Jellyfin.Server
                 return Task.CompletedTask;
             }
 
+            // The dotnet swagger tool passes in an --applicationName that isn't allowed by the CLI parser
+            // Instead create a lean version of a host that only configures the Jellyfin services
+            // which swagger will use to generate the OpenAPI document using and then exit the app
+            if (Assembly.GetEntryAssembly()?.GetName().Name == "dotnet-swagger")
+            {
+                var startupOptions = new StartupOptions();
+                var swaggerWrapper = new Func<Task>(async () =>
+                {
+                    ServerApplicationPaths appPaths = StartupHelpers.CreateApplicationPaths(startupOptions);
+                    IConfiguration startupConfig = CreateAppConfiguration(startupOptions, appPaths);
+                    using CoreAppHost appHost = new CoreAppHost(
+                            appPaths,
+                            _loggerFactory,
+                            startupOptions,
+                            startupConfig);
+
+                    try
+                    {
+                        _jellyfinHost = Host.CreateDefaultBuilder()
+                        .ConfigureServices(services => appHost.Init(services))
+                        .ConfigureWebHostDefaults(webHostBuilder =>
+                        {
+                            webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths, _logger);
+                        })
+                        .Build();
+
+                        await appHost.InitializeServices(startupConfig).ConfigureAwait(false);
+                        await _jellyfinHost.StartAsync().ConfigureAwait(false);
+                        await _jellyfinHost.WaitForShutdownAsync().ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogCritical(ex, "Error while generating API");
+                    }
+                });
+
+                return swaggerWrapper.Invoke();
+            }
+
             // Parse the command line arguments and either start the app or exit indicating error
             return Parser.Default.ParseArguments<StartupOptions>(args)
                 .MapResult(StartApp, ErrorParsingArguments);
