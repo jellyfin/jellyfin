@@ -1169,6 +1169,7 @@ namespace MediaBrowser.Controller.Entities
                 info.VideoType = video.VideoType;
                 info.Video3DFormat = video.Video3DFormat;
                 info.Timestamp = video.Timestamp;
+                info.IsoPlaybackTitle = video.IsoPlaybackTitle;
 
                 if (video.IsShortcut && !string.IsNullOrEmpty(video.ShortcutPath))
                 {

@@ -15,11 +15,13 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.MediaInfo;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -38,6 +40,7 @@ public class ItemUpdateController : BaseJellyfinApiController
     private readonly ILocalizationManager _localizationManager;
     private readonly IFileSystem _fileSystem;
     private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IMediaEncoder _mediaEncoder;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ItemUpdateController"/> class.
@@ -47,18 +50,21 @@ public class ItemUpdateController : BaseJellyfinApiController
     /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
     /// <param name="localizationManager">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
     public ItemUpdateController(
         IFileSystem fileSystem,
         ILibraryManager libraryManager,
         IProviderManager providerManager,
         ILocalizationManager localizationManager,
-        IServerConfigurationManager serverConfigurationManager)
+        IServerConfigurationManager serverConfigurationManager,
+        IMediaEncoder mediaEncoder)
     {
         _libraryManager = libraryManager;
         _providerManager = providerManager;
         _localizationManager = localizationManager;
         _fileSystem = fileSystem;
         _serverConfigurationManager = serverConfigurationManager;
+        _mediaEncoder = mediaEncoder;
     }
 
     /// <summary>
@@ -88,6 +94,10 @@ public class ItemUpdateController : BaseJellyfinApiController
             series.DisplayOrder ?? string.Empty,
             request.DisplayOrder ?? string.Empty,
             StringComparison.OrdinalIgnoreCase);
+        // Queue a re-probe only when a supported disc item's stored title differs from the requested title.
+        var shouldReprobeForTitleChange = item is Video existingVideo
+            && IsIsoPlaybackTitleSupported(existingVideo)
+            && existingVideo.IsoPlaybackTitle != request.IsoPlaybackTitle;
 
         // Do this first so that metadata savers can pull the updates from the database.
         if (request.People is not null)
@@ -132,6 +142,19 @@ public class ItemUpdateController : BaseJellyfinApiController
                 RefreshPriority.High);
         }
 
+        if (shouldReprobeForTitleChange)
+        {
+            // Re-probe using the selected title so tracks/codecs/chapters reflect that title.
+            _providerManager.QueueRefresh(
+                item.Id,
+                new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                {
+                    MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                    ImageRefreshMode = MetadataRefreshMode.None
+                },
+                RefreshPriority.High);
+        }
+
         return NoContent();
     }
 
@@ -161,7 +184,9 @@ public class ItemUpdateController : BaseJellyfinApiController
             Cultures = _localizationManager.GetCultures()
                 .DistinctBy(c => c.DisplayName, StringComparer.OrdinalIgnoreCase)
                 .OrderBy(c => c.DisplayName)
-                .ToArray()
+                .ToArray(),
+            SupportsDvdVideo = _mediaEncoder.SupportsDvdVideo,
+            SupportsLibBluray = _mediaEncoder.SupportsLibBluray
         };
 
         if (!item.IsVirtualItem
@@ -194,6 +219,70 @@ public class ItemUpdateController : BaseJellyfinApiController
         }
 
         return info;
+    }
+
+    /// <summary>
+    /// Gets the available playback titles for a DVD or Blu-ray (ISO or unpacked directory).
+    /// Returns a list of title numbers and their durations so the user can select the desired title.
+    /// </summary>
+    /// <param name="itemId">The item id.</param>
+    /// <response code="200">Titles returned.</response>
+    /// <response code="404">Item not found.</response>
+    /// <response code="400">Item is not a DVD/Blu-ray ISO or unpacked disc.</response>
+    /// <returns>A list of <see cref="IsoTitleInfo"/> on success.</returns>
+    [HttpGet("Items/{itemId}/IsoTitles")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<IReadOnlyList<IsoTitleInfo>> GetIsoTitles([FromRoute, Required] Guid itemId)
+    {
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (item is not Video video)
+        {
+            return BadRequest(_localizationManager.GetLocalizedString("ItemNotDvdBluray"));
+        }
+
+        IsoType? effectiveIsoType = video.VideoType switch
+        {
+            VideoType.Iso when video.IsoType.HasValue => video.IsoType.Value,
+            VideoType.BluRay => IsoType.BluRay,
+            VideoType.Dvd => IsoType.Dvd,
+            _ => null
+        };
+
+        if (effectiveIsoType is null)
+        {
+            if (video.VideoType == VideoType.Iso)
+            {
+                if (_mediaEncoder.SupportsDvdVideo)
+                {
+                    var dvdTitles = _mediaEncoder.GetIsoTitles(video.Path, IsoType.Dvd);
+                    if (dvdTitles.Count > 0)
+                    {
+                        return Ok(dvdTitles);
+                    }
+                }
+
+                if (_mediaEncoder.SupportsLibBluray)
+                {
+                    var blurayTitles = _mediaEncoder.GetIsoTitles(video.Path, IsoType.BluRay);
+                    if (blurayTitles.Count > 0)
+                    {
+                        return Ok(blurayTitles);
+                    }
+                }
+            }
+
+            return BadRequest(_localizationManager.GetLocalizedString("ItemNotDvdBluray"));
+        }
+
+        var titles = _mediaEncoder.GetIsoTitles(video.Path, effectiveIsoType.Value);
+        return Ok(titles);
     }
 
     /// <summary>
@@ -416,6 +505,12 @@ public class ItemUpdateController : BaseJellyfinApiController
         if (item is Video video)
         {
             video.Video3DFormat = request.Video3DFormat;
+
+            // Allow setting the ISO/disc playback title for DVD/Blu-ray ISO files or unpacked directories.
+            if (IsIsoPlaybackTitleSupported(video))
+            {
+                video.IsoPlaybackTitle = request.IsoPlaybackTitle;
+            }
         }
 
         if (request.AlbumArtists is not null)
@@ -456,6 +551,14 @@ public class ItemUpdateController : BaseJellyfinApiController
                 }
         }
     }
+
+    /// <summary>
+    /// Determines whether ISO/disc playback title selection applies to the given video item.
+    /// Supported for unpacked DVD/Blu-ray directories and ISO items with a known <see cref="IsoType"/>.
+    /// </summary>
+    private static bool IsIsoPlaybackTitleSupported(Video video)
+        => video.VideoType is MediaBrowser.Model.Entities.VideoType.Dvd or MediaBrowser.Model.Entities.VideoType.BluRay
+            || (video.VideoType == MediaBrowser.Model.Entities.VideoType.Iso && video.IsoType.HasValue);
 
     private SeriesStatus? GetSeriesStatus(BaseItemDto item)
     {
