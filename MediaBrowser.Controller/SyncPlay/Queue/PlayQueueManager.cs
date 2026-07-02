@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.SyncPlay;
 
 namespace MediaBrowser.Controller.SyncPlay.Queue
@@ -20,6 +22,11 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         private const int NoPlayingItemIndex = -1;
 
         /// <summary>
+        /// The dto service.
+        /// </summary>
+        private readonly IDtoService _dtoService;
+
+        /// <summary>
         /// The sorted playlist.
         /// </summary>
         /// <value>The sorted playlist, or play queue of the group.</value>
@@ -34,8 +41,10 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// <summary>
         /// Initializes a new instance of the <see cref="PlayQueueManager" /> class.
         /// </summary>
-        public PlayQueueManager()
+        /// <param name="dtoService">The dto service.</param>
+        public PlayQueueManager(IDtoService dtoService)
         {
+            _dtoService = dtoService;
             Reset();
         }
 
@@ -79,6 +88,17 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         public IReadOnlyList<SyncPlayQueueItem> GetPlaylist()
         {
             return GetPlaylistInternal();
+        }
+
+        /// <summary>
+        /// Gets the current playlist considering the shuffle mode.
+        /// </summary>
+        /// <returns>The playlist.</returns>
+        public IReadOnlyList<SyncPlayQueueItemDto> GetPlaylistDto()
+        {
+            var playlist = GetPlaylist();
+
+            return playlist.Select(_dtoService.GetSyncPlayQueueItemDto).ToList();
         }
 
         /// <summary>

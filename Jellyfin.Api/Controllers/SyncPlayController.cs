@@ -7,11 +7,14 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.SyncPlayDtos;
 using MediaBrowser.Common.Api;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Controller.SyncPlay.PlaybackRequests;
 using MediaBrowser.Controller.SyncPlay.Requests;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.SyncPlay;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -28,6 +31,7 @@ public class SyncPlayController : BaseJellyfinApiController
     private readonly ISessionManager _sessionManager;
     private readonly ISyncPlayManager _syncPlayManager;
     private readonly IUserManager _userManager;
+    private readonly IDtoService _dtoService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SyncPlayController"/> class.
@@ -35,14 +39,17 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
     /// <param name="syncPlayManager">Instance of the <see cref="ISyncPlayManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+    /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
     public SyncPlayController(
         ISessionManager sessionManager,
         ISyncPlayManager syncPlayManager,
-        IUserManager userManager)
+        IUserManager userManager,
+        IDtoService dtoService)
     {
         _sessionManager = sessionManager;
         _syncPlayManager = syncPlayManager;
         _userManager = userManager;
+        _dtoService = dtoService;
     }
 
     /// <summary>
@@ -219,6 +226,22 @@ public class SyncPlayController : BaseJellyfinApiController
         var syncPlayRequest = new QueueGroupRequest(requestData.ItemIds, requestData.Mode);
         _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
         return NoContent();
+    }
+
+    /// <summary>
+    /// Gets the current SyncPlay queue.
+    /// </summary>
+    /// <response code="200">Queue returned.</response>
+    /// <returns>A <see cref="QueryResult{SyncPlayQueueItem}"/> containing the current queue items.</returns>
+    [HttpGet("Queue")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize(Policy = Policies.SyncPlayIsInGroup)]
+    public async Task<ActionResult<QueryResult<SyncPlayQueueItemDto>>> SyncPlayGetQueue()
+    {
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var queue = _syncPlayManager.GetQueue(currentSession) ?? [];
+        var dtoQueue = queue.Select(_dtoService.GetSyncPlayQueueItemDto).ToList();
+        return Ok(new QueryResult<SyncPlayQueueItemDto>(dtoQueue));
     }
 
     /// <summary>

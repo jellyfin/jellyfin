@@ -56,6 +56,13 @@ namespace MediaBrowser.Controller.SyncPlay
         GroupInfoDto GetGroup(SessionInfo session, Guid groupId);
 
         /// <summary>
+        /// Gets the current queue for the session's group.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        /// <returns>The current queue items.</returns>
+        IReadOnlyList<SyncPlayQueueItem> GetQueue(SessionInfo session);
+
+        /// <summary>
         /// Handle a request by a session in a group.
         /// </summary>
         /// <param name="session">The session.</param>
