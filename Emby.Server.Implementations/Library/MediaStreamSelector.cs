@@ -134,7 +134,7 @@ namespace Emby.Server.Implementations.Library
             {
                 // Always load (full/non-forced) subtitles of the user's preferred subtitle language if possible, otherwise OnlyForced behavior.
                 filteredStreams = sortedStreams.Where(s => !s.IsForced && MatchesPreferredLanguage(s.Language, preferredLanguages))
-                    .ToList() ?? BehaviorOnlyForced(sortedStreams, preferredLanguages);
+                    .ToList();
             }
             else if (mode == SubtitlePlaybackMode.OnlyForced)
             {

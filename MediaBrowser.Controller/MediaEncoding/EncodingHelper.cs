@@ -4444,12 +4444,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // preferred qsv(d3d11) + opencl filters pipeline
-            if (isIntelDx11OclSupported)
-            {
-                return GetIntelQsvDx11VidFiltersPrefered(state, options, vidDecoder, vidEncoder);
-            }
-
-            return (null, null, null);
+            return GetIntelQsvDx11VidFiltersPrefered(state, options, vidDecoder, vidEncoder);
         }
 
         public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetIntelQsvDx11VidFiltersPrefered(
@@ -5967,12 +5962,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // preferred rkmpp + rkrga + opencl filters pipeline
-            if (isRkmppOclSupported)
-            {
-                return GetRkmppVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
-            }
-
-            return (null, null, null);
+            return GetRkmppVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
         }
 
         public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetRkmppVidFiltersPrefered(
