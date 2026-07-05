@@ -739,12 +739,9 @@ public sealed partial class BaseItemRepository
                     .Where(e => e.OwnerId == null);
             }
         }
-        else if (filter.OwnerIds.Length == 0 && filter.ExtraTypes.Length == 0 && !filter.IncludeOwnedItems)
+        else if (filter.OwnerIds.Length == 0 && filter.ExtraTypes.Length == 0)
         {
-            // Exclude alternate versions and owned non-extra items from general queries.
-            // Alternate versions have PrimaryVersionId set (pointing to their primary).
-            // Extras (trailers, etc.) have OwnerId set but also have ExtraType set - keep those.
-            baseQuery = baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
+            baseQuery = ApplyOwnedItemVisibilityFilter(baseQuery, filter);
         }
 
         if (filter.OwnerIds.Length > 0)
