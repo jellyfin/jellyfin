@@ -1456,7 +1456,9 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         var segmentExtension = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer);
 
-        TranscodingJob? job;
+        _logger.LogDebug("Segment request id={SegmentId} playlist={Playlist} exists={Exists} device={DeviceId} playSession={PlaySessionId}", segmentId, Path.GetFileName(playlistPath), System.IO.File.Exists(segmentPath), streamingRequest.DeviceId, streamingRequest.PlaySessionId);
+
+        TranscodingJob? job = null;
 
         if (System.IO.File.Exists(segmentPath))
         {
@@ -1500,6 +1502,22 @@ public class DynamicHlsController : BaseJellyfinApiController
                 startTranscoding = true;
             }
 
+            if (!startTranscoding)
+            {
+                job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
+                if (job is null)
+                {
+                    // Playlist is on disk but its transcode job was killed (kill-timer or throttle cap) — restart instead of looping on the missing segment.
+                    _logger.LogDebug("Restarting transcode for {Playlist} at segment {SegmentId}: existing job was null (killed)", playlistPath, segmentId);
+                    startTranscoding = true;
+                }
+                else if (job.TranscodingThrottler is not null)
+                {
+                    _logger.LogDebug("Found live job for {Playlist} at segment {SegmentId}, unpausing", playlistPath, segmentId);
+                    await job.TranscodingThrottler.UnpauseTranscoding().ConfigureAwait(false);
+                }
+            }
+
             if (startTranscoding)
             {
                 // If the playlist doesn't already exist, startup ffmpeg
@@ -1531,14 +1549,6 @@ public class DynamicHlsController : BaseJellyfinApiController
                 }
 
                 // await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
-            }
-            else
-            {
-                job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
-                if (job?.TranscodingThrottler is not null)
-                {
-                    await job.TranscodingThrottler.UnpauseTranscoding().ConfigureAwait(false);
-                }
             }
         }
 
@@ -1974,9 +1984,9 @@ public class DynamicHlsController : BaseJellyfinApiController
 
             cancellationToken.ThrowIfCancellationRequested();
         }
-        else
+        else if (!System.IO.File.Exists(segmentPath))
         {
-            _logger.LogWarning("cannot serve {0} as it doesn't exist and no transcode is running", segmentPath);
+            _logger.LogWarning("cannot serve {SegmentPath} (segment {SegmentIndex}) as it doesn't exist and no transcode is running; playSession={PlaySessionId}", segmentPath, segmentIndex, state.Request.PlaySessionId);
         }
 
         return GetSegmentResult(state, segmentPath, transcodingJob);
