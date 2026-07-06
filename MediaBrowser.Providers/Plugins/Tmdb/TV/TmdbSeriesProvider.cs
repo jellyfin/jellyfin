@@ -260,12 +260,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (seriesResult.ProductionCompanies is not null)
             {
-                studios = studios.Concat(seriesResult.ProductionCompanies.Select(i => i.Name));
+                studios = studios.Concat(seriesResult.ProductionCompanies.Select(i => i.Name).OfType<string>());
             }
 
             if (seriesResult.Networks is not null)
             {
-                studios = studios.Concat(seriesResult.Networks.Select(i => i.Name));
+                studios = studios.Concat(seriesResult.Networks.Select(i => i.Name).OfType<string>());
             }
 
             series.SetStudios(studios);
