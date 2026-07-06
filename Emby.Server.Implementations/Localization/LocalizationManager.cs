@@ -356,6 +356,27 @@ namespace Emby.Server.Implementations.Localization
         {
             ArgumentException.ThrowIfNullOrEmpty(rating);
 
+            // Some providers may list multiple ratings separated by '/' (e.g. "SE:15 / SE:15+ / SE:Från 15 år").
+            // Try each one in order and use the first that resolves.
+            var ratingValues = rating.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            foreach (var ratingValue in ratingValues)
+            {
+                var score = GetSingleRatingScore(ratingValue, countryCode);
+                if (score is not null)
+                {
+                    return score;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Resolves a single rating value to a score.
+        /// </summary>
+        private ParentalRatingScore? GetSingleRatingScore(string rating, string? countryCode)
+        {
             // Handle unrated content
             if (_unratedValues.Contains(rating.AsSpan(), StringComparison.OrdinalIgnoreCase))
             {
@@ -566,11 +587,15 @@ namespace Emby.Server.Implementations.Localization
 
         private static string GetResourceFilename(string culture)
         {
-            var parts = culture.Split('-');
+            // Region codes may use a '-' (BCP-47, e.g. "pt-BR") or '_' (e.g. "es_419", "ar_SA") separator.
+            // Normalize the casing (lower-case language, upper-case region) while preserving the separator
+            // so the result matches the embedded resource file name, which is case-sensitive.
+            var separatorIndex = culture.IndexOfAny(['-', '_']);
 
-            if (parts.Length == 2)
+            if (separatorIndex > 0)
             {
-                culture = parts[0].ToLowerInvariant() + "-" + parts[1].ToUpperInvariant();
+                var separator = culture[separatorIndex];
+                culture = culture[..separatorIndex].ToLowerInvariant() + separator + culture[(separatorIndex + 1)..].ToUpperInvariant();
             }
             else
             {

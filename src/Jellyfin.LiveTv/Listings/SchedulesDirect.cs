@@ -748,9 +748,7 @@ namespace Jellyfin.LiveTv.Listings
 #pragma warning disable CA5350 // SchedulesDirect is always SHA1.
             var hashedPasswordBytes = SHA1.HashData(Encoding.ASCII.GetBytes(password));
 #pragma warning restore CA5350
-            // TODO: remove ToLower when Convert.ToHexString supports lowercase
-            // Schedules Direct requires the hex to be lowercase
-            string hashedPassword = Convert.ToHexString(hashedPasswordBytes).ToLowerInvariant();
+            string hashedPassword = Convert.ToHexStringLower(hashedPasswordBytes);
             options.Content = new StringContent("{\"username\":\"" + username + "\",\"password\":\"" + hashedPassword + "\"}", Encoding.UTF8, MediaTypeNames.Application.Json);
 
             var root = await Request<TokenDto>(options, false, null, cancellationToken).ConfigureAwait(false);

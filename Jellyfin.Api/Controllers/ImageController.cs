@@ -2049,7 +2049,7 @@ public class ImageController : BaseJellyfinApiController
             }
 
             // Check If-Modified-Since header for time-based validation
-            if (DateTime.TryParse(Request.Headers[HeaderNames.IfModifiedSince], out var ifModifiedSinceHeader))
+            if (DateTime.TryParse(Request.Headers[HeaderNames.IfModifiedSince], CultureInfo.InvariantCulture, out var ifModifiedSinceHeader))
             {
                 // Return 304 if the image has not been modified since the client's cached version
                 if (dateImageModified <= ifModifiedSinceHeader)

@@ -106,5 +106,7 @@
     "TaskAudioNormalization": "Normalizimi i audios",
     "TaskAudioNormalizationDescription": "Skannon skedarët për të dhëna të normalizimit të audios.",
     "CleanupUserDataTaskDescription": "Pastron të gjitha të dhënat e përdorueseve (gjendja e shikimit, statusi i të preferuarave etj.) nga mediat që nuk janë më të pranishme për të paktën 90 ditë.",
-    "CleanupUserDataTask": "Veprim për pastrimin të dhënave të përdorueseve"
+    "CleanupUserDataTask": "Veprim për pastrimin të dhënave të përdorueseve",
+    "LyricDownloadFailureFromForItem": "Teksti i këngës nuk arriti të shkarkohej nga {0} për {1}",
+    "Original": "Origjinal"
 }

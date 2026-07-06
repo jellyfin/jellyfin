@@ -549,7 +549,7 @@ namespace MediaBrowser.Providers.MediaInfo
             var candidateUnsynchronizedLyric = supportedLyrics.FirstOrDefault(l => l.Format is LyricsInfo.LyricsFormat.UNSYNCHRONIZED or LyricsInfo.LyricsFormat.OTHER && l.UnsynchronizedLyrics is not null);
             var lyrics = candidateSynchronizedLyric is not null ? candidateSynchronizedLyric.FormatSynch() : candidateUnsynchronizedLyric?.UnsynchronizedLyrics;
             if (!string.IsNullOrWhiteSpace(lyrics)
-                && tryExtractEmbeddedLyrics)
+                && (tryExtractEmbeddedLyrics || options.ReplaceAllMetadata))
             {
                 await _lyricManager.SaveLyricAsync(audio, "lrc", lyrics).ConfigureAwait(false);
             }

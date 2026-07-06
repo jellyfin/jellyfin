@@ -182,23 +182,35 @@ public class MergeDuplicateMusicArtists : IAsyncMigrationRoutine
             // Resolve via LibraryManager so DeleteItemsUnsafeFast can also remove the
             // %MetadataPath%/artists/<Name> directories that the duplicate stubs left behind.
             // Fall back to the persistence service for any items the LibraryManager can't resolve.
-            var itemsToDelete = idsToDelete
-                .Select(id => _libraryManager.GetItemById(id))
-                .Where(item => item is not null)
-                .ToList();
-            if (itemsToDelete.Count > 0)
+            // Delete in batches so we never issue one massive delete transaction and progress stays visible.
+            _logger.LogInformation("Deleting {Count} duplicate MusicArtist records...", idsToDelete.Count);
+            const int deleteBatchSize = 500;
+            var deletedSoFar = 0;
+            for (var offset = 0; offset < idsToDelete.Count; offset += deleteBatchSize)
             {
-                _libraryManager.DeleteItemsUnsafeFast(itemsToDelete!);
-            }
+                cancellationToken.ThrowIfCancellationRequested();
 
-            var deletedIds = itemsToDelete.Select(i => i!.Id).ToHashSet();
-            var unresolvedIds = idsToDelete.Where(id => !deletedIds.Contains(id)).ToList();
-            if (unresolvedIds.Count > 0)
-            {
-                _persistenceService.DeleteItem(unresolvedIds);
-            }
+                var batchIds = idsToDelete.GetRange(offset, Math.Min(deleteBatchSize, idsToDelete.Count - offset));
 
-            _logger.LogInformation("Removed {Count} duplicate MusicArtist records.", idsToDelete.Count);
+                var itemsToDelete = batchIds
+                    .Select(id => _libraryManager.GetItemById(id))
+                    .Where(item => item is not null)
+                    .ToList();
+                if (itemsToDelete.Count > 0)
+                {
+                    _libraryManager.DeleteItemsUnsafeFast(itemsToDelete!);
+                }
+
+                var deletedIds = itemsToDelete.Select(i => i!.Id).ToHashSet();
+                var unresolvedIds = batchIds.Where(id => !deletedIds.Contains(id)).ToList();
+                if (unresolvedIds.Count > 0)
+                {
+                    _persistenceService.DeleteItem(unresolvedIds);
+                }
+
+                deletedSoFar += batchIds.Count;
+                _logger.LogInformation("Deleting duplicate MusicArtist records: {Deleted}/{Total}", deletedSoFar, idsToDelete.Count);
+            }
         }
     }
 }

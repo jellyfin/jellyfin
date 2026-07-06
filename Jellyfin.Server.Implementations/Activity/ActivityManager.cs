@@ -56,11 +56,11 @@ public class ActivityManager : IActivityManager
         var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
-            // TODO switch to LeftJoin in .NET 10.
-            var entries = from a in dbContext.ActivityLogs
-                          join u in dbContext.Users on a.UserId equals u.Id into ugj
-                          from u in ugj.DefaultIfEmpty()
-                          select new ExpandedActivityLog { ActivityLog = a, Username = u.Username };
+            var entries = dbContext.ActivityLogs.LeftJoin(
+                dbContext.Users,
+                a => a.UserId,
+                u => u.Id,
+                (a, u) => new ExpandedActivityLog { ActivityLog = a, Username = u == null ? null : u.Username });
 
             if (query.HasUserId is not null)
             {

@@ -1002,9 +1002,7 @@ public class LiveTvController : BaseJellyfinApiController
     {
         if (!string.IsNullOrEmpty(pw))
         {
-            // TODO: remove ToLower when Convert.ToHexString supports lowercase
-            // Schedules Direct requires the hex to be lowercase
-            listingsProviderInfo.Password = Convert.ToHexString(SHA1.HashData(Encoding.UTF8.GetBytes(pw))).ToLowerInvariant();
+            listingsProviderInfo.Password = Convert.ToHexStringLower(SHA1.HashData(Encoding.UTF8.GetBytes(pw)));
         }
 
         return await _listingsManager.SaveListingProvider(listingsProviderInfo, validateLogin, validateListings).ConfigureAwait(false);

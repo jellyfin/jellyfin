@@ -125,7 +125,7 @@ namespace MediaBrowser.Providers.Books.OpenPackagingFormat
 
             ReadStringInto("//dc:date", date =>
             {
-                if (DateTime.TryParse(date, out var dateValue))
+                if (DateTime.TryParse(date, CultureInfo.InvariantCulture, out var dateValue))
                 {
                     book.PremiereDate = dateValue.Date;
                     book.ProductionYear = dateValue.Date.Year;

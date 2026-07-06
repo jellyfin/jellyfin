@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
@@ -56,6 +57,43 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
         public void IsNearSquarePixelSar_DetectsCorrectly(string? sar, bool expected)
             => Assert.Equal(expected, ProbeResultNormalizer.IsNearSquarePixelSar(sar));
 
+        [Theory]
+        // Lossy codecs, mono/stereo and multichannel.
+        [InlineData("aac", null, 2, 192000)]
+        [InlineData("mp3", null, 2, 192000)]
+        [InlineData("mp2", null, 2, 192000)]
+        [InlineData("aac", null, 6, 320000)]
+        [InlineData("ac3", null, 2, 192000)]
+        [InlineData("eac3", null, 6, 640000)]
+        [InlineData("opus", null, 2, 128000)]
+        [InlineData("vorbis", null, 6, 320000)]
+        [InlineData("wmav2", null, 2, 192000)]
+        // DTS: the lossy core (any non-MA profile, or none) is flat and caps at 5.1...
+        [InlineData("dts", null, 2, 768000)]
+        [InlineData("dts", "DTS", 6, 1509000)]
+        [InlineData("dts", "DTS-HD HRA", 8, 1509000)]
+        // ...while lossless DTS-HD MA scales per channel like other lossless codecs.
+        [InlineData("dts", "DTS-HD MA", 6, 4200000)]
+        [InlineData("dts", "DTS-HD MA + DTS:X", 8, 5600000)]
+        // Lossless codecs scale per channel.
+        [InlineData("flac", null, 2, 960000)]
+        [InlineData("flac", null, 6, 2880000)]
+        [InlineData("flac", null, 8, 3840000)]
+        [InlineData("alac", null, 6, 2880000)]
+        [InlineData("truehd", null, 2, 1400000)]
+        [InlineData("truehd", null, 6, 4200000)]
+        [InlineData("truehd", "Dolby TrueHD + Dolby Atmos", 8, 5600000)]
+        // 3-4 channel audio must use the multichannel estimate, not return null.
+        [InlineData("aac", null, 3, 320000)]
+        [InlineData("ac3", null, 4, 640000)]
+        // Codec matching is case-insensitive.
+        [InlineData("AAC", null, 2, 192000)]
+        // Unknown codec or unknown channel count cannot be estimated.
+        [InlineData("pcm_s16le", null, 2, null)]
+        [InlineData("aac", null, null, null)]
+        public void GetEstimatedAudioBitrate_ReturnsExpected(string codec, string? profile, int? channels, int? expected)
+            => Assert.Equal(expected, ProbeResultNormalizer.GetEstimatedAudioBitrate(codec, profile, channels));
+
         [Fact]
         public void GetMediaInfo_MetaData_Success()
         {
@@ -71,7 +109,10 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal("4:3", res.VideoStream.AspectRatio);
             Assert.Equal(25f, res.VideoStream.AverageFrameRate);
             Assert.Equal(8, res.VideoStream.BitDepth);
-            Assert.Equal(69432, res.VideoStream.BitRate);
+            // ffprobe reports no per-stream video bitrate here. The container bitrate must not be
+            // misreported as the video bitrate, and the other streams' bitrates exceed the container
+            // bitrate in this sample, so no sensible video bitrate can be inferred (see #16248).
+            Assert.Null(res.VideoStream.BitRate);
             Assert.Equal("h264", res.VideoStream.Codec);
             Assert.Equal("1/50", res.VideoStream.CodecTimeBase);
             Assert.Equal(240, res.VideoStream.Height);
@@ -319,6 +360,73 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal(56945, res.VideoStream.BitRate);
             Assert.Equal(8, res.VideoStream.BitDepth);
             Assert.True(res.VideoStream.IsDefault);
+        }
+
+        [Fact]
+        public void GetMediaInfo_MissingVideoBitrate_EstimatedFromContainer()
+        {
+            // ffprobe did not report a per-stream video bitrate. The video bitrate must be estimated
+            // as the container bitrate minus the other (audio) stream bitrates, not reported as the
+            // whole container bitrate (see #16248).
+            var bytes = File.ReadAllBytes("Test Data/Probing/video_missing_video_bitrate.json");
+
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_missing_video_bitrate.mp4", MediaProtocol.File);
+
+            Assert.Equal(2, res.MediaStreams.Count);
+
+            Assert.NotNull(res.VideoStream);
+            Assert.Equal(MediaStreamType.Video, res.VideoStream.Type);
+
+            var audioStream = res.MediaStreams.First(i => i.Type == MediaStreamType.Audio);
+            Assert.Equal(128000, audioStream.BitRate);
+
+            // Container bitrate (5128000) minus the audio bitrate (128000).
+            Assert.Equal(5000000, res.VideoStream.BitRate);
+
+            // The container bitrate itself must remain the overall container bitrate.
+            Assert.Equal(5128000, res.Bitrate);
+        }
+
+        [Fact]
+        public void GetMediaInfo_NanosecondDurationTag_BitrateComputedFromBytes()
+        {
+            // The stream carries NUMBER_OF_BYTES and a nanosecond-precision DURATION tag but no
+            // bitrate. TimeSpan only supports 7 fractional digits, so the 9-digit DURATION must be
+            // trimmed for the duration to parse and the bitrate to be computed (bytes * 8 / seconds).
+            var bytes = File.ReadAllBytes("Test Data/Probing/video_nanosecond_duration_bitrate.json");
+
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_nanosecond_duration_bitrate.mkv", MediaProtocol.File);
+
+            Assert.NotNull(res.VideoStream);
+
+            // 10000000 bytes * 8 / 100 seconds.
+            Assert.Equal(800000, res.VideoStream.BitRate);
+        }
+
+        [Fact]
+        public void GetMediaInfo_MissingVideoBitrate_UnknownAudioBitrate_NotEstimated()
+        {
+            // ffprobe reported no per-stream video bitrate and the audio bitrate cannot be estimated
+            // (the audio stream has no channel count, so GetEstimatedAudioBitrate returns null). The
+            // video bitrate must be left unset rather than wrongly absorbing the unaccounted audio
+            // bitrate (see #16248).
+            var bytes = File.ReadAllBytes("Test Data/Probing/video_missing_video_bitrate_unknown_audio.json");
+
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_missing_video_bitrate_unknown_audio.mp4", MediaProtocol.File);
+
+            Assert.Equal(2, res.MediaStreams.Count);
+
+            Assert.NotNull(res.VideoStream);
+            Assert.Null(res.VideoStream.BitRate);
+
+            var audioStream = res.MediaStreams.First(i => i.Type == MediaStreamType.Audio);
+            Assert.Null(audioStream.BitRate);
+
+            // The overall container bitrate is still reported.
+            Assert.Equal(5128000, res.Bitrate);
         }
 
         [Fact]

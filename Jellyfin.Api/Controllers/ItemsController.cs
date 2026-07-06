@@ -287,6 +287,8 @@ public class ItemsController : BaseJellyfinApiController
         QueryResult<BaseItem> result;
 
         Guid[] linkedChildAncestorIds = [];
+
+        includeItemTypes ??= [];
         if (includeItemTypes.Length == 1
             && (includeItemTypes[0] == BaseItemKind.BoxSet || includeItemTypes[0] == BaseItemKind.Playlist)
             && item is not BoxSet
@@ -314,6 +316,7 @@ public class ItemsController : BaseJellyfinApiController
         if (folder is IHasCollectionType hasCollectionType)
         {
             collectionType = hasCollectionType.CollectionType;
+            includeItemTypes = [.. includeItemTypes.Union(DtoExtensions.GetBaseItemKindsForCollectionType(collectionType))];
         }
 
         if (collectionType == CollectionType.playlists)
@@ -962,9 +965,15 @@ public class ItemsController : BaseJellyfinApiController
         var excludeItemIds = Array.Empty<Guid>();
         if (excludeActiveSessions)
         {
+            // NowPlayingItem.Id is the displayed/primary id, but resume queries surface the actually-played
+            // alternate version's own id. Expand each active session to every version id so an in-progress
+            // alternate is excluded too, instead of leaking back into the resume list.
             excludeItemIds = _sessionManager.Sessions
                 .Where(s => s.UserId.Equals(requestUserId) && s.NowPlayingItem is not null)
-                .Select(s => s.NowPlayingItem.Id)
+                .SelectMany(s => _libraryManager.GetItemById(s.NowPlayingItem.Id) is Video video
+                    ? video.GetAllVersions().Select(v => v.Id)
+                    : [s.NowPlayingItem.Id])
+                .Distinct()
                 .ToArray();
         }
 

@@ -345,6 +345,20 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         }
 
         [Fact]
+        public void GetLocalizedString_WithBcp47NormalizationToUppercaseRegion_ReturnsTranslation()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+
+            // he-IL normalizes to the underscore resource he_IL. The resource lookup is case-sensitive,
+            // so the region casing has to be preserved or the file is not found and we fall back to en-US.
+            var translated = localizationManager.GetLocalizedString("Books", "he-IL");
+            Assert.Equal("ספרים", translated);
+        }
+
+        [Fact]
         public void GetServerLocalizedString_UsesServerCulture()
         {
             var localizationManager = Setup(new ServerConfiguration

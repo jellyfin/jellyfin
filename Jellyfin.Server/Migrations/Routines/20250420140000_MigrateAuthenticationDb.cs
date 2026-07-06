@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations;
@@ -79,9 +80,9 @@ namespace Jellyfin.Server.Migrations.Routines
                 foreach (var row in authenticatedDevices)
                 {
                     var dateCreatedStr = row.GetString(9);
-                    _ = DateTime.TryParse(dateCreatedStr, out var dateCreated);
+                    _ = DateTime.TryParse(dateCreatedStr, CultureInfo.InvariantCulture, out var dateCreated);
                     var dateLastActivityStr = row.GetString(10);
-                    _ = DateTime.TryParse(dateLastActivityStr, out var dateLastActivity);
+                    _ = DateTime.TryParse(dateLastActivityStr, CultureInfo.InvariantCulture, out var dateLastActivity);
 
                     if (row.IsDBNull(6))
                     {

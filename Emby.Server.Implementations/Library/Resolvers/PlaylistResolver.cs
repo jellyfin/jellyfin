@@ -1,6 +1,7 @@
 #nullable disable
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Jellyfin.Data.Enums;
@@ -46,7 +47,16 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 }
 
                 // It's a directory-based playlist if the directory contains a playlist file
-                var filePaths = Directory.EnumerateFiles(args.Path, "*", new EnumerationOptions { IgnoreInaccessible = true });
+                IEnumerable<string> filePaths;
+                try
+                {
+                    filePaths = Directory.EnumerateFiles(args.Path, "*", new EnumerationOptions { IgnoreInaccessible = true });
+                }
+                catch (IOException)
+                {
+                    return null;
+                }
+
                 if (filePaths.Any(f => f.EndsWith(PlaylistXmlSaver.DefaultPlaylistFilename, StringComparison.OrdinalIgnoreCase)))
                 {
                     return new Playlist
