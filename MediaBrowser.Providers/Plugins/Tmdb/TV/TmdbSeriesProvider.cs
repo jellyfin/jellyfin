@@ -256,9 +256,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             series.Overview = seriesResult.Overview;
 
-            if (seriesResult.Networks is not null)
+            if (seriesResult.ProductionCompanies is not null)
             {
-                series.Studios = seriesResult.Networks.Select(i => i.Name).ToArray();
+                series.Studios = seriesResult.ProductionCompanies.Select(i => i.Name).ToArray();
             }
 
             if (seriesResult.Genres is not null)
