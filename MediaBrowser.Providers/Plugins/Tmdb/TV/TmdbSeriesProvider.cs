@@ -255,11 +255,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             series.CommunityRating = Convert.ToSingle(seriesResult.VoteAverage);
 
             series.Overview = seriesResult.Overview;
+            
+            var studios = Enumerable.Empty<string>();
 
             if (seriesResult.ProductionCompanies is not null)
             {
-                series.Studios = seriesResult.ProductionCompanies.Select(i => i.Name).ToArray();
+                studios = studios.Concat(seriesResult.ProductionCompanies.Select(i => i.Name));
             }
+            
+            if (seriesResult.Networks is not null)
+            {
+                studios = studios.Concat(seriesResult.Networks.Select(i => i.Name));
+            }
+            
+            series.SetStudios(studios);
 
             if (seriesResult.Genres is not null)
             {
