@@ -14,7 +14,12 @@ public static class ImageOrderingUtilities
     public const int UnknownImagePriority = 999;
 
     // Matches the trailing run of digits at the end of the filename (e.g. "fanart10" -> "10").
-    private static readonly Regex _trailingDigits = new(@"\d+$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    // The pattern is linear-time (no nested quantifiers, no backtracking); the timeout
+    // satisfies csharpsquid:S6444 and will never fire in practice given short filenames.
+    private static readonly Regex _trailingDigits = new(
+        @"\d+$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant,
+        TimeSpan.FromSeconds(1));
 
     /// <summary>
     /// Extracts numeric index from image filename for proper sorting within priority groups.
