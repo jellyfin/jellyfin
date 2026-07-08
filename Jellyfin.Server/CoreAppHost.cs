@@ -9,6 +9,7 @@ using Jellyfin.Drawing;
 using Jellyfin.Drawing.Skia;
 using Jellyfin.LiveTv;
 using Jellyfin.Server.Implementations.Activity;
+using Jellyfin.Server.Implementations.Authentication;
 using Jellyfin.Server.Implementations.Devices;
 using Jellyfin.Server.Implementations.Events;
 using Jellyfin.Server.Implementations.Extensions;
@@ -75,6 +76,7 @@ namespace Jellyfin.Server
                 Logger.LogWarning("Skia not available. Will fallback to {ImageEncoder}.", nameof(NullImageEncoder));
             }
 
+            serviceCollection.AddDataProtection();
             serviceCollection.AddEventServices();
             serviceCollection.AddSingleton<IBaseItemManager, BaseItemManager>();
             serviceCollection.AddSingleton<IEventManager, EventManager>();
@@ -83,6 +85,8 @@ namespace Jellyfin.Server
             serviceCollection.AddSingleton<IUserManager, UserManager>();
             serviceCollection.AddSingleton<IAuthenticationProvider, DefaultAuthenticationProvider>();
             serviceCollection.AddSingleton<IAuthenticationProvider, InvalidAuthProvider>();
+            serviceCollection.AddSingleton<IOidcConfigurationManager, OidcConfigurationManager>();
+            serviceCollection.AddSingleton<IOidcAuthenticationManager, OidcAuthenticationManager>();
             serviceCollection.AddSingleton<IPasswordResetProvider, DefaultPasswordResetProvider>();
             serviceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
             serviceCollection.AddSingleton<IDeviceManager, DeviceManager>();
