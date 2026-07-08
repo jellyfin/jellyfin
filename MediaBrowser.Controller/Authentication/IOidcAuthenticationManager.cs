@@ -22,10 +22,31 @@ public interface IOidcAuthenticationManager
     /// <summary>
     /// Exchanges a one-time code for a Jellyfin authentication result.
     /// </summary>
+    /// <param name="providerId">The provider id.</param>
     /// <param name="code">The one-time code.</param>
+    /// <param name="remoteEndPoint">The remote endpoint of the exchange request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The Jellyfin authentication result.</returns>
-    Task<AuthenticationResult> ExchangeCodeAsync(string code, CancellationToken cancellationToken);
+    Task<AuthenticationResult> ExchangeCodeAsync(string providerId, string code, string remoteEndPoint, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Creates a one-time account-linking start code for an authenticated Jellyfin user.
+    /// </summary>
+    /// <param name="providerId">The provider id.</param>
+    /// <param name="userId">The Jellyfin user id.</param>
+    /// <param name="returnUrl">The optional relative return URL.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A one-time account-linking start code.</returns>
+    Task<string> CreateLinkCodeAsync(string providerId, Guid userId, string? returnUrl, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Consumes a one-time account-linking start code.
+    /// </summary>
+    /// <param name="providerId">The provider id.</param>
+    /// <param name="code">The one-time account-linking start code.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The account-linking request.</returns>
+    Task<OidcLinkRequest> ConsumeLinkCodeAsync(string providerId, string code, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets linked external identities for a user.
@@ -36,6 +57,24 @@ public interface IOidcAuthenticationManager
     Task<IReadOnlyList<ExternalIdentityDto>> GetExternalIdentitiesAsync(Guid userId, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Creates an explicit external identity link for a user.
+    /// </summary>
+    /// <param name="userId">The user id.</param>
+    /// <param name="request">The external identity link request.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The created identity.</returns>
+    Task<ExternalIdentityDto> CreateExternalIdentityAsync(Guid userId, OidcExternalIdentityCreateRequest request, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Links a validated external identity to a user.
+    /// </summary>
+    /// <param name="userId">The user id.</param>
+    /// <param name="request">The validated external identity.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The created identity.</returns>
+    Task<ExternalIdentityDto> LinkExternalIdentityAsync(Guid userId, OidcExternalIdentityRequest request, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Deletes an external identity link.
     /// </summary>
     /// <param name="userId">The user id.</param>
@@ -43,13 +82,4 @@ public interface IOidcAuthenticationManager
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the delete.</returns>
     Task DeleteExternalIdentityAsync(Guid userId, Guid identityId, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Logs out a Jellyfin session and optionally returns an upstream logout URL.
-    /// </summary>
-    /// <param name="accessToken">The Jellyfin access token.</param>
-    /// <param name="returnUrl">The relative return URL.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The logout result.</returns>
-    Task<OidcLogoutResult> LogoutAsync(string accessToken, string? returnUrl, CancellationToken cancellationToken);
 }

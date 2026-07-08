@@ -1,7 +1,9 @@
 using System;
 using System.IO;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions.Json;
 using Jellyfin.Server.Implementations.Authentication;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Authentication;
@@ -28,6 +30,53 @@ public class OidcConfigurationManagerTests
             var provider = Assert.Single(configuration.Providers);
 
             Assert.True(provider.HasClientSecret);
+        }
+        finally
+        {
+            Directory.Delete(tempDirectory, true);
+        }
+    }
+
+    [Fact]
+    public async Task GetConfiguration_WhenSavedConfigDiffersFromStartupSnapshot_ReturnsRequiresRestartAndActiveProvidersStayUnchanged()
+    {
+        var (manager, tempDirectory) = CreateManager(new OidcOptions
+        {
+            Providers = [CreateValidProviderOptions()]
+        });
+
+        try
+        {
+            var updatedProvider = CreateValidProvider("updated-secret");
+            updatedProvider.Name = "Updated";
+            updatedProvider.Authority = "https://updated.example.com";
+
+            await manager.UpdateConfigurationAsync(
+                new OidcConfigurationUpdateDto
+                {
+                    Providers = [updatedProvider]
+                },
+                CancellationToken.None);
+
+            var configuration = manager.GetConfiguration();
+            var configuredProvider = Assert.Single(configuration.Providers);
+            Assert.True(configuration.RequiresRestart);
+            Assert.Equal("Updated", configuredProvider.Name);
+            Assert.Equal("https://updated.example.com", configuredProvider.Authority);
+
+            var activeProvider = manager.GetEnabledProvider("authelia");
+            Assert.NotNull(activeProvider);
+            Assert.Equal("Authelia", activeProvider.Name);
+            Assert.Equal("https://auth.example.com", activeProvider.Authority);
+
+            activeProvider.Name = "Mutated";
+            var activeProviderAfterMutation = manager.GetEnabledProvider("authelia");
+            Assert.NotNull(activeProviderAfterMutation);
+            Assert.Equal("Authelia", activeProviderAfterMutation.Name);
+
+            var providerInfo = Assert.Single(manager.GetProviderInfos());
+            Assert.Equal("Authelia", providerInfo.Name);
+            Assert.Equal("https://auth.example.com", providerInfo.Authority);
         }
         finally
         {
@@ -86,6 +135,35 @@ public class OidcConfigurationManagerTests
 
             var storedProvider = Assert.Single(manager.GetOptions().Providers);
             Assert.Equal("http://auth.example.com", storedProvider.Authority);
+        }
+        finally
+        {
+            Directory.Delete(tempDirectory, true);
+        }
+    }
+
+    [Fact]
+    public async Task UpdateConfiguration_WhenListPropertiesNull_NormalizesLists()
+    {
+        var (manager, tempDirectory) = CreateManager();
+        try
+        {
+            var provider = CreateValidProvider();
+            provider.Scopes = null!;
+            provider.RequiredGroups = null!;
+            provider.AdminGroups = null!;
+
+            await manager.UpdateConfigurationAsync(
+                new OidcConfigurationUpdateDto
+                {
+                    Providers = [provider]
+                },
+                CancellationToken.None);
+
+            var storedProvider = Assert.Single(manager.GetOptions().Providers);
+            Assert.Contains("openid", storedProvider.Scopes);
+            Assert.Empty(storedProvider.RequiredGroups);
+            Assert.Empty(storedProvider.AdminGroups);
         }
         finally
         {
@@ -173,16 +251,41 @@ public class OidcConfigurationManagerTests
             RequiredGroups = ["jellyfin"],
             AdminGroups = ["jellyfin-admins"],
             ProvisioningMode = OidcUserProvisioningMode.Disabled,
-            GetClaimsFromUserInfoEndpoint = true,
-            EnableDeviceAuthorization = true,
-            EnableRpInitiatedLogout = true
+            GetClaimsFromUserInfoEndpoint = true
         };
     }
 
-    private static (OidcConfigurationManager Manager, string TempDirectory) CreateManager()
+    private static OidcProviderOptions CreateValidProviderOptions()
+    {
+        return new OidcProviderOptions
+        {
+            Enabled = true,
+            ProviderId = "authelia",
+            Name = "Authelia",
+            Authority = "https://auth.example.com",
+            ClientId = "jellyfin",
+            ClientSecret = "client-secret",
+            Scopes = ["openid", "profile", "email", "groups"],
+            UsernameClaim = "preferred_username",
+            RoleClaim = "groups",
+            EmailClaim = "email",
+            RequiredGroups = ["jellyfin"],
+            AdminGroups = ["jellyfin-admins"],
+            ProvisioningMode = OidcUserProvisioningMode.Disabled,
+            GetClaimsFromUserInfoEndpoint = true
+        };
+    }
+
+    private static (OidcConfigurationManager Manager, string TempDirectory) CreateManager(OidcOptions? initialOptions = null)
     {
         var tempDirectory = Path.Combine(Path.GetTempPath(), "jellyfin-oidc-tests-" + Guid.NewGuid());
         Directory.CreateDirectory(tempDirectory);
+
+        if (initialOptions is not null)
+        {
+            using var stream = File.Create(Path.Combine(tempDirectory, "oidc.json"));
+            JsonSerializer.Serialize(stream, initialOptions, JsonDefaults.Options);
+        }
 
         var applicationPaths = new Mock<IApplicationPaths>();
         applicationPaths.Setup(paths => paths.ConfigurationDirectoryPath).Returns(tempDirectory);

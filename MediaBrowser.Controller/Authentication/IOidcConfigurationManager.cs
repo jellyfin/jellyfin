@@ -17,7 +17,7 @@ public interface IOidcConfigurationManager
     OidcOptions GetOptions();
 
     /// <summary>
-    /// Gets secret-safe provider metadata for clients.
+    /// Gets secret-safe provider metadata for active providers.
     /// </summary>
     /// <returns>The enabled provider information.</returns>
     IReadOnlyList<OidcProviderInfo> GetProviderInfos();
@@ -37,7 +37,7 @@ public interface IOidcConfigurationManager
     Task UpdateConfigurationAsync(OidcConfigurationUpdateDto configuration, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Gets an enabled provider by id.
+    /// Gets an active enabled provider by id.
     /// </summary>
     /// <param name="providerId">The provider id.</param>
     /// <returns>The provider options, or <c>null</c>.</returns>

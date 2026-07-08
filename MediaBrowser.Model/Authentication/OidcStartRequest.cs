@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace MediaBrowser.Model.Authentication;
 
 /// <summary>
@@ -8,21 +10,25 @@ public class OidcStartRequest
     /// <summary>
     /// Gets or sets the client name.
     /// </summary>
+    [Required]
     public string App { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the client version.
     /// </summary>
+    [Required]
     public string AppVersion { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the device id.
     /// </summary>
+    [Required]
     public string DeviceId { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the device name.
     /// </summary>
+    [Required]
     public string DeviceName { get; set; } = string.Empty;
 
     /// <summary>

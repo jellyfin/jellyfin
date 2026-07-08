@@ -17,8 +17,10 @@ using Jellyfin.Networking;
 using Jellyfin.Networking.HappyEyeballs;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.HealthChecks;
+using Jellyfin.Server.Implementations.Authentication;
 using Jellyfin.Server.Implementations.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.XbmcMetadata;
@@ -28,6 +30,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
@@ -74,7 +77,9 @@ namespace Jellyfin.Server
             services.AddJellyfinApiSwagger();
 
             // configure custom legacy authentication
-            services.AddCustomAuthentication(_serverConfigurationManager.ApplicationPaths);
+            var oidcConfigurationManager = new OidcConfigurationManager(_serverConfigurationManager.ApplicationPaths);
+            services.Replace(ServiceDescriptor.Singleton<IOidcConfigurationManager>(oidcConfigurationManager));
+            services.AddCustomAuthentication(oidcConfigurationManager);
 
             services.AddJellyfinApiAuthorization();
 
