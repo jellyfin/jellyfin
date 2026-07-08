@@ -605,7 +605,9 @@ namespace Emby.Server.Implementations
             serviceCollection.AddTransient(provider => new Lazy<ILiveTvManager>(provider.GetRequiredService<ILiveTvManager>));
             serviceCollection.AddSingleton<IDtoService, DtoService>();
 
-            serviceCollection.AddSingleton<ISessionManager, SessionManager>();
+            serviceCollection.AddSingleton<SessionManager>();
+            serviceCollection.AddSingleton<ISessionManager>(sp => sp.GetRequiredService<SessionManager>());
+            serviceCollection.AddSingleton<IExternalSessionCreator>(sp => sp.GetRequiredService<SessionManager>());
 
             serviceCollection.AddSingleton<ICollectionManager, CollectionManager>();
             serviceCollection.AddSingleton<ILimitedConcurrencyLibraryScheduler, LimitedConcurrencyLibraryScheduler>();

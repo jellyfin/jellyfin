@@ -74,7 +74,7 @@ namespace Jellyfin.Server
             services.AddJellyfinApiSwagger();
 
             // configure custom legacy authentication
-            services.AddCustomAuthentication();
+            services.AddCustomAuthentication(_serverConfigurationManager.ApplicationPaths);
 
             services.AddJellyfinApiAuthorization();
 

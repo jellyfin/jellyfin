@@ -44,6 +44,16 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<Device> Devices => Set<Device>();
 
     /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing OpenID Connect external identities.
+    /// </summary>
+    public DbSet<OidcExternalIdentity> OidcExternalIdentities => Set<OidcExternalIdentity>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing OpenID Connect session metadata.
+    /// </summary>
+    public DbSet<OidcSession> OidcSessions => Set<OidcSession>();
+
+    /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the device options.
     /// </summary>
     public DbSet<DeviceOptions> DeviceOptions => Set<DeviceOptions>();
