@@ -30,6 +30,7 @@ public class OidcAuthenticationManager : IOidcAuthenticationManager
 {
     private const int MaxExchangeStates = 1024;
     private const int MaxLinkStates = 1024;
+    private const string ProviderNotFoundMessage = "OpenID Connect provider was not found.";
     private static readonly TimeSpan ExchangeCodeLifetime = TimeSpan.FromMinutes(2);
     private readonly IOidcConfigurationManager _configurationManager;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
@@ -136,7 +137,7 @@ public class OidcAuthenticationManager : IOidcAuthenticationManager
         }
 
         var provider = _configurationManager.GetEnabledProvider(providerId)
-            ?? throw new ResourceNotFoundException("OpenID Connect provider was not found.");
+            ?? throw new ResourceNotFoundException(ProviderNotFoundMessage);
 
         var now = DateTime.UtcNow;
         RemoveExpiredLinkStates(now);
@@ -173,7 +174,7 @@ public class OidcAuthenticationManager : IOidcAuthenticationManager
         }
 
         var provider = _configurationManager.GetEnabledProvider(providerId)
-            ?? throw new ResourceNotFoundException("OpenID Connect provider was not found.");
+            ?? throw new ResourceNotFoundException(ProviderNotFoundMessage);
 
         return Task.FromResult(new OidcLinkRequest
         {
@@ -220,7 +221,7 @@ public class OidcAuthenticationManager : IOidcAuthenticationManager
         ArgumentNullException.ThrowIfNull(request);
 
         var provider = _configurationManager.GetEnabledProvider(request.ProviderId)
-            ?? throw new ResourceNotFoundException("OpenID Connect provider was not found.");
+            ?? throw new ResourceNotFoundException(ProviderNotFoundMessage);
 
         ValidateExternalIdentity(request, provider);
 
@@ -244,7 +245,7 @@ public class OidcAuthenticationManager : IOidcAuthenticationManager
         CancellationToken cancellationToken)
     {
         var provider = _configurationManager.GetEnabledProvider(requestProviderId)
-            ?? throw new ResourceNotFoundException("OpenID Connect provider was not found.");
+            ?? throw new ResourceNotFoundException(ProviderNotFoundMessage);
 
         var issuer = requestIssuer.Trim();
         var subject = requestSubject.Trim();
@@ -281,12 +282,7 @@ public class OidcAuthenticationManager : IOidcAuthenticationManager
             }
 
             var identity = CreateExternalIdentity(
-                userId,
-                providerId,
-                issuer,
-                subject,
-                preferredUsername,
-                email,
+                new OidcExternalIdentityLink(userId, providerId, issuer, subject, preferredUsername, email),
                 DateTime.UtcNow,
                 lastLoginAt: null);
 
@@ -417,12 +413,13 @@ public class OidcAuthenticationManager : IOidcAuthenticationManager
         {
             var now = DateTime.UtcNow;
             dbContext.OidcExternalIdentities.Add(CreateExternalIdentity(
-                userId,
-                request.ProviderId,
-                request.Issuer,
-                request.Subject,
-                request.PreferredUsername,
-                request.Email,
+                new OidcExternalIdentityLink(
+                    userId,
+                    request.ProviderId,
+                    request.Issuer,
+                    request.Subject,
+                    request.PreferredUsername,
+                    request.Email),
                 now,
                 now));
 
@@ -569,30 +566,30 @@ public class OidcAuthenticationManager : IOidcAuthenticationManager
         };
     }
 
-    private static OidcExternalIdentity CreateExternalIdentity(
-        Guid userId,
-        string providerId,
-        string issuer,
-        string subject,
-        string? preferredUsername,
-        string? email,
-        DateTime createdAt,
-        DateTime? lastLoginAt)
+    private static OidcExternalIdentity CreateExternalIdentity(OidcExternalIdentityLink link, DateTime createdAt, DateTime? lastLoginAt)
     {
         return new OidcExternalIdentity
         {
-            UserId = userId,
-            ProviderId = providerId,
-            Issuer = issuer,
-            Subject = subject,
-            PreferredUsername = preferredUsername?.Trim(),
-            Email = email?.Trim(),
+            UserId = link.UserId,
+            ProviderId = link.ProviderId,
+            Issuer = link.Issuer,
+            Subject = link.Subject,
+            PreferredUsername = link.PreferredUsername?.Trim(),
+            Email = link.Email?.Trim(),
             CreatedAt = createdAt,
             LastLoginAt = lastLoginAt
         };
     }
 
     private sealed record OidcExchangeState(OidcExternalIdentityRequest Request, DateTime ExpiresAt);
+
+    private sealed record OidcExternalIdentityLink(
+        Guid UserId,
+        string ProviderId,
+        string Issuer,
+        string Subject,
+        string? PreferredUsername,
+        string? Email);
 
     private sealed record OidcLinkState(string ProviderId, Guid UserId, string? ReturnUrl, DateTime ExpiresAt);
 }

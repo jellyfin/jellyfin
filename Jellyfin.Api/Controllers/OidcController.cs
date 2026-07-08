@@ -667,12 +667,9 @@ public class OidcController : BaseJellyfinApiController
 
     private void AddProviderRedirectUris(OidcConfigurationDto configuration)
     {
-        foreach (var provider in configuration.Providers)
+        foreach (var provider in configuration.Providers.Where(provider => !string.IsNullOrWhiteSpace(provider.ProviderId)))
         {
-            if (!string.IsNullOrWhiteSpace(provider.ProviderId))
-            {
-                provider.RedirectUri = GetProviderCallbackUri(provider.ProviderId);
-            }
+            provider.RedirectUri = GetProviderCallbackUri(provider.ProviderId);
         }
     }
 
@@ -716,7 +713,7 @@ public class OidcController : BaseJellyfinApiController
             or ArgumentException;
     }
 
-    private bool IsSafeRelativeUrl(string url)
+    private static bool IsSafeRelativeUrl(string url)
     {
         return OidcConstants.IsSafeRelativeUrl(url);
     }
