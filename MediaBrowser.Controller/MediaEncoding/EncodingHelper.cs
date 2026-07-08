@@ -2422,7 +2422,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Can't stream copy if we're burning in subtitles
             if (request.SubtitleStreamIndex.HasValue
                 && request.SubtitleStreamIndex.Value >= 0
-                && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
+                && ShouldEncodeSubtitle(state))
             {
                 return false;
             }
