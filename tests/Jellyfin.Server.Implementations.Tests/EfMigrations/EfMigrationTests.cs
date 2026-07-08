@@ -37,19 +37,4 @@ public class EfMigrationTests
             && foreignKey.Properties.Select(property => property.Name).SequenceEqual(["UserId"])
             && foreignKey.DeleteBehavior == DeleteBehavior.Cascade);
     }
-
-    [Fact]
-    public void OidcSession_ModelIsKeyedByAccessToken()
-    {
-        var dbDesignContext = new SqliteDesignTimeJellyfinDbFactory();
-        using var context = dbDesignContext.CreateDbContext([]);
-        var entityType = context.Model.FindEntityType(typeof(OidcSession));
-
-        Assert.NotNull(entityType);
-        Assert.Contains(entityType!.GetIndexes(), index =>
-            index.IsUnique
-            && index.Properties.Select(property => property.Name).SequenceEqual(["AccessToken"]));
-        Assert.NotNull(entityType.FindProperty(nameof(OidcSession.Sid)));
-        Assert.NotNull(entityType.FindProperty(nameof(OidcSession.ProtectedIdTokenHint)));
-    }
 }

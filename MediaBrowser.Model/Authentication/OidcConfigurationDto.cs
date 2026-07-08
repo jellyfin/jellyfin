@@ -11,4 +11,9 @@ public class OidcConfigurationDto
     /// Gets or sets the configured providers.
     /// </summary>
     public IReadOnlyList<OidcProviderConfigurationDto> Providers { get; set; } = new List<OidcProviderConfigurationDto>();
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the saved configuration differs from the active startup configuration.
+    /// </summary>
+    public bool RequiresRestart { get; set; }
 }

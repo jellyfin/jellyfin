@@ -21,7 +21,7 @@ public class OidcProviderInfo
     public string Authority { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets a value indicating whether device authorization flow is enabled.
+    /// Gets or sets the redirect URI to register with the provider.
     /// </summary>
-    public bool DeviceAuthorizationEnabled { get; set; }
+    public string RedirectUri { get; set; } = string.Empty;
 }

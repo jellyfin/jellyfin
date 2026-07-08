@@ -19,7 +19,10 @@ namespace Jellyfin.Server.Implementations.Authentication;
 public class OidcConfigurationManager : IOidcConfigurationManager
 {
     private const string ConfigurationFileName = "oidc.json";
+    private const UnixFileMode SecretFileMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
     private readonly string _configurationPath;
+    private readonly OidcOptions _activeOptions;
+    private readonly object _configurationLock = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OidcConfigurationManager"/> class.
@@ -28,10 +31,83 @@ public class OidcConfigurationManager : IOidcConfigurationManager
     public OidcConfigurationManager(IApplicationPaths applicationPaths)
     {
         _configurationPath = Path.Combine(applicationPaths.ConfigurationDirectoryPath, ConfigurationFileName);
+        _activeOptions = CloneOptions(ReadOptions());
     }
 
     /// <inheritdoc />
     public OidcOptions GetOptions()
+    {
+        lock (_configurationLock)
+        {
+            return ReadOptions();
+        }
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<OidcProviderInfo> GetProviderInfos()
+    {
+        return _activeOptions.Providers
+            .Where(provider => provider.Enabled)
+            .Select(ToProviderInfo)
+            .ToList();
+    }
+
+    /// <inheritdoc />
+    public OidcConfigurationDto GetConfiguration()
+    {
+        var options = GetOptions();
+        return new OidcConfigurationDto
+        {
+            Providers = options.Providers
+                .Select(ToConfigurationDto)
+                .ToList(),
+            RequiresRestart = !OptionsEqual(options, _activeOptions)
+        };
+    }
+
+    /// <inheritdoc />
+    public Task UpdateConfigurationAsync(OidcConfigurationUpdateDto configuration, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        lock (_configurationLock)
+        {
+            var currentByProviderId = ReadOptions().Providers
+                .Where(provider => !string.IsNullOrWhiteSpace(provider.ProviderId))
+                .GroupBy(provider => provider.ProviderId, StringComparer.OrdinalIgnoreCase)
+                .Select(group => group.First())
+                .ToDictionary(provider => provider.ProviderId, StringComparer.OrdinalIgnoreCase);
+
+            var updated = new OidcOptions
+            {
+                Providers = (configuration.Providers ?? new List<OidcProviderConfigurationUpdateDto>())
+                    .Select(provider => ToProviderOptions(provider, currentByProviderId))
+                    .ToList()
+            };
+
+            Validate(updated);
+            WriteOptions(updated);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public OidcProviderOptions? GetEnabledProvider(string providerId)
+    {
+        if (string.IsNullOrWhiteSpace(providerId))
+        {
+            return null;
+        }
+
+        var provider = _activeOptions.Providers
+            .FirstOrDefault(provider => provider.Enabled && string.Equals(provider.ProviderId, providerId, StringComparison.OrdinalIgnoreCase));
+
+        return provider is null ? null : CloneProvider(provider);
+    }
+
+    private OidcOptions ReadOptions()
     {
         if (!File.Exists(_configurationPath))
         {
@@ -43,92 +119,83 @@ public class OidcConfigurationManager : IOidcConfigurationManager
         return Normalize(options ?? new OidcOptions());
     }
 
-    /// <inheritdoc />
-    public IReadOnlyList<OidcProviderInfo> GetProviderInfos()
+    private void WriteOptions(OidcOptions options)
     {
-        return GetOptions().Providers
-            .Where(provider => provider.Enabled)
-            .Select(provider => new OidcProviderInfo
+        var directory = Path.GetDirectoryName(_configurationPath)!;
+        Directory.CreateDirectory(directory);
+
+        var tempPath = Path.Combine(directory, ConfigurationFileName + "." + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture) + ".tmp");
+        try
+        {
+            using (var stream = CreateSecretTempFile(tempPath))
             {
-                ProviderId = provider.ProviderId,
-                Name = provider.Name,
-                Authority = provider.Authority,
-                DeviceAuthorizationEnabled = provider.EnableDeviceAuthorization
-            })
-            .ToList();
+                JsonSerializer.Serialize(stream, options, JsonDefaults.Options);
+                stream.Flush(true);
+            }
+
+            SetSecretFileMode(tempPath);
+            if (File.Exists(_configurationPath))
+            {
+                File.Replace(tempPath, _configurationPath, null);
+            }
+            else
+            {
+                File.Move(tempPath, _configurationPath);
+            }
+
+            SetSecretFileMode(_configurationPath);
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+            {
+                File.Delete(tempPath);
+            }
+        }
     }
 
-    /// <inheritdoc />
-    public OidcConfigurationDto GetConfiguration()
+    private static void SetSecretFileMode(string path)
     {
-        return new OidcConfigurationDto
+        if (!OperatingSystem.IsWindows())
         {
-            Providers = GetOptions().Providers
-                .Select(ToConfigurationDto)
-                .ToList()
+            File.SetUnixFileMode(path, SecretFileMode);
+        }
+    }
+
+    private static FileStream CreateSecretTempFile(string path)
+    {
+        var options = new FileStreamOptions
+        {
+            Mode = FileMode.CreateNew,
+            Access = FileAccess.Write,
+            Share = FileShare.None,
+            BufferSize = 4096,
+            Options = FileOptions.WriteThrough
         };
-    }
 
-    /// <inheritdoc />
-    public async Task UpdateConfigurationAsync(OidcConfigurationUpdateDto configuration, CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(configuration);
-
-        var currentByProviderId = GetOptions().Providers
-            .Where(provider => !string.IsNullOrWhiteSpace(provider.ProviderId))
-            .GroupBy(provider => provider.ProviderId, StringComparer.OrdinalIgnoreCase)
-            .Select(group => group.First())
-            .ToDictionary(provider => provider.ProviderId, StringComparer.OrdinalIgnoreCase);
-
-        var updated = new OidcOptions
+        if (!OperatingSystem.IsWindows())
         {
-            Providers = (configuration.Providers ?? new List<OidcProviderConfigurationUpdateDto>())
-                .Select(provider => ToProviderOptions(provider, currentByProviderId))
-                .ToList()
-        };
-
-        Validate(updated);
-        Directory.CreateDirectory(Path.GetDirectoryName(_configurationPath)!);
-
-        await using var stream = File.Create(_configurationPath);
-        await JsonSerializer.SerializeAsync(stream, updated, JsonDefaults.Options, cancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public OidcProviderOptions? GetEnabledProvider(string providerId)
-    {
-        if (string.IsNullOrWhiteSpace(providerId))
-        {
-            return null;
+            options.UnixCreateMode = SecretFileMode;
         }
 
-        return GetOptions().Providers
-            .FirstOrDefault(provider => provider.Enabled && string.Equals(provider.ProviderId, providerId, StringComparison.OrdinalIgnoreCase));
+        return new FileStream(path, options);
     }
 
     private static OidcProviderConfigurationDto ToConfigurationDto(OidcProviderOptions provider)
     {
-        return new OidcProviderConfigurationDto
+        return CopyProviderConfiguration(provider, new OidcProviderConfigurationDto
         {
-            Enabled = provider.Enabled,
+            HasClientSecret = !string.IsNullOrWhiteSpace(provider.ClientSecret)
+        });
+    }
+
+    private static OidcProviderInfo ToProviderInfo(OidcProviderOptions provider)
+    {
+        return new OidcProviderInfo
+        {
             ProviderId = provider.ProviderId,
             Name = provider.Name,
-            Authority = provider.Authority,
-            ClientId = provider.ClientId,
-            HasClientSecret = !string.IsNullOrWhiteSpace(provider.ClientSecret),
-            AllowInsecureAuthority = provider.AllowInsecureAuthority,
-            Scopes = provider.Scopes,
-            UsernameClaim = provider.UsernameClaim,
-            RoleClaim = provider.RoleClaim,
-            EmailClaim = provider.EmailClaim,
-            RequiredGroups = provider.RequiredGroups,
-            AdminGroups = provider.AdminGroups,
-            ProvisioningMode = provider.ProvisioningMode,
-            SyncAdminRole = provider.SyncAdminRole,
-            GetClaimsFromUserInfoEndpoint = provider.GetClaimsFromUserInfoEndpoint,
-            EnableDeviceAuthorization = provider.EnableDeviceAuthorization,
-            EnableRpInitiatedLogout = provider.EnableRpInitiatedLogout
+            Authority = provider.Authority
         };
     }
 
@@ -139,27 +206,12 @@ public class OidcConfigurationManager : IOidcConfigurationManager
         var providerId = NormalizeString(provider.ProviderId);
         currentByProviderId.TryGetValue(providerId, out var currentProvider);
 
-        return NormalizeProvider(new OidcProviderOptions
+        var options = CopyProviderConfiguration(provider, new OidcProviderOptions
         {
-            Enabled = provider.Enabled,
-            ProviderId = providerId,
-            Name = NormalizeString(provider.Name),
-            Authority = NormalizeString(provider.Authority),
-            ClientId = NormalizeString(provider.ClientId),
-            ClientSecret = string.IsNullOrWhiteSpace(provider.ClientSecret) ? currentProvider?.ClientSecret ?? string.Empty : provider.ClientSecret.Trim(),
-            AllowInsecureAuthority = provider.AllowInsecureAuthority,
-            Scopes = provider.Scopes,
-            UsernameClaim = NormalizeString(provider.UsernameClaim),
-            RoleClaim = NormalizeString(provider.RoleClaim),
-            EmailClaim = NormalizeString(provider.EmailClaim),
-            RequiredGroups = provider.RequiredGroups,
-            AdminGroups = provider.AdminGroups,
-            ProvisioningMode = provider.ProvisioningMode,
-            SyncAdminRole = provider.SyncAdminRole,
-            GetClaimsFromUserInfoEndpoint = provider.GetClaimsFromUserInfoEndpoint,
-            EnableDeviceAuthorization = provider.EnableDeviceAuthorization,
-            EnableRpInitiatedLogout = provider.EnableRpInitiatedLogout
+            ClientSecret = GetClientSecret(provider.ClientSecret, currentProvider)
         });
+        options.ProviderId = providerId;
+        return NormalizeProvider(options);
     }
 
     private static OidcOptions Normalize(OidcOptions options)
@@ -168,6 +220,43 @@ public class OidcConfigurationManager : IOidcConfigurationManager
         {
             Providers = (options.Providers ?? new List<OidcProviderOptions>()).Select(NormalizeProvider).ToList()
         };
+    }
+
+    private static OidcOptions CloneOptions(OidcOptions options)
+    {
+        return new OidcOptions
+        {
+            Providers = options.Providers.Select(CloneProvider).ToList()
+        };
+    }
+
+    private static OidcProviderOptions CloneProvider(OidcProviderOptions provider)
+    {
+        return CopyProviderConfiguration(provider, new OidcProviderOptions
+        {
+            ClientSecret = provider.ClientSecret
+        });
+    }
+
+    private static T CopyProviderConfiguration<T>(OidcProviderConfigurationBase source, T target)
+        where T : OidcProviderConfigurationBase
+    {
+        target.Enabled = source.Enabled;
+        target.ProviderId = source.ProviderId;
+        target.Name = source.Name;
+        target.Authority = source.Authority;
+        target.ClientId = source.ClientId;
+        target.AllowInsecureAuthority = source.AllowInsecureAuthority;
+        target.Scopes = source.Scopes?.ToList() ?? new List<string>();
+        target.UsernameClaim = source.UsernameClaim;
+        target.RoleClaim = source.RoleClaim;
+        target.EmailClaim = source.EmailClaim;
+        target.RequiredGroups = source.RequiredGroups?.ToList() ?? new List<string>();
+        target.AdminGroups = source.AdminGroups?.ToList() ?? new List<string>();
+        target.ProvisioningMode = source.ProvisioningMode;
+        target.SyncAdminRole = source.SyncAdminRole;
+        target.GetClaimsFromUserInfoEndpoint = source.GetClaimsFromUserInfoEndpoint;
+        return target;
     }
 
     private static OidcProviderOptions NormalizeProvider(OidcProviderOptions provider)
@@ -195,9 +284,7 @@ public class OidcConfigurationManager : IOidcConfigurationManager
             AdminGroups = NormalizeStrings(provider.AdminGroups),
             ProvisioningMode = provider.ProvisioningMode,
             SyncAdminRole = provider.SyncAdminRole,
-            GetClaimsFromUserInfoEndpoint = provider.GetClaimsFromUserInfoEndpoint,
-            EnableDeviceAuthorization = provider.EnableDeviceAuthorization,
-            EnableRpInitiatedLogout = provider.EnableRpInitiatedLogout
+            GetClaimsFromUserInfoEndpoint = provider.GetClaimsFromUserInfoEndpoint
         };
     }
 
@@ -215,68 +302,92 @@ public class OidcConfigurationManager : IOidcConfigurationManager
             .ToList();
     }
 
+    private static string GetClientSecret(string? clientSecret, OidcProviderOptions? currentProvider)
+    {
+        return string.IsNullOrWhiteSpace(clientSecret)
+            ? currentProvider?.ClientSecret ?? string.Empty
+            : clientSecret.Trim();
+    }
+
     private static void Validate(OidcOptions options)
     {
         var seenProviderIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var provider in options.Providers)
         {
-            if (string.IsNullOrWhiteSpace(provider.ProviderId))
-            {
-                if (provider.Enabled)
-                {
-                    throw new ArgumentException("Enabled OIDC providers require a provider id.");
-                }
-
-                continue;
-            }
-
-            if (!seenProviderIds.Add(provider.ProviderId))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "OIDC provider id '{0}' is configured more than once.", provider.ProviderId));
-            }
-
-            if (!IsValidProviderId(provider.ProviderId))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "OIDC provider id '{0}' is invalid.", provider.ProviderId));
-            }
-
-            if (!provider.Enabled)
+            if (!ValidateProviderIdPresence(provider))
             {
                 continue;
             }
 
-            if (string.IsNullOrWhiteSpace(provider.Authority)
-                || !Uri.TryCreate(provider.Authority, UriKind.Absolute, out var authority))
+            ValidateProviderId(provider, seenProviderIds);
+            if (provider.Enabled)
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "OIDC provider '{0}' has an invalid authority.", provider.ProviderId));
+                ValidateEnabledProvider(provider);
             }
+        }
+    }
 
-            if (!string.Equals(authority.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(authority.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "OIDC provider '{0}' must use an HTTP or HTTPS authority.", provider.ProviderId));
-            }
+    private static bool ValidateProviderIdPresence(OidcProviderOptions provider)
+    {
+        if (!string.IsNullOrWhiteSpace(provider.ProviderId))
+        {
+            return true;
+        }
 
-            if (!provider.AllowInsecureAuthority
-                && !string.Equals(authority.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "OIDC provider '{0}' must use an HTTPS authority unless insecure authority is explicitly allowed.", provider.ProviderId));
-            }
+        if (provider.Enabled)
+        {
+            throw new ArgumentException("Enabled OIDC providers require a provider id.");
+        }
 
-            if (string.IsNullOrWhiteSpace(provider.ClientId))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "OIDC provider '{0}' requires a client id.", provider.ProviderId));
-            }
+        return false;
+    }
 
-            if (string.IsNullOrWhiteSpace(provider.ClientSecret))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "OIDC provider '{0}' requires a client secret.", provider.ProviderId));
-            }
+    private static void ValidateProviderId(OidcProviderOptions provider, HashSet<string> seenProviderIds)
+    {
+        if (!seenProviderIds.Add(provider.ProviderId))
+        {
+            throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "OIDC provider id '{0}' is configured more than once.", provider.ProviderId));
+        }
 
-            if (!provider.Scopes.Contains("openid", StringComparer.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "OIDC provider '{0}' must request the openid scope.", provider.ProviderId));
-            }
+        if (!IsValidProviderId(provider.ProviderId))
+        {
+            throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "OIDC provider id '{0}' is invalid.", provider.ProviderId));
+        }
+    }
+
+    private static void ValidateEnabledProvider(OidcProviderOptions provider)
+    {
+        if (string.IsNullOrWhiteSpace(provider.Authority)
+            || !Uri.TryCreate(provider.Authority, UriKind.Absolute, out var authority))
+        {
+            throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "OIDC provider '{0}' has an invalid authority.", provider.ProviderId));
+        }
+
+        if (!string.Equals(authority.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(authority.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "OIDC provider '{0}' must use an HTTP or HTTPS authority.", provider.ProviderId));
+        }
+
+        if (!provider.AllowInsecureAuthority
+            && !string.Equals(authority.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "OIDC provider '{0}' must use an HTTPS authority unless insecure authority is explicitly allowed.", provider.ProviderId));
+        }
+
+        if (string.IsNullOrWhiteSpace(provider.ClientId))
+        {
+            throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "OIDC provider '{0}' requires a client id.", provider.ProviderId));
+        }
+
+        if (string.IsNullOrWhiteSpace(provider.ClientSecret))
+        {
+            throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "OIDC provider '{0}' requires a client secret.", provider.ProviderId));
+        }
+
+        if (!provider.Scopes.Contains("openid", StringComparer.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "OIDC provider '{0}' must request the openid scope.", provider.ProviderId));
         }
     }
 
@@ -287,14 +398,11 @@ public class OidcConfigurationManager : IOidcConfigurationManager
             return false;
         }
 
-        foreach (var c in providerId)
-        {
-            if (!char.IsAsciiLetterOrDigit(c) && c != '-' && c != '_')
-            {
-                return false;
-            }
-        }
+        return providerId.All(c => char.IsAsciiLetterOrDigit(c) || c == '-' || c == '_');
+    }
 
-        return true;
+    private static bool OptionsEqual(OidcOptions left, OidcOptions right)
+    {
+        return JsonSerializer.Serialize(left, JsonDefaults.Options) == JsonSerializer.Serialize(right, JsonDefaults.Options);
     }
 }
