@@ -379,6 +379,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 // The fallback filename is only used when the item isn't in a mixed folder
                 var fileName = item.IsInMixedFolder ? ReadOnlySpan<char>.Empty : Path.GetFileName(item.Path.AsSpan());
 
+                item.TrySetProviderId(MetadataProvider.Tmdb, GetIdFromNameOrPath(justName, fileName, "tmdbid"));
+                item.TrySetProviderId(MetadataProvider.Tvdb, GetIdFromNameOrPath(justName, fileName, "tvdbid"));
+
                 string GetIdFromNameOrPath(ReadOnlySpan<char> name, ReadOnlySpan<char> fallbackName, string attribute)
                 {
                     var id = name.GetAttributeValue(attribute);
@@ -391,9 +394,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
                     return id;
                 }
-
-                item.TrySetProviderId(MetadataProvider.Tmdb, GetIdFromNameOrPath(justName, fileName, "tmdbid"));
-                item.TrySetProviderId(MetadataProvider.Tvdb, GetIdFromNameOrPath(justName, fileName, "tvdbid"));
 
                 if (!string.IsNullOrEmpty(item.Path))
                 {
