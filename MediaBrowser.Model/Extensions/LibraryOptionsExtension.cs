@@ -18,16 +18,11 @@ public static class LibraryOptionsExtension
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        var delimiterList = options.CustomTagDelimiters.Select<string, char?>(x =>
-        {
-            var isChar = char.TryParse(x, out var c);
-            if (isChar)
-            {
-                return c;
-            }
-
-            return null;
-        }).Where(x => x is not null).Select(x => x!.Value).ToList();
+        var delimiterList = options.CustomTagDelimiters
+            .Where(x => !string.IsNullOrEmpty(x))
+            .SelectMany(x => x.ToCharArray())
+            .Distinct()
+            .ToList();
         delimiterList.Add('\0');
         return delimiterList.ToArray();
     }
