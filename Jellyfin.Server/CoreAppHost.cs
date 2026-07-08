@@ -76,7 +76,6 @@ namespace Jellyfin.Server
                 Logger.LogWarning("Skia not available. Will fallback to {ImageEncoder}.", nameof(NullImageEncoder));
             }
 
-            serviceCollection.AddDataProtection();
             serviceCollection.AddEventServices();
             serviceCollection.AddSingleton<IBaseItemManager, BaseItemManager>();
             serviceCollection.AddSingleton<IEventManager, EventManager>();
@@ -85,7 +84,7 @@ namespace Jellyfin.Server
             serviceCollection.AddSingleton<IUserManager, UserManager>();
             serviceCollection.AddSingleton<IAuthenticationProvider, DefaultAuthenticationProvider>();
             serviceCollection.AddSingleton<IAuthenticationProvider, InvalidAuthProvider>();
-            serviceCollection.AddSingleton<IOidcConfigurationManager, OidcConfigurationManager>();
+            serviceCollection.AddSingleton<IOidcConfigurationManager>(_ => new OidcConfigurationManager(ApplicationPaths));
             serviceCollection.AddSingleton<IOidcAuthenticationManager, OidcAuthenticationManager>();
             serviceCollection.AddSingleton<IPasswordResetProvider, DefaultPasswordResetProvider>();
             serviceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();

@@ -1279,56 +1279,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
 
-            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.Security.OidcSession", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("AccessToken")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Issuer")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ProtectedIdTokenHint")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ProviderId")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Sid")
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Subject")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccessToken")
-                        .IsUnique();
-
-                    b.HasIndex("Sid");
-
-                    b.HasIndex("ProviderId", "Issuer", "Subject");
-
-                    b.ToTable("OidcSessions");
-
-                    b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
-                });
-
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.Security.DeviceOptions", b =>
                 {
                     b.Property<int>("Id")

@@ -1,5 +1,3 @@
-using System;
-
 namespace MediaBrowser.Model.Authentication;
 
 /// <summary>
@@ -11,9 +9,4 @@ public class OidcStartResult
     /// Gets or sets the browser start URL.
     /// </summary>
     public string Url { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets when the start URL state expires.
-    /// </summary>
-    public DateTime ExpiresAt { get; set; }
 }

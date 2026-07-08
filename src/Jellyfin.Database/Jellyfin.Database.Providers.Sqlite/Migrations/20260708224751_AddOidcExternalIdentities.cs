@@ -36,24 +36,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "OidcSessions",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    AccessToken = table.Column<string>(type: "TEXT", maxLength: 256, nullable: false),
-                    ProviderId = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
-                    Issuer = table.Column<string>(type: "TEXT", maxLength: 512, nullable: false),
-                    Subject = table.Column<string>(type: "TEXT", maxLength: 512, nullable: false),
-                    Sid = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    ProtectedIdTokenHint = table.Column<string>(type: "TEXT", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_OidcSessions", x => x.Id);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_OidcExternalIdentities_ProviderId_Issuer_Subject",
                 table: "OidcExternalIdentities",
@@ -65,22 +47,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                 table: "OidcExternalIdentities",
                 columns: new[] { "UserId", "ProviderId" },
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OidcSessions_AccessToken",
-                table: "OidcSessions",
-                column: "AccessToken",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OidcSessions_ProviderId_Issuer_Subject",
-                table: "OidcSessions",
-                columns: new[] { "ProviderId", "Issuer", "Subject" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OidcSessions_Sid",
-                table: "OidcSessions",
-                column: "Sid");
         }
 
         /// <inheritdoc />
@@ -88,9 +54,6 @@ namespace Jellyfin.Server.Implementations.Migrations
         {
             migrationBuilder.DropTable(
                 name: "OidcExternalIdentities");
-
-            migrationBuilder.DropTable(
-                name: "OidcSessions");
         }
     }
 }

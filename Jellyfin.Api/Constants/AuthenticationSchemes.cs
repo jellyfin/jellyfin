@@ -16,11 +16,6 @@ public static class AuthenticationSchemes
     public const string OidcExternalCookie = "OidcExternalCookie";
 
     /// <summary>
-    /// Authentication property key for the OpenID Connect id token.
-    /// </summary>
-    public const string OidcIdTokenProperty = "jellyfin:id_token";
-
-    /// <summary>
     /// Gets the OpenID Connect scheme name for a provider.
     /// </summary>
     /// <param name="providerId">The provider id.</param>
@@ -38,5 +33,15 @@ public static class AuthenticationSchemes
     public static string GetOidcExternalCookieScheme(string providerId)
     {
         return OidcExternalCookie + ":" + providerId;
+    }
+
+    /// <summary>
+    /// Gets the OpenID Connect callback path for a provider.
+    /// </summary>
+    /// <param name="providerId">The provider id.</param>
+    /// <returns>The OpenID Connect callback path.</returns>
+    public static string GetOidcCallbackPath(string providerId)
+    {
+        return "/auth/oidc/" + providerId + "/callback";
     }
 }

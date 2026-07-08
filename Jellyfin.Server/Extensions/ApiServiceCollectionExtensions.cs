@@ -29,15 +29,18 @@ using Jellyfin.Server.Implementations.Authentication;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -106,7 +109,7 @@ namespace Jellyfin.Server.Extensions
         /// <returns>The updated service collection.</returns>
         public static AuthenticationBuilder AddCustomAuthentication(this IServiceCollection serviceCollection)
         {
-            return serviceCollection.AddCustomAuthentication(null);
+            return serviceCollection.AddCustomAuthentication((IOidcConfigurationManager?)null);
         }
 
         /// <summary>
@@ -117,15 +120,25 @@ namespace Jellyfin.Server.Extensions
         /// <returns>The updated service collection.</returns>
         public static AuthenticationBuilder AddCustomAuthentication(this IServiceCollection serviceCollection, IApplicationPaths? applicationPaths)
         {
+            return serviceCollection.AddCustomAuthentication(applicationPaths is null ? null : new OidcConfigurationManager(applicationPaths));
+        }
+
+        /// <summary>
+        /// Adds custom legacy authentication and optional OpenID Connect providers to the service collection.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection.</param>
+        /// <param name="oidcConfigurationManager">The OpenID Connect configuration manager.</param>
+        /// <returns>The updated service collection.</returns>
+        public static AuthenticationBuilder AddCustomAuthentication(this IServiceCollection serviceCollection, IOidcConfigurationManager? oidcConfigurationManager)
+        {
             var builder = serviceCollection.AddAuthentication(AuthenticationSchemes.CustomAuthentication)
                 .AddScheme<AuthenticationSchemeOptions, CustomAuthenticationHandler>(AuthenticationSchemes.CustomAuthentication, null);
 
-            if (applicationPaths is null)
+            if (oidcConfigurationManager is null)
             {
                 return builder;
             }
 
-            var oidcConfigurationManager = new OidcConfigurationManager(applicationPaths);
             var providers = oidcConfigurationManager.GetOptions().Providers.Where(provider => provider.Enabled).ToList();
             if (providers.Count == 0)
             {
@@ -139,7 +152,7 @@ namespace Jellyfin.Server.Extensions
                     options.Cookie.Name = "jellyfin_oidc_external_" + provider.ProviderId;
                     options.Cookie.HttpOnly = true;
                     options.Cookie.SameSite = SameSiteMode.Lax;
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                    options.Cookie.SecurePolicy = provider.AllowInsecureAuthority ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
                     options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
                     options.SlidingExpiration = false;
                 });
@@ -150,8 +163,7 @@ namespace Jellyfin.Server.Extensions
                     options.Authority = provider.Authority;
                     options.ClientId = provider.ClientId;
                     options.ClientSecret = provider.ClientSecret;
-                    options.CallbackPath = $"/auth/oidc/{provider.ProviderId}/callback";
-                    options.SignedOutCallbackPath = $"/auth/oidc/{provider.ProviderId}/signed-out";
+                    options.CallbackPath = AuthenticationSchemes.GetOidcCallbackPath(provider.ProviderId);
                     options.ResponseType = OpenIdConnectResponseType.Code;
                     options.UsePkce = true;
                     options.RequireHttpsMetadata = !provider.AllowInsecureAuthority;
@@ -170,29 +182,39 @@ namespace Jellyfin.Server.Extensions
                         options.Scope.Add(scope);
                     }
 
+                    options.ClaimActions.MapUniqueJsonKey(provider.UsernameClaim, provider.UsernameClaim);
+                    options.ClaimActions.MapUniqueJsonKey(provider.EmailClaim, provider.EmailClaim);
+                    options.ClaimActions.MapJsonKey(provider.RoleClaim, provider.RoleClaim);
+
                     options.Events = new OpenIdConnectEvents
                     {
-                        OnTokenResponseReceived = context =>
-                        {
-                            var idToken = context.TokenEndpointResponse?.IdToken;
-                            if (!string.IsNullOrWhiteSpace(idToken) && context.Properties is not null)
-                            {
-                                context.Properties.Items[AuthenticationSchemes.OidcIdTokenProperty] = idToken;
-                            }
-
-                            return Task.CompletedTask;
-                        },
-                        OnRemoteFailure = context =>
-                        {
-                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                            context.HandleResponse();
-                            return Task.CompletedTask;
-                        }
+                        OnRemoteFailure = HandleOidcRemoteFailure
                     };
                 });
             }
 
             return builder;
+        }
+
+        private static Task HandleOidcRemoteFailure(RemoteFailureContext context)
+        {
+            var returnUrl = GetAuthenticationProperty(context.Properties, OidcConstants.ReturnUrlProperty);
+            if (!string.IsNullOrWhiteSpace(returnUrl) && OidcConstants.IsSafeRelativeUrl(returnUrl))
+            {
+                context.Response.Redirect(QueryHelpers.AddQueryString(returnUrl, OidcConstants.ErrorQueryParameter, OidcConstants.RemoteFailureError));
+            }
+            else
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            }
+
+            context.HandleResponse();
+            return Task.CompletedTask;
+        }
+
+        private static string? GetAuthenticationProperty(AuthenticationProperties? properties, string key)
+        {
+            return properties is not null && properties.Items.TryGetValue(key, out var value) ? value : null;
         }
 
         /// <summary>

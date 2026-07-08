@@ -1,15 +1,12 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace MediaBrowser.Model.Authentication;
 
 /// <summary>
-/// Request to exchange an OpenID Connect one-time code for a Jellyfin authentication result.
+/// Result containing an OpenID Connect one-time exchange code.
 /// </summary>
-public class OidcExchangeRequest
+public class OidcExchangeResult
 {
     /// <summary>
     /// Gets or sets the one-time exchange code.
     /// </summary>
-    [Required]
     public string Code { get; set; } = string.Empty;
 }

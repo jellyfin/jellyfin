@@ -39,16 +39,6 @@ public class OidcExternalIdentityRequest
     public IReadOnlyList<string> Groups { get; set; } = Array.Empty<string>();
 
     /// <summary>
-    /// Gets or sets the upstream session id.
-    /// </summary>
-    public string? SessionId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the id token hint for RP-initiated logout.
-    /// </summary>
-    public string? IdTokenHint { get; set; }
-
-    /// <summary>
     /// Gets or sets the client name.
     /// </summary>
     public string App { get; set; } = string.Empty;
