@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text.Json.Nodes;
+using System.Threading.Tasks;
 using Emby.Server.Implementations;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.AnonymousLanAccessPolicy;
@@ -23,16 +25,23 @@ using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
+using Jellyfin.Server.Implementations.Authentication;
 using MediaBrowser.Common.Api;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -97,8 +106,93 @@ namespace Jellyfin.Server.Extensions
         /// <returns>The updated service collection.</returns>
         public static AuthenticationBuilder AddCustomAuthentication(this IServiceCollection serviceCollection)
         {
-            return serviceCollection.AddAuthentication(AuthenticationSchemes.CustomAuthentication)
+            return serviceCollection.AddCustomAuthentication(null);
+        }
+
+        /// <summary>
+        /// Adds custom legacy authentication and optional OpenID Connect providers to the service collection.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection.</param>
+        /// <param name="applicationPaths">The application paths.</param>
+        /// <returns>The updated service collection.</returns>
+        public static AuthenticationBuilder AddCustomAuthentication(this IServiceCollection serviceCollection, IApplicationPaths? applicationPaths)
+        {
+            var builder = serviceCollection.AddAuthentication(AuthenticationSchemes.CustomAuthentication)
                 .AddScheme<AuthenticationSchemeOptions, CustomAuthenticationHandler>(AuthenticationSchemes.CustomAuthentication, null);
+
+            if (applicationPaths is null)
+            {
+                return builder;
+            }
+
+            var oidcConfigurationManager = new OidcConfigurationManager(applicationPaths);
+            var providers = oidcConfigurationManager.GetOptions().Providers.Where(provider => provider.Enabled).ToList();
+            if (providers.Count == 0)
+            {
+                return builder;
+            }
+
+            foreach (var provider in providers)
+            {
+                builder.AddCookie(AuthenticationSchemes.GetOidcExternalCookieScheme(provider.ProviderId), options =>
+                {
+                    options.Cookie.Name = "jellyfin_oidc_external_" + provider.ProviderId;
+                    options.Cookie.HttpOnly = true;
+                    options.Cookie.SameSite = SameSiteMode.Lax;
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                    options.SlidingExpiration = false;
+                });
+
+                builder.AddOpenIdConnect(AuthenticationSchemes.GetOidcScheme(provider.ProviderId), options =>
+                {
+                    options.SignInScheme = AuthenticationSchemes.GetOidcExternalCookieScheme(provider.ProviderId);
+                    options.Authority = provider.Authority;
+                    options.ClientId = provider.ClientId;
+                    options.ClientSecret = provider.ClientSecret;
+                    options.CallbackPath = $"/auth/oidc/{provider.ProviderId}/callback";
+                    options.SignedOutCallbackPath = $"/auth/oidc/{provider.ProviderId}/signed-out";
+                    options.ResponseType = OpenIdConnectResponseType.Code;
+                    options.UsePkce = true;
+                    options.RequireHttpsMetadata = !provider.AllowInsecureAuthority;
+                    options.SaveTokens = false;
+                    options.MapInboundClaims = false;
+                    options.GetClaimsFromUserInfoEndpoint = provider.GetClaimsFromUserInfoEndpoint;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        NameClaimType = provider.UsernameClaim,
+                        RoleClaimType = provider.RoleClaim
+                    };
+
+                    options.Scope.Clear();
+                    foreach (var scope in provider.Scopes)
+                    {
+                        options.Scope.Add(scope);
+                    }
+
+                    options.Events = new OpenIdConnectEvents
+                    {
+                        OnTokenResponseReceived = context =>
+                        {
+                            var idToken = context.TokenEndpointResponse?.IdToken;
+                            if (!string.IsNullOrWhiteSpace(idToken) && context.Properties is not null)
+                            {
+                                context.Properties.Items[AuthenticationSchemes.OidcIdTokenProperty] = idToken;
+                            }
+
+                            return Task.CompletedTask;
+                        },
+                        OnRemoteFailure = context =>
+                        {
+                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            context.HandleResponse();
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
+            }
+
+            return builder;
         }
 
         /// <summary>

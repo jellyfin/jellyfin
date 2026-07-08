@@ -27,6 +27,8 @@
     <PackageVersion Include="LrcParser" Version="2025.623.0" />
     <PackageVersion Include="MetaBrainz.MusicBrainz" Version="8.0.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="10.0.11" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.11" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="5.6.0" />

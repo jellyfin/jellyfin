@@ -17,6 +17,7 @@ using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
@@ -46,7 +47,7 @@ namespace Emby.Server.Implementations.Session
     /// <summary>
     /// Class SessionManager.
     /// </summary>
-    public sealed class SessionManager : ISessionManager, IAsyncDisposable
+    public sealed class SessionManager : ISessionManager, IExternalSessionCreator, IAsyncDisposable
     {
         private readonly IUserDataManager _userDataManager;
         private readonly IServerConfigurationManager _config;
@@ -60,6 +61,7 @@ namespace Emby.Server.Implementations.Session
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerApplicationHost _appHost;
         private readonly IDeviceManager _deviceManager;
+        private readonly INetworkManager _networkManager;
         private readonly CancellationTokenRegistration _shutdownCallback;
         private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections
             = new(StringComparer.OrdinalIgnoreCase);
@@ -87,6 +89,7 @@ namespace Emby.Server.Implementations.Session
         /// <param name="imageProcessor">Instance of <see cref="IImageProcessor"/> interface.</param>
         /// <param name="appHost">Instance of <see cref="IServerApplicationHost"/> interface.</param>
         /// <param name="deviceManager">Instance of <see cref="IDeviceManager"/> interface.</param>
+        /// <param name="networkManager">Instance of <see cref="INetworkManager"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="hostApplicationLifetime">Instance of <see cref="IHostApplicationLifetime"/> interface.</param>
         public SessionManager(
@@ -101,6 +104,7 @@ namespace Emby.Server.Implementations.Session
             IImageProcessor imageProcessor,
             IServerApplicationHost appHost,
             IDeviceManager deviceManager,
+            INetworkManager networkManager,
             IMediaSourceManager mediaSourceManager,
             IHostApplicationLifetime hostApplicationLifetime)
         {
@@ -115,6 +119,7 @@ namespace Emby.Server.Implementations.Session
             _imageProcessor = imageProcessor;
             _appHost = appHost;
             _deviceManager = deviceManager;
+            _networkManager = networkManager;
             _mediaSourceManager = mediaSourceManager;
             _shutdownCallback = hostApplicationLifetime.ApplicationStopping.Register(OnApplicationStopping);
 
@@ -1640,10 +1645,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            ArgumentException.ThrowIfNullOrEmpty(request.App);
-            ArgumentException.ThrowIfNullOrEmpty(request.DeviceId);
-            ArgumentException.ThrowIfNullOrEmpty(request.DeviceName);
-            ArgumentException.ThrowIfNullOrEmpty(request.AppVersion);
+            ValidateSessionRequest(request);
 
             User user = null;
             if (!request.UserId.IsEmpty())
@@ -1668,6 +1670,48 @@ namespace Emby.Server.Implementations.Session
                 throw new AuthenticationException("Invalid username or password entered.");
             }
 
+            return await CreateSessionForValidatedUser(user, request).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task<AuthenticationResult> CreateExternalSession(ExternalAuthenticationRequest request)
+        {
+            CheckDisposed();
+
+            ArgumentNullException.ThrowIfNull(request);
+
+            var sessionRequest = new AuthenticationRequest
+            {
+                UserId = request.UserId,
+                App = request.App,
+                AppVersion = request.AppVersion,
+                DeviceId = request.DeviceId,
+                DeviceName = request.DeviceName,
+                RemoteEndPoint = request.RemoteEndPoint
+            };
+
+            ValidateSessionRequest(sessionRequest);
+
+            var user = _userManager.GetUserById(request.UserId);
+            if (user is null)
+            {
+                await _eventManager.PublishAsync(new AuthenticationRequestEventArgs(sessionRequest)).ConfigureAwait(false);
+                throw new AuthenticationException("External authentication user was not found.");
+            }
+
+            EnsureExternalUserPolicyAllowsLogin(user, request.RemoteEndPoint);
+
+            var now = DateTime.UtcNow;
+            user.LastActivityDate = now;
+            user.LastLoginDate = now;
+            user.InvalidLoginAttemptCount = 0;
+            await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
+
+            return await CreateSessionForValidatedUser(user, sessionRequest).ConfigureAwait(false);
+        }
+
+        private async Task<AuthenticationResult> CreateSessionForValidatedUser(User user, AuthenticationRequest request)
+        {
             if (!string.IsNullOrEmpty(request.DeviceId)
                 && !_deviceManager.CanAccessDevice(user, request.DeviceId))
             {
@@ -1702,6 +1746,46 @@ namespace Emby.Server.Implementations.Session
 
             await _eventManager.PublishAsync(new AuthenticationResultEventArgs(returnResult)).ConfigureAwait(false);
             return returnResult;
+        }
+
+        private static void ValidateSessionRequest(AuthenticationRequest request)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(request.App);
+            ArgumentException.ThrowIfNullOrEmpty(request.DeviceId);
+            ArgumentException.ThrowIfNullOrEmpty(request.DeviceName);
+            ArgumentException.ThrowIfNullOrEmpty(request.AppVersion);
+        }
+
+        private void EnsureExternalUserPolicyAllowsLogin(User user, string remoteEndPoint)
+        {
+            if (user.HasPermission(PermissionKind.IsDisabled))
+            {
+                _logger.LogInformation(
+                    "External authentication request for {UserName} has been denied because this account is currently disabled (IP: {IP}).",
+                    user.Username,
+                    remoteEndPoint);
+                throw new SecurityException(
+                    $"The {user.Username} account is currently disabled. Please consult with your administrator.");
+            }
+
+            if (!user.HasPermission(PermissionKind.EnableRemoteAccess)
+                && !_networkManager.IsInLocalNetwork(remoteEndPoint))
+            {
+                _logger.LogInformation(
+                    "External authentication request for {UserName} forbidden: remote access disabled and user not in local network (IP: {IP}).",
+                    user.Username,
+                    remoteEndPoint);
+                throw new SecurityException("Forbidden.");
+            }
+
+            if (!user.IsParentalScheduleAllowed())
+            {
+                _logger.LogInformation(
+                    "External authentication request for {UserName} is not allowed at this time due parental restrictions (IP: {IP}).",
+                    user.Username,
+                    remoteEndPoint);
+                throw new SecurityException("User is not allowed access at this time.");
+            }
         }
 
         internal async Task<string> GetAuthorizationToken(User user, string deviceId, string app, string appVersion, string deviceName)
