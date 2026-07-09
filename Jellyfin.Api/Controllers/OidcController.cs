@@ -673,7 +673,7 @@ public class OidcController : BaseJellyfinApiController
         }
     }
 
-    private void ValidateStart(
+    private static void ValidateStart(
         string app,
         string appVersion,
         string deviceId,
