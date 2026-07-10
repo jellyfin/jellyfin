@@ -53,11 +53,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             ["7"] = "8"
         };
 
-        private static readonly Regex _assStyleLineRegex = new(@"^Style:.*$", RegexOptions.Multiline | RegexOptions.Compiled);
+        private static readonly Regex _assStyleLineRegex = new(@"^Style:.*$", RegexOptions.Multiline | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
-        private static readonly Regex _assOverrideAlignmentRegex = new(@"\\an([147])(?=[}\\])", RegexOptions.Compiled);
+        private static readonly Regex _assOverrideAlignmentRegex = new(@"\\an([147])(?=[}\\])", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
-        private static readonly Regex _assOverrideFontSizeRegex = new(@"\\fs(\d+)", RegexOptions.Compiled);
+        private static readonly Regex _assOverrideFontSizeRegex = new(@"\\fs(\d+)", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
         /// <summary>
         /// The _semaphoreLocks.
@@ -977,10 +977,25 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <param name="file">The file.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <c>System.Threading.CancellationToken.None</c>.</param>
         /// <returns>Task.</returns>
-        private async Task SetAssFont(string file, CancellationToken cancellationToken = default)
+        private Task SetAssFont(string file, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("Setting ass font within {File}", file);
 
+            return RewriteTextFileIfChangedAsync(
+                file,
+                text => text.Replace(",Arial,", ",Arial Unicode MS,", StringComparison.Ordinal),
+                cancellationToken);
+        }
+
+        /// <summary>
+        /// Reads a text file, applies <paramref name="transform"/> to its contents, and writes the
+        /// result back to disk (preserving the file's detected encoding) only if it actually changed.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="transform">The transformation to apply to the file's contents.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        private static async Task RewriteTextFileIfChangedAsync(string file, Func<string, string> transform, CancellationToken cancellationToken)
+        {
             string text;
             Encoding encoding;
 
@@ -992,7 +1007,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 text = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            var newText = text.Replace(",Arial,", ",Arial Unicode MS,", StringComparison.Ordinal);
+            var newText = transform(text);
 
             if (!string.Equals(text, newText, StringComparison.Ordinal))
             {
@@ -1029,35 +1044,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <param name="file">The extracted .ass file path.</param>
         /// <param name="videoHeight">The coded height of the video the track was authored against.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-        private async Task FixMovTextStyle(string file, int videoHeight, CancellationToken cancellationToken = default)
+        private Task FixMovTextStyle(string file, int videoHeight, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("Normalizing mov_text style within {File}", file);
 
-            string text;
-            Encoding encoding;
-
-            using (var fileStream = AsyncFile.OpenRead(file))
-            using (var reader = new StreamReader(fileStream, true))
-            {
-                encoding = reader.CurrentEncoding;
-
-                text = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
-            }
-
-            var newText = NormalizeMovTextAss(text, videoHeight);
-
-            if (!string.Equals(text, newText, StringComparison.Ordinal))
-            {
-                var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
-                await using (fileStream.ConfigureAwait(false))
-                {
-                    var writer = new StreamWriter(fileStream, encoding);
-                    await using (writer.ConfigureAwait(false))
-                    {
-                        await writer.WriteAsync(newText.AsMemory(), cancellationToken).ConfigureAwait(false);
-                    }
-                }
-            }
+            return RewriteTextFileIfChangedAsync(
+                file,
+                text => NormalizeMovTextAss(text, videoHeight),
+                cancellationToken);
         }
 
         /// <summary>
