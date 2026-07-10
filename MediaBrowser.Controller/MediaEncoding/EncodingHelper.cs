@@ -3244,6 +3244,24 @@ namespace MediaBrowser.Controller.MediaEncoding
             return returnFirstIfNoIndex ? streams.FirstOrDefault() : null;
         }
 
+        private static (int? Width, int? Height) GetVisibleVideoSize(MediaStream videoStream)
+        {
+            if (videoStream is null)
+            {
+                return (null, null);
+            }
+
+            var width = videoStream.Width - (videoStream.CropLeft ?? 0) - (videoStream.CropRight ?? 0);
+            var height = videoStream.Height - (videoStream.CropTop ?? 0) - (videoStream.CropBottom ?? 0);
+
+            if (!width.HasValue || !height.HasValue || width.Value <= 0 || height.Value <= 0)
+            {
+                return (videoStream.Width, videoStream.Height);
+            }
+
+            return (width, height);
+        }
+
         public static (int? Width, int? Height) GetFixedOutputSize(
             int? videoWidth,
             int? videoHeight,
@@ -3376,6 +3394,16 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return string.Empty;
+        }
+
+        private static string GetQsvVppCropArgs(MediaStream videoStream)
+        {
+            var cropLeft = videoStream.CropLeft ?? 0;
+            var cropTop = videoStream.CropTop ?? 0;
+            var cropRight = videoStream.CropRight ?? 0;
+            var cropBottom = videoStream.CropBottom ?? 0;
+
+            return string.Format(CultureInfo.InvariantCulture, ":cx={0}:cy={1}:cw=iw-{0}-{2}:ch=ih-{1}-{3}", cropLeft, cropTop, cropRight, cropBottom);
         }
 
         public static string GetGraphicalSubPreProcessFilters(
@@ -3855,8 +3883,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             EncodingOptions options,
             string vidEncoder)
         {
-            var inW = state.VideoStream?.Width;
-            var inH = state.VideoStream?.Height;
+            var (inW, inH) = GetVisibleVideoSize(state.VideoStream);
             var reqW = state.BaseRequest.Width;
             var reqH = state.BaseRequest.Height;
             var reqMaxW = state.BaseRequest.MaxWidth;
@@ -4004,8 +4031,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             string vidDecoder,
             string vidEncoder)
         {
-            var inW = state.VideoStream?.Width;
-            var inH = state.VideoStream?.Height;
+            var (inW, inH) = GetVisibleVideoSize(state.VideoStream);
             var reqW = state.BaseRequest.Width;
             var reqH = state.BaseRequest.Height;
             var reqMaxW = state.BaseRequest.MaxWidth;
@@ -4214,8 +4240,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             string vidDecoder,
             string vidEncoder)
         {
-            var inW = state.VideoStream?.Width;
-            var inH = state.VideoStream?.Height;
+            var (inW, inH) = GetVisibleVideoSize(state.VideoStream);
             var reqW = state.BaseRequest.Width;
             var reqH = state.BaseRequest.Height;
             var reqMaxW = state.BaseRequest.MaxWidth;
@@ -4458,8 +4483,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             string vidDecoder,
             string vidEncoder)
         {
-            var inW = state.VideoStream?.Width;
-            var inH = state.VideoStream?.Height;
+            var (inW, inH) = GetVisibleVideoSize(state.VideoStream);
             var reqW = state.BaseRequest.Width;
             var reqH = state.BaseRequest.Height;
             var reqMaxW = state.BaseRequest.MaxWidth;
@@ -4750,8 +4774,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             string vidDecoder,
             string vidEncoder)
         {
-            var inW = state.VideoStream?.Width;
-            var inH = state.VideoStream?.Height;
+            var (inW, inH) = GetVisibleVideoSize(state.VideoStream);
             var reqW = state.BaseRequest.Width;
             var reqH = state.BaseRequest.Height;
             var reqMaxW = state.BaseRequest.MaxWidth;
@@ -4787,6 +4810,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             var swapWAndH = Math.Abs(rotation) == 90 && (isSwDecoder || ((isVaapiDecoder || isQsvDecoder) && doVppTranspose));
             var swpInW = swapWAndH ? inH : inW;
             var swpInH = swapWAndH ? inW : inH;
+
+            var hasAsymmetricCrop = ((state.VideoStream?.CropLeft ?? 0) > 0
+                || (state.VideoStream?.CropTop ?? 0) > 0
+                || (state.VideoStream?.CropRight ?? 0) > 0
+                || (state.VideoStream?.CropBottom ?? 0) > 0) && !doVppTranspose;
+            var needsQsvCropHop = isVaapiDecoder && isQsvEncoder && hasAsymmetricCrop;
+            var framesInQsv = isQsvDecoder || needsQsvCropHop;
 
             /* Make main filters for video stream */
             var mainFilters = new List<string>();
@@ -4846,10 +4876,18 @@ namespace MediaBrowser.Controller.MediaEncoding
                     mainFilters.Add($"transpose_vaapi=dir={transposeDir}");
                 }
 
+                // hop the vaapi surface to qsv early so vpp_qsv (the only filter that can crop) can run
+                if (needsQsvCropHop)
+                {
+                    mainFilters.Add("hwmap=derive_device=qsv");
+                    mainFilters.Add("format=qsv");
+                }
+
                 var outFormat = doTonemap ? (((isQsvDecoder && doVppTranspose) || isRext) ? "p010" : string.Empty) : "nv12";
                 var swapOutputWandH = isQsvDecoder && doVppTranspose && swapWAndH;
-                var hwScalePrefix = isQsvDecoder ? "vpp" : "scale";
-                var hwScaleFilter = GetHwScaleFilter(hwScalePrefix, hwFilterSuffix, outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                var hwScalePrefix = framesInQsv ? "vpp" : "scale";
+                var hwScaleSuffix = framesInQsv ? "qsv" : hwFilterSuffix;
+                var hwScaleFilter = GetHwScaleFilter(hwScalePrefix, hwScaleSuffix, outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
                 if (!string.IsNullOrEmpty(hwScaleFilter) && isQsvDecoder && doVppTranspose)
                 {
@@ -4862,8 +4900,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                     hwScaleFilter += isQsvDecoder ? (doVppScaleModeHq ? ":scale_mode=hq" : string.Empty) : ":mode=hq";
                 }
 
+                // fix up the conformance-window crop vpp_qsv can't infer on its own
+                if (!string.IsNullOrEmpty(hwScaleFilter) && framesInQsv && hasAsymmetricCrop)
+                {
+                    hwScaleFilter += GetQsvVppCropArgs(state.VideoStream);
+                }
+
                 // allocate extra pool sizes for vaapi vpp scale
-                if (!string.IsNullOrEmpty(hwScaleFilter) && isVaapiDecoder)
+                if (!string.IsNullOrEmpty(hwScaleFilter) && isVaapiDecoder && !needsQsvCropHop)
                 {
                     hwScaleFilter += ":extra_hw_frames=24";
                 }
@@ -4875,7 +4919,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // vaapi vpp tonemap
             if (doVaVppTonemap && isHwDecoder)
             {
-                if (isQsvDecoder)
+                if (framesInQsv)
                 {
                     // map from qsv to vaapi.
                     mainFilters.Add("hwmap=derive_device=vaapi");
@@ -4885,7 +4929,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var tonemapFilter = GetHwTonemapFilter(options, "vaapi", "nv12", isMjpegEncoder);
                 mainFilters.Add(tonemapFilter);
 
-                if (isQsvDecoder)
+                if (framesInQsv)
                 {
                     // map from vaapi to qsv.
                     mainFilters.Add("hwmap=derive_device=qsv");
@@ -4946,7 +4990,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     mainFilters.Add("hwmap=derive_device=qsv:mode=write:reverse=1:extra_hw_frames=16");
                     mainFilters.Add("format=qsv");
                 }
-                else if (isVaapiDecoder)
+                else if (isVaapiDecoder && !needsQsvCropHop)
                 {
                     mainFilters.Add("hwmap=derive_device=qsv");
                     mainFilters.Add("format=qsv");
@@ -5081,8 +5125,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             string vidDecoder,
             string vidEncoder)
         {
-            var inW = state.VideoStream?.Width;
-            var inH = state.VideoStream?.Height;
+            var (inW, inH) = GetVisibleVideoSize(state.VideoStream);
             var reqW = state.BaseRequest.Width;
             var reqH = state.BaseRequest.Height;
             var reqMaxW = state.BaseRequest.MaxWidth;
@@ -5171,6 +5214,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 var outFormat = doTonemap ? (isRext ? "p010" : string.Empty) : "nv12";
+
+                // scale_vaapi has no crop option; asymmetric-crop streams only get corrected geometry
+                // in the QSV pipeline (GetIntelQsvVaapiVidFiltersPrefered) for now.
                 var hwScaleFilter = GetHwScaleFilter("scale", "vaapi", outFormat, false, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
                 if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder)
@@ -5317,8 +5363,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             string vidDecoder,
             string vidEncoder)
         {
-            var inW = state.VideoStream?.Width;
-            var inH = state.VideoStream?.Height;
+            var (inW, inH) = GetVisibleVideoSize(state.VideoStream);
             var reqW = state.BaseRequest.Width;
             var reqH = state.BaseRequest.Height;
             var reqMaxW = state.BaseRequest.MaxWidth;
@@ -5552,8 +5597,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             string vidDecoder,
             string vidEncoder)
         {
-            var inW = state.VideoStream?.Width;
-            var inH = state.VideoStream?.Height;
+            var (inW, inH) = GetVisibleVideoSize(state.VideoStream);
             var reqW = state.BaseRequest.Width;
             var reqH = state.BaseRequest.Height;
             var reqMaxW = state.BaseRequest.MaxWidth;
@@ -5792,8 +5836,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isVtDecoder = vidDecoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase);
             var isMjpegEncoder = vidEncoder.Contains("mjpeg", StringComparison.OrdinalIgnoreCase);
 
-            var inW = state.VideoStream?.Width;
-            var inH = state.VideoStream?.Height;
+            var (inW, inH) = GetVisibleVideoSize(state.VideoStream);
             var reqW = state.BaseRequest.Width;
             var reqH = state.BaseRequest.Height;
             var reqMaxW = state.BaseRequest.MaxWidth;
@@ -5981,8 +6024,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             string vidDecoder,
             string vidEncoder)
         {
-            var inW = state.VideoStream?.Width;
-            var inH = state.VideoStream?.Height;
+            var (inW, inH) = GetVisibleVideoSize(state.VideoStream);
             var reqW = state.BaseRequest.Width;
             var reqH = state.BaseRequest.Height;
             var reqMaxW = state.BaseRequest.MaxWidth;
@@ -7097,8 +7139,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return null;
             }
 
-            var inW = state.VideoStream?.Width;
-            var inH = state.VideoStream?.Height;
+            var (inW, inH) = GetVisibleVideoSize(state.VideoStream);
             var reqW = state.BaseRequest.Width;
             var reqH = state.BaseRequest.Height;
             var reqMaxW = state.BaseRequest.MaxWidth;

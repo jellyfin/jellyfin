@@ -164,6 +164,10 @@ public class MediaStreamRepository : IMediaStreamRepository
         dto.IsHearingImpaired = entity.IsHearingImpaired.GetValueOrDefault();
         dto.Rotation = entity.Rotation;
         dto.Hdr10PlusPresentFlag = entity.Hdr10PlusPresentFlag;
+        dto.CropTop = entity.CropTop;
+        dto.CropBottom = entity.CropBottom;
+        dto.CropLeft = entity.CropLeft;
+        dto.CropRight = entity.CropRight;
 
         if (dto.Type is MediaStreamType.Audio or MediaStreamType.Subtitle)
         {
@@ -245,6 +249,10 @@ public class MediaStreamRepository : IMediaStreamRepository
             IsHearingImpaired = dto.IsHearingImpaired,
             Rotation = dto.Rotation,
             Hdr10PlusPresentFlag = dto.Hdr10PlusPresentFlag,
+            CropTop = dto.CropTop,
+            CropBottom = dto.CropBottom,
+            CropLeft = dto.CropLeft,
+            CropRight = dto.CropRight,
         };
         return entity;
     }

@@ -701,6 +701,14 @@ namespace MediaBrowser.Model.Entities
         /// <value><c>true</c> if this instance is anamorphic; otherwise, <c>false</c>.</value>
         public bool? IsAnamorphic { get; set; }
 
+        public int? CropTop { get; set; }
+
+        public int? CropBottom { get; set; }
+
+        public int? CropLeft { get; set; }
+
+        public int? CropRight { get; set; }
+
         internal string GetResolutionText()
         {
             if (!Width.HasValue || !Height.HasValue)

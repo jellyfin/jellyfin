@@ -76,5 +76,21 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <value>The Rotation.</value>
         [JsonPropertyName("rotation")]
         public int? Rotation { get; set; }
+
+        /// <summary>Gets or sets the CropTop.</summary>
+        [JsonPropertyName("crop_top")]
+        public int? CropTop { get; set; }
+
+        /// <summary>Gets or sets the CropBottom.</summary>
+        [JsonPropertyName("crop_bottom")]
+        public int? CropBottom { get; set; }
+
+        /// <summary>Gets or sets the CropLeft.</summary>
+        [JsonPropertyName("crop_left")]
+        public int? CropLeft { get; set; }
+
+        /// <summary>Gets or sets the CropRight.</summary>
+        [JsonPropertyName("crop_right")]
+        public int? CropRight { get; set; }
     }
 }

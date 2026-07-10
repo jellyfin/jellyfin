@@ -63,6 +63,13 @@
                 {
                     "side_data_type": "Display Matrix",
                     "rotation": -180
+                },
+                {
+                    "side_data_type": "Frame Cropping",
+                    "crop_top": 2,
+                    "crop_bottom": 4,
+                    "crop_left": 6,
+                    "crop_right": 8
                 }
             ]
         },
