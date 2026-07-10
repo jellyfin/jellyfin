@@ -851,7 +851,7 @@ public class NetworkManager : INetworkManager, IDisposable
             bool isExternal = !IsInLocalNetwork(source);
             _logger.LogDebug("Trying to get bind address for source {Source} - External: {IsExternal}", source, isExternal);
 
-            if (!skipOverrides && MatchesPublishedServerUrl(source, isExternal, out result))
+            if (!skipOverrides && MatchesPublishedServerUrl(source, isExternal, out result, out port))
             {
                 return result;
             }
@@ -1017,11 +1017,12 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <param name="source">IP source address to use.</param>
     /// <param name="isInExternalSubnet">True if the source is in an external subnet.</param>
     /// <param name="bindPreference">The published server URL that matches the source address.</param>
+    /// <param name="port">The explicit port parsed from the override, if any.</param>
     /// <returns><c>true</c> if a match is found, <c>false</c> otherwise.</returns>
-    private bool MatchesPublishedServerUrl(IPAddress source, bool isInExternalSubnet, out string bindPreference)
+    private bool MatchesPublishedServerUrl(IPAddress source, bool isInExternalSubnet, out string bindPreference, out int? port)
     {
         bindPreference = string.Empty;
-        int? port = null;
+        port = null;
 
         // Only consider subnets including the source IP, preferring specific overrides
         List<PublishedServerUriOverride> validPublishedServerUrls;
@@ -1063,22 +1064,40 @@ public class NetworkManager : INetworkManager, IDisposable
             return false;
         }
 
-        // Handle override specifying port
-        var parts = bindPreference.Split(':');
-        if (parts.Length > 1)
+        // Handle override specifying an explicit port.
+        (bindPreference, port) = ParseHostAndPort(bindPreference);
+
+        if (port.HasValue)
         {
-            if (int.TryParse(parts[1], out int p))
-            {
-                bindPreference = parts[0];
-                port = p;
-                _logger.LogDebug("{Source}: Matching bind address override found: {Address}:{Port}", source, bindPreference, port);
-                return true;
-            }
+            _logger.LogDebug("{Source}: Matching bind address override found: {Address}:{Port}", source, bindPreference, port);
+        }
+        else
+        {
+            _logger.LogDebug("{Source}: Matching bind address override found: {Address}", source, bindPreference);
         }
 
-        _logger.LogDebug("{Source}: Matching bind address override found: {Address}", source, bindPreference);
-
         return true;
+    }
+
+    /// <summary>
+    /// Splits a published server URL override into its host and explicit port, if any.
+    /// Full URLs (containing "://") are returned whole, with any port left embedded.
+    /// </summary>
+    /// <param name="value">The override value, e.g. "host:port", "[::1]:port", or a full URL.</param>
+    /// <returns>The parsed host (or the original value if not split) and the explicit port, if any.</returns>
+    private static (string Host, int? Port) ParseHostAndPort(string value)
+    {
+        if (value.Contains("://", StringComparison.Ordinal))
+        {
+            return (value, null);
+        }
+
+        if (Uri.TryCreate("any://" + value, UriKind.Absolute, out var parsed) && parsed.Port != -1)
+        {
+            return (parsed.DnsSafeHost, parsed.Port);
+        }
+
+        return (value, null);
     }
 
     /// <summary>

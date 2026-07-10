@@ -493,5 +493,39 @@ namespace Jellyfin.Networking.Tests
 
             Assert.Equal(result, interfaceToUse);
         }
+
+        [Theory]
+        // Internal override with an explicit port.
+        [InlineData("192.168.1.1", "192.168.1.0/24=internal.jellyfin:8097", "internal.jellyfin", 8097)]
+        // External/all override with an explicit port.
+        [InlineData("8.8.8.8", "all=external.jellyfin:8097", "external.jellyfin", 8097)]
+        // Bracketed IPv6 override with an explicit port.
+        [InlineData("8.8.8.8", "all=[fd00:1234::1]:8097", "fd00:1234::1", 8097)]
+        // Bare IPv6 override without a port - must remain whole, not mangled by the extra colons.
+        [InlineData("8.8.8.8", "all=fd00:1234::1", "fd00:1234::1", null)]
+        // Full HTTPS URL override with an explicit port - the URL stays whole, port stays embedded.
+        [InlineData("8.8.8.8", "all=https://secure.jellyfin.org:8920", "https://secure.jellyfin.org:8920", null)]
+        // Hostname beginning with "http" is a hostname, not a URL scheme.
+        [InlineData("8.8.8.8", "all=http-proxy.lan:8097", "http-proxy.lan", 8097)]
+        public void GetBindAddress_PublishedServerOverride_ParsesHostAndPort(string source, string publishedServers, string expectedHost, int? expectedPort)
+        {
+            var conf = new NetworkConfiguration
+            {
+                LocalNetworkSubnets = new[] { "192.168.1.0/24" },
+                LocalNetworkAddresses = new[] { "eth16", "eth11" },
+                EnableIPv4 = true,
+                PublishedServerUriBySubnet = new[] { publishedServers }
+            };
+
+            NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11";
+            var startupConf = new Mock<IConfiguration>();
+            using var nm = new NetworkManager(NetworkParseTests.GetMockConfig(conf), startupConf.Object, new NullLogger<NetworkManager>());
+            NetworkManager.MockNetworkSettings = string.Empty;
+
+            var intf = nm.GetBindAddress(IPAddress.Parse(source), out int? port);
+
+            Assert.Equal(expectedHost, intf);
+            Assert.Equal(expectedPort, port);
+        }
     }
 }
