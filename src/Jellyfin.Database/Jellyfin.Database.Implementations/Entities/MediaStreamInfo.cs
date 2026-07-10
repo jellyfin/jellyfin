@@ -103,4 +103,12 @@ public class MediaStreamInfo
     public string? KeyFrames { get; set; }
 
     public bool? Hdr10PlusPresentFlag { get; set; }
+
+    public int? CropTop { get; set; }
+
+    public int? CropBottom { get; set; }
+
+    public int? CropLeft { get; set; }
+
+    public int? CropRight { get; set; }
 }

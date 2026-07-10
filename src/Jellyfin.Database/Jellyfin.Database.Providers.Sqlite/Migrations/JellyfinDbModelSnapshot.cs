@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
@@ -912,6 +912,18 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.Property<string>("Comment")
                         .HasColumnType("TEXT");
+
+                    b.Property<int?>("CropBottom")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("CropLeft")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("CropRight")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("CropTop")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("DvBlSignalCompatibilityId")
                         .HasColumnType("INTEGER");
