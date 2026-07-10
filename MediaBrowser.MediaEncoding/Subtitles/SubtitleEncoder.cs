@@ -1080,7 +1080,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             // black-outlined look most reference renderers (including VLC) give tx3g text.
             // Scale it with the corrected font size using a standard ~6% stroke-to-em ratio.
             var targetOutline = Math.Max(1, (int)Math.Round(targetFontSize * 0.06, MidpointRounding.AwayFromZero));
+
             var originalFontSize = 0;
+            var styleMatch = _assStyleLineRegex.Match(assText);
+            if (styleMatch.Success)
+            {
+                var originalFields = styleMatch.Value.Split(',');
+                if (originalFields.Length >= 23)
+                {
+                    int.TryParse(originalFields[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out originalFontSize);
+                }
+            }
 
             var newText = _assStyleLineRegex.Replace(assText, m =>
             {
@@ -1088,11 +1098,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 if (fields.Length < 23)
                 {
                     return m.Value;
-                }
-
-                if (int.TryParse(fields[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out var fontSize))
-                {
-                    originalFontSize = fontSize;
                 }
 
                 fields[2] = targetFontSize.ToString(CultureInfo.InvariantCulture);
