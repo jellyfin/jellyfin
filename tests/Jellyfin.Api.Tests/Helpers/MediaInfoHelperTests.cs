@@ -230,6 +230,7 @@ namespace Jellyfin.Api.Tests.Helpers
         [InlineData(MediaProtocol.Http, "http://192.168.1.50:5004/live/channel1.ts")]
         [InlineData(MediaProtocol.File, "/media/livetv/buffer/abc/stream.ts")]
         [InlineData(MediaProtocol.Http, "http://172.19.0.3:8096/Videos/abc/stream.ts")]
+        [InlineData(MediaProtocol.Http, "http://172.19.0.3:8096/library/movie.strm")]
         public async Task OpenMediaSource_NotAPublishableLiveStreamFilesPath_PathUnchanged(MediaProtocol protocol, string path)
         {
             var mediaSource = new MediaSourceInfo
@@ -281,6 +282,136 @@ namespace Jellyfin.Api.Tests.Helpers
             var response = await helper.OpenMediaSource(new DefaultHttpContext(), new LiveStreamRequest()).ConfigureAwait(true);
 
             Assert.Equal(LocalPath, response.MediaSource.Path);
+        }
+
+        [Fact]
+        public async Task OpenMediaSource_ExplicitPortOverrideWithBaseUrl_RewritesToOverrideHostAndPort()
+        {
+            // Mirrors NetworkManager.GetBindAddress resolving a "internal=myhost:8097" override: the smart API
+            // URL carries an explicit non-default port alongside the configured BaseUrl.
+            var mediaSource = new MediaSourceInfo
+            {
+                Id = "abc",
+                Protocol = MediaProtocol.Http,
+                Path = "http://172.19.0.3:8096/jellyfin" + LiveStreamFilesPath,
+                LiveStreamId = "livestream-1"
+            };
+
+            var helper = CreateOpenMediaSourceHelper(mediaSource, "http://myhost:8097/jellyfin", "/jellyfin");
+
+            var response = await helper.OpenMediaSource(new DefaultHttpContext(), new LiveStreamRequest()).ConfigureAwait(true);
+
+            Assert.Equal("http://myhost:8097/jellyfin" + LiveStreamFilesPath, response.MediaSource.Path);
+        }
+
+        [Fact]
+        public async Task GetPlaybackInfo_TwoRequestsForSharedLiveStream_ReceiveIndependentSmartApiBases()
+        {
+            const string LocalPath = "http://172.19.0.3:8096" + LiveStreamFilesPath;
+
+            // Both requests resolve the same live stream; the manager hands back its own shared instance each time.
+            var sharedLiveSource = new MediaSourceInfo
+            {
+                Id = "abc",
+                Protocol = MediaProtocol.Http,
+                Path = LocalPath,
+                LiveStreamId = "livestream-1"
+            };
+
+            var mediaSourceManager = new Mock<IMediaSourceManager>();
+            mediaSourceManager
+                .Setup(x => x.GetLiveStream(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(sharedLiveSource);
+
+            var requestA = new DefaultHttpContext().Request;
+            var requestB = new DefaultHttpContext().Request;
+
+            var appHost = new Mock<IServerApplicationHost>();
+            appHost.Setup(x => x.GetSmartApiUrl(requestA)).Returns("https://a.example.com");
+            appHost.Setup(x => x.GetSmartApiUrl(requestB)).Returns("https://b.example.com");
+
+            var helper = CreateHelper(mediaSourceManager: mediaSourceManager.Object, appHost: appHost.Object);
+
+            var resultA = await helper.GetPlaybackInfo(new Movie(), null, requestA, liveStreamId: "live-1").ConfigureAwait(true);
+            var resultB = await helper.GetPlaybackInfo(new Movie(), null, requestB, liveStreamId: "live-1").ConfigureAwait(true);
+
+            Assert.Equal("https://a.example.com" + LiveStreamFilesPath, resultA.MediaSources[0].Path);
+            Assert.Equal("https://b.example.com" + LiveStreamFilesPath, resultB.MediaSources[0].Path);
+
+            // Neither request's rewrite may leak into the other's response or into the shared instance.
+            Assert.NotEqual(resultA.MediaSources[0].Path, resultB.MediaSources[0].Path);
+            Assert.Equal(LocalPath, sharedLiveSource.Path);
+        }
+
+        [Fact]
+        public async Task GetPlaybackInfo_AutoOpenLiveStreamFlow_MergedOpenedSourceHasRewrittenPath()
+        {
+            // Reproduces MediaInfoController.GetPostedPlaybackInfo's AutoOpenLiveStream branch (~line 220-246):
+            // it picks the RequiresOpening source out of GetPlaybackInfo's result, calls OpenMediaSource, then
+            // merges by replacing result.MediaSources with the opened source. Building a full controller fixture
+            // is impractical (it pulls in many unrelated dependencies), so this test drives the same two helper
+            // calls the controller makes and asserts the merged source is the rewritten one.
+            var itemId = Guid.NewGuid();
+            var sourceId = itemId.ToString("N", CultureInfo.InvariantCulture);
+
+            // The pre-open placeholder source carries a different local path than the one OpenMediaSource
+            // eventually returns, so the final assertion can prove the merge picked up the freshly opened
+            // source rather than the stale placeholder.
+            var requiresOpeningSource = new MediaSourceInfo
+            {
+                Id = sourceId,
+                Protocol = MediaProtocol.Http,
+                Path = "http://172.19.0.3:8096/LiveTv/LiveStreamFiles/placeholder/stream.ts",
+                RequiresOpening = true,
+                LiveStreamId = string.Empty
+            };
+
+            var openedSource = new MediaSourceInfo
+            {
+                Id = sourceId,
+                Protocol = MediaProtocol.Http,
+                Path = "http://172.19.0.3:8096" + LiveStreamFilesPath,
+                LiveStreamId = "livestream-1"
+            };
+
+            var mediaSourceManager = new Mock<IMediaSourceManager>();
+            mediaSourceManager
+                .Setup(x => x.GetPlaybackMediaSources(It.IsAny<BaseItem>(), It.IsAny<User>(), true, true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new[] { requiresOpeningSource });
+            mediaSourceManager
+                .Setup(x => x.OpenLiveStream(It.IsAny<LiveStreamRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(() =>
+                {
+                    // MediaSourceManager.OpenLiveStream JSON-clones its internal MediaSourceInfo before returning
+                    // it (see Emby.Server.Implementations/Library/MediaSourceManager.cs:693-706); mirror that so
+                    // the in-place rewrite below can't be observed on openedSource itself.
+                    var clone = JsonSerializer.Deserialize<MediaSourceInfo>(JsonSerializer.SerializeToUtf8Bytes(openedSource))!;
+                    return new LiveStreamResponse(clone);
+                });
+
+            var appHost = new Mock<IServerApplicationHost>();
+            appHost.Setup(x => x.GetSmartApiUrl(It.IsAny<HttpRequest>())).Returns("https://media.example.com");
+
+            var helper = CreateHelper(mediaSourceManager: mediaSourceManager.Object, appHost: appHost.Object);
+
+            var info = await helper.GetPlaybackInfo(new Movie(), null, Mock.Of<HttpRequest>()).ConfigureAwait(true);
+
+            var mediaSource = info.MediaSources[0];
+            Assert.True(mediaSource.RequiresOpening);
+            var preOpenPath = mediaSource.Path;
+
+            var openStreamResult = await helper.OpenMediaSource(
+                new DefaultHttpContext(),
+                new LiveStreamRequest { OpenToken = mediaSource.OpenToken, ItemId = itemId }).ConfigureAwait(true);
+
+            // MediaInfoController.cs:245 - info.MediaSources = new[] { openStreamResult.MediaSource };
+            info.MediaSources = new[] { openStreamResult.MediaSource };
+
+            Assert.Equal("https://media.example.com" + LiveStreamFilesPath, info.MediaSources[0].Path);
+            Assert.NotEqual(preOpenPath, info.MediaSources[0].Path);
+
+            // The pristine OpenLiveStream response object must remain unrewritten; only the merged clone changed.
+            Assert.Equal("http://172.19.0.3:8096" + LiveStreamFilesPath, openedSource.Path);
         }
 
         [Theory]
