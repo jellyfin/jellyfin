@@ -99,29 +99,7 @@ public class MediaInfoHelper
     {
         var result = new PlaybackInfoResponse();
 
-        MediaSourceInfo[] mediaSources;
-        if (string.IsNullOrWhiteSpace(liveStreamId))
-        {
-            // TODO (moved from MediaBrowser.Api) handle supportedLiveMediaTypes?
-            var mediaSourcesList = await _mediaSourceManager.GetPlaybackMediaSources(item, user, true, true, CancellationToken.None).ConfigureAwait(false);
-
-            if (string.IsNullOrWhiteSpace(mediaSourceId))
-            {
-                mediaSources = mediaSourcesList.ToArray();
-            }
-            else
-            {
-                mediaSources = mediaSourcesList
-                    .Where(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
-                    .ToArray();
-            }
-        }
-        else
-        {
-            var mediaSource = await _mediaSourceManager.GetLiveStream(liveStreamId, CancellationToken.None).ConfigureAwait(false);
-
-            mediaSources = new[] { mediaSource };
-        }
+        var mediaSources = await ResolvePlaybackMediaSources(item, user, mediaSourceId, liveStreamId).ConfigureAwait(false);
 
         if (mediaSources.Length == 0)
         {
@@ -155,6 +133,28 @@ public class MediaInfoHelper
         }
 
         return result;
+    }
+
+    private async Task<MediaSourceInfo[]> ResolvePlaybackMediaSources(BaseItem item, User? user, string? mediaSourceId, string? liveStreamId)
+    {
+        if (!string.IsNullOrWhiteSpace(liveStreamId))
+        {
+            var mediaSource = await _mediaSourceManager.GetLiveStream(liveStreamId, CancellationToken.None).ConfigureAwait(false);
+
+            return new[] { mediaSource };
+        }
+
+        // TODO (moved from MediaBrowser.Api) handle supportedLiveMediaTypes?
+        var mediaSourcesList = await _mediaSourceManager.GetPlaybackMediaSources(item, user, true, true, CancellationToken.None).ConfigureAwait(false);
+
+        if (string.IsNullOrWhiteSpace(mediaSourceId))
+        {
+            return mediaSourcesList.ToArray();
+        }
+
+        return mediaSourcesList
+            .Where(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
     }
 
     /// <summary>
