@@ -46,6 +46,12 @@ namespace MediaBrowser.Controller.SyncPlay
         public long Ping { get; set; }
 
         /// <summary>
+        /// Gets or sets the UTC time of the last ping update. <see cref="DateTime.MinValue"/> if no ping has been reported yet.
+        /// </summary>
+        /// <value>The last ping update.</value>
+        public DateTime LastPingUpdate { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this member is buffering.
         /// </summary>
         /// <value><c>true</c> if member is buffering; <c>false</c> otherwise.</value>
