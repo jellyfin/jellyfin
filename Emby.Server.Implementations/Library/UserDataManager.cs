@@ -434,9 +434,20 @@ namespace Emby.Server.Implementations.Library
             };
         }
 
-        /// <inheritdoc />
-        public bool UpdatePlayState(BaseItem item, UserItemData data, long? reportedPositionTicks)
+        private long GetCommittedPositionTicks(Guid itemId, Guid userId)
         {
+            using var dbContext = _repository.CreateDbContext();
+            return dbContext.UserData
+                .Where(e => e.ItemId == itemId && e.UserId == userId)
+                .Select(e => e.PlaybackPositionTicks)
+                .OrderByDescending(t => t)
+                .FirstOrDefault();
+        }
+
+        /// <inheritdoc />
+        public bool UpdatePlayState(BaseItem item, UserItemData data, long? reportedPositionTicks, User? user = null, bool wasStopped = false)
+        {
+            var previousPositionTicks = data.PlaybackPositionTicks;
             var playedToCompletion = false;
 
             var runtimeTicks = item.GetRunTimeTicksForPlayState();
@@ -493,6 +504,15 @@ namespace Emby.Server.Implementations.Library
                 // If we don't know the runtime we'll just have to assume it was fully played
                 data.Played = playedToCompletion = true;
                 positionTicks = 0;
+            }
+
+            if (wasStopped && reportedPositionTicks == 0 && positionTicks == 0 && !playedToCompletion && user is not null && previousPositionTicks > 0 && item.SupportsPositionTicksResume)
+            {
+                var committedPositionTicks = GetCommittedPositionTicks(item.Id, user.Id);
+                if (committedPositionTicks > 0)
+                {
+                    positionTicks = committedPositionTicks;
+                }
             }
 
             if (!item.SupportsPlayedStatus)
