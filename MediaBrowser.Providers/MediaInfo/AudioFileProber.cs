@@ -468,6 +468,24 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
+            TryGetSanitizedAdditionalFields(track, "REPLAYGAIN_ALBUM_GAIN", out var trackAlbumGainTag);
+
+            if (trackAlbumGainTag is not null)
+            {
+                if (trackAlbumGainTag.EndsWith("db", StringComparison.OrdinalIgnoreCase))
+                {
+                    trackAlbumGainTag = trackAlbumGainTag[..^2].Trim();
+                }
+
+                if (float.TryParse(trackAlbumGainTag, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) && float.IsFinite(value))
+                {
+                    if (!audio.AlbumEntity.NormalizationGain.HasValue)
+                    {
+                        audio.AlbumEntity.NormalizationGain = value;
+                    }
+                }
+            }
+
             if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out _))
             {
                 if ((TryGetSanitizedAdditionalFields(track, "MUSICBRAINZ_ARTISTID", out var musicBrainzArtistTag)

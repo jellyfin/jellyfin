@@ -235,6 +235,7 @@
  - [Lampan-git](https://github.com/Lampan-git)
  - [elio42](https://github.com/elio42)
  - [rwebster85](https://github.com/rwebster85)
+ - [Florin-Popescu](https://github.com/Florin-Popescu)
 
 # Emby Contributors
 
