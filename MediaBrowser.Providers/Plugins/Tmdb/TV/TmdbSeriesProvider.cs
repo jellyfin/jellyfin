@@ -258,14 +258,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var studios = Enumerable.Empty<string>();
 
-            if (seriesResult.ProductionCompanies is not null)
-            {
-                studios = studios.Concat(seriesResult.ProductionCompanies.Select(i => i.Name).OfType<string>());
-            }
-
             if (seriesResult.Networks is not null)
             {
                 studios = studios.Concat(seriesResult.Networks.Select(i => i.Name).OfType<string>());
+            }
+
+            if (seriesResult.ProductionCompanies is not null)
+            {
+                studios = studios.Concat(seriesResult.ProductionCompanies.Select(i => i.Name).OfType<string>());
             }
 
             series.SetStudios(studios);
