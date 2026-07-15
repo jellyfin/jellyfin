@@ -232,8 +232,10 @@ namespace Emby.Server.Implementations.Session
                 {
                     await SendForceKeepAlive(webSocket).ConfigureAwait(false);
                 }
-                catch (WebSocketException exception)
+                catch (Exception exception)
                 {
+                    // This runs from an async void timer handler, so any escaping exception would
+                    // crash the process. Treat any send failure as a lost connection.
                     _logger.LogInformation(exception, "Error sending ForceKeepAlive message to WebSocket.");
                     lost.Add(webSocket);
                 }
