@@ -466,8 +466,8 @@ namespace Emby.Server.Implementations.SyncPlay
                 var previousPing = value.Ping;
                 if ((DateTime.UtcNow - value.LastPingUpdate).TotalMilliseconds > PingStaleAfterMs)
                 {
-                   // Use the raw sample  when we don't have an established smoothed average
-                   // or use raw sample if our last ping update is stale.
+                    // Use the raw sample  when we don't have an established smoothed average
+                    // or use raw sample if our last ping update is stale.
                     value.Ping = ping;
                 }
                 else
