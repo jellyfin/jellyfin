@@ -121,6 +121,25 @@ public class GroupTests
     }
 
     [Fact]
+    public void UpdatePing_UsesRawValue_WhenPriorSampleIsStale()
+    {
+        var group = new Emby.Server.Implementations.SyncPlay.Group(MockLoggerFactory.Object, MockUserManager.Object, MockSessionManager.Object, MockLibraryManager.Object);
+        var session = CreateSession();
+        AddParticipant(group, session);
+
+        group.UpdatePing(session, 2000);
+        var member = GetParticipant(group, session.Id);
+        member.LastPingUpdate = DateTime.UtcNow.AddSeconds(-91);
+
+        group.UpdatePing(session, 10);
+
+        // A fresh sample after a stale gap should replace the old value outright, not decay
+        // slowly toward it (0.2 * 10 + 0.8 * 2000 = 1602) - nothing was trusting that stale
+        // 2000ms reading anymore, so there is nothing meaningful to smooth against.
+        Assert.Equal(10, group.GetHighestPing());
+    }
+
+    [Fact]
     public void GetHighestPing_IgnoresStalePing_AndFallsBackToDefault()
     {
         var group = new Emby.Server.Implementations.SyncPlay.Group(MockLoggerFactory.Object, MockUserManager.Object, MockSessionManager.Object, MockLibraryManager.Object);

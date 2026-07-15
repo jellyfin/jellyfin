@@ -464,9 +464,10 @@ namespace Emby.Server.Implementations.SyncPlay
             if (_participants.TryGetValue(session.Id, out GroupMember value))
             {
                 var previousPing = value.Ping;
-                if (value.LastPingUpdate == DateTime.MinValue)
+                if ((DateTime.UtcNow - value.LastPingUpdate).TotalMilliseconds > PingStaleAfterMs)
                 {
-                    // Use the raw sample until we have an established average to smooth against.
+                   // Use the raw sample  when we don't have an established smoothed average
+                   // or use raw sample if our last ping update is stale.
                     value.Ping = ping;
                 }
                 else
