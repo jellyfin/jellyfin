@@ -238,7 +238,11 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 if (data.Format is not null && !string.IsNullOrEmpty(data.Format.Duration))
                 {
-                    info.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(data.Format.Duration, CultureInfo.InvariantCulture)).Ticks;
+                    var runTimeTicks = ParseDurationToTicks(data.Format.Duration);
+                    if (runTimeTicks is not null)
+                    {
+                        info.RunTimeTicks = runTimeTicks;
+                    }
                 }
 
                 FetchWtvInfo(info, data);
@@ -276,10 +280,11 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                     if (audioBitratesKnown)
                     {
-                        var estimatedVideoBitrate = info.Bitrate.Value - otherStreams.Sum(i => i.BitRate ?? 0);
-                        if (estimatedVideoBitrate > 0)
+                        // Sum as long to avoid a checked int overflow on crafted per-stream bitrates.
+                        var estimatedVideoBitrate = info.Bitrate.Value - otherStreams.Sum(i => (long)(i.BitRate ?? 0));
+                        if (estimatedVideoBitrate > 0 && estimatedVideoBitrate <= int.MaxValue)
                         {
-                            videoStreams[0].BitRate = estimatedVideoBitrate;
+                            videoStreams[0].BitRate = (int)estimatedVideoBitrate;
                         }
                     }
                 }
@@ -1024,10 +1029,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                     var bytes = GetNumberOfBytesFromTags(streamInfo);
                     if (durationInSeconds is not null && durationInSeconds.Value >= 1 && bytes is not null)
                     {
-                        bps = Convert.ToInt32(bytes * 8 / durationInSeconds, CultureInfo.InvariantCulture);
-                        if (bps > 0)
+                        // Compute as double and range-check before narrowing to avoid an OverflowException
+                        // on crafted NUMBER_OF_BYTES/DURATION tags.
+                        var estimatedBps = bytes.Value * 8d / durationInSeconds.Value;
+                        if (double.IsFinite(estimatedBps) && estimatedBps >= 1 && estimatedBps <= int.MaxValue)
                         {
-                            stream.BitRate = bps;
+                            stream.BitRate = (int)estimatedBps;
                         }
                     }
                 }
@@ -1250,7 +1257,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             // If we got something, parse it
             if (!string.IsNullOrEmpty(duration))
             {
-                data.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(duration, CultureInfo.InvariantCulture)).Ticks;
+                data.RunTimeTicks = ParseDurationToTicks(duration);
             }
         }
 
@@ -1595,6 +1602,26 @@ namespace MediaBrowser.MediaEncoding.Probing
             return null;
         }
 
+        /// <summary>
+        /// Parses a duration in seconds (as reported by ffprobe) into ticks, guarding against
+        /// malformed, non-finite (NaN/Infinity) or out-of-range values that would otherwise throw
+        /// from <see cref="TimeSpan.FromSeconds(double)"/> and abort the probe.
+        /// </summary>
+        /// <param name="value">The duration string in seconds.</param>
+        /// <returns>The duration in ticks, or <c>null</c> if it could not be parsed safely.</returns>
+        private static long? ParseDurationToTicks(string value)
+        {
+            if (!double.TryParse(value, CultureInfo.InvariantCulture, out var seconds)
+                || !double.IsFinite(seconds)
+                || seconds < 0
+                || seconds > TimeSpan.MaxValue.TotalSeconds)
+            {
+                return null;
+            }
+
+            return TimeSpan.FromSeconds(seconds).Ticks;
+        }
+
         private static ChapterInfo GetChapterInfo(MediaChapter chapter)
         {
             var info = new ChapterInfo();
@@ -1607,7 +1634,9 @@ namespace MediaBrowser.MediaEncoding.Probing
             // Limit accuracy to milliseconds to match xml saving
             var secondsString = chapter.StartTime;
 
-            if (double.TryParse(secondsString, CultureInfo.InvariantCulture, out var seconds))
+            if (double.TryParse(secondsString, CultureInfo.InvariantCulture, out var seconds)
+                && double.IsFinite(seconds)
+                && Math.Abs(seconds) <= TimeSpan.MaxValue.TotalSeconds)
             {
                 var ms = Math.Round(TimeSpan.FromSeconds(seconds).TotalMilliseconds);
                 info.StartPositionTicks = TimeSpan.FromMilliseconds(ms).Ticks;
