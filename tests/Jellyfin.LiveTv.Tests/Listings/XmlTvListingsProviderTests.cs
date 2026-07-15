@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Jellyfin.LiveTv.Listings;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.LiveTv;
 using Moq;
 using Moq.Protected;
@@ -85,5 +87,23 @@ public class XmlTvListingsProviderTests
         var program = programsList[0];
         Assert.DoesNotContain(program.Genres, g => string.IsNullOrEmpty(g));
         Assert.Equal("3297", program.ChannelId);
+    }
+
+    [Fact]
+    public async Task GetProgramsAsync_NoProgramId_UsesSeriesIdentityForShowId()
+    {
+        var info = new ListingsProviderInfo()
+        {
+            Path = "Test Data/LiveTv/Listings/XmlTv/showidcollision.xml"
+        };
+
+        var startDate = new DateTime(2022, 11, 4, 0, 0, 0, DateTimeKind.Utc);
+        var programs = await _xmlTvListingsProvider.GetProgramsAsync(info, "3297", startDate, startDate.AddDays(1), CancellationToken.None);
+        var programsList = programs.ToList();
+
+        Assert.Equal(2, programsList.Count);
+        Assert.NotEqual(programsList[0].ShowId, programsList[1].ShowId);
+        Assert.Equal("First Series-1-1".GetMD5().ToString("N", CultureInfo.InvariantCulture), programsList[0].ShowId);
+        Assert.Equal("Second Series-1-1".GetMD5().ToString("N", CultureInfo.InvariantCulture), programsList[1].ShowId);
     }
 }

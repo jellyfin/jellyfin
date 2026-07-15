@@ -221,12 +221,12 @@ namespace Jellyfin.LiveTv.Listings
 
                 if (programInfo.SeasonNumber.HasValue)
                 {
-                    uniqueString = "-" + programInfo.SeasonNumber.Value.ToString(CultureInfo.InvariantCulture);
+                    uniqueString += "-" + programInfo.SeasonNumber.Value.ToString(CultureInfo.InvariantCulture);
                 }
 
                 if (programInfo.EpisodeNumber.HasValue)
                 {
-                    uniqueString = "-" + programInfo.EpisodeNumber.Value.ToString(CultureInfo.InvariantCulture);
+                    uniqueString += "-" + programInfo.EpisodeNumber.Value.ToString(CultureInfo.InvariantCulture);
                 }
 
                 programInfo.ShowId = uniqueString.GetMD5().ToString("N", CultureInfo.InvariantCulture);

@@ -1,0 +1,10 @@
+<tv date="20221104">
+  <programme channel="3297" start="20221104130000 +0000" stop="20221104140000 +0000">
+    <title lang="en">First Series</title>
+    <episode-num system="xmltv_ns">0.0.</episode-num>
+  </programme>
+  <programme channel="3297" start="20221104140000 +0000" stop="20221104150000 +0000">
+    <title lang="en">Second Series</title>
+    <episode-num system="xmltv_ns">0.0.</episode-num>
+  </programme>
+</tv>
