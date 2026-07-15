@@ -25,6 +25,7 @@ SOFTWARE.
 */
 
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading;
@@ -105,7 +106,27 @@ public static class HttpClientExtension
 
         try
         {
-            await socket.ConnectAsync(context.DnsEndPoint, cancellationToken).ConfigureAwait(false);
+            var dnsEndPoint = context.DnsEndPoint;
+
+            // Resolve the destination ourselves and connect to the validated address so that the
+            // SSRF guard below cannot be bypassed via DNS rebinding (the connection targets the
+            // exact address that was checked). Resolving per address family also preserves the
+            // Happy Eyeballs fallback behaviour.
+            var addresses = await ResolveAddressesAsync(dnsEndPoint.Host, addressFamily, cancellationToken).ConfigureAwait(false);
+
+            // Reject loopback and link-local destinations (the latter includes the cloud metadata
+            // endpoint 169.254.169.254). Private/RFC1918 ranges are intentionally left reachable to
+            // preserve LAN tuners and local metadata services. Fail closed if any resolved address
+            // is restricted.
+            foreach (var address in addresses)
+            {
+                if (IsRestrictedAddress(address))
+                {
+                    throw new HttpRequestException($"Blocked attempt to connect to a restricted address '{address}' for host '{dnsEndPoint.Host}'.");
+                }
+            }
+
+            await socket.ConnectAsync(addresses, dnsEndPoint.Port, cancellationToken).ConfigureAwait(false);
             // The stream should take the ownership of the underlying socket,
             // closing it when it's disposed.
             return new NetworkStream(socket, ownsSocket: true);
@@ -115,5 +136,39 @@ public static class HttpClientExtension
             socket.Dispose();
             throw;
         }
+    }
+
+    private static async Task<IPAddress[]> ResolveAddressesAsync(string host, AddressFamily addressFamily, CancellationToken cancellationToken)
+    {
+        if (IPAddress.TryParse(host, out var literal))
+        {
+            return literal.AddressFamily == addressFamily ? [literal] : [];
+        }
+
+        return await Dns.GetHostAddressesAsync(host, addressFamily, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static bool IsRestrictedAddress(IPAddress address)
+    {
+        if (address.IsIPv4MappedToIPv6)
+        {
+            address = address.MapToIPv4();
+        }
+
+        // Loopback (127.0.0.0/8, ::1), IPv6 link-local (fe80::/10) and IPv4 link-local (169.254.0.0/16).
+        return IPAddress.IsLoopback(address)
+            || address.IsIPv6LinkLocal
+            || IsIPv4LinkLocal(address);
+    }
+
+    private static bool IsIPv4LinkLocal(IPAddress address)
+    {
+        if (address.AddressFamily != AddressFamily.InterNetwork)
+        {
+            return false;
+        }
+
+        var bytes = address.GetAddressBytes();
+        return bytes[0] == 169 && bytes[1] == 254;
     }
 }

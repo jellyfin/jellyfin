@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
@@ -51,6 +52,12 @@ namespace MediaBrowser.Providers.Manager
     /// </summary>
     public class ProviderManager : IProviderManager, IDisposable
     {
+        /// <summary>
+        /// The maximum size, in bytes, of a remote image that will be downloaded and buffered.
+        /// Guards against decompression bombs / oversized responses exhausting memory.
+        /// </summary>
+        private const long MaxRemoteImageSizeBytes = 30 * 1024 * 1024;
+
         private readonly Lock _refreshQueueLock = new();
         private readonly ILogger<ProviderManager> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -237,7 +244,7 @@ namespace MediaBrowser.Providers.Manager
                     throw new HttpRequestException($"Request returned '{contentType}' instead of an image type", null, HttpStatusCode.NotFound);
                 }
 
-                var responseBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+                var responseBytes = await ReadImageContentAsync(response, url, cancellationToken).ConfigureAwait(false);
                 var stream = new MemoryStream(responseBytes, 0, responseBytes.Length, false);
                 await using (stream.ConfigureAwait(false))
                 {
@@ -251,6 +258,45 @@ namespace MediaBrowser.Providers.Manager
                         imageIndex,
                         cancellationToken).ConfigureAwait(false);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Reads a remote image response into memory, enforcing <see cref="MaxRemoteImageSizeBytes"/>.
+        /// The default HTTP client has automatic decompression enabled, so an unbounded read could be
+        /// abused as a decompression bomb; this bounds the decompressed size as it is streamed.
+        /// </summary>
+        private static async Task<byte[]> ReadImageContentAsync(HttpResponseMessage response, string url, CancellationToken cancellationToken)
+        {
+            if (response.Content.Headers.ContentLength > MaxRemoteImageSizeBytes)
+            {
+                throw new HttpRequestException($"Remote image '{url}' exceeds the maximum allowed size of {MaxRemoteImageSizeBytes} bytes.");
+            }
+
+            var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using (contentStream.ConfigureAwait(false))
+            {
+                using var memoryStream = new MemoryStream();
+                var buffer = ArrayPool<byte>.Shared.Rent(81920);
+                try
+                {
+                    int bytesRead;
+                    while ((bytesRead = await contentStream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
+                    {
+                        if (memoryStream.Length + bytesRead > MaxRemoteImageSizeBytes)
+                        {
+                            throw new HttpRequestException($"Remote image '{url}' exceeds the maximum allowed size of {MaxRemoteImageSizeBytes} bytes.");
+                        }
+
+                        await memoryStream.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
+                    }
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(buffer);
+                }
+
+                return memoryStream.ToArray();
             }
         }
 
