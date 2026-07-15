@@ -1537,11 +1537,33 @@ namespace Emby.Server.Implementations.Session
             return SendMessageToSession(session, SessionMessageType.Playstate, command, cancellationToken);
         }
 
-        private static void AssertCanControl(SessionInfo session, SessionInfo controllingSession)
+        private void AssertCanControl(SessionInfo session, SessionInfo controllingSession)
         {
             ArgumentNullException.ThrowIfNull(session);
 
             ArgumentNullException.ThrowIfNull(controllingSession);
+
+            var controllingUserId = controllingSession.UserId;
+
+            // Controlling a session is always allowed when:
+            // - the caller has no associated user (an API key, which is a privileged context),
+            // - the target session is public (has no owning user), or
+            // - the caller's user is associated with the target session.
+            // Controlling a session owned by a different user requires the
+            // EnableRemoteControlOfOtherUsers permission.
+            if (controllingUserId.IsEmpty()
+                || session.UserId.IsEmpty()
+                || session.ContainsUser(controllingUserId))
+            {
+                return;
+            }
+
+            var controllingUser = _userManager.GetUserById(controllingUserId);
+            if (controllingUser is null
+                || !controllingUser.HasPermission(PermissionKind.EnableRemoteControlOfOtherUsers))
+            {
+                throw new SecurityException("The current user does not have permission to remote control other users.");
+            }
         }
 
         /// <summary>
