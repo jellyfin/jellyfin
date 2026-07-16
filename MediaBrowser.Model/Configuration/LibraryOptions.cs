@@ -36,6 +36,7 @@ namespace MediaBrowser.Model.Configuration
 
             PreferNonstandardArtistsTag = false;
             UseCustomTagDelimiters = false;
+            PreferCueSidecarForAudiobookChapters = false;
             CustomTagDelimiters = _defaultTagDelimiters;
             DelimiterWhitelist = Array.Empty<string>();
         }
@@ -126,6 +127,9 @@ namespace MediaBrowser.Model.Configuration
 
         [DefaultValue(false)]
         public bool UseCustomTagDelimiters { get; set; }
+
+        [DefaultValue(false)]
+        public bool PreferCueSidecarForAudiobookChapters { get; set; }
 
         public string[] CustomTagDelimiters { get; set; }
 
