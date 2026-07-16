@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Users;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.Users
 {
@@ -24,6 +25,7 @@ namespace Jellyfin.Server.Implementations.Users
         private const string BaseResetFileName = "passwordreset";
 
         private readonly IApplicationHost _appHost;
+        private readonly ILogger<DefaultPasswordResetProvider> _logger;
 
         private readonly string _passwordResetFileBase;
         private readonly string _passwordResetFileBaseDir;
@@ -33,11 +35,13 @@ namespace Jellyfin.Server.Implementations.Users
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="appHost">The application host.</param>
-        public DefaultPasswordResetProvider(IServerConfigurationManager configurationManager, IApplicationHost appHost)
+        /// <param name="logger">The logger.</param>
+        public DefaultPasswordResetProvider(IServerConfigurationManager configurationManager, IApplicationHost appHost, ILogger<DefaultPasswordResetProvider> logger)
         {
             _passwordResetFileBaseDir = configurationManager.ApplicationPaths.ProgramDataPath;
             _passwordResetFileBase = Path.Combine(_passwordResetFileBaseDir, BaseResetFileName);
             _appHost = appHost;
+            _logger = logger;
             // TODO: Remove the circular dependency on UserManager
         }
 
@@ -54,12 +58,30 @@ namespace Jellyfin.Server.Implementations.Users
             var usersReset = new List<string>();
             foreach (var resetFile in Directory.EnumerateFiles(_passwordResetFileBaseDir, $"{BaseResetFileName}*"))
             {
-                SerializablePasswordReset spr;
-                var str = AsyncFile.OpenRead(resetFile);
-                await using (str.ConfigureAwait(false))
+                SerializablePasswordReset? spr;
+                try
                 {
-                    spr = await JsonSerializer.DeserializeAsync<SerializablePasswordReset>(str).ConfigureAwait(false)
-                        ?? throw new ResourceNotFoundException($"Provided path ({resetFile}) is not valid.");
+                    var str = AsyncFile.OpenRead(resetFile);
+                    await using (str.ConfigureAwait(false))
+                    {
+                        spr = await JsonSerializer.DeserializeAsync<SerializablePasswordReset>(str).ConfigureAwait(false);
+                    }
+                }
+                catch (JsonException ex)
+                {
+                    // A reset file can be left in a corrupt/partial state if the server was
+                    // terminated while it was being written. Without this, a single bad file
+                    // would make every future password reset attempt fail with a 500 error.
+                    _logger.LogWarning(ex, "Ignoring invalid password reset file {ResetFile}", resetFile);
+                    File.Delete(resetFile);
+                    continue;
+                }
+
+                if (spr is null)
+                {
+                    _logger.LogWarning("Ignoring invalid password reset file {ResetFile}", resetFile);
+                    File.Delete(resetFile);
+                    continue;
                 }
 
                 if (spr.ExpirationDate < DateTime.UtcNow)
