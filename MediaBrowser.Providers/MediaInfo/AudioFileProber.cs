@@ -479,7 +479,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (float.TryParse(trackAlbumGainTag, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) && float.IsFinite(value))
                 {
-                    if (!audio.AlbumEntity.NormalizationGain.HasValue)
+                    if (audio.AlbumEntity is not null && !audio.AlbumEntity.NormalizationGain.HasValue)
                     {
                         audio.AlbumEntity.NormalizationGain = value;
                     }
