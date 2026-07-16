@@ -761,6 +761,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (failed)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 if (!string.IsNullOrWhiteSpace(ffmpegError))
                 {
                     _logger.LogError("ffmpeg subtitle extraction failed for {InputPath}: {FfmpegOutput}", inputPath, ffmpegError);
@@ -888,12 +890,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 process.StandardInput.Close();
 
                 // Begin draining stderr before waiting for exit; a full stderr pipe buffer would otherwise deadlock ffmpeg.
-                var standardErrorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+                var standardErrorTask = process.StandardError.ReadToEndAsync(CancellationToken.None);
+                var timeoutMinutes = _serverConfigurationManager.GetEncodingOptions().SubtitleExtractionTimeoutMinutes;
+                using var waitSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                waitSource.CancelAfter(TimeSpan.FromMinutes(timeoutMinutes));
 
                 try
                 {
-                    var timeoutMinutes = _serverConfigurationManager.GetEncodingOptions().SubtitleExtractionTimeoutMinutes;
-                    await process.WaitForExitAsync(TimeSpan.FromMinutes(timeoutMinutes)).ConfigureAwait(false);
+                    await process.WaitForExitAsync(waitSource.Token).ConfigureAwait(false);
                     exitCode = process.ExitCode;
                 }
                 catch (OperationCanceledException)
