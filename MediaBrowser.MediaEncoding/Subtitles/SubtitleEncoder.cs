@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
@@ -43,6 +44,20 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly ISubtitleParser _subtitleParser;
         private readonly IPathManager _pathManager;
         private readonly IServerConfigurationManager _serverConfigurationManager;
+
+        // ASS alignment numbering (numpad layout): 1/4/7 are the bottom/middle/top-LEFT variants.
+        private static readonly Dictionary<string, string> _movTextLeftToCenterAlignment = new()
+        {
+            ["1"] = "2",
+            ["4"] = "5",
+            ["7"] = "8"
+        };
+
+        private static readonly Regex _assStyleLineRegex = new(@"^Style:.*$", RegexOptions.Multiline | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+
+        private static readonly Regex _assOverrideAlignmentRegex = new(@"\\an([147])(?=[}\\])", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+
+        private static readonly Regex _assOverrideFontSizeRegex = new(@"\\fs(\d+)", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
         /// <summary>
         /// The _semaphoreLocks.
@@ -551,6 +566,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 return "mks";
             }
+            else if (string.Equals(subtitleStream.Codec, "mov_text", StringComparison.OrdinalIgnoreCase))
+            {
+                // mov_text (tx3g) embeds an absolute per-style font size with no reference
+                // resolution of its own. Extracting to plain SubRip loses that context
+                // entirely; libavcodec's mov_text decoder needs to be told the real video
+                // frame size (see the -width/-height args added in
+                // ExtractAllExtractableSubtitlesInternal) and the result kept as ASS so the
+                // font size is interpreted against the correct PlayResX/PlayResY instead of
+                // whatever the burn-in filter would otherwise default to.
+                return "ass";
+            }
             else
             {
                 return "srt";
@@ -709,7 +735,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         outputPath);
                 }
 
-                await ExtractSubtitlesForFile(inputPath, args, outputPaths, cancellationToken).ConfigureAwait(false);
+                await ExtractSubtitlesForFile(inputPath, args, outputPaths, [], 0, cancellationToken).ConfigureAwait(false);
 
                 foreach (var outputPath in outputPaths)
                 {
@@ -725,10 +751,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             var inputPath = _mediaEncoder.GetInputArgument(mediaSource.Path, mediaSource);
             var outputPaths = new List<string>();
-            var args = string.Format(
-                CultureInfo.InvariantCulture,
-                "-i {0}",
-                inputPath);
+            var movTextOutputPaths = new List<string>();
+            var inputOptions = new StringBuilder();
+            var mapOptions = new StringBuilder();
+            var videoStream = mediaSource.VideoStream;
 
             foreach (var subtitleStream in subtitleStreams)
             {
@@ -744,7 +770,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     continue;
                 }
 
-                var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
+                var isMovText = string.Equals(subtitleStream.Codec, "mov_text", StringComparison.OrdinalIgnoreCase);
+                var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : GetExtractableSubtitleFormat(subtitleStream);
                 // FFmpeg does not provide an .idx/.sub muxer, so VobSub streams must be written as MKS files.
                 var outputFormatOption = MediaStream.IsVobSubFormat(subtitleStream.Codec) ? " -f matroska" : string.Empty;
                 var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
@@ -757,19 +784,25 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new FileNotFoundException($"Calculated path ({outputPath}) is not valid."));
 
+                // The mov_text (tx3g) decoder embeds an absolute font size authored against the
+                // real video's pixel dimensions, but falls back to a 384x288 reference if it isn't
+                // told the actual frame size, which inflates burned-in text several times over.
+                // https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/movtextdec.c
+                if (isMovText && videoStream is not null && videoStream.Width > 0 && videoStream.Height > 0)
+                {
+                    inputOptions.Append(CultureInfo.InvariantCulture, $" -width:{streamIndex} {videoStream.Width} -height:{streamIndex} {videoStream.Height}");
+                    movTextOutputPaths.Add(outputPath);
+                }
+
                 outputPaths.Add(outputPath);
-                args += string.Format(
-                    CultureInfo.InvariantCulture,
-                    " -map 0:{0} -an -vn -c:s {1}{2} -flush_packets 1 \"{3}\"",
-                    streamIndex,
-                    outputCodec,
-                    outputFormatOption,
-                    outputPath);
+                mapOptions.Append(CultureInfo.InvariantCulture, $" -map 0:{streamIndex} -an -vn -c:s {outputCodec}{outputFormatOption} -flush_packets 1 \"{outputPath}\"");
             }
+
+            var args = string.Format(CultureInfo.InvariantCulture, "{0} -i {1}{2}", inputOptions, inputPath, mapOptions);
 
             if (outputPaths.Count > 0)
             {
-                await ExtractSubtitlesForFile(inputPath, args, outputPaths, cancellationToken).ConfigureAwait(false);
+                await ExtractSubtitlesForFile(inputPath, args, outputPaths, movTextOutputPaths, videoStream?.Height ?? 0, cancellationToken).ConfigureAwait(false);
 
                 foreach (var outputPath in outputPaths)
                 {
@@ -782,6 +815,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             string inputPath,
             string args,
             List<string> outputPaths,
+            List<string> movTextOutputPaths,
+            int movTextVideoHeight,
             CancellationToken cancellationToken)
         {
             int exitCode;
@@ -876,6 +911,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     if (outputPath.EndsWith("ass", StringComparison.OrdinalIgnoreCase))
                     {
                         await SetAssFont(outputPath, cancellationToken).ConfigureAwait(false);
+
+                        if (movTextOutputPaths.Contains(outputPath))
+                        {
+                            await FixMovTextStyle(outputPath, movTextVideoHeight, cancellationToken).ConfigureAwait(false);
+                        }
                     }
 
                     _logger.LogInformation("ffmpeg subtitle extraction completed for {InputPath} to {OutputPath}", inputPath, outputPath);
@@ -1051,10 +1091,25 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <param name="file">The file.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <c>System.Threading.CancellationToken.None</c>.</param>
         /// <returns>Task.</returns>
-        private async Task SetAssFont(string file, CancellationToken cancellationToken = default)
+        private Task SetAssFont(string file, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("Setting ass font within {File}", file);
 
+            return RewriteTextFileIfChangedAsync(
+                file,
+                text => text.Replace(",Arial,", ",Arial Unicode MS,", StringComparison.Ordinal),
+                cancellationToken);
+        }
+
+        /// <summary>
+        /// Reads a text file, applies <paramref name="transform"/> to its contents, and writes the
+        /// result back to disk (preserving the file's detected encoding) only if it actually changed.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="transform">The transformation to apply to the file's contents.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        private static async Task RewriteTextFileIfChangedAsync(string file, Func<string, string> transform, CancellationToken cancellationToken)
+        {
             string text;
             Encoding encoding;
 
@@ -1066,7 +1121,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 text = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            var newText = text.Replace(",Arial,", ",Arial Unicode MS,", StringComparison.Ordinal);
+            var newText = transform(text);
 
             if (!string.Equals(text, newText, StringComparison.Ordinal))
             {
@@ -1080,6 +1135,119 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// ffmpeg's mov_text decoder has two fidelity gaps compared to reference tx3g
+        /// renderers (e.g. VLC's modules/codec/substx3g.c):
+        /// (1) it treats the track's embedded font size as an absolute ASS Fontsize, but
+        /// VLC's own FontSizeConvert() always renders the sample description's default
+        /// style at a fixed 5% of the frame height ("as the line should always be 5%") -
+        /// the embedded byte only expresses relative size between text runs on the same
+        /// line, not an absolute size, so ffmpeg's interpretation renders noticeably
+        /// smaller or larger than reference players depending on what that byte happens
+        /// to be; and
+        /// (2) it maps the track's default text-box justification straight onto ASS
+        /// alignment while ignoring the box's actual position/extent, which for
+        /// left-justified tracks renders noticeably left of where VLC places the same
+        /// (in practice centered) text.
+        /// This re-derives the Style's Fontsize/MarginV from the real video height and
+        /// centers left-column alignment, both in the Style definition and in any
+        /// per-line override.
+        /// </summary>
+        /// <param name="file">The extracted .ass file path.</param>
+        /// <param name="videoHeight">The coded height of the video the track was authored against.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        private Task FixMovTextStyle(string file, int videoHeight, CancellationToken cancellationToken = default)
+        {
+            _logger.LogInformation("Normalizing mov_text style within {File}", file);
+
+            return RewriteTextFileIfChangedAsync(
+                file,
+                text => NormalizeMovTextAss(text, videoHeight),
+                cancellationToken);
+        }
+
+        /// <summary>
+        /// Only public for the unit tests. See <see cref="FixMovTextStyle"/>.
+        /// </summary>
+        /// <param name="assText">The contents of an .ass file produced from a mov_text track.</param>
+        /// <param name="videoHeight">The coded height of the video the track was authored against.</param>
+        /// <returns>The text with a VLC-equivalent font size, margin and centered alignment.</returns>
+        public static string NormalizeMovTextAss(string assText, int videoHeight)
+        {
+            // VLC's own tx3g decoder documents its default style as always rendering at
+            // "5%" of the frame height (modules/codec/substx3g.c, FontSizeConvert), but
+            // that percentage is measured on VLC's internal text metrics, not on libass's
+            // Fontsize/PlayResY ratio -- burning the two at the same raw "5" produces
+            // visibly different glyph heights. The 0.121 ratio below was calibrated by
+            // measuring VLC's rendered glyph height against libass's for the same PlayResY
+            // on macOS (Helvetica Neue); on the actual deployment target (Linux, whatever
+            // font "Arial Unicode MS" resolves to via fontconfig) it rendered roughly twice
+            // too large, so it's halved here (0.121 / 2 = 0.0605) pending a font-specific
+            // recalibration.
+            var targetFontSize = (int)Math.Round(videoHeight * 0.0605, MidpointRounding.AwayFromZero);
+            var targetMarginV = (int)Math.Round(videoHeight * 0.0231, MidpointRounding.AwayFromZero);
+            // ffmpeg's mov_text default style always carries an Outline of 1, authored for
+            // the small original Fontsize -- left untouched, the outline becomes visibly
+            // too thin relative to the corrected (larger) font and loses the crisp
+            // black-outlined look most reference renderers (including VLC) give tx3g text.
+            // Scale it with the corrected font size using a standard ~6% stroke-to-em ratio.
+            var targetOutline = Math.Max(1, (int)Math.Round(targetFontSize * 0.06, MidpointRounding.AwayFromZero));
+
+            var originalFontSize = 0;
+            var styleMatch = _assStyleLineRegex.Match(assText);
+            if (styleMatch.Success)
+            {
+                var originalFields = styleMatch.Value.Split(',');
+                if (originalFields.Length >= 23)
+                {
+                    int.TryParse(originalFields[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out originalFontSize);
+                }
+            }
+
+            var newText = _assStyleLineRegex.Replace(assText, m =>
+            {
+                var fields = m.Value.Split(',');
+                if (fields.Length < 23)
+                {
+                    return m.Value;
+                }
+
+                fields[2] = targetFontSize.ToString(CultureInfo.InvariantCulture);
+                // ffmpeg writes OutlineColour/BackColour as 8-digit &HAABBGGRR with the alpha
+                // byte set to "ff". ASS uses an inverted alpha (00 = opaque, ff = fully
+                // transparent), so this renders the outline and shadow completely invisible
+                // regardless of Outline/Shadow width. PrimaryColour/SecondaryColour are
+                // unaffected because ffmpeg writes those as 6-digit RRGGBB with no alpha byte.
+                fields[5] = "&H00000000";
+                fields[6] = "&H00000000";
+                fields[16] = targetOutline.ToString(CultureInfo.InvariantCulture);
+                fields[21] = targetMarginV.ToString(CultureInfo.InvariantCulture);
+
+                if (_movTextLeftToCenterAlignment.TryGetValue(fields[18], out var centeredAlignment))
+                {
+                    fields[18] = centeredAlignment;
+                }
+
+                return string.Join(',', fields);
+            });
+
+            // Per-line {\fsNN} overrides carry the original absolute value; rescale them
+            // proportionally so their size relative to the new default is preserved.
+            if (originalFontSize > 0 && originalFontSize != targetFontSize)
+            {
+                newText = _assOverrideFontSizeRegex.Replace(newText, m =>
+                {
+                    var originalOverride = int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture);
+                    var scaled = (int)Math.Round(targetFontSize * (double)originalOverride / originalFontSize, MidpointRounding.AwayFromZero);
+                    return "\\fs" + scaled.ToString(CultureInfo.InvariantCulture);
+                });
+            }
+
+            return _assOverrideAlignmentRegex.Replace(
+                newText,
+                m => "\\an" + _movTextLeftToCenterAlignment[m.Groups[1].Value]);
         }
 
         private string? GetSubtitleCachePath(MediaSourceInfo mediaSource, int subtitleStreamIndex, string outputSubtitleExtension)
