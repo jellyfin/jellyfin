@@ -764,6 +764,10 @@ public class DynamicHlsHelper
             {
                 levelString = state.GetRequestedLevel(state.ActualOutputVideoCodec) ?? "41";
                 levelString = EncodingHelper.NormalizeTranscodingLevel(state, levelString);
+                levelString = EncodingHelper.AdjustH264TranscodingLevelForOutput(
+                    state,
+                    _serverConfigurationManager.GetEncodingOptions(),
+                    levelString);
             }
 
             if (string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)

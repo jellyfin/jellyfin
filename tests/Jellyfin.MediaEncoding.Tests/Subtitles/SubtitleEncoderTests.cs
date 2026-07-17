@@ -2,10 +2,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.MediaEncoding.Subtitles;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
+using Moq;
 using Xunit;
 
 namespace Jellyfin.MediaEncoding.Subtitles.Tests
@@ -102,6 +104,38 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
             Assert.Equal(subtitleInfo.Protocol, result.Protocol);
             Assert.Equal(subtitleInfo.Format, result.Format);
             Assert.Equal(subtitleInfo.IsExternal, result.IsExternal);
+        }
+
+        [Fact]
+        public async Task ExtractAllExtractableSubtitles_InfiniteStream_SkipsExtraction()
+        {
+            var fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
+            var mediaEncoder = fixture.Freeze<Mock<IMediaEncoder>>();
+            var subtitleEncoder = fixture.Create<SubtitleEncoder>();
+
+            var mediaSource = new MediaSourceInfo
+            {
+                IsInfiniteStream = true,
+                Path = "https://example.com/live/stream.ts",
+                Protocol = MediaProtocol.Http,
+                MediaStreams =
+                [
+                    new MediaStream
+                    {
+                        Index = 2,
+                        Type = MediaStreamType.Subtitle,
+                        Codec = "subrip",
+                        SupportsExternalStream = true,
+                        Path = "https://example.com/live/stream.ts",
+                    },
+                ],
+            };
+
+            await subtitleEncoder.ExtractAllExtractableSubtitles(mediaSource, CancellationToken.None);
+
+            mediaEncoder.Verify(
+                m => m.GetInputArgument(It.IsAny<string>(), It.IsAny<MediaSourceInfo>()),
+                Times.Never);
         }
     }
 }

@@ -588,6 +588,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <inheritdoc />
         public async Task ExtractAllExtractableSubtitles(MediaSourceInfo mediaSource, CancellationToken cancellationToken)
         {
+            if (mediaSource.IsInfiniteStream)
+            {
+                return;
+            }
+
             var locks = new List<IDisposable>();
             var extractableStreams = new List<MediaStream>();
 
