@@ -491,6 +491,7 @@ public class NetworkManager : INetworkManager, IDisposable
                         startupOverrideKey,
                         true,
                         true));
+                WarnIfPublishedUrlBasePathDiffers(publishedServerUrls, config.BaseUrl);
                 _publishedServerUrls = publishedServerUrls;
                 return;
             }
@@ -580,7 +581,50 @@ public class NetworkManager : INetworkManager, IDisposable
                 }
             }
 
+            WarnIfPublishedUrlBasePathDiffers(publishedServerUrls, config.BaseUrl);
             _publishedServerUrls = publishedServerUrls;
+        }
+    }
+
+    /// <summary>
+    /// Warns when a full-URL published server override uses a public path that differs from the configured base
+    /// URL. Jellyfin appends the base URL to generated Live TV client URLs in this case, which can conflict with
+    /// reverse proxies that translate public request paths. Bare host/IP overrides are exempt because the base URL
+    /// is appended when the API URL is built from them.
+    /// </summary>
+    /// <param name="publishedServerUrls">The parsed published server URL overrides.</param>
+    /// <param name="baseUrl">The configured base URL, if any.</param>
+    private void WarnIfPublishedUrlBasePathDiffers(List<PublishedServerUriOverride> publishedServerUrls, string baseUrl)
+    {
+        if (string.IsNullOrEmpty(baseUrl))
+        {
+            return;
+        }
+
+        foreach (var overrideUri in publishedServerUrls.Select(x => x.OverrideUri).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            if (!overrideUri.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                && !overrideUri.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (!Uri.TryCreate(overrideUri, UriKind.Absolute, out var uri))
+            {
+                continue;
+            }
+
+            var path = Uri.UnescapeDataString(uri.AbsolutePath).TrimEnd('/');
+            if (path.EndsWith(baseUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var publishedServerHost = uri.GetComponents(UriComponents.HostAndPort, UriFormat.Unescaped);
+            _logger.LogWarning(
+                "The published server URL for host '{PublishedServerHost}' does not end with the configured base URL '{BaseUrl}'. Jellyfin will append this base URL when generating Live TV client URLs. If your reverse proxy translates public paths, this may cause Live TV playback to fail. Update the Published Server URIs setting on the Networking page of the admin dashboard, the JELLYFIN_PublishedServerUrl environment variable / --published-server-url option, or the reverse proxy path mapping accordingly.",
+                publishedServerHost,
+                baseUrl);
         }
     }
 
