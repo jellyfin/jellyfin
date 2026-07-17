@@ -80,8 +80,17 @@ public class ApiKeyController : BaseJellyfinApiController
     private static AuthenticationInfoDto ToDto(AuthenticationInfo info)
         => new()
         {
+            Id = info.Id,
             AccessToken = info.AccessToken,
+            DeviceId = info.DeviceId,
             AppName = info.AppName,
-            DateCreated = info.DateCreated
+            AppVersion = info.AppVersion,
+            DeviceName = info.DeviceName,
+            UserId = info.UserId,
+            IsActive = info.IsActive,
+            DateCreated = info.DateCreated,
+            DateRevoked = info.DateRevoked,
+            DateLastActivity = info.DateLastActivity,
+            UserName = info.UserName
         };
 }
