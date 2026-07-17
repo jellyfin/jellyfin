@@ -555,11 +555,6 @@ public class MediaInfoHelper
             return;
         }
 
-        if (mediaSource.Protocol != MediaProtocol.Http)
-        {
-            return;
-        }
-
         var baseUrl = _serverConfigurationManager.GetNetworkConfiguration().BaseUrl;
         var publishedPath = GetPublishedLiveStreamPath(_appHost.GetSmartApiUrl(request), mediaSource.Path, mediaSource.Protocol, baseUrl);
 
@@ -613,6 +608,20 @@ public class MediaInfoHelper
             return null;
         }
 
-        return smartApiUrl.TrimEnd('/') + relativePath;
+        var prefix = smartApiUrl.TrimEnd('/');
+        if (!string.IsNullOrEmpty(baseUrl))
+        {
+            var includesBaseUrl = Uri.TryCreate(prefix, UriKind.Absolute, out var publishedUri)
+                && Uri.UnescapeDataString(publishedUri.AbsolutePath)
+                    .TrimEnd('/')
+                    .EndsWith(baseUrl, StringComparison.OrdinalIgnoreCase);
+
+            if (!includesBaseUrl)
+            {
+                prefix += baseUrl;
+            }
+        }
+
+        return prefix + relativePath;
     }
 }

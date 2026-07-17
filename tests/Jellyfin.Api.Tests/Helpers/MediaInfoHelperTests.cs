@@ -435,6 +435,48 @@ namespace Jellyfin.Api.Tests.Helpers
             "https://media.example.com" + LiveStreamFilesPath)]
         [InlineData(
             "https://media.example.com",
+            "https://172.19.0.3:8920" + LiveStreamFilesPath,
+            MediaProtocol.Http,
+            "",
+            "https://media.example.com" + LiveStreamFilesPath)]
+        [InlineData(
+            "https://media.example.com",
+            "http://192.168.1.10:8096" + LiveStreamFilesPath,
+            MediaProtocol.Http,
+            "",
+            "https://media.example.com" + LiveStreamFilesPath)]
+        [InlineData(
+            "https://media.example.com:8920",
+            "http://172.19.0.3:8096" + LiveStreamFilesPath,
+            MediaProtocol.Http,
+            "",
+            "https://media.example.com:8920" + LiveStreamFilesPath)]
+        [InlineData(
+            "https://media.example.com",
+            "http://172.19.0.3:8096/jellyfin" + LiveStreamFilesPath,
+            MediaProtocol.Http,
+            "/jellyfin",
+            "https://media.example.com/jellyfin" + LiveStreamFilesPath)]
+        [InlineData(
+            "https://jellyfin",
+            "http://172.19.0.3:8096/jellyfin" + LiveStreamFilesPath,
+            MediaProtocol.Http,
+            "/jellyfin",
+            "https://jellyfin/jellyfin" + LiveStreamFilesPath)]
+        [InlineData(
+            "https://media.example.com/jellyfin",
+            "http://172.19.0.3:8096/jellyfin" + LiveStreamFilesPath,
+            MediaProtocol.Http,
+            "/jellyfin",
+            "https://media.example.com/jellyfin" + LiveStreamFilesPath)]
+        [InlineData(
+            "https://media.example.com/jellyfin/",
+            "http://172.19.0.3:8096/jellyfin" + LiveStreamFilesPath,
+            MediaProtocol.Http,
+            "/jellyfin",
+            "https://media.example.com/jellyfin" + LiveStreamFilesPath)]
+        [InlineData(
+            "https://media.example.com",
             "http://172.19.0.3:8096/jellyfin2" + LiveStreamFilesPath,
             MediaProtocol.Http,
             "/jellyfin",
