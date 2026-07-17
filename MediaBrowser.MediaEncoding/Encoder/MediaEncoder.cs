@@ -89,6 +89,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private bool _isVideoToolboxAv1DecodeAvailable = false;
 
+        private bool _supportsDvdVideo = false;
+        private bool _supportsLibBluray = false;
+
         private static string[] _vulkanImageDrmFmtModifierExts =
         {
             "VK_EXT_image_drm_format_modifier",
@@ -166,6 +169,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public bool IsVaapiDeviceSupportVulkanDrmInterop => _isVaapiDeviceSupportVulkanDrmInterop;
 
         public bool IsVideoToolboxAv1DecodeAvailable => _isVideoToolboxAv1DecodeAvailable;
+
+        /// <inheritdoc />
+        public bool SupportsDvdVideo => _supportsDvdVideo;
+
+        /// <inheritdoc />
+        public bool SupportsLibBluray => _supportsLibBluray;
 
         [GeneratedRegex(@"[^\/\\]+?(\.[^\/\\\n.]+)?$")]
         private static partial Regex FfprobePathRegex();
@@ -277,6 +286,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     _isVideoToolboxAv1DecodeAvailable = validator.CheckIsVideoToolboxAv1DecodeAvailable();
                 }
+
+                // Check DVD and Blu-ray disc feature availability.
+                _supportsDvdVideo = validator.CheckDvdVideoSupport();
+                _supportsLibBluray = validator.CheckLibBluraySupport();
+                _logger.LogInformation("FFmpeg disc features — dvdvideo: {DvdVideo}, libbluray: {LibBluray}", _supportsDvdVideo, _supportsLibBluray);
             }
 
             _logger.LogInformation("FFmpeg: {FfmpegPath}", _ffmpegPath ?? string.Empty);
@@ -418,15 +432,39 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             var extractChapters = request.ExtractChapters;
             var extraArgs = GetExtraArguments(request);
+            var inputPath = GetInputArgument(request.MediaSource.Path, request.MediaSource);
+            var mediaSource = request.MediaSource;
+
+            // Title-based probing applies to disc video sources; audio probe requests do not use disc title selection.
+            if (mediaSource.IsoPlaybackTitle.HasValue && request.MediaType != DlnaProfileType.Audio)
+            {
+                // Probe using the selected title when available so stream/chapter metadata reflects
+                // the user-selected title rather than the default playlist/file sequence.
+                if (((mediaSource.VideoType == VideoType.Dvd)
+                    || (mediaSource.VideoType == VideoType.Iso && mediaSource.IsoType == IsoType.Dvd))
+                    && _supportsDvdVideo)
+                {
+                    extraArgs += $" -f dvdvideo -title {mediaSource.IsoPlaybackTitle.Value}";
+                    inputPath = GetDvdVideoInputArgument(mediaSource.Path, mediaSource.Protocol);
+                }
+                else if (((mediaSource.VideoType == VideoType.BluRay)
+                    || (mediaSource.VideoType == VideoType.Iso && mediaSource.IsoType == IsoType.BluRay))
+                    && _supportsLibBluray)
+                {
+                    // IsoPlaybackTitle is 1-based for display; libbluray expects 0-based.
+                    extraArgs += $" -playlist {mediaSource.IsoPlaybackTitle.Value.ToString(CultureInfo.InvariantCulture).PadLeft(5, '0')}";
+                    inputPath = GetInputPathArgument(mediaSource.Path, mediaSource);
+                }
+            }
 
             return GetMediaInfoInternal(
-                GetInputArgument(request.MediaSource.Path, request.MediaSource),
-                request.MediaSource.Path,
-                request.MediaSource.Protocol,
+                inputPath,
+                mediaSource.Path,
+                mediaSource.Protocol,
                 extractChapters,
                 extraArgs,
                 request.MediaType == DlnaProfileType.Audio,
-                request.MediaSource.VideoType,
+                mediaSource.VideoType,
                 cancellationToken);
         }
 
@@ -1274,6 +1312,74 @@ namespace MediaBrowser.MediaEncoding.Encoder
             => _blurayExaminer.GetDiscInfo(path).Files;
 
         /// <inheritdoc />
+        public IReadOnlyList<IsoTitleInfo> GetIsoTitles(string path, IsoType isoType)
+        {
+            if (isoType == IsoType.BluRay)
+            {
+                // Title enumeration for Blu-ray uses BDInfo (no ffmpeg dependency), but playback
+                // of a specific title requires libbluray in ffmpeg.  Return an empty list when
+                // libbluray is absent so the UI doesn't offer a selection that cannot be honoured.
+                if (!_supportsLibBluray)
+                {
+                    _logger.LogDebug("Skipping Blu-ray title enumeration: libbluray not available in ffmpeg");
+                    return Array.Empty<IsoTitleInfo>();
+                }
+
+                try
+                {
+                    return _blurayExaminer.GetTitles(path);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error enumerating Blu-ray titles for {Path}", path);
+                    return Array.Empty<IsoTitleInfo>();
+                }
+            }
+
+            // DVD title enumeration uses pure IFO binary parsing — no ffmpeg/dvdvideo demuxer required.
+            // Note: per-title playback still requires the dvdvideo demuxer at transcode time.
+            return GetDvdTitles(path);
+        }
+
+        /// <summary>
+        /// Enumerates DVD titles and their durations by parsing the IFO files directly.
+        /// Works for both ISO files and unpacked DVD directories without requiring ffprobe.
+        /// </summary>
+        private IReadOnlyList<IsoTitleInfo> GetDvdTitles(string path)
+        {
+            bool isFile = File.Exists(path);
+
+            DvdDiscInfo disc;
+            try
+            {
+                disc = isFile
+                    ? DvdVideoProber.ParseVideoTsIso(path, _logger)
+                    : DvdVideoProber.ParseVideoTsDirectory(path, _logger);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error parsing DVD IFO for {Path}", path);
+                return Array.Empty<IsoTitleInfo>();
+            }
+
+            if (disc.Titles.Count == 0)
+            {
+                return Array.Empty<IsoTitleInfo>();
+            }
+
+            return disc.Titles
+                .OrderBy(t => t.TitleNumber)
+                .Select(t => new IsoTitleInfo
+                {
+                    TitleNumber = t.TitleNumber,
+                    DurationTicks = t.Duration?.Ticks,
+                    ChapterCount = t.ChapterCount,
+                    AngleCount = t.AngleCount
+                })
+                .ToList();
+        }
+
+        /// <inheritdoc />
         public string GetInputPathArgument(EncodingJobInfo state)
             => GetInputPathArgument(state.MediaPath, state.MediaSource);
 
@@ -1282,10 +1388,29 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             return mediaSource.VideoType switch
             {
+                // When a specific title has been selected for an unpacked DVD directory, use a raw
+                // filesystem path with dvdvideo. ffmpeg has no "dvd" protocol.
+                // Without a title selection (or when dvdvideo is unavailable), fall back to concat.
+                VideoType.Dvd when mediaSource.IsoPlaybackTitle.HasValue && _supportsDvdVideo
+                    => GetDvdVideoInputArgument(path, mediaSource.Protocol),
                 VideoType.Dvd => GetInputArgument(GetPrimaryPlaylistVobFiles(path, null), mediaSource),
+                // When a specific title has been selected for an unpacked Blu-ray directory, use the
+                // bluray: URI scheme so FFmpeg's libbluray can apply -playlist selection.
+                // Without a title selection (or when libbluray is unavailable), fall back to concat.
+                VideoType.BluRay when mediaSource.IsoPlaybackTitle.HasValue && _supportsLibBluray
+                    => EncodingUtils.GetInputArgument("bluray", path, mediaSource.Protocol),
                 VideoType.BluRay => GetInputArgument(GetPrimaryPlaylistM2tsFiles(path), mediaSource),
+                // dvdvideo demuxer with ISO input requires a raw filesystem path, not file:"path".
+                VideoType.Iso when mediaSource.IsoType == IsoType.Dvd && _supportsDvdVideo
+                    => GetDvdVideoInputArgument(path, mediaSource.Protocol),
                 _ => GetInputArgument(path, mediaSource)
             };
+        }
+
+        private static string GetDvdVideoInputArgument(string inputPath, MediaProtocol protocol)
+        {
+            var normalizedPath = protocol == MediaProtocol.File ? EncodingUtils.NormalizePath(inputPath) : inputPath;
+            return string.Format(CultureInfo.InvariantCulture, "\"{0}\"", normalizedPath);
         }
 
         /// <inheritdoc />

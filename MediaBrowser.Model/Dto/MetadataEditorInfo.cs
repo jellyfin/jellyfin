@@ -52,4 +52,16 @@ public class MetadataEditorInfo
     /// Gets or sets the content type options.
     /// </summary>
     public IReadOnlyList<NameValuePair> ContentTypeOptions { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the dvdvideo demuxer is available in ffmpeg.
+    /// When <c>false</c>, DVD title selection cannot be offered in the editor UI.
+    /// </summary>
+    public bool SupportsDvdVideo { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the libbluray input protocol is available in ffmpeg.
+    /// When <c>false</c>, Blu-ray title selection cannot be offered in the editor UI.
+    /// </summary>
+    public bool SupportsLibBluray { get; set; }
 }

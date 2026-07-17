@@ -64,6 +64,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public VideoType VideoType { get; set; }
 
+        public bool? MapAll { get; set; }
+
         public Dictionary<string, string> RemoteHttpHeaders { get; set; }
 
         public string OutputVideoCodec { get; set; }

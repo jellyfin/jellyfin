@@ -1258,7 +1258,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 arg.Append(canvasArgs);
             }
 
-            if (state.MediaSource.VideoType == VideoType.Dvd || state.MediaSource.VideoType == VideoType.BluRay)
+            if ((state.MediaSource.VideoType == VideoType.Dvd && (!state.MediaSource.IsoPlaybackTitle.HasValue || !_mediaEncoder.SupportsDvdVideo))
+                || (state.MediaSource.VideoType == VideoType.BluRay && (!state.MediaSource.IsoPlaybackTitle.HasValue || !_mediaEncoder.SupportsLibBluray)))
             {
                 var concatFilePath = Path.Join(_configurationManager.CommonApplicationPaths.CachePath, "concat", state.MediaSource.Id + ".concat");
                 if (!File.Exists(concatFilePath))
@@ -1270,8 +1271,76 @@ namespace MediaBrowser.Controller.MediaEncoding
                     .Append(concatFilePath)
                     .Append("\" ");
             }
+            else if (state.MediaSource.VideoType == VideoType.Dvd
+                && state.MediaSource.IsoPlaybackTitle.HasValue
+                && _mediaEncoder.SupportsDvdVideo)
+            {
+                // Unpacked DVD directory with an explicit title selection: use dvdvideo demuxer.
+                // IsoPlaybackTitle is 1-based.
+                var titleNumber = state.MediaSource.IsoPlaybackTitle.Value;
+                arg.Append(" -f dvdvideo -title ")
+                    .Append(titleNumber)
+                    .Append(" -i ")
+                    .Append(_mediaEncoder.GetInputPathArgument(state));
+            }
+            else if (state.MediaSource.VideoType == VideoType.BluRay
+                && state.MediaSource.IsoPlaybackTitle.HasValue
+                && _mediaEncoder.SupportsLibBluray)
+            {
+                // Unpacked Blu-ray directory with an explicit title selection: use libbluray title selection.
+                // IsoPlaybackTitle is 1-based for display; libbluray expects the specific number of the .mpls file.
+                var titleNumber = state.MediaSource.IsoPlaybackTitle.Value;
+                arg.Append(" -playlist ")
+                    .Append(titleNumber.ToString(CultureInfo.InvariantCulture).PadLeft(5, '0'))
+                    .Append(" -i ")
+                    .Append(_mediaEncoder.GetInputPathArgument(state));
+            }
+            else if (state.MediaSource.VideoType == VideoType.Iso
+                && state.MediaSource.IsoType == IsoType.Dvd)
+            {
+                if (_mediaEncoder.SupportsDvdVideo)
+                {
+                    // DVD ISO: use the dvdvideo demuxer which requires libdvdnav + libdvdread.
+                    // Use the stored playback title; if none is set, resolve the longest title on demand.
+                    var titleNumber = state.MediaSource.IsoPlaybackTitle
+                        ?? GetLongestIsoTitleNumber(state.MediaPath, IsoType.Dvd, _mediaEncoder);
+                    arg.Append(" -f dvdvideo -title ")
+                        .Append(titleNumber)
+                        .Append(" -i ")
+                        .Append(_mediaEncoder.GetInputPathArgument(state));
+                }
+                else
+                {
+                    // dvdvideo demuxer unavailable: fall back to passing the ISO path directly.
+                    arg.Append(" -i ")
+                        .Append(_mediaEncoder.GetInputPathArgument(state));
+                }
+            }
+            else if (state.MediaSource.VideoType == VideoType.Iso
+                && state.MediaSource.IsoType == IsoType.BluRay)
+            {
+                if (_mediaEncoder.SupportsLibBluray)
+                {
+                    // Blu-ray ISO: pass -playlist N (BDMV/PLAYLIST/?????.mpls) before the input.
+                    // IsoPlaybackTitle is 1-based for display; libbluray expects the exact .mpls number.
+                    // If no title is stored, resolve the longest title on demand.
+                    var titleNumber = state.MediaSource.IsoPlaybackTitle
+                        ?? GetLongestIsoTitleNumber(state.MediaPath, IsoType.BluRay, _mediaEncoder);
+                    arg.Append(" -playlist ")
+                        .Append(titleNumber.ToString(CultureInfo.InvariantCulture).PadLeft(5, '0'))
+                        .Append(" -i ")
+                        .Append(_mediaEncoder.GetInputPathArgument(state));
+                }
+                else
+                {
+                    // libbluray unavailable: fall back to passing the ISO path directly.
+                    arg.Append(" -i ")
+                        .Append(_mediaEncoder.GetInputPathArgument(state));
+                }
+            }
             else
             {
+                // Covers generic ISOs (IsoType = null), plain video files, and anything not handled above.
                 arg.Append(" -i ")
                     .Append(_mediaEncoder.GetInputPathArgument(state));
             }
@@ -3078,6 +3147,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <returns>System.String.</returns>
         public string GetMapArgs(EncodingJobInfo state)
         {
+            var mapAll = state.MapAll.HasValue && state.MapAll.Value;
+
             // If we don't have known media info
             // If input is video, use -sn to drop subtitles
             // Otherwise just return empty
@@ -3115,7 +3186,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 args += "-vn";
             }
 
-            if (state.AudioStream is not null)
+            if (!mapAll && state.AudioStream is not null)
             {
                 int audioStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.AudioStream);
                 if (state.AudioStream.IsExternal)
@@ -3136,6 +3207,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                         " -map 0:{0}",
                         audioStreamIndex);
                 }
+            }
+            else if (mapAll)
+            {
+                args += " -map 0:a";
             }
             else
             {
@@ -7792,6 +7867,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Get the output codec name
             var codec = GetAudioEncoder(state);
 
+            if (state.MapAll.HasValue && state.MapAll.Value)
+            {
+                return "-codec:a " + codec;
+            }
+
             var args = "-codec:a:0 " + codec;
 
             if (IsCopyCodec(codec))
@@ -7923,6 +8003,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             for (var i = 0; i < length; i++)
             {
                 var currentMediaStream = mediaStreams[i];
+
+                if (currentMediaStream.Codec == "dvd_nav_packet")
+                {
+                    continue;
+                }
+
                 if (currentMediaStream == streamToFind)
                 {
                     return index;
@@ -7982,6 +8068,37 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // -vsync is deprecated in FFmpeg 5.1 and will be removed in the future.
             return $" -vsync {videoSync}";
+        }
+
+        /// <summary>
+        /// Resolves the 1-based title number of the longest title in a DVD or Blu-ray ISO.
+        /// Used as a fallback at encode time when <see cref="MediaSourceInfo.IsoPlaybackTitle"/> is not set.
+        /// Falls back to title 1 if the title list is empty or enumeration fails.
+        /// </summary>
+        /// <param name="path">The path to the media.</param>
+        /// <param name="isoType">The type of iso if applicable.</param>
+        /// <param name="mediaEncoder">The media encoder instance.</param>
+        /// <returns>The number for the longest title.</returns>
+        public static int GetLongestIsoTitleNumber(string path, IsoType isoType, IMediaEncoder mediaEncoder)
+        {
+            try
+            {
+                var titles = mediaEncoder.GetIsoTitles(path, isoType);
+                if (titles.Count == 0)
+                {
+                    return 1;
+                }
+
+                return titles
+                    .OrderByDescending(t => t.DurationTicks ?? 0)
+                    .ThenByDescending(t => t.TitleNumber)
+                    .First()
+                    .TitleNumber;
+            }
+            catch
+            {
+                return 1;
+            }
         }
     }
 }

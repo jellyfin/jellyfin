@@ -135,6 +135,13 @@ namespace MediaBrowser.Controller.Entities
         public IsoType? IsoType { get; set; }
 
         /// <summary>
+        /// Gets or sets the 1-based playback title number to use when playing a DVD/Blu-ray ISO or directory.
+        /// When null, the default (longest) title is used.
+        /// </summary>
+        /// <value>The playback title number, or null for the default title.</value>
+        public int? IsoPlaybackTitle { get; set; }
+
+        /// <summary>
         /// Gets or sets the video3 D format.
         /// </summary>
         /// <value>The video3 D format.</value>

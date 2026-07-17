@@ -574,6 +574,52 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return !string.IsNullOrEmpty(option) && GetProcessExitCode(proberPath, $"-loglevel quiet -f lavfi -i nullsrc=s=1x1:d=1 -{option}");
         }
 
+        /// <summary>
+        /// Checks whether the <c>dvdvideo</c> demuxer is compiled into ffmpeg.
+        /// The demuxer requires libdvdnav and libdvdread at build time.
+        /// </summary>
+        /// <returns><c>true</c> if dvdvideo is listed in <c>ffmpeg -formats</c>.</returns>
+        public bool CheckDvdVideoSupport()
+        {
+            string output;
+            try
+            {
+                output = GetProcessOutput(_encoderPath, "-formats", false, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking dvdvideo demuxer support");
+                return false;
+            }
+
+            return output.Contains("dvdvideo", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Checks whether the <c>bluray</c> input protocol is compiled into ffmpeg.
+        /// The protocol requires libbluray at build time.
+        /// </summary>
+        /// <returns><c>true</c> if bluray is listed in <c>ffmpeg -protocols</c>.</returns>
+        public bool CheckLibBluraySupport()
+        {
+            string output;
+            try
+            {
+                output = GetProcessOutput(_encoderPath, "-protocols", false, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking libbluray protocol support");
+                return false;
+            }
+
+            // The output lists one protocol per line; match the token exactly to avoid false positives.
+            // Split on both \r\n and \n to handle different line-ending conventions.
+            return output
+                .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+                .Any(line => string.Equals(line.Trim(), "bluray", StringComparison.OrdinalIgnoreCase));
+        }
+
         private IEnumerable<string> GetCodecs(Codec codec)
         {
             string codecstr = codec == Codec.Encoder ? "encoders" : "decoders";
