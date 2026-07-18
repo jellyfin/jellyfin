@@ -16,6 +16,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using Microsoft.Extensions.Logging;
 using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
 
 namespace MediaBrowser.Controller.Entities.Audio
@@ -163,26 +164,74 @@ namespace MediaBrowser.Controller.Entities.Audio
             return id;
         }
 
+        /// <summary>
+        /// Maximum time a single child item's metadata refresh is allowed to run before it is abandoned as hung.
+        /// A single slow or stuck provider call must not be allowed to stall the entire album refresh
+        /// (see <see cref="MediaBrowser.Controller.LibraryTaskScheduler.ILimitedConcurrencyLibraryScheduler"/>, which bounds how many run at once but not how long any one of them may take).
+        /// </summary>
+        private static readonly TimeSpan _childMetadataRefreshTimeout = TimeSpan.FromSeconds(60);
+
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var items = GetRecursiveChildren();
 
-            var totalItems = items.Count;
-            var numComplete = 0;
-
             var childUpdateType = ItemUpdateType.None;
+            var updateTypeLock = new object();
+            var numFailed = 0;
 
-            foreach (var item in items)
+            async Task RefreshChildAsync(BaseItem item)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeoutCts.CancelAfter(_childMetadataRefreshTimeout);
 
-                var updateType = await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-                childUpdateType = childUpdateType | updateType;
+                try
+                {
+                    var updateType = await item.RefreshMetadata(refreshOptions, timeoutCts.Token).ConfigureAwait(false);
+                    lock (updateTypeLock)
+                    {
+                        childUpdateType |= updateType;
+                    }
+                }
+                catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+                {
+                    Interlocked.Increment(ref numFailed);
+                    Logger.LogError(
+                        "Timed out after {Timeout} refreshing metadata for {ItemType} '{ItemName}' ({Path}) in album '{AlbumName}'. Skipping this item and continuing with the rest of the album.",
+                        _childMetadataRefreshTimeout,
+                        item.GetType().Name,
+                        item.Name,
+                        item.Path,
+                        Name);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    Interlocked.Increment(ref numFailed);
+                    Logger.LogError(
+                        ex,
+                        "Error refreshing metadata for {ItemType} '{ItemName}' ({Path}) in album '{AlbumName}'. Skipping this item and continuing with the rest of the album.",
+                        item.GetType().Name,
+                        item.Name,
+                        item.Path,
+                        Name);
+                }
+            }
 
-                numComplete++;
-                double percent = numComplete;
-                percent /= totalItems;
-                progress.Report(percent * 95);
+            var itemsProgress = new Progress<double>(p => progress.Report(p * 0.95));
+            await LimitedConcurrencyLibraryScheduler
+                .Enqueue(
+                    items.ToArray(),
+                    (item, _) => RefreshChildAsync(item),
+                    itemsProgress,
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            if (numFailed > 0)
+            {
+                Logger.LogWarning(
+                    "Finished refreshing metadata for album '{AlbumName}': {FailedCount} of {TotalCount} child items failed or timed out and were skipped.",
+                    Name,
+                    numFailed,
+                    items.Count);
             }
 
             var parentRefreshOptions = refreshOptions;
