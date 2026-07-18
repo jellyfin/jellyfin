@@ -6,6 +6,7 @@ namespace MediaBrowser.Controller.Entities
     {
         Library = 0,
         Channel = 1,
-        LiveTV = 2
+        LiveTV = 2,
+        External = 3
     }
 }
