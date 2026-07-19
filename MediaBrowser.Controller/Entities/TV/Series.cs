@@ -332,10 +332,17 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     await item.RefreshMetadata(refreshOptions, timeoutCts.Token).ConfigureAwait(false);
                 }
-                catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+                catch (OperationCanceledException ex)
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        // The caller's token was cancelled, not our own timeout. Propagate it.
+                        throw;
+                    }
+
                     Interlocked.Increment(ref numFailed);
                     Logger.LogError(
+                        ex,
                         "Timed out after {Timeout} refreshing metadata for {ItemType} '{ItemName}' ({Path}) in series '{SeriesName}'. Skipping this item and continuing with the rest of the series.",
                         _childMetadataRefreshTimeout,
                         item.GetType().Name,
@@ -343,7 +350,7 @@ namespace MediaBrowser.Controller.Entities.TV
                         item.Path,
                         Name);
                 }
-                catch (Exception ex) when (ex is not OperationCanceledException)
+                catch (Exception ex)
                 {
                     Interlocked.Increment(ref numFailed);
                     Logger.LogError(

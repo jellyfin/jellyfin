@@ -192,10 +192,17 @@ namespace MediaBrowser.Controller.Entities.Audio
                         childUpdateType |= updateType;
                     }
                 }
-                catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+                catch (OperationCanceledException ex)
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        // The caller's token was cancelled, not our own timeout. Propagate it.
+                        throw;
+                    }
+
                     Interlocked.Increment(ref numFailed);
                     Logger.LogError(
+                        ex,
                         "Timed out after {Timeout} refreshing metadata for {ItemType} '{ItemName}' ({Path}) in album '{AlbumName}'. Skipping this item and continuing with the rest of the album.",
                         _childMetadataRefreshTimeout,
                         item.GetType().Name,
@@ -203,7 +210,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                         item.Path,
                         Name);
                 }
-                catch (Exception ex) when (ex is not OperationCanceledException)
+                catch (Exception ex)
                 {
                     Interlocked.Increment(ref numFailed);
                     Logger.LogError(
