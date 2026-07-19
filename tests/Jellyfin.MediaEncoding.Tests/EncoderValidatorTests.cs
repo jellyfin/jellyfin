@@ -42,7 +42,7 @@ namespace Jellyfin.MediaEncoding.Tests
                 Add(EncoderValidatorTestsData.FFmpegV44Output, new Version(4, 4));
                 Add(EncoderValidatorTestsData.FFmpegV432Output, new Version(4, 3, 2));
                 Add(EncoderValidatorTestsData.FFmpegGitUnknownOutput2, new Version(4, 4));
-                Add(EncoderValidatorTestsData.FFmpegGitWithoutLibpostprocOutput, new Version(8, 1));
+                Add(EncoderValidatorTestsData.FFmpegGitWithoutLibpostprocOutput, new Version(4, 4));
                 Add(EncoderValidatorTestsData.FFmpegGitUnknownOutput, null);
             }
         }
