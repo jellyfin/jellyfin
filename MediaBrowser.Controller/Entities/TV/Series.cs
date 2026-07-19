@@ -27,6 +27,13 @@ namespace MediaBrowser.Controller.Entities.TV
     /// </summary>
     public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IMetadataContainer, ISupportsBoxSetGrouping
     {
+        /// <summary>
+        /// Maximum time a single child item's metadata refresh is allowed to run before it is abandoned as hung.
+        /// A single slow or stuck provider call must not be allowed to stall the entire series refresh
+        /// (see <see cref="MediaBrowser.Controller.LibraryTaskScheduler.ILimitedConcurrencyLibraryScheduler"/>, which bounds how many run at once but not how long any one of them may take).
+        /// </summary>
+        private static readonly TimeSpan _childMetadataRefreshTimeout = TimeSpan.FromSeconds(60);
+
         public Series()
         {
             AirDays = Array.Empty<DayOfWeek>();
@@ -297,13 +304,6 @@ namespace MediaBrowser.Controller.Entities.TV
 
             return allEpisodes.DistinctBy(i => i.Id).Reverse();
         }
-
-        /// <summary>
-        /// Maximum time a single child item's metadata refresh is allowed to run before it is abandoned as hung.
-        /// A single slow or stuck provider call must not be allowed to stall the entire series refresh
-        /// (see <see cref="MediaBrowser.Controller.LibraryTaskScheduler.ILimitedConcurrencyLibraryScheduler"/>, which bounds how many run at once but not how long any one of them may take).
-        /// </summary>
-        private static readonly TimeSpan _childMetadataRefreshTimeout = TimeSpan.FromSeconds(60);
 
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {

@@ -27,6 +27,13 @@ namespace MediaBrowser.Controller.Entities.Audio
     [Common.RequiresSourceSerialisation]
     public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>, IMetadataContainer
     {
+        /// <summary>
+        /// Maximum time a single child item's metadata refresh is allowed to run before it is abandoned as hung.
+        /// A single slow or stuck provider call must not be allowed to stall the entire album refresh
+        /// (see <see cref="MediaBrowser.Controller.LibraryTaskScheduler.ILimitedConcurrencyLibraryScheduler"/>, which bounds how many run at once but not how long any one of them may take).
+        /// </summary>
+        private static readonly TimeSpan _childMetadataRefreshTimeout = TimeSpan.FromSeconds(60);
+
         public MusicAlbum()
         {
             Artists = Array.Empty<string>();
@@ -163,13 +170,6 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             return id;
         }
-
-        /// <summary>
-        /// Maximum time a single child item's metadata refresh is allowed to run before it is abandoned as hung.
-        /// A single slow or stuck provider call must not be allowed to stall the entire album refresh
-        /// (see <see cref="MediaBrowser.Controller.LibraryTaskScheduler.ILimitedConcurrencyLibraryScheduler"/>, which bounds how many run at once but not how long any one of them may take).
-        /// </summary>
-        private static readonly TimeSpan _childMetadataRefreshTimeout = TimeSpan.FromSeconds(60);
 
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
