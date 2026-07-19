@@ -185,8 +185,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             { "libavdevice", new Version(58, 13) },
             { "libavfilter", new Version(7, 110) },
             { "libswscale", new Version(5, 9) },
-            { "libswresample", new Version(3, 9) },
-            { "libpostproc", new Version(55, 9) }
+            { "libswresample", new Version(3, 9) }
         };
 
         private readonly ILogger _logger;
