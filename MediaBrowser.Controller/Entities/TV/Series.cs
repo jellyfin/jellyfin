@@ -395,6 +395,10 @@ namespace MediaBrowser.Controller.Entities.TV
                     cancellationToken)
                 .ConfigureAwait(false);
 
+            // numFailed is mutated via Interlocked.Increment inside RefreshChildAsync, which the scheduler invokes
+            // through a delegate the analyzer cannot trace into. The preceding awaits on Enqueue (which awaits all
+            // worker tasks) establish a happens-before relationship, so the value read here is correctly synchronized.
+#pragma warning disable S2583
             if (numFailed > 0)
             {
                 Logger.LogWarning(
@@ -403,6 +407,7 @@ namespace MediaBrowser.Controller.Entities.TV
                     numFailed,
                     totalItems);
             }
+#pragma warning restore S2583
 
             refreshOptions = new MetadataRefreshOptions(refreshOptions);
             await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);

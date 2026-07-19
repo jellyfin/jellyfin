@@ -232,6 +232,10 @@ namespace MediaBrowser.Controller.Entities.Audio
                     cancellationToken)
                 .ConfigureAwait(false);
 
+            // numFailed is mutated via Interlocked.Increment inside RefreshChildAsync, which the scheduler invokes
+            // through a delegate the analyzer cannot trace into. The preceding await on Enqueue (which awaits all
+            // worker tasks) establishes a happens-before relationship, so the value read here is correctly synchronized.
+#pragma warning disable S2583
             if (numFailed > 0)
             {
                 Logger.LogWarning(
@@ -240,6 +244,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                     numFailed,
                     items.Count);
             }
+#pragma warning restore S2583
 
             var parentRefreshOptions = refreshOptions;
             if (childUpdateType > ItemUpdateType.None)
