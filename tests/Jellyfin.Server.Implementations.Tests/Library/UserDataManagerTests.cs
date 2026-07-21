@@ -206,4 +206,11 @@ public sealed class UserDataManagerTests : IDisposable
         Assert.Equal(222, result[fossilItem.Id].PlaybackPositionTicks);
         Assert.Equal(333, result[retiredItem.Id].PlaybackPositionTicks);
     }
+
+    [Fact]
+    public void GetUserData_NullUser_ThrowsArgumentNullException()
+    {
+        var item = CreateAudioBook();
+        Assert.Throws<ArgumentNullException>(() => _userDataManager.GetUserData(null!, item));
+    }
 }
