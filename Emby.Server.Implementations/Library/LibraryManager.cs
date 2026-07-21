@@ -1969,9 +1969,16 @@ namespace Emby.Server.Implementations.Library
         {
             var comparer = Comparers.FirstOrDefault(c => name == c.Type);
 
-            // If it requires a user, create a new one, and assign the user
+            // User-dependent comparers (IUserBaseItemComparer) need a User. With no user
+            // (anonymous/API-key /Items requests), substitute the SortName comparer so the
+            // result stays deterministic instead of 500-ing with an NRE inside the LINQ sort.
             if (comparer is IUserBaseItemComparer)
             {
+                if (user is null)
+                {
+                    return Comparers.FirstOrDefault(c => c.Type == ItemSortBy.SortName);
+                }
+
                 var userComparer = (IUserBaseItemComparer)Activator.CreateInstance(comparer.GetType())!; // only null for Nullable<T> instances
 
                 userComparer.User = user;

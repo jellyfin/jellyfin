@@ -238,6 +238,7 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public UserItemData GetUserData(User user, BaseItem item)
         {
+            ArgumentNullException.ThrowIfNull(user);
             var cacheKey = GetCacheKey(user.InternalId, item.Id);
             return _cache.GetOrAdd(
                 cacheKey,
