@@ -757,11 +757,17 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 if (string.IsNullOrEmpty(stream.Title))
                 {
-                    // mp4 missing track title workaround: fall back to handler_name if populated and not the default "SoundHandler"
-                    string handlerName = GetDictionaryValue(streamInfo.Tags, "handler_name");
-                    if (!string.IsNullOrEmpty(handlerName) && !string.Equals(handlerName, "SoundHandler", StringComparison.OrdinalIgnoreCase))
+                    // mp4 missing track title workaround: some muxers store the track title in a "name" tag
+                    stream.Title = GetDictionaryValue(streamInfo.Tags, "name");
+
+                    if (string.IsNullOrEmpty(stream.Title))
                     {
-                        stream.Title = handlerName;
+                        // fall back to handler_name if populated and not the default "SoundHandler"
+                        string handlerName = GetDictionaryValue(streamInfo.Tags, "handler_name");
+                        if (!string.IsNullOrEmpty(handlerName) && !string.Equals(handlerName, "SoundHandler", StringComparison.OrdinalIgnoreCase))
+                        {
+                            stream.Title = handlerName;
+                        }
                     }
                 }
             }
@@ -781,11 +787,17 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 if (string.IsNullOrEmpty(stream.Title))
                 {
-                    // mp4 missing track title workaround: fall back to handler_name if populated and not the default "SubtitleHandler"
-                    string handlerName = GetDictionaryValue(streamInfo.Tags, "handler_name");
-                    if (!string.IsNullOrEmpty(handlerName) && !string.Equals(handlerName, "SubtitleHandler", StringComparison.OrdinalIgnoreCase))
+                    // mp4 missing track title workaround: some muxers store the track title in a "name" tag
+                    stream.Title = GetDictionaryValue(streamInfo.Tags, "name");
+
+                    if (string.IsNullOrEmpty(stream.Title))
                     {
-                        stream.Title = handlerName;
+                        // fall back to handler_name if populated and not the default "SubtitleHandler"
+                        string handlerName = GetDictionaryValue(streamInfo.Tags, "handler_name");
+                        if (!string.IsNullOrEmpty(handlerName) && !string.Equals(handlerName, "SubtitleHandler", StringComparison.OrdinalIgnoreCase))
+                        {
+                            stream.Title = handlerName;
+                        }
                     }
                 }
             }
