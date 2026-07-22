@@ -309,7 +309,7 @@ public sealed class UserDataManagerTests : IDisposable
         var user = new User("test", "default", "default");
         SeedCommittedPosition(item.Id, user.Id, existingResume.Ticks);
 
-        var playedToCompletion = _userDataManager.UpdatePlayState(item, data, 0, user, wasStopped: true);
+        var playedToCompletion = _userDataManager.UpdatePlayState(item, data, 0, user.Id, wasStopped: true);
 
         Assert.Equal(existingResume.Ticks, data.PlaybackPositionTicks);
         Assert.False(playedToCompletion);
@@ -324,7 +324,7 @@ public sealed class UserDataManagerTests : IDisposable
         var data = CreateUserData(existingResume.Ticks);
         var user = new User("test", "default", "default");
 
-        var playedToCompletion = _userDataManager.UpdatePlayState(item, data, 0, user, wasStopped: false);
+        var playedToCompletion = _userDataManager.UpdatePlayState(item, data, 0, user.Id, wasStopped: false);
 
         Assert.Equal(0, data.PlaybackPositionTicks);
         Assert.False(playedToCompletion);

@@ -445,70 +445,23 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public bool UpdatePlayState(BaseItem item, UserItemData data, long? reportedPositionTicks, User? user = null, bool wasStopped = false)
+        public bool UpdatePlayState(BaseItem item, UserItemData data, long? reportedPositionTicks, Guid userId = default, bool wasStopped = false)
         {
             var previousPositionTicks = data.PlaybackPositionTicks;
-            var playedToCompletion = false;
-
             var runtimeTicks = item.GetRunTimeTicksForPlayState();
-
             var positionTicks = reportedPositionTicks ?? runtimeTicks;
-            var hasRuntime = runtimeTicks > 0;
 
-            // If a position has been reported, and if we know the duration
-            if (positionTicks > 0 && hasRuntime && item is not AudioBook && item is not Book)
+            (positionTicks, var playedToCompletion) = ResolveResumePosition(item, positionTicks, runtimeTicks);
+            if (playedToCompletion)
             {
-                var pctIn = decimal.Divide(positionTicks, runtimeTicks) * 100;
-
-                if (pctIn < _config.Configuration.MinResumePct)
-                {
-                    // ignore progress during the beginning
-                    positionTicks = 0;
-                }
-                else if (pctIn > _config.Configuration.MaxResumePct || positionTicks >= (runtimeTicks - TimeSpan.TicksPerSecond))
-                {
-                    // mark as completed close to the end
-                    positionTicks = 0;
-                    data.Played = playedToCompletion = true;
-                }
-                else
-                {
-                    // Enforce MinResumeDuration
-                    var durationSeconds = TimeSpan.FromTicks(runtimeTicks).TotalSeconds;
-                    if (durationSeconds < _config.Configuration.MinResumeDurationSeconds)
-                    {
-                        positionTicks = 0;
-                        data.Played = playedToCompletion = true;
-                    }
-                }
-            }
-            else if (positionTicks > 0 && hasRuntime && item is AudioBook)
-            {
-                var playbackPositionInMinutes = TimeSpan.FromTicks(positionTicks).TotalMinutes;
-                var remainingTimeInMinutes = TimeSpan.FromTicks(runtimeTicks - positionTicks).TotalMinutes;
-
-                if (playbackPositionInMinutes < _config.Configuration.MinAudiobookResume)
-                {
-                    // ignore progress during the beginning
-                    positionTicks = 0;
-                }
-                else if (remainingTimeInMinutes < _config.Configuration.MaxAudiobookResume || positionTicks >= runtimeTicks)
-                {
-                    // mark as completed close to the end
-                    positionTicks = 0;
-                    data.Played = playedToCompletion = true;
-                }
-            }
-            else if (!hasRuntime)
-            {
-                // If we don't know the runtime we'll just have to assume it was fully played
-                data.Played = playedToCompletion = true;
-                positionTicks = 0;
+                data.Played = true;
             }
 
-            if (wasStopped && reportedPositionTicks == 0 && positionTicks == 0 && !playedToCompletion && user is not null && previousPositionTicks > 0 && item.SupportsPositionTicksResume)
+            var stoppedAtStartWithoutCompletion = wasStopped && reportedPositionTicks == 0 && positionTicks == 0 && !playedToCompletion;
+            var hasResumableHistory = userId != Guid.Empty && previousPositionTicks > 0 && item.SupportsPositionTicksResume;
+            if (stoppedAtStartWithoutCompletion && hasResumableHistory)
             {
-                var committedPositionTicks = GetCommittedPositionTicks(item.Id, user.Id);
+                var committedPositionTicks = GetCommittedPositionTicks(item.Id, userId);
                 if (committedPositionTicks > 0)
                 {
                     positionTicks = committedPositionTicks;
@@ -529,6 +482,69 @@ namespace Emby.Server.Implementations.Library
             data.PlaybackPositionTicks = positionTicks;
 
             return playedToCompletion;
+        }
+
+        private (long PositionTicks, bool PlayedToCompletion) ResolveResumePosition(BaseItem item, long positionTicks, long runtimeTicks)
+        {
+            var hasRuntime = runtimeTicks > 0;
+
+            if (positionTicks > 0 && hasRuntime && item is not AudioBook && item is not Book)
+            {
+                return ResolveVideoResume(positionTicks, runtimeTicks);
+            }
+
+            if (positionTicks > 0 && hasRuntime && item is AudioBook)
+            {
+                return ResolveAudiobookResume(positionTicks, runtimeTicks);
+            }
+
+            if (!hasRuntime)
+            {
+                return (0, true);
+            }
+
+            return (positionTicks, false);
+        }
+
+        private (long PositionTicks, bool PlayedToCompletion) ResolveVideoResume(long positionTicks, long runtimeTicks)
+        {
+            var pctIn = decimal.Divide(positionTicks, runtimeTicks) * 100;
+
+            if (pctIn < _config.Configuration.MinResumePct)
+            {
+                return (0, false);
+            }
+
+            if (pctIn > _config.Configuration.MaxResumePct || positionTicks >= runtimeTicks - TimeSpan.TicksPerSecond)
+            {
+                return (0, true);
+            }
+
+            var durationSeconds = TimeSpan.FromTicks(runtimeTicks).TotalSeconds;
+            if (durationSeconds < _config.Configuration.MinResumeDurationSeconds)
+            {
+                return (0, true);
+            }
+
+            return (positionTicks, false);
+        }
+
+        private (long PositionTicks, bool PlayedToCompletion) ResolveAudiobookResume(long positionTicks, long runtimeTicks)
+        {
+            var playbackPositionInMinutes = TimeSpan.FromTicks(positionTicks).TotalMinutes;
+            var remainingTimeInMinutes = TimeSpan.FromTicks(runtimeTicks - positionTicks).TotalMinutes;
+
+            if (playbackPositionInMinutes < _config.Configuration.MinAudiobookResume)
+            {
+                return (0, false);
+            }
+
+            if (remainingTimeInMinutes < _config.Configuration.MaxAudiobookResume || positionTicks >= runtimeTicks)
+            {
+                return (0, true);
+            }
+
+            return (positionTicks, false);
         }
 
         /// <inheritdoc />

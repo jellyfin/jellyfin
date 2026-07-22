@@ -970,7 +970,7 @@ namespace Emby.Server.Implementations.Session
 
             if (positionTicks.HasValue)
             {
-                _userDataManager.UpdatePlayState(item, data, positionTicks.Value, user);
+                _userDataManager.UpdatePlayState(item, data, positionTicks.Value, user.Id);
                 changed = true;
             }
 
@@ -1171,7 +1171,7 @@ namespace Emby.Server.Implementations.Session
             bool playedToCompletion;
             if (positionTicks.HasValue)
             {
-                playedToCompletion = _userDataManager.UpdatePlayState(item, data, positionTicks.Value, user, wasStopped: true);
+                playedToCompletion = _userDataManager.UpdatePlayState(item, data, positionTicks.Value, user.Id, wasStopped: true);
             }
             else
             {
