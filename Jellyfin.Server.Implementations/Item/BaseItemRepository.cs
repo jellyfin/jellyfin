@@ -2053,20 +2053,23 @@ public sealed class BaseItemRepository
 
         if (filter.IsLiked.HasValue)
         {
+            var isLiked = filter.IsLiked.Value;
             baseQuery = baseQuery
-                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.Rating >= UserItemData.MinLikeValue);
+                .Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.Rating >= UserItemData.MinLikeValue) == isLiked);
         }
 
         if (filter.IsFavoriteOrLiked.HasValue)
         {
+            var isFavoriteOrLiked = filter.IsFavoriteOrLiked.Value;
             baseQuery = baseQuery
-                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.IsFavorite == filter.IsFavoriteOrLiked);
+                .Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.IsFavorite) == isFavoriteOrLiked);
         }
 
         if (filter.IsFavorite.HasValue)
         {
+            var isFavorite = filter.IsFavorite.Value;
             baseQuery = baseQuery
-                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.IsFavorite == filter.IsFavorite);
+                .Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.IsFavorite) == isFavorite);
         }
 
         if (filter.IsPlayed.HasValue)
@@ -2076,7 +2079,7 @@ public sealed class BaseItemRepository
             {
                 baseQuery = baseQuery.Where(e => context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId))
                     .Where(e => e.IsFolder == false && e.IsVirtualItem == false)
-                    .Where(f => f.UserData!.FirstOrDefault(e => e.UserId == filter.User!.Id && e.Played)!.Played)
+                    .Where(f => f.UserData!.Any(e => e.UserId == filter.User!.Id && e.Played))
                     .Any(f => f.SeriesPresentationUniqueKey == e.PresentationUniqueKey) == filter.IsPlayed);
             }
             else
@@ -2097,12 +2100,12 @@ public sealed class BaseItemRepository
             if (filter.IsResumable.Value)
             {
                 baseQuery = baseQuery
-                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.PlaybackPositionTicks > 0);
+                       .Where(e => e.UserData!.Any(f => f.UserId == filter.User!.Id && f.PlaybackPositionTicks > 0));
             }
             else
             {
                 baseQuery = baseQuery
-                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.PlaybackPositionTicks == 0);
+                       .Where(e => !e.UserData!.Any(f => f.UserId == filter.User!.Id && f.PlaybackPositionTicks > 0));
             }
         }
 
