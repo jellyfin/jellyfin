@@ -731,12 +731,9 @@ public class SkiaEncoder : IImageEncoder
                 throw new InvalidDataException("Could not decode image data.");
             }
 
-            if (firstImg.Width != imgWidth)
-            {
-                throw new InvalidOperationException("Image width does not match provided width.");
-            }
-
-            imgHeight = firstImg.Height;
+            var derivedHeight = (int)Math.Round(firstImg.Height * (double)imgWidth / firstImg.Width);
+            derivedHeight += derivedHeight % 2; // keep even for the JPEG encoder
+            imgHeight = derivedHeight;
         }
 
         // Make horizontal strips using every provided image.
@@ -760,17 +757,18 @@ public class SkiaEncoder : IImageEncoder
                     throw new InvalidDataException("Could not decode image data.");
                 }
 
-                if (img.Width != imgWidth)
+                if (img.Width != imgWidth || img.Height != imgHeight.Value)
                 {
-                    throw new InvalidOperationException("Image width does not match provided width.");
+                    // Normalize any off-by-a-few-pixels hardware-scaled frame to the exact
+                    // cell size so the grid stays aligned with the stored trickplay width.
+                    var targetInfo = new SKImageInfo(imgWidth, imgHeight.Value, img.ColorType, img.AlphaType, img.ColorSpace);
+                    using var resized = ResizeImage(img, targetInfo);
+                    canvas.DrawImage(resized, x * imgWidth, y * imgHeight.Value);
                 }
-
-                if (img.Height != imgHeight)
+                else
                 {
-                    throw new InvalidOperationException("Image height does not match first image height.");
+                    canvas.DrawBitmap(img, x * imgWidth, y * imgHeight.Value, DefaultSamplingOptions);
                 }
-
-                canvas.DrawBitmap(img, x * imgWidth, y * imgHeight.Value, DefaultSamplingOptions);
             }
         }
 
