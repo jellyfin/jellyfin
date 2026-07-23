@@ -757,7 +757,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 if (string.IsNullOrEmpty(stream.Title))
                 {
-                    // mp4 missing track title workaround: some muxers store the track title in a "name" tag
+                    // mp4 missing track title workaround: FFprobe exposes MP4 track names via the name tag rather than title
                     stream.Title = GetDictionaryValue(streamInfo.Tags, "name");
 
                     if (string.IsNullOrEmpty(stream.Title))
@@ -787,7 +787,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 if (string.IsNullOrEmpty(stream.Title))
                 {
-                    // mp4 missing track title workaround: some muxers store the track title in a "name" tag
+                    // mp4 missing track title workaround: FFprobe exposes MP4 track names via the name tag rather than title
                     stream.Title = GetDictionaryValue(streamInfo.Tags, "name");
 
                     if (string.IsNullOrEmpty(stream.Title))
