@@ -194,19 +194,34 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
 
         try
         {
-            if (!File.Exists(cacheFilePath))
+            var cacheFile = new FileInfo(cacheFilePath);
+            if (!cacheFile.Exists || cacheFile.Length == 0)
             {
                 string resultPath;
 
-                // Limit number of parallel (more precisely: concurrent) image encodings to prevent a high memory usage
-                using (await _parallelEncodingLimit.LockAsync().ConfigureAwait(false))
-                {
-                    resultPath = _imageEncoder.EncodeImage(originalImagePath, dateModified, cacheFilePath, autoOrient, orientation, quality, options, outputFormat);
-                }
+                var tempFilePath = string.Concat(cacheFilePath, ".", Guid.NewGuid().ToString("N"), ".tmp");
 
-                if (string.Equals(resultPath, originalImagePath, StringComparison.OrdinalIgnoreCase))
+                try
                 {
-                    return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
+                    // Limit number of parallel (more precisely: concurrent) image encodings to prevent a high memory usage
+                    using (await _parallelEncodingLimit.LockAsync().ConfigureAwait(false))
+                    {
+                        resultPath = _imageEncoder.EncodeImage(originalImagePath, dateModified, tempFilePath, autoOrient, orientation, quality, options, outputFormat);
+                    }
+
+                    if (string.Equals(resultPath, originalImagePath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
+                    }
+
+                    File.Move(tempFilePath, cacheFilePath, overwrite: true);
+                }
+                finally
+                {
+                    if (File.Exists(tempFilePath))
+                    {
+                        File.Delete(tempFilePath);
+                    }
                 }
             }
 
