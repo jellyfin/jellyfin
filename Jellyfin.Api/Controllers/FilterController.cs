@@ -158,13 +158,43 @@ public class FilterController : BaseJellyfinApiController
             IsSeries = isSeries
         };
 
+        var streamLanguageQuery = new InternalItemsQuery(user)
+        {
+            // It's possible that different langauges are only available on alternative versions.
+            // To fetch them all, owned items are included.
+            IncludeOwnedItems = true,
+            IncludeItemTypes = includeItemTypes,
+            DtoOptions = new DtoOptions
+            {
+                Fields = Array.Empty<ItemFields>(),
+                EnableImages = false,
+                EnableUserData = false
+            },
+            IsAiring = isAiring,
+            IsMovie = isMovie,
+            IsSports = isSports,
+            IsKids = isKids,
+            IsNews = isNews,
+            IsSeries = isSeries
+        };
+
         if ((recursive ?? true) || parentItem is UserView || parentItem is ICollectionFolder)
         {
-            genreQuery.AncestorIds = parentItem is null ? Array.Empty<Guid>() : new[] { parentItem.Id };
+            var ancestorIds = parentItem is null ? Array.Empty<Guid>() : new[] { parentItem.Id };
+            genreQuery.AncestorIds = ancestorIds;
+            streamLanguageQuery.AncestorIds = ancestorIds;
         }
         else
         {
             genreQuery.Parent = parentItem;
+            streamLanguageQuery.Parent = parentItem;
+        }
+
+        if ((includeItemTypes.Contains(BaseItemKind.Series) || includeItemTypes.Contains(BaseItemKind.Season))
+            && !includeItemTypes.Contains(BaseItemKind.Episode))
+        {
+            // streams are joined on epsiodes not shows or seasons
+            streamLanguageQuery.IncludeItemTypes = [.. includeItemTypes, BaseItemKind.Episode];
         }
 
         if (includeItemTypes.Length == 1
@@ -188,10 +218,13 @@ public class FilterController : BaseJellyfinApiController
             }).ToArray();
         }
 
-        if (includeItemTypes.Contains(BaseItemKind.Movie) || includeItemTypes.Contains(BaseItemKind.Series))
+        if (includeItemTypes.Contains(BaseItemKind.Movie)
+            || includeItemTypes.Contains(BaseItemKind.Series)
+            || includeItemTypes.Contains(BaseItemKind.Season)
+            || includeItemTypes.Contains(BaseItemKind.Episode))
         {
             filters.AudioLanguages = _libraryManager
-                .GetMediaStreamLanguages(MediaStreamType.Audio)
+                .GetMediaStreamLanguages(MediaStreamType.Audio, streamLanguageQuery)
                 .Select(language =>
                 {
                     var culture = _localization.FindLanguageInfo(language);
@@ -204,7 +237,7 @@ public class FilterController : BaseJellyfinApiController
                 .OrderBy(l => l.Name)
                 .ToArray();
             filters.SubtitleLanguages = _libraryManager
-                .GetMediaStreamLanguages(MediaStreamType.Subtitle)
+                .GetMediaStreamLanguages(MediaStreamType.Subtitle, streamLanguageQuery)
                 .Select(language =>
                 {
                     var culture = _localization.FindLanguageInfo(language);

@@ -65,8 +65,13 @@ public class ItemPersistenceService : IItemPersistenceService
             descendantIds.Add(id);
         }
 
+        // Use WhereOneOrMany instead of a raw HashSet.Contains so large id sets are bound as a
+        // single parameter (json_each) rather than one SQL variable per id, which would otherwise
+        // overflow SQLite's variable limit when deleting many items at once (e.g. migrations).
+        var ownerIds = descendantIds.ToArray();
         var extraIds = context.BaseItems
-            .Where(e => e.OwnerId.HasValue && descendantIds.Contains(e.OwnerId.Value))
+            .Where(e => e.OwnerId.HasValue)
+            .WhereOneOrMany(ownerIds, e => e.OwnerId!.Value)
             .Select(e => e.Id)
             .ToArray();
 
@@ -557,9 +562,11 @@ public class ItemPersistenceService : IItemPersistenceService
                     }
                 }
 
+                // Deduplicate; local (file-based) relationships take priority over linked (user-merged)
+                // ones, matching the LinkedChildren migration.
                 newLinkedChildren = newLinkedChildren
                     .GroupBy(c => c.ChildId)
-                    .Select(g => g.Last())
+                    .Select(g => g.OrderBy(c => c.Type == LinkedChildType.LocalAlternateVersion ? 0 : 1).First())
                     .ToList();
 
                 var childIdsToCheck = newLinkedChildren.Select(c => c.ChildId).ToList();

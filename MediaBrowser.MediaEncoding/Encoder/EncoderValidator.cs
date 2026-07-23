@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Versioning;
+using System.Text;
 using System.Text.RegularExpressions;
 using MediaBrowser.Controller.MediaEncoding;
 using Microsoft.Extensions.Logging;
@@ -184,8 +185,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             { "libavdevice", new Version(58, 13) },
             { "libavfilter", new Version(7, 110) },
             { "libswscale", new Version(5, 9) },
-            { "libswresample", new Version(3, 9) },
-            { "libpostproc", new Version(55, 9) }
+            { "libswresample", new Version(3, 9) }
         };
 
         private readonly ILogger _logger;
@@ -645,7 +645,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false,
                     RedirectStandardInput = redirectStandardIn,
+                    StandardOutputEncoding = Encoding.UTF8,
                     RedirectStandardOutput = true,
+                    StandardErrorEncoding = Encoding.UTF8,
                     RedirectStandardError = true
                 }
             })

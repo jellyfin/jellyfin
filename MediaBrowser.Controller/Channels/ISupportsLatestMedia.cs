@@ -1,11 +1,12 @@
-#pragma warning disable CS1591
-
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Channels
 {
+    /// <summary>
+    /// Interface for channels that support retrieving the latest media.
+    /// </summary>
     public interface ISupportsLatestMedia
     {
         /// <summary>

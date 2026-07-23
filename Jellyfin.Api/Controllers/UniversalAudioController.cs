@@ -163,7 +163,7 @@ public class UniversalAudioController : BaseJellyfinApiController
                 Request.HttpContext.GetNormalizedRemoteIP());
         }
 
-        _mediaInfoHelper.SortMediaSources(info, maxStreamingBitrate);
+        _mediaInfoHelper.SortMediaSources(info, maxStreamingBitrate, item.Id);
 
         foreach (var source in info.MediaSources)
         {

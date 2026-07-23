@@ -223,6 +223,35 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
                 toInsert = toInsert.Where(lc => existingChildIds.Contains(lc.ChildId)).ToList();
 
+                // Drop linked (user-merged) entries that point at items the parent owns (local
+                // file-based alternates or extras). These stem from legacy data that merged an
+                // owned item onto its own primary and would wrongly mark server-merged groups
+                // as user-merged (splittable).
+                var linkedChildIds = toInsert
+                    .Where(lc => lc.ChildType == LinkedChildType.LinkedAlternateVersion)
+                    .Select(lc => lc.ChildId)
+                    .Distinct()
+                    .ToList();
+
+                if (linkedChildIds.Count > 0)
+                {
+                    var ownerIdByChildId = context.BaseItems
+                        .WhereOneOrMany(linkedChildIds, b => b.Id)
+                        .Where(b => b.OwnerId.HasValue)
+                        .Select(b => new { b.Id, b.OwnerId })
+                        .ToDictionary(b => b.Id, b => b.OwnerId!.Value);
+
+                    var removedCount = toInsert.RemoveAll(lc =>
+                        lc.ChildType == LinkedChildType.LinkedAlternateVersion
+                        && ownerIdByChildId.TryGetValue(lc.ChildId, out var ownerId)
+                        && ownerId.Equals(lc.ParentId));
+
+                    if (removedCount > 0)
+                    {
+                        _logger.LogInformation("Skipped {Count} LinkedAlternateVersion records pointing at items owned by their parent.", removedCount);
+                    }
+                }
+
                 context.LinkedChildren.AddRange(toInsert);
                 context.SaveChanges();
 

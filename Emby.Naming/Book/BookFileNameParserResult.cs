@@ -1,5 +1,3 @@
-using System;
-
 namespace Emby.Naming.Book
 {
     /// <summary>
@@ -14,6 +12,7 @@ namespace Emby.Naming.Book
         {
             Name = null;
             Index = null;
+            ParentIndex = null;
             Year = null;
             SeriesName = null;
         }
@@ -27,6 +26,11 @@ namespace Emby.Naming.Book
         /// Gets or sets the book index.
         /// </summary>
         public int? Index { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parent index number.
+        /// </summary>
+        public int? ParentIndex { get; set; }
 
         /// <summary>
         /// Gets or sets the publication year.

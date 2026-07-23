@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.IO;
 
-public class ManagedFileSystemTests
+public partial class ManagedFileSystemTests
 {
     private readonly IFixture _fixture;
     private readonly ManagedFileSystem _sut;
@@ -117,7 +117,7 @@ public class ManagedFileSystemTests
     }
 
     [SuppressMessage("Naming Rules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "Have to")]
-    [DllImport("libc", SetLastError = true, CharSet = CharSet.Ansi)]
+    [LibraryImport("libc", SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
-    private static extern int symlink(string target, string linkpath);
+    private static partial int symlink([MarshalAs(UnmanagedType.LPStr)] string target, [MarshalAs(UnmanagedType.LPStr)] string linkpath);
 }

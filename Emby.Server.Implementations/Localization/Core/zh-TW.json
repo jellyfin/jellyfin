@@ -106,5 +106,7 @@
     "TaskMoveTrickplayImages": "遷移快轉縮圖位置",
     "TaskMoveTrickplayImagesDescription": "根據媒體庫的設定遷移快轉縮圖的檔案。",
     "CleanupUserDataTask": "用戶資料清理工作",
-    "CleanupUserDataTaskDescription": "從用戶資料中清除已被刪除超過 90 天的媒體的相關資料。"
+    "CleanupUserDataTaskDescription": "從用戶資料中清除已被刪除超過 90 天的媒體的相關資料。",
+    "Original": "原作",
+    "LyricDownloadFailureFromForItem": "無法從 {0} 下載 {1} 的歌詞"
 }

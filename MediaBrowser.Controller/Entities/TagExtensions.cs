@@ -15,6 +15,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException(nameof(name));
             }
 
+            name = name.Trim();
             var current = item.Tags;
 
             if (!current.Contains(name, StringComparison.OrdinalIgnoreCase))

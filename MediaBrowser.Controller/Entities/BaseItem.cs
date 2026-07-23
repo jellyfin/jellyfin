@@ -23,7 +23,6 @@ using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
@@ -87,6 +86,8 @@ namespace MediaBrowser.Controller.Entities
             Model.Entities.ExtraType.Featurette,
             Model.Entities.ExtraType.Short
         };
+
+        private static readonly char[] VersionDelimiters = ['-', '_', '.'];
 
         private string _sortName;
 
@@ -1100,8 +1101,9 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            var list = GetAllItemsForMediaSources();
-            var result = list.Select(i => GetVersionInfo(enablePathSubstitution, i.Item, i.MediaSourceType)).ToList();
+            var list = GetAllItemsForMediaSources().ToList();
+            var commonPrefix = GetCommonNamePrefix(list);
+            var result = list.Select(i => GetVersionInfo(enablePathSubstitution, i.Item, i.MediaSourceType, commonPrefix)).ToList();
 
             if (IsActiveRecording())
             {
@@ -1111,17 +1113,15 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            return result.OrderBy(i =>
-            {
-                if (i.VideoType == VideoType.VideoFile)
-                {
-                    return 0;
-                }
+            // The source belonging to the item being queried sorts first so it is the default the client plays.
+            var selfId = Id.ToString("N", CultureInfo.InvariantCulture);
 
-                return 1;
-            }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
-            .ThenByDescending(i => i, new MediaSourceWidthComparator())
-            .ToArray();
+            return result
+                .OrderByDescending(i => string.Equals(i.Id, selfId, StringComparison.OrdinalIgnoreCase))
+                .ThenBy(i => i.VideoType == VideoType.VideoFile ? 0 : 1)
+                .ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
+                .ThenByDescending(i => i, new MediaSourceWidthComparator())
+                .ToArray();
         }
 
         protected virtual IEnumerable<(BaseItem Item, MediaSourceType MediaSourceType)> GetAllItemsForMediaSources()
@@ -1129,20 +1129,12 @@ namespace MediaBrowser.Controller.Entities
             return Enumerable.Empty<(BaseItem, MediaSourceType)>();
         }
 
-        private MediaSourceInfo GetVersionInfo(bool enablePathSubstitution, BaseItem item, MediaSourceType type)
+        private MediaSourceInfo GetVersionInfo(bool enablePathSubstitution, BaseItem item, MediaSourceType type, string commonPrefix = null)
         {
             ArgumentNullException.ThrowIfNull(item);
 
             var protocol = item.PathProtocol;
-
-            // Resolve the item path so everywhere we use the media source it will always point to
-            // the correct path even if symlinks are in use. Calling ResolveLinkTarget on a non-link
-            // path will return null, so it's safe to check for all paths.
             var itemPath = item.Path;
-            if (protocol is MediaProtocol.File && FileSystemHelper.ResolveLinkTarget(itemPath, returnFinalTarget: true) is { Exists: true } linkInfo)
-            {
-                itemPath = linkInfo.FullName;
-            }
 
             var info = new MediaSourceInfo
             {
@@ -1150,7 +1142,7 @@ namespace MediaBrowser.Controller.Entities
                 Protocol = protocol ?? MediaProtocol.File,
                 MediaStreams = MediaSourceManager.GetMediaStreams(item.Id),
                 MediaAttachments = MediaSourceManager.GetMediaAttachments(item.Id),
-                Name = GetMediaSourceName(item),
+                Name = GetMediaSourceName(item, commonPrefix),
                 Path = enablePathSubstitution ? GetMappedPath(item, itemPath, protocol) : itemPath,
                 RunTimeTicks = item.RunTimeTicks,
                 Container = item.Container,
@@ -1229,7 +1221,7 @@ namespace MediaBrowser.Controller.Entities
             return info;
         }
 
-        internal string GetMediaSourceName(BaseItem item)
+        internal string GetMediaSourceName(BaseItem item, string commonPrefix = null)
         {
             var terms = new List<string>();
 
@@ -1237,12 +1229,31 @@ namespace MediaBrowser.Controller.Entities
             if (item.IsFileProtocol && !string.IsNullOrEmpty(path))
             {
                 var displayName = System.IO.Path.GetFileNameWithoutExtension(path);
-                if (HasLocalAlternateVersions)
+
+                // Prefer the suffix that differs from the other versions: strip the prefix shared by
+                // all sibling files. This works regardless of folder layout, so it also labels episode
+                // versions that share a season folder (e.g. "Greyscale" instead of the full
+                // "Show - S01E02 - Title - Greyscale"). The prefix is already retreated to a delimiter
+                // boundary (see GetCommonVersionPrefix).
+                if (!string.IsNullOrEmpty(commonPrefix)
+                    && displayName.Length > commonPrefix.Length
+                    && displayName.StartsWith(commonPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    var name = displayName.AsSpan(commonPrefix.Length).TrimStart([' ', .. VersionDelimiters]);
+                    if (!name.IsWhiteSpace())
+                    {
+                        terms.Add(name.ToString());
+                    }
+                }
+
+                // Fall back to the containing folder name (the common layout for movie versions, and
+                // the path taken when no common prefix could be derived).
+                if (terms.Count == 0 && HasLocalAlternateVersions)
                 {
                     var containingFolderName = System.IO.Path.GetFileName(ContainingFolderPath);
                     if (displayName.Length > containingFolderName.Length && displayName.StartsWith(containingFolderName, StringComparison.OrdinalIgnoreCase))
                     {
-                        var name = displayName.AsSpan(containingFolderName.Length).TrimStart([' ', '-']);
+                        var name = displayName.AsSpan(containingFolderName.Length).TrimStart([' ', .. VersionDelimiters]);
                         if (!name.IsWhiteSpace())
                         {
                             terms.Add(name.ToString());
@@ -1297,6 +1308,98 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return string.Join('/', terms);
+        }
+
+        /// <summary>
+        /// Derives the prefix shared by the supplied media source items' file names, used to strip the
+        /// common part and surface a short version label per source. Returns null when there are fewer
+        /// than two file-based sources, since there is nothing to differentiate.
+        /// </summary>
+        /// <param name="items">The media source items.</param>
+        /// <returns>The shared prefix, or null when no useful prefix exists.</returns>
+        private static string GetCommonNamePrefix(IReadOnlyList<(BaseItem Item, MediaSourceType MediaSourceType)> items)
+        {
+            var fileNames = new List<string>();
+            foreach (var (item, _) in items)
+            {
+                if (item.IsFileProtocol && !string.IsNullOrEmpty(item.Path))
+                {
+                    fileNames.Add(System.IO.Path.GetFileNameWithoutExtension(item.Path));
+                }
+            }
+
+            if (fileNames.Count < 2)
+            {
+                return null;
+            }
+
+            var prefix = GetCommonVersionPrefix(fileNames);
+            return string.IsNullOrEmpty(prefix) ? null : prefix;
+        }
+
+        /// <summary>
+        /// Computes the case-insensitive longest common prefix of the supplied version file names,
+        /// retreated to the last delimiter boundary. Retreating keeps the differing suffix intact:
+        /// it avoids slicing through a word every version shares (e.g. "Grey" in "Greyscale" and
+        /// "Greyish") while still trimming the common part when every version is suffixed (e.g.
+        /// "- Greyscale" / "- Colorized"). It prefers a structural delimiter ('-', '_', '.') so a
+        /// token shared by the descriptors but separated only by spaces (e.g. a common "2160p ") is
+        /// kept in the label, falling back to a space only when no structural delimiter is shared. The
+        /// separators mirror the version delimiters recognised by the naming layer (Emby.Naming
+        /// VideoFlagDelimiters).
+        /// </summary>
+        /// <param name="fileNames">The version file names without extension; must contain at least one entry.</param>
+        /// <returns>The shared prefix retreated to a separator boundary, or an empty string when none is shared.</returns>
+        internal static string GetCommonVersionPrefix(IReadOnlyList<string> fileNames)
+        {
+            var prefix = fileNames[0];
+            for (var i = 1; i < fileNames.Count && prefix.Length > 0; i++)
+            {
+                var name = fileNames[i];
+                var length = Math.Min(prefix.Length, name.Length);
+                var common = 0;
+                while (common < length && char.ToUpperInvariant(prefix[common]) == char.ToUpperInvariant(name[common]))
+                {
+                    common++;
+                }
+
+                prefix = prefix[..common];
+            }
+
+            // If the common prefix is itself a whole file name then one version is unlabelled (the
+            // base name); the boundary already sits at the end of that name, so don't retreat into it.
+            var prefixIsWholeName = false;
+            for (var i = 0; i < fileNames.Count; i++)
+            {
+                if (fileNames[i].Length == prefix.Length)
+                {
+                    prefixIsWholeName = true;
+                    break;
+                }
+            }
+
+            if (!prefixIsWholeName)
+            {
+                // Retreat to the last structural delimiter ('-', '_', '.').
+                var cut = prefix.Length;
+                while (cut > 0 && Array.IndexOf(VersionDelimiters, prefix[cut - 1]) < 0)
+                {
+                    cut--;
+                }
+
+                if (cut == 0)
+                {
+                    cut = prefix.Length;
+                    while (cut > 0 && prefix[cut - 1] != ' ')
+                    {
+                        cut--;
+                    }
+                }
+
+                prefix = prefix[..cut];
+            }
+
+            return prefix;
         }
 
         public Task RefreshMetadata(CancellationToken cancellationToken)
@@ -2020,12 +2123,23 @@ namespace MediaBrowser.Controller.Entities
             // I think it is okay to do this here.
             // if this is only called when a user is manually forcing something to un-played
             // then it probably is what we want to do...
+            ResetPlayedState(data);
+
+            UserDataManager.SaveUserData(user, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Clears the played state on the supplied user data.
+        /// </summary>
+        /// <param name="data">The user data to reset.</param>
+        protected static void ResetPlayedState(UserItemData data)
+        {
+            ArgumentNullException.ThrowIfNull(data);
+
             data.PlayCount = 0;
             data.PlaybackPositionTicks = 0;
             data.LastPlayedDate = null;
             data.Played = false;
-
-            UserDataManager.SaveUserData(user, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
         }
 
         /// <summary>
@@ -2727,7 +2841,7 @@ namespace MediaBrowser.Controller.Entities
 
         public IReadOnlyList<BaseItem> GetThemeSongs(User user, IEnumerable<(ItemSortBy SortBy, SortOrder SortOrder)> orderBy)
         {
-            return LibraryManager.Sort(GetExtras().Where(e => e.ExtraType == Model.Entities.ExtraType.ThemeSong), user, orderBy).ToArray();
+            return LibraryManager.Sort(GetExtras(user).Where(e => e.ExtraType == Model.Entities.ExtraType.ThemeSong), user, orderBy).ToArray();
         }
 
         public IReadOnlyList<BaseItem> GetThemeVideos(User user = null)
@@ -2737,18 +2851,28 @@ namespace MediaBrowser.Controller.Entities
 
         public IReadOnlyList<BaseItem> GetThemeVideos(User user, IEnumerable<(ItemSortBy SortBy, SortOrder SortOrder)> orderBy)
         {
-            return LibraryManager.Sort(GetExtras().Where(e => e.ExtraType == Model.Entities.ExtraType.ThemeVideo), user, orderBy).ToArray();
+            return LibraryManager.Sort(GetExtras(user).Where(e => e.ExtraType == Model.Entities.ExtraType.ThemeVideo), user, orderBy).ToArray();
+        }
+
+        /// <summary>
+        /// Gets the ids of the items whose owned extras belong to this item.
+        /// </summary>
+        /// <returns>An array containing the owner ids.</returns>
+        protected virtual Guid[] GetExtraOwnerIds()
+        {
+            return [Id];
         }
 
         /// <summary>
         /// Get all extras associated with this item, sorted by <see cref="SortName"/>.
         /// </summary>
+        /// <param name="user">The user to apply parental restrictions for, or <c>null</c> to skip restriction checks.</param>
         /// <returns>An enumerable containing the items.</returns>
-        public IEnumerable<BaseItem> GetExtras()
+        public IEnumerable<BaseItem> GetExtras(User user = null)
         {
-            return LibraryManager.GetItemList(new InternalItemsQuery()
+            return LibraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                OwnerIds = [Id],
+                OwnerIds = GetExtraOwnerIds(),
                 OrderBy = [(ItemSortBy.SortName, SortOrder.Ascending)]
             });
         }
@@ -2757,12 +2881,13 @@ namespace MediaBrowser.Controller.Entities
         /// Get all extras with specific types that are associated with this item.
         /// </summary>
         /// <param name="extraTypes">The types of extras to retrieve.</param>
+        /// <param name="user">The user to apply parental restrictions for, or <c>null</c> to skip restriction checks.</param>
         /// <returns>An enumerable containing the extras.</returns>
-        public IEnumerable<BaseItem> GetExtras(IReadOnlyCollection<ExtraType> extraTypes)
+        public IEnumerable<BaseItem> GetExtras(IReadOnlyCollection<ExtraType> extraTypes, User user = null)
         {
-            return LibraryManager.GetItemList(new InternalItemsQuery()
+            return LibraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                OwnerIds = [Id],
+                OwnerIds = GetExtraOwnerIds(),
                 ExtraTypes = extraTypes.ToArray(),
                 OrderBy = [(ItemSortBy.SortName, SortOrder.Ascending)]
             });

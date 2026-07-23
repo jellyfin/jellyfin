@@ -215,8 +215,11 @@ internal class JellyfinMigrationService
                 logger.LogInformation("There are {Pending} migrations for stage {Stage}.", pendingCodeMigrations.Length, stage);
                 migrations = pendingMigrations.OrderBy(e => e.Key).ToArray();
 
+                var migrationIndex = 0;
                 foreach (var item in migrations)
                 {
+                    // Surface generic "Running migration X of Y" progress in the always-visible startup UI header.
+                    SetupServer.ReportActivity(StartupActivity.Migration(++migrationIndex, migrations.Length));
                     var migrationLogger = logger.With(_loggerFactory.CreateLogger(item.Migration.GetType().Name)).BeginGroup($"{item.Key}");
                     try
                     {

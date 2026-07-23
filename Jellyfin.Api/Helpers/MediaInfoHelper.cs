@@ -351,11 +351,20 @@ public class MediaInfoHelper
     /// </summary>
     /// <param name="result">Playback info response.</param>
     /// <param name="maxBitrate">Max bitrate.</param>
-    public void SortMediaSources(PlaybackInfoResponse result, long? maxBitrate)
+    /// <param name="preferredItemId">The id of the queried item, whose own media source must stay the default.</param>
+    public void SortMediaSources(PlaybackInfoResponse result, long? maxBitrate, Guid preferredItemId = default)
     {
         var originalList = result.MediaSources.ToList();
 
-        result.MediaSources = result.MediaSources.OrderBy(i =>
+        // The queried item's source carries the user's resume state for that version, so it must stay the
+        // default the client plays. An unfavorable bitrate means transcoding it, not switching to a sibling version.
+        var preferredId = preferredItemId.IsEmpty()
+            ? null
+            : preferredItemId.ToString("N", CultureInfo.InvariantCulture);
+
+        result.MediaSources = result.MediaSources
+            .OrderByDescending(i => preferredId is not null && string.Equals(i.Id, preferredId, StringComparison.OrdinalIgnoreCase))
+            .ThenBy(i =>
             {
                 // Nothing beats direct playing a file
                 if (i.SupportsDirectPlay && i.Protocol == MediaProtocol.File)
