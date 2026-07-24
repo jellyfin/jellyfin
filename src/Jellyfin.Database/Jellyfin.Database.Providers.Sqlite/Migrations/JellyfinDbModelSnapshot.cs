@@ -373,7 +373,8 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("PresentationUniqueKey");
 
-                    b.HasIndex("PrimaryVersionId");
+                    b.HasIndex("PrimaryVersionId")
+                        .HasFilter("\"PrimaryVersionId\" IS NOT NULL");
 
                     b.HasIndex("SeasonId");
 

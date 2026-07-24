@@ -13,7 +13,8 @@ namespace Jellyfin.Server.Implementations.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_BaseItems_PrimaryVersionId",
                 table: "BaseItems",
-                column: "PrimaryVersionId");
+                column: "PrimaryVersionId",
+                filter: "\"PrimaryVersionId\" IS NOT NULL");
         }
 
         /// <inheritdoc />

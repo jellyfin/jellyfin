@@ -434,20 +434,34 @@ public sealed partial class BaseItemRepository
 
         if (filter.IsLiked.HasValue)
         {
-            var isLiked = filter.IsLiked.Value;
-            baseQuery = baseQuery.Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.Rating >= UserItemData.MinLikeValue) == isLiked);
+            var likedIds = context.UserData
+                .Where(ud => ud.UserId == filter.User!.Id && ud.Rating >= UserItemData.MinLikeValue)
+                .Select(ud => ud.ItemId);
+
+            baseQuery = filter.IsLiked.Value
+                ? baseQuery.Where(e => likedIds.Contains(e.Id))
+                : baseQuery.Where(e => !likedIds.Contains(e.Id));
         }
 
-        if (filter.IsFavoriteOrLiked.HasValue)
+        if (filter.IsFavoriteOrLiked.HasValue || filter.IsFavorite.HasValue)
         {
-            var isFavoriteOrLiked = filter.IsFavoriteOrLiked.Value;
-            baseQuery = baseQuery.Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.IsFavorite) == isFavoriteOrLiked);
-        }
+            var favoriteIds = context.UserData
+                .Where(ud => ud.UserId == filter.User!.Id && ud.IsFavorite)
+                .Select(ud => ud.ItemId);
 
-        if (filter.IsFavorite.HasValue)
-        {
-            var isFavorite = filter.IsFavorite.Value;
-            baseQuery = baseQuery.Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.IsFavorite) == isFavorite);
+            if (filter.IsFavoriteOrLiked.HasValue)
+            {
+                baseQuery = filter.IsFavoriteOrLiked.Value
+                    ? baseQuery.Where(e => favoriteIds.Contains(e.Id))
+                    : baseQuery.Where(e => !favoriteIds.Contains(e.Id));
+            }
+
+            if (filter.IsFavorite.HasValue)
+            {
+                baseQuery = filter.IsFavorite.Value
+                    ? baseQuery.Where(e => favoriteIds.Contains(e.Id))
+                    : baseQuery.Where(e => !favoriteIds.Contains(e.Id));
+            }
         }
 
         if (filter.IsPlayed.HasValue)

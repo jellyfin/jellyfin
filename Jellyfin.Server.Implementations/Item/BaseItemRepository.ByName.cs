@@ -168,21 +168,16 @@ public sealed partial class BaseItemRepository
             IsSeries = filter.IsSeries
         });
 
-        // Resolve, then materialize, the set of clean values belonging to items that match the inner filter.
-        var matchingCleanValues = context.ItemValuesMap
-            .Where(ivm => itemValueTypes.Contains(ivm.ItemValue.Type))
-            .Join(
-                innerQueryFilter,
-                ivm => ivm.ItemId,
-                g => g.Id,
-                (ivm, g) => ivm.ItemValue.CleanValue)
-            .Distinct()
-            .ToList();
-
-        // Match CleanName against the resolved clean values.
         var innerQuery = PrepareItemQuery(context, filter)
             .Where(e => e.Type == returnType)
-            .WhereOneOrMany(matchingCleanValues, e => e.CleanName!);
+            .Where(e => context.ItemValuesMap
+                .Where(ivm => itemValueTypes.Contains(ivm.ItemValue.Type) && ivm.ItemValue.CleanValue == e.CleanName)
+                .Join(
+                    innerQueryFilter,
+                    ivm => ivm.ItemId,
+                    g => g.Id,
+                    (ivm, g) => ivm.ItemId)
+                .Any());
 
         var outerQueryFilter = new InternalItemsQuery(filter.User)
         {
