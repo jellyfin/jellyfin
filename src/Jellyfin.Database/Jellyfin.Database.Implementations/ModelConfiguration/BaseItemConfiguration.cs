@@ -61,6 +61,8 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasIndex(e => new { e.TopParentId, e.MediaType, e.IsVirtualItem, e.DateCreated });
         // resume
         builder.HasIndex(e => new { e.MediaType, e.TopParentId, e.IsVirtualItem, e.PresentationUniqueKey });
+        // alternate versions of an item, e.g. resolving the played date of a version onto its primary
+        builder.HasIndex(e => e.PrimaryVersionId);
         // sorted library queries (e.g., Series sorted by SortName)
         builder.HasIndex(e => new { e.Type, e.TopParentId, e.SortName });
         // NextUp: per-series episode ordering (index seek + range scan on season/episode)
