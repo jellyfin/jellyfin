@@ -180,6 +180,88 @@ public class TmdbMissingEpisodeProviderTests
         Assert.Equal(2026, episode.ProductionYear);
     }
 
+    [Fact]
+    public void BuildSeasonSortNameTemplate_NoNameSortedPhysicalSeason_ReturnsNull()
+    {
+        // No physical season carries a forced (name-based) sort name -> virtual seasons keep their
+        // bare-index sort, so no template is produced.
+        var seasons = new[]
+        {
+            PhysicalSeason(1, forcedSortName: null),
+            VirtualSeason(3),
+        };
+
+        Assert.Null(TmdbMissingEpisodeProvider.BuildSeasonSortNameTemplate(seasons));
+    }
+
+    [Fact]
+    public void BuildSeasonSortNameTemplate_MirrorsSiblingConventionAndSwapsNumber()
+    {
+        var template = TmdbMissingEpisodeProvider.BuildSeasonSortNameTemplate(new[]
+        {
+            PhysicalSeason(1, forcedSortName: "Season 01"),
+            VirtualSeason(3),
+        });
+
+        Assert.NotNull(template);
+        // Keeps the sibling's text token and zero-padding width, swapping in the target number.
+        Assert.Equal("Season 03", template!(3));
+        Assert.Equal("Season 12", template(12));
+    }
+
+    [Fact]
+    public void BuildSeasonSortNameTemplate_PreservesNonEnglishToken()
+    {
+        var template = TmdbMissingEpisodeProvider.BuildSeasonSortNameTemplate(new[]
+        {
+            PhysicalSeason(1, forcedSortName: "Staffel 1"),
+            VirtualSeason(2),
+        });
+
+        Assert.NotNull(template);
+        Assert.Equal("Staffel 2", template!(2));
+    }
+
+    [Fact]
+    public void BuildSeasonSortNameTemplate_SiblingWithoutDigits_ReturnsNull()
+    {
+        var template = TmdbMissingEpisodeProvider.BuildSeasonSortNameTemplate(new[]
+        {
+            PhysicalSeason(1, forcedSortName: "Miniseries"),
+            VirtualSeason(2),
+        });
+
+        Assert.Null(template);
+    }
+
+    [Fact]
+    public void BuildSeasonSortNameTemplate_IgnoresVirtualSeasonsAsReference()
+    {
+        // A virtual season's own forced sort name must not be used as the convention source.
+        var virtualWithForced = VirtualSeason(3);
+        virtualWithForced.ForcedSortName = "Season 03";
+
+        Assert.Null(TmdbMissingEpisodeProvider.BuildSeasonSortNameTemplate(new[]
+        {
+            PhysicalSeason(1, forcedSortName: null),
+            virtualWithForced,
+        }));
+    }
+
+    private static Season PhysicalSeason(int indexNumber, string? forcedSortName)
+    {
+        var season = new Season { IndexNumber = indexNumber, Path = $"/media/show/Season {indexNumber:00}" };
+        if (!string.IsNullOrEmpty(forcedSortName))
+        {
+            season.ForcedSortName = forcedSortName;
+        }
+
+        return season;
+    }
+
+    private static Season VirtualSeason(int indexNumber)
+        => new Season { IndexNumber = indexNumber, IsVirtualItem = true };
+
     private static Episode VirtualEpisode(DateTime premiereDate, bool withTmdbId, int? seasonNumber = null)
     {
         var episode = new Episode { PremiereDate = premiereDate, IsVirtualItem = true, ParentIndexNumber = seasonNumber };

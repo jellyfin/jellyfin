@@ -23,6 +23,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         private readonly TmdbClientManager _tmdbClientManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IFileSystem _fileSystem;
+        private readonly IProviderManager _providerManager;
         private readonly ILogger<TmdbMissingEpisodeProvider> _logger;
 
         /// <summary>
@@ -31,16 +32,19 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         /// <param name="tmdbClientManager">The <see cref="TmdbClientManager"/>.</param>
         /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
         /// <param name="fileSystem">The <see cref="IFileSystem"/>.</param>
+        /// <param name="providerManager">The <see cref="IProviderManager"/>.</param>
         /// <param name="logger">The <see cref="ILogger{TmdbMissingEpisodeProvider}"/>.</param>
         public TmdbMissingEpisodeProvider(
             TmdbClientManager tmdbClientManager,
             ILibraryManager libraryManager,
             IFileSystem fileSystem,
+            IProviderManager providerManager,
             ILogger<TmdbMissingEpisodeProvider> logger)
         {
             _tmdbClientManager = tmdbClientManager;
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
+            _providerManager = providerManager;
             _logger = logger;
         }
 
@@ -179,6 +183,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                             updatedEpisodes = true;
                         }
 
+                        // Backfill the still for placeholders created before images were fetched.
+                        if (await EnsureEpisodeImageAsync(existingEpisode, tmdbEpisode, cancellationToken).ConfigureAwait(false))
+                        {
+                            updatedEpisodes = true;
+                        }
+
                         continue;
                     }
 
@@ -188,12 +198,15 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     }
 
                     var targetSeason = await GetOrCreateSeasonAsync(item, seasonNumber, tmdbSeason.Name, seasonsByNumber, cancellationToken).ConfigureAwait(false);
-                    AddVirtualEpisode(item, targetSeason, tmdbEpisode, premiereDate);
+                    var newEpisode = AddVirtualEpisode(item, targetSeason, tmdbEpisode, premiereDate);
+                    await EnsureEpisodeImageAsync(newEpisode, tmdbEpisode, cancellationToken).ConfigureAwait(false);
                     addedEpisodes = true;
                 }
             }
 
-            if (!addedEpisodes && !prunedEpisodes && !updatedEpisodes)
+            var alignedSeasons = await AlignVirtualSeasonSortNamesAsync(seasonsByNumber.Values, cancellationToken).ConfigureAwait(false);
+
+            if (!addedEpisodes && !prunedEpisodes && !updatedEpisodes && !alignedSeasons)
             {
                 return ItemUpdateType.None;
             }
@@ -238,6 +251,105 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             return season;
         }
 
+        /// <summary>
+        /// Mirrors physical seasons' name-based sort convention onto virtual seasons so they interleave by
+        /// number instead of jumping ahead. See <see cref="BuildSeasonSortNameTemplate"/> for the details.
+        /// </summary>
+        /// <param name="seasons">The series' seasons (physical and virtual).</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns><c>true</c> if any virtual season was updated; otherwise <c>false</c>.</returns>
+        private async Task<bool> AlignVirtualSeasonSortNamesAsync(IEnumerable<Season> seasons, CancellationToken cancellationToken)
+        {
+            var seasonList = seasons.ToList();
+            var template = BuildSeasonSortNameTemplate(seasonList);
+            if (template is null)
+            {
+                // No physical season sorts by name: virtual seasons already share the bare-index key space.
+                return false;
+            }
+
+            var updated = false;
+            foreach (var season in seasonList)
+            {
+                if (!season.IsVirtualItem || !season.IndexNumber.HasValue)
+                {
+                    continue;
+                }
+
+                var desired = template(season.IndexNumber.Value);
+                if (string.Equals(season.ForcedSortName, desired, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                _logger.LogInformation(
+                    "Aligning sort name of virtual season {SeasonNumber} in series {SeriesName} to {SortName}",
+                    season.IndexNumber,
+                    season.SeriesName,
+                    desired);
+
+                season.ForcedSortName = desired;
+                await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                updated = true;
+            }
+
+            return updated;
+        }
+
+        /// <summary>
+        /// Builds a factory that maps a season number to a forced sort name mirroring a physical,
+        /// name-sorted sibling season, or <c>null</c> when no physical season sorts by name.
+        /// </summary>
+        /// <param name="seasons">The series' seasons (physical and virtual).</param>
+        /// <returns>A season-number-to-sort-name factory, or <c>null</c> if there is nothing to mirror.</returns>
+        internal static Func<int, string>? BuildSeasonSortNameTemplate(IEnumerable<Season> seasons)
+        {
+            // Season.CreateSortName sorts by the bare padded index ("0003"), but season NFOs give physical
+            // seasons a name-based forced sort ("Season 01" -> "season 0000000001"). The digit-leading key
+            // sorts ahead of the letter-leading one, so mirror the sibling's token with each season number.
+            var reference = seasons.FirstOrDefault(s =>
+                !s.IsVirtualItem && s.IndexNumber.HasValue && !string.IsNullOrEmpty(s.ForcedSortName));
+            if (reference is null)
+            {
+                return null;
+            }
+
+            var forced = reference.ForcedSortName!;
+
+            // Locate the last run of digits (the season number) in the sibling's forced sort name.
+            var end = -1;
+            var start = -1;
+            for (var i = forced.Length - 1; i >= 0; i--)
+            {
+                if (char.IsDigit(forced[i]))
+                {
+                    end = end < 0 ? i : end;
+                    start = i;
+                }
+                else if (end >= 0)
+                {
+                    break;
+                }
+            }
+
+            if (end < 0)
+            {
+                // Sibling has no numeric component to swap; leave virtual seasons on the bare-index key.
+                return null;
+            }
+
+            var prefix = forced[..start];
+            var suffix = forced[(end + 1)..];
+            var width = end - start + 1;
+
+            // The exact zero-padding is cosmetic: ModifySortChunks pads every digit run to 10 characters,
+            // so "Season 3" and "Season 03" collapse to the same sort key. Keeping the sibling's width just
+            // makes the stored value read naturally.
+            return number => prefix
+                + number.ToString(CultureInfo.InvariantCulture).PadLeft(width, '0')
+                + suffix;
+        }
+
         private bool IsEnabledForLibrary(BaseItem item)
         {
             var disabledLibraries = Plugin.Instance?.Configuration.DisabledMissingEpisodeLibraries;
@@ -262,6 +374,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         {
             var keys = new HashSet<(int Season, int Episode)>();
             var updatable = new Dictionary<(int Season, int Episode), Episode>();
+            var physicalKeys = new HashSet<(int Season, int Episode)>();
+            var ourVirtuals = new List<((int Season, int Episode) Key, Episode Episode)>();
             pruned = false;
 
             // Enumerate by parent rather than via Series.GetEpisodes: on an initial scan the episodes'
@@ -300,11 +414,34 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     var key = (episode.ParentIndexNumber.Value, episode.IndexNumber.Value);
                     keys.Add(key);
 
-                    // Virtual episodes this provider created are candidates for metadata sync.
+                    // Defer the ours/physical reconciliation: an episode's virtual counterpart and its
+                    // physical file can appear in either order while walking the tree, so we can only
+                    // decide which of our virtual episodes are superseded once every episode is seen.
                     if (isOurs)
                     {
-                        updatable[key] = episode;
+                        ourVirtuals.Add((key, episode));
                     }
+                    else if (!episode.IsVirtualItem)
+                    {
+                        physicalKeys.Add(key);
+                    }
+                }
+            }
+
+            // A physical file now exists for one of our placeholders: delete the placeholder here rather
+            // than updating it (and then leaving RemoveObsoleteEpisodes to delete it moments later). The
+            // physical key already blocks re-creation via the dedupe set above.
+            foreach (var (key, episode) in ourVirtuals)
+            {
+                if (physicalKeys.Contains(key))
+                {
+                    DeleteEpisode(episode, "a physical episode now exists for this slot");
+                    pruned = true;
+                }
+                else
+                {
+                    // Virtual episodes this provider created are candidates for metadata sync.
+                    updatable[key] = episode;
                 }
             }
 
@@ -443,7 +580,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             return changed;
         }
 
-        private void AddVirtualEpisode(Series series, Season season, TvSeasonEpisode tmdbEpisode, DateTime? premiereDate)
+        private Episode AddVirtualEpisode(Series series, Season season, TvSeasonEpisode tmdbEpisode, DateTime? premiereDate)
         {
             var seasonNumber = season.IndexNumber.GetValueOrDefault();
             var episodeNumber = (int)tmdbEpisode.EpisodeNumber;
@@ -484,6 +621,49 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 series.Name);
 
             season.AddChild(episode);
+
+            return episode;
+        }
+
+        /// <summary>
+        /// Downloads the TMDb still for a virtual episode that has no image yet, so it does not fall back
+        /// to the season/series image.
+        /// </summary>
+        /// <param name="episode">The virtual episode.</param>
+        /// <param name="tmdbEpisode">The matching TMDb episode.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns><c>true</c> if a still was downloaded and saved; otherwise <c>false</c>.</returns>
+        private async Task<bool> EnsureEpisodeImageAsync(Episode episode, TvSeasonEpisode tmdbEpisode, CancellationToken cancellationToken)
+        {
+            // The still ships with the season episode list, so use it directly instead of a per-episode lookup.
+            if (episode.HasImage(ImageType.Primary, 0) || string.IsNullOrEmpty(tmdbEpisode.StillPath))
+            {
+                return false;
+            }
+
+            var stillUrl = _tmdbClientManager.GetStillUrl(tmdbEpisode.StillPath);
+            if (string.IsNullOrEmpty(stillUrl))
+            {
+                return false;
+            }
+
+            try
+            {
+                // SaveImage sets the image path on the item but does not persist it, so save afterwards.
+                await _providerManager.SaveImage(episode, stillUrl, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
+                await episode.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, cancellationToken).ConfigureAwait(false);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error downloading still for virtual episode S{SeasonNumber}E{EpisodeNumber} of {SeriesName}",
+                    episode.ParentIndexNumber,
+                    episode.IndexNumber,
+                    episode.SeriesName);
+                return false;
+            }
         }
     }
 }
