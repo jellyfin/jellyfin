@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
@@ -22,7 +22,7 @@ public class DeleteCacheFileTask : IScheduledTask, IConfigurableScheduledTask
     /// Gets or sets the application paths.
     /// </summary>
     /// <value>The application paths.</value>
-    private readonly IApplicationPaths _applicationPaths;
+    private readonly IServerApplicationPaths _applicationPaths;
     private readonly ILogger<DeleteCacheFileTask> _logger;
     private readonly IFileSystem _fileSystem;
     private readonly ILocalizationManager _localization;
@@ -30,12 +30,12 @@ public class DeleteCacheFileTask : IScheduledTask, IConfigurableScheduledTask
     /// <summary>
     /// Initializes a new instance of the <see cref="DeleteCacheFileTask" /> class.
     /// </summary>
-    /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
+    /// <param name="appPaths">Instance of the <see cref="IServerApplicationPaths"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     public DeleteCacheFileTask(
-        IApplicationPaths appPaths,
+        IServerApplicationPaths appPaths,
         ILogger<DeleteCacheFileTask> logger,
         IFileSystem fileSystem,
         ILocalizationManager localization)
@@ -84,7 +84,8 @@ public class DeleteCacheFileTask : IScheduledTask, IConfigurableScheduledTask
 
         try
         {
-            DeleteCacheFilesFromDirectory(_applicationPaths.CachePath, minDateModified, progress, cancellationToken);
+            var metadataPath = GetProtectedMetadataPath();
+            DeleteCacheFilesFromDirectory(_applicationPaths.CachePath, minDateModified, progress, cancellationToken, metadataPath);
         }
         catch (DirectoryNotFoundException)
         {
@@ -114,10 +115,17 @@ public class DeleteCacheFileTask : IScheduledTask, IConfigurableScheduledTask
     /// <param name="minDateModified">The min date modified.</param>
     /// <param name="progress">The progress.</param>
     /// <param name="cancellationToken">The task cancellation token.</param>
-    private void DeleteCacheFilesFromDirectory(string directory, DateTime minDateModified, IProgress<double> progress, CancellationToken cancellationToken)
+    /// <param name="excludedDirectory">An optional directory to exclude.</param>
+    private void DeleteCacheFilesFromDirectory(
+        string directory,
+        DateTime minDateModified,
+        IProgress<double> progress,
+        CancellationToken cancellationToken,
+        string? excludedDirectory = null)
     {
         var filesToDelete = _fileSystem.GetFiles(directory, true)
-            .Where(f => _fileSystem.GetLastWriteTimeUtc(f) < minDateModified)
+            .Where(f => _fileSystem.GetLastWriteTimeUtc(f) < minDateModified
+                && (excludedDirectory is null || !IsPathEqualOrSubPath(excludedDirectory, f.FullName)))
             .ToList();
 
         var index = 0;
@@ -139,5 +147,41 @@ public class DeleteCacheFileTask : IScheduledTask, IConfigurableScheduledTask
         FileSystemHelper.DeleteEmptyFolders(_fileSystem, directory, _logger);
 
         progress.Report(100);
+    }
+
+    private string? GetProtectedMetadataPath()
+    {
+        var cachePath = Path.GetFullPath(_applicationPaths.CachePath);
+        var metadataPath = Path.GetFullPath(_applicationPaths.InternalMetadataPath);
+
+        if (!IsPathEqualOrSubPath(cachePath, metadataPath))
+        {
+            return null;
+        }
+
+        _logger.LogWarning(
+            "The metadata directory {MetadataPath} is inside the cache directory {CachePath} and will be excluded from cache cleanup",
+            metadataPath,
+            cachePath);
+
+        return metadataPath;
+    }
+
+    private static bool IsPathEqualOrSubPath(string directory, string path)
+    {
+        var normalizedDirectory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
+        var normalizedPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
+        if (string.Equals(normalizedDirectory, normalizedPath, comparison))
+        {
+            return true;
+        }
+
+        var directoryWithSeparator = normalizedDirectory.EndsWith(Path.DirectorySeparatorChar)
+            ? normalizedDirectory
+            : normalizedDirectory + Path.DirectorySeparatorChar;
+
+        return normalizedPath.StartsWith(directoryWithSeparator, comparison);
     }
 }
