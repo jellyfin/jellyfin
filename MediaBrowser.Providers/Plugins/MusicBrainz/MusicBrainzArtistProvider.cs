@@ -114,7 +114,7 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
         }
 
         var query = Plugin.Instance!.MusicBrainzQuery;
-        var artist = await query.LookupArtistAsync(new Guid(musicBrainzId), Include.Annotation | Include.Genres | Include.Tags, null, null, cancellationToken).ConfigureAwait(false);
+        var artist = await query.LookupArtistAsync(new Guid(musicBrainzId), Include.Genres | Include.Tags, null, null, cancellationToken).ConfigureAwait(false);
 
         if (artist is null)
         {
@@ -127,11 +127,6 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
         if (Plugin.Instance!.Configuration.ReplaceArtistName && !string.IsNullOrWhiteSpace(artist.Name))
         {
             result.Item.Name = artist.Name;
-        }
-
-        if (!string.IsNullOrWhiteSpace(artist.Annotation))
-        {
-            result.Item.Overview = artist.Annotation;
         }
 
         if (artist.LifeSpan?.Begin is not null)

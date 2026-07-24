@@ -213,7 +213,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         {
             release = await query.LookupReleaseAsync(
                 new Guid(releaseId),
-                Include.Artists | Include.ReleaseGroups | Include.Labels | Include.Genres | Include.Tags | Include.Annotation,
+                Include.Artists | Include.ReleaseGroups | Include.Labels | Include.Genres | Include.Tags,
                 cancellationToken).ConfigureAwait(false);
 
             if (string.IsNullOrWhiteSpace(releaseGroupId) && release?.ReleaseGroup?.Id is not null)
@@ -227,7 +227,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         {
             releaseGroup = await query.LookupReleaseGroupAsync(
                 new Guid(releaseGroupId),
-                Include.Artists | Include.Genres | Include.Tags | Include.Annotation,
+                Include.Artists | Include.Genres | Include.Tags,
                 null,
                 cancellationToken).ConfigureAwait(false);
         }
@@ -252,17 +252,6 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
     private static void Populate(MusicAlbum item, IRelease? release, IReleaseGroup? releaseGroup)
     {
         // Prefer the release group (album-level) data, falling back to the specific release.
-        var overview = releaseGroup?.Annotation;
-        if (string.IsNullOrWhiteSpace(overview))
-        {
-            overview = release?.Annotation;
-        }
-
-        if (!string.IsNullOrWhiteSpace(overview))
-        {
-            item.Overview = overview;
-        }
-
         // The release group's first release date is the original album date.
         var date = releaseGroup?.FirstReleaseDate ?? release?.Date;
         if (date is not null)
