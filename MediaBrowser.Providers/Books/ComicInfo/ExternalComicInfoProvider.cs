@@ -38,7 +38,7 @@ public class ExternalComicInfoProvider : IComicProvider
 
         if (comicInfoXml is null)
         {
-            _logger.LogInformation("Could not load ComicInfo metadata for {Path} from XML file.", info.Path);
+            _logger.LogDebug("No external ComicInfo metadata found for {Path}.", info.Path);
             return new MetadataResult<Book> { HasMetadata = false };
         }
 
@@ -67,23 +67,22 @@ public class ExternalComicInfoProvider : IComicProvider
 
     private async Task<XDocument?> LoadXml(ItemInfo info, CancellationToken cancellationToken)
     {
-        var path = GetXmlFilePath(info.Path).FullName;
-
-        if (path is null)
+        var file = GetXmlFilePath(info.Path);
+        if (!file.Exists)
         {
             return null;
         }
 
         try
         {
-            using var reader = XmlReader.Create(path, new XmlReaderSettings { Async = true });
+            using var reader = XmlReader.Create(file.FullName, new XmlReaderSettings { Async = true });
             var comicInfoXml = XDocument.LoadAsync(reader, LoadOptions.None, cancellationToken);
 
             return await comicInfoXml.ConfigureAwait(false);
         }
         catch (Exception e)
         {
-            _logger.LogInformation(e, "Could not load external XML from {Path}. This could mean there is no separate ComicInfo metadata file for this comic or the metadata is bundled within the comic.", path);
+            _logger.LogWarning(e, "Could not load external ComicInfo XML from {Path}.", file.FullName);
             return null;
         }
     }

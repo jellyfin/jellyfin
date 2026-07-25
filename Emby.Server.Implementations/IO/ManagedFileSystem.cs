@@ -691,7 +691,7 @@ namespace Emby.Server.Implementations.IO
             }
             catch (Exception ex) when (ex is UnauthorizedAccessException or DirectoryNotFoundException or SecurityException)
             {
-                _logger.LogError(ex, "Failed to enumerate path {Path}", path);
+                _logger.LogWarning("Failed to enumerate path \"{Path}\": {Message}", path, ex.Message);
                 return Enumerable.Empty<string>();
             }
         }

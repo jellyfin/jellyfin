@@ -277,8 +277,15 @@ public class TvShowsController : BaseJellyfinApiController
 
         if (startItemId.HasValue)
         {
+            // The start item may be an alternate version, which is not part of the episode listing; start from its primary episode instead.
+            var startId = startItemId.Value;
+            if (_libraryManager.GetItemById<Video>(startId)?.PrimaryVersionId is { } primaryVersionId)
+            {
+                startId = primaryVersionId;
+            }
+
             episodes = episodes
-                .SkipWhile(i => !startItemId.Value.Equals(i.Id))
+                .SkipWhile(i => !startId.Equals(i.Id))
                 .ToList();
         }
 

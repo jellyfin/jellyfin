@@ -234,6 +234,7 @@
  - [dwandw](https://github.com/dwandw)
  - [Lampan-git](https://github.com/Lampan-git)
  - [DeployHuman](https://github.com/deployHuman)
+ - [rwebster85](https://github.com/rwebster85)
 
 # Emby Contributors
 

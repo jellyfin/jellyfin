@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -528,6 +529,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     UseShellExecute = false,
 
                     // Must consume both or ffmpeg may hang due to deadlocks.
+                    StandardOutputEncoding = Encoding.UTF8,
                     RedirectStandardOutput = true,
 
                     FileName = _ffprobePath,
@@ -924,6 +926,25 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (string.IsNullOrWhiteSpace(filterParam))
             {
                 throw new InvalidOperationException("EncodingHelper returned empty or invalid filter parameters.");
+            }
+
+            // Normalize invalid PTS from containers for non keyframe only mode
+            if (!enableKeyFrameOnlyExtraction)
+            {
+                var fpsFilterIndex = filterParam.IndexOf("fps=", StringComparison.Ordinal);
+                if (fpsFilterIndex >= 0)
+                {
+                    var inputFrameRate = (imageStream.ReferenceFrameRate.HasValue && imageStream.ReferenceFrameRate > 0)
+                        ? imageStream.ReferenceFrameRate.Value : 30;
+
+                    var setPtsFilter = string.Create(CultureInfo.InvariantCulture, $"setpts=N/{inputFrameRate:F3}/TB,");
+
+                    filterParam = filterParam.Insert(fpsFilterIndex, setPtsFilter);
+                }
+                else
+                {
+                    throw new InvalidOperationException("EncodingHelper returned invalid filter parameters.");
+                }
             }
 
             try

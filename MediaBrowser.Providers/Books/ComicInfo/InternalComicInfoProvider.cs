@@ -36,7 +36,7 @@ public class InternalComicInfoProvider : IComicProvider
 
         if (comicInfoXml is null)
         {
-            _logger.LogInformation("Could not load ComicInfo metadata for {Path} from XML file. No internal XML in comic archive.", info.Path);
+            _logger.LogDebug("Could not load ComicInfo metadata for {Path} from XML file. No internal XML in comic archive.", info.Path);
             return new MetadataResult<Book> { HasMetadata = false };
         }
 

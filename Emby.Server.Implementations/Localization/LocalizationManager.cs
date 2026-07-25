@@ -262,6 +262,24 @@ namespace Emby.Server.Implementations.Localization
         }
 
         /// <inheritdoc />
+        public string? GetLanguageDisplayName(string language)
+        {
+            if (string.IsNullOrEmpty(language))
+            {
+                return null;
+            }
+
+            var displayName = FindLanguageInfo(language)?.DisplayName;
+            if (displayName is null)
+            {
+                return null;
+            }
+
+            // Truncate at the first delimiter to avoid cluttered display names
+            return displayName.Split([';', ','], StringSplitOptions.None)[0].Trim();
+        }
+
+        /// <inheritdoc />
         public IReadOnlyList<CountryInfo> GetCountries()
         {
             using var stream = _assembly.GetManifestResourceStream(CountriesPath) ?? throw new InvalidOperationException($"Invalid resource path: '{CountriesPath}'");
@@ -356,6 +374,27 @@ namespace Emby.Server.Implementations.Localization
         {
             ArgumentException.ThrowIfNullOrEmpty(rating);
 
+            // Some providers may list multiple ratings separated by '/' (e.g. "SE:15 / SE:15+ / SE:Från 15 år").
+            // Try each one in order and use the first that resolves.
+            var ratingValues = rating.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            foreach (var ratingValue in ratingValues)
+            {
+                var score = GetSingleRatingScore(ratingValue, countryCode);
+                if (score is not null)
+                {
+                    return score;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Resolves a single rating value to a score.
+        /// </summary>
+        private ParentalRatingScore? GetSingleRatingScore(string rating, string? countryCode)
+        {
             // Handle unrated content
             if (_unratedValues.Contains(rating.AsSpan(), StringComparison.OrdinalIgnoreCase))
             {
@@ -364,7 +403,7 @@ namespace Emby.Server.Implementations.Localization
 
             // Convert ints directly
             // This may override some of the locale specific age ratings (but those always map to the same age)
-            if (int.TryParse(rating, out var ratingAge))
+            if (TryParseRatingAsScore(rating, out var ratingAge))
             {
                 return new(ratingAge, null);
             }
@@ -466,6 +505,13 @@ namespace Emby.Server.Implementations.Localization
                     return true;
                 }
 
+                // If it's not a recognized rating string, fall back to using the number as the score
+                if (TryParseRatingAsScore(ratingPart, out var numericScore))
+                {
+                    result = new ParentalRatingScore(numericScore, null);
+                    return true;
+                }
+
                 _logger.LogWarning(
                     "Rating '{Rating}' not found in the '{CountryCode}' rating system, treating as unrated",
                     rating,
@@ -478,6 +524,18 @@ namespace Emby.Server.Implementations.Localization
             result = GetRatingScore(ratingPart, resolvedCountryCode);
 
             return true;
+        }
+
+        /// <summary>
+        /// Tries to parse a rating as a number, allowing an optional trailing '+' (e.g. "16" or "18+").
+        /// </summary>
+        /// <param name="ratingValue">Rating value to parse.</param>
+        /// <param name="score">Parsed score.</param>
+        /// <returns>Returns true if parsing was successful.</returns>
+        private static bool TryParseRatingAsScore(ReadOnlySpan<char> ratingValue, out int score)
+        {
+            var trimmed = ratingValue.TrimEnd('+');
+            return int.TryParse(trimmed, out score);
         }
 
         /// <inheritdoc />

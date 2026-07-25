@@ -256,10 +256,19 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             series.Overview = seriesResult.Overview;
 
+            var studios = Enumerable.Empty<string>();
+
             if (seriesResult.Networks is not null)
             {
-                series.Studios = seriesResult.Networks.Select(i => i.Name).ToArray();
+                studios = studios.Concat(seriesResult.Networks.Select(i => i.Name).OfType<string>());
             }
+
+            if (seriesResult.ProductionCompanies is not null)
+            {
+                studios = studios.Concat(seriesResult.ProductionCompanies.Select(i => i.Name).OfType<string>());
+            }
+
+            series.SetStudios(studios);
 
             if (seriesResult.Genres is not null)
             {
@@ -320,13 +329,26 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (seriesResult.Videos?.Results is not null)
             {
-                foreach (var video in seriesResult.Videos.Results)
+                var trailers = new List<MediaUrl>();
+
+                var sortedVideos = seriesResult.Videos.Results
+                    .OrderByDescending(video => string.Equals(video.Type, "trailer", StringComparison.OrdinalIgnoreCase));
+
+                foreach (var video in sortedVideos)
                 {
-                    if (TmdbUtils.IsTrailerType(video))
+                    if (!TmdbUtils.IsTrailerType(video))
                     {
-                        series.AddTrailerUrl("https://www.youtube.com/watch?v=" + video.Key);
+                        continue;
                     }
+
+                    trailers.Add(new MediaUrl
+                    {
+                        Url = string.Format(CultureInfo.InvariantCulture, "https://www.youtube.com/watch?v={0}", video.Key),
+                        Name = video.Name
+                    });
                 }
+
+                series.RemoteTrailers = trailers;
             }
 
             if (!string.IsNullOrEmpty(seriesResult.OriginalLanguage))

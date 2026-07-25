@@ -24,7 +24,7 @@ public static class DtoExtensions
             case CollectionType.tvshows:
                 return [BaseItemKind.Series];
             case CollectionType.music:
-                return [BaseItemKind.MusicAlbum, BaseItemKind.MusicArtist];
+                return [BaseItemKind.MusicAlbum];
             case CollectionType.musicvideos:
                 return [BaseItemKind.MusicVideo];
             case CollectionType.books:
@@ -34,6 +34,8 @@ public static class DtoExtensions
             case CollectionType.homevideos:
             case CollectionType.photos:
                 return [BaseItemKind.Video, BaseItemKind.Photo];
+            case CollectionType.folders:
+                return [];
             default:
                 return [BaseItemKind.Video, BaseItemKind.Audio, BaseItemKind.Photo, BaseItemKind.Movie, BaseItemKind.Series];
         }
