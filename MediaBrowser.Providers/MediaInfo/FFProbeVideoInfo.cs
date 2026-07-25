@@ -386,7 +386,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions refreshOptions, LibraryOptions libraryOptions)
+        internal void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions refreshOptions, LibraryOptions libraryOptions)
         {
             var replaceData = refreshOptions.ReplaceAllMetadata;
 
@@ -432,7 +432,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (data.ProductionYear is not null)
+            // Extras have no release date of their own, they inherit it from the item they belong to.
+            var useContainerDates = video.ExtraType is null;
+            if (useContainerDates && data.ProductionYear is not null)
             {
                 if (video.ProductionYear is null || replaceData)
                 {
@@ -440,9 +442,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (data.PremiereDate.HasValue)
+            if (useContainerDates && data.PremiereDate is not null)
             {
-                if (!video.PremiereDate.HasValue || replaceData)
+                if (video.PremiereDate is null || replaceData)
                 {
                     video.PremiereDate = data.PremiereDate;
                 }
@@ -482,7 +484,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             // If we don't have a ProductionYear try and get it from PremiereDate
-            if (video.PremiereDate is not null && video.ProductionYear is null)
+            if (useContainerDates && video.PremiereDate is not null && video.ProductionYear is null)
             {
                 video.ProductionYear = video.PremiereDate.Value.ToLocalTime().Year;
             }

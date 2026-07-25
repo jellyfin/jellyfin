@@ -1533,15 +1533,27 @@ namespace MediaBrowser.Controller.Entities
             var extras = LibraryManager.FindExtras(item, fileSystemChildren, options.DirectoryService).ToArray();
             var newExtraIds = Array.ConvertAll(extras, x => x.Id);
 
-            var currentExtraIds = LibraryManager.GetItemList(new InternalItemsQuery()
+            var currentExtras = LibraryManager.GetItemList(new InternalItemsQuery()
             {
                 OwnerIds = [item.Id]
-            }).Select(e => e.Id).ToArray();
+            });
+
+            var currentExtraIds = currentExtras.Select(e => e.Id).ToArray();
 
             var extrasChanged = !currentExtraIds.OrderBy(x => x).SequenceEqual(newExtraIds.OrderBy(x => x));
 
             if (!extrasChanged && !options.ReplaceAllMetadata && options.MetadataRefreshMode != MetadataRefreshMode.FullRefresh)
             {
+                // The owner's dates may only have become known after its extras were created, so keep
+                // them in sync even when there is nothing to refresh.
+                foreach (var extra in currentExtras)
+                {
+                    if (extra.ExtraType is not null && InheritDatesFromOwner(item, extra))
+                    {
+                        await extra.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+
                 return false;
             }
 
@@ -1557,18 +1569,6 @@ namespace MediaBrowser.Controller.Entities
 
                 i.OwnerId = ownerId;
                 i.ParentId = Guid.Empty;
-
-                // Extras (e.g. trailers) frequently have no reliable date metadata of their own and
-                // would otherwise fall back to the file's container creation date. Inherit the owner's
-                // year/premiere date when the extra doesn't have one, so it stays consistent with the
-                // media it belongs to. Setting it before the refresh means the media info provider
-                // won't overwrite it from the file creation date.
-                if (i.ProductionYear is null && item.ProductionYear is not null)
-                {
-                    i.ProductionYear = item.ProductionYear;
-                    i.PremiereDate ??= item.PremiereDate;
-                    subOptions.ForceSave = true;
-                }
 
                 return RefreshMetadataForOwnedItem(i, true, subOptions, cancellationToken);
             });
@@ -2652,6 +2652,32 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        /// <summary>
+        /// Applies the owner's premiere date and production year to an owned item, returning whether anything changed.
+        /// </summary>
+        /// <param name="owner">The owner.</param>
+        /// <param name="ownedItem">The owned item.</param>
+        /// <returns><c>true</c> if the owned item was changed, else <c>false</c>.</returns>
+        internal static bool InheritDatesFromOwner(BaseItem owner, BaseItem ownedItem)
+        {
+            // Extras have no release date of their own, so the owner's is authoritative.
+            var changed = false;
+
+            if (owner.ProductionYear is not null && ownedItem.ProductionYear != owner.ProductionYear)
+            {
+                ownedItem.ProductionYear = owner.ProductionYear;
+                changed = true;
+            }
+
+            if (owner.PremiereDate is not null && ownedItem.PremiereDate != owner.PremiereDate)
+            {
+                ownedItem.PremiereDate = owner.PremiereDate;
+                changed = true;
+            }
+
+            return changed;
+        }
+
         protected async Task RefreshMetadataForOwnedItem(BaseItem ownedItem, bool copyTitleMetadata, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var newOptions = new MetadataRefreshOptions(options)
@@ -2709,6 +2735,11 @@ namespace MediaBrowser.Controller.Entities
                 if (!string.Equals(item.CustomRating, ownedItem.CustomRating, StringComparison.Ordinal))
                 {
                     ownedItem.CustomRating = item.CustomRating;
+                    newOptions.ForceSave = true;
+                }
+
+                if (InheritDatesFromOwner(item, ownedItem))
+                {
                     newOptions.ForceSave = true;
                 }
             }

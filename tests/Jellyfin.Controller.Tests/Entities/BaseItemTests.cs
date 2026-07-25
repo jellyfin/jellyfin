@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaSegments;
@@ -334,5 +335,81 @@ public class BaseItemTests
             Assert.Contains(alt1.Id, ids);
             Assert.Contains(alt2.Id, ids);
         }
+    }
+
+    [Fact]
+    public void InheritDatesFromOwner_OwnerHasDates_OverwritesOwnedItemDates()
+    {
+        var owner = new Movie
+        {
+            ProductionYear = 1982,
+            PremiereDate = new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+        // 2016 is what the container creation date of a re-encoded trailer would have yielded.
+        var trailer = new Trailer
+        {
+            ExtraType = ExtraType.Trailer,
+            ProductionYear = 2016,
+            PremiereDate = new DateTime(2016, 5, 4, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+        Assert.True(BaseItem.InheritDatesFromOwner(owner, trailer));
+        Assert.Equal(owner.ProductionYear, trailer.ProductionYear);
+        Assert.Equal(owner.PremiereDate, trailer.PremiereDate);
+    }
+
+    [Fact]
+    public void InheritDatesFromOwner_OwnerHasNoDates_KeepsOwnedItemDates()
+    {
+        var owner = new Movie();
+        var trailer = new Trailer
+        {
+            ExtraType = ExtraType.Trailer,
+            ProductionYear = 1982,
+            PremiereDate = new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+        Assert.False(BaseItem.InheritDatesFromOwner(owner, trailer));
+        Assert.Equal(1982, trailer.ProductionYear);
+        Assert.Equal(new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc), trailer.PremiereDate);
+    }
+
+    [Fact]
+    public void InheritDatesFromOwner_DatesAlreadyMatch_ReportsNoChange()
+    {
+        var owner = new Movie
+        {
+            ProductionYear = 1982,
+            PremiereDate = new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+        var trailer = new Trailer
+        {
+            ExtraType = ExtraType.Trailer,
+            ProductionYear = owner.ProductionYear,
+            PremiereDate = owner.PremiereDate
+        };
+
+        Assert.False(BaseItem.InheritDatesFromOwner(owner, trailer));
+    }
+
+    [Fact]
+    public void InheritDatesFromOwner_OwnedItemHasNoDates_TakesOwnerDates()
+    {
+        var owner = new Movie
+        {
+            ProductionYear = 1982,
+            PremiereDate = new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+        var trailer = new Trailer
+        {
+            ExtraType = ExtraType.Trailer
+        };
+
+        Assert.True(BaseItem.InheritDatesFromOwner(owner, trailer));
+        Assert.Equal(1982, trailer.ProductionYear);
+        Assert.Equal(new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc), trailer.PremiereDate);
     }
 }
