@@ -106,5 +106,7 @@
     "TaskAudioNormalization": "Normalizacija zvoka",
     "TaskAudioNormalizationDescription": "Pregled datotek za podatke o normalizaciji zvoka.",
     "CleanupUserDataTask": "Čiščenje uporabniških podatkov",
-    "CleanupUserDataTaskDescription": "Izbriše vse uporabniške podatke (stanje ogleda, priljubljene itd.) za vsebine, ki že več kot 90 dni niso na voljo."
+    "CleanupUserDataTaskDescription": "Izbriše vse uporabniške podatke (stanje ogleda, priljubljene itd.) za vsebine, ki že več kot 90 dni niso na voljo.",
+    "LyricDownloadFailureFromForItem": "Besedila ni bilo mogoče prenesti iz {0} za {1}",
+    "Original": "Original"
 }

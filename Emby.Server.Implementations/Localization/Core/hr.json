@@ -107,5 +107,6 @@
     "TaskMoveTrickplayImagesDescription": "Premješta postojeće datoteke brzog pregledavanja u postavke biblioteke.",
     "CleanupUserDataTask": "Zadatak čišćenja korisničkih podataka",
     "CleanupUserDataTaskDescription": "Briše sve korisničke podatke (stanje gledanja, status favorita itd.) s medija koji više nisu prisutni najmanje 90 dana.",
-    "Original": "Original"
+    "Original": "Original",
+    "LyricDownloadFailureFromForItem": "Preuzimanje tekstova pjesmi od {0} za {1} nije uspjelo"
 }

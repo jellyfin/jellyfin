@@ -62,18 +62,21 @@ public sealed partial class BaseItemRepository
 
     private IQueryable<BaseItemEntity> ApplyGroupingFilter(JellyfinDbContext context, IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
-        // Collapse duplicates sharing a presentation key (e.g. alternate versions) by picking
-        // the min Id per group. Keep the grouped ids as an IQueryable sub-select; materializing
+        // Collapse duplicates sharing a presentation key (e.g. alternate versions), preferring the
+        // primary version (PrimaryVersionId is null) so detail pages and actions target it instead
+        // of an arbitrary alternate. Keep the grouped ids as an IQueryable sub-select; materializing
         // to a List would inline one bound parameter per id and hit SQLite's variable cap.
         var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
         if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
         {
-            var groupedIds = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.Min(x => x.Id));
+            var groupedIds = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey })
+                .Select(g => g.Where(e => e.PrimaryVersionId == null).Min(e => (Guid?)e.Id) ?? g.Min(e => (Guid?)e.Id));
             dbQuery = context.BaseItems.AsNoTracking().Where(e => groupedIds.Contains(e.Id));
         }
         else if (enableGroupByPresentationUniqueKey)
         {
-            var groupedIds = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.Min(x => x.Id));
+            var groupedIds = dbQuery.GroupBy(e => e.PresentationUniqueKey)
+                .Select(g => g.Where(e => e.PrimaryVersionId == null).Min(e => (Guid?)e.Id) ?? g.Min(e => (Guid?)e.Id));
             dbQuery = context.BaseItems.AsNoTracking().Where(e => groupedIds.Contains(e.Id));
         }
         else if (filter.GroupBySeriesPresentationUniqueKey)
@@ -444,6 +447,7 @@ public sealed partial class BaseItemRepository
         if (filter.IncludeInheritedTags.Length > 0)
         {
             var includeTags = filter.IncludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
+            var personTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
             var allowedTagItemIds = context.ItemValuesMap
                 .Where(f => f.ItemValue.Type == ItemValueType.Tags && includeTags.Contains(f.ItemValue.CleanValue))
                 .Select(f => f.ItemId);
@@ -452,7 +456,10 @@ public sealed partial class BaseItemRepository
                 allowedTagItemIds.Contains(e.Id)
                 || (e.SeriesId.HasValue && allowedTagItemIds.Contains(e.SeriesId.Value))
                 || e.Parents!.Any(p => allowedTagItemIds.Contains(p.ParentItemId))
-                || (e.TopParentId.HasValue && allowedTagItemIds.Contains(e.TopParentId.Value)));
+                || (e.TopParentId.HasValue && allowedTagItemIds.Contains(e.TopParentId.Value))
+
+                // People don't carry the tags of the media they appear in and would never match
+                || e.Type == personTypeName);
         }
 
         // Exclude alternate versions (have PrimaryVersionId set) and owned non-extra items.

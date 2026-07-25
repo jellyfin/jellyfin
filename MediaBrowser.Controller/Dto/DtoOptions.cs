@@ -82,13 +82,6 @@ namespace MediaBrowser.Controller.Dto
         public bool AddCurrentProgram { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether an episode's portrait poster (its season's primary
-        /// image, falling back to the series') should replace the episode's own (16:9) primary image.
-        /// Used by views that render episodes as poster cards, e.g. "Latest".
-        /// </summary>
-        public bool PreferEpisodeParentPoster { get; set; }
-
-        /// <summary>
         /// Gets a value indicating whether the specified field is populated.
         /// </summary>
         /// <param name="field">The field to check.</param>

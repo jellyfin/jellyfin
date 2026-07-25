@@ -29,17 +29,41 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentException("String can't be empty.", nameof(attribute));
             }
 
-            var attributeIndex = str.IndexOf(attribute, StringComparison.OrdinalIgnoreCase);
-
-            // Must be at least 3 characters after the attribute =, ], any character,
-            // then we offset it by 1, because we want the index and not length.
-            var maxIndex = str.Length - attribute.Length - 2;
-            while (attributeIndex > -1 && attributeIndex < maxIndex)
+            // Allow tmdb as an alias for tmdbid, tvdb for tvdbid, etc.
+            // The code below only supports aliases for attributes in the form of "<alias>id".
+            ReadOnlySpan<char> shortAttr = attribute switch
             {
-                var attributeEnd = attributeIndex + attribute.Length;
+                _ when attribute.Equals("tmdbid", StringComparison.OrdinalIgnoreCase) => "tmdb",
+                _ when attribute.Equals("tvdbid", StringComparison.OrdinalIgnoreCase) => "tvdb",
+                _ when attribute.Equals("imdbid", StringComparison.OrdinalIgnoreCase) => "imdb",
+                _ => ReadOnlySpan<char>.Empty
+            };
+
+            for (int strIndex = 0, attributeIndex = 0; attributeIndex > -1;)
+            {
+                // We may want to use imdbid pattern matching later, so we don't want to modify the original 'str'.
+                var subStr = str[strIndex..];
+                int attributeEnd = 0;
+
+                if (shortAttr.Length > 0)
+                {
+                    // If we are using an alias it should be shorter (and a prefix), so let's search for that.
+                    attributeIndex = subStr.IndexOf(shortAttr, StringComparison.OrdinalIgnoreCase);
+                    attributeEnd = attributeIndex + shortAttr.Length;
+                }
+                else
+                {
+                    attributeIndex = subStr.IndexOf(attribute, StringComparison.OrdinalIgnoreCase);
+                    attributeEnd = attributeIndex + attribute.Length;
+                }
+
+                // The next iteration should start at the end of the attribute we just found.
+                // If attributeIndex < 0, the loop will end and strIndex won't be used again.
+                strIndex += attributeEnd;
+
                 if (attributeIndex > 0)
                 {
-                    var attributeOpener = str[attributeIndex - 1];
+                    var attributeOpener = subStr[attributeIndex - 1];
                     var attributeCloser = attributeOpener switch
                     {
                         '[' => ']',
@@ -47,20 +71,37 @@ namespace Emby.Server.Implementations.Library
                         '{' => '}',
                         _ => '\0'
                     };
-                    if (attributeCloser != '\0' && (str[attributeEnd] == '=' || str[attributeEnd] == '-'))
-                    {
-                        var closingIndex = str[attributeEnd..].IndexOf(attributeCloser);
 
-                        // Must be at least 1 character before the closing bracket.
-                        if (closingIndex > 1)
+                    if (attributeCloser != '\0')
+                    {
+                        if (shortAttr.Length > 0
+                            && attributeEnd + 1 < subStr.Length
+                            && (subStr[attributeEnd] is 'i' or 'I')
+                            && (subStr[attributeEnd + 1] is 'd' or 'D'))
                         {
-                            return str[(attributeEnd + 1)..(attributeEnd + closingIndex)].Trim().ToString();
+                            // We were searching for a shortened attribute, but it's followed by "id" - let's skip it.
+                            attributeEnd += 2;
+                        }
+
+                        // attributeEnd points at '='.
+                        // We need at least 1 more character and the closing bracket after that.
+                        if (attributeEnd + 2 < subStr.Length && (subStr[attributeEnd] is '=' or '-'))
+                        {
+                            var closingIndex = subStr[attributeEnd..].IndexOf(attributeCloser);
+
+                            // Must be at least 1 character before the closing bracket.
+                            if (closingIndex > 1)
+                            {
+                                var trimmed = subStr[(attributeEnd + 1)..(attributeEnd + closingIndex)].Trim();
+
+                                if (trimmed.Length > 0)
+                                {
+                                    return trimmed.ToString();
+                                }
+                            }
                         }
                     }
                 }
-
-                str = str[attributeEnd..];
-                attributeIndex = str.IndexOf(attribute, StringComparison.OrdinalIgnoreCase);
             }
 
             // for imdbid we also accept pattern matching
@@ -68,16 +109,6 @@ namespace Emby.Server.Implementations.Library
             {
                 var match = ProviderIdParsers.TryFindImdbId(str, out var imdbId);
                 return match ? imdbId.ToString() : null;
-            }
-
-            // Allow tmdb as an alias for tmdbid
-            if (attribute.Equals("tmdbid", StringComparison.OrdinalIgnoreCase))
-            {
-                var tmdbValue = str.GetAttributeValue("tmdb");
-                if (tmdbValue is not null)
-                {
-                    return tmdbValue;
-                }
             }
 
             return null;

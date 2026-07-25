@@ -2315,9 +2315,13 @@ namespace Emby.Server.Implementations.Library
         {
             var comparer = Comparers.FirstOrDefault(c => name == c.Type);
 
-            // If it requires a user, create a new one, and assign the user
             if (comparer is IUserBaseItemComparer)
             {
+                if (user is null)
+                {
+                    throw new ArgumentException($"Sort key '{name}' requires a user, but none was provided.");
+                }
+
                 var userComparer = (IUserBaseItemComparer)Activator.CreateInstance(comparer.GetType())!; // only null for Nullable<T> instances
 
                 userComparer.User = user;
@@ -3885,6 +3889,18 @@ namespace Emby.Server.Implementations.Library
         public IReadOnlyList<string> GetMediaStreamLanguages(MediaStreamType mediaStreamType)
         {
             return _mediaStreamRepository.GetMediaStreamLanguages(mediaStreamType);
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> GetMediaStreamLanguages(MediaStreamType mediaStreamType, InternalItemsQuery query)
+        {
+            if (query.User is not null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return _itemRepository.GetMediaStreamLanguages(query, mediaStreamType);
         }
     }
 }

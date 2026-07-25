@@ -384,6 +384,7 @@ namespace MediaBrowser.Controller.Entities
             cancellationToken.ThrowIfCancellationRequested();
 
             var validChildren = new List<BaseItem>();
+            var accessibleChildren = new List<BaseItem>();
             var validChildrenNeedGeneration = false;
 
             if (IsFileProtocol)
@@ -438,12 +439,19 @@ namespace MediaBrowser.Controller.Entities
                 {
                     if (!IsLibraryFolderAccessible(directoryService, child, allowRemoveRoot))
                     {
+                        // Preserve inaccessible items so they aren't treated as removed.
+                        if (currentChildren.TryGetValue(child.Id, out var childrenToKeep))
+                        {
+                            validChildren.Add(childrenToKeep);
+                        }
+
                         continue;
                     }
 
                     if (currentChildren.TryGetValue(child.Id, out BaseItem currentChild))
                     {
                         validChildren.Add(currentChild);
+                        accessibleChildren.Add(currentChild);
 
                         if (currentChild.UpdateFromResolvedItem(child) > ItemUpdateType.None)
                         {
@@ -480,11 +488,12 @@ namespace MediaBrowser.Controller.Entities
                     child.SetParent(this);
                     newItems.Add(child);
                     validChildren.Add(child);
+                    accessibleChildren.Add(child);
                 }
 
                 // That's all the new and changed ones - now see if any have been removed and need cleanup
                 var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
-                var shouldRemove = !IsRoot || allowRemoveRoot;
+
                 // If it's an AggregateFolder, don't remove
                 // Collect replaced primaries for deferred deletion (after CreateItems)
                 var replacedPrimaries = new List<(Video OldPrimary, Video NewPrimary)>();
@@ -497,7 +506,7 @@ namespace MediaBrowser.Controller.Entities
                     .Where(p => !string.IsNullOrEmpty(p))
                     .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-                if (shouldRemove && itemsRemoved.Count > 0)
+                if (itemsRemoved.Count > 0)
                 {
                     foreach (var item in itemsRemoved)
                     {
@@ -703,7 +712,7 @@ namespace MediaBrowser.Controller.Entities
                     validChildrenNeedGeneration = false;
                 }
 
-                await ValidateSubFolders(validChildren.OfType<Folder>().ToList(), directoryService, innerProgress, cancellationToken).ConfigureAwait(false);
+                await ValidateSubFolders(accessibleChildren.OfType<Folder>().ToList(), directoryService, innerProgress, cancellationToken).ConfigureAwait(false);
             }
 
             if (refreshChildMetadata)
@@ -742,7 +751,7 @@ namespace MediaBrowser.Controller.Entities
                         validChildren = Children.ToList();
                     }
 
-                    await RefreshMetadataRecursive(validChildren, refreshOptions, recursive, innerProgress, cancellationToken).ConfigureAwait(false);
+                    await RefreshMetadataRecursive(accessibleChildren, refreshOptions, recursive, innerProgress, cancellationToken).ConfigureAwait(false);
                 }
             }
         }

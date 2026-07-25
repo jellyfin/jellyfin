@@ -14,6 +14,7 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
+using Jellyfin.LiveTv;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -1109,9 +1110,8 @@ namespace Jellyfin.LiveTv.Channels
                 item.Path = mediaSource?.Path;
             }
 
-            if (!string.IsNullOrEmpty(info.ImageUrl) && !item.HasImage(ImageType.Primary))
+            if (LiveTvChannelImageHelper.UpdateChannelImageIfNeeded(item, null, info.ImageUrl))
             {
-                item.SetImagePath(ImageType.Primary, info.ImageUrl);
                 _logger.LogDebug("Forcing update due to ImageUrl {0}", item.Name);
                 forceUpdate = true;
             }

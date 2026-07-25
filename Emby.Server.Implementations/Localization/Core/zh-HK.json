@@ -77,8 +77,8 @@
     "TaskCleanLogsDescription": "自動刪走超過 {0} 日嘅紀錄檔。",
     "TaskCleanLogs": "清理日誌資料夾",
     "TaskRefreshLibrary": "掃描媒體櫃",
-    "TaskRefreshChapterImagesDescription": "幫有章節嘅影片整返啲章節縮圖。",
-    "TaskRefreshChapterImages": "擷取章節圖片",
+    "TaskRefreshChapterImagesDescription": "幫有章節嘅影片整返啲章節預覽圖。",
+    "TaskRefreshChapterImages": "擷取章節圖像",
     "TaskCleanCacheDescription": "刪走系統已經唔再需要嘅快取檔案。",
     "TaskCleanCache": "清理快取（Cache）資料夾",
     "TasksChannelsCategory": "網路頻道",
@@ -106,5 +106,7 @@
     "TaskMoveTrickplayImagesDescription": "根據媒體櫃設定，將現有嘅 Trickplay（快轉預覽）檔案搬去對應位置。",
     "TaskMoveTrickplayImages": "搬移快轉預覽圖嘅位置",
     "CleanupUserDataTask": "清理使用者資料嘅任務",
-    "CleanupUserDataTaskDescription": "清理已消失至少 90 日嘅媒體用家數據（包括觀看狀態、心水狀態等）。"
+    "CleanupUserDataTaskDescription": "清理已消失至少 90 日嘅媒體用家數據（包括觀看狀態、心水狀態等）。",
+    "LyricDownloadFailureFromForItem": "冇辦法從 {0} 下載 {1} 嘅歌詞",
+    "Original": "原始"
 }

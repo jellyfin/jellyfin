@@ -106,5 +106,7 @@
     "TaskMoveTrickplayImages": "Migrate Trickplay Image Location",
     "TaskMoveTrickplayImagesDescription": "Moves existing trickplay files according to the library settings.",
     "CleanupUserDataTask": "User data cleanup task",
-    "CleanupUserDataTaskDescription": "Cleans all user data (Watch state, favourite status etc) from media that is no longer present for at least 90 days."
+    "CleanupUserDataTaskDescription": "Cleans all user data (Watch state, favourite status etc) from media that is no longer present for at least 90 days.",
+    "LyricDownloadFailureFromForItem": "Lyrics failed to download from {0} for {1}",
+    "Original": "Original"
 }
