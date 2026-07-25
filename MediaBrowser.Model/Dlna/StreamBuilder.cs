@@ -405,7 +405,7 @@ namespace MediaBrowser.Model.Dlna
         /// <returns>The normalized input container.</returns>
         public static string? NormalizeMediaSourceFormatIntoSingleContainer(string inputContainer, DeviceProfile? profile, DlnaProfileType type, DirectPlayProfile? playProfile = null)
         {
-            // If the source is Live TV the inputContainer will be null until the mediasource is probed on first access
+            // If the source is Live TV the inputContainer will be null until the media source is probed on first access
             if (profile is null || string.IsNullOrEmpty(inputContainer) || !inputContainer.Contains(',', StringComparison.OrdinalIgnoreCase))
             {
                 return inputContainer;

@@ -83,7 +83,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 // Make sure that the database is empty in case of failed migration due to power outages, etc.
                 dbContext.ActivityLogs.RemoveRange(dbContext.ActivityLogs);
                 dbContext.SaveChanges();
-                // Reset the autoincrement counter
+                // Reset the auto-increment counter
                 dbContext.Database.ExecuteSqlRaw("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'ActivityLog';");
                 dbContext.SaveChanges();
 

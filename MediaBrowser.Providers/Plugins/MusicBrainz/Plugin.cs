@@ -129,7 +129,7 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages, IHasEmbedde
         _disposed = true;
     }
 
-    [SuppressMessage("IDisposableAnalyzers.Correctness", "IDISP003:Dispose previous before re-assigning", Justification = "The previous Query may still be in use by in-flight async requests; disposing it would cause ObjectDisposedException. The orphan is intentionally left for GC.")]
+    [SuppressMessage("IDisposableAnalyzers.Correctness", "IDISP003:Dispose previous before re-assigning", Justification = "The previous Query may still be in use by in-flight async requests; disposing it would cause ObjectDisposedException. The orphan is intentionally left for GC.")] // cspell:disable-line
     private void OnConfigurationChanged(object? sender, BasePluginConfiguration e)
     {
         var configuration = (PluginConfiguration)e;

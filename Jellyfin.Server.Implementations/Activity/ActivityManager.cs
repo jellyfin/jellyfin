@@ -194,7 +194,7 @@ public class ActivityManager : IActivityManager
         return sortBy switch
         {
             ActivityLogSortBy.Name => e => e.ActivityLog.Name,
-            ActivityLogSortBy.Overiew => e => e.ActivityLog.Overview,
+            ActivityLogSortBy.Overview => e => e.ActivityLog.Overview,
             ActivityLogSortBy.ShortOverview => e => e.ActivityLog.ShortOverview,
             ActivityLogSortBy.Type => e => e.ActivityLog.Type,
             ActivityLogSortBy.DateCreated => e => e.ActivityLog.DateCreated,

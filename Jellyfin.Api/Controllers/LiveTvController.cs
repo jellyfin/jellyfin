@@ -690,7 +690,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <param name="enableUserData">Optional. include user data.</param>
     /// <param name="enableTotalRecordCount">Retrieve total record count.</param>
     /// <response code="200">Recommended epgs returned.</response>
-    /// <returns>A <see cref="OkResult"/> containing the queryresult of recommended epgs.</returns>
+    /// <returns>A <see cref="OkResult"/> containing the query result of recommended epgs.</returns>
     [HttpGet("Programs/Recommended")]
     [Authorize(Policy = Policies.LiveTvAccess)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -1098,7 +1098,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <param name="newDevicesOnly">Only discover new tuners.</param>
     /// <response code="200">Tuners returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the tuners.</returns>
-    [HttpGet("Tuners/Discvover", Name = "DiscvoverTuners")]
+    [HttpGet("Tuners/Discvover", Name = "DiscvoverTuners")] // cspell:disable-line
     [HttpGet("Tuners/Discover")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]

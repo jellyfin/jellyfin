@@ -555,7 +555,7 @@ public class DynamicHlsHelper
                 VideoRangeType.DOVIWithHDR10 => "db1p",
                 VideoRangeType.DOVIWithHLG => "db4h",
                 VideoRangeType.DOVIWithHDR10Plus => "db1p", // The HDR10+ metadata would be removed if Dovi metadata is not removed
-                _ => string.Empty // Don't label Dovi with EL and SDR due to compatability issues, ignore invalid configurations
+                _ => string.Empty // Don't label Dovi with EL and SDR due to compatibility issues, ignore invalid configurations
             };
 
             if (dvProfile is null || dvLevel is null || string.IsNullOrEmpty(dvRangeString))

@@ -44,15 +44,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
             var xmlFile = File.ReadAllText(metadataFile);
 
-            var srch = "</episodedetails>";
-            var index = xmlFile.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
+            var search = "</episodedetails>";
+            var index = xmlFile.IndexOf(search, StringComparison.OrdinalIgnoreCase);
 
             var xml = xmlFile;
 
             if (index != -1)
             {
-                xml = xmlFile.Substring(0, index + srch.Length);
-                xmlFile = xmlFile.Substring(index + srch.Length);
+                xml = xmlFile.Substring(0, index + search.Length);
+                xmlFile = xmlFile.Substring(index + search.Length);
             }
 
             // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
@@ -67,10 +67,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 var name = new StringBuilder(item.Item.Name);
                 var originalTitle = new StringBuilder(item.Item.OriginalTitle);
                 var overview = new StringBuilder(item.Item.Overview);
-                while ((index = xmlFile.IndexOf(srch, StringComparison.OrdinalIgnoreCase)) != -1)
+                while ((index = xmlFile.IndexOf(search, StringComparison.OrdinalIgnoreCase)) != -1)
                 {
-                    xml = xmlFile.Substring(0, index + srch.Length);
-                    xmlFile = xmlFile.Substring(index + srch.Length);
+                    xml = xmlFile.Substring(0, index + search.Length);
+                    xmlFile = xmlFile.Substring(index + search.Length);
 
                     var additionalEpisode = new MetadataResult<Episode>()
                     {

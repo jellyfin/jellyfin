@@ -150,7 +150,7 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
                 keyColumn: "Id",
                 keyValue: new Guid("00000000-0000-0000-0000-000000000001"),
                 columns: new[] { "Name", "OwnerId" },
-                values: new object[] { "This is a placeholder item for UserData that has been detacted from its original item", null });
+                values: new object[] { "This is a placeholder item for UserData that has been detached from its original item", null });
         }
     }
 }

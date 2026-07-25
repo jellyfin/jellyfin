@@ -10,6 +10,7 @@ namespace Emby.Naming.TV
     /// </summary>
     public static partial class SeasonPathParser
     {
+        // cspell:disable
         private const string SeasonKeywordPattern =
             @"시즌|シーズン|сезон" +
             @"|season|sæson|saison|staffel|series|stagione|säsong|seizoen|seasong" +
@@ -22,6 +23,7 @@ namespace Emby.Naming.TV
 
         [GeneratedRegex(@"^\s*(?:" + SeasonKeywordPattern + @")\s*(?<seasonnumber>\d+?)(?=\d{3,4}p|[^\d]|$)(?!\s*[Ee]\d)(?<rightpart>.*)$", RegexOptions.IgnoreCase)]
         private static partial Regex ProcessPost();
+        // cspell: enable
 
         [GeneratedRegex(@"[sS](\d{1,4})(?!\d|[eE]\d)(?=\.|_|-|\[|\]|\s|$)", RegexOptions.None)]
         private static partial Regex SeasonPrefix();

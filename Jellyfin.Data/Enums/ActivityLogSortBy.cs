@@ -13,7 +13,7 @@ public enum ActivityLogSortBy
     /// <summary>
     /// Sort by overview.
     /// </summary>
-    Overiew = 1,
+    Overview = 1,
 
     /// <summary>
     /// Sort by short overview.

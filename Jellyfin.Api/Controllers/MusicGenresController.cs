@@ -70,7 +70,7 @@ public class MusicGenresController : BaseJellyfinApiController
     /// <param name="enableImages">Optional, include image information in output.</param>
     /// <param name="enableTotalRecordCount">Optional. Include total record count.</param>
     /// <response code="200">Music genres returned.</response>
-    /// <returns>An <see cref="OkResult"/> containing the queryresult of music genres.</returns>
+    /// <returns>An <see cref="OkResult"/> containing the query result of music genres.</returns>
     [HttpGet]
     [Obsolete("Use GetGenres instead")]
     [ApiExplorerSettings(IgnoreApi = true)]

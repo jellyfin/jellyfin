@@ -320,7 +320,7 @@ namespace Emby.Server.Implementations.Plugins
 
             if (ChangePluginState(plugin, PluginStatus.Active))
             {
-                // See if there is another version, and if so, supercede it.
+                // See if there is another version, and if so, supersede it.
                 ProcessAlternative(plugin);
             }
         }
@@ -820,7 +820,7 @@ namespace Emby.Server.Implementations.Plugins
         /// </summary>
         /// <remarks>
         /// Loading DLLs from externally supplied paths introduces a path traversal risk. This method
-        /// uses a safelisting tactic of considering DLLs from the plugin directory and only using
+        /// uses a safe-listing tactic of considering DLLs from the plugin directory and only using
         /// the plugin's canonicalized assembly whitelist for comparison. See
         /// <see href="https://owasp.org/www-community/attacks/Path_Traversal"/> for more details.
         /// </remarks>
@@ -903,7 +903,7 @@ namespace Emby.Server.Implementations.Plugins
             }
             else if (plugin.Manifest.Status == PluginStatus.Superseded && !ChangePluginState(previousVersion, PluginStatus.Active))
             {
-                _logger.LogError("Unable to supercede version {Version} of {Name}", previousVersion.Version, previousVersion.Name);
+                _logger.LogError("Unable to supersede version {Version} of {Name}", previousVersion.Version, previousVersion.Name);
             }
 
             // This value is memory only - so that the web will show restart required.

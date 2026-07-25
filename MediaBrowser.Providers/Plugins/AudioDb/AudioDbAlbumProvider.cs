@@ -49,7 +49,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public string Name => "TheAudioDB";
 
         /// <inheritdoc />
-        // After music brainz
+        // After MusicBrainz
         public int Order => 1;
 
         /// <inheritdoc />

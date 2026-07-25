@@ -196,7 +196,7 @@ namespace MediaBrowser.Providers.MediaInfo
             trackTitle = GetSanitizedStringTag(trackTitle, audio.Path);
             trackAlbum = GetSanitizedStringTag(trackAlbum, audio.Path);
             var trackAlbumArtist = GetSanitizedStringTag(track.AlbumArtist, audio.Path);
-            var trackArist = GetSanitizedStringTag(track.Artist, audio.Path);
+            var trackArtist = GetSanitizedStringTag(track.Artist, audio.Path);
             var trackComposer = GetSanitizedStringTag(track.Composer, audio.Path);
             var trackGenre = GetSanitizedStringTag(track.Genre, audio.Path);
 
@@ -235,7 +235,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (performers is null || performers.Length == 0)
                 {
-                    performers = string.IsNullOrEmpty(trackArist) ? [] : trackArist.Split(InternalValueSeparator);
+                    performers = string.IsNullOrEmpty(trackArtist) ? [] : trackArtist.Split(InternalValueSeparator);
                 }
 
                 if (libraryOptions.UseCustomTagDelimiters)

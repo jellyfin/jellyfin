@@ -31,7 +31,7 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
     /// <summary>
     /// Initializes a new instance of the <see cref="MigrateKeyframeData"/> class.
     /// </summary>
-    /// <param name="startupLogger">The startup logger for Startup UI intigration.</param>
+    /// <param name="startupLogger">The startup logger for Startup UI integration.</param>
     /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="dbProvider">The EFCore db factory.</param>
     public MigrateKeyframeData(

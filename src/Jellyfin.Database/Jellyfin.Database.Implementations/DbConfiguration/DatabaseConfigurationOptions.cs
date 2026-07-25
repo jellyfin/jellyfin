@@ -3,12 +3,12 @@ using System.Collections.Generic;
 namespace Jellyfin.Database.Implementations.DbConfiguration;
 
 /// <summary>
-/// Options to configure jellyfins managed database.
+/// Options to configure Jellyfin's managed database.
 /// </summary>
 public class DatabaseConfigurationOptions
 {
     /// <summary>
-    /// Gets or Sets the type of database jellyfin should use.
+    /// Gets or Sets the type of database Jellyfin should use.
     /// </summary>
     public required string DatabaseType { get; set; }
 
@@ -18,7 +18,7 @@ public class DatabaseConfigurationOptions
     public CustomDatabaseOptions? CustomProviderOptions { get; set; }
 
     /// <summary>
-    /// Gets or Sets the kind of locking behavior jellyfin should perform. Possible options are "NoLock", "Pessimistic", "Optimistic".
+    /// Gets or Sets the kind of locking behavior Jellyfin should perform. Possible options are "NoLock", "Pessimistic", "Optimistic".
     /// Defaults to "NoLock".
     /// </summary>
     public DatabaseLockingBehaviorTypes LockingBehavior { get; set; }

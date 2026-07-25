@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Jellyfin.Database.Implementations.ModelConfiguration;
 
 /// <summary>
-/// People configuration.
+/// PeopleBaseItemMap Configuration.
 /// </summary>
 public class PeopleBaseItemMapConfiguration : IEntityTypeConfiguration<PeopleBaseItemMap>
 {

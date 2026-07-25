@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.Routines;
 
 /// <summary>
-/// The migration routine for checking if the current instance of Jellyfin is compatiable to be upgraded.
+/// The migration routine for checking if the current instance of Jellyfin is compatible to be upgraded.
 /// </summary>
 [JellyfinMigration("2025-04-20T19:30:00", nameof(MigrateLibraryDbCompatibilityCheck))]
 public class MigrateLibraryDbCompatibilityCheck : IAsyncMigrationRoutine
@@ -51,11 +51,11 @@ public class MigrateLibraryDbCompatibilityCheck : IAsyncMigrationRoutine
 
     private static void CheckMigratableVersion(SqliteConnection connection)
     {
-        CheckColumnExistance(connection, "TypedBaseItems", "lufs");
-        CheckColumnExistance(connection, "TypedBaseItems", "normalizationgain");
-        CheckColumnExistance(connection, "mediastreams", "dvversionmajor");
+        CheckColumnExistence(connection, "TypedBaseItems", "lufs");
+        CheckColumnExistence(connection, "TypedBaseItems", "normalizationgain");
+        CheckColumnExistence(connection, "mediastreams", "dvversionmajor");
 
-        static void CheckColumnExistance(SqliteConnection connection, string table, string column)
+        static void CheckColumnExistence(SqliteConnection connection, string table, string column)
         {
             using (var cmd = connection.CreateCommand())
             {

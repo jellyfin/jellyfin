@@ -45,7 +45,7 @@ public static class HttpClientExtension
     public static bool UseIPv6 { get; set; } = true;
 
     /// <summary>
-    /// Implements the httpclient callback method.
+    /// Implements the HttpClient callback method.
     /// </summary>
     /// <param name="context">The <see cref="SocketsHttpConnectionContext"/> instance.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> instance.</param>

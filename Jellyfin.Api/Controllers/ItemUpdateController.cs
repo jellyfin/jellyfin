@@ -312,9 +312,9 @@ public class ItemUpdateController : BaseJellyfinApiController
             addedTags = [];
         }
 
-        if (item is Series rseries)
+        if (item is Series rSeries)
         {
-            foreach (var season in rseries.Children.OfType<Season>())
+            foreach (var season in rSeries.Children.OfType<Season>())
             {
                 season.SeriesName = rseries.Name;
 

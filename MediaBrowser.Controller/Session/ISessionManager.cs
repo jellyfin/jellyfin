@@ -347,7 +347,7 @@ namespace MediaBrowser.Controller.Session
         /// Used to close the livestream if needed.
         /// </summary>
         /// <param name="liveStreamId">The livestream id.</param>
-        /// <param name="sessionIdOrPlaySessionId">The session id or playsession id.</param>
+        /// <param name="sessionIdOrPlaySessionId">The session id or play session id.</param>
         /// <returns>Task.</returns>
         Task CloseLiveStreamIfNeededAsync(string liveStreamId, string sessionIdOrPlaySessionId);
 

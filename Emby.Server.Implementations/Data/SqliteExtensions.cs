@@ -10,6 +10,7 @@ namespace Emby.Server.Implementations.Data
 {
     public static class SqliteExtensions
     {
+        // cspell:disable
         private const string DatetimeFormatUtc = "yyyy-MM-dd HH:mm:ss.FFFFFFFK";
         private const string DatetimeFormatLocal = "yyyy-MM-dd HH:mm:ss.FFFFFFF";
 
@@ -50,6 +51,7 @@ namespace Emby.Server.Implementations.Data
             "yyyyMMdd",
             "yy-MM-dd"
         };
+        // cspell:enable
 
         public static IEnumerable<SqliteDataReader> Query(this SqliteConnection sqliteConnection, string commandText)
         {

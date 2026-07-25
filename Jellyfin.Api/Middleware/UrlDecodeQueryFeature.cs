@@ -43,7 +43,7 @@ public class UrlDecodeQueryFeature : IQueryFeature
                 return;
             }
 
-            // Encoded querystrings have no value, so don't process anything if a value is present.
+            // Encoded query strings have no value, so don't process anything if a value is present.
             var (key, stringValues) = value.First();
             if (!string.IsNullOrEmpty(stringValues))
             {

@@ -40,7 +40,7 @@ public class MoveExtractedFiles : IAsyncMigrationRoutine
     /// </summary>
     /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="logger">The logger.</param>
-    /// <param name="startupLogger">The startup logger for Startup UI intigration.</param>
+    /// <param name="startupLogger">The startup logger for Startup UI integration.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="pathManager">Instance of the <see cref="IPathManager"/> interface.</param>
     /// <param name="dbProvider">Instance of the <see cref="IDbContextFactory{JellyfinDbContext}"/> interface.</param>

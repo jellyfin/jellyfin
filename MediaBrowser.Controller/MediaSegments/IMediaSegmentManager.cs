@@ -70,7 +70,7 @@ public interface IMediaSegmentManager
     /// </summary>
     /// <param name="itemId">The id of the <see cref="BaseItem"/>.</param>
     /// <returns>True if there are any segments stored for the item, otherwise false.</returns>
-    /// TODO: this should be async but as the only caller BaseItem.GetVersionInfo isn't async, this is also not. Venson.
+    /// TODO: this should be async but as the only caller BaseItem.GetVersionInfo isn't async, this is also not.
     bool HasSegments(Guid itemId);
 
     /// <summary>

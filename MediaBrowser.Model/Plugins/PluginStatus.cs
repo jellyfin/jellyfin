@@ -41,7 +41,7 @@ namespace MediaBrowser.Model.Plugins
         /// <summary>
         /// [DEPRECATED] See Superseded.
         /// </summary>
-        Superceded = -4,
+        Superceded = -4, // cspell:disable-line
 
         /// <summary>
         /// An attempt to remove this plugin from disk will happen at every restart.

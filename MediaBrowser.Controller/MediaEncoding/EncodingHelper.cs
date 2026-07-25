@@ -2509,7 +2509,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     // Check complicated cases where we need to remove dynamic metadata
                     // Conservatively refuse to copy if the encoder can't remove dynamic metadata,
-                    // but a removal is required for compatability reasons.
+                    // but a removal is required for compatibility reasons.
                     var dynamicHdrMetadataRemovalPlan = ShouldRemoveDynamicHdrMetadata(state);
                     if (!CanEncoderRemoveDynamicHdrMetadata(dynamicHdrMetadataRemovalPlan, videoStream))
                     {
@@ -3887,7 +3887,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             mainFilters.Add(GetOverwriteColorPropertiesParam(state, doToneMap));
 
             // INPUT sw surface(memory/copy-back from vram)
-            // sw deint
+            // sw deinterlace
             if (doDeintH2645)
             {
                 var deintFilter = GetSwDeinterlaceFilter(state, options);
@@ -3995,10 +3995,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // preferred nvdec/cuvid + cuda filters + nvenc pipeline
-            return GetNvidiaVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
+            return GetNvidiaVidFiltersPreferred(state, options, vidDecoder, vidEncoder);
         }
 
-        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetNvidiaVidFiltersPrefered(
+        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetNvidiaVidFiltersPreferred(
             EncodingJobInfo state,
             EncodingOptions options,
             string vidDecoder,
@@ -4047,7 +4047,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (isSwDecoder)
             {
                 // INPUT sw surface(memory)
-                // sw deint
+                // sw deinterlace
                 if (doDeintH2645)
                 {
                     var swDeintFilter = GetSwDeinterlaceFilter(state, options);
@@ -4070,7 +4070,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (isNvDecoder)
             {
                 // INPUT cuda surface(vram)
-                // hw deint
+                // hw deinterlace
                 if (doDeintH2645)
                 {
                     var deintFilter = GetHwDeinterlaceFilter(state, options, "cuda");
@@ -4205,10 +4205,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // preferred d3d11va + opencl filters + amf pipeline
-            return GetAmdDx11VidFiltersPrefered(state, options, vidDecoder, vidEncoder);
+            return GetAmdDx11VidFiltersPreferred(state, options, vidDecoder, vidEncoder);
         }
 
-        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetAmdDx11VidFiltersPrefered(
+        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetAmdDx11VidFiltersPreferred(
             EncodingJobInfo state,
             EncodingOptions options,
             string vidDecoder,
@@ -4257,7 +4257,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (isSwDecoder)
             {
                 // INPUT sw surface(memory)
-                // sw deint
+                // sw deinterlace
                 if (doDeintH2645)
                 {
                     var swDeintFilter = GetSwDeinterlaceFilter(state, options);
@@ -4287,7 +4287,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // map from d3d11va to opencl via d3d11-opencl interop.
                 mainFilters.Add("hwmap=derive_device=opencl:mode=read");
 
-                // hw deint
+                // hw deinterlace
                 if (doDeintH2645)
                 {
                     var deintFilter = GetHwDeinterlaceFilter(state, options, "opencl");
@@ -4440,19 +4440,19 @@ namespace MediaBrowser.Controller.MediaEncoding
             // preferred qsv(vaapi) + opencl filters pipeline
             if (isIntelVaapiOclSupported)
             {
-                return GetIntelQsvVaapiVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
+                return GetIntelQsvVaapiVidFiltersPreferred(state, options, vidDecoder, vidEncoder);
             }
 
             // preferred qsv(d3d11) + opencl filters pipeline
             if (isIntelDx11OclSupported)
             {
-                return GetIntelQsvDx11VidFiltersPrefered(state, options, vidDecoder, vidEncoder);
+                return GetIntelQsvDx11VidFiltersPreferred(state, options, vidDecoder, vidEncoder);
             }
 
             return (null, null, null);
         }
 
-        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetIntelQsvDx11VidFiltersPrefered(
+        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetIntelQsvDx11VidFiltersPreferred(
             EncodingJobInfo state,
             EncodingOptions options,
             string vidDecoder,
@@ -4504,7 +4504,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (isSwDecoder)
             {
                 // INPUT sw surface(memory)
-                // sw deint
+                // sw deinterlace
                 if (doDeintH2645)
                 {
                     var swDeintFilter = GetSwDeinterlaceFilter(state, options);
@@ -4583,7 +4583,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var hwScaleFilter = GetHwScaleFilter("vpp", "qsv", outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
                 // d3d11va doesn't support dynamic pool size, use vpp filter ctx to relay
-                // to prevent encoder async and bframes from exhausting the decoder pool.
+                // to prevent encoder async and B-frames from exhausting the decoder pool.
                 if (!string.IsNullOrEmpty(hwScaleFilter) && isD3d11vaDecoder)
                 {
                     hwScaleFilter += ":passthrough=0";
@@ -4615,7 +4615,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                 }
 
-                // hw deint
+                // hw deinterlace
                 if (doDeintH2645)
                 {
                     var deintFilter = GetHwDeinterlaceFilter(state, options, "qsv");
@@ -4744,7 +4744,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return (mainFilters, subFilters, overlayFilters);
         }
 
-        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetIntelQsvVaapiVidFiltersPrefered(
+        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetIntelQsvVaapiVidFiltersPreferred(
             EncodingJobInfo state,
             EncodingOptions options,
             string vidDecoder,
@@ -4796,7 +4796,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (isSwDecoder)
             {
                 // INPUT sw surface(memory)
-                // sw deint
+                // sw deinterlace
                 if (doDeintH2645)
                 {
                     var swDeintFilter = GetSwDeinterlaceFilter(state, options);
@@ -4833,7 +4833,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     && _mediaEncoder.EncoderVersion >= _minFFmpegQsvVppScaleModeOption;
 
                 // INPUT vaapi/qsv surface(vram)
-                // hw deint
+                // hw deinterlace
                 if (doDeintH2645)
                 {
                     var deintFilter = GetHwDeinterlaceFilter(state, options, hwFilterSuffix);
@@ -5041,13 +5041,13 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (!isSwEncoder)
                 {
-                    var newfilters = new List<string>();
+                    var newFilters = new List<string>();
                     var noOverlay = swFilterChain.OverlayFilters.Count == 0;
-                    newfilters.AddRange(noOverlay ? swFilterChain.MainFilters : swFilterChain.OverlayFilters);
-                    newfilters.Add("hwupload=derive_device=vaapi");
+                    newFilters.AddRange(noOverlay ? swFilterChain.MainFilters : swFilterChain.OverlayFilters);
+                    newFilters.Add("hwupload=derive_device=vaapi");
 
-                    var mainFilters = noOverlay ? newfilters : swFilterChain.MainFilters;
-                    var overlayFilters = noOverlay ? swFilterChain.OverlayFilters : newfilters;
+                    var mainFilters = noOverlay ? newFilters : swFilterChain.MainFilters;
+                    var overlayFilters = noOverlay ? swFilterChain.OverlayFilters : newFilters;
                     return (mainFilters, swFilterChain.SubFilters, overlayFilters);
                 }
 
@@ -5058,7 +5058,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (_mediaEncoder.IsVaapiDeviceInteliHD)
             {
                 // Intel iHD path, with extra vpp tonemap and overlay support.
-                return GetIntelVaapiFullVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
+                return GetIntelVaapiFullVidFiltersPreferred(state, options, vidDecoder, vidEncoder);
             }
 
             // preferred vaapi + vulkan filters pipeline
@@ -5068,14 +5068,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && Environment.OSVersion.Version >= _minKernelVersionAmdVkFmtModifier)
             {
                 // AMD radeonsi path(targeting Polaris/gfx8+), with extra vulkan tonemap and overlay support.
-                return GetAmdVaapiFullVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
+                return GetAmdVaapiFullVidFiltersPreferred(state, options, vidDecoder, vidEncoder);
             }
 
             // Intel i965 and Amd legacy driver path, only featuring scale and deinterlace support.
-            return GetVaapiLimitedVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
+            return GetVaapiLimitedVidFiltersPreferred(state, options, vidDecoder, vidEncoder);
         }
 
-        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetIntelVaapiFullVidFiltersPrefered(
+        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetIntelVaapiFullVidFiltersPreferred(
             EncodingJobInfo state,
             EncodingOptions options,
             string vidDecoder,
@@ -5125,7 +5125,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (isSwDecoder)
             {
                 // INPUT sw surface(memory)
-                // sw deint
+                // sw deinterlace
                 if (doDeintH2645)
                 {
                     var swDeintFilter = GetSwDeinterlaceFilter(state, options);
@@ -5157,7 +5157,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var isRext = IsVideoStreamHevcRext(state);
 
                 // INPUT vaapi surface(vram)
-                // hw deint
+                // hw deinterlace
                 if (doDeintH2645)
                 {
                     var deintFilter = GetHwDeinterlaceFilter(state, options, "vaapi");
@@ -5311,7 +5311,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return (mainFilters, subFilters, overlayFilters);
         }
 
-        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetAmdVaapiFullVidFiltersPrefered(
+        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetAmdVaapiFullVidFiltersPreferred(
             EncodingJobInfo state,
             EncodingOptions options,
             string vidDecoder,
@@ -5356,7 +5356,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (isSwDecoder)
             {
                 // INPUT sw surface(memory)
-                // sw deint
+                // sw deinterlace
                 if (doDeintH2645)
                 {
                     var swDeintFilter = GetSwDeinterlaceFilter(state, options);
@@ -5414,7 +5414,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else
                 {
-                    // hw deint
+                    // hw deinterlace
                     if (doDeintH2645)
                     {
                         var deintFilter = GetHwDeinterlaceFilter(state, options, "vaapi");
@@ -5464,7 +5464,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // clear the surf->meta_offset and output nv12
                 mainFilters.Add("scale_vaapi=format=nv12");
 
-                // hw deint
+                // hw deinterlace
                 if (doDeintH2645)
                 {
                     var deintFilter = GetHwDeinterlaceFilter(state, options, "vaapi");
@@ -5534,7 +5534,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     // clear the surf->meta_offset and output nv12
                     overlayFilters.Add("scale_vaapi=format=nv12");
 
-                    // hw deint
+                    // hw deinterlace
                     if (doDeintH2645)
                     {
                         var deintFilter = GetHwDeinterlaceFilter(state, options, "vaapi");
@@ -5546,7 +5546,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return (mainFilters, subFilters, overlayFilters);
         }
 
-        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetVaapiLimitedVidFiltersPrefered(
+        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetVaapiLimitedVidFiltersPreferred(
             EncodingJobInfo state,
             EncodingOptions options,
             string vidDecoder,
@@ -5590,7 +5590,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (isSwDecoder)
             {
                 // INPUT sw surface(memory)
-                // sw deint
+                // sw deinterlace
                 if (doDeintH2645)
                 {
                     var swDeintFilter = GetSwDeinterlaceFilter(state, options);
@@ -5620,7 +5620,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             else if (isVaapiDecoder)
             {
                 // INPUT vaapi surface(vram)
-                // hw deint
+                // hw deinterlace
                 if (doDeintH2645)
                 {
                     var deintFilter = GetHwDeinterlaceFilter(state, options, "vaapi");
@@ -5841,7 +5841,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             /* Make main filters for video stream */
             var mainFilters = new List<string>();
 
-            // hw deint
+            // hw deinterlace
             if (doDeintH2645)
             {
                 var deintFilter = GetHwDeinterlaceFilter(state, options, "videotoolbox");
@@ -5969,13 +5969,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             // preferred rkmpp + rkrga + opencl filters pipeline
             if (isRkmppOclSupported)
             {
-                return GetRkmppVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
+                return GetRkmppVidFiltersPreferred(state, options, vidDecoder, vidEncoder);
             }
 
             return (null, null, null);
         }
 
-        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetRkmppVidFiltersPrefered(
+        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetRkmppVidFiltersPreferred(
             EncodingJobInfo state,
             EncodingOptions options,
             string vidDecoder,
@@ -6026,7 +6026,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (isSwDecoder)
             {
                 // INPUT sw surface(memory)
-                // sw deint
+                // sw deinterlace
                 if (doDeintH2645)
                 {
                     var swDeintFilter = GetSwDeinterlaceFilter(state, options);

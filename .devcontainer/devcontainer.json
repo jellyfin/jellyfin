@@ -30,7 +30,8 @@
         "ghcr.io/devcontainers-extra/features/apt-packages:1": {
             "preserve_apt_list": false,
             "packages": [
-                "libfontconfig1"
+                "libfontconfig1",
+                "ripgrep"
             ]
         },
         "ghcr.io/devcontainers/features/docker-in-docker:3": {

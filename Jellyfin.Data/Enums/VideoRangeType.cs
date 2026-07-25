@@ -46,7 +46,7 @@ public enum VideoRangeType
     DOVIWithSDR,
 
     /// <summary>
-    /// Dolby Vision with Enhancment Layer (Profile 7).
+    /// Dolby Vision with Enhancement Layer (Profile 7).
     /// </summary>
     DOVIWithEL,
 
@@ -56,7 +56,7 @@ public enum VideoRangeType
     DOVIWithHDR10Plus,
 
     /// <summary>
-    /// Dolby Vision with Enhancment Layer (Profile 7) and HDR10+ Metadata coexists.
+    /// Dolby Vision with Enhancement Layer (Profile 7) and HDR10+ Metadata coexists.
     /// </summary>
     DOVIWithELHDR10Plus,
 

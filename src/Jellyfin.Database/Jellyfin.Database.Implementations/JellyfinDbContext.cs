@@ -286,7 +286,7 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     }
 
     /// <inheritdoc/>
-    public override int SaveChanges(bool acceptAllChangesOnSuccess) // SaveChanges(bool) is beeing called by SaveChanges() with default to false.
+    public override int SaveChanges(bool acceptAllChangesOnSuccess) // SaveChanges(bool) is being called by SaveChanges() with default to false.
     {
         HandleConcurrencyToken();
 

@@ -27,7 +27,7 @@ public interface IBackupService
     /// Gets a single backup manifest if the path defines a valid Jellyfin backup archive.
     /// </summary>
     /// <param name="archivePath">The path to be loaded.</param>
-    /// <returns>The containing backup manifest or null if not existing or compatiable.</returns>
+    /// <returns>The containing backup manifest or null if not existing or compatible.</returns>
     Task<BackupManifestDto?> GetBackupManifest(string archivePath);
 
     /// <summary>

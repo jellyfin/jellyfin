@@ -41,7 +41,7 @@ internal class JellyfinMigrationService
     /// </summary>
     /// <param name="dbContextFactory">Provides access to the jellyfin database.</param>
     /// <param name="loggerFactory">The logger factory.</param>
-    /// <param name="startupLogger">The startup logger for Startup UI intigration.</param>
+    /// <param name="startupLogger">The startup logger for Startup UI integration.</param>
     /// <param name="applicationPaths">Application paths for library.db backup.</param>
     /// <param name="backupService">The jellyfin backup service.</param>
     /// <param name="jellyfinDatabaseProvider">The jellyfin database provider.</param>

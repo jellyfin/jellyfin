@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace MediaBrowser.Model.System;
 
 /// <summary>
-/// Contains informations about the systems storage.
+/// Contains information about the systems storage.
 /// </summary>
 public class SystemStorageInfo
 {
@@ -50,7 +50,7 @@ public class SystemStorageInfo
     public required FolderStorageInfo TranscodingTempFolder { get; set; }
 
     /// <summary>
-    /// Gets or sets the storage informations of all libraries.
+    /// Gets or sets the storage information of all libraries.
     /// </summary>
     public required IReadOnlyCollection<LibraryStorageInfo> Libraries { get; set; }
 }

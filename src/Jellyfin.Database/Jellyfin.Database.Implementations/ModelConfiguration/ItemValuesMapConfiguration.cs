@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Jellyfin.Database.Implementations.ModelConfiguration;
 
 /// <summary>
-/// itemvalues Configuration.
+/// ItemValuesMap Configuration.
 /// </summary>
 public class ItemValuesMapConfiguration : IEntityTypeConfiguration<ItemValueMap>
 {
