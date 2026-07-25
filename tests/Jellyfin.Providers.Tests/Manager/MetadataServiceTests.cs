@@ -1,13 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace Jellyfin.Providers.Tests.Manager
@@ -77,13 +86,347 @@ namespace Jellyfin.Providers.Tests.Manager
             }
         }
 
+        [Fact]
+        public void MergeBaseItemData_ReloadMetadata_OrphanedSource_DoesNotOverwriteEditedFields()
+        {
+            var target = new MetadataResult<Movie>
+            {
+                Item = new Movie
+                {
+                    Name = "Edited name",
+                    OfficialRating = "TV-14",
+                    CustomRating = "Edited custom",
+                    Overview = "Edited overview",
+                    ProductionYear = 2024,
+                    CommunityRating = 8.5f,
+                    CriticRating = 88f,
+                    Genres = new[] { "Drama" },
+                    Studios = new[] { "Edited Studio" },
+                    Tags = new[] { "Edited Tag" },
+                    ProductionLocations = new[] { "PT" },
+                    ForcedSortName = "Edited sort"
+                }
+            };
+
+            // Simulate manual edits already stored in library item.
+            var expectedName = target.Item.Name;
+            var expectedOfficialRating = target.Item.OfficialRating;
+            var expectedCustomRating = target.Item.CustomRating;
+            var expectedOverview = target.Item.Overview;
+            var expectedProductionYear = target.Item.ProductionYear;
+            var expectedCommunityRating = target.Item.CommunityRating;
+            var expectedCriticRating = target.Item.CriticRating;
+            var expectedGenres = target.Item.Genres.ToArray();
+            var expectedStudios = target.Item.Studios.ToArray();
+            var expectedTags = target.Item.Tags.ToArray();
+            var expectedProductionLocations = target.Item.ProductionLocations.ToArray();
+            var expectedForcedSortName = target.Item.ForcedSortName;
+
+            var source = new MetadataResult<Movie>
+            {
+                // Simulate reload returning no content metadata and no provider ids (orphan).
+                Item = new Movie()
+            };
+
+            MetadataService<Movie, MovieInfo>.MergeBaseItemData(source, target, Array.Empty<MetadataField>(), true, true);
+
+            Assert.Equal(expectedName, target.Item.Name);
+            Assert.Equal(expectedOfficialRating, target.Item.OfficialRating);
+            Assert.Equal(expectedCustomRating, target.Item.CustomRating);
+            Assert.Equal(expectedOverview, target.Item.Overview);
+            Assert.Equal(expectedProductionYear, target.Item.ProductionYear);
+            Assert.Equal(expectedCommunityRating, target.Item.CommunityRating);
+            Assert.Equal(expectedCriticRating, target.Item.CriticRating);
+            Assert.Equal(expectedGenres, target.Item.Genres);
+            Assert.Equal(expectedStudios, target.Item.Studios);
+            Assert.Equal(expectedTags, target.Item.Tags);
+            Assert.Equal(expectedProductionLocations, target.Item.ProductionLocations);
+            Assert.Equal(expectedForcedSortName, target.Item.ForcedSortName);
+        }
+
+        [Fact]
+        public void MergeBaseItemData_ReloadMetadata_EmptyProviderData_DoesNotOverwriteEditedRatings()
+        {
+            var target = new MetadataResult<Movie>
+            {
+                Item = new Movie
+                {
+                    OfficialRating = "PG-13",
+                    CustomRating = "Edited custom",
+                    ProductionYear = 2022,
+                    CriticRating = 75f,
+                    CommunityRating = 7.4f
+                }
+            };
+
+            // Source has provider ids so it is not orphaned, but content fields are empty/default.
+            var source = new MetadataResult<Movie>
+            {
+                Item = new Movie
+                {
+                    OfficialRating = string.Empty,
+                    CustomRating = string.Empty,
+                    ProductionYear = 0,
+                    CriticRating = null,
+                    CommunityRating = null
+                }
+            };
+            source.Item.ProviderIds["tmdb"] = "12345";
+
+            MetadataService<Movie, MovieInfo>.MergeBaseItemData(source, target, Array.Empty<MetadataField>(), true, false);
+
+            Assert.Equal("PG-13", target.Item.OfficialRating);
+            Assert.Equal("Edited custom", target.Item.CustomRating);
+            Assert.Equal(2022, target.Item.ProductionYear);
+            Assert.Equal(75f, target.Item.CriticRating);
+            Assert.Equal(7.4f, target.Item.CommunityRating);
+        }
+
+        [Fact]
+        public void MergeBaseItemData_ReloadMetadata_ReplaceAllWithSettings_PreservesEditedContentFields()
+        {
+            var target = new MetadataResult<Movie>
+            {
+                Item = new Movie
+                {
+                    Name = "Edited name",
+                    OfficialRating = "TV-MA",
+                    CustomRating = "Edited custom",
+                    Overview = "Edited overview",
+                    Genres = new[] { "Drama" },
+                    Studios = new[] { "Edited Studio" },
+                    Tags = new[] { "Edited Tag" },
+                    ProductionLocations = new[] { "PT" },
+                    IsLocked = false,
+                    PreferredMetadataCountryCode = "pt",
+                    PreferredMetadataLanguage = "pt-PT"
+                }
+            };
+
+            var source = new MetadataResult<Movie>
+            {
+                // Simulates refresh result where provider id exists but field payload is empty/default.
+                Item = new Movie
+                {
+                    Name = string.Empty,
+                    OfficialRating = string.Empty,
+                    CustomRating = string.Empty,
+                    Overview = string.Empty,
+                    Genres = Array.Empty<string>(),
+                    Studios = Array.Empty<string>(),
+                    Tags = Array.Empty<string>(),
+                    ProductionLocations = Array.Empty<string>(),
+                    IsLocked = true,
+                    PreferredMetadataCountryCode = "en",
+                    PreferredMetadataLanguage = "en-US"
+                }
+            };
+            source.Item.ProviderIds["tmdb"] = "12345";
+
+            // Runtime-equivalent merge configuration for full replace plus metadata settings update.
+            MetadataService<Movie, MovieInfo>.MergeBaseItemData(source, target, Array.Empty<MetadataField>(), true, true);
+
+            Assert.Equal("Edited name", target.Item.Name);
+            Assert.Equal("TV-MA", target.Item.OfficialRating);
+            Assert.Equal("Edited custom", target.Item.CustomRating);
+            Assert.Equal("Edited overview", target.Item.Overview);
+            Assert.Equal(new[] { "Drama" }, target.Item.Genres);
+            Assert.Equal(new[] { "Edited Studio" }, target.Item.Studios);
+            Assert.Equal(new[] { "Edited Tag" }, target.Item.Tags);
+            Assert.Equal(new[] { "PT" }, target.Item.ProductionLocations);
+
+            // Metadata settings should still follow the source in this mode.
+            Assert.True(target.Item.IsLocked);
+            Assert.Equal("en", target.Item.PreferredMetadataCountryCode);
+            Assert.Equal("en-US", target.Item.PreferredMetadataLanguage);
+        }
+
+        [Fact]
+        public async Task RefreshWithProviders_ReplaceAllRemoveOld_EmptyLocalMetadataWithProviderId_DoesNotOverwriteEditedFields()
+        {
+            var service = CreateTestService();
+
+            var metadata = new MetadataResult<Movie>
+            {
+                Item = new Movie
+                {
+                    Name = "Edited name",
+                    OfficialRating = "PG-13",
+                    CustomRating = "Edited custom",
+                    Overview = "Edited overview",
+                    Genres = new[] { "Drama" },
+                    ProductionYear = 2022
+                }
+            };
+
+            var localProviderResult = new MetadataResult<Movie>
+            {
+                Item = new Movie
+                {
+                    Name = string.Empty,
+                    OfficialRating = string.Empty,
+                    CustomRating = string.Empty,
+                    Overview = string.Empty,
+                    Genres = Array.Empty<string>(),
+                    ProductionYear = 0
+                },
+                HasMetadata = true
+            };
+            localProviderResult.Item.ProviderIds["tmdb"] = "123";
+
+            var localProvider = new Mock<ILocalMetadataProvider<Movie>>(MockBehavior.Strict);
+            localProvider.SetupGet(p => p.Name).Returns("local-test");
+            localProvider
+                .Setup(p => p.GetMetadata(It.IsAny<ItemInfo>(), It.IsAny<IDirectoryService>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(localProviderResult);
+
+            var options = new MetadataRefreshOptions(Mock.Of<IDirectoryService>())
+            {
+                MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                ReplaceAllMetadata = true,
+                RemoveOldMetadata = true
+            };
+
+            var id = new MovieInfo();
+            id.ProviderIds["tmdb"] = "123";
+
+            var result = await service.RunRefreshWithProviders(
+                metadata,
+                id,
+                options,
+                new List<IMetadataProvider> { localProvider.Object },
+                false,
+                CancellationToken.None);
+
+            Assert.True((result.UpdateType & ItemUpdateType.MetadataImport) > ItemUpdateType.None);
+            Assert.Equal("Edited name", metadata.Item.Name);
+            Assert.Equal("PG-13", metadata.Item.OfficialRating);
+            Assert.Equal("Edited custom", metadata.Item.CustomRating);
+            Assert.Equal("Edited overview", metadata.Item.Overview);
+            Assert.Equal(new[] { "Drama" }, metadata.Item.Genres);
+            Assert.Equal(2022, metadata.Item.ProductionYear);
+        }
+
+        [Fact]
+        public async Task RefreshWithProviders_ReplaceAllRemoveOld_EmptyLocalMetadataWithoutProviderId_PreservesEditedFields()
+        {
+            var service = CreateTestService();
+
+            var metadata = new MetadataResult<Movie>
+            {
+                Item = new Movie
+                {
+                    OfficialRating = "TV-14",
+                    Overview = "Edited overview",
+                    Genres = new[] { "Sci-Fi" }
+                }
+            };
+
+            var localProviderResult = new MetadataResult<Movie>
+            {
+                Item = new Movie
+                {
+                    OfficialRating = string.Empty,
+                    Overview = string.Empty,
+                    Genres = Array.Empty<string>()
+                },
+                HasMetadata = true
+            };
+
+            var localProvider = new Mock<ILocalMetadataProvider<Movie>>(MockBehavior.Strict);
+            localProvider.SetupGet(p => p.Name).Returns("local-test-no-id");
+            localProvider
+                .Setup(p => p.GetMetadata(It.IsAny<ItemInfo>(), It.IsAny<IDirectoryService>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(localProviderResult);
+
+            var options = new MetadataRefreshOptions(Mock.Of<IDirectoryService>())
+            {
+                MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                ReplaceAllMetadata = true,
+                RemoveOldMetadata = true
+            };
+
+            var result = await service.RunRefreshWithProviders(
+                metadata,
+                new MovieInfo(),
+                options,
+                new List<IMetadataProvider> { localProvider.Object },
+                false,
+                CancellationToken.None);
+
+            Assert.True((result.UpdateType & ItemUpdateType.MetadataImport) > ItemUpdateType.None);
+            Assert.Equal("TV-14", metadata.Item.OfficialRating);
+            Assert.Equal("Edited overview", metadata.Item.Overview);
+            Assert.Equal(new[] { "Sci-Fi" }, metadata.Item.Genres);
+        }
+
+        [Fact]
+        public async Task RefreshWithProviders_NoExternalMetadata_CustomProviderChanges_AreRevertedForMenuFields()
+        {
+            var service = CreateTestService();
+
+            var metadata = new MetadataResult<Movie>
+            {
+                Item = new Movie
+                {
+                    Name = "Edited name",
+                    Overview = "Edited overview",
+                    OfficialRating = "TV-14",
+                    Genres = new[] { "Drama" },
+                    Studios = new[] { "Edited Studio" },
+                    Tags = new[] { "Edited Tag" },
+                    ProductionLocations = new[] { "PT" }
+                }
+            };
+
+            var customProvider = new Mock<ICustomMetadataProvider<Movie>>(MockBehavior.Strict);
+            customProvider.SetupGet(p => p.Name).Returns("custom-no-remote");
+            customProvider
+                .Setup(p => p.FetchAsync(It.IsAny<Movie>(), It.IsAny<MetadataRefreshOptions>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Movie item, MetadataRefreshOptions _, CancellationToken _) =>
+                {
+                    item.Name = "Changed name";
+                    item.Overview = "Changed overview";
+                    item.OfficialRating = "R";
+                    item.Genres = new[] { "Action" };
+                    item.Studios = new[] { "Changed Studio" };
+                    item.Tags = new[] { "Changed Tag" };
+                    item.ProductionLocations = new[] { "US" };
+                    return ItemUpdateType.MetadataImport;
+                });
+
+            var options = new MetadataRefreshOptions(Mock.Of<IDirectoryService>())
+            {
+                MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                ReplaceAllMetadata = true,
+                RemoveOldMetadata = true
+            };
+
+            var result = await service.RunRefreshWithProviders(
+                metadata,
+                new MovieInfo(),
+                options,
+                new List<IMetadataProvider> { customProvider.Object },
+                false,
+                CancellationToken.None);
+
+            Assert.True((result.UpdateType & ItemUpdateType.MetadataImport) > ItemUpdateType.None);
+            Assert.Equal("Edited name", metadata.Item.Name);
+            Assert.Equal("Edited overview", metadata.Item.Overview);
+            Assert.Equal("TV-14", metadata.Item.OfficialRating);
+            Assert.Equal(new[] { "Drama" }, metadata.Item.Genres);
+            Assert.Equal(new[] { "Edited Studio" }, metadata.Item.Studios);
+            Assert.Equal(new[] { "Edited Tag" }, metadata.Item.Tags);
+            Assert.Equal(new[] { "PT" }, metadata.Item.ProductionLocations);
+        }
+
         [Theory]
         [InlineData("Name", MetadataField.Name, false)]
-        [InlineData("OriginalTitle", null)]
-        [InlineData("OfficialRating", MetadataField.OfficialRating)]
-        [InlineData("CustomRating")]
-        [InlineData("Tagline")]
-        [InlineData("Overview", MetadataField.Overview)]
+        [InlineData("OriginalTitle", null, false)]
+        [InlineData("OfficialRating", MetadataField.OfficialRating, false)]
+        [InlineData("CustomRating", null, false)]
+        [InlineData("Tagline", null, false)]
+        [InlineData("Overview", MetadataField.Overview, false)]
         [InlineData("DisplayOrder", null, false)]
         [InlineData("ForcedSortName", null, false)]
         public void MergeBaseItemData_StringField_ReplacesAppropriately(string propName, MetadataField? lockField = null, bool replacesWithEmpty = true)
@@ -131,7 +474,7 @@ namespace Jellyfin.Providers.Tests.Manager
             Assert.True(TestMergeBaseItemData<Audio, SongInfo>(propName, oldValue, newValue, null, true, out _));
             Assert.True(TestMergeBaseItemData<Audio, SongInfo>(propName, Array.Empty<string>(), newValue, null, false, out _));
 
-            Assert.True(TestMergeBaseItemData<Audio, SongInfo>(propName, oldValue, Array.Empty<string>(), null, true, out _));
+            Assert.False(TestMergeBaseItemData<Audio, SongInfo>(propName, oldValue, Array.Empty<string>(), null, true, out _));
         }
 
         public static TheoryData<string, object, object> MergeBaseItemData_SimpleField_ReplacesAppropriately_TestData()
@@ -157,17 +500,8 @@ namespace Jellyfin.Providers.Tests.Manager
             Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, newValue, null, true, out _));
             Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, null, newValue, null, false, out _));
 
-            // Video3DFormat - null values do NOT replace existing data
-            if (string.Equals(propName, "Video3DFormat", StringComparison.Ordinal))
-            {
-                Assert.False(
-                    TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, null, null, true, out _));
-            }
-            else
-            {
-                Assert.True(
-                    TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, null, null, true, out _));
-            }
+            Assert.False(
+                TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, null, null, true, out _));
         }
 
         [Fact]
@@ -196,7 +530,7 @@ namespace Jellyfin.Providers.Tests.Manager
             Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, newValue, null, true, out _));
             Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, Array.Empty<MediaUrl>(), newValue, null, false, out _));
 
-            Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, Array.Empty<MediaUrl>(), null, true, out _));
+            Assert.False(TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, Array.Empty<MediaUrl>(), null, true, out _));
         }
 
         [Fact]
@@ -319,8 +653,8 @@ namespace Jellyfin.Providers.Tests.Manager
             Assert.Equal("Name 1", actual[0].Name);
             Assert.Equal("URL 1", actual[0].ImageUrl);
 
-            // empty source can be forced to overwrite a target with data
-            Assert.True(TestMergeBaseItemDataPerson(GetOldValue(), new List<PersonInfo>(), null, true, out _));
+            // Empty source no longer overwrites existing cast data.
+            Assert.False(TestMergeBaseItemDataPerson(GetOldValue(), new List<PersonInfo>(), null, true, out _));
         }
 
         private static bool TestMergeBaseItemDataPerson(List<PersonInfo>? oldValue, List<PersonInfo>? newValue, MetadataField? lockField, bool replaceData, out object? actualValue)
@@ -330,6 +664,7 @@ namespace Jellyfin.Providers.Tests.Manager
                 Item = new Movie(),
                 People = newValue
             };
+            source.Item.ProviderIds["test"] = "1";
 
             var target = new MetadataResult<Movie>
             {
@@ -369,6 +704,10 @@ namespace Jellyfin.Providers.Tests.Manager
                 Item = new TItemType()
             };
             property.SetValue(source.Item, newValue);
+            if (!string.Equals(propName, "ProviderIds", StringComparison.Ordinal) && source.Item.ProviderIds.Count == 0)
+            {
+                source.Item.ProviderIds["test"] = "1";
+            }
 
             var target = new MetadataResult<TItemType>
             {
@@ -382,6 +721,44 @@ namespace Jellyfin.Providers.Tests.Manager
 
             actualValue = property.GetValue(target.Item);
             return newValue?.Equals(actualValue) ?? actualValue is null;
+        }
+
+        private static TestMovieMetadataService CreateTestService()
+        {
+            return new TestMovieMetadataService(
+                Mock.Of<IServerConfigurationManager>(),
+                Mock.Of<ILogger<MetadataService<Movie, MovieInfo>>>(),
+                Mock.Of<IProviderManager>(),
+                Mock.Of<IFileSystem>(),
+                Mock.Of<ILibraryManager>(),
+                Mock.Of<IExternalDataManager>(),
+                Mock.Of<IItemRepository>());
+        }
+
+        private sealed class TestMovieMetadataService : MetadataService<Movie, MovieInfo>
+        {
+            public TestMovieMetadataService(
+                IServerConfigurationManager serverConfigurationManager,
+                ILogger<MetadataService<Movie, MovieInfo>> logger,
+                IProviderManager providerManager,
+                IFileSystem fileSystem,
+                ILibraryManager libraryManager,
+                IExternalDataManager externalDataManager,
+                IItemRepository itemRepository)
+                : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, externalDataManager, itemRepository)
+            {
+            }
+
+            public Task<RefreshResult> RunRefreshWithProviders(
+                MetadataResult<Movie> metadata,
+                MovieInfo id,
+                MetadataRefreshOptions options,
+                ICollection<IMetadataProvider> providers,
+                bool isSavingMetadata,
+                CancellationToken cancellationToken)
+            {
+                return RefreshWithProviders(metadata, id, options, providers, ImageProvider, isSavingMetadata, cancellationToken);
+            }
         }
     }
 }
