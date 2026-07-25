@@ -361,7 +361,10 @@ namespace Emby.Naming.Common
                 // Not a Kodi rule as well, but the expression below also causes false positives,
                 // so we make sure this one gets tested first.
                 // "Foo Bar 889"
-                new EpisodeExpression(@".*[\\\/](?![Ee]pisode)(?<seriesname>[\w\s]+?)\s(?<epnumber>[0-9]{1,4})(-(?<endingepnumber>[0-9]{2,4}))*[^\\\/x]*$")
+                // Names carrying an SxxEyy marker are excluded because the Kodi expression above already covers them.
+                // Without that guard this expression reads digits out of the title instead, turning
+                // "S01E01 1-23-45 [Bluray-1080p]" into episodes 1 through 45.
+                new EpisodeExpression(@".*[\\\/](?![Ee]pisode)(?![^\\\/]*[Ss][0-9]+[][ ._-]*[Ee][0-9]+)(?<seriesname>[\w\s]+?)\s(?<epnumber>[0-9]{1,4})(-(?<endingepnumber>[0-9]{2,4}))*[^\\\/x]*$")
                 {
                     IsNamed = true
                 },
