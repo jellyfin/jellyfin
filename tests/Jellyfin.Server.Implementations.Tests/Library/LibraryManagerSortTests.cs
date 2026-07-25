@@ -36,8 +36,6 @@ public class LibraryManagerSortTests
             new Audio { Name = "Alpha", SortName = "Alpha", Id = Guid.NewGuid() },
         };
 
-        // A user-dependent sort key with no user is a caller contract violation — throw,
-        // don't silently fall back to a different key (review feedback on #17395).
         Assert.Throws<ArgumentException>(() => libraryManager.Sort(
             items,
             user: null,
@@ -47,16 +45,9 @@ public class LibraryManagerSortTests
     [Fact]
     public void Sort_DateLastContentAdded_NullUser_OrdersByDateNotSortName()
     {
-        // DateLastMediaAddedComparer does not use User (its GetDate is static), so it must NOT be
-        // treated as a user-dependent comparer: with no user it should still sort by date, not fall
-        // back to SortName.
         var libraryManager = CreateLibraryManager(
             new IBaseItemComparer[] { new DateLastMediaAddedComparer(), new SortNameComparer() });
 
-        // Names are chosen so date-descending and SortName-descending DISAGREE: Alpha is newest
-        // (date-desc rank 1), but Zulu sorts last alphabetically (SortName-desc rank 1). If the
-        // comparer were still tagged IUserBaseItemComparer, the null-user SortName fallback would
-        // return [Zulu, Mike, Alpha] and this assertion would fail.
         BaseItem[] items =
         {
             MakeFolder("Alpha", new DateTime(2026, 1, 1)),
@@ -69,7 +60,6 @@ public class LibraryManagerSortTests
             user: null,
             new[] { (ItemSortBy.DateLastContentAdded, SortOrder.Descending) }).ToArray();
 
-        // Descending by date => newest first: Alpha, Mike, Zulu. (SortName-desc would be Zulu, Mike, Alpha.)
         Assert.Equal(new[] { "Alpha", "Mike", "Zulu" }, sorted.Select(i => i.Name));
     }
 
@@ -82,8 +72,6 @@ public class LibraryManagerSortTests
         fixture.Register(() => new NamingOptions());
         var configMock = fixture.Freeze<Mock<IServerConfigurationManager>>();
         configMock.Setup(c => c.ApplicationPaths.ProgramDataPath).Returns("/data");
-        // BaseItem.SortName/CreateSortName dereference this static; set it so SortName-fallback
-        // paths don't NRE in-process (mirrors AudioResolverTests in the sibling test project).
         BaseItem.ConfigurationManager ??= configMock.Object;
         var itemRepository = fixture.Freeze<Mock<IItemRepository>>();
         itemRepository.Setup(i => i.RetrieveItem(It.IsAny<Guid>())).Returns<BaseItem>(null);

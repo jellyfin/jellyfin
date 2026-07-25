@@ -2315,9 +2315,6 @@ namespace Emby.Server.Implementations.Library
         {
             var comparer = Comparers.FirstOrDefault(c => name == c.Type);
 
-            // User-dependent comparers (IUserBaseItemComparer) need a User. With no user
-            // (anonymous/API-key /Items requests), a user-dependent sort key is a caller contract
-            // violation — throw rather than silently falling back to a different key.
             if (comparer is IUserBaseItemComparer)
             {
                 if (user is null)
