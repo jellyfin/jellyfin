@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Emby.Server.Implementations.AppBase;
 using MediaBrowser.Controller;
@@ -102,6 +103,41 @@ namespace Emby.Server.Implementations
         {
             base.MakeSanityCheckOrThrow();
             CreateAndCheckMarker(RootFolderPath, "root");
+            ValidateMetadataPathOrThrow(InternalMetadataPath);
+            CreateAndCheckMarker(InternalMetadataPath, "metadata");
+        }
+
+        internal void ValidateMetadataPathOrThrow(string metadataPath, string? cachePath = null)
+        {
+            cachePath = string.IsNullOrWhiteSpace(cachePath) ? CachePath : cachePath;
+
+            if (IsPathEqualOrSubPath(ConfigurationDirectoryPath, metadataPath)
+                || IsPathEqualOrSubPath(LogDirectoryPath, metadataPath)
+                || IsPathEqualOrSubPath(PluginsPath, metadataPath)
+                || IsPathEqualOrSubPath(cachePath, metadataPath)
+                || IsPathEqualOrSubPath(DataPath, metadataPath)
+                || IsPathEqualOrSubPath(RootFolderPath, metadataPath))
+            {
+                throw new InvalidOperationException($"Metadata directory {metadataPath} cannot be nested inside another Jellyfin directory.");
+            }
+        }
+
+        private static bool IsPathEqualOrSubPath(string directory, string path)
+        {
+            var normalizedDirectory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
+            var normalizedPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
+            var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
+            if (string.Equals(normalizedDirectory, normalizedPath, comparison))
+            {
+                return true;
+            }
+
+            var directoryWithSeparator = normalizedDirectory.EndsWith(Path.DirectorySeparatorChar)
+                ? normalizedDirectory
+                : normalizedDirectory + Path.DirectorySeparatorChar;
+
+            return normalizedPath.StartsWith(directoryWithSeparator, comparison);
         }
     }
 }

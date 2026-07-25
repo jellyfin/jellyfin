@@ -76,13 +76,14 @@ namespace Emby.Server.Implementations.Configuration
             ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = string.IsNullOrWhiteSpace(Configuration.MetadataPath)
                 ? ApplicationPaths.DefaultInternalMetadataPath
                 : Configuration.MetadataPath;
-            Directory.CreateDirectory(ApplicationPaths.InternalMetadataPath);
+            ApplicationPaths.CreateAndCheckMarker(ApplicationPaths.InternalMetadataPath, "metadata");
         }
 
         /// <summary>
         /// Replaces the configuration.
         /// </summary>
         /// <param name="newConfiguration">The new configuration.</param>
+        /// <exception cref="ArgumentException">If the metadata path is nested inside another Jellyfin directory.</exception>
         /// <exception cref="DirectoryNotFoundException">If the configuration path doesn't exist.</exception>
         public override void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration)
         {
@@ -99,6 +100,7 @@ namespace Emby.Server.Implementations.Configuration
         /// Validates the metadata path.
         /// </summary>
         /// <param name="newConfig">The new configuration.</param>
+        /// <exception cref="ArgumentException">The new metadata path is nested inside another Jellyfin directory.</exception>
         /// <exception cref="DirectoryNotFoundException">The new config path doesn't exist.</exception>
         private void ValidateMetadataPath(ServerConfiguration newConfig)
         {
@@ -117,6 +119,22 @@ namespace Emby.Server.Implementations.Configuration
                 }
 
                 EnsureWriteAccess(newPath);
+            }
+
+            var metadataPath = string.IsNullOrWhiteSpace(newPath)
+                ? ApplicationPaths.DefaultInternalMetadataPath
+                : newPath;
+            var cachePath = string.IsNullOrWhiteSpace(newConfig.CachePath)
+                ? ApplicationPaths.CachePath
+                : newConfig.CachePath;
+
+            try
+            {
+                ((ServerApplicationPaths)ApplicationPaths).ValidateMetadataPathOrThrow(metadataPath, cachePath);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new ArgumentException(ex.Message, nameof(newConfig), ex);
             }
         }
     }
