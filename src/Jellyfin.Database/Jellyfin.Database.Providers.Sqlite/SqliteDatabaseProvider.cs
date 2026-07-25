@@ -83,7 +83,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
                     .Ignore(RelationalEventId.MultipleCollectionIncludeWarning))
             .AddInterceptors(new PragmaConnectionInterceptor(
                 _logger,
-                GetOption<int?>(customOptions, "cacheSize", e => int.Parse(e, CultureInfo.InvariantCulture)),
+                GetOption<int?>(customOptions, "cacheSize", e => int.Parse(e, CultureInfo.InvariantCulture), () => GetDefaultCacheSize()),
                 GetOption(customOptions, "lockingmode", e => e, () => "NORMAL")!,
                 GetOption(customOptions, "journalsizelimit", int.Parse, () => 134_217_728),
                 GetOption(customOptions, "tempstoremode", int.Parse, () => 2),
@@ -96,6 +96,45 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             options.EnableSensitiveDataLogging(enableSensitiveDataLogging);
             _logger.LogInformation("EnableSensitiveDataLogging is enabled on SQLite connection");
         }
+    }
+
+    /// <summary>
+    /// Computes the default SQLite <c>PRAGMA cache_size</c> when the operator has not set an explicit
+    /// <c>cacheSize</c> custom provider option.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// SQLite defaults to a 2 MiB page cache. The Jellyfin database uses a 64 KiB page size, so the
+    /// default is only ~32 pages. The ItemsByName queries (<c>/Artists</c>, <c>/Studios</c>,
+    /// <c>/Genres</c>, ...) run a window sort over an <c>IN (&lt;subquery over ItemValuesMap&gt;)</c>
+    /// whose working set does not fit in ~32 pages, so on large libraries the connection thrashes the
+    /// page cache and every request re-reads the same pages from disk. A cache large enough to hold the
+    /// hot working set removes the thrashing (see jellyfin/jellyfin#17405).
+    /// </para>
+    /// <para>
+    /// The value is returned as a negative number, which SQLite interprets as a size in KiB (so it is
+    /// independent of the page size). It is scaled to a small fraction of the memory actually available
+    /// to the process — <see cref="GCMemoryInfo.TotalAvailableMemoryBytes"/> honours cgroup / container
+    /// limits, so a memory-limited container is respected — and clamped to a sane range. This keeps the
+    /// footprint negligible on small devices (Raspberry Pi, NAS) while giving large installs enough
+    /// cache to avoid the thrashing. Note that SQLite allocates the cache lazily and per connection, so
+    /// the clamp is an upper bound on each pooled connection's cache, not a fixed reservation.
+    /// </para>
+    /// </remarks>
+    /// <returns>The default <c>cache_size</c> PRAGMA value (negative = KiB).</returns>
+    public static int GetDefaultCacheSize()
+    {
+        // Bounds (in KiB, negated on return). The performance win saturates well before 128 MiB on a
+        // ~200k-item library, so there is no benefit to going higher; 16 MiB is plenty for tiny libraries.
+        const long MinCacheKiB = 16L * 1024; // 16 MiB
+        const long MaxCacheKiB = 128L * 1024; // 128 MiB
+
+        // Target ~1/16th of the memory available to the process, container/cgroup aware.
+        var availableBytes = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
+        var targetKiB = availableBytes > 0 ? availableBytes / 16 / 1024 : MaxCacheKiB;
+
+        var clampedKiB = Math.Clamp(targetKiB, MinCacheKiB, MaxCacheKiB);
+        return -(int)clampedKiB;
     }
 
     /// <inheritdoc/>

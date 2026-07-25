@@ -26,7 +26,14 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
     /// Initializes a new instance of the <see cref="PragmaConnectionInterceptor"/> class.
     /// </summary>
     /// <param name="logger">The logger.</param>
-    /// <param name="cacheSize">Cache size.</param>
+    /// <param name="cacheSize">
+    /// The <see href="https://sqlite.org/pragma.html#pragma_cache_size">cache_size</see> pragma value.
+    /// A positive value is a number of pages; a negative value is a size in KiB (page-size independent).
+    /// When <see langword="null"/> no <c>PRAGMA cache_size</c> is emitted and SQLite keeps its 2 MiB
+    /// default. Operators can override it with the <c>cacheSize</c> custom provider option; when unset it
+    /// is auto-scaled to available memory by
+    /// <see cref="SqliteDatabaseProvider.GetDefaultCacheSize"/> (see jellyfin/jellyfin#17405).
+    /// </param>
     /// <param name="lockingMode">Locking mode.</param>
     /// <param name="journalSizeLimit">Journal Size.</param>
     /// <param name="tempStoreMode">The https://sqlite.org/pragma.html#pragma_temp_store pragma.</param>
