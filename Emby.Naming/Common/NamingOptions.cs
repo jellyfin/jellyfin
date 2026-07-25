@@ -57,7 +57,6 @@ namespace Emby.Naming.Common
                 ".nrg",
                 ".nsv",
                 ".nuv",
-                ".ogg",
                 ".ogm",
                 ".ogv",
                 ".pva",
