@@ -3,7 +3,9 @@ using AutoFixture;
 using AutoFixture.AutoMoq;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Providers.MediaInfo;
 using Moq;
 using Xunit;
@@ -75,4 +77,62 @@ public class FFProbeVideoInfoTests
 
         Assert.All(chapters, chapter => Assert.True(chapter.StartPositionTicks < runtime));
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FetchEmbeddedInfo_NoExtra_AppliesContainerDates(bool replaceAllMetadata)
+    {
+        var video = new Video();
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, CreateMediaInfoWithDates(), CreateRefreshOptions(replaceAllMetadata), new LibraryOptions());
+
+        Assert.Equal(2016, video.ProductionYear);
+        Assert.Equal(new DateTime(2016, 5, 4, 0, 0, 0, DateTimeKind.Utc), video.PremiereDate);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FetchEmbeddedInfo_Extra_IgnoresContainerDates(bool replaceAllMetadata)
+    {
+        var video = new Video
+        {
+            ExtraType = ExtraType.Trailer,
+            ProductionYear = 1982,
+            PremiereDate = new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, CreateMediaInfoWithDates(), CreateRefreshOptions(replaceAllMetadata), new LibraryOptions());
+
+        Assert.Equal(1982, video.ProductionYear);
+        Assert.Equal(new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc), video.PremiereDate);
+    }
+
+    [Fact]
+    public void FetchEmbeddedInfo_ExtraWithoutDates_StaysWithoutDates()
+    {
+        var video = new Video
+        {
+            ExtraType = ExtraType.Trailer
+        };
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, CreateMediaInfoWithDates(), CreateRefreshOptions(false), new LibraryOptions());
+
+        Assert.Null(video.ProductionYear);
+        Assert.Null(video.PremiereDate);
+    }
+
+    private static MediaBrowser.Model.MediaInfo.MediaInfo CreateMediaInfoWithDates()
+        => new()
+        {
+            ProductionYear = 2016,
+            PremiereDate = new DateTime(2016, 5, 4, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+    private static MetadataRefreshOptions CreateRefreshOptions(bool replaceAllMetadata)
+        => new(Mock.Of<IDirectoryService>())
+        {
+            ReplaceAllMetadata = replaceAllMetadata
+        };
 }

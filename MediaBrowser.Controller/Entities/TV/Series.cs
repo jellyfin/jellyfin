@@ -507,7 +507,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
 
-            if (!ProductionYear.HasValue)
+            if (ProductionYear is null)
             {
                 var info = LibraryManager.ParseName(Name);
 

@@ -544,7 +544,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("rating", item.CommunityRating.Value.ToString(CultureInfo.InvariantCulture));
             }
 
-            if (item.ProductionYear.HasValue)
+            if (item.ProductionYear is not null)
             {
                 writer.WriteElementString("year", item.ProductionYear.Value.ToString(CultureInfo.InvariantCulture));
             }

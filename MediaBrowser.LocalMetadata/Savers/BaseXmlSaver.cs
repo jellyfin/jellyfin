@@ -277,7 +277,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 await writer.WriteElementStringAsync(null, "Rating", null, item.CommunityRating.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
             }
 
-            if (item.ProductionYear.HasValue && item is not Person)
+            if (item.ProductionYear is not null && item is not Person)
             {
                 await writer.WriteElementStringAsync(null, "ProductionYear", null, item.ProductionYear.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
             }

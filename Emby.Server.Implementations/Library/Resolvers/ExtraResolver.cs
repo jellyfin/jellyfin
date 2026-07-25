@@ -32,8 +32,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
             : base(logger, namingOptions, directoryService)
         {
             _namingOptions = namingOptions;
-            _trailerResolvers = new IItemResolver[] { new GenericVideoResolver<Trailer>(logger, namingOptions, directoryService) };
-            _videoResolvers = new IItemResolver[] { this };
+            _trailerResolvers = [new GenericVideoResolver<Trailer>(logger, namingOptions, directoryService, parseName: true)];
+            _videoResolvers = [this];
         }
 
         protected override Video Resolve(ItemResolveArgs args)
