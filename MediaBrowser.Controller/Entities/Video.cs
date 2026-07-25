@@ -492,8 +492,8 @@ namespace MediaBrowser.Controller.Entities
         public IOrderedEnumerable<Video> GetAdditionalParts(User user = null)
         {
             return GetAdditionalPartIds()
-                .Select(i => LibraryManager.GetItemById<Video>(i, user))
-                .Where(i => i is not null)
+                .Select(i => LibraryManager.GetItemById<Video>(i))
+                .Where(i => i is not null && (user is null || i.IsVisible(user)))
                 .OrderBy(i => i.SortName);
         }
 

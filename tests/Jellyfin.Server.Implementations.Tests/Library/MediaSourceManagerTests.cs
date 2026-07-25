@@ -150,7 +150,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         }
 
         [Fact]
-        public void GetStaticMediaSources_PrimaryQueried_PopulatesPerVersionPositionsAndDefaultsToMostRecent()
+        public void GetStaticMediaSources_PrimaryQueried_DefaultsToMostRecentlyPlayedVersion()
         {
             var (primary, alt1, alt2) = SetupVersionGroup();
             SetupUserDataBatch(new Dictionary<Guid, UserItemData>
@@ -161,12 +161,8 @@ namespace Jellyfin.Server.Implementations.Tests.Library
 
             var sources = _mediaSourceManager.GetStaticMediaSources(primary, false, _user);
 
-            // Each version carries its own resume point; the primary has none.
-            Assert.Equal((long?)10, sources.First(s => s.Id == alt1.Id.ToString("N")).PlaybackPositionTicks);
-            Assert.Equal((long?)20, sources.First(s => s.Id == alt2.Id.ToString("N")).PlaybackPositionTicks);
-            Assert.Null(sources.First(s => s.Id == primary.Id.ToString("N")).PlaybackPositionTicks);
-
             // The most recently played version is the default source, so resuming plays the right file.
+            // Per-user positions live in each version's UserData, not on the source.
             Assert.Equal(alt2.Id.ToString("N"), sources[0].Id);
         }
 
@@ -182,9 +178,8 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             var sources = _mediaSourceManager.GetStaticMediaSources(alt1, false, _user);
 
             // An explicitly opened version keeps its own source first, even when a sibling was
-            // played more recently, but the sibling's resume point is still populated.
+            // played more recently.
             Assert.Equal(alt1.Id.ToString("N"), sources[0].Id);
-            Assert.Equal((long?)20, sources.First(s => s.Id == alt2.Id.ToString("N")).PlaybackPositionTicks);
             Assert.Equal(3, sources.Count);
         }
 
@@ -197,7 +192,6 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             var sources = _mediaSourceManager.GetStaticMediaSources(primary, false, _user);
 
             Assert.Equal(primary.Id.ToString("N"), sources[0].Id);
-            Assert.All(sources, s => Assert.Null(s.PlaybackPositionTicks));
         }
 
         [Fact]

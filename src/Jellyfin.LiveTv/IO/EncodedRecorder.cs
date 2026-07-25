@@ -83,6 +83,7 @@ namespace Jellyfin.LiveTv.IO
                 CreateNoWindow = true,
                 UseShellExecute = false,
 
+                StandardErrorEncoding = Encoding.UTF8,
                 RedirectStandardError = true,
                 RedirectStandardInput = true,
 

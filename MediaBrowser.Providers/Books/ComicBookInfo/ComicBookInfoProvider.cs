@@ -42,7 +42,7 @@ public class ComicBookInfoProvider : IComicProvider
 
         if (path is null)
         {
-            _logger.LogError("could not load comic: {Path}", info.Path);
+            _logger.LogDebug("could not load comic: {Path}", info.Path);
             return new MetadataResult<Book> { HasMetadata = false };
         }
 

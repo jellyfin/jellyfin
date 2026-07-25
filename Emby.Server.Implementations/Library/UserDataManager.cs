@@ -192,7 +192,8 @@ namespace Emby.Server.Implementations.Library
                 }
                 else
                 {
-                    var userData = item.UserData?.Where(e => e.UserId.Equals(user.Id)).Select(Map).FirstOrDefault();
+                    var userDataRow = ResolveUserDataRow(item, item.UserData?.Where(e => e.UserId.Equals(user.Id)));
+                    var userData = userDataRow is not null ? Map(userDataRow) : null;
                     if (userData is not null)
                     {
                         result[item.Id] = userData;
@@ -211,37 +212,32 @@ namespace Emby.Server.Implementations.Library
                 return result;
             }
 
-            // Build a single query for all missing items
+            // Build a single query for all missing items. Fetch rows by item alone so rows kept
+            // under keys from older metadata resolve the same way as the in-memory path.
             var allItemIds = itemsNeedingQuery.Select(x => x.Item.Id).ToList();
-            var allKeys = itemsNeedingQuery.SelectMany(x => x.Keys).Distinct().ToList();
-            if (allKeys.Count > 0)
+            using var context = _repository.CreateDbContext();
+            var userDataArray = context.UserData
+                .AsNoTracking()
+                .Where(e => e.UserId.Equals(user.Id))
+                .WhereOneOrMany(allItemIds, e => e.ItemId)
+                .ToArray();
+
+            var userDataByItem = userDataArray.GroupBy(e => e.ItemId).ToDictionary(g => g.Key, g => g.ToArray());
+            foreach (var (item, keys) in itemsNeedingQuery)
             {
-                using var context = _repository.CreateDbContext();
-                var userDataArray = context.UserData
-                    .AsNoTracking()
-                    .Where(e => e.UserId.Equals(user.Id))
-                    .WhereOneOrMany(allItemIds, e => e.ItemId)
-                    .WhereOneOrMany(allKeys, e => e.CustomDataKey)
-                    .ToArray();
-
-                var userDataByItem = userDataArray.GroupBy(e => e.ItemId).ToDictionary(g => g.Key, g => g.ToArray());
-                foreach (var (item, keys) in itemsNeedingQuery)
+                UserItemData userData;
+                if (userDataByItem.TryGetValue(item.Id, out var itemUserData) && itemUserData.Length > 0)
                 {
-                    UserItemData userData;
-                    if (userDataByItem.TryGetValue(item.Id, out var itemUserData) && itemUserData.Length > 0)
-                    {
-                        var directDataReference = itemUserData.FirstOrDefault(e => e.CustomDataKey == item.Id.ToString("N"));
-                        userData = directDataReference is not null ? Map(directDataReference) : Map(itemUserData.First());
-                    }
-                    else
-                    {
-                        userData = new UserItemData { Key = keys.Count > 0 ? keys[0] : string.Empty };
-                    }
-
-                    result[item.Id] = userData;
-                    var cacheKey = GetCacheKey(user.InternalId, item.Id);
-                    _cache.AddOrUpdate(cacheKey, userData);
+                    userData = Map(ResolveUserDataRow(item, itemUserData)!);
                 }
+                else
+                {
+                    userData = new UserItemData { Key = keys.Count > 0 ? keys[0] : string.Empty };
+                }
+
+                result[item.Id] = userData;
+                var cacheKey = GetCacheKey(user.InternalId, item.Id);
+                _cache.AddOrUpdate(cacheKey, userData);
             }
 
             return result;
@@ -291,8 +287,8 @@ namespace Emby.Server.Implementations.Library
             {
                 using var dbContext = _repository.CreateDbContext();
                 withLocalAlternates = dbContext.LinkedChildren
-                    .Where(lc => lc.ChildType == Jellyfin.Database.Implementations.Entities.LinkedChildType.LocalAlternateVersion
-                        && localProbeIds.Contains(lc.ParentId))
+                    .Where(lc => lc.ChildType == Jellyfin.Database.Implementations.Entities.LinkedChildType.LocalAlternateVersion)
+                    .WhereOneOrMany(localProbeIds, lc => lc.ParentId)
                     .Select(lc => lc.ParentId)
                     .Distinct()
                     .ToHashSet();
@@ -356,10 +352,38 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public UserItemData? GetUserData(User user, BaseItem item)
         {
-            return item.UserData?.Where(e => e.UserId.Equals(user.Id)).Select(Map).FirstOrDefault() ?? new UserItemData()
+            var row = ResolveUserDataRow(item, item.UserData?.Where(e => e.UserId.Equals(user.Id)));
+            return row is not null ? Map(row) : new UserItemData()
             {
                 Key = item.GetUserDataKeys()[0],
             };
+        }
+
+        /// <summary>
+        /// Picks the row matching the item's current user data keys, in key order, so rows left behind
+        /// under keys from older metadata don't take priority over the rows the write path updates.
+        /// </summary>
+        /// <param name="item">The item whose keys to match.</param>
+        /// <param name="rows">The candidate user data rows for a single user.</param>
+        /// <returns>The best matching row, or <c>null</c> when there are none.</returns>
+        private static UserData? ResolveUserDataRow(BaseItem item, IEnumerable<UserData>? rows)
+        {
+            var candidates = rows?.ToList();
+            if (candidates is null || candidates.Count == 0)
+            {
+                return null;
+            }
+
+            foreach (var key in item.GetUserDataKeys())
+            {
+                var match = candidates.Find(e => string.Equals(e.CustomDataKey, key, StringComparison.Ordinal));
+                if (match is not null)
+                {
+                    return match;
+                }
+            }
+
+            return candidates[0];
         }
 
         /// <inheritdoc />

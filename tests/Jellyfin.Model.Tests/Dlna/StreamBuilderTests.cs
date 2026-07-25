@@ -677,6 +677,48 @@ namespace Jellyfin.Model.Tests
         }
 
         [Theory]
+        [InlineData(false, null, true, SubtitleDeliveryMethod.External)]
+        [InlineData(false, null, false, SubtitleDeliveryMethod.Encode)]
+        [InlineData(true, "/media/sub.mks", true, SubtitleDeliveryMethod.External)]
+        [InlineData(true, "/media/sub.idx", true, SubtitleDeliveryMethod.Encode)]
+        [InlineData(true, "/media/sub.sub", true, SubtitleDeliveryMethod.Encode)]
+        public void GetSubtitleProfile_MatchesVobSubMksProfileOnlyWhenDeliveredAsMks(
+            bool isExternal,
+            string? path,
+            bool enableSubtitleExtraction,
+            SubtitleDeliveryMethod expectedMethod)
+        {
+            var mediaSource = new MediaSourceInfo();
+            var subtitleStream = new MediaStream
+            {
+                Type = MediaStreamType.Subtitle,
+                Index = 0,
+                IsExternal = isExternal,
+                Path = path,
+                Codec = "vobsub"
+            };
+
+            var subtitleProfiles = new[]
+            {
+                new SubtitleProfile { Format = "vobsub", Container = "mks", Method = SubtitleDeliveryMethod.External }
+            };
+
+            var transcoderSupport = new Mock<ITranscoderSupport>();
+            transcoderSupport.Setup(t => t.CanExtractSubtitles(It.IsAny<string>())).Returns(enableSubtitleExtraction);
+
+            var result = StreamBuilder.GetSubtitleProfile(
+                mediaSource,
+                subtitleStream,
+                subtitleProfiles,
+                PlayMethod.Transcode,
+                transcoderSupport.Object,
+                null,
+                null);
+
+            Assert.Equal(expectedMethod, result.Method);
+        }
+
+        [Theory]
         // External text subs embedded into MKV when transcoding (#16403)
         [InlineData("srt", true, PlayMethod.Transcode, "mkv", MediaStreamProtocol.http, SubtitleDeliveryMethod.Embed)]
         [InlineData("ass", true, PlayMethod.Transcode, "mkv", MediaStreamProtocol.http, SubtitleDeliveryMethod.Embed)]

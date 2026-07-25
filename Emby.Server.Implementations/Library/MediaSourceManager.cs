@@ -418,10 +418,10 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Populates each source's own playback position for the user and, when the queried item is a
-        /// primary, moves the most recently played version to the front so that resuming without an
-        /// explicit source selection plays the version that was last watched. A directly queried
-        /// alternate version keeps its own source first.
+        /// When the queried item is a primary, moves the most recently played version to the front so
+        /// that resuming without an explicit source selection plays the version that was last watched.
+        /// A directly queried alternate version keeps its own source first. Per-user playback position
+        /// is not surfaced on the source itself; it is carried by each version's own UserData.
         /// </summary>
         /// <param name="item">The queried item.</param>
         /// <param name="sources">The item's media sources.</param>
@@ -448,16 +448,6 @@ namespace Emby.Server.Implementations.Library
                 if (userDataByVersion.TryGetValue(version.Id, out var data))
                 {
                     dataBySourceId[version.Id.ToString("N", CultureInfo.InvariantCulture)] = data;
-                }
-            }
-
-            foreach (var source in sources)
-            {
-                if (source.Id is not null
-                    && dataBySourceId.TryGetValue(source.Id, out var data)
-                    && data.PlaybackPositionTicks > 0)
-                {
-                    source.PlaybackPositionTicks = data.PlaybackPositionTicks;
                 }
             }
 

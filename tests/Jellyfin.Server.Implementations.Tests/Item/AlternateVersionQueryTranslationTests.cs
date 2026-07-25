@@ -60,7 +60,9 @@ public sealed class AlternateVersionQueryTranslationTests : IDisposable
                 .Where(e => seededIds.Contains(e.Id))
                 .Where(e => inProgressIds.Contains(e.Id))
                 .Where(e => !ctx.BaseItems
-                    .Where(s => s.Id != e.Id && (s.PrimaryVersionId ?? s.Id) == (e.PrimaryVersionId ?? e.Id))
+                    .Where(s => s.Id != e.Id
+                        && inProgressIds.Contains(s.Id)
+                        && (s.PrimaryVersionId ?? s.Id) == (e.PrimaryVersionId ?? e.Id))
                     .Any(s =>
                         inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
                             > inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)
@@ -110,7 +112,9 @@ public sealed class AlternateVersionQueryTranslationTests : IDisposable
                 .Where(e => seededIds.Contains(e.Id))
                 .Where(e => inProgressIds.Contains(e.Id))
                 .Where(e => !ctx.BaseItems
-                    .Where(s => s.Id != e.Id && (s.PrimaryVersionId ?? s.Id) == (e.PrimaryVersionId ?? e.Id))
+                    .Where(s => s.Id != e.Id
+                        && inProgressIds.Contains(s.Id)
+                        && (s.PrimaryVersionId ?? s.Id) == (e.PrimaryVersionId ?? e.Id))
                     .Any(s =>
                         inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
                             > inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)

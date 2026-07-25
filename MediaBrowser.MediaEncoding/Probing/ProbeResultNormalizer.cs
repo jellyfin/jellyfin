@@ -732,9 +732,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.LocalizedDefault = _localization.GetLocalizedString("Default");
                 stream.LocalizedExternal = _localization.GetLocalizedString("External");
                 stream.LocalizedOriginal = _localization.GetLocalizedString("Original");
-                stream.LocalizedLanguage = string.IsNullOrEmpty(stream.Language)
-                    ? null
-                    : _localization.FindLanguageInfo(stream.Language)?.DisplayName;
+                if (!string.IsNullOrEmpty(stream.Language))
+                {
+                    stream.LocalizedLanguage = _localization.GetLanguageDisplayName(stream.Language);
+                }
 
                 stream.Channels = streamInfo.Channels;
 
@@ -756,11 +757,17 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 if (string.IsNullOrEmpty(stream.Title))
                 {
-                    // mp4 missing track title workaround: fall back to handler_name if populated and not the default "SoundHandler"
-                    string handlerName = GetDictionaryValue(streamInfo.Tags, "handler_name");
-                    if (!string.IsNullOrEmpty(handlerName) && !string.Equals(handlerName, "SoundHandler", StringComparison.OrdinalIgnoreCase))
+                    // FFprobe exposes MP4 track names via the name tag rather than title
+                    stream.Title = GetDictionaryValue(streamInfo.Tags, "name");
+
+                    if (string.IsNullOrEmpty(stream.Title))
                     {
-                        stream.Title = handlerName;
+                        // fall back to handler_name if populated and not the default "SoundHandler"
+                        string handlerName = GetDictionaryValue(streamInfo.Tags, "handler_name");
+                        if (!string.IsNullOrEmpty(handlerName) && !string.Equals(handlerName, "SoundHandler", StringComparison.OrdinalIgnoreCase))
+                        {
+                            stream.Title = handlerName;
+                        }
                     }
                 }
             }
@@ -773,17 +780,24 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.LocalizedForced = _localization.GetLocalizedString("Forced");
                 stream.LocalizedExternal = _localization.GetLocalizedString("External");
                 stream.LocalizedHearingImpaired = _localization.GetLocalizedString("HearingImpaired");
-                stream.LocalizedLanguage = string.IsNullOrEmpty(stream.Language)
-                    ? null
-                    : _localization.FindLanguageInfo(stream.Language)?.DisplayName;
+                if (!string.IsNullOrEmpty(stream.Language))
+                {
+                    stream.LocalizedLanguage = _localization.GetLanguageDisplayName(stream.Language);
+                }
 
                 if (string.IsNullOrEmpty(stream.Title))
                 {
-                    // mp4 missing track title workaround: fall back to handler_name if populated and not the default "SubtitleHandler"
-                    string handlerName = GetDictionaryValue(streamInfo.Tags, "handler_name");
-                    if (!string.IsNullOrEmpty(handlerName) && !string.Equals(handlerName, "SubtitleHandler", StringComparison.OrdinalIgnoreCase))
+                    // FFprobe exposes MP4 track names via the name tag rather than title
+                    stream.Title = GetDictionaryValue(streamInfo.Tags, "name");
+
+                    if (string.IsNullOrEmpty(stream.Title))
                     {
-                        stream.Title = handlerName;
+                        // fall back to handler_name if populated and not the default "SubtitleHandler"
+                        string handlerName = GetDictionaryValue(streamInfo.Tags, "handler_name");
+                        if (!string.IsNullOrEmpty(handlerName) && !string.Equals(handlerName, "SubtitleHandler", StringComparison.OrdinalIgnoreCase))
+                        {
+                            stream.Title = handlerName;
+                        }
                     }
                 }
             }

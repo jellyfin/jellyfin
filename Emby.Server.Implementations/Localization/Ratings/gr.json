@@ -10,21 +10,42 @@
             }
         },
         {
-            "ratingStrings": ["K12"],
+            "ratingStrings": ["K12", "K-12", "12"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["K13", "K-13", "13"],
             "ratingScore": {
                 "score": 13,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["K15"],
+            "ratingStrings": ["K15", "K-15", "15"],
             "ratingScore": {
                 "score": 15,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["K18"],
+            "ratingStrings": ["K16", "K-16", "16"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["K17", "K-17", "17"],
+            "ratingScore": {
+                "score": 17,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["K18", "K-18", "18", "18+"],
             "ratingScore": {
                 "score": 18,
                 "subScore": null

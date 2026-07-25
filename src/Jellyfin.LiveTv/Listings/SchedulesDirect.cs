@@ -491,6 +491,12 @@ namespace Jellyfin.LiveTv.Listings
             var results = new List<ShowImagesDto>();
             for (int i = 0; i < programIds.Count; i += BatchSize)
             {
+                // The daily image limit may be surfaced mid-batch.
+                if (IsImageDailyLimitActive())
+                {
+                    break;
+                }
+
                 var batch = programIds.Skip(i).Take(BatchSize);
 
                 using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/metadata/programs/");
@@ -511,6 +517,18 @@ namespace Jellyfin.LiveTv.Listings
                                     entry.ProgramId,
                                     entry.Code,
                                     entry.Message);
+
+                                // The image download limit can be reported per-entry inside an
+                                // otherwise successful (HTTP 200) response when the limit is hit
+                                // mid-batch. Back off so we stop requesting images until SD resets.
+                                if (entry.Code is (int)SdErrorCode.MaxImageDownloads or (int)SdErrorCode.MaxImageDownloadsTrial)
+                                {
+                                    _logger.LogError(
+                                        "Schedules Direct image download limit hit (code {Code}). Disabling image acquisition until SD reset.",
+                                        entry.Code);
+                                    SetImageLimitHit();
+                                }
+
                                 continue;
                             }
 

@@ -376,15 +376,24 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 // We need to only look at the name of this actual item (not parents)
                 var justName = item.IsInMixedFolder ? Path.GetFileName(item.Path.AsSpan()) : Path.GetFileName(item.ContainingFolderPath.AsSpan());
 
-                var tmdbid = justName.GetAttributeValue("tmdbid");
+                // The fallback filename is only used when the item isn't in a mixed folder
+                var fileName = item.IsInMixedFolder ? ReadOnlySpan<char>.Empty : Path.GetFileName(item.Path.AsSpan());
 
-                // If not in a mixed folder and ID not found in folder path, check filename
-                if (string.IsNullOrEmpty(tmdbid) && !item.IsInMixedFolder)
+                item.TrySetProviderId(MetadataProvider.Tmdb, GetIdFromNameOrPath(justName, fileName, "tmdbid"));
+                item.TrySetProviderId(MetadataProvider.Tvdb, GetIdFromNameOrPath(justName, fileName, "tvdbid"));
+
+                string GetIdFromNameOrPath(ReadOnlySpan<char> name, ReadOnlySpan<char> fallbackName, string attribute)
                 {
-                    tmdbid = Path.GetFileName(item.Path.AsSpan()).GetAttributeValue("tmdbid");
-                }
+                    var id = name.GetAttributeValue(attribute);
 
-                item.TrySetProviderId(MetadataProvider.Tmdb, tmdbid);
+                    // If not in a mixed folder and ID not found in folder path, check filename
+                    if (string.IsNullOrEmpty(id) && !item.IsInMixedFolder)
+                    {
+                        id = fallbackName.GetAttributeValue(attribute);
+                    }
+
+                    return id;
+                }
 
                 if (!string.IsNullOrEmpty(item.Path))
                 {

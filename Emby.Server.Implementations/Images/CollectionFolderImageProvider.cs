@@ -31,6 +31,12 @@ namespace Emby.Server.Implementations.Images
             var includeItemTypes = DtoExtensions.GetBaseItemKindsForCollectionType(viewType);
             var recursive = viewType != CollectionType.playlists;
 
+            if (viewType == CollectionType.music)
+            {
+                // Music albums usually don't have dedicated backdrops, so use artist instead
+                includeItemTypes = [BaseItemKind.MusicArtist];
+            }
+
             return view.GetItemList(new InternalItemsQuery
             {
                 CollapseBoxSetItems = false,

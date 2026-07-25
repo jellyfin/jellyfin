@@ -316,7 +316,6 @@ public class ItemsController : BaseJellyfinApiController
         if (folder is IHasCollectionType hasCollectionType)
         {
             collectionType = hasCollectionType.CollectionType;
-            includeItemTypes = [.. includeItemTypes.Union(DtoExtensions.GetBaseItemKindsForCollectionType(collectionType))];
         }
 
         if (collectionType == CollectionType.playlists)
@@ -329,7 +328,6 @@ public class ItemsController : BaseJellyfinApiController
             includeItemTypes = collectionType switch
             {
                 CollectionType.boxsets => [BaseItemKind.BoxSet],
-                null => [BaseItemKind.Movie, BaseItemKind.Series],
                 _ => []
             };
         }

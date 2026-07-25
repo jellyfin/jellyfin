@@ -359,18 +359,39 @@ public class BackupService : IBackupService
                                     jsonSerializer.WriteStartArray();
 
                                     var set = entityType.ValueFactory().ConfigureAwait(false);
-                                    await foreach (var item in set.ConfigureAwait(false))
+                                    var enumerator = set.GetAsyncEnumerator();
+                                    await using (enumerator)
                                     {
-                                        entities++;
-                                        try
+                                        while (true)
                                         {
-                                            using var document = JsonSerializer.SerializeToDocument(item, _serializerSettings);
-                                            document.WriteTo(jsonSerializer);
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            _logger.LogError(ex, "Could not load entity {Entity}", item);
-                                            throw;
+                                            bool hasNext;
+                                            try
+                                            {
+                                                hasNext = await enumerator.MoveNextAsync();
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                _logger.LogError(ex, "Could not read next entity of type {Table}, the underlying data appears to be corrupt. Skipping this row and continuing backup; the affected database row should be inspected and fixed manually", entityType.SourceName);
+                                                continue;
+                                            }
+
+                                            if (!hasNext)
+                                            {
+                                                break;
+                                            }
+
+                                            var item = enumerator.Current;
+                                            entities++;
+                                            try
+                                            {
+                                                using var document = JsonSerializer.SerializeToDocument(item, _serializerSettings);
+                                                document.WriteTo(jsonSerializer);
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                _logger.LogError(ex, "Could not load entity {Entity}", item);
+                                                throw;
+                                            }
                                         }
                                     }
 

@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 using Jellyfin.Data.Enums;
@@ -17,7 +18,7 @@ namespace MediaBrowser.Providers.Books.OpenPackagingFormat
     /// Methods used to pull metadata and other information from Open Packaging Format in XML objects.
     /// </summary>
     /// <typeparam name="TCategoryName">The type of category.</typeparam>
-    public class OpfReader<TCategoryName>
+    public partial class OpfReader<TCategoryName>
     {
         private const string DcNamespace = @"http://purl.org/dc/elements/1.1/";
         private const string OpfNamespace = @"http://www.idpf.org/2007/opf";
@@ -41,6 +42,9 @@ namespace MediaBrowser.Providers.Books.OpenPackagingFormat
             _namespaceManager.AddNamespace("dc", DcNamespace);
             _namespaceManager.AddNamespace("opf", OpfNamespace);
         }
+
+        [GeneratedRegex(@"(?<=\p{L})\.(?!\s|$)")]
+        private static partial Regex InitialsRegex();
 
         /// <summary>
         /// Checks for the existence of a cover image.
@@ -229,11 +233,23 @@ namespace MediaBrowser.Providers.Books.OpenPackagingFormat
             {
                 foreach (XmlElement creator in resultElement)
                 {
-                    var creatorName = creator.InnerText;
                     var role = creator.GetAttribute("opf:role");
-                    var person = new PersonInfo { Name = creatorName, Type = GetRole(role) };
+                    var normalizedCreators = creator.InnerText
+                        .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .Select(fullName =>
+                        {
+                            if (fullName.Split(',', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) is [var lastName, var firstName])
+                            {
+                                fullName = $"{firstName} {lastName}";
+                            }
 
-                    book.AddPerson(person);
+                            return InitialsRegex().Replace(fullName, ". ");
+                        });
+
+                    foreach (var fullName in normalizedCreators)
+                    {
+                        book.AddPerson(new PersonInfo { Name = fullName, Type = GetRole(role) });
+                    }
                 }
             }
         }

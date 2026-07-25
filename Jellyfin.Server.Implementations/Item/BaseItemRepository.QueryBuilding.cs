@@ -447,6 +447,7 @@ public sealed partial class BaseItemRepository
         if (filter.IncludeInheritedTags.Length > 0)
         {
             var includeTags = filter.IncludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
+            var personTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
             var allowedTagItemIds = context.ItemValuesMap
                 .Where(f => f.ItemValue.Type == ItemValueType.Tags && includeTags.Contains(f.ItemValue.CleanValue))
                 .Select(f => f.ItemId);
@@ -455,7 +456,10 @@ public sealed partial class BaseItemRepository
                 allowedTagItemIds.Contains(e.Id)
                 || (e.SeriesId.HasValue && allowedTagItemIds.Contains(e.SeriesId.Value))
                 || e.Parents!.Any(p => allowedTagItemIds.Contains(p.ParentItemId))
-                || (e.TopParentId.HasValue && allowedTagItemIds.Contains(e.TopParentId.Value)));
+                || (e.TopParentId.HasValue && allowedTagItemIds.Contains(e.TopParentId.Value))
+
+                // People don't carry the tags of the media they appear in and would never match
+                || e.Type == personTypeName);
         }
 
         // Exclude alternate versions (have PrimaryVersionId set) and owned non-extra items.
