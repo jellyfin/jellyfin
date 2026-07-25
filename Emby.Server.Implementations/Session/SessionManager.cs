@@ -641,8 +641,7 @@ namespace Emby.Server.Implementations.Session
             if (playingSessions.Count > 0)
             {
                 var idle = playingSessions
-                    .Where(i => (DateTime.UtcNow - i.LastPlaybackCheckIn).TotalMinutes > 5)
-                    .ToList();
+                    .Where(i => (DateTime.UtcNow - i.LastPlaybackCheckIn).TotalMinutes > 5);
 
                 foreach (var session in idle)
                 {

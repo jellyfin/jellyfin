@@ -105,5 +105,6 @@
     "TaskExtractMediaSegmentsDescription": "मीडियासेगमेंट सक्षम प्लगइन्स से मीडिया सेगमेंट निकालता है या प्राप्त करता है।",
     "TaskMoveTrickplayImages": "ट्रिकप्ले छवि स्थान माइग्रेट करें",
     "TaskMoveTrickplayImagesDescription": "लाइब्रेरी सेटिंग्स के अनुसार मौजूदा ट्रिकप्ले फ़ाइलों को स्थानांतरित करता है।",
-    "CleanupUserDataTask": "यूज़र डेटा सफाई कार्य"
+    "CleanupUserDataTask": "यूज़र डेटा सफाई कार्य",
+    "Original": "असली"
 }

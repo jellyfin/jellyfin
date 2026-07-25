@@ -352,6 +352,7 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public UserItemData? GetUserData(User user, BaseItem item)
         {
+            ArgumentNullException.ThrowIfNull(user);
             var row = ResolveUserDataRow(item, item.UserData?.Where(e => e.UserId.Equals(user.Id)));
             return row is not null ? Map(row) : new UserItemData()
             {
