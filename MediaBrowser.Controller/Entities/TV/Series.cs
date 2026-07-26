@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -82,16 +81,23 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 var userdatakeys = GetUserDataKeys();
 
-                if (userdatakeys.Count > 1)
+                // The first user data key is a stable cross-folder identity.
+                // When none exists, fall back to the (normalized) series name.
+                var groupingKey = userdatakeys.Count > 1
+                    ? userdatakeys[0]
+                    : GetNameBasedGroupingKey();
+
+                if (!string.IsNullOrEmpty(groupingKey))
                 {
-                    return AddLibrariesToPresentationUniqueKey(userdatakeys[0]);
+                    return AppendPreferredLanguage(groupingKey);
                 }
             }
 
             return base.CreatePresentationUniqueKey();
         }
 
-        private string AddLibrariesToPresentationUniqueKey(string key)
+        // The owning libraries are deliberately NOT part of the key.
+        private string AppendPreferredLanguage(string key)
         {
             var lang = GetPreferredMetadataLanguage();
             if (!string.IsNullOrEmpty(lang))
@@ -99,16 +105,15 @@ namespace MediaBrowser.Controller.Entities.TV
                 key += "-" + lang;
             }
 
-            var folders = LibraryManager.GetCollectionFolders(this)
-                .Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture))
-                .ToArray();
+            return key;
+        }
 
-            if (folders.Length == 0)
-            {
-                return key;
-            }
-
-            return key + "-" + string.Join('-', folders);
+        private string GetNameBasedGroupingKey()
+        {
+            // Prefix with the type so a series can never collide with a same-named item of another kind.
+            return string.IsNullOrEmpty(Name)
+                ? null
+                : "series-" + Name.ToLowerInvariant();
         }
 
         private static string GetUniqueSeriesKey(BaseItem series)
@@ -186,6 +191,25 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             return list;
+        }
+
+        /// <inheritdoc />
+        protected override Guid[] GetExtraOwnerIds()
+        {
+            if (!LibraryManager.GetLibraryOptions(this).EnableAutomaticSeriesGrouping)
+            {
+                return base.GetExtraOwnerIds();
+            }
+
+            // Setting PresentationUniqueKey on the query disables presentation-key grouping, so this
+            // returns every folder-item of the merged series rather than the collapsed survivor.
+            var ids = LibraryManager.GetItemIds(new InternalItemsQuery
+            {
+                PresentationUniqueKey = GetPresentationUniqueKey(),
+                IncludeItemTypes = [BaseItemKind.Series]
+            });
+
+            return ids.Count == 0 ? base.GetExtraOwnerIds() : ids.ToArray();
         }
 
         public override IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
