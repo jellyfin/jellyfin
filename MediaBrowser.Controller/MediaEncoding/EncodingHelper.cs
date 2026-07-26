@@ -7502,7 +7502,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else
             {
-                state.AudioStream = GetMediaStream(mediaStreams, null, MediaStreamType.Audio, true);
+                state.AudioStream = GetMediaStream(mediaStreams, state.BaseRequest.AudioStreamIndex, MediaStreamType.Audio, true);
             }
 
             state.MediaSource = mediaSource;
