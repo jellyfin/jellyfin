@@ -257,14 +257,14 @@ namespace MediaBrowser.Providers.Subtitles
                     if (path.StartsWith(containingFolder, StringComparison.Ordinal)
                             || path.StartsWith(metadataFolder, StringComparison.Ordinal))
                     {
-                        var fileExists = File.Exists(path);
-                        var counter = 0;
-
-                        while (fileExists)
+                        // Skip if a subtitle for this language already exists at the target path.
+                        // The previous counter-based loop (movie.en.0.srt, movie.en.1.srt, ...)
+                        // accumulated unbounded duplicate files on every scheduled task run
+                        // (https://github.com/jellyfin/jellyfin/issues/17426).
+                        if (File.Exists(path))
                         {
-                            path = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}", savePath, counter, extension);
-                            fileExists = File.Exists(path);
-                            counter++;
+                            _logger.LogDebug("Subtitle already exists at {SavePath}, skipping download", path);
+                            return;
                         }
 
                         _logger.LogInformation("Saving subtitles to {SavePath}", path);
