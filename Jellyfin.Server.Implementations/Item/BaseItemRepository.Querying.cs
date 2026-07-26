@@ -134,19 +134,13 @@ public sealed partial class BaseItemRepository
                 .ThenByDescending(e => e.Id)
                 .Select(e => new { e.Id, e.PresentationUniqueKey });
 
-            var seenKeys = new HashSet<string>();
-            var firstIds = new List<Guid>(limit ?? 0);
-            foreach (var row in orderedIds.AsEnumerable())
-            {
-                if (seenKeys.Add(row.PresentationUniqueKey!))
-                {
-                    firstIds.Add(row.Id);
-                    if (limit.HasValue && firstIds.Count >= limit.Value)
-                    {
-                        break;
-                    }
-                }
-            }
+            // DistinctBy and Take are lazy, so enumeration stops as soon as limit distinct keys are read.
+            var firstIds = orderedIds
+                .AsEnumerable()
+                .DistinctBy(row => row.PresentationUniqueKey)
+                .Select(row => row.Id)
+                .Take(limit ?? int.MaxValue)
+                .ToList();
 
             return LoadLatestByIds(context, firstIds, filter);
         }

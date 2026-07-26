@@ -208,7 +208,7 @@ public sealed partial class BaseItemRepository
         if (isMusicArtist)
         {
             // For MusicArtist, prefer the entity from a library the user can actually access.
-            // Materilaize to prevent correlated per-group first-row queries which hurt performance.
+            // Materialize to prevent correlated per-group first-row queries which hurt performance.
             var topParentIds = filter.TopParentIds;
             representativeIds = masterQuery
                 .Select(e => new { e.Id, e.PresentationUniqueKey, e.TopParentId })
