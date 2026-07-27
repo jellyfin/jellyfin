@@ -1429,7 +1429,13 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<DateTime?>("LastPlayedDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("LastSkippedDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool?>("Likes")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("PartiallyPlayed")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("PlayCount")
@@ -1447,6 +1453,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<DateTime?>("RetentionDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("SkipCount")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int?>("SubtitleStreamIndex")
                         .HasColumnType("INTEGER");
 
@@ -1460,11 +1469,15 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ItemId", "UserId", "Played");
 
+                    b.HasIndex("ItemId", "UserId", "SkipCount");
+
                     b.HasIndex("UserId", "IsFavorite", "ItemId");
 
                     b.HasIndex("UserId", "ItemId", "LastPlayedDate");
 
                     b.HasIndex("UserId", "Played", "ItemId");
+
+                    b.HasIndex("UserId", "SkipCount", "ItemId");
 
                     b.ToTable("UserData");
 

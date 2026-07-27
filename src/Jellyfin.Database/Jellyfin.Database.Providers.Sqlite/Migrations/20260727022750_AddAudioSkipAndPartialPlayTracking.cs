@@ -31,13 +31,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                 nullable: false,
                 defaultValue: 0);
 
-            migrationBuilder.AddColumn<bool>(
-                name: "IsOriginal",
-                table: "MediaStreamInfos",
-                type: "INTEGER",
-                nullable: false,
-                defaultValue: false);
-
             migrationBuilder.CreateIndex(
                 name: "IX_UserData_ItemId_UserId_SkipCount",
                 table: "UserData",
@@ -71,10 +64,6 @@ namespace Jellyfin.Server.Implementations.Migrations
             migrationBuilder.DropColumn(
                 name: "SkipCount",
                 table: "UserData");
-
-            migrationBuilder.DropColumn(
-                name: "IsOriginal",
-                table: "MediaStreamInfos");
         }
     }
 }
