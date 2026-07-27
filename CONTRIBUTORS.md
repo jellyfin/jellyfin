@@ -234,6 +234,7 @@
  - [dwandw](https://github.com/dwandw)
  - [Lampan-git](https://github.com/Lampan-git)
  - [riseprometheus](https://github.com/riseprometheus)
+ - [elio42](https://github.com/elio42)
  - [rwebster85](https://github.com/rwebster85)
 
 # Emby Contributors

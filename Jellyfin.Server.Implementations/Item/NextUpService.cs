@@ -98,7 +98,7 @@ public class NextUpService : INextUpService
             .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
         lastWatchedBase = _queryHelpers.ApplyAccessFiltering(context, lastWatchedBase, filter);
 
-        // Use lightweight projection + client-side grouping to avoid correlated scalar subquery
+        // Use lightweight projection + client-side dedup to avoid the correlated scalar subquery
         // per group that EF generates for GroupBy+OrderByDescending+FirstOrDefault.
         var allPlayedLite = lastWatchedBase
             .Select(e => new
@@ -110,15 +110,11 @@ public class NextUpService : INextUpService
             })
             .ToList();
 
-        var lastWatchedInfo = new Dictionary<string, Guid>();
-        foreach (var group in allPlayedLite.GroupBy(e => e.SeriesPresentationUniqueKey))
-        {
-            var lastWatched = group
-                .OrderByDescending(e => e.ParentIndexNumber)
-                .ThenByDescending(e => e.IndexNumber)
-                .First();
-            lastWatchedInfo[group.Key!] = lastWatched.Id;
-        }
+        var lastWatchedInfo = allPlayedLite
+            .OrderByDescending(e => e.ParentIndexNumber)
+            .ThenByDescending(e => e.IndexNumber)
+            .DistinctBy(e => e.SeriesPresentationUniqueKey)
+            .ToDictionary(e => e.SeriesPresentationUniqueKey!, e => e.Id);
 
         Dictionary<string, Guid> lastWatchedByDateInfo = new();
         if (includeWatchedForRewatching)
@@ -144,11 +140,10 @@ public class NextUpService : INextUpService
                     (e, ud) => new { EpisodeId = e.Id, e.SeriesPresentationUniqueKey, ud.LastPlayedDate })
                 .ToList();
 
-            foreach (var group in playedWithDates.GroupBy(x => x.SeriesPresentationUniqueKey))
-            {
-                var mostRecent = group.OrderByDescending(x => x.LastPlayedDate).First();
-                lastWatchedByDateInfo[group.Key!] = mostRecent.EpisodeId;
-            }
+            lastWatchedByDateInfo = playedWithDates
+                .OrderByDescending(x => x.LastPlayedDate)
+                .DistinctBy(x => x.SeriesPresentationUniqueKey)
+                .ToDictionary(x => x.SeriesPresentationUniqueKey!, x => x.EpisodeId);
         }
 
         var allLastWatchedIds = lastWatchedInfo.Values

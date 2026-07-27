@@ -1088,7 +1088,7 @@ namespace Emby.Server.Implementations.Dto
                 dto.ParentId = item.DisplayParentId;
             }
 
-            AddInheritedImages(dto, item, options, owner);
+            AddInheritedImages(dto, item, options, owner, artistsBatch);
 
             if (options.ContainsField(ItemFields.Path))
             {
@@ -1519,11 +1519,11 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
-        private BaseItem? GetImageDisplayParent(BaseItem currentItem, BaseItem originalItem)
+        private BaseItem? GetImageDisplayParent(BaseItem currentItem, BaseItem originalItem, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch)
         {
             if (currentItem is MusicAlbum musicAlbum)
             {
-                var artist = musicAlbum.GetMusicArtist(new DtoOptions(false));
+                var artist = GetBatchedAlbumArtist(musicAlbum, artistsBatch) ?? musicAlbum.GetMusicArtist(new DtoOptions(false));
                 if (artist is not null)
                 {
                     return artist;
@@ -1540,7 +1540,20 @@ namespace Emby.Server.Implementations.Dto
             return parent;
         }
 
-        private void AddInheritedImages(BaseItemDto dto, BaseItem item, DtoOptions options, BaseItem? owner)
+        private static MusicArtist? GetBatchedAlbumArtist(MusicAlbum album, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch)
+        {
+            if (artistsBatch is null)
+            {
+                return null;
+            }
+
+            var name = album.AlbumArtists.Count > 0 ? album.AlbumArtists[0] : null;
+            return !string.IsNullOrEmpty(name) && artistsBatch.TryGetValue(name, out var artists) && artists.Length > 0
+                ? artists[0]
+                : null;
+        }
+
+        private void AddInheritedImages(BaseItemDto dto, BaseItem item, DtoOptions options, BaseItem? owner, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch)
         {
             if (item is UserView { ViewType: CollectionType.playlists } playlistsView
                 && options.GetImageLimit(ImageType.Primary) > 0
@@ -1585,7 +1598,7 @@ namespace Emby.Server.Implementations.Dto
                 || (!(imageTags is not null && imageTags.ContainsKey(ImageType.Thumb)) && thumbLimit > 0)
                 || parent is Series)
             {
-                parent ??= isFirst ? GetImageDisplayParent(item, item) ?? owner : parent;
+                parent ??= isFirst ? GetImageDisplayParent(item, item, artistsBatch) ?? owner : parent;
                 if (parent is null)
                 {
                     break;
@@ -1644,7 +1657,7 @@ namespace Emby.Server.Implementations.Dto
                     break;
                 }
 
-                parent = GetImageDisplayParent(parent, item);
+                parent = GetImageDisplayParent(parent, item, artistsBatch);
             }
         }
 

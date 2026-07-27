@@ -189,7 +189,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             // Guess ProductionYear from PremiereDate if missing
-            if (!info.ProductionYear.HasValue && info.PremiereDate.HasValue)
+            if (info.ProductionYear is null && info.PremiereDate is not null)
             {
                 info.ProductionYear = info.PremiereDate.Value.Year;
             }
