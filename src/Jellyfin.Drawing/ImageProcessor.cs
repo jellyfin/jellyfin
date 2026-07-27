@@ -214,7 +214,16 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
                         return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
                     }
 
-                    File.Move(tempFilePath, cacheFilePath, overwrite: true);
+                    try
+                    {
+                        File.Move(tempFilePath, cacheFilePath, overwrite: true);
+                    }
+                    catch (IOException) when (new FileInfo(cacheFilePath) is { Exists: true, Length: > 0 })
+                    {
+                        // Lost the publish race: a concurrent request already wrote this cache
+                        // entry and a reader holds it open (Windows denies replacing an open
+                        // file). The published entry is complete, so serve that one.
+                    }
                 }
                 finally
                 {
