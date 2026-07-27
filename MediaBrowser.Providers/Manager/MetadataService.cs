@@ -1114,7 +1114,7 @@ namespace MediaBrowser.Providers.Manager
                 target.PremiereDate = source.PremiereDate;
             }
 
-            if (replaceData || !target.ProductionYear.HasValue)
+            if (replaceData || target.ProductionYear is null)
             {
                 target.ProductionYear = source.ProductionYear;
             }

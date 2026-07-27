@@ -730,7 +730,7 @@ namespace MediaBrowser.Controller.Entities
             // Apply year filter
             if (query.Years.Length > 0)
             {
-                if (!(item.ProductionYear.HasValue && query.Years.Contains(item.ProductionYear.Value)))
+                if (item.ProductionYear is null || !query.Years.Contains(item.ProductionYear.Value))
                 {
                     return false;
                 }

@@ -434,20 +434,34 @@ public sealed partial class BaseItemRepository
 
         if (filter.IsLiked.HasValue)
         {
-            var isLiked = filter.IsLiked.Value;
-            baseQuery = baseQuery.Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.Rating >= UserItemData.MinLikeValue) == isLiked);
+            var likedIds = context.UserData
+                .Where(ud => ud.UserId == filter.User!.Id && ud.Rating >= UserItemData.MinLikeValue)
+                .Select(ud => ud.ItemId);
+
+            baseQuery = filter.IsLiked.Value
+                ? baseQuery.Where(e => likedIds.Contains(e.Id))
+                : baseQuery.Where(e => !likedIds.Contains(e.Id));
         }
 
-        if (filter.IsFavoriteOrLiked.HasValue)
+        if (filter.IsFavoriteOrLiked.HasValue || filter.IsFavorite.HasValue)
         {
-            var isFavoriteOrLiked = filter.IsFavoriteOrLiked.Value;
-            baseQuery = baseQuery.Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.IsFavorite) == isFavoriteOrLiked);
-        }
+            var favoriteIds = context.UserData
+                .Where(ud => ud.UserId == filter.User!.Id && ud.IsFavorite)
+                .Select(ud => ud.ItemId);
 
-        if (filter.IsFavorite.HasValue)
-        {
-            var isFavorite = filter.IsFavorite.Value;
-            baseQuery = baseQuery.Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.IsFavorite) == isFavorite);
+            if (filter.IsFavoriteOrLiked.HasValue)
+            {
+                baseQuery = filter.IsFavoriteOrLiked.Value
+                    ? baseQuery.Where(e => favoriteIds.Contains(e.Id))
+                    : baseQuery.Where(e => !favoriteIds.Contains(e.Id));
+            }
+
+            if (filter.IsFavorite.HasValue)
+            {
+                baseQuery = filter.IsFavorite.Value
+                    ? baseQuery.Where(e => favoriteIds.Contains(e.Id))
+                    : baseQuery.Where(e => !favoriteIds.Contains(e.Id));
+            }
         }
 
         if (filter.IsPlayed.HasValue)
@@ -560,16 +574,19 @@ public sealed partial class BaseItemRepository
                 // Only in-progress siblings can eliminate a candidate: a version without progress has a NULL max LastPlayedDate,
                 // which is never greater and never ties. Restricting the sibling scan to the in-progress set keeps this bounded by
                 // the user's Continue Watching count instead of forcing a full BaseItems scan (COALESCE keys are non-indexable) per row.
-                baseQuery = baseQuery.Where(e => e.Type == seriesTypeName || !context.BaseItems
-                    .Where(s => s.Id != e.Id
-                        && inProgressIds.Contains(s.Id)
-                        && (s.PrimaryVersionId ?? s.Id) == (e.PrimaryVersionId ?? e.Id))
-                    .Any(s =>
-                        inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
-                            > inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)
-                        || (inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
-                                == inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)
-                            && s.Id.CompareTo(e.Id) < 0)));
+                // Items in no version group at all have no sibling that could eliminate them, so short-circuit the scan for those.
+                baseQuery = baseQuery.Where(e => e.Type == seriesTypeName
+                    || (e.PrimaryVersionId == null && !context.BaseItems.Any(a => a.PrimaryVersionId == e.Id))
+                    || !context.BaseItems
+                        .Where(s => s.Id != e.Id
+                            && inProgressIds.Contains(s.Id)
+                            && (s.PrimaryVersionId ?? s.Id) == (e.PrimaryVersionId ?? e.Id))
+                        .Any(s =>
+                            inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
+                                > inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)
+                            || (inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
+                                    == inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)
+                                && s.Id.CompareTo(e.Id) < 0)));
             }
             else
             {

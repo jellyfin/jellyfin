@@ -1,5 +1,5 @@
 {
-    "Artists": "Listafólk",
+    "Artists": "Tónlistafólk",
     "Collections": "Søvn",
     "Default": "Forsett",
     "External": "Ytri",
@@ -29,9 +29,9 @@
     "NotificationOptionPluginUpdateInstalled": "Ískoytisforrit dagført",
     "NotificationOptionUserLockedOut": "Brúkari útihýstur",
     "Photos": "Ljósmyndir",
-    "PluginInstalledWithName": "{0} var innlagt",
-    "PluginUninstalledWithName": "{0} var strikað",
-    "PluginUpdatedWithName": "{0} varð dagført",
+    "PluginInstalledWithName": "{0} innlagt",
+    "PluginUninstalledWithName": "{0} strikað",
+    "PluginUpdatedWithName": "{0} dagført",
     "Shows": "Røðir",
     "SubtitleDownloadFailureFromForItem": "Miseydnaðist at niðurtakað undirtekstir til {1} frá {0}",
     "TvShows": "Sjónvarpsrøðir",
@@ -48,5 +48,7 @@
     "TaskDownloadMissingLyricsDescription": "Niðurtekur sangtekstir",
     "Movies": "Filmar",
     "MixedContent": "Blandað innihald",
-    "Music": "Tónleikur"
+    "Music": "Tónleikur",
+    "UserStartedPlayingItemWithValues": "{0} spælur {1} á {2}",
+    "HeaderContinueWatching": "Hald áfram at hyggja"
 }

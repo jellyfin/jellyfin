@@ -2315,9 +2315,13 @@ namespace Emby.Server.Implementations.Library
         {
             var comparer = Comparers.FirstOrDefault(c => name == c.Type);
 
-            // If it requires a user, create a new one, and assign the user
             if (comparer is IUserBaseItemComparer)
             {
+                if (user is null)
+                {
+                    throw new ArgumentException($"Sort key '{name}' requires a user, but none was provided.");
+                }
+
                 var userComparer = (IUserBaseItemComparer)Activator.CreateInstance(comparer.GetType())!; // only null for Nullable<T> instances
 
                 userComparer.User = user;
@@ -3195,11 +3199,11 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
 
-                if (!episode.ProductionYear.HasValue)
+                if (episode.ProductionYear is null)
                 {
                     episode.ProductionYear = episodeInfo.Year;
 
-                    if (episode.ProductionYear.HasValue)
+                    if (episode.ProductionYear is not null)
                     {
                         changed = true;
                     }

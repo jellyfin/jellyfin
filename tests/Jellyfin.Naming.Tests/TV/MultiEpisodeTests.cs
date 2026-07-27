@@ -69,6 +69,11 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData("Season 1/series-s09e14-720i.mkv", null)]
         [InlineData("Season 1/MOONLIGHTING_s01e01-e04.mkv", 4)]
         [InlineData("Season 1/MOONLIGHTING_s01e01-e04", 4)]
+        // Hyphenated numbers in the episode title must not be read as an episode range
+        [InlineData("Season 1/S01E01 The 6-10 to Lubbock [WEBRip-1080p][AV1 Opus].mkv", null)]
+        [InlineData("Season 5/S05E23 11-59 [HDTV-1080p][x265 AC3].mkv", null)]
+        [InlineData("Season 5/S05E23 11-59 [HDTV-1080p][HEVC AC3].mkv", null)]
+        [InlineData("Season 1/S01E01 1-23-45 [Bluray-1080p][AV1 Opus].mkv", null)]
         public void TestGetEndingEpisodeNumberFromFile(string filename, int? endingEpisodeNumber)
         {
             var result = _episodePathParser.Parse(filename, false);

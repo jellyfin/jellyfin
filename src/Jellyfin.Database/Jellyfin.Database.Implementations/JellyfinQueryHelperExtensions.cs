@@ -70,15 +70,24 @@ public static class JellyfinQueryHelperExtensions
         bool invert = false)
     {
         var itemFilter = OneOrManyExpressionBuilder<BaseItemEntity, Guid>(referenceIds, f => f.Id);
-        var typeFilter = OneOrManyExpressionBuilder<ItemValue, ItemValueType>(itemValueTypes, iv => iv.Type);
+        var typeFilter = OneOrManyExpressionBuilder<ItemValueMap, ItemValueType>(itemValueTypes, m => m.ItemValue.Type);
 
-        return baseQuery.Where(item =>
-            context.ItemValues
-                .Where(typeFilter)
-                .Join(context.ItemValuesMap, e => e.ItemValueId, e => e.ItemValueId, (itemVal, map) => new { itemVal, map })
-                .Any(val =>
-                    context.BaseItems.Where(itemFilter).Any(e => e.CleanName == val.itemVal.CleanValue)
-                    && val.map.ItemId == item.Id) == EF.Constant(!invert));
+        // Flat sub-selects + Contains instead of a nested correlated .Any(...Any(...)).
+        var referencedCleanValues = context.BaseItems
+            .Where(itemFilter)
+            .Select(e => e.CleanName);
+
+        var matchingItemIds = context.ItemValuesMap
+            .Where(typeFilter)
+            .Where(m => referencedCleanValues.Contains(m.ItemValue.CleanValue))
+            .Select(m => m.ItemId);
+
+        if (invert)
+        {
+            return baseQuery.Where(e => !matchingItemIds.Contains(e.Id));
+        }
+
+        return baseQuery.Where(e => matchingItemIds.Contains(e.Id));
     }
 
     /// <summary>
@@ -102,13 +111,21 @@ public static class JellyfinQueryHelperExtensions
 
         var itemFilter = OneOrManyExpressionBuilder<BaseItemEntity, Guid>(referenceIds, f => f.Id);
 
-        return item =>
-          context.ItemValues
-              .Join(context.ItemValuesMap, e => e.ItemValueId, e => e.ItemValueId, (item, map) => new { item, map })
-              .Any(val =>
-                  val.item.Type == itemValueType
-                  && context.BaseItems.Where(itemFilter).Any(e => e.CleanName == val.item.CleanValue)
-                  && val.map.ItemId == item.Id) == EF.Constant(!invert);
+        // Flat sub-selects + Contains instead of a nested correlated .Any(...Any(...)).
+        var referencedCleanValues = context.BaseItems
+            .Where(itemFilter)
+            .Select(e => e.CleanName);
+
+        var matchingItemIds = context.ItemValuesMap
+            .Where(m => m.ItemValue.Type == itemValueType && referencedCleanValues.Contains(m.ItemValue.CleanValue))
+            .Select(m => m.ItemId);
+
+        if (invert)
+        {
+            return item => !matchingItemIds.Contains(item.Id);
+        }
+
+        return item => matchingItemIds.Contains(item.Id);
     }
 
     /// <summary>
@@ -224,14 +241,14 @@ public static class JellyfinQueryHelperExtensions
 
         var containsMethodInfo = _containsQueryCache.GetOrAdd(typeof(TProperty), static (key) => _containsMethodGenericCache.MakeGenericMethod(key));
 
-        // Threshold picked from microbenchmarks on SQLite: inline IN(const,...) beats a
-        // parameterized array lookup by ~5-10% up to ~32 elements.
-        if (oneOf.Count <= 32)
-        {
-            return Expression.Lambda<Func<TEntity, bool>>(Expression.Call(null, containsMethodInfo, Expression.Constant(oneOf), property.Body), parameter);
-        }
-
-        return Expression.Lambda<Func<TEntity, bool>>(Expression.Call(null, containsMethodInfo, Expression.Call(null, _efParameterInstruction.MakeGenericMethod(oneOf.GetType()), Expression.Constant(oneOf)), property.Body), parameter);
+        // Always wrap the collection in EF.Parameter so EF Core caches a single compiled plan and reuses it across calls.
+        return Expression.Lambda<Func<TEntity, bool>>(
+            Expression.Call(
+                null,
+                containsMethodInfo,
+                Expression.Call(null, _efParameterInstruction.MakeGenericMethod(oneOf.GetType()), Expression.Constant(oneOf)),
+                property.Body),
+            parameter);
     }
 
     internal static class ParameterReplacer
