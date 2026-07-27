@@ -1167,16 +1167,23 @@ public sealed partial class BaseItemRepository
                 : baseQuery.WhereNeitherItemNorDescendantMatches(context, isPlaceHolder);
         }
 
+        // An extra is owned by the single version of an item it is named after, so an extra on any
+        // version counts for the item itself
+        IQueryable<Guid> WithPrimaryVersions(IQueryable<Guid> ownerIds)
+            => ownerIds.Concat(context.BaseItems
+                .Where(version => version.PrimaryVersionId != null && ownerIds.Contains(version.Id))
+                .Select(version => version.PrimaryVersionId!.Value));
+
         if (filter.HasSpecialFeature.HasValue)
         {
-            var itemsWithExtras = context.BaseItems
+            var itemsWithExtras = WithPrimaryVersions(context.BaseItems
                 .Where(extra => extra.OwnerId != null
                     && extra.ExtraType != null
                     && extra.ExtraType != BaseItemExtraType.Unknown
                     && extra.ExtraType != BaseItemExtraType.Trailer
                     && extra.ExtraType != BaseItemExtraType.ThemeSong
                     && extra.ExtraType != BaseItemExtraType.ThemeVideo)
-                .Select(extra => extra.OwnerId!.Value)
+                .Select(extra => extra.OwnerId!.Value))
                 .Distinct();
 
             Expression<Func<BaseItemEntity, bool>> hasExtras = e => itemsWithExtras.Contains(e.Id);
@@ -1188,9 +1195,9 @@ public sealed partial class BaseItemRepository
 
         if (filter.HasTrailer.HasValue)
         {
-            var trailerOwnerIds = context.BaseItems
+            var trailerOwnerIds = WithPrimaryVersions(context.BaseItems
                 .Where(extra => extra.ExtraType == BaseItemExtraType.Trailer && extra.OwnerId != null)
-                .Select(extra => extra.OwnerId!.Value);
+                .Select(extra => extra.OwnerId!.Value));
 
             Expression<Func<BaseItemEntity, bool>> hasTrailer = e => trailerOwnerIds.Contains(e.Id);
 
@@ -1201,9 +1208,9 @@ public sealed partial class BaseItemRepository
 
         if (filter.HasThemeSong.HasValue)
         {
-            var themeSongOwnerIds = context.BaseItems
+            var themeSongOwnerIds = WithPrimaryVersions(context.BaseItems
                 .Where(extra => extra.ExtraType == BaseItemExtraType.ThemeSong && extra.OwnerId != null)
-                .Select(extra => extra.OwnerId!.Value);
+                .Select(extra => extra.OwnerId!.Value));
 
             Expression<Func<BaseItemEntity, bool>> hasThemeSong = e => themeSongOwnerIds.Contains(e.Id);
 
@@ -1214,9 +1221,9 @@ public sealed partial class BaseItemRepository
 
         if (filter.HasThemeVideo.HasValue)
         {
-            var themeVideoOwnerIds = context.BaseItems
+            var themeVideoOwnerIds = WithPrimaryVersions(context.BaseItems
                 .Where(extra => extra.ExtraType == BaseItemExtraType.ThemeVideo && extra.OwnerId != null)
-                .Select(extra => extra.OwnerId!.Value);
+                .Select(extra => extra.OwnerId!.Value));
 
             Expression<Func<BaseItemEntity, bool>> hasThemeVideo = e => themeVideoOwnerIds.Contains(e.Id);
 
