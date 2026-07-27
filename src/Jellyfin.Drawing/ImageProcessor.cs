@@ -218,11 +218,13 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
                     {
                         File.Move(tempFilePath, cacheFilePath, overwrite: true);
                     }
-                    catch (IOException) when (new FileInfo(cacheFilePath) is { Exists: true, Length: > 0 })
+                    catch (Exception ex) when ((ex is IOException or UnauthorizedAccessException)
+                        && new FileInfo(cacheFilePath) is { Exists: true, Length: > 0 })
                     {
                         // Lost the publish race: a concurrent request already wrote this cache
                         // entry and a reader holds it open (Windows denies replacing an open
-                        // file). The published entry is complete, so serve that one.
+                        // file with UnauthorizedAccessException). The published entry is
+                        // complete, so serve that one.
                     }
                 }
                 finally
