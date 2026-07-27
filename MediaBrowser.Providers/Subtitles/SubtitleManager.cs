@@ -257,7 +257,21 @@ namespace MediaBrowser.Providers.Subtitles
                     if (path.StartsWith(containingFolder, StringComparison.Ordinal)
                             || path.StartsWith(metadataFolder, StringComparison.Ordinal))
                     {
-                        var fileExists = File.Exists(path);
+                        // The canonical path already holds a subtitle for this
+                        // language/forced/sdh combination. Rather than fall through to
+                        // the counter below (which would write movie.en.0.srt,
+                        // movie.en.1.srt, ... on every task run), treat the file as
+                        // already saved and return. The counter logic is only useful
+                        // when the same canonical name collides between genuinely
+                        // different subtitle variants, and in that case the first
+                        // existing file should still win. See #17426.
+                        if (File.Exists(path))
+                        {
+                            _logger.LogInformation("Subtitle already exists at {SavePath}, skipping save", path);
+                            return;
+                        }
+
+                        var fileExists = false;
                         var counter = 0;
 
                         while (fileExists)
