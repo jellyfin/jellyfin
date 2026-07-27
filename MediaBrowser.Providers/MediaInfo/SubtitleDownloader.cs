@@ -14,6 +14,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.MediaInfo
@@ -22,11 +23,36 @@ namespace MediaBrowser.Providers.MediaInfo
     {
         private readonly ILogger _logger;
         private readonly ISubtitleManager _subtitleManager;
+        private readonly ILocalizationManager _localization;
 
-        public SubtitleDownloader(ILogger logger, ISubtitleManager subtitleManager)
+        public SubtitleDownloader(ILogger logger, ISubtitleManager subtitleManager, ILocalizationManager localization)
         {
             _logger = logger;
             _subtitleManager = subtitleManager;
+            _localization = localization;
+        }
+
+        /// <summary>
+        /// Normalizes an ISO language code (2-letter, 3-letter, or full name) to the
+        /// canonical <see cref="CultureDto.Name"/> so two codes referring to the same
+        /// language compare equal. Returns the input unchanged when no culture matches.
+        /// </summary>
+        /// <remarks>
+        /// Media streams store the language detected by FFprobe via <c>ExternalPathParser</c>,
+        /// which prefers the ISO 639-3 code (e.g. "eng"), while library options and subtitle
+        /// requests commonly use ISO 639-2 codes (e.g. "en"). A plain ordinal compare lets
+        /// an existing subtitle slip through the pre-download guard, causing a redundant
+        /// download that consumes the OpenSubtitles daily quota and re-creates the file.
+        /// </remarks>
+        private string NormalizeLanguage(string language)
+        {
+            if (string.IsNullOrEmpty(language))
+            {
+                return string.Empty;
+            }
+
+            var culture = _localization.FindLanguageInfo(language);
+            return culture?.Name ?? language;
         }
 
         public async Task<List<string>> DownloadSubtitles(
@@ -131,8 +157,13 @@ namespace MediaBrowser.Providers.MediaInfo
             bool isAutomated,
             CancellationToken cancellationToken)
         {
+            // Normalize the requested language so a 2-letter/3-letter code mismatch
+            // (e.g. requested "en" vs. an existing stream stored as "eng") doesn't
+            // bypass these guards and trigger a redundant download.
+            var normalizedLanguage = NormalizeLanguage(language);
+
             // There's already subtitles for this language
-            if (mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && i.IsTextSubtitleStream && string.Equals(i.Language, language, StringComparison.OrdinalIgnoreCase)))
+            if (mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && i.IsTextSubtitleStream && string.Equals(NormalizeLanguage(i.Language), normalizedLanguage, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
@@ -148,14 +179,14 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // There's already a default audio stream for this language
             if (skipIfAudioTrackMatches &&
-                defaultAudioStreams.Any(i => string.Equals(i.Language, language, StringComparison.OrdinalIgnoreCase)))
+                defaultAudioStreams.Any(i => string.Equals(NormalizeLanguage(i.Language), normalizedLanguage, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
 
             // There's an internal subtitle stream for this language
             if (skipIfEmbeddedSubtitlesPresent &&
-                mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && !i.IsExternal && string.Equals(i.Language, language, StringComparison.OrdinalIgnoreCase)))
+                mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && !i.IsExternal && string.Equals(NormalizeLanguage(i.Language), normalizedLanguage, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
