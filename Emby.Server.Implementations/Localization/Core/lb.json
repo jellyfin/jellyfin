@@ -107,5 +107,6 @@
     "TaskOptimizeDatabaseDescription": "Kompriméiert d’Datebank a schneit de fräie Speicherplatz zou. Dës Aufgab no engem Bibliothéik-Scan oder anere Ännerungen, déi Datebankmodifikatioune mat sech bréngen, auszeféieren, kann d’Performance verbesseren.",
     "LyricDownloadFailureFromForItem": "Feeler beim Download vun de Songtexter vun {0} fir {1}",
     "Original": "Original",
-    "CleanupUserDataTask": "Aufgab fir Berengege vu Benotzerdaten"
+    "CleanupUserDataTask": "Aufgab fir Berengege vu Benotzerdaten",
+    "CleanupUserDataTaskDescription": "Läscht all Benotzerdaten (Ofspillstatus, Favoritestatus, asw.) vu Medien, déi zënter mindestens 90 Deeg net méi besteeënd sinn."
 }
