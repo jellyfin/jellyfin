@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -100,13 +101,9 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
-            var jsonStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await using (jsonStream.ConfigureAwait(false))
-            {
-                var obj = await JsonSerializer.DeserializeAsync<RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            var obj = await response.Content.ReadFromJsonAsync<RootObject>(_jsonOptions, cancellationToken).ConfigureAwait(false);
 
-                return obj?.artists ?? [];
-            }
+            return obj?.artists ?? [];
         }
 
         private RemoteSearchResult ToRemoteSearchResult(Artist artist)
