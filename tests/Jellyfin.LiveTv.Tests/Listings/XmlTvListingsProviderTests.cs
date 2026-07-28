@@ -124,6 +124,61 @@ public class XmlTvListingsProviderTests
         Assert.Equal(original.Etag, equivalent.Etag);
     }
 
+    [Fact]
+    public async Task GetProgramsAsync_MultipleChannels_ReturnsOnlyRequestedChannel()
+    {
+        var info = new ListingsProviderInfo { Path = "Test Data/LiveTv/Listings/XmlTv/multichannel.xml" };
+        var startDate = new DateTime(2022, 11, 4, 0, 0, 0, DateTimeKind.Utc);
+
+        var channel1001 = (await _xmlTvListingsProvider
+            .GetProgramsAsync(info, "1001", startDate, startDate.AddDays(1), CancellationToken.None)).ToList();
+        var channel2002 = (await _xmlTvListingsProvider
+            .GetProgramsAsync(info, "2002", startDate, startDate.AddDays(1), CancellationToken.None)).ToList();
+
+        Assert.All(channel1001, p => Assert.Equal("1001", p.ChannelId));
+        Assert.All(channel2002, p => Assert.Equal("2002", p.ChannelId));
+
+        // Within a one-day window: 1001 has Program A + B (Program C is two days later), 2002 has A + B.
+        Assert.Equal(2, channel1001.Count);
+        Assert.Equal(2, channel2002.Count);
+    }
+
+    [Fact]
+    public async Task GetProgramsAsync_FiltersToRequestedWindow()
+    {
+        var info = new ListingsProviderInfo { Path = "Test Data/LiveTv/Listings/XmlTv/multichannel.xml" };
+        var startDate = new DateTime(2022, 11, 4, 0, 0, 0, DateTimeKind.Utc);
+
+        // A three-day window should also include Program C for channel 1001.
+        var wideWindow = (await _xmlTvListingsProvider
+            .GetProgramsAsync(info, "1001", startDate, startDate.AddDays(3), CancellationToken.None)).ToList();
+
+        Assert.Equal(3, wideWindow.Count);
+    }
+
+    [Fact]
+    public async Task GetProgramsAsync_RepeatedCalls_ReturnFreshObjects()
+    {
+        var info = new ListingsProviderInfo { Path = "Test Data/LiveTv/Listings/XmlTv/multichannel.xml" };
+        var startDate = new DateTime(2022, 11, 4, 0, 0, 0, DateTimeKind.Utc);
+
+        var first = (await _xmlTvListingsProvider
+            .GetProgramsAsync(info, "1001", startDate, startDate.AddDays(1), CancellationToken.None)).ToList();
+
+        // Callers mutate ProgramInfo (Id/ChannelId). Ensure the cached parse is not corrupted by it.
+        foreach (var program in first)
+        {
+            program.Id += "_mutated";
+            program.ChannelId = "mutated";
+        }
+
+        var second = (await _xmlTvListingsProvider
+            .GetProgramsAsync(info, "1001", startDate, startDate.AddDays(1), CancellationToken.None)).ToList();
+
+        Assert.All(second, p => Assert.Equal("1001", p.ChannelId));
+        Assert.All(second, p => Assert.DoesNotContain("_mutated", p.Id, StringComparison.Ordinal));
+    }
+
     private async Task<ProgramInfo> GetSingleProgramAsync(string path)
     {
         var info = new ListingsProviderInfo()

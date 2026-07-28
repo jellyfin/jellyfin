@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using Jellyfin.Extensions;
 using Jellyfin.XmlTv;
 using Jellyfin.XmlTv.Entities;
@@ -31,6 +32,14 @@ namespace Jellyfin.LiveTv.Listings
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<XmlTvListingsProvider> _logger;
+
+        // Caches the last fully-parsed XMLTV file, grouped by channel id, so a guide refresh over
+        // thousands of channels parses the (potentially multi-GB) file once instead of once per
+        // channel. Keyed by file path + last-write-time so a freshly downloaded file rebuilds it.
+        private readonly object _programsCacheLock = new();
+        private string? _programsCacheFile;
+        private DateTime _programsCacheWriteTimeUtc;
+        private IReadOnlyDictionary<string, List<XmlTvProgram>>? _programsCache;
 
         public XmlTvListingsProvider(
             IServerConfigurationManager config,
@@ -58,7 +67,7 @@ namespace Jellyfin.LiveTv.Listings
 
         private async Task<string> GetXml(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("xmltv path: {Path}", info.Path);
+            _logger.LogDebug("xmltv path: {Path}", info.Path);
 
             string cacheFilename = info.Id + ".xml";
             string cacheDir = Path.Join(_config.ApplicationPaths.CachePath, "xmltv");
@@ -169,11 +178,116 @@ namespace Jellyfin.LiveTv.Listings
             _logger.LogDebug("Getting xmltv programs for channel {Id}", channelId);
 
             string path = await GetXml(info, cancellationToken).ConfigureAwait(false);
-            _logger.LogDebug("Opening XmlTvReader for {Path}", path);
-            var reader = new XmlTvReader(path, GetLanguage(info));
 
-            return reader.GetProgrammes(channelId, startDateUtc, endDateUtc, cancellationToken)
-                        .Select(p => GetProgramInfoWithEtag(p, info));
+            var programsByChannel = GetProgramsByChannel(path, GetLanguage(info), cancellationToken);
+            if (!programsByChannel.TryGetValue(channelId, out var channelPrograms))
+            {
+                return [];
+            }
+
+            var startOffset = new DateTimeOffset(DateTime.SpecifyKind(startDateUtc, DateTimeKind.Utc));
+            var endOffset = new DateTimeOffset(DateTime.SpecifyKind(endDateUtc, DateTimeKind.Utc));
+
+            // Materialize fresh ProgramInfo instances per call: callers mutate ProgramInfo (Id/ChannelId),
+            // so cached parsed XmlTvProgram entries must never be handed out directly.
+            return channelPrograms
+                .Where(p => p.EndDate >= startOffset && p.StartDate < endOffset)
+                .Select(p => GetProgramInfoWithEtag(p, info))
+                .ToList();
+        }
+
+        /// <summary>
+        /// Parses the entire XMLTV file a single time and groups every programme by channel id, caching
+        /// the result until the underlying file changes. Without this, a guide refresh re-parses the whole
+        /// file once for every channel, which is unusable for providers exposing tens of thousands of channels.
+        /// </summary>
+        private IReadOnlyDictionary<string, List<XmlTvProgram>> GetProgramsByChannel(string path, string? language, CancellationToken cancellationToken)
+        {
+            var writeTimeUtc = File.GetLastWriteTimeUtc(path);
+
+            var cached = _programsCache;
+            if (cached is not null
+                && string.Equals(_programsCacheFile, path, StringComparison.Ordinal)
+                && _programsCacheWriteTimeUtc == writeTimeUtc)
+            {
+                return cached;
+            }
+
+            lock (_programsCacheLock)
+            {
+                cached = _programsCache;
+                if (cached is not null
+                    && string.Equals(_programsCacheFile, path, StringComparison.Ordinal)
+                    && _programsCacheWriteTimeUtc == writeTimeUtc)
+                {
+                    return cached;
+                }
+
+                _logger.LogDebug("Parsing XMLTV programmes for all channels from {Path}", path);
+
+                // Release any previously cached data before building the replacement.
+                _programsCache = null;
+                _programsCacheFile = null;
+
+                var parsed = ParseProgramsByChannel(path, language, cancellationToken);
+
+                _programsCacheFile = path;
+                _programsCacheWriteTimeUtc = writeTimeUtc;
+                _programsCache = parsed;
+
+                _logger.LogDebug("Parsed XMLTV programmes for {ChannelCount} channels from {Path}", parsed.Count, path);
+
+                return parsed;
+            }
+        }
+
+        private static IReadOnlyDictionary<string, List<XmlTvProgram>> ParseProgramsByChannel(string path, string? language, CancellationToken cancellationToken)
+        {
+            // Reuse the library's per-programme parser, but drive a single pass over the file ourselves
+            // so every channel's programmes are captured in one read instead of one read per channel.
+            var reader = new XmlTvReader(path, language);
+            var result = new Dictionary<string, List<XmlTvProgram>>(StringComparer.OrdinalIgnoreCase);
+
+            var settings = new XmlReaderSettings
+            {
+                DtdProcessing = DtdProcessing.Ignore,
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true
+            };
+
+            using var xml = XmlReader.Create(path, settings);
+            if (xml.ReadToDescendant("tv") && xml.ReadToDescendant("programme"))
+            {
+                do
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var channelId = xml.GetAttribute("channel");
+                    if (string.IsNullOrEmpty(channelId))
+                    {
+                        continue;
+                    }
+
+                    // Capture the full date range; per-request date filtering happens against the cache.
+                    var programme = reader.GetProgramme(xml, channelId, DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
+                    if (programme is null)
+                    {
+                        continue;
+                    }
+
+                    if (!result.TryGetValue(channelId, out var list))
+                    {
+                        list = [];
+                        result[channelId] = list;
+                    }
+
+                    list.Add(programme);
+                }
+                while (xml.ReadToFollowing("programme"));
+            }
+
+            return result;
         }
 
         private ProgramInfo GetProgramInfoWithEtag(XmlTvProgram program, ListingsProviderInfo info)

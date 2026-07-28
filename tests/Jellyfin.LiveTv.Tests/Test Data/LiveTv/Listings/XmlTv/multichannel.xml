@@ -1,0 +1,22 @@
+<tv date="20221104">
+  <programme channel="1001" start="20221104130000 +0000" stop="20221104140000 +0000">
+    <title lang="en">Channel 1001 - Program A</title>
+    <desc lang="en">First program on 1001.</desc>
+  </programme>
+  <programme channel="2002" start="20221104130000 +0000" stop="20221104140000 +0000">
+    <title lang="en">Channel 2002 - Program A</title>
+    <desc lang="en">First program on 2002.</desc>
+  </programme>
+  <programme channel="1001" start="20221104140000 +0000" stop="20221104150000 +0000">
+    <title lang="en">Channel 1001 - Program B</title>
+    <desc lang="en">Second program on 1001.</desc>
+  </programme>
+  <programme channel="1001" start="20221106130000 +0000" stop="20221106140000 +0000">
+    <title lang="en">Channel 1001 - Program C (next-next day)</title>
+    <desc lang="en">Later program on 1001, outside a one-day window.</desc>
+  </programme>
+  <programme channel="2002" start="20221104150000 +0000" stop="20221104160000 +0000">
+    <title lang="en">Channel 2002 - Program B</title>
+    <desc lang="en">Second program on 2002.</desc>
+  </programme>
+</tv>
