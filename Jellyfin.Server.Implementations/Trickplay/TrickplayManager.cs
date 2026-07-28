@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
@@ -28,7 +29,7 @@ namespace Jellyfin.Server.Implementations.Trickplay;
 /// <summary>
 /// ITrickplayManager implementation.
 /// </summary>
-public class TrickplayManager : ITrickplayManager
+public partial class TrickplayManager : ITrickplayManager
 {
     private readonly ILogger<TrickplayManager> _logger;
     private readonly IMediaEncoder _mediaEncoder;
@@ -135,6 +136,147 @@ public class TrickplayManager : ITrickplayManager
         }
     }
 
+    private async Task DiscoverExistingTrickplayAsync(Video video, bool saveWithMedia, CancellationToken cancellationToken)
+    {
+        var options = _config.Configuration.TrickplayOptions;
+        var existing = await GetTrickplayResolutions(video.Id).ConfigureAwait(false);
+
+        // Remove DB rows whose on-disk folder no longer exists in either possible location.
+        // Checking both locations avoids dropping rows mid-`SaveTrickplayWithMedia` migration.
+        var orphanedWidths = new List<int>();
+        foreach (var (width, info) in existing)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var localDir = GetTrickplayDirectory(video, info.TileWidth, info.TileHeight, info.Width, false);
+            var mediaDir = GetTrickplayDirectory(video, info.TileWidth, info.TileHeight, info.Width, true);
+            if (!HasTrickplayTiles(localDir) && !HasTrickplayTiles(mediaDir))
+            {
+                orphanedWidths.Add(width);
+            }
+        }
+
+        if (orphanedWidths.Count > 0)
+        {
+            var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+            await using (dbContext.ConfigureAwait(false))
+            {
+                await dbContext.TrickplayInfos
+                    .Where(i => i.ItemId.Equals(video.Id) && orphanedWidths.Contains(i.Width))
+                    .ExecuteDeleteAsync(cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            foreach (var width in orphanedWidths)
+            {
+                _logger.LogInformation("Removed orphaned trickplay DB entry width={Width} for {Path}", width, video.Path);
+                existing.Remove(width);
+            }
+        }
+
+        var trickplayDirectory = _pathManager.GetTrickplayDirectory(video, saveWithMedia);
+        if (!Directory.Exists(trickplayDirectory))
+        {
+            return;
+        }
+
+        foreach (var subdir in new DirectoryInfo(trickplayDirectory).EnumerateDirectories())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var match = TrickplaySubdirRegex().Match(subdir.Name);
+            if (!match.Success)
+            {
+                continue;
+            }
+
+            var width = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+            var tileWidth = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
+            var tileHeight = int.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture);
+
+            if (existing.ContainsKey(width))
+            {
+                continue;
+            }
+
+            var tiles = subdir.GetFiles("*.jpg")
+                .OrderBy(t => t.Name, StringComparer.Ordinal)
+                .ToArray();
+            if (tiles.Length == 0)
+            {
+                continue;
+            }
+
+            // The encoder pads the last tile to a full TileWidth*TileHeight grid, so the real
+            // thumbnail count cannot be read from tile dimensions. Instead, bound the count from
+            // the tile count and per-tile capacity, then pick an interval consistent with the
+            // video runtime - snapping to the server's configured interval when it fits.
+            var thumbsPerTile = tileWidth * tileHeight;
+            var maxThumbs = tiles.Length * thumbsPerTile;
+            var minThumbs = tiles.Length > 1 ? ((tiles.Length - 1) * thumbsPerTile) + 1 : 1;
+
+            int interval;
+            int thumbnailCount;
+            if (video.RunTimeTicks is long ticks)
+            {
+                var runtimeMs = ticks / TimeSpan.TicksPerMillisecond;
+                var minInterval = Math.Max(1000L, (long)Math.Ceiling(runtimeMs / (double)maxThumbs));
+                var maxInterval = Math.Max(minInterval, (long)Math.Floor(runtimeMs / (double)minThumbs));
+
+                if (options.Interval >= minInterval && options.Interval <= maxInterval)
+                {
+                    interval = options.Interval;
+                }
+                else
+                {
+                    var midpoint = (minInterval + maxInterval) / 2.0;
+                    var snapped = (long)Math.Round(midpoint / 1000d) * 1000L;
+                    interval = (int)Math.Clamp(snapped, minInterval, maxInterval);
+                }
+
+                thumbnailCount = Math.Clamp(
+                    (int)Math.Round(runtimeMs / (double)interval),
+                    minThumbs,
+                    maxThumbs);
+            }
+            else
+            {
+                interval = Math.Max(1000, options.Interval);
+                thumbnailCount = maxThumbs;
+            }
+
+            var firstSize = _imageEncoder.GetImageSize(tiles[0].FullName);
+            var thumbPxH = Math.Max(1, (int)Math.Ceiling((double)firstSize.Height / tileHeight));
+
+            var info = new TrickplayInfo
+            {
+                ItemId = video.Id,
+                Width = width,
+                Interval = interval,
+                TileWidth = tileWidth,
+                TileHeight = tileHeight,
+                ThumbnailCount = thumbnailCount,
+                Height = thumbPxH,
+                Bandwidth = 0,
+            };
+
+            foreach (var tile in tiles)
+            {
+                var bitrate = (int)Math.Ceiling((decimal)tile.Length * 8 / tileWidth / tileHeight / (interval / 1000m));
+                info.Bandwidth = Math.Max(info.Bandwidth, bitrate);
+            }
+
+            await SaveTrickplayInfo(info).ConfigureAwait(false);
+            _logger.LogInformation(
+                "Discovered existing trickplay {Width} - {TileWidth}x{TileHeight} ({ThumbnailCount} thumbnails, {Interval}ms interval) for {Path}",
+                width,
+                tileWidth,
+                tileHeight,
+                thumbnailCount,
+                interval,
+                video.Path);
+        }
+    }
+
     /// <inheritdoc />
     public async Task RefreshTrickplayDataAsync(Video video, bool replace, LibraryOptions libraryOptions, CancellationToken cancellationToken)
     {
@@ -144,11 +286,27 @@ public class TrickplayManager : ITrickplayManager
             return;
         }
 
+        var saveWithMedia = libraryOptions.SaveTrickplayWithMedia;
+
+        // Catalog any existing trickplay folders on disk before any prune/generate. This picks up
+        // user-placed files even when their (width, tile dims) don't match the server's configured values.
+        if (!replace)
+        {
+            await DiscoverExistingTrickplayAsync(video, saveWithMedia, cancellationToken).ConfigureAwait(false);
+        }
+
         var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
-            var saveWithMedia = libraryOptions.SaveTrickplayWithMedia;
             var trickplayDirectory = _pathManager.GetTrickplayDirectory(video, saveWithMedia);
+
+            // When extraction is disabled and files live next to media, treat them as user-managed:
+            // discovery above already catalogued whatever is on disk, leave it alone.
+            if (!libraryOptions.EnableTrickplayImageExtraction && !replace && saveWithMedia)
+            {
+                return;
+            }
+
             if (!libraryOptions.EnableTrickplayImageExtraction || replace)
             {
                 // Prune existing data
@@ -686,6 +844,19 @@ public class TrickplayManager : ITrickplayManager
             tileHeight.ToString(CultureInfo.InvariantCulture));
 
         return Path.Combine(path, subdirectory);
+    }
+
+    [GeneratedRegex(@"^(\d+) - (\d+)x(\d+)$")]
+    private static partial Regex TrickplaySubdirRegex();
+
+    private static bool HasTrickplayTiles(string directory)
+    {
+        if (!Directory.Exists(directory))
+        {
+            return false;
+        }
+
+        return new DirectoryInfo(directory).EnumerateFiles("*.jpg").Any();
     }
 
     private async Task<bool> HasTrickplayResolutionAsync(Guid itemId, int width)

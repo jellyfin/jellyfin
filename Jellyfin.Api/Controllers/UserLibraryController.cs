@@ -551,8 +551,6 @@ public class UserLibraryController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-        dtoOptions.PreferEpisodeParentPoster = true;
-
         var list = _userViewManager.GetLatestItems(
             new LatestItemsQuery
             {

@@ -127,8 +127,12 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     receiveResult = await _socket.ReceiveAsync(memory, cancellationToken).ConfigureAwait(false);
                 }
-                catch (WebSocketException ex)
+                catch (Exception ex) when (ex is WebSocketException or ObjectDisposedException or OperationCanceledException)
                 {
+                    // ObjectDisposedException/OperationCanceledException: the socket was torn
+                    // down underneath us (e.g. by the keep-alive watchdog after the connection
+                    // was declared lost). Fall through so Closed is still raised and the
+                    // session can release this connection.
                     _logger.LogWarning("WS {IP} error receiving data: {Message}", RemoteEndPoint, ex.Message);
                     break;
                 }

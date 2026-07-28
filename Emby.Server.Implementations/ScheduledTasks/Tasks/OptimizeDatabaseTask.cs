@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,7 @@ public class OptimizeDatabaseTask : IScheduledTask, IConfigurableScheduledTask
     private readonly ILogger<OptimizeDatabaseTask> _logger;
     private readonly ILocalizationManager _localization;
     private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
+    private readonly ILibraryManager _libraryManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OptimizeDatabaseTask" /> class.
@@ -24,14 +26,17 @@ public class OptimizeDatabaseTask : IScheduledTask, IConfigurableScheduledTask
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
     /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="jellyfinDatabaseProvider">Instance of the JellyfinDatabaseProvider that can be used for provider specific operations.</param>
+    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     public OptimizeDatabaseTask(
         ILogger<OptimizeDatabaseTask> logger,
         ILocalizationManager localization,
-        IJellyfinDatabaseProvider jellyfinDatabaseProvider)
+        IJellyfinDatabaseProvider jellyfinDatabaseProvider,
+        ILibraryManager libraryManager)
     {
         _logger = logger;
         _localization = localization;
         _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
+        _libraryManager = libraryManager;
     }
 
     /// <inheritdoc />
@@ -68,6 +73,15 @@ public class OptimizeDatabaseTask : IScheduledTask, IConfigurableScheduledTask
     /// <inheritdoc />
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
+        // Vacuuming/checkpointing requires an exclusive lock on the database. Running it while a library scan is in
+        // progress causes both operations to contend for the database and can stall the scan, so defer optimization
+        // until no scan is running. The task will run again on its next trigger.
+        if (_libraryManager.IsScanRunning)
+        {
+            _logger.LogInformation("Skipping database optimization because a library scan is currently running.");
+            return;
+        }
+
         _logger.LogInformation("Optimizing and vacuuming jellyfin.db...");
 
         try

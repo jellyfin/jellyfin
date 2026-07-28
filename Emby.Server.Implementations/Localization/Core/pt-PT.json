@@ -107,5 +107,6 @@
     "TaskMoveTrickplayImagesDescription": "Move os ficheiros trickplay existentes de acordo com as definições da mediateca.",
     "CleanupUserDataTaskDescription": "Apaga todos os dados de utilizador (estados de reprodução, favoritos, etc) de arquivos média não presentes há 90 dias ou mais.",
     "CleanupUserDataTask": "Limpeza de dados de utilizador",
-    "Original": "Original"
+    "Original": "Original",
+    "LyricDownloadFailureFromForItem": "Erro ao descarregar letras de {0} para {1}"
 }

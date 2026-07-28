@@ -63,6 +63,24 @@ namespace MediaBrowser.Controller.Library
         Dictionary<Guid, UserItemData> GetUserDataBatch(IReadOnlyList<BaseItem> items, User user);
 
         /// <summary>
+        /// Gets the user data that should drive resume for a multi-version item: the data of the most
+        /// recently played alternate version (including the item itself) that has a resume point.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="item">The item.</param>
+        /// <returns>The resume version's data, or <c>null</c> when the item has no versions or none has a resume point.</returns>
+        VersionResumeData? GetResumeUserData(User user, BaseItem item);
+
+        /// <summary>
+        /// Gets the resume-driving user data for multiple items in a single batch operation.
+        /// See <see cref="GetResumeUserData(User, BaseItem)"/>.
+        /// </summary>
+        /// <param name="items">The items to get resume data for.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>A dictionary mapping item ids to their resume version's data; items without one are omitted.</returns>
+        IReadOnlyDictionary<Guid, VersionResumeData> GetResumeUserDataBatch(IReadOnlyList<BaseItem> items, User user);
+
+        /// <summary>
         /// Gets the user data dto.
         /// </summary>
         /// <param name="item">Item to use.</param>
@@ -80,5 +98,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="reportedPositionTicks">New playstate.</param>
         /// <returns>True if playstate was updated.</returns>
         bool UpdatePlayState(BaseItem item, UserItemData data, long? reportedPositionTicks);
+
+        /// <summary>
+        /// Clears any stored audio and subtitle stream selections for the given user/item pair.
+        /// Used when the user has opted out of remembering selections.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="item">The item.</param>
+        void ResetPlaybackStreamSelections(User user, BaseItem item);
     }
 }
