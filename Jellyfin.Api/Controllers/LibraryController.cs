@@ -898,6 +898,16 @@ public class LibraryController : BaseJellyfinApiController
             .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
+        result.LocalImageProviders = plugins
+            .SelectMany(i => i.Plugins.Where(p => p.Type == MetadataPluginType.LocalImageProvider))
+            .Select(i => new LibraryOptionInfoDto
+            {
+                Name = i.Name,
+                DefaultEnabled = true
+            })
+            .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
         result.SubtitleFetchers = plugins
             .SelectMany(i => i.Plugins.Where(p => p.Type == MetadataPluginType.SubtitleFetcher))
             .Select(i => new LibraryOptionInfoDto
