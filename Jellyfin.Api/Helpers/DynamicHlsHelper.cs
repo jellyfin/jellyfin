@@ -441,52 +441,26 @@ public class DynamicHlsHelper
     /// <param name="state">StreamState of the current stream.</param>
     private void AppendPlaylistVideoRangeField(StringBuilder builder, StreamState state)
     {
-        if (state.VideoStream is not null && state.VideoStream.VideoRange != VideoRange.Unknown)
+        if (state.VideoStream is null || state.VideoStream.VideoRange == VideoRange.Unknown)
         {
-            var videoRange = state.VideoStream.VideoRange;
-            var videoRangeType = state.VideoStream.VideoRangeType;
-            if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
-            {
-                if (videoRange == VideoRange.SDR)
-                {
-                    builder.Append(",VIDEO-RANGE=SDR");
-                }
-
-                if (videoRange == VideoRange.HDR)
-                {
-                    switch (videoRangeType)
-                    {
-                        case VideoRangeType.HLG:
-                        case VideoRangeType.DOVIWithHLG:
-                            builder.Append(",VIDEO-RANGE=HLG");
-                            break;
-                        default:
-                            builder.Append(",VIDEO-RANGE=PQ");
-                            break;
-                    }
-                }
-            }
-            else if (_encodingHelper.IsHdrPassthroughAvailable(state, _serverConfigurationManager.GetEncodingOptions()))
-            {
-                // Clients configure their decoder from this field; announcing SDR while
-                // delivering PQ prevents playback.
-                switch (videoRangeType)
-                {
-                    case VideoRangeType.HLG:
-                    case VideoRangeType.DOVIWithHLG:
-                        builder.Append(",VIDEO-RANGE=HLG");
-                        break;
-                    default:
-                        builder.Append(",VIDEO-RANGE=PQ");
-                        break;
-                }
-            }
-            else
-            {
-                builder.Append(",VIDEO-RANGE=SDR");
-            }
+            return;
         }
+
+        // A copy keeps the source range, and so does a passthrough transcode. Anything else is
+        // tone mapped. Clients configure their decoder from this field, so announcing SDR while
+        // delivering PQ prevents playback.
+        var keepsSourceRange = EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
+                               || _encodingHelper.IsHdrPassthroughAvailable(state, _serverConfigurationManager.GetEncodingOptions());
+
+        var range = keepsSourceRange && state.VideoStream.VideoRange == VideoRange.HDR
+            ? GetHdrPlaylistVideoRange(state.VideoStream.VideoRangeType)
+            : "SDR";
+
+        builder.Append(",VIDEO-RANGE=").Append(range);
     }
+
+    private static string GetHdrPlaylistVideoRange(VideoRangeType videoRangeType)
+        => videoRangeType is VideoRangeType.HLG or VideoRangeType.DOVIWithHLG ? "HLG" : "PQ";
 
     /// <summary>
     /// Appends a CODECS field containing formatted strings of
