@@ -46,6 +46,23 @@ public sealed partial class BaseItemRepository
     private static readonly IReadOnlyList<ItemValueType> _getStudiosValueTypes = [ItemValueType.Studios];
     private static readonly IReadOnlyList<ItemValueType> _getGenreValueTypes = [ItemValueType.Genre];
 
+    private static readonly BaseItemKind[] _itemByNameKinds =
+    [
+        BaseItemKind.Person,
+        BaseItemKind.Genre,
+        BaseItemKind.MusicGenre,
+        BaseItemKind.MusicArtist,
+        BaseItemKind.Studio
+    ];
+
+    private static readonly (BaseItemKind Kind, IReadOnlyList<ItemValueType> ValueTypes)[] _itemByNameValueTypes =
+    [
+        (BaseItemKind.Genre, _getGenreValueTypes),
+        (BaseItemKind.MusicGenre, _getGenreValueTypes),
+        (BaseItemKind.MusicArtist, _getAllArtistsValueTypes),
+        (BaseItemKind.Studio, _getStudiosValueTypes)
+    ];
+
     /// <summary>
     /// Initializes a new instance of the <see cref="BaseItemRepository"/> class.
     /// </summary>

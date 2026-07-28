@@ -21,10 +21,11 @@ namespace Jellyfin.Server.Implementations.Item;
 /// </summary>
 /// <param name="dbProvider">Efcore Factory.</param>
 /// <param name="itemTypeLookup">Items lookup service.</param>
+/// <param name="queryHelpers">Shared item query helpers.</param>
 /// <remarks>
 /// Initializes a new instance of the <see cref="PeopleRepository"/> class.
 /// </remarks>
-public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IItemTypeLookup itemTypeLookup) : IPeopleRepository
+public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IItemTypeLookup itemTypeLookup, IItemQueryHelpers queryHelpers) : IPeopleRepository
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider = dbProvider;
 
@@ -54,10 +55,18 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                 .Where(p => !candidates.Any(other => other.Name.ToLower() == p.Name.ToLower() && other.Id < p.Id))
                 .OrderBy(e => e.Name.ToLower());
 
-            distinctNameCount = candidates.Select(e => e.Name.ToLower()).Distinct().Count();
+            if (filter.EnableTotalRecordCount)
+            {
+                distinctNameCount = candidates.Select(e => e.Name.ToLower()).Distinct().Count();
+            }
         }
 
-        var count = distinctNameCount ?? dbQuery.Count();
+        var count = 0;
+        if (filter.EnableTotalRecordCount)
+        {
+            count = distinctNameCount ?? dbQuery.Count();
+        }
+
         if (filter.StartIndex.HasValue && filter.StartIndex > 0)
         {
             dbQuery = dbQuery.Skip(filter.StartIndex.Value);
@@ -248,6 +257,14 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                 .Join(oldQuery, e => e.Item!.Name, e => e.Name, (item, person) => person)
                 .Distinct()
                 .AsNoTracking();
+        }
+
+        if (filter.AccessFilter is not null)
+        {
+            // Keep only people credited on at least one item the user can see.
+            var accessibleItems = queryHelpers.ApplyAccessFiltering(context, context.BaseItems.AsNoTracking(), filter.AccessFilter);
+            query = query.Where(e => context.PeopleBaseItemMap
+                .Any(m => m.PeopleId == e.Id && accessibleItems.Any(i => i.Id == m.ItemId)));
         }
 
         if (!filter.ItemId.IsEmpty())

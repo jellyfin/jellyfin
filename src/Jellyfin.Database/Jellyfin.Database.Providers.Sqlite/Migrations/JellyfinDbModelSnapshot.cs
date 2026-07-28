@@ -1060,11 +1060,11 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "PeopleId", "Role");
 
-                    b.HasIndex("PeopleId");
-
                     b.HasIndex("ItemId", "ListOrder");
 
                     b.HasIndex("ItemId", "SortOrder");
+
+                    b.HasIndex("PeopleId", "ItemId");
 
                     b.ToTable("PeopleBaseItemMap");
 
