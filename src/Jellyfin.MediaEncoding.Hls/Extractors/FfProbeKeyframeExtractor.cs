@@ -1,10 +1,12 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Emby.Naming.Common;
 using Jellyfin.Extensions;
 using Jellyfin.MediaEncoding.Keyframes;
-using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.MediaEncoding.FFProcessing;
+using MediaBrowser.Controller.MediaEncoding.FFProcessing.Requests;
 using Microsoft.Extensions.Logging;
 using Extractor = Jellyfin.MediaEncoding.Keyframes.FfProbe.FfProbeKeyframeExtractor;
 
@@ -13,19 +15,19 @@ namespace Jellyfin.MediaEncoding.Hls.Extractors;
 /// <inheritdoc />
 public class FfProbeKeyframeExtractor : IKeyframeExtractor
 {
-    private readonly IMediaEncoder _mediaEncoder;
+    private readonly IFFRunner _ffRunner;
     private readonly NamingOptions _namingOptions;
     private readonly ILogger<FfProbeKeyframeExtractor> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FfProbeKeyframeExtractor"/> class.
     /// </summary>
-    /// <param name="mediaEncoder">An instance of the <see cref="IMediaEncoder"/> interface.</param>
+    /// <param name="ffRunner">An instance of the <see cref="IFFRunner"/> interface.</param>
     /// <param name="namingOptions">An instance of <see cref="NamingOptions"/>.</param>
     /// <param name="logger">An instance of the <see cref="ILogger{FfprobeKeyframeExtractor}"/> interface.</param>
-    public FfProbeKeyframeExtractor(IMediaEncoder mediaEncoder, NamingOptions namingOptions, ILogger<FfProbeKeyframeExtractor> logger)
+    public FfProbeKeyframeExtractor(IFFRunner ffRunner, NamingOptions namingOptions, ILogger<FfProbeKeyframeExtractor> logger)
     {
-        _mediaEncoder = mediaEncoder;
+        _ffRunner = ffRunner;
         _namingOptions = namingOptions;
         _logger = logger;
     }
@@ -34,25 +36,53 @@ public class FfProbeKeyframeExtractor : IKeyframeExtractor
     public bool IsMetadataBased => false;
 
     /// <inheritdoc />
-    public bool TryExtractKeyframes(Guid itemId, string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData)
+    public async Task<KeyframeData?> ExtractKeyframesAsync(Guid itemId, string filePath, CancellationToken cancellationToken)
     {
         if (!_namingOptions.VideoFileExtensions.Contains(Path.GetExtension(filePath.AsSpan()), StringComparison.OrdinalIgnoreCase))
         {
-            keyframeData = null;
-            return false;
+            return null;
         }
+
+        KeyframeData? keyframeData = null;
 
         try
         {
-            keyframeData = Extractor.GetKeyframeData(_mediaEncoder.ProbePath, filePath);
-            return keyframeData.KeyframeTicks.Count > 0;
+            // The library owns the parsing; this layer only owns getting ffprobe to produce it.
+            var result = await _ffRunner.RunAsync(
+                new KeyframeScanRequest
+                {
+                    FilePath = filePath,
+                    Stdout = (stdout, _) =>
+                    {
+                        using var reader = new StreamReader(stdout);
+                        keyframeData = Extractor.ParseStream(reader);
+                        return Task.CompletedTask;
+                    }
+                },
+                cancellationToken).ConfigureAwait(false);
+
+            if (!result.Succeeded)
+            {
+                _logger.LogError(
+                    "Extracting keyframes from {FilePath} using ffprobe failed: {Stderr}",
+                    filePath,
+                    result.Stderr);
+
+                return null;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is not "this file has no keyframes"; letting it surface as null would
+            // cache that conclusion and hide why the scan stopped.
+            throw;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Extracting keyframes from {FilePath} using ffprobe failed", filePath);
+            return null;
         }
 
-        keyframeData = null;
-        return false;
+        return keyframeData?.KeyframeTicks.Count > 0 ? keyframeData : null;
     }
 }

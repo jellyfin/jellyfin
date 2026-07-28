@@ -50,7 +50,7 @@ public class KeyframeExtractionScheduledTask : IScheduledTask
     public string Category => _localizationManager.GetLocalizedString("TasksLibraryCategory");
 
     /// <inheritdoc />
-    public Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
+    public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
         var query = new InternalItemsQuery
         {
@@ -85,7 +85,7 @@ public class KeyframeExtractionScheduledTask : IScheduledTask
                     foreach (var extractor in _keyframeExtractors)
                     {
                         // The cache decorator will make sure to save the keyframes
-                        if (extractor.TryExtractKeyframes(video.Id, path, out _))
+                        if (await extractor.ExtractKeyframesAsync(video.Id, path, cancellationToken).ConfigureAwait(false) is not null)
                         {
                             break;
                         }
@@ -102,7 +102,6 @@ public class KeyframeExtractionScheduledTask : IScheduledTask
         }
 
         progress.Report(100);
-        return Task.CompletedTask;
     }
 
     /// <inheritdoc />

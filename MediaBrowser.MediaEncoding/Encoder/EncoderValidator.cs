@@ -4,12 +4,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.MediaEncoding.FFProcessing;
+using MediaBrowser.Controller.MediaEncoding.FFProcessing.Requests;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
@@ -193,12 +197,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private readonly string _encoderPath;
 
+        private readonly IFFRunner? _ffRunner;
+
         private readonly Version _minFFmpegMultiThreadedCli = new Version(7, 0);
 
-        public EncoderValidator(ILogger logger, string encoderPath)
+        public EncoderValidator(ILogger logger, string encoderPath, IFFRunner? ffRunner = null)
         {
             _logger = logger;
             _encoderPath = encoderPath;
+
+            // Null while validating a candidate path: nothing is committed to IFFPaths yet, so the
+            // runner cannot resolve a binary. Only ValidateVersion runs in that state.
+            _ffRunner = ffRunner;
         }
 
         private enum Codec
@@ -218,12 +228,35 @@ namespace MediaBrowser.MediaEncoding.Encoder
         [GeneratedRegex(@"((?<name>lib\w+)\s+(?<major>[0-9]+)\.\s*(?<minor>[0-9]+))", RegexOptions.Multiline)]
         private static partial Regex LibraryRegex();
 
-        public bool ValidateVersion()
+        public async Task<bool> ValidateVersionAsync()
         {
-            string output;
+            var output = string.Empty;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-version", false, null);
+                // Names its own binary: this runs to decide whether that path is usable, so there
+                // is nothing committed to IFFPaths for the runner to resolve.
+                var result = await _ffRunner!.RunAsync(
+                    new ValidateBinaryRequest
+                    {
+                        BinaryPath = _encoderPath,
+                        Stdout = async (stdout, ct) =>
+                        {
+                            using var reader = new StreamReader(stdout);
+                            output = await reader.ReadToEndAsync(ct).ConfigureAwait(false);
+                        }
+                    },
+                    CancellationToken.None).ConfigureAwait(false);
+
+                if (!result.Succeeded)
+                {
+                    _logger.LogError(
+                        "FFmpeg validation: {Path} did not report a version ({Reason}). {Stderr}",
+                        _encoderPath,
+                        result.StopReason,
+                        result.Stderr);
+
+                    return false;
+                }
             }
             catch (Exception ex)
             {
@@ -291,26 +324,42 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return true;
         }
 
-        public IEnumerable<string> GetDecoders() => GetCodecs(Codec.Decoder);
+        public Task<IEnumerable<string>> GetDecodersAsync() => GetCodecsAsync(Codec.Decoder);
 
-        public IEnumerable<string> GetEncoders() => GetCodecs(Codec.Encoder);
+        public Task<IEnumerable<string>> GetEncodersAsync() => GetCodecsAsync(Codec.Encoder);
 
-        public IEnumerable<string> GetHwaccels() => GetHwaccelTypes();
+        public Task<IEnumerable<string>> GetHwaccelsAsync() => GetHwaccelTypesAsync();
 
-        public IEnumerable<string> GetFilters() => GetFFmpegFilters();
+        public Task<IEnumerable<string>> GetFiltersAsync() => GetFFmpegFiltersAsync();
 
-        public IDictionary<FilterOptionType, bool> GetFiltersWithOption() => _filterOptionsDict
-            .ToDictionary(item => item.Key, item => CheckFilterWithOption(item.Value.Item1, item.Value.Item2));
+        public async Task<IDictionary<FilterOptionType, bool>> GetFiltersWithOptionAsync()
+        {
+            var results = new Dictionary<FilterOptionType, bool>();
+            foreach (var (key, (filter, option)) in _filterOptionsDict)
+            {
+                results[key] = await CheckFilterWithOptionAsync(filter, option).ConfigureAwait(false);
+            }
 
-        public IDictionary<BitStreamFilterOptionType, bool> GetBitStreamFiltersWithOption() => _bsfOptionsDict
-            .ToDictionary(item => item.Key, item => CheckBitStreamFilterWithOption(item.Value.Item1, item.Value.Item2));
+            return results;
+        }
 
-        public Version? GetFFmpegVersion()
+        public async Task<IDictionary<BitStreamFilterOptionType, bool>> GetBitStreamFiltersWithOptionAsync()
+        {
+            var results = new Dictionary<BitStreamFilterOptionType, bool>();
+            foreach (var (key, (filter, option)) in _bsfOptionsDict)
+            {
+                results[key] = await CheckBitStreamFilterWithOptionAsync(filter, option).ConfigureAwait(false);
+            }
+
+            return results;
+        }
+
+        public async Task<Version?> GetFFmpegVersionAsync()
         {
             string output;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-version", false, null);
+                output = await InterrogateAsync("-version", false).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -400,7 +449,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return map;
         }
 
-        public bool CheckVaapiDeviceByDriverName(string driverName, string renderNodePath)
+        public async Task<bool> CheckVaapiDeviceByDriverNameAsync(string driverName, string renderNodePath)
         {
             if (!OperatingSystem.IsLinux())
             {
@@ -414,7 +463,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             try
             {
-                var output = GetProcessOutput(_encoderPath, "-v verbose -hide_banner -init_hw_device vaapi=va:" + renderNodePath, true, null);
+                // Two things here are deliberate and easy to undo by accident.
+                //
+                // The explicit -v verbose overrides the level the runner would otherwise derive from
+                // the server's log level. The driver name is only printed while the device is being
+                // initialised, and at the default level of warning that line is never emitted, so the
+                // match below would fail on hardware that is in fact present.
+                //
+                // The answer is the log, not the exit code. There is no input or output file, so
+                // FFmpeg initialises the device and then exits non-zero with rc=234 about on a working
+                // node and on a missing one alike. Only the content distinguishes them, which is why
+                // this reads the output rather than calling InterrogationSucceeds.
+                var output = await InterrogateAsync("-v verbose -init_hw_device vaapi=va:" + renderNodePath, true).ConfigureAwait(false);
                 return output.Contains(driverName, StringComparison.Ordinal);
             }
             catch (Exception ex)
@@ -424,7 +484,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
-        public bool CheckVulkanDrmDeviceByExtensionName(string renderNodePath, string[] vulkanExtensions)
+        public async Task<bool> CheckVulkanDrmDeviceByExtensionNameAsync(string renderNodePath, string[] vulkanExtensions)
         {
             if (!OperatingSystem.IsLinux())
             {
@@ -438,8 +498,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             try
             {
-                var command = "-v verbose -hide_banner -init_hw_device drm=dr:" + renderNodePath + " -init_hw_device vulkan=vk@dr";
-                var output = GetProcessOutput(_encoderPath, command, true, null);
+                // Same two properties as the vaapi check above: -v verbose is required for the device
+                // log to be emitted at all, and the verdict comes from that log rather than from the
+                // exit code, which is non-zero either way for want of an output file.
+                //
+                // The devices are chained. "drm=dr:<node>" opens the render node under the alias dr,
+                // then "vulkan=vk@dr" derives a Vulkan device *from* that one — the @ is what makes
+                // this test the Vulkan driver backing this specific node instead of whichever device
+                // the loader would have picked on its own.
+                var command = "-v verbose -init_hw_device drm=dr:" + renderNodePath + " -init_hw_device vulkan=vk@dr";
+                var output = await InterrogateAsync(command, true).ConfigureAwait(false);
+
+                // Every extension must be present; the caller asks about a set it needs in full.
                 foreach (string ext in vulkanExtensions)
                 {
                     if (!output.Contains(ext, StringComparison.Ordinal))
@@ -463,12 +533,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return ApplePlatformHelper.HasAv1HardwareAccel(_logger);
         }
 
-        private IEnumerable<string> GetHwaccelTypes()
+        private async Task<IEnumerable<string>> GetHwaccelTypesAsync()
         {
             string? output = null;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-hwaccels", false, null);
+                output = await InterrogateAsync("-hwaccels", false).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -486,7 +556,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return found;
         }
 
-        public bool CheckFilterWithOption(string filter, string option)
+        public async Task<bool> CheckFilterWithOptionAsync(string filter, string option)
         {
             if (string.IsNullOrEmpty(filter) || string.IsNullOrEmpty(option))
             {
@@ -496,7 +566,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string output;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-h filter=" + filter, false, null);
+                output = await InterrogateAsync("-h filter=" + filter, false).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -504,6 +574,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return false;
             }
 
+            // Two questions, in order. "-h filter=x" prints help for a filter it knows and a bare
+            // "Unknown filter" line for one it does not, so the header confirms the filter exists
+            // before the option is looked for in its parameter list. Without that first check a
+            // missing filter and a present filter lacking the option are the same answer, and the
+            // warning below would name the wrong problem.
             if (output.Contains("Filter " + filter, StringComparison.Ordinal))
             {
                 return output.Contains(option, StringComparison.Ordinal);
@@ -514,7 +589,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return false;
         }
 
-        public bool CheckBitStreamFilterWithOption(string filter, string option)
+        public async Task<bool> CheckBitStreamFilterWithOptionAsync(string filter, string option)
         {
             if (string.IsNullOrEmpty(filter) || string.IsNullOrEmpty(option))
             {
@@ -524,7 +599,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string output;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-h bsf=" + filter, false, null);
+                output = await InterrogateAsync("-h bsf=" + filter, false).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -532,6 +607,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return false;
             }
 
+            // Same two-stage shape as CheckFilterWithOptionAsync, against "-h bsf=" and the header
+            // FFmpeg prints for a bit stream filter.
             if (output.Contains("Bit stream filter " + filter, StringComparison.Ordinal))
             {
                 return output.Contains(option, StringComparison.Ordinal);
@@ -542,7 +619,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return false;
         }
 
-        public bool CheckSupportedRuntimeKey(string keyDesc, Version? ffmpegVersion)
+        public async Task<bool> CheckSupportedRuntimeKeyAsync(string keyDesc, Version? ffmpegVersion)
         {
             if (string.IsNullOrEmpty(keyDesc))
             {
@@ -552,9 +629,26 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string output;
             try
             {
-                // With multi-threaded cli support, FFmpeg 7 is less sensitive to keyboard input
+                // Asks FFmpeg which keys it will respond to while running, by giving it something to
+                // do and then interrupting it: the runner writes RuntimeKeyProbeRequest.QueryKey ("?")
+                // to stdin, and FFmpeg answers with its key list on stderr.
+                //
+                // The work is a 1x1 null source encoded to nothing, so the run costs nothing while it
+                // lasts. The duration only has to outlive the write — the process is torn down as soon
+                // as the answer is in hand, never actually running for the hours nominated here.
                 var duration = ffmpegVersion >= _minFFmpegMultiThreadedCli ? 10000 : 1000;
-                output = GetProcessOutput(_encoderPath, $"-hide_banner -f lavfi -i nullsrc=s=1x1:d={duration} -f null -", true, "?");
+                var runtime = await _ffRunner!.RunAsync(
+                    new RuntimeKeyProbeRequest
+                    {
+                        Arguments = $"-f lavfi -i nullsrc=s=1x1:d={duration} -f null -",
+
+                        // Complete, not a trailing window: the key list is printed when the query is
+                        // answered and is then followed by ordinary encoding progress, so a window
+                        // sized for diagnosing a failure would scroll the answer away.
+                        Stderr = FFOutputSink.Complete()
+                    },
+                    CancellationToken.None).ConfigureAwait(false);
+                output = runtime.Stderr;
             }
             catch (Exception ex)
             {
@@ -565,23 +659,47 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return output.Contains(keyDesc, StringComparison.Ordinal);
         }
 
-        public bool CheckSupportedHwaccelFlag(string flag)
+        /// <summary>
+        /// Tests whether the encoder accepts a given <c>-hwaccel_flags</c> value, by asking it to do
+        /// trivial work with that flag set and seeing whether it agrees to start.
+        /// </summary>
+        /// <remarks>
+        /// Unlike the device checks above, the verdict here is the exit code and the output is
+        /// discarded: FFmpeg rejects an unknown flag while parsing options, before it does anything.
+        /// Measured against jellyfin-ffmpeg 7.1.4, a known flag exits 0 and an unknown one exits 234.
+        /// </remarks>
+        /// <param name="flag">The <c>-hwaccel_flags</c> value to test, without its leading <c>+</c>.</param>
+        /// <returns><c>true</c> if the encoder accepts the flag; otherwise, <c>false</c>.</returns>
+        public async Task<bool> CheckSupportedHwaccelFlagAsync(string flag)
         {
-            return !string.IsNullOrEmpty(flag) && GetProcessExitCode(_encoderPath, $"-loglevel quiet -hwaccel_flags +{flag} -hide_banner -f lavfi -i nullsrc=s=1x1:d=100 -f null -");
+            return !string.IsNullOrEmpty(flag)
+                && await InterrogationSucceedsAsync($"-hwaccel_flags +{flag} -f lavfi -i nullsrc=s=1x1:d=100 -f null -").ConfigureAwait(false);
         }
 
-        public bool CheckSupportedProberOption(string option, string proberPath)
+        /// <summary>
+        /// Tests whether ffprobe — not ffmpeg, hence <c>probeOnly</c> — recognises an option, so that
+        /// options absent from some builds are only ever passed to a prober that accepts them.
+        /// </summary>
+        /// <remarks>
+        /// Also decided by exit code. The option is named with no value against a 1x1 null source: a
+        /// recognised option exits 0 and an unrecognised one exits 1, since ffprobe fails on the
+        /// option itself long before the source matters.
+        /// </remarks>
+        /// <param name="option">The option name to test, without its leading <c>-</c>.</param>
+        /// <returns><c>true</c> if the prober recognises the option; otherwise, <c>false</c>.</returns>
+        public async Task<bool> CheckSupportedProberOptionAsync(string option)
         {
-            return !string.IsNullOrEmpty(option) && GetProcessExitCode(proberPath, $"-loglevel quiet -f lavfi -i nullsrc=s=1x1:d=1 -{option}");
+            return !string.IsNullOrEmpty(option)
+                && await InterrogationSucceedsAsync($"-f lavfi -i nullsrc=s=1x1:d=1 -{option}", probeOnly: true).ConfigureAwait(false);
         }
 
-        private IEnumerable<string> GetCodecs(Codec codec)
+        private async Task<IEnumerable<string>> GetCodecsAsync(Codec codec)
         {
             string codecstr = codec == Codec.Encoder ? "encoders" : "decoders";
             string output;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-" + codecstr, false, null);
+                output = await InterrogateAsync("-" + codecstr, false).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -606,12 +724,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return found;
         }
 
-        private IEnumerable<string> GetFFmpegFilters()
+        private async Task<IEnumerable<string>> GetFFmpegFiltersAsync()
         {
             string output;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-filters", false, null);
+                output = await InterrogateAsync("-filters", false).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -634,70 +752,49 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return found;
         }
 
-        private string GetProcessOutput(string path, string arguments, bool readStdErr, string? testKey)
+        /// <summary>
+        /// Runs an interrogation through the shared runner and returns the stream the caller reads.
+        /// Retains all stderr: these probes answer questions by scraping their own output, so a
+        /// truncated middle would silently change the answer.
+        /// </summary>
+        private async Task<string> InterrogateAsync(string arguments, bool readStdErr, bool probeOnly = false)
         {
-            var redirectStandardIn = !string.IsNullOrEmpty(testKey);
-            using (var process = new Process
+            var request = new CapabilitiesRequest
             {
-                StartInfo = new ProcessStartInfo(path, arguments)
-                {
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    ErrorDialog = false,
-                    RedirectStandardInput = redirectStandardIn,
-                    StandardOutputEncoding = Encoding.UTF8,
-                    RedirectStandardOutput = true,
-                    StandardErrorEncoding = Encoding.UTF8,
-                    RedirectStandardError = true
-                }
-            })
+                Arguments = arguments,
+                ProbeOnly = probeOnly,
+                Stderr = FFOutputSink.Complete()
+            };
+
+            if (readStdErr)
             {
-                _logger.LogDebug("Running {Path} {Arguments}", path, arguments);
-
-                process.Start();
-
-                if (redirectStandardIn)
-                {
-                    using var writer = process.StandardInput;
-                    writer.Write(testKey);
-                }
-
-                // Drain both streams concurrently to prevent pipe hanging, see #17429
-                using var standardOutput = process.StandardOutput;
-                using var standardError = process.StandardError;
-                var standardOutputTask = standardOutput.ReadToEndAsync();
-                var standardErrorTask = standardError.ReadToEndAsync();
-                process.WaitForExit();
-                Task.WaitAll(standardOutputTask, standardErrorTask);
-
-                return (readStdErr ? standardErrorTask : standardOutputTask).GetAwaiter().GetResult();
+                var stderrResult = await _ffRunner!.RunAsync(request, CancellationToken.None).ConfigureAwait(false);
+                return stderrResult.Stderr;
             }
+
+            var output = string.Empty;
+            await _ffRunner!.RunAsync(
+                request with
+                {
+                    Stdout = async (stdout, ct) =>
+                    {
+                        using var reader = new StreamReader(stdout);
+                        output = await reader.ReadToEndAsync(ct).ConfigureAwait(false);
+                    }
+                },
+                CancellationToken.None).ConfigureAwait(false);
+
+            return output;
         }
 
-        private bool GetProcessExitCode(string path, string arguments)
+        /// <summary>Runs an interrogation whose answer is only whether FFmpeg accepted it.</summary>
+        private async Task<bool> InterrogationSucceedsAsync(string arguments, bool probeOnly = false)
         {
-            using var process = new Process();
-            process.StartInfo = new ProcessStartInfo(path, arguments)
-            {
-                CreateNoWindow = true,
-                UseShellExecute = false,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                ErrorDialog = false
-            };
-            _logger.LogDebug("Running {Path} {Arguments}", path, arguments);
+            var result = await _ffRunner!.RunAsync(
+                new CapabilitiesRequest { Arguments = arguments, ProbeOnly = probeOnly },
+                CancellationToken.None).ConfigureAwait(false);
 
-            try
-            {
-                process.Start();
-                process.WaitForExit();
-                return process.ExitCode == 0;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Running {Path} {Arguments} failed with exception {Exception}", path, arguments, ex.Message);
-                return false;
-            }
+            return result.Succeeded;
         }
 
         [GeneratedRegex("^\\s\\S{6}\\s(?<codec>[\\w|-]+)\\s+.+$", RegexOptions.Multiline)]

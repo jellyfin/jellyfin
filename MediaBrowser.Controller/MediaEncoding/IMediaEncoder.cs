@@ -243,7 +243,19 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Sets the path to find FFmpeg.
         /// </summary>
         /// <returns>bool indicates whether a valid ffmpeg is found.</returns>
-        bool SetFFmpegPath();
+        Task<bool> SetFFmpegPathAsync();
+
+        /// <summary>
+        /// Run at startup to validate ffmpeg.
+        /// </summary>
+        /// <returns><c>true</c> if a valid ffmpeg is found.</returns>
+        /// <remarks>
+        /// Blocks the calling thread until validation completes. Retained so existing callers keep
+        /// working; the cost is bounded because this runs once at startup and the capability
+        /// interrogations take a couple of seconds, but prefer <see cref="SetFFmpegPathAsync"/>.
+        /// </remarks>
+        [Obsolete("Blocks the calling thread. Use SetFFmpegPathAsync instead.")]
+        bool SetFFmpegPath() => SetFFmpegPathAsync().GetAwaiter().GetResult();
 
         /// <summary>
         /// Gets the primary playlist of .vob files.

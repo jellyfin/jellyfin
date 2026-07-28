@@ -5,6 +5,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.MediaEncoding.Hls.Extractors;
 using Jellyfin.MediaEncoding.Keyframes;
 using MediaBrowser.Common.Configuration;
@@ -31,13 +33,13 @@ public class DynamicHlsPlaylistGenerator : IDynamicHlsPlaylistGenerator
     }
 
     /// <inheritdoc />
-    public string CreateMainPlaylist(CreateMainPlaylistRequest request)
+    public async Task<string> CreateMainPlaylistAsync(CreateMainPlaylistRequest request, CancellationToken cancellationToken)
     {
         IReadOnlyList<double> segments;
         // For video transcodes it is sufficient with equal length segments as ffmpeg will create new keyframes
         if (request.IsRemuxingVideo
             && request.MediaSourceId is not null
-            && TryExtractKeyframes(request.MediaSourceId.Value, request.FilePath, out var keyframeData))
+            && await ExtractKeyframesAsync(request.MediaSourceId.Value, request.FilePath, cancellationToken).ConfigureAwait(false) is { } keyframeData)
         {
             segments = ComputeSegments(keyframeData, request.DesiredSegmentLengthMs);
         }
@@ -106,28 +108,23 @@ public class DynamicHlsPlaylistGenerator : IDynamicHlsPlaylistGenerator
         return builder.ToString();
     }
 
-    private bool TryExtractKeyframes(Guid itemId, string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData)
+    private async Task<KeyframeData?> ExtractKeyframesAsync(Guid itemId, string filePath, CancellationToken cancellationToken)
     {
-        keyframeData = null;
         if (!IsExtractionAllowedForFile(filePath, _serverConfigurationManager.GetEncodingOptions().AllowOnDemandMetadataBasedKeyframeExtractionForExtensions))
         {
-            return false;
+            return null;
         }
 
-        var len = _extractors.Length;
-        for (var i = 0; i < len; i++)
+        foreach (var extractor in _extractors)
         {
-            var extractor = _extractors[i];
-            if (!extractor.TryExtractKeyframes(itemId, filePath, out var result))
+            var result = await extractor.ExtractKeyframesAsync(itemId, filePath, cancellationToken).ConfigureAwait(false);
+            if (result is not null)
             {
-                continue;
+                return result;
             }
-
-            keyframeData = result;
-            return true;
         }
 
-        return false;
+        return null;
     }
 
     internal static bool IsExtractionAllowedForFile(ReadOnlySpan<char> filePath, IReadOnlyList<string> allowedExtensions)

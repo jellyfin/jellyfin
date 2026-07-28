@@ -157,6 +157,28 @@ This repository also includes unit tests that are used to validate functionality
 2. Run tests in Visual Studio using the [Test Explorer](https://docs.microsoft.com/en-us/visualstudio/test/run-unit-tests-with-test-explorer)
 3. Run individual tests in Visual Studio Code using the associated [CodeLens annotation](https://github.com/OmniSharp/omnisharp-vscode/wiki/How-to-run-and-debug-unit-tests)
 
+#### Tests Requiring FFmpeg
+
+A few tests run a real FFmpeg to check that the arguments the server generates are actually
+accepted, rather than merely well-formed. They need an FFmpeg binary, so they are marked
+`Explicit` and none of the commands above will run them.
+
+Run them with xUnit's `-explicit` switch, which only the in-process runner understands — it is a
+single dash, and `dotnet test` does not accept it:
+
+```bash
+dotnet run --project tests/Jellyfin.MediaEncoding.Tests -- -explicit only  # just these tests
+dotnet run --project tests/Jellyfin.MediaEncoding.Tests -- -explicit on    # these plus the rest
+```
+
+The binary is taken from `JELLYFIN_ffmpeg`, the same environment variable the server itself
+honours and the one `--ffmpeg` sets, falling back to `/usr/share/jellyfin-ffmpeg/ffmpeg`. FFprobe
+is not configured separately; it is derived from that path exactly as the server derives it. If no
+binary is found the tests fail rather than skip.
+
+Any media these tests need is synthesised at runtime with FFmpeg's `lavfi` sources into a
+temporary directory and deleted afterwards.
+
 ### Advanced Configuration
 
 The following sections describe some more advanced scenarios for running the server from source that build upon the standard instructions above.

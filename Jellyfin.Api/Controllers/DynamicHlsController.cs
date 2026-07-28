@@ -1420,7 +1420,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             "hls1/main/",
             Request.QueryString.ToString(),
             EncodingHelper.IsCopyCodec(state.OutputVideoCodec));
-        var playlist = _dynamicHlsPlaylistGenerator.CreateMainPlaylist(request);
+        var playlist = await _dynamicHlsPlaylistGenerator.CreateMainPlaylistAsync(request, cancellationTokenSource.Token).ConfigureAwait(false);
 
         return new FileContentResult(Encoding.UTF8.GetBytes(playlist), MimeTypes.GetMimeType("playlist.m3u8"));
     }
@@ -1633,9 +1633,34 @@ public class DynamicHlsController : BaseJellyfinApiController
                 Path.GetFileNameWithoutExtension(outputPath));
         }
 
+        // Assembled in FFmpeg's required order: input options, the input, then everything describing
+        // the output. Reading the placeholders left to right —
+        //
+        //   {0} {1}            input options and the input itself, which must precede everything else
+        //   -map_metadata -1   drop the source's container metadata and chapters rather than copying
+        //   -map_chapters -1     them into every segment; the client has them from the API already
+        //   -threads {2}       encoder thread count
+        //   {3} {4} {5}        stream selection, then the video and audio encoding decisions
+        //   -copyts            keep the source's timestamps instead of rebasing them to zero, and
+        //   -avoid_negative_ts   suppress the shift FFmpeg would otherwise apply to avoid negatives
+        //     disabled
+        //   -max_muxing_queue_size {6}
+        //   -f hls             the HLS muxer; everything below configures it
+        //   -max_delay 5000000 500ms of muxer reordering slack, in microseconds
+        //   -hls_time {7}      target segment duration
+        //   -hls_segment_type {8}          mpegts or fmp4, plus the fmp4 header filename
+        //   -start_number {9}  the segment index this process begins at
+        //   {10}               -hls_base_url, event playlists only
+        //   -hls_segment_filename "{11}"   the numbered segment pattern
+        //   {12}               playlist type, list size, and the fmp4 discontinuity flag
+        //   "{13}"             the .m3u8 playlist, which is what the runner waits to appear
+        //
+        // Seeking restarts FFmpeg at an arbitrary -start_number rather than from the beginning, so a
+        // restarted process has to land segment N on the same point in the source timeline the
+        // original would have.
         return string.Format(
             CultureInfo.InvariantCulture,
-            "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -hls_segment_type {8} -start_number {9}{10} -hls_segment_filename \"{11}\" {12} -y \"{13}\"",
+            "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -hls_segment_type {8} -start_number {9}{10} -hls_segment_filename \"{11}\" {12} \"{13}\"",
             inputModifier,
             _encodingHelper.GetInputArgument(state, _encodingOptions, segmentContainer),
             threads,

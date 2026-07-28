@@ -7663,9 +7663,23 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var inputModifier = GetInputModifier(state, encodingOptions, null);
 
+            // One continuous file rather than segments, so there is no muxer configuration block —
+            // the shape is input, mapping, encoding decisions, output. Left to right:
+            //
+            //   {0} {1}            input options and the input, which must precede everything else
+            //   {2}                keyframe placement, only when the container needs it
+            //   {3}                stream selection
+            //   {4}                video encoding decisions
+            //   -map_metadata -1   drop the source's container metadata and chapters; the client has
+            //   -map_chapters -1     them from the API already
+            //   -threads {5}       encoder thread count
+            //   {6}                audio encoding decisions
+            //   {7}                burned-in or embedded subtitles
+            //   {8}                the fragmented-mp4 muxer flags set above, when the output is mp4
+            //   "{9}"              the output file, which is what the runner waits to appear
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "{0} {1}{2} {3} {4} -map_metadata -1 -map_chapters -1 -threads {5} {6}{7}{8} -y \"{9}\"",
+                "{0} {1}{2} {3} {4} -map_metadata -1 -map_chapters -1 -threads {5} {6}{7}{8} \"{9}\"",
                 inputModifier,
                 GetInputArgument(state, encodingOptions, null),
                 keyFrame,
@@ -7907,18 +7921,23 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var inputModifier = GetInputModifier(state, encodingOptions, null);
 
+            // Audio only, so there is no mapping or video block at all. Left to right as it renders:
+            //
+            //   {0} {1}            input options and the input, which must precede everything else
+            //   -threads {2}       decoder thread count
+            //   -vn                drop any video stream the source carries
+            //   {3}                the audio encoding decisions built above
+            //   -id3v2_version 3   write ID3v2.3 rather than the 2.4 FFmpeg defaults to, and add an
+            //   -write_id3v1 1     ID3v1 tag as well, for players that read neither of the others
+            //   "{4}"              the output file, which is what the runner waits to appear
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "{0} {1}{7}{8} -threads {2}{3} {4} -id3v2_version 3 -write_id3v1 1{6} -y \"{5}\"",
+                "{0} {1} -threads {2} -vn {3} -id3v2_version 3 -write_id3v1 1 \"{4}\"",
                 inputModifier,
                 GetInputArgument(state, encodingOptions, null),
                 threads,
-                " -vn",
                 string.Join(' ', audioTranscodeParams),
-                outputPath,
-                string.Empty,
-                string.Empty,
-                string.Empty).Trim();
+                outputPath).Trim();
         }
 
         public static int FindIndex(IReadOnlyList<MediaStream> mediaStreams, MediaStream streamToFind)
