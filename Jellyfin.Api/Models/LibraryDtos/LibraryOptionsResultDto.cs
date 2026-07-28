@@ -19,6 +19,11 @@ public class LibraryOptionsResultDto
     public IReadOnlyList<LibraryOptionInfoDto> MetadataReaders { get; set; } = Array.Empty<LibraryOptionInfoDto>();
 
     /// <summary>
+    /// Gets or sets the local image providers.
+    /// </summary>
+    public IReadOnlyList<LibraryOptionInfoDto> LocalImageProviders { get; set; } = Array.Empty<LibraryOptionInfoDto>();
+
+    /// <summary>
     /// Gets or sets the subtitle fetchers.
     /// </summary>
     public IReadOnlyList<LibraryOptionInfoDto> SubtitleFetchers { get; set; } = Array.Empty<LibraryOptionInfoDto>();

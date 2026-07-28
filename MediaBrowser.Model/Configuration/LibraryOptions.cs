@@ -18,6 +18,7 @@ namespace MediaBrowser.Model.Configuration
             MediaSegmentProviderOrder = Array.Empty<string>();
             SubtitleFetcherOrder = Array.Empty<string>();
             DisabledLocalMetadataReaders = Array.Empty<string>();
+            DisabledLocalImageProviders = Array.Empty<string>();
             DisabledLyricFetchers = Array.Empty<string>();
             LyricFetcherOrder = Array.Empty<string>();
 
@@ -92,6 +93,16 @@ namespace MediaBrowser.Model.Configuration
         public string[] DisabledLocalMetadataReaders { get; set; }
 
         public string[]? LocalMetadataReaderOrder { get; set; }
+
+        /// <summary>
+        /// Gets or sets the names of local image providers that are disabled for this library.
+        /// </summary>
+        /// <remarks>
+        /// Empty by default, which preserves the historical behaviour of always applying every
+        /// local image provider. Note that "Internal Images" reads the internal metadata folder,
+        /// which is where artwork uploaded through the API or the web client is stored.
+        /// </remarks>
+        public string[] DisabledLocalImageProviders { get; set; }
 
         public string[] DisabledSubtitleFetchers { get; set; }
 
