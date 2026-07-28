@@ -271,16 +271,6 @@ namespace MediaBrowser.Providers.Subtitles
                             return;
                         }
 
-                        var fileExists = false;
-                        var counter = 0;
-
-                        while (fileExists)
-                        {
-                            path = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}", savePath, counter, extension);
-                            fileExists = File.Exists(path);
-                            counter++;
-                        }
-
                         _logger.LogInformation("Saving subtitles to {SavePath}", path);
                         _monitor.ReportFileSystemChangeBeginning(path);
 
