@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
 using Jellyfin.Data;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common;
@@ -346,7 +347,16 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         {
             var audioCodec = state.ActualOutputAudioCodec;
             var videoCodec = state.ActualOutputVideoCodec;
-            var hardwareAccelerationType = _serverConfigurationManager.GetEncodingOptions().HardwareAccelerationType;
+            var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
+            var hardwareAccelerationType = encodingOptions.HardwareAccelerationType;
+
+            // A copy keeps the source range; a re-encode is tone mapped to SDR unless passthrough
+            // carries it through.
+            var keepsSourceRange = EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
+                                   || _encodingHelper.IsHdrPassthroughAvailable(state, encodingOptions);
+            var outputRangeType = keepsSourceRange
+                ? state.VideoStream?.VideoRangeType ?? VideoRangeType.Unknown
+                : VideoRangeType.SDR;
 
             _sessionManager.ReportTranscodingInfo(deviceId, new TranscodingInfo
             {
@@ -354,6 +364,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
                 AudioCodec = audioCodec,
                 VideoCodec = videoCodec,
                 Container = state.OutputContainer,
+                VideoRangeType = outputRangeType,
                 Framerate = framerate,
                 CompletionPercentage = percentComplete,
                 Width = state.OutputWidth,

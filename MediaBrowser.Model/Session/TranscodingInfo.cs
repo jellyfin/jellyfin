@@ -1,5 +1,6 @@
 #nullable disable
 
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Session;
@@ -23,6 +24,12 @@ public class TranscodingInfo
     /// Gets or sets the thread count used for encoding.
     /// </summary>
     public string Container { get; set; }
+
+    /// <summary>
+    /// Gets or sets the video range type of the output, which is not necessarily that of the
+    /// source: HDR is tone mapped to SDR unless passthrough is carrying it.
+    /// </summary>
+    public VideoRangeType VideoRangeType { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the video is passed through.
