@@ -468,18 +468,18 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            TryGetSanitizedAdditionalFields(track, "REPLAYGAIN_ALBUM_GAIN", out var trackAlbumGainTag);
-
-            if (trackAlbumGainTag is not null)
+            if (audio.AlbumEntity is not null && !audio.AlbumEntity.NormalizationGain.HasValue)
             {
-                if (trackAlbumGainTag.EndsWith("db", StringComparison.OrdinalIgnoreCase))
-                {
-                    trackAlbumGainTag = trackAlbumGainTag[..^2].Trim();
-                }
+                TryGetSanitizedAdditionalFields(track, "REPLAYGAIN_ALBUM_GAIN", out var trackAlbumGainTag);
 
-                if (float.TryParse(trackAlbumGainTag, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) && float.IsFinite(value))
+                if (trackAlbumGainTag is not null)
                 {
-                    if (audio.AlbumEntity is not null && !audio.AlbumEntity.NormalizationGain.HasValue)
+                    if (trackAlbumGainTag.EndsWith("db", StringComparison.OrdinalIgnoreCase))
+                    {
+                        trackAlbumGainTag = trackAlbumGainTag[..^2].Trim();
+                    }
+
+                    if (float.TryParse(trackAlbumGainTag, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) && float.IsFinite(value))
                     {
                         audio.AlbumEntity.NormalizationGain = value;
                     }
