@@ -448,7 +448,12 @@ namespace Jellyfin.LiveTv
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
             var channels = await GetChannelsAsync(true, cancellationToken).ConfigureAwait(false);
-            var channel = channels.First(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
+            var channel = channels.FirstOrDefault(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
+            if (channel is null)
+            {
+                _logger.LogDebug("No channel found matching id {ChannelId}; returning no programs", channelId);
+                return [];
+            }
 
             return await _listingsManager.GetProgramsAsync(channel, startDateUtc, endDateUtc, cancellationToken)
                 .ConfigureAwait(false);
