@@ -503,7 +503,7 @@ public sealed partial class BaseItemRepository
     }
 
     /// <inheritdoc />
-    public IQueryable<Guid> GetFullyPlayedFolderIdsQuery(JellyfinDbContext context, IQueryable<Guid> folderIds, User user)
+    public IQueryable<Guid> GetFoldersWithUnplayedItemsQuery(JellyfinDbContext context, IQueryable<Guid> folderIds, User user)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(folderIds);
@@ -517,24 +517,27 @@ public sealed partial class BaseItemRepository
             .Where(b => !b.IsFolder && !b.IsVirtualItem);
         leafItems = ApplyAccessFiltering(context, leafItems, filter);
 
-        var playedLeafItems = leafItems
-            .Select(b => new { b.Id, Played = b.UserData!.Any(ud => ud.UserId == userId && ud.Played) });
+        // Only unplayed leaves are joined, so each branch is a semi-join per folder instead of a
+        // played-vs-total count per folder. Folders with no leaves at all simply never match.
+        var unplayedLeafItems = leafItems
+            .Where(b => !b.UserData!.Any(ud => ud.UserId == userId && ud.Played))
+            .Select(b => new { b.Id });
 
         var ancestorLeaves = context.AncestorIds
             .Where(a => folderIds.Contains(a.ParentItemId))
             .Join(
-                playedLeafItems,
+                unplayedLeafItems,
                 a => a.ItemId,
                 b => b.Id,
-                (a, b) => new { FolderId = a.ParentItemId, b.Id, b.Played });
+                (a, b) => a.ParentItemId);
 
         var linkedLeaves = context.LinkedChildren
             .Where(lc => folderIds.Contains(lc.ParentId))
             .Join(
-                playedLeafItems,
+                unplayedLeafItems,
                 lc => lc.ChildId,
                 b => b.Id,
-                (lc, b) => new { FolderId = lc.ParentId, b.Id, b.Played });
+                (lc, b) => lc.ParentId);
 
         var linkedFolderLeaves = context.LinkedChildren
             .Where(lc => folderIds.Contains(lc.ParentId))
@@ -549,16 +552,13 @@ public sealed partial class BaseItemRepository
                 a => a.ParentItemId,
                 (x, a) => new { x.ParentId, DescendantId = a.ItemId })
             .Join(
-                playedLeafItems,
+                unplayedLeafItems,
                 x => x.DescendantId,
                 b => b.Id,
-                (x, b) => new { FolderId = x.ParentId, b.Id, b.Played });
+                (x, b) => x.ParentId);
 
         return ancestorLeaves
             .Union(linkedLeaves)
-            .Union(linkedFolderLeaves)
-            .GroupBy(x => x.FolderId)
-            .Where(g => g.Select(x => x.Id).Distinct().Count() == g.Where(x => x.Played).Select(x => x.Id).Distinct().Count())
-            .Select(g => g.Key);
+            .Union(linkedFolderLeaves);
     }
 }

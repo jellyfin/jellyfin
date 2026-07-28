@@ -476,19 +476,14 @@ public sealed partial class BaseItemRepository
                 var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
                 var boxSetTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.BoxSet];
 
-                // Series: played = at least one episode AND all episodes played; unplayed = otherwise.
-                IQueryable<Guid> playedSeriesIds = hasSeries
-                    ? context.BaseItems
-                        .AsNoTracking()
-                        .Where(e => !e.IsFolder && !e.IsVirtualItem && e.SeriesId.HasValue)
-                        .GroupBy(e => e.SeriesId!.Value)
-                        .Where(g => !g.Any(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played)))
-                        .Select(g => g.Key)
-                    : Enumerable.Empty<Guid>().AsQueryable();
+                // Series and BoxSets are matched by absence of an unplayed descendant rather than by
+                // "all descendants played".
+                var seriesEpisodes = context.BaseItems
+                    .AsNoTracking()
+                    .Where(e => !e.IsFolder && !e.IsVirtualItem);
 
-                // BoxSet: played = all children played.
-                IQueryable<Guid> playedBoxSetIds = hasBoxSet
-                    ? GetFullyPlayedFolderIdsQuery(
+                IQueryable<Guid> unplayedBoxSetIds = hasBoxSet
+                    ? GetFoldersWithUnplayedItemsQuery(
                         context,
                         baseQuery.Where(e => e.Type == boxSetTypeName).Select(e => e.Id),
                         filter.User!)
@@ -502,15 +497,17 @@ public sealed partial class BaseItemRepository
                 if (isPlayed)
                 {
                     baseQuery = baseQuery.Where(e =>
-                        (e.Type == seriesTypeName && playedSeriesIds.Contains(e.Id))
-                        || (e.Type == boxSetTypeName && playedBoxSetIds.Contains(e.Id))
+                        (e.Type == seriesTypeName && !seriesEpisodes.Any(ep => ep.SeriesId == e.Id
+                            && !ep.UserData!.Any(ud => ud.UserId == userId && ud.Played)))
+                        || (e.Type == boxSetTypeName && !unplayedBoxSetIds.Contains(e.Id))
                         || (e.Type != seriesTypeName && e.Type != boxSetTypeName && playedItemIds.Contains(e.Id)));
                 }
                 else
                 {
                     baseQuery = baseQuery.Where(e =>
-                        (e.Type == seriesTypeName && !playedSeriesIds.Contains(e.Id))
-                        || (e.Type == boxSetTypeName && !playedBoxSetIds.Contains(e.Id))
+                        (e.Type == seriesTypeName && seriesEpisodes.Any(ep => ep.SeriesId == e.Id
+                            && !ep.UserData!.Any(ud => ud.UserId == userId && ud.Played)))
+                        || (e.Type == boxSetTypeName && unplayedBoxSetIds.Contains(e.Id))
                         || (e.Type != seriesTypeName && e.Type != boxSetTypeName && !playedItemIds.Contains(e.Id)));
                 }
             }

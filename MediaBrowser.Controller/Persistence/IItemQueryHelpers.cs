@@ -79,14 +79,14 @@ public interface IItemQueryHelpers
         Guid ancestorId);
 
     /// <summary>
-    /// Builds an <see cref="IQueryable{Guid}"/> of folder IDs whose descendants are all played
-    /// for the given user. Composable into outer queries to avoid an extra DB roundtrip.
+    /// Builds an <see cref="IQueryable{Guid}"/> of folder IDs that have at least one unplayed
+    /// descendant for the given user. Composable into outer queries to avoid an extra DB roundtrip.
     /// </summary>
     /// <param name="context">The database context the resulting query is bound to.</param>
     /// <param name="folderIds">A query yielding candidate folder IDs.</param>
     /// <param name="user">The user for access filtering and played status.</param>
-    /// <returns>An <see cref="IQueryable{Guid}"/> of fully-played folder IDs.</returns>
-    IQueryable<Guid> GetFullyPlayedFolderIdsQuery(
+    /// <returns>An <see cref="IQueryable{Guid}"/> of folder IDs with unplayed descendants.</returns>
+    IQueryable<Guid> GetFoldersWithUnplayedItemsQuery(
         JellyfinDbContext context,
         IQueryable<Guid> folderIds,
         User user);
