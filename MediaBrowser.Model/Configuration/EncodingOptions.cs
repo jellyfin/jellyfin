@@ -33,6 +33,7 @@ public class EncodingOptions
         EnableTonemapping = false;
         EnableVppTonemapping = false;
         EnableVideoToolboxTonemapping = false;
+        EnableHdrPassthrough = false;
         TonemappingAlgorithm = TonemappingAlgorithm.bt2390;
         TonemappingMode = TonemappingMode.auto;
         TonemappingRange = TonemappingRange.auto;
@@ -164,6 +165,14 @@ public class EncodingOptions
     /// Gets or sets a value indicating whether videotoolbox tonemapping is enabled.
     /// </summary>
     public bool EnableVideoToolboxTonemapping { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether HDR is preserved when transcoding instead
+    /// of being tone mapped to SDR. Only applies when the source carries a static HDR10 or
+    /// HLG base layer, the output codec can hold 10-bit, and the client reports the matching
+    /// range as supported. Takes priority over tone mapping when all of those hold.
+    /// </summary>
+    public bool EnableHdrPassthrough { get; set; }
 
     /// <summary>
     /// Gets or sets the tone-mapping algorithm.

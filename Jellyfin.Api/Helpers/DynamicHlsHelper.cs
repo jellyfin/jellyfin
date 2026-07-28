@@ -466,9 +466,23 @@ public class DynamicHlsHelper
                     }
                 }
             }
+            else if (_encodingHelper.IsHdrPassthroughAvailable(state, _serverConfigurationManager.GetEncodingOptions()))
+            {
+                // Clients configure their decoder from this field; announcing SDR while
+                // delivering PQ prevents playback.
+                switch (videoRangeType)
+                {
+                    case VideoRangeType.HLG:
+                    case VideoRangeType.DOVIWithHLG:
+                        builder.Append(",VIDEO-RANGE=HLG");
+                        break;
+                    default:
+                        builder.Append(",VIDEO-RANGE=PQ");
+                        break;
+                }
+            }
             else
             {
-                // Currently we only encode to SDR.
                 builder.Append(",VIDEO-RANGE=SDR");
             }
         }
@@ -815,6 +829,14 @@ public class DynamicHlsHelper
                 || string.Equals(state.ActualOutputVideoCodec, "av1", StringComparison.OrdinalIgnoreCase))
             {
                 profileString ??= "main";
+
+                // Passthrough encodes HEVC as Main 10; announcing Main describes an 8-bit
+                // stream and the client fails to initialise on the 10-bit init segment.
+                if (!string.Equals(state.ActualOutputVideoCodec, "av1", StringComparison.OrdinalIgnoreCase)
+                    && _encodingHelper.IsHdrPassthroughAvailable(state, _serverConfigurationManager.GetEncodingOptions()))
+                {
+                    profileString = "main10";
+                }
             }
         }
 
