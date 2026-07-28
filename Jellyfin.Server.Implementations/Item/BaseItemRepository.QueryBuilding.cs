@@ -396,6 +396,17 @@ public sealed partial class BaseItemRepository
     }
 
     /// <summary>
+    /// Checks whether the user restricts access to items by parental rating or tags.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns><c>true</c> if the query carries parental restrictions.</returns>
+    private static bool RequiresParentalRestrictions(InternalItemsQuery filter)
+        => filter.IncludeInheritedTags.Length > 0
+            || filter.ExcludeInheritedTags.Length > 0
+            || filter.MaxParentalRating is not null
+            || filter.BlockUnratedItems.Length > 0;
+
+    /// <summary>
     /// Applies user access filtering to a query.
     /// Includes TopParentIds, parental rating, and tag filtering.
     /// </summary>
@@ -412,6 +423,30 @@ public sealed partial class BaseItemRepository
             baseQuery = baseQuery.Where(e => topParentIds.Contains(e.TopParentId!.Value));
         }
 
+        baseQuery = ApplyParentalRestrictions(context, baseQuery, filter);
+
+        // Exclude alternate versions (have PrimaryVersionId set) and owned non-extra items.
+        // Extras (trailers, etc.) have OwnerId set but also have ExtraType set — keep those.
+        if (!filter.IncludeOwnedItems)
+        {
+            baseQuery = baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
+        }
+
+        return baseQuery;
+    }
+
+    /// <summary>
+    /// Applies the user's parental rating and tag restrictions to a query.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    /// <param name="baseQuery">The query to filter.</param>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The filtered query.</returns>
+    private IQueryable<BaseItemEntity> ApplyParentalRestrictions(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> baseQuery,
+        InternalItemsQuery filter)
+    {
         // Apply parental rating filtering
         if (filter.MaxParentalRating is not null)
         {
@@ -460,13 +495,6 @@ public sealed partial class BaseItemRepository
 
                 // People don't carry the tags of the media they appear in and would never match
                 || e.Type == personTypeName);
-        }
-
-        // Exclude alternate versions (have PrimaryVersionId set) and owned non-extra items.
-        // Extras (trailers, etc.) have OwnerId set but also have ExtraType set — keep those.
-        if (!filter.IncludeOwnedItems)
-        {
-            baseQuery = baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
         }
 
         return baseQuery;
