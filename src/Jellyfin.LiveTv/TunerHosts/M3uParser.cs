@@ -105,7 +105,7 @@ namespace Jellyfin.LiveTv.TunerHosts
 
                     channel.Path = trimmedLine;
                     channels.Add(channel);
-                    _logger.LogInformation("Parsed channel: {ChannelName}", channel.Name);
+                    _logger.LogDebug("Parsed channel: {ChannelName}", channel.Name);
                     extInf = string.Empty;
                 }
             }

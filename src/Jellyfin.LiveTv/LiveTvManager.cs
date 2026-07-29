@@ -134,6 +134,14 @@ namespace Jellyfin.LiveTv
                 DtoOptions = dtoOptions
             };
 
+            // Optionally hide channels that carry no guide data. The guide refresh tags channels
+            // that received programmes, so filtering on that tag keeps blank channels out of large
+            // IPTV playlists without an expensive per-channel program lookup here.
+            if (_config.GetLiveTvConfiguration().HideChannelsWithoutProgrammes)
+            {
+                internalQuery.Tags = [Guide.GuideManager.GuideDataTagName];
+            }
+
             var orderBy = internalQuery.OrderBy.ToList();
 
             orderBy.AddRange(query.SortBy.Select(i => (i, query.SortOrder ?? SortOrder.Ascending)));

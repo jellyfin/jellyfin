@@ -29,6 +29,12 @@ public class GuideManager : IGuideManager
     private const string EtagKey = "ProgramEtag";
     private const string ExternalServiceTag = "ExternalServiceId";
 
+    /// <summary>
+    /// Tag applied to channels that have at least one guide programme after a refresh.
+    /// Used to optionally hide channels with no EPG data from the channel list and guide.
+    /// </summary>
+    public const string GuideDataTagName = "GuideData";
+
     private static readonly ParallelOptions _cacheParallelOptions = new() { MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 10) };
 
     private readonly ILogger<GuideManager> _logger;
@@ -181,7 +187,7 @@ public class GuideManager : IGuideManager
             .Select(i => new Tuple<string, ChannelInfo>(service.Name, i))
             .ToList();
 
-        var list = new List<LiveTvChannel>();
+        var list = new List<(LiveTvChannel Channel, bool NeedsRefresh)>();
 
         var numComplete = 0;
         var parentFolder = _liveTvManager.GetInternalLiveTvFolder(cancellationToken);
@@ -220,10 +226,18 @@ public class GuideManager : IGuideManager
 
         var guideDays = GetGuideDays();
 
-        _logger.LogInformation("Refreshing guide with {Days} days of guide data", guideDays);
+        // When disabled, channel logos and programme images are left as remote URLs and fetched
+        // lazily on first display instead of being downloaded synchronously here. This avoids the
+        // per-channel network stall (often on dead IPTV logo links) that dominates a large refresh.
+        var preCacheImages = _config.GetLiveTvConfiguration().PreCacheGuideImages;
+
+        _logger.LogInformation(
+            "Refreshing guide with {Days} days of guide data (image pre-caching {State})",
+            guideDays,
+            preCacheImages ? "enabled" : "disabled");
 
         var maxCacheDate = DateTime.UtcNow.AddDays(MaxCacheDays);
-        foreach (var currentChannel in list)
+        foreach (var (currentChannel, channelNeedsRefresh) in list)
         {
             cancellationToken.ThrowIfCancellationRequested();
             channels.Add(currentChannel.Id);
@@ -241,12 +255,18 @@ public class GuideManager : IGuideManager
 
                 var channelPrograms = (await service.GetProgramsAsync(currentChannel.ExternalId, start, end, cancellationToken).ConfigureAwait(false)).ToList();
 
-                var existingPrograms = _libraryManager.GetItemList(new InternalItemsQuery
-                {
-                    IncludeItemTypes = [BaseItemKind.LiveTvProgram],
-                    ChannelIds = [currentChannel.Id],
-                    DtoOptions = new DtoOptions(true)
-                }).Cast<LiveTvProgram>().ToDictionary(i => i.Id);
+                // Skip the per-channel existing-programs lookup when the provider returned no
+                // programmes for this channel. On large IPTV playlists the vast majority of
+                // channels have no EPG, so this avoids tens of thousands of pointless DB queries
+                // each refresh. Any stale programmes are still removed by CleanDatabase afterwards.
+                var existingPrograms = channelPrograms.Count == 0
+                    ? new Dictionary<Guid, LiveTvProgram>()
+                    : _libraryManager.GetItemList(new InternalItemsQuery
+                    {
+                        IncludeItemTypes = [BaseItemKind.LiveTvProgram],
+                        ChannelIds = [currentChannel.Id],
+                        DtoOptions = new DtoOptions(true)
+                    }).Cast<LiveTvProgram>().ToDictionary(i => i.Id);
 
                 var newPrograms = new List<LiveTvProgram>();
                 var updatedPrograms = new List<LiveTvProgram>();
@@ -283,7 +303,10 @@ public class GuideManager : IGuideManager
                 {
                     _libraryManager.CreateItems(newPrograms, currentChannel, cancellationToken);
 
-                    await PreCacheImages(newPrograms, maxCacheDate).ConfigureAwait(false);
+                    if (preCacheImages)
+                    {
+                        await PreCacheImages(newPrograms, maxCacheDate).ConfigureAwait(false);
+                    }
                 }
 
                 if (updatedPrograms.Count > 0)
@@ -294,26 +317,83 @@ public class GuideManager : IGuideManager
                         ItemUpdateType.MetadataImport,
                         cancellationToken).ConfigureAwait(false);
 
-                    await PreCacheImages(updatedPrograms, maxCacheDate).ConfigureAwait(false);
+                    if (preCacheImages)
+                    {
+                        await PreCacheImages(updatedPrograms, maxCacheDate).ConfigureAwait(false);
+                    }
                 }
 
-                currentChannel.IsMovie = isMovie;
-                currentChannel.IsNews = isNews;
-                currentChannel.IsSports = isSports;
-                currentChannel.IsSeries = isSeries;
+                // Only persist and refresh the channel when something actually changed this cycle.
+                // Doing this unconditionally re-saved and re-refreshed every channel (icons included)
+                // on every guide refresh, which is the dominant cost for large playlists.
+                var channelChanged = channelNeedsRefresh;
+
+                if (currentChannel.IsMovie != isMovie)
+                {
+                    currentChannel.IsMovie = isMovie;
+                    channelChanged = true;
+                }
+
+                if (currentChannel.IsNews != isNews)
+                {
+                    currentChannel.IsNews = isNews;
+                    channelChanged = true;
+                }
+
+                if (currentChannel.IsSports != isSports)
+                {
+                    currentChannel.IsSports = isSports;
+                    channelChanged = true;
+                }
+
+                if (currentChannel.IsSeries != isSeries)
+                {
+                    currentChannel.IsSeries = isSeries;
+                    channelChanged = true;
+                }
+
+                var tagsBefore = currentChannel.Tags;
 
                 if (isKids)
                 {
                     currentChannel.AddTag("Kids");
                 }
 
-                await currentChannel.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
-                await currentChannel.RefreshMetadata(
-                    new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                // Mark whether this channel has any guide data so it can be optionally hidden
+                // when empty. A previously marked channel that lost all programmes must be
+                // unmarked, otherwise it would linger in a filtered guide.
+                if (channelPrograms.Count > 0)
+                {
+                    currentChannel.AddTag(GuideDataTagName);
+                }
+                else
+                {
+                    RemoveTag(currentChannel, GuideDataTagName);
+                }
+
+                // AddTag/RemoveTag only swap the array instance when the set actually changed.
+                if (!ReferenceEquals(tagsBefore, currentChannel.Tags))
+                {
+                    channelChanged = true;
+                }
+
+                if (channelChanged)
+                {
+                    await currentChannel.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+
+                    // RefreshMetadata is what downloads/localizes the channel logo. Skip it when
+                    // image pre-caching is disabled; the logo (a remote URL) then loads lazily on
+                    // first display via the image endpoint instead of stalling the refresh here.
+                    if (preCacheImages)
                     {
-                        ForceSave = true
-                    },
-                    cancellationToken).ConfigureAwait(false);
+                        await currentChannel.RefreshMetadata(
+                            new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                            {
+                                ForceSave = true
+                            },
+                            cancellationToken).ConfigureAwait(false);
+                    }
+                }
             }
             catch (OperationCanceledException)
             {
@@ -342,6 +422,11 @@ public class GuideManager : IGuideManager
             DtoOptions = new DtoOptions(false)
         });
 
+        // Use a set for O(1) membership tests. The previous Array.Contains made this O(n*m),
+        // which becomes pathological (tens of thousands of programmes x thousands of ids) and
+        // dominated the tail of the guide refresh on large playlists.
+        var currentIds = new HashSet<Guid>(currentIdList);
+
         var numComplete = 0;
 
         foreach (var itemId in list)
@@ -354,7 +439,7 @@ public class GuideManager : IGuideManager
                 continue;
             }
 
-            if (!currentIdList.Contains(itemId))
+            if (!currentIds.Contains(itemId))
             {
                 var item = _libraryManager.GetItemById(itemId);
 
@@ -378,7 +463,7 @@ public class GuideManager : IGuideManager
         }
     }
 
-    private async Task<LiveTvChannel> GetChannel(
+    private async Task<(LiveTvChannel Channel, bool NeedsRefresh)> GetChannel(
         ChannelInfo channelInfo,
         string serviceName,
         BaseItem parentFolder,
@@ -464,7 +549,9 @@ public class GuideManager : IGuideManager
             await _libraryManager.UpdateItemAsync(item, parentFolder, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
         }
 
-        return item;
+        // A new or changed channel needs its metadata (icon included) refreshed; an unchanged one
+        // can skip that expensive step during the program pass below.
+        return (item, isNew || forceUpdate);
     }
 
     private (LiveTvProgram Item, bool IsNew, bool IsUpdated) GetProgram(
@@ -649,6 +736,21 @@ public class GuideManager : IGuideManager
         }
 
         return (item, false, false);
+    }
+
+    private static void RemoveTag(BaseItem item, string name)
+    {
+        var current = item.Tags;
+        if (current.Length == 0)
+        {
+            return;
+        }
+
+        var filtered = Array.FindAll(current, t => !string.Equals(t, name, StringComparison.OrdinalIgnoreCase));
+        if (filtered.Length != current.Length)
+        {
+            item.Tags = filtered;
+        }
     }
 
     private static bool UpdateImages(BaseItem item, ProgramInfo info)

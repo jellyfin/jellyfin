@@ -44,5 +44,21 @@ namespace MediaBrowser.Model.LiveTv
         public bool SaveRecordingNFO { get; set; } = true;
 
         public bool SaveRecordingImages { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether channels without any guide data are hidden
+        /// from the channel list and guide. Useful for large IPTV playlists (tens of thousands
+        /// of channels) where most channels have no EPG, leaving the guide cluttered with blank rows.
+        /// </summary>
+        public bool HideChannelsWithoutProgrammes { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether channel logos and programme images are
+        /// downloaded and cached locally during the guide refresh. When disabled, images are
+        /// fetched lazily on first display instead, which dramatically speeds up the guide
+        /// refresh for large IPTV playlists (whose logo/image URLs are often dead links that
+        /// otherwise block the refresh on network timeouts). Defaults to <c>true</c>.
+        /// </summary>
+        public bool PreCacheGuideImages { get; set; } = true;
     }
 }

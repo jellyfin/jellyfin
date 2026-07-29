@@ -35,7 +35,7 @@ public class LiveTvChannelImageHelperTests
     }
 
     [Fact]
-    public void UpdateChannelImageIfNeeded_SameUrl_StillUpdates()
+    public void UpdateChannelImageIfNeeded_SameUrl_DoesNotUpdate()
     {
         var channel = new LiveTvChannel { Name = "Test Channel" };
         LiveTvChannelImageHelper.UpdateChannelImageIfNeeded(channel, null, "https://example.com/icon.png");
@@ -45,7 +45,22 @@ public class LiveTvChannelImageHelperTests
             null,
             "https://example.com/icon.png");
 
-        Assert.True(updated);
+        Assert.False(updated);
         Assert.Equal("https://example.com/icon.png", channel.GetImagePath(ImageType.Primary));
+    }
+
+    [Fact]
+    public void UpdateChannelImageIfNeeded_ChangedUrl_Updates()
+    {
+        var channel = new LiveTvChannel { Name = "Test Channel" };
+        LiveTvChannelImageHelper.UpdateChannelImageIfNeeded(channel, null, "https://example.com/icon.png");
+
+        var updated = LiveTvChannelImageHelper.UpdateChannelImageIfNeeded(
+            channel,
+            null,
+            "https://example.com/new-icon.png");
+
+        Assert.True(updated);
+        Assert.Equal("https://example.com/new-icon.png", channel.GetImagePath(ImageType.Primary));
     }
 }
