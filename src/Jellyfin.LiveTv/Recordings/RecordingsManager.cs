@@ -51,6 +51,10 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     private readonly SeriesTimerManager _seriesTimerManager;
     private readonly RecordingsMetadataManager _recordingsMetadataManager;
 
+    private const int StreamOpenMaxAttempts = 3;
+    private static readonly TimeSpan StreamOpenInitialRetryDelay = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan StreamOpenMaxRetryDelay = TimeSpan.FromSeconds(10);
+
     private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings = new(StringComparer.OrdinalIgnoreCase);
     private readonly AsyncNonKeyedLocker _recordingDeleteSemaphore = new();
     private bool _disposed;
@@ -321,13 +325,21 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             IDirectStreamProvider? directStreamProvider = null;
             if (mediaStreamInfo.RequiresOpening)
             {
-                var liveStreamResponse = await _mediaSourceManager.OpenLiveStreamInternal(
-                    new LiveStreamRequest
-                    {
-                        ItemId = channel.Id,
-                        OpenToken = mediaStreamInfo.OpenToken
-                    },
-                    CancellationToken.None).ConfigureAwait(false);
+                // Retry the stream open with exponential backoff so a transient IPTV/tuner hiccup
+                // doesn't lose the whole recording before the recorder even starts.
+                var liveStreamResponse = await OpenWithRetryAsync(
+                    ct => _mediaSourceManager.OpenLiveStreamInternal(
+                        new LiveStreamRequest
+                        {
+                            ItemId = channel.Id,
+                            OpenToken = mediaStreamInfo.OpenToken
+                        },
+                        ct),
+                    StreamOpenMaxAttempts,
+                    StreamOpenInitialRetryDelay,
+                    StreamOpenMaxRetryDelay,
+                    _logger,
+                    recordingInfo.CancellationTokenSource.Token).ConfigureAwait(false);
 
                 mediaStreamInfo = liveStreamResponse.Item1.MediaSource;
                 liveStreamId = mediaStreamInfo.LiveStreamId;
@@ -354,7 +366,6 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
                 timer.Status = RecordingStatus.InProgress;
                 _timerManager.AddOrUpdate(timer, false);
 
-                await _recordingsMetadataManager.SaveRecordingMetadata(timer, recordingPath, seriesPath).ConfigureAwait(false);
                 await CreateRecordingFolders().ConfigureAwait(false);
 
                 TriggerRefresh(recordingPath);
@@ -395,7 +406,9 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             }
         }
 
-        DeleteFileIfEmpty(recordingPath);
+        // Remove any empty/failed capture and its orphaned .nfo/folder so a recording that never
+        // produced video doesn't leave a metadata-only phantom item in the library.
+        DeleteOrphanedRecordingArtifacts(recordingPath, _logger);
         TriggerRefresh(recordingPath);
         _libraryMonitor.ReportFileSystemChangeComplete(recordingPath, false);
         _activeRecordings.TryRemove(timer.Id, out _);
@@ -411,11 +424,15 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             timer.RetryCount++;
             _timerManager.AddOrUpdate(timer);
         }
-        else if (File.Exists(recordingPath))
+        else if (HasUsableRecording(recordingPath))
         {
             timer.RecordingPath = recordingPath;
             timer.Status = RecordingStatus.Completed;
             _timerManager.AddOrUpdate(timer, false);
+
+            // Write the .nfo sidecar only now that a usable (non-empty) recording exists, so a
+            // failed/empty capture never leaves an orphaned metadata file behind.
+            await _recordingsMetadataManager.SaveRecordingMetadata(timer, recordingPath, seriesPath).ConfigureAwait(false);
             await PostProcessRecording(recordingPath).ConfigureAwait(false);
         }
         else
@@ -584,20 +601,127 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         return Path.Combine(recordingPath, recordingFileName);
     }
 
-    private void DeleteFileIfEmpty(string path)
+    /// <summary>
+    /// Removes a failed/empty recording capture and any artifacts it left behind (an empty video
+    /// file, an orphaned <c>.nfo</c> sidecar and the now-empty recording folder).
+    /// </summary>
+    /// <param name="recordingPath">The recording output path.</param>
+    /// <param name="logger">The logger.</param>
+    /// <returns><c>true</c> if the recording produced no usable video and artifacts were cleaned up; otherwise <c>false</c>.</returns>
+    internal static bool DeleteOrphanedRecordingArtifacts(string recordingPath, ILogger logger)
     {
-        var file = _fileSystem.GetFileInfo(path);
-
-        if (file.Exists && file.Length == 0)
+        if (HasUsableRecording(recordingPath))
         {
+            return false;
+        }
+
+        TryDeleteFile(recordingPath, logger);
+        TryDeleteFile(Path.ChangeExtension(recordingPath, ".nfo"), logger);
+
+        // A failed capture still created the series/movie subfolder for the output file. Remove it
+        // when empty so a recording that produced no video doesn't leave a phantom folder behind.
+        TryDeleteEmptyDirectory(Path.GetDirectoryName(recordingPath), logger);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Determines whether a recording output file exists and contains data. Used to gate metadata
+    /// writing and orphan cleanup so a failed/empty capture never persists a <c>.nfo</c> sidecar.
+    /// </summary>
+    /// <param name="recordingPath">The recording output path.</param>
+    /// <returns><c>true</c> if the file exists and is non-empty; otherwise <c>false</c>.</returns>
+    internal static bool HasUsableRecording(string recordingPath)
+        => File.Exists(recordingPath) && new FileInfo(recordingPath).Length > 0;
+
+    /// <summary>
+    /// Attempts an asynchronous open operation, retrying transient failures with exponential
+    /// backoff. Retries every exception except <see cref="OperationCanceledException"/> (which is
+    /// propagated immediately). The exception from the final attempt is re-thrown to the caller.
+    /// </summary>
+    /// <typeparam name="T">The result type of the open operation.</typeparam>
+    /// <param name="openAsync">The open operation to attempt.</param>
+    /// <param name="maxAttempts">The maximum number of attempts (must be at least 1).</param>
+    /// <param name="initialDelay">The delay before the first retry.</param>
+    /// <param name="maxDelay">The upper bound for the backoff delay.</param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The result of the first successful attempt.</returns>
+    internal static async Task<T> OpenWithRetryAsync<T>(
+        Func<CancellationToken, Task<T>> openAsync,
+        int maxAttempts,
+        TimeSpan initialDelay,
+        TimeSpan maxDelay,
+        ILogger logger,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(openAsync);
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxAttempts, 1);
+
+        var attempt = 0;
+        var delay = initialDelay;
+        while (true)
+        {
+            attempt++;
             try
             {
-                _fileSystem.DeleteFile(path);
+                return await openAsync(cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException && attempt < maxAttempts)
             {
-                _logger.LogError(ex, "Error deleting 0-byte failed recording file {Path}", path);
+                logger.LogWarning(
+                    ex,
+                    "Stream open attempt {Attempt}/{MaxAttempts} failed; retrying in {DelaySeconds}s",
+                    attempt,
+                    maxAttempts,
+                    delay.TotalSeconds);
+
+                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+
+                var nextDelayMs = Math.Min(delay.TotalMilliseconds * 2, maxDelay.TotalMilliseconds);
+                delay = TimeSpan.FromMilliseconds(nextDelayMs);
             }
+        }
+    }
+
+    /// <summary>
+    /// Deletes the given directory only when it exists and contains no entries. Used to remove the
+    /// leftover recording folder after a failed (empty) capture has been cleaned up.
+    /// </summary>
+    /// <param name="path">The directory to remove if empty.</param>
+    /// <param name="logger">The logger.</param>
+    private static void TryDeleteEmptyDirectory(string? path, ILogger logger)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return;
+        }
+
+        try
+        {
+            if (Directory.Exists(path) && Directory.GetFileSystemEntries(path).Length == 0)
+            {
+                Directory.Delete(path, false);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Error deleting empty recording folder {Path}", path);
+        }
+    }
+
+    private static void TryDeleteFile(string path, ILogger logger)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error deleting orphaned recording artifact {Path}", path);
         }
     }
 
