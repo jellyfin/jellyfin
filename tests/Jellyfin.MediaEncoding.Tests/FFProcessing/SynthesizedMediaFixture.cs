@@ -63,7 +63,7 @@ public sealed class SynthesizedMediaFixture : IDisposable
     }
 
     /// <summary>
-    /// The environment variable the server itself honours for the encoder path, which is what
+    /// Gets the environment variable the server itself honours for the encoder path, which is what
     /// <c>--ffmpeg</c> sets. Configuration keys are matched case-insensitively, so the
     /// conventional upper-case spelling works too.
     /// </summary>

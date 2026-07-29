@@ -52,12 +52,11 @@ public class FfProbeKeyframeExtractor : IKeyframeExtractor
                 new KeyframeScanRequest
                 {
                     FilePath = filePath,
-                    Stdout = (stdout, _) =>
-                    {
-                        using var reader = new StreamReader(stdout);
-                        keyframeData = Extractor.ParseStream(reader);
-                        return Task.CompletedTask;
-                    }
+
+                    // Task.Run because Extractor.ParseStream is a blocking read loop
+                    Stdout = (stdout, ct) => Task.Run(
+                        () => keyframeData = Extractor.ParseStream(new StreamReader(stdout)),
+                        ct)
                 },
                 cancellationToken).ConfigureAwait(false);
 

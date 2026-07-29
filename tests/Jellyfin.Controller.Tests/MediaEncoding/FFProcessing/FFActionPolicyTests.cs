@@ -19,7 +19,7 @@ namespace Jellyfin.Controller.Tests.MediaEncoding.FFProcessing;
 public static class FFActionPolicyTests
 {
     /// <summary>
-    /// The distinctive values per action: what each arm exists to say. Anything not listed is
+    /// Gets the distinctive values per action: what each arm exists to say. Anything not listed is
     /// inherited and is covered by the cross-cutting invariants below instead.
     /// </summary>
     public static TheoryData<FFAction, bool, bool, FFStdinMode, bool, bool> Distinctive => new()
@@ -39,7 +39,7 @@ public static class FFActionPolicyTests
         { FFAction.Stream, false, true, FFStdinMode.ControlChannel, true, false },
     };
 
-    /// <summary>The deadline and priority each action is expected to carry.</summary>
+    /// <summary>Gets the deadline and priority each action is expected to carry.</summary>
     public static TheoryData<FFAction, TimeSpan, TimeSpan, ProcessPriorityClass> Bounds => new()
     {
         // action, timeout, idleTimeout, priority

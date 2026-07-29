@@ -73,8 +73,8 @@ public abstract record FFRequest
     public FFOutputSink Stderr { get; init; } = FFOutputSink.Diagnostic();
 
     /// <summary>
-    /// Gets an optional liveness counter, such as files produced so far. The watchdog also tracks
-    /// the child's CPU time; either advancing counts as alive.
+    /// Gets an optional liveness counter, such as files produced so far. When supplied, the
+    /// runner's idle watchdog uses this to detect stalled work.
     /// </summary>
     public Func<long> ProgressProbe { get; init; } = FFDefaults.NoProgressProbe;
 

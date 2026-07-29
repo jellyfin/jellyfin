@@ -20,8 +20,8 @@ public enum FFStopReason
     TimedOut,
 
     /// <summary>
-    /// The process was alive but made no forward progress within the idle window, measured by its
-    /// own CPU time and by the action's optional domain probe. It was killed.
+    /// The process was alive but made no forward progress within the idle window, measured by
+    /// the action's optional probe, so it was terminated.
     /// </summary>
     Stalled
 }

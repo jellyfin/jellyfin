@@ -235,7 +235,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 // Names its own binary: this runs to decide whether that path is usable, so there
                 // is nothing committed to IFFPaths for the runner to resolve.
-                var result = await _ffRunner!.RunAsync(
+                ArgumentNullException.ThrowIfNull(_ffRunner);
+                var result = await _ffRunner.RunAsync(
                     new ValidateBinaryRequest
                     {
                         BinaryPath = _encoderPath,

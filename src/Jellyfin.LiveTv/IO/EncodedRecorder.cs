@@ -86,7 +86,7 @@ namespace Jellyfin.LiveTv.IO
 
             await JsonSerializer.SerializeAsync(_logFileStream, mediaSource, _jsonOptions, cancellationToken).ConfigureAwait(false);
             await _logFileStream.WriteAsync(
-                Encoding.UTF8.GetBytes(Environment.NewLine + Environment.NewLine + _mediaEncoder.EncoderPath + Environment.NewLine + Environment.NewLine),
+                Encoding.UTF8.GetBytes(Environment.NewLine + Environment.NewLine + _ffRunner.GetCommandLine(request) + Environment.NewLine + Environment.NewLine),
                 cancellationToken).ConfigureAwait(false);
 
             // Cancellation is the stop signal: the runner writes q, waits the action's grace period,
