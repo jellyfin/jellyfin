@@ -197,7 +197,7 @@ public sealed partial class BaseItemRepository
     {
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
         {
-            var paddedPrefix = BaseItem.NormalizeSortNameFilter(filter.NameStartsWith);
+            var paddedPrefix = BaseItem.NormalizeSortNameFilter(filter.NameStartsWith).ToLowerInvariant();
             var rawPrefix = filter.NameStartsWith.ToLowerInvariant();
             dbQuery = dbQuery.Where(e =>
                 e.SortName!.ToLower().StartsWith(paddedPrefix)
@@ -206,13 +206,13 @@ public sealed partial class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWithOrGreater))
         {
-            var paddedValue = BaseItem.NormalizeSortNameFilter(filter.NameStartsWithOrGreater);
+            var paddedValue = BaseItem.NormalizeSortNameFilter(filter.NameStartsWithOrGreater).ToLowerInvariant();
             dbQuery = dbQuery.Where(e => e.SortName!.ToLower().CompareTo(paddedValue) >= 0);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameLessThan))
         {
-            var paddedValue = BaseItem.NormalizeSortNameFilter(filter.NameLessThan);
+            var paddedValue = BaseItem.NormalizeSortNameFilter(filter.NameLessThan).ToLowerInvariant();
             dbQuery = dbQuery.Where(e => e.SortName!.ToLower().CompareTo(paddedValue) < 0);
         }
 

@@ -969,27 +969,33 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
+            return ModifySortChunks(ApplySortCharacterRules(sortable, configuration));
+        }
+
+        private static string ApplySortCharacterRules(string name, ServerConfiguration configuration)
+        {
             foreach (var removeChar in configuration.SortRemoveCharacters)
             {
-                sortable = sortable.Replace(removeChar, string.Empty, StringComparison.Ordinal);
+                name = name.Replace(removeChar, string.Empty, StringComparison.Ordinal);
             }
 
             foreach (var replaceChar in configuration.SortReplaceCharacters)
             {
-                sortable = sortable.Replace(replaceChar, " ", StringComparison.Ordinal);
+                name = name.Replace(replaceChar, " ", StringComparison.Ordinal);
             }
 
-            return ModifySortChunks(sortable);
+            return name;
         }
 
         /// <summary>
         /// Normalizes a user-provided name filter value to match against <see cref="SortName"/>.
-        /// Applies the same zero-padding, diacritics removal, and transliteration as sort name generation.
+        /// Applies the same character removal/replacement, zero-padding, diacritics removal, and transliteration
+        /// as sort name generation, but not <c>SortRemoveWords</c> since stripping articles from a prefix is unsafe.
         /// </summary>
         /// <param name="input">The raw filter value from the API.</param>
-        /// <returns>The normalized value suitable for comparison against SortName.</returns>
+        /// <returns>The normalized value suitable for comparison against SortName. Casing is preserved; callers requiring case-sensitive matching must handle it themselves.</returns>
         public static string NormalizeSortNameFilter(string input)
-            => ModifySortChunks(input).ToLowerInvariant();
+            => ModifySortChunks(ApplySortCharacterRules(input, ConfigurationManager.Configuration));
 
         /// <summary>
         /// Processes a name by zero-padding numeric chunks to 10 digits for natural sort order,

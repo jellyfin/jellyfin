@@ -35,9 +35,15 @@ public class UserViewBuilderFilterTests
     // Mixed alpha-numeric input: handled via ModifySortChunks padding
     [InlineData("Apollo 13", "apollo 13", true)]
     [InlineData("Apollo 13", "apollo 2", false)]
-    // Edge case: "0" should only match items whose name is literally "0"
+    // Edge case: "0" should only match items whose name genuinely starts with "0"
     [InlineData("0", "0", true)]
     [InlineData("1", "0", false)]
+    [InlineData("0.0MHz", "0", true)]
+    [InlineData("0.0MHz", "0.0", true)]
+    [InlineData("0.0MHz", "1", false)]
+    // Punctuation in the filter goes through the same replace/remove rules as sort names
+    [InlineData("Mr. Bean", "Mr. B", true)]
+    [InlineData("Spider-Man", "Spider-M", true)]
     public void Filter_NameStartsWith_MatchesNumericAndAlphabeticPrefixes(string name, string nameStartsWith, bool expected)
     {
         var item = CreateVideo(name);
