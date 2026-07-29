@@ -34,14 +34,6 @@ local.properties
 .buildpath
 
 #################
-## Media Browser
-#################
-ProgramData*/
-CorePlugins*/
-ProgramData-Server*/
-ProgramData-UI*/
-
-#################
 ## Visual Studio
 #################
 
@@ -63,9 +55,8 @@ build/
 [Bb]in/
 [Oo]bj/
 
-# MSTest test Results
-[Tt]est[Rr]esult*/
-[Bb]uild[Ll]og.*
+# Build results
+[Oo]utput/
 
 *_i.c
 *_p.c
@@ -283,3 +274,4 @@ mono_crash.*.json
 .devcontainer/devcontainer-lock.json
 dotnet/
 out/
+
