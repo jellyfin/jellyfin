@@ -31,7 +31,7 @@ namespace Jellyfin.Drawing;
 public sealed class ImageProcessor : IImageProcessor, IDisposable
 {
     // Increment this when there's a change requiring caches to be invalidated
-    private const char Version = '3';
+    private const char Version = '4';
 
     private static readonly HashSet<string> _transparentImageTypes
         = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".webp", ".gif", ".svg" };
@@ -251,7 +251,23 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     /// <summary>
     /// Gets the cache file path based on a set of parameters.
     /// </summary>
-    private string GetCacheFilePath(
+    /// <param name="originalPath">The original image path.</param>
+    /// <param name="width">The requested width.</param>
+    /// <param name="height">The requested height.</param>
+    /// <param name="maxWidth">The maximum width.</param>
+    /// <param name="maxHeight">The maximum height.</param>
+    /// <param name="fillWidth">The fill width.</param>
+    /// <param name="fillHeight">The fill height.</param>
+    /// <param name="quality">The image quality.</param>
+    /// <param name="dateModified">The source image modification date.</param>
+    /// <param name="format">The output format.</param>
+    /// <param name="percentPlayed">The played percentage overlay value.</param>
+    /// <param name="unwatchedCount">The unwatched count overlay value.</param>
+    /// <param name="blur">The blur amount.</param>
+    /// <param name="backgroundColor">The background color.</param>
+    /// <param name="foregroundLayer">The foreground layer.</param>
+    /// <returns>The transformed image cache path.</returns>
+    internal string GetCacheFilePath(
         string originalPath,
         int? width,
         int? height,
@@ -318,13 +334,13 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
 
         if (percentPlayed > 0)
         {
-            filename.Append(",p=");
-            filename.Append(percentPlayed);
+            filename.Append(",pp=");
+            filename.Append(percentPlayed.ToString(CultureInfo.InvariantCulture));
         }
 
         if (unwatchedCount.HasValue)
         {
-            filename.Append(",p=");
+            filename.Append(",uc=");
             filename.Append(unwatchedCount.Value);
         }
 
