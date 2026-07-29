@@ -15,7 +15,6 @@ namespace MediaBrowser.Controller.MediaEncoding;
 /// </summary>
 public sealed class JobLogSink : FFOutputSink
 {
-    private readonly JobLogger _jobLogger;
     private readonly EncodingJobInfo _state;
     private readonly Stream _target;
 
@@ -27,7 +26,6 @@ public sealed class JobLogSink : FFOutputSink
     /// <param name="target">The log file to write to. Owned by the caller.</param>
     public JobLogSink(ILogger logger, EncodingJobInfo state, Stream target)
     {
-        _jobLogger = new JobLogger(logger);
         _state = state;
         _target = target;
     }
@@ -46,7 +44,7 @@ public sealed class JobLogSink : FFOutputSink
     /// <returns>A task representing the write.</returns>
     public override async ValueTask WriteLineAsync(string line, CancellationToken cancellationToken)
     {
-        _jobLogger.ParseLogLine(line, _state);
+        JobLogger.ParseLogLine(line, _state);
 
         await _target.WriteAsync(Encoding.UTF8.GetBytes(Environment.NewLine + line), cancellationToken).ConfigureAwait(false);
 

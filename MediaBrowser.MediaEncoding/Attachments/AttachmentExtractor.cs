@@ -335,7 +335,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 {
                     await ExtractAttachmentInternal(
                         _mediaEncoder.GetInputArgument(inputFile, mediaSource),
-                        mediaSource,
                         mediaAttachment.Index,
                         attachmentPath,
                         cancellationToken).ConfigureAwait(false);
@@ -347,7 +346,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
         private async Task ExtractAttachmentInternal(
             string inputPath,
-            MediaSourceInfo mediaSource,
             int attachmentStreamIndex,
             string outputPath,
             CancellationToken cancellationToken)

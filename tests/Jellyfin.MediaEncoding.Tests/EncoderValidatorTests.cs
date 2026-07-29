@@ -1,13 +1,19 @@
 using System;
+using MediaBrowser.Controller.MediaEncoding.FFProcessing;
 using MediaBrowser.MediaEncoding.Encoder;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using Xunit;
 
 namespace Jellyfin.MediaEncoding.Tests
 {
     public class EncoderValidatorTests
     {
-        private readonly EncoderValidator _encoderValidator = new EncoderValidator(new NullLogger<EncoderValidatorTests>(), "ffmpeg");
+        // These cases only parse text that FFmpeg already printed, so the runner is never reached.
+        private readonly EncoderValidator _encoderValidator = new EncoderValidator(
+            new NullLogger<EncoderValidatorTests>(),
+            "ffmpeg",
+            Mock.Of<IFFRunner>());
 
         [Theory]
         [ClassData(typeof(GetFFmpegVersionTestData))]

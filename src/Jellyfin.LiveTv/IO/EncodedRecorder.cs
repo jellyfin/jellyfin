@@ -35,7 +35,6 @@ namespace Jellyfin.LiveTv.IO
         private readonly IFFRunner _ffRunner;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private FileStream _logFileStream;
-        private string _targetPath;
         private bool _disposed;
 
         public EncodedRecorder(
@@ -70,7 +69,6 @@ namespace Jellyfin.LiveTv.IO
 
         private async Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, Action onStarted, CancellationToken cancellationToken)
         {
-            _targetPath = targetFile;
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
             if (!File.Exists(targetFile))
             {
@@ -105,7 +103,7 @@ namespace Jellyfin.LiveTv.IO
                 throw;
             }
 
-            _logger.LogInformation("ffmpeg recording process started for {Path}", _targetPath);
+            _logger.LogInformation("ffmpeg recording process started for {Path}", targetFile);
             onStarted();
 
             var result = await session.Completion.ConfigureAwait(false);
@@ -124,7 +122,7 @@ namespace Jellyfin.LiveTv.IO
 
             if (!result.Succeeded)
             {
-                throw new FfmpegException($"Recording for {_targetPath} failed. Exit code {result.ExitCode}");
+                throw new FfmpegException($"Recording for {targetFile} failed. Exit code {result.ExitCode}");
             }
         }
 

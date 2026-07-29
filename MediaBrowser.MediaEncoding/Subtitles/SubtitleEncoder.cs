@@ -45,7 +45,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ISubtitleParser _subtitleParser;
         private readonly IPathManager _pathManager;
-        private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
         /// The _semaphoreLocks.
@@ -64,8 +63,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             IHttpClientFactory httpClientFactory,
             IMediaSourceManager mediaSourceManager,
             ISubtitleParser subtitleParser,
-            IPathManager pathManager,
-            IServerConfigurationManager serverConfigurationManager)
+            IPathManager pathManager)
         {
             _logger = logger;
             _fileSystem = fileSystem;
@@ -75,7 +73,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _mediaSourceManager = mediaSourceManager;
             _subtitleParser = subtitleParser;
             _pathManager = pathManager;
-            _serverConfigurationManager = serverConfigurationManager;
         }
 
         internal MemoryStream ConvertSubtitles(

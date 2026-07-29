@@ -4,23 +4,12 @@
 
 using System;
 using System.Globalization;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
     public class JobLogger
     {
-        private readonly ILogger _logger;
-
-        public JobLogger(ILogger logger)
-        {
-            _logger = logger;
-        }
-
-        public void ParseLogLine(string line, EncodingJobInfo state)
+        public static void ParseLogLine(string line, EncodingJobInfo state)
         {
             float? framerate = null;
             double? percent = null;

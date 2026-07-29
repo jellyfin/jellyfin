@@ -197,17 +197,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private readonly string _encoderPath;
 
-        private readonly IFFRunner? _ffRunner;
+        private readonly IFFRunner _ffRunner;
 
         private readonly Version _minFFmpegMultiThreadedCli = new Version(7, 0);
 
-        public EncoderValidator(ILogger logger, string encoderPath, IFFRunner? ffRunner = null)
+        public EncoderValidator(ILogger logger, string encoderPath, IFFRunner ffRunner)
         {
+            ArgumentNullException.ThrowIfNull(ffRunner);
+
             _logger = logger;
             _encoderPath = encoderPath;
-
-            // Null while validating a candidate path: nothing is committed to IFFPaths yet, so the
-            // runner cannot resolve a binary. Only ValidateVersion runs in that state.
             _ffRunner = ffRunner;
         }
 
@@ -235,7 +234,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 // Names its own binary: this runs to decide whether that path is usable, so there
                 // is nothing committed to IFFPaths for the runner to resolve.
-                ArgumentNullException.ThrowIfNull(_ffRunner);
                 var result = await _ffRunner.RunAsync(
                     new ValidateBinaryRequest
                     {
@@ -638,7 +636,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 // lasts. The duration only has to outlive the write — the process is torn down as soon
                 // as the answer is in hand, never actually running for the hours nominated here.
                 var duration = ffmpegVersion >= _minFFmpegMultiThreadedCli ? 10000 : 1000;
-                var runtime = await _ffRunner!.RunAsync(
+                var runtime = await _ffRunner.RunAsync(
                     new RuntimeKeyProbeRequest
                     {
                         Arguments = $"-f lavfi -i nullsrc=s=1x1:d={duration} -f null -",
@@ -769,12 +767,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (readStdErr)
             {
-                var stderrResult = await _ffRunner!.RunAsync(request, CancellationToken.None).ConfigureAwait(false);
+                var stderrResult = await _ffRunner.RunAsync(request, CancellationToken.None).ConfigureAwait(false);
                 return stderrResult.Stderr;
             }
 
             var output = string.Empty;
-            await _ffRunner!.RunAsync(
+            await _ffRunner.RunAsync(
                 request with
                 {
                     Stdout = async (stdout, ct) =>
@@ -791,7 +789,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <summary>Runs an interrogation whose answer is only whether FFmpeg accepted it.</summary>
         private async Task<bool> InterrogationSucceedsAsync(string arguments, bool probeOnly = false)
         {
-            var result = await _ffRunner!.RunAsync(
+            var result = await _ffRunner.RunAsync(
                 new CapabilitiesRequest { Arguments = arguments, ProbeOnly = probeOnly },
                 CancellationToken.None).ConfigureAwait(false);
 
