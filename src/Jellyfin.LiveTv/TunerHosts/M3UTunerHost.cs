@@ -164,6 +164,24 @@ namespace Jellyfin.LiveTv.TunerHosts
                 httpHeaders[HeaderNames.UserAgent] = string.IsNullOrWhiteSpace(info.UserAgent) ?
                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" :
                     info.UserAgent;
+
+                // Some IPTV providers reject requests (HTTP 406/403) without a matching Referer.
+                if (!string.IsNullOrWhiteSpace(info.Referer))
+                {
+                    httpHeaders[HeaderNames.Referer] = info.Referer;
+                }
+
+                // Apply any additional provider-specific headers configured for this tuner.
+                if (info.CustomHttpHeaders is not null)
+                {
+                    foreach (var header in info.CustomHttpHeaders)
+                    {
+                        if (!string.IsNullOrWhiteSpace(header.Name) && !string.IsNullOrWhiteSpace(header.Value))
+                        {
+                            httpHeaders[header.Name] = header.Value;
+                        }
+                    }
+                }
             }
 
             var mediaSource = new MediaSourceInfo
