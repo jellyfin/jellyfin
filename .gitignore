@@ -48,14 +48,11 @@ local.properties
 *.sln.docstates
 
 # Build results
-
 [Dd]ebug/
 [Rr]elease/
 build/
 [Bb]in/
 [Oo]bj/
-
-# Build results
 [Oo]utput/
 
 *_i.c
