@@ -1085,15 +1085,7 @@ namespace MediaBrowser.Controller.Entities
                 items = ApplyNameFilter(items, query);
             }
 
-            var filteredItems = items as IReadOnlyList<BaseItem> ?? items.ToList();
-            var result = UserViewBuilder.SortAndPage(filteredItems, null, query, LibraryManager);
-
-            if (query.EnableTotalRecordCount)
-            {
-                result.TotalRecordCount = filteredItems.Count;
-            }
-
-            return result;
+            return UserViewBuilder.SortAndPage(items, null, query, LibraryManager);
         }
 
         private static IEnumerable<BaseItem> ApplyNameFilter(IEnumerable<BaseItem> items, InternalItemsQuery query)

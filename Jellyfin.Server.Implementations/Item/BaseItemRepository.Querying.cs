@@ -49,6 +49,7 @@ public sealed partial class BaseItemRepository
 
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
+        dbQuery = ApplyAdjacencyFilter(context, dbQuery, filter);
 
         if (filter.EnableTotalRecordCount)
         {
@@ -75,6 +76,7 @@ public sealed partial class BaseItemRepository
         dbQuery = TranslateQuery(dbQuery, context, filter);
 
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
+        dbQuery = ApplyAdjacencyFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
 
         var hasRandomSort = filter.OrderBy.Any(e => e.OrderBy == ItemSortBy.Random);
