@@ -284,8 +284,17 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (!string.IsNullOrWhiteSpace(filter.NameContains))
         {
-            var nameContainsUpper = filter.NameContains.ToUpper();
-            query = query.Where(e => e.Name.ToUpper().Contains(nameContainsUpper));
+            // The previous code compared SQLite's UPPER(name) against a .NET-uppercased search
+            // term. SQLite's UPPER() only folds ASCII letters, so "René" -> "RENé", whereas .NET's
+            // ToUpper() folds accented letters too, so "René" -> "RENÉ". The mismatch meant
+            // searching for an accented name failed to match the identical stored name, even though
+            // searching without the accent ("Ren") matched. Use EF.Functions.Like so the match is
+            // handled by SQLite's case-insensitive LIKE on UPPER(name); LIKE folds ASCII case but
+            // compares non-ASCII characters exactly, so the accented letter lines up on both sides
+            // and "Ren", "René", "ren" and "rené" all match a person named "René".
+            query = query.Where(e => EF.Functions.Like(
+                e.Name.ToUpper(),
+                "%" + filter.NameContains + "%"));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
