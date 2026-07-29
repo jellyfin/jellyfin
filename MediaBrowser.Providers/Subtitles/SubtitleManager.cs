@@ -194,6 +194,56 @@ namespace MediaBrowser.Providers.Subtitles
         {
             var saveInMediaFolder = libraryOptions.SaveSubtitlesWithMedia;
 
+            var savePaths = new List<string>();
+            var language = response.Language.ToLowerInvariant();
+            if (language.AsSpan().IndexOfAny(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) >= 0)
+            {
+                throw new ArgumentException("Language contains invalid characters.");
+            }
+
+            var saveFileName = Path.GetFileNameWithoutExtension(video.Path) + "." + language;
+
+            if (response.IsForced)
+            {
+                saveFileName += ".forced";
+            }
+
+            if (response.IsHearingImpaired)
+            {
+                saveFileName += ".sdh";
+            }
+
+            if (saveInMediaFolder)
+            {
+                var mediaFolderPath = Path.GetFullPath(Path.Combine(video.ContainingFolderPath, saveFileName));
+                savePaths.Add(mediaFolderPath);
+            }
+            else
+            {
+                var internalPath = Path.GetFullPath(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
+                savePaths.Add(internalPath);
+            }
+
+            // Check whether a subtitle is already present at the canonical
+            // location before pulling the content. Downloading the response
+            // stream consumes the subtitle provider's rate limit, so doing the
+            // existence check up-front avoids an unnecessary download on every
+            // scheduled task run for files that are already saved. See #17426.
+            var extension = response.Format.ToLowerInvariant();
+            foreach (var savePath in savePaths)
+            {
+                var path = Path.GetFullPath(savePath + "." + extension);
+                var containingFolder = video.ContainingFolderPath + Path.DirectorySeparatorChar;
+                var metadataFolder = video.GetInternalMetadataPath() + Path.DirectorySeparatorChar;
+                if ((path.StartsWith(containingFolder, StringComparison.Ordinal)
+                        || path.StartsWith(metadataFolder, StringComparison.Ordinal))
+                    && File.Exists(path))
+                {
+                    _logger.LogInformation("Subtitle already exists at {SavePath}, skipping download and save", path);
+                    return;
+                }
+            }
+
             var memoryStream = new MemoryStream();
             await using (memoryStream.ConfigureAwait(false))
             {
@@ -204,37 +254,7 @@ namespace MediaBrowser.Providers.Subtitles
                     memoryStream.Position = 0;
                 }
 
-                var savePaths = new List<string>();
-                var language = response.Language.ToLowerInvariant();
-                if (language.AsSpan().IndexOfAny(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) >= 0)
-                {
-                    throw new ArgumentException("Language contains invalid characters.");
-                }
-
-                var saveFileName = Path.GetFileNameWithoutExtension(video.Path) + "." + language;
-
-                if (response.IsForced)
-                {
-                    saveFileName += ".forced";
-                }
-
-                if (response.IsHearingImpaired)
-                {
-                    saveFileName += ".sdh";
-                }
-
-                if (saveInMediaFolder)
-                {
-                    var mediaFolderPath = Path.GetFullPath(Path.Combine(video.ContainingFolderPath, saveFileName));
-                    savePaths.Add(mediaFolderPath);
-                }
-                else
-                {
-                    var internalPath = Path.GetFullPath(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
-                    savePaths.Add(internalPath);
-                }
-
-                await TrySaveToFiles(memoryStream, savePaths, video, response.Format.ToLowerInvariant()).ConfigureAwait(false);
+                await TrySaveToFiles(memoryStream, savePaths, video, extension).ConfigureAwait(false);
             }
         }
 
