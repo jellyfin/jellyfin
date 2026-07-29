@@ -428,23 +428,60 @@ public class ItemPersistenceService : IItemPersistenceService
 
         foreach (var item in tuples)
         {
+            // A container that was never hydrated cannot be used to rewrite its links: its empty
+            // array means "unknown", so clearing the stored rows would silently empty the item.
+            if (item.Item is Folder { LinkedChildrenLoaded: false })
+            {
+                continue;
+            }
+
             if (item.Item is Folder or Video
                 && allLinkedChildrenByParent.TryGetValue(item.Item.Id, out var existingLinks)
                 && existingLinks.Count > 0)
             {
-                context.LinkedChildren.RemoveRange(existingLinks);
+                // A video only owns its alternate version links; any other link on that parent is
+                // written by the folder branch below and must survive.
+                var staleLinks = item.Item is Folder
+                    ? existingLinks
+                    : existingLinks
+                        .Where(e => e.ChildType is DbLinkedChildType.LocalAlternateVersion or DbLinkedChildType.LinkedAlternateVersion)
+                        .ToList();
+
+                if (staleLinks.Count > 0)
+                {
+                    context.LinkedChildren.RemoveRange(staleLinks);
+                }
             }
         }
 
         context.SaveChanges();
 
+        // A LinkedChild's ItemId is only a cache.
+        var cachedChildIds = tuples
+            .Select(t => t.Item)
+            .OfType<Folder>()
+            .Where(f => f.LinkedChildrenLoaded)
+            .SelectMany(f => f.LinkedChildren)
+            .Where(lc => lc.ItemId.HasValue && !lc.ItemId.Value.IsEmpty())
+            .Select(lc => lc.ItemId!.Value)
+            .Distinct()
+            .ToList();
+
+        var knownChildIds = cachedChildIds.Count > 0
+            ? context.BaseItems
+                .WhereOneOrMany(cachedChildIds, e => e.Id)
+                .Select(e => e.Id)
+                .ToHashSet()
+            : [];
+
         foreach (var item in tuples)
         {
-            if (item.Item is Folder folder && folder.LinkedChildren.Length > 0)
+            if (item.Item is Folder { LinkedChildrenLoaded: true } folder && folder.LinkedChildren.Length > 0)
             {
 #pragma warning disable CS0618 // Type or member is obsolete - legacy path resolution for old data
                 var pathsToResolve = folder.LinkedChildren
-                    .Where(lc => (!lc.ItemId.HasValue || lc.ItemId.Value.IsEmpty()) && !string.IsNullOrEmpty(lc.Path))
+                    .Where(lc => !string.IsNullOrEmpty(lc.Path)
+                        && (!lc.ItemId.HasValue || lc.ItemId.Value.IsEmpty() || !knownChildIds.Contains(lc.ItemId.Value)))
                     .Select(lc => lc.Path)
                     .Distinct()
                     .ToList();
@@ -461,11 +498,15 @@ public class ItemPersistenceService : IItemPersistenceService
                 foreach (var linkedChild in folder.LinkedChildren)
                 {
                     var childItemId = linkedChild.ItemId;
-                    if (!childItemId.HasValue || childItemId.Value.IsEmpty())
+                    if (!childItemId.HasValue || childItemId.Value.IsEmpty() || !knownChildIds.Contains(childItemId.Value))
                     {
                         if (!string.IsNullOrEmpty(linkedChild.Path) && pathToIdMap.TryGetValue(linkedChild.Path, out var resolvedId))
                         {
                             childItemId = resolvedId;
+                        }
+                        else if (Guid.TryParse(linkedChild.LibraryItemId, out var libraryItemId) && !libraryItemId.IsEmpty())
+                        {
+                            childItemId = libraryItemId;
                         }
                     }
 #pragma warning restore CS0618
@@ -500,11 +541,14 @@ public class ItemPersistenceService : IItemPersistenceService
                 {
                     if (!existingChildIds.Contains(childId))
                     {
+#pragma warning disable CS0618 // Type or member is obsolete - legacy path is logged for diagnostics
                         _logger.LogWarning(
-                            "Skipping LinkedChild for parent {ParentName} ({ParentId}): child item {ChildId} does not exist in database",
+                            "Skipping LinkedChild for parent {ParentName} ({ParentId}): child item {ChildId} (path {ChildPath}) does not exist in database",
                             item.Item.Name,
                             item.Item.Id,
-                            childId);
+                            childId,
+                            linkedChild.Path ?? "unknown");
+#pragma warning restore CS0618
                         continue;
                     }
 

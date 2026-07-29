@@ -63,7 +63,7 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
         var itemsWithData = context.BaseItems
             .Where(b => b.Data != null && (containerTypes.Contains(b.Type) || videoTypes.Contains(b.Type)))
-            .Select(b => new { b.Id, b.Data, b.Type })
+            .Select(b => new { b.Id, b.Data, b.Type, b.Path, b.IsFolder })
             .ToList();
 
         _logger.LogInformation("Found {Count} potential items with LinkedChildren data to process.", itemsWithData.Count);
@@ -74,6 +74,15 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
             .GroupBy(b => b.Path!)
             .ToDictionary(g => g.Key, g => g.First().Id);
 
+        // Needed to tell a stale cached ItemId apart from one that still points at a real item.
+        var allItemIds = context.BaseItems.Select(b => b.Id).ToHashSet();
+
+        var playlistParentIds = itemsWithData
+            .Where(b => b.Type == "MediaBrowser.Controller.Playlists.Playlist")
+            .Select(b => b.Id)
+            .ToHashSet();
+
+        var droppedChildren = 0;
         var linkedChildrenToAdd = new List<LinkedChildEntity>();
         var processedCount = 0;
         const int progressLogStep = 1000;
@@ -100,7 +109,7 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
                 // Handle Video alternate versions
                 if (isVideo)
                 {
-                    ProcessVideoAlternateVersions(doc.RootElement, item.Id, pathToIdMap, linkedChildrenToAdd);
+                    ProcessVideoAlternateVersions(doc.RootElement, item.Id, pathToIdMap, allItemIds, linkedChildrenToAdd);
                 }
 
                 // Handle LinkedChildren (for containers and other items)
@@ -110,45 +119,22 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
                     continue;
                 }
 
+                // Legacy entries may hold a path relative to the container that holds them, so the
+                // container's own location has to be a real path, not a virtual one.
+                var itemPath = item.Path is null ? null : _appHost.ExpandVirtualPath(item.Path);
+                var containingFolderPath = item.IsFolder ? itemPath : Path.GetDirectoryName(itemPath);
                 var sortOrder = 0;
                 foreach (var childElement in linkedChildrenElement.EnumerateArray())
                 {
-                    Guid? childId = null;
-                    if (childElement.TryGetProperty("ItemId", out var itemIdProp) && itemIdProp.ValueKind != JsonValueKind.Null)
+                    var childId = ResolveChildId(childElement, containingFolderPath, pathToIdMap, allItemIds);
+                    if (!childId.HasValue)
                     {
-                        var itemIdStr = itemIdProp.GetString();
-                        if (!string.IsNullOrEmpty(itemIdStr) && Guid.TryParse(itemIdStr, out var parsedId))
-                        {
-                            childId = parsedId;
-                        }
-                    }
-
-                    if (!childId.HasValue || childId.Value.IsEmpty())
-                    {
-                        if (childElement.TryGetProperty("Path", out var pathProp))
-                        {
-                            var path = pathProp.GetString();
-                            if (!string.IsNullOrEmpty(path) && pathToIdMap.TryGetValue(path, out var resolvedId))
-                            {
-                                childId = resolvedId;
-                            }
-                        }
-                    }
-
-                    if (!childId.HasValue || childId.Value.IsEmpty())
-                    {
-                        if (childElement.TryGetProperty("LibraryItemId", out var libIdProp))
-                        {
-                            var libIdStr = libIdProp.GetString();
-                            if (!string.IsNullOrEmpty(libIdStr) && Guid.TryParse(libIdStr, out var parsedLibId))
-                            {
-                                childId = parsedLibId;
-                            }
-                        }
-                    }
-
-                    if (!childId.HasValue || childId.Value.IsEmpty())
-                    {
+                        droppedChildren++;
+                        _logger.LogWarning(
+                            "Dropping unresolvable LinkedChild of {ParentId}: ItemId {ItemId}, path {ChildPath}",
+                            item.Id,
+                            GetStringProperty(childElement, "ItemId") ?? "none",
+                            GetStringProperty(childElement, "Path") ?? "none");
                         continue;
                     }
 
@@ -196,23 +182,37 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
                 .Select(lc => new { lc.ParentId, lc.ChildId })
                 .ToHashSet();
 
+            // A playlist may list the same child more than once, so it cannot be keyed by
+            // (ParentId, ChildId): skip a playlist wholesale if it already has rows instead, which
+            // keeps the routine re-runnable without collapsing repeated entries.
+            var populatedParentIds = context.LinkedChildren
+                .Select(lc => lc.ParentId)
+                .Distinct()
+                .ToHashSet();
+
             var toInsert = linkedChildrenToAdd
-                .Where(lc => !existingKeys.Contains(new { lc.ParentId, lc.ChildId }))
+                .Where(lc => playlistParentIds.Contains(lc.ParentId)
+                    ? !populatedParentIds.Contains(lc.ParentId)
+                    : !existingKeys.Contains(new { lc.ParentId, lc.ChildId }))
                 .ToList();
 
             if (toInsert.Count > 0)
             {
-                // Deduplicate by composite key (ParentId, ChildId)
+                // Every container type other than a playlist keeps a single entry per child.
                 // Priority: LocalAlternateVersion > LinkedAlternateVersion > Other
-                toInsert = toInsert
-                    .OrderBy(lc => lc.ChildType switch
-                    {
-                        LinkedChildType.LocalAlternateVersion => 0,
-                        LinkedChildType.LinkedAlternateVersion => 1,
-                        _ => 2
-                    })
-                    .DistinctBy(lc => new { lc.ParentId, lc.ChildId })
-                    .ToList();
+                toInsert =
+                [
+                    .. toInsert.Where(lc => playlistParentIds.Contains(lc.ParentId)),
+                    .. toInsert
+                        .Where(lc => !playlistParentIds.Contains(lc.ParentId))
+                        .OrderBy(lc => lc.ChildType switch
+                        {
+                            LinkedChildType.LocalAlternateVersion => 0,
+                            LinkedChildType.LinkedAlternateVersion => 1,
+                            _ => 2
+                        })
+                        .DistinctBy(lc => new { lc.ParentId, lc.ChildId })
+                ];
 
                 var childIds = toInsert.Select(lc => lc.ChildId).Distinct().ToList();
                 var existingChildIds = context.BaseItems
@@ -266,7 +266,10 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
             _logger.LogInformation("No LinkedChildren data found to migrate.");
         }
 
-        _logger.LogInformation("LinkedChildren migration completed. Processed {Count} items.", processedCount);
+        _logger.LogInformation(
+            "LinkedChildren migration completed. Processed {Count} items, dropped {DroppedCount} unresolvable children.",
+            processedCount,
+            droppedChildren);
 
         CleanupWrongTypeAlternateVersions(context);
         CleanupOrphanedAlternateVersionBaseItems(context);
@@ -417,6 +420,12 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
         var internalMetadataPath = _appPaths.InternalMetadataPath;
 
+        // An item outside every library location is normally left over from a removed media path, but
+        // it looks exactly the same as one whose storage failed to mount (a wrong bind mount on the
+        // first container start, for example). Only act on it while every location is readable.
+        var canRemoveUnrootedItems = inaccessiblePaths.Count == 0;
+        var skippedUnrootedItems = 0;
+
         var staleIds = new List<Guid>();
         foreach (var item in itemsWithPaths)
         {
@@ -435,6 +444,7 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
                 // Directory check covers BDMV/DVD items whose Path points to a folder
                 if (!File.Exists(path) && !Directory.Exists(path))
                 {
+                    _logger.LogDebug("Removing item {ItemId}: file {Path} no longer exists.", item.Id, path);
                     staleIds.Add(item.Id);
                 }
             }
@@ -442,10 +452,26 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
             {
                 // Item is not under ANY library location (accessible or not) —
                 // it's orphaned from all libraries (e.g. media path was removed from config)
-                staleIds.Add(item.Id);
+                if (canRemoveUnrootedItems)
+                {
+                    _logger.LogDebug("Removing item {ItemId}: path {Path} is outside every library location.", item.Id, path);
+                    staleIds.Add(item.Id);
+                }
+                else
+                {
+                    skippedUnrootedItems++;
+                }
             }
 
             // Otherwise: item is under an inaccessible location — skip (storage may be offline)
+        }
+
+        if (skippedUnrootedItems > 0)
+        {
+            _logger.LogWarning(
+                "Keeping {Count} items that are outside every library location because {LocationCount} library location(s) are currently unavailable.",
+                skippedUnrootedItems,
+                inaccessiblePaths.Count);
         }
 
         if (staleIds.Count == 0)
@@ -517,18 +543,86 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
             orphanedLinkedChildren.AddRange(orphanedByParent);
         }
 
-        // Remove all orphaned records
-        var distinctOrphaned = orphanedLinkedChildren.DistinctBy(lc => new { lc.ParentId, lc.ChildId }).ToList();
+        // Remove all orphaned records. Both queries can return the same row, and a playlist may hold
+        // several rows for one child, so the position is what identifies an entry here.
+        var distinctOrphaned = orphanedLinkedChildren.DistinctBy(lc => new { lc.ParentId, lc.SortOrder }).ToList();
         context.LinkedChildren.RemoveRange(distinctOrphaned);
         context.SaveChanges();
 
         _logger.LogInformation("Successfully removed {Count} orphaned LinkedChildren records.", distinctOrphaned.Count);
     }
 
+    /// <summary>
+    /// Resolves the item a legacy LinkedChild entry points at.
+    /// </summary>
+    private static Guid? ResolveChildId(
+        JsonElement childElement,
+        string? containingFolderPath,
+        Dictionary<string, Guid> pathToIdMap,
+        HashSet<Guid> allItemIds)
+    {
+        // Pre-12 data only cached ItemId and re-resolved it from the path whenever the cached value
+        // went stale (BaseItem.GetLinkedChild in 10.x). An id that no longer exists must therefore
+        // fall through to the path, or the entry is lost even though its file is still in the library.
+        if (TryGetGuidProperty(childElement, "ItemId", out var itemId) && allItemIds.Contains(itemId))
+        {
+            return itemId;
+        }
+
+        var path = GetStringProperty(childElement, "Path");
+        if (!string.IsNullOrEmpty(path))
+        {
+            if (pathToIdMap.TryGetValue(path, out var idByPath))
+            {
+                return idByPath;
+            }
+
+            // 10.x resolved entries relative to the container that holds them.
+            if (!Path.IsPathRooted(path) && !string.IsNullOrEmpty(containingFolderPath))
+            {
+                string? absolutePath = null;
+                try
+                {
+                    absolutePath = Path.GetFullPath(Path.Combine(containingFolderPath, path));
+                }
+                catch (ArgumentException)
+                {
+                    // Malformed path, nothing to resolve.
+                }
+
+                if (absolutePath is not null && pathToIdMap.TryGetValue(absolutePath, out var idByAbsolutePath))
+                {
+                    return idByAbsolutePath;
+                }
+            }
+        }
+
+        if (TryGetGuidProperty(childElement, "LibraryItemId", out var libraryItemId) && allItemIds.Contains(libraryItemId))
+        {
+            return libraryItemId;
+        }
+
+        return null;
+    }
+
+    private static string? GetStringProperty(JsonElement element, string propertyName)
+        => element.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.String
+            ? property.GetString()
+            : null;
+
+    private static bool TryGetGuidProperty(JsonElement element, string propertyName, out Guid value)
+    {
+        value = Guid.Empty;
+        var raw = GetStringProperty(element, propertyName);
+
+        return !string.IsNullOrEmpty(raw) && Guid.TryParse(raw, out value) && !value.IsEmpty();
+    }
+
     private void ProcessVideoAlternateVersions(
         JsonElement root,
         Guid parentId,
         Dictionary<string, Guid> pathToIdMap,
+        HashSet<Guid> allItemIds,
         List<LinkedChildEntity> linkedChildrenToAdd)
     {
         int sortOrder = 0;
@@ -581,45 +675,8 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
         {
             foreach (var linkedChildElement in linkedAlternateVersionsElement.EnumerateArray())
             {
-                Guid? childId = null;
-
-                // Try to get ItemId
-                if (linkedChildElement.TryGetProperty("ItemId", out var itemIdProp) && itemIdProp.ValueKind != JsonValueKind.Null)
-                {
-                    var itemIdStr = itemIdProp.GetString();
-                    if (!string.IsNullOrEmpty(itemIdStr) && Guid.TryParse(itemIdStr, out var parsedId))
-                    {
-                        childId = parsedId;
-                    }
-                }
-
-                // Try to get from Path if ItemId not available
-                if (!childId.HasValue || childId.Value.IsEmpty())
-                {
-                    if (linkedChildElement.TryGetProperty("Path", out var pathProp))
-                    {
-                        var path = pathProp.GetString();
-                        if (!string.IsNullOrEmpty(path) && pathToIdMap.TryGetValue(path, out var resolvedId))
-                        {
-                            childId = resolvedId;
-                        }
-                    }
-                }
-
-                // Try LibraryItemId as fallback
-                if (!childId.HasValue || childId.Value.IsEmpty())
-                {
-                    if (linkedChildElement.TryGetProperty("LibraryItemId", out var libIdProp))
-                    {
-                        var libIdStr = libIdProp.GetString();
-                        if (!string.IsNullOrEmpty(libIdStr) && Guid.TryParse(libIdStr, out var parsedLibId))
-                        {
-                            childId = parsedLibId;
-                        }
-                    }
-                }
-
-                if (!childId.HasValue || childId.Value.IsEmpty())
+                var childId = ResolveChildId(linkedChildElement, null, pathToIdMap, allItemIds);
+                if (!childId.HasValue)
                 {
                     _logger.LogWarning("Could not resolve LinkedAlternateVersion child ID for parent {ParentId}", parentId);
                     continue;
