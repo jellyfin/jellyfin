@@ -55,6 +55,16 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     private static readonly TimeSpan StreamOpenInitialRetryDelay = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan StreamOpenMaxRetryDelay = TimeSpan.FromSeconds(10);
 
+    // A source that opens but delivers no data across this many consecutive reconnects is treated as
+    // unusable and the recording is aborted (instead of reconnecting forever on an empty stream).
+    private const int MaxEmptyReconnects = 5;
+    private static readonly TimeSpan StreamReconnectInitialDelay = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan StreamReconnectMaxDelay = TimeSpan.FromSeconds(10);
+
+    // Don't bother reconnecting when this little of the scheduled recording remains; the reconnect
+    // overhead isn't worth it and the recording is effectively complete.
+    private static readonly TimeSpan MinRecordingRemaining = TimeSpan.FromSeconds(10);
+
     private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings = new(StringComparer.OrdinalIgnoreCase);
     private readonly AsyncNonKeyedLocker _recordingDeleteSemaphore = new();
     private bool _disposed;
@@ -314,70 +324,120 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         var remoteMetadata = await FetchInternetMetadata(timer, CancellationToken.None).ConfigureAwait(false);
         var recordingPath = GetRecordingPath(timer, remoteMetadata, out var seriesPath);
 
-        string? liveStreamId = null;
         RecordingStatus recordingStatus;
-        try
+
+        // Runs exactly once, when the first connection actually starts producing the recording file.
+        async void OnStarted()
+        {
+            recordingInfo.Path = recordingPath;
+            _activeRecordings.TryAdd(timer.Id, recordingInfo);
+
+            timer.Status = RecordingStatus.InProgress;
+            _timerManager.AddOrUpdate(timer, false);
+
+            // Metadata is intentionally NOT written here. Writing it on "start" (before any video
+            // data is confirmed) left an orphaned .nfo and no video whenever an IPTV/M3U source
+            // failed to open. It is written in the finalize step below, only once a non-empty
+            // recording actually exists.
+            await CreateRecordingFolders().ConfigureAwait(false);
+
+            TriggerRefresh(recordingPath);
+            await EnforceKeepUpTo(timer, seriesPath).ConfigureAwait(false);
+        }
+
+        // Records a single connection to the source, appending to the same file on reconnects. A
+        // dropped/ended stream returns here so the reconnect loop can resume; the scheduled end
+        // (or a user stop) surfaces as an OperationCanceledException and ends the recording.
+        async Task RecordSegmentAsync(bool append, TimeSpan remaining, CancellationToken segmentToken)
         {
             var allMediaSources = await _mediaSourceManager
                 .GetPlaybackMediaSources(channel, null, true, false, CancellationToken.None).ConfigureAwait(false);
 
             var mediaStreamInfo = allMediaSources[0];
             IDirectStreamProvider? directStreamProvider = null;
+            string? segmentLiveStreamId = null;
             if (mediaStreamInfo.RequiresOpening)
             {
-                // Retry the stream open with exponential backoff so a transient IPTV/tuner hiccup
-                // doesn't lose the whole recording before the recorder even starts.
+                // Flaky IPTV/M3U sources frequently fail to open on the first attempt. Retry with
+                // backoff before starting the recorder so a transient hiccup doesn't lose the segment.
+                var openToken = mediaStreamInfo.OpenToken;
                 var liveStreamResponse = await OpenWithRetryAsync(
                     ct => _mediaSourceManager.OpenLiveStreamInternal(
                         new LiveStreamRequest
                         {
                             ItemId = channel.Id,
-                            OpenToken = mediaStreamInfo.OpenToken
+                            OpenToken = openToken
                         },
                         ct),
                     StreamOpenMaxAttempts,
                     StreamOpenInitialRetryDelay,
                     StreamOpenMaxRetryDelay,
                     _logger,
-                    recordingInfo.CancellationTokenSource.Token).ConfigureAwait(false);
+                    segmentToken).ConfigureAwait(false);
 
                 mediaStreamInfo = liveStreamResponse.Item1.MediaSource;
-                liveStreamId = mediaStreamInfo.LiveStreamId;
+                segmentLiveStreamId = mediaStreamInfo.LiveStreamId;
                 directStreamProvider = liveStreamResponse.Item2;
             }
 
-            using var recorder = GetRecorder(mediaStreamInfo);
-
-            recordingPath = recorder.GetOutputPath(mediaStreamInfo, recordingPath);
-            recordingPath = EnsureFileUnique(recordingPath, timer.Id);
-
-            _libraryMonitor.ReportFileSystemChangeBeginning(recordingPath);
-
-            var duration = recordingEndDate - DateTime.UtcNow;
-
-            _logger.LogInformation("Beginning recording. Will record for {Duration} minutes.", duration.TotalMinutes);
-            _logger.LogInformation("Writing file to: {Path}", recordingPath);
-
-            async void OnStarted()
+            try
             {
-                recordingInfo.Path = recordingPath;
-                _activeRecordings.TryAdd(timer.Id, recordingInfo);
+                using var recorder = GetRecorder(mediaStreamInfo, directStreamProvider);
 
-                timer.Status = RecordingStatus.InProgress;
-                _timerManager.AddOrUpdate(timer, false);
+                if (!append)
+                {
+                    recordingPath = recorder.GetOutputPath(mediaStreamInfo, recordingPath);
+                    recordingPath = EnsureFileUnique(recordingPath, timer.Id);
 
-                await CreateRecordingFolders().ConfigureAwait(false);
+                    _libraryMonitor.ReportFileSystemChangeBeginning(recordingPath);
 
-                TriggerRefresh(recordingPath);
-                await EnforceKeepUpTo(timer, seriesPath).ConfigureAwait(false);
+                    _logger.LogInformation("Beginning recording. Will record for {Duration} minutes.", remaining.TotalMinutes);
+                    _logger.LogInformation("Writing file to: {Path}", recordingPath);
+                }
+                else
+                {
+                    _logger.LogInformation("Resuming recording after stream drop; appending to {Path}", recordingPath);
+                }
+
+                await recorder.Record(
+                    directStreamProvider,
+                    mediaStreamInfo,
+                    recordingPath,
+                    remaining,
+                    append ? () => { } : OnStarted,
+                    append,
+                    segmentToken).ConfigureAwait(false);
             }
+            finally
+            {
+                if (!string.IsNullOrWhiteSpace(segmentLiveStreamId))
+                {
+                    try
+                    {
+                        await _mediaSourceManager.CloseLiveStream(segmentLiveStreamId).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error closing live stream");
+                    }
+                }
+            }
+        }
 
-            await recorder.Record(
-                directStreamProvider,
-                mediaStreamInfo,
-                recordingPath,
-                duration,
-                OnStarted,
+        try
+        {
+            // Record across reconnects so a laggy/dropping IPTV source still produces a single,
+            // complete file: each dropped connection is reopened and recording resumes by appending
+            // until the scheduled end is reached (or the user stops the recording).
+            await RecordWithReconnectAsync(
+                RecordSegmentAsync,
+                () => recordingEndDate - DateTime.UtcNow,
+                () => File.Exists(recordingPath) ? new FileInfo(recordingPath).Length : 0,
+                MaxEmptyReconnects,
+                MinRecordingRemaining,
+                StreamReconnectInitialDelay,
+                StreamReconnectMaxDelay,
+                _logger,
                 recordingInfo.CancellationTokenSource.Token).ConfigureAwait(false);
 
             recordingStatus = RecordingStatus.Completed;
@@ -392,18 +452,6 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         {
             _logger.LogError(ex, "Error recording to {RecordPath}", recordingPath);
             recordingStatus = RecordingStatus.Error;
-        }
-
-        if (!string.IsNullOrWhiteSpace(liveStreamId))
-        {
-            try
-            {
-                await _mediaSourceManager.CloseLiveStream(liveStreamId).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error closing live stream");
-            }
         }
 
         // Remove any empty/failed capture and its orphaned .nfo/folder so a recording that never
@@ -685,6 +733,97 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     }
 
     /// <summary>
+    /// Records a source across reconnects so a laggy/dropping stream still produces a single,
+    /// complete recording. Each call to <paramref name="recordSegmentAsync"/> records one connection;
+    /// when it returns before the scheduled end (the stream dropped), the source is reopened after a
+    /// backoff delay and recording resumes by appending to the same file. The loop ends when the
+    /// remaining time falls to <paramref name="minRemaining"/> or the segment throws
+    /// <see cref="OperationCanceledException"/> (scheduled end reached or the recording was stopped).
+    /// </summary>
+    /// <param name="recordSegmentAsync">
+    /// Records a single connection. The first argument is <c>true</c> when the segment should append
+    /// to the existing recording (i.e. this is a reconnect), the second is the time left to record.
+    /// </param>
+    /// <param name="getRemaining">Returns the time remaining until the scheduled recording end.</param>
+    /// <param name="getBytesWritten">Returns the number of bytes captured to the recording so far.</param>
+    /// <param name="maxEmptyReconnects">
+    /// The number of consecutive reconnects that may capture no new data before the recording is
+    /// aborted. Prevents an unusable source (e.g. one that opens but never delivers data) from
+    /// reconnecting forever and producing an endless empty recording.
+    /// </param>
+    /// <param name="minRemaining">The smallest remaining time worth (re)connecting for.</param>
+    /// <param name="initialReconnectDelay">The delay before the first reconnect attempt.</param>
+    /// <param name="maxReconnectDelay">The upper bound for the reconnect backoff delay.</param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A <see cref="Task"/> that completes when the recording reaches its scheduled end.</returns>
+    internal static async Task RecordWithReconnectAsync(
+        Func<bool, TimeSpan, CancellationToken, Task> recordSegmentAsync,
+        Func<TimeSpan> getRemaining,
+        Func<long> getBytesWritten,
+        int maxEmptyReconnects,
+        TimeSpan minRemaining,
+        TimeSpan initialReconnectDelay,
+        TimeSpan maxReconnectDelay,
+        ILogger logger,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(recordSegmentAsync);
+        ArgumentNullException.ThrowIfNull(getRemaining);
+        ArgumentNullException.ThrowIfNull(getBytesWritten);
+
+        var appending = false;
+        var reconnectDelay = initialReconnectDelay;
+        var emptyReconnects = 0;
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var remaining = getRemaining();
+            if (remaining <= minRemaining)
+            {
+                break;
+            }
+
+            var bytesBefore = getBytesWritten();
+
+            await recordSegmentAsync(appending, remaining, cancellationToken).ConfigureAwait(false);
+
+            // The segment returned without cancellation, which means the source stopped delivering
+            // data before the scheduled end. If there's still meaningful time left, reconnect and
+            // keep appending so the recording finishes.
+            appending = true;
+
+            if (getRemaining() <= minRemaining)
+            {
+                break;
+            }
+
+            // Guard against a source that repeatedly opens but delivers nothing (e.g. an unusable
+            // URL or a redirect that yields an empty body): abort instead of reconnecting forever.
+            if (getBytesWritten() > bytesBefore)
+            {
+                emptyReconnects = 0;
+            }
+            else if (++emptyReconnects >= maxEmptyReconnects)
+            {
+                throw new InvalidOperationException(
+                    FormattableString.Invariant($"Recording captured no data across {emptyReconnects} consecutive reconnect attempts; aborting."));
+            }
+
+            logger.LogWarning(
+                "Recording stream ended with ~{RemainingSeconds:F0}s left before the scheduled end; reconnecting in {DelaySeconds:F0}s to finish the recording.",
+                getRemaining().TotalSeconds,
+                reconnectDelay.TotalSeconds);
+
+            await Task.Delay(reconnectDelay, cancellationToken).ConfigureAwait(false);
+
+            var nextDelayMs = Math.Min(reconnectDelay.TotalMilliseconds * 2, maxReconnectDelay.TotalMilliseconds);
+            reconnectDelay = TimeSpan.FromMilliseconds(nextDelayMs);
+        }
+    }
+
+    /// <summary>
     /// Deletes the given directory only when it exists and contains no entries. Used to remove the
     /// leftover recording folder after a failed (empty) capture has been cleaned up.
     /// </summary>
@@ -912,11 +1051,23 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         return path;
     }
 
-    private IRecorder GetRecorder(MediaSourceInfo mediaSource)
+    private IRecorder GetRecorder(MediaSourceInfo mediaSource, IDirectStreamProvider? directStreamProvider)
     {
         if (mediaSource.RequiresLooping
             || !(mediaSource.Container ?? string.Empty).EndsWith("ts", StringComparison.OrdinalIgnoreCase)
             || (mediaSource.Protocol != MediaProtocol.File && mediaSource.Protocol != MediaProtocol.Http))
+        {
+            return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _config);
+        }
+
+        // For infinite HTTP live streams consumed directly from the source URL (no shared-stream pipe),
+        // record through ffmpeg so it can transparently reconnect on the frequent connection drops of
+        // flaky IPTV/M3U providers, producing one continuous file. The raw DirectRecorder can only
+        // byte-append across reconnects, which stitches fragments from different edge servers and breaks
+        // playback at each seam.
+        if (directStreamProvider is null
+            && mediaSource.IsInfiniteStream
+            && mediaSource.Protocol == MediaProtocol.Http)
         {
             return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _config);
         }

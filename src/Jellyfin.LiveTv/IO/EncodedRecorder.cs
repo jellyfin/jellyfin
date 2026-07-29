@@ -58,15 +58,73 @@ namespace Jellyfin.LiveTv.IO
             return Path.ChangeExtension(targetFile, ".ts");
         }
 
-        public async Task Record(IDirectStreamProvider directStreamProvider, MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
+        public async Task Record(IDirectStreamProvider directStreamProvider, MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, bool append, CancellationToken cancellationToken)
         {
             // The media source is infinite so we need to handle stopping ourselves
             using var durationToken = new CancellationTokenSource(duration);
             using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
 
-            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, onStarted, cancellationTokenSource.Token).ConfigureAwait(false);
+            if (!append)
+            {
+                await RecordFromFile(mediaSource, mediaSource.Path, targetFile, onStarted, cancellationTokenSource.Token).ConfigureAwait(false);
+            }
+            else
+            {
+                // ffmpeg cannot append to an existing container in-process, so capture this reconnect
+                // segment to a sibling file and binary-append it to the target afterwards. MPEG-TS
+                // concatenates cleanly, so the resulting recording plays back as one continuous file.
+                var segmentFile = targetFile + "." + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture) + ".part.ts";
+                try
+                {
+                    await RecordFromFile(mediaSource, mediaSource.Path, segmentFile, onStarted, cancellationTokenSource.Token).ConfigureAwait(false);
+                }
+                finally
+                {
+                    await AppendSegmentAsync(segmentFile, targetFile).ConfigureAwait(false);
+                }
+            }
 
             _logger.LogInformation("Recording completed to file {Path}", targetFile);
+        }
+
+        private async Task AppendSegmentAsync(string segmentFile, string targetFile)
+        {
+            try
+            {
+                if (!File.Exists(segmentFile) || new FileInfo(segmentFile).Length == 0)
+                {
+                    return;
+                }
+
+                var input = new FileStream(segmentFile, FileMode.Open, FileAccess.Read, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+                await using (input.ConfigureAwait(false))
+                {
+                    var output = new FileStream(targetFile, FileMode.Append, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+                    await using (output.ConfigureAwait(false))
+                    {
+                        // Copy regardless of the recording cancellation so the captured segment is not lost.
+                        await input.CopyToAsync(output, CancellationToken.None).ConfigureAwait(false);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error appending recording segment {Segment} to {Target}", segmentFile, targetFile);
+            }
+            finally
+            {
+                try
+                {
+                    if (File.Exists(segmentFile))
+                    {
+                        File.Delete(segmentFile);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error deleting recording segment {Segment}", segmentFile);
+                }
+            }
         }
 
         private async Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, Action onStarted, CancellationToken cancellationToken)
@@ -169,6 +227,20 @@ namespace Jellyfin.LiveTv.IO
             if (mediaSource.RequiresLooping)
             {
                 inputModifier += " -stream_loop -1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2";
+            }
+            else if (inputTempFile.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                || inputTempFile.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                // Flaky IPTV/M3U providers routinely close the connection mid-stream (often every few
+                // seconds) and expect the client to reconnect. Let ffmpeg transparently reconnect the
+                // HTTP(S) input within this single process - including on a clean end-of-stream close -
+                // so the capture continues into one continuous, seamless file instead of being truncated
+                // or stitched together from many fragments (which breaks playback at each seam).
+                inputModifier += " -reconnect 1 -reconnect_streamed 1 -reconnect_at_eof 1 -reconnect_delay_max 4";
+                if (_mediaEncoder.EncoderVersion >= new Version(4, 3))
+                {
+                    inputModifier += " -reconnect_on_network_error 1";
+                }
             }
 
             var analyzeDurationSeconds = 5;
