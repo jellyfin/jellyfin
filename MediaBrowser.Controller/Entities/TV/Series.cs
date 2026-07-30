@@ -3,6 +3,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -28,9 +29,7 @@ namespace MediaBrowser.Controller.Entities.TV
     public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IMetadataContainer, ISupportsBoxSetGrouping
     {
         /// <summary>
-        /// Maximum time a single child item's metadata refresh is allowed to run before it is abandoned as hung.
-        /// A single slow or stuck provider call must not be allowed to stall the entire series refresh
-        /// (see <see cref="MediaBrowser.Controller.LibraryTaskScheduler.ILimitedConcurrencyLibraryScheduler"/>, which bounds how many run at once but not how long any one of them may take).
+        /// Maximum time a single child item's metadata refresh may run before it is abandoned.
         /// </summary>
         private static readonly TimeSpan _childMetadataRefreshTimeout = TimeSpan.FromSeconds(60);
 
@@ -316,11 +315,19 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var totalItems = items.Count;
             var seasonsShare = totalItems == 0 ? 0 : (seasons.Length * 100d) / totalItems;
-            var numFailed = 0;
+            var failedItems = new ConcurrentBag<BaseItem>();
 
-            async Task RefreshChildAsync(BaseItem item, bool skip)
+            async Task RefreshChildAsync(BaseItem item)
             {
-                if (skip || !refreshOptions.RefreshItem(item))
+                var skipItem = item is Episode episode
+                    && refreshOptions.MetadataRefreshMode != MetadataRefreshMode.FullRefresh
+                    && !refreshOptions.ReplaceAllMetadata
+                    && episode.IsMissingEpisode
+                    && episode.LocationType == LocationType.Virtual
+                    && episode.PremiereDate.HasValue
+                    && (DateTime.UtcNow - episode.PremiereDate.Value).TotalDays > 30;
+
+                if (skipItem || !refreshOptions.RefreshItem(item))
                 {
                     return;
                 }
@@ -332,82 +339,56 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     await item.RefreshMetadata(refreshOptions, timeoutCts.Token).ConfigureAwait(false);
                 }
-                catch (OperationCanceledException ex)
+                catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
                 {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        // The caller's token was cancelled, not our own timeout. Propagate it.
-                        throw;
-                    }
-
-                    Interlocked.Increment(ref numFailed);
+                    failedItems.Add(item);
                     Logger.LogError(
                         ex,
-                        "Timed out after {Timeout} refreshing metadata for {ItemType} '{ItemName}' ({Path}) in series '{SeriesName}'. Skipping this item and continuing with the rest of the series.",
+                        "Timed out after {Timeout} refreshing metadata for {ItemType} '{ItemName}' ({ItemPath})",
                         _childMetadataRefreshTimeout,
                         item.GetType().Name,
                         item.Name,
-                        item.Path,
-                        Name);
+                        item.Path);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not OperationCanceledException)
                 {
-                    Interlocked.Increment(ref numFailed);
+                    failedItems.Add(item);
                     Logger.LogError(
                         ex,
-                        "Error refreshing metadata for {ItemType} '{ItemName}' ({Path}) in series '{SeriesName}'. Skipping this item and continuing with the rest of the series.",
+                        "Error refreshing metadata for {ItemType} '{ItemName}' ({ItemPath})",
                         item.GetType().Name,
                         item.Name,
-                        item.Path,
-                        Name);
+                        item.Path);
                 }
             }
 
-            // Refresh seasons first (bounded concurrency via the shared library scheduler), then episodes and other children.
-            // Seasons must exist before episodes are (re)parented against them, so these two phases stay sequential relative to each other.
+            // Refresh seasons, then episodes and other children.
             var seasonsProgress = new Progress<double>(p => progress.Report(seasonsShare * (p / 100)));
             await LimitedConcurrencyLibraryScheduler
                 .Enqueue(
                     seasons,
-                    (item, _) => RefreshChildAsync(item, skip: false),
+                    (item, _) => RefreshChildAsync(item),
                     seasonsProgress,
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            // Refresh episodes and other children
             var othersProgress = new Progress<double>(p => progress.Report(seasonsShare + ((100 - seasonsShare) * (p / 100))));
             await LimitedConcurrencyLibraryScheduler
                 .Enqueue(
                     others,
-                    (item, _) =>
-                    {
-                        bool skipItem = item is Episode episode
-                            && refreshOptions.MetadataRefreshMode != MetadataRefreshMode.FullRefresh
-                            && !refreshOptions.ReplaceAllMetadata
-                            && episode.IsMissingEpisode
-                            && episode.LocationType == LocationType.Virtual
-                            && episode.PremiereDate.HasValue
-                            && (DateTime.UtcNow - episode.PremiereDate.Value).TotalDays > 30;
-
-                        return RefreshChildAsync(item, skipItem);
-                    },
+                    (item, _) => RefreshChildAsync(item),
                     othersProgress,
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            // numFailed is mutated via Interlocked.Increment inside RefreshChildAsync, which the scheduler invokes
-            // through a delegate the analyzer cannot trace into. The preceding awaits on Enqueue (which awaits all
-            // worker tasks) establish a happens-before relationship, so the value read here is correctly synchronized.
-#pragma warning disable S2583
-            if (numFailed > 0)
+            if (!failedItems.IsEmpty)
             {
                 Logger.LogWarning(
-                    "Finished refreshing metadata for series '{SeriesName}': {FailedCount} of {TotalCount} child items failed or timed out and were skipped.",
-                    Name,
-                    numFailed,
-                    totalItems);
+                    "Failed to refresh metadata for {FailedCount} of {TotalCount} child items in series '{SeriesName}'",
+                    failedItems.Count,
+                    totalItems,
+                    Name);
             }
-#pragma warning restore S2583
 
             refreshOptions = new MetadataRefreshOptions(refreshOptions);
             await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
