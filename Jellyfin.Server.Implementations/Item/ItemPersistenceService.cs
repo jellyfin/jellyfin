@@ -136,6 +136,7 @@ public class ItemPersistenceService : IItemPersistenceService
         context.ItemValuesMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ParentId).ExecuteDelete();
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ChildId).ExecuteDelete();
+        context.UserListItems.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.BaseItems.WhereOneOrMany(relatedItems, e => e.Id).ExecuteDelete();
         context.KeyframeData.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.MediaSegments.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
