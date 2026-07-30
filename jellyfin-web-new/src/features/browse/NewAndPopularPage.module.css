@@ -1,0 +1,20 @@
+.section {
+    margin-bottom: 3rem;
+}
+
+.section h2 {
+    margin: 0 var(--page-gutter, 4vw) 1rem;
+}
+
+.section > div:not(.rail) {
+    padding-bottom: 0;
+}
+
+.rail {
+    display: grid;
+    gap: 1rem;
+    grid-auto-columns: clamp(9rem, 15vw, 13rem);
+    grid-auto-flow: column;
+    overflow-x: auto;
+    padding: .5rem var(--page-gutter, 4vw) 1rem;
+}

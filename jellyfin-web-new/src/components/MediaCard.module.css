@@ -1,0 +1,84 @@
+.card {
+    min-width: 0;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.4rem;
+}
+
+.link {
+    min-width: 0;
+    display: grid;
+    gap: 0.65rem;
+}
+
+.artwork {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-raised);
+    transition: transform var(--transition-main), border-color var(--transition-main), filter var(--transition-main);
+}
+
+.poster .artwork {
+    aspect-ratio: 2 / 3;
+}
+
+.landscape .artwork {
+    aspect-ratio: 16 / 9;
+}
+
+.artwork img,
+.placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.placeholder {
+    display: grid;
+    place-items: center;
+    color: var(--color-ink-muted);
+    font: 500 clamp(2rem, 5vw, 4rem)/1 var(--font-mono);
+    background: linear-gradient(145deg, #262626, #0a0a0a);
+}
+
+.link:hover .artwork,
+.link:focus-visible .artwork {
+    z-index: 1;
+    border-color: rgba(255, 255, 255, 0.28);
+    filter: brightness(1.08);
+    transform: scale(1.025) translateY(-0.2rem);
+}
+
+.title {
+    overflow: hidden;
+    color: var(--color-ink-muted);
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.number {
+    padding-bottom: 1.9rem;
+    color: transparent;
+    font: 700 clamp(2.5rem, 6vw, 5.25rem)/0.7 var(--font-mono);
+    letter-spacing: -0.12em;
+    -webkit-text-stroke: 1px #71717a;
+}
+
+.progress {
+    position: absolute;
+    inset: auto 0.55rem 0.55rem;
+    height: 0.18rem;
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.28);
+}
+
+.progress > span {
+    display: block;
+    height: 100%;
+    background: #fafafa;
+}

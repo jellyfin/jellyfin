@@ -1,0 +1,35 @@
+.search {
+    margin: 0 var(--page-gutter, 4vw) 2rem;
+    max-width: 54rem;
+}
+
+.search label {
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+.search input {
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid #262626;
+    color: #fafafa;
+    font-size: clamp(1.35rem, 4vw, 3rem);
+    letter-spacing: -.035em;
+    outline: 0;
+    padding: .4rem 0 .8rem;
+    width: 100%;
+}
+
+.search input:focus {
+    border-bottom-color: #fafafa;
+}
+
+.hint {
+    color: #a1a1aa;
+    margin: 0 var(--page-gutter, 4vw);
+}

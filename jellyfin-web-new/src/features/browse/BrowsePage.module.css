@@ -1,0 +1,46 @@
+.filters {
+    align-items: end;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .8rem;
+    padding: 0 var(--page-gutter, 4vw) 2rem;
+}
+
+.filters label {
+    display: grid;
+    gap: .4rem;
+}
+
+.filters span {
+    color: #a1a1aa;
+    font-size: .72rem;
+}
+
+.filters input,
+.filters select {
+    background: #0a0a0a;
+    border: 1px solid #262626;
+    color: #fafafa;
+    min-height: 2.8rem;
+    padding: 0 .8rem;
+}
+
+.filters input:focus-visible,
+.filters select:focus-visible {
+    border-color: #fafafa;
+    outline: 0;
+}
+
+.more {
+    background: #171717;
+    border: 1px solid #262626;
+    color: #fafafa;
+    cursor: pointer;
+    display: block;
+    margin: -1.5rem auto 4rem;
+    padding: .85rem 1.5rem;
+}
+
+.more:disabled {
+    opacity: .5;
+}

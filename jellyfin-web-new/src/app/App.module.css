@@ -1,0 +1,27 @@
+.update {
+    position: fixed;
+    z-index: 200;
+    inset: auto var(--page-gutter) max(1rem, env(safe-area-inset-bottom)) auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    border: 1px solid #3f3f46;
+    border-radius: var(--radius-md);
+    background: rgba(23, 23, 23, 0.96);
+    box-shadow: 0 1rem 4rem rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(16px);
+}
+
+.update p {
+    margin: 0 0 0 0.25rem;
+    color: var(--color-ink-muted);
+    font-size: 0.85rem;
+}
+
+@media (max-width: 44rem) {
+    .update {
+        inset: auto 0.75rem calc(5rem + env(safe-area-inset-bottom)) 0.75rem;
+        justify-content: space-between;
+    }
+}

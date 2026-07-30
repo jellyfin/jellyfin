@@ -1,0 +1,14 @@
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: var(--color-ink);
+    font-size: 1.05rem;
+    font-weight: 650;
+    letter-spacing: -0.035em;
+}
+
+.brand svg {
+    width: 1.55rem;
+    height: 1.55rem;
+}

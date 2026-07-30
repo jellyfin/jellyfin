@@ -1,0 +1,395 @@
+.root {
+    background: #000;
+    color: #fafafa;
+    display: grid;
+    inset: 0;
+    overflow: hidden;
+    place-items: center;
+    position: fixed;
+    z-index: 100;
+}
+
+.stage {
+    height: 100%;
+    position: relative;
+    width: 100%;
+}
+
+.video {
+    background: #000;
+    display: block;
+    height: 100%;
+    object-fit: contain;
+    width: 100%;
+}
+
+.top,
+.controls {
+    left: 0;
+    position: absolute;
+    right: 0;
+    z-index: 3;
+}
+
+.top {
+    align-items: center;
+    background: linear-gradient(to bottom, rgb(0 0 0 / 88%), transparent);
+    display: flex;
+    gap: .8rem;
+    padding: 1rem clamp(1rem, 3vw, 3rem) 4rem;
+    top: 0;
+}
+
+.controls {
+    background: linear-gradient(to top, rgb(0 0 0 / 94%) 15%, transparent);
+    bottom: 0;
+    padding: 5rem clamp(1rem, 3vw, 3rem) max(1rem, env(safe-area-inset-bottom));
+}
+
+.title {
+    font-size: clamp(1rem, 2vw, 1.35rem);
+    font-weight: 550;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.timeline {
+    align-items: center;
+    display: flex;
+    min-height: 1.5rem;
+    width: 100%;
+}
+
+.seek,
+.volume {
+    accent-color: #fafafa;
+    cursor: pointer;
+}
+
+.seek {
+    width: 100%;
+}
+
+.volume {
+    width: min(8rem, 16vw);
+}
+
+.seek:focus-visible,
+.volume:focus-visible {
+    outline: 2px solid #fafafa;
+    outline-offset: 4px;
+}
+
+.controlRow {
+    align-items: center;
+    display: flex;
+    gap: .55rem;
+    min-height: 3rem;
+}
+
+.button,
+.select {
+    background: rgb(10 10 10 / 76%);
+    border: 1px solid rgb(255 255 255 / 24%);
+    border-radius: .45rem;
+    color: inherit;
+    font: inherit;
+    min-height: 2.75rem;
+}
+
+.button {
+    align-items: center;
+    cursor: pointer;
+    display: inline-flex;
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: .72rem;
+    font-weight: 650;
+    justify-content: center;
+    min-width: 2.75rem;
+    padding: .6rem .75rem;
+}
+
+.primaryControl {
+    background: #fafafa;
+    border-color: #fafafa;
+    color: #000;
+    font-size: 1rem;
+}
+
+.button:hover,
+.button:focus-visible,
+.select:hover,
+.select:focus-visible {
+    background: #171717;
+    border-color: #fafafa;
+    outline: none;
+}
+
+.primaryControl:hover,
+.primaryControl:focus-visible {
+    background: #d4d4d8;
+    color: #000;
+}
+
+.button:focus-visible,
+.select:focus-visible,
+.settings summary:focus-visible {
+    outline: 2px solid #fafafa;
+    outline-offset: 3px;
+}
+
+.button:disabled,
+.select:disabled {
+    cursor: not-allowed;
+    opacity: .48;
+}
+
+.time {
+    color: #d4d4d8;
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: .75rem;
+    font-variant-numeric: tabular-nums;
+    min-width: 7rem;
+    white-space: nowrap;
+}
+
+.spacer {
+    flex: 1;
+}
+
+.skip {
+    background: #fafafa;
+    border: 1px solid #fafafa;
+    border-radius: .35rem;
+    bottom: 8rem;
+    color: #000;
+    cursor: pointer;
+    font: 600 .9rem/1 inherit;
+    padding: .85rem 1.1rem;
+    position: absolute;
+    right: clamp(1rem, 4vw, 4rem);
+    z-index: 4;
+}
+
+.skip:focus-visible {
+    outline: 2px solid #fafafa;
+    outline-offset: 4px;
+}
+
+.dialog,
+.error {
+    background: #0a0a0a;
+    border: 1px solid #262626;
+    border-radius: .6rem;
+    box-shadow: 0 2rem 8rem rgb(0 0 0 / 70%);
+    left: 50%;
+    padding: 1.5rem;
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(30rem, calc(100% - 2rem));
+    z-index: 5;
+}
+
+.dialogActions {
+    display: flex;
+    gap: .75rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.errorCode {
+    color: #a1a1aa;
+    font-family: "Geist Mono", ui-monospace, monospace;
+}
+
+.loading {
+    align-items: center;
+    color: #d4d4d8;
+    display: flex;
+    flex-direction: column;
+    font-size: .8rem;
+    gap: .8rem;
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.loading span {
+    animation: spin .85s linear infinite;
+    border: 2px solid #52525b;
+    border-radius: 50%;
+    border-top-color: #fafafa;
+    height: 2rem;
+    width: 2rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(1turn); }
+}
+
+.settings {
+    background: rgb(10 10 10 / 96%);
+    border: 1px solid #3f3f46;
+    bottom: calc(100% - 4.5rem);
+    box-shadow: 0 1.5rem 6rem rgb(0 0 0 / 75%);
+    max-height: min(68vh, 42rem);
+    overflow: auto;
+    padding: 1rem;
+    position: absolute;
+    right: clamp(1rem, 3vw, 3rem);
+    width: min(31rem, calc(100% - 2rem));
+}
+
+.settings > header {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.settings h2 {
+    font-size: 1rem;
+    margin: 0;
+}
+
+.settingsGrid {
+    display: grid;
+    gap: .75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.settingsGrid label {
+    display: grid;
+    gap: .35rem;
+}
+
+.settingsGrid label > span,
+.technical dt {
+    color: #a1a1aa;
+    font-size: .68rem;
+}
+
+.select {
+    min-width: 0;
+    padding: 0 .65rem;
+    width: 100%;
+}
+
+.technical {
+    border-top: 1px solid #262626;
+    margin-top: 1rem;
+    padding-top: 1rem;
+}
+
+.technical summary {
+    cursor: pointer;
+    font-size: .82rem;
+}
+
+.technical dl {
+    display: grid;
+    gap: .5rem;
+    margin: 1rem 0 0;
+}
+
+.technical dl div {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr 1.25fr;
+}
+
+.technical dd,
+.technical dt {
+    margin: 0;
+}
+
+.technical dd {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: .7rem;
+    overflow-wrap: anywhere;
+}
+
+.shortcuts {
+    border-top: 1px solid #262626;
+    color: #71717a;
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: .65rem;
+    line-height: 1.5;
+    margin: 1rem 0 0;
+    padding-top: 1rem;
+}
+
+@media (max-width: 700px) {
+    .top {
+        padding-inline: .75rem;
+    }
+
+    .controls {
+        padding: 4rem .75rem max(.75rem, env(safe-area-inset-bottom));
+    }
+
+    .controlRow {
+        gap: .35rem;
+    }
+
+    .button {
+        min-height: 2.65rem;
+        min-width: 2.65rem;
+        padding-inline: .55rem;
+    }
+
+    .volume {
+        display: none;
+    }
+
+    .time {
+        font-size: .65rem;
+        min-width: 0;
+    }
+
+    .skip {
+        bottom: 8.5rem;
+    }
+
+    .settings {
+        border-inline: 0;
+        bottom: calc(100% - 4rem);
+        max-height: 62vh;
+        right: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 390px) {
+    .controlRow {
+        display: grid;
+        grid-template-columns: auto auto 1fr auto auto;
+    }
+
+    .pipButton {
+        display: none;
+    }
+
+    .settingsGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .root *,
+    .root *::before,
+    .root *::after {
+        animation-duration: .01ms !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+    }
+
+    .loading span {
+        animation: none;
+    }
+}

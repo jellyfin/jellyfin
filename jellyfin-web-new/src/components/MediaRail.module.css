@@ -1,0 +1,78 @@
+.rail {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--page-gutter);
+}
+
+.heading h2 {
+    margin: 0;
+    font-size: clamp(1.05rem, 2vw, 1.35rem);
+    letter-spacing: -0.03em;
+}
+
+.controls {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.controls button {
+    width: 2.1rem;
+    height: 2.1rem;
+    border: 1px solid var(--color-line);
+    border-radius: 50%;
+    color: var(--color-ink-muted);
+    background: var(--color-surface);
+}
+
+.controls button:hover {
+    color: var(--color-ink);
+    border-color: #525252;
+}
+
+.items {
+    display: grid;
+    grid-auto-flow: column;
+    gap: clamp(0.65rem, 1.2vw, 1rem);
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    padding: 0 var(--page-gutter) 0.75rem;
+    scroll-padding-inline: var(--page-gutter);
+    scroll-snap-type: inline proximity;
+    scrollbar-width: none;
+}
+
+.items::-webkit-scrollbar {
+    display: none;
+}
+
+.poster {
+    grid-auto-columns: clamp(8.75rem, 14vw, 13rem);
+}
+
+.landscape {
+    grid-auto-columns: clamp(14rem, 24vw, 23rem);
+}
+
+.items > * {
+    scroll-snap-align: start;
+}
+
+@media (max-width: 44rem) {
+    .controls {
+        display: none;
+    }
+
+    .poster {
+        grid-auto-columns: 7.75rem;
+    }
+
+    .landscape {
+        grid-auto-columns: 14rem;
+    }
+}

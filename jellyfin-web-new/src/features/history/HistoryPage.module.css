@@ -1,0 +1,13 @@
+.grid {
+    display: grid;
+    gap: clamp(.75rem, 1.6vw, 1.4rem);
+    grid-template-columns: repeat(auto-fill, minmax(min(10rem, 42vw), 1fr));
+    padding: 0 var(--page-gutter, 4vw) 4rem;
+}
+
+.grid p {
+    color: #a1a1aa;
+    font-family: var(--font-mono, monospace);
+    font-size: .68rem;
+    line-height: 1.45;
+}

@@ -1,0 +1,148 @@
+.page {
+    display: grid;
+    min-height: 100vh;
+    padding: clamp(1.25rem, 6vw, 6rem);
+    place-items: center;
+}
+
+.panel {
+    width: min(100%, 27rem);
+}
+
+.brand {
+    display: inline-flex;
+    margin-bottom: 5rem;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .18em;
+}
+
+.brand span {
+    margin-left: .35rem;
+    color: var(--color-ink-muted);
+    font-weight: 450;
+}
+
+.kicker {
+    margin: 0 0 .75rem;
+    color: var(--color-ink-muted);
+    font-family: var(--font-mono);
+    font-size: .72rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.panel h1 {
+    margin: 0 0 2rem;
+    font-size: clamp(2.2rem, 8vw, 4rem);
+    font-weight: 520;
+    letter-spacing: -.06em;
+    line-height: .95;
+}
+
+.form {
+    display: grid;
+    gap: 1rem;
+}
+
+.form label {
+    display: grid;
+    gap: .5rem;
+    color: var(--color-ink-muted);
+    font-size: .8rem;
+}
+
+.form input {
+    width: 100%;
+    min-height: 3.25rem;
+    padding: 0 1rem;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+}
+
+.form input:focus {
+    border-color: var(--color-ink);
+}
+
+.form small {
+    margin-top: -.55rem;
+    color: var(--color-ink-muted);
+}
+
+.primary,
+.primaryLink {
+    display: grid;
+    min-height: 3.25rem;
+    padding: 0 1.25rem;
+    border: 1px solid var(--color-ink);
+    border-radius: var(--radius-sm);
+    background: var(--color-ink);
+    color: var(--color-canvas);
+    font-weight: 650;
+    place-items: center;
+}
+
+.primary:disabled {
+    cursor: wait;
+    opacity: .55;
+}
+
+.links {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+    color: var(--color-ink-muted);
+    font-size: .82rem;
+}
+
+.links a:hover,
+.secondaryLink:hover {
+    color: var(--color-ink);
+}
+
+.secondaryLink {
+    display: inline-block;
+    margin-top: 1.5rem;
+    color: var(--color-ink-muted);
+    font-size: .82rem;
+}
+
+.error {
+    min-height: 1.2rem;
+    margin: 0;
+    color: var(--color-danger);
+    font-size: .82rem;
+}
+
+.notice {
+    padding: 1rem;
+    margin-top: 1rem;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-sm);
+    color: var(--color-ink-muted);
+    overflow-wrap: anywhere;
+}
+
+.notice p {
+    margin: 0 0 .75rem;
+}
+
+.notice p:last-child {
+    margin-bottom: 0;
+}
+
+.notice code {
+    color: var(--color-ink);
+}
+
+.copy {
+    color: var(--color-ink-muted);
+    line-height: 1.6;
+}
+
+@media (max-width: 35rem) {
+    .brand {
+        margin-bottom: 3rem;
+    }
+}

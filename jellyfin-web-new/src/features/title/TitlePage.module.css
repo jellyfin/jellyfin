@@ -1,0 +1,176 @@
+.page {
+    min-height: 100vh;
+    padding-top: min(62vh, 44rem);
+    position: relative;
+}
+
+.backdrop {
+    background-color: #0a0a0a;
+    background-position: center 15%;
+    background-size: cover;
+    height: min(75vh, 52rem);
+    inset: 0 0 auto;
+    position: absolute;
+}
+
+.backdrop::after {
+    background:
+        linear-gradient(0deg, #000 0%, rgb(0 0 0 / 12%) 60%, transparent),
+        linear-gradient(90deg, rgb(0 0 0 / 35%), transparent);
+    content: "";
+    inset: 0;
+    position: absolute;
+}
+
+.sheet {
+    animation: reveal 420ms cubic-bezier(.2, .8, .2, 1) both;
+    background: #0a0a0a;
+    border: 1px solid #262626;
+    margin: 0 auto 4rem;
+    max-width: 84rem;
+    padding: clamp(1.4rem, 4vw, 4.5rem);
+    position: relative;
+    width: min(92vw, 84rem);
+}
+
+@keyframes reveal {
+    from {
+        clip-path: inset(30% 18% 30% 18%);
+        opacity: .4;
+        transform: translateY(2rem) scale(.96);
+    }
+}
+
+.type,
+.metadata,
+.genres {
+    color: #a1a1aa;
+    font-family: var(--font-mono, monospace);
+    font-size: .75rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.sheet h1 {
+    font-size: clamp(2.7rem, 8vw, 7rem);
+    letter-spacing: -.065em;
+    line-height: .87;
+    margin: .5rem 0 1.2rem;
+    max-width: 15ch;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+    margin: 1.8rem 0 .8rem;
+}
+
+.actions a,
+.actions button {
+    border: 1px solid #3f3f46;
+    cursor: pointer;
+    min-height: 3rem;
+    padding: 0 1rem;
+}
+
+.actions button {
+    background: transparent;
+    color: #fafafa;
+}
+
+.actions .play {
+    align-items: center;
+    background: #fafafa;
+    border-color: #fafafa;
+    color: #000;
+    display: flex;
+    text-decoration: none;
+}
+
+.overview {
+    font-size: clamp(1rem, 2vw, 1.3rem);
+    line-height: 1.62;
+    margin: 2.2rem 0 1rem;
+    max-width: 58rem;
+}
+
+.inlineError {
+    color: #fca5a5;
+    display: block;
+    margin-bottom: .75rem;
+}
+
+.cast {
+    border-top: 1px solid #262626;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+}
+
+.cast h2,
+.episodes h2 {
+    font-size: 1rem;
+    margin: 0 0 .6rem;
+}
+
+.cast p {
+    color: #a1a1aa;
+}
+
+.episodes {
+    border-top: 1px solid #262626;
+    margin-top: 3rem;
+    padding-top: 2rem;
+}
+
+.episodeHeading {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+}
+
+.episodeHeading label span {
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    width: 1px;
+}
+
+.episodeHeading select {
+    background: #171717;
+    border: 1px solid #3f3f46;
+    color: #fafafa;
+    min-height: 2.6rem;
+    padding: 0 .75rem;
+}
+
+.episodeGrid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
+    margin-top: 1.2rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sheet {
+        animation: none;
+    }
+}
+
+@media (max-width: 44rem) {
+    .page {
+        padding-top: 42vh;
+    }
+
+    .backdrop {
+        height: 48vh;
+    }
+
+    .sheet {
+        border-inline: 0;
+        margin: 0;
+        width: 100%;
+    }
+}

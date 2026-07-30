@@ -1,0 +1,141 @@
+.shell {
+    min-height: 100vh;
+}
+
+.header {
+    position: fixed;
+    z-index: 50;
+    inset: 0 0 auto;
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 3vw, 2.5rem);
+    padding: 0 var(--page-gutter);
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.94), rgba(0, 0, 0, 0));
+}
+
+.brandLink {
+    flex: none;
+}
+
+.desktopNav,
+.actions {
+    display: flex;
+    align-items: center;
+}
+
+.desktopNav {
+    gap: clamp(0.25rem, 1.25vw, 1rem);
+}
+
+.actions {
+    gap: 0.75rem;
+    margin-left: auto;
+}
+
+.link,
+.activeLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 0.4rem;
+    color: var(--color-ink-muted);
+    font-size: 0.875rem;
+    font-weight: 540;
+    white-space: nowrap;
+    transition: color var(--transition-fast);
+}
+
+.link:hover,
+.activeLink {
+    color: var(--color-ink);
+}
+
+.link svg,
+.activeLink svg {
+    display: none;
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.iconLink,
+.profileLink {
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    border-radius: 50%;
+    transition: background var(--transition-fast);
+}
+
+.iconLink:hover,
+.profileLink:hover {
+    background: var(--color-surface-raised);
+}
+
+.iconLink svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.profileLink {
+    border: 1px solid var(--color-line);
+    background: var(--color-surface-raised);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+}
+
+.main {
+    min-height: 100vh;
+}
+
+.mobileNav {
+    display: none;
+}
+
+@media (max-width: 68rem) {
+    .desktopNav a:nth-last-child(-n + 2) {
+        display: none;
+    }
+}
+
+@media (max-width: 44rem) {
+    .header {
+        height: 3.75rem;
+    }
+
+    .desktopNav,
+    .actions .iconLink {
+        display: none;
+    }
+
+    .main {
+        padding-bottom: 4.75rem;
+    }
+
+    .mobileNav {
+        position: fixed;
+        z-index: 60;
+        inset: auto 0 0;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        padding: 0.4rem max(0.25rem, env(safe-area-inset-right)) max(0.4rem, env(safe-area-inset-bottom)) max(0.25rem, env(safe-area-inset-left));
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(10, 10, 10, 0.92);
+        backdrop-filter: blur(18px);
+    }
+
+    .mobileNav .link,
+    .mobileNav .activeLink {
+        min-width: 0;
+        flex-direction: column;
+        gap: 0.2rem;
+        padding: 0.35rem 0.1rem;
+        font-size: 0.66rem;
+    }
+
+    .mobileNav .link svg,
+    .mobileNav .activeLink svg {
+        display: block;
+    }
+}

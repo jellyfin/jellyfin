@@ -1,0 +1,35 @@
+.view {
+    min-height: min(70vh, 42rem);
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: var(--space-3);
+    padding: var(--page-gutter);
+    text-align: center;
+}
+
+.view > span {
+    width: 3rem;
+    height: 3rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--color-line);
+    border-radius: 50%;
+    color: var(--color-ink-muted);
+    font: 300 1.75rem/1 var(--font-mono);
+}
+
+.view h1,
+.view p {
+    margin: 0;
+}
+
+.view h1 {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    letter-spacing: -0.045em;
+}
+
+.view p {
+    max-width: 35rem;
+    color: var(--color-ink-muted);
+}

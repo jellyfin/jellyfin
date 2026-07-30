@@ -1,0 +1,45 @@
+.loading,
+.notFound {
+    min-height: 100vh;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    padding: var(--page-gutter);
+    text-align: center;
+}
+
+.loading {
+    gap: 0.75rem;
+    color: var(--color-ink-muted);
+}
+
+.loading span {
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid var(--color-line);
+    border-top-color: var(--color-ink);
+    border-radius: 50%;
+    animation: spin 800ms linear infinite;
+}
+
+.notFound p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    font: 500 0.8rem/1 var(--font-mono);
+    letter-spacing: 0.15em;
+}
+
+.notFound h1 {
+    margin: 0.75rem 0 1.5rem;
+    font-size: clamp(2rem, 6vw, 4.5rem);
+    letter-spacing: -0.06em;
+}
+
+.notFound a {
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--color-ink);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

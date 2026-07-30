@@ -1,0 +1,28 @@
+.grid {
+    display: grid;
+    gap: clamp(.75rem, 1.6vw, 1.4rem);
+    grid-template-columns: repeat(auto-fill, minmax(min(10rem, 42vw), 1fr));
+    padding: 0 var(--page-gutter, 4vw) 4rem;
+}
+
+.grid article > button {
+    align-items: center;
+    background: #0a0a0a;
+    border: 1px solid #262626;
+    border-radius: 50%;
+    color: #fafafa;
+    cursor: pointer;
+    display: flex;
+    font-size: 1.25rem;
+    height: 2.25rem;
+    justify-content: center;
+    position: absolute;
+    right: .55rem;
+    top: .55rem;
+    width: 2.25rem;
+}
+
+.grid article > button:focus-visible {
+    outline: 2px solid #fafafa;
+    outline-offset: 2px;
+}

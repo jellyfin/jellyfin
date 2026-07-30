@@ -1,0 +1,15 @@
+.banner {
+    position: fixed;
+    z-index: 100;
+    inset: var(--header-height) var(--page-gutter) auto;
+    max-width: 42rem;
+    padding: 0.7rem 1rem;
+    margin: auto;
+    border: 1px solid #525252;
+    border-radius: var(--radius-sm);
+    color: var(--color-ink);
+    background: rgba(23, 23, 23, 0.96);
+    font-size: 0.85rem;
+    text-align: center;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.5);
+}

@@ -1,0 +1,31 @@
+:root {
+    --color-canvas: #000000;
+    --color-surface: #0a0a0a;
+    --color-surface-raised: #171717;
+    --color-ink: #fafafa;
+    --color-ink-muted: #a1a1aa;
+    --color-line: #262626;
+    --color-danger: #e5484d;
+    --color-success: #46a758;
+    --font-sans: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', monospace;
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.5rem;
+    --space-6: 2rem;
+    --space-7: 3rem;
+    --space-8: 4rem;
+    --radius-sm: 0.375rem;
+    --radius-md: 0.75rem;
+    --radius-pill: 999px;
+    --header-height: 4.5rem;
+    --page-gutter: clamp(1rem, 4vw, 4rem);
+    --transition-fast: 140ms cubic-bezier(0.2, 0, 0, 1);
+    --transition-main: 240ms cubic-bezier(0.2, 0, 0, 1);
+    color-scheme: dark;
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background: var(--color-canvas);
+}

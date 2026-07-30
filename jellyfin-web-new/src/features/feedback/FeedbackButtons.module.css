@@ -1,0 +1,31 @@
+.feedback {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .55rem;
+}
+
+.feedback button {
+    background: transparent;
+    border: 1px solid #3f3f46;
+    color: #fafafa;
+    cursor: pointer;
+    min-height: 2.7rem;
+    padding: 0 .85rem;
+}
+
+.feedback button[aria-pressed="true"] {
+    background: #fafafa;
+    border-color: #fafafa;
+    color: #000;
+}
+
+.feedback button:focus-visible {
+    outline: 2px solid #fafafa;
+    outline-offset: 3px;
+}
+
+.feedback small {
+    color: #fca5a5;
+    flex-basis: 100%;
+}

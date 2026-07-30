@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Jellyfin">
+  <rect width="512" height="512" rx="112" fill="#000"/>
+  <path d="M256 82 108 387h296L256 82Zm0 94 75 155H181l75-155Z" fill="#fafafa"/>
+</svg>

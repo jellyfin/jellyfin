@@ -1,0 +1,142 @@
+.heading {
+    padding: 7rem var(--page-gutter, 4vw) 1.5rem;
+}
+
+.heading h1 {
+    font-size: clamp(2.4rem, 6vw, 5.8rem);
+    letter-spacing: -.065em;
+    line-height: .92;
+    margin: 0;
+}
+
+.heading p,
+.card small {
+    color: var(--color-text-muted, #a1a1aa);
+}
+
+.grid,
+.skeletonGrid {
+    display: grid;
+    gap: clamp(.75rem, 1.6vw, 1.4rem);
+    grid-template-columns: repeat(auto-fill, minmax(min(10rem, 42vw), 1fr));
+    padding: 0 var(--page-gutter, 4vw) 4rem;
+}
+
+.card {
+    min-width: 0;
+    position: relative;
+}
+
+.cardLink {
+    color: inherit;
+    display: grid;
+    gap: .38rem;
+    text-decoration: none;
+}
+
+.cardLink:focus-visible {
+    outline: 2px solid #fafafa;
+    outline-offset: 5px;
+}
+
+.artwork,
+.skeleton {
+    aspect-ratio: 2 / 3;
+    background: #171717;
+    display: block;
+    overflow: hidden;
+    position: relative;
+}
+
+.landscape .artwork {
+    aspect-ratio: 16 / 9;
+}
+
+.artwork img,
+.placeholder {
+    height: 100%;
+    object-fit: cover;
+    transition: transform 260ms ease;
+    width: 100%;
+}
+
+.cardLink:hover img {
+    transform: scale(1.025);
+}
+
+.card strong {
+    font-size: .92rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.card small {
+    font-family: var(--font-mono, monospace);
+    font-size: .7rem;
+    min-height: 1em;
+}
+
+.progress {
+    background: rgb(255 255 255 / 28%);
+    bottom: 0;
+    height: 3px;
+    left: 0;
+    position: absolute;
+    right: 0;
+}
+
+.progress span {
+    background: #fafafa;
+    display: block;
+    height: 100%;
+}
+
+.rank {
+    font-family: var(--font-mono, monospace);
+    font-size: clamp(1.6rem, 4vw, 3.6rem);
+    font-weight: 700;
+    left: -.08em;
+    letter-spacing: -.1em;
+    line-height: 1;
+    mix-blend-mode: difference;
+    position: absolute;
+    top: -.25em;
+    z-index: 1;
+}
+
+.state {
+    align-items: center;
+    color: #a1a1aa;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 18rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.state button {
+    background: #fafafa;
+    border: 0;
+    color: #000;
+    cursor: pointer;
+    padding: .72rem 1rem;
+}
+
+.skeleton {
+    animation: shimmer 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes shimmer {
+    from { opacity: .45; }
+    to { opacity: .9; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .artwork img,
+    .skeleton {
+        animation: none;
+        transition: none;
+    }
+}

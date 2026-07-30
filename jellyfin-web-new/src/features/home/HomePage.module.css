@@ -1,0 +1,128 @@
+.hero {
+    align-items: flex-end;
+    background-color: #0a0a0a;
+    background-position: center top;
+    background-size: cover;
+    display: flex;
+    min-height: min(82vh, 58rem);
+    padding: 8rem var(--page-gutter, 4vw) 8rem;
+    position: relative;
+}
+
+.hero::after {
+    background:
+        linear-gradient(90deg, #000 0%, rgb(0 0 0 / 78%) 33%, transparent 72%),
+        linear-gradient(0deg, #000 0%, transparent 52%);
+    content: "";
+    inset: 0;
+    position: absolute;
+}
+
+.heroContent {
+    max-width: 42rem;
+    position: relative;
+    z-index: 1;
+}
+
+.eyebrow,
+.metadata {
+    font-family: var(--font-mono, monospace);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.eyebrow {
+    color: #a1a1aa;
+    font-size: .7rem;
+}
+
+.hero h1 {
+    font-size: clamp(3.2rem, 8.5vw, 8.5rem);
+    letter-spacing: -.07em;
+    line-height: .82;
+    margin: .35rem 0 1.5rem;
+    text-wrap: balance;
+}
+
+.overview {
+    display: -webkit-box;
+    line-height: 1.55;
+    max-width: 38rem;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+.heroActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .7rem;
+    margin-top: 1.5rem;
+}
+
+.heroActions a {
+    padding: .85rem 1.15rem;
+    text-decoration: none;
+}
+
+.primary {
+    background: #fafafa;
+    color: #000;
+}
+
+.secondary {
+    backdrop-filter: blur(12px);
+    background: rgb(23 23 23 / 76%);
+    color: #fafafa;
+}
+
+.rows {
+    margin-top: -5rem;
+    padding-bottom: 4rem;
+    position: relative;
+    z-index: 2;
+}
+
+.rail {
+    margin-bottom: 2.6rem;
+}
+
+.rail h2 {
+    font-size: clamp(1.05rem, 2vw, 1.35rem);
+    margin: 0 var(--page-gutter, 4vw) .8rem;
+}
+
+.scroller {
+    display: grid;
+    gap: clamp(.7rem, 1.2vw, 1.2rem);
+    grid-auto-columns: clamp(9rem, 15vw, 13.5rem);
+    grid-auto-flow: column;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    padding: .5rem var(--page-gutter, 4vw) 1.2rem;
+    scroll-snap-type: inline proximity;
+    scrollbar-width: thin;
+}
+
+.scroller > * {
+    scroll-snap-align: start;
+}
+
+@media (max-width: 40rem) {
+    .hero {
+        min-height: 72vh;
+        padding-bottom: 6rem;
+    }
+
+    .hero::after {
+        background: linear-gradient(0deg, #000 0%, rgb(0 0 0 / 35%) 62%, transparent);
+    }
+
+    .overview {
+        -webkit-line-clamp: 2;
+    }
+
+    .rows {
+        margin-top: -3.5rem;
+    }
+}
