@@ -105,20 +105,27 @@ public sealed class ImageProcessorTests : IDisposable
     }
 
     private string GetCacheFilePath(double percentPlayed = 0, int? unwatchedCount = null)
-        => _imageProcessor.GetCacheFilePath(
+    {
+        var options = new ImageProcessingOptions
+        {
+            Width = 200,
+            Height = 300,
+            MaxWidth = 400,
+            MaxHeight = 500,
+            FillWidth = 600,
+            FillHeight = 700,
+            Quality = 90,
+            PercentPlayed = percentPlayed,
+            UnplayedCount = unwatchedCount,
+            Blur = 2,
+            BackgroundColor = "000000",
+            ForegroundLayer = "layer"
+        };
+
+        return _imageProcessor.GetCacheFilePath(
             OriginalPath,
-            width: 200,
-            height: 300,
-            maxWidth: 400,
-            maxHeight: 500,
-            fillWidth: 600,
-            fillHeight: 700,
-            quality: 90,
-            dateModified: _dateModified,
-            format: ImageFormat.Jpg,
-            percentPlayed,
-            unwatchedCount,
-            blur: 2,
-            backgroundColor: "000000",
-            foregroundLayer: "layer");
+            _dateModified,
+            ImageFormat.Jpg,
+            options);
+    }
 }

@@ -252,22 +252,33 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     /// Gets the cache file path based on a set of parameters.
     /// </summary>
     /// <param name="originalPath">The original image path.</param>
-    /// <param name="width">The requested width.</param>
-    /// <param name="height">The requested height.</param>
-    /// <param name="maxWidth">The maximum width.</param>
-    /// <param name="maxHeight">The maximum height.</param>
-    /// <param name="fillWidth">The fill width.</param>
-    /// <param name="fillHeight">The fill height.</param>
-    /// <param name="quality">The image quality.</param>
     /// <param name="dateModified">The source image modification date.</param>
     /// <param name="format">The output format.</param>
-    /// <param name="percentPlayed">The played percentage overlay value.</param>
-    /// <param name="unwatchedCount">The unwatched count overlay value.</param>
-    /// <param name="blur">The blur amount.</param>
-    /// <param name="backgroundColor">The background color.</param>
-    /// <param name="foregroundLayer">The foreground layer.</param>
+    /// <param name="options">The image processing options.</param>
     /// <returns>The transformed image cache path.</returns>
     internal string GetCacheFilePath(
+        string originalPath,
+        DateTime dateModified,
+        ImageFormat format,
+        ImageProcessingOptions options)
+        => GetCacheFilePath(
+            originalPath,
+            options.Width,
+            options.Height,
+            options.MaxWidth,
+            options.MaxHeight,
+            options.FillWidth,
+            options.FillHeight,
+            options.Quality,
+            dateModified,
+            format,
+            options.PercentPlayed,
+            options.UnplayedCount,
+            options.Blur,
+            options.BackgroundColor,
+            options.ForegroundLayer);
+
+    private string GetCacheFilePath(
         string originalPath,
         int? width,
         int? height,
