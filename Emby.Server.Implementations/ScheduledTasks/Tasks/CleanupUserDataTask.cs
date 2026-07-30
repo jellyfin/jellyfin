@@ -64,6 +64,15 @@ public class CleanupUserDataTask : IScheduledTask
             _logger.LogInformation("{NoDetached} are older then {Limit} days.", detachedUserData.Count(), LimitDays);
 
             await detachedUserData.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+
+            var detachedUserListItems = dbContext.UserListItems.Where(e => e.ItemId == null);
+            _logger.LogInformation("There are {NoDetached} detached UserListItem entries.", detachedUserListItems.Count());
+
+            detachedUserListItems = detachedUserListItems.Where(e => e.RetentionDate < userDataDate);
+
+            _logger.LogInformation("{NoDetached} detached UserListItem entries are older then {Limit} days.", detachedUserListItems.Count(), LimitDays);
+
+            await detachedUserListItems.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
         }
 
         progress.Report(100);
