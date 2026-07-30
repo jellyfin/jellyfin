@@ -114,7 +114,7 @@ namespace Emby.Server.Implementations.Dto
         private readonly ILogger<DtoService> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserDataManager _userDataRepository;
-        private readonly IUserListManager? _userListManager;
+        private readonly IUserListManager _userListManager;
 
         private readonly IImageProcessor _imageProcessor;
         private readonly IProviderManager _providerManager;
@@ -139,7 +139,7 @@ namespace Emby.Server.Implementations.Dto
             Lazy<ILiveTvManager> livetvManagerFactory,
             ITrickplayManager trickplayManager,
             IChapterManager chapterManager,
-            IUserListManager? userListManager = null)
+            IUserListManager userListManager)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -185,8 +185,7 @@ namespace Emby.Server.Implementations.Dto
             UserListMembershipBatch? userListMembershipBatch = null;
             if (user is not null
                 && options.EnableUserData
-                && accessibleItems.Count > 0
-                && _userListManager is not null)
+                && accessibleItems.Count > 0)
             {
                 var itemIds = accessibleItems.Select(item => item.Id).ToArray();
                 var userLists = _userListManager.GetListsAsync(user.Id).GetAwaiter().GetResult();

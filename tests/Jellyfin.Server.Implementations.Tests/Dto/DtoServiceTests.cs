@@ -50,7 +50,8 @@ public class DtoServiceTests
             new Mock<IMediaSourceManager>().Object,
             new Lazy<ILiveTvManager>(() => new Mock<ILiveTvManager>().Object),
             new Mock<ITrickplayManager>().Object,
-            new Mock<IChapterManager>().Object);
+            new Mock<IChapterManager>().Object,
+            new Mock<IUserListManager>().Object);
 
         // Episode.Series / Episode.Season resolve through the static BaseItem.LibraryManager.
         BaseItem.LibraryManager = _libraryManagerMock.Object;
