@@ -465,8 +465,8 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
         // Ask the runner rather than pairing the encoder path with our own arguments. The runner adds
         // the global flags — the derived -loglevel, -stats, the overwrite flag — so those two strings
-        // are no longer the whole command, and a header built from them would not reproduce when
-        // pasted into a shell. This is the artifact people attach to bug reports; it has to be real.
+        // are not the whole command, and a header built from them would not reproduce when pasted
+        // into a shell. This is the artifact people attach to bug reports; it has to be real.
         //
         // Written before StartAsync, and this is why the request is built first: JobLogSink starts
         // writing FFmpeg's stderr into the same stream the moment the process is up, so a header

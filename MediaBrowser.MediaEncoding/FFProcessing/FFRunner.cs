@@ -110,8 +110,28 @@ public sealed class FFRunner : IFFRunner, IDisposable
         ArgumentNullException.ThrowIfNull(request);
         var policy = request.ResolvePolicy();
 
+        // This is the only point that knows whether the request supplies
+        // the progress signal the idle watchdog needs.
+        policy.EnsureCoherent(request.Action, request.HasProgressSignal);
+
         return new ResolvedCommand(policy, ResolveBinaryPath(request, policy), BuildArguments(request, policy));
     }
+
+    /// <summary>
+    /// Guarantees what <see cref="FFActionPolicy.StderrIsPayload"/> promises: an action reading its
+    /// own stderr as the answer gets a sink that keeps all of it.
+    /// <para>
+    /// The log-level floor alone is not enough. The default sink retains a trailing window, which is
+    /// right for output that only explains a failure and wrong for output that <em>is</em> the
+    /// result — the part that matters could be anywhere in it. Leaving this to each caller makes the
+    /// guarantee depend on every call site remembering, and the failure is silent: a truncated
+    /// answer parses as no answer.
+    /// </para>
+    /// </summary>
+    private static FFRequest UpgradeSinkIfPayload(FFRequest request, in FFActionPolicy policy)
+        => policy.StderrIsPayload && !request.Stderr.RetainsEverything
+            ? request with { Stderr = FFOutputSink.Complete() }
+            : request;
 
     /// <summary>
     /// Picks the executable for a request: the one it names, or the resolved prober or encoder.
@@ -141,6 +161,8 @@ public sealed class FFRunner : IFFRunner, IDisposable
         var (policy, fileName, arguments) = Resolve(request);
         _logger.LogDebug("{Action}: {FileName} {Arguments}", request.Action, fileName, arguments);
 
+        request = UpgradeSinkIfPayload(request, policy);
+
         var process = CreateProcess(request, fileName, arguments);
         var stopwatch = Stopwatch.StartNew();
 
@@ -160,13 +182,19 @@ public sealed class FFRunner : IFFRunner, IDisposable
         _running[process.Id] = process;
         ApplyPriority(process, request, policy.Priority);
 
-        if (policy.Stdin == FFStdinMode.FireAndForget)
+        switch (policy.Stdin)
         {
-            TryCloseStdin(process, request);
-        }
-        else if (request.Action == FFAction.ProbeRuntimeKeys)
-        {
-            await WriteRuntimeKeyAsync(process, request).ConfigureAwait(false);
+            case FFStdinMode.FireAndForget:
+                TryCloseStdin(process, request);
+                break;
+
+            case FFStdinMode.WriteThenClose:
+                await WriteQueryKeyAsync(process, request).ConfigureAwait(false);
+                break;
+
+            default:
+                // ControlChannel: left open for the caller to steer through IFFSession.
+                break;
         }
 
         // Drains start before the exit wait because a full pipe would block the child, which then never exits.
@@ -348,7 +376,11 @@ public sealed class FFRunner : IFFRunner, IDisposable
         }
     }
 
-    private async Task WriteRuntimeKeyAsync(Process process, FFRequest request)
+    /// <summary>
+    /// Asks the question that <see cref="FFStdinMode.WriteThenClose"/> exists for, then closes stdin
+    /// so the child sees end of input.
+    /// </summary>
+    private async Task WriteQueryKeyAsync(Process process, FFRequest request)
     {
         try
         {
@@ -358,7 +390,7 @@ public sealed class FFRunner : IFFRunner, IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "{Action}: could not write the runtime key", request.Action);
+            _logger.LogDebug(ex, "{Action}: could not write the query key", request.Action);
         }
     }
 
@@ -385,6 +417,10 @@ public sealed class FFRunner : IFFRunner, IDisposable
         return request.Stderr.GetRetainedText();
     }
 
+    /// <summary>
+    /// Ends the process, asking first where the action allows it. Called from a <c>finally</c>, so it
+    /// never throws: an exception here would replace whatever sent us down that path.
+    /// </summary>
     private async Task TerminateAsync(Process process, FFActionPolicy policy, FFRequest request)
     {
         try
@@ -394,21 +430,15 @@ public sealed class FFRunner : IFFRunner, IDisposable
                 return;
             }
 
-            if (policy.Stdin == FFStdinMode.ControlChannel)
+            // Asking is best-effort and must never cost us the kill. Only an exit skips it — a failed
+            // request to stop falls through, because the caller is left with a live process either
+            // way and this is the last chance to reap it. SuperviseAsync drops the process from
+            // _running the moment this returns, so anything still alive here is beyond the reach of
+            // the shutdown sweep too.
+            if (policy.Stdin == FFStdinMode.ControlChannel
+                && await TryStopPolitelyAsync(process, policy, request).ConfigureAwait(false))
             {
-                await process.StandardInput.WriteLineAsync("q").ConfigureAwait(false);
-                await process.StandardInput.FlushAsync().ConfigureAwait(false);
-
-                using var grace = new CancellationTokenSource(policy.GracefulStopTimeout);
-                try
-                {
-                    await process.WaitForExitAsync(grace.Token).ConfigureAwait(false);
-                    return;
-                }
-                catch (OperationCanceledException)
-                {
-                    // Fall through to the kill.
-                }
+                return;
             }
 
             process.Kill(true);
@@ -416,6 +446,36 @@ public sealed class FFRunner : IFFRunner, IDisposable
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "{Action}: failed to terminate the process", request.Action);
+        }
+    }
+
+    /// <summary>
+    /// Writes the quit key and waits out the action's grace period.
+    /// </summary>
+    /// <returns>
+    /// Whether the process actually exited. Any failure reports <c>false</c> so the caller escalates.
+    /// </returns>
+    private async Task<bool> TryStopPolitelyAsync(Process process, FFActionPolicy policy, FFRequest request)
+    {
+        try
+        {
+            await process.StandardInput.WriteLineAsync("q").ConfigureAwait(false);
+            await process.StandardInput.FlushAsync().ConfigureAwait(false);
+
+            using var grace = new CancellationTokenSource(policy.GracefulStopTimeout);
+            await process.WaitForExitAsync(grace.Token).ConfigureAwait(false);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            // Covers the grace expiring and stdin not being writable at all. A child that has
+            // closed its stdin makes the write throw an IOException on a broken pipe. A handle
+            // already disposed throws ObjectDisposedException. Neither may cost us the kill: the
+            // caller is left with a live process either way.
+            _logger.LogDebug(ex, "{Action}: did not stop when asked; killing", request.Action);
+
+            return false;
         }
     }
 

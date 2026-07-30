@@ -29,7 +29,7 @@ public static class FFActionPolicyTests
         { FFAction.ScanKeyframes, true, false, FFStdinMode.FireAndForget, false, false },
         { FFAction.ValidateBinary, false, false, FFStdinMode.FireAndForget, false, false },
         { FFAction.Capabilities, false, false, FFStdinMode.FireAndForget, false, true },
-        { FFAction.ProbeRuntimeKeys, false, false, FFStdinMode.ControlChannel, false, true },
+        { FFAction.ProbeRuntimeKeys, false, false, FFStdinMode.WriteThenClose, false, true },
         { FFAction.MeasureLoudness, false, false, FFStdinMode.FireAndForget, false, true },
         { FFAction.ExtractAttachment, false, true, FFStdinMode.FireAndForget, false, false },
         { FFAction.ExtractSubtitle, false, true, FFStdinMode.FireAndForget, false, false },
@@ -39,22 +39,25 @@ public static class FFActionPolicyTests
         { FFAction.Stream, false, true, FFStdinMode.ControlChannel, true, false },
     };
 
-    /// <summary>Gets the deadline and priority each action is expected to carry.</summary>
-    public static TheoryData<FFAction, TimeSpan, TimeSpan, ProcessPriorityClass> Bounds => new()
+    /// <summary>
+    /// Gets the deadlines, stop grace and priority each action is expected to carry. A zero grace
+    /// means the action is killed outright rather than asked to stop first.
+    /// </summary>
+    public static TheoryData<FFAction, TimeSpan, TimeSpan, TimeSpan, ProcessPriorityClass> Bounds => new()
     {
-        // action, timeout, idleTimeout, priority
-        { FFAction.Probe, FFActionPolicy.MetadataRead, FFDefaults.Unbounded, ProcessPriorityClass.BelowNormal },
-        { FFAction.ScanKeyframes, FFActionPolicy.FullFileScan, FFDefaults.Unbounded, ProcessPriorityClass.BelowNormal },
-        { FFAction.ValidateBinary, FFActionPolicy.StartupInterrogation, FFDefaults.Unbounded, FFDefaults.InheritPriority },
-        { FFAction.Capabilities, FFActionPolicy.StartupInterrogation, FFDefaults.Unbounded, FFDefaults.InheritPriority },
-        { FFAction.ProbeRuntimeKeys, FFActionPolicy.StartupInterrogation, FFDefaults.Unbounded, FFDefaults.InheritPriority },
-        { FFAction.MeasureLoudness, FFActionPolicy.FullAudioScan, FFDefaults.Unbounded, ProcessPriorityClass.BelowNormal },
-        { FFAction.ExtractAttachment, FFActionPolicy.MetadataRead, FFDefaults.Unbounded, ProcessPriorityClass.BelowNormal },
-        { FFAction.ExtractSubtitle, FFActionPolicy.DefaultSubtitleExtraction, FFDefaults.Unbounded, ProcessPriorityClass.BelowNormal },
-        { FFAction.ExtractImage, FFActionPolicy.DefaultImageExtraction, FFDefaults.Unbounded, ProcessPriorityClass.BelowNormal },
-        { FFAction.GenerateTrickplay, FFDefaults.Unbounded, FFActionPolicy.DefaultImageExtraction, ProcessPriorityClass.BelowNormal },
-        { FFAction.Record, FFDefaults.Unbounded, FFDefaults.Unbounded, ProcessPriorityClass.Normal },
-        { FFAction.Stream, FFDefaults.Unbounded, FFDefaults.Unbounded, ProcessPriorityClass.Normal },
+        // action, timeout, idleTimeout, gracefulStopTimeout, priority
+        { FFAction.Probe, FFActionPolicy.MetadataRead, FFDefaults.Unbounded, TimeSpan.Zero, ProcessPriorityClass.BelowNormal },
+        { FFAction.ScanKeyframes, FFActionPolicy.FullFileScan, FFDefaults.Unbounded, TimeSpan.Zero, ProcessPriorityClass.BelowNormal },
+        { FFAction.ValidateBinary, FFActionPolicy.StartupInterrogation, FFDefaults.Unbounded, TimeSpan.Zero, FFDefaults.InheritPriority },
+        { FFAction.Capabilities, FFActionPolicy.StartupInterrogation, FFDefaults.Unbounded, TimeSpan.Zero, FFDefaults.InheritPriority },
+        { FFAction.ProbeRuntimeKeys, FFActionPolicy.StartupInterrogation, FFDefaults.Unbounded, TimeSpan.Zero, FFDefaults.InheritPriority },
+        { FFAction.MeasureLoudness, FFActionPolicy.FullAudioScan, FFDefaults.Unbounded, TimeSpan.Zero, ProcessPriorityClass.BelowNormal },
+        { FFAction.ExtractAttachment, FFActionPolicy.MetadataRead, FFDefaults.Unbounded, TimeSpan.Zero, ProcessPriorityClass.BelowNormal },
+        { FFAction.ExtractSubtitle, FFActionPolicy.DefaultSubtitleExtraction, FFDefaults.Unbounded, TimeSpan.Zero, ProcessPriorityClass.BelowNormal },
+        { FFAction.ExtractImage, FFActionPolicy.DefaultImageExtraction, FFDefaults.Unbounded, TimeSpan.Zero, ProcessPriorityClass.BelowNormal },
+        { FFAction.GenerateTrickplay, FFDefaults.Unbounded, FFActionPolicy.DefaultImageExtraction, TimeSpan.Zero, ProcessPriorityClass.BelowNormal },
+        { FFAction.Record, FFDefaults.Unbounded, FFDefaults.Unbounded, FFActionPolicy.RecordingStopGrace, ProcessPriorityClass.Normal },
+        { FFAction.Stream, FFDefaults.Unbounded, FFDefaults.Unbounded, FFActionPolicy.StreamStopGrace, ProcessPriorityClass.Normal },
     };
 
     public static TheoryData<FFAction> AllActions => new(Enum.GetValues<FFAction>());
@@ -112,12 +115,14 @@ public static class FFActionPolicyTests
         FFAction action,
         TimeSpan timeout,
         TimeSpan idleTimeout,
+        TimeSpan gracefulStopTimeout,
         ProcessPriorityClass priority)
     {
         var policy = FFActionPolicy.For(action);
 
         Assert.Equal(timeout, policy.Timeout);
         Assert.Equal(idleTimeout, policy.IdleTimeout);
+        Assert.Equal(gracefulStopTimeout, policy.GracefulStopTimeout);
         Assert.Equal(priority, policy.Priority);
     }
 
@@ -184,6 +189,60 @@ public static class FFActionPolicyTests
             .ToArray();
 
         Assert.Equal([FFAction.GenerateTrickplay], armed);
+    }
+
+    [Theory]
+    [MemberData(nameof(AllActions))]
+    public static void EveryShippedPolicyIsCoherent(FFAction action)
+    {
+        // Trickplay is the only action whose request supplies a liveness probe, and the only one that
+        // needs to: it is also the only one without a wall clock other than the two steerable ones.
+        var hasProgressSignal = action == FFAction.GenerateTrickplay;
+
+        var exception = Record.Exception(() => FFActionPolicy.For(action).EnsureCoherent(action, hasProgressSignal));
+
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public static void EnsureCoherent_RejectsAStopGraceWithNowhereToSendTheKey()
+    {
+        var policy = FFActionPolicy.For(FFAction.ExtractImage) with { GracefulStopTimeout = TimeSpan.FromSeconds(5) };
+
+        Assert.Throws<InvalidOperationException>(() => policy.EnsureCoherent(FFAction.ExtractImage, false));
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public static void EnsureCoherent_RejectsAProbeAskingForEncoderBehaviour(bool steerable, bool wantsStats)
+    {
+        var policy = FFActionPolicy.For(FFAction.Probe) with
+        {
+            Stdin = steerable ? FFStdinMode.ControlChannel : FFStdinMode.FireAndForget,
+            RequiresProgressStats = wantsStats
+        };
+
+        Assert.Throws<InvalidOperationException>(() => policy.EnsureCoherent(FFAction.Probe, false));
+    }
+
+    [Fact]
+    public static void EnsureCoherent_RejectsAnIdleWatchdogWithNoProbeBehindIt()
+    {
+        // The half that no policy-only assertion can see. Trickplay's arm is correct; drop the probe
+        // from its request and the watchdog never arms, leaving nothing at all able to end the run.
+        var policy = FFActionPolicy.For(FFAction.GenerateTrickplay);
+
+        Assert.Throws<InvalidOperationException>(() => policy.EnsureCoherent(FFAction.GenerateTrickplay, false));
+        Assert.Null(Record.Exception(() => policy.EnsureCoherent(FFAction.GenerateTrickplay, true)));
+    }
+
+    [Fact]
+    public static void EnsureCoherent_RejectsDroppingEveryBoundAtOnce()
+    {
+        var policy = FFActionPolicy.For(FFAction.ExtractImage) with { Timeout = FFDefaults.Unbounded };
+
+        Assert.Throws<InvalidOperationException>(() => policy.EnsureCoherent(FFAction.ExtractImage, false));
     }
 
     [Fact]

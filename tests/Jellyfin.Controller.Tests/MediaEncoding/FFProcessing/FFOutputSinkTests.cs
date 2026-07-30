@@ -105,4 +105,17 @@ public static class FFOutputSinkTests
             "alpha" + Environment.NewLine + "beta" + Environment.NewLine,
             Encoding.UTF8.GetString(destination.ToArray()));
     }
+
+    [Fact]
+    public static void OnlyCompleteClaimsToRetainEverything()
+    {
+        // The runner substitutes a retaining sink for an action whose stderr is its answer, and this
+        // is how it tells. A sink that dropped output while reporting true would truncate that answer
+        // with nothing to show for it.
+        using var destination = new MemoryStream();
+
+        Assert.True(FFOutputSink.Complete().RetainsEverything);
+        Assert.False(FFOutputSink.Diagnostic().RetainsEverything);
+        Assert.False(FFOutputSink.ToStream(destination).RetainsEverything);
+    }
 }

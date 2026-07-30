@@ -23,6 +23,13 @@ public abstract class FFOutputSink
     public const int DefaultRetainedLines = 200;
 
     /// <summary>
+    /// Gets a value indicating whether nothing written here is ever dropped. The runner checks this
+    /// for an action whose stderr is its answer rather than a diagnostic, since a sink that keeps a
+    /// trailing window would silently truncate that answer.
+    /// </summary>
+    public virtual bool RetainsEverything => false;
+
+    /// <summary>
     /// Gets a sink for output that only ever explains a failure. Keeps the last
     /// <see cref="DefaultRetainedLines"/> lines; everything earlier is dropped.
     /// </summary>
@@ -86,6 +93,8 @@ public abstract class FFOutputSink
     private sealed class CompleteSink : FFOutputSink
     {
         private readonly StringBuilder _builder = new();
+
+        public override bool RetainsEverything => true;
 
         public override ValueTask WriteLineAsync(string line, CancellationToken cancellationToken)
         {

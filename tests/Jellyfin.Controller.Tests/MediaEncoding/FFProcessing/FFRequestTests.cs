@@ -137,13 +137,15 @@ public static class FFRequestTests
     }
 
     [Fact]
-    public static void RuntimeKeyProbe_IsSteerableAndPlainCapabilitiesIsNot()
+    public static void RuntimeKeyProbe_WritesStdinOnceAndPlainCapabilitiesDoesNot()
     {
-        // The runtime-key test cannot run with -nostdin, because that disables what it is testing.
+        // The runtime-key test cannot run with -nostdin, because that disables what it is testing —
+        // but it is not a control channel either. It writes its query, closes stdin, and from then on
+        // cannot be asked to quit, which is why terminating it goes straight to the kill.
         var probe = new RuntimeKeyProbeRequest { Arguments = "-f lavfi -i nullsrc" };
         var capabilities = new CapabilitiesRequest { Arguments = "-hwaccels" };
 
-        Assert.Equal(FFStdinMode.ControlChannel, probe.ResolvePolicy().Stdin);
+        Assert.Equal(FFStdinMode.WriteThenClose, probe.ResolvePolicy().Stdin);
         Assert.Equal(FFStdinMode.FireAndForget, capabilities.ResolvePolicy().Stdin);
     }
 

@@ -7,7 +7,7 @@ using System.Globalization;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
-    public class JobLogger
+    public static class JobLogger
     {
         public static void ParseLogLine(string line, EncodingJobInfo state)
         {

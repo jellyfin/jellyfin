@@ -12,7 +12,10 @@ namespace MediaBrowser.Controller.MediaEncoding.FFProcessing;
 /// <c>-n</c> and non-interactive stdin FFmpeg fatals with "File ... already exists. Exiting".
 /// ffprobe registers neither option.
 /// </param>
-/// <param name="Stdin">Whether the process is steerable through runtime keys.</param>
+/// <param name="Stdin">
+/// What becomes of the process's standard input, which decides both whether <c>-nostdin</c> is
+/// emitted and whether the process can be asked to quit rather than killed.
+/// </param>
 /// <param name="Timeout">The wall-clock deadline when the request does not supply one.</param>
 /// <param name="IdleTimeout">
 /// How long the process may report no progress before it is killed. Only applies when the request
@@ -21,6 +24,8 @@ namespace MediaBrowser.Controller.MediaEncoding.FFProcessing;
 /// </param>
 /// <param name="GracefulStopTimeout">
 /// How long a steerable process is given to exit after being sent <c>q</c>, before it is killed.
+/// Zero for everything that is not a <see cref="FFStdinMode.ControlChannel"/>, which is killed
+/// outright because there is nowhere to send the key.
 /// </param>
 /// <param name="Priority">The scheduling priority when the request does not supply one.</param>
 /// <param name="RequiresProgressStats">
@@ -158,12 +163,13 @@ public readonly record struct FFActionPolicy(
             StderrIsPayload = true
         },
 
-        // Steerable because the probe writes a key to stdin and reads the reply off stderr; a
-        // process told not to read stdin cannot answer the question being asked of it.
+        // Writes a key to stdin and reads the reply off stderr so it must not be run with -nostdin.
+        // It closes stdin once the key is written, so unlike a genuine control channel there
+        // is no way to ask it to quit afterwards.
         FFAction.ProbeRuntimeKeys => Background with
         {
             Overwrite = false,
-            Stdin = FFStdinMode.ControlChannel,
+            Stdin = FFStdinMode.WriteThenClose,
             Timeout = StartupInterrogation,
             Priority = FFDefaults.InheritPriority,
             StderrIsPayload = true
@@ -227,4 +233,56 @@ public readonly record struct FFActionPolicy(
 
         _ => throw new ArgumentOutOfRangeException(nameof(action), action, "No policy defined.")
     };
+
+    /// <summary>
+    /// Throws if this policy asks for a combination that cannot work.
+    /// <para>
+    /// Validation done here rather than in the constructor because every arm of <see cref="For"/>
+    /// is built with a <c>with</c> expression, which copies the struct and assigns properties.
+    /// The runner calls this at the single point where a resolved policy becomes operative, which
+    /// is also the only place the request's own contribution is visible.
+    /// </para>
+    /// </summary>
+    /// <param name="action">The action this policy came from, named in the message.</param>
+    /// <param name="hasProgressSignal">
+    /// Whether the request supplies a liveness probe. The idle watchdog does nothing without one, so
+    /// a policy leaning on it is only bounded if the request cooperates.
+    /// </param>
+    /// <exception cref="InvalidOperationException">The combination cannot work.</exception>
+    public void EnsureCoherent(FFAction action, bool hasProgressSignal)
+    {
+        // The grace is the wait after writing "q". Anything else has nowhere to write it, so the
+        // grace would be spent waiting on a message that was never sent.
+        if (GracefulStopTimeout > TimeSpan.Zero && Stdin != FFStdinMode.ControlChannel)
+        {
+            throw new InvalidOperationException(
+                $"{action}: a stop grace needs {nameof(FFStdinMode.ControlChannel)}, not {Stdin}.");
+        }
+
+        if (ProbeOnly)
+        {
+            // ffprobe has no runtime keys to steer with and no encode whose progress it could report.
+            if (Stdin != FFStdinMode.FireAndForget)
+            {
+                throw new InvalidOperationException($"{action}: ffprobe cannot be steered through stdin.");
+            }
+
+            if (RequiresProgressStats)
+            {
+                throw new InvalidOperationException($"{action}: ffprobe has no progress to report.");
+            }
+        }
+
+        // Something has to be able to end the process. Dropping the wall clock is allowed, but only
+        // in exchange for a watchdog that will actually arm or a channel to ask it to stop through.
+        // A watchdog with no probe behind it counts for nothing, and that half lives on the request,
+        // so this is the only place the two can be weighed together.
+        if (Timeout == FFDefaults.Unbounded
+            && Stdin != FFStdinMode.ControlChannel
+            && !(IdleTimeout != FFDefaults.Unbounded && hasProgressSignal))
+        {
+            throw new InvalidOperationException(
+                $"{action}: no wall clock, no armed idle watchdog and no way to ask it to stop.");
+        }
+    }
 }

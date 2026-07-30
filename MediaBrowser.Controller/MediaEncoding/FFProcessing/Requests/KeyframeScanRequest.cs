@@ -24,9 +24,9 @@ public sealed record KeyframeScanRequest : FFRequest
         // empty pts_time fields, and a keyframe with no timestamp tells a segmenter nothing.
         builder.Append("-fflags +genpts ")
 
-            // Inert for this query, and kept only so the scan asks for exactly what it always has.
-            // -skip_frame is a decoder option, but -show_entries packet= reads the demuxer's packet
-            // headers and decodes nothing, so there are no frames to skip.
+            // Inert for this query: -skip_frame is a decoder option, but -show_entries packet= reads
+            // the demuxer's packet headers and decodes nothing, so there are no frames to skip. Kept
+            // because dropping it would change what the scan asks ffprobe for to no benefit.
             .Append("-skip_frame nokey ")
 
             // Ask for both durations because either can be missing. The parser prefers the stream's

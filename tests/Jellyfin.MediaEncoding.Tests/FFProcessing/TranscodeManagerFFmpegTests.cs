@@ -181,7 +181,7 @@ public sealed class TranscodeManagerFFmpegTests : IClassFixture<SynthesizedMedia
         Assert.Contains("-loglevel", header, StringComparison.Ordinal);
         Assert.Contains("-stats", header, StringComparison.Ordinal);
 
-        // Specifically the overwrite flag, which the argument builders no longer emit themselves.
+        // Specifically the overwrite flag, which only the runner emits.
         Assert.Contains("-y", header, StringComparison.Ordinal);
     }
 
