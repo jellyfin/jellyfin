@@ -583,6 +583,9 @@ namespace MediaBrowser.Controller.Entities
                     case ItemFilter.IsFavorite:
                         IsFavorite = true;
                         break;
+                    case ItemFilter.IsInWatchlist:
+                        IsInWatchlist = true;
+                        break;
                     case ItemFilter.IsResumable:
                         IsResumable = true;
                         break;

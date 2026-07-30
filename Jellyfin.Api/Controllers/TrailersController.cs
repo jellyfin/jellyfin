@@ -73,7 +73,7 @@ public class TrailersController : BaseJellyfinApiController
     /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
     /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
     /// <param name="excludeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
-    /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
+    /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes, IsInWatchlist.</param>
     /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not.</param>
     /// <param name="mediaTypes">Optional filter by MediaType. Allows multiple, comma delimited.</param>
     /// <param name="imageTypes">Optional. If specified, results will be filtered based on those containing image types. This allows multiple, comma delimited.</param>
@@ -119,6 +119,8 @@ public class TrailersController : BaseJellyfinApiController
     /// <param name="subtitleLanguages">Optional. If specified, results will be filtered based on subtitale language. This allows multiple, comma delimited values.</param>
     /// <param name="enableTotalRecordCount">Optional. Enable the total record count.</param>
     /// <param name="enableImages">Optional, include image information in output.</param>
+    /// <param name="userListId">Optional filter by user list id.</param>
+    /// <param name="isInWatchlist">Optional filter by items that are in the user's default watchlist, or not.</param>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the trailers.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -209,7 +211,9 @@ public class TrailersController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] audioLanguages,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] subtitleLanguages,
         [FromQuery] bool enableTotalRecordCount = true,
-        [FromQuery] bool? enableImages = true)
+        [FromQuery] bool? enableImages = true,
+        [FromQuery] Guid? userListId = null,
+        [FromQuery] bool? isInWatchlist = null)
     {
         var includeItemTypes = new[] { BaseItemKind.Trailer };
 
@@ -302,6 +306,8 @@ public class TrailersController : BaseJellyfinApiController
                 audioLanguages,
                 subtitleLanguages,
                 enableTotalRecordCount,
-                enableImages).ConfigureAwait(false);
+                enableImages,
+                userListId: userListId,
+                isInWatchlist: isInWatchlist).ConfigureAwait(false);
     }
 }

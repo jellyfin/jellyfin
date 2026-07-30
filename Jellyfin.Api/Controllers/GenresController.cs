@@ -69,6 +69,8 @@ public class GenresController : BaseJellyfinApiController
     /// <param name="sortOrder">Sort Order - Ascending,Descending.</param>
     /// <param name="enableImages">Optional, include image information in output.</param>
     /// <param name="enableTotalRecordCount">Optional. Include total record count.</param>
+    /// <param name="userListId">Optional filter by user list id.</param>
+    /// <param name="isInWatchlist">Optional filter by items that are in the user's default watchlist, or not.</param>
     /// <response code="200">Genres returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the queryresult of genres.</returns>
     [HttpGet]
@@ -91,7 +93,9 @@ public class GenresController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemSortBy[] sortBy,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] SortOrder[] sortOrder,
         [FromQuery] bool? enableImages = true,
-        [FromQuery] bool enableTotalRecordCount = true)
+        [FromQuery] bool enableTotalRecordCount = true,
+        [FromQuery] Guid? userListId = null,
+        [FromQuery] bool? isInWatchlist = null)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
@@ -110,6 +114,8 @@ public class GenresController : BaseJellyfinApiController
             StartIndex = startIndex,
             Limit = limit,
             IsFavorite = isFavorite,
+            UserListId = userListId,
+            IsInWatchlist = isInWatchlist,
             NameLessThan = nameLessThan,
             NameStartsWith = nameStartsWith,
             NameStartsWithOrGreater = nameStartsWithOrGreater,
