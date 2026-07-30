@@ -118,7 +118,7 @@ public class SearchManager : ISearchManager
             var user = _userManager.GetUserById(query.UserId.Value);
             if (user is not null)
             {
-                results = await FilterByUserAccessAsync(results, user, cancellationToken).ConfigureAwait(false);
+                results = await FilterByUserAccessAsync(results, user, query, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -128,13 +128,14 @@ public class SearchManager : ISearchManager
     private async Task<IReadOnlyList<SearchResult>> FilterByUserAccessAsync(
         IReadOnlyList<SearchResult> candidates,
         User user,
+        SearchProviderQuery query,
         CancellationToken cancellationToken)
     {
-        // SetUser populates parental rating + blocked/allowed tags. ConfigureUserAccess populates
-        // TopParentIds for the user's accessible libraries — we call it before assigning ItemIds
-        // because LibraryManager.AddUserToQuery skips TopParentIds when ItemIds is non-empty.
-        var accessFilter = new InternalItemsQuery(user);
-        _libraryManager.ConfigureUserAccess(accessFilter, user);
+        // SetUser populates parental rating + blocked/allowed tags, Build populates TopParentIds
+        // for the user's accessible libraries. The candidate ids are applied to the query below
+        // rather than to the filter because LibraryManager.AddUserToQuery skips TopParentIds when
+        // ItemIds is non-empty.
+        var accessFilter = SearchQueryAccessFilter.Build(user, query, _libraryManager);
 
         Guid[] candidateIds = [.. candidates.Select(c => c.ItemId)];
 

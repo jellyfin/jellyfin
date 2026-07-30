@@ -1044,36 +1044,7 @@ public sealed partial class BaseItemRepository
                 : baseQuery.Where(e => e.Provider!.All(f => f.ProviderId.ToLower() != TvdbProviderName));
         }
 
-        var queryTopParentIds = filter.TopParentIds;
-
-        if (queryTopParentIds.Length > 0)
-        {
-            var includedItemByNameTypes = GetItemByNameTypesInQuery(filter);
-            var enableItemsByName = (filter.IncludeItemsByName ?? false) && includedItemByNameTypes.Count > 0;
-
-            // A by-name item belongs to no library, so it has no TopParentId to test and the filter
-            // below would drop it. Items-by-name queries exempt the whole group; a query that names a
-            // by-name type explicitly gets the same exemption, since it is asking for those items.
-            var exemptedItemByNameTypes = enableItemsByName
-                ? includedItemByNameTypes
-                : _itemByNameKinds.Where(filter.IncludeItemTypes.Contains).Select(e => _itemTypeLookup.BaseItemKindNames[e]!).ToList();
-
-            if (exemptedItemByNameTypes.Count > 0)
-            {
-                baseQuery = baseQuery.Where(e => exemptedItemByNameTypes.Contains(e.Type) || queryTopParentIds.Any(w => w == e.TopParentId!.Value));
-            }
-            else
-            {
-                baseQuery = baseQuery.WhereOneOrMany(queryTopParentIds, e => e.TopParentId!.Value);
-            }
-
-            // That exemption is what lets a by-name item from a library the user cannot open show up
-            // in search. Decide those on the items behind the name instead.
-            if (filter.UserHasContentRestrictions && exemptedItemByNameTypes.Count > 0)
-            {
-                baseQuery = ApplyItemByNameAccessFiltering(baseQuery, context, filter, exemptedItemByNameTypes, queryTopParentIds);
-            }
-        }
+        baseQuery = ApplyTopParentFiltering(context, baseQuery, filter);
 
         if (filter.AncestorIds.Length > 0)
         {
@@ -1283,49 +1254,6 @@ public sealed partial class BaseItemRepository
                 adjacentIds.Add(adjacentToId);
                 baseQuery = baseQuery.Where(e => adjacentIds.Contains(e.Id));
             }
-        }
-
-        return baseQuery;
-    }
-
-    /// <summary>
-    /// Keeps a by-name row only when at least one item behind its name is reachable for the user.
-    /// </summary>
-    private IQueryable<BaseItemEntity> ApplyItemByNameAccessFiltering(
-        IQueryable<BaseItemEntity> baseQuery,
-        JellyfinDbContext context,
-        InternalItemsQuery filter,
-        IReadOnlyList<string> itemByNameTypes,
-        Guid[] topParentIds)
-    {
-        // IncludeOwnedItems: a credit on an alternate version of a reachable movie still counts.
-        var accessibleItems = ApplyAccessFiltering(
-            context,
-            context.BaseItems.AsNoTracking(),
-            new InternalItemsQuery(filter.User) { TopParentIds = topParentIds, IncludeOwnedItems = true });
-
-        // Each predicate is written outside-in - name row, then link table, then item - and with nested
-        // Any() rather than a Contains over the accessible ids, which would materialise all of them
-        // before the first row. That keeps every step an index seek.
-        var personType = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
-        if (itemByNameTypes.Contains(personType))
-        {
-            baseQuery = baseQuery.Where(e => e.Type != personType
-                || context.Peoples.Any(p => p.Name == e.Name
-                    && context.PeopleBaseItemMap.Any(m => m.PeopleId == p.Id && accessibleItems.Any(i => i.Id == m.ItemId))));
-        }
-
-        foreach (var (kind, valueTypes) in _itemByNameValueTypes)
-        {
-            var typeName = _itemTypeLookup.BaseItemKindNames[kind];
-            if (!itemByNameTypes.Contains(typeName))
-            {
-                continue;
-            }
-
-            baseQuery = baseQuery.Where(e => e.Type != typeName
-                || context.ItemValues.Any(v => valueTypes.Contains(v.Type) && v.CleanValue == e.CleanName
-                    && context.ItemValuesMap.Any(m => m.ItemValueId == v.ItemValueId && accessibleItems.Any(i => i.Id == m.ItemId))));
         }
 
         return baseQuery;

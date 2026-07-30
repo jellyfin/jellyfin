@@ -416,12 +416,7 @@ public sealed partial class BaseItemRepository
         IQueryable<BaseItemEntity> baseQuery,
         InternalItemsQuery filter)
     {
-        // Apply TopParentIds filtering (library folder access)
-        if (filter.TopParentIds.Length > 0)
-        {
-            var topParentIds = filter.TopParentIds;
-            baseQuery = baseQuery.Where(e => topParentIds.Contains(e.TopParentId!.Value));
-        }
+        baseQuery = ApplyTopParentFiltering(context, baseQuery, filter);
 
         baseQuery = ApplyParentalRestrictions(context, baseQuery, filter);
 
@@ -430,6 +425,101 @@ public sealed partial class BaseItemRepository
         if (!filter.IncludeOwnedItems)
         {
             baseQuery = baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
+        }
+
+        return baseQuery;
+    }
+
+    /// <summary>
+    /// Restricts a query to the libraries the user may open, exempting requested by-name items.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    /// <param name="baseQuery">The query to filter.</param>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The filtered query.</returns>
+    private IQueryable<BaseItemEntity> ApplyTopParentFiltering(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> baseQuery,
+        InternalItemsQuery filter)
+    {
+        var queryTopParentIds = filter.TopParentIds;
+        if (queryTopParentIds.Length == 0)
+        {
+            return baseQuery;
+        }
+
+        var exemptedItemByNameTypes = GetExemptedItemByNameTypes(filter);
+        if (exemptedItemByNameTypes.Count == 0)
+        {
+            return baseQuery.WhereOneOrMany(queryTopParentIds, e => e.TopParentId!.Value);
+        }
+
+        baseQuery = baseQuery.Where(e => exemptedItemByNameTypes.Contains(e.Type) || queryTopParentIds.Any(w => w == e.TopParentId!.Value));
+        if (filter.UserHasContentRestrictions)
+        {
+            baseQuery = ApplyItemByNameAccessFiltering(baseQuery, context, filter, exemptedItemByNameTypes, queryTopParentIds);
+        }
+
+        return baseQuery;
+    }
+
+    /// <summary>
+    /// Returns the by-name types a query asks for, which carry no TopParentId to filter on.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The type names exempt from library filtering.</returns>
+    private List<string> GetExemptedItemByNameTypes(InternalItemsQuery filter)
+    {
+        var includedItemByNameTypes = GetItemByNameTypesInQuery(filter);
+        if ((filter.IncludeItemsByName ?? false) && includedItemByNameTypes.Count > 0)
+        {
+            return includedItemByNameTypes;
+        }
+
+        return _itemByNameKinds.Where(filter.IncludeItemTypes.Contains).Select(e => _itemTypeLookup.BaseItemKindNames[e]!).ToList();
+    }
+
+    /// <summary>
+    /// Keeps a by-name row only when at least one item behind its name is reachable for the user.
+    /// </summary>
+    /// <param name="baseQuery">The query to filter.</param>
+    /// <param name="context">The database context.</param>
+    /// <param name="filter">The query filter.</param>
+    /// <param name="itemByNameTypes">The exempted by-name type names.</param>
+    /// <param name="topParentIds">The libraries the user may open.</param>
+    /// <returns>The filtered query.</returns>
+    private IQueryable<BaseItemEntity> ApplyItemByNameAccessFiltering(
+        IQueryable<BaseItemEntity> baseQuery,
+        JellyfinDbContext context,
+        InternalItemsQuery filter,
+        IReadOnlyList<string> itemByNameTypes,
+        Guid[] topParentIds)
+    {
+        // IncludeOwnedItems: a credit on an alternate version of a reachable movie still counts.
+        var accessibleItems = ApplyAccessFiltering(
+            context,
+            context.BaseItems.AsNoTracking(),
+            new InternalItemsQuery(filter.User) { TopParentIds = topParentIds, IncludeOwnedItems = true });
+
+        var personType = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
+        if (itemByNameTypes.Contains(personType))
+        {
+            baseQuery = baseQuery.Where(e => e.Type != personType
+                || context.Peoples.Any(p => p.Name == e.Name
+                    && context.PeopleBaseItemMap.Any(m => m.PeopleId == p.Id && accessibleItems.Any(i => i.Id == m.ItemId))));
+        }
+
+        foreach (var (kind, valueTypes) in _itemByNameValueTypes)
+        {
+            var typeName = _itemTypeLookup.BaseItemKindNames[kind];
+            if (!itemByNameTypes.Contains(typeName))
+            {
+                continue;
+            }
+
+            baseQuery = baseQuery.Where(e => e.Type != typeName
+                || context.ItemValues.Any(v => valueTypes.Contains(v.Type) && v.CleanValue == e.CleanName
+                    && context.ItemValuesMap.Any(m => m.ItemValueId == v.ItemValueId && accessibleItems.Any(i => i.Id == m.ItemId))));
         }
 
         return baseQuery;
