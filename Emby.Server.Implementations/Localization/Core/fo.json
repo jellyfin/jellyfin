@@ -51,5 +51,15 @@
     "Music": "Tónleikur",
     "UserStartedPlayingItemWithValues": "{0} spælur {1} á {2}",
     "HeaderContinueWatching": "Hald áfram at hyggja",
-    "MusicVideos": "Sjónbandaløg"
+    "MusicVideos": "Sjónbandaløg",
+    "TaskUpdatePluginsDescription": "Niðurtekur og innleggur dagføringar til ískoytisforrit ið eru stillaði til at dagførast sjálvvirkandi.",
+    "TaskCleanTranscodeDescription": "Strikar umkotaðar fílar ið eru eldri enn 1 dag.",
+    "TaskOptimizeDatabase": "Albøt dátugrunn",
+    "NameSeasonNumber": "Sesong {0}",
+    "NameSeasonUnknown": "Ókend sesong",
+    "ScheduledTaskFailedWithName": "{0} miseydnaðist",
+    "Undefined": "Óskilmarkað",
+    "TasksMaintenanceCategory": "Viðlíkahald",
+    "TaskCleanLogs": "Reinsa gerðalistaskjáttu",
+    "UserOnlineFromDevice": "{0} er íbundin frá {1}"
 }
