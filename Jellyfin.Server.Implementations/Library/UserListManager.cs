@@ -10,7 +10,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using Microsoft.EntityFrameworkCore;
 
-namespace Emby.Server.Implementations.Library;
+namespace Jellyfin.Server.Implementations.Library;
 
 /// <summary>
 /// Manages per-user named lists stored in the Jellyfin database.
@@ -491,6 +491,21 @@ public sealed class UserListManager : IUserListManager, IDisposable
                 .Where(listItem => listItem.UserListId.Equals(listId))
                 .Select(listItem => listItem.ItemId)
                 .ToHashSetAsync()
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<Guid, DateTime>> GetListItemDatesAsync(Guid listId)
+    {
+        ThrowIfEmpty(listId, nameof(listId));
+
+        var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
+        {
+            return await dbContext.UserListItems
+                .Where(listItem => listItem.UserListId.Equals(listId))
+                .ToDictionaryAsync(listItem => listItem.ItemId, listItem => listItem.DateAdded)
                 .ConfigureAwait(false);
         }
     }

@@ -47,6 +47,7 @@ using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Udp;
 using Jellyfin.Server.Implementations.FullSystemBackup;
 using Jellyfin.Server.Implementations.Item;
+using Jellyfin.Server.Implementations.Library;
 using Jellyfin.Server.Implementations.MediaSegments;
 using Jellyfin.Server.Implementations.SystemBackupService;
 using MediaBrowser.Common;

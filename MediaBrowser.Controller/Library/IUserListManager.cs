@@ -93,6 +93,13 @@ public interface IUserListManager
     Task<IReadOnlySet<Guid>> GetListItemIdsAsync(Guid listId);
 
     /// <summary>
+    /// Gets the date each item was added to the specified list.
+    /// </summary>
+    /// <param name="listId">The list identifier.</param>
+    /// <returns>A map from each item identifier to the date it was added.</returns>
+    Task<IReadOnlyDictionary<Guid, DateTime>> GetListItemDatesAsync(Guid listId);
+
+    /// <summary>
     /// The exception thrown when a configured per-user-list or per-list-item cap is reached.
     /// </summary>
     public sealed class UserListLimitExceededException : Exception
