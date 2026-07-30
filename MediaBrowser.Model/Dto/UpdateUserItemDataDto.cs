@@ -44,6 +44,12 @@ namespace MediaBrowser.Model.Dto
         public bool? IsFavorite { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this item is in the user's default watchlist.
+        /// </summary>
+        /// <value><c>null</c> to leave watchlist membership unchanged; otherwise, <c>true</c> to add the item or <c>false</c> to remove it.</value>
+        public bool? IsWatchlisted { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="UpdateUserItemDataDto" /> is likes.
         /// </summary>
         /// <value><c>null</c> if [likes] contains no value, <c>true</c> if [likes]; otherwise, <c>false</c>.</value>

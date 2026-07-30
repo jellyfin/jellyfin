@@ -114,6 +114,7 @@ namespace Emby.Server.Implementations.Dto
         private readonly ILogger<DtoService> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserDataManager _userDataRepository;
+        private readonly IUserListManager? _userListManager;
 
         private readonly IImageProcessor _imageProcessor;
         private readonly IProviderManager _providerManager;
@@ -137,11 +138,13 @@ namespace Emby.Server.Implementations.Dto
             IMediaSourceManager mediaSourceManager,
             Lazy<ILiveTvManager> livetvManagerFactory,
             ITrickplayManager trickplayManager,
-            IChapterManager chapterManager)
+            IChapterManager chapterManager,
+            IUserListManager? userListManager = null)
         {
             _logger = logger;
             _libraryManager = libraryManager;
             _userDataRepository = userDataRepository;
+            _userListManager = userListManager;
             _imageProcessor = imageProcessor;
             _providerManager = providerManager;
             _recordingsManager = recordingsManager;
@@ -176,6 +179,26 @@ namespace Emby.Server.Implementations.Dto
 
                 // For items with alternate versions, the most recently played version drives resume.
                 resumeDataBatch = _userDataRepository.GetResumeUserDataBatch(accessibleItems, user);
+            }
+
+            // Batch-fetch user list membership for all items to avoid N+1 queries.
+            UserListMembershipBatch? userListMembershipBatch = null;
+            if (user is not null
+                && options.EnableUserData
+                && accessibleItems.Count > 0
+                && _userListManager is not null)
+            {
+                var itemIds = accessibleItems.Select(item => item.Id).ToArray();
+                var userLists = _userListManager.GetListsAsync(user.Id).GetAwaiter().GetResult();
+                var membership = _userListManager.GetMembershipAsync(user.Id, itemIds).GetAwaiter().GetResult();
+                var defaultListId = userLists.FirstOrDefault(list => list.IsDefault)?.Id;
+                var defaultListItemIds = defaultListId.HasValue
+                    ? membership
+                        .Where(entry => entry.Value.Contains(defaultListId.Value))
+                        .Select(entry => entry.Key)
+                        .ToHashSet()
+                    : new HashSet<Guid>();
+                userListMembershipBatch = new UserListMembershipBatch(membership, defaultListItemIds);
             }
 
             // Pre-compute collection folders once to avoid N+1 queries in CanDelete
@@ -255,7 +278,8 @@ namespace Emby.Server.Implementations.Dto
                     childCountBatch,
                     playedCountBatch,
                     artistsBatch,
-                    resumeDataBatch?.GetValueOrDefault(item.Id));
+                    resumeDataBatch?.GetValueOrDefault(item.Id),
+                    userListMembershipBatch);
 
                 if (item is LiveTvChannel tvChannel)
                 {
@@ -289,22 +313,7 @@ namespace Emby.Server.Implementations.Dto
 
         public BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User? user = null, BaseItem? owner = null)
         {
-            var dto = GetBaseItemDtoInternal(item, options, user, owner, null);
-            if (item is LiveTvChannel tvChannel)
-            {
-                LivetvManager.AddChannelInfo(new[] { (dto, tvChannel) }, options, user);
-            }
-            else if (item is LiveTvProgram)
-            {
-                LivetvManager.AddInfoToProgramDto(new[] { (item, dto) }, options.Fields, user).GetAwaiter().GetResult();
-            }
-
-            if (options.ContainsField(ItemFields.ItemCounts))
-            {
-                SetItemByNameInfo(dto, user);
-            }
-
-            return dto;
+            return GetBaseItemDtos([item], options, user, owner, skipVisibilityCheck: true)[0];
         }
 
         private BaseItemDto GetBaseItemDtoInternal(
@@ -317,7 +326,8 @@ namespace Emby.Server.Implementations.Dto
             Dictionary<Guid, int>? childCountBatch = null,
             Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null,
             IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null,
-            VersionResumeData? resumeData = null)
+            VersionResumeData? resumeData = null,
+            UserListMembershipBatch? userListMembershipBatch = null)
         {
             var dto = new BaseItemDto
             {
@@ -362,7 +372,8 @@ namespace Emby.Server.Implementations.Dto
                     userData,
                     childCountBatch,
                     playedCountBatch,
-                    resumeData);
+                    resumeData,
+                    userListMembershipBatch);
             }
 
             if (item is IHasMediaSources
@@ -548,7 +559,8 @@ namespace Emby.Server.Implementations.Dto
             UserItemData? userData = null,
             Dictionary<Guid, int>? childCountBatch = null,
             Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null,
-            VersionResumeData? resumeData = null)
+            VersionResumeData? resumeData = null,
+            UserListMembershipBatch? userListMembershipBatch = null)
         {
             if (item.IsFolder)
             {
@@ -619,6 +631,17 @@ namespace Emby.Server.Implementations.Dto
                         // Fall back to individual fetch
                         dto.UserData = _userDataRepository.GetUserDataDto(item, user);
                     }
+                }
+            }
+
+            if (dto.UserData is not null && userListMembershipBatch is not null)
+            {
+                dto.UserData.IsWatchlisted = item.IsWatchlisted(userListMembershipBatch.DefaultListItemIds);
+                if (options.ContainsField(ItemFields.UserLists))
+                {
+                    dto.UserData.UserListIds = userListMembershipBatch.Membership.TryGetValue(item.Id, out var userListIds)
+                        ? userListIds.ToArray()
+                        : [];
                 }
             }
 
@@ -1713,6 +1736,21 @@ namespace Emby.Server.Implementations.Dto
             }
 
             return item.GetDefaultPrimaryImageAspectRatio();
+        }
+
+        private sealed class UserListMembershipBatch
+        {
+            internal UserListMembershipBatch(
+                IReadOnlyDictionary<Guid, IReadOnlyList<Guid>> membership,
+                IReadOnlySet<Guid> defaultListItemIds)
+            {
+                Membership = membership;
+                DefaultListItemIds = defaultListItemIds;
+            }
+
+            internal IReadOnlyDictionary<Guid, IReadOnlyList<Guid>> Membership { get; }
+
+            internal IReadOnlySet<Guid> DefaultListItemIds { get; }
         }
     }
 }
