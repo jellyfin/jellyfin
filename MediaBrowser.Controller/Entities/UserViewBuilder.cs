@@ -587,6 +587,23 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
+            if (query.UserListId.HasValue && query.UserListItemIds is not null)
+            {
+                if (!query.UserListItemIds.Contains(item.Id))
+                {
+                    return false;
+                }
+            }
+
+            if (query.IsInWatchlist.HasValue && query.UserListItemIds is not null)
+            {
+                var isInWatchlist = query.UserListItemIds.Contains(item.Id);
+                if (isInWatchlist != query.IsInWatchlist.Value)
+                {
+                    return false;
+                }
+            }
+
             if (query.IsResumable.HasValue)
             {
                 userData ??= userDataManager.GetUserData(user, item);
