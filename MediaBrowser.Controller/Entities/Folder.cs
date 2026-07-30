@@ -1265,6 +1265,16 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            if (request.UserListId.HasValue)
+            {
+                return false;
+            }
+
+            if (request.IsInWatchlist.HasValue)
+            {
+                return false;
+            }
+
             if (request.IsPlayed.HasValue)
             {
                 return false;
