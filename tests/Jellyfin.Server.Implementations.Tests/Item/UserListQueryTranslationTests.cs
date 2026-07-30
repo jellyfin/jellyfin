@@ -170,6 +170,41 @@ public sealed class UserListQueryTranslationTests : IDisposable
     }
 
     [Fact]
+    public void DetachedEntry_IsExcludedFromWatchlistAndSelectedListFilters()
+    {
+        User user;
+        UserList defaultList;
+        BaseItemEntity attached;
+        BaseItemEntity detached;
+
+        using (var context = CreateDbContext())
+        {
+            user = CreateUser("detached-filter");
+            defaultList = CreateList(user.Id, "Watchlist", isDefault: true);
+            attached = CreateItem("A Attached");
+            detached = CreateItem("B Detached");
+
+            context.Users.Add(user);
+            context.UserLists.Add(defaultList);
+            context.BaseItems.AddRange(attached, detached);
+            context.UserListItems.AddRange(
+                CreateListItem(defaultList, attached, new DateTime(2026, 1, 1)),
+                CreateDetachedListItem(defaultList, detached, new DateTime(2026, 1, 2)));
+            context.SaveChanges();
+        }
+
+        var watchlistQuery = CreateScopedQuery(user, attached, detached);
+        watchlistQuery.IsInWatchlist = true;
+
+        Assert.Equal(attached.Id, Assert.Single(_repository.GetItemIdsList(watchlistQuery)));
+
+        var selectedListQuery = CreateScopedQuery(user, attached, detached);
+        selectedListQuery.UserListId = defaultList.Id;
+
+        Assert.Equal(attached.Id, Assert.Single(_repository.GetItemIdsList(selectedListQuery)));
+    }
+
+    [Fact]
     public void UserListId_ReturnsOnlySelectedListMembers()
     {
         User user;
@@ -299,9 +334,24 @@ public sealed class UserListQueryTranslationTests : IDisposable
         {
             UserListId = list.Id,
             UserList = list,
+            CustomDataKey = item.Id.ToString(),
             ItemId = item.Id,
             Item = item,
             DateAdded = dateAdded
+        };
+    }
+
+    private static UserListItem CreateDetachedListItem(UserList list, BaseItemEntity item, DateTime dateAdded)
+    {
+        return new UserListItem
+        {
+            UserListId = list.Id,
+            UserList = list,
+            CustomDataKey = item.Id.ToString(),
+            ItemId = null,
+            Item = null,
+            DateAdded = dateAdded,
+            RetentionDate = new DateTime(2026, 1, 3)
         };
     }
 

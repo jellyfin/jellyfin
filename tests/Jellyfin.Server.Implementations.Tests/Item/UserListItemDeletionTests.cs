@@ -48,7 +48,7 @@ public sealed class UserListItemDeletionTests : IDisposable
     }
 
     [Fact]
-    public void DeleteItem_RemovesListEntriesWithoutPlaceholderingThem()
+    public void DeleteItem_DetachesListEntriesWithoutPlaceholderingThem()
     {
         Guid userId;
         Guid firstListId;
@@ -89,22 +89,38 @@ public sealed class UserListItemDeletionTests : IDisposable
             retainedItemId = retainedItem.Id;
         }
 
+        var beforeDelete = DateTime.UtcNow;
         _itemPersistenceService.DeleteItem(deletedItemId);
+        var afterDelete = DateTime.UtcNow;
 
         using (var context = CreateDbContext())
         {
             var seededListIds = new[] { firstListId, secondListId };
 
-            Assert.False(context.UserListItems.Any(
-                entry => seededListIds.Contains(entry.UserListId) && entry.ItemId.Equals(deletedItemId)));
-            Assert.False(context.UserListItems.Any(
-                entry => seededListIds.Contains(entry.UserListId)
-                    && entry.ItemId.Equals(BaseItemRepository.PlaceholderId)));
+            var detachedEntries = context.UserListItems
+                .Where(entry => seededListIds.Contains(entry.UserListId)
+                    && entry.CustomDataKey == deletedItemId.ToString())
+                .ToList();
+            Assert.Equal(2, detachedEntries.Count);
+            Assert.All(
+                detachedEntries,
+                entry =>
+                {
+                    Assert.False(entry.ItemId.HasValue);
+                    Assert.NotNull(entry.RetentionDate);
+                    Assert.InRange(entry.RetentionDate!.Value, beforeDelete, afterDelete);
+                });
+            Assert.DoesNotContain(
+                detachedEntries,
+                entry => entry.ItemId.HasValue
+                    && entry.ItemId!.Value.Equals(BaseItemRepository.PlaceholderId));
 
             var retainedEntry = Assert.Single(context.UserListItems.Where(
-                entry => seededListIds.Contains(entry.UserListId)));
+                entry => seededListIds.Contains(entry.UserListId)
+                    && entry.CustomDataKey == retainedItemId.ToString()));
             Assert.Equal(firstListId, retainedEntry.UserListId);
             Assert.Equal(retainedItemId, retainedEntry.ItemId);
+            Assert.Null(retainedEntry.RetentionDate);
 
             var retainedUserData = Assert.Single(context.UserData.Where(
                 data => data.UserId.Equals(userId) && data.CustomDataKey == UserDataKey));
@@ -155,6 +171,7 @@ public sealed class UserListItemDeletionTests : IDisposable
         {
             UserListId = list.Id,
             UserList = list,
+            CustomDataKey = item.Id.ToString(),
             ItemId = item.Id,
             Item = item,
             DateAdded = new DateTime(2026, 1, 1)

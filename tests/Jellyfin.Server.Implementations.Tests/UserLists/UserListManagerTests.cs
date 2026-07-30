@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,10 +7,16 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Server.Implementations.Item;
 using Jellyfin.Server.Implementations.Library;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -26,6 +33,9 @@ public sealed class UserListManagerTests : IDisposable
     private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly ServerConfiguration _configuration;
     private readonly IDbContextFactory<JellyfinDbContext> _factory;
+    private readonly ItemPersistenceService _itemPersistenceService;
+    private readonly Dictionary<Guid, BaseItem> _libraryItems = new();
+    private readonly Mock<ILibraryManager> _libraryManager;
     private readonly UserListManager _manager;
 
     public UserListManagerTests()
@@ -50,7 +60,20 @@ public sealed class UserListManagerTests : IDisposable
         var configurationManager = new Mock<IServerConfigurationManager>();
         configurationManager.Setup(manager => manager.Configuration).Returns(_configuration);
 
-        _manager = new UserListManager(configurationManager.Object, _factory);
+        _libraryManager = new Mock<ILibraryManager>();
+        _libraryManager
+            .Setup(manager => manager.GetItemById(It.IsAny<Guid>()))
+            .Returns((Guid itemId) => _libraryItems.GetValueOrDefault(itemId));
+        Video.RecordingsManager = new Mock<IRecordingsManager>().Object;
+
+        _itemPersistenceService = new ItemPersistenceService(
+            _factory,
+            new Mock<IServerApplicationHost>().Object,
+            NullLogger<ItemPersistenceService>.Instance);
+        _manager = new UserListManager(
+            configurationManager.Object,
+            _factory,
+            new Lazy<ILibraryManager>(() => _libraryManager.Object));
     }
 
     public void Dispose()
@@ -104,7 +127,10 @@ public sealed class UserListManagerTests : IDisposable
 
                 return _configuration;
             });
-        using var manager = new UserListManager(configurationManager.Object, _factory);
+        using var manager = new UserListManager(
+            configurationManager.Object,
+            _factory,
+            new Lazy<ILibraryManager>(() => _libraryManager.Object));
 
         var exception = await Assert.ThrowsAsync<IUserListManager.DuplicateUserListNameException>(
             () => manager.CreateListAsync(userId, "Animation", true));
@@ -206,6 +232,55 @@ public sealed class UserListManagerTests : IDisposable
     }
 
     [Fact]
+    public async Task DetachedItem_IsExcludedFromMembershipAndListItemIds()
+    {
+        var userId = SeedUser();
+        var itemIds = SeedItems(2);
+        var list = await _manager.GetOrCreateDefaultListAsync(userId);
+        await _manager.AddItemAsync(list.Id, itemIds[0]);
+        await _manager.AddItemAsync(list.Id, itemIds[1]);
+        _itemPersistenceService.DeleteItem(itemIds[0]);
+
+        var membership = await _manager.GetMembershipAsync(userId, itemIds);
+        var listItemIds = await _manager.GetListItemIdsAsync(list.Id);
+        var listItemDates = await _manager.GetListItemDatesAsync(list.Id);
+
+        Assert.True(membership.TryGetValue(itemIds[0], out var detachedMembership));
+        Assert.Empty(detachedMembership);
+        Assert.True(membership.TryGetValue(itemIds[1], out var attachedMembership));
+        Assert.Contains(list.Id, attachedMembership);
+        Assert.DoesNotContain(itemIds[0], listItemIds);
+        Assert.Contains(itemIds[1], listItemIds);
+        Assert.False(listItemDates.ContainsKey(itemIds[0]));
+        Assert.True(listItemDates.ContainsKey(itemIds[1]));
+        Assert.False(_libraryItems[itemIds[0]].IsWatchlisted(listItemIds));
+        Assert.True(_libraryItems[itemIds[1]].IsWatchlisted(listItemIds));
+    }
+
+    [Fact]
+    public async Task AddItemAsync_DetachedItemDoesNotCountTowardConfiguredLimit()
+    {
+        _configuration.MaxItemsPerUserList = 1;
+        var userId = SeedUser();
+        var itemIds = SeedItems(2);
+        var list = await _manager.GetOrCreateDefaultListAsync(userId);
+        await _manager.AddItemAsync(list.Id, itemIds[0]);
+        _itemPersistenceService.DeleteItem(itemIds[0]);
+
+        await _manager.AddItemAsync(list.Id, itemIds[1]);
+
+        using var context = CreateDbContext();
+        var entries = await context.UserListItems
+            .Where(entry => entry.UserListId.Equals(list.Id))
+            .ToListAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(2, entries.Count);
+        var detachedEntry = Assert.Single(entries, entry => !entry.ItemId.HasValue);
+        Assert.NotNull(detachedEntry.RetentionDate);
+        var attachedEntry = Assert.Single(entries, entry => entry.ItemId.HasValue);
+        Assert.Equal(itemIds[1], attachedEntry.ItemId);
+    }
+
+    [Fact]
     public async Task DeleteUser_ThroughDbContext_CascadesToListsAndListItems()
     {
         var userId = SeedUser();
@@ -226,6 +301,23 @@ public sealed class UserListManagerTests : IDisposable
             Assert.False(await context.UserListItems.AnyAsync(entry => entry.UserListId.Equals(list.Id), TestContext.Current.CancellationToken));
             Assert.True(await context.BaseItems.AnyAsync(item => item.Id.Equals(itemId), TestContext.Current.CancellationToken));
         }
+    }
+
+    [Fact]
+    public async Task DeleteListAsync_CustomList_CascadesToDetachedListItems()
+    {
+        var userId = SeedUser();
+        var itemId = Assert.Single(SeedItems(1));
+        var list = await _manager.CreateListAsync(userId, "Delete me", false);
+        await _manager.AddItemAsync(list.Id, itemId);
+        DetachListItem(list.Id, itemId);
+
+        await _manager.DeleteListAsync(list.Id);
+
+        using var context = CreateDbContext();
+        Assert.False(await context.UserLists.AnyAsync(entity => entity.Id.Equals(list.Id), TestContext.Current.CancellationToken));
+        Assert.False(await context.UserListItems.AnyAsync(entry => entry.UserListId.Equals(list.Id), TestContext.Current.CancellationToken));
+        Assert.True(await context.BaseItems.AnyAsync(item => item.Id.Equals(itemId), TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -261,17 +353,44 @@ public sealed class UserListManagerTests : IDisposable
 
     private Guid[] SeedItems(int count)
     {
-        var itemIds = Enumerable.Range(0, count)
-            .Select(_ => Guid.NewGuid())
+        var items = Enumerable.Range(0, count)
+            .Select(index =>
+            {
+                var movie = new Movie
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Test Movie " + index
+                };
+                movie.SetProviderId(MetadataProvider.Imdb, "tt" + movie.Id.ToString("N"));
+                return movie;
+            })
             .ToArray();
-        using var context = CreateDbContext();
-        context.BaseItems.AddRange(itemIds.Select(itemId => new BaseItemEntity
+        foreach (var item in items)
         {
-            Id = itemId,
+            _libraryItems.Add(item.Id, item);
+        }
+
+        using var context = CreateDbContext();
+        context.BaseItems.AddRange(items.Select(item => new BaseItemEntity
+        {
+            Id = item.Id,
             Type = BaseItemType
         }));
         context.SaveChanges();
-        return itemIds;
+        return items.Select(item => item.Id).ToArray();
+    }
+
+    private void DetachListItem(Guid listId, Guid itemId)
+    {
+        using var context = CreateDbContext();
+        var entry = context.UserListItems.Single(
+            listItem => listItem.UserListId.Equals(listId)
+                && listItem.ItemId.HasValue
+                && listItem.ItemId!.Value.Equals(itemId));
+        entry.ItemId = null;
+        entry.Item = null;
+        entry.RetentionDate = DateTime.UtcNow;
+        context.SaveChanges();
     }
 
     private JellyfinDbContext CreateDbContext()
