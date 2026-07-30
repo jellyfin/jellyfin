@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Server.Implementations.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    [Migration("20260730015231_AddUserLists")]
+    [Migration("20260730212941_AddUserLists")]
     partial class AddUserLists
     {
         /// <inheritdoc />
@@ -1523,16 +1523,22 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<Guid>("UserListId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("ItemId")
+                    b.Property<string>("CustomDataKey")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DateAdded")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("RetentionDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("SortIndex")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("UserListId", "ItemId");
+                    b.HasKey("UserListId", "CustomDataKey");
 
                     b.HasIndex("ItemId");
 
@@ -1828,8 +1834,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
                         .WithMany()
                         .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("Jellyfin.Database.Implementations.Entities.UserList", "UserList")
                         .WithMany()

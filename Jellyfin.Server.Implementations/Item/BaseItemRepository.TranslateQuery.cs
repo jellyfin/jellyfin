@@ -467,7 +467,7 @@ public sealed partial class BaseItemRepository
         if (filter.UserListId.HasValue)
         {
             var listItemIds = context.UserListItems
-                .Where(uli => uli.UserListId == filter.UserListId.Value)
+                .Where(uli => uli.UserListId == filter.UserListId.Value && uli.ItemId != null)
                 .Select(uli => uli.ItemId);
 
             baseQuery = baseQuery.Where(e => listItemIds.Contains(e.Id));
@@ -480,7 +480,7 @@ public sealed partial class BaseItemRepository
                 .Where(ul => ul.UserId == userId && ul.IsDefault)
                 .Select(ul => ul.Id);
             var watchlistItemIds = context.UserListItems
-                .Where(uli => defaultListIds.Contains(uli.UserListId))
+                .Where(uli => defaultListIds.Contains(uli.UserListId) && uli.ItemId != null)
                 .Select(uli => uli.ItemId);
 
             baseQuery = filter.IsInWatchlist.Value

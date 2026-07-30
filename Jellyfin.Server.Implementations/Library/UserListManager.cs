@@ -21,6 +21,7 @@ public sealed class UserListManager : IUserListManager, IDisposable
 
     private readonly IServerConfigurationManager _config;
     private readonly IDbContextFactory<JellyfinDbContext> _provider;
+    private readonly Lazy<ILibraryManager> _libraryManagerFactory;
     private readonly AsyncKeyedLocker<Guid> _mutationLock = new();
     private bool _disposed;
 
@@ -29,12 +30,15 @@ public sealed class UserListManager : IUserListManager, IDisposable
     /// </summary>
     /// <param name="config">The server configuration manager.</param>
     /// <param name="provider">The Jellyfin database provider.</param>
+    /// <param name="libraryManagerFactory">The library manager.</param>
     public UserListManager(
         IServerConfigurationManager config,
-        IDbContextFactory<JellyfinDbContext> provider)
+        IDbContextFactory<JellyfinDbContext> provider,
+        Lazy<ILibraryManager> libraryManagerFactory)
     {
         _config = config;
         _provider = provider;
+        _libraryManagerFactory = libraryManagerFactory;
     }
 
     /// <inheritdoc />
@@ -227,40 +231,65 @@ public sealed class UserListManager : IUserListManager, IDisposable
             await using (dbContext.ConfigureAwait(false))
             {
                 var list = await GetTrackedListAsync(dbContext, listId).ConfigureAwait(false);
-                var existingItems = await dbContext.UserListItems
+                var item = _libraryManagerFactory.Value.GetItemById(itemId);
+                if (item is null)
+                {
+                    throw new ArgumentException("The library item does not exist.", nameof(itemId));
+                }
+
+                var customDataKey = item.GetUserDataKeys().First();
+                var allItems = await dbContext.UserListItems
                     .Where(listItem => listItem.UserListId.Equals(listId))
                     .OrderBy(listItem => listItem.SortIndex)
                     .ThenBy(listItem => listItem.DateAdded)
                     .ThenBy(listItem => listItem.ItemId)
+                    .ThenBy(listItem => listItem.CustomDataKey)
                     .ToListAsync()
                     .ConfigureAwait(false);
+                var attachedItems = allItems
+                    .Where(listItem => listItem.ItemId is not null)
+                    .ToList();
 
-                if (existingItems.Any(listItem => listItem.ItemId.Equals(itemId)))
+                if (attachedItems.Any(listItem => listItem.ItemId!.Value.Equals(itemId)))
+                {
+                    return;
+                }
+
+                var matchingKeyItem = allItems.FirstOrDefault(listItem => listItem.CustomDataKey == customDataKey);
+                if (matchingKeyItem?.ItemId is not null)
                 {
                     return;
                 }
 
                 var maximumItemCount = _config.Configuration.MaxItemsPerUserList;
-                if (existingItems.Count >= maximumItemCount)
+                if (attachedItems.Count >= maximumItemCount)
                 {
                     throw new IUserListManager.UserListLimitExceededException(
                         $"The user list item limit of {maximumItemCount} has been reached.");
                 }
 
-                if (!await dbContext.BaseItems.AnyAsync(item => item.Id.Equals(itemId)).ConfigureAwait(false))
+                var now = DateTime.UtcNow;
+                if (matchingKeyItem is not null)
                 {
-                    throw new ArgumentException("The library item does not exist.", nameof(itemId));
+                    matchingKeyItem.ItemId = itemId;
+                    matchingKeyItem.Item = null;
+                    matchingKeyItem.RetentionDate = null;
+                    matchingKeyItem.DateAdded = now;
+                    list.DateModified = now;
+                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                    return;
                 }
 
-                var now = DateTime.UtcNow;
                 dbContext.UserListItems.Add(new UserListItem
                 {
                     UserListId = listId,
                     UserList = list,
+                    CustomDataKey = customDataKey,
                     ItemId = itemId,
                     Item = null,
                     DateAdded = now,
-                    SortIndex = GetAppendSortIndex(existingItems)
+                    RetentionDate = null,
+                    SortIndex = GetAppendSortIndex(allItems)
                 });
 
                 list.DateModified = now;
@@ -270,7 +299,7 @@ public sealed class UserListManager : IUserListManager, IDisposable
                 }
                 catch (DbUpdateException)
                 {
-                    if (await ContainsListItemAsync(listId, itemId).ConfigureAwait(false))
+                    if (await ContainsListItemAsync(listId, itemId, customDataKey).ConfigureAwait(false))
                     {
                         return;
                     }
@@ -294,7 +323,10 @@ public sealed class UserListManager : IUserListManager, IDisposable
             {
                 var list = await GetTrackedListAsync(dbContext, listId).ConfigureAwait(false);
                 var listItem = await dbContext.UserListItems
-                    .FirstOrDefaultAsync(entry => entry.UserListId.Equals(listId) && entry.ItemId.Equals(itemId))
+                    .FirstOrDefaultAsync(
+                        entry => entry.UserListId.Equals(listId)
+                            && entry.ItemId.HasValue
+                            && entry.ItemId.Value.Equals(itemId))
                     .ConfigureAwait(false);
                 if (listItem is null)
                 {
@@ -324,21 +356,25 @@ public sealed class UserListManager : IUserListManager, IDisposable
             await using (dbContext.ConfigureAwait(false))
             {
                 var list = await GetTrackedListAsync(dbContext, listId).ConfigureAwait(false);
-                var items = await dbContext.UserListItems
+                var allItems = await dbContext.UserListItems
                     .Where(listItem => listItem.UserListId.Equals(listId))
                     .OrderBy(listItem => listItem.SortIndex)
                     .ThenBy(listItem => listItem.DateAdded)
                     .ThenBy(listItem => listItem.ItemId)
+                    .ThenBy(listItem => listItem.CustomDataKey)
                     .ToListAsync()
                     .ConfigureAwait(false);
 
-                var currentIndex = items.FindIndex(listItem => listItem.ItemId.Equals(itemId));
+                var attachedItems = allItems
+                    .Where(listItem => listItem.ItemId is not null)
+                    .ToList();
+                var currentIndex = attachedItems.FindIndex(listItem => listItem.ItemId!.Value.Equals(itemId));
                 if (currentIndex < 0)
                 {
                     throw new ArgumentException("The item is not in the user list.", nameof(itemId));
                 }
 
-                if (newSortIndex >= items.Count)
+                if (newSortIndex >= attachedItems.Count)
                 {
                     throw new ArgumentOutOfRangeException(
                         nameof(newSortIndex),
@@ -346,16 +382,20 @@ public sealed class UserListManager : IUserListManager, IDisposable
                         "The sort index must identify a position in the user list.");
                 }
 
-                var movedItem = items[currentIndex];
-                items.RemoveAt(currentIndex);
-                items.Insert(newSortIndex, movedItem);
+                var movedItem = attachedItems[currentIndex];
+                attachedItems.RemoveAt(currentIndex);
+                attachedItems.Insert(newSortIndex, movedItem);
 
                 var changed = false;
-                for (var index = 0; index < items.Count; index++)
+                var attachedIndex = 0;
+                for (var index = 0; index < allItems.Count; index++)
                 {
-                    if (items[index].SortIndex != index)
+                    var itemToIndex = allItems[index].ItemId is null
+                        ? allItems[index]
+                        : attachedItems[attachedIndex++];
+                    if (itemToIndex.SortIndex != index)
                     {
-                        items[index].SortIndex = index;
+                        itemToIndex.SortIndex = index;
                         changed = true;
                     }
                 }
@@ -458,11 +498,13 @@ public sealed class UserListManager : IUserListManager, IDisposable
             var memberships = await (
                     from listItem in dbContext.UserListItems
                     join list in dbContext.UserLists on listItem.UserListId equals list.Id
-                    where list.UserId.Equals(userId) && requestedItemIds.Contains(listItem.ItemId)
+                    where list.UserId.Equals(userId)
+                        && listItem.ItemId.HasValue
+                        && requestedItemIds.Contains(listItem.ItemId.Value)
                     orderby list.SortIndex, list.Id
                     select new
                     {
-                        listItem.ItemId,
+                        ItemId = listItem.ItemId!.Value,
                         ListId = list.Id
                     })
                 .ToListAsync()
@@ -488,8 +530,8 @@ public sealed class UserListManager : IUserListManager, IDisposable
         await using (dbContext.ConfigureAwait(false))
         {
             return await dbContext.UserListItems
-                .Where(listItem => listItem.UserListId.Equals(listId))
-                .Select(listItem => listItem.ItemId)
+                .Where(listItem => listItem.UserListId.Equals(listId) && listItem.ItemId.HasValue)
+                .Select(listItem => listItem.ItemId!.Value)
                 .ToHashSetAsync()
                 .ConfigureAwait(false);
         }
@@ -504,8 +546,8 @@ public sealed class UserListManager : IUserListManager, IDisposable
         await using (dbContext.ConfigureAwait(false))
         {
             return await dbContext.UserListItems
-                .Where(listItem => listItem.UserListId.Equals(listId))
-                .ToDictionaryAsync(listItem => listItem.ItemId, listItem => listItem.DateAdded)
+                .Where(listItem => listItem.UserListId.Equals(listId) && listItem.ItemId.HasValue)
+                .ToDictionaryAsync(listItem => listItem.ItemId!.Value, listItem => listItem.DateAdded)
                 .ConfigureAwait(false);
         }
     }
@@ -645,13 +687,16 @@ public sealed class UserListManager : IUserListManager, IDisposable
         }
     }
 
-    private async Task<bool> ContainsListItemAsync(Guid listId, Guid itemId)
+    private async Task<bool> ContainsListItemAsync(Guid listId, Guid itemId, string customDataKey)
     {
         var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
             return await dbContext.UserListItems
-                .AnyAsync(entry => entry.UserListId.Equals(listId) && entry.ItemId.Equals(itemId))
+                .AnyAsync(
+                    entry => entry.UserListId.Equals(listId)
+                        && entry.ItemId.HasValue
+                        && (entry.ItemId.Value.Equals(itemId) || entry.CustomDataKey == customDataKey))
                 .ConfigureAwait(false);
         }
     }

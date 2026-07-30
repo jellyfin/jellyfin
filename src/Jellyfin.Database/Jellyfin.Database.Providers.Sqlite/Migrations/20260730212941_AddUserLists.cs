@@ -41,19 +41,21 @@ namespace Jellyfin.Server.Implementations.Migrations
                 columns: table => new
                 {
                     UserListId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ItemId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    CustomDataKey = table.Column<string>(type: "TEXT", nullable: false),
+                    ItemId = table.Column<Guid>(type: "TEXT", nullable: true),
                     DateAdded = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    RetentionDate = table.Column<DateTime>(type: "TEXT", nullable: true),
                     SortIndex = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserListItems", x => new { x.UserListId, x.ItemId });
+                    table.PrimaryKey("PK_UserListItems", x => new { x.UserListId, x.CustomDataKey });
                     table.ForeignKey(
                         name: "FK_UserListItems_BaseItems_ItemId",
                         column: x => x.ItemId,
                         principalTable: "BaseItems",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_UserListItems_UserLists_UserListId",
                         column: x => x.UserListId,

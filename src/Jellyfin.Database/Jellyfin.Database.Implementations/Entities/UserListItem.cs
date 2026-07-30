@@ -18,9 +18,14 @@ public class UserListItem
     public required UserList? UserList { get; set; }
 
     /// <summary>
+    /// Gets or sets the custom data key.
+    /// </summary>
+    public required string CustomDataKey { get; set; }
+
+    /// <summary>
     /// Gets or sets the identifier of the item.
     /// </summary>
-    public required Guid ItemId { get; set; }
+    public Guid? ItemId { get; set; }
 
     /// <summary>
     /// Gets or sets the item.
@@ -31,6 +36,11 @@ public class UserListItem
     /// Gets or sets the date the item was added to the list.
     /// </summary>
     public DateTime DateAdded { get; set; }
+
+    /// <summary>
+    /// Gets or Sets the date the referenced <see cref="Item"/> has been deleted.
+    /// </summary>
+    public DateTime? RetentionDate { get; set; }
 
     /// <summary>
     /// Gets or sets the sort index of the item within the list.
