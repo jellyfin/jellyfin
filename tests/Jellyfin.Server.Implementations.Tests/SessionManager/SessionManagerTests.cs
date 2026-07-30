@@ -18,6 +18,26 @@ namespace Jellyfin.Server.Implementations.Tests.SessionManager;
 
 public class SessionManagerTests
 {
+    [Fact]
+    public void ShouldUpdateNativeUserData_FailsClosedForProfileChangesAndIdleStops()
+    {
+        var session = new SessionInfo(Mock.Of<ISessionManager>(), NullLogger.Instance)
+        {
+            CustomNetflixProfileGeneration = 2,
+            CustomNetflixNativeUserDataEnabled = false
+        };
+
+        Assert.False(Emby.Server.Implementations.Session.SessionManager.ShouldUpdateNativeUserData(session, null, null));
+        Assert.False(Emby.Server.Implementations.Session.SessionManager.ShouldUpdateNativeUserData(session, true, 2));
+
+        session.CustomNetflixNativeUserDataEnabled = true;
+        Assert.False(Emby.Server.Implementations.Session.SessionManager.ShouldUpdateNativeUserData(session, true, 1));
+        Assert.True(Emby.Server.Implementations.Session.SessionManager.ShouldUpdateNativeUserData(session, true, 2));
+
+        session.CustomNetflixNativeUserDataEnabled = null;
+        Assert.True(Emby.Server.Implementations.Session.SessionManager.ShouldUpdateNativeUserData(session, null, null));
+    }
+
     [Theory]
     [InlineData("", typeof(ArgumentException))]
     [InlineData(null, typeof(ArgumentNullException))]

@@ -1,4 +1,5 @@
 using System;
+using System.Data.Common;
 using System.IO;
 using System.Net.Mime;
 using System.Net.Sockets;
@@ -6,6 +7,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.CustomNetflix;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -70,7 +72,8 @@ public class ExceptionMiddleware
                 || ex is OperationCanceledException
                 || ex is SecurityException
                 || ex is AuthenticationException
-                || ex is FileNotFoundException;
+                || ex is FileNotFoundException
+                || ex is RateLimitExceededException;
 
             if (ignoreStackTrace)
             {
@@ -89,11 +92,17 @@ public class ExceptionMiddleware
                     context.Request.Path);
             }
 
-            context.Response.StatusCode = GetStatusCode(ex);
+            context.Response.StatusCode = GetStatusCode(context.Request.Path, ex);
             context.Response.ContentType = MediaTypeNames.Text.Plain;
+            if (ex is RateLimitExceededException)
+            {
+                context.Response.Headers.RetryAfter = "5";
+            }
 
             // Don't send exception unless the server is in a Development environment
-            var errorContent = _hostEnvironment.IsDevelopment()
+            var errorContent = ex is RateLimitExceededException
+                ? ex.Message
+                : _hostEnvironment.IsDevelopment()
                     ? NormalizeExceptionMessage(ex.Message)
                     : "Error processing request.";
             await context.Response.WriteAsync(errorContent).ConfigureAwait(false);
@@ -120,8 +129,14 @@ public class ExceptionMiddleware
         return ex;
     }
 
-    private static int GetStatusCode(Exception ex)
+    private static int GetStatusCode(PathString requestPath, Exception ex)
     {
+        if (requestPath.StartsWithSegments("/CustomNetflix", StringComparison.OrdinalIgnoreCase)
+            && ex is DbException)
+        {
+            return StatusCodes.Status503ServiceUnavailable;
+        }
+
         return ex switch
         {
             ArgumentException => StatusCodes.Status400BadRequest,
@@ -131,6 +146,8 @@ public class ExceptionMiddleware
             FileNotFoundException => StatusCodes.Status404NotFound,
             ResourceNotFoundException => StatusCodes.Status404NotFound,
             MethodNotAllowedException => StatusCodes.Status405MethodNotAllowed,
+            RateLimitExceededException => StatusCodes.Status429TooManyRequests,
+            CustomNetflixUnavailableException => StatusCodes.Status503ServiceUnavailable,
             _ => StatusCodes.Status500InternalServerError
         };
     }

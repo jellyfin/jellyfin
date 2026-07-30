@@ -10,12 +10,14 @@ using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller.CustomNetflix;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -40,6 +42,8 @@ public class UserLibraryController : BaseJellyfinApiController
     private readonly IDtoService _dtoService;
     private readonly IUserViewManager _userViewManager;
     private readonly IFileSystem _fileSystem;
+    private readonly ISessionManager _sessionManager;
+    private readonly ICustomNetflixActiveProfileService _activeProfileService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserLibraryController"/> class.
@@ -50,13 +54,17 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
     /// <param name="userViewManager">Instance of the <see cref="IUserViewManager"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+    /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
+    /// <param name="activeProfileService">Instance of the <see cref="ICustomNetflixActiveProfileService"/> interface.</param>
     public UserLibraryController(
         IUserManager userManager,
         IUserDataManager userDataRepository,
         ILibraryManager libraryManager,
         IDtoService dtoService,
         IUserViewManager userViewManager,
-        IFileSystem fileSystem)
+        IFileSystem fileSystem,
+        ISessionManager sessionManager,
+        ICustomNetflixActiveProfileService activeProfileService)
     {
         _userManager = userManager;
         _userDataRepository = userDataRepository;
@@ -64,6 +72,8 @@ public class UserLibraryController : BaseJellyfinApiController
         _dtoService = dtoService;
         _userViewManager = userViewManager;
         _fileSystem = fileSystem;
+        _sessionManager = sessionManager;
+        _activeProfileService = activeProfileService;
     }
 
     /// <summary>
@@ -214,7 +224,7 @@ public class UserLibraryController : BaseJellyfinApiController
     [HttpPost("UserFavoriteItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Tags("UserData")]
-    public ActionResult<UserItemDataDto> MarkFavoriteItem(
+    public async Task<ActionResult<UserItemDataDto>> MarkFavoriteItem(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
     {
@@ -233,7 +243,22 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        return MarkFavorite(user, item, true);
+        var nativeSession = await GetNativeUserDataSessionAsync(userId.Value).ConfigureAwait(false);
+        var writeError = RequestHelpers.GetCustomNetflixNativeUserDataWriteError(nativeSession.IsEnabled);
+        if (writeError is not null)
+        {
+            return writeError;
+        }
+
+        return nativeSession.Session.SynchronizeCustomNetflixProfile<ActionResult<UserItemDataDto>>(() =>
+        {
+            if (!IsNativeUserDataResolutionCurrent(nativeSession, userId.Value))
+            {
+                return RequestHelpers.GetCustomNetflixNativeUserDataWriteError(false)!;
+            }
+
+            return MarkFavorite(user, item, true);
+        });
     }
 
     /// <summary>
@@ -247,7 +272,7 @@ public class UserLibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public ActionResult<UserItemDataDto> MarkFavoriteItemLegacy(
+    public Task<ActionResult<UserItemDataDto>> MarkFavoriteItemLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId)
         => MarkFavoriteItem(userId, itemId);
@@ -262,7 +287,7 @@ public class UserLibraryController : BaseJellyfinApiController
     [HttpDelete("UserFavoriteItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Tags("UserData")]
-    public ActionResult<UserItemDataDto> UnmarkFavoriteItem(
+    public async Task<ActionResult<UserItemDataDto>> UnmarkFavoriteItem(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
     {
@@ -281,7 +306,22 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        return MarkFavorite(user, item, false);
+        var nativeSession = await GetNativeUserDataSessionAsync(userId.Value).ConfigureAwait(false);
+        var writeError = RequestHelpers.GetCustomNetflixNativeUserDataWriteError(nativeSession.IsEnabled);
+        if (writeError is not null)
+        {
+            return writeError;
+        }
+
+        return nativeSession.Session.SynchronizeCustomNetflixProfile<ActionResult<UserItemDataDto>>(() =>
+        {
+            if (!IsNativeUserDataResolutionCurrent(nativeSession, userId.Value))
+            {
+                return RequestHelpers.GetCustomNetflixNativeUserDataWriteError(false)!;
+            }
+
+            return MarkFavorite(user, item, false);
+        });
     }
 
     /// <summary>
@@ -295,7 +335,7 @@ public class UserLibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public ActionResult<UserItemDataDto> UnmarkFavoriteItemLegacy(
+    public Task<ActionResult<UserItemDataDto>> UnmarkFavoriteItemLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId)
         => UnmarkFavoriteItem(userId, itemId);
@@ -310,7 +350,7 @@ public class UserLibraryController : BaseJellyfinApiController
     [HttpDelete("UserItems/{itemId}/Rating")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Tags("UserData")]
-    public ActionResult<UserItemDataDto?> DeleteUserItemRating(
+    public async Task<ActionResult<UserItemDataDto?>> DeleteUserItemRating(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
     {
@@ -329,7 +369,22 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        return UpdateUserItemRatingInternal(user, item, null);
+        var nativeSession = await GetNativeUserDataSessionAsync(userId.Value).ConfigureAwait(false);
+        var writeError = RequestHelpers.GetCustomNetflixNativeUserDataWriteError(nativeSession.IsEnabled);
+        if (writeError is not null)
+        {
+            return writeError;
+        }
+
+        return nativeSession.Session.SynchronizeCustomNetflixProfile<ActionResult<UserItemDataDto?>>(() =>
+        {
+            if (!IsNativeUserDataResolutionCurrent(nativeSession, userId.Value))
+            {
+                return RequestHelpers.GetCustomNetflixNativeUserDataWriteError(false)!;
+            }
+
+            return UpdateUserItemRatingInternal(user, item, null);
+        });
     }
 
     /// <summary>
@@ -343,7 +398,7 @@ public class UserLibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public ActionResult<UserItemDataDto?> DeleteUserItemRatingLegacy(
+    public Task<ActionResult<UserItemDataDto?>> DeleteUserItemRatingLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId)
         => DeleteUserItemRating(userId, itemId);
@@ -359,7 +414,7 @@ public class UserLibraryController : BaseJellyfinApiController
     [HttpPost("UserItems/{itemId}/Rating")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Tags("UserData")]
-    public ActionResult<UserItemDataDto?> UpdateUserItemRating(
+    public async Task<ActionResult<UserItemDataDto?>> UpdateUserItemRating(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId,
         [FromQuery] bool? likes)
@@ -379,7 +434,22 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        return UpdateUserItemRatingInternal(user, item, likes);
+        var nativeSession = await GetNativeUserDataSessionAsync(userId.Value).ConfigureAwait(false);
+        var writeError = RequestHelpers.GetCustomNetflixNativeUserDataWriteError(nativeSession.IsEnabled);
+        if (writeError is not null)
+        {
+            return writeError;
+        }
+
+        return nativeSession.Session.SynchronizeCustomNetflixProfile<ActionResult<UserItemDataDto?>>(() =>
+        {
+            if (!IsNativeUserDataResolutionCurrent(nativeSession, userId.Value))
+            {
+                return RequestHelpers.GetCustomNetflixNativeUserDataWriteError(false)!;
+            }
+
+            return UpdateUserItemRatingInternal(user, item, likes);
+        });
     }
 
     /// <summary>
@@ -394,7 +464,7 @@ public class UserLibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public ActionResult<UserItemDataDto?> UpdateUserItemRatingLegacy(
+    public Task<ActionResult<UserItemDataDto?>> UpdateUserItemRatingLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId,
         [FromQuery] bool? likes)
@@ -665,6 +735,24 @@ public class UserLibraryController : BaseJellyfinApiController
             }
         }
     }
+
+    private Task<(SessionInfo Session, bool? IsEnabled, long Generation)> GetNativeUserDataSessionAsync(Guid userId)
+        => RequestHelpers.GetCustomNetflixNativeUserDataSession(
+            _sessionManager,
+            _userManager,
+            _activeProfileService,
+            HttpContext,
+            userId);
+
+    private bool IsNativeUserDataResolutionCurrent(
+        (SessionInfo Session, bool? IsEnabled, long Generation) nativeSession,
+        Guid userId)
+        => RequestHelpers.IsCustomNetflixProfileResolutionCurrentUnsafe(
+            nativeSession.Session,
+            nativeSession.Generation,
+            userId,
+            User.GetToken(),
+            enabled: true);
 
     /// <summary>
     /// Marks the favorite.

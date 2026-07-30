@@ -66,6 +66,16 @@ public interface IMediaSegmentManager
     Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(BaseItem item, IEnumerable<MediaSegmentType>? typeFilter, LibraryOptions libraryOptions, bool filterByProvider = true);
 
     /// <summary>
+    /// Counts distinct video items that have each requested segment type.
+    /// </summary>
+    /// <param name="typeFilter">The segment types to count.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Distinct item counts keyed by segment type.</returns>
+    Task<IReadOnlyDictionary<MediaSegmentType, int>> GetSegmentedItemCountsAsync(
+        IEnumerable<MediaSegmentType> typeFilter,
+        CancellationToken cancellationToken);
+
+    /// <summary>
     /// Gets information about any media segments stored for the given itemId.
     /// </summary>
     /// <param name="itemId">The id of the <see cref="BaseItem"/>.</param>

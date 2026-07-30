@@ -6,28 +6,37 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.RateLimiting;
 using Emby.Server.Implementations.EntryPoints;
 using Emby.Server.Implementations.Localization;
 using Jellyfin.Api.Middleware;
 using Jellyfin.Database.Implementations;
-using Jellyfin.LiveTv.Extensions;
-using Jellyfin.LiveTv.Recordings;
+using Jellyfin.LiveTv.Channels;
 using Jellyfin.MediaEncoding.Hls.Extensions;
 using Jellyfin.Networking;
 using Jellyfin.Networking.HappyEyeballs;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.HealthChecks;
+using Jellyfin.Server.Implementations.CustomNetflix;
 using Jellyfin.Server.Implementations.Extensions;
+using MediaBrowser.Common.Api;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.XbmcMetadata;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
@@ -40,6 +49,10 @@ namespace Jellyfin.Server
     /// </summary>
     public class Startup
     {
+        private static readonly Regex _versionedAssetRegex = new(
+            @"\.[a-f0-9]{8,}\.",
+            RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
         private readonly CoreAppHost _serverApplicationHost;
         private readonly IConfiguration _configuration;
         private readonly IServerConfigurationManager _serverConfigurationManager;
@@ -71,12 +84,35 @@ namespace Jellyfin.Server
 
             services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
             services.AddJellyfinDbContext(_serverApplicationHost.ConfigurationManager, _configuration);
+            services.AddCustomNetflixServices(_configuration);
             services.AddJellyfinApiSwagger();
 
             // configure custom legacy authentication
             services.AddCustomAuthentication();
 
             services.AddJellyfinApiAuthorization();
+            services.AddRateLimiter(options =>
+            {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+                options.AddPolicy<(IPAddress Address, int PermitLimit, int WindowSeconds)>("PublicRegistration", context =>
+                {
+                    var configuration = _serverConfigurationManager.Configuration;
+                    var partitionKey = (
+                        context.GetNormalizedRemoteIP(),
+                        Math.Max(1, configuration.PublicUserRegistrationMaxAttemptsPerWindow),
+                        Math.Max(1, configuration.PublicUserRegistrationWindowSeconds));
+
+                    return RateLimitPartition.GetFixedWindowLimiter(
+                        partitionKey,
+                        key => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = key.Item2,
+                            Window = TimeSpan.FromSeconds(key.Item3),
+                            QueueLimit = 0,
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+                        });
+                });
+            });
 
             var productHeader = new ProductInfoHeaderValue(
                 _serverApplicationHost.Name.Replace(' ', '-'),
@@ -125,10 +161,10 @@ namespace Jellyfin.Server
                 .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
 
             services.AddHealthChecks()
-                .AddCheck<DbContextFactoryHealthCheck<JellyfinDbContext>>(nameof(JellyfinDbContext));
+                .AddCheck<DbContextFactoryHealthCheck<JellyfinDbContext>>(nameof(JellyfinDbContext), tags: ["ready"]);
 
             services.AddHlsPlaylistGenerator();
-            services.AddLiveTvServices();
+            services.AddSingleton<IChannelManager, ChannelManager>();
 
             var serverUICulture = _serverConfigurationManager.Configuration.UICulture;
             if (string.IsNullOrEmpty(serverUICulture))
@@ -149,12 +185,10 @@ namespace Jellyfin.Server
                 options.FallBackToParentUICultures = true;
             });
 
-            services.AddHostedService<RecordingsHost>();
             services.AddHostedService<AutoDiscoveryHost>();
             services.AddHostedService<NfoUserDataSaver>();
             services.AddHostedService<LibraryChangedNotifier>();
             services.AddHostedService<UserDataChangeNotifier>();
-            services.AddHostedService<RecordingNotifier>();
         }
 
         /// <summary>
@@ -179,6 +213,13 @@ namespace Jellyfin.Server
                     mainApp.UseDeveloperExceptionPage();
                 }
 
+                // Liveness must remain reachable while startup is incomplete and
+                // independently of remote-access policy or external dependencies.
+                mainApp.UseHealthChecks("/live", new HealthCheckOptions
+                {
+                    Predicate = _ => false
+                });
+
                 mainApp.UseForwardedHeaders();
                 mainApp.UseMiddleware<ExceptionMiddleware>();
 
@@ -192,9 +233,17 @@ namespace Jellyfin.Server
 
                 mainApp.UseRequestLocalization();
 
-                if (config.RequireHttps && _serverApplicationHost.ListenWithHttps)
+                if (config.RequireHttps)
                 {
-                    mainApp.UseHttpsRedirection();
+                    if (!env.IsDevelopment())
+                    {
+                        mainApp.UseHsts();
+                    }
+
+                    if (_serverApplicationHost.ListenWithHttps)
+                    {
+                        mainApp.UseHttpsRedirection();
+                    }
                 }
 
                 if (appConfig.HostWebClient())
@@ -220,6 +269,11 @@ namespace Jellyfin.Server
                             {
                                 context.Context.Response.Headers.CacheControl = new StringValues("no-cache");
                             }
+                            else if (context.Context.Request.QueryString.HasValue
+                                     || _versionedAssetRegex.IsMatch(context.File.Name))
+                            {
+                                context.Context.Response.Headers.CacheControl = new StringValues("public,max-age=31536000,immutable");
+                            }
                         }
                     });
 
@@ -231,6 +285,7 @@ namespace Jellyfin.Server
                 mainApp.UseJellyfinApiSwagger(_serverConfigurationManager);
                 mainApp.UseQueryStringDecoding();
                 mainApp.UseRouting();
+                mainApp.UseRateLimiter();
                 mainApp.UseAuthorization();
 
                 mainApp.UseIPBasedAccessValidation();
@@ -248,9 +303,20 @@ namespace Jellyfin.Server
                     endpoints.MapControllers();
                     if (_serverConfigurationManager.Configuration.EnableMetrics)
                     {
-                        endpoints.MapMetrics();
+                        endpoints.MapMetrics()
+                            .RequireAuthorization(Policies.RequiresElevation);
                     }
 
+                    endpoints.MapHealthChecks("/ready", new HealthCheckOptions
+                    {
+                        Predicate = registration => registration.Tags.Contains("ready"),
+                        ResultStatusCodes =
+                        {
+                            [HealthStatus.Healthy] = StatusCodes.Status200OK,
+                            [HealthStatus.Degraded] = StatusCodes.Status503ServiceUnavailable,
+                            [HealthStatus.Unhealthy] = StatusCodes.Status503ServiceUnavailable
+                        }
+                    });
                     endpoints.MapHealthChecks("/health");
                 });
             });

@@ -26,6 +26,7 @@ namespace Jellyfin.Server.Helpers;
 public static class StartupHelpers
 {
     private static readonly string[] _relevantEnvVarPrefixes = { "JELLYFIN_", "DOTNET_", "ASPNETCORE_" };
+    private static readonly string[] _sensitiveEnvVarFragments = { "PASSWORD", "TOKEN", "SECRET", "CONNECTIONSTRING", "APIKEY", "API_KEY", "CREDENTIAL" };
 
     /// <summary>
     /// Logs relevant environment variables and information about the host.
@@ -46,7 +47,8 @@ public static class StartupHelpers
         {
             if (_relevantEnvVarPrefixes.Any(prefix => key.ToString()!.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
             {
-                relevantEnvVars.Add(key, allEnvVars[key]!);
+                var keyText = key.ToString()!;
+                relevantEnvVars.Add(key, IsSensitiveEnvironmentVariable(keyText) ? "[REDACTED]" : allEnvVars[key]!);
             }
         }
 
@@ -65,6 +67,9 @@ public static class StartupHelpers
         logger.LogInformation("Web resources path: {WebPath}", appPaths.WebPath);
         logger.LogInformation("Application directory: {ApplicationPath}", appPaths.ProgramSystemPath);
     }
+
+    internal static bool IsSensitiveEnvironmentVariable(string key)
+        => _sensitiveEnvVarFragments.Any(fragment => key.Contains(fragment, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// Create the data, config and log paths from the variety of inputs(command line args,

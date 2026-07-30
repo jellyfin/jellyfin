@@ -314,9 +314,9 @@ public static partial class NetworkUtils
         }
 
         var hosts = new List<string>();
-        foreach (var splitSpan in host.Split(':'))
+        foreach (var range in host.Split(':'))
         {
-            hosts.Add(splitSpan.ToString());
+            hosts.Add(host[range].ToString());
         }
 
         if (hosts.Count <= 2)

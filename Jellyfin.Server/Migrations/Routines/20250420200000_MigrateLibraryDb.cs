@@ -1317,8 +1317,9 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         var position = 0;
         var result = new ItemImageInfo[count];
-        foreach (var part in valueSpan.Split('|'))
+        foreach (var range in valueSpan.Split('|'))
         {
+            var part = valueSpan[range];
             var image = ItemImageInfoFromValueString(part);
 
             if (image is not null)

@@ -5,14 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-      <_Parameter1>Jellyfin.LiveTv.Tests</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="AsyncKeyedLock" />
-    <PackageReference Include="Jellyfin.XmlTv" />
   </ItemGroup>
 
   <ItemGroup>

@@ -24,6 +24,7 @@ namespace Jellyfin.Server.Implementations.Users
         private const string BaseResetFileName = "passwordreset";
 
         private readonly IApplicationHost _appHost;
+        private readonly IServerConfigurationManager _configurationManager;
 
         private readonly string _passwordResetFileBase;
         private readonly string _passwordResetFileBaseDir;
@@ -35,6 +36,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <param name="appHost">The application host.</param>
         public DefaultPasswordResetProvider(IServerConfigurationManager configurationManager, IApplicationHost appHost)
         {
+            _configurationManager = configurationManager;
             _passwordResetFileBaseDir = configurationManager.ApplicationPaths.ProgramDataPath;
             _passwordResetFileBase = Path.Combine(_passwordResetFileBaseDir, BaseResetFileName);
             _appHost = appHost;
@@ -101,7 +103,13 @@ namespace Jellyfin.Server.Implementations.Users
 
             if (user is not null && isInNetwork)
             {
-                byte[] bytes = new byte[4];
+                var minimumPasswordLength = Math.Max(
+                    1,
+                    _configurationManager.Configuration.PublicUserRegistrationMinimumPasswordLength);
+                var randomByteCount = Math.Max(
+                    4,
+                    (int)(((long)minimumPasswordLength + 3) / 3));
+                byte[] bytes = new byte[randomByteCount];
                 RandomNumberGenerator.Fill(bytes);
                 string pin = BitConverter.ToString(bytes);
 

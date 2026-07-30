@@ -58,8 +58,10 @@ public class UrlDecodeQueryFeature : IQueryFeature
             }
 
             var pairs = new Dictionary<string, StringValues>();
-            foreach (var pair in key.SpanSplit('&'))
+            var keySpan = key.AsSpan();
+            foreach (var range in keySpan.Split('&'))
             {
+                var pair = keySpan[range];
                 var i = pair.IndexOf('=');
                 if (i == -1)
                 {

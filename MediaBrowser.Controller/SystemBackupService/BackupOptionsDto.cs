@@ -26,4 +26,11 @@ public class BackupOptionsDto
     /// Gets or sets a value indicating whether the archive contains the Database contents.
     /// </summary>
     public bool Database { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the archive contains the external
+    /// CustomNetflix PostgreSQL database. The server populates this value when
+    /// PostgreSQL is configured.
+    /// </summary>
+    public bool CustomNetflixDatabase { get; set; }
 }

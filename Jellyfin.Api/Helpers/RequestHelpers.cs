@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.CustomNetflix;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -18,6 +20,7 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api.Helpers;
 
@@ -143,6 +146,134 @@ public static class RequestHelpers
         }
 
         return session;
+    }
+
+    internal static async Task<(SessionInfo Session, bool? IsEnabled, long Generation)> GetCustomNetflixNativeUserDataSession(
+        ISessionManager sessionManager,
+        IUserManager userManager,
+        ICustomNetflixActiveProfileService activeProfileService,
+        HttpContext httpContext,
+        Guid? userId = null)
+    {
+        var profileUserId = userId ?? httpContext.User.GetUserId();
+        var session = await GetSession(sessionManager, userManager, httpContext, profileUserId).ConfigureAwait(false);
+        var token = httpContext.User.GetToken();
+        var tokenHash = CustomNetflixNativePlaystateSyncPolicy.HashToken(token);
+        var cachedResolution = session.SynchronizeCustomNetflixProfile(() =>
+        {
+            if (session.CustomNetflixProfileUserId.Equals(profileUserId)
+                && string.Equals(session.CustomNetflixTokenHash, tokenHash, StringComparison.Ordinal)
+                && session.CustomNetflixNativeUserDataEnabled.HasValue)
+            {
+                return (
+                    IsCached: true,
+                    IsEnabled: session.CustomNetflixNativeUserDataEnabled.Value,
+                    Generation: session.CustomNetflixProfileGeneration);
+            }
+
+            return (
+                IsCached: false,
+                IsEnabled: false,
+                Generation: BeginCustomNetflixProfileResolutionUnsafe(session));
+        });
+        if (cachedResolution.IsCached)
+        {
+            return (session, cachedResolution.IsEnabled, cachedResolution.Generation);
+        }
+
+        var generation = cachedResolution.Generation;
+        if (!activeProfileService.IsEnabled)
+        {
+            var published = TrySetCustomNetflixProfileResolution(session, generation, profileUserId, token, true);
+            return (session, published, generation);
+        }
+
+        try
+        {
+            var activeProfile = await activeProfileService.GetActiveProfileAsync(
+                profileUserId,
+                token,
+                httpContext.RequestAborted).ConfigureAwait(false);
+            var enabled = CustomNetflixNativePlaystateSyncPolicy.ShouldSync(activeProfile.Profile);
+            var published = TrySetCustomNetflixProfileResolution(session, generation, profileUserId, token, enabled);
+            return (session, published && enabled, generation);
+        }
+        catch (Exception ex) when (ex is CustomNetflixUnavailableException or DbException)
+        {
+            // Retry on the next request, but never contaminate the default profile meanwhile.
+            return (session, null, generation);
+        }
+    }
+
+    internal static long BeginCustomNetflixProfileResolution(SessionInfo session)
+        => session.SynchronizeCustomNetflixProfile(
+            () => BeginCustomNetflixProfileResolutionUnsafe(session));
+
+    internal static long BeginCustomNetflixProfileChange(SessionInfo session)
+        => session.SynchronizeCustomNetflixProfile(
+            () => BeginCustomNetflixProfileResolutionUnsafe(session));
+
+    internal static bool TrySetCustomNetflixProfileResolution(
+        SessionInfo session,
+        long generation,
+        Guid userId,
+        string? token,
+        bool enabled)
+        => session.SynchronizeCustomNetflixProfile(() =>
+        {
+            if (session.CustomNetflixProfileGeneration != generation)
+            {
+                return false;
+            }
+
+            session.CustomNetflixProfileUserId = userId;
+            session.CustomNetflixNativeUserDataEnabled = enabled;
+            session.CustomNetflixTokenHash = CustomNetflixNativePlaystateSyncPolicy.HashToken(token);
+            return true;
+        });
+
+    internal static ObjectResult? GetCustomNetflixNativeUserDataWriteError(bool? enabled)
+        => enabled switch
+        {
+            true => null,
+            false => new ConflictObjectResult(new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "CustomNetflix profile isolation",
+                Detail = "Native Jellyfin user data is disabled while a non-default CustomNetflix profile is active."
+            }),
+            null => new ObjectResult(new ProblemDetails
+            {
+                Status = StatusCodes.Status503ServiceUnavailable,
+                Title = "CustomNetflix profile state unavailable",
+                Detail = "The active profile could not be verified, so native Jellyfin user data was not changed."
+            })
+            {
+                StatusCode = StatusCodes.Status503ServiceUnavailable
+            }
+        };
+
+    internal static bool IsCustomNetflixProfileResolutionCurrentUnsafe(
+        SessionInfo session,
+        long generation,
+        Guid userId,
+        string? token,
+        bool enabled)
+        => session.CustomNetflixProfileGeneration == generation
+            && session.CustomNetflixProfileUserId.Equals(userId)
+            && string.Equals(
+                session.CustomNetflixTokenHash,
+                CustomNetflixNativePlaystateSyncPolicy.HashToken(token),
+                StringComparison.Ordinal)
+            && session.CustomNetflixNativeUserDataEnabled == enabled;
+
+    private static long BeginCustomNetflixProfileResolutionUnsafe(SessionInfo session)
+    {
+        session.CustomNetflixProfileGeneration++;
+        session.CustomNetflixTokenHash = null;
+        session.CustomNetflixProfileUserId = null;
+        session.CustomNetflixNativeUserDataEnabled = false;
+        return session.CustomNetflixProfileGeneration;
     }
 
     internal static async Task<string> GetSessionId(ISessionManager sessionManager, IUserManager userManager, HttpContext httpContext)

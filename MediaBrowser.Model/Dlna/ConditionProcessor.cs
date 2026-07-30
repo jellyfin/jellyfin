@@ -198,8 +198,10 @@ namespace MediaBrowser.Model.Dlna
             var conditionType = condition.Condition;
             if (condition.Condition == ProfileConditionType.EqualsAny)
             {
-                foreach (var singleConditionString in condition.Value.AsSpan().Split('|'))
+                var conditionValueSpan = condition.Value.AsSpan();
+                foreach (var range in conditionValueSpan.Split('|'))
                 {
+                    var singleConditionString = conditionValueSpan[range];
                     if (int.TryParse(singleConditionString, NumberStyles.Integer, CultureInfo.InvariantCulture, out int conditionValue)
                         && conditionValue.Equals(currentValue))
                     {
@@ -288,8 +290,10 @@ namespace MediaBrowser.Model.Dlna
             var conditionType = condition.Condition;
             if (condition.Condition == ProfileConditionType.EqualsAny)
             {
-                foreach (var singleConditionString in condition.Value.AsSpan().Split('|'))
+                var conditionValueSpan = condition.Value.AsSpan();
+                foreach (var range in conditionValueSpan.Split('|'))
                 {
+                    var singleConditionString = conditionValueSpan[range];
                     if (double.TryParse(singleConditionString, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out double conditionValue)
                         && conditionValue.Equals(currentValue))
                     {
@@ -361,8 +365,10 @@ namespace MediaBrowser.Model.Dlna
             var conditionType = condition.Condition;
             if (conditionType == ProfileConditionType.EqualsAny)
             {
-                foreach (var singleConditionString in condition.Value.AsSpan().Split('|'))
+                var conditionValueSpan = condition.Value.AsSpan();
+                foreach (var range in conditionValueSpan.Split('|'))
                 {
+                    var singleConditionString = conditionValueSpan[range];
                     if (Enum.TryParse(singleConditionString, true, out VideoRangeType conditionValue)
                         && conditionValue.Equals(currentValue))
                     {

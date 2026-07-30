@@ -30,14 +30,14 @@ namespace Jellyfin.Server.Configuration
                 .AllowAnyMethod()
                 .AllowAnyHeader();
 
-            // No hosts configured or only default configured.
-            if (corsHosts.Length == 0
-                || (corsHosts.Length == 1
-                    && string.Equals(corsHosts[0], CorsConstants.AnyOrigin, StringComparison.Ordinal)))
+            // Wildcard CORS must be explicitly configured. An empty list keeps
+            // same-origin clients working without exposing the API cross-origin.
+            if (corsHosts.Length == 1
+                && string.Equals(corsHosts[0], CorsConstants.AnyOrigin, StringComparison.Ordinal))
             {
                 builder.AllowAnyOrigin();
             }
-            else
+            else if (corsHosts.Length > 0)
             {
                 builder.WithOrigins(corsHosts)
                     .AllowCredentials();

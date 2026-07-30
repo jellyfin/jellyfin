@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using Jellyfin.Extensions;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace MediaBrowser.Model.Net
 {
@@ -63,19 +64,32 @@ namespace MediaBrowser.Model.Net
         }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Used for extensions not in <see cref="Model.MimeTypes"/> or to override them.
+        /// Used for extensions not in <see cref="FileExtensionContentTypeProvider"/> or to override them.
         /// </summary>
         private static readonly FrozenDictionary<string, string> _mimeTypeLookup = new KeyValuePair<string, string>[]
         {
             // Type application
+            new(".7z", "application/x-7z-compressed"),
+            new(".azw", "application/vnd.amazon.ebook"),
             new(".azw3", "application/vnd.amazon.ebook"),
             new(".cb7", "application/x-cb7"),
             new(".cba", "application/x-cba"),
             new(".cbr", "application/vnd.comicbook-rar"),
             new(".cbt", "application/x-cbt"),
             new(".cbz", "application/vnd.comicbook+zip"),
+            new(".dll", "application/octet-stream"),
+            new(".epub", "application/epub+zip"),
+            new(".mobi", "application/x-mobipocket-ebook"),
+            new(".opf", "application/oebps-package+xml"),
+            new(".rar", "application/vnd.rar"),
+            new(".srt", "application/x-subrip"),
+            new(".ttml", "application/ttml+xml"),
+            new(".xml", "application/xml"),
+            new(".zip", "application/zip"),
 
             // Type image
+            new(".apng", "image/apng"),
+            new(".ico", "image/vnd.microsoft.icon"),
             new(".tbn", "image/jpeg"),
 
             // Type text
@@ -84,9 +98,14 @@ namespace MediaBrowser.Model.Net
             new(".edl", "text/plain"),
             new(".html", "text/html; charset=UTF-8"),
             new(".htm", "text/html; charset=UTF-8"),
+            new(".log", "text/plain"),
+            new(".vtt", "text/vtt"),
 
             // Type video
+            new(".m4v", "video/x-m4v"),
+            new(".mkv", "video/x-matroska"),
             new(".mpegts", "video/mp2t"),
+            new(".ts", "video/mp2t"),
 
             // Type audio
             new(".aac", "audio/aac"),
@@ -96,11 +115,19 @@ namespace MediaBrowser.Model.Net
             new(".dsp", "audio/dsp"),
             new(".flac", "audio/flac"),
             new(".m4b", "audio/mp4"),
+            new(".mid", "audio/midi"),
+            new(".midi", "audio/midi"),
             new(".mp3", "audio/mpeg"),
+            new(".ogg", "audio/ogg"),
+            new(".opus", "audio/ogg"),
             new(".vorbis", "audio/vorbis"),
             new(".webma", "audio/webm"),
             new(".wv", "audio/x-wavpack"),
             new(".xsp", "audio/xsp"),
+
+            // Type font
+            new(".ttf", "font/ttf"),
+            new(".woff", "font/woff"),
         }.ToFrozenDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
 
         private static readonly FrozenDictionary<string, string> _extensionLookup = new KeyValuePair<string, string>[]
@@ -108,14 +135,23 @@ namespace MediaBrowser.Model.Net
             // Type application
             new("application/vnd.comicbook-rar", ".cbr"),
             new("application/vnd.comicbook+zip", ".cbz"),
+            new("application/epub+zip", ".epub"),
+            new("application/oebps-package+xml", ".opf"),
+            new("application/ttml+xml", ".ttml"),
+            new("application/vnd.amazon.ebook", ".azw"),
+            new("application/vnd.rar", ".rar"),
+            new("application/x-7z-compressed", ".7z"),
             new("application/x-cb7", ".cb7"),
             new("application/x-cba", ".cba"),
             new("application/x-cbr", ".cbr"),
             new("application/x-cbt", ".cbt"),
             new("application/x-cbz", ".cbz"),
             new("application/x-javascript", ".js"),
+            new("application/x-mobipocket-ebook", ".mobi"),
             new("application/xml", ".xml"),
             new("application/x-mpegURL", ".m3u8"),
+            new("application/x-subrip", ".srt"),
+            new("application/zip", ".zip"),
 
             // Type audio
             new("audio/aac", ".aac"),
@@ -130,22 +166,39 @@ namespace MediaBrowser.Model.Net
             new("audio/x-aac", ".aac"),
             new("audio/x-wavpack", ".wv"),
 
+            // Type font
+            new("font/ttf", ".ttf"),
+            new("font/woff", ".woff"),
+
             // Type image
+            new("image/apng", ".apng"),
             new("image/jpeg", ".jpg"),
             new("image/jpg", ".jpg"),
             new("image/tiff", ".tiff"),
+            new("image/vnd.microsoft.icon", ".ico"),
             new("image/x-png", ".png"),
             new("image/x-icon", ".ico"),
 
             // Type text
             new("text/plain", ".txt"),
             new("text/rtf", ".rtf"),
+            new("text/vtt", ".vtt"),
             new("text/x-ssa", ".ssa"),
 
             // Type video
             new("video/vnd.mpeg.dash.mpd", ".mpd"),
+            new("video/mp2t", ".ts"),
+            new("video/mp4", ".mp4"),
+            new("video/ogg", ".ogv"),
+            new("video/x-m4v", ".m4v"),
             new("video/x-matroska", ".mkv"),
         }.ToFrozenDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+
+        private static readonly FileExtensionContentTypeProvider _contentTypeProvider = new();
+
+        private static readonly FrozenDictionary<string, string> _contentTypeExtensionLookup = _contentTypeProvider.Mappings
+            .GroupBy(pair => pair.Value, StringComparer.OrdinalIgnoreCase)
+            .ToFrozenDictionary(group => group.Key, group => group.First().Key, StringComparer.OrdinalIgnoreCase);
 
         public static string GetMimeType(string path) => GetMimeType(path, MediaTypeNames.Application.Octet);
 
@@ -167,7 +220,7 @@ namespace MediaBrowser.Model.Net
                 return result;
             }
 
-            if (Model.MimeTypes.TryGetMimeType(filename, out var mimeType))
+            if (_contentTypeProvider.TryGetContentType(filename, out var mimeType))
             {
                 return mimeType;
             }
@@ -193,8 +246,7 @@ namespace MediaBrowser.Model.Net
                 return result;
             }
 
-            var extension = Model.MimeTypes.GetMimeTypeExtensions(mimeType).FirstOrDefault();
-            return string.IsNullOrEmpty(extension) ? null : "." + extension;
+            return _contentTypeExtensionLookup.GetValueOrDefault(mimeType);
         }
 
         public static bool IsImage(ReadOnlySpan<char> mimeType)

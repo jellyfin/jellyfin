@@ -6,6 +6,7 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Database.Implementations.Entities;
+using MediaBrowser.Controller.CustomNetflix;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -31,6 +32,7 @@ public class PlaystateController : BaseJellyfinApiController
     private readonly IUserDataManager _userDataRepository;
     private readonly ILibraryManager _libraryManager;
     private readonly ISessionManager _sessionManager;
+    private readonly ICustomNetflixActiveProfileService _activeProfileService;
     private readonly ILogger<PlaystateController> _logger;
     private readonly ITranscodeManager _transcodeManager;
 
@@ -41,6 +43,7 @@ public class PlaystateController : BaseJellyfinApiController
     /// <param name="userDataRepository">Instance of the <see cref="IUserDataManager"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
+    /// <param name="activeProfileService">Instance of the <see cref="ICustomNetflixActiveProfileService"/> interface.</param>
     /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     public PlaystateController(
@@ -48,6 +51,7 @@ public class PlaystateController : BaseJellyfinApiController
         IUserDataManager userDataRepository,
         ILibraryManager libraryManager,
         ISessionManager sessionManager,
+        ICustomNetflixActiveProfileService activeProfileService,
         ILoggerFactory loggerFactory,
         ITranscodeManager transcodeManager)
     {
@@ -55,6 +59,7 @@ public class PlaystateController : BaseJellyfinApiController
         _userDataRepository = userDataRepository;
         _libraryManager = libraryManager;
         _sessionManager = sessionManager;
+        _activeProfileService = activeProfileService;
         _logger = loggerFactory.CreateLogger<PlaystateController>();
 
         _transcodeManager = transcodeManager;
@@ -91,21 +96,45 @@ public class PlaystateController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var session = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext, userId).ConfigureAwait(false);
-
-        var dto = UpdatePlayedStatus(user, item, true, datePlayed);
-        foreach (var additionalUserInfo in session.AdditionalUsers)
+        var nativeSession = await RequestHelpers.GetCustomNetflixNativeUserDataSession(
+            _sessionManager,
+            _userManager,
+            _activeProfileService,
+            HttpContext,
+            userId).ConfigureAwait(false);
+        var writeError = RequestHelpers.GetCustomNetflixNativeUserDataWriteError(nativeSession.IsEnabled);
+        if (writeError is not null)
         {
-            var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
-            if (additionalUser is null)
-            {
-                return NotFound();
-            }
-
-            UpdatePlayedStatus(additionalUser, item, true, datePlayed);
+            return writeError;
         }
 
-        return dto;
+        var session = nativeSession.Session;
+        return session.SynchronizeCustomNetflixProfile<ActionResult<UserItemDataDto?>>(() =>
+        {
+            if (!RequestHelpers.IsCustomNetflixProfileResolutionCurrentUnsafe(
+                    session,
+                    nativeSession.Generation,
+                    userId.Value,
+                    User.GetToken(),
+                    enabled: true))
+            {
+                return RequestHelpers.GetCustomNetflixNativeUserDataWriteError(false)!;
+            }
+
+            var dto = UpdatePlayedStatus(user, item, true, datePlayed);
+            foreach (var additionalUserInfo in session.AdditionalUsers)
+            {
+                var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
+                if (additionalUser is null)
+                {
+                    return NotFound();
+                }
+
+                UpdatePlayedStatus(additionalUser, item, true, datePlayed);
+            }
+
+            return dto;
+        });
     }
 
     /// <summary>
@@ -157,21 +186,45 @@ public class PlaystateController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var session = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext, userId).ConfigureAwait(false);
-
-        var dto = UpdatePlayedStatus(user, item, false, null);
-        foreach (var additionalUserInfo in session.AdditionalUsers)
+        var nativeSession = await RequestHelpers.GetCustomNetflixNativeUserDataSession(
+            _sessionManager,
+            _userManager,
+            _activeProfileService,
+            HttpContext,
+            userId).ConfigureAwait(false);
+        var writeError = RequestHelpers.GetCustomNetflixNativeUserDataWriteError(nativeSession.IsEnabled);
+        if (writeError is not null)
         {
-            var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
-            if (additionalUser is null)
-            {
-                return NotFound();
-            }
-
-            UpdatePlayedStatus(additionalUser, item, false, null);
+            return writeError;
         }
 
-        return dto;
+        var session = nativeSession.Session;
+        return session.SynchronizeCustomNetflixProfile<ActionResult<UserItemDataDto?>>(() =>
+        {
+            if (!RequestHelpers.IsCustomNetflixProfileResolutionCurrentUnsafe(
+                    session,
+                    nativeSession.Generation,
+                    userId.Value,
+                    User.GetToken(),
+                    enabled: true))
+            {
+                return RequestHelpers.GetCustomNetflixNativeUserDataWriteError(false)!;
+            }
+
+            var dto = UpdatePlayedStatus(user, item, false, null);
+            foreach (var additionalUserInfo in session.AdditionalUsers)
+            {
+                var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
+                if (additionalUser is null)
+                {
+                    return NotFound();
+                }
+
+                UpdatePlayedStatus(additionalUser, item, false, null);
+            }
+
+            return dto;
+        });
     }
 
     /// <summary>
@@ -203,7 +256,14 @@ public class PlaystateController : BaseJellyfinApiController
     public async Task<ActionResult> ReportPlaybackStart([FromBody] PlaybackStartInfo playbackStartInfo)
     {
         playbackStartInfo.PlayMethod = ValidatePlayMethod(playbackStartInfo.PlayMethod, playbackStartInfo.PlaySessionId);
-        playbackStartInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var nativeSession = await RequestHelpers.GetCustomNetflixNativeUserDataSession(
+            _sessionManager,
+            _userManager,
+            _activeProfileService,
+            HttpContext).ConfigureAwait(false);
+        playbackStartInfo.SessionId = nativeSession.Session.Id;
+        playbackStartInfo.CustomNetflixNativeUserDataEnabled = nativeSession.IsEnabled ?? false;
+        playbackStartInfo.CustomNetflixProfileGeneration = nativeSession.Generation;
         await _sessionManager.OnPlaybackStart(playbackStartInfo).ConfigureAwait(false);
         return NoContent();
     }
@@ -219,7 +279,14 @@ public class PlaystateController : BaseJellyfinApiController
     public async Task<ActionResult> ReportPlaybackProgress([FromBody] PlaybackProgressInfo playbackProgressInfo)
     {
         playbackProgressInfo.PlayMethod = ValidatePlayMethod(playbackProgressInfo.PlayMethod, playbackProgressInfo.PlaySessionId);
-        playbackProgressInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var nativeSession = await RequestHelpers.GetCustomNetflixNativeUserDataSession(
+            _sessionManager,
+            _userManager,
+            _activeProfileService,
+            HttpContext).ConfigureAwait(false);
+        playbackProgressInfo.SessionId = nativeSession.Session.Id;
+        playbackProgressInfo.CustomNetflixNativeUserDataEnabled = nativeSession.IsEnabled ?? false;
+        playbackProgressInfo.CustomNetflixProfileGeneration = nativeSession.Generation;
         await _sessionManager.OnPlaybackProgress(playbackProgressInfo).ConfigureAwait(false);
         return NoContent();
     }
@@ -254,7 +321,14 @@ public class PlaystateController : BaseJellyfinApiController
             await _transcodeManager.KillTranscodingJobs(User.GetDeviceId()!, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
         }
 
-        playbackStopInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var nativeSession = await RequestHelpers.GetCustomNetflixNativeUserDataSession(
+            _sessionManager,
+            _userManager,
+            _activeProfileService,
+            HttpContext).ConfigureAwait(false);
+        playbackStopInfo.SessionId = nativeSession.Session.Id;
+        playbackStopInfo.CustomNetflixNativeUserDataEnabled = nativeSession.IsEnabled ?? false;
+        playbackStopInfo.CustomNetflixProfileGeneration = nativeSession.Generation;
         await _sessionManager.OnPlaybackStopped(playbackStopInfo).ConfigureAwait(false);
         return NoContent();
     }
@@ -299,7 +373,14 @@ public class PlaystateController : BaseJellyfinApiController
         };
 
         playbackStartInfo.PlayMethod = ValidatePlayMethod(playbackStartInfo.PlayMethod, playbackStartInfo.PlaySessionId);
-        playbackStartInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var nativeSession = await RequestHelpers.GetCustomNetflixNativeUserDataSession(
+            _sessionManager,
+            _userManager,
+            _activeProfileService,
+            HttpContext).ConfigureAwait(false);
+        playbackStartInfo.SessionId = nativeSession.Session.Id;
+        playbackStartInfo.CustomNetflixNativeUserDataEnabled = nativeSession.IsEnabled ?? false;
+        playbackStartInfo.CustomNetflixProfileGeneration = nativeSession.Generation;
         await _sessionManager.OnPlaybackStart(playbackStartInfo).ConfigureAwait(false);
         return NoContent();
     }
@@ -387,7 +468,14 @@ public class PlaystateController : BaseJellyfinApiController
         };
 
         playbackProgressInfo.PlayMethod = ValidatePlayMethod(playbackProgressInfo.PlayMethod, playbackProgressInfo.PlaySessionId);
-        playbackProgressInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var nativeSession = await RequestHelpers.GetCustomNetflixNativeUserDataSession(
+            _sessionManager,
+            _userManager,
+            _activeProfileService,
+            HttpContext).ConfigureAwait(false);
+        playbackProgressInfo.SessionId = nativeSession.Session.Id;
+        playbackProgressInfo.CustomNetflixNativeUserDataEnabled = nativeSession.IsEnabled ?? false;
+        playbackProgressInfo.CustomNetflixProfileGeneration = nativeSession.Generation;
         await _sessionManager.OnPlaybackProgress(playbackProgressInfo).ConfigureAwait(false);
         return NoContent();
     }
@@ -470,7 +558,14 @@ public class PlaystateController : BaseJellyfinApiController
             await _transcodeManager.KillTranscodingJobs(User.GetDeviceId()!, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
         }
 
-        playbackStopInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var nativeSession = await RequestHelpers.GetCustomNetflixNativeUserDataSession(
+            _sessionManager,
+            _userManager,
+            _activeProfileService,
+            HttpContext).ConfigureAwait(false);
+        playbackStopInfo.SessionId = nativeSession.Session.Id;
+        playbackStopInfo.CustomNetflixNativeUserDataEnabled = nativeSession.IsEnabled ?? false;
+        playbackStopInfo.CustomNetflixProfileGeneration = nativeSession.Generation;
         await _sessionManager.OnPlaybackStopped(playbackStopInfo).ConfigureAwait(false);
         return NoContent();
     }

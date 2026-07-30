@@ -24,6 +24,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     private const string BackupFolderName = "SQLiteBackups";
     private readonly IApplicationPaths _applicationPaths;
     private readonly ILogger<SqliteDatabaseProvider> _logger;
+    private string? _connectionString;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteDatabaseProvider"/> class.
@@ -68,14 +69,14 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             DefaultTimeout = GetOption(customOptions, "command-timeout", int.Parse, () => 60)
         };
 
-        var connectionString = sqliteConnectionBuilder.ToString();
+        _connectionString = sqliteConnectionBuilder.ToString();
 
         // Log SQLite connection parameters
-        _logger.LogInformation("SQLite connection string: {ConnectionString}", connectionString);
+        _logger.LogInformation("SQLite connection string: {ConnectionString}", _connectionString);
 
         options
             .UseSqlite(
-                connectionString,
+                _connectionString,
                 sqLiteOptions => sqLiteOptions.MigrationsAssembly(GetType().Assembly))
             // TODO: Remove when https://github.com/dotnet/efcore/pull/35873 is merged & released
             .ConfigureWarnings(warnings =>
@@ -143,33 +144,106 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     }
 
     /// <inheritdoc />
-    public Task<string> MigrationBackupFast(CancellationToken cancellationToken)
+    public async Task<string> MigrationBackupFast(CancellationToken cancellationToken)
     {
-        var key = DateTime.UtcNow.ToString("yyyyMMddhhmmss", CultureInfo.InvariantCulture);
-        var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
+        var key = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff", CultureInfo.InvariantCulture);
         var backupFile = Path.Combine(_applicationPaths.DataPath, BackupFolderName);
         Directory.CreateDirectory(backupFile);
 
         backupFile = Path.Combine(backupFile, $"{key}_jellyfin.db");
-        File.Copy(path, backupFile);
-        return Task.FromResult(key);
+        try
+        {
+            var source = new SqliteConnection(GetConnectionString());
+            await using (source.ConfigureAwait(false))
+            {
+                var destination = new SqliteConnection(new SqliteConnectionStringBuilder
+                {
+                    DataSource = backupFile,
+                    Pooling = false
+                }.ToString());
+                await using (destination.ConfigureAwait(false))
+                {
+                    await source.OpenAsync(cancellationToken).ConfigureAwait(false);
+                    await destination.OpenAsync(cancellationToken).ConfigureAwait(false);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    source.BackupDatabase(destination);
+                    return key;
+                }
+            }
+        }
+        catch
+        {
+            TryDeleteFile(backupFile);
+            throw;
+        }
     }
 
     /// <inheritdoc />
     public Task RestoreBackupFast(string key, CancellationToken cancellationToken)
     {
-        // ensure there are absolutely no dangling Sqlite connections.
-        SqliteConnection.ClearAllPools();
-        var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
+        cancellationToken.ThrowIfCancellationRequested();
+        var path = GetDatabasePath();
         var backupFile = Path.Combine(_applicationPaths.DataPath, BackupFolderName, $"{key}_jellyfin.db");
 
         if (!File.Exists(backupFile))
         {
             _logger.LogCritical("Tried to restore a backup that does not exist: {Key}", key);
-            return Task.CompletedTask;
+            throw new FileNotFoundException($"SQLite backup '{key}' does not exist.", backupFile);
         }
 
-        File.Copy(backupFile, path, true);
+        var restoreId = Guid.NewGuid().ToString("N");
+        var stagedFile = $"{path}.{restoreId}.restore";
+        var rollbackFile = $"{path}.{restoreId}.rollback";
+        var hadDatabase = File.Exists(path);
+
+        // Ensure there are absolutely no dangling SQLite connections before replacing the database.
+        SqliteConnection.ClearAllPools();
+        try
+        {
+            File.Copy(backupFile, stagedFile);
+            if (hadDatabase)
+            {
+                File.Move(path, rollbackFile);
+            }
+
+            try
+            {
+                File.Move(stagedFile, path, true);
+
+                // Delete SHM first. If deleting WAL fails, the previous database can still be restored
+                // and SQLite will safely recreate SHM from the retained WAL.
+                File.Delete(path + "-shm");
+                File.Delete(path + "-wal");
+            }
+            catch (Exception restoreException)
+            {
+                try
+                {
+                    File.Delete(path);
+                    if (hadDatabase)
+                    {
+                        File.Move(rollbackFile, path, true);
+                    }
+                }
+                catch (Exception rollbackException)
+                {
+                    throw new AggregateException("SQLite restore and rollback both failed.", restoreException, rollbackException);
+                }
+
+                throw;
+            }
+
+            if (hadDatabase)
+            {
+                TryDeleteFile(rollbackFile);
+            }
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            TryDeleteFile(stagedFile);
+        }
+
         return Task.CompletedTask;
     }
 
@@ -207,5 +281,31 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         """;
 
         await dbContext.Database.ExecuteSqlRawAsync(deleteAllQuery).ConfigureAwait(false);
+    }
+
+    private string GetConnectionString()
+        => _connectionString ?? throw new InvalidOperationException("SQLite database provider has not been initialized.");
+
+    private string GetDatabasePath()
+    {
+        var dataSource = new SqliteConnectionStringBuilder(GetConnectionString()).DataSource;
+        if (string.IsNullOrWhiteSpace(dataSource))
+        {
+            throw new InvalidOperationException("SQLite connection string has no DataSource.");
+        }
+
+        return Path.GetFullPath(dataSource);
+    }
+
+    private void TryDeleteFile(string path)
+    {
+        try
+        {
+            File.Delete(path);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Unable to delete SQLite restore file {Path}", path);
+        }
     }
 }

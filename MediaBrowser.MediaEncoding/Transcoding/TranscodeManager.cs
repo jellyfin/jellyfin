@@ -46,6 +46,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
     private readonly IAttachmentExtractor _attachmentExtractor;
 
     private readonly List<TranscodingJob> _activeTranscodingJobs = new();
+    private readonly HashSet<string> _activeTranscodingSlots = new(StringComparer.Ordinal);
     private readonly AsyncKeyedLocker<string> _transcodingLocks = new(o =>
     {
         o.PoolSize = 20;
@@ -377,6 +378,9 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         CancellationTokenSource cancellationTokenSource,
         string? workingDirectory = null)
     {
+        var transcodingJobId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+        using var transcodingSlot = ReserveTranscodingSlot(transcodingJobId);
+
         var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
         Directory.CreateDirectory(directory);
 
@@ -438,7 +442,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             outputPath,
             state.Request.PlaySessionId,
             state.MediaSource.LiveStreamId,
-            Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
+            transcodingJobId,
             transcodingJobType,
             process,
             state.Request.DeviceId,
@@ -488,7 +492,12 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
         try
         {
-            process.Start();
+            if (!process.Start())
+            {
+                throw new InvalidOperationException("FFmpeg did not start.");
+            }
+
+            transcodingSlot.TransferToProcess();
         }
         catch (Exception ex)
         {
@@ -611,11 +620,14 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
     /// <inheritdoc />
     public void OnTranscodeEndRequest(TranscodingJob job)
     {
-        job.ActiveRequestCount--;
-        _logger.LogDebug("OnTranscodeEndRequest job.ActiveRequestCount={ActiveRequestCount}", job.ActiveRequestCount);
-        if (job.ActiveRequestCount <= 0)
+        lock (_activeTranscodingJobs)
         {
-            PingTimer(job, false);
+            job.ActiveRequestCount--;
+            _logger.LogDebug("OnTranscodeEndRequest job.ActiveRequestCount={ActiveRequestCount}", job.ActiveRequestCount);
+            if (job.ActiveRequestCount <= 0)
+            {
+                PingTimer(job, false);
+            }
         }
     }
 
@@ -639,24 +651,66 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
     private void OnFfMpegProcessExited(Process process, TranscodingJob job, StreamState state)
     {
-        job.HasExited = true;
-        job.ExitCode = process.ExitCode;
-
-        ReportTranscodingProgress(job, state, null, null, null, null, null);
-
-        _logger.LogDebug("Disposing stream resources");
-        state.Dispose();
-
-        if (process.ExitCode == 0)
+        try
         {
-            _logger.LogInformation("FFmpeg exited with code 0");
+            job.HasExited = true;
+            job.ExitCode = process.ExitCode;
+
+            ReportTranscodingProgress(job, state, null, null, null, null, null);
+
+            _logger.LogDebug("Disposing stream resources");
+            state.Dispose();
+
+            if (process.ExitCode == 0)
+            {
+                _logger.LogInformation("FFmpeg exited with code 0");
+            }
+            else
+            {
+                _logger.LogError("FFmpeg exited with code {0}", process.ExitCode);
+            }
         }
-        else
+        finally
         {
-            _logger.LogError("FFmpeg exited with code {0}", process.ExitCode);
+            if (job.Id is not null)
+            {
+                ReleaseTranscodingSlot(job.Id);
+            }
+
+            job.Dispose();
+        }
+    }
+
+    internal TranscodingSlotReservation ReserveTranscodingSlot(string reservationId)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(reservationId);
+
+        lock (_activeTranscodingJobs)
+        {
+            var maximumTranscodingJobs = Math.Max(
+                1,
+                _serverConfigurationManager.Configuration.MaxConcurrentTranscodingJobs);
+            if (_activeTranscodingSlots.Count >= maximumTranscodingJobs)
+            {
+                throw new RateLimitExceededException(
+                    $"The server is already running the configured maximum of {maximumTranscodingJobs} concurrent FFmpeg jobs. Try again later.");
+            }
+
+            if (!_activeTranscodingSlots.Add(reservationId))
+            {
+                throw new InvalidOperationException($"A transcoding slot is already reserved for job {reservationId}.");
+            }
         }
 
-        job.Dispose();
+        return new TranscodingSlotReservation(this, reservationId);
+    }
+
+    private void ReleaseTranscodingSlot(string reservationId)
+    {
+        lock (_activeTranscodingJobs)
+        {
+            _activeTranscodingSlots.Remove(reservationId);
+        }
     }
 
     private async Task AcquireResources(StreamState state, CancellationTokenSource cancellationTokenSource)
@@ -753,5 +807,31 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         _sessionManager.PlaybackProgress -= OnPlaybackProgress;
         _sessionManager.PlaybackStart -= OnPlaybackProgress;
         _transcodingLocks.Dispose();
+        lock (_activeTranscodingJobs)
+        {
+            _activeTranscodingSlots.Clear();
+        }
+    }
+
+    internal sealed class TranscodingSlotReservation : IDisposable
+    {
+        private readonly string _reservationId;
+        private TranscodeManager? _owner;
+
+        public TranscodingSlotReservation(TranscodeManager owner, string reservationId)
+        {
+            _owner = owner;
+            _reservationId = reservationId;
+        }
+
+        public void TransferToProcess()
+        {
+            Interlocked.Exchange(ref _owner, null);
+        }
+
+        public void Dispose()
+        {
+            Interlocked.Exchange(ref _owner, null)?.ReleaseTranscodingSlot(_reservationId);
+        }
     }
 }

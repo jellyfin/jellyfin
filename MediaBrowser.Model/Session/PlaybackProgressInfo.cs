@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Text.Json.Serialization;
 using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.Session
@@ -34,6 +35,12 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The session id.</value>
         public string SessionId { get; set; }
+
+        [JsonIgnore]
+        public bool? CustomNetflixNativeUserDataEnabled { get; set; }
+
+        [JsonIgnore]
+        public long? CustomNetflixProfileGeneration { get; set; }
 
         /// <summary>
         /// Gets or sets the media version identifier.

@@ -226,6 +226,9 @@ public class MediaSegmentManager : IMediaSegmentManager
         {
             var query = db.MediaSegments
                 .Where(e => e.ItemId.Equals(item.Id));
+            var enabledProviders = _segmentProviders
+                .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(e.Name, StringComparer.OrdinalIgnoreCase))
+                .ToArray();
 
             if (typeFilter is not null)
             {
@@ -234,8 +237,7 @@ public class MediaSegmentManager : IMediaSegmentManager
 
             if (filterByProvider)
             {
-                var providerIds = _segmentProviders
-                    .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(e.Name, StringComparer.OrdinalIgnoreCase))
+                var providerIds = enabledProviders
                     .Select(f => GetProviderId(f.Name))
                     .ToArray();
                 if (providerIds.Length == 0)
@@ -246,12 +248,57 @@ public class MediaSegmentManager : IMediaSegmentManager
                 query = query.Where(e => providerIds.Contains(e.SegmentProviderId));
             }
 
-            return query
+            var segments = query
                 .OrderBy(e => e.StartTicks)
                 .AsNoTracking()
-                .AsEnumerable()
+                .ToArray();
+            if (filterByProvider)
+            {
+                var overridingProviderIds = enabledProviders
+                    .Where(provider => provider.OverridesOtherProviders)
+                    .Select(provider => GetProviderId(provider.Name))
+                    .ToHashSet();
+                segments = ApplyProviderOverrides(segments, overridingProviderIds).ToArray();
+            }
+
+            return segments
                 .Select(Map)
                 .ToArray();
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<MediaSegmentType, int>> GetSegmentedItemCountsAsync(
+        IEnumerable<MediaSegmentType> typeFilter,
+        CancellationToken cancellationToken)
+    {
+        var requestedTypes = typeFilter.Distinct().ToArray();
+        if (requestedTypes.Length == 0)
+        {
+            return new Dictionary<MediaSegmentType, int>();
+        }
+
+        var videoMediaType = Jellyfin.Data.Enums.MediaType.Video.ToString();
+        var db = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (db.ConfigureAwait(false))
+        {
+            var counts = await (
+                from segment in db.MediaSegments
+                join item in db.BaseItems on segment.ItemId equals item.Id
+                where requestedTypes.Contains(segment.Type)
+                    && item.MediaType == videoMediaType
+                    && !item.IsFolder
+                    && !item.IsVirtualItem
+                group segment by segment.Type
+                into segments
+                select new
+                {
+                    Type = segments.Key,
+                    Count = segments.Select(segment => segment.ItemId).Distinct().Count()
+                })
+                .ToArrayAsync(cancellationToken)
+                .ConfigureAwait(false);
+            return counts.ToDictionary(entry => entry.Type, entry => entry.Count);
         }
     }
 
@@ -278,6 +325,19 @@ public class MediaSegmentManager : IMediaSegmentManager
             Type = segment.Type,
             SegmentProviderId = segmentProviderId
         };
+    }
+
+    internal static IEnumerable<MediaSegment> ApplyProviderOverrides(
+        IReadOnlyList<MediaSegment> segments,
+        IReadOnlySet<string> overridingProviderIds)
+    {
+        var overriddenTypes = segments
+            .Where(segment => overridingProviderIds.Contains(segment.SegmentProviderId))
+            .Select(segment => segment.Type)
+            .ToHashSet();
+        return segments.Where(segment =>
+            overridingProviderIds.Contains(segment.SegmentProviderId)
+            || !overriddenTypes.Contains(segment.Type));
     }
 
     /// <inheritdoc />

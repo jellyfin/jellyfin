@@ -37,13 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MimeTypes">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Include="..\SharedVersion.cs" />
   </ItemGroup>
 

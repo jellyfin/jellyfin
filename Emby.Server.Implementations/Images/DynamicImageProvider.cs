@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
@@ -89,14 +90,14 @@ namespace Emby.Server.Implementations.Images
                 returnItems = items
                     .Where(i => i.HasImage(ImageType.Primary) || i.HasImage(ImageType.Thumb))
                     .ToList();
-                returnItems.Shuffle();
+                Random.Shared.Shuffle(CollectionsMarshal.AsSpan(returnItems));
                 return returnItems;
             }
 
             returnItems = items
                 .Where(i => i.HasImage(ImageType.Primary))
                 .ToList();
-            returnItems.Shuffle();
+            Random.Shared.Shuffle(CollectionsMarshal.AsSpan(returnItems));
             return returnItems;
         }
 

@@ -51,5 +51,15 @@ namespace MediaBrowser.Model.System
         /// </remarks>
         /// <value>The startup completion status.</value>]
         public bool? StartupWizardCompleted { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether anonymous users can create accounts.
+        /// </summary>
+        public bool EnablePublicUserRegistration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the minimum password length required for public registration.
+        /// </summary>
+        public int PublicUserRegistrationMinimumPasswordLength { get; set; }
     }
 }

@@ -12,4 +12,6 @@ internal class BackupOptions
     public bool Subtitles { get; set; }
 
     public bool Database { get; set; }
+
+    public bool CustomNetflixDatabase { get; set; }
 }

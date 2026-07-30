@@ -43,3 +43,45 @@ jobs:
 
       # TODO - which action / tool to use to publish code coverage results?
       # - name: Publish code coverage results
+
+  custom-netflix-integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: jellyfin_test
+          POSTGRES_USER: jellyfin
+          POSTGRES_PASSWORD: jellyfin_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U jellyfin -d jellyfin_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      JELLYFIN_TEST_POSTGRES_CONNECTION_STRING: "Host=localhost;Port=5432;Database=jellyfin_test;Username=jellyfin;Password=jellyfin_test;Pooling=false"
+      JELLYFIN_TEST_REDIS_CONNECTION_STRING: "localhost:6379,abortConnect=false"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5.3.0
+        with:
+          dotnet-version: ${{ env.SDK_VERSION }}
+
+      - name: Run CustomNetflix integration tests
+        run: >
+          dotnet test tests/Jellyfin.Server.Implementations.Tests/Jellyfin.Server.Implementations.Tests.csproj
+          --configuration Release
+          --filter "FullyQualifiedName~CustomNetflix"
+          --verbosity minimal

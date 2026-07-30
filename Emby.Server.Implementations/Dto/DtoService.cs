@@ -115,11 +115,9 @@ namespace Emby.Server.Implementations.Dto
 
         private readonly IImageProcessor _imageProcessor;
         private readonly IProviderManager _providerManager;
-        private readonly IRecordingsManager _recordingsManager;
 
         private readonly IApplicationHost _appHost;
         private readonly IMediaSourceManager _mediaSourceManager;
-        private readonly Lazy<ILiveTvManager> _livetvManagerFactory;
 
         private readonly ITrickplayManager _trickplayManager;
         private readonly IChapterManager _chapterManager;
@@ -130,10 +128,8 @@ namespace Emby.Server.Implementations.Dto
             IUserDataManager userDataRepository,
             IImageProcessor imageProcessor,
             IProviderManager providerManager,
-            IRecordingsManager recordingsManager,
             IApplicationHost appHost,
             IMediaSourceManager mediaSourceManager,
-            Lazy<ILiveTvManager> livetvManagerFactory,
             ITrickplayManager trickplayManager,
             IChapterManager chapterManager)
         {
@@ -142,15 +138,11 @@ namespace Emby.Server.Implementations.Dto
             _userDataRepository = userDataRepository;
             _imageProcessor = imageProcessor;
             _providerManager = providerManager;
-            _recordingsManager = recordingsManager;
             _appHost = appHost;
             _mediaSourceManager = mediaSourceManager;
-            _livetvManagerFactory = livetvManagerFactory;
             _trickplayManager = trickplayManager;
             _chapterManager = chapterManager;
         }
-
-        private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
 
         /// <inheritdoc />
         public IReadOnlyList<BaseItemDto> GetBaseItemDtos(
@@ -162,8 +154,6 @@ namespace Emby.Server.Implementations.Dto
         {
             var accessibleItems = skipVisibilityCheck || user is null ? items : items.Where(x => x.IsVisible(user)).ToList();
             var returnItems = new BaseItemDto[accessibleItems.Count];
-            List<(BaseItem, BaseItemDto)>? programTuples = null;
-            List<(BaseItemDto, LiveTvChannel)>? channelTuples = null;
 
             // Batch-fetch user data for all items
             Dictionary<Guid, UserItemData>? userDataBatch = null;
@@ -250,15 +240,6 @@ namespace Emby.Server.Implementations.Dto
                     playedCountBatch,
                     artistsBatch);
 
-                if (item is LiveTvChannel tvChannel)
-                {
-                    (channelTuples ??= []).Add((dto, tvChannel));
-                }
-                else if (item is LiveTvProgram)
-                {
-                    (programTuples ??= []).Add((item, dto));
-                }
-
                 if (options.ContainsField(ItemFields.ItemCounts))
                 {
                     SetItemByNameInfo(dto, user);
@@ -267,31 +248,12 @@ namespace Emby.Server.Implementations.Dto
                 returnItems[index] = dto;
             }
 
-            if (programTuples is not null)
-            {
-                LivetvManager.AddInfoToProgramDto(programTuples, options.Fields, user).GetAwaiter().GetResult();
-            }
-
-            if (channelTuples is not null)
-            {
-                LivetvManager.AddChannelInfo(channelTuples, options, user);
-            }
-
             return returnItems;
         }
 
         public BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User? user = null, BaseItem? owner = null)
         {
             var dto = GetBaseItemDtoInternal(item, options, user, owner, null);
-            if (item is LiveTvChannel tvChannel)
-            {
-                LivetvManager.AddChannelInfo(new[] { (dto, tvChannel) }, options, user);
-            }
-            else if (item is LiveTvProgram)
-            {
-                LivetvManager.AddInfoToProgramDto(new[] { (item, dto) }, options.Fields, user).GetAwaiter().GetResult();
-            }
-
             if (options.ContainsField(ItemFields.ItemCounts))
             {
                 SetItemByNameInfo(dto, user);
@@ -390,22 +352,6 @@ namespace Emby.Server.Implementations.Dto
             if (options.ContainsField(ItemFields.Etag))
             {
                 dto.Etag = item.GetEtag(user);
-            }
-
-            var activeRecording = _recordingsManager.GetActiveRecordingInfo(item.Path);
-            if (activeRecording is not null)
-            {
-                dto.Type = BaseItemKind.Recording;
-                dto.CanDownload = false;
-                dto.RunTimeTicks = null;
-
-                if (!string.IsNullOrEmpty(dto.SeriesName))
-                {
-                    dto.EpisodeTitle = dto.Name;
-                    dto.Name = dto.SeriesName;
-                }
-
-                LivetvManager.AddInfoToRecordingDto(item, dto, activeRecording, user);
             }
 
             if (item is Audio audio)

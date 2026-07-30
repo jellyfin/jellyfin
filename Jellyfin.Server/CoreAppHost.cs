@@ -7,7 +7,7 @@ using Jellyfin.Api.WebSocketListeners;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Drawing;
 using Jellyfin.Drawing.Skia;
-using Jellyfin.LiveTv;
+using Jellyfin.LiveTv.Channels;
 using Jellyfin.Server.Implementations.Activity;
 using Jellyfin.Server.Implementations.Devices;
 using Jellyfin.Server.Implementations.Events;
@@ -123,8 +123,8 @@ namespace Jellyfin.Server
             // Jellyfin.Server.Implementations
             yield return typeof(ServiceCollectionExtensions).Assembly;
 
-            // Jellyfin.LiveTv
-            yield return typeof(LiveTvManager).Assembly;
+            // Jellyfin.LiveTv currently contains the generic Channels subsystem.
+            yield return typeof(ChannelManager).Assembly;
         }
     }
 }

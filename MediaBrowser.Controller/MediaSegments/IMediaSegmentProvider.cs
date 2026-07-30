@@ -19,6 +19,12 @@ public interface IMediaSegmentProvider
     string Name { get; }
 
     /// <summary>
+    /// Gets a value indicating whether this provider's segments replace segments
+    /// of the same type from non-overriding providers.
+    /// </summary>
+    bool OverridesOtherProviders => false;
+
+    /// <summary>
     /// Enumerates all Media Segments from an Media Item.
     /// </summary>
     /// <param name="request">Arguments to enumerate MediaSegments.</param>

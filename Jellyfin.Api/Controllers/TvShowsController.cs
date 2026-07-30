@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -290,7 +291,7 @@ public class TvShowsController : BaseJellyfinApiController
 
         if (sortBy == ItemSortBy.Random)
         {
-            episodes.Shuffle();
+            Random.Shared.Shuffle(CollectionsMarshal.AsSpan(episodes));
         }
 
         var returnItems = episodes;

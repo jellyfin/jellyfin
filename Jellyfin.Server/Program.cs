@@ -268,7 +268,7 @@ namespace Jellyfin.Server
 
                     var databaseProvider = appHost.ServiceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
                     using var shutdownSource = new CancellationTokenSource();
-                    shutdownSource.CancelAfter((int)TimeSpan.FromSeconds(60).TotalMicroseconds);
+                    shutdownSource.CancelAfter(TimeSpan.FromSeconds(60));
                     await databaseProvider.RunShutdownTask(shutdownSource.Token).ConfigureAwait(false);
                 }
 

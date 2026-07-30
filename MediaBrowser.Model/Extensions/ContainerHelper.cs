@@ -87,14 +87,15 @@ public static class ContainerHelper
             return true;
         }
 
-        var allInputContainers = inputContainer.Split(',');
-        var allProfileContainers = profileContainers.SpanSplit(',');
-        foreach (var container in allInputContainers)
+        var profileSpan = profileContainers.AsSpan();
+        foreach (var containerRange in inputContainer.Split(','))
         {
+            var container = inputContainer[containerRange];
             if (!container.IsEmpty)
             {
-                foreach (var profile in allProfileContainers)
+                foreach (var profileRange in profileSpan.Split(','))
                 {
+                    var profile = profileSpan[profileRange];
                     if (!profile.IsEmpty && container.Equals(profile, StringComparison.OrdinalIgnoreCase))
                     {
                         return !isNegativeList;

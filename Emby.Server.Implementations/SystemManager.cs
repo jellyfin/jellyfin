@@ -76,6 +76,8 @@ public class SystemManager : ISystemManager
             ServerName = _applicationHost.FriendlyName,
             LocalAddress = _applicationHost.GetSmartApiUrl(request),
             StartupWizardCompleted = _configurationManager.CommonConfiguration.IsStartupWizardCompleted,
+            EnablePublicUserRegistration = _configurationManager.Configuration.EnablePublicUserRegistration,
+            PublicUserRegistrationMinimumPasswordLength = Math.Max(1, _configurationManager.Configuration.PublicUserRegistrationMinimumPasswordLength),
             SupportsLibraryMonitor = true,
             PackageName = _startupOptions.PackageName,
             CastReceiverApplications = _configurationManager.Configuration.CastReceiverApplications
@@ -118,7 +120,9 @@ public class SystemManager : ISystemManager
             Id = _applicationHost.SystemId,
             ServerName = _applicationHost.FriendlyName,
             LocalAddress = _applicationHost.GetSmartApiUrl(request),
-            StartupWizardCompleted = _configurationManager.CommonConfiguration.IsStartupWizardCompleted
+            StartupWizardCompleted = _configurationManager.CommonConfiguration.IsStartupWizardCompleted,
+            EnablePublicUserRegistration = _configurationManager.Configuration.EnablePublicUserRegistration,
+            PublicUserRegistrationMinimumPasswordLength = Math.Max(1, _configurationManager.Configuration.PublicUserRegistrationMinimumPasswordLength)
         };
     }
 

@@ -83,6 +83,58 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public bool QuickConnectAvailable { get; set; } = true;
 
     /// <summary>
+    /// Gets or sets a value indicating whether anonymous users can create regular accounts.
+    /// </summary>
+    public bool EnablePublicUserRegistration { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum number of public registration attempts allowed per window.
+    /// </summary>
+    public int PublicUserRegistrationMaxAttemptsPerWindow { get; set; } = 5;
+
+    /// <summary>
+    /// Gets or sets the public registration rate limit window in seconds.
+    /// </summary>
+    public int PublicUserRegistrationWindowSeconds { get; set; } = 600;
+
+    /// <summary>
+    /// Gets or sets the minimum password length required for public registration.
+    /// </summary>
+    public int PublicUserRegistrationMinimumPasswordLength { get; set; } = 8;
+
+    /// <summary>
+    /// Gets or sets the maximum number of non-administrator users allowed when public registration is enabled.
+    /// </summary>
+    public int PublicUserRegistrationMaxUsers { get; set; } = 100;
+
+    /// <summary>
+    /// Gets or sets the maximum number of active sessions for publicly registered users.
+    /// </summary>
+    public int PublicUserRegistrationMaxActiveSessions { get; set; } = 2;
+
+    /// <summary>
+    /// Gets or sets the remote bitrate limit, in bits per second, for publicly registered users.
+    /// </summary>
+    public int PublicUserRegistrationRemoteClientBitrateLimit { get; set; } = 8_000_000;
+
+    /// <summary>
+    /// Gets or sets the number of failed remote login attempts before progressive backoff starts.
+    /// A value less than or equal to zero disables the application login limiter.
+    /// </summary>
+    public int PublicUserLoginMaxFailedAttempts { get; set; } = 5;
+
+    /// <summary>
+    /// Gets or sets the failed remote login attempt retention window in seconds.
+    /// </summary>
+    public int PublicUserLoginFailureWindowSeconds { get; set; } = 900;
+
+    /// <summary>
+    /// Gets or sets the maximum number of concurrent playback FFmpeg processes.
+    /// Values less than one are treated as one.
+    /// </summary>
+    public int MaxConcurrentTranscodingJobs { get; set; } = 2;
+
+    /// <summary>
     /// Gets or sets a value indicating whether [enable case-sensitive item ids].
     /// </summary>
     /// <value><c>true</c> if [enable case-sensitive item ids]; otherwise, <c>false</c>.</value>
@@ -233,7 +285,7 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// <summary>
     /// Gets or sets the cors hosts.
     /// </summary>
-    public string[] CorsHosts { get; set; } = new[] { "*" };
+    public string[] CorsHosts { get; set; } = Array.Empty<string>();
 
     /// <summary>
     /// Gets or sets the number of days we should retain activity logs.
@@ -253,7 +305,7 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// <summary>
     /// Gets or sets a value indicating whether clients should be allowed to upload logs.
     /// </summary>
-    public bool AllowClientLogUpload { get; set; } = true;
+    public bool AllowClientLogUpload { get; set; }
 
     /// <summary>
     /// Gets or sets the dummy chapter duration in seconds, use 0 (zero) or less to disable generation altogether.
@@ -287,5 +339,5 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// <summary>
     /// Gets or sets a value indicating whether old authorization methods are allowed.
     /// </summary>
-    public bool EnableLegacyAuthorization { get; set; } = true;
+    public bool EnableLegacyAuthorization { get; set; }
 }

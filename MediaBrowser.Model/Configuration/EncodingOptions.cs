@@ -23,8 +23,8 @@ public class EncodingOptions
         MaxMuxingQueueSize = 2048;
         EnableThrottling = false;
         ThrottleDelaySeconds = 180;
-        EnableSegmentDeletion = false;
-        SegmentKeepSeconds = 720;
+        EnableSegmentDeletion = true;
+        SegmentKeepSeconds = 300;
         EncodingThreadCount = -1;
         // This is a DRM device that is almost guaranteed to be there on every intel platform,
         // plus it's the default one in ffmpeg if you don't specify anything

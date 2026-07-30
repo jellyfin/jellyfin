@@ -25,6 +25,7 @@ namespace MediaBrowser.Controller.Session
         private readonly ISessionManager _sessionManager;
         private readonly ILogger _logger;
 
+        private readonly Lock _customNetflixProfileLock = new();
         private readonly Lock _progressLock = new();
         private Timer _progressTimer;
         private PlaybackProgressInfo _lastProgressInfo;
@@ -100,6 +101,30 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value>The user id.</value>
         public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the hash of the token used to resolve the active CustomNetflix profile.
+        /// </summary>
+        [JsonIgnore]
+        public string CustomNetflixTokenHash { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user whose active CustomNetflix profile was resolved.
+        /// </summary>
+        [JsonIgnore]
+        public Guid? CustomNetflixProfileUserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether native Jellyfin user data may be updated for the active CustomNetflix profile.
+        /// </summary>
+        [JsonIgnore]
+        public bool? CustomNetflixNativeUserDataEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the generation used to reject stale profile resolutions.
+        /// </summary>
+        [JsonIgnore]
+        public long CustomNetflixProfileGeneration { get; set; }
 
         /// <summary>
         /// Gets or sets the username.
@@ -307,6 +332,34 @@ namespace MediaBrowser.Controller.Session
         /// <value>The supported commands.</value>
         public IReadOnlyList<GeneralCommandType> SupportedCommands
             => Capabilities is null ? [] : Capabilities.SupportedCommands;
+
+        /// <summary>
+        /// Executes an action while holding this session's private CustomNetflix profile lock.
+        /// </summary>
+        /// <param name="action">The action to execute.</param>
+        public void SynchronizeCustomNetflixProfile(Action action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+            lock (_customNetflixProfileLock)
+            {
+                action();
+            }
+        }
+
+        /// <summary>
+        /// Executes a function while holding this session's private CustomNetflix profile lock.
+        /// </summary>
+        /// <typeparam name="T">The result type.</typeparam>
+        /// <param name="action">The function to execute.</param>
+        /// <returns>The function result.</returns>
+        public T SynchronizeCustomNetflixProfile<T>(Func<T> action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+            lock (_customNetflixProfileLock)
+            {
+                return action();
+            }
+        }
 
         /// <summary>
         /// Ensures a controller of type exists.

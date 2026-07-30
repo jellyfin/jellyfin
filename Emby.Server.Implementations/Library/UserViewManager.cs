@@ -16,7 +16,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Library;
@@ -30,15 +29,13 @@ namespace Emby.Server.Implementations.Library
         private readonly ILocalizationManager _localizationManager;
 
         private readonly IChannelManager _channelManager;
-        private readonly ILiveTvManager _liveTvManager;
         private readonly IServerConfigurationManager _config;
 
-        public UserViewManager(ILibraryManager libraryManager, ILocalizationManager localizationManager, IChannelManager channelManager, ILiveTvManager liveTvManager, IServerConfigurationManager config)
+        public UserViewManager(ILibraryManager libraryManager, ILocalizationManager localizationManager, IChannelManager channelManager, IServerConfigurationManager config)
         {
             _libraryManager = libraryManager;
             _localizationManager = localizationManager;
             _channelManager = channelManager;
-            _liveTvManager = liveTvManager;
             _config = config;
         }
 
@@ -126,11 +123,6 @@ namespace Emby.Server.Implementations.Library
                 var channels = channelResult.Items;
 
                 list.AddRange(channels);
-
-                if (_liveTvManager.GetEnabledUsers().Select(i => i.Id).Contains(user.Id))
-                {
-                    list.Add(_liveTvManager.GetInternalLiveTvFolder(CancellationToken.None));
-                }
             }
 
             if (!query.IncludeHidden)

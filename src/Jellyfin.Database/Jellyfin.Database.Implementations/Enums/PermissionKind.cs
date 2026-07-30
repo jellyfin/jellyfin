@@ -124,4 +124,10 @@ public enum PermissionKind
     /// Whether the user can edit lyrics.
     /// </summary>
     EnableLyricManagement = 23,
+
+    /// <summary>
+    /// Whether the user was created through public registration and must retain
+    /// the server's public password policy.
+    /// </summary>
+    IsPubliclyRegistered = 24,
 }

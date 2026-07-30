@@ -1,6 +1,17 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
+using System.Net.Http.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.CustomNetflix;
+using MediaBrowser.Model.Session;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Moq;
+using Npgsql;
 using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers;
@@ -57,5 +68,49 @@ public class PlaystateControllerTests : IClassFixture<JellyfinApplicationFactory
 
         using var response = await client.PostAsync($"Users/{userDto.Id}/PlayedItems/{Guid.NewGuid()}", null, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task PlaybackReports_ContinueAndRetryWhenProfileStoreIsUnavailable()
+    {
+        var activeProfiles = new Mock<ICustomNetflixActiveProfileService>();
+        activeProfiles.SetupGet(service => service.IsEnabled).Returns(true);
+        activeProfiles
+            .Setup(service => service.GetActiveProfileAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<string?>(),
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new NpgsqlException("PostgreSQL unavailable."));
+        using var factory = _factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureAppConfiguration((_, configurationBuilder) =>
+                configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["CustomNetflix:PostgreSqlConnectionString"] = string.Empty
+                }));
+            builder.ConfigureTestServices(services =>
+            {
+                services.RemoveAll<ICustomNetflixActiveProfileService>();
+                services.AddSingleton(activeProfiles.Object);
+            });
+        });
+        var client = factory.CreateClient();
+        client.DefaultRequestHeaders.AddAuthHeader(await AuthHelper.CompleteStartupAsync(client));
+        var report = new PlaybackStartInfo
+        {
+            PlayMethod = PlayMethod.DirectPlay
+        };
+
+        using var first = await client.PostAsJsonAsync("Sessions/Playing", report, TestContext.Current.CancellationToken);
+        using var second = await client.PostAsJsonAsync("Sessions/Playing", report, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.NoContent, first.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, second.StatusCode);
+        activeProfiles.Verify(
+            service => service.GetActiveProfileAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<string?>(),
+                It.IsAny<CancellationToken>()),
+            Times.Exactly(2));
     }
 }

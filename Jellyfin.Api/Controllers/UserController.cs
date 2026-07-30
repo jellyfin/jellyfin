@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
@@ -23,10 +25,12 @@ using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers;
@@ -37,6 +41,9 @@ namespace Jellyfin.Api.Controllers;
 [Route("Users")]
 public class UserController : BaseJellyfinApiController
 {
+    private static readonly SemaphoreSlim PublicRegistrationSemaphore = new(1, 1);
+    private static readonly PublicLoginRateLimiter PublicLoginLimiter = new();
+
     private readonly IUserManager _userManager;
     private readonly ISessionManager _sessionManager;
     private readonly INetworkManager _networkManager;
@@ -46,6 +53,7 @@ public class UserController : BaseJellyfinApiController
     private readonly ILogger _logger;
     private readonly IQuickConnect _quickConnectManager;
     private readonly IPlaylistManager _playlistManager;
+    private readonly ILibraryManager _libraryManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserController"/> class.
@@ -59,6 +67,7 @@ public class UserController : BaseJellyfinApiController
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
     /// <param name="quickConnectManager">Instance of the <see cref="IQuickConnect"/> interface.</param>
     /// <param name="playlistManager">Instance of the <see cref="IPlaylistManager"/> interface.</param>
+    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     public UserController(
         IUserManager userManager,
         ISessionManager sessionManager,
@@ -68,7 +77,8 @@ public class UserController : BaseJellyfinApiController
         IServerConfigurationManager config,
         ILogger<UserController> logger,
         IQuickConnect quickConnectManager,
-        IPlaylistManager playlistManager)
+        IPlaylistManager playlistManager,
+        ILibraryManager libraryManager)
     {
         _userManager = userManager;
         _sessionManager = sessionManager;
@@ -79,6 +89,7 @@ public class UserController : BaseJellyfinApiController
         _logger = logger;
         _quickConnectManager = quickConnectManager;
         _playlistManager = playlistManager;
+        _libraryManager = libraryManager;
     }
 
     /// <summary>
@@ -205,13 +216,40 @@ public class UserController : BaseJellyfinApiController
     /// </summary>
     /// <param name="request">The <see cref="AuthenticateUserByName"/> request.</param>
     /// <response code="200">User authenticated.</response>
+    /// <response code="429">The source address or account is temporarily rate limited.</response>
     /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationRequest"/> with information about the new session.</returns>
     [HttpPost("AuthenticateByName")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     [Tags("Authentication")]
     public async Task<ActionResult<AuthenticationResult>> AuthenticateUserByName([FromBody, Required] AuthenticateUserByName request)
     {
         var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
+        var remoteIpAddress = HttpContext.GetNormalizedRemoteIP();
+        var remoteEndpoint = remoteIpAddress.ToString();
+        var configuration = _config.Configuration;
+        var applyLoginRateLimit = configuration.PublicUserLoginMaxFailedAttempts > 0
+            && !_networkManager.IsInLocalNetwork(remoteIpAddress);
+        var requestedUser = string.IsNullOrWhiteSpace(request.Username)
+            ? null
+            : _userManager.GetUserByName(request.Username);
+        var includeAccountKey = requestedUser is null
+            || !requestedUser.HasPermission(PermissionKind.IsAdministrator);
+
+        if (applyLoginRateLimit
+            && PublicLoginLimiter.IsBlocked(
+                remoteEndpoint,
+                request.Username ?? string.Empty,
+                includeAccountKey,
+                configuration.PublicUserLoginFailureWindowSeconds,
+                out var retryAfter))
+        {
+            Response.Headers.RetryAfter = Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds))
+                .ToString(CultureInfo.InvariantCulture);
+            return StatusCode(
+                StatusCodes.Status429TooManyRequests,
+                "Too many failed login attempts. Try again later.");
+        }
 
         try
         {
@@ -222,16 +260,31 @@ public class UserController : BaseJellyfinApiController
                 DeviceId = auth.DeviceId,
                 DeviceName = auth.Device,
                 Password = request.Pw,
-                RemoteEndPoint = HttpContext.GetNormalizedRemoteIP().ToString(),
+                RemoteEndPoint = remoteEndpoint,
                 Username = request.Username
             }).ConfigureAwait(false);
+
+            if (applyLoginRateLimit)
+            {
+                PublicLoginLimiter.RecordSuccess(request.Username ?? string.Empty);
+            }
 
             return result;
         }
         catch (SecurityException e)
         {
+            if (applyLoginRateLimit)
+            {
+                PublicLoginLimiter.RecordFailure(
+                    remoteEndpoint,
+                    request.Username ?? string.Empty,
+                    includeAccountKey,
+                    configuration.PublicUserLoginMaxFailedAttempts,
+                    configuration.PublicUserLoginFailureWindowSeconds);
+            }
+
             // rethrow adding IP address to message
-            throw new SecurityException($"[{HttpContext.GetNormalizedRemoteIP()}] {e.Message}", e);
+            throw new SecurityException($"[{remoteIpAddress}] {e.Message}", e);
         }
     }
 
@@ -259,17 +312,188 @@ public class UserController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Creates a regular user through public registration and starts a new session.
+    /// </summary>
+    /// <param name="request">The public registration request body.</param>
+    /// <response code="200">User created and authenticated.</response>
+    /// <response code="400">The registration request is invalid.</response>
+    /// <response code="403">Public registration is disabled.</response>
+    /// <response code="409">A user with the requested name already exists.</response>
+    /// <response code="429">Too many registration attempts were made.</response>
+    /// <returns>An <see cref="AuthenticationResult"/> for the new user session.</returns>
+    [HttpPost("Register")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    [EnableRateLimiting("PublicRegistration")]
+    [Tags("Authentication")]
+    public async Task<ActionResult<AuthenticationResult>> RegisterUser([FromBody, Required] CreateUserByName request)
+    {
+        var configuration = _config.Configuration;
+        if (!configuration.EnablePublicUserRegistration)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, "Public user registration is disabled.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            return BadRequest("Username is required.");
+        }
+
+        var minimumPasswordLength = Math.Max(1, configuration.PublicUserRegistrationMinimumPasswordLength);
+        if (request.Password is null || request.Password.Length < minimumPasswordLength)
+        {
+            return BadRequest($"Password must be at least {minimumPasswordLength} characters long.");
+        }
+
+        if (_userManager.GetUserByName(request.Name) is not null)
+        {
+            return Conflict("A user with this name already exists.");
+        }
+
+        var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(auth.Client)
+            || string.IsNullOrWhiteSpace(auth.Version)
+            || string.IsNullOrWhiteSpace(auth.DeviceId)
+            || string.IsNullOrWhiteSpace(auth.Device))
+        {
+            return BadRequest("Client, version, device ID, and device name are required.");
+        }
+
+        Jellyfin.Database.Implementations.Entities.User? newUser = null;
+        try
+        {
+            await PublicRegistrationSemaphore.WaitAsync(HttpContext.RequestAborted).ConfigureAwait(false);
+            try
+            {
+                if (_userManager.GetUserByName(request.Name) is not null)
+                {
+                    return Conflict("A user with this name already exists.");
+                }
+
+                var maximumPublicUsers = Math.Max(1, configuration.PublicUserRegistrationMaxUsers);
+                var regularUserCount = _userManager.GetUsers()
+                    .Count(user => !user.HasPermission(PermissionKind.IsAdministrator));
+                if (regularUserCount >= maximumPublicUsers)
+                {
+                    return Conflict("Public user registration capacity has been reached.");
+                }
+
+                try
+                {
+                    newUser = await _userManager.CreateUserAsync(request.Name).ConfigureAwait(false);
+                }
+                catch (ArgumentException ex)
+                {
+                    return _userManager.GetUserByName(request.Name) is not null
+                        ? Conflict("A user with this name already exists.")
+                        : BadRequest(ex.Message);
+                }
+
+                newUser.SetPermission(PermissionKind.IsPubliclyRegistered, true);
+                await _userManager.UpdateUserAsync(newUser).ConfigureAwait(false);
+
+                var publicPolicy = _userManager.GetUserDto(
+                    newUser,
+                    HttpContext.GetNormalizedRemoteIP().ToString()).Policy;
+                var enabledFolders = _libraryManager.GetVirtualFolders()
+                    .Where(folder => folder.CollectionType is CollectionTypeOptions.movies
+                        or CollectionTypeOptions.tvshows
+                        or CollectionTypeOptions.mixed)
+                    .Select(folder => Guid.TryParse(folder.ItemId, out var folderId) ? folderId : Guid.Empty)
+                    .Where(folderId => !folderId.Equals(Guid.Empty))
+                    .ToArray();
+                ApplyPublicRegistrationPolicy(publicPolicy, configuration, enabledFolders);
+                await _userManager.UpdatePolicyAsync(newUser.Id, publicPolicy).ConfigureAwait(false);
+                await _userManager.ChangePassword(newUser.Id, request.Password).ConfigureAwait(false);
+            }
+            finally
+            {
+                PublicRegistrationSemaphore.Release();
+            }
+
+            var result = await _sessionManager.AuthenticateNewSession(new AuthenticationRequest
+            {
+                App = auth.Client,
+                AppVersion = auth.Version,
+                DeviceId = auth.DeviceId,
+                DeviceName = auth.Device,
+                Password = request.Password,
+                RemoteEndPoint = HttpContext.GetNormalizedRemoteIP().ToString(),
+                Username = request.Name
+            }).ConfigureAwait(false);
+
+            return result;
+        }
+        catch
+        {
+            if (newUser is not null)
+            {
+                try
+                {
+                    await _userManager.DeleteUserAsync(newUser.Id).ConfigureAwait(false);
+                }
+                catch (Exception cleanupException)
+                {
+                    _logger.LogError(
+                        cleanupException,
+                        "Unable to roll back failed public registration for user {UserId}.",
+                        newUser.Id);
+                }
+            }
+
+            throw;
+        }
+    }
+
+    private static void ApplyPublicRegistrationPolicy(
+        UserPolicy policy,
+        ServerConfiguration configuration,
+        Guid[] enabledFolders)
+    {
+        policy.IsAdministrator = false;
+        policy.IsDisabled = false;
+        policy.EnableSharedDeviceControl = false;
+        policy.EnableRemoteControlOfOtherUsers = false;
+        policy.EnableContentDeletion = false;
+        policy.EnableContentDeletionFromFolders = Array.Empty<string>();
+        policy.EnableContentDownloading = false;
+        policy.EnableMediaConversion = false;
+        policy.EnableSyncTranscoding = false;
+        policy.EnablePublicSharing = false;
+        policy.EnableCollectionManagement = false;
+        policy.EnableSubtitleManagement = false;
+        policy.EnableLyricManagement = false;
+        policy.EnableLiveTvAccess = false;
+        policy.EnableLiveTvManagement = false;
+        policy.EnableAllChannels = false;
+        policy.EnabledChannels = Array.Empty<Guid>();
+        policy.EnableAllFolders = false;
+        policy.EnabledFolders = enabledFolders;
+        policy.SyncPlayAccess = SyncPlayUserAccessType.None;
+        policy.LoginAttemptsBeforeLockout = -1;
+        policy.MaxActiveSessions = Math.Max(1, configuration.PublicUserRegistrationMaxActiveSessions);
+        policy.RemoteClientBitrateLimit = Math.Max(
+            1,
+            configuration.PublicUserRegistrationRemoteClientBitrateLimit);
+    }
+
+    /// <summary>
     /// Updates a user's password.
     /// </summary>
     /// <param name="userId">The user id.</param>
     /// <param name="request">The <see cref="UpdateUserPassword"/> request.</param>
     /// <response code="204">Password successfully reset.</response>
+    /// <response code="400">The new password does not satisfy the public password policy.</response>
     /// <response code="403">User is not allowed to update the password.</response>
     /// <response code="404">User not found.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>
     [HttpPost("Password")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UpdateUserPassword(
@@ -286,6 +510,19 @@ public class UserController : BaseJellyfinApiController
         if (!RequestHelpers.AssertCanUpdateUser(User, user, true))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the password.");
+        }
+
+        if (user.HasPermission(PermissionKind.IsPubliclyRegistered))
+        {
+            var minimumPasswordLength = Math.Max(
+                1,
+                _config.Configuration.PublicUserRegistrationMinimumPasswordLength);
+            if (request.ResetPassword
+                || request.NewPw is null
+                || request.NewPw.Length < minimumPasswordLength)
+            {
+                return BadRequest($"Password must be at least {minimumPasswordLength} characters long.");
+            }
         }
 
         if (request.ResetPassword)
@@ -324,12 +561,14 @@ public class UserController : BaseJellyfinApiController
     /// <param name="userId">The user id.</param>
     /// <param name="request">The <see cref="UpdateUserPassword"/> request.</param>
     /// <response code="204">Password successfully reset.</response>
+    /// <response code="400">The new password does not satisfy the public password policy.</response>
     /// <response code="403">User is not allowed to update the password.</response>
     /// <response code="404">User not found.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>
     [HttpPost("{userId}/Password")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Obsolete("Kept for backwards compatibility")]

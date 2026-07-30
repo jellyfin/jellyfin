@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Jellyfin.Extensions;
 using MediaBrowser.Model.SyncPlay;
 
@@ -94,7 +95,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
             if (ShuffleMode.Equals(GroupShuffleMode.Shuffle))
             {
                 _shuffledPlaylist = new List<SyncPlayQueueItem>(_sortedPlaylist);
-                _shuffledPlaylist.Shuffle();
+                Random.Shared.Shuffle(CollectionsMarshal.AsSpan(_shuffledPlaylist));
             }
 
             PlayingItemIndex = NoPlayingItemIndex;
@@ -126,7 +127,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
             if (PlayingItemIndex == NoPlayingItemIndex)
             {
                 _shuffledPlaylist = new List<SyncPlayQueueItem>(_sortedPlaylist);
-                _shuffledPlaylist.Shuffle();
+                Random.Shared.Shuffle(CollectionsMarshal.AsSpan(_shuffledPlaylist));
             }
             else if (ShuffleMode.Equals(GroupShuffleMode.Sorted))
             {
@@ -134,7 +135,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
                 var playingItem = _sortedPlaylist[PlayingItemIndex];
                 _shuffledPlaylist = new List<SyncPlayQueueItem>(_sortedPlaylist);
                 _shuffledPlaylist.RemoveAt(PlayingItemIndex);
-                _shuffledPlaylist.Shuffle();
+                Random.Shared.Shuffle(CollectionsMarshal.AsSpan(_shuffledPlaylist));
                 _shuffledPlaylist.Insert(0, playingItem);
                 PlayingItemIndex = 0;
             }
@@ -143,7 +144,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
                 // Re-shuffle playlist.
                 var playingItem = _shuffledPlaylist[PlayingItemIndex];
                 _shuffledPlaylist.RemoveAt(PlayingItemIndex);
-                _shuffledPlaylist.Shuffle();
+                Random.Shared.Shuffle(CollectionsMarshal.AsSpan(_shuffledPlaylist));
                 _shuffledPlaylist.Insert(0, playingItem);
                 PlayingItemIndex = 0;
             }

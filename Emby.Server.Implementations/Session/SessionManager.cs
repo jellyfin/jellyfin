@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data;
@@ -768,10 +769,19 @@ namespace Emby.Server.Implementations.Session
 
             if (libraryItem is not null)
             {
-                foreach (var user in users)
+                session.SynchronizeCustomNetflixProfile(() =>
                 {
-                    OnPlaybackStart(user, libraryItem);
-                }
+                    if (ShouldUpdateNativeUserData(
+                            session,
+                            info.CustomNetflixNativeUserDataEnabled,
+                            info.CustomNetflixProfileGeneration))
+                    {
+                        foreach (var user in users)
+                        {
+                            OnPlaybackStart(user, libraryItem);
+                        }
+                    }
+                });
             }
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
@@ -902,10 +912,19 @@ namespace Emby.Server.Implementations.Session
             // only update saved user data on actual check-ins, not automated ones
             if (libraryItem is not null && !isAutomated)
             {
-                foreach (var user in users)
+                session.SynchronizeCustomNetflixProfile(() =>
                 {
-                    OnPlaybackProgress(user, libraryItem, info);
-                }
+                    if (ShouldUpdateNativeUserData(
+                            session,
+                            info.CustomNetflixNativeUserDataEnabled,
+                            info.CustomNetflixProfileGeneration))
+                    {
+                        foreach (var user in users)
+                        {
+                            OnPlaybackProgress(user, libraryItem, info);
+                        }
+                    }
+                });
             }
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
@@ -1095,10 +1114,19 @@ namespace Emby.Server.Implementations.Session
 
             if (libraryItem is not null)
             {
-                foreach (var user in users)
+                session.SynchronizeCustomNetflixProfile(() =>
                 {
-                    playedToCompletion = OnPlaybackStopped(user, libraryItem, info.PositionTicks, info.Failed);
-                }
+                    if (ShouldUpdateNativeUserData(
+                            session,
+                            info.CustomNetflixNativeUserDataEnabled,
+                            info.CustomNetflixProfileGeneration))
+                    {
+                        foreach (var user in users)
+                        {
+                            playedToCompletion = OnPlaybackStopped(user, libraryItem, info.PositionTicks, info.Failed);
+                        }
+                    }
+                });
             }
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
@@ -1151,6 +1179,22 @@ namespace Emby.Server.Implementations.Session
             _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None);
 
             return playedToCompletion;
+        }
+
+        internal static bool ShouldUpdateNativeUserData(
+            SessionInfo session,
+            bool? requestEnabled,
+            long? requestGeneration)
+        {
+            if (!requestEnabled.HasValue)
+            {
+                return session.CustomNetflixNativeUserDataEnabled != false;
+            }
+
+            return requestEnabled.Value
+                && session.CustomNetflixNativeUserDataEnabled == true
+                && (!requestGeneration.HasValue
+                    || requestGeneration.Value == session.CustomNetflixProfileGeneration);
         }
 
         /// <summary>
@@ -1324,7 +1368,7 @@ namespace Emby.Server.Implementations.Session
 
             if (command.PlayCommand == PlayCommand.PlayShuffle)
             {
-                items.Shuffle();
+                Random.Shared.Shuffle(CollectionsMarshal.AsSpan(items));
                 command.PlayCommand = PlayCommand.PlayNow;
             }
 

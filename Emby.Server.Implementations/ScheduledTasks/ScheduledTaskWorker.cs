@@ -29,6 +29,7 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
     private readonly ITaskManager _taskManager;
     private readonly Lock _lastExecutionResultSyncLock = new();
     private bool _readFromFile;
+    private object _executionGate;
     private TaskResult _lastExecutionResult;
     private Task _currentTask;
     private Tuple<TaskTriggerInfo, ITaskTrigger>[] _triggers;
@@ -283,29 +284,32 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
     /// <exception cref="InvalidOperationException">Cannot execute a Task that is already running.</exception>
     public async Task Execute(TaskOptions options)
     {
-        var task = Task.Run(async () => await ExecuteInternal(options).ConfigureAwait(false));
-
-        _currentTask = task;
-
-        try
-        {
-            await task.ConfigureAwait(false);
-        }
-        finally
-        {
-            _currentTask = null;
-            GC.Collect();
-        }
-    }
-
-    private async Task ExecuteInternal(TaskOptions options)
-    {
-        // Cancel the current execution, if any
-        if (CurrentCancellationTokenSource is not null)
+        var executionGate = new object();
+        if (Interlocked.CompareExchange(ref _executionGate, executionGate, null) is not null)
         {
             throw new InvalidOperationException("Cannot execute a Task that is already running");
         }
 
+        Task task = null;
+        try
+        {
+            task = Task.Run(async () => await ExecuteInternal(options, executionGate).ConfigureAwait(false));
+            _ = Interlocked.Exchange(ref _currentTask, task);
+            await task.ConfigureAwait(false);
+        }
+        finally
+        {
+            if (task is not null)
+            {
+                _ = Interlocked.CompareExchange(ref _currentTask, null, task);
+            }
+
+            Interlocked.CompareExchange(ref _executionGate, null, executionGate);
+        }
+    }
+
+    private async Task ExecuteInternal(TaskOptions options, object executionGate)
+    {
         var progress = new Progress<double>();
 
         CurrentCancellationTokenSource = new CancellationTokenSource();
@@ -353,6 +357,7 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
         CurrentCancellationTokenSource = null;
         CurrentProgress = null;
 
+        Interlocked.CompareExchange(ref _executionGate, null, executionGate);
         OnTaskCompleted(startTime, endTime, status, failureException);
     }
 

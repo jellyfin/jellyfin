@@ -356,7 +356,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected override bool IsActiveRecording()
         {
-            return RecordingsManager.GetActiveRecordingInfo(Path) is not null;
+            return RecordingsManager?.GetActiveRecordingInfo(Path) is not null;
         }
 
         public override bool CanDelete()

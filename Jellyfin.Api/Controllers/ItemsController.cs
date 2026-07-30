@@ -10,6 +10,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.CustomNetflix;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -41,6 +42,7 @@ public class ItemsController : BaseJellyfinApiController
     private readonly IDtoService _dtoService;
     private readonly ILogger<ItemsController> _logger;
     private readonly ISessionManager _sessionManager;
+    private readonly ICustomNetflixActiveProfileService _activeProfileService;
     private readonly IUserDataManager _userDataRepository;
 
     /// <summary>
@@ -52,6 +54,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
     /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
+    /// <param name="activeProfileService">Instance of the <see cref="ICustomNetflixActiveProfileService"/> interface.</param>
     /// <param name="userDataRepository">Instance of the <see cref="IUserDataManager"/> interface.</param>
     public ItemsController(
         IUserManager userManager,
@@ -60,6 +63,7 @@ public class ItemsController : BaseJellyfinApiController
         IDtoService dtoService,
         ILogger<ItemsController> logger,
         ISessionManager sessionManager,
+        ICustomNetflixActiveProfileService activeProfileService,
         IUserDataManager userDataRepository)
     {
         _userManager = userManager;
@@ -68,6 +72,7 @@ public class ItemsController : BaseJellyfinApiController
         _dtoService = dtoService;
         _logger = logger;
         _sessionManager = sessionManager;
+        _activeProfileService = activeProfileService;
         _userDataRepository = userDataRepository;
     }
 
@@ -1060,7 +1065,7 @@ public class ItemsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Tags("UserData")]
-    public ActionResult<UserItemDataDto?> UpdateItemUserData(
+    public async Task<ActionResult<UserItemDataDto?>> UpdateItemUserData(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId,
         [FromBody, Required] UpdateUserItemDataDto userDataDto)
@@ -1083,9 +1088,33 @@ public class ItemsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        _userDataRepository.SaveUserData(user, item, userDataDto, UserDataSaveReason.UpdateUserData);
+        var nativeSession = await RequestHelpers.GetCustomNetflixNativeUserDataSession(
+            _sessionManager,
+            _userManager,
+            _activeProfileService,
+            HttpContext,
+            requestUserId).ConfigureAwait(false);
+        var writeError = RequestHelpers.GetCustomNetflixNativeUserDataWriteError(nativeSession.IsEnabled);
+        if (writeError is not null)
+        {
+            return writeError;
+        }
 
-        return _userDataRepository.GetUserDataDto(item, user);
+        return nativeSession.Session.SynchronizeCustomNetflixProfile<ActionResult<UserItemDataDto?>>(() =>
+        {
+            if (!RequestHelpers.IsCustomNetflixProfileResolutionCurrentUnsafe(
+                    nativeSession.Session,
+                    nativeSession.Generation,
+                    requestUserId,
+                    User.GetToken(),
+                    enabled: true))
+            {
+                return RequestHelpers.GetCustomNetflixNativeUserDataWriteError(false)!;
+            }
+
+            _userDataRepository.SaveUserData(user, item, userDataDto, UserDataSaveReason.UpdateUserData);
+            return _userDataRepository.GetUserDataDto(item, user);
+        });
     }
 
     /// <summary>
@@ -1102,7 +1131,7 @@ public class ItemsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public ActionResult<UserItemDataDto?> UpdateItemUserDataLegacy(
+    public Task<ActionResult<UserItemDataDto?>> UpdateItemUserDataLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId,
         [FromBody, Required] UpdateUserItemDataDto userDataDto)
