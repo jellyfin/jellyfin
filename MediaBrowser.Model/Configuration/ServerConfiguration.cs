@@ -157,6 +157,16 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public int MaxAudiobookResume { get; set; } = 5;
 
     /// <summary>
+    /// Gets or sets the maximum number of lists a single user may create.
+    /// </summary>
+    public int MaxUserListsPerUser { get; set; } = 50;
+
+    /// <summary>
+    /// Gets or sets the maximum number of items a single user list may contain.
+    /// </summary>
+    public int MaxItemsPerUserList { get; set; } = 10000;
+
+    /// <summary>
     /// Gets or sets the threshold in minutes after a inactive session gets closed automatically.
     /// If set to 0 the check for inactive sessions gets disabled.
     /// </summary>
