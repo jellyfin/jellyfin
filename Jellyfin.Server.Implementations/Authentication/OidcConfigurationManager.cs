@@ -121,7 +121,12 @@ public class OidcConfigurationManager : IOidcConfigurationManager
 
     private void WriteOptions(OidcOptions options)
     {
-        var directory = Path.GetDirectoryName(_configurationPath)!;
+        var directory = Path.GetDirectoryName(_configurationPath);
+        if (string.IsNullOrEmpty(directory))
+        {
+            throw new InvalidOperationException("The OIDC configuration path must include a directory.");
+        }
+
         Directory.CreateDirectory(directory);
 
         var tempPath = Path.Combine(directory, ConfigurationFileName + "." + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture) + ".tmp");

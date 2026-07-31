@@ -62,5 +62,5 @@ public class OidcExternalIdentity
     /// <summary>
     /// Gets or sets the user.
     /// </summary>
-    public User User { get; set; } = null!;
+    public User? User { get; set; }
 }
