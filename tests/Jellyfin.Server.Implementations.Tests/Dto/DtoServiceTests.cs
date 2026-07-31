@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using Emby.Server.Implementations.Dto;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Drawing;
@@ -10,6 +12,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Trickplay;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -21,11 +24,15 @@ namespace Jellyfin.Server.Implementations.Tests.Dto;
 public class DtoServiceTests
 {
     private readonly Mock<ILibraryManager> _libraryManagerMock;
+    private readonly Mock<IUserDataManager> _userDataManagerMock;
+    private readonly Mock<IUserListManager> _userListManagerMock;
     private readonly DtoService _dtoService;
 
     public DtoServiceTests()
     {
         _libraryManagerMock = new Mock<ILibraryManager>();
+        _userDataManagerMock = new Mock<IUserDataManager>();
+        _userListManagerMock = new Mock<IUserListManager>();
 
         var imageProcessor = new Mock<IImageProcessor>();
         // Deterministic tag derived from the image so each item gets a distinct, assertable tag.
@@ -42,7 +49,7 @@ public class DtoServiceTests
         _dtoService = new DtoService(
             NullLogger<DtoService>.Instance,
             _libraryManagerMock.Object,
-            new Mock<IUserDataManager>().Object,
+            _userDataManagerMock.Object,
             imageProcessor.Object,
             new Mock<IProviderManager>().Object,
             new Mock<IRecordingsManager>().Object,
@@ -51,7 +58,7 @@ public class DtoServiceTests
             new Lazy<ILiveTvManager>(() => new Mock<ILiveTvManager>().Object),
             new Mock<ITrickplayManager>().Object,
             new Mock<IChapterManager>().Object,
-            new Mock<IUserListManager>().Object);
+            _userListManagerMock.Object);
 
         // Episode.Series / Episode.Season resolve through the static BaseItem.LibraryManager.
         BaseItem.LibraryManager = _libraryManagerMock.Object;
@@ -104,6 +111,97 @@ public class DtoServiceTests
         Assert.NotNull(dto.ImageTags);
         Assert.True(dto.ImageTags.ContainsKey(ImageType.Primary));
         Assert.Null(dto.ParentPrimaryImageItemId);
+    }
+
+    [Fact]
+    public void GetBaseItemDto_ItemInDefaultList_SetsBothListMembershipFlags()
+    {
+        var userData = GetUserDataForListMembership(inDefaultList: true, inCustomList: false);
+
+        Assert.True(userData.IsWatchlisted);
+        Assert.True(userData.IsInAnyUserList);
+    }
+
+    [Fact]
+    public void GetBaseItemDto_ItemInCustomListOnly_SetsOnlyAnyListMembershipFlag()
+    {
+        var userData = GetUserDataForListMembership(inDefaultList: false, inCustomList: true);
+
+        Assert.False(userData.IsWatchlisted);
+        Assert.True(userData.IsInAnyUserList);
+    }
+
+    [Fact]
+    public void GetBaseItemDto_ItemInDefaultAndCustomLists_SetsBothListMembershipFlags()
+    {
+        var userData = GetUserDataForListMembership(inDefaultList: true, inCustomList: true);
+
+        Assert.True(userData.IsWatchlisted);
+        Assert.True(userData.IsInAnyUserList);
+    }
+
+    [Fact]
+    public void GetBaseItemDto_ItemInNoLists_ClearsBothListMembershipFlags()
+    {
+        var userData = GetUserDataForListMembership(inDefaultList: false, inCustomList: false);
+
+        Assert.False(userData.IsWatchlisted);
+        Assert.False(userData.IsInAnyUserList);
+    }
+
+    private UserItemDataDto GetUserDataForListMembership(bool inDefaultList, bool inCustomList)
+    {
+        var item = new Video { Id = Guid.NewGuid(), Name = "Item" };
+        var user = new User("list-user", "authentication", "password-reset");
+        var defaultList = new UserList
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            Name = "Watchlist",
+            IsDefault = true
+        };
+        var customList = new UserList
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            Name = "Anime"
+        };
+        var listIds = new List<Guid>();
+        if (inDefaultList)
+        {
+            listIds.Add(defaultList.Id);
+        }
+
+        if (inCustomList)
+        {
+            listIds.Add(customList.Id);
+        }
+
+        IReadOnlyDictionary<Guid, IReadOnlyList<Guid>> membership = new Dictionary<Guid, IReadOnlyList<Guid>>
+        {
+            [item.Id] = listIds
+        };
+        _userDataManagerMock
+            .Setup(x => x.GetUserDataBatch(It.IsAny<IReadOnlyList<BaseItem>>(), user))
+            .Returns(new Dictionary<Guid, UserItemData>
+            {
+                [item.Id] = new UserItemData { Key = "item-key" }
+            });
+        _userListManagerMock
+            .Setup(x => x.GetListsAsync(user.Id))
+            .ReturnsAsync([defaultList, customList]);
+        _userListManagerMock
+            .Setup(x => x.GetMembershipAsync(user.Id, It.IsAny<IReadOnlyList<Guid>>()))
+            .ReturnsAsync(membership);
+
+        var options = new DtoOptions(false);
+        var dto = _dtoService.GetBaseItemDto(item, options, user);
+
+        Assert.DoesNotContain(ItemFields.UserLists, options.Fields);
+        _userListManagerMock.Verify(
+            x => x.GetMembershipAsync(user.Id, It.IsAny<IReadOnlyList<Guid>>()),
+            Times.Once);
+        return Assert.IsType<UserItemDataDto>(dto.UserData);
     }
 
     private (Episode Episode, Season Season, Series Series) BuildEpisode(bool seasonHasPoster, bool seriesHasPoster = true)

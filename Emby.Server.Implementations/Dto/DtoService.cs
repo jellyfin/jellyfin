@@ -636,6 +636,8 @@ namespace Emby.Server.Implementations.Dto
             if (dto.UserData is not null && userListMembershipBatch is not null)
             {
                 dto.UserData.IsWatchlisted = item.IsWatchlisted(userListMembershipBatch.DefaultListItemIds);
+                dto.UserData.IsInAnyUserList = userListMembershipBatch.Membership.TryGetValue(item.Id, out var memberships)
+                    && memberships.Count > 0;
                 if (options.ContainsField(ItemFields.UserLists))
                 {
                     dto.UserData.UserListIds = userListMembershipBatch.Membership.TryGetValue(item.Id, out var userListIds)

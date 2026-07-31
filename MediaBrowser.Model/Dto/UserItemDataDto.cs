@@ -50,6 +50,12 @@ namespace MediaBrowser.Model.Dto
         public bool IsWatchlisted { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this item is in any of the user's lists.
+        /// </summary>
+        /// <value><c>true</c> if this item is in any of the user's lists; otherwise, <c>false</c>.</value>
+        public bool IsInAnyUserList { get; set; }
+
+        /// <summary>
         /// Gets or sets the identifiers of the user lists containing this item.
         /// </summary>
         /// <value>The user list identifiers.</value>
