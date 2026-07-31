@@ -2703,8 +2703,17 @@ namespace Emby.Server.Implementations.Library
 
         public List<Folder> GetCollectionFolders(BaseItem item, IEnumerable<Folder> allUserRootChildren)
         {
+            var visited = new HashSet<Guid>();
             while (item is not null)
             {
+                // Guard against a cyclic parent chain (e.g. ParentId set before the parent is
+                // registered during concurrent scans). Without this the loop never terminates
+                // and re-enters the item-id cache forever — the trickplay/segment ~75%/95% freeze.
+                if (!visited.Add(item.Id))
+                {
+                    break;
+                }
+
                 var parent = item.GetParent();
 
                 if (parent is AggregateFolder)
