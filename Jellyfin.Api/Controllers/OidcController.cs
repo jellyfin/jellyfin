@@ -238,7 +238,12 @@ public class OidcController : BaseJellyfinApiController
 
         // ASP.NET Core's OpenID Connect handler owns the callback, correlation, and nonce validation.
         // This endpoint only consumes the provider-specific external cookie produced by that handler.
-        var provider = _configurationManager.GetEnabledProvider(providerId)!;
+        var provider = _configurationManager.GetEnabledProvider(providerId);
+        if (provider is null)
+        {
+            return NotFound();
+        }
+
         var authenticationResult = await HttpContext.AuthenticateAsync(AuthenticationSchemes.GetOidcExternalCookieScheme(providerId)).ConfigureAwait(false);
         if (!authenticationResult.Succeeded || authenticationResult.Principal is null || authenticationResult.Properties is null)
         {
@@ -413,7 +418,12 @@ public class OidcController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var provider = _configurationManager.GetEnabledProvider(providerId)!;
+        var provider = _configurationManager.GetEnabledProvider(providerId);
+        if (provider is null)
+        {
+            return NotFound();
+        }
+
         var authenticationResult = await HttpContext.AuthenticateAsync(AuthenticationSchemes.GetOidcExternalCookieScheme(providerId)).ConfigureAwait(false);
         if (!authenticationResult.Succeeded || authenticationResult.Principal is null || authenticationResult.Properties is null)
         {
