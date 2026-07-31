@@ -61,5 +61,13 @@
     "Undefined": "Óskilmarkað",
     "TasksMaintenanceCategory": "Viðlíkahald",
     "TaskCleanLogs": "Reinsa gerðalistaskjáttu",
-    "UserOnlineFromDevice": "{0} er íbundin frá {1}"
+    "UserOnlineFromDevice": "{0} er íbundin frá {1}",
+    "HeaderNextUp": "Næst á skránni",
+    "NotificationOptionPluginError": "Brek í ískoytisforriti",
+    "NotificationOptionInstallationFailed": "Innleggingarbrek",
+    "NotificationOptionServerRestartRequired": "Tørvur er á ambætaraendurbyrjan",
+    "TasksApplicationCategory": "Nýtsluskipan",
+    "NotificationOptionApplicationUpdateAvailable": "Skipanardagføring er tøk",
+    "NotificationOptionApplicationUpdateInstalled": "Skipanardagføring varð innløgd",
+    "UserStoppedPlayingItemWithValues": "{0} er liðugur at spæla {1} á {2}"
 }
