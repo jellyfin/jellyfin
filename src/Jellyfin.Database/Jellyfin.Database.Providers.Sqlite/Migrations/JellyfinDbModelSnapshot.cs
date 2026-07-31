@@ -746,6 +746,81 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
 
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.ItemList", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("AutoRemoveWatched")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ListType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortIndex")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Name")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "SortIndex");
+
+                    b.ToTable("ItemLists");
+
+                    b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
+                });
+
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.ItemListBaseItemMap", b =>
+                {
+                    b.Property<Guid>("ItemListId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CustomDataKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DateAdded")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("RetentionDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortIndex")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ItemListId", "CustomDataKey");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("ItemListId", "SortIndex");
+
+                    b.ToTable("ItemListBaseItemMap");
+
+                    b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
+                });
+
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.ItemValue", b =>
                 {
                     b.Property<Guid>("ItemValueId")
@@ -1471,81 +1546,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
 
-            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.UserList", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("AutoRemoveWatched")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("DateModified")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsDefault")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Kind")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("SortIndex")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId", "Name")
-                        .IsUnique();
-
-                    b.HasIndex("UserId", "SortIndex");
-
-                    b.ToTable("UserLists");
-
-                    b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
-                });
-
-            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.UserListItem", b =>
-                {
-                    b.Property<Guid>("UserListId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CustomDataKey")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("DateAdded")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("ItemId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("RetentionDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("SortIndex")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("UserListId", "CustomDataKey");
-
-                    b.HasIndex("ItemId");
-
-                    b.HasIndex("UserListId", "SortIndex");
-
-                    b.ToTable("UserListItems");
-
-                    b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
-                });
-
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
                     b.HasOne("Jellyfin.Database.Implementations.Entities.User", null)
@@ -1692,6 +1692,33 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.ItemList", b =>
+                {
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.User", null)
+                        .WithMany("Lists")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.ItemListBaseItemMap", b =>
+                {
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.ItemList", "ItemList")
+                        .WithMany()
+                        .HasForeignKey("ItemListId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("ItemList");
+                });
+
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.ItemValueMap", b =>
                 {
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
@@ -1815,33 +1842,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("Item");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.UserList", b =>
-                {
-                    b.HasOne("Jellyfin.Database.Implementations.Entities.User", null)
-                        .WithMany("Lists")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.UserListItem", b =>
-                {
-                    b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
-                        .WithMany()
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Jellyfin.Database.Implementations.Entities.UserList", "UserList")
-                        .WithMany()
-                        .HasForeignKey("UserListId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Item");
-
-                    b.Navigation("UserList");
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemEntity", b =>

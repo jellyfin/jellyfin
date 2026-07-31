@@ -31,7 +31,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// <summary>
 /// Verifies retention and reattachment of detached user-list entries.
 /// </summary>
-public sealed class UserListRetentionTests : IDisposable
+public sealed class ItemListRetentionTests : IDisposable
 {
     private const string ExpiredKey = "expired-key";
     private const string FreshKey = "fresh-key";
@@ -43,9 +43,9 @@ public sealed class UserListRetentionTests : IDisposable
     private readonly Dictionary<Guid, BaseItem> _libraryItems = new();
     private readonly Mock<ILibraryManager> _libraryManager;
     private readonly ItemPersistenceService _itemPersistenceService;
-    private readonly UserListManager _userListManager;
+    private readonly ItemListManager _itemListManager;
 
-    public UserListRetentionTests()
+    public ItemListRetentionTests()
     {
         _connection = new SqliteConnection("Data Source=:memory:");
         _connection.Open();
@@ -81,7 +81,7 @@ public sealed class UserListRetentionTests : IDisposable
         // BaseItem.CreateSortName reads the static configuration manager when an item is persisted.
         BaseItem.ConfigurationManager = configurationManager.Object;
 
-        _userListManager = new UserListManager(
+        _itemListManager = new ItemListManager(
             configurationManager.Object,
             _factory,
             new Lazy<ILibraryManager>(() => _libraryManager.Object));
@@ -100,16 +100,16 @@ public sealed class UserListRetentionTests : IDisposable
         var userId = SeedUser();
         var originalItem = CreateMovie("Original", ImdbId);
         SaveItem(originalItem, cancellationToken);
-        var list = await _userListManager.GetOrCreateDefaultListAsync(userId);
-        await _userListManager.AddItemAsync(list.Id, originalItem.Id);
+        var list = await _itemListManager.GetOrCreateDefaultListAsync(userId);
+        await _itemListManager.AddItemAsync(list.Id, originalItem.Id);
 
         _itemPersistenceService.DeleteItem(originalItem.Id);
 
         using (var context = CreateDbContext())
         {
-            var detachedEntry = await context.UserListItems
+            var detachedEntry = await context.ItemListBaseItemMap
                 .SingleAsync(
-                    entry => entry.UserListId.Equals(list.Id) && entry.CustomDataKey == ImdbId,
+                    entry => entry.ItemListId.Equals(list.Id) && entry.CustomDataKey == ImdbId,
                     cancellationToken);
             Assert.False(detachedEntry.ItemId.HasValue);
             Assert.NotNull(detachedEntry.RetentionDate);
@@ -123,9 +123,9 @@ public sealed class UserListRetentionTests : IDisposable
 
         using (var context = CreateDbContext())
         {
-            var reattachedEntry = await context.UserListItems
+            var reattachedEntry = await context.ItemListBaseItemMap
                 .SingleAsync(
-                    entry => entry.UserListId.Equals(list.Id) && entry.CustomDataKey == ImdbId,
+                    entry => entry.ItemListId.Equals(list.Id) && entry.CustomDataKey == ImdbId,
                     cancellationToken);
             Assert.True(reattachedEntry.ItemId.HasValue);
             Assert.Equal(replacementItem.Id, reattachedEntry.ItemId!.Value);
@@ -151,15 +151,15 @@ public sealed class UserListRetentionTests : IDisposable
         Assert.Equal(ImdbId, firstItem.GetUserDataKeys().First());
         SaveItem(firstItem, cancellationToken);
         SaveItem(secondItem, cancellationToken);
-        var list = await _userListManager.GetOrCreateDefaultListAsync(userId);
+        var list = await _itemListManager.GetOrCreateDefaultListAsync(userId);
 
-        await _userListManager.AddItemAsync(list.Id, firstItem.Id);
-        await _userListManager.AddItemAsync(list.Id, secondItem.Id);
+        await _itemListManager.AddItemAsync(list.Id, firstItem.Id);
+        await _itemListManager.AddItemAsync(list.Id, secondItem.Id);
 
         using (var context = CreateDbContext())
         {
-            var deduplicatedEntry = await context.UserListItems.SingleAsync(
-                entry => entry.UserListId.Equals(list.Id),
+            var deduplicatedEntry = await context.ItemListBaseItemMap.SingleAsync(
+                entry => entry.ItemListId.Equals(list.Id),
                 cancellationToken);
             Assert.Equal(ImdbId, deduplicatedEntry.CustomDataKey);
             Assert.Equal(firstItem.Id, deduplicatedEntry.ItemId);
@@ -169,8 +169,8 @@ public sealed class UserListRetentionTests : IDisposable
 
         using (var context = CreateDbContext())
         {
-            var detachedEntry = await context.UserListItems.SingleAsync(
-                entry => entry.UserListId.Equals(list.Id),
+            var detachedEntry = await context.ItemListBaseItemMap.SingleAsync(
+                entry => entry.ItemListId.Equals(list.Id),
                 cancellationToken);
             Assert.Equal(ImdbId, detachedEntry.CustomDataKey);
             Assert.False(detachedEntry.ItemId.HasValue);
@@ -188,8 +188,8 @@ public sealed class UserListRetentionTests : IDisposable
         var userId = SeedUser();
         var originalItem = CreateMovie("Original without provider");
         SaveItem(originalItem, cancellationToken);
-        var list = await _userListManager.GetOrCreateDefaultListAsync(userId);
-        await _userListManager.AddItemAsync(list.Id, originalItem.Id);
+        var list = await _itemListManager.GetOrCreateDefaultListAsync(userId);
+        await _itemListManager.AddItemAsync(list.Id, originalItem.Id);
 
         _itemPersistenceService.DeleteItem(originalItem.Id);
 
@@ -200,8 +200,8 @@ public sealed class UserListRetentionTests : IDisposable
         await _itemPersistenceService.ReattachUserDataAsync(replacementItem, cancellationToken);
 
         using var context = CreateDbContext();
-        var detachedEntry = await context.UserListItems.SingleAsync(
-            entry => entry.UserListId.Equals(list.Id),
+        var detachedEntry = await context.ItemListBaseItemMap.SingleAsync(
+            entry => entry.ItemListId.Equals(list.Id),
             cancellationToken);
         Assert.Equal(originalItem.Id.ToString(), detachedEntry.CustomDataKey);
         Assert.False(detachedEntry.ItemId.HasValue);
@@ -225,8 +225,8 @@ public sealed class UserListRetentionTests : IDisposable
         await task.ExecuteAsync(progress.Object, cancellationToken);
 
         using var context = CreateDbContext();
-        var retainedEntries = await context.UserListItems
-            .Where(entry => entry.UserListId.Equals(listId))
+        var retainedEntries = await context.ItemListBaseItemMap
+            .Where(entry => entry.ItemListId.Equals(listId))
             .OrderBy(entry => entry.SortIndex)
             .ToListAsync(cancellationToken);
         Assert.DoesNotContain(retainedEntries, entry => entry.CustomDataKey == ExpiredKey);
@@ -249,7 +249,7 @@ public sealed class UserListRetentionTests : IDisposable
 
     public void Dispose()
     {
-        _userListManager.Dispose();
+        _itemListManager.Dispose();
         _connection.Dispose();
     }
 
@@ -293,20 +293,20 @@ public sealed class UserListRetentionTests : IDisposable
             "reaper-user-" + Guid.NewGuid().ToString("N"),
             "authentication",
             "password-reset");
-        var list = new UserList
+        var list = new ItemList
         {
             Id = Guid.NewGuid(),
             UserId = user.Id,
             Name = "Watchlist",
-            Kind = UserListKind.Watchlist,
+            ListType = ItemListType.Watchlist,
             IsDefault = true,
             AutoRemoveWatched = true,
             DateCreated = DateTime.UtcNow,
             DateModified = DateTime.UtcNow
         };
         context.Users.Add(user);
-        context.UserLists.Add(list);
-        context.UserListItems.AddRange(
+        context.ItemLists.Add(list);
+        context.ItemListBaseItemMap.AddRange(
             CreateDetachedEntry(list, ExpiredKey, DateTime.UtcNow.AddDays(-91), 0),
             CreateDetachedEntry(list, FreshKey, DateTime.UtcNow.AddDays(-89), 1),
             CreateDetachedEntry(list, NullRetentionKey, null, 2));
@@ -314,16 +314,16 @@ public sealed class UserListRetentionTests : IDisposable
         return list.Id;
     }
 
-    private static UserListItem CreateDetachedEntry(
-        UserList list,
+    private static ItemListBaseItemMap CreateDetachedEntry(
+        ItemList list,
         string customDataKey,
         DateTime? retentionDate,
         int sortIndex)
     {
-        return new UserListItem
+        return new ItemListBaseItemMap
         {
-            UserListId = list.Id,
-            UserList = list,
+            ItemListId = list.Id,
+            ItemList = list,
             CustomDataKey = customDataKey,
             ItemId = null,
             Item = null,

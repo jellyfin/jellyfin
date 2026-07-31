@@ -464,10 +464,10 @@ public sealed partial class BaseItemRepository
             }
         }
 
-        if (filter.UserListId.HasValue)
+        if (filter.ItemListId.HasValue)
         {
-            var listItemIds = context.UserListItems
-                .Where(uli => uli.UserListId == filter.UserListId.Value && uli.ItemId != null)
+            var listItemIds = context.ItemListBaseItemMap
+                .Where(uli => uli.ItemListId == filter.ItemListId.Value && uli.ItemId != null)
                 .Select(uli => uli.ItemId);
 
             baseQuery = baseQuery.Where(e => listItemIds.Contains(e.Id));
@@ -476,11 +476,11 @@ public sealed partial class BaseItemRepository
         if (filter.IsInWatchlist.HasValue && filter.User is not null)
         {
             var userId = filter.User.Id;
-            var defaultListIds = context.UserLists
+            var defaultListIds = context.ItemLists
                 .Where(ul => ul.UserId == userId && ul.IsDefault)
                 .Select(ul => ul.Id);
-            var watchlistItemIds = context.UserListItems
-                .Where(uli => defaultListIds.Contains(uli.UserListId) && uli.ItemId != null)
+            var watchlistItemIds = context.ItemListBaseItemMap
+                .Where(uli => defaultListIds.Contains(uli.ItemListId) && uli.ItemId != null)
                 .Select(uli => uli.ItemId);
 
             baseQuery = filter.IsInWatchlist.Value

@@ -99,14 +99,14 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<UserData> UserData => Set<UserData>();
 
     /// <summary>
-    /// Gets the <see cref="DbSet{TEntity}"/> containing the user lists.
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the item lists.
     /// </summary>
-    public DbSet<UserList> UserLists => Set<UserList>();
+    public DbSet<ItemList> ItemLists => Set<ItemList>();
 
     /// <summary>
-    /// Gets the <see cref="DbSet{TEntity}"/> containing the user list items.
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the item list base item maps.
     /// </summary>
-    public DbSet<UserListItem> UserListItems => Set<UserListItem>();
+    public DbSet<ItemListBaseItemMap> ItemListBaseItemMap => Set<ItemListBaseItemMap>();
 
     /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.

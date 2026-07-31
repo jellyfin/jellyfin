@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Library;
 /// <summary>
 /// Manages per-user named lists stored in the Jellyfin database.
 /// </summary>
-public sealed class UserListManager : IUserListManager, IDisposable
+public sealed class ItemListManager : IItemListManager, IDisposable
 {
     private const int MaxListNameLength = 256;
 
@@ -26,12 +26,12 @@ public sealed class UserListManager : IUserListManager, IDisposable
     private bool _disposed;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="UserListManager"/> class.
+    /// Initializes a new instance of the <see cref="ItemListManager"/> class.
     /// </summary>
     /// <param name="config">The server configuration manager.</param>
     /// <param name="provider">The Jellyfin database provider.</param>
     /// <param name="libraryManagerFactory">The library manager.</param>
-    public UserListManager(
+    public ItemListManager(
         IServerConfigurationManager config,
         IDbContextFactory<JellyfinDbContext> provider,
         Lazy<ILibraryManager> libraryManagerFactory)
@@ -42,14 +42,14 @@ public sealed class UserListManager : IUserListManager, IDisposable
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<UserList>> GetListsAsync(Guid userId)
+    public async Task<IReadOnlyList<ItemList>> GetListsAsync(Guid userId)
     {
         ThrowIfEmpty(userId, nameof(userId));
 
         var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
-            return await dbContext.UserLists
+            return await dbContext.ItemLists
                 .AsNoTracking()
                 .Where(list => list.UserId.Equals(userId))
                 .OrderBy(list => list.SortIndex)
@@ -61,7 +61,7 @@ public sealed class UserListManager : IUserListManager, IDisposable
     }
 
     /// <inheritdoc />
-    public async Task<UserList> CreateListAsync(Guid userId, string name, bool autoRemoveWatched)
+    public async Task<ItemList> CreateListAsync(Guid userId, string name, bool autoRemoveWatched)
     {
         ThrowIfEmpty(userId, nameof(userId));
         ValidateName(name);
@@ -76,7 +76,7 @@ public sealed class UserListManager : IUserListManager, IDisposable
                     throw new ArgumentException("The user does not exist.", nameof(userId));
                 }
 
-                var existingLists = await dbContext.UserLists
+                var existingLists = await dbContext.ItemLists
                     .Where(list => list.UserId.Equals(userId))
                     .OrderBy(list => list.SortIndex)
                     .ThenBy(list => list.DateCreated)
@@ -92,17 +92,17 @@ public sealed class UserListManager : IUserListManager, IDisposable
                 var maximumListCount = _config.Configuration.MaxUserListsPerUser;
                 if (existingLists.Count >= maximumListCount)
                 {
-                    throw new IUserListManager.UserListLimitExceededException(
+                    throw new IItemListManager.ItemListLimitExceededException(
                         $"The user list limit of {maximumListCount} has been reached.");
                 }
 
                 var now = DateTime.UtcNow;
-                var list = new UserList
+                var list = new ItemList
                 {
                     Id = Guid.NewGuid(),
                     UserId = userId,
                     Name = name,
-                    Kind = UserListKind.Custom,
+                    ListType = ItemListType.Watchlist,
                     IsDefault = false,
                     AutoRemoveWatched = autoRemoveWatched,
                     SortIndex = GetAppendSortIndex(existingLists, now),
@@ -110,7 +110,7 @@ public sealed class UserListManager : IUserListManager, IDisposable
                     DateModified = now
                 };
 
-                dbContext.UserLists.Add(list);
+                dbContext.ItemLists.Add(list);
                 try
                 {
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
@@ -150,7 +150,7 @@ public sealed class UserListManager : IUserListManager, IDisposable
 
                 if (name is not null && list.Name != name)
                 {
-                    if (await dbContext.UserLists
+                    if (await dbContext.ItemLists
                         .AnyAsync(other => other.UserId.Equals(list.UserId) && !other.Id.Equals(listId) && other.Name == name)
                         .ConfigureAwait(false))
                     {
@@ -209,11 +209,11 @@ public sealed class UserListManager : IUserListManager, IDisposable
                 var list = await GetTrackedListAsync(dbContext, listId).ConfigureAwait(false);
                 if (list.IsDefault)
                 {
-                    throw new IUserListManager.DefaultUserListDeletionException(
+                    throw new IItemListManager.DefaultItemListDeletionException(
                         "The default user list cannot be deleted.");
                 }
 
-                dbContext.UserLists.Remove(list);
+                dbContext.ItemLists.Remove(list);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }
@@ -238,8 +238,8 @@ public sealed class UserListManager : IUserListManager, IDisposable
                 }
 
                 var customDataKey = item.GetUserDataKeys().First();
-                var allItems = await dbContext.UserListItems
-                    .Where(listItem => listItem.UserListId.Equals(listId))
+                var allItems = await dbContext.ItemListBaseItemMap
+                    .Where(listItem => listItem.ItemListId.Equals(listId))
                     .OrderBy(listItem => listItem.SortIndex)
                     .ThenBy(listItem => listItem.DateAdded)
                     .ThenBy(listItem => listItem.ItemId)
@@ -264,7 +264,7 @@ public sealed class UserListManager : IUserListManager, IDisposable
                 var maximumItemCount = _config.Configuration.MaxItemsPerUserList;
                 if (attachedItems.Count >= maximumItemCount)
                 {
-                    throw new IUserListManager.UserListLimitExceededException(
+                    throw new IItemListManager.ItemListLimitExceededException(
                         $"The user list item limit of {maximumItemCount} has been reached.");
                 }
 
@@ -280,10 +280,10 @@ public sealed class UserListManager : IUserListManager, IDisposable
                     return;
                 }
 
-                dbContext.UserListItems.Add(new UserListItem
+                dbContext.ItemListBaseItemMap.Add(new ItemListBaseItemMap
                 {
-                    UserListId = listId,
-                    UserList = list,
+                    ItemListId = listId,
+                    ItemList = list,
                     CustomDataKey = customDataKey,
                     ItemId = itemId,
                     Item = null,
@@ -322,9 +322,9 @@ public sealed class UserListManager : IUserListManager, IDisposable
             await using (dbContext.ConfigureAwait(false))
             {
                 var list = await GetTrackedListAsync(dbContext, listId).ConfigureAwait(false);
-                var listItem = await dbContext.UserListItems
+                var listItem = await dbContext.ItemListBaseItemMap
                     .FirstOrDefaultAsync(
-                        entry => entry.UserListId.Equals(listId)
+                        entry => entry.ItemListId.Equals(listId)
                             && entry.ItemId.HasValue
                             && entry.ItemId.Value.Equals(itemId))
                     .ConfigureAwait(false);
@@ -333,7 +333,7 @@ public sealed class UserListManager : IUserListManager, IDisposable
                     return;
                 }
 
-                dbContext.UserListItems.Remove(listItem);
+                dbContext.ItemListBaseItemMap.Remove(listItem);
                 list.DateModified = DateTime.UtcNow;
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
@@ -356,8 +356,8 @@ public sealed class UserListManager : IUserListManager, IDisposable
             await using (dbContext.ConfigureAwait(false))
             {
                 var list = await GetTrackedListAsync(dbContext, listId).ConfigureAwait(false);
-                var allItems = await dbContext.UserListItems
-                    .Where(listItem => listItem.UserListId.Equals(listId))
+                var allItems = await dbContext.ItemListBaseItemMap
+                    .Where(listItem => listItem.ItemListId.Equals(listId))
                     .OrderBy(listItem => listItem.SortIndex)
                     .ThenBy(listItem => listItem.DateAdded)
                     .ThenBy(listItem => listItem.ItemId)
@@ -412,7 +412,7 @@ public sealed class UserListManager : IUserListManager, IDisposable
     }
 
     /// <inheritdoc />
-    public async Task<UserList> GetOrCreateDefaultListAsync(Guid userId)
+    public async Task<ItemList> GetOrCreateDefaultListAsync(Guid userId)
     {
         ThrowIfEmpty(userId, nameof(userId));
 
@@ -421,7 +421,7 @@ public sealed class UserListManager : IUserListManager, IDisposable
             var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                var existingLists = await dbContext.UserLists
+                var existingLists = await dbContext.ItemLists
                     .Where(list => list.UserId.Equals(userId))
                     .OrderBy(list => list.SortIndex)
                     .ThenBy(list => list.DateCreated)
@@ -440,12 +440,12 @@ public sealed class UserListManager : IUserListManager, IDisposable
                 }
 
                 var now = DateTime.UtcNow;
-                defaultList = new UserList
+                defaultList = new ItemList
                 {
                     Id = Guid.NewGuid(),
                     UserId = userId,
                     Name = "Watchlist",
-                    Kind = UserListKind.Watchlist,
+                    ListType = ItemListType.Watchlist,
                     IsDefault = true,
                     AutoRemoveWatched = true,
                     SortIndex = GetAppendSortIndex(existingLists, now),
@@ -453,7 +453,7 @@ public sealed class UserListManager : IUserListManager, IDisposable
                     DateModified = now
                 };
 
-                dbContext.UserLists.Add(defaultList);
+                dbContext.ItemLists.Add(defaultList);
                 try
                 {
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
@@ -496,8 +496,8 @@ public sealed class UserListManager : IUserListManager, IDisposable
         await using (dbContext.ConfigureAwait(false))
         {
             var memberships = await (
-                    from listItem in dbContext.UserListItems
-                    join list in dbContext.UserLists on listItem.UserListId equals list.Id
+                    from listItem in dbContext.ItemListBaseItemMap
+                    join list in dbContext.ItemLists on listItem.ItemListId equals list.Id
                     where list.UserId.Equals(userId)
                         && listItem.ItemId.HasValue
                         && requestedItemIds.Contains(listItem.ItemId.Value)
@@ -529,8 +529,8 @@ public sealed class UserListManager : IUserListManager, IDisposable
         var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
-            return await dbContext.UserListItems
-                .Where(listItem => listItem.UserListId.Equals(listId) && listItem.ItemId.HasValue)
+            return await dbContext.ItemListBaseItemMap
+                .Where(listItem => listItem.ItemListId.Equals(listId) && listItem.ItemId.HasValue)
                 .Select(listItem => listItem.ItemId!.Value)
                 .ToHashSetAsync()
                 .ConfigureAwait(false);
@@ -545,8 +545,8 @@ public sealed class UserListManager : IUserListManager, IDisposable
         var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
-            return await dbContext.UserListItems
-                .Where(listItem => listItem.UserListId.Equals(listId) && listItem.ItemId.HasValue)
+            return await dbContext.ItemListBaseItemMap
+                .Where(listItem => listItem.ItemListId.Equals(listId) && listItem.ItemId.HasValue)
                 .ToDictionaryAsync(listItem => listItem.ItemId!.Value, listItem => listItem.DateAdded)
                 .ConfigureAwait(false);
         }
@@ -566,13 +566,13 @@ public sealed class UserListManager : IUserListManager, IDisposable
         _disposed = true;
     }
 
-    private static IUserListManager.DuplicateUserListNameException CreateDuplicateNameException(string name)
+    private static IItemListManager.DuplicateItemListNameException CreateDuplicateNameException(string name)
     {
-        return new IUserListManager.DuplicateUserListNameException(
+        return new IItemListManager.DuplicateItemListNameException(
             $"A user list named '{name}' already exists.");
     }
 
-    private static int GetAppendSortIndex(IReadOnlyList<UserListItem> existingItems)
+    private static int GetAppendSortIndex(IReadOnlyList<ItemListBaseItemMap> existingItems)
     {
         if (existingItems.Count == 0)
         {
@@ -593,7 +593,7 @@ public sealed class UserListManager : IUserListManager, IDisposable
         return existingItems.Count;
     }
 
-    private static int GetAppendSortIndex(IReadOnlyList<UserList> existingLists, DateTime dateModified)
+    private static int GetAppendSortIndex(IReadOnlyList<ItemList> existingLists, DateTime dateModified)
     {
         if (existingLists.Count == 0)
         {
@@ -637,12 +637,12 @@ public sealed class UserListManager : IUserListManager, IDisposable
         }
     }
 
-    private async Task<UserList?> GetDefaultListAsync(Guid userId)
+    private async Task<ItemList?> GetDefaultListAsync(Guid userId)
     {
         var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
-            return await dbContext.UserLists
+            return await dbContext.ItemLists
                 .AsNoTracking()
                 .Where(list => list.UserId.Equals(userId) && list.IsDefault)
                 .OrderBy(list => list.SortIndex)
@@ -653,9 +653,9 @@ public sealed class UserListManager : IUserListManager, IDisposable
         }
     }
 
-    private static async Task<UserList> GetTrackedListAsync(JellyfinDbContext dbContext, Guid listId)
+    private static async Task<ItemList> GetTrackedListAsync(JellyfinDbContext dbContext, Guid listId)
     {
-        return await dbContext.UserLists
+        return await dbContext.ItemLists
             .FirstOrDefaultAsync(list => list.Id.Equals(listId))
             .ConfigureAwait(false)
             ?? throw new ArgumentException("The user list does not exist.", nameof(listId));
@@ -670,7 +670,7 @@ public sealed class UserListManager : IUserListManager, IDisposable
         var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
-            var duplicateQuery = dbContext.UserLists
+            var duplicateQuery = dbContext.ItemLists
                 .AsNoTracking()
                 .Where(list => list.UserId.Equals(userId) && list.Name == name);
             if (excludedListId is not null)
@@ -680,7 +680,7 @@ public sealed class UserListManager : IUserListManager, IDisposable
 
             if (await duplicateQuery.AnyAsync().ConfigureAwait(false))
             {
-                throw new IUserListManager.DuplicateUserListNameException(
+                throw new IItemListManager.DuplicateItemListNameException(
                     $"A user list named '{name}' already exists.",
                     exception);
             }
@@ -692,9 +692,9 @@ public sealed class UserListManager : IUserListManager, IDisposable
         var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
-            return await dbContext.UserListItems
+            return await dbContext.ItemListBaseItemMap
                 .AnyAsync(
-                    entry => entry.UserListId.Equals(listId)
+                    entry => entry.ItemListId.Equals(listId)
                         && entry.ItemId.HasValue
                         && (entry.ItemId.Value.Equals(itemId) || entry.CustomDataKey == customDataKey))
                 .ConfigureAwait(false);

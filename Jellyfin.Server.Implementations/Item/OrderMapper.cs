@@ -58,12 +58,12 @@ public static class OrderMapper
             (ItemSortBy.IsFolder, _) => e => e.IsFolder,
             (ItemSortBy.IsPlayed, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.Played,
             (ItemSortBy.IsUnplayed, _) => e => !e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.Played,
-            (ItemSortBy.DateAddedToList, _) => e => jellyfinDbContext.UserListItems
+            (ItemSortBy.DateAddedToList, _) => e => jellyfinDbContext.ItemListBaseItemMap
                 .Where(uli => uli.ItemId == e.Id
-                    && (query.UserListId.HasValue
-                        ? uli.UserListId == query.UserListId.Value
-                        : uli.UserList!.UserId == query.User!.Id && uli.UserList!.IsDefault))
-                .OrderBy(uli => uli.UserListId)
+                    && (query.ItemListId.HasValue
+                        ? uli.ItemListId == query.ItemListId.Value
+                        : uli.ItemList!.UserId == query.User!.Id && uli.ItemList!.IsDefault))
+                .OrderBy(uli => uli.ItemListId)
                 .Select(uli => (DateTime?)uli.DateAdded)
                 .FirstOrDefault(),
             (ItemSortBy.DateLastContentAdded, _) => e => e.DateLastMediaAdded,

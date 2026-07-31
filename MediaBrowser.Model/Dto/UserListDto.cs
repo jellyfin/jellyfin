@@ -21,10 +21,10 @@ namespace MediaBrowser.Model.Dto
         public required string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the list kind.
+        /// Gets or sets the item list type.
         /// </summary>
-        /// <value>The list kind.</value>
-        public UserListKind Kind { get; set; }
+        /// <value>The item list type.</value>
+        public ItemListType Kind { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this is the user's default list.

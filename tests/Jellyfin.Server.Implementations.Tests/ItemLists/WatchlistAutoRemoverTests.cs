@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.EntryPoints;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -14,7 +15,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
-namespace Jellyfin.Server.Implementations.Tests.UserLists;
+namespace Jellyfin.Server.Implementations.Tests.ItemLists;
 
 public sealed class WatchlistAutoRemoverTests
 {
@@ -22,7 +23,7 @@ public sealed class WatchlistAutoRemoverTests
     private readonly Mock<IItemCountService> _itemCountService = new();
     private readonly Mock<ILibraryManager> _libraryManager = new();
     private readonly Mock<IUserDataManager> _userDataManager = new();
-    private readonly Mock<IUserListManager> _userListManager = new();
+    private readonly Mock<IItemListManager> _itemListManager = new();
     private readonly Mock<IUserManager> _userManager = new();
     private readonly WatchlistAutoRemover _autoRemover;
 
@@ -33,7 +34,7 @@ public sealed class WatchlistAutoRemoverTests
             Id = _userId
         };
         _userManager.Setup(manager => manager.GetUserById(_userId)).Returns(user);
-        _userListManager
+        _itemListManager
             .Setup(manager => manager.RemoveItemAsync(It.IsAny<Guid>(), It.IsAny<Guid>()))
             .Returns(Task.CompletedTask);
 
@@ -42,7 +43,7 @@ public sealed class WatchlistAutoRemoverTests
             _itemCountService.Object,
             _libraryManager.Object,
             _userDataManager.Object,
-            _userListManager.Object,
+            _itemListManager.Object,
             _userManager.Object);
     }
 
@@ -56,13 +57,13 @@ public sealed class WatchlistAutoRemoverTests
 
         await RaiseUserDataSavedAsync(movie, UserDataSaveReason.PlaybackFinished, true);
 
-        _userListManager.Verify(
+        _itemListManager.Verify(
             manager => manager.RemoveItemAsync(autoRemoveList.Id, movie.Id),
             Times.Once);
-        _userListManager.Verify(
+        _itemListManager.Verify(
             manager => manager.RemoveItemAsync(retainedList.Id, movie.Id),
             Times.Never);
-        _userListManager.Verify(
+        _itemListManager.Verify(
             manager => manager.RemoveItemAsync(It.IsAny<Guid>(), movie.Id),
             Times.Once);
     }
@@ -76,10 +77,10 @@ public sealed class WatchlistAutoRemoverTests
 
         await RaiseUserDataSavedAsync(episode, UserDataSaveReason.PlaybackFinished, true);
 
-        _userListManager.Verify(
+        _itemListManager.Verify(
             manager => manager.RemoveItemAsync(autoRemoveList.Id, episode.Id),
             Times.Once);
-        _userListManager.Verify(
+        _itemListManager.Verify(
             manager => manager.RemoveItemAsync(It.IsAny<Guid>(), series.Id),
             Times.Never);
     }
@@ -93,10 +94,10 @@ public sealed class WatchlistAutoRemoverTests
 
         await RaiseUserDataSavedAsync(episode, UserDataSaveReason.PlaybackFinished, true);
 
-        _userListManager.Verify(
+        _itemListManager.Verify(
             manager => manager.RemoveItemAsync(autoRemoveList.Id, episode.Id),
             Times.Once);
-        _userListManager.Verify(
+        _itemListManager.Verify(
             manager => manager.RemoveItemAsync(autoRemoveList.Id, series.Id),
             Times.Once);
     }
@@ -111,10 +112,10 @@ public sealed class WatchlistAutoRemoverTests
 
         await RaiseUserDataSavedAsync(episode, UserDataSaveReason.PlaybackFinished, true);
 
-        _userListManager.Verify(
+        _itemListManager.Verify(
             manager => manager.RemoveItemAsync(autoRemoveList.Id, series.Id),
             Times.Once);
-        _userListManager.Verify(
+        _itemListManager.Verify(
             manager => manager.RemoveItemAsync(retainedList.Id, series.Id),
             Times.Never);
     }
@@ -131,21 +132,22 @@ public sealed class WatchlistAutoRemoverTests
 
         await RaiseUserDataSavedAsync(movie, saveReason, played);
 
-        _userListManager.Verify(
+        _itemListManager.Verify(
             manager => manager.GetListsAsync(It.IsAny<Guid>()),
             Times.Never);
-        _userListManager.Verify(
+        _itemListManager.Verify(
             manager => manager.RemoveItemAsync(It.IsAny<Guid>(), It.IsAny<Guid>()),
             Times.Never);
     }
 
-    private UserList CreateList(bool autoRemoveWatched)
+    private ItemList CreateList(bool autoRemoveWatched)
     {
-        return new UserList
+        return new ItemList
         {
             Id = Guid.NewGuid(),
             UserId = _userId,
             Name = autoRemoveWatched ? "Auto remove" : "Retained",
+            ListType = ItemListType.Watchlist,
             AutoRemoveWatched = autoRemoveWatched
         };
     }
@@ -169,11 +171,11 @@ public sealed class WatchlistAutoRemoverTests
         return (episode, series);
     }
 
-    private void SetupLists(params UserList[] lists)
+    private void SetupLists(params ItemList[] lists)
     {
-        _userListManager
+        _itemListManager
             .Setup(manager => manager.GetListsAsync(_userId))
-            .ReturnsAsync((IReadOnlyList<UserList>)lists);
+            .ReturnsAsync((IReadOnlyList<ItemList>)lists);
     }
 
     private async Task RaiseUserDataSavedAsync(

@@ -391,7 +391,7 @@ public class ItemsController : BaseJellyfinApiController
             Recursive = recursive ?? false,
             OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder),
             IsFavorite = isFavorite,
-            UserListId = userListId,
+            ItemListId = userListId,
             IsInWatchlist = isInWatchlist,
             Limit = searchResultScores is null ? limit : null,
             StartIndex = searchResultScores is null ? startIndex : null,

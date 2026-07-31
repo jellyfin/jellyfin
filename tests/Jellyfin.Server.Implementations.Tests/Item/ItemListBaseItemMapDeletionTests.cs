@@ -18,13 +18,13 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// <summary>
 /// Verifies user-list cleanup performed by item deletion against the SQLite provider.
 /// </summary>
-public sealed class UserListItemDeletionTests : IDisposable
+public sealed class ItemListBaseItemMapDeletionTests : IDisposable
 {
     private readonly SqliteConnection _connection;
     private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly ItemPersistenceService _itemPersistenceService;
 
-    public UserListItemDeletionTests()
+    public ItemListBaseItemMapDeletionTests()
     {
         _connection = new SqliteConnection("Data Source=:memory:");
         _connection.Open();
@@ -66,9 +66,9 @@ public sealed class UserListItemDeletionTests : IDisposable
             var retainedItem = CreateItem("Retained Item");
 
             context.Users.Add(user);
-            context.UserLists.AddRange(firstList, secondList);
+            context.ItemLists.AddRange(firstList, secondList);
             context.BaseItems.AddRange(deletedItem, retainedItem);
-            context.UserListItems.AddRange(
+            context.ItemListBaseItemMap.AddRange(
                 CreateListItem(firstList, deletedItem),
                 CreateListItem(secondList, deletedItem),
                 CreateListItem(firstList, retainedItem));
@@ -97,8 +97,8 @@ public sealed class UserListItemDeletionTests : IDisposable
         {
             var seededListIds = new[] { firstListId, secondListId };
 
-            var detachedEntries = context.UserListItems
-                .Where(entry => seededListIds.Contains(entry.UserListId)
+            var detachedEntries = context.ItemListBaseItemMap
+                .Where(entry => seededListIds.Contains(entry.ItemListId)
                     && entry.CustomDataKey == deletedItemId.ToString())
                 .ToList();
             Assert.Equal(2, detachedEntries.Count);
@@ -115,10 +115,10 @@ public sealed class UserListItemDeletionTests : IDisposable
                 entry => entry.ItemId.HasValue
                     && entry.ItemId!.Value.Equals(BaseItemRepository.PlaceholderId));
 
-            var retainedEntry = Assert.Single(context.UserListItems.Where(
-                entry => seededListIds.Contains(entry.UserListId)
+            var retainedEntry = Assert.Single(context.ItemListBaseItemMap.Where(
+                entry => seededListIds.Contains(entry.ItemListId)
                     && entry.CustomDataKey == retainedItemId.ToString()));
-            Assert.Equal(firstListId, retainedEntry.UserListId);
+            Assert.Equal(firstListId, retainedEntry.ItemListId);
             Assert.Equal(retainedItemId, retainedEntry.ItemId);
             Assert.Null(retainedEntry.RetentionDate);
 
@@ -137,14 +137,14 @@ public sealed class UserListItemDeletionTests : IDisposable
         _connection.Dispose();
     }
 
-    private static UserList CreateList(Guid userId, string name, bool isDefault)
+    private static ItemList CreateList(Guid userId, string name, bool isDefault)
     {
-        return new UserList
+        return new ItemList
         {
             Id = Guid.NewGuid(),
             UserId = userId,
             Name = name,
-            Kind = isDefault ? UserListKind.Watchlist : UserListKind.Custom,
+            ListType = ItemListType.Watchlist,
             IsDefault = isDefault,
             AutoRemoveWatched = isDefault,
             DateCreated = new DateTime(2026, 1, 1),
@@ -165,12 +165,12 @@ public sealed class UserListItemDeletionTests : IDisposable
         };
     }
 
-    private static UserListItem CreateListItem(UserList list, BaseItemEntity item)
+    private static ItemListBaseItemMap CreateListItem(ItemList list, BaseItemEntity item)
     {
-        return new UserListItem
+        return new ItemListBaseItemMap
         {
-            UserListId = list.Id,
-            UserList = list,
+            ItemListId = list.Id,
+            ItemList = list,
             CustomDataKey = item.Id.ToString(),
             ItemId = item.Id,
             Item = item,

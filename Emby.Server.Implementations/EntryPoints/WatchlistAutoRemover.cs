@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.EntryPoints;
 
 /// <summary>
-/// Removes completed items from user lists configured to remove watched items automatically.
+/// Removes completed items from item lists configured to remove watched items automatically.
 /// </summary>
 public sealed class WatchlistAutoRemover : IHostedService
 {
@@ -23,7 +23,7 @@ public sealed class WatchlistAutoRemover : IHostedService
     private readonly IItemCountService _itemCountService;
     private readonly ILibraryManager _libraryManager;
     private readonly IUserDataManager _userDataManager;
-    private readonly IUserListManager _userListManager;
+    private readonly IItemListManager _itemListManager;
     private readonly IUserManager _userManager;
 
     /// <summary>
@@ -33,21 +33,21 @@ public sealed class WatchlistAutoRemover : IHostedService
     /// <param name="itemCountService">The item count service.</param>
     /// <param name="libraryManager">The library manager.</param>
     /// <param name="userDataManager">The user data manager.</param>
-    /// <param name="userListManager">The user list manager.</param>
+    /// <param name="itemListManager">The item list manager.</param>
     /// <param name="userManager">The user manager.</param>
     public WatchlistAutoRemover(
         ILogger<WatchlistAutoRemover> logger,
         IItemCountService itemCountService,
         ILibraryManager libraryManager,
         IUserDataManager userDataManager,
-        IUserListManager userListManager,
+        IItemListManager itemListManager,
         IUserManager userManager)
     {
         _logger = logger;
         _itemCountService = itemCountService;
         _libraryManager = libraryManager;
         _userDataManager = userDataManager;
-        _userListManager = userListManager;
+        _itemListManager = itemListManager;
         _userManager = userManager;
     }
 
@@ -74,7 +74,7 @@ public sealed class WatchlistAutoRemover : IHostedService
                 return;
             }
 
-            var autoRemoveListIds = (await _userListManager.GetListsAsync(e.UserId).ConfigureAwait(false))
+            var autoRemoveListIds = (await _itemListManager.GetListsAsync(e.UserId).ConfigureAwait(false))
                 .Where(list => list.AutoRemoveWatched)
                 .Select(list => list.Id)
                 .ToArray();
@@ -112,7 +112,7 @@ public sealed class WatchlistAutoRemover : IHostedService
     {
         foreach (var listId in listIds)
         {
-            await _userListManager.RemoveItemAsync(listId, itemId).ConfigureAwait(false);
+            await _itemListManager.RemoveItemAsync(listId, itemId).ConfigureAwait(false);
         }
     }
 

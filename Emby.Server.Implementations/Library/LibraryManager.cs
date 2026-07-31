@@ -69,7 +69,7 @@ namespace Emby.Server.Implementations.Library
         private readonly ITaskManager _taskManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
-        private readonly IUserListManager _userListManager;
+        private readonly IItemListManager _itemListManager;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly Lazy<ILibraryMonitor> _libraryMonitorFactory;
         private readonly Lazy<IProviderManager> _providerManagerFactory;
@@ -117,7 +117,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userDataManager">The user data manager.</param>
-        /// <param name="userListManager">The user list manager.</param>
+        /// <param name="itemListManager">The item list manager.</param>
         /// <param name="libraryMonitorFactory">The library monitor.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="providerManagerFactory">The provider manager.</param>
@@ -143,7 +143,7 @@ namespace Emby.Server.Implementations.Library
             IUserManager userManager,
             IServerConfigurationManager configurationManager,
             IUserDataManager userDataManager,
-            IUserListManager userListManager,
+            IItemListManager itemListManager,
             Lazy<ILibraryMonitor> libraryMonitorFactory,
             IFileSystem fileSystem,
             Lazy<IProviderManager> providerManagerFactory,
@@ -169,7 +169,7 @@ namespace Emby.Server.Implementations.Library
             _userManager = userManager;
             _configurationManager = configurationManager;
             _userDataManager = userDataManager;
-            _userListManager = userListManager;
+            _itemListManager = itemListManager;
             _libraryMonitorFactory = libraryMonitorFactory;
             _fileSystem = fileSystem;
             _providerManagerFactory = providerManagerFactory;
@@ -2332,9 +2332,9 @@ namespace Emby.Server.Implementations.Library
                 userComparer.UserManager = _userManager;
                 userComparer.UserDataManager = _userDataManager;
 
-                if (userComparer is IUserListBaseItemComparer userListComparer)
+                if (userComparer is IItemListBaseItemComparer itemListComparer)
                 {
-                    userListComparer.UserListManager = _userListManager;
+                    itemListComparer.ItemListManager = _itemListManager;
                 }
 
                 return userComparer;

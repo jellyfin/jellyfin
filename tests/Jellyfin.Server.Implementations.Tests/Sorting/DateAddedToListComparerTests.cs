@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Emby.Server.Implementations.Sorting;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using Moq;
@@ -18,18 +19,18 @@ public class DateAddedToListComparerTests
         var newerItem = new Movie { Id = Guid.NewGuid() };
         var user = CreateUser();
         var defaultList = CreateDefaultList(user.Id);
-        var userListManager = new Mock<IUserListManager>();
-        userListManager
+        var itemListManager = new Mock<IItemListManager>();
+        itemListManager
             .Setup(manager => manager.GetOrCreateDefaultListAsync(user.Id))
             .ReturnsAsync(defaultList);
-        userListManager
+        itemListManager
             .Setup(manager => manager.GetListItemDatesAsync(defaultList.Id))
             .ReturnsAsync(new Dictionary<Guid, DateTime>
             {
                 [olderItem.Id] = new DateTime(2026, 1, 1),
                 [newerItem.Id] = new DateTime(2026, 1, 2)
             });
-        var comparer = CreateComparer(user, userListManager.Object);
+        var comparer = CreateComparer(user, itemListManager.Object);
 
         Assert.True(comparer.Compare(olderItem, newerItem) < 0);
         Assert.True(comparer.Compare(newerItem, olderItem) > 0);
@@ -43,17 +44,17 @@ public class DateAddedToListComparerTests
         var secondAbsentItem = new Movie { Id = Guid.NewGuid() };
         var user = CreateUser();
         var defaultList = CreateDefaultList(user.Id);
-        var userListManager = new Mock<IUserListManager>();
-        userListManager
+        var itemListManager = new Mock<IItemListManager>();
+        itemListManager
             .Setup(manager => manager.GetOrCreateDefaultListAsync(user.Id))
             .ReturnsAsync(defaultList);
-        userListManager
+        itemListManager
             .Setup(manager => manager.GetListItemDatesAsync(defaultList.Id))
             .ReturnsAsync(new Dictionary<Guid, DateTime>
             {
                 [listedItem.Id] = new DateTime(2026, 1, 1)
             });
-        var comparer = CreateComparer(user, userListManager.Object);
+        var comparer = CreateComparer(user, itemListManager.Object);
 
         Assert.True(comparer.Compare(firstAbsentItem, listedItem) < 0);
         Assert.True(comparer.Compare(listedItem, firstAbsentItem) > 0);
@@ -72,11 +73,11 @@ public class DateAddedToListComparerTests
         };
         var user = CreateUser();
         var defaultList = CreateDefaultList(user.Id);
-        var userListManager = new Mock<IUserListManager>();
-        userListManager
+        var itemListManager = new Mock<IItemListManager>();
+        itemListManager
             .Setup(manager => manager.GetOrCreateDefaultListAsync(user.Id))
             .ReturnsAsync(defaultList);
-        userListManager
+        itemListManager
             .Setup(manager => manager.GetListItemDatesAsync(defaultList.Id))
             .ReturnsAsync(new Dictionary<Guid, DateTime>
             {
@@ -84,36 +85,37 @@ public class DateAddedToListComparerTests
                 [items[1].Id] = new DateTime(2026, 1, 2),
                 [items[2].Id] = new DateTime(2026, 1, 3)
             });
-        var comparer = CreateComparer(user, userListManager.Object);
+        var comparer = CreateComparer(user, itemListManager.Object);
 
         Assert.True(comparer.Compare(items[0], items[1]) < 0);
         Assert.True(comparer.Compare(items[1], items[2]) < 0);
         Assert.True(comparer.Compare(items[2], items[0]) > 0);
         Assert.Equal(0, comparer.Compare(items[1], items[1]));
-        userListManager.Verify(
+        itemListManager.Verify(
             manager => manager.GetOrCreateDefaultListAsync(user.Id),
             Times.Once);
-        userListManager.Verify(
+        itemListManager.Verify(
             manager => manager.GetListItemDatesAsync(defaultList.Id),
             Times.Once);
     }
 
-    private static DateAddedToListComparer CreateComparer(User user, IUserListManager userListManager)
+    private static DateAddedToListComparer CreateComparer(User user, IItemListManager itemListManager)
     {
         return new DateAddedToListComparer
         {
             User = user,
-            UserListManager = userListManager
+            ItemListManager = itemListManager
         };
     }
 
-    private static UserList CreateDefaultList(Guid userId)
+    private static ItemList CreateDefaultList(Guid userId)
     {
-        return new UserList
+        return new ItemList
         {
             Id = Guid.NewGuid(),
             UserId = userId,
             Name = "Watchlist",
+            ListType = ItemListType.Watchlist,
             IsDefault = true
         };
     }

@@ -65,14 +65,14 @@ public class CleanupUserDataTask : IScheduledTask
 
             await detachedUserData.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
-            var detachedUserListItems = dbContext.UserListItems.Where(e => e.ItemId == null);
-            _logger.LogInformation("There are {NoDetached} detached UserListItem entries.", detachedUserListItems.Count());
+            var detachedItemListBaseItemMaps = dbContext.ItemListBaseItemMap.Where(e => e.ItemId == null);
+            _logger.LogInformation("There are {NoDetached} detached ItemListBaseItemMap entries.", detachedItemListBaseItemMaps.Count());
 
-            detachedUserListItems = detachedUserListItems.Where(e => e.RetentionDate < userDataDate);
+            detachedItemListBaseItemMaps = detachedItemListBaseItemMaps.Where(e => e.RetentionDate < userDataDate);
 
-            _logger.LogInformation("{NoDetached} detached UserListItem entries are older then {Limit} days.", detachedUserListItems.Count(), LimitDays);
+            _logger.LogInformation("{NoDetached} detached ItemListBaseItemMap entries are older then {Limit} days.", detachedItemListBaseItemMaps.Count(), LimitDays);
 
-            await detachedUserListItems.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+            await detachedItemListBaseItemMaps.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
         }
 
         progress.Report(100);

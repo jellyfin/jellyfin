@@ -613,7 +613,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ILimitedConcurrencyLibraryScheduler, LimitedConcurrencyLibraryScheduler>();
 
             serviceCollection.AddSingleton<IPlaylistManager, PlaylistManager>();
-            serviceCollection.AddSingleton<IUserListManager, UserListManager>();
+            serviceCollection.AddSingleton<IItemListManager, ItemListManager>();
 
             serviceCollection.AddSingleton<ISyncPlayManager, SyncPlayManager>();
 

@@ -15,22 +15,22 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Creates a default Watchlist for users that do not already have one.
 /// </summary>
-[JellyfinMigration("2026-08-01T12:00:00", nameof(CreateDefaultUserLists))]
+[JellyfinMigration("2026-08-01T12:00:00", nameof(CreateDefaultItemLists))]
 [JellyfinMigrationBackup(JellyfinDb = true)]
-public class CreateDefaultUserLists : IAsyncMigrationRoutine
+public class CreateDefaultItemLists : IAsyncMigrationRoutine
 {
     private const int ProgressLogStep = 500;
 
-    private readonly IStartupLogger<CreateDefaultUserLists> _logger;
+    private readonly IStartupLogger<CreateDefaultItemLists> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CreateDefaultUserLists"/> class.
+    /// Initializes a new instance of the <see cref="CreateDefaultItemLists"/> class.
     /// </summary>
     /// <param name="logger">The startup logger.</param>
     /// <param name="dbContextFactory">The database context factory.</param>
-    public CreateDefaultUserLists(
-        IStartupLogger<CreateDefaultUserLists> logger,
+    public CreateDefaultItemLists(
+        IStartupLogger<CreateDefaultItemLists> logger,
         IDbContextFactory<JellyfinDbContext> dbContextFactory)
     {
         _logger = logger;
@@ -59,7 +59,7 @@ public class CreateDefaultUserLists : IAsyncMigrationRoutine
                 .Where(user => user.HasDefaultList)
                 .Select(user => user.Id)
                 .ToHashSet();
-            var defaultLists = new List<UserList>(users.Count - existingDefaultListUserIds.Count);
+            var defaultLists = new List<ItemList>(users.Count - existingDefaultListUserIds.Count);
             var now = DateTime.UtcNow;
             var processed = 0;
             var skipped = 0;
@@ -78,12 +78,12 @@ public class CreateDefaultUserLists : IAsyncMigrationRoutine
                     var sortIndex = user.MaximumSortIndex.HasValue && user.MaximumSortIndex.Value < int.MaxValue
                         ? user.MaximumSortIndex.Value + 1
                         : user.ListCount;
-                    defaultLists.Add(new UserList
+                    defaultLists.Add(new ItemList
                     {
                         Id = Guid.NewGuid(),
                         UserId = user.Id,
                         Name = "Watchlist",
-                        Kind = UserListKind.Watchlist,
+                        ListType = ItemListType.Watchlist,
                         IsDefault = true,
                         AutoRemoveWatched = true,
                         SortIndex = sortIndex,
@@ -95,7 +95,7 @@ public class CreateDefaultUserLists : IAsyncMigrationRoutine
                 if (processed % ProgressLogStep == 0)
                 {
                     _logger.LogInformation(
-                        "Provisioning default user lists: processed {Processed}/{Total}, staged {Provisioned}, skipped {Skipped}",
+                        "Provisioning default item lists: processed {Processed}/{Total}, staged {Provisioned}, skipped {Skipped}",
                         processed,
                         users.Count,
                         defaultLists.Count,
@@ -105,12 +105,12 @@ public class CreateDefaultUserLists : IAsyncMigrationRoutine
 
             if (defaultLists.Count > 0)
             {
-                dbContext.UserLists.AddRange(defaultLists);
+                dbContext.ItemLists.AddRange(defaultLists);
                 await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             }
 
             _logger.LogInformation(
-                "Default user list provisioning complete: provisioned {Provisioned}, skipped {Skipped}",
+                "Default item list provisioning complete: provisioned {Provisioned}, skipped {Skipped}",
                 defaultLists.Count,
                 skipped);
         }

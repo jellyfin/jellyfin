@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Jellyfin.Database.Implementations.ModelConfiguration;
 
 /// <summary>
-/// FluentAPI configuration for the UserList entity.
+/// FluentAPI configuration for the ItemList entity.
 /// </summary>
-public class UserListConfiguration : IEntityTypeConfiguration<UserList>
+public class ItemListConfiguration : IEntityTypeConfiguration<ItemList>
 {
     /// <inheritdoc/>
-    public void Configure(EntityTypeBuilder<UserList> builder)
+    public void Configure(EntityTypeBuilder<ItemList> builder)
     {
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Name).HasMaxLength(256).IsRequired();

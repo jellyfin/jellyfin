@@ -12,7 +12,7 @@ using MediaBrowser.Controller.Sorting;
 
 namespace Emby.Server.Implementations.Sorting
 {
-    public class DateAddedToListComparer : IUserListBaseItemComparer
+    public class DateAddedToListComparer : IItemListBaseItemComparer
     {
         private readonly Lazy<IReadOnlyDictionary<Guid, DateTime>> _itemDates;
 
@@ -44,10 +44,10 @@ namespace Emby.Server.Implementations.Sorting
         public IUserDataManager UserDataManager { get; set; }
 
         /// <summary>
-        /// Gets or sets the user list manager.
+        /// Gets or sets the item list manager.
         /// </summary>
-        /// <value>The user list manager.</value>
-        public IUserListManager UserListManager { get; set; }
+        /// <value>The item list manager.</value>
+        public IItemListManager ItemListManager { get; set; }
 
         /// <summary>
         /// Gets or sets the user manager.
@@ -80,11 +80,11 @@ namespace Emby.Server.Implementations.Sorting
 
         private async Task<IReadOnlyDictionary<Guid, DateTime>> ResolveItemDatesAsync()
         {
-            var defaultList = await UserListManager
+            var defaultList = await ItemListManager
                 .GetOrCreateDefaultListAsync(User.Id)
                 .ConfigureAwait(false);
 
-            return await UserListManager
+            return await ItemListManager
                 .GetListItemDatesAsync(defaultList.Id)
                 .ConfigureAwait(false);
         }

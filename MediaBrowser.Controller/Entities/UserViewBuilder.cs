@@ -632,17 +632,17 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            if (query.UserListId.HasValue && query.UserListItemIds is not null)
+            if (query.ItemListId.HasValue && query.ItemListMemberIds is not null)
             {
-                if (!query.UserListItemIds.Contains(item.Id))
+                if (!query.ItemListMemberIds.Contains(item.Id))
                 {
                     return false;
                 }
             }
 
-            if (query.IsInWatchlist.HasValue && query.UserListItemIds is not null)
+            if (query.IsInWatchlist.HasValue && query.ItemListMemberIds is not null)
             {
-                var isInWatchlist = query.UserListItemIds.Contains(item.Id);
+                var isInWatchlist = query.ItemListMemberIds.Contains(item.Id);
                 if (isInWatchlist != query.IsInWatchlist.Value)
                 {
                     return false;

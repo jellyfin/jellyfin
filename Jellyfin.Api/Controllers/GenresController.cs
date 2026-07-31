@@ -114,7 +114,7 @@ public class GenresController : BaseJellyfinApiController
             StartIndex = startIndex,
             Limit = limit,
             IsFavorite = isFavorite,
-            UserListId = userListId,
+            ItemListId = userListId,
             IsInWatchlist = isInWatchlist,
             NameLessThan = nameLessThan,
             NameStartsWith = nameStartsWith,

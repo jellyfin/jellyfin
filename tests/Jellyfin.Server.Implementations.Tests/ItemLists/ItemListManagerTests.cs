@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Server.Implementations.Item;
@@ -23,9 +24,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
-namespace Jellyfin.Server.Implementations.Tests.UserLists;
+namespace Jellyfin.Server.Implementations.Tests.ItemLists;
 
-public sealed class UserListManagerTests : IDisposable
+public sealed class ItemListManagerTests : IDisposable
 {
     private const string BaseItemType = "MediaBrowser.Controller.Entities.Movies.Movie";
 
@@ -36,9 +37,9 @@ public sealed class UserListManagerTests : IDisposable
     private readonly ItemPersistenceService _itemPersistenceService;
     private readonly Dictionary<Guid, BaseItem> _libraryItems = new();
     private readonly Mock<ILibraryManager> _libraryManager;
-    private readonly UserListManager _manager;
+    private readonly ItemListManager _manager;
 
-    public UserListManagerTests()
+    public ItemListManagerTests()
     {
         _connection = new SqliteConnection("Data Source=:memory:");
         _connection.Open();
@@ -70,7 +71,7 @@ public sealed class UserListManagerTests : IDisposable
             _factory,
             new Mock<IServerApplicationHost>().Object,
             NullLogger<ItemPersistenceService>.Instance);
-        _manager = new UserListManager(
+        _manager = new ItemListManager(
             configurationManager.Object,
             _factory,
             new Lazy<ILibraryManager>(() => _libraryManager.Object));
@@ -96,11 +97,11 @@ public sealed class UserListManagerTests : IDisposable
         using var context = CreateDbContext();
         Assert.Equal(
             1,
-            await context.UserLists.CountAsync(list => list.UserId.Equals(userId), TestContext.Current.CancellationToken));
+            await context.ItemLists.CountAsync(list => list.UserId.Equals(userId), TestContext.Current.CancellationToken));
     }
 
     [Fact]
-    public async Task CreateListAsync_DuplicateName_ThrowsDuplicateUserListNameException()
+    public async Task CreateListAsync_DuplicateName_ThrowsDuplicateItemListNameException()
     {
         var userId = SeedUser();
         var duplicateInserted = false;
@@ -113,11 +114,12 @@ public sealed class UserListManagerTests : IDisposable
                 {
                     var now = DateTime.UtcNow;
                     using var context = CreateDbContext();
-                    context.UserLists.Add(new UserList
+                    context.ItemLists.Add(new ItemList
                     {
                         Id = Guid.NewGuid(),
                         UserId = userId,
                         Name = "Animation",
+                        ListType = ItemListType.Watchlist,
                         DateCreated = now,
                         DateModified = now
                     });
@@ -127,53 +129,53 @@ public sealed class UserListManagerTests : IDisposable
 
                 return _configuration;
             });
-        using var manager = new UserListManager(
+        using var manager = new ItemListManager(
             configurationManager.Object,
             _factory,
             new Lazy<ILibraryManager>(() => _libraryManager.Object));
 
-        var exception = await Assert.ThrowsAsync<IUserListManager.DuplicateUserListNameException>(
+        var exception = await Assert.ThrowsAsync<IItemListManager.DuplicateItemListNameException>(
             () => manager.CreateListAsync(userId, "Animation", true));
 
         Assert.IsType<DbUpdateException>(exception.InnerException);
         using var context = CreateDbContext();
         Assert.Equal(
             1,
-            await context.UserLists.CountAsync(list => list.UserId.Equals(userId), TestContext.Current.CancellationToken));
+            await context.ItemLists.CountAsync(list => list.UserId.Equals(userId), TestContext.Current.CancellationToken));
     }
 
     [Fact]
-    public async Task DeleteListAsync_DefaultList_ThrowsDefaultUserListDeletionException()
+    public async Task DeleteListAsync_DefaultList_ThrowsDefaultItemListDeletionException()
     {
         var userId = SeedUser();
         var defaultList = await _manager.GetOrCreateDefaultListAsync(userId);
 
-        await Assert.ThrowsAsync<IUserListManager.DefaultUserListDeletionException>(
+        await Assert.ThrowsAsync<IItemListManager.DefaultItemListDeletionException>(
             () => _manager.DeleteListAsync(defaultList.Id));
 
         using var context = CreateDbContext();
-        Assert.True(await context.UserLists.AnyAsync(list => list.Id.Equals(defaultList.Id), TestContext.Current.CancellationToken));
+        Assert.True(await context.ItemLists.AnyAsync(list => list.Id.Equals(defaultList.Id), TestContext.Current.CancellationToken));
     }
 
     [Fact]
-    public async Task CreateListAsync_OnePastConfiguredLimit_ThrowsUserListLimitExceededException()
+    public async Task CreateListAsync_OnePastConfiguredLimit_ThrowsItemListLimitExceededException()
     {
         _configuration.MaxUserListsPerUser = 2;
         var userId = SeedUser();
         await _manager.GetOrCreateDefaultListAsync(userId);
         await _manager.CreateListAsync(userId, "First custom list", false);
 
-        await Assert.ThrowsAsync<IUserListManager.UserListLimitExceededException>(
+        await Assert.ThrowsAsync<IItemListManager.ItemListLimitExceededException>(
             () => _manager.CreateListAsync(userId, "Past the limit", false));
 
         using var context = CreateDbContext();
         Assert.Equal(
             2,
-            await context.UserLists.CountAsync(list => list.UserId.Equals(userId), TestContext.Current.CancellationToken));
+            await context.ItemLists.CountAsync(list => list.UserId.Equals(userId), TestContext.Current.CancellationToken));
     }
 
     [Fact]
-    public async Task AddItemAsync_OnePastConfiguredLimit_ThrowsUserListLimitExceededException()
+    public async Task AddItemAsync_OnePastConfiguredLimit_ThrowsItemListLimitExceededException()
     {
         _configuration.MaxItemsPerUserList = 1;
         var userId = SeedUser();
@@ -181,13 +183,13 @@ public sealed class UserListManagerTests : IDisposable
         var list = await _manager.GetOrCreateDefaultListAsync(userId);
         await _manager.AddItemAsync(list.Id, itemIds[0]);
 
-        await Assert.ThrowsAsync<IUserListManager.UserListLimitExceededException>(
+        await Assert.ThrowsAsync<IItemListManager.ItemListLimitExceededException>(
             () => _manager.AddItemAsync(list.Id, itemIds[1]));
 
         using var context = CreateDbContext();
         Assert.Equal(
             1,
-            await context.UserListItems.CountAsync(entry => entry.UserListId.Equals(list.Id), TestContext.Current.CancellationToken));
+            await context.ItemListBaseItemMap.CountAsync(entry => entry.ItemListId.Equals(list.Id), TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -204,9 +206,9 @@ public sealed class UserListManagerTests : IDisposable
         await _manager.MoveItemAsync(list.Id, itemIds[0], 2);
 
         using var context = CreateDbContext();
-        var entries = await context.UserListItems
+        var entries = await context.ItemListBaseItemMap
             .AsNoTracking()
-            .Where(entry => entry.UserListId.Equals(list.Id))
+            .Where(entry => entry.ItemListId.Equals(list.Id))
             .OrderBy(entry => entry.SortIndex)
             .ToListAsync(TestContext.Current.CancellationToken);
 
@@ -226,8 +228,8 @@ public sealed class UserListManagerTests : IDisposable
         await _manager.AddItemAsync(list.Id, itemId);
 
         using var context = CreateDbContext();
-        var entry = await context.UserListItems
-            .SingleAsync(listItem => listItem.UserListId.Equals(list.Id) && listItem.ItemId.Equals(itemId), TestContext.Current.CancellationToken);
+        var entry = await context.ItemListBaseItemMap
+            .SingleAsync(listItem => listItem.ItemListId.Equals(list.Id) && listItem.ItemId.Equals(itemId), TestContext.Current.CancellationToken);
         Assert.Equal(0, entry.SortIndex);
     }
 
@@ -270,8 +272,8 @@ public sealed class UserListManagerTests : IDisposable
         await _manager.AddItemAsync(list.Id, itemIds[1]);
 
         using var context = CreateDbContext();
-        var entries = await context.UserListItems
-            .Where(entry => entry.UserListId.Equals(list.Id))
+        var entries = await context.ItemListBaseItemMap
+            .Where(entry => entry.ItemListId.Equals(list.Id))
             .ToListAsync(TestContext.Current.CancellationToken);
         Assert.Equal(2, entries.Count);
         var detachedEntry = Assert.Single(entries, entry => !entry.ItemId.HasValue);
@@ -297,8 +299,8 @@ public sealed class UserListManagerTests : IDisposable
 
         using (var context = CreateDbContext())
         {
-            Assert.False(await context.UserLists.AnyAsync(listEntity => listEntity.UserId.Equals(userId), TestContext.Current.CancellationToken));
-            Assert.False(await context.UserListItems.AnyAsync(entry => entry.UserListId.Equals(list.Id), TestContext.Current.CancellationToken));
+            Assert.False(await context.ItemLists.AnyAsync(listEntity => listEntity.UserId.Equals(userId), TestContext.Current.CancellationToken));
+            Assert.False(await context.ItemListBaseItemMap.AnyAsync(entry => entry.ItemListId.Equals(list.Id), TestContext.Current.CancellationToken));
             Assert.True(await context.BaseItems.AnyAsync(item => item.Id.Equals(itemId), TestContext.Current.CancellationToken));
         }
     }
@@ -315,8 +317,8 @@ public sealed class UserListManagerTests : IDisposable
         await _manager.DeleteListAsync(list.Id);
 
         using var context = CreateDbContext();
-        Assert.False(await context.UserLists.AnyAsync(entity => entity.Id.Equals(list.Id), TestContext.Current.CancellationToken));
-        Assert.False(await context.UserListItems.AnyAsync(entry => entry.UserListId.Equals(list.Id), TestContext.Current.CancellationToken));
+        Assert.False(await context.ItemLists.AnyAsync(entity => entity.Id.Equals(list.Id), TestContext.Current.CancellationToken));
+        Assert.False(await context.ItemListBaseItemMap.AnyAsync(entry => entry.ItemListId.Equals(list.Id), TestContext.Current.CancellationToken));
         Assert.True(await context.BaseItems.AnyAsync(item => item.Id.Equals(itemId), TestContext.Current.CancellationToken));
     }
 
@@ -383,8 +385,8 @@ public sealed class UserListManagerTests : IDisposable
     private void DetachListItem(Guid listId, Guid itemId)
     {
         using var context = CreateDbContext();
-        var entry = context.UserListItems.Single(
-            listItem => listItem.UserListId.Equals(listId)
+        var entry = context.ItemListBaseItemMap.Single(
+            listItem => listItem.ItemListId.Equals(listId)
                 && listItem.ItemId.HasValue
                 && listItem.ItemId!.Value.Equals(itemId));
         entry.ItemId = null;

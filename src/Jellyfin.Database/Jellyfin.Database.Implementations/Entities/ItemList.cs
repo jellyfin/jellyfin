@@ -6,7 +6,7 @@ namespace Jellyfin.Database.Implementations.Entities;
 /// <summary>
 /// Represents a named list belonging to a user.
 /// </summary>
-public class UserList
+public class ItemList
 {
     /// <summary>
     /// Gets or sets the identifier.
@@ -24,9 +24,9 @@ public class UserList
     public required string Name { get; set; }
 
     /// <summary>
-    /// Gets or sets the kind of the list.
+    /// Gets or sets the type of the list.
     /// </summary>
-    public UserListKind Kind { get; set; }
+    public ItemListType ListType { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether this is the user's default list.

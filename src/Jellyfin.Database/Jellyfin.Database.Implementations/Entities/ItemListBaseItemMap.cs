@@ -3,19 +3,19 @@ using System;
 namespace Jellyfin.Database.Implementations.Entities;
 
 /// <summary>
-/// Represents an item in a user list.
+/// Represents a base item mapped to an item list.
 /// </summary>
-public class UserListItem
+public class ItemListBaseItemMap
 {
     /// <summary>
-    /// Gets or sets the identifier of the user list.
+    /// Gets or sets the identifier of the item list.
     /// </summary>
-    public required Guid UserListId { get; set; }
+    public required Guid ItemListId { get; set; }
 
     /// <summary>
-    /// Gets or sets the user list.
+    /// Gets or sets the item list.
     /// </summary>
-    public required UserList? UserList { get; set; }
+    public required ItemList? ItemList { get; set; }
 
     /// <summary>
     /// Gets or sets the custom data key.

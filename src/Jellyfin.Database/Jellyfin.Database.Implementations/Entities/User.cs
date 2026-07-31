@@ -35,7 +35,7 @@ namespace Jellyfin.Database.Implementations.Entities
             DisplayPreferences = new HashSet<DisplayPreferences>();
             ItemDisplayPreferences = new HashSet<ItemDisplayPreferences>();
             // Groups = new HashSet<Group>();
-            Lists = new HashSet<UserList>();
+            Lists = new HashSet<ItemList>();
             Permissions = new HashSet<Permission>();
             Preferences = new HashSet<Preference>();
             // ProviderMappings = new HashSet<ProviderMapping>();
@@ -320,7 +320,7 @@ namespace Jellyfin.Database.Implementations.Entities
         /// <summary>
         /// Gets the named lists this user owns.
         /// </summary>
-        public virtual ICollection<UserList> Lists { get; private set; }
+        public virtual ICollection<ItemList> Lists { get; private set; }
 
         /*
         /// <summary>

@@ -24,13 +24,13 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// <summary>
 /// Verifies that user-list filters and ordering translate and evaluate correctly on SQLite.
 /// </summary>
-public sealed class UserListQueryTranslationTests : IDisposable
+public sealed class ItemListQueryTranslationTests : IDisposable
 {
     private readonly SqliteConnection _connection;
     private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly BaseItemRepository _repository;
 
-    public UserListQueryTranslationTests()
+    public ItemListQueryTranslationTests()
     {
         _connection = new SqliteConnection("Data Source=:memory:");
         _connection.Open();
@@ -75,16 +75,16 @@ public sealed class UserListQueryTranslationTests : IDisposable
             untouched = CreateItem("C Untouched");
 
             context.Users.Add(user);
-            context.UserLists.Add(defaultList);
+            context.ItemLists.Add(defaultList);
             context.BaseItems.AddRange(member, nonMemberWithUserData, untouched);
-            context.UserListItems.Add(CreateListItem(defaultList, member, new DateTime(2026, 1, 1)));
+            context.ItemListBaseItemMap.Add(CreateListItem(defaultList, member, new DateTime(2026, 1, 1)));
             context.UserData.Add(CreateUserData(user, nonMemberWithUserData, "nonmember-key"));
             context.SaveChanges();
 
             Assert.False(context.UserData.Any(
                 data => data.ItemId.Equals(untouched.Id) && data.UserId.Equals(user.Id)));
-            Assert.False(context.UserListItems.Any(entry => entry.ItemId.Equals(nonMemberWithUserData.Id)));
-            Assert.False(context.UserListItems.Any(entry => entry.ItemId.Equals(untouched.Id)));
+            Assert.False(context.ItemListBaseItemMap.Any(entry => entry.ItemId.Equals(nonMemberWithUserData.Id)));
+            Assert.False(context.ItemListBaseItemMap.Any(entry => entry.ItemId.Equals(untouched.Id)));
         }
 
         var query = CreateScopedQuery(user, member, nonMemberWithUserData, untouched);
@@ -115,9 +115,9 @@ public sealed class UserListQueryTranslationTests : IDisposable
             nonMember = CreateItem("D Nonmember");
 
             context.Users.Add(user);
-            context.UserLists.AddRange(defaultList, customList);
+            context.ItemLists.AddRange(defaultList, customList);
             context.BaseItems.AddRange(firstDefaultMember, secondDefaultMember, customListMember, nonMember);
-            context.UserListItems.AddRange(
+            context.ItemListBaseItemMap.AddRange(
                 CreateListItem(defaultList, firstDefaultMember, new DateTime(2026, 1, 1)),
                 CreateListItem(defaultList, secondDefaultMember, new DateTime(2026, 1, 2)),
                 CreateListItem(customList, customListMember, new DateTime(2026, 1, 3)));
@@ -147,9 +147,9 @@ public sealed class UserListQueryTranslationTests : IDisposable
             nonMember = CreateItem("B Nonmember");
 
             context.Users.Add(user);
-            context.UserLists.Add(defaultList);
+            context.ItemLists.Add(defaultList);
             context.BaseItems.AddRange(member, nonMember);
-            context.UserListItems.Add(CreateListItem(defaultList, member, new DateTime(2026, 1, 1)));
+            context.ItemListBaseItemMap.Add(CreateListItem(defaultList, member, new DateTime(2026, 1, 1)));
             context.UserData.AddRange(
                 CreateUserData(user, member, "first-key"),
                 CreateUserData(user, member, "second-key"));
@@ -173,7 +173,7 @@ public sealed class UserListQueryTranslationTests : IDisposable
     public void DetachedEntry_IsExcludedFromWatchlistAndSelectedListFilters()
     {
         User user;
-        UserList defaultList;
+        ItemList defaultList;
         BaseItemEntity attached;
         BaseItemEntity detached;
 
@@ -185,9 +185,9 @@ public sealed class UserListQueryTranslationTests : IDisposable
             detached = CreateItem("B Detached");
 
             context.Users.Add(user);
-            context.UserLists.Add(defaultList);
+            context.ItemLists.Add(defaultList);
             context.BaseItems.AddRange(attached, detached);
-            context.UserListItems.AddRange(
+            context.ItemListBaseItemMap.AddRange(
                 CreateListItem(defaultList, attached, new DateTime(2026, 1, 1)),
                 CreateDetachedListItem(defaultList, detached, new DateTime(2026, 1, 2)));
             context.SaveChanges();
@@ -199,16 +199,16 @@ public sealed class UserListQueryTranslationTests : IDisposable
         Assert.Equal(attached.Id, Assert.Single(_repository.GetItemIdsList(watchlistQuery)));
 
         var selectedListQuery = CreateScopedQuery(user, attached, detached);
-        selectedListQuery.UserListId = defaultList.Id;
+        selectedListQuery.ItemListId = defaultList.Id;
 
         Assert.Equal(attached.Id, Assert.Single(_repository.GetItemIdsList(selectedListQuery)));
     }
 
     [Fact]
-    public void UserListId_ReturnsOnlySelectedListMembers()
+    public void ItemListId_ReturnsOnlySelectedListMembers()
     {
         User user;
-        UserList selectedList;
+        ItemList selectedList;
         BaseItemEntity selectedOnly;
         BaseItemEntity shared;
         BaseItemEntity otherOnly;
@@ -223,9 +223,9 @@ public sealed class UserListQueryTranslationTests : IDisposable
             otherOnly = CreateItem("C Other Only");
 
             context.Users.Add(user);
-            context.UserLists.AddRange(selectedList, otherList);
+            context.ItemLists.AddRange(selectedList, otherList);
             context.BaseItems.AddRange(selectedOnly, shared, otherOnly);
-            context.UserListItems.AddRange(
+            context.ItemListBaseItemMap.AddRange(
                 CreateListItem(selectedList, selectedOnly, new DateTime(2026, 1, 1)),
                 CreateListItem(selectedList, shared, new DateTime(2026, 1, 2)),
                 CreateListItem(otherList, shared, new DateTime(2026, 1, 3)),
@@ -234,7 +234,7 @@ public sealed class UserListQueryTranslationTests : IDisposable
         }
 
         var query = CreateScopedQuery(user, selectedOnly, shared, otherOnly);
-        query.UserListId = selectedList.Id;
+        query.ItemListId = selectedList.Id;
 
         var result = _repository.GetItemIdsList(query);
 
@@ -245,7 +245,7 @@ public sealed class UserListQueryTranslationTests : IDisposable
     public void DateAddedToList_OrdersBySelectedListEntryDate()
     {
         User user;
-        UserList selectedList;
+        ItemList selectedList;
         BaseItemEntity olderInSelectedList;
         BaseItemEntity newerInSelectedList;
 
@@ -258,9 +258,9 @@ public sealed class UserListQueryTranslationTests : IDisposable
             newerInSelectedList = CreateItem("B Newer In Selected");
 
             context.Users.Add(user);
-            context.UserLists.AddRange(selectedList, otherList);
+            context.ItemLists.AddRange(selectedList, otherList);
             context.BaseItems.AddRange(olderInSelectedList, newerInSelectedList);
-            context.UserListItems.AddRange(
+            context.ItemListBaseItemMap.AddRange(
                 CreateListItem(selectedList, olderInSelectedList, new DateTime(2026, 1, 1)),
                 CreateListItem(selectedList, newerInSelectedList, new DateTime(2026, 1, 4)),
                 CreateListItem(otherList, olderInSelectedList, new DateTime(2026, 1, 5)),
@@ -269,7 +269,7 @@ public sealed class UserListQueryTranslationTests : IDisposable
         }
 
         var query = CreateScopedQuery(user, olderInSelectedList, newerInSelectedList);
-        query.UserListId = selectedList.Id;
+        query.ItemListId = selectedList.Id;
         query.OrderBy = [(ItemSortBy.DateAddedToList, SortOrder.Descending)];
 
         var result = _repository.GetItemIdsList(query);
@@ -298,14 +298,14 @@ public sealed class UserListQueryTranslationTests : IDisposable
         return new User(name, "authentication", "password-reset");
     }
 
-    private static UserList CreateList(Guid userId, string name, bool isDefault)
+    private static ItemList CreateList(Guid userId, string name, bool isDefault)
     {
-        return new UserList
+        return new ItemList
         {
             Id = Guid.NewGuid(),
             UserId = userId,
             Name = name,
-            Kind = isDefault ? UserListKind.Watchlist : UserListKind.Custom,
+            ListType = ItemListType.Watchlist,
             IsDefault = isDefault,
             AutoRemoveWatched = isDefault,
             DateCreated = new DateTime(2026, 1, 1),
@@ -328,12 +328,12 @@ public sealed class UserListQueryTranslationTests : IDisposable
         };
     }
 
-    private static UserListItem CreateListItem(UserList list, BaseItemEntity item, DateTime dateAdded)
+    private static ItemListBaseItemMap CreateListItem(ItemList list, BaseItemEntity item, DateTime dateAdded)
     {
-        return new UserListItem
+        return new ItemListBaseItemMap
         {
-            UserListId = list.Id,
-            UserList = list,
+            ItemListId = list.Id,
+            ItemList = list,
             CustomDataKey = item.Id.ToString(),
             ItemId = item.Id,
             Item = item,
@@ -341,12 +341,12 @@ public sealed class UserListQueryTranslationTests : IDisposable
         };
     }
 
-    private static UserListItem CreateDetachedListItem(UserList list, BaseItemEntity item, DateTime dateAdded)
+    private static ItemListBaseItemMap CreateDetachedListItem(ItemList list, BaseItemEntity item, DateTime dateAdded)
     {
-        return new UserListItem
+        return new ItemListBaseItemMap
         {
-            UserListId = list.Id,
-            UserList = list,
+            ItemListId = list.Id,
+            ItemList = list,
             CustomDataKey = item.Id.ToString(),
             ItemId = null,
             Item = null,

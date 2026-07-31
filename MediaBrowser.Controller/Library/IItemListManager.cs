@@ -8,23 +8,23 @@ namespace MediaBrowser.Controller.Library;
 /// <summary>
 /// Manages per-user named lists and their item membership.
 /// </summary>
-public interface IUserListManager
+public interface IItemListManager
 {
     /// <summary>
     /// Gets all lists owned by a user.
     /// </summary>
     /// <param name="userId">The user identifier.</param>
     /// <returns>The user's lists in list sort order.</returns>
-    Task<IReadOnlyList<UserList>> GetListsAsync(Guid userId);
+    Task<IReadOnlyList<ItemList>> GetListsAsync(Guid userId);
 
     /// <summary>
-    /// Creates a custom list for a user.
+    /// Creates a named item list for a user.
     /// </summary>
     /// <param name="userId">The user identifier.</param>
     /// <param name="name">The list name.</param>
     /// <param name="autoRemoveWatched">Whether watched items should be removed automatically.</param>
     /// <returns>The created list.</returns>
-    Task<UserList> CreateListAsync(Guid userId, string name, bool autoRemoveWatched);
+    Task<ItemList> CreateListAsync(Guid userId, string name, bool autoRemoveWatched);
 
     /// <summary>
     /// Updates the supplied properties of a list.
@@ -73,7 +73,7 @@ public interface IUserListManager
     /// </summary>
     /// <param name="userId">The user identifier.</param>
     /// <returns>The user's default watchlist.</returns>
-    Task<UserList> GetOrCreateDefaultListAsync(Guid userId);
+    Task<ItemList> GetOrCreateDefaultListAsync(Guid userId);
 
     /// <summary>
     /// Gets list membership for a batch of items belonging to a user.
@@ -100,96 +100,96 @@ public interface IUserListManager
     Task<IReadOnlyDictionary<Guid, DateTime>> GetListItemDatesAsync(Guid listId);
 
     /// <summary>
-    /// The exception thrown when a configured per-user-list or per-list-item cap is reached.
+    /// The exception thrown when a configured per-item-list or per-list-item cap is reached.
     /// </summary>
-    public sealed class UserListLimitExceededException : Exception
+    public sealed class ItemListLimitExceededException : Exception
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="UserListLimitExceededException"/> class.
+        /// Initializes a new instance of the <see cref="ItemListLimitExceededException"/> class.
         /// </summary>
-        public UserListLimitExceededException()
+        public ItemListLimitExceededException()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="UserListLimitExceededException"/> class.
+        /// Initializes a new instance of the <see cref="ItemListLimitExceededException"/> class.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        public UserListLimitExceededException(string message)
+        public ItemListLimitExceededException(string message)
             : base(message)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="UserListLimitExceededException"/> class.
+        /// Initializes a new instance of the <see cref="ItemListLimitExceededException"/> class.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that caused the limit failure.</param>
-        public UserListLimitExceededException(string message, Exception innerException)
+        public ItemListLimitExceededException(string message, Exception innerException)
             : base(message, innerException)
         {
         }
     }
 
     /// <summary>
-    /// The exception thrown when deletion of a default user list is attempted.
+    /// The exception thrown when deletion of a default item list is attempted.
     /// </summary>
-    public sealed class DefaultUserListDeletionException : Exception
+    public sealed class DefaultItemListDeletionException : Exception
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DefaultUserListDeletionException"/> class.
+        /// Initializes a new instance of the <see cref="DefaultItemListDeletionException"/> class.
         /// </summary>
-        public DefaultUserListDeletionException()
+        public DefaultItemListDeletionException()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DefaultUserListDeletionException"/> class.
+        /// Initializes a new instance of the <see cref="DefaultItemListDeletionException"/> class.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        public DefaultUserListDeletionException(string message)
+        public DefaultItemListDeletionException(string message)
             : base(message)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DefaultUserListDeletionException"/> class.
+        /// Initializes a new instance of the <see cref="DefaultItemListDeletionException"/> class.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that caused the default-list deletion failure.</param>
-        public DefaultUserListDeletionException(string message, Exception innerException)
+        public DefaultItemListDeletionException(string message, Exception innerException)
             : base(message, innerException)
         {
         }
     }
 
     /// <summary>
-    /// The exception thrown when a user list name duplicates another list owned by the same user.
+    /// The exception thrown when an item list name duplicates another list owned by the same user.
     /// </summary>
-    public sealed class DuplicateUserListNameException : Exception
+    public sealed class DuplicateItemListNameException : Exception
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DuplicateUserListNameException"/> class.
+        /// Initializes a new instance of the <see cref="DuplicateItemListNameException"/> class.
         /// </summary>
-        public DuplicateUserListNameException()
+        public DuplicateItemListNameException()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DuplicateUserListNameException"/> class.
+        /// Initializes a new instance of the <see cref="DuplicateItemListNameException"/> class.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        public DuplicateUserListNameException(string message)
+        public DuplicateItemListNameException(string message)
             : base(message)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DuplicateUserListNameException"/> class.
+        /// Initializes a new instance of the <see cref="DuplicateItemListNameException"/> class.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that caused the duplicate-name failure.</param>
-        public DuplicateUserListNameException(string message, Exception innerException)
+        public DuplicateItemListNameException(string message, Exception innerException)
             : base(message, innerException)
         {
         }

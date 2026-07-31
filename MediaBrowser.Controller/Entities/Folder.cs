@@ -1265,7 +1265,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.UserListId.HasValue)
+            if (request.ItemListId.HasValue)
             {
                 return false;
             }

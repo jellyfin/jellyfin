@@ -185,7 +185,7 @@ public sealed partial class BaseItemRepository
             IsFavorite = filter.IsFavorite,
             IsFavoriteOrLiked = filter.IsFavoriteOrLiked,
             IsLiked = filter.IsLiked,
-            UserListId = filter.UserListId,
+            ItemListId = filter.ItemListId,
             IsInWatchlist = filter.IsInWatchlist,
             IsLocked = filter.IsLocked,
             NameLessThan = filter.NameLessThan,

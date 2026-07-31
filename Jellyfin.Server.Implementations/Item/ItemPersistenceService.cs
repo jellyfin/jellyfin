@@ -138,7 +138,7 @@ public class ItemPersistenceService : IItemPersistenceService
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ChildId).ExecuteDelete();
         // Compare on ItemId.Value: WhereOneOrMany builds an Expression.Equal against a boxed
         // constant, which cannot be typed as Nullable<Guid> and throws for a nullable property.
-        context.UserListItems
+        context.ItemListBaseItemMap
             .Where(e => e.ItemId.HasValue)
             .WhereOneOrMany(relatedItems, e => e.ItemId!.Value)
             .ExecuteUpdate(e => e
@@ -230,7 +230,7 @@ public class ItemPersistenceService : IItemPersistenceService
                             .SetProperty(f => f.RetentionDate, retentionDate),
                         cancellationToken).ConfigureAwait(false);
 
-                await dbContext.UserListItems
+                await dbContext.ItemListBaseItemMap
                     .Where(e => e.ItemId == null)
                     .Where(e => userKeys.Contains(e.CustomDataKey))
                     .ExecuteUpdateAsync(

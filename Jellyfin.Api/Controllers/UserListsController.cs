@@ -27,7 +27,7 @@ namespace Jellyfin.Api.Controllers;
 [Tags("UserList")]
 public class UserListsController : BaseJellyfinApiController
 {
-    private readonly IUserListManager _userListManager;
+    private readonly IItemListManager _itemListManager;
     private readonly IUserManager _userManager;
     private readonly ILibraryManager _libraryManager;
     private readonly IDtoService _dtoService;
@@ -35,17 +35,17 @@ public class UserListsController : BaseJellyfinApiController
     /// <summary>
     /// Initializes a new instance of the <see cref="UserListsController"/> class.
     /// </summary>
-    /// <param name="userListManager">Instance of the <see cref="IUserListManager"/> interface.</param>
+    /// <param name="itemListManager">Instance of the <see cref="IItemListManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
     public UserListsController(
-        IUserListManager userListManager,
+        IItemListManager itemListManager,
         IUserManager userManager,
         ILibraryManager libraryManager,
         IDtoService dtoService)
     {
-        _userListManager = userListManager;
+        _itemListManager = itemListManager;
         _userManager = userManager;
         _libraryManager = libraryManager;
         _dtoService = dtoService;
@@ -62,7 +62,7 @@ public class UserListsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<IReadOnlyList<UserListDto>>> GetUserLists()
     {
-        var lists = await _userListManager.GetListsAsync(User.GetUserId()).ConfigureAwait(false);
+        var lists = await _itemListManager.GetListsAsync(User.GetUserId()).ConfigureAwait(false);
         IReadOnlyList<UserListDto> result = lists.Select(ToDto).ToArray();
         return Ok(result);
     }
@@ -82,21 +82,21 @@ public class UserListsController : BaseJellyfinApiController
     {
         try
         {
-            var list = await _userListManager.CreateListAsync(
+            var list = await _itemListManager.CreateListAsync(
                 User.GetUserId(),
                 request.Name,
                 request.AutoRemoveWatched).ConfigureAwait(false);
             return ToDto(list);
         }
-        catch (IUserListManager.UserListLimitExceededException exception)
+        catch (IItemListManager.ItemListLimitExceededException exception)
         {
             return BadRequest(exception.Message);
         }
-        catch (IUserListManager.DefaultUserListDeletionException exception)
+        catch (IItemListManager.DefaultItemListDeletionException exception)
         {
             return BadRequest(exception.Message);
         }
-        catch (IUserListManager.DuplicateUserListNameException exception)
+        catch (IItemListManager.DuplicateItemListNameException exception)
         {
             return BadRequest(exception.Message);
         }
@@ -125,7 +125,7 @@ public class UserListsController : BaseJellyfinApiController
         }
 
         var errorResult = await ExecuteManagerOperationAsync(
-            () => _userListManager.UpdateListAsync(
+            () => _itemListManager.UpdateListAsync(
                 listId,
                 request.Name,
                 request.SortIndex,
@@ -154,7 +154,7 @@ public class UserListsController : BaseJellyfinApiController
         }
 
         var errorResult = await ExecuteManagerOperationAsync(
-            () => _userListManager.DeleteListAsync(listId)).ConfigureAwait(false);
+            () => _itemListManager.DeleteListAsync(listId)).ConfigureAwait(false);
 
         return errorResult ?? NoContent();
     }
@@ -198,7 +198,7 @@ public class UserListsController : BaseJellyfinApiController
         };
         var itemsResult = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
         {
-            UserListId = listId,
+            ItemListId = listId,
             StartIndex = startIndex,
             Limit = limit,
             DtoOptions = dtoOptions
@@ -234,7 +234,7 @@ public class UserListsController : BaseJellyfinApiController
         }
 
         var errorResult = await ExecuteManagerOperationAsync(
-            () => _userListManager.AddItemAsync(listId, itemId)).ConfigureAwait(false);
+            () => _itemListManager.AddItemAsync(listId, itemId)).ConfigureAwait(false);
 
         return errorResult ?? NoContent();
     }
@@ -262,7 +262,7 @@ public class UserListsController : BaseJellyfinApiController
         }
 
         var errorResult = await ExecuteManagerOperationAsync(
-            () => _userListManager.RemoveItemAsync(listId, itemId)).ConfigureAwait(false);
+            () => _itemListManager.RemoveItemAsync(listId, itemId)).ConfigureAwait(false);
 
         return errorResult ?? NoContent();
     }
@@ -292,7 +292,7 @@ public class UserListsController : BaseJellyfinApiController
         }
 
         var errorResult = await ExecuteManagerOperationAsync(
-            () => _userListManager.MoveItemAsync(listId, itemId, newSortIndex)).ConfigureAwait(false);
+            () => _itemListManager.MoveItemAsync(listId, itemId, newSortIndex)).ConfigureAwait(false);
 
         return errorResult ?? NoContent();
     }
@@ -313,8 +313,8 @@ public class UserListsController : BaseJellyfinApiController
         var errorResult = await ExecuteManagerOperationAsync(
             async () =>
             {
-                var list = await _userListManager.GetOrCreateDefaultListAsync(userId).ConfigureAwait(false);
-                await _userListManager.AddItemAsync(list.Id, itemId).ConfigureAwait(false);
+                var list = await _itemListManager.GetOrCreateDefaultListAsync(userId).ConfigureAwait(false);
+                await _itemListManager.AddItemAsync(list.Id, itemId).ConfigureAwait(false);
             }).ConfigureAwait(false);
 
         return errorResult ?? NoContent();
@@ -336,20 +336,20 @@ public class UserListsController : BaseJellyfinApiController
         var errorResult = await ExecuteManagerOperationAsync(
             async () =>
             {
-                var list = await _userListManager.GetOrCreateDefaultListAsync(userId).ConfigureAwait(false);
-                await _userListManager.RemoveItemAsync(list.Id, itemId).ConfigureAwait(false);
+                var list = await _itemListManager.GetOrCreateDefaultListAsync(userId).ConfigureAwait(false);
+                await _itemListManager.RemoveItemAsync(list.Id, itemId).ConfigureAwait(false);
             }).ConfigureAwait(false);
 
         return errorResult ?? NoContent();
     }
 
-    private static UserListDto ToDto(UserList list)
+    private static UserListDto ToDto(ItemList list)
     {
         return new UserListDto
         {
             Id = list.Id,
             Name = list.Name,
-            Kind = list.Kind,
+            Kind = list.ListType,
             IsDefault = list.IsDefault,
             AutoRemoveWatched = list.AutoRemoveWatched,
             SortIndex = list.SortIndex,
@@ -360,7 +360,7 @@ public class UserListsController : BaseJellyfinApiController
 
     private async Task<bool> IsListOwnedByUserAsync(Guid userId, Guid listId)
     {
-        var lists = await _userListManager.GetListsAsync(userId).ConfigureAwait(false);
+        var lists = await _itemListManager.GetListsAsync(userId).ConfigureAwait(false);
         return lists.Any(list => list.Id.Equals(listId));
     }
 
@@ -371,15 +371,15 @@ public class UserListsController : BaseJellyfinApiController
             await operation().ConfigureAwait(false);
             return null;
         }
-        catch (IUserListManager.UserListLimitExceededException exception)
+        catch (IItemListManager.ItemListLimitExceededException exception)
         {
             return new BadRequestObjectResult(exception.Message);
         }
-        catch (IUserListManager.DefaultUserListDeletionException exception)
+        catch (IItemListManager.DefaultItemListDeletionException exception)
         {
             return new BadRequestObjectResult(exception.Message);
         }
-        catch (IUserListManager.DuplicateUserListNameException exception)
+        catch (IItemListManager.DuplicateItemListNameException exception)
         {
             return new BadRequestObjectResult(exception.Message);
         }
