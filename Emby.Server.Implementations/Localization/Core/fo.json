@@ -78,5 +78,11 @@
     "TaskCleanActivityLog": "Reinsa virksemisskrá",
     "TaskCleanActivityLogDescription": "Strikar skrásetingar eldri enn ásetta aldur.",
     "TaskCleanCache": "Reinsa kovaskjáttu",
-    "TaskCleanCacheDescription": "Strikar kovafílar ið kervið ikki hevur tørv á longur."
+    "TaskCleanCacheDescription": "Strikar kovafílar ið kervið ikki hevur tørv á longur.",
+    "TaskCleanTranscode": "Reinsa umkotuskjáttu",
+    "TaskRefreshTrickplayImages": "",
+    "TaskDownloadMissingLyrics": "Niðurtak vantandi sangtekstir",
+    "TaskDownloadMissingSubtitles": "Niðurtak vantandi undirtekstir",
+    "CleanupUserDataTaskDescription": "Strikar allar brúkaradátur, so sum spælistøðu, yndislistastøðu o.s.fr., fyri miðlar ið ikki hava verið tøkir í í minsta lagi 90 dagar.",
+    "CleanupUserDataTask": "Koyrsla ið reinsar brúkaradátur"
 }
