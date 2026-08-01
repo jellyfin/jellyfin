@@ -461,11 +461,12 @@ namespace MediaBrowser.Controller.Entities
                     var counts = libraryManager.GetPlayedAndTotalCountBatch(folderIds, user);
                     var isPlayedValue = query.IsPlayed.Value;
 
-                    return itemList.Where(i =>
+                    return itemList.Where(item =>
                     {
-                        if (i.IsFolder && counts.TryGetValue(i.Id, out var c))
+                        if (item is Folder)
                         {
-                            return (c.Total > 0 && c.Played == c.Total) == isPlayedValue;
+                            var itemCount = counts.GetValueOrDefault(item.Id);
+                            return (itemCount.Played >= itemCount.Total) == isPlayedValue;
                         }
 
                         return true;
