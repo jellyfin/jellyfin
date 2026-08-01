@@ -219,27 +219,14 @@ namespace Emby.Server.Implementations.Playlists
             var playlist = _libraryManager.GetItemById(playlistId) as Playlist
                 ?? throw new ArgumentException("No Playlist exists with Id " + playlistId);
 
-            // Retrieve all the items to be added to the playlist
+            // Retrieve all the items to be added to the playlist.
             var newItems = GetPlaylistItems(newItemIds, user, options)
                 .Where(i => i.SupportsAddingToPlaylist);
-
-            // Filter out duplicate items
-            var existingIds = playlist.LinkedChildren.Select(c => c.ItemId).ToHashSet();
-            newItems = newItems
-                .Where(i => !existingIds.Contains(i.Id))
-                .Distinct();
 
             // Create a list of the new linked children to add to the playlist
             var childrenToAdd = newItems
                 .Select(LinkedChild.Create)
                 .ToList();
-
-            // Log duplicates that have been ignored, if any
-            int numDuplicates = newItemIds.Count - childrenToAdd.Count;
-            if (numDuplicates > 0)
-            {
-                _logger.LogWarning("Ignored adding {DuplicateCount} duplicate items to playlist {PlaylistName}.", numDuplicates, playlist.Name);
-            }
 
             // Do nothing else if there are no items to add to the playlist
             if (childrenToAdd.Count == 0)

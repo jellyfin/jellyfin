@@ -815,22 +815,20 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<Guid>("ParentId")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
                     b.Property<Guid>("ChildId")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("ChildType")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("SortOrder")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("ParentId", "ChildId");
+                    b.HasKey("ParentId", "SortOrder");
 
                     b.HasIndex("ChildId", "ChildType");
 
                     b.HasIndex("ParentId", "ChildType");
-
-                    b.HasIndex("ParentId", "SortOrder");
 
                     b.ToTable("LinkedChildren", (string)null);
 
