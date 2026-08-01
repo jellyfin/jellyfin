@@ -69,5 +69,14 @@
     "TasksApplicationCategory": "Nýtsluskipan",
     "NotificationOptionApplicationUpdateAvailable": "Skipanardagføring er tøk",
     "NotificationOptionApplicationUpdateInstalled": "Skipanardagføring varð innløgd",
-    "UserStoppedPlayingItemWithValues": "{0} er liðugur at spæla {1} á {2}"
+    "UserStoppedPlayingItemWithValues": "{0} er liðugur at spæla {1} á {2}",
+    "HomeVideos": "Heimaupptøkur",
+    "StartupEmbyServerIsLoading": "Jellyfin-ambætarin er undir byrjanarinnlesing. Vinaliga royn aftur um eitt bil.",
+    "UserOfflineFromDevice": "{0} breyt av á {1}",
+    "UserPasswordChangedWithName": "Loyniorðið hjá brúkaranum {0} er broytt",
+    "TasksChannelsCategory": "Alnetsrásir",
+    "TaskCleanActivityLog": "Reinsa virksemisskrá",
+    "TaskCleanActivityLogDescription": "Strikar skrásetingar eldri enn ásetta aldur.",
+    "TaskCleanCache": "Reinsa kovaskjáttu",
+    "TaskCleanCacheDescription": "Strikar kovafílar ið kervið ikki hevur tørv á longur."
 }
