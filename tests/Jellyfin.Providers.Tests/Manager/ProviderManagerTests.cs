@@ -213,16 +213,26 @@ namespace Jellyfin.Providers.Tests.Manager
                 disabledLocalImageProviders: disableLocal ? new[] { "provider" } : null);
         }
 
-        [Theory]
-        [InlineData(nameof(ILocalImageProvider), true)]
-        [InlineData(nameof(IRemoteImageProvider), true)]
-        public void GetImageProviders_CanRefreshImagesLocalDisabled_IsCaseInsensitive(string providerType, bool disableLocal)
+        [Fact]
+        public void GetImageProviders_CanRefreshImagesLocalDisabled_IsCaseInsensitive()
         {
             GetImageProviders_CanRefreshImages_Tester(
-                providerType,
+                nameof(ILocalImageProvider),
                 true,
-                providerType != nameof(ILocalImageProvider),
-                disabledLocalImageProviders: disableLocal ? new[] { "PROVIDER" } : null);
+                false,
+                disabledLocalImageProviders: new[] { "PROVIDER" });
+        }
+
+        [Fact]
+        public void GetImageProviders_CanRefreshImagesLocalDisabledNull_TreatedAsEmpty()
+        {
+            // Clients can update library options with the property set to null; the setter
+            // stores an empty array so local providers stay enabled instead of throwing.
+            GetImageProviders_CanRefreshImages_Tester(
+                nameof(ILocalImageProvider),
+                true,
+                true,
+                disabledLocalImageProviders: null);
         }
 
         private static void GetImageProviders_CanRefreshImages_Tester(
@@ -261,7 +271,8 @@ namespace Jellyfin.Providers.Tests.Manager
 
             var libraryOptions = new LibraryOptions
             {
-                DisabledLocalImageProviders = disabledLocalImageProviders ?? Array.Empty<string>()
+                // Null is assigned as-is to verify that the property setter coalesces it.
+                DisabledLocalImageProviders = disabledLocalImageProviders!
             };
 
             using var providerManager = GetProviderManager(libraryOptions: libraryOptions, baseItemManager: baseItemManager.Object);
