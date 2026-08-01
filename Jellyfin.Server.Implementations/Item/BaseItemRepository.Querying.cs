@@ -56,9 +56,19 @@ public sealed partial class BaseItemRepository
         }
 
         dbQuery = ApplyQueryPaging(dbQuery, filter);
-        dbQuery = ApplyNavigations(dbQuery, filter);
 
-        result.Items = dbQuery.AsEnumerable().Where(e => e != null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto != null).ToArray()!;
+        // Loading the full entity graph in one query multiplies rows by every collection include
+        // ApplyNavigations adds; EF then de-duplicates client-side, which dominates response time on
+        // large libraries. Project the page of ids first, then load only those items split per
+        // collection, mirroring the random-sort branch of GetItemList.
+        var pagedIds = dbQuery.AsNoTracking().Select(e => e.Id).ToList();
+        var pagedById = ApplyNavigations(context.BaseItems.AsNoTracking().WhereOneOrMany(pagedIds, e => e.Id), filter)
+            .AsSplitQuery()
+            .AsEnumerable()
+            .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
+            .OfType<BaseItemDto>()
+            .ToDictionary(i => i.Id);
+        result.Items = pagedIds.Where(pagedById.ContainsKey).Select(id => pagedById[id]).ToArray();
         result.StartIndex = filter.StartIndex ?? 0;
         return result;
     }
@@ -96,9 +106,17 @@ public sealed partial class BaseItemRepository
             return orderedIds.Where(itemsById.ContainsKey).Select(id => itemsById[id]).ToArray()!;
         }
 
-        dbQuery = ApplyNavigations(dbQuery, filter);
-
-        return dbQuery.AsEnumerable().Where(e => e != null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto != null).ToArray()!;
+        // Same two-step load as above and as the random-sort branch: keeps the (potentially
+        // expensive) filter query free of collection includes and bounds the split queries to the
+        // requested page.
+        var pagedIds = dbQuery.AsNoTracking().Select(e => e.Id).ToList();
+        var pagedById = ApplyNavigations(context.BaseItems.AsNoTracking().WhereOneOrMany(pagedIds, e => e.Id), filter)
+            .AsSplitQuery()
+            .AsEnumerable()
+            .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
+            .OfType<BaseItemDto>()
+            .ToDictionary(i => i.Id);
+        return pagedIds.Where(pagedById.ContainsKey).Select(id => pagedById[id]).ToArray();
     }
 
     /// <inheritdoc/>
