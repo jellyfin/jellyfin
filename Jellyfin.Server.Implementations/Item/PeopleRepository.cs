@@ -40,7 +40,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         if (!filter.ItemId.IsEmpty())
         {
             dbQuery = dbQuery.Include(p => p.BaseItems!.Where(m => m.ItemId == filter.ItemId))
-                .OrderBy(e => e.BaseItems!.First(e => e.ItemId == filter.ItemId).ListOrder)
+                .OrderBy(e => e.BaseItems!.Where(m => m.ItemId == filter.ItemId).Min(m => m.ListOrder))
                 .ThenBy(e => e.PersonType)
                 .ThenBy(e => e.Name);
         }
@@ -81,7 +81,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         {
             StartIndex = filter.StartIndex ?? 0,
             TotalRecordCount = count,
-            Items = dbQuery.AsEnumerable().Select(Map).ToArray(),
+            Items = dbQuery.AsEnumerable().SelectMany(MapCredits).ToArray(),
         };
     }
 
@@ -117,9 +117,13 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             person.Role = person.Role?.Trim() ?? string.Empty;
         }
 
-        // multiple metadata providers can provide the _same_ person; dedupe case-insensitively.
-        people = people.DistinctBy(e => e.Name.ToLowerInvariant() + "-" + e.Type).ToArray();
-        var personKeys = people.Select(e => e.Name.ToLowerInvariant() + "-" + e.Type).ToArray();
+        // multiple metadata providers can provide the _same_ credit; dedupe case-insensitively.
+        // The role is part of the key because one person can hold several credits of the same type
+        // on an item, e.g. a Writer credited for both the Novel and the Screenplay.
+        people = people.DistinctBy(e => e.Name.ToLowerInvariant() + "-" + e.Type + "-" + e.Role.ToLowerInvariant()).ToArray();
+
+        var distinctPersons = people.DistinctBy(e => e.Name.ToLowerInvariant() + "-" + e.Type).ToArray();
+        var personKeys = distinctPersons.Select(e => e.Name.ToLowerInvariant() + "-" + e.Type).ToArray();
 
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
@@ -132,9 +136,10 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             .Select(f => f.item)
             .ToArray();
 
-        var toAdd = people
+        var toAdd = distinctPersons
             .Where(e => !existingPersons.Any(f => string.Equals(f.Name, e.Name, StringComparison.OrdinalIgnoreCase) && f.PersonType == e.Type.ToString()))
-            .Select(Map);
+            .Select(Map)
+            .ToArray();
         context.Peoples.AddRange(toAdd);
         context.SaveChanges();
 
@@ -215,9 +220,19 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         return result;
     }
 
-    private PersonInfo Map(People people)
+    private IEnumerable<PersonInfo> MapCredits(People people)
     {
-        var mapping = people.BaseItems?.FirstOrDefault();
+        var mappings = people.BaseItems;
+        if (mappings is null || mappings.Count == 0)
+        {
+            return [Map(people, null)];
+        }
+
+        return mappings.OrderBy(m => m.ListOrder).Select(m => Map(people, m));
+    }
+
+    private PersonInfo Map(People people, PeopleBaseItemMap? mapping)
+    {
         var personInfo = new PersonInfo()
         {
             Id = people.Id,
