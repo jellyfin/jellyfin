@@ -2302,6 +2302,15 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+/// <summary>
+        /// Adds the given image to this item.
+        /// </summary>
+        /// <param name="image">The image to add.</param>
+        /// <remarks>
+        /// For image types allowing multiple images, a <see cref="ItemImageInfo.SortOrder"/> of 0 is treated
+        /// as "unset" and reassigned to the next position (current maximum + 1), so callers cannot use
+        /// this method to explicitly insert an image at position 0.
+        /// </remarks>
         public void AddImage(ItemImageInfo image)
         {
             if (image.SortOrder == 0 && AllowsMultipleImages(image.Type))
@@ -2594,7 +2603,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var images = GetImages(type).ToList();
 
-            if (index1 >= images.Count || index2 >= images.Count)
+            if (index1 < 0 || index2 < 0 || index1 >= images.Count || index2 >= images.Count)
             {
                 return Task.CompletedTask;
             }

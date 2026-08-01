@@ -1,15 +1,19 @@
 using System;
+using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Server.Migrations;
 using Jellyfin.Server.Migrations.Routines;
 using Jellyfin.Server.ServerSetupApp;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -102,6 +106,26 @@ public sealed class PopulateImageSortOrderTests : IDisposable
             Path = path,
             SortOrder = sortOrder
         };
+    }
+
+    [Fact]
+    public void MigrationOrder_RoutineRunsAfterSortOrderSchemaMigration()
+    {
+        // Regression guard: JellyfinMigrationService applies pending migrations ordered by ordinal key,
+        // mixing EF migration ids ("20260801054140_AddSortOrderToBaseItemImageInfo") with routine keys
+        // ("yyyyMMddHHmmsss" + "_" + name). This routine queries the SortOrder column, so its key must
+        // sort strictly after the EF migration that creates the column, or upgrades fail at boot.
+        var routineAttribute = typeof(PopulateImageSortOrder).GetCustomAttribute<JellyfinMigrationAttribute>();
+        Assert.NotNull(routineAttribute);
+
+        var routineKey = routineAttribute.Order.ToString("yyyyMMddHHmmsss", CultureInfo.InvariantCulture) + "_" + routineAttribute.Name;
+        var efMigrationId = typeof(Database.Providers.Sqlite.Migrations.AddSortOrderToBaseItemImageInfo)
+            .GetCustomAttribute<MigrationAttribute>()?.Id;
+
+        Assert.NotNull(efMigrationId);
+        Assert.True(
+            string.CompareOrdinal(efMigrationId, routineKey) < 0,
+            $"Routine key '{routineKey}' must sort after EF migration id '{efMigrationId}'.");
     }
 
     private IDbContextFactory<JellyfinDbContext> CreateDbContextFactory()
