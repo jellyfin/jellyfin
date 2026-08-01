@@ -58,7 +58,7 @@ public sealed partial class BaseItemRepository
         dbQuery = ApplyQueryPaging(dbQuery, filter);
         dbQuery = ApplyNavigations(dbQuery, filter);
 
-        result.Items = dbQuery.AsEnumerable().Where(e => e != null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto != null).ToArray()!;
+        result.Items = dbQuery.AsEnumerable().Where(e => e != null).AsParallel().AsOrdered().Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto != null).ToArray()!;
         result.StartIndex = filter.StartIndex ?? 0;
         return result;
     }
@@ -89,6 +89,7 @@ public sealed partial class BaseItemRepository
             var itemsById = ApplyNavigations(context.BaseItems.AsNoTracking().WhereOneOrMany(orderedIds, e => e.Id), filter)
                 .AsSplitQuery()
                 .AsEnumerable()
+                .AsParallel()
                 .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
                 .Where(dto => dto != null)
                 .ToDictionary(i => i!.Id);
@@ -98,7 +99,7 @@ public sealed partial class BaseItemRepository
 
         dbQuery = ApplyNavigations(dbQuery, filter);
 
-        return dbQuery.AsEnumerable().Where(e => e != null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto != null).ToArray()!;
+        return dbQuery.AsEnumerable().Where(e => e != null).AsParallel().AsOrdered().Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto != null).ToArray()!;
     }
 
     /// <inheritdoc/>
