@@ -9,6 +9,7 @@ using Xunit;
 
 namespace Jellyfin.Controller.Tests.Entities;
 
+[Collection("BaseItem static state")]
 public class BaseItemParentsTests
 {
     [Fact]
