@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -163,6 +162,34 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             using var response = await UpdateUserPassword(client, _testUserId, createRequest);
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        }
+
+        [Fact]
+        [Priority(2)]
+        public async Task UpdateUser_UsernameCaseDifference_Success()
+        {
+            var client = _factory.CreateClient();
+
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken!);
+
+            using var response = await client.GetAsync("Users/" + _testUserId, TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var userDto = await response.Content.ReadFromJsonAsync<UserDto>(JsonDefaults.Options, TestContext.Current.CancellationToken);
+            Assert.NotNull(userDto);
+
+            userDto.Name = userDto.Name.ToLowerInvariant();
+
+            using var response2 = await client.PostAsJsonAsync($"Users?userId={_testUserId}", userDto, _jsonOptions, TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.NoContent, response2.StatusCode);
+
+            using var response3 = await client.GetAsync("Users/" + _testUserId, TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var newUserDto = await response3.Content.ReadFromJsonAsync<UserDto>(JsonDefaults.Options, TestContext.Current.CancellationToken);
+            Assert.NotNull(newUserDto);
+            Assert.Equal(userDto.Name, newUserDto.Name);
+
+            // Sanity check, make sure we're testing something
+            Assert.NotEqual(TestUsername, userDto.Name);
         }
     }
 }

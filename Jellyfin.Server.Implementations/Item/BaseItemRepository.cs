@@ -167,6 +167,14 @@ public sealed partial class BaseItemRepository
             return false;
         }
 
+        // Resume queries surface the actually-played version (which may be an alternate sharing the
+        // primary's presentation key). The resumable filter already keeps one version per group, so
+        // presentation-key grouping must not collapse the surfaced version back onto the primary.
+        if (query.IsResumable == true)
+        {
+            return false;
+        }
+
         if (query.GroupBySeriesPresentationUniqueKey)
         {
             return false;

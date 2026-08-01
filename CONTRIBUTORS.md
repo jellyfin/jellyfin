@@ -233,6 +233,8 @@
  - [MSalman5230](https://github.com/MSalman5230)
  - [dwandw](https://github.com/dwandw)
  - [Lampan-git](https://github.com/Lampan-git)
+ - [elio42](https://github.com/elio42)
+ - [rwebster85](https://github.com/rwebster85)
 
 # Emby Contributors
 

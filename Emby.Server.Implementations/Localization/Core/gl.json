@@ -106,5 +106,6 @@
     "TaskRefreshTrickplayImages": "Xerar miniaturas de previsualización",
     "TaskAudioNormalizationDescription": "Escanea ficheiros á procura de datos de normalización de volume.",
     "CleanupUserDataTask": "Tarefa de limpeza de datos dos usuarios",
-    "CleanupUserDataTaskDescription": "Limpa todos os datos do usuario (estado de visualización, de favorito etc.) dos medios ausentes polo menos 90 días."
+    "CleanupUserDataTaskDescription": "Limpa todos os datos do usuario (estado de visualización, de favorito etc.) dos medios ausentes polo menos 90 días.",
+    "Original": "Orixinal"
 }

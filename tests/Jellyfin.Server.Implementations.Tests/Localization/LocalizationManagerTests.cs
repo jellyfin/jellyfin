@@ -119,6 +119,40 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             Assert.Equal(code, culture.ThreeLetterISOLanguageName);
         }
 
+        [Theory]
+        [InlineData("ell", "Greek")] // Comma truncation
+        [InlineData("nld", "Dutch")] // Semicolon truncation
+        [InlineData("ron", "Romanian")] // Semicolon truncation, multiple
+        [InlineData("eng", "English")] // No truncation
+        [InlineData("zh-CN", "Chinese (Simplified)")] // No truncation, with parentheses
+        public async Task GetLanguageDisplayName_DelimitedName_ReturnsTruncatedName(string language, string expected)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+            await localizationManager.LoadAll();
+
+            var result = localizationManager.GetLanguageDisplayName(language);
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("xyz")]
+        public async Task GetLanguageDisplayName_InvalidInput_ReturnsNull(string? language)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+            await localizationManager.LoadAll();
+
+            var result = localizationManager.GetLanguageDisplayName(language!);
+            Assert.Null(result);
+        }
+
         [Fact]
         public async Task GetParentalRatings_Default_Success()
         {
@@ -342,6 +376,20 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             // es-419 is stored as es_419 in Jellyfin
             var translated = localizationManager.GetLocalizedString("Default", "es-419");
             Assert.NotEqual("Default", translated);
+        }
+
+        [Fact]
+        public void GetLocalizedString_WithBcp47NormalizationToUppercaseRegion_ReturnsTranslation()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+
+            // he-IL normalizes to the underscore resource he_IL. The resource lookup is case-sensitive,
+            // so the region casing has to be preserved or the file is not found and we fall back to en-US.
+            var translated = localizationManager.GetLocalizedString("Books", "he-IL");
+            Assert.Equal("ספרים", translated);
         }
 
         [Fact]

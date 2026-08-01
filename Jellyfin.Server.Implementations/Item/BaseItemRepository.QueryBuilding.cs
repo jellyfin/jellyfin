@@ -62,18 +62,21 @@ public sealed partial class BaseItemRepository
 
     private IQueryable<BaseItemEntity> ApplyGroupingFilter(JellyfinDbContext context, IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
-        // Collapse duplicates sharing a presentation key (e.g. alternate versions) by picking
-        // the min Id per group. Keep the grouped ids as an IQueryable sub-select; materializing
+        // Collapse duplicates sharing a presentation key (e.g. alternate versions), preferring the
+        // primary version (PrimaryVersionId is null) so detail pages and actions target it instead
+        // of an arbitrary alternate. Keep the grouped ids as an IQueryable sub-select; materializing
         // to a List would inline one bound parameter per id and hit SQLite's variable cap.
         var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
         if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
         {
-            var groupedIds = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.Min(x => x.Id));
+            var groupedIds = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey })
+                .Select(g => g.Where(e => e.PrimaryVersionId == null).Min(e => (Guid?)e.Id) ?? g.Min(e => (Guid?)e.Id));
             dbQuery = context.BaseItems.AsNoTracking().Where(e => groupedIds.Contains(e.Id));
         }
         else if (enableGroupByPresentationUniqueKey)
         {
-            var groupedIds = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.Min(x => x.Id));
+            var groupedIds = dbQuery.GroupBy(e => e.PresentationUniqueKey)
+                .Select(g => g.Where(e => e.PrimaryVersionId == null).Min(e => (Guid?)e.Id) ?? g.Min(e => (Guid?)e.Id));
             dbQuery = context.BaseItems.AsNoTracking().Where(e => groupedIds.Contains(e.Id));
         }
         else if (filter.GroupBySeriesPresentationUniqueKey)
@@ -445,6 +448,7 @@ public sealed partial class BaseItemRepository
         if (filter.IncludeInheritedTags.Length > 0)
         {
             var includeTags = filter.IncludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
+            var personTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
             var allowedTagItemIds = context.ItemValuesMap
                 .Where(f => f.ItemValue.Type == ItemValueType.Tags && includeTags.Contains(f.ItemValue.CleanValue))
                 .Select(f => f.ItemId);
@@ -453,7 +457,10 @@ public sealed partial class BaseItemRepository
                 allowedTagItemIds.Contains(e.Id)
                 || (e.SeriesId.HasValue && allowedTagItemIds.Contains(e.SeriesId.Value))
                 || e.Parents!.Any(p => allowedTagItemIds.Contains(p.ParentItemId))
-                || (e.TopParentId.HasValue && allowedTagItemIds.Contains(e.TopParentId.Value)));
+                || (e.TopParentId.HasValue && allowedTagItemIds.Contains(e.TopParentId.Value))
+
+                // People don't carry the tags of the media they appear in and would never match
+                || e.Type == personTypeName);
         }
 
         // Exclude alternate versions (have PrimaryVersionId set) and owned non-extra items.
@@ -497,62 +504,31 @@ public sealed partial class BaseItemRepository
     }
 
     /// <inheritdoc />
-    public IQueryable<Guid> GetFullyPlayedFolderIdsQuery(JellyfinDbContext context, IQueryable<Guid> folderIds, User user)
+    public IQueryable<BaseItemEntity> GetAccessFilteredLeafItemsQuery(JellyfinDbContext context, User user, bool includeOwnedItems = false)
     {
         ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(folderIds);
         ArgumentNullException.ThrowIfNull(user);
-
-        var filter = new InternalItemsQuery(user);
-        var userId = user.Id;
 
         var leafItems = context.BaseItems
             .AsNoTracking()
             .Where(DescendantQueryHelper.IsCountableLeaf);
-        leafItems = ApplyAccessFiltering(context, leafItems, filter);
 
-        var playedLeafItems = leafItems
-            .Select(b => new { b.Id, Played = b.UserData!.Any(ud => ud.UserId == userId && ud.Played) });
+        return ApplyAccessFiltering(context, leafItems, new InternalItemsQuery(user) { IncludeOwnedItems = includeOwnedItems });
+    }
 
-        var ancestorLeaves = context.AncestorIds
-            .Where(a => folderIds.Contains(a.ParentItemId))
-            .Join(
-                playedLeafItems,
-                a => a.ItemId,
-                b => b.Id,
-                (a, b) => new { FolderId = a.ParentItemId, b.Id, b.Played });
+    /// <inheritdoc />
+    public Expression<Func<BaseItemEntity, bool>> BuildHasDescendantFilter(JellyfinDbContext context, IQueryable<BaseItemEntity> descendants)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(descendants);
 
-        var linkedLeaves = context.LinkedChildren
-            .Where(lc => folderIds.Contains(lc.ParentId))
-            .Join(
-                playedLeafItems,
-                lc => lc.ChildId,
-                b => b.Id,
-                (lc, b) => new { FolderId = lc.ParentId, b.Id, b.Played });
-
-        var linkedFolderLeaves = context.LinkedChildren
-            .Where(lc => folderIds.Contains(lc.ParentId))
-            .Join(
-                context.BaseItems.Where(b => b.IsFolder),
-                lc => lc.ChildId,
-                b => b.Id,
-                (lc, b) => new { lc.ParentId, FolderChildId = b.Id })
-            .Join(
-                context.AncestorIds,
-                x => x.FolderChildId,
-                a => a.ParentItemId,
-                (x, a) => new { x.ParentId, DescendantId = a.ItemId })
-            .Join(
-                playedLeafItems,
-                x => x.DescendantId,
-                b => b.Id,
-                (x, b) => new { FolderId = x.ParentId, b.Id, b.Played });
-
-        return ancestorLeaves
-            .Union(linkedLeaves)
-            .Union(linkedFolderLeaves)
-            .GroupBy(x => x.FolderId)
-            .Where(g => g.Select(x => x.Id).Distinct().Count() == g.Where(x => x.Played).Select(x => x.Id).Distinct().Count())
-            .Select(g => g.Key);
+        // Descendants are reachable through the ancestor chain and - for BoxSets and Playlists - as
+        // linked children, which can themselves be folders contributing their own descendants.
+        // Every step is a correlated index seek, so only the rows the outer query keeps are visited
+        // and a folder is left as soon as its first matching descendant is found.
+        return e => context.AncestorIds.Any(a => a.ParentItemId == e.Id && descendants.Any(d => d.Id == a.ItemId))
+            || context.LinkedChildren.Any(lc => lc.ParentId == e.Id
+                && (descendants.Any(d => d.Id == lc.ChildId)
+                    || context.AncestorIds.Any(a => a.ParentItemId == lc.ChildId && descendants.Any(d => d.Id == a.ItemId))));
     }
 }

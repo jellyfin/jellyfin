@@ -53,6 +53,7 @@ public sealed class MovieSimilarItemsProvider : ILocalSimilarItemsProvider<Movie
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IItemQueryHelpers _queryHelpers;
     private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly ILibraryManager _libraryManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MovieSimilarItemsProvider"/> class.
@@ -60,14 +61,17 @@ public sealed class MovieSimilarItemsProvider : ILocalSimilarItemsProvider<Movie
     /// <param name="dbProvider">The database context factory.</param>
     /// <param name="queryHelpers">The shared query helpers.</param>
     /// <param name="serverConfigurationManager">The server configuration manager.</param>
+    /// <param name="libraryManager">The library manager.</param>
     public MovieSimilarItemsProvider(
         IDbContextFactory<JellyfinDbContext> dbProvider,
         IItemQueryHelpers queryHelpers,
-        IServerConfigurationManager serverConfigurationManager)
+        IServerConfigurationManager serverConfigurationManager,
+        ILibraryManager libraryManager)
     {
         _dbProvider = dbProvider;
         _queryHelpers = queryHelpers;
         _serverConfigurationManager = serverConfigurationManager;
+        _libraryManager = libraryManager;
     }
 
     /// <inheritdoc/>
@@ -155,6 +159,11 @@ public sealed class MovieSimilarItemsProvider : ILocalSimilarItemsProvider<Movie
                 IsMovie = true,
                 IsPlayed = false
             };
+
+            if (query.User is not null)
+            {
+                _libraryManager.ConfigureUserAccess(filter, query.User);
+            }
 
             _queryHelpers.PrepareFilterQuery(filter);
             var baseQuery = _queryHelpers.PrepareItemQuery(context, filter);

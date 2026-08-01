@@ -5,7 +5,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
@@ -31,15 +30,16 @@ public static class RequestHelpers
     /// </summary>
     /// <param name="sortBy">Sort By. Comma delimited string.</param>
     /// <param name="requestedSortOrder">Sort Order. Comma delimited string.</param>
+    /// <typeparam name="TSortBy">The type of the sort by field.</typeparam>
     /// <returns>Order By.</returns>
-    public static (ItemSortBy, SortOrder)[] GetOrderBy(IReadOnlyList<ItemSortBy> sortBy, IReadOnlyList<SortOrder> requestedSortOrder)
+    public static (TSortBy, SortOrder)[] GetOrderBy<TSortBy>(IReadOnlyList<TSortBy> sortBy, IReadOnlyList<SortOrder> requestedSortOrder)
     {
         if (sortBy.Count == 0)
         {
-            return Array.Empty<(ItemSortBy, SortOrder)>();
+            return Array.Empty<(TSortBy, SortOrder)>();
         }
 
-        var result = new (ItemSortBy, SortOrder)[sortBy.Count];
+        var result = new (TSortBy, SortOrder)[sortBy.Count];
         var i = 0;
         // Add elements which have a SortOrder specified
         for (; i < requestedSortOrder.Count; i++)

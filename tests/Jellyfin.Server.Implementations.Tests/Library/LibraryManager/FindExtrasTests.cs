@@ -306,6 +306,47 @@ public class FindExtrasTests
     }
 
     [Fact]
+    public void FindExtras_TrailerWithYearInFilename_SetsProductionYearFromFilename()
+    {
+        var owner = new Movie { Name = "Up", Path = "/movies/Up/Up.mkv" };
+        var paths = new List<string>
+        {
+            "/movies/Up/Up.mkv",
+            "/movies/Up/trailers"
+        };
+
+        _fileSystemMock.Setup(f => f.GetFiles(
+                "/movies/Up/trailers",
+                It.IsAny<string[]>(),
+                false,
+                false))
+            .Returns(new List<FileSystemMetadata>
+            {
+                new()
+                {
+                    FullName = "/movies/Up/trailers/Trailer 1 (2013).mkv",
+                    Name = "Trailer 1 (2013).mkv",
+                    IsDirectory = false
+                }
+            }).Verifiable();
+
+        var files = paths.Select(p => new FileSystemMetadata
+        {
+            FullName = p,
+            Name = Path.GetFileName(p),
+            IsDirectory = !Path.HasExtension(p)
+        }).ToList();
+
+        var extras = _libraryManager.FindExtras(owner, files, new DirectoryService(_fileSystemMock.Object)).ToList();
+
+        _fileSystemMock.Verify();
+        var trailer = Assert.Single(extras);
+        Assert.Equal(ExtraType.Trailer, trailer.ExtraType);
+        Assert.Equal(typeof(Trailer), trailer.GetType());
+        Assert.Equal(2013, trailer.ProductionYear);
+    }
+
+    [Fact]
     public void FindExtras_SeriesWithTrailers_FindsCorrectExtras()
     {
         var owner = new Series { Name = "Dexter", Path = "/series/Dexter" };
