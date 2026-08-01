@@ -94,5 +94,9 @@
     "TaskKeyframeExtractorDescription": "Úttekur lyklamyndir frá kykmynda-fílum til tess at byggja nágreiniligari HLS-spælilistar. Koyrslan kann taka langa tíð.",
     "TaskOptimizeDatabaseDescription": "Trýstur dátugrunninin saman og loysur tóma goymslu. Koyrslan kann bøta um avrikið, eftir skanning ella aðrar broytingar í savninum ið elva til dátugrunnsbroytingar.",
     "TaskRefreshChapterImagesDescription": "Ger smámyndir fyri kykmyndir ið hava kapitlar.",
-    "TaskRefreshChapterImages": "Kapitlamyndaúttøkur"
+    "TaskRefreshChapterImages": "Kapitlamyndaúttøkur",
+    "NotificationOptionVideoPlayback": "Kykmyndaspæl byrjað",
+    "NotificationOptionVideoPlaybackStopped": "Kykmyndaspæl steðgað",
+    "NotificationOptionAudioPlayback": "Ljóðspæl byrjað",
+    "NotificationOptionAudioPlaybackStopped": "Ljóðspæl steðgað"
 }
