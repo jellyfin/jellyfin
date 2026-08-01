@@ -87,8 +87,9 @@ public static class StorageHelper
     /// </summary>
     private static string ResolvePath(string path)
     {
-        var parts = path.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
-        var current = Path.DirectorySeparatorChar.ToString();
+        var root = Path.GetPathRoot(path) ?? Path.DirectorySeparatorChar.ToString();
+        var parts = path.Substring(root.Length).Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+        var current = root;
         foreach (var part in parts)
         {
             current = Path.Combine(current, part);

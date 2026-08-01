@@ -159,12 +159,16 @@ public class LinkedChildrenService : ILinkedChildrenService
 
         if (existingLink is null)
         {
+            var nextSortOrder = (context.LinkedChildren
+                .Where(lc => lc.ParentId == parentId)
+                .Max(lc => (int?)lc.SortOrder) ?? -1) + 1;
+
             context.LinkedChildren.Add(new Jellyfin.Database.Implementations.Entities.LinkedChildEntity
             {
                 ParentId = parentId,
                 ChildId = childId,
                 ChildType = dbChildType,
-                SortOrder = null
+                SortOrder = nextSortOrder
             });
         }
         else

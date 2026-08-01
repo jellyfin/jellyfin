@@ -31,6 +31,10 @@ public sealed partial class BaseItemRepository
     private static readonly string TmdbProviderName = MetadataProvider.Tmdb.ToString().ToLowerInvariant();
     private static readonly string TvdbProviderName = MetadataProvider.Tvdb.ToString().ToLowerInvariant();
 
+    // A fresh expression per access: EF rejects a query tree that reuses one lambda parameter
+    // instance across several lambdas, and this filter is combined into a tree more than once.
+    private static Expression<Func<BaseItemEntity, bool>> IsFolderFilter => e => e.IsFolder;
+
     /// <inheritdoc />
     public IQueryable<BaseItemEntity> TranslateQuery(
         IQueryable<BaseItemEntity> baseQuery,
@@ -466,97 +470,45 @@ public sealed partial class BaseItemRepository
 
         if (filter.IsPlayed.HasValue)
         {
-            var hasSeries = filter.IncludeItemTypes.Contains(BaseItemKind.Series);
-            var hasBoxSet = filter.IncludeItemTypes.Contains(BaseItemKind.BoxSet);
+            var userId = filter.User!.Id;
 
-            if (hasSeries || hasBoxSet)
-            {
-                var userId = filter.User!.Id;
-                var isPlayed = filter.IsPlayed.Value;
-                var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
-                var boxSetTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.BoxSet];
+            // Leaf items carry their own played state.
+            var playedItemIds = context.UserData
+                .Where(ud => ud.UserId == userId && ud.Played)
+                .Select(ud => ud.ItemId);
 
-                // Series: played = at least one episode AND all episodes played; unplayed = otherwise.
-                IQueryable<Guid> playedSeriesIds = hasSeries
-                    ? context.BaseItems
-                        .AsNoTracking()
-                        .Where(e => !e.IsFolder && !e.IsVirtualItem && e.SeriesId.HasValue)
-                        .GroupBy(e => e.SeriesId!.Value)
-                        .Where(g => !g.Any(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played)))
-                        .Select(g => g.Key)
-                    : Enumerable.Empty<Guid>().AsQueryable();
+            // Folders (Series, Seasons, BoxSets, albums, ...) have none and count as played once no
+            // descendant is left unplayed, matching what the DTO reports for them. This has to key off
+            // the item itself rather than off the requested item types: tag and collection listings mix
+            // folders and leaf items in a single query.
+            var unplayedLeafItems = GetAccessFilteredLeafItemsQuery(context, filter.User!)
+                .Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
 
-                // BoxSet: played = all children played.
-                IQueryable<Guid> playedBoxSetIds = hasBoxSet
-                    ? GetFullyPlayedFolderIdsQuery(
-                        context,
-                        baseQuery.Where(e => e.Type == boxSetTypeName).Select(e => e.Id),
-                        filter.User!)
-                    : Enumerable.Empty<Guid>().AsQueryable();
+            var isPlayedFilter = IsFolderFilter.And(BuildHasDescendantFilter(context, unplayedLeafItems).Not())
+                .Or(IsFolderFilter.Not().And(e => playedItemIds.Contains(e.Id)));
 
-                // Non-folder items: check UserData directly
-                var playedItemIds = context.UserData
-                    .Where(ud => ud.UserId == userId && ud.Played)
-                    .Select(ud => ud.ItemId);
-
-                if (isPlayed)
-                {
-                    baseQuery = baseQuery.Where(e =>
-                        (e.Type == seriesTypeName && playedSeriesIds.Contains(e.Id))
-                        || (e.Type == boxSetTypeName && playedBoxSetIds.Contains(e.Id))
-                        || (e.Type != seriesTypeName && e.Type != boxSetTypeName && playedItemIds.Contains(e.Id)));
-                }
-                else
-                {
-                    baseQuery = baseQuery.Where(e =>
-                        (e.Type == seriesTypeName && !playedSeriesIds.Contains(e.Id))
-                        || (e.Type == boxSetTypeName && !playedBoxSetIds.Contains(e.Id))
-                        || (e.Type != seriesTypeName && e.Type != boxSetTypeName && !playedItemIds.Contains(e.Id)));
-                }
-            }
-            else
-            {
-                var playedItemIds = context.UserData
-                    .Where(ud => ud.UserId == filter.User!.Id && ud.Played)
-                    .Select(ud => ud.ItemId);
-                var isPlayedItem = filter.IsPlayed.Value;
-                baseQuery = baseQuery.Where(e => playedItemIds.Contains(e.Id) == isPlayedItem);
-            }
+            baseQuery = baseQuery.Where(filter.IsPlayed.Value ? isPlayedFilter : isPlayedFilter.Not());
         }
 
         if (filter.IsResumable.HasValue)
         {
-            var hasSeries = filter.IncludeItemTypes.Contains(BaseItemKind.Series);
             var userId = filter.User!.Id;
             var isResumable = filter.IsResumable.Value;
-            var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
 
             // In-progress user data rows; alternate versions track their own progress.
             var inProgress = context.UserData
                 .Where(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0);
 
-            IQueryable<Guid>? resumableSeriesIds = null;
-            if (hasSeries)
-            {
-                // Aggregate per series in a single GROUP BY pass, instead of three full scans.
-                var seriesEpisodeStats = context.BaseItems
-                    .AsNoTracking()
-                    .Where(e => !e.IsFolder && !e.IsVirtualItem && e.SeriesId.HasValue)
-                    .GroupBy(e => e.SeriesId!.Value)
-                    .Select(g => new
-                    {
-                        SeriesId = g.Key,
-                        HasInProgress = g.Any(e => e.UserData!.Any(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0)),
-                        HasPlayed = g.Any(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played)),
-                        HasUnplayed = g.Any(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played))
-                    });
+            // Folders are resumable when a descendant is in progress, or when they hold both played and
+            // unplayed descendants (partially watched). Alternate versions keep their own progress, so
+            // they count towards the in-progress check but not towards the played/unplayed one.
+            var leafItems = GetAccessFilteredLeafItemsQuery(context, filter.User!);
+            var inProgressLeafItems = GetAccessFilteredLeafItemsQuery(context, filter.User!, includeOwnedItems: true)
+                .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0));
 
-                // A series is resumable if it has an in-progress episode,
-                // or if it has both played and unplayed episodes (partially watched).
-                resumableSeriesIds = seriesEpisodeStats
-                    .Where(s => s.HasInProgress || (s.HasPlayed && s.HasUnplayed))
-                    .Select(s => s.SeriesId);
-            }
+            var folderResumableFilter = BuildHasDescendantFilter(context, inProgressLeafItems)
+                .Or(BuildHasDescendantFilter(context, leafItems.Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played)))
+                    .And(BuildHasDescendantFilter(context, leafItems.Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played)))));
 
             if (isResumable)
             {
@@ -564,18 +516,15 @@ public sealed partial class BaseItemRepository
                 // Match each version on its own progress rather than coalescing onto the primary.
                 var inProgressIds = inProgress.Select(ud => ud.ItemId);
 
-                baseQuery = hasSeries
-                    ? baseQuery.Where(e =>
-                        (e.Type == seriesTypeName && resumableSeriesIds!.Contains(e.Id))
-                        || (e.Type != seriesTypeName && inProgressIds.Contains(e.Id)))
-                    : baseQuery.Where(e => inProgressIds.Contains(e.Id));
+                baseQuery = baseQuery.Where(IsFolderFilter.And(folderResumableFilter)
+                    .Or(IsFolderFilter.Not().And(e => inProgressIds.Contains(e.Id))));
 
                 // When several versions of the same item are in progress, keep only the most recently played one, use id as tiebreaker.
                 // Only in-progress siblings can eliminate a candidate: a version without progress has a NULL max LastPlayedDate,
                 // which is never greater and never ties. Restricting the sibling scan to the in-progress set keeps this bounded by
                 // the user's Continue Watching count instead of forcing a full BaseItems scan (COALESCE keys are non-indexable) per row.
                 // Items in no version group at all have no sibling that could eliminate them, so short-circuit the scan for those.
-                baseQuery = baseQuery.Where(e => e.Type == seriesTypeName
+                baseQuery = baseQuery.Where(e => e.IsFolder
                     || (e.PrimaryVersionId == null && !context.BaseItems.Any(a => a.PrimaryVersionId == e.Id))
                     || !context.BaseItems
                         .Where(s => s.Id != e.Id
@@ -594,11 +543,8 @@ public sealed partial class BaseItemRepository
                 var resumableMovieIds = inProgress
                     .Join(context.BaseItems, ud => ud.ItemId, bi => bi.Id, (ud, bi) => bi.PrimaryVersionId ?? bi.Id);
 
-                baseQuery = hasSeries
-                    ? baseQuery.Where(e =>
-                        (e.Type == seriesTypeName && !resumableSeriesIds!.Contains(e.Id))
-                        || (e.Type != seriesTypeName && !resumableMovieIds.Contains(e.Id)))
-                    : baseQuery.Where(e => !resumableMovieIds.Contains(e.Id));
+                baseQuery = baseQuery.Where(IsFolderFilter.And(folderResumableFilter.Not())
+                    .Or(IsFolderFilter.Not().And(e => !resumableMovieIds.Contains(e.Id))));
             }
         }
 

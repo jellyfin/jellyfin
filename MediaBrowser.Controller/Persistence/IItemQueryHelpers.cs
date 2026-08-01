@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
@@ -79,17 +80,26 @@ public interface IItemQueryHelpers
         Guid ancestorId);
 
     /// <summary>
-    /// Builds an <see cref="IQueryable{Guid}"/> of folder IDs whose descendants are all played
-    /// for the given user. Composable into outer queries to avoid an extra DB roundtrip.
+    /// Builds a query for the playable leaf items a user can access.
     /// </summary>
     /// <param name="context">The database context the resulting query is bound to.</param>
-    /// <param name="folderIds">A query yielding candidate folder IDs.</param>
-    /// <param name="user">The user for access filtering and played status.</param>
-    /// <returns>An <see cref="IQueryable{Guid}"/> of fully-played folder IDs.</returns>
-    IQueryable<Guid> GetFullyPlayedFolderIdsQuery(
+    /// <param name="user">The user to filter accessible items for.</param>
+    /// <param name="includeOwnedItems">Whether to include alternate versions and owned items.</param>
+    /// <returns>The access-filtered leaf item queryable.</returns>
+    IQueryable<BaseItemEntity> GetAccessFilteredLeafItemsQuery(
         JellyfinDbContext context,
-        IQueryable<Guid> folderIds,
-        User user);
+        User user,
+        bool includeOwnedItems = false);
+
+    /// <summary>
+    /// Builds a filter matching items that have at least one of <paramref name="descendants"/> below them.
+    /// </summary>
+    /// <param name="context">The database context the resulting filter is bound to.</param>
+    /// <param name="descendants">A query yielding the descendants to look for.</param>
+    /// <returns>A filter expression matching items with a matching descendant.</returns>
+    Expression<Func<BaseItemEntity, bool>> BuildHasDescendantFilter(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> descendants);
 
     /// <summary>
     /// Deserializes a <see cref="BaseItemEntity"/> into a <see cref="BaseItem"/>.

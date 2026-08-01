@@ -4,9 +4,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,45 +54,176 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public int Order => 1;
 
         /// <inheritdoc />
-        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
-            => Task.FromResult(Enumerable.Empty<RemoteSearchResult>());
-
-        /// <inheritdoc />
-        public async Task<MetadataResult<MusicArtist>> GetMetadata(ArtistInfo info, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
         {
-            var result = new MetadataResult<MusicArtist>();
-            var id = info.GetMusicBrainzArtistId();
-
-            if (!string.IsNullOrWhiteSpace(id))
+            // Prefer a known TheAudioDB artist id.
+            var audioDbId = searchInfo.GetProviderId(MetadataProvider.AudioDbArtist);
+            if (!string.IsNullOrWhiteSpace(audioDbId))
             {
-                await EnsureArtistInfo(id, cancellationToken).ConfigureAwait(false);
+                var artists = await FetchArtists(BaseUrl + "/artist.php?i=" + audioDbId, cancellationToken).ConfigureAwait(false);
+                return artists.Select(ToRemoteSearchResult);
+            }
 
-                var path = GetArtistInfoPath(_config.ApplicationPaths, id);
+            // Fall back to the MusicBrainz artist id, reusing the on-disk cache also used by GetMetadata.
+            var musicBrainzId = searchInfo.GetMusicBrainzArtistId();
+            if (!string.IsNullOrWhiteSpace(musicBrainzId))
+            {
+                await EnsureArtistInfo(musicBrainzId, cancellationToken).ConfigureAwait(false);
+
+                var path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
 
                 FileStream jsonStream = AsyncFile.OpenRead(path);
                 await using (jsonStream.ConfigureAwait(false))
                 {
                     var obj = await JsonSerializer.DeserializeAsync<RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
-                    if (obj is not null && obj.artists is not null && obj.artists.Count > 0)
+                    if (obj is not null && obj.artists is not null)
                     {
-                        result.Item = new MusicArtist();
-                        result.HasMetadata = true;
-                        ProcessResult(result.Item, obj.artists[0], info.MetadataLanguage);
+                        return obj.artists.Select(ToRemoteSearchResult);
                     }
                 }
+
+                return [];
+            }
+
+            // Finally, search by name.
+            if (!string.IsNullOrWhiteSpace(searchInfo.Name))
+            {
+                var artists = await FetchArtists(BaseUrl + "/search.php?s=" + Uri.EscapeDataString(searchInfo.Name), cancellationToken).ConfigureAwait(false);
+                return artists.Select(ToRemoteSearchResult);
+            }
+
+            return [];
+        }
+
+        private async Task<List<Artist>> FetchArtists(string url, CancellationToken cancellationToken)
+        {
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
+            var obj = await response.Content.ReadFromJsonAsync<RootObject>(_jsonOptions, cancellationToken).ConfigureAwait(false);
+
+            return obj?.artists ?? [];
+        }
+
+        private RemoteSearchResult ToRemoteSearchResult(Artist artist)
+        {
+            var result = new RemoteSearchResult
+            {
+                Name = artist.strArtist,
+                ImageUrl = artist.strArtistThumb,
+                SearchProviderName = Name,
+                Overview = (artist.strBiographyEN ?? string.Empty).StripHtml()
+            };
+
+            if (!string.IsNullOrEmpty(artist.idArtist))
+            {
+                result.SetProviderId(MetadataProvider.AudioDbArtist, artist.idArtist);
+            }
+
+            if (!string.IsNullOrEmpty(artist.strMusicBrainzID))
+            {
+                result.SetProviderId(MetadataProvider.MusicBrainzArtist, artist.strMusicBrainzID);
+            }
+
+            if (int.TryParse(artist.intFormedYear, NumberStyles.Integer, CultureInfo.InvariantCulture, out var formedYear))
+            {
+                result.ProductionYear = formedYear;
             }
 
             return result;
         }
 
+        /// <inheritdoc />
+        public async Task<MetadataResult<MusicArtist>> GetMetadata(ArtistInfo info, CancellationToken cancellationToken)
+        {
+            var result = new MetadataResult<MusicArtist>();
+
+            var artist = await GetArtist(
+                info.GetMusicBrainzArtistId(),
+                info.GetProviderId(MetadataProvider.AudioDbArtist),
+                cancellationToken).ConfigureAwait(false);
+
+            if (artist is not null)
+            {
+                result.Item = new MusicArtist();
+                result.HasMetadata = true;
+                ProcessResult(result.Item, artist, info.MetadataLanguage);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Resolves the cached AudioDB artist, preferring the MusicBrainz id and falling back to the AudioDB id.
+        /// </summary>
+        /// <param name="musicBrainzId">The MusicBrainz artist id, if known.</param>
+        /// <param name="audioDbId">The TheAudioDB artist id, if known.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The matching artist, or <c>null</c> if none could be resolved.</returns>
+        internal async Task<Artist> GetArtist(string musicBrainzId, string audioDbId, CancellationToken cancellationToken)
+        {
+            string path;
+            if (!string.IsNullOrWhiteSpace(musicBrainzId))
+            {
+                await EnsureArtistInfo(musicBrainzId, cancellationToken).ConfigureAwait(false);
+                path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
+            }
+            else if (!string.IsNullOrWhiteSpace(audioDbId))
+            {
+                await EnsureArtistInfoByAudioDbId(audioDbId, cancellationToken).ConfigureAwait(false);
+                path = GetArtistInfoPath(_config.ApplicationPaths, audioDbId);
+            }
+            else
+            {
+                return null;
+            }
+
+            FileStream jsonStream = AsyncFile.OpenRead(path);
+            await using (jsonStream.ConfigureAwait(false))
+            {
+                var obj = await JsonSerializer.DeserializeAsync<RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+
+                if (obj is not null && obj.artists is not null && obj.artists.Count > 0)
+                {
+                    return obj.artists[0];
+                }
+            }
+
+            return null;
+        }
+
         private void ProcessResult(MusicArtist item, Artist result, string preferredLanguage)
         {
-            // item.HomePageUrl = result.strWebsite;
-
-            if (!string.IsNullOrEmpty(result.strGenre))
+            if (!string.IsNullOrWhiteSpace(result.strWebsite))
             {
-                item.Genres = new[] { result.strGenre };
+                item.HomePageUrl = result.strWebsite;
+            }
+
+            var genres = new List<string>();
+            if (!string.IsNullOrWhiteSpace(result.strGenre))
+            {
+                genres.Add(result.strGenre);
+            }
+
+            if (!string.IsNullOrWhiteSpace(result.strSubGenre))
+            {
+                genres.Add(result.strSubGenre);
+            }
+
+            if (genres.Count > 0)
+            {
+                item.Genres = genres.ToArray();
+            }
+
+            if (int.TryParse(result.intFormedYear, NumberStyles.Integer, CultureInfo.InvariantCulture, out var formedYear))
+            {
+                item.ProductionYear = formedYear;
+            }
+
+            if (!string.IsNullOrWhiteSpace(result.strCountry))
+            {
+                item.ProductionLocations = new[] { result.strCountry };
             }
 
             item.SetProviderId(MetadataProvider.AudioDbArtist, result.idArtist);
@@ -150,13 +283,32 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
         internal async Task DownloadArtistInfo(string musicBrainzId, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             var url = BaseUrl + "/artist-mb.php?i=" + musicBrainzId;
+            await DownloadArtistInfo(url, GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId), cancellationToken).ConfigureAwait(false);
+        }
+
+        internal async Task EnsureArtistInfoByAudioDbId(string audioDbId, CancellationToken cancellationToken)
+        {
+            var xmlPath = GetArtistInfoPath(_config.ApplicationPaths, audioDbId);
+
+            var fileInfo = _fileSystem.GetFileSystemInfo(xmlPath);
+
+            if (fileInfo.Exists
+                && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
+            {
+                return;
+            }
+
+            var url = BaseUrl + "/artist.php?i=" + audioDbId;
+            await DownloadArtistInfo(url, xmlPath, cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task DownloadArtistInfo(string url, string path, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            var path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             var fileStreamOptions = AsyncFile.WriteOptions;

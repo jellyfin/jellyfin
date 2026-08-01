@@ -141,32 +141,32 @@ public class ItemCountService : IItemCountService
         switch (kind)
         {
             case BaseItemKind.Person:
-                baseQuery = context.PeopleBaseItemMap
+                baseQuery = ItemsById(context, context.PeopleBaseItemMap
                     .AsNoTracking()
                     .Where(m => m.People.Name == item.Name)
-                    .Select(m => m.Item);
+                    .Select(m => m.ItemId));
                 break;
             case BaseItemKind.MusicArtist:
-                baseQuery = context.ItemValuesMap
+                baseQuery = ItemsById(context, context.ItemValuesMap
                     .AsNoTracking()
                     .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
                         && (ivm.ItemValue.Type == ItemValueType.Artist || ivm.ItemValue.Type == ItemValueType.AlbumArtist))
-                    .Select(ivm => ivm.Item);
+                    .Select(ivm => ivm.ItemId));
                 break;
             case BaseItemKind.Genre:
             case BaseItemKind.MusicGenre:
-                baseQuery = context.ItemValuesMap
+                baseQuery = ItemsById(context, context.ItemValuesMap
                     .AsNoTracking()
                     .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
                         && ivm.ItemValue.Type == ItemValueType.Genre)
-                    .Select(ivm => ivm.Item);
+                    .Select(ivm => ivm.ItemId));
                 break;
             case BaseItemKind.Studio:
-                baseQuery = context.ItemValuesMap
+                baseQuery = ItemsById(context, context.ItemValuesMap
                     .AsNoTracking()
                     .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
                         && ivm.ItemValue.Type == ItemValueType.Studios)
-                    .Select(ivm => ivm.Item);
+                    .Select(ivm => ivm.ItemId));
                 break;
             case BaseItemKind.Year:
                 if (int.TryParse(item.Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
@@ -253,6 +253,9 @@ public class ItemCountService : IItemCountService
 
         return result;
     }
+
+    private static IQueryable<BaseItemEntity> ItemsById(JellyfinDbContext context, IQueryable<Guid> itemIds)
+        => context.BaseItems.AsNoTracking().Where(e => itemIds.Contains(e.Id));
 
     /// <inheritdoc/>
     public int GetPlayedCount(InternalItemsQuery filter, Guid ancestorId)
