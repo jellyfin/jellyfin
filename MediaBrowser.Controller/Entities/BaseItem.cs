@@ -2302,7 +2302,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-/// <summary>
+        /// <summary>
         /// Adds the given image to this item.
         /// </summary>
         /// <param name="image">The image to add.</param>
