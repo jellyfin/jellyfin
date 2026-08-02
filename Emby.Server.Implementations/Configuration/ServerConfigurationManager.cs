@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.Configuration
         /// Replaces the configuration.
         /// </summary>
         /// <param name="newConfiguration">The new configuration.</param>
-        /// <exception cref="ArgumentException">If the metadata path is nested inside another Jellyfin directory.</exception>
+        /// <exception cref="ArgumentException">If the metadata path is nested inside the cache or transcode directory.</exception>
         /// <exception cref="DirectoryNotFoundException">If the configuration path doesn't exist.</exception>
         public override void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration)
         {
@@ -100,7 +100,7 @@ namespace Emby.Server.Implementations.Configuration
         /// Validates the metadata path.
         /// </summary>
         /// <param name="newConfig">The new configuration.</param>
-        /// <exception cref="ArgumentException">The new metadata path is nested inside another Jellyfin directory.</exception>
+        /// <exception cref="ArgumentException">The new metadata path is nested inside the cache or transcode directory.</exception>
         /// <exception cref="DirectoryNotFoundException">The new config path doesn't exist.</exception>
         private void ValidateMetadataPath(ServerConfiguration newConfig)
         {
@@ -127,10 +127,11 @@ namespace Emby.Server.Implementations.Configuration
             var cachePath = string.IsNullOrWhiteSpace(newConfig.CachePath)
                 ? ApplicationPaths.CachePath
                 : newConfig.CachePath;
+            var transcodePath = this.GetEncodingOptions().TranscodingTempPath;
 
             try
             {
-                ((ServerApplicationPaths)ApplicationPaths).ValidateMetadataPathOrThrow(metadataPath, cachePath);
+                ((ServerApplicationPaths)ApplicationPaths).ValidateMetadataPathOrThrow(metadataPath, cachePath, transcodePath);
             }
             catch (InvalidOperationException ex)
             {

@@ -107,18 +107,14 @@ namespace Emby.Server.Implementations
             CreateAndCheckMarker(InternalMetadataPath, "metadata");
         }
 
-        internal void ValidateMetadataPathOrThrow(string metadataPath, string? cachePath = null)
+        internal void ValidateMetadataPathOrThrow(string metadataPath, string? cachePath = null, string? transcodePath = null)
         {
             cachePath = string.IsNullOrWhiteSpace(cachePath) ? CachePath : cachePath;
 
-            if (IsPathEqualOrSubPath(ConfigurationDirectoryPath, metadataPath)
-                || IsPathEqualOrSubPath(LogDirectoryPath, metadataPath)
-                || IsPathEqualOrSubPath(PluginsPath, metadataPath)
-                || IsPathEqualOrSubPath(cachePath, metadataPath)
-                || IsPathEqualOrSubPath(DataPath, metadataPath)
-                || IsPathEqualOrSubPath(RootFolderPath, metadataPath))
+            if (IsPathEqualOrSubPath(cachePath, metadataPath)
+                || (!string.IsNullOrWhiteSpace(transcodePath) && IsPathEqualOrSubPath(transcodePath, metadataPath)))
             {
-                throw new InvalidOperationException($"Metadata directory {metadataPath} cannot be nested inside another Jellyfin directory.");
+                throw new InvalidOperationException($"Metadata directory {metadataPath} cannot be nested inside the cache or transcode directories because their contents are periodically deleted.");
             }
         }
 

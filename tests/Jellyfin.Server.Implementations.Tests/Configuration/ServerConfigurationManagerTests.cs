@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.Configuration;
+using MediaBrowser.MediaEncoding.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -52,9 +53,33 @@ public sealed class ServerConfigurationManagerTests : IDisposable
 
     [Theory]
     [InlineData("cache")]
+    [InlineData("transcode")]
+    public void ReplaceConfiguration_MetadataPathNestedInsideCacheLikeDirectory_ThrowsArgumentException(string directory)
+    {
+        var metadataPath = Path.Combine(GetApplicationPath(directory), "metadata");
+        Directory.CreateDirectory(metadataPath);
+        var configurationManager = CreateConfigurationManager();
+        if (directory == "transcode")
+        {
+            configurationManager.SaveConfiguration(
+                "encoding",
+                new EncodingOptions { TranscodingTempPath = GetApplicationPath("transcode") });
+        }
+
+        var newConfiguration = new ServerConfiguration
+        {
+            CachePath = _applicationPaths.CachePath,
+            MetadataPath = metadataPath
+        };
+
+        Assert.Throws<ArgumentException>(() => configurationManager.ReplaceConfiguration(newConfiguration));
+        Assert.Empty(configurationManager.Configuration.MetadataPath);
+    }
+
+    [Theory]
     [InlineData("data")]
     [InlineData("config")]
-    public void ReplaceConfiguration_MetadataPathNestedInsideJellyfinDirectory_ThrowsArgumentException(string directory)
+    public void ReplaceConfiguration_MetadataPathNestedInsideNonCacheDirectory_AcceptsPathAndCreatesMarker(string directory)
     {
         var metadataPath = Path.Combine(GetApplicationPath(directory), "metadata");
         Directory.CreateDirectory(metadataPath);
@@ -65,8 +90,10 @@ public sealed class ServerConfigurationManagerTests : IDisposable
             MetadataPath = metadataPath
         };
 
-        Assert.Throws<ArgumentException>(() => configurationManager.ReplaceConfiguration(newConfiguration));
-        Assert.Empty(configurationManager.Configuration.MetadataPath);
+        configurationManager.ReplaceConfiguration(newConfiguration);
+
+        Assert.Equal(metadataPath, configurationManager.Configuration.MetadataPath);
+        Assert.True(File.Exists(Path.Combine(metadataPath, ".jellyfin-metadata")));
     }
 
     [Fact]
@@ -116,10 +143,12 @@ public sealed class ServerConfigurationManagerTests : IDisposable
 
     private ServerConfigurationManager CreateConfigurationManager()
     {
-        return new ServerConfigurationManager(
+        var configurationManager = new ServerConfigurationManager(
             _applicationPaths,
             NullLoggerFactory.Instance,
             Mock.Of<IXmlSerializer>());
+        configurationManager.RegisterConfiguration<EncodingConfigurationFactory>();
+        return configurationManager;
     }
 
     private string GetApplicationPath(string directory)
@@ -129,6 +158,7 @@ public sealed class ServerConfigurationManagerTests : IDisposable
             "cache" => _applicationPaths.CachePath,
             "data" => _applicationPaths.DataPath,
             "config" => _applicationPaths.ConfigurationDirectoryPath,
+            "transcode" => Path.Combine(_testRoot, "transcode"),
             _ => throw new ArgumentException($"Unknown application directory: {directory}", nameof(directory))
         };
     }
