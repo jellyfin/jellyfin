@@ -436,6 +436,14 @@ namespace MediaBrowser.Providers.Manager
                 return false;
             }
 
+            // Extras have no identity of their own in an online database, so remote artwork for them
+            // is always some other item's. Local and dynamic providers still apply, so an extra can
+            // keep an embedded thumbnail or an extracted frame.
+            if (item.ExtraType.HasValue && provider is IRemoteImageProvider)
+            {
+                return false;
+            }
+
             return _baseItemManager.IsImageFetcherEnabled(item, libraryTypeOptions, provider.Name);
         }
 
@@ -582,6 +590,14 @@ namespace MediaBrowser.Providers.Manager
             if (forceEnableInternetMetadata || provider is not IRemoteMetadataProvider)
             {
                 return true;
+            }
+
+            // An extra is a local file belonging to another item and has no identity of its own in an
+            // online database. Looking it up matches whatever the surrounding folder happens to be
+            // called and overwrites the extra's name with a different item's title.
+            if (item.ExtraType.HasValue)
+            {
+                return false;
             }
 
             // Artists without a folder structure that are derived from metadata have no real path in the library,
