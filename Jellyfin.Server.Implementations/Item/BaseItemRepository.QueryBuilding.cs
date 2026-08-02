@@ -35,9 +35,38 @@ public sealed partial class BaseItemRepository
     {
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
+        dbQuery = ApplyAdjacencyFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
         dbQuery = ApplyNavigations(dbQuery, filter);
         return dbQuery;
+    }
+
+    /// <summary>
+    /// Trims an ordered query down to the AdjacentTo item and its immediate neighbours.
+    /// </summary>
+    private IQueryable<BaseItemEntity> ApplyAdjacencyFilter(JellyfinDbContext context, IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
+    {
+        if (filter.AdjacentTo.IsNullOrEmpty())
+        {
+            return dbQuery;
+        }
+
+        // Adjacency is relative to the result set and the order the query asked for, so the ids have
+        // to be read back in that order.
+        var orderedIds = dbQuery.Select(e => e.Id).ToList();
+        var index = orderedIds.IndexOf(filter.AdjacentTo.Value);
+        if (index < 0)
+        {
+            // The item isn't part of this result set, so it has no neighbours in it either.
+            return dbQuery.Take(0);
+        }
+
+        var start = Math.Max(index - 1, 0);
+        var adjacentIds = orderedIds.GetRange(start, Math.Min(index + 2, orderedIds.Count) - start);
+
+        var adjacentQuery = context.BaseItems.AsNoTracking().AsSingleQuery().Where(e => adjacentIds.Contains(e.Id));
+
+        return ApplyOrder(adjacentQuery, filter, context);
     }
 
     private IQueryable<BaseItemEntity> ApplyQueryPaging(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)

@@ -1189,33 +1189,6 @@ public sealed partial class BaseItemRepository
             }
         }
 
-        if (filter.AdjacentTo.HasValue && !filter.AdjacentTo.Value.IsEmpty())
-        {
-            var adjacentToId = filter.AdjacentTo.Value;
-            var targetItem = context.BaseItems.Where(e => e.Id == adjacentToId).Select(e => new { e.SortName, e.Id }).FirstOrDefault();
-            if (targetItem is not null)
-            {
-                var targetSortName = targetItem.SortName ?? string.Empty;
-
-                // Fetch both prev and next adjacent items in a single query using Concat (UNION ALL).
-                var adjacentIds = context.BaseItems
-                    .Where(e => string.Compare(e.SortName, targetSortName) < 0)
-                    .OrderByDescending(e => e.SortName)
-                    .Select(e => e.Id)
-                    .Take(1)
-                    .Concat(
-                        context.BaseItems
-                            .Where(e => string.Compare(e.SortName, targetSortName) > 0)
-                            .OrderBy(e => e.SortName)
-                            .Select(e => e.Id)
-                            .Take(1))
-                    .ToList();
-
-                adjacentIds.Add(adjacentToId);
-                baseQuery = baseQuery.Where(e => adjacentIds.Contains(e.Id));
-            }
-        }
-
         return baseQuery;
     }
 }
