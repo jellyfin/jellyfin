@@ -30,29 +30,11 @@ namespace Jellyfin.Server.Implementations.Migrations
                 type: "INTEGER",
                 nullable: false,
                 defaultValue: 0);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserData_ItemId_UserId_SkipCount",
-                table: "UserData",
-                columns: new[] { "ItemId", "UserId", "SkipCount" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserData_UserId_SkipCount_ItemId",
-                table: "UserData",
-                columns: new[] { "UserId", "SkipCount", "ItemId" });
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "IX_UserData_ItemId_UserId_SkipCount",
-                table: "UserData");
-
-            migrationBuilder.DropIndex(
-                name: "IX_UserData_UserId_SkipCount_ItemId",
-                table: "UserData");
-
             migrationBuilder.DropColumn(
                 name: "LastSkippedDate",
                 table: "UserData");
