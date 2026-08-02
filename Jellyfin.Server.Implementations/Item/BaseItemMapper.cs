@@ -134,6 +134,21 @@ public static class BaseItemMapper
         if (dto is Video video)
         {
             video.PrimaryVersionId = entity.PrimaryVersionId;
+
+            // The LinkedChildren table is the source of truth for version links
+            if (entity.LinkedChildEntities is not null)
+            {
+                video.LinkedAlternateVersions = entity.LinkedChildEntities
+                    // LocalAlternateVersion links belong to Video.LocalAlternateVersions, not here
+                    .Where(e => e.ChildType == Database.Implementations.Entities.LinkedChildType.LinkedAlternateVersion)
+                    .OrderBy(e => e.SortOrder)
+                    .Select(e => new LinkedChild
+                    {
+                        ItemId = e.ChildId,
+                        Type = (MediaBrowser.Controller.Entities.LinkedChildType)e.ChildType
+                    })
+                    .ToArray();
+            }
         }
 
         if (dto is IHasSeries hasSeriesName)

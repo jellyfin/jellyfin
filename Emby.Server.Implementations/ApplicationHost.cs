@@ -987,8 +987,9 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetLocalApiUrl(string hostname, string scheme = null, int? port = null)
         {
-            // If the smartAPI doesn't start with http then treat it as a host or ip.
-            if (hostname.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            // If the smartAPI isn't already a complete URL then treat it as a host or ip.
+            if (hostname.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                || hostname.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             {
                 return hostname.TrimEnd('/');
             }

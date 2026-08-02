@@ -172,6 +172,7 @@
  - [whooo](https://github.com/whooo)
  - [WiiPlayer2](https://github.com/WiiPlayer2)
  - [WillWill56](https://github.com/WillWill56)
+ - [WizardOfYendor1](https://github.com/WizardOfYendor1)
  - [wtayl0r](https://github.com/wtayl0r)
  - [Wuerfelbecher](https://github.com/Wuerfelbecher)
  - [Wunax](https://github.com/Wunax)

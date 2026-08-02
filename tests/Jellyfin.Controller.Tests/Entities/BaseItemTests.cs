@@ -443,4 +443,68 @@ public class BaseItemTests
         Assert.Equal(1982, trailer.ProductionYear);
         Assert.Equal(new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc), trailer.PremiereDate);
     }
+
+    [Theory]
+    // An extra named after a version belongs to that version, not to the primary whose name it
+    // also starts with
+    [InlineData("/Movies/Movie/Movie - 4K-trailer.mkv", 2)]
+    [InlineData("/Movies/Movie/Movie - 1080p-behindthescenes.mkv", 1)]
+    // Named after the movie rather than one of its versions
+    [InlineData("/Movies/Movie/Movie-trailer.mkv", 0)]
+    // In an extras folder, so named after nothing in particular
+    [InlineData("/Movies/Movie/trailers/Official.mkv", 0)]
+    // A version name is only a match when it is followed by the extra's own suffix
+    [InlineData("/Movies/Movie/Movie - 4Kish-trailer.mkv", 0)]
+    public void GetOwnerIdForExtra_AssignsExtraToItsVersion(string extraPath, int expectedVersion)
+    {
+        var (primary, alt1, alt2) = SetupVersionGroup();
+        var expectedId = expectedVersion switch
+        {
+            1 => alt1.Id,
+            2 => alt2.Id,
+            _ => primary.Id
+        };
+
+        var method = typeof(Video).GetMethod("GetOwnerIdForExtra", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+
+        var ownerId = (Guid)method!.Invoke(primary, [new Video { Id = Guid.NewGuid(), Path = extraPath }])!;
+
+        Assert.Equal(expectedId, ownerId);
+    }
+
+    [Fact]
+    public void GetExtraOwnerIds_FromAnyVersion_CoversEveryVersion()
+    {
+        var (primary, alt1, alt2) = SetupVersionGroup();
+
+        var method = typeof(Video).GetMethod("GetExtraOwnerIds", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+
+        // An extra is owned by the one version it is named after, and the extras of the movie as a
+        // whole are owned by the primary, so every version has to read all of them back
+        foreach (var version in new[] { primary, alt1, alt2 })
+        {
+            var ids = (Guid[])method!.Invoke(version, null)!;
+
+            Assert.Equal(3, ids.Length);
+            Assert.Contains(primary.Id, ids);
+            Assert.Contains(alt1.Id, ids);
+            Assert.Contains(alt2.Id, ids);
+        }
+    }
+
+    [Fact]
+    public void GetOwnedVersionIds_CoversEveryLocalVersion()
+    {
+        var (primary, alt1, alt2) = SetupVersionGroup();
+
+        var method = typeof(Video).GetMethod("GetOwnedVersionIds", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+
+        // The extras of all versions are maintained together, so all of them have to be read back
+        var ids = (Guid[])method!.Invoke(primary, null)!;
+
+        Assert.Equal([primary.Id, alt1.Id, alt2.Id], ids);
+    }
 }
