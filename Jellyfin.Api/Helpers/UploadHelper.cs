@@ -37,9 +37,9 @@ public class UploadHelper
         NamingOptions namingOptions)
     {
         var allDefinitions = new ExhaustiveBuilder()
-            {
-                UsageType = UsageType.PersonalNonCommercial
-            }.Build();
+        {
+            UsageType = UsageType.PersonalNonCommercial
+        }.Build();
 
         var extensions = namingOptions.AudioFileExtensions.Select(x => x.Replace(".", string.Empty, StringComparison.Ordinal)).ToArray();
         _audioDefinitions = allDefinitions
