@@ -98,5 +98,8 @@
     "NotificationOptionVideoPlayback": "Kykmyndaspæl byrjað",
     "NotificationOptionVideoPlaybackStopped": "Kykmyndaspæl steðgað",
     "NotificationOptionAudioPlayback": "Ljóðspæl byrjað",
-    "NotificationOptionAudioPlaybackStopped": "Ljóðspæl steðgað"
+    "NotificationOptionAudioPlaybackStopped": "Ljóðspæl steðgað",
+    "TaskExtractMediaSegments": "Leita eftir margmiðlabrotum",
+    "TaskExtractMediaSegmentsDescription": "Framleiður upplýsingar um brot í margmiðlum, við hjálp frá MediaSegment-virktum ískoytisforritum.",
+    "NotificationOptionCameraImageUploaded": "Ljósmynd uppsent"
 }
