@@ -109,5 +109,6 @@
     "Genres": "Genres",
     "Original": "Oorspronkelijk",
     "LyricDownloadFailureFromForItem": "Downloaden van liedteksten voor {1} van {0} mislukt",
-    "NameExtraBehindTheScenes": "Achter de schermen"
+    "NameExtraBehindTheScenes": "Achter de schermen",
+    "NameExtraClip": "Clip"
 }
