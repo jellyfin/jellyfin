@@ -58,12 +58,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
         /// <summary>
         /// Gets or sets the ids (the "N" formatted GUIDs from <c>VirtualFolderInfo.ItemId</c>) of the
-        /// libraries for which the unaired/missing episode provider is disabled. Whether episodes are
-        /// imported at all, and how, is still controlled by the global toggles above; this list only
-        /// opts individual libraries out. Libraries not listed here are enabled, so the global toggles
-        /// apply to every library unless it is explicitly opted out.
+        /// libraries for which the unaired/missing episode provider is enabled. Whether episodes are
+        /// imported at all, and how, is still controlled by the global toggles above; those toggles only
+        /// apply to the libraries listed here. Libraries not listed, including newly added ones, are
+        /// never processed, so an empty list disables the feature entirely.
         /// </summary>
-        public string[] DisabledMissingEpisodeLibraries { get; set; } = [];
+        public string[] EnabledMissingEpisodeLibraries { get; set; } = [];
 
         /// <summary>
         /// Gets or sets how often, in days, the scheduled task re-checks TMDb for newly announced

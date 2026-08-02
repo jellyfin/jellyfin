@@ -85,14 +85,15 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             // The feature is fully disabled: remove every virtual episode (and now-empty virtual season)
             // this provider previously created, across all libraries, then stop.
-            if (!configuration.ImportUnairedEpisodes && !configuration.ImportMissingEpisodes)
+            if ((!configuration.ImportUnairedEpisodes && !configuration.ImportMissingEpisodes)
+                || configuration.EnabledMissingEpisodeLibraries.Length == 0)
             {
                 RemoveAllVirtualItems(progress, cancellationToken);
                 return;
             }
 
             // Process non-ended series (they may have gained episodes) plus any series in a library that
-            // has been opted out (regardless of status) so the provider can prune the virtual episodes it
+            // is not opted in (regardless of status) so the provider can prune the virtual episodes it
             // previously created there. Ended series in enabled libraries cannot change, so they're skipped.
             var series = _libraryManager.GetItemList(new InternalItemsQuery
             {
@@ -142,22 +143,16 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         private bool IsEnabledForLibrary(BaseItem item)
         {
-            var disabledLibraries = Plugin.Instance?.Configuration.DisabledMissingEpisodeLibraries;
-            if (disabledLibraries is null || disabledLibraries.Length == 0)
+            var enabledLibraries = Plugin.Instance?.Configuration.EnabledMissingEpisodeLibraries;
+            if (enabledLibraries is null || enabledLibraries.Length == 0)
             {
-                return true;
+                return false;
             }
 
-            // A series can live under more than one collection folder; treat it as disabled only when
-            // every containing library is opted out.
-            var collectionFolders = _libraryManager.GetCollectionFolders(item);
-            if (collectionFolders.Count == 0)
-            {
-                return true;
-            }
-
-            return collectionFolders.Any(folder =>
-                !disabledLibraries.Contains(folder.Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase));
+            // A series can live under more than one collection folder; opting in any one of them is
+            // enough. An item that belongs to no collection folder cannot be opted in at all.
+            return _libraryManager.GetCollectionFolders(item).Any(folder =>
+                enabledLibraries.Contains(folder.Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase));
         }
 
         /// <summary>

@@ -75,8 +75,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             var importMissing = (configuration?.ImportMissingEpisodes).GetValueOrDefault();
 
             // The provider is inactive for this series when both global imports are off, or the series'
-            // library has been opted out. In either case remove every virtual episode (unaired and missing
-            // alike) it previously created, so disabling the feature cleans up on the next library scan.
+            // library has not been opted in. In either case remove every virtual episode (unaired and
+            // missing alike) it previously created, so disabling the feature cleans up on the next scan.
             if ((!importUnaired && !importMissing) || !IsEnabledForLibrary(item))
             {
                 if (!PruneAllVirtualEpisodes(item))
@@ -352,22 +352,16 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         private bool IsEnabledForLibrary(BaseItem item)
         {
-            var disabledLibraries = Plugin.Instance?.Configuration.DisabledMissingEpisodeLibraries;
-            if (disabledLibraries is null || disabledLibraries.Length == 0)
+            var enabledLibraries = Plugin.Instance?.Configuration.EnabledMissingEpisodeLibraries;
+            if (enabledLibraries is null || enabledLibraries.Length == 0)
             {
-                return true;
+                return false;
             }
 
-            // A series can live under more than one collection folder; treat it as disabled only when
-            // every containing library is opted out.
-            var collectionFolders = _libraryManager.GetCollectionFolders(item);
-            if (collectionFolders.Count == 0)
-            {
-                return true;
-            }
-
-            return collectionFolders.Any(folder =>
-                !disabledLibraries.Contains(folder.Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase));
+            // A series can live under more than one collection folder; opting in any one of them is
+            // enough. An item that belongs to no collection folder cannot be opted in at all.
+            return _libraryManager.GetCollectionFolders(item).Any(folder =>
+                enabledLibraries.Contains(folder.Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase));
         }
 
         private (HashSet<(int Season, int Episode)> Keys, Dictionary<(int Season, int Episode), Episode> Updatable) GetExistingEpisodes(Series series, bool pruneAgedOut, DateTime today, int gracePeriodDays, bool importSpecials, out bool pruned)

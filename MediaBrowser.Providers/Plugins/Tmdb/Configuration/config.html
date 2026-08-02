@@ -56,7 +56,7 @@
                     </div>
                     <div class="verticalSection">
                         <h2>Libraries</h2>
-                        <div class="fieldDescription" style="margin-bottom:1em;">Choose which TV libraries the unaired/missing episode options above apply to. The settings above are global; this only controls which libraries they run for. New libraries are enabled by default.</div>
+                        <div class="fieldDescription" style="margin-bottom:1em;">Choose which TV libraries the unaired/missing episode options above apply to. The settings above are global; this only controls which libraries they run for. Libraries are opted in individually, so newly added libraries are not processed until they are enabled here.</div>
                         <div id="missingEpisodeLibraries"></div>
                     </div>
                     <div class="verticalSection">
@@ -119,7 +119,7 @@
                     Dashboard.showLoadingMsg();
 
                     var clientConfig, pluginConfig;
-                    var populateMissingEpisodeLibraries = function (disabledLibraries) {
+                    var populateMissingEpisodeLibraries = function (enabledLibraries) {
                         var container = document.querySelector('#missingEpisodeLibraries');
                         ApiClient.getVirtualFolders().then(function (folders) {
                             // Series only live in TV libraries (and mixed-content libraries, which report
@@ -134,7 +134,7 @@
                             }
 
                             container.innerHTML = tvLibraries.map(function (folder) {
-                                var checked = disabledLibraries.indexOf(folder.ItemId) === -1 ? ' checked' : '';
+                                var checked = enabledLibraries.indexOf(folder.ItemId) === -1 ? '' : ' checked';
                                 return '<label class="checkboxContainer">'
                                     + '<input is="emby-checkbox" type="checkbox" class="missingEpisodeLibrary" data-library-id="' + folder.ItemId + '"' + checked + ' />'
                                     + '<span>' + folder.Name + '</span>'
@@ -216,7 +216,7 @@
                         document.querySelector('#hideMissingCastMembers').checked = config.HideMissingCastMembers;
                         document.querySelector('#hideMissingCrewMembers').checked = config.HideMissingCrewMembers;
 
-                        populateMissingEpisodeLibraries(config.DisabledMissingEpisodeLibraries || []);
+                        populateMissingEpisodeLibraries(config.EnabledMissingEpisodeLibraries || []);
 
                         var maxCastMembers = document.querySelector('#maxCastMembers');
                         maxCastMembers.value = config.MaxCastMembers;
@@ -258,9 +258,12 @@
                         config.ImportSpecials = document.querySelector('#importSpecials').checked;
                         config.MissingEpisodeRefreshIntervalDays = parseInt(document.querySelector('#missingEpisodeRefreshIntervalDays').value, 10);
                         config.UpcomingEpisodeGracePeriodDays = parseInt(document.querySelector('#upcomingEpisodeGracePeriodDays').value, 10);
-                        config.DisabledMissingEpisodeLibraries = Array.prototype.map.call(
-                            document.querySelectorAll('.missingEpisodeLibrary:not(:checked)'),
-                            function (checkbox) { return checkbox.getAttribute('data-library-id'); });
+                        var libraryCheckboxes = document.querySelectorAll('.missingEpisodeLibrary');
+                        if (libraryCheckboxes.length > 0) {
+                            config.EnabledMissingEpisodeLibraries = Array.prototype.filter
+                                .call(libraryCheckboxes, function (checkbox) { return checkbox.checked; })
+                                .map(function (checkbox) { return checkbox.getAttribute('data-library-id'); });
+                        }
                         config.MaxCastMembers = document.querySelector('#maxCastMembers').value;
                         config.MaxCrewMembers = document.querySelector('#maxCrewMembers').value;
                         config.HideMissingCastMembers = document.querySelector('#hideMissingCastMembers').checked;
