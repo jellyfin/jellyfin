@@ -155,7 +155,6 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
     /// <inheritdoc />
     public async Task<MetadataResult<MusicAlbum>> GetMetadata(AlbumInfo info, CancellationToken cancellationToken)
     {
-        // TODO: This sets essentially nothing. As-is, it's mostly useless. Make it actually pull metadata and use it.
         var query = MusicBrainz.Plugin.Instance!.MusicBrainzQuery;
         var releaseId = info.GetReleaseId();
         var releaseGroupId = info.GetReleaseGroupId();
@@ -169,13 +168,8 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         if (string.IsNullOrWhiteSpace(releaseId) && !string.IsNullOrWhiteSpace(releaseGroupId))
         {
             // TODO: Actually try to match the release. Simply taking the first result is stupid.
-            var releaseGroup = await query.LookupReleaseGroupAsync(new Guid(releaseGroupId), Include.None, null, cancellationToken).ConfigureAwait(false);
-            var release = releaseGroup.Releases?.Count > 0 ? releaseGroup.Releases[0] : null;
-            if (release is not null)
-            {
-                releaseId = release.Id.ToString();
-                result.HasMetadata = true;
-            }
+            var releaseGroupLookup = await query.LookupReleaseGroupAsync(new Guid(releaseGroupId), Include.None, null, cancellationToken).ConfigureAwait(false);
+            releaseId = releaseGroupLookup.Releases?.Count > 0 ? releaseGroupLookup.Releases[0].Id.ToString() : null;
         }
 
         // If there is no release ID, lookup a release with the info we have
@@ -205,41 +199,104 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
                 {
                     releaseGroupId = releaseResult.ReleaseGroup.Id.ToString();
                 }
-
-                result.HasMetadata = true;
-                result.Item.ProductionYear = releaseResult.Date?.Year;
-                result.Item.Overview = releaseResult.Annotation;
             }
         }
 
-        // If we have a release ID but not a release group ID, lookup the release group
-        if (!string.IsNullOrWhiteSpace(releaseId) && string.IsNullOrWhiteSpace(releaseGroupId))
+        if (string.IsNullOrWhiteSpace(releaseId) && string.IsNullOrWhiteSpace(releaseGroupId))
         {
-            var release = await query.LookupReleaseAsync(new Guid(releaseId), Include.ReleaseGroups, cancellationToken).ConfigureAwait(false);
-            releaseGroupId = release.ReleaseGroup?.Id.ToString();
-            result.HasMetadata = true;
+            return result;
         }
 
-        // If we have a release ID and a release group ID
-        if (!string.IsNullOrWhiteSpace(releaseId) || !string.IsNullOrWhiteSpace(releaseGroupId))
+        // Fetch the full release (and its release group) so we can populate everything MusicBrainz returns.
+        IRelease? release = null;
+        if (!string.IsNullOrWhiteSpace(releaseId))
         {
-            result.HasMetadata = true;
-        }
+            release = await query.LookupReleaseAsync(
+                new Guid(releaseId),
+                Include.Artists | Include.ReleaseGroups | Include.Labels | Include.Genres | Include.Tags,
+                cancellationToken).ConfigureAwait(false);
 
-        if (result.HasMetadata)
-        {
-            if (!string.IsNullOrEmpty(releaseId))
+            if (string.IsNullOrWhiteSpace(releaseGroupId) && release?.ReleaseGroup?.Id is not null)
             {
-                result.Item.SetProviderId(MetadataProvider.MusicBrainzAlbum, releaseId);
-            }
-
-            if (!string.IsNullOrEmpty(releaseGroupId))
-            {
-                result.Item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, releaseGroupId);
+                releaseGroupId = release.ReleaseGroup.Id.ToString();
             }
         }
+
+        IReleaseGroup? releaseGroup = null;
+        if (!string.IsNullOrWhiteSpace(releaseGroupId))
+        {
+            releaseGroup = await query.LookupReleaseGroupAsync(
+                new Guid(releaseGroupId),
+                Include.Artists | Include.Genres | Include.Tags,
+                null,
+                cancellationToken).ConfigureAwait(false);
+        }
+
+        result.HasMetadata = true;
+
+        if (!string.IsNullOrEmpty(releaseId))
+        {
+            result.Item.SetProviderId(MetadataProvider.MusicBrainzAlbum, releaseId);
+        }
+
+        if (!string.IsNullOrEmpty(releaseGroupId))
+        {
+            result.Item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, releaseGroupId);
+        }
+
+        Populate(result.Item, release, releaseGroup);
 
         return result;
+    }
+
+    private static void Populate(MusicAlbum item, IRelease? release, IReleaseGroup? releaseGroup)
+    {
+        // Prefer the release group (album-level) data, falling back to the specific release.
+        // The release group's first release date is the original album date.
+        var date = releaseGroup?.FirstReleaseDate ?? release?.Date;
+        if (date is not null)
+        {
+            item.PremiereDate = date.NearestDate;
+            item.ProductionYear = date.Year;
+        }
+
+        var artistCredit = release?.ArtistCredit ?? releaseGroup?.ArtistCredit;
+        if (artistCredit is not null && artistCredit.Count > 0)
+        {
+            item.AlbumArtists = artistCredit
+                .Select(credit => credit.Name)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .ToArray();
+        }
+
+        var genres = releaseGroup?.Genres ?? release?.Genres;
+        if (genres is not null && genres.Count > 0)
+        {
+            item.Genres = genres
+                .OrderByDescending(genre => genre.VoteCount)
+                .Select(genre => genre.Name)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .ToArray();
+        }
+
+        var tags = releaseGroup?.Tags ?? release?.Tags;
+        if (tags is not null && tags.Count > 0)
+        {
+            item.Tags = tags
+                .OrderByDescending(tag => tag.VoteCount)
+                .Select(tag => tag.Name)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .ToArray();
+        }
+
+        if (release?.LabelInfo is not null && release.LabelInfo.Count > 0)
+        {
+            item.Studios = release.LabelInfo
+                .Where(labelInfo => !string.IsNullOrWhiteSpace(labelInfo.Label?.Name))
+                .Select(labelInfo => labelInfo.Label!.Name!)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
     }
 
     /// <inheritdoc />

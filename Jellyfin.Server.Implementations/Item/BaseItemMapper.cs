@@ -183,7 +183,7 @@ public static class BaseItemMapper
         if (dto is Folder folder)
         {
             folder.DateLastMediaAdded = entity.DateLastMediaAdded ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
-            if (entity.LinkedChildEntities is not null && entity.LinkedChildEntities.Count > 0)
+            if (entity.LinkedChildEntities is not null)
             {
                 folder.LinkedChildren = entity.LinkedChildEntities
                     .OrderBy(e => e.SortOrder)

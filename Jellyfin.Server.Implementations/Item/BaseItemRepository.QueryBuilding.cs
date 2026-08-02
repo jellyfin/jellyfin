@@ -503,62 +503,31 @@ public sealed partial class BaseItemRepository
     }
 
     /// <inheritdoc />
-    public IQueryable<Guid> GetFullyPlayedFolderIdsQuery(JellyfinDbContext context, IQueryable<Guid> folderIds, User user)
+    public IQueryable<BaseItemEntity> GetAccessFilteredLeafItemsQuery(JellyfinDbContext context, User user, bool includeOwnedItems = false)
     {
         ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(folderIds);
         ArgumentNullException.ThrowIfNull(user);
-
-        var filter = new InternalItemsQuery(user);
-        var userId = user.Id;
 
         var leafItems = context.BaseItems
             .AsNoTracking()
-            .Where(b => !b.IsFolder && !b.IsVirtualItem);
-        leafItems = ApplyAccessFiltering(context, leafItems, filter);
+            .Where(e => !e.IsFolder && !e.IsVirtualItem);
 
-        var playedLeafItems = leafItems
-            .Select(b => new { b.Id, Played = b.UserData!.Any(ud => ud.UserId == userId && ud.Played) });
+        return ApplyAccessFiltering(context, leafItems, new InternalItemsQuery(user) { IncludeOwnedItems = includeOwnedItems });
+    }
 
-        var ancestorLeaves = context.AncestorIds
-            .Where(a => folderIds.Contains(a.ParentItemId))
-            .Join(
-                playedLeafItems,
-                a => a.ItemId,
-                b => b.Id,
-                (a, b) => new { FolderId = a.ParentItemId, b.Id, b.Played });
+    /// <inheritdoc />
+    public Expression<Func<BaseItemEntity, bool>> BuildHasDescendantFilter(JellyfinDbContext context, IQueryable<BaseItemEntity> descendants)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(descendants);
 
-        var linkedLeaves = context.LinkedChildren
-            .Where(lc => folderIds.Contains(lc.ParentId))
-            .Join(
-                playedLeafItems,
-                lc => lc.ChildId,
-                b => b.Id,
-                (lc, b) => new { FolderId = lc.ParentId, b.Id, b.Played });
-
-        var linkedFolderLeaves = context.LinkedChildren
-            .Where(lc => folderIds.Contains(lc.ParentId))
-            .Join(
-                context.BaseItems.Where(b => b.IsFolder),
-                lc => lc.ChildId,
-                b => b.Id,
-                (lc, b) => new { lc.ParentId, FolderChildId = b.Id })
-            .Join(
-                context.AncestorIds,
-                x => x.FolderChildId,
-                a => a.ParentItemId,
-                (x, a) => new { x.ParentId, DescendantId = a.ItemId })
-            .Join(
-                playedLeafItems,
-                x => x.DescendantId,
-                b => b.Id,
-                (x, b) => new { FolderId = x.ParentId, b.Id, b.Played });
-
-        return ancestorLeaves
-            .Union(linkedLeaves)
-            .Union(linkedFolderLeaves)
-            .GroupBy(x => x.FolderId)
-            .Where(g => g.Select(x => x.Id).Distinct().Count() == g.Where(x => x.Played).Select(x => x.Id).Distinct().Count())
-            .Select(g => g.Key);
+        // Descendants are reachable through the ancestor chain and - for BoxSets and Playlists - as
+        // linked children, which can themselves be folders contributing their own descendants.
+        // Every step is a correlated index seek, so only the rows the outer query keeps are visited
+        // and a folder is left as soon as its first matching descendant is found.
+        return e => context.AncestorIds.Any(a => a.ParentItemId == e.Id && descendants.Any(d => d.Id == a.ItemId))
+            || context.LinkedChildren.Any(lc => lc.ParentId == e.Id
+                && (descendants.Any(d => d.Id == lc.ChildId)
+                    || context.AncestorIds.Any(a => a.ParentItemId == lc.ChildId && descendants.Any(d => d.Id == a.ItemId))));
     }
 }
