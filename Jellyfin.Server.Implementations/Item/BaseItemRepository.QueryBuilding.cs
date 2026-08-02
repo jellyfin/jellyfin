@@ -390,7 +390,8 @@ public sealed partial class BaseItemRepository
 
         var baseQuery = context.BaseItems
             .AsNoTracking()
-            .Where(b => allDescendantIds.Contains(b.Id) && !b.IsFolder && !b.IsVirtualItem);
+            .Where(b => allDescendantIds.Contains(b.Id))
+            .Where(DescendantQueryHelper.IsCountableLeaf);
 
         return ApplyAccessFiltering(context, baseQuery, filter);
     }
@@ -510,7 +511,7 @@ public sealed partial class BaseItemRepository
 
         var leafItems = context.BaseItems
             .AsNoTracking()
-            .Where(e => !e.IsFolder && !e.IsVirtualItem);
+            .Where(DescendantQueryHelper.IsCountableLeaf);
 
         return ApplyAccessFiltering(context, leafItems, new InternalItemsQuery(user) { IncludeOwnedItems = includeOwnedItems });
     }
