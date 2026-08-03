@@ -180,7 +180,7 @@ namespace Jellyfin.LiveTv.Listings
         {
             var programInfo = GetProgramInfo(program, info);
 
-            if (XmlTvProgramEtag.TryCreate(programInfo, out var etag, out var reason))
+            if (ProgramEtag.TryCreate(programInfo, out var etag, out var reason))
             {
                 programInfo.Etag = etag;
             }
