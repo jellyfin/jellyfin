@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -329,20 +330,24 @@ public class BaseItemTests
     [Theory]
     // The season folder is the season's own, so the extras that sit in it are the season's. Whether
     // the season holds one episode or two must not decide where its extras show up.
-    [InlineData("/TV/Show/Season 1/S01E01 - 1080p.mkv", false)]
+    [InlineData(false, false)]
     // An episode with a folder of its own keeps the extras in it, as nothing else searches there
-    [InlineData("/TV/Show/Season 1/S01E01/S01E01 - 1080p.mkv", true)]
-    public async Task RefreshedOwnedItems_EpisodeInAContainersOwnFolder_LeavesExtrasToTheContainer(string episodePath, bool expectSearch)
+    [InlineData(true, true)]
+    public async Task RefreshedOwnedItems_EpisodeInAContainersOwnFolder_LeavesExtrasToTheContainer(bool episodeHasOwnFolder, bool expectSearch)
     {
+        var seasonPath = Path.Combine("TV", "Show", "Season 1");
+        var episodeFolder = episodeHasOwnFolder ? Path.Combine(seasonPath, "S01E01") : seasonPath;
+        var episodePath = Path.Combine(episodeFolder, "S01E01 - 1080p.mkv");
+
         // The season needs a parent of its own, as an item without one maintains no owned items
-        var season = new Season { Id = Guid.NewGuid(), ParentId = Guid.NewGuid(), Path = "/TV/Show/Season 1" };
+        var season = new Season { Id = Guid.NewGuid(), ParentId = Guid.NewGuid(), Path = seasonPath };
         var episode = new Episode
         {
             Id = Guid.NewGuid(),
             ParentId = season.Id,
             Path = episodePath,
             // A version file is what makes an episode maintain owned items at all
-            LocalAlternateVersions = [episodePath.Replace("1080p", "720p", StringComparison.Ordinal)]
+            LocalAlternateVersions = [Path.Combine(episodeFolder, "S01E01 - 720p.mkv")]
         };
 
         var mediaSourceManager = new Mock<IMediaSourceManager>();
