@@ -1,20 +1,17 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Extensions;
-using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;
@@ -34,7 +31,6 @@ using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Book = MediaBrowser.Controller.Entities.Book;
@@ -187,20 +183,32 @@ namespace MediaBrowser.Providers.Manager
         {
             using (await _imageSaveLock.LockAsync(url, cancellationToken).ConfigureAwait(false))
             {
-                if (_memoryCache.TryGetValue(url, out (string ContentType, byte[] ImageContents)? cachedValue)
+                if (_memoryCache.TryGetValue(
+                        url,
+                        out (string ContentType, byte[] ImageContents, string? ETag, DateTime? LastModified)? cachedValue)
                     && cachedValue is not null)
                 {
-                    var imageContents = cachedValue.Value.ImageContents;
+                    var cached = cachedValue.Value;
+                    var imageContents = cached.ImageContents;
                     var cacheStream = new MemoryStream(imageContents, 0, imageContents.Length, false);
                     await using (cacheStream.ConfigureAwait(false))
                     {
                         await SaveImage(
                             item,
                             cacheStream,
-                            cachedValue.Value.ContentType,
+                            cached.ContentType,
                             type,
                             imageIndex,
                             cancellationToken).ConfigureAwait(false);
+
+                        // The validators are cached alongside the payload: without this, images served
+                        // from the cache would be stored without any, permanently disabling change
+                        // detection for them.
+                        RemoteImageMetadata.Record(
+                            RemoteImageMetadata.GetSavedImage(item, type, imageIndex),
+                            url,
+                            cached.ETag,
+                            cached.LastModified);
                         return;
                     }
                 }
@@ -239,7 +247,10 @@ namespace MediaBrowser.Providers.Manager
                 var stream = new MemoryStream(responseBytes, 0, responseBytes.Length, false);
                 await using (stream.ConfigureAwait(false))
                 {
-                    _memoryCache.Set(url, (contentType, responseBytes), TimeSpan.FromSeconds(10));
+                    var etag = response.Headers.ETag?.ToString();
+                    var lastModified = response.Content.Headers.LastModified?.UtcDateTime;
+
+                    _memoryCache.Set(url, (contentType, responseBytes, etag, lastModified), TimeSpan.FromSeconds(10));
 
                     await SaveImage(
                         item,
@@ -248,6 +259,14 @@ namespace MediaBrowser.Providers.Manager
                         type,
                         imageIndex,
                         cancellationToken).ConfigureAwait(false);
+
+                    // Record the source and its HTTP cache validators so later refreshes can detect
+                    // content changes without re-downloading.
+                    RemoteImageMetadata.Record(
+                        RemoteImageMetadata.GetSavedImage(item, type, imageIndex),
+                        url,
+                        etag,
+                        lastModified);
                 }
             }
         }
