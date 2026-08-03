@@ -281,6 +281,7 @@ public class GuideManager : IGuideManager
 
                 var newPrograms = new List<LiveTvProgram>();
                 var updatedPrograms = new List<LiveTvProgram>();
+                var programsToCache = new List<LiveTvProgram>();
 
                 foreach (var program in channelPrograms)
                 {
@@ -293,6 +294,13 @@ public class GuideManager : IGuideManager
                     else if (isUpdated)
                     {
                         updatedPrograms.Add(programItem);
+                    }
+                    else if (programItem.ImageInfos.Any(i => !i.IsLocalFile))
+                    {
+                        // An unchanged program still needs its images cached once it moves into the
+                        // cache window, which it does not do on the refresh that first stored it.
+                        // PreCacheImages applies the date and daily-limit rules.
+                        programsToCache.Add(programItem);
                     }
 
                     programIds.Add(programItem.Id);
@@ -326,6 +334,13 @@ public class GuideManager : IGuideManager
                         cancellationToken).ConfigureAwait(false);
 
                     await PreCacheImages(updatedPrograms, maxCacheDate).ConfigureAwait(false);
+                }
+
+                if (programsToCache.Count > 0)
+                {
+                    // ConvertImageToLocal persists each converted image itself, so these programs do
+                    // not need a save of their own.
+                    await PreCacheImages(programsToCache, maxCacheDate).ConfigureAwait(false);
                 }
 
                 var flagsChanged = currentChannel.IsMovie != isMovie
@@ -1000,7 +1015,13 @@ public class GuideManager : IGuideManager
         return (item, false, false);
     }
 
-    private static bool UpdateImages(BaseItem item, ProgramInfo info)
+    /// <summary>
+    /// Applies the program images from guide metadata.
+    /// </summary>
+    /// <param name="item">The program item to update.</param>
+    /// <param name="info">The guide metadata.</param>
+    /// <returns><c>true</c> when the item was changed and has to be saved.</returns>
+    internal static bool UpdateImages(BaseItem item, ProgramInfo info)
     {
         var updated = false;
 
@@ -1022,7 +1043,6 @@ public class GuideManager : IGuideManager
     private static bool UpdateImage(ImageType imageType, BaseItem item, ProgramInfo info)
     {
         var image = item.GetImages(imageType).FirstOrDefault();
-        var currentImagePath = image?.Path;
         var newImagePath = imageType switch
         {
             ImageType.Primary => info.ImagePath,
@@ -1037,42 +1057,43 @@ public class GuideManager : IGuideManager
             _ => null
         };
 
-        var sameImage = (currentImagePath?.Equals(newImageUrl, StringComparison.OrdinalIgnoreCase) ?? false)
-                                || (currentImagePath?.Equals(newImagePath, StringComparison.OrdinalIgnoreCase) ?? false);
+        // Compare against where the image came from, not where it currently lives: PreCacheImages
+        // rewrites Path to the local cache file, so comparing that to the guide URL would always look
+        // like a change and re-apply (and therefore re-download) the image on every refresh.
+        // Source is empty for images stored before it was tracked, hence the Path fallback.
+        var currentSource = string.IsNullOrEmpty(image?.Source) ? image?.Path : image.Source;
+
+        var sameImage = (currentSource?.Equals(newImageUrl, StringComparison.OrdinalIgnoreCase) ?? false)
+                                || (currentSource?.Equals(newImagePath, StringComparison.OrdinalIgnoreCase) ?? false);
         if (sameImage)
         {
             return false;
         }
 
-        if (!string.IsNullOrWhiteSpace(newImagePath))
+        var newSource = !string.IsNullOrWhiteSpace(newImagePath) ? newImagePath : newImageUrl;
+        if (!string.IsNullOrWhiteSpace(newSource))
         {
             item.SetImage(
                 new ItemImageInfo
                 {
-                    Path = newImagePath,
-                    Type = imageType
+                    Path = newSource,
+                    Type = imageType,
+                    Source = newSource
                 },
                 0);
 
             return true;
         }
 
-        if (!string.IsNullOrWhiteSpace(newImageUrl))
+        if (image is null)
         {
-            item.SetImage(
-                new ItemImageInfo
-                {
-                    Path = newImageUrl,
-                    Type = imageType
-                },
-                0);
-
-            return true;
+            return false;
         }
 
+        // Report the removal, or it would only be applied in memory and never persisted.
         item.RemoveImage(image);
 
-        return false;
+        return true;
     }
 
     private async Task PreCacheImages(IReadOnlyList<BaseItem> programs, DateTime maxCacheDate)
