@@ -265,13 +265,17 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         if (filter.User is not null && filter.IsFavorite.HasValue)
         {
             var personType = itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
-            var oldQuery = query;
+            var userId = filter.User.Id;
+            var isFavorite = filter.IsFavorite.Value;
+            var favoriteItemIds = context.UserData
+                .Where(u => u.UserId.Equals(userId) && u.IsFavorite == isFavorite)
+                .Select(u => u.ItemId);
 
-            query = context.UserData
-                .Where(u => u.Item!.Type == personType && u.IsFavorite == filter.IsFavorite && u.UserId.Equals(filter.User.Id))
-                .Join(oldQuery, e => e.Item!.Name, e => e.Name, (item, person) => person)
-                .Distinct()
-                .AsNoTracking();
+            var favoriteNames = context.BaseItems
+                .Where(b => b.Type == personType && favoriteItemIds.Contains(b.Id))
+                .Select(b => b.Name);
+
+            query = query.Where(e => favoriteNames.Contains(e.Name));
         }
 
         if (filter.AccessFilter is not null)
