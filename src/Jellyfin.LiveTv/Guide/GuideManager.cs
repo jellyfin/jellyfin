@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
@@ -8,6 +12,7 @@ using Jellyfin.Extensions;
 using Jellyfin.LiveTv.Configuration;
 using Jellyfin.LiveTv.Listings;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -27,6 +32,7 @@ public class GuideManager : IGuideManager
     private const int MaxGuideDays = 14;
     private const string EtagKey = "ProgramEtag";
     private const string ExternalServiceTag = "ExternalServiceId";
+    private const int ChannelSaveBatchSize = 100;
 
     private static readonly ParallelOptions _cacheParallelOptions = new() { MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 10) };
 
@@ -40,6 +46,7 @@ public class GuideManager : IGuideManager
     private readonly IRecordingsManager _recordingsManager;
     private readonly ISchedulesDirectService _schedulesDirectService;
     private readonly LiveTvDtoService _tvDtoService;
+    private readonly IHttpClientFactory _httpClientFactory;
 
     /// <summary>
     /// Amount of days images are pre-cached from external sources.
@@ -59,6 +66,7 @@ public class GuideManager : IGuideManager
     /// <param name="recordingsManager">The <see cref="IRecordingsManager"/>.</param>
     /// <param name="schedulesDirectService">The <see cref="ISchedulesDirectService"/>.</param>
     /// <param name="tvDtoService">The <see cref="LiveTvDtoService"/>.</param>
+    /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
     public GuideManager(
         ILogger<GuideManager> logger,
         IConfigurationManager config,
@@ -69,7 +77,8 @@ public class GuideManager : IGuideManager
         ITunerHostManager tunerHostManager,
         IRecordingsManager recordingsManager,
         ISchedulesDirectService schedulesDirectService,
-        LiveTvDtoService tvDtoService)
+        LiveTvDtoService tvDtoService,
+        IHttpClientFactory httpClientFactory)
     {
         _logger = logger;
         _config = config;
@@ -81,6 +90,7 @@ public class GuideManager : IGuideManager
         _recordingsManager = recordingsManager;
         _schedulesDirectService = schedulesDirectService;
         _tvDtoService = tvDtoService;
+        _httpClientFactory = httpClientFactory;
     }
 
     /// <inheritdoc />
@@ -181,6 +191,10 @@ public class GuideManager : IGuideManager
             .ToList();
 
         var list = new List<LiveTvChannel>();
+        // Keyed by item id: a duplicate channel id in the provider's list maps to the same cached
+        // BaseItem instance, which the parallel icon pass below would then mutate from two tasks.
+        var channelSources = new Dictionary<Guid, (LiveTvChannel Channel, ChannelInfo Info)>();
+        var changedChannels = new HashSet<Guid>();
 
         var numComplete = 0;
         var parentFolder = _liveTvManager.GetInternalLiveTvFolder(cancellationToken);
@@ -191,9 +205,14 @@ public class GuideManager : IGuideManager
 
             try
             {
-                var item = await GetChannel(channelInfo.Item2, channelInfo.Item1, parentFolder, cancellationToken).ConfigureAwait(false);
+                var (item, changed) = await GetChannel(channelInfo.Item2, channelInfo.Item1, parentFolder, cancellationToken).ConfigureAwait(false);
 
                 list.Add(item);
+                channelSources[item.Id] = (item, channelInfo.Item2);
+                if (changed)
+                {
+                    changedChannels.Add(item.Id);
+                }
             }
             catch (OperationCanceledException)
             {
@@ -208,14 +227,27 @@ public class GuideManager : IGuideManager
             double percent = numComplete;
             percent /= allChannelsList.Count;
 
-            progress.Report((5 * percent) + 10);
+            progress.Report((3 * percent) + 10);
         }
+
+        var (iconChanged, validatorsChanged) = await UpdateChannelImagesAsync(
+            channelSources.Values,
+            new Progress<double>(percent => progress.Report((2 * percent) + 13)),
+            cancellationToken).ConfigureAwait(false);
+
+        // Persist the icon results now instead of leaving it to the program loop below: the pass
+        // mutated the shared cached items, so an unsaved change makes the next refresh believe the icon
+        // is current and the stale image would stick. ImageUpdate is what makes UpdateItemsAsync
+        // download and localise the new remote icon, along with its dimensions and blurhash.
+        await SaveChannelsInBatchesAsync(iconChanged, parentFolder, ItemUpdateType.ImageUpdate, cancellationToken).ConfigureAwait(false);
+        await SaveChannelsInBatchesAsync(validatorsChanged, parentFolder, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
 
         progress.Report(15);
 
         numComplete = 0;
         var programIds = new List<Guid>();
         var channels = new List<Guid>();
+        var channelsToSave = new List<BaseItem>();
 
         var guideDays = GetGuideDays();
 
@@ -296,6 +328,12 @@ public class GuideManager : IGuideManager
                     await PreCacheImages(updatedPrograms, maxCacheDate).ConfigureAwait(false);
                 }
 
+                var flagsChanged = currentChannel.IsMovie != isMovie
+                    || currentChannel.IsNews != isNews
+                    || currentChannel.IsSports != isSports
+                    || currentChannel.IsSeries != isSeries
+                    || (isKids && !currentChannel.Tags.Contains("Kids", StringComparer.OrdinalIgnoreCase));
+
                 currentChannel.IsMovie = isMovie;
                 currentChannel.IsNews = isNews;
                 currentChannel.IsSports = isSports;
@@ -306,13 +344,23 @@ public class GuideManager : IGuideManager
                     currentChannel.AddTag("Kids");
                 }
 
-                await currentChannel.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
-                await currentChannel.RefreshMetadata(
-                    new MetadataRefreshOptions(new DirectoryService(_fileSystem))
-                    {
-                        ForceSave = true
-                    },
-                    cancellationToken).ConfigureAwait(false);
+                // Persisting the channel and re-running metadata providers is expensive, so only do it when needed.
+                // Icon changes are already saved above and deliberately not handled here.
+                if (changedChannels.Contains(currentChannel.Id))
+                {
+                    // The channel metadata changed: run a full refresh.
+                    await currentChannel.RefreshMetadata(
+                        new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                        {
+                            ForceSave = true
+                        },
+                        cancellationToken).ConfigureAwait(false);
+                }
+                else if (flagsChanged)
+                {
+                    // Only the derived category flags changed.
+                    channelsToSave.Add(currentChannel);
+                }
             }
             catch (OperationCanceledException)
             {
@@ -323,14 +371,318 @@ public class GuideManager : IGuideManager
                 _logger.LogError(ex, "Error getting programs for channel {Name}", currentChannel.Name);
             }
 
+            if (channelsToSave.Count >= ChannelSaveBatchSize)
+            {
+                await FlushChannelUpdatesAsync(channelsToSave, parentFolder, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                channelsToSave.Clear();
+            }
+
             numComplete++;
             double percent = numComplete / (double)allChannelsList.Count;
 
             progress.Report((85 * percent) + 15);
         }
 
+        // Flush any channels left over from the last, partial batch.
+        await FlushChannelUpdatesAsync(channelsToSave, parentFolder, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+        channelsToSave.Clear();
+
         progress.Report(100);
         return new Tuple<List<Guid>, List<Guid>>(channels, programIds);
+    }
+
+    private async Task SaveChannelsInBatchesAsync(
+        IReadOnlyList<BaseItem> channels,
+        BaseItem parentFolder,
+        ItemUpdateType reason,
+        CancellationToken cancellationToken)
+    {
+        foreach (var batch in channels.Chunk(ChannelSaveBatchSize))
+        {
+            await FlushChannelUpdatesAsync(batch, parentFolder, reason, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private async Task FlushChannelUpdatesAsync(
+        IReadOnlyList<BaseItem> channelsToSave,
+        BaseItem parentFolder,
+        ItemUpdateType reason,
+        CancellationToken cancellationToken)
+    {
+        if (channelsToSave.Count == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            await _libraryManager.UpdateItemsAsync(channelsToSave, parentFolder, reason, cancellationToken).ConfigureAwait(false);
+            return;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving {Count} updated Live TV channels, retrying individually", channelsToSave.Count);
+        }
+
+        // UpdateItemsAsync persists the whole set, so a single bad channel would discard the batch.
+        foreach (var channel in channelsToSave)
+        {
+            try
+            {
+                await _libraryManager.UpdateItemAsync(channel, parentFolder, reason, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving updated Live TV channel {Name}", channel.Name);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Detects and applies channel icon changes for a whole channel list, in parallel.
+    /// </summary>
+    /// <param name="channels">The channels and their guide or tuner metadata. Must not contain duplicate items.</param>
+    /// <param name="progress">Reports the fraction of channels processed.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The channels whose icon changed, and those where only the cache validators changed.</returns>
+    private async Task<(List<BaseItem> IconChanged, List<BaseItem> ValidatorsChanged)> UpdateChannelImagesAsync(
+        IReadOnlyCollection<(LiveTvChannel Channel, ChannelInfo Info)> channels,
+        IProgress<double> progress,
+        CancellationToken cancellationToken)
+    {
+        if (channels.Count == 0)
+        {
+            return ([], []);
+        }
+
+        // Both lists only hold in-memory mutations: the caller has to persist them. IconChanged needs
+        // ItemUpdateType.ImageUpdate so the new remote icon is downloaded, the rest a plain save.
+        var iconChanged = new ConcurrentBag<BaseItem>();
+        var validatorsChanged = new ConcurrentBag<BaseItem>();
+
+        var options = new ParallelOptions
+        {
+            MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 6),
+            CancellationToken = cancellationToken
+        };
+
+        var numComplete = 0;
+
+        await Parallel.ForEachAsync(
+            channels,
+            options,
+            async (source, ct) =>
+            {
+                try
+                {
+                    var result = await UpdateChannelImageIfNeededAsync(
+                        source.Channel,
+                        source.Info.ImagePath,
+                        source.Info.ImageUrl,
+                        ct).ConfigureAwait(false);
+
+                    switch (result)
+                    {
+                        case ChannelImageUpdate.ImageChanged:
+                            iconChanged.Add(source.Channel);
+                            break;
+                        case ChannelImageUpdate.ValidatorsOnly:
+                            validatorsChanged.Add(source.Channel);
+                            break;
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error updating icon for channel {Name}", source.Channel.Name);
+                }
+
+                // This phase is network bound and can take minutes on large channel lists.
+                progress.Report(Interlocked.Increment(ref numComplete) / (double)channels.Count);
+            }).ConfigureAwait(false);
+
+        return ([.. iconChanged], [.. validatorsChanged]);
+    }
+
+    /// <summary>
+    /// Applies the channel icon from guide or tuner metadata when it actually changed.
+    /// </summary>
+    /// <param name="item">The channel item.</param>
+    /// <param name="imagePath">The local image path from the tuner, if any.</param>
+    /// <param name="imageUrl">The remote image URL from the guide provider, if any.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>What the caller has to persist, if anything.</returns>
+    // Any result other than None must be persisted by the caller: item is the shared cached instance,
+    // so an unsaved mutation makes the next refresh believe nothing changed and leaves the icon stale.
+    private async Task<ChannelImageUpdate> UpdateChannelImageIfNeededAsync(
+        BaseItem item,
+        string? imagePath,
+        string? imageUrl,
+        CancellationToken cancellationToken)
+    {
+        var newImageSource = !string.IsNullOrWhiteSpace(imagePath)
+            ? imagePath
+            : imageUrl;
+
+        if (string.IsNullOrWhiteSpace(newImageSource))
+        {
+            return ChannelImageUpdate.None;
+        }
+
+        // Only remote http(s) sources can be probed for changes; a local tuner path is treated as-is.
+        var isRemote = string.IsNullOrWhiteSpace(imagePath)
+            && (newImageSource.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                || newImageSource.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
+
+        var primary = item.GetImageInfo(ImageType.Primary, 0);
+
+        // Apply unconditionally when the channel has no primary image yet or the source path/URL changed.
+        if (primary is null || !string.Equals(primary.Source, newImageSource, StringComparison.Ordinal))
+        {
+            ApplySource(item, newImageSource, etag: null, lastModified: null);
+            return ChannelImageUpdate.ImageChanged;
+        }
+
+        // Same local (tuner) path or a non-http source: keep the cached image, nothing to detect.
+        if (!isRemote)
+        {
+            return ChannelImageUpdate.None;
+        }
+
+        // Same remote URL: only re-apply (and re-download) when the picon content actually changed.
+        var probe = await ProbeRemoteAsync(newImageSource, primary.ETag, primary.SourceLastModified, cancellationToken).ConfigureAwait(false);
+
+        if (probe.Changed)
+        {
+            ApplySource(item, newImageSource, probe.ETag, probe.LastModified);
+            return ChannelImageUpdate.ImageChanged;
+        }
+
+        // Newly learned validators have to be saved, otherwise every later refresh probes without them
+        // and could never detect a change.
+        if (probe.LearnedValidators)
+        {
+            primary.ETag = probe.ETag;
+            primary.SourceLastModified = probe.LastModified;
+            return ChannelImageUpdate.ValidatorsOnly;
+        }
+
+        return ChannelImageUpdate.None;
+    }
+
+    private static void ApplySource(BaseItem item, string source, string? etag, DateTime? lastModified)
+    {
+        item.SetImagePath(ImageType.Primary, source);
+
+        // SetImagePath preserves fields it does not know about, so update the source/validators explicitly.
+        var image = item.GetImageInfo(ImageType.Primary, 0);
+        if (image is not null)
+        {
+            image.Source = source;
+            image.ETag = etag;
+            image.SourceLastModified = lastModified;
+        }
+    }
+
+    private async Task<RemoteProbeResult> ProbeRemoteAsync(
+        string url,
+        string? storedETag,
+        DateTime? storedLastModified,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            if (!string.IsNullOrEmpty(storedETag))
+            {
+                request.Headers.TryAddWithoutValidation("If-None-Match", storedETag);
+            }
+
+            if (storedLastModified.HasValue)
+            {
+                request.Headers.TryAddWithoutValidation(
+                    "If-Modified-Since",
+                    storedLastModified.Value.ToUniversalTime().ToString("R", CultureInfo.InvariantCulture));
+            }
+
+            var client = _httpClientFactory.CreateClient(NamedClient.Default);
+            // ResponseHeadersRead avoids buffering the body: on a 200 we inspect the validators and
+            // dispose without downloading the payload (the actual download happens later, only if needed).
+            using var response = await client
+                .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (response.StatusCode == HttpStatusCode.NotModified)
+            {
+                return new RemoteProbeResult(false, false, storedETag, storedLastModified);
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                // Can't determine the state; keep the cached icon rather than re-downloading every refresh.
+                _logger.LogDebug("Channel icon {Url} returned {StatusCode}; keeping cached image", url, response.StatusCode);
+                return new RemoteProbeResult(false, false, storedETag, storedLastModified);
+            }
+
+            var newETag = response.Headers.ETag?.ToString();
+            var newLastModified = response.Content.Headers.LastModified?.UtcDateTime;
+
+            var hadValidators = !string.IsNullOrEmpty(storedETag) || storedLastModified.HasValue;
+            var hasValidators = !string.IsNullOrEmpty(newETag) || newLastModified.HasValue;
+
+            if (!hasValidators)
+            {
+                // The server exposes no cache validators, so we can't tell whether it changed: re-download.
+                return new RemoteProbeResult(true, false, null, null);
+            }
+
+            if (!hadValidators)
+            {
+                // First time we record validators for an already-cached icon; assume the cache is current.
+                return new RemoteProbeResult(false, true, newETag, newLastModified);
+            }
+
+            // Prefer the ETag when both sides have one: it is authoritative, while Last-Modified is often
+            // inconsistent across load-balanced origins and would otherwise cause spurious re-downloads.
+            bool unchanged;
+            if (!string.IsNullOrEmpty(newETag) && !string.IsNullOrEmpty(storedETag))
+            {
+                unchanged = string.Equals(newETag, storedETag, StringComparison.Ordinal);
+            }
+            else
+            {
+                unchanged = newLastModified.HasValue && newLastModified == storedLastModified;
+            }
+
+            // Only worth a save when a validator we did not have before appeared. Drift in one that is
+            // already stored (typically Last-Modified varying across load-balanced origins while the
+            // authoritative ETag is stable) must not trigger one, or every refresh re-saves every channel.
+            var learned = (string.IsNullOrEmpty(storedETag) && !string.IsNullOrEmpty(newETag))
+                || (!storedLastModified.HasValue && newLastModified.HasValue);
+
+            return new RemoteProbeResult(!unchanged, learned, newETag, newLastModified);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            // Network error, timeout or unsupported method: keep the cached icon.
+            _logger.LogDebug(ex, "Unable to check channel icon {Url} for changes; keeping cached image", url);
+            return new RemoteProbeResult(false, false, storedETag, storedLastModified);
+        }
     }
 
     private void CleanDatabase(Guid[] currentIdList, BaseItemKind[] validTypes, IProgress<double> progress, CancellationToken cancellationToken)
@@ -377,7 +729,7 @@ public class GuideManager : IGuideManager
         }
     }
 
-    private async Task<LiveTvChannel> GetChannel(
+    private async Task<(LiveTvChannel Item, bool Changed)> GetChannel(
         ChannelInfo channelInfo,
         string serviceName,
         BaseItem parentFolder,
@@ -449,24 +801,8 @@ public class GuideManager : IGuideManager
 
         item.Name = channelInfo.Name;
 
-        var currentPrimary = item.GetImageInfo(ImageType.Primary, 0);
-        var imageUrlIsNull = string.IsNullOrWhiteSpace(channelInfo.ImageUrl);
-
-        // Update channel image if image URL has changed
-        if (currentPrimary is null
-            || (!imageUrlIsNull && !string.Equals(currentPrimary.Path, channelInfo.ImageUrl, StringComparison.Ordinal)))
-        {
-            if (!string.IsNullOrWhiteSpace(channelInfo.ImagePath))
-            {
-                item.SetImagePath(ImageType.Primary, channelInfo.ImagePath);
-                forceUpdate = true;
-            }
-            else if (!imageUrlIsNull)
-            {
-                item.SetImagePath(ImageType.Primary, channelInfo.ImageUrl);
-                forceUpdate = true;
-            }
-        }
+        // The icon is deliberately not handled here: UpdateChannelImagesAsync probes every channel's
+        // source in parallel afterwards, so an unchanged picon is not re-downloaded on every refresh.
 
         if (isNew)
         {
@@ -477,7 +813,7 @@ public class GuideManager : IGuideManager
             await _libraryManager.UpdateItemAsync(item, parentFolder, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
         }
 
-        return item;
+        return (item, isNew || forceUpdate);
     }
 
     private (LiveTvProgram Item, bool IsNew, bool IsUpdated) GetProgram(
@@ -797,4 +1133,7 @@ public class GuideManager : IGuideManager
                 }
             }).ConfigureAwait(false);
     }
+
+    // LearnedValidators: a cache validator that was not stored before is now available.
+    private readonly record struct RemoteProbeResult(bool Changed, bool LearnedValidators, string? ETag, DateTime? LastModified);
 }
