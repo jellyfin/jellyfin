@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.Extensions;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.People
 {
@@ -120,8 +121,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                     Name = info.Name,
                     HomePageUrl = person.Homepage,
                     Overview = person.Biography,
-                    PremiereDate = person.Birthday?.ToUniversalTime(),
-                    EndDate = person.Deathday?.ToUniversalTime()
+                    PremiereDate = person.Birthday.AsCalendarDate(),
+                    EndDate = person.Deathday.AsCalendarDate()
                 };
 
                 if (!string.IsNullOrWhiteSpace(person.PlaceOfBirth))

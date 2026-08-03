@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.Extensions;
 using MediaBrowser.Providers.Music;
 using MetaBrainz.MusicBrainz;
 using MetaBrainz.MusicBrainz.Interfaces.Entities;
@@ -113,7 +114,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         {
             Name = releaseSearchResult.Title,
             ProductionYear = releaseSearchResult.Date?.Year,
-            PremiereDate = releaseSearchResult.Date?.NearestDate,
+            PremiereDate = releaseSearchResult.Date?.NearestDate.AsCalendarDate(),
             SearchProviderName = Name
         };
 
@@ -256,7 +257,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         var date = releaseGroup?.FirstReleaseDate ?? release?.Date;
         if (date is not null)
         {
-            item.PremiereDate = date.NearestDate;
+            item.PremiereDate = date.NearestDate.AsCalendarDate();
             item.ProductionYear = date.Year;
         }
 
