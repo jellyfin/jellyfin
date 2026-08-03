@@ -159,8 +159,8 @@ public class GuideManager : IGuideManager
 
         if (cleanDatabase)
         {
-            CleanDatabase(newChannelIdList.ToArray(), [BaseItemKind.LiveTvChannel], progress, cancellationToken);
-            CleanDatabase(newProgramIdList.ToArray(), [BaseItemKind.LiveTvProgram], progress, cancellationToken);
+            CleanDatabase(newChannelIdList, [BaseItemKind.LiveTvChannel], progress, cancellationToken);
+            CleanDatabase(newProgramIdList, [BaseItemKind.LiveTvProgram], progress, cancellationToken);
         }
 
         var coreService = _liveTvManager.Services.OfType<DefaultLiveTvService>().FirstOrDefault();
@@ -700,13 +700,17 @@ public class GuideManager : IGuideManager
         }
     }
 
-    private void CleanDatabase(Guid[] currentIdList, BaseItemKind[] validTypes, IProgress<double> progress, CancellationToken cancellationToken)
+    private void CleanDatabase(IReadOnlyCollection<Guid> currentIdList, BaseItemKind[] validTypes, IProgress<double> progress, CancellationToken cancellationToken)
     {
         var list = _itemRepo.GetItemIdsList(new InternalItemsQuery
         {
             IncludeItemTypes = validTypes,
             DtoOptions = new DtoOptions(false)
         });
+
+        // Both collections scale with the number of programs, so a linear lookup per row would make
+        // this quadratic in the size of the guide.
+        var currentIds = currentIdList as HashSet<Guid> ?? [.. currentIdList];
 
         var numComplete = 0;
 
@@ -720,7 +724,7 @@ public class GuideManager : IGuideManager
                 continue;
             }
 
-            if (!currentIdList.Contains(itemId))
+            if (!currentIds.Contains(itemId))
             {
                 var item = _libraryManager.GetItemById(itemId);
 
