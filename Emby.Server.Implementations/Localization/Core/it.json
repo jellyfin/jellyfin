@@ -108,5 +108,11 @@
     "CleanupUserDataTask": "Task di pulizia dei dati utente",
     "CleanupUserDataTaskDescription": "Pulisce tutti i dati utente (stato di visione, status preferiti, ecc.) dai contenuti non più presenti da almeno 90 giorni.",
     "Original": "Originale",
-    "LyricDownloadFailureFromForItem": "Scaricamento dei testi non riuscito da {0} per {1}"
+    "LyricDownloadFailureFromForItem": "Scaricamento dei testi non riuscito da {0} per {1}",
+    "NameExtraBehindTheScenes": "Dietro le scene",
+    "NameExtraClip": "Filmato",
+    "NameExtraDeletedScene": "Scena eliminata",
+    "NameExtraInterview": "Intervista",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraScene": "Scena"
 }
