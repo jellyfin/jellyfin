@@ -153,6 +153,12 @@ namespace MediaBrowser.Controller.Entities.TV
             return 16.0 / 9;
         }
 
+        /// <inheritdoc />
+        public override string GetInheritedOriginalLanguage()
+        {
+            return OriginalLanguage ?? Series?.GetInheritedOriginalLanguage();
+        }
+
         public override List<string> GetUserDataKeys()
         {
             var list = base.GetUserDataKeys();

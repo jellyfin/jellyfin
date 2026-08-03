@@ -40,6 +40,7 @@ public class UserLibraryController : BaseJellyfinApiController
     private readonly IDtoService _dtoService;
     private readonly IUserViewManager _userViewManager;
     private readonly IFileSystem _fileSystem;
+    private readonly IProviderManager _providerManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserLibraryController"/> class.
@@ -50,13 +51,15 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
     /// <param name="userViewManager">Instance of the <see cref="IUserViewManager"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+    /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
     public UserLibraryController(
         IUserManager userManager,
         IUserDataManager userDataRepository,
         ILibraryManager libraryManager,
         IDtoService dtoService,
         IUserViewManager userViewManager,
-        IFileSystem fileSystem)
+        IFileSystem fileSystem,
+        IProviderManager providerManager)
     {
         _userManager = userManager;
         _userDataRepository = userDataRepository;
@@ -64,6 +67,7 @@ public class UserLibraryController : BaseJellyfinApiController
         _dtoService = dtoService;
         _userViewManager = userViewManager;
         _fileSystem = fileSystem;
+        _providerManager = providerManager;
     }
 
     /// <summary>
@@ -75,7 +79,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the item.</returns>
     [HttpGet("Items/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<BaseItemDto>> GetItem(
+    public ActionResult<BaseItemDto> GetItem(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
     {
@@ -94,7 +98,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        await RefreshItemOnDemandIfNeeded(item).ConfigureAwait(false);
+        QueueRefreshOnDemandIfNeeded(item);
 
         var dtoOptions = new DtoOptions();
 
@@ -112,7 +116,7 @@ public class UserLibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public Task<ActionResult<BaseItemDto>> GetItemLegacy(
+    public ActionResult<BaseItemDto> GetItemLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId)
         => GetItem(userId, itemId);
@@ -429,14 +433,8 @@ public class UserLibraryController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions();
-        if (item is IHasTrailers hasTrailers)
-        {
-            var trailers = hasTrailers.LocalTrailers;
-            return Ok(_dtoService.GetBaseItemDtos(trailers, dtoOptions, user, item).AsEnumerable());
-        }
 
-        return Ok(item.GetExtras()
-            .Where(e => e.ExtraType == ExtraType.Trailer)
+        return Ok(item.GetExtras([ExtraType.Trailer], user)
             .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item)));
     }
 
@@ -487,7 +485,7 @@ public class UserLibraryController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions();
 
         return Ok(item
-            .GetExtras()
+            .GetExtras(user)
             .Where(i => i.ExtraType.HasValue && BaseItem.DisplayExtraTypes.Contains(i.ExtraType.Value))
             .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item)));
     }
@@ -577,7 +575,7 @@ public class UserLibraryController : BaseJellyfinApiController
             var item = tuple.Item2[0];
             var childCount = 0;
 
-            if (tuple.Item1 is not null && (tuple.Item2.Count > 1 || tuple.Item1 is MusicAlbum || tuple.Item1 is Series))
+            if (tuple.Item1 is not null && (tuple.Item2.Count > 1 || tuple.Item1 is MusicAlbum))
             {
                 item = tuple.Item1;
                 childCount = tuple.Item2.Count;
@@ -645,25 +643,28 @@ public class UserLibraryController : BaseJellyfinApiController
             limit,
             groupItems);
 
-    private async Task RefreshItemOnDemandIfNeeded(BaseItem item)
+    private void QueueRefreshOnDemandIfNeeded(BaseItem item)
     {
-        if (item is Person)
+        if (item is not Person)
         {
-            var hasMetadata = !string.IsNullOrWhiteSpace(item.Overview) && item.HasImage(ImageType.Primary);
-            var performFullRefresh = !hasMetadata && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= 3;
-
-            if (performFullRefresh)
-            {
-                var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
-                {
-                    MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
-                    ImageRefreshMode = MetadataRefreshMode.FullRefresh,
-                    ForceSave = true
-                };
-
-                await item.RefreshMetadata(options, CancellationToken.None).ConfigureAwait(false);
-            }
+            return;
         }
+
+        var hasMetadata = !string.IsNullOrWhiteSpace(item.Overview) && item.HasImage(ImageType.Primary);
+        if (hasMetadata || (DateTime.UtcNow - item.DateLastRefreshed).TotalDays < 3)
+        {
+            return;
+        }
+
+        _providerManager.QueueRefresh(
+            item.Id,
+            new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+            {
+                MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                ImageRefreshMode = MetadataRefreshMode.FullRefresh,
+                ForceSave = true
+            },
+            RefreshPriority.High);
     }
 
     /// <summary>

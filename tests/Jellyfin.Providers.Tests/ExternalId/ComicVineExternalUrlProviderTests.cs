@@ -1,7 +1,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Providers.Plugins.ComicVine;
+using MediaBrowser.Providers.Books.ComicVine;
 using Xunit;
 
 namespace Jellyfin.Providers.Tests.ExternalId

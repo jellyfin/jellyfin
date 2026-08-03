@@ -6,7 +6,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Versioning;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
 using Microsoft.Extensions.Logging;
 
@@ -184,8 +186,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             { "libavdevice", new Version(58, 13) },
             { "libavfilter", new Version(7, 110) },
             { "libswscale", new Version(5, 9) },
-            { "libswresample", new Version(3, 9) },
-            { "libpostproc", new Version(55, 9) }
+            { "libswresample", new Version(3, 9) }
         };
 
         private readonly ILogger _logger;
@@ -645,7 +646,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false,
                     RedirectStandardInput = redirectStandardIn,
+                    StandardOutputEncoding = Encoding.UTF8,
                     RedirectStandardOutput = true,
+                    StandardErrorEncoding = Encoding.UTF8,
                     RedirectStandardError = true
                 }
             })
@@ -660,8 +663,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     writer.Write(testKey);
                 }
 
-                using var reader = readStdErr ? process.StandardError : process.StandardOutput;
-                return reader.ReadToEnd();
+                // Drain both streams concurrently to prevent pipe hanging, see #17429
+                using var standardOutput = process.StandardOutput;
+                using var standardError = process.StandardError;
+                var standardOutputTask = standardOutput.ReadToEndAsync();
+                var standardErrorTask = standardError.ReadToEndAsync();
+                process.WaitForExit();
+                Task.WaitAll(standardOutputTask, standardErrorTask);
+
+                return (readStdErr ? standardErrorTask : standardOutputTask).GetAwaiter().GetResult();
             }
         }
 

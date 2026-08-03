@@ -107,5 +107,6 @@
     "TaskMoveTrickplayImagesDescription": "Přesune existující soubory Trickplay podle nastavení knihovny.",
     "CleanupUserDataTaskDescription": "Odstraní všechna uživatelská data (stav zhlédnutí, oblíbené atd.) z médií, které již neexistují více než 90 dní.",
     "CleanupUserDataTask": "Pročistit uživatelská data",
-    "Original": "Originál"
+    "Original": "Originál",
+    "LyricDownloadFailureFromForItem": "Nepodařilo se stáhnout texty pro {1} ze služby {0}"
 }

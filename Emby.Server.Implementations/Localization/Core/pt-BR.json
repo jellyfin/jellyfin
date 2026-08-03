@@ -106,5 +106,7 @@
     "TaskExtractMediaSegmentsDescription": "Extrai ou obtém segmentos de mídia de plug-ins habilitados para MediaSegment.",
     "TaskMoveTrickplayImages": "Migrar o local da imagem do Trickplay",
     "CleanupUserDataTask": "Tarefa de limpeza de dados do usuário",
-    "CleanupUserDataTaskDescription": "Limpa todos os dados do usuário (estado de visualização, status de favorito, etc.) de mídias que não estão presentes por pelo menos 90 dias."
+    "CleanupUserDataTaskDescription": "Limpa todos os dados do usuário (estado de visualização, status de favorito, etc.) de mídias que não estão presentes por pelo menos 90 dias.",
+    "LyricDownloadFailureFromForItem": "Download das Letras falharam em {0} para o item {1}",
+    "Original": "Original"
 }

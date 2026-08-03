@@ -564,7 +564,8 @@ namespace Emby.Server.Implementations.Plugins
                             Id = instance.Id,
                             Status = PluginStatus.Active,
                             Name = instance.Name,
-                            Version = instance.Version.ToString()
+                            Version = instance.Version.ToString(),
+                            ImageResourceName = (instance as IHasEmbeddedImage)?.ImageResourceName
                         })
                     {
                         Instance = instance

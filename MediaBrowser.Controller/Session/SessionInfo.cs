@@ -45,7 +45,6 @@ namespace MediaBrowser.Controller.Session
             PlayState = new PlayerStateInfo();
             SessionControllers = [];
             NowPlayingQueue = [];
-            NowPlayingQueueFullItems = [];
         }
 
         /// <summary>
@@ -272,15 +271,9 @@ namespace MediaBrowser.Controller.Session
         public IReadOnlyList<QueueItem> NowPlayingQueue { get; set; }
 
         /// <summary>
-        /// Gets or sets the now playing queue full items.
-        /// </summary>
-        /// <value>The now playing queue full items.</value>
-        public IReadOnlyList<BaseItemDto> NowPlayingQueueFullItems { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether the session has a custom device name.
         /// </summary>
-        /// <value><c>true</c> if this session has a custom device name; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if the session has a custom device name; otherwise, <c>false</c>.</value>
         public bool HasCustomDeviceName { get; set; }
 
         /// <summary>

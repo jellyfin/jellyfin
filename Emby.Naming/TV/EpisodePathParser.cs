@@ -125,7 +125,7 @@ namespace Emby.Naming.TV
                             result.Success = true;
                         }
                     }
-                    else if (DateTime.TryParse(match.Groups[0].ValueSpan, out date))
+                    else if (DateTime.TryParse(match.Groups[0].ValueSpan, CultureInfo.InvariantCulture, out date))
                     {
                         result.Year = date.Year;
                         result.Month = date.Month;

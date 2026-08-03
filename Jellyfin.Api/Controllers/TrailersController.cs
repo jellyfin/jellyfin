@@ -122,6 +122,7 @@ public class TrailersController : BaseJellyfinApiController
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the trailers.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Obsolete("Use GetItems with includeItemTypes=Trailer instead.")]
     public async Task<ActionResult<QueryResult<BaseItemDto>>> GetTrailers(
         [FromQuery] Guid? userId,
         [FromQuery] string? maxOfficialRating,

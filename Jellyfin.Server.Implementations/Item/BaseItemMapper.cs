@@ -26,7 +26,7 @@ namespace Jellyfin.Server.Implementations.Item;
 /// <summary>
 /// Handles mapping between BaseItemEntity (database) and BaseItemDto (domain) objects.
 /// </summary>
-internal static class BaseItemMapper
+public static class BaseItemMapper
 {
     /// <summary>
     /// This holds all the types in the running assemblies
@@ -134,6 +134,21 @@ internal static class BaseItemMapper
         if (dto is Video video)
         {
             video.PrimaryVersionId = entity.PrimaryVersionId;
+
+            // The LinkedChildren table is the source of truth for version links
+            if (entity.LinkedChildEntities is not null)
+            {
+                video.LinkedAlternateVersions = entity.LinkedChildEntities
+                    // LocalAlternateVersion links belong to Video.LocalAlternateVersions, not here
+                    .Where(e => e.ChildType == Database.Implementations.Entities.LinkedChildType.LinkedAlternateVersion)
+                    .OrderBy(e => e.SortOrder)
+                    .Select(e => new LinkedChild
+                    {
+                        ItemId = e.ChildId,
+                        Type = (MediaBrowser.Controller.Entities.LinkedChildType)e.ChildType
+                    })
+                    .ToArray();
+            }
         }
 
         if (dto is IHasSeries hasSeriesName)
@@ -183,7 +198,7 @@ internal static class BaseItemMapper
         if (dto is Folder folder)
         {
             folder.DateLastMediaAdded = entity.DateLastMediaAdded ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
-            if (entity.LinkedChildEntities is not null && entity.LinkedChildEntities.Count > 0)
+            if (entity.LinkedChildEntities is not null)
             {
                 folder.LinkedChildren = entity.LinkedChildEntities
                     .OrderBy(e => e.SortOrder)

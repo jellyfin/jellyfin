@@ -128,6 +128,12 @@ namespace MediaBrowser.Controller.Entities.TV
             return result;
         }
 
+        /// <inheritdoc />
+        public override string GetInheritedOriginalLanguage()
+        {
+            return OriginalLanguage ?? Series?.GetInheritedOriginalLanguage();
+        }
+
         public override string CreatePresentationUniqueKey()
         {
             if (IndexNumber.HasValue)

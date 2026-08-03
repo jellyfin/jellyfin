@@ -7,11 +7,12 @@ namespace MediaBrowser.Model.Configuration
     public enum HlsAudioSeekStrategy
     {
         /// <summary>
-        /// If the video stream is transcoded and the audio stream is copied,
-        /// seek the video stream to the same keyframe as the audio stream. The
-        /// resulting timestamps in the output streams may be inaccurate.
+        /// When video is transcoded and audio is copied, use a bitstream filter
+        /// to drop copied audio packets before the seek point, aligning them
+        /// with the accurately-seeked video. Timestamps are accurate and audio
+        /// remains stream-copied (no re-encoding overhead).
         /// </summary>
-        DisableAccurateSeek = 0,
+        TrimCopiedAudio = 0,
 
         /// <summary>
         /// Prevent audio streams from being copied if the video stream is transcoded.

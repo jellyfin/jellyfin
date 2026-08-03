@@ -106,5 +106,7 @@
     "CleanupUserDataTask": "Задатак чишћења корисничких података",
     "CleanupUserDataTaskDescription": "Чисти све корисничке податке (напредак гледања, ознаке за омиљено...) медија који нису доступни 90 дана или дуже.",
     "TaskMoveTrickplayImages": "Промени локацију сличица за визуелно премотавање",
-    "TaskDownloadMissingLyricsDescription": "Преузми стихове песама"
+    "TaskDownloadMissingLyricsDescription": "Преузми стихове песама",
+    "LyricDownloadFailureFromForItem": "Није успело преузимање стихова са {0} за {1}",
+    "Original": "Изворно"
 }

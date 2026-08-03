@@ -144,6 +144,15 @@ public static class StreamingHelpers
             mediaSource = liveStreamInfo.Item1;
             state.DirectStreamProvider = liveStreamInfo.Item2;
 
+            // The requested live stream is no longer open. This commonly happens when a client keeps
+            // polling the HLS playlist (e.g. live.m3u8) after the stream was disposed because its
+            // consumer count dropped to zero. GetLiveStreamWithDirectStreamProvider returns a null
+            // MediaSource in that case, so return 404 instead of dereferencing it below.
+            if (mediaSource is null)
+            {
+                throw new ResourceNotFoundException($"The live stream with id {streamingRequest.LiveStreamId} could not be found or is no longer available.");
+            }
+
             // Cap the max bitrate when it is too high. This is usually due to ffmpeg is unable to probe the source liveTV streams' bitrate.
             if (mediaSource.FallbackMaxStreamingBitrate is not null && streamingRequest.VideoBitRate is not null)
             {

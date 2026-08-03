@@ -106,5 +106,20 @@
     "TaskMoveTrickplayImagesDescription": "Mueve archivos existentes de trickplay de acuerdo a la configuración de la biblioteca.",
     "TaskMoveTrickplayImages": "Migrar Ubicación de Imagen de Trickplay",
     "CleanupUserDataTaskDescription": "Limpia todos los datos del usuario (estado de visualización, estado de los favoritos, etc.) que no están presentes en la biblioteca por al menos 90 días.",
-    "CleanupUserDataTask": "Tarea de limpieza de datos de usuarios"
+    "CleanupUserDataTask": "Tarea de limpieza de datos de usuarios",
+    "LyricDownloadFailureFromForItem": "No se pudo descargar la letra desde {0} para {1}",
+    "Original": "Original",
+    "NameExtraBehindTheScenes": "Detrás de cámaras",
+    "NameExtraClip": "Clip",
+    "NameExtraDeletedScene": "Escena eliminada",
+    "NameExtraFeaturette": "Minidocumental",
+    "NameExtraInterview": "Entrevista",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Muestra",
+    "NameExtraScene": "Escena",
+    "NameExtraShort": "Cortometraje",
+    "NameExtraThemeSong": "Música de presentación",
+    "NameExtraThemeVideo": "Video de presentación",
+    "NameExtraTrailer": "Tráiler",
+    "NameExtraUnknown": "Extra"
 }

@@ -52,13 +52,18 @@ namespace Emby.Naming.Video
             while (path.Length > 0)
             {
                 var index = path.IndexOfAny(delimiters);
+                ReadOnlySpan<char> currentSlice;
                 if (index == -1)
                 {
-                    index = path.Length - 1;
+                    // No delimiter left, the last token is the remainder of the path
+                    currentSlice = path;
+                    path = default;
                 }
-
-                var currentSlice = path[..index];
-                path = path[(index + 1)..];
+                else
+                {
+                    currentSlice = path[..index];
+                    path = path[(index + 1)..];
+                }
 
                 if (!foundPrefix)
                 {

@@ -578,7 +578,9 @@ namespace MediaBrowser.Model.Dlna
                 {
                     foreach (var profile in subtitleProfiles)
                     {
-                        if (profile.Method == SubtitleDeliveryMethod.External && string.Equals(profile.Format, stream.Codec, StringComparison.OrdinalIgnoreCase))
+                        if (profile.Method == SubtitleDeliveryMethod.External
+                            && (IsVobSubMksProfile(profile, stream)
+                                || (!IsVobSubMksDeliveryProfile(profile) && string.Equals(profile.Format, stream.Codec, StringComparison.OrdinalIgnoreCase))))
                         {
                             return stream.Index;
                         }
@@ -951,6 +953,10 @@ namespace MediaBrowser.Model.Dlna
             }
 
             playlistItem.VideoCodecs = videoCodecs;
+            if (videoStream is not null && !ContainerHelper.ContainsContainer(videoCodecs, false, videoStream.Codec))
+            {
+                playlistItem.TranscodeReasons |= TranscodeReason.VideoCodecNotSupported;
+            }
 
             // Copy video codec options as a starting point, this applies to transcode and direct-stream
             playlistItem.MaxFramerate = videoStream?.ReferenceFrameRate;
@@ -999,6 +1005,10 @@ namespace MediaBrowser.Model.Dlna
             var directAudioFailures = audioStreamWithSupportedCodec is null ? default : GetCompatibilityAudioCodec(options, item, container ?? string.Empty, audioStreamWithSupportedCodec, null, true, false);
 
             playlistItem.TranscodeReasons |= directAudioFailures;
+            if (audioStream is not null && audioStreamWithSupportedCodec is null)
+            {
+                playlistItem.TranscodeReasons |= TranscodeReason.AudioCodecNotSupported;
+            }
 
             var directAudioStreamSatisfied = audioStreamWithSupportedCodec is not null && !channelsExceedsLimit
                 && directAudioFailures == 0;
@@ -1450,7 +1460,7 @@ namespace MediaBrowser.Model.Dlna
             string? outputContainer,
             MediaStreamProtocol? transcodingSubProtocol)
         {
-            if (!subtitleStream.IsExternal && (playMethod != PlayMethod.Transcode || transcodingSubProtocol != MediaStreamProtocol.hls))
+            if (CanConsiderEmbedSubtitle(subtitleStream, playMethod, transcodingSubProtocol, outputContainer))
             {
                 // Look for supported embedded subs of the same format
                 foreach (var profile in subtitleProfiles)
@@ -1539,6 +1549,19 @@ namespace MediaBrowser.Model.Dlna
             return false;
         }
 
+        private static bool CanConsiderEmbedSubtitle(MediaStream subtitleStream, PlayMethod playMethod, MediaStreamProtocol? transcodingSubProtocol, string? outputContainer)
+        {
+            if (subtitleStream.IsExternal)
+            {
+                return playMethod == PlayMethod.Transcode
+                    && transcodingSubProtocol != MediaStreamProtocol.hls
+                    && IsSubtitleEmbedSupported(outputContainer);
+            }
+
+            return playMethod != PlayMethod.Transcode
+                || transcodingSubProtocol != MediaStreamProtocol.hls;
+        }
+
         private static SubtitleProfile? GetExternalSubtitleProfile(MediaSourceInfo mediaSource, MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod, ITranscoderSupport transcoderSupport, bool allowConversion)
         {
             foreach (var profile in subtitleProfiles)
@@ -1558,15 +1581,24 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (!subtitleStream.IsExternal && playMethod == PlayMethod.Transcode && !transcoderSupport.CanExtractSubtitles(subtitleStream.Codec))
+                if (!subtitleStream.IsExternal
+                    && playMethod == PlayMethod.Transcode
+                    && !transcoderSupport.CanExtractSubtitles(subtitleStream.Codec)
+                    && !subtitleStream.IsPgsSubtitleStream
+                    && !subtitleStream.IsVobSubSubtitleStream)
                 {
                     continue;
                 }
 
-                if ((profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format)) ||
+                bool isVobSubMksProfile = IsVobSubMksProfile(profile, subtitleStream);
+
+                if ((profile.Method == SubtitleDeliveryMethod.External
+                        && (isVobSubMksProfile
+                            || (!IsVobSubMksDeliveryProfile(profile) && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format)))) ||
                     (profile.Method == SubtitleDeliveryMethod.Hls && subtitleStream.IsTextSubtitleStream))
                 {
-                    bool requiresConversion = !string.Equals(subtitleStream.Codec, profile.Format, StringComparison.OrdinalIgnoreCase);
+                    bool requiresConversion = !isVobSubMksProfile
+                        && !string.Equals(subtitleStream.Codec, profile.Format, StringComparison.OrdinalIgnoreCase);
 
                     if (!requiresConversion)
                     {
@@ -1592,6 +1624,21 @@ namespace MediaBrowser.Model.Dlna
             }
 
             return null;
+        }
+
+        private static bool IsVobSubMksDeliveryProfile(SubtitleProfile profile)
+        {
+            return MediaStream.IsVobSubFormat(profile.Format)
+                && !string.IsNullOrWhiteSpace(profile.Container)
+                && ContainerHelper.ContainsContainer(profile.Container, "mks");
+        }
+
+        private static bool IsVobSubMksProfile(SubtitleProfile profile, MediaStream subtitleStream)
+        {
+            // FFmpeg cannot mux VobSub back into an .idx/.sub pair, so extracted VobSub streams are exposed as .mks.
+            return IsVobSubMksDeliveryProfile(profile)
+                && subtitleStream.IsVobSubSubtitleStream
+                && (!subtitleStream.IsExternal || subtitleStream.Path?.EndsWith(".mks", StringComparison.OrdinalIgnoreCase) == true);
         }
 
         private bool IsBitrateLimitExceeded(MediaSourceInfo item, long maxBitrate)

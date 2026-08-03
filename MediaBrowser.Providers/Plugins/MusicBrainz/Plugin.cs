@@ -6,6 +6,7 @@ using System.Threading;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Plugins.MusicBrainz.Configuration;
@@ -17,7 +18,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz;
 /// <summary>
 /// Plugin instance.
 /// </summary>
-public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages, IDisposable
+public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages, IHasEmbeddedImage, IDisposable
 {
     private readonly ILogger<Plugin> _logger;
     private readonly Lock _queryLock = new();
@@ -65,6 +66,9 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages, IDisposable
     /// <inheritdoc />
     // TODO remove when plugin removed from server.
     public override string ConfigurationFileName => "Jellyfin.Plugin.MusicBrainz.xml";
+
+    /// <inheritdoc />
+    public string ImageResourceName => GetType().Namespace + ".jellyfin-plugin-musicbrainz.svg";
 
     /// <summary>
     /// Gets the current MusicBrainz query client.

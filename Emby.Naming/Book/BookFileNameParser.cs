@@ -1,3 +1,4 @@
+using System;
 using System.Text.RegularExpressions;
 
 namespace Emby.Naming.Book
@@ -5,7 +6,7 @@ namespace Emby.Naming.Book
     /// <summary>
     /// Helper class to retrieve basic metadata from a book filename.
     /// </summary>
-    public static class BookFileNameParser
+    public static partial class BookFileNameParser
     {
         private const string NameMatchGroup = "name";
         private const string IndexMatchGroup = "index";
@@ -15,13 +16,16 @@ namespace Emby.Naming.Book
         private static readonly Regex[] _nameMatches =
         [
             // seriesName (seriesYear) #index (of count) (year) where only seriesName and index are required
-            new Regex(@"^(?<seriesName>.+?)((\s\((?<seriesYear>[0-9]{4})\))?)\s#(?<index>[0-9]+)((\s\(of\s(?<count>[0-9]+)\))?)((\s\((?<year>[0-9]{4})\))?)$"),
-            new Regex(@"^(?<name>.+?)\s\((?<seriesName>.+?),\s#(?<index>[0-9]+)\)((\s\((?<year>[0-9]{4})\))?)$"),
-            new Regex(@"^(?<index>[0-9]+)\s\-\s(?<name>.+?)((\s\((?<year>[0-9]{4})\))?)$"),
+            new Regex(@"^(?<seriesName>.+?)((\s\((?<seriesYear>[0-9]{4})\))?)\s#(?<index>[0-9]+)(?:\.0)?((\s\(of\s(?<count>[0-9]+)\))?)((\s\((?<year>[0-9]{4})\))?)$"),
+            new Regex(@"^(?<name>.+?)\s\((?<seriesName>.+?),\s#(?<index>[0-9]+)\)(?:\.0)?((\s\((?<year>[0-9]{4})\))?)$"),
+            new Regex(@"^(?<index>[0-9]+)(?:\.0)?\s\-\s(?<name>.+?)((\s\((?<year>[0-9]{4})\))?)$"),
             new Regex(@"(?<name>.*)\((?<year>[0-9]{4})\)"),
             // last resort matches the whole string as the name
             new Regex(@"(?<name>.*)")
         ];
+
+        [GeneratedRegex(@"^(?<name>.+?)(\sv(?<volume>[0-9]+))?(\sc(?<chapter>[0-9]+))?$")]
+        private static partial Regex ComicRegex();
 
         /// <summary>
         /// Parse a filename name to retrieve the book name, series name, index, and year.
@@ -48,7 +52,22 @@ namespace Emby.Naming.Book
 
                 if (match.Groups.TryGetValue(NameMatchGroup, out Group? nameGroup) && nameGroup.Success)
                 {
-                    result.Name = nameGroup.Value.Trim();
+                    var comicMatch = ComicRegex().Match(nameGroup.Value.Trim());
+
+                    if (comicMatch.Success)
+                    {
+                        if (comicMatch.Groups.TryGetValue("volume", out Group? volumeGroup) && volumeGroup.Success && int.TryParse(volumeGroup.ValueSpan, out var volume))
+                        {
+                            result.ParentIndex = volume;
+                        }
+
+                        if (comicMatch.Groups.TryGetValue("chapter", out Group? chapterGroup) && chapterGroup.Success && int.TryParse(chapterGroup.ValueSpan, out var chapter))
+                        {
+                            result.Index = chapter;
+                        }
+                    }
+
+                    result.Name = nameGroup.ValueSpan.Trim().ToString();
                 }
 
                 if (match.Groups.TryGetValue(IndexMatchGroup, out Group? indexGroup) && indexGroup.Success && int.TryParse(indexGroup.Value, out var index))

@@ -398,7 +398,7 @@ public class LyricManager : ILyricManager
             {
                 var mediaFolderPath = Path.GetFullPath(Path.Combine(audio.ContainingFolderPath, saveFileName));
                 // TODO: Add some error handling to the API user: return BadRequest("Could not save lyric, bad path.");
-                if (mediaFolderPath.StartsWith(audio.ContainingFolderPath, StringComparison.Ordinal))
+                if (PathHelper.IsContainedIn(audio.ContainingFolderPath, mediaFolderPath))
                 {
                     savePaths.Add(mediaFolderPath);
                 }
@@ -407,7 +407,7 @@ public class LyricManager : ILyricManager
             var internalPath = Path.GetFullPath(Path.Combine(audio.GetInternalMetadataPath(), saveFileName));
 
             // TODO: Add some error to the user: return BadRequest("Could not save lyric, bad path.");
-            if (internalPath.StartsWith(audio.GetInternalMetadataPath(), StringComparison.Ordinal))
+            if (PathHelper.IsContainedIn(audio.GetInternalMetadataPath(), internalPath))
             {
                 savePaths.Add(internalPath);
             }

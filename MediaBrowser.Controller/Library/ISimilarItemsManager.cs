@@ -6,6 +6,7 @@ using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Controller.Library;
 
@@ -46,5 +47,24 @@ public interface ISimilarItemsManager
         DtoOptions dtoOptions,
         int? limit,
         LibraryOptions? libraryOptions,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Builds movie recommendations for a user: a mix of similar-items and person-based categories,
+    /// scheduled round-robin and capped to <paramref name="categoryLimit"/>.
+    /// </summary>
+    /// <param name="user">The user the recommendations are for. May be <see langword="null"/> for anonymous access.</param>
+    /// <param name="parentId">The library/folder to localize the search to. Pass <see cref="Guid.Empty"/> to use the root.</param>
+    /// <param name="categoryLimit">Maximum number of recommendation categories to return.</param>
+    /// <param name="itemLimit">Maximum number of items per category.</param>
+    /// <param name="dtoOptions">DTO options used when querying the library.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The list of recommendation categories, ordered by <see cref="RecommendationType"/>.</returns>
+    Task<IReadOnlyList<SimilarItemsRecommendation>> GetMovieRecommendationsAsync(
+        User? user,
+        Guid parentId,
+        int categoryLimit,
+        int itemLimit,
+        DtoOptions dtoOptions,
         CancellationToken cancellationToken);
 }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
+using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Plugins;
@@ -226,16 +227,35 @@ public class PluginsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var imagePath = Path.Combine(plugin.Path, plugin.Manifest.ImagePath ?? string.Empty);
-        if (plugin.Manifest.ImagePath is null || !System.IO.File.Exists(imagePath))
+        string? imagePath = plugin.Manifest.ImagePath;
+        if (!string.IsNullOrWhiteSpace(imagePath))
         {
-            return NotFound();
+            var pluginPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(plugin.Path));
+            imagePath = Path.GetFullPath(imagePath, pluginPath);
+            // Require a separator after the plugin path so a sibling like "<pluginPath>-evil" can't pass.
+            if (imagePath.StartsWith(pluginPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) is false || System.IO.File.Exists(imagePath) is false)
+            {
+                return NotFound();
+            }
+
+            Response.Headers.ContentDisposition = "attachment";
+            return PhysicalFile(imagePath, MimeTypes.GetMimeType(imagePath));
         }
 
-        Response.Headers.ContentDisposition = "attachment";
+        var resourceName = plugin.Manifest.ImageResourceName;
+        if (!string.IsNullOrEmpty(resourceName) && plugin.Instance is not null)
+        {
+            var stream = plugin.Instance.GetType().Assembly.GetManifestResourceStream(resourceName);
+            if (stream is null)
+            {
+                return NotFound();
+            }
 
-        imagePath = Path.Combine(plugin.Path, plugin.Manifest.ImagePath);
-        return PhysicalFile(imagePath, MimeTypes.GetMimeType(imagePath));
+            Response.Headers.ContentDisposition = "attachment";
+            return File(stream, MimeTypes.GetMimeType(resourceName));
+        }
+
+        return NotFound();
     }
 
     /// <summary>
