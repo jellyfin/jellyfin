@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -24,6 +22,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.LiveTv.Listings
 {
+    /// <summary>
+    /// Provides guide listings from a local or remote XMLTV file.
+    /// </summary>
     public class XmlTvListingsProvider : IListingsProvider
     {
         private static readonly TimeSpan _maxCacheAge = TimeSpan.FromHours(1);
@@ -32,6 +33,12 @@ namespace Jellyfin.LiveTv.Listings
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<XmlTvListingsProvider> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="XmlTvListingsProvider"/> class.
+        /// </summary>
+        /// <param name="config">The <see cref="IServerConfigurationManager"/>.</param>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
+        /// <param name="logger">The <see cref="ILogger{TCategoryName}"/>.</param>
         public XmlTvListingsProvider(
             IServerConfigurationManager config,
             IHttpClientFactory httpClientFactory,
@@ -42,8 +49,10 @@ namespace Jellyfin.LiveTv.Listings
             _logger = logger;
         }
 
+        /// <inheritdoc />
         public string Name => "XmlTV";
 
+        /// <inheritdoc />
         public string Type => "xmltv";
 
         private string GetLanguage(ListingsProviderInfo info)
@@ -159,6 +168,7 @@ namespace Jellyfin.LiveTv.Listings
             return file;
         }
 
+        /// <inheritdoc />
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(channelId))
@@ -279,6 +289,7 @@ namespace Jellyfin.LiveTv.Listings
             return programInfo;
         }
 
+        /// <inheritdoc />
         public Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
         {
             // Assume all urls are valid. check files for existence
@@ -290,6 +301,7 @@ namespace Jellyfin.LiveTv.Listings
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc />
         public async Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
         {
             // In theory this should never be called because there is always only one lineup
@@ -302,6 +314,7 @@ namespace Jellyfin.LiveTv.Listings
             return results.Select(c => new NameIdPair() { Id = c.Id, Name = c.DisplayName }).ToList();
         }
 
+        /// <inheritdoc />
         public async Task<List<ChannelInfo>> GetChannels(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
             // In theory this should never be called because there is always only one lineup

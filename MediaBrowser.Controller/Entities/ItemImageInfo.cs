@@ -1,11 +1,12 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Text.Json.Serialization;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
 {
+    /// <summary>
+    /// Describes a single image of a <see cref="BaseItem"/>.
+    /// </summary>
     public class ItemImageInfo
     {
         /// <summary>
@@ -26,8 +27,16 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The date modified.</value>
         public DateTime DateModified { get; set; }
 
+        /// <summary>
+        /// Gets or sets the width in pixels, or 0 when it is not known yet.
+        /// </summary>
+        /// <value>The width.</value>
         public int Width { get; set; }
 
+        /// <summary>
+        /// Gets or sets the height in pixels, or 0 when it is not known yet.
+        /// </summary>
+        /// <value>The height.</value>
         public int Height { get; set; }
 
         /// <summary>
