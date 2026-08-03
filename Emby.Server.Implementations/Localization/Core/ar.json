@@ -100,7 +100,7 @@
     "TaskAudioNormalization": "تطبيع الصوت",
     "TaskAudioNormalizationDescription": "يفحص الملفات لجمع بيانات تطبيع الصوت.",
     "TaskDownloadMissingLyrics": "تنزيل الكلمات المفقودة",
-    "TaskDownloadMissingLyricsDescription": "ينزّل الكلمات للأغاني.",
+    "TaskDownloadMissingLyricsDescription": "تحميل كلمات الأغاني",
     "TaskExtractMediaSegments": "فحص مقاطع المحتوى",
     "TaskExtractMediaSegmentsDescription": "يستخرج أو يحصل على مقاطع المحتوى من الملحقات المفعّلة لمقاطع المحتوى (MediaSegment).",
     "TaskMoveTrickplayImages": "نقل موقع صور معاينات التنقل",
@@ -108,5 +108,8 @@
     "CleanupUserDataTask": "مهمة تنظيف بيانات المستخدم",
     "CleanupUserDataTaskDescription": "ينظف جميع بيانات المستخدم (مثل حالة المشاهدة وحالة المفضلة وغيرها) للمحتوى الذي لم يعد موجوداً لمدة 90 يوماً على الأقل.",
     "Original": "فريد",
-    "LyricDownloadFailureFromForItem": "فشل تحميل الكلمات من {0} إلى {1}"
+    "LyricDownloadFailureFromForItem": "فشل تحميل الكلمات من {0} إلى {1}",
+    "NameExtraBehindTheScenes": "خلف المشاهد",
+    "NameExtraClip": "مقطع",
+    "NameExtraDeletedScene": "المشهد المحذوف"
 }
