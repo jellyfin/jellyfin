@@ -576,7 +576,8 @@ namespace Jellyfin.Providers.Tests.Manager
                 baseItemManager!,
                 Mock.Of<ILyricManager>(),
                 Mock.Of<IMemoryCache>(),
-                Mock.Of<IMediaSegmentManager>());
+                Mock.Of<IMediaSegmentManager>(),
+                Mock.Of<ISimilarItemsManager>());
 
             return providerManager;
         }

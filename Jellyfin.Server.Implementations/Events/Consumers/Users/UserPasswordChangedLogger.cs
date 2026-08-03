@@ -33,7 +33,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
             await _activityManager.CreateAsync(new ActivityLog(
                     string.Format(
                         CultureInfo.InvariantCulture,
-                        _localizationManager.GetLocalizedString("UserPasswordChangedWithName"),
+                        _localizationManager.GetServerLocalizedString("UserPasswordChangedWithName"),
                         eventArgs.Argument.Username),
                     "UserPasswordChanged",
                     eventArgs.Argument.Id))

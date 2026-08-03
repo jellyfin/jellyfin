@@ -1,17 +1,20 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Extensions;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;
@@ -64,6 +67,7 @@ namespace MediaBrowser.Providers.Manager
         private readonly PriorityQueue<(Guid ItemId, MetadataRefreshOptions RefreshOptions), RefreshPriority> _refreshQueue = new();
         private readonly IMemoryCache _memoryCache;
         private readonly IMediaSegmentManager _mediaSegmentManager;
+        private readonly ISimilarItemsManager _similarItemsManager;
         private readonly AsyncKeyedLocker<string> _imageSaveLock = new(o =>
         {
             o.PoolSize = 20;
@@ -101,6 +105,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="lyricManager">The lyric manager.</param>
         /// <param name="memoryCache">The memory cache.</param>
         /// <param name="mediaSegmentManager">The media segment manager.</param>
+        /// <param name="similarItemsManager">The similar items manager.</param>
         public ProviderManager(
             IHttpClientFactory httpClientFactory,
             ISubtitleManager subtitleManager,
@@ -113,7 +118,8 @@ namespace MediaBrowser.Providers.Manager
             IBaseItemManager baseItemManager,
             ILyricManager lyricManager,
             IMemoryCache memoryCache,
-            IMediaSegmentManager mediaSegmentManager)
+            IMediaSegmentManager mediaSegmentManager,
+            ISimilarItemsManager similarItemsManager)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
@@ -127,6 +133,7 @@ namespace MediaBrowser.Providers.Manager
             _lyricManager = lyricManager;
             _memoryCache = memoryCache;
             _mediaSegmentManager = mediaSegmentManager;
+            _similarItemsManager = similarItemsManager;
 
             CollectionFolder.LibraryOptionsUpdated += OnLibraryOptionsUpdated;
         }
@@ -429,6 +436,14 @@ namespace MediaBrowser.Providers.Manager
                 return false;
             }
 
+            // Extras have no identity of their own in an online database, so remote artwork for them
+            // is always some other item's. Local and dynamic providers still apply, so an extra can
+            // keep an embedded thumbnail or an extracted frame.
+            if (item.ExtraType.HasValue && provider is IRemoteImageProvider)
+            {
+                return false;
+            }
+
             return _baseItemManager.IsImageFetcherEnabled(item, libraryTypeOptions, provider.Name);
         }
 
@@ -577,6 +592,14 @@ namespace MediaBrowser.Providers.Manager
                 return true;
             }
 
+            // An extra is a local file belonging to another item and has no identity of its own in an
+            // online database. Looking it up matches whatever the surrounding folder happens to be
+            // called and overwrites the extra's name with a different item's title.
+            if (item.ExtraType.HasValue)
+            {
+                return false;
+            }
+
             // Artists without a folder structure that are derived from metadata have no real path in the library,
             // so GetLibraryOptions returns null. Allow all providers through rather than blocking them.
             if (item is MusicArtist && libraryTypeOptions is null)
@@ -685,6 +708,14 @@ namespace MediaBrowser.Providers.Manager
             {
                 Name = i.Name,
                 Type = MetadataPluginType.MediaSegmentProvider
+            }));
+
+            // Similar items providers
+            var similarItemsProviders = _similarItemsManager.GetSimilarItemsProviders<T>();
+            pluginList.AddRange(similarItemsProviders.Select(i => new MetadataPlugin
+            {
+                Name = i.Name,
+                Type = i.Type
             }));
 
             summary.Plugins = pluginList.ToArray();

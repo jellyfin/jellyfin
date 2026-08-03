@@ -20,19 +20,19 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
         {
             using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(ssa));
 
-            SubtitleTrackInfo subtitleTrackInfo = _parser.Parse(stream, "ssa");
+            var subtitle = _parser.Parse(stream, "ssa");
 
-            Assert.Equal(expectedSubtitleTrackEvents.Count, subtitleTrackInfo.TrackEvents.Count);
+            Assert.Equal(expectedSubtitleTrackEvents.Count, subtitle.Paragraphs.Count);
 
             for (int i = 0; i < expectedSubtitleTrackEvents.Count; ++i)
             {
                 SubtitleTrackEvent expected = expectedSubtitleTrackEvents[i];
-                SubtitleTrackEvent actual = subtitleTrackInfo.TrackEvents[i];
+                var actual = subtitle.Paragraphs[i];
 
-                Assert.Equal(expected.Id, actual.Id);
+                Assert.Equal(expected.Id, actual.Number.ToString(CultureInfo.InvariantCulture));
                 Assert.Equal(expected.Text, actual.Text);
-                Assert.Equal(expected.StartPositionTicks, actual.StartPositionTicks);
-                Assert.Equal(expected.EndPositionTicks, actual.EndPositionTicks);
+                Assert.Equal(expected.StartPositionTicks, actual.StartTime.TimeSpan.Ticks);
+                Assert.Equal(expected.EndPositionTicks, actual.EndTime.TimeSpan.Ticks);
             }
         }
 
@@ -75,13 +75,13 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
             using var stream = File.OpenRead("Test Data/example.ssa");
 
             var parsed = _parser.Parse(stream, "ssa");
-            Assert.Single(parsed.TrackEvents);
-            var trackEvent = parsed.TrackEvents[0];
+            Assert.Single(parsed.Paragraphs);
+            var paragraph = parsed.Paragraphs[0];
 
-            Assert.Equal("1", trackEvent.Id);
-            Assert.Equal(TimeSpan.Parse("00:00:01.18", CultureInfo.InvariantCulture).Ticks, trackEvent.StartPositionTicks);
-            Assert.Equal(TimeSpan.Parse("00:00:06.85", CultureInfo.InvariantCulture).Ticks, trackEvent.EndPositionTicks);
-            Assert.Equal("{\\pos(400,570)}Like an angel with pity on nobody", trackEvent.Text);
+            Assert.Equal(1, paragraph.Number);
+            Assert.Equal(TimeSpan.Parse("00:00:01.18", CultureInfo.InvariantCulture).Ticks, paragraph.StartTime.TimeSpan.Ticks);
+            Assert.Equal(TimeSpan.Parse("00:00:06.85", CultureInfo.InvariantCulture).Ticks, paragraph.EndTime.TimeSpan.Ticks);
+            Assert.Equal("{\\pos(400,570)}Like an angel with pity on nobody", paragraph.Text);
         }
     }
 }

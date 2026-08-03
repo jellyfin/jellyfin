@@ -71,6 +71,8 @@ namespace Emby.Server.Implementations.Dto
             {
                 BaseItemKind.Person, [
                     BaseItemKind.Audio,
+                    BaseItemKind.AudioBook,
+                    BaseItemKind.Book,
                     BaseItemKind.Episode,
                     BaseItemKind.Movie,
                     BaseItemKind.LiveTvProgram,
@@ -167,9 +169,13 @@ namespace Emby.Server.Implementations.Dto
 
             // Batch-fetch user data for all items
             Dictionary<Guid, UserItemData>? userDataBatch = null;
+            IReadOnlyDictionary<Guid, VersionResumeData>? resumeDataBatch = null;
             if (user is not null && options.EnableUserData)
             {
                 userDataBatch = _userDataRepository.GetUserDataBatch(accessibleItems, user);
+
+                // For items with alternate versions, the most recently played version drives resume.
+                resumeDataBatch = _userDataRepository.GetResumeUserDataBatch(accessibleItems, user);
             }
 
             // Pre-compute collection folders once to avoid N+1 queries in CanDelete
@@ -248,7 +254,8 @@ namespace Emby.Server.Implementations.Dto
                     allCollectionFolders,
                     childCountBatch,
                     playedCountBatch,
-                    artistsBatch);
+                    artistsBatch,
+                    resumeDataBatch?.GetValueOrDefault(item.Id));
 
                 if (item is LiveTvChannel tvChannel)
                 {
@@ -309,7 +316,8 @@ namespace Emby.Server.Implementations.Dto
             List<Folder>? allCollectionFolders = null,
             Dictionary<Guid, int>? childCountBatch = null,
             Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null,
-            IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null)
+            IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null,
+            VersionResumeData? resumeData = null)
         {
             var dto = new BaseItemDto
             {
@@ -353,7 +361,8 @@ namespace Emby.Server.Implementations.Dto
                     options,
                     userData,
                     childCountBatch,
-                    playedCountBatch);
+                    playedCountBatch,
+                    resumeData);
             }
 
             if (item is IHasMediaSources
@@ -369,7 +378,7 @@ namespace Emby.Server.Implementations.Dto
                 AttachStudios(dto, item);
             }
 
-            AttachBasicFields(dto, item, owner, options, artistsBatch);
+            AttachBasicFields(dto, item, owner, options, artistsBatch, user);
 
             if (options.ContainsField(ItemFields.CanDelete))
             {
@@ -538,7 +547,8 @@ namespace Emby.Server.Implementations.Dto
             DtoOptions options,
             UserItemData? userData = null,
             Dictionary<Guid, int>? childCountBatch = null,
-            Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null)
+            Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null,
+            VersionResumeData? resumeData = null)
         {
             if (item.IsFolder)
             {
@@ -600,6 +610,9 @@ namespace Emby.Server.Implementations.Dto
                         // Use pre-fetched user data
                         dto.UserData = GetUserItemDataDto(userData, item.Id);
                         item.FillUserDataDtoValues(dto.UserData, userData, dto, user, options);
+
+                        // For items with alternate versions, the most recently played version drives resume.
+                        resumeData?.ApplyTo(dto.UserData);
                     }
                     else
                     {
@@ -943,7 +956,8 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="owner">The owner.</param>
         /// <param name="options">The options.</param>
         /// <param name="artistsBatch">Optional pre-fetched artist lookup shared across a batch of items.</param>
-        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem? owner, DtoOptions options, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null)
+        /// <param name="user">The user, for per-user values such as the accessible media source count.</param>
+        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem? owner, DtoOptions options, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null, User? user = null)
         {
             if (options.ContainsField(ItemFields.DateCreated))
             {
@@ -1074,7 +1088,7 @@ namespace Emby.Server.Implementations.Dto
                 dto.ParentId = item.DisplayParentId;
             }
 
-            AddInheritedImages(dto, item, options, owner);
+            AddInheritedImages(dto, item, options, owner, artistsBatch);
 
             if (options.ContainsField(ItemFields.Path))
             {
@@ -1257,7 +1271,12 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.ContainsField(ItemFields.MediaSourceCount))
                 {
-                    var mediaSourceCount = video.MediaSourceCount;
+                    // Match the per-user filtering of the media sources: versions the user cannot
+                    // access are not selectable, so they must not count towards the badge either.
+                    var mediaSourceCount = user is null
+                        || (!video.PrimaryVersionId.HasValue && video.LinkedAlternateVersions.Length == 0 && !video.HasLocalAlternateVersions)
+                            ? video.MediaSourceCount
+                            : video.GetAllVersions().Count(v => v.Id.Equals(video.Id) || v.IsVisibleStandalone(user));
                     if (mediaSourceCount != 1)
                     {
                         dto.MediaSourceCount = mediaSourceCount;
@@ -1363,6 +1382,25 @@ namespace Emby.Server.Implementations.Dto
                         {
                             AttachPrimaryImageAspectRatio(dto, episodeSeries);
                         }
+                    }
+                }
+
+                if (options.GetImageLimit(ImageType.Primary) > 0)
+                {
+                    var episodeSeason = episode.Season;
+                    var seasonPrimaryTag = episodeSeason is not null
+                        ? GetTagAndFillBlurhash(dto, episodeSeason, ImageType.Primary)
+                        : null;
+
+                    if (seasonPrimaryTag is not null)
+                    {
+                        dto.ParentPrimaryImageItemId = episodeSeason!.Id;
+                        dto.ParentPrimaryImageTag = seasonPrimaryTag;
+                    }
+                    else if (episodeSeries is not null && dto.SeriesPrimaryImageTag is not null)
+                    {
+                        dto.ParentPrimaryImageItemId = episodeSeries.Id;
+                        dto.ParentPrimaryImageTag = dto.SeriesPrimaryImageTag;
                     }
                 }
 
@@ -1481,11 +1519,11 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
-        private BaseItem? GetImageDisplayParent(BaseItem currentItem, BaseItem originalItem)
+        private BaseItem? GetImageDisplayParent(BaseItem currentItem, BaseItem originalItem, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch)
         {
             if (currentItem is MusicAlbum musicAlbum)
             {
-                var artist = musicAlbum.GetMusicArtist(new DtoOptions(false));
+                var artist = GetBatchedAlbumArtist(musicAlbum, artistsBatch) ?? musicAlbum.GetMusicArtist(new DtoOptions(false));
                 if (artist is not null)
                 {
                     return artist;
@@ -1502,8 +1540,36 @@ namespace Emby.Server.Implementations.Dto
             return parent;
         }
 
-        private void AddInheritedImages(BaseItemDto dto, BaseItem item, DtoOptions options, BaseItem? owner)
+        private static MusicArtist? GetBatchedAlbumArtist(MusicAlbum album, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch)
         {
+            if (artistsBatch is null)
+            {
+                return null;
+            }
+
+            var name = album.AlbumArtists.Count > 0 ? album.AlbumArtists[0] : null;
+            return !string.IsNullOrEmpty(name) && artistsBatch.TryGetValue(name, out var artists) && artists.Length > 0
+                ? artists[0]
+                : null;
+        }
+
+        private void AddInheritedImages(BaseItemDto dto, BaseItem item, DtoOptions options, BaseItem? owner, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch)
+        {
+            if (item is UserView { ViewType: CollectionType.playlists } playlistsView
+                && options.GetImageLimit(ImageType.Primary) > 0
+                && !playlistsView.DisplayParentId.IsEmpty())
+            {
+                var displayParent = _libraryManager.GetItemById(playlistsView.DisplayParentId);
+                var displayParentPrimaryImage = displayParent?.GetImageInfo(ImageType.Primary, 0);
+
+                if (displayParentPrimaryImage is not null)
+                {
+                    dto.ImageTags?.Remove(ImageType.Primary);
+                    dto.ParentPrimaryImageItemId = displayParent!.Id;
+                    dto.ParentPrimaryImageTag = GetTagAndFillBlurhash(dto, displayParent, displayParentPrimaryImage);
+                }
+            }
+
             if (!item.SupportsInheritedParentImages)
             {
                 return;
@@ -1532,7 +1598,7 @@ namespace Emby.Server.Implementations.Dto
                 || (!(imageTags is not null && imageTags.ContainsKey(ImageType.Thumb)) && thumbLimit > 0)
                 || parent is Series)
             {
-                parent ??= isFirst ? GetImageDisplayParent(item, item) ?? owner : parent;
+                parent ??= isFirst ? GetImageDisplayParent(item, item, artistsBatch) ?? owner : parent;
                 if (parent is null)
                 {
                     break;
@@ -1591,7 +1657,7 @@ namespace Emby.Server.Implementations.Dto
                     break;
                 }
 
-                parent = GetImageDisplayParent(parent, item);
+                parent = GetImageDisplayParent(parent, item, artistsBatch);
             }
         }
 

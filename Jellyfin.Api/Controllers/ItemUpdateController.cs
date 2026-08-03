@@ -236,7 +236,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         return NoContent();
     }
 
-    private async Task UpdateItem(BaseItemDto request, BaseItem item)
+    internal async Task UpdateItem(BaseItemDto request, BaseItem item)
     {
         item.Name = request.Name;
         item.ForcedSortName = request.ForcedSortName;
@@ -250,7 +250,11 @@ public class ItemUpdateController : BaseJellyfinApiController
         item.IndexNumber = request.IndexNumber;
         item.ParentIndexNumber = request.ParentIndexNumber;
         item.Overview = request.Overview;
-        item.Genres = request.Genres.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+
+        if (request.Genres is not null)
+        {
+            item.Genres = request.Genres.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        }
 
         if (item is Episode episode)
         {
@@ -279,6 +283,11 @@ public class ItemUpdateController : BaseJellyfinApiController
             item.DateCreated = NormalizeDateTime(request.DateCreated.Value);
         }
 
+        if (request.SeriesName is not null && item is IHasSeries hasSeries)
+        {
+            hasSeries.SeriesName = request.SeriesName;
+        }
+
         item.EndDate = request.EndDate.HasValue ? NormalizeDateTime(request.EndDate.Value) : null;
         item.PremiereDate = request.PremiereDate.HasValue ? NormalizeDateTime(request.PremiereDate.Value) : null;
         item.ProductionYear = request.ProductionYear;
@@ -288,15 +297,27 @@ public class ItemUpdateController : BaseJellyfinApiController
         item.CustomRating = request.CustomRating;
 
         var currentTags = item.Tags;
-        var newTags = request.Tags.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-        var removedTags = currentTags.Except(newTags).ToList();
-        var addedTags = newTags.Except(currentTags).ToList();
-        item.Tags = newTags;
+        List<string> removedTags;
+        List<string> addedTags;
+        if (request.Tags is not null)
+        {
+            var newTags = request.Tags.Select(t => t.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+            removedTags = currentTags.Except(newTags).ToList();
+            addedTags = newTags.Except(currentTags).ToList();
+            item.Tags = newTags;
+        }
+        else
+        {
+            removedTags = [];
+            addedTags = [];
+        }
 
         if (item is Series rseries)
         {
             foreach (var season in rseries.Children.OfType<Season>())
             {
+                season.SeriesName = rseries.Name;
+
                 if (!season.LockedFields.Contains(MetadataField.OfficialRating))
                 {
                     season.OfficialRating = request.OfficialRating;
@@ -314,6 +335,8 @@ public class ItemUpdateController : BaseJellyfinApiController
 
                 foreach (var ep in season.Children.OfType<Episode>())
                 {
+                    ep.SeriesName = rseries.Name;
+
                     if (!ep.LockedFields.Contains(MetadataField.OfficialRating))
                     {
                         ep.OfficialRating = request.OfficialRating;
@@ -403,15 +426,18 @@ public class ItemUpdateController : BaseJellyfinApiController
             item.RunTimeTicks = request.RunTimeTicks;
         }
 
-        foreach (var pair in request.ProviderIds.ToList())
+        if (request.ProviderIds is not null)
         {
-            if (string.IsNullOrEmpty(pair.Value))
+            foreach (var pair in request.ProviderIds.ToList())
             {
-                request.ProviderIds.Remove(pair.Key);
+                if (string.IsNullOrEmpty(pair.Value))
+                {
+                    request.ProviderIds.Remove(pair.Key);
+                }
             }
-        }
 
-        item.ProviderIds = request.ProviderIds;
+            item.ProviderIds = request.ProviderIds;
+        }
 
         if (item is Video video)
         {

@@ -69,15 +69,15 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
             await _activityManager.CreateAsync(new ActivityLog(
                     string.Format(
                         CultureInfo.InvariantCulture,
-                        _localizationManager.GetLocalizedString("UserStoppedPlayingItemWithValues"),
+                        _localizationManager.GetServerLocalizedString("UserStoppedPlayingItemWithValues"),
                         user.Username,
                         GetItemName(item),
                         eventArgs.DeviceName),
                     notificationType,
                     user.Id)
-                {
-                    ItemId = eventArgs.Item?.Id.ToString("N", CultureInfo.InvariantCulture),
-                })
+            {
+                ItemId = eventArgs.Item?.Id.ToString("N", CultureInfo.InvariantCulture),
+            })
                 .ConfigureAwait(false);
         }
 

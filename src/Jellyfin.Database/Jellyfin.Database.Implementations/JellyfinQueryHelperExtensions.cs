@@ -70,15 +70,24 @@ public static class JellyfinQueryHelperExtensions
         bool invert = false)
     {
         var itemFilter = OneOrManyExpressionBuilder<BaseItemEntity, Guid>(referenceIds, f => f.Id);
-        var typeFilter = OneOrManyExpressionBuilder<ItemValue, ItemValueType>(itemValueTypes, iv => iv.Type);
+        var typeFilter = OneOrManyExpressionBuilder<ItemValueMap, ItemValueType>(itemValueTypes, m => m.ItemValue.Type);
 
-        return baseQuery.Where(item =>
-            context.ItemValues
-                .Where(typeFilter)
-                .Join(context.ItemValuesMap, e => e.ItemValueId, e => e.ItemValueId, (itemVal, map) => new { itemVal, map })
-                .Any(val =>
-                    context.BaseItems.Where(itemFilter).Any(e => e.CleanName == val.itemVal.CleanValue)
-                    && val.map.ItemId == item.Id) == EF.Constant(!invert));
+        // Flat sub-selects + Contains instead of a nested correlated .Any(...Any(...)).
+        var referencedCleanValues = context.BaseItems
+            .Where(itemFilter)
+            .Select(e => e.CleanName);
+
+        var matchingItemIds = context.ItemValuesMap
+            .Where(typeFilter)
+            .Where(m => referencedCleanValues.Contains(m.ItemValue.CleanValue))
+            .Select(m => m.ItemId);
+
+        if (invert)
+        {
+            return baseQuery.Where(e => !matchingItemIds.Contains(e.Id));
+        }
+
+        return baseQuery.Where(e => matchingItemIds.Contains(e.Id));
     }
 
     /// <summary>
@@ -102,13 +111,107 @@ public static class JellyfinQueryHelperExtensions
 
         var itemFilter = OneOrManyExpressionBuilder<BaseItemEntity, Guid>(referenceIds, f => f.Id);
 
-        return item =>
-          context.ItemValues
-              .Join(context.ItemValuesMap, e => e.ItemValueId, e => e.ItemValueId, (item, map) => new { item, map })
-              .Any(val =>
-                  val.item.Type == itemValueType
-                  && context.BaseItems.Where(itemFilter).Any(e => e.CleanName == val.item.CleanValue)
-                  && val.map.ItemId == item.Id) == EF.Constant(!invert);
+        // Flat sub-selects + Contains instead of a nested correlated .Any(...Any(...)).
+        var referencedCleanValues = context.BaseItems
+            .Where(itemFilter)
+            .Select(e => e.CleanName);
+
+        var matchingItemIds = context.ItemValuesMap
+            .Where(m => m.ItemValue.Type == itemValueType && referencedCleanValues.Contains(m.ItemValue.CleanValue))
+            .Select(m => m.ItemId);
+
+        if (invert)
+        {
+            return item => !matchingItemIds.Contains(item.Id);
+        }
+
+        return item => matchingItemIds.Contains(item.Id);
+    }
+
+    /// <summary>
+    /// Filters items that match any of the specified (provider name, value) pairs.
+    /// </summary>
+    /// <param name="baseQuery">The source query.</param>
+    /// <param name="providerIds">Dictionary mapping provider names to arrays of values to match.</param>
+    /// <returns>A filtered query.</returns>
+    public static IQueryable<BaseItemEntity> WhereHasAnyProviderIds(
+        this IQueryable<BaseItemEntity> baseQuery,
+        IReadOnlyDictionary<string, string[]> providerIds)
+    {
+        var providerKeys = providerIds
+            .SelectMany(kvp => kvp.Value.Select(v => $"{kvp.Key}:{v}"))
+            .ToList();
+
+        if (providerKeys.Count == 0)
+        {
+            return baseQuery;
+        }
+
+        return baseQuery.Where(e => e.Provider!.Any(p => providerKeys.Contains(p.ProviderId + ":" + p.ProviderValue)));
+    }
+
+    /// <summary>
+    /// Filters items that have any of the specified providers. Empty/null values match any value for that provider.
+    /// </summary>
+    /// <param name="baseQuery">The source query.</param>
+    /// <param name="providerIds">Dictionary mapping provider names to optional values.</param>
+    /// <returns>A filtered query.</returns>
+    public static IQueryable<BaseItemEntity> WhereHasAnyProviderId(
+        this IQueryable<BaseItemEntity> baseQuery,
+        IReadOnlyDictionary<string, string> providerIds)
+    {
+        var existenceOnly = providerIds
+            .Where(e => string.IsNullOrEmpty(e.Value))
+            .Select(e => e.Key)
+            .ToList();
+
+        var specificValues = providerIds
+            .Where(e => !string.IsNullOrEmpty(e.Value))
+            .Select(e => $"{e.Key}:{e.Value}")
+            .ToList();
+
+        if (existenceOnly.Count == 0 && specificValues.Count == 0)
+        {
+            return baseQuery;
+        }
+
+        if (existenceOnly.Count == 0)
+        {
+            return baseQuery.Where(e => e.Provider!.Any(p =>
+                specificValues.Contains(p.ProviderId + ":" + p.ProviderValue)));
+        }
+
+        if (specificValues.Count == 0)
+        {
+            return baseQuery.Where(e => e.Provider!.Any(p => existenceOnly.Contains(p.ProviderId)));
+        }
+
+        // Single EXISTS over Provider with both predicates OR'd, instead of two separate subqueries.
+        return baseQuery.Where(e => e.Provider!.Any(p =>
+            existenceOnly.Contains(p.ProviderId) ||
+            specificValues.Contains(p.ProviderId + ":" + p.ProviderValue)));
+    }
+
+    /// <summary>
+    /// Excludes items that match any of the specified (provider name, value) pairs.
+    /// </summary>
+    /// <param name="baseQuery">The source query.</param>
+    /// <param name="providerIds">Dictionary mapping provider names to values to exclude.</param>
+    /// <returns>A filtered query.</returns>
+    public static IQueryable<BaseItemEntity> WhereExcludeProviderIds(
+        this IQueryable<BaseItemEntity> baseQuery,
+        IReadOnlyDictionary<string, string> providerIds)
+    {
+        var excludeKeys = providerIds
+            .Select(e => $"{e.Key}:{e.Value}")
+            .ToList();
+
+        if (excludeKeys.Count == 0)
+        {
+            return baseQuery;
+        }
+
+        return baseQuery.Where(e => e.Provider!.All(p => !excludeKeys.Contains(p.ProviderId + ":" + p.ProviderValue)));
     }
 
     /// <summary>
@@ -138,13 +241,14 @@ public static class JellyfinQueryHelperExtensions
 
         var containsMethodInfo = _containsQueryCache.GetOrAdd(typeof(TProperty), static (key) => _containsMethodGenericCache.MakeGenericMethod(key));
 
-        if (oneOf.Count < 4) // arbitrary value choosen.
-        {
-            // if we have 3 or fewer values to check against its faster to do a IN(const,const,const) lookup
-            return Expression.Lambda<Func<TEntity, bool>>(Expression.Call(null, containsMethodInfo, Expression.Constant(oneOf), property.Body), parameter);
-        }
-
-        return Expression.Lambda<Func<TEntity, bool>>(Expression.Call(null, containsMethodInfo, Expression.Call(null, _efParameterInstruction.MakeGenericMethod(oneOf.GetType()), Expression.Constant(oneOf)), property.Body), parameter);
+        // Always wrap the collection in EF.Parameter so EF Core caches a single compiled plan and reuses it across calls.
+        return Expression.Lambda<Func<TEntity, bool>>(
+            Expression.Call(
+                null,
+                containsMethodInfo,
+                Expression.Call(null, _efParameterInstruction.MakeGenericMethod(oneOf.GetType()), Expression.Constant(oneOf)),
+                property.Body),
+            parameter);
     }
 
     internal static class ParameterReplacer

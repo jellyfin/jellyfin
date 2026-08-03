@@ -21,6 +21,7 @@ namespace MediaBrowser.Controller.Entities
             AlbumArtistIds = [];
             AlbumIds = [];
             AncestorIds = [];
+            LinkedChildAncestorIds = [];
             ArtistIds = [];
             BlockUnratedItems = [];
             BoxSetLibraryFolders = [];
@@ -58,6 +59,8 @@ namespace MediaBrowser.Controller.Entities
             VideoTypes = [];
             Years = [];
             SkipDeserialization = false;
+            AudioLanguages = [];
+            SubtitleLanguages = [];
         }
 
         public InternalItemsQuery(User? user)
@@ -68,6 +71,102 @@ namespace MediaBrowser.Controller.Entities
                 SetUser(user);
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether the query carries any criteria that narrows the
+        /// result set, as opposed to user context, pagination, sorting or DTO options.
+        /// </summary>
+        public bool HasFilters =>
+            IncludeItemTypes.Length > 0
+            || ExcludeItemTypes.Length > 0
+            || Genres.Count > 0
+            || GenreIds.Count > 0
+            || Years.Length > 0
+            || Tags.Length > 0
+            || ExcludeTags.Length > 0
+            || OfficialRatings.Length > 0
+            || StudioIds.Length > 0
+            || ArtistIds.Length > 0
+            || AlbumArtistIds.Length > 0
+            || ContributingArtistIds.Length > 0
+            || ExcludeArtistIds.Length > 0
+            || AlbumIds.Length > 0
+            || PersonIds.Length > 0
+            || PersonTypes.Length > 0
+            || MediaTypes.Length > 0
+            || VideoTypes.Length > 0
+            || ImageTypes.Length > 0
+            || SeriesStatuses.Length > 0
+            || ItemIds.Length > 0
+            || ExcludeItemIds.Length > 0
+            || AudioLanguages.Count > 0
+            || SubtitleLanguages.Count > 0
+            || LinkedChildAncestorIds.Length > 0
+            || AncestorIds.Length > 0
+            || IsFavorite.HasValue
+            || IsFavoriteOrLiked.HasValue
+            || IsLiked.HasValue
+            || IsPlayed.HasValue
+            || IsResumable.HasValue
+            || IsFolder.HasValue
+            || IsMissing.HasValue
+            || IsUnaired.HasValue
+            || IsSpecialSeason.HasValue
+            || Is3D.HasValue
+            || IsHD.HasValue
+            || Is4K.HasValue
+            || IsLocked.HasValue
+            || IsPlaceHolder.HasValue
+            || IsMovie.HasValue
+            || IsSports.HasValue
+            || IsKids.HasValue
+            || IsNews.HasValue
+            || IsSeries.HasValue
+            || IsAiring.HasValue
+            || IsVirtualItem.HasValue
+            || HasImdbId.HasValue
+            || HasTmdbId.HasValue
+            || HasTvdbId.HasValue
+            || HasOverview.HasValue
+            || HasOfficialRating.HasValue
+            || HasParentalRating.HasValue
+            || HasThemeSong.HasValue
+            || HasThemeVideo.HasValue
+            || HasSubtitles.HasValue
+            || HasSpecialFeature.HasValue
+            || HasTrailer.HasValue
+            || HasChapterImages.HasValue
+            || MinCriticRating.HasValue
+            || MinCommunityRating.HasValue
+            || MinParentalRating is not null
+            || MinIndexNumber.HasValue
+            || MinParentAndIndexNumber.HasValue
+            || IndexNumber.HasValue
+            || ParentIndexNumber.HasValue
+            || AiredDuringSeason.HasValue
+            || MinWidth.HasValue
+            || MinHeight.HasValue
+            || MaxWidth.HasValue
+            || MaxHeight.HasValue
+            || MinPremiereDate.HasValue
+            || MaxPremiereDate.HasValue
+            || MinStartDate.HasValue
+            || MaxStartDate.HasValue
+            || MinEndDate.HasValue
+            || MaxEndDate.HasValue
+            || MinDateCreated.HasValue
+            || MinDateLastSaved.HasValue
+            || MinDateLastSavedForUser.HasValue
+            || AdjacentTo.HasValue
+            || !string.IsNullOrEmpty(NameStartsWith)
+            || !string.IsNullOrEmpty(NameStartsWithOrGreater)
+            || !string.IsNullOrEmpty(NameLessThan)
+            || !string.IsNullOrEmpty(NameContains)
+            || !string.IsNullOrEmpty(MinSortName)
+            || !string.IsNullOrEmpty(Name)
+            || !string.IsNullOrEmpty(Person)
+            || !string.IsNullOrEmpty(SearchTerm)
+            || !string.IsNullOrEmpty(Path);
 
         public bool Recursive { get; set; }
 
@@ -263,6 +362,12 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid[] AncestorIds { get; set; }
 
+        /// <summary>
+        /// Gets or sets a list of ancestor ids that the item's linked children must descend from.
+        /// Useful for filtering BoxSets/Playlists to only those that contain items from a specific library.
+        /// </summary>
+        public Guid[] LinkedChildAncestorIds { get; set; }
+
         public Guid[] TopParentIds { get; set; }
 
         public CollectionType?[] PresetViews { get; set; }
@@ -351,6 +456,8 @@ namespace MediaBrowser.Controller.Entities
 
         public Dictionary<string, string>? HasAnyProviderId { get; set; }
 
+        public Dictionary<string, string[]>? HasAnyProviderIds { get; set; }
+
         public Guid[] AlbumArtistIds { get; set; }
 
         public Guid[] BoxSetLibraryFolders { get; set; }
@@ -384,6 +491,10 @@ namespace MediaBrowser.Controller.Entities
         public bool SkipDeserialization { get; set; }
 
         public bool IncludeExtras { get; set; }
+
+        public IReadOnlyList<string> AudioLanguages { get; set; }
+
+        public IReadOnlyList<string> SubtitleLanguages { get; set; }
 
         public void SetUser(User user)
         {

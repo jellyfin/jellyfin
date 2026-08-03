@@ -83,6 +83,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 result.Item.Name = seasonResult.Name;
             }
 
+            result.Item.TrySetProviderId(MetadataProvider.Tmdb, seasonResult.Id?.ToString(CultureInfo.InvariantCulture));
             result.Item.TrySetProviderId(MetadataProvider.Tvdb, seasonResult.ExternalIds?.TvdbId);
 
             if (groupResult is not null && !string.IsNullOrWhiteSpace(groupResult.Id))
@@ -90,9 +91,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 result.Item.TrySetProviderId(TmdbEpisodeGroupId.ProviderKey, groupResult.Id);
             }
 
-            // TODO why was this disabled?
             var credits = seasonResult.Credits;
-
             if (credits?.Cast is not null)
             {
                 var castQuery = config.HideMissingCastMembers

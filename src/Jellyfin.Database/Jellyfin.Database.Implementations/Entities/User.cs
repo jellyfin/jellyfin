@@ -27,6 +27,7 @@ namespace Jellyfin.Database.Implementations.Entities
             ArgumentException.ThrowIfNullOrEmpty(passwordResetProviderId);
 
             Username = username;
+            NormalizedUsername = username.ToUpperInvariant();
             AuthenticationProviderId = authenticationProviderId;
             PasswordResetProviderId = passwordResetProviderId;
 
@@ -72,6 +73,16 @@ namespace Jellyfin.Database.Implementations.Entities
         [MaxLength(255)]
         [StringLength(255)]
         public string Username { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user's normalized name.
+        /// </summary>
+        /// <remarks>
+        /// Required, Max length = 255.
+        /// </remarks>
+        [MaxLength(255)]
+        [StringLength(255)]
+        public string NormalizedUsername { get; set; }
 
         /// <summary>
         /// Gets or sets the user's password, or <c>null</c> if none is set.

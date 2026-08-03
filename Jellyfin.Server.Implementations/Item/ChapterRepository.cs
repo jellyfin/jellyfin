@@ -55,6 +55,7 @@ public class ChapterRepository : IChapterRepository
     {
         using var context = _dbProvider.CreateDbContext();
         return context.Chapters.AsNoTracking().Where(e => e.ItemId.Equals(baseItemId))
+            .OrderBy(e => e.StartPositionTicks)
             .Select(e => new
             {
                 chapter = e,
@@ -69,18 +70,16 @@ public class ChapterRepository : IChapterRepository
     public void SaveChapters(Guid itemId, IReadOnlyList<ChapterInfo> chapters)
     {
         using var context = _dbProvider.CreateDbContext();
-        using (var transaction = context.Database.BeginTransaction())
+        using var transaction = context.Database.BeginTransaction();
+        context.Chapters.Where(e => e.ItemId.Equals(itemId)).ExecuteDelete();
+        for (var i = 0; i < chapters.Count; i++)
         {
-            context.Chapters.Where(e => e.ItemId.Equals(itemId)).ExecuteDelete();
-            for (var i = 0; i < chapters.Count; i++)
-            {
-                var chapter = chapters[i];
-                context.Chapters.Add(Map(chapter, i, itemId));
-            }
-
-            context.SaveChanges();
-            transaction.Commit();
+            var chapter = chapters[i];
+            context.Chapters.Add(Map(chapter, i, itemId));
         }
+
+        context.SaveChanges();
+        transaction.Commit();
     }
 
     /// <inheritdoc />

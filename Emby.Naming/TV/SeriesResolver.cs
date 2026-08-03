@@ -21,7 +21,7 @@ namespace Emby.Naming.TV
         /// Regex that matches titles with year in parentheses. Captures the title (which may be
         /// numeric) before the year, i.e. turns "1923 (2022)" into "1923".
         /// </summary>
-        [GeneratedRegex(@"(?<title>.+?)\s*\(\d{4}\)")]
+        [GeneratedRegex(@"(?<title>.+?)\s*\((?<year>[0-9]{4})\)")]
         private static partial Regex TitleWithYearRegex();
 
         /// <summary>
@@ -43,7 +43,8 @@ namespace Emby.Naming.TV
                     seriesName = titleWithYearMatch.Groups["title"].Value.Trim();
                     return new SeriesInfo(path)
                     {
-                        Name = seriesName
+                        Name = seriesName,
+                        Year = int.TryParse(titleWithYearMatch.Groups["year"].ValueSpan, out var year) ? year : null
                     };
                 }
             }

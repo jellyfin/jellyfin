@@ -491,6 +491,12 @@ namespace Jellyfin.LiveTv.Listings
             var results = new List<ShowImagesDto>();
             for (int i = 0; i < programIds.Count; i += BatchSize)
             {
+                // The daily image limit may be surfaced mid-batch.
+                if (IsImageDailyLimitActive())
+                {
+                    break;
+                }
+
                 var batch = programIds.Skip(i).Take(BatchSize);
 
                 using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/metadata/programs/");
@@ -511,6 +517,18 @@ namespace Jellyfin.LiveTv.Listings
                                     entry.ProgramId,
                                     entry.Code,
                                     entry.Message);
+
+                                // The image download limit can be reported per-entry inside an
+                                // otherwise successful (HTTP 200) response when the limit is hit
+                                // mid-batch. Back off so we stop requesting images until SD resets.
+                                if (entry.Code is (int)SdErrorCode.MaxImageDownloads or (int)SdErrorCode.MaxImageDownloadsTrial)
+                                {
+                                    _logger.LogError(
+                                        "Schedules Direct image download limit hit (code {Code}). Disabling image acquisition until SD reset.",
+                                        entry.Code);
+                                    SetImageLimitHit();
+                                }
+
                                 continue;
                             }
 
@@ -684,27 +702,37 @@ namespace Jellyfin.LiveTv.Listings
                 sdCode?.ToString() ?? "N/A",
                 responseBody);
 
-            if (sdCode is SdErrorCode.InvalidUser or SdErrorCode.InvalidHash or SdErrorCode.AccountLocked or SdErrorCode.AccountExpired or SdErrorCode.PasswordRequired)
+            if (sdCode is SdErrorCode.AccountExpired or SdErrorCode.InvalidHash or SdErrorCode.InvalidUser or SdErrorCode.AccountLocked or SdErrorCode.AppLocked or SdErrorCode.AccountInactive)
             {
                 // Permanent account errors — disable SD for this server lifetime.
-                _logger.LogError("Schedules Direct account error (code {SdCode}). Disabling SD until server restart", sdCode);
+                _logger.LogError("Schedules Direct account error (code {SdCode}). Disabling SD until server restart.", sdCode);
                 _tokens.Clear();
                 _accountError = true;
             }
-            else if (sdCode is SdErrorCode.MaxLoginAttempts or SdErrorCode.TemporaryLockout)
+            else if (sdCode is SdErrorCode.ServiceOffline or SdErrorCode.ServiceBusy or SdErrorCode.AccountTempLock)
             {
                 // Transient login errors — back off for 30 minutes, then allow retry.
+                _logger.LogError("Schedules Direct transient error (code {SdCode}). Backing off for 30 minutes.", sdCode);
                 _tokens.Clear();
                 Interlocked.Exchange(ref _lastErrorResponseTicks, DateTime.UtcNow.Ticks);
             }
-            else if (sdCode is SdErrorCode.MaxImageDownloads)
+            else if (sdCode is SdErrorCode.MaxLoginAttempts or SdErrorCode.MaxIPAttempts)
+            {
+                // 24 hour bans - stop image and metadata requests until SD reset at 00:00 UTC.
+                _logger.LogError("Schedules Direct service limit error (code {SdCode}). Disabling until SD reset.", sdCode);
+                SetImageLimitHit();
+                SetMetadataLimitHit();
+            }
+            else if (sdCode is SdErrorCode.MaxImageDownloads or SdErrorCode.MaxImageDownloadsTrial)
             {
                 // Max image downloads — stop image requests until SD resets at 00:00 UTC.
+                _logger.LogError("Schedules Direct image download limit hit (code {SdCode}). Disabling image acquisition until SD reset.", sdCode);
                 SetImageLimitHit();
             }
             else if (sdCode is SdErrorCode.MaxScheduleRequests)
             {
                 // Max schedule/metadata requests — stop metadata requests until SD resets at 00:00 UTC.
+                _logger.LogError("Schedules Direct metadata download limit hit (code {SdCode}). Disabling metadata acquisition until SD reset.", sdCode);
                 SetMetadataLimitHit();
             }
             else if (enableRetry
@@ -738,9 +766,7 @@ namespace Jellyfin.LiveTv.Listings
 #pragma warning disable CA5350 // SchedulesDirect is always SHA1.
             var hashedPasswordBytes = SHA1.HashData(Encoding.ASCII.GetBytes(password));
 #pragma warning restore CA5350
-            // TODO: remove ToLower when Convert.ToHexString supports lowercase
-            // Schedules Direct requires the hex to be lowercase
-            string hashedPassword = Convert.ToHexString(hashedPasswordBytes).ToLowerInvariant();
+            string hashedPassword = Convert.ToHexStringLower(hashedPasswordBytes);
             options.Content = new StringContent("{\"username\":\"" + username + "\",\"password\":\"" + hashedPassword + "\"}", Encoding.UTF8, MediaTypeNames.Application.Json);
 
             var root = await Request<TokenDto>(options, false, null, cancellationToken).ConfigureAwait(false);

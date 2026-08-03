@@ -34,7 +34,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
             await _activityManager.CreateAsync(new ActivityLog(
                     string.Format(
                         CultureInfo.InvariantCulture,
-                        _localizationManager.GetLocalizedString("UserDeletedWithName"),
+                        _localizationManager.GetServerLocalizedString("UserDeletedWithName"),
                         eventArgs.Argument.Username),
                     "UserDeleted",
                     Guid.Empty))

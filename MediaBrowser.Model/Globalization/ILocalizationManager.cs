@@ -51,6 +51,15 @@ public interface ILocalizationManager
     string GetLocalizedString(string phrase);
 
     /// <summary>
+    /// Gets the localized string using the server's configured UICulture,
+    /// ignoring the current request's culture. Use this for data that is
+    /// persisted (e.g. activity log entries) rather than returned per-request.
+    /// </summary>
+    /// <param name="phrase">The phrase.</param>
+    /// <returns>System.String.</returns>
+    string GetServerLocalizedString(string phrase);
+
+    /// <summary>
     /// Gets the localization options.
     /// </summary>
     /// <returns><see cref="IEnumerable{LocalizationOption}" />.</returns>
@@ -62,6 +71,14 @@ public interface ILocalizationManager
     /// <param name="language">The language.</param>
     /// <returns>The correct <see cref="CultureDto" /> for the given language.</returns>
     CultureDto? FindLanguageInfo(string language);
+
+    /// <summary>
+    /// Gets a human-readable display name for the given language code.
+    /// Truncates at the first semicolon or comma to avoid cluttered ISO-639-2 names.
+    /// </summary>
+    /// <param name="language">An ISO language code.</param>
+    /// <returns>The display name, or null if not found.</returns>
+    string? GetLanguageDisplayName(string language);
 
     /// <summary>
     /// Returns the language in ISO 639-2/T when the input is ISO 639-2/B.

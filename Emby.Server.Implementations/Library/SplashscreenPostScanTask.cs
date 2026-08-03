@@ -80,7 +80,7 @@ public class SplashscreenPostScanTask : ILibraryPostScanTask
             ImageTypes = [imageType],
             Limit = 30,
             // TODO max parental rating configurable
-            MaxParentalRating = new(10, null),
+            MaxParentalRating = new(13, null),
             OrderBy =
             [
                 (ItemSortBy.Random, SortOrder.Ascending)

@@ -180,9 +180,16 @@ public static partial class NetworkUtils
         List<IPData>? tmpResult = null;
         for (int a = 0; a < values.Length; a++)
         {
+            // Skip entries whose '!' polarity doesn't match this pass
+            var trimmed = values[a].AsSpan().Trim();
+            if (trimmed.StartsWith('!') != negated)
+            {
+                continue;
+            }
+
             if (TryParseToSubnet(values[a], out var innerResult, negated))
             {
-                (tmpResult ??= new()).Add(innerResult);
+                (tmpResult ??= []).Add(innerResult);
             }
             else
             {

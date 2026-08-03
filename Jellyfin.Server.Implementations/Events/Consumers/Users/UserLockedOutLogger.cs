@@ -35,7 +35,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
             await _activityManager.CreateAsync(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
-                    _localizationManager.GetLocalizedString("UserLockedOutWithName"),
+                    _localizationManager.GetServerLocalizedString("UserLockedOutWithName"),
                     eventArgs.Argument.Username),
                 NotificationType.UserLockedOut.ToString(),
                 eventArgs.Argument.Id)

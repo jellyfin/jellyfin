@@ -90,6 +90,7 @@
  - [mark-monteiro](https://github.com/mark-monteiro)
  - [MarkCiliaVincenti](https://github.com/MarkCiliaVincenti)
  - [Martin Reuter](https://github.com/reuterma24)
+ - [Matt Teahan](https://github.com/matt-teahan)
  - [Matt07211](https://github.com/Matt07211)
  - [Matthew Jones](https://github.com/matthew-jones-uk)
  - [Maxr1998](https://github.com/Maxr1998)
@@ -114,6 +115,7 @@
  - [oddstr13](https://github.com/oddstr13)
  - [olsh](https://github.com/olsh)
  - [orryverducci](https://github.com/orryverducci)
+ - [PCEWLKR](https://github.com/PCEWLKR)
  - [petermcneil](https://github.com/petermcneil)
  - [Phlogi](https://github.com/Phlogi)
  - [pjeanjean](https://github.com/pjeanjean)
@@ -170,6 +172,7 @@
  - [whooo](https://github.com/whooo)
  - [WiiPlayer2](https://github.com/WiiPlayer2)
  - [WillWill56](https://github.com/WillWill56)
+ - [WizardOfYendor1](https://github.com/WizardOfYendor1)
  - [wtayl0r](https://github.com/wtayl0r)
  - [Wuerfelbecher](https://github.com/Wuerfelbecher)
  - [Wunax](https://github.com/Wunax)
@@ -232,6 +235,8 @@
  - [MSalman5230](https://github.com/MSalman5230)
  - [dwandw](https://github.com/dwandw)
  - [Lampan-git](https://github.com/Lampan-git)
+ - [elio42](https://github.com/elio42)
+ - [rwebster85](https://github.com/rwebster85)
 
 # Emby Contributors
 

@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using BitFaster.Caching.Lru;
 using Emby.Naming.Common;
 using Emby.Naming.TV;
+using Emby.Naming.Video;
 using Emby.Server.Implementations.Library.Resolvers;
 using Emby.Server.Implementations.Library.Validators;
 using Emby.Server.Implementations.Playlists;
@@ -44,6 +45,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
@@ -85,8 +87,11 @@ namespace Emby.Server.Implementations.Library
         private readonly IPeopleRepository _peopleRepository;
         private readonly ExtraResolver _extraResolver;
         private readonly IPathManager _pathManager;
+        private readonly ILocalizationManager _localization;
         private readonly FastConcurrentLru<Guid, BaseItem> _cache;
         private readonly DotIgnoreIgnoreRule _dotIgnoreIgnoreRule;
+        private readonly IMediaStreamRepository _mediaStreamRepository;
+        private readonly Lazy<IExternalDataManager> _externalDataManagerFactory;
 
         /// <summary>
         /// The _root folder sync lock.
@@ -129,6 +134,9 @@ namespace Emby.Server.Implementations.Library
         /// <param name="peopleRepository">The people repository.</param>
         /// <param name="pathManager">The path manager.</param>
         /// <param name="dotIgnoreIgnoreRule">The .ignore rule handler.</param>
+        /// <param name="localization">The localization manager.</param>
+        /// <param name="mediaStreamRepository">The media stream repository.</param>
+        /// <param name="externalDataManagerFactory">The external data manager (lazy, to break the DI cycle through ChapterManager).</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILoggerFactory loggerFactory,
@@ -151,7 +159,10 @@ namespace Emby.Server.Implementations.Library
             IDirectoryService directoryService,
             IPeopleRepository peopleRepository,
             IPathManager pathManager,
-            DotIgnoreIgnoreRule dotIgnoreIgnoreRule)
+            DotIgnoreIgnoreRule dotIgnoreIgnoreRule,
+            ILocalizationManager localization,
+            IMediaStreamRepository mediaStreamRepository,
+            Lazy<IExternalDataManager> externalDataManagerFactory)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
@@ -177,9 +188,13 @@ namespace Emby.Server.Implementations.Library
             _peopleRepository = peopleRepository;
             _pathManager = pathManager;
             _dotIgnoreIgnoreRule = dotIgnoreIgnoreRule;
+            _localization = localization;
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
+
+            _mediaStreamRepository = mediaStreamRepository;
+            _externalDataManagerFactory = externalDataManagerFactory;
 
             RecordConfigurationValues(_configurationManager.Configuration);
         }
@@ -390,6 +405,12 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
+            var externalDataManager = _externalDataManagerFactory.Value;
+            foreach (var (item, _, _) in pathMaps)
+            {
+                externalDataManager.DeleteExternalItemFiles(item);
+            }
+
             _persistenceService.DeleteItem([.. pathMaps.Select(f => f.Item.Id)]);
         }
 
@@ -569,6 +590,13 @@ namespace Emby.Server.Implementations.Library
             }
 
             item.SetParent(null);
+
+            var externalDataManager = _externalDataManagerFactory.Value;
+            externalDataManager.DeleteExternalItemFiles(item);
+            foreach (var child in children)
+            {
+                externalDataManager.DeleteExternalItemFiles(child);
+            }
 
             _persistenceService.DeleteItem([item.Id, .. children.Select(f => f.Id)]);
             _cache.TryRemove(item.Id, out _);
@@ -786,6 +814,42 @@ namespace Emby.Server.Implementations.Library
             IDirectoryService? directoryService = null,
             CollectionType? collectionType = null)
             => ResolvePath(fileInfo, directoryService ?? new DirectoryService(_fileSystem), null, parent, collectionType);
+
+        private void SetAdditionalPartsFromStack(Video altVideo, string path)
+        {
+            if (altVideo.AdditionalParts is { Length: > 0 })
+            {
+                return;
+            }
+
+            var directory = Path.GetDirectoryName(path);
+            if (string.IsNullOrEmpty(directory))
+            {
+                return;
+            }
+
+            IEnumerable<FileSystemMetadata> siblings;
+            try
+            {
+                siblings = _fileSystem.GetFiles(directory);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to enumerate siblings to detect stack for {Path}", path);
+                return;
+            }
+
+            var stacks = StackResolver.Resolve(siblings, _namingOptions);
+            foreach (var stack in stacks)
+            {
+                if (stack.Files.Count > 1
+                    && string.Equals(stack.Files[0], path, StringComparison.OrdinalIgnoreCase))
+                {
+                    altVideo.AdditionalParts = stack.Files.Skip(1).ToArray();
+                    return;
+                }
+            }
+        }
 
         /// <inheritdoc />
         public Video? ResolveAlternateVersion(string path, Type expectedVideoType, Folder? parent, CollectionType? collectionType)
@@ -1945,7 +2009,8 @@ namespace Emby.Server.Implementations.Library
                 query.TopParentIds.Length == 0 &&
                 string.IsNullOrEmpty(query.AncestorWithPresentationUniqueKey) &&
                 string.IsNullOrEmpty(query.SeriesPresentationUniqueKey) &&
-                query.ItemIds.Length == 0)
+                query.ItemIds.Length == 0 &&
+                query.OwnerIds.Length == 0)
             {
                 var userViews = UserViewManager.GetUserViews(new UserViewQuery
                 {
@@ -2255,9 +2320,13 @@ namespace Emby.Server.Implementations.Library
         {
             var comparer = Comparers.FirstOrDefault(c => name == c.Type);
 
-            // If it requires a user, create a new one, and assign the user
             if (comparer is IUserBaseItemComparer)
             {
+                if (user is null)
+                {
+                    throw new ArgumentException($"Sort key '{name}' requires a user, but none was provided.");
+                }
+
                 var userComparer = (IUserBaseItemComparer)Activator.CreateInstance(comparer.GetType())!; // only null for Nullable<T> instances
 
                 userComparer.User = user;
@@ -2307,6 +2376,10 @@ namespace Emby.Server.Implementations.Library
                             {
                                 altVideo.OwnerId = video.Id;
                                 altVideo.SetPrimaryVersionId(video.Id);
+                                // ResolveAlternateVersion only sees the alternate's primary file.
+                                // If the alternate is itself a stack (e.g. 1080p part1 + part2),
+                                // detect its parts from sibling files so its AdditionalParts persist.
+                                SetAdditionalPartsFromStack(altVideo, path);
                                 allItems.Add(altVideo);
                             }
                         }
@@ -2386,8 +2459,14 @@ namespace Emby.Server.Implementations.Library
             var outdated = forceUpdate
                 ? item.ImageInfos.Where(i => i.Path is not null).ToArray()
                 : item.ImageInfos.Where(ImageNeedsRefresh).ToArray();
-            // Skip image processing if current or live tv source
-            if (outdated.Length == 0 || item.SourceType != SourceType.Library)
+
+            var parentItem = item.GetParent();
+            var isLiveTvShow = item.SourceType != SourceType.Library &&
+                               parentItem is not null &&
+                               parentItem.SourceType != SourceType.Library; // not a channel
+
+            // Skip image processing if current or live tv show
+            if (outdated.Length == 0 || isLiveTvShow)
             {
                 RegisterItem(item);
                 return;
@@ -2510,6 +2589,10 @@ namespace Emby.Server.Implementations.Library
                             {
                                 altVideo.OwnerId = video.Id;
                                 altVideo.SetPrimaryVersionId(video.Id);
+                                // ResolveAlternateVersion only sees the alternate's primary file.
+                                // If the alternate is itself a stack (e.g. 1080p part1 + part2),
+                                // detect its parts from sibling files so its AdditionalParts persist.
+                                SetAdditionalPartsFromStack(altVideo, path);
                                 allItems.Add(altVideo);
                             }
                         }
@@ -3121,11 +3204,11 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
 
-                if (!episode.ProductionYear.HasValue)
+                if (episode.ProductionYear is null)
                 {
                     episode.ProductionYear = episodeInfo.Year;
 
-                    if (episode.ProductionYear.HasValue)
+                    if (episode.ProductionYear is not null)
                     {
                         changed = true;
                     }
@@ -3202,8 +3285,10 @@ namespace Emby.Server.Implementations.Library
             var ownerVideoInfo = VideoResolver.Resolve(owner.Path, isFolder, _namingOptions, libraryRoot: owner.ContainingFolderPath);
             if (ownerVideoInfo is null)
             {
-                yield break;
+                return [];
             }
+
+            var candidates = new List<ExtraCandidate>();
 
             var count = filtered.Count;
             for (var i = 0; i < count; i++)
@@ -3218,35 +3303,50 @@ namespace Emby.Server.Implementations.Library
 
                     foreach (var file in filesInSubFolderList)
                     {
-                        if (!_extraResolver.TryGetExtraTypeForOwner(file.FullName, ownerVideoInfo, out var extraType))
+                        if (!_extraResolver.TryGetExtraTypeForOwner(file.FullName, ownerVideoInfo, out var extraType, out var extraRule))
                         {
                             continue;
                         }
 
-                        var extra = GetExtra(file, extraType.Value, subFolderIsMixedFolder);
-                        if (extra is not null)
-                        {
-                            yield return extra;
-                        }
+                        AddCandidate(file, extraType.Value, extraRule, subFolderIsMixedFolder);
                     }
                 }
-                else if (!current.IsDirectory && _extraResolver.TryGetExtraTypeForOwner(current.FullName, ownerVideoInfo, out var extraType))
+                else if (!current.IsDirectory && _extraResolver.TryGetExtraTypeForOwner(current.FullName, ownerVideoInfo, out var extraType, out var extraRule))
                 {
-                    var extra = GetExtra(current, extraType.Value, false);
-                    if (extra is not null)
-                    {
-                        yield return extra;
-                    }
+                    AddCandidate(current, extraType.Value, extraRule, false);
                 }
             }
 
-            BaseItem? GetExtra(FileSystemMetadata file, ExtraType extraType, bool isInMixedFolder)
+            var extras = new List<BaseItem>();
+            var typeCounters = new Dictionary<ExtraType, int>();
+
+            // Order by path so that the numbering handed out below does not depend on the
+            // order the file system happened to list the folder in
+            foreach (var candidate in candidates.OrderBy(c => c.Extra.Path, StringComparer.Ordinal))
+            {
+                var extra = PrepareExtra(candidate);
+                if (extra is not null)
+                {
+                    extras.Add(extra);
+                }
+            }
+
+            return extras;
+
+            void AddCandidate(FileSystemMetadata file, ExtraType extraType, ExtraRule extraRule, bool isInMixedFolder)
             {
                 var extra = ResolvePath(_fileSystem.GetFileInfo(file.FullName), directoryService, _extraResolver.GetResolversForExtraType(extraType));
-                if (extra is not Video && extra is not Audio)
+                if (extra is Video or Audio)
                 {
-                    return null;
+                    candidates.Add(new ExtraCandidate(extra, extraType, extraRule, isInMixedFolder));
                 }
+            }
+
+            BaseItem? PrepareExtra(ExtraCandidate candidate)
+            {
+                var resolved = candidate.Extra;
+                var extra = resolved;
+                var name = GetExtraName(candidate, ownerVideoInfo, typeCounters);
 
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
                 var itemById = GetItemById(extra.Id);
@@ -3255,10 +3355,18 @@ namespace Emby.Server.Implementations.Library
                     extra = itemById;
                 }
 
-                // Only update extra type if it is more specific then the currently known extra type
-                if (extra.ExtraType is null or ExtraType.Unknown || extraType != ExtraType.Unknown)
+                // An extra is named after its file, so the file is the source of truth. Items created
+                // by older versions, or renamed by a metadata provider, are corrected here;
+                // RefreshExtras persists the change.
+                if (!string.IsNullOrEmpty(name) && extra.LockedFields?.Contains(MetadataField.Name) != true)
                 {
-                    extra.ExtraType = extraType;
+                    extra.Name = name;
+                }
+
+                // Only update extra type if it is more specific then the currently known extra type
+                if (extra.ExtraType is null or ExtraType.Unknown || candidate.ExtraType != ExtraType.Unknown)
+                {
+                    extra.ExtraType = candidate.ExtraType;
                 }
 
                 // Only return items that are actual extras (have ExtraType set)
@@ -3266,13 +3374,64 @@ namespace Emby.Server.Implementations.Library
                 // so that RefreshExtras can detect when they need updating and set ForceSave.
                 if (extra.ExtraType is not null)
                 {
-                    extra.IsInMixedFolder = isInMixedFolder;
+                    extra.IsInMixedFolder = candidate.IsInMixedFolder;
                     return extra;
                 }
 
                 return null;
             }
         }
+
+        /// <summary>
+        /// Gets the name to give an extra.
+        /// </summary>
+        /// <param name="candidate">The resolved extra.</param>
+        /// <param name="ownerVideoInfo">The naming info of the owner.</param>
+        /// <param name="typeCounters">Number of extras named after their type so far, per type.</param>
+        /// <returns>The name.</returns>
+        private string GetExtraName(ExtraCandidate candidate, VideoFileInfo ownerVideoInfo, Dictionary<ExtraType, int> typeCounters)
+        {
+            var isNamedAfterOwner = candidate.ExtraRule.RuleType switch
+            {
+                ExtraRuleType.Filename => true,
+                ExtraRuleType.Suffix => string.Equals(candidate.Extra.Name, ownerVideoInfo.Name, StringComparison.OrdinalIgnoreCase),
+                _ => false
+            };
+
+            if (!isNamedAfterOwner)
+            {
+                return candidate.Extra.Name;
+            }
+
+            typeCounters.TryGetValue(candidate.ExtraType, out var seen);
+            typeCounters[candidate.ExtraType] = seen + 1;
+
+            var typeName = _localization.GetServerLocalizedString(GetExtraTypeNameKey(candidate.ExtraType));
+
+            return seen == 0
+                ? typeName
+                : string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetServerLocalizedString("NameExtraNumbered"),
+                    typeName,
+                    seen + 1);
+        }
+
+        private static string GetExtraTypeNameKey(ExtraType extraType) => extraType switch
+        {
+            ExtraType.Clip => "NameExtraClip",
+            ExtraType.Trailer => "NameExtraTrailer",
+            ExtraType.BehindTheScenes => "NameExtraBehindTheScenes",
+            ExtraType.DeletedScene => "NameExtraDeletedScene",
+            ExtraType.Interview => "NameExtraInterview",
+            ExtraType.Scene => "NameExtraScene",
+            ExtraType.Sample => "NameExtraSample",
+            ExtraType.ThemeSong => "NameExtraThemeSong",
+            ExtraType.ThemeVideo => "NameExtraThemeVideo",
+            ExtraType.Featurette => "NameExtraFeaturette",
+            ExtraType.Short => "NameExtraShort",
+            _ => "NameExtraUnknown"
+        };
 
         public string GetPathAfterNetworkSubstitution(string path, BaseItem? ownerItem)
         {
@@ -3342,6 +3501,12 @@ namespace Emby.Server.Implementations.Library
         public IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery query)
         {
             return _peopleRepository.GetPeopleNames(query);
+        }
+
+        /// <inheritdoc/>
+        public IReadOnlyDictionary<Guid, IReadOnlyList<string>> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes)
+        {
+            return _peopleRepository.GetPeopleNamesByItems(itemIds, personTypes);
         }
 
         public void UpdatePeople(BaseItem item, List<PersonInfo> people)
@@ -3800,5 +3965,25 @@ namespace Emby.Server.Implementations.Library
             SetTopParentOrAncestorIds(query);
             return _itemRepository.GetQueryFiltersLegacy(query);
         }
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> GetMediaStreamLanguages(MediaStreamType mediaStreamType)
+        {
+            return _mediaStreamRepository.GetMediaStreamLanguages(mediaStreamType);
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> GetMediaStreamLanguages(MediaStreamType mediaStreamType, InternalItemsQuery query)
+        {
+            if (query.User is not null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return _itemRepository.GetMediaStreamLanguages(query, mediaStreamType);
+        }
+
+        private sealed record ExtraCandidate(BaseItem Extra, ExtraType ExtraType, ExtraRule ExtraRule, bool IsInMixedFolder);
     }
 }

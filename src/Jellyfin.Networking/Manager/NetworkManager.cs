@@ -356,7 +356,7 @@ public class NetworkManager : INetworkManager, IDisposable
     {
         lock (_initLock)
         {
-           _interfaces = FilterBindSettings(config, _interfaces, IsIPv4Enabled, IsIPv6Enabled).ToList();
+            _interfaces = FilterBindSettings(config, _interfaces, IsIPv4Enabled, IsIPv6Enabled).ToList();
         }
     }
 
@@ -491,6 +491,7 @@ public class NetworkManager : INetworkManager, IDisposable
                         startupOverrideKey,
                         true,
                         true));
+                WarnIfPublishedUrlBasePathDiffers(publishedServerUrls, config.BaseUrl);
                 _publishedServerUrls = publishedServerUrls;
                 return;
             }
@@ -580,7 +581,50 @@ public class NetworkManager : INetworkManager, IDisposable
                 }
             }
 
+            WarnIfPublishedUrlBasePathDiffers(publishedServerUrls, config.BaseUrl);
             _publishedServerUrls = publishedServerUrls;
+        }
+    }
+
+    /// <summary>
+    /// Warns when a full-URL published server override uses a public path that differs from the configured base
+    /// URL. Jellyfin appends the base URL to generated Live TV client URLs in this case, which can conflict with
+    /// reverse proxies that translate public request paths. Bare host/IP overrides are exempt because the base URL
+    /// is appended when the API URL is built from them.
+    /// </summary>
+    /// <param name="publishedServerUrls">The parsed published server URL overrides.</param>
+    /// <param name="baseUrl">The configured base URL, if any.</param>
+    private void WarnIfPublishedUrlBasePathDiffers(List<PublishedServerUriOverride> publishedServerUrls, string baseUrl)
+    {
+        if (string.IsNullOrEmpty(baseUrl))
+        {
+            return;
+        }
+
+        foreach (var overrideUri in publishedServerUrls.Select(x => x.OverrideUri).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            if (!overrideUri.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                && !overrideUri.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (!Uri.TryCreate(overrideUri, UriKind.Absolute, out var uri))
+            {
+                continue;
+            }
+
+            var path = Uri.UnescapeDataString(uri.AbsolutePath).TrimEnd('/');
+            if (path.EndsWith(baseUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var publishedServerHost = uri.GetComponents(UriComponents.HostAndPort, UriFormat.Unescaped);
+            _logger.LogWarning(
+                "The published server URL for host '{PublishedServerHost}' does not end with the configured base URL '{BaseUrl}'. Jellyfin will append this base URL when generating Live TV client URLs. If your reverse proxy translates public paths, this may cause Live TV playback to fail. Update the Published Server URIs setting on the Networking page of the admin dashboard, the JELLYFIN_PublishedServerUrl environment variable / --published-server-url option, or the reverse proxy path mapping accordingly.",
+                publishedServerHost,
+                baseUrl);
         }
     }
 
@@ -851,7 +895,7 @@ public class NetworkManager : INetworkManager, IDisposable
             bool isExternal = !IsInLocalNetwork(source);
             _logger.LogDebug("Trying to get bind address for source {Source} - External: {IsExternal}", source, isExternal);
 
-            if (!skipOverrides && MatchesPublishedServerUrl(source, isExternal, out result))
+            if (!skipOverrides && MatchesPublishedServerUrl(source, isExternal, out result, out port))
             {
                 return result;
             }
@@ -1017,11 +1061,12 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <param name="source">IP source address to use.</param>
     /// <param name="isInExternalSubnet">True if the source is in an external subnet.</param>
     /// <param name="bindPreference">The published server URL that matches the source address.</param>
+    /// <param name="port">The explicit port parsed from the override, if any.</param>
     /// <returns><c>true</c> if a match is found, <c>false</c> otherwise.</returns>
-    private bool MatchesPublishedServerUrl(IPAddress source, bool isInExternalSubnet, out string bindPreference)
+    private bool MatchesPublishedServerUrl(IPAddress source, bool isInExternalSubnet, out string bindPreference, out int? port)
     {
         bindPreference = string.Empty;
-        int? port = null;
+        port = null;
 
         // Only consider subnets including the source IP, preferring specific overrides
         List<PublishedServerUriOverride> validPublishedServerUrls;
@@ -1063,22 +1108,40 @@ public class NetworkManager : INetworkManager, IDisposable
             return false;
         }
 
-        // Handle override specifying port
-        var parts = bindPreference.Split(':');
-        if (parts.Length > 1)
+        // Handle override specifying an explicit port.
+        (bindPreference, port) = ParseHostAndPort(bindPreference);
+
+        if (port.HasValue)
         {
-            if (int.TryParse(parts[1], out int p))
-            {
-                bindPreference = parts[0];
-                port = p;
-                _logger.LogDebug("{Source}: Matching bind address override found: {Address}:{Port}", source, bindPreference, port);
-                return true;
-            }
+            _logger.LogDebug("{Source}: Matching bind address override found: {Address}:{Port}", source, bindPreference, port);
+        }
+        else
+        {
+            _logger.LogDebug("{Source}: Matching bind address override found: {Address}", source, bindPreference);
         }
 
-        _logger.LogDebug("{Source}: Matching bind address override found: {Address}", source, bindPreference);
-
         return true;
+    }
+
+    /// <summary>
+    /// Splits a published server URL override into its host and explicit port, if any.
+    /// Full URLs (containing "://") are returned whole, with any port left embedded.
+    /// </summary>
+    /// <param name="value">The override value, e.g. "host:port", "[::1]:port", or a full URL.</param>
+    /// <returns>The parsed host (or the original value if not split) and the explicit port, if any.</returns>
+    private static (string Host, int? Port) ParseHostAndPort(string value)
+    {
+        if (value.Contains("://", StringComparison.Ordinal))
+        {
+            return (value, null);
+        }
+
+        if (Uri.TryCreate("any://" + value, UriKind.Absolute, out var parsed) && parsed.Port != -1)
+        {
+            return (parsed.DnsSafeHost, parsed.Port);
+        }
+
+        return (value, null);
     }
 
     /// <summary>

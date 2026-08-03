@@ -31,6 +31,10 @@ public sealed partial class BaseItemRepository
     private static readonly string TmdbProviderName = MetadataProvider.Tmdb.ToString().ToLowerInvariant();
     private static readonly string TvdbProviderName = MetadataProvider.Tvdb.ToString().ToLowerInvariant();
 
+    // A fresh expression per access: EF rejects a query tree that reuses one lambda parameter
+    // instance across several lambdas, and this filter is combined into a tree more than once.
+    private static Expression<Func<BaseItemEntity, bool>> IsFolderFilter => e => e.IsFolder;
+
     /// <inheritdoc />
     public IQueryable<BaseItemEntity> TranslateQuery(
         IQueryable<BaseItemEntity> baseQuery,
@@ -434,127 +438,113 @@ public sealed partial class BaseItemRepository
 
         if (filter.IsLiked.HasValue)
         {
-            var isLiked = filter.IsLiked.Value;
-            baseQuery = baseQuery.Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.Rating >= UserItemData.MinLikeValue) == isLiked);
+            var likedIds = context.UserData
+                .Where(ud => ud.UserId == filter.User!.Id && ud.Rating >= UserItemData.MinLikeValue)
+                .Select(ud => ud.ItemId);
+
+            baseQuery = filter.IsLiked.Value
+                ? baseQuery.Where(e => likedIds.Contains(e.Id))
+                : baseQuery.Where(e => !likedIds.Contains(e.Id));
         }
 
-        if (filter.IsFavoriteOrLiked.HasValue)
+        if (filter.IsFavoriteOrLiked.HasValue || filter.IsFavorite.HasValue)
         {
-            var isFavoriteOrLiked = filter.IsFavoriteOrLiked.Value;
-            baseQuery = baseQuery.Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.IsFavorite) == isFavoriteOrLiked);
-        }
+            var favoriteIds = context.UserData
+                .Where(ud => ud.UserId == filter.User!.Id && ud.IsFavorite)
+                .Select(ud => ud.ItemId);
 
-        if (filter.IsFavorite.HasValue)
-        {
-            var isFavorite = filter.IsFavorite.Value;
-            baseQuery = baseQuery.Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.IsFavorite) == isFavorite);
+            if (filter.IsFavoriteOrLiked.HasValue)
+            {
+                baseQuery = filter.IsFavoriteOrLiked.Value
+                    ? baseQuery.Where(e => favoriteIds.Contains(e.Id))
+                    : baseQuery.Where(e => !favoriteIds.Contains(e.Id));
+            }
+
+            if (filter.IsFavorite.HasValue)
+            {
+                baseQuery = filter.IsFavorite.Value
+                    ? baseQuery.Where(e => favoriteIds.Contains(e.Id))
+                    : baseQuery.Where(e => !favoriteIds.Contains(e.Id));
+            }
         }
 
         if (filter.IsPlayed.HasValue)
         {
-            var hasSeries = filter.IncludeItemTypes.Contains(BaseItemKind.Series);
-            var hasBoxSet = filter.IncludeItemTypes.Contains(BaseItemKind.BoxSet);
+            var userId = filter.User!.Id;
 
-            if (hasSeries || hasBoxSet)
-            {
-                var userId = filter.User!.Id;
-                var isPlayed = filter.IsPlayed.Value;
-                var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
-                var boxSetTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.BoxSet];
+            // Leaf items carry their own played state.
+            var playedItemIds = context.UserData
+                .Where(ud => ud.UserId == userId && ud.Played)
+                .Select(ud => ud.ItemId);
 
-                // Series: played = at least one episode AND all episodes played; unplayed = otherwise.
-                IQueryable<Guid> playedSeriesIds = hasSeries
-                    ? context.BaseItems
-                        .AsNoTracking()
-                        .Where(e => !e.IsFolder && !e.IsVirtualItem && e.SeriesId.HasValue)
-                        .GroupBy(e => e.SeriesId!.Value)
-                        .Where(g => !g.Any(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played)))
-                        .Select(g => g.Key)
-                    : Enumerable.Empty<Guid>().AsQueryable();
+            // Folders (Series, Seasons, BoxSets, albums, ...) have none and count as played once no
+            // descendant is left unplayed, matching what the DTO reports for them. This has to key off
+            // the item itself rather than off the requested item types: tag and collection listings mix
+            // folders and leaf items in a single query.
+            var unplayedLeafItems = GetAccessFilteredLeafItemsQuery(context, filter.User!)
+                .Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
 
-                // BoxSet: played = all children played.
-                IQueryable<Guid> playedBoxSetIds = hasBoxSet
-                    ? GetFullyPlayedFolderIdsQuery(
-                        context,
-                        baseQuery.Where(e => e.Type == boxSetTypeName).Select(e => e.Id),
-                        filter.User!)
-                    : Enumerable.Empty<Guid>().AsQueryable();
+            var isPlayedFilter = IsFolderFilter.And(BuildHasDescendantFilter(context, unplayedLeafItems).Not())
+                .Or(IsFolderFilter.Not().And(e => playedItemIds.Contains(e.Id)));
 
-                // Non-folder items: check UserData directly
-                var playedItemIds = context.UserData
-                    .Where(ud => ud.UserId == userId && ud.Played)
-                    .Select(ud => ud.ItemId);
-
-                if (isPlayed)
-                {
-                    baseQuery = baseQuery.Where(e =>
-                        (e.Type == seriesTypeName && playedSeriesIds.Contains(e.Id))
-                        || (e.Type == boxSetTypeName && playedBoxSetIds.Contains(e.Id))
-                        || (e.Type != seriesTypeName && e.Type != boxSetTypeName && playedItemIds.Contains(e.Id)));
-                }
-                else
-                {
-                    baseQuery = baseQuery.Where(e =>
-                        (e.Type == seriesTypeName && !playedSeriesIds.Contains(e.Id))
-                        || (e.Type == boxSetTypeName && !playedBoxSetIds.Contains(e.Id))
-                        || (e.Type != seriesTypeName && e.Type != boxSetTypeName && !playedItemIds.Contains(e.Id)));
-                }
-            }
-            else
-            {
-                var playedItemIds = context.UserData
-                    .Where(ud => ud.UserId == filter.User!.Id && ud.Played)
-                    .Select(ud => ud.ItemId);
-                var isPlayedItem = filter.IsPlayed.Value;
-                baseQuery = baseQuery.Where(e => playedItemIds.Contains(e.Id) == isPlayedItem);
-            }
+            baseQuery = baseQuery.Where(filter.IsPlayed.Value ? isPlayedFilter : isPlayedFilter.Not());
         }
 
         if (filter.IsResumable.HasValue)
         {
-            var hasSeries = filter.IncludeItemTypes.Contains(BaseItemKind.Series);
+            var userId = filter.User!.Id;
+            var isResumable = filter.IsResumable.Value;
 
-            if (hasSeries)
+            // In-progress user data rows; alternate versions track their own progress.
+            var inProgress = context.UserData
+                .Where(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0);
+
+            // Folders are resumable when a descendant is in progress, or when they hold both played and
+            // unplayed descendants (partially watched). Alternate versions keep their own progress, so
+            // they count towards the in-progress check but not towards the played/unplayed one.
+            var leafItems = GetAccessFilteredLeafItemsQuery(context, filter.User!);
+            var inProgressLeafItems = GetAccessFilteredLeafItemsQuery(context, filter.User!, includeOwnedItems: true)
+                .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0));
+
+            var folderResumableFilter = BuildHasDescendantFilter(context, inProgressLeafItems)
+                .Or(BuildHasDescendantFilter(context, leafItems.Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played)))
+                    .And(BuildHasDescendantFilter(context, leafItems.Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played)))));
+
+            if (isResumable)
             {
-                var userId = filter.User!.Id;
-                var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
-                var isResumable = filter.IsResumable.Value;
+                // Resume queries surface the version that was actually played, which may be an alternate.
+                // Match each version on its own progress rather than coalescing onto the primary.
+                var inProgressIds = inProgress.Select(ud => ud.ItemId);
 
-                // Aggregate per series in a single GROUP BY pass, instead of three full scans.
-                var seriesEpisodeStats = context.BaseItems
-                    .AsNoTracking()
-                    .Where(e => !e.IsFolder && !e.IsVirtualItem && e.SeriesId.HasValue)
-                    .GroupBy(e => e.SeriesId!.Value)
-                    .Select(g => new
-                    {
-                        SeriesId = g.Key,
-                        HasInProgress = g.Any(e => e.UserData!.Any(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0)),
-                        HasPlayed = g.Any(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played)),
-                        HasUnplayed = g.Any(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played))
-                    });
+                baseQuery = baseQuery.Where(IsFolderFilter.And(folderResumableFilter)
+                    .Or(IsFolderFilter.Not().And(e => inProgressIds.Contains(e.Id))));
 
-                // A series is resumable if it has an in-progress episode,
-                // or if it has both played and unplayed episodes (partially watched).
-                var resumableSeriesIds = seriesEpisodeStats
-                    .Where(s => s.HasInProgress || (s.HasPlayed && s.HasUnplayed))
-                    .Select(s => s.SeriesId);
-
-                // Non-series items: resumable if PlaybackPositionTicks > 0
-                var resumableItemIds = context.UserData
-                    .Where(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0)
-                    .Select(ud => ud.ItemId);
-
-                baseQuery = baseQuery.Where(e =>
-                    (e.Type == seriesTypeName && resumableSeriesIds.Contains(e.Id) == isResumable)
-                    || (e.Type != seriesTypeName && resumableItemIds.Contains(e.Id) == isResumable));
+                // When several versions of the same item are in progress, keep only the most recently played one, use id as tiebreaker.
+                // Only in-progress siblings can eliminate a candidate: a version without progress has a NULL max LastPlayedDate,
+                // which is never greater and never ties. Restricting the sibling scan to the in-progress set keeps this bounded by
+                // the user's Continue Watching count instead of forcing a full BaseItems scan (COALESCE keys are non-indexable) per row.
+                // Items in no version group at all have no sibling that could eliminate them, so short-circuit the scan for those.
+                baseQuery = baseQuery.Where(e => e.IsFolder
+                    || (e.PrimaryVersionId == null && !context.BaseItems.Any(a => a.PrimaryVersionId == e.Id))
+                    || !context.BaseItems
+                        .Where(s => s.Id != e.Id
+                            && inProgressIds.Contains(s.Id)
+                            && (s.PrimaryVersionId ?? s.Id) == (e.PrimaryVersionId ?? e.Id))
+                        .Any(s =>
+                            inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
+                                > inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)
+                            || (inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
+                                    == inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)
+                                && s.Id.CompareTo(e.Id) < 0)));
             }
             else
             {
-                var resumableItemIds = context.UserData
-                    .Where(ud => ud.UserId == filter.User!.Id && ud.PlaybackPositionTicks > 0)
-                    .Select(ud => ud.ItemId);
-                var isResumable = filter.IsResumable.Value;
-                baseQuery = baseQuery.Where(e => resumableItemIds.Contains(e.Id) == isResumable);
+                // Not-resumable queries operate on primaries only.
+                var resumableMovieIds = inProgress
+                    .Join(context.BaseItems, ud => ud.ItemId, bi => bi.Id, (ud, bi) => bi.PrimaryVersionId ?? bi.Id);
+
+                baseQuery = baseQuery.Where(IsFolderFilter.And(folderResumableFilter.Not())
+                    .Or(IsFolderFilter.Not().And(e => !resumableMovieIds.Contains(e.Id))));
             }
         }
 
@@ -586,8 +576,7 @@ public sealed partial class BaseItemRepository
 
         if (filter.AlbumIds.Length > 0)
         {
-            var subQuery = context.BaseItems.WhereOneOrMany(filter.AlbumIds, f => f.Id);
-            baseQuery = baseQuery.Where(e => subQuery.Any(f => f.Name == e.Album));
+            baseQuery = baseQuery.Where(e => e.ParentId.HasValue && filter.AlbumIds.Contains(e.ParentId.Value));
         }
 
         if (filter.ExcludeArtistIds.Length > 0)
@@ -742,10 +731,13 @@ public sealed partial class BaseItemRepository
         }
         else if (filter.OwnerIds.Length == 0 && filter.ExtraTypes.Length == 0 && !filter.IncludeOwnedItems)
         {
-            // Exclude alternate versions and owned non-extra items from general queries.
-            // Alternate versions have PrimaryVersionId set (pointing to their primary).
+            // Exclude owned non-extra items from general queries.
             // Extras (trailers, etc.) have OwnerId set but also have ExtraType set - keep those.
-            baseQuery = baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
+            // Alternate versions (PrimaryVersionId set) are normally excluded too, but resume queries
+            // keep them so the actually-played version can surface instead of collapsing onto the primary.
+            baseQuery = filter.IsResumable == true
+                ? baseQuery.Where(e => e.OwnerId == null || e.ExtraType != null)
+                : baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
         }
 
         if (filter.OwnerIds.Length > 0)
@@ -822,6 +814,26 @@ public sealed partial class BaseItemRepository
                         (!e.IsFolder && !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle))
                         || (e.IsFolder && !foldersWithSubtitles.Contains(e.Id)));
             }
+        }
+
+        if (filter.SubtitleLanguages.Count > 0)
+        {
+            var foldersWithSubtitles = DescendantQueryHelper.GetFolderIdsMatching(context, new HasMediaStreamType(MediaStreamTypeEntity.Subtitle, filter.SubtitleLanguages));
+            baseQuery = baseQuery
+                .Where(e =>
+                    (!e.IsFolder && e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle
+                     && (filter.SubtitleLanguages.Contains(f.Language) || (filter.SubtitleLanguages.Contains("und") && string.IsNullOrEmpty(f.Language)))))
+                    || (e.IsFolder && foldersWithSubtitles.Contains(e.Id)));
+        }
+
+        if (filter.AudioLanguages.Count > 0)
+        {
+            var foldersWithAudio = DescendantQueryHelper.GetFolderIdsMatching(context, new HasMediaStreamType(MediaStreamTypeEntity.Audio, filter.AudioLanguages));
+            baseQuery = baseQuery
+                .Where(e =>
+                    (!e.IsFolder && e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Audio
+                     && (filter.AudioLanguages.Contains(f.Language) || (filter.AudioLanguages.Contains("und") && string.IsNullOrEmpty(f.Language)))))
+                    || (e.IsFolder && foldersWithAudio.Contains(e.Id)));
         }
 
         if (filter.HasChapterImages.HasValue)
@@ -933,23 +945,27 @@ public sealed partial class BaseItemRepository
 
         if (filter.ExcludeProviderIds is not null && filter.ExcludeProviderIds.Count > 0)
         {
-            var exclude = filter.ExcludeProviderIds.Select(e => $"{e.Key}:{e.Value}").ToArray();
-            baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId + ":" + f.ProviderValue)!.All(f => !exclude.Contains(f)));
+            baseQuery = baseQuery.WhereExcludeProviderIds(filter.ExcludeProviderIds);
         }
 
         if (filter.HasAnyProviderId is not null && filter.HasAnyProviderId.Count > 0)
         {
-            // Allow setting a null or empty value to get all items that have the specified provider set.
-            var includeAny = filter.HasAnyProviderId.Where(e => string.IsNullOrEmpty(e.Value)).Select(e => e.Key).ToArray();
+            baseQuery = baseQuery.WhereHasAnyProviderId(filter.HasAnyProviderId);
+        }
+
+        if (filter.HasAnyProviderIds is not null && filter.HasAnyProviderIds.Count > 0)
+        {
+            baseQuery = baseQuery.WhereHasAnyProviderIds(filter.HasAnyProviderIds);
+        }
+
+        if (filter.HasAnyProviderIds is not null && filter.HasAnyProviderIds.Count > 0)
+        {
+            var includeAny = filter.HasAnyProviderIds
+                .SelectMany(kvp => kvp.Value.Select(v => $"{kvp.Key}:{v}"))
+                .ToArray();
             if (includeAny.Length > 0)
             {
-                baseQuery = baseQuery.Where(e => e.Provider!.Any(f => includeAny.Contains(f.ProviderId)));
-            }
-
-            var includeSelected = filter.HasAnyProviderId.Where(e => !string.IsNullOrEmpty(e.Value)).Select(e => $"{e.Key}:{e.Value}").ToArray();
-            if (includeSelected.Length > 0)
-            {
-                baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId + ":" + f.ProviderValue)!.Any(f => includeSelected.Contains(f)));
+                baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId + ":" + f.ProviderValue)!.Any(f => includeAny.Contains(f)));
             }
         }
 
@@ -996,6 +1012,15 @@ public sealed partial class BaseItemRepository
             baseQuery = baseQuery.Where(e => e.Parents!.AsQueryable().Any(ancestorFilter));
         }
 
+        if (filter.LinkedChildAncestorIds.Length > 0)
+        {
+            // Keep folder-like items (BoxSets, Playlists) whose linked children descend from any of the requested ancestor ids.
+            var linkedChildAncestorIds = filter.LinkedChildAncestorIds;
+            baseQuery = baseQuery.Where(e => context.LinkedChildren.Any(lc =>
+                lc.ParentId == e.Id
+                && lc.Child!.Parents!.Any(a => linkedChildAncestorIds.Contains(a.ParentItemId))));
+        }
+
         if (!string.IsNullOrWhiteSpace(filter.AncestorWithPresentationUniqueKey))
         {
             baseQuery = baseQuery
@@ -1027,6 +1052,7 @@ public sealed partial class BaseItemRepository
         {
             var includeTags = filter.IncludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
             var isPlaylistOnlyQuery = includeTypes.Length == 1 && includeTypes.FirstOrDefault() == BaseItemKind.Playlist;
+            var personTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
             var allowedTagItemIds = context.ItemValuesMap
                 .Where(f => f.ItemValue.Type == ItemValueType.Tags && includeTags.Contains(f.ItemValue.CleanValue))
                 .Select(f => f.ItemId);
@@ -1036,6 +1062,9 @@ public sealed partial class BaseItemRepository
                 || (e.SeriesId.HasValue && allowedTagItemIds.Contains(e.SeriesId.Value))
                 || e.Parents!.Any(p => allowedTagItemIds.Contains(p.ParentItemId))
                 || (e.TopParentId.HasValue && allowedTagItemIds.Contains(e.TopParentId.Value))
+
+                // People don't carry the tags of the media they appear in and would never match
+                || e.Type == personTypeName
 
                 // A playlist should be accessible to its owner regardless of allowed tags
                 || (isPlaylistOnlyQuery && e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\"")));
@@ -1057,8 +1086,12 @@ public sealed partial class BaseItemRepository
 
         if (filter.VideoTypes.Length > 0)
         {
+            // Dvds and Blu-rays can either be stored in a folder structure or as an iso file
+            // => to find all matches we need to check both: VideoType and IsoType
+            // alternatively, we could provide specific IsoType filters
             var videoTypeBs = filter.VideoTypes.Select(vt => $"\"VideoType\":\"{vt}\"").ToArray();
-            Expression<Func<BaseItemEntity, bool>> hasVideoType = e => videoTypeBs.Any(f => e.Data!.Contains(f));
+            var isoTypeBs = filter.VideoTypes.Select(vt => $"\"IsoType\":\"{vt}\"").ToArray();
+            Expression<Func<BaseItemEntity, bool>> hasVideoType = e => videoTypeBs.Any(f => e.Data!.Contains(f)) || isoTypeBs.Any(f => e.Data!.Contains(f));
             baseQuery = baseQuery.WhereItemOrDescendantMatches(context, hasVideoType);
         }
 
@@ -1080,16 +1113,23 @@ public sealed partial class BaseItemRepository
                 : baseQuery.WhereNeitherItemNorDescendantMatches(context, isPlaceHolder);
         }
 
+        // An extra is owned by the single version of an item it is named after, so an extra on any
+        // version counts for the item itself
+        IQueryable<Guid> WithPrimaryVersions(IQueryable<Guid> ownerIds)
+            => ownerIds.Concat(context.BaseItems
+                .Where(version => version.PrimaryVersionId != null && ownerIds.Contains(version.Id))
+                .Select(version => version.PrimaryVersionId!.Value));
+
         if (filter.HasSpecialFeature.HasValue)
         {
-            var itemsWithExtras = context.BaseItems
+            var itemsWithExtras = WithPrimaryVersions(context.BaseItems
                 .Where(extra => extra.OwnerId != null
                     && extra.ExtraType != null
                     && extra.ExtraType != BaseItemExtraType.Unknown
                     && extra.ExtraType != BaseItemExtraType.Trailer
                     && extra.ExtraType != BaseItemExtraType.ThemeSong
                     && extra.ExtraType != BaseItemExtraType.ThemeVideo)
-                .Select(extra => extra.OwnerId!.Value)
+                .Select(extra => extra.OwnerId!.Value))
                 .Distinct();
 
             Expression<Func<BaseItemEntity, bool>> hasExtras = e => itemsWithExtras.Contains(e.Id);
@@ -1101,9 +1141,9 @@ public sealed partial class BaseItemRepository
 
         if (filter.HasTrailer.HasValue)
         {
-            var trailerOwnerIds = context.BaseItems
+            var trailerOwnerIds = WithPrimaryVersions(context.BaseItems
                 .Where(extra => extra.ExtraType == BaseItemExtraType.Trailer && extra.OwnerId != null)
-                .Select(extra => extra.OwnerId!.Value);
+                .Select(extra => extra.OwnerId!.Value));
 
             Expression<Func<BaseItemEntity, bool>> hasTrailer = e => trailerOwnerIds.Contains(e.Id);
 
@@ -1114,9 +1154,9 @@ public sealed partial class BaseItemRepository
 
         if (filter.HasThemeSong.HasValue)
         {
-            var themeSongOwnerIds = context.BaseItems
+            var themeSongOwnerIds = WithPrimaryVersions(context.BaseItems
                 .Where(extra => extra.ExtraType == BaseItemExtraType.ThemeSong && extra.OwnerId != null)
-                .Select(extra => extra.OwnerId!.Value);
+                .Select(extra => extra.OwnerId!.Value));
 
             Expression<Func<BaseItemEntity, bool>> hasThemeSong = e => themeSongOwnerIds.Contains(e.Id);
 
@@ -1127,9 +1167,9 @@ public sealed partial class BaseItemRepository
 
         if (filter.HasThemeVideo.HasValue)
         {
-            var themeVideoOwnerIds = context.BaseItems
+            var themeVideoOwnerIds = WithPrimaryVersions(context.BaseItems
                 .Where(extra => extra.ExtraType == BaseItemExtraType.ThemeVideo && extra.OwnerId != null)
-                .Select(extra => extra.OwnerId!.Value);
+                .Select(extra => extra.OwnerId!.Value));
 
             Expression<Func<BaseItemEntity, bool>> hasThemeVideo = e => themeVideoOwnerIds.Contains(e.Id);
 
@@ -1153,33 +1193,6 @@ public sealed partial class BaseItemRepository
                     || (e.Data != null && (
                         e.Data.Contains("\"AirsAfterSeasonNumber\":" + seasonStr)
                         || e.Data.Contains("\"AirsBeforeSeasonNumber\":" + seasonStr))));
-            }
-        }
-
-        if (filter.AdjacentTo.HasValue && !filter.AdjacentTo.Value.IsEmpty())
-        {
-            var adjacentToId = filter.AdjacentTo.Value;
-            var targetItem = context.BaseItems.Where(e => e.Id == adjacentToId).Select(e => new { e.SortName, e.Id }).FirstOrDefault();
-            if (targetItem is not null)
-            {
-                var targetSortName = targetItem.SortName ?? string.Empty;
-
-                // Fetch both prev and next adjacent items in a single query using Concat (UNION ALL).
-                var adjacentIds = context.BaseItems
-                    .Where(e => string.Compare(e.SortName, targetSortName) < 0)
-                    .OrderByDescending(e => e.SortName)
-                    .Select(e => e.Id)
-                    .Take(1)
-                    .Concat(
-                        context.BaseItems
-                            .Where(e => string.Compare(e.SortName, targetSortName) > 0)
-                            .OrderBy(e => e.SortName)
-                            .Select(e => e.Id)
-                            .Take(1))
-                    .ToList();
-
-                adjacentIds.Add(adjacentToId);
-                baseQuery = baseQuery.Where(e => adjacentIds.Contains(e.Id));
             }
         }
 

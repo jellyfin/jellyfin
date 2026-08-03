@@ -270,6 +270,9 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
                     b.Property<string>("OfficialRating")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("OriginalLanguage")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("OriginalTitle")
                         .HasColumnType("TEXT");
 

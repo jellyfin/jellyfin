@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.WebSockets;
@@ -69,6 +70,11 @@ namespace Emby.Server.Implementations.HttpServer
         /// <inheritdoc />
         public IPAddress? RemoteEndPoint { get; }
 
+        /// <summary>
+        /// Gets or initializes the UI culture captured from the upgrade request.
+        /// </summary>
+        public CultureInfo? RequestUICulture { get; init; }
+
         /// <inheritdoc />
         public Func<WebSocketMessageInfo, Task>? OnReceive { get; set; }
 
@@ -80,6 +86,17 @@ namespace Emby.Server.Implementations.HttpServer
 
         /// <inheritdoc />
         public WebSocketState State => _socket.State;
+
+        /// <inheritdoc />
+        public void ApplyRequestCulture()
+        {
+            if (RequestUICulture is null)
+            {
+                return;
+            }
+
+            CultureInfo.CurrentUICulture = RequestUICulture;
+        }
 
         /// <inheritdoc />
         public async Task SendAsync(OutboundWebSocketMessage message, CancellationToken cancellationToken)
@@ -110,8 +127,12 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     receiveResult = await _socket.ReceiveAsync(memory, cancellationToken).ConfigureAwait(false);
                 }
-                catch (WebSocketException ex)
+                catch (Exception ex) when (ex is WebSocketException or ObjectDisposedException or OperationCanceledException)
                 {
+                    // ObjectDisposedException/OperationCanceledException: the socket was torn
+                    // down underneath us (e.g. by the keep-alive watchdog after the connection
+                    // was declared lost). Fall through so Closed is still raised and the
+                    // session can release this connection.
                     _logger.LogWarning("WS {IP} error receiving data: {Message}", RemoteEndPoint, ex.Message);
                     break;
                 }

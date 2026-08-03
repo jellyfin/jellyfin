@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.7");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.10");
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
@@ -372,6 +372,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("Path");
 
                     b.HasIndex("PresentationUniqueKey");
+
+                    b.HasIndex("PrimaryVersionId")
+                        .HasFilter("\"PrimaryVersionId\" IS NOT NULL");
 
                     b.HasIndex("SeasonId");
 
@@ -812,22 +815,20 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<Guid>("ParentId")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
                     b.Property<Guid>("ChildId")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("ChildType")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("SortOrder")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("ParentId", "ChildId");
+                    b.HasKey("ParentId", "SortOrder");
 
                     b.HasIndex("ChildId", "ChildType");
 
                     b.HasIndex("ParentId", "ChildType");
-
-                    b.HasIndex("ParentId", "SortOrder");
 
                     b.ToTable("LinkedChildren", (string)null);
 
@@ -1348,6 +1349,11 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<bool>("MustUpdatePassword")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("NormalizedUsername")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Password")
                         .HasMaxLength(65535)
                         .HasColumnType("TEXT");
@@ -1389,6 +1395,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("NormalizedUsername")
+                        .IsUnique();
 
                     b.HasIndex("Username")
                         .IsUnique();

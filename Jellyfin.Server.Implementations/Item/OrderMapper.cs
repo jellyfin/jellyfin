@@ -29,12 +29,30 @@ public static class OrderMapper
     /// <returns>Func to be executed later for sorting query.</returns>
     public static Expression<Func<BaseItemEntity, object?>> MapOrderByField(ItemSortBy sortBy, InternalItemsQuery query, JellyfinDbContext jellyfinDbContext)
     {
+        if (sortBy == ItemSortBy.DatePlayed)
+        {
+            // An item's played date is the newest of its own progress and that of its alternate versions,
+            // which track progress under their own ids. Matching both in one predicate ORs them together,
+            // which no index can serve: the user's whole UserData table gets scanned per sorted row.
+            // Two indexed lookups combined by MAX cost a seek each instead.
+            var userData = query.User is null
+                ? jellyfinDbContext.UserData
+                : jellyfinDbContext.UserData.Where(w => w.UserId == query.User.Id);
+
+            return e => userData
+                .Where(w => w.ItemId == e.Id)
+                .Select(w => w.LastPlayedDate)
+                .Concat(userData
+                    .Where(w => w.Item!.PrimaryVersionId == e.Id)
+                    .Select(w => w.LastPlayedDate))
+                .Max();
+        }
+
         return (sortBy, query.User) switch
         {
             (ItemSortBy.AirTime, _) => e => e.SortName,
             (ItemSortBy.Runtime, _) => e => e.RunTimeTicks,
             (ItemSortBy.Random, _) => e => EF.Functions.Random(),
-            (ItemSortBy.DatePlayed, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.LastPlayedDate,
             (ItemSortBy.PlayCount, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.PlayCount,
             (ItemSortBy.IsFavoriteOrLiked, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).Select(f => (bool?)f.IsFavorite).FirstOrDefault() ?? false,
             (ItemSortBy.IsFolder, _) => e => e.IsFolder,
@@ -50,7 +68,7 @@ public static class OrderMapper
             (ItemSortBy.DateCreated, _) => e => e.DateCreated,
             (ItemSortBy.PremiereDate, _) => e => e.PremiereDate ?? (e.ProductionYear.HasValue ? DateTime.MinValue.AddYears(e.ProductionYear.Value - 1) : null),
             (ItemSortBy.StartDate, _) => e => e.StartDate,
-            (ItemSortBy.Name, _) => e => e.SortName,
+            (ItemSortBy.Name, _) => e => e.CleanName,
             (ItemSortBy.CommunityRating, _) => e => e.CommunityRating,
             (ItemSortBy.ProductionYear, _) => e => e.ProductionYear,
             (ItemSortBy.CriticRating, _) => e => e.CriticRating,

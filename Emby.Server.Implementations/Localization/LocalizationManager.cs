@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -26,6 +27,7 @@ namespace Emby.Server.Implementations.Localization
         private const string RatingsPath = "Emby.Server.Implementations.Localization.Ratings.";
         private const string CulturesPath = "Emby.Server.Implementations.Localization.iso6392.txt";
         private const string CountriesPath = "Emby.Server.Implementations.Localization.countries.json";
+        private const string CoreResourcePrefix = "Emby.Server.Implementations.Localization.Core.";
         private static readonly Assembly _assembly = typeof(LocalizationManager).Assembly;
         private static readonly string[] _unratedValues = ["n/a", "unrated", "not rated", "nr"];
 
@@ -34,12 +36,20 @@ namespace Emby.Server.Implementations.Localization
 
         private readonly Dictionary<string, Dictionary<string, ParentalRatingScore?>> _allParentalRatings = new(StringComparer.OrdinalIgnoreCase);
 
-        private readonly ConcurrentDictionary<string, Dictionary<string, string>> _dictionaries = new(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, Dictionary<string, string>> _cultureOnlyDictionaries = new(StringComparer.OrdinalIgnoreCase);
 
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         private readonly ConcurrentDictionary<string, CultureDto?> _cultureCache = new(StringComparer.OrdinalIgnoreCase);
         private List<CultureDto> _cultures = [];
+
+        private static readonly (IReadOnlyList<LocalizationOption> Options, FrozenDictionary<string, string> Bcp47ToJellyfinMap) _localizationData = BuildLocalizationData();
+        private static readonly IReadOnlyList<LocalizationOption> _localizationOptions = _localizationData.Options;
+
+        // Maps BCP-47 hyphenated culture codes (set by ASP.NET Core's RequestLocalizationMiddleware
+        // and used as CurrentUICulture.Name) to Jellyfin's underscore-based resource file codes.
+        // Built reflexively from the resource file scan so both directions stay in sync.
+        private static readonly FrozenDictionary<string, string> _bcp47ToJellyfinMap = _localizationData.Bcp47ToJellyfinMap;
 
         private FrozenDictionary<string, string> _iso6392BtoT = null!;
 
@@ -54,6 +64,59 @@ namespace Emby.Server.Implementations.Localization
         {
             _configurationManager = configurationManager;
             _logger = logger;
+
+            _configurationManager.ConfigurationUpdated += OnConfigurationUpdated;
+        }
+
+        /// <summary>
+        /// Gets the supported UI cultures.
+        /// </summary>
+        /// <returns>A list of <see cref="CultureInfo"/> objects covering every embedded translation.</returns>
+        public static IList<CultureInfo> GetSupportedUICultures()
+        {
+            var cultures = new List<CultureInfo>();
+            foreach (var option in _localizationOptions)
+            {
+                // Skip novelty codes (e.g. "pr" Pirate, "jbo" Lojban) that .NET cannot resolve.
+                if (TryGetCultureInfo(option.Value, out var cultureInfo))
+                {
+                    cultures.Add(cultureInfo);
+                }
+            }
+
+            return cultures;
+        }
+
+        /// <summary>
+        /// Resolves a Jellyfin resource culture code (which may use underscores, e.g. <c>es_419</c>)
+        /// to a <see cref="CultureInfo"/>. Returns <see langword="false"/> for codes .NET cannot resolve.
+        /// </summary>
+        private static bool TryGetCultureInfo(string cultureCode, [NotNullWhen(true)] out CultureInfo? cultureInfo)
+        {
+            try
+            {
+                // Resource files use underscores for some variants (e.g. es_419);
+                // CultureInfo only accepts hyphenated BCP-47 codes.
+                cultureInfo = CultureInfo.GetCultureInfo(cultureCode.Replace('_', '-'));
+                return true;
+            }
+            catch (CultureNotFoundException)
+            {
+                cultureInfo = null;
+                return false;
+            }
+        }
+
+        private static void OnConfigurationUpdated(object? sender, EventArgs e)
+        {
+            if (sender is IServerConfigurationManager configManager)
+            {
+                var uiCulture = configManager.Configuration.UICulture;
+                if (!string.IsNullOrEmpty(uiCulture))
+                {
+                    CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(uiCulture);
+                }
+            }
         }
 
         /// <summary>
@@ -199,6 +262,24 @@ namespace Emby.Server.Implementations.Localization
         }
 
         /// <inheritdoc />
+        public string? GetLanguageDisplayName(string language)
+        {
+            if (string.IsNullOrEmpty(language))
+            {
+                return null;
+            }
+
+            var displayName = FindLanguageInfo(language)?.DisplayName;
+            if (displayName is null)
+            {
+                return null;
+            }
+
+            // Truncate at the first delimiter to avoid cluttered display names
+            return displayName.Split([';', ','], StringSplitOptions.None)[0].Trim();
+        }
+
+        /// <inheritdoc />
         public IReadOnlyList<CountryInfo> GetCountries()
         {
             using var stream = _assembly.GetManifestResourceStream(CountriesPath) ?? throw new InvalidOperationException($"Invalid resource path: '{CountriesPath}'");
@@ -255,13 +336,13 @@ namespace Emby.Server.Implementations.Localization
             // A lot of countries don't explicitly have a separate rating for adult content
             if (ratings.All(x => x.RatingScore?.Score != 1000))
             {
-                ratings.Add(new ParentalRating("XXX",  new(1000, null)));
+                ratings.Add(new ParentalRating("XXX", new(1000, null)));
             }
 
             // A lot of countries don't explicitly have a separate rating for banned content
             if (ratings.All(x => x.RatingScore?.Score != 1001))
             {
-                ratings.Add(new ParentalRating("Banned",  new(1001, null)));
+                ratings.Add(new ParentalRating("Banned", new(1001, null)));
             }
 
             return [.. ratings.OrderBy(r => r.RatingScore?.Score).ThenBy(r => r.RatingScore?.SubScore)];
@@ -293,6 +374,27 @@ namespace Emby.Server.Implementations.Localization
         {
             ArgumentException.ThrowIfNullOrEmpty(rating);
 
+            // Some providers may list multiple ratings separated by '/' (e.g. "SE:15 / SE:15+ / SE:Från 15 år").
+            // Try each one in order and use the first that resolves.
+            var ratingValues = rating.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            foreach (var ratingValue in ratingValues)
+            {
+                var score = GetSingleRatingScore(ratingValue, countryCode);
+                if (score is not null)
+                {
+                    return score;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Resolves a single rating value to a score.
+        /// </summary>
+        private ParentalRatingScore? GetSingleRatingScore(string rating, string? countryCode)
+        {
             // Handle unrated content
             if (_unratedValues.Contains(rating.AsSpan(), StringComparison.OrdinalIgnoreCase))
             {
@@ -301,7 +403,7 @@ namespace Emby.Server.Implementations.Localization
 
             // Convert ints directly
             // This may override some of the locale specific age ratings (but those always map to the same age)
-            if (int.TryParse(rating, out var ratingAge))
+            if (TryParseRatingAsScore(rating, out var ratingAge))
             {
                 return new(ratingAge, null);
             }
@@ -403,6 +505,13 @@ namespace Emby.Server.Implementations.Localization
                     return true;
                 }
 
+                // If it's not a recognized rating string, fall back to using the number as the score
+                if (TryParseRatingAsScore(ratingPart, out var numericScore))
+                {
+                    result = new ParentalRatingScore(numericScore, null);
+                    return true;
+                }
+
                 _logger.LogWarning(
                     "Rating '{Rating}' not found in the '{CountryCode}' rating system, treating as unrated",
                     rating,
@@ -417,8 +526,26 @@ namespace Emby.Server.Implementations.Localization
             return true;
         }
 
+        /// <summary>
+        /// Tries to parse a rating as a number, allowing an optional trailing '+' (e.g. "16" or "18+").
+        /// </summary>
+        /// <param name="ratingValue">Rating value to parse.</param>
+        /// <param name="score">Parsed score.</param>
+        /// <returns>Returns true if parsing was successful.</returns>
+        private static bool TryParseRatingAsScore(ReadOnlySpan<char> ratingValue, out int score)
+        {
+            var trimmed = ratingValue.TrimEnd('+');
+            return int.TryParse(trimmed, out score);
+        }
+
         /// <inheritdoc />
         public string GetLocalizedString(string phrase)
+        {
+            return GetLocalizedString(phrase, CultureInfo.CurrentUICulture.Name);
+        }
+
+        /// <inheritdoc />
+        public string GetServerLocalizedString(string phrase)
         {
             return GetLocalizedString(phrase, _configurationManager.Configuration.UICulture);
         }
@@ -436,11 +563,26 @@ namespace Emby.Server.Implementations.Localization
                 culture = DefaultCulture;
             }
 
+            // Normalize BCP-47 hyphenated codes to Jellyfin's underscore-based codes
+            if (_bcp47ToJellyfinMap.TryGetValue(culture, out var mapped))
+            {
+                culture = mapped;
+            }
+
             var dictionary = GetLocalizationDictionary(culture);
 
             if (dictionary.TryGetValue(phrase, out var value))
             {
                 return value;
+            }
+
+            if (!string.Equals(culture, DefaultCulture, StringComparison.OrdinalIgnoreCase))
+            {
+                var fallback = GetLocalizationDictionary(DefaultCulture);
+                if (fallback.TryGetValue(phrase, out var fallbackValue))
+                {
+                    return fallbackValue;
+                }
             }
 
             return phrase;
@@ -450,26 +592,17 @@ namespace Emby.Server.Implementations.Localization
         {
             ArgumentException.ThrowIfNullOrEmpty(culture);
 
-            const string Prefix = "Core";
-
-            return _dictionaries.GetOrAdd(
+            return _cultureOnlyDictionaries.GetOrAdd(
                 culture,
-                static (key, localizationManager) => localizationManager.GetDictionary(Prefix, key, DefaultCulture + ".json").GetAwaiter().GetResult(),
+                static (key, localizationManager) =>
+                {
+                    var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    var namespaceName = localizationManager.GetType().Namespace + ".Core";
+                    localizationManager.CopyInto(dictionary, namespaceName + "." + GetResourceFilename(key)).GetAwaiter().GetResult();
+
+                    return dictionary;
+                },
                 this);
-        }
-
-        private async Task<Dictionary<string, string>> GetDictionary(string prefix, string culture, string baseFilename)
-        {
-            ArgumentException.ThrowIfNullOrEmpty(culture);
-
-            var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            var namespaceName = GetType().Namespace + "." + prefix;
-
-            await CopyInto(dictionary, namespaceName + "." + baseFilename).ConfigureAwait(false);
-            await CopyInto(dictionary, namespaceName + "." + GetResourceFilename(culture)).ConfigureAwait(false);
-
-            return dictionary;
         }
 
         private async Task CopyInto(IDictionary<string, string> dictionary, string resourcePath)
@@ -491,11 +624,15 @@ namespace Emby.Server.Implementations.Localization
 
         private static string GetResourceFilename(string culture)
         {
-            var parts = culture.Split('-');
+            // Region codes may use a '-' (BCP-47, e.g. "pt-BR") or '_' (e.g. "es_419", "ar_SA") separator.
+            // Normalize the casing (lower-case language, upper-case region) while preserving the separator
+            // so the result matches the embedded resource file name, which is case-sensitive.
+            var separatorIndex = culture.IndexOfAny(['-', '_']);
 
-            if (parts.Length == 2)
+            if (separatorIndex > 0)
             {
-                culture = parts[0].ToLowerInvariant() + "-" + parts[1].ToUpperInvariant();
+                var separator = culture[separatorIndex];
+                culture = culture[..separatorIndex].ToLowerInvariant() + separator + culture[(separatorIndex + 1)..].ToUpperInvariant();
             }
             else
             {
@@ -508,77 +645,55 @@ namespace Emby.Server.Implementations.Localization
         /// <inheritdoc />
         public IEnumerable<LocalizationOption> GetLocalizationOptions()
         {
-            yield return new LocalizationOption("Afrikaans", "af");
-            yield return new LocalizationOption("العربية", "ar");
-            yield return new LocalizationOption("Беларуская", "be");
-            yield return new LocalizationOption("Български", "bg-BG");
-            yield return new LocalizationOption("বাংলা (বাংলাদেশ)", "bn");
-            yield return new LocalizationOption("Català", "ca");
-            yield return new LocalizationOption("Čeština", "cs");
-            yield return new LocalizationOption("Cymraeg", "cy");
-            yield return new LocalizationOption("Dansk", "da");
-            yield return new LocalizationOption("Deutsch", "de");
-            yield return new LocalizationOption("English (United Kingdom)", "en-GB");
-            yield return new LocalizationOption("English", "en-US");
-            yield return new LocalizationOption("Ελληνικά", "el");
-            yield return new LocalizationOption("Esperanto", "eo");
-            yield return new LocalizationOption("Español", "es");
-            yield return new LocalizationOption("Español americano", "es_419");
-            yield return new LocalizationOption("Español (Argentina)", "es-AR");
-            yield return new LocalizationOption("Español (Dominicana)", "es_DO");
-            yield return new LocalizationOption("Español (México)", "es-MX");
-            yield return new LocalizationOption("Eesti", "et");
-            yield return new LocalizationOption("Basque", "eu");
-            yield return new LocalizationOption("فارسی", "fa");
-            yield return new LocalizationOption("Suomi", "fi");
-            yield return new LocalizationOption("Filipino", "fil");
-            yield return new LocalizationOption("Français", "fr");
-            yield return new LocalizationOption("Français (Canada)", "fr-CA");
-            yield return new LocalizationOption("Galego", "gl");
-            yield return new LocalizationOption("Schwiizerdütsch", "gsw");
-            yield return new LocalizationOption("עִבְרִית", "he");
-            yield return new LocalizationOption("हिन्दी", "hi");
-            yield return new LocalizationOption("Hrvatski", "hr");
-            yield return new LocalizationOption("Magyar", "hu");
-            yield return new LocalizationOption("Bahasa Indonesia", "id");
-            yield return new LocalizationOption("Íslenska", "is");
-            yield return new LocalizationOption("Italiano", "it");
-            yield return new LocalizationOption("日本語", "ja");
-            yield return new LocalizationOption("Qazaqşa", "kk");
-            yield return new LocalizationOption("한국어", "ko");
-            yield return new LocalizationOption("Lietuvių", "lt");
-            yield return new LocalizationOption("Latviešu", "lv");
-            yield return new LocalizationOption("Македонски", "mk");
-            yield return new LocalizationOption("മലയാളം", "ml");
-            yield return new LocalizationOption("मराठी", "mr");
-            yield return new LocalizationOption("Bahasa Melayu", "ms");
-            yield return new LocalizationOption("Norsk bokmål", "nb");
-            yield return new LocalizationOption("नेपाली", "ne");
-            yield return new LocalizationOption("Nederlands", "nl");
-            yield return new LocalizationOption("Norsk nynorsk", "nn");
-            yield return new LocalizationOption("ਪੰਜਾਬੀ", "pa");
-            yield return new LocalizationOption("Polski", "pl");
-            yield return new LocalizationOption("Pirate", "pr");
-            yield return new LocalizationOption("Português", "pt");
-            yield return new LocalizationOption("Português (Brasil)", "pt-BR");
-            yield return new LocalizationOption("Português (Portugal)", "pt-PT");
-            yield return new LocalizationOption("Românește", "ro");
-            yield return new LocalizationOption("Русский", "ru");
-            yield return new LocalizationOption("Slovenčina", "sk");
-            yield return new LocalizationOption("Slovenščina", "sl-SI");
-            yield return new LocalizationOption("Shqip", "sq");
-            yield return new LocalizationOption("Српски", "sr");
-            yield return new LocalizationOption("Svenska", "sv");
-            yield return new LocalizationOption("தமிழ்", "ta");
-            yield return new LocalizationOption("తెలుగు", "te");
-            yield return new LocalizationOption("ภาษาไทย", "th");
-            yield return new LocalizationOption("Türkçe", "tr");
-            yield return new LocalizationOption("Українська", "uk");
-            yield return new LocalizationOption("اُردُو", "ur_PK");
-            yield return new LocalizationOption("Tiếng Việt", "vi");
-            yield return new LocalizationOption("汉语 (简体字)", "zh-CN");
-            yield return new LocalizationOption("漢語 (繁體字)", "zh-TW");
-            yield return new LocalizationOption("廣東話 (香港)", "zh-HK");
+            return _localizationOptions;
+        }
+
+        private static (IReadOnlyList<LocalizationOption> Options, FrozenDictionary<string, string> Bcp47ToJellyfinMap) BuildLocalizationData()
+        {
+            var options = new List<LocalizationOption>();
+            var bcp47Map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var prefix = CoreResourcePrefix;
+
+            foreach (var resource in _assembly.GetManifestResourceNames())
+            {
+                if (!resource.StartsWith(prefix, StringComparison.Ordinal)
+                    || !resource.EndsWith(".json", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                // Extract culture code from resource name: "...Core.de.json" -> "de", "...Core.pt-BR.json" -> "pt-BR"
+                var code = resource[prefix.Length..^5];
+
+                // Record the BCP-47 → Jellyfin mapping for any resource file using underscores.
+                if (code.Contains('_', StringComparison.Ordinal))
+                {
+                    bcp47Map[code.Replace('_', '-')] = code;
+                }
+
+                // Skip the base language file — en-US is added explicitly below
+                if (code.Equals(DefaultCulture, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var displayName = GetDisplayName(code);
+                options.Add(new LocalizationOption(displayName, code));
+            }
+
+            // Ensure en-US is always present
+            options.Add(new LocalizationOption("English", DefaultCulture));
+
+            options.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
+            return (options, bcp47Map.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase));
+        }
+
+        private static string GetDisplayName(string cultureCode)
+        {
+            // Custom/novelty codes like "pr" (Pirate) — fall back to code itself
+            return TryGetCultureInfo(cultureCode, out var cultureInfo)
+                ? cultureInfo.NativeName
+                : cultureCode;
         }
 
         /// <inheritdoc />

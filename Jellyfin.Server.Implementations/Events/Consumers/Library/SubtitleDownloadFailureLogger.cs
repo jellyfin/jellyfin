@@ -37,7 +37,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Library
             await _activityManager.CreateAsync(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
-                    _localizationManager.GetLocalizedString("SubtitleDownloadFailureFromForItem"),
+                    _localizationManager.GetServerLocalizedString("SubtitleDownloadFailureFromForItem"),
                     eventArgs.Provider,
                     GetItemName(eventArgs.Item)),
                 "SubtitleDownloadFailure",

@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -84,6 +85,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private bool _isVaapiDeviceInteli965 = false;
         private bool _isVaapiDeviceSupportVulkanDrmModifier = false;
         private bool _isVaapiDeviceSupportVulkanDrmInterop = false;
+
+        private bool _canSetProcessPriority = true;
 
         private bool _isVideoToolboxAv1DecodeAvailable = false;
 
@@ -526,6 +529,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     UseShellExecute = false,
 
                     // Must consume both or ffmpeg may hang due to deadlocks.
+                    StandardOutputEncoding = Encoding.UTF8,
                     RedirectStandardOutput = true,
 
                     FileName = _ffprobePath,
@@ -924,6 +928,25 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 throw new InvalidOperationException("EncodingHelper returned empty or invalid filter parameters.");
             }
 
+            // Normalize invalid PTS from containers for non keyframe only mode
+            if (!enableKeyFrameOnlyExtraction)
+            {
+                var fpsFilterIndex = filterParam.IndexOf("fps=", StringComparison.Ordinal);
+                if (fpsFilterIndex >= 0)
+                {
+                    var inputFrameRate = (imageStream.ReferenceFrameRate.HasValue && imageStream.ReferenceFrameRate > 0)
+                        ? imageStream.ReferenceFrameRate.Value : 30;
+
+                    var setPtsFilter = string.Create(CultureInfo.InvariantCulture, $"setpts=N/{inputFrameRate:F3}/TB,");
+
+                    filterParam = filterParam.Insert(fpsFilterIndex, setPtsFilter);
+                }
+                else
+                {
+                    throw new InvalidOperationException("EncodingHelper returned invalid filter parameters.");
+                }
+            }
+
             try
             {
                 return await ExtractVideoImagesOnIntervalInternal(
@@ -1123,13 +1146,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             process.Process.Start();
 
-            try
+            if (_canSetProcessPriority)
             {
-                process.Process.PriorityClass = ProcessPriorityClass.BelowNormal;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Unable to set process priority to BelowNormal for {ProcessFileName}", process.Process.StartInfo.FileName);
+                try
+                {
+                    process.Process.PriorityClass = ProcessPriorityClass.BelowNormal;
+                }
+                catch (Exception ex)
+                {
+                    _canSetProcessPriority = false;
+                    _logger.LogWarning(ex, "Unable to set process priority to BelowNormal for {ProcessFileName}. Further attempts will be skipped.", process.Process.StartInfo.FileName);
+                }
             }
 
             lock (_runningProcessesLock)

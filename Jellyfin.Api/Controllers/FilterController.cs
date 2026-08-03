@@ -8,6 +8,8 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -24,16 +26,19 @@ public class FilterController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
+    private readonly ILocalizationManager _localization;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FilterController"/> class.
     /// </summary>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-    public FilterController(ILibraryManager libraryManager, IUserManager userManager)
+    /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
+    public FilterController(ILibraryManager libraryManager, IUserManager userManager, ILocalizationManager localization)
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
+        _localization = localization;
     }
 
     /// <summary>
@@ -153,13 +158,43 @@ public class FilterController : BaseJellyfinApiController
             IsSeries = isSeries
         };
 
+        var streamLanguageQuery = new InternalItemsQuery(user)
+        {
+            // It's possible that different langauges are only available on alternative versions.
+            // To fetch them all, owned items are included.
+            IncludeOwnedItems = true,
+            IncludeItemTypes = includeItemTypes,
+            DtoOptions = new DtoOptions
+            {
+                Fields = Array.Empty<ItemFields>(),
+                EnableImages = false,
+                EnableUserData = false
+            },
+            IsAiring = isAiring,
+            IsMovie = isMovie,
+            IsSports = isSports,
+            IsKids = isKids,
+            IsNews = isNews,
+            IsSeries = isSeries
+        };
+
         if ((recursive ?? true) || parentItem is UserView || parentItem is ICollectionFolder)
         {
-            genreQuery.AncestorIds = parentItem is null ? Array.Empty<Guid>() : new[] { parentItem.Id };
+            var ancestorIds = parentItem is null ? Array.Empty<Guid>() : new[] { parentItem.Id };
+            genreQuery.AncestorIds = ancestorIds;
+            streamLanguageQuery.AncestorIds = ancestorIds;
         }
         else
         {
             genreQuery.Parent = parentItem;
+            streamLanguageQuery.Parent = parentItem;
+        }
+
+        if ((includeItemTypes.Contains(BaseItemKind.Series) || includeItemTypes.Contains(BaseItemKind.Season))
+            && !includeItemTypes.Contains(BaseItemKind.Episode))
+        {
+            // streams are joined on epsiodes not shows or seasons
+            streamLanguageQuery.IncludeItemTypes = [.. includeItemTypes, BaseItemKind.Episode];
         }
 
         if (includeItemTypes.Length == 1
@@ -181,6 +216,39 @@ public class FilterController : BaseJellyfinApiController
                 Name = i.Item.Name,
                 Id = i.Item.Id
             }).ToArray();
+        }
+
+        if (includeItemTypes.Contains(BaseItemKind.Movie)
+            || includeItemTypes.Contains(BaseItemKind.Series)
+            || includeItemTypes.Contains(BaseItemKind.Season)
+            || includeItemTypes.Contains(BaseItemKind.Episode))
+        {
+            filters.AudioLanguages = _libraryManager
+                .GetMediaStreamLanguages(MediaStreamType.Audio, streamLanguageQuery)
+                .Select(language =>
+                {
+                    var culture = _localization.FindLanguageInfo(language);
+                    return new NameValuePair
+                    {
+                        Name = culture is null ? language : $"{culture.DisplayName} ({language})",
+                        Value = language
+                    };
+                })
+                .OrderBy(l => l.Name)
+                .ToArray();
+            filters.SubtitleLanguages = _libraryManager
+                .GetMediaStreamLanguages(MediaStreamType.Subtitle, streamLanguageQuery)
+                .Select(language =>
+                {
+                    var culture = _localization.FindLanguageInfo(language);
+                    return new NameValuePair
+                    {
+                        Name = culture is null ? language : $"{culture.DisplayName} ({language})",
+                        Value = language
+                    };
+                })
+                .OrderBy(l => l.Name)
+                .ToArray();
         }
 
         return filters;

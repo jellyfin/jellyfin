@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using BitFaster.Caching;
@@ -116,6 +117,40 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             Assert.NotNull(culture);
             Assert.Equal(expectedDisplayName, culture.DisplayName);
             Assert.Equal(code, culture.ThreeLetterISOLanguageName);
+        }
+
+        [Theory]
+        [InlineData("ell", "Greek")] // Comma truncation
+        [InlineData("nld", "Dutch")] // Semicolon truncation
+        [InlineData("ron", "Romanian")] // Semicolon truncation, multiple
+        [InlineData("eng", "English")] // No truncation
+        [InlineData("zh-CN", "Chinese (Simplified)")] // No truncation, with parentheses
+        public async Task GetLanguageDisplayName_DelimitedName_ReturnsTruncatedName(string language, string expected)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+            await localizationManager.LoadAll();
+
+            var result = localizationManager.GetLanguageDisplayName(language);
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("xyz")]
+        public async Task GetLanguageDisplayName_InvalidInput_ReturnsNull(string? language)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+            await localizationManager.LoadAll();
+
+            var result = localizationManager.GetLanguageDisplayName(language!);
+            Assert.Null(result);
         }
 
         [Fact]
@@ -303,6 +338,112 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             var translated = localizationManager.GetLocalizedString(key);
             Assert.NotNull(translated);
             Assert.Equal(key, translated);
+        }
+
+        [Fact]
+        public void GetLocalizedString_WithCulture_ReturnsTranslation()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+
+            var translated = localizationManager.GetLocalizedString("Artists", "de");
+            Assert.Equal("Interpreten", translated);
+        }
+
+        [Fact]
+        public void GetLocalizedString_WithCulture_FallsBackToEnUs()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+
+            // A culture with no translation file should fall back to en-US
+            var translated = localizationManager.GetLocalizedString("Artists", "zz");
+            Assert.Equal("Artists", translated);
+        }
+
+        [Fact]
+        public void GetLocalizedString_WithBcp47Normalization_ReturnsTranslation()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+
+            // es-419 is stored as es_419 in Jellyfin
+            var translated = localizationManager.GetLocalizedString("Default", "es-419");
+            Assert.NotEqual("Default", translated);
+        }
+
+        [Fact]
+        public void GetLocalizedString_WithBcp47NormalizationToUppercaseRegion_ReturnsTranslation()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+
+            // he-IL normalizes to the underscore resource he_IL. The resource lookup is case-sensitive,
+            // so the region casing has to be preserved or the file is not found and we fall back to en-US.
+            var translated = localizationManager.GetLocalizedString("Books", "he-IL");
+            Assert.Equal("ספרים", translated);
+        }
+
+        [Fact]
+        public void GetServerLocalizedString_UsesServerCulture()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "de"
+            });
+
+            // Even if CurrentUICulture is fr, GetServerLocalizedString should use the server's "de"
+            var previousCulture = CultureInfo.CurrentUICulture;
+            try
+            {
+                CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("fr");
+                var translated = localizationManager.GetServerLocalizedString("Artists");
+                Assert.Equal("Interpreten", translated);
+            }
+            finally
+            {
+                CultureInfo.CurrentUICulture = previousCulture;
+            }
+        }
+
+        [Fact]
+        public void GetLocalizedString_UsesCurrentUICulture()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+
+            var previousCulture = CultureInfo.CurrentUICulture;
+            try
+            {
+                CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de");
+                var translated = localizationManager.GetLocalizedString("Artists");
+                Assert.Equal("Interpreten", translated);
+            }
+            finally
+            {
+                CultureInfo.CurrentUICulture = previousCulture;
+            }
+        }
+
+        [Fact]
+        public void GetSupportedUICultures_IncludesCommonCultures()
+        {
+            var supported = LocalizationManager.GetSupportedUICultures();
+            Assert.Contains(supported, c => c.Name.Equals("de", StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(supported, c => c.Name.Equals("en-US", StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(supported, c => c.Name.Equals("fr", StringComparison.OrdinalIgnoreCase));
+            // Underscore variants get normalized to BCP-47 hyphen form for CultureInfo compatibility.
+            Assert.Contains(supported, c => c.Name.Equals("es-419", StringComparison.OrdinalIgnoreCase));
         }
 
         private LocalizationManager Setup(ServerConfiguration config)

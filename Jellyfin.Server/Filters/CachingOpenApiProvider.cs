@@ -68,7 +68,7 @@ internal sealed class CachingOpenApiProvider : ISwaggerProvider
 
         try
         {
-        openApiDocument = _swaggerGenerator.GetSwagger(documentName);
+            openApiDocument = _swaggerGenerator.GetSwagger(documentName);
         }
         catch (Exception ex)
         {

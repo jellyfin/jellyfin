@@ -193,26 +193,50 @@ internal class JellyfinMigrationService
         {
             var historyRepository = dbContext.GetService<IHistoryRepository>();
             var migrationsAssembly = dbContext.GetService<IMigrationsAssembly>();
-            var appliedMigrations = await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false);
-            var pendingCodeMigrations = migrationStage
-                .Where(e => appliedMigrations.All(f => f.MigrationId != e.BuildCodeMigrationId()))
-                .Select(e => (Key: e.BuildCodeMigrationId(), Migration: new InternalCodeMigration(e, serviceProvider, dbContext)))
-                .ToArray();
+            var completedMigrations = 0;
+            string? lastMigrationKey = null;
 
-            (string Key, InternalDatabaseMigration Migration)[] pendingDatabaseMigrations = [];
-            if (stage is JellyfinMigrationStageTypes.CoreInitialisation)
+            while (true)
             {
-                pendingDatabaseMigrations = migrationsAssembly.Migrations.Where(f => appliedMigrations.All(e => e.MigrationId != f.Key))
-                   .Select(e => (Key: e.Key, Migration: new InternalDatabaseMigration(e, dbContext)))
-                   .ToArray();
-            }
+                // A single migration can change which migrations still apply: IMigrator.MigrateAsync treats its argument as the
+                // state to end up in, so it reverts everything applied after it, and a reverted migration can take code migrations
+                // with it (AddNormalizedUsername.Down drops the UpdateNormalizedUsername history row). Anything computed before
+                // that point is stale, so only ever run the next migration and then work out the pending set again.
+                var appliedMigrations = await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false);
+                var pendingCodeMigrations = migrationStage
+                    .Where(e => appliedMigrations.All(f => f.MigrationId != e.BuildCodeMigrationId()))
+                    .Select(e => (Key: e.BuildCodeMigrationId(), Migration: new InternalCodeMigration(e, serviceProvider, dbContext)))
+                    .ToArray();
 
-            (string Key, IInternalMigration Migration)[] pendingMigrations = [.. pendingCodeMigrations, .. pendingDatabaseMigrations];
-            logger.LogInformation("There are {Pending} migrations for stage {Stage}.", pendingCodeMigrations.Length, stage);
-            var migrations = pendingMigrations.OrderBy(e => e.Key).ToArray();
+                (string Key, InternalDatabaseMigration Migration)[] pendingDatabaseMigrations = [];
+                if (stage is JellyfinMigrationStageTypes.CoreInitialisation)
+                {
+                    pendingDatabaseMigrations = migrationsAssembly.Migrations.Where(f => appliedMigrations.All(e => e.MigrationId != f.Key))
+                       .Select(e => (Key: e.Key, Migration: new InternalDatabaseMigration(e, dbContext)))
+                       .ToArray();
+                }
 
-            foreach (var item in migrations)
-            {
+                (string Key, IInternalMigration Migration)[] pendingMigrations = [.. pendingCodeMigrations, .. pendingDatabaseMigrations];
+                if (pendingMigrations.Length == 0)
+                {
+                    break;
+                }
+
+                if (completedMigrations == 0)
+                {
+                    logger.LogInformation("There are {Pending} migrations for stage {Stage}.", pendingMigrations.Length, stage);
+                }
+
+                var item = pendingMigrations.OrderBy(e => e.Key, StringComparer.Ordinal).First();
+                if (string.Equals(item.Key, lastMigrationKey, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException($"Migration {item.Key} ran but did not record itself as applied and would repeat indefinitely.");
+                }
+
+                lastMigrationKey = item.Key;
+
+                // Surface generic "Running migration X of Y" progress in the always-visible startup UI header.
+                SetupServer.ReportActivity(StartupActivity.Migration(completedMigrations + 1, completedMigrations + pendingMigrations.Length));
                 var migrationLogger = logger.With(_loggerFactory.CreateLogger(item.Migration.GetType().Name)).BeginGroup($"{item.Key}");
                 try
                 {
@@ -270,6 +294,8 @@ internal class JellyfinMigrationService
 
                     throw;
                 }
+
+                completedMigrations++;
             }
         }
     }

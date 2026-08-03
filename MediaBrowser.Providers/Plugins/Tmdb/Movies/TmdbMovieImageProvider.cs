@@ -95,7 +95,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             var posters = movie.Images.Posters;
             var backdrops = movie.Images.Backdrops;
             var logos = movie.Images.Logos;
-            var remoteImages = new List<RemoteImageInfo>(posters?.Count ?? 0 + backdrops?.Count ?? 0 + logos?.Count ?? 0);
+            var remoteImages = new List<RemoteImageInfo>((posters?.Count ?? 0) + (backdrops?.Count ?? 0) + (logos?.Count ?? 0));
 
             if (posters is not null)
             {

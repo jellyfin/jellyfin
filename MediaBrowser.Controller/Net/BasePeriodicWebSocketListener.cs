@@ -209,6 +209,11 @@ namespace MediaBrowser.Controller.Net
                 var (connection, cts, state) = tuple;
                 var cancellationToken = cts.Token;
 
+                // Restore the culture context captured when the connection was established
+                // so that GetDataToSendForConnection produces a localized payload matching
+                // the client's Accept-Language preference rather than the server default.
+                connection.ApplyRequestCulture();
+
                 var data = await GetDataToSendForConnection(connection).ConfigureAwait(false);
                 if (data is null)
                 {

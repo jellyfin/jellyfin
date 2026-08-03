@@ -299,6 +299,11 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
             });
             return result;
         }
+        catch (DbUpdateConcurrencyException)
+        {
+            // a concurrency exception is supposed to be always handled by the invoker of the method, logging it here is only causing log bloat.
+            throw;
+        }
         catch (Exception e)
         {
             logger.LogError(e, "Error trying to save changes.");

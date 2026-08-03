@@ -50,7 +50,7 @@ namespace MediaBrowser.Model.SyncPlay
         /// </summary>
         Seek = 8,
 
-         /// <summary>
+        /// <summary>
         /// A user is signaling that playback is buffering.
         /// </summary>
         Buffer = 9,
