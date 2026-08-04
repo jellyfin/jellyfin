@@ -1,6 +1,6 @@
 # How to run EFCore migrations
 
-This shall provide context on how to work with entity frameworks multi provider migration feature.
+This shall provide context on how to work with Entity Framework's multi-provider migration feature.
 
 Jellyfin will support multiple database providers in the future, namely SQLite as its default and the experimental PostgreSQL.
 
