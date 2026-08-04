@@ -114,5 +114,9 @@
     "NameExtraDeletedScene": "Scena eliminata",
     "NameExtraInterview": "Intervista",
     "NameExtraNumbered": "{0} {1}",
-    "NameExtraScene": "Scena"
+    "NameExtraScene": "Scena",
+    "NameExtraSample": "Campione",
+    "NameExtraShort": "Corto",
+    "NameExtraThemeSong": "Sigla musicale",
+    "NameExtraTrailer": "Trailer"
 }
