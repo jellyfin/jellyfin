@@ -10,6 +10,6 @@ Add the following line under "Template Repositories"
 
 https://github.com/jellyfin/jellyfin/tree/master/deployment/unraid/docker-templates
 
-Click save than click on Add Container and select jellyfin.
+Click save then click on Add Container and select jellyfin.
 
 Adjust to your paths to your liking and off you go!
