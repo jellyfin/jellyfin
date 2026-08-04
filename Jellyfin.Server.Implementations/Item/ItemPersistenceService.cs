@@ -314,9 +314,11 @@ public class ItemPersistenceService : IItemPersistenceService
         }).ToArray();
         context.ItemValues.AddRange(missingItemValues);
 
-        var itemValuesStore = existingValues.Concat(missingItemValues).ToArray();
+        var itemValuesStore = existingValues
+            .Concat(missingItemValues)
+            .ToDictionary(e => (e.Type, e.Value));
         var valueMap = itemValueMaps
-            .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).DistinctBy(e => e.ItemValueId).ToArray()))
+            .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore[(e.MagicNumber, e.Value)]).DistinctBy(e => e.ItemValueId).ToArray()))
             .ToArray();
 
         var mappedValues = context.ItemValuesMap.Where(e => ids.Contains(e.ItemId)).ToList();
