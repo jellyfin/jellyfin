@@ -20,6 +20,7 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
     private readonly int? _journalSizeLimit;
     private readonly int _tempStoreMode;
     private readonly int _syncMode;
+    private readonly int _busyTimeout;
     private readonly IDictionary<string, string> _customPragma;
 
     /// <summary>
@@ -31,8 +32,9 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
     /// <param name="journalSizeLimit">Journal Size.</param>
     /// <param name="tempStoreMode">The https://sqlite.org/pragma.html#pragma_temp_store pragma.</param>
     /// <param name="syncMode">The https://sqlite.org/pragma.html#pragma_synchronous pragma.</param>
+    /// <param name="busyTimeout">The https://sqlite.org/pragma.html#pragma_busy_timeout pragma, in milliseconds.</param>
     /// <param name="customPragma">A list of custom provided Pragma in the list of CustomOptions starting with "#PRAGMA:".</param>
-    public PragmaConnectionInterceptor(ILogger logger, int? cacheSize, string lockingMode, int? journalSizeLimit, int tempStoreMode, int syncMode, IDictionary<string, string> customPragma)
+    public PragmaConnectionInterceptor(ILogger logger, int? cacheSize, string lockingMode, int? journalSizeLimit, int tempStoreMode, int syncMode, int busyTimeout, IDictionary<string, string> customPragma)
     {
         _logger = logger;
         _cacheSize = cacheSize;
@@ -40,6 +42,7 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
         _journalSizeLimit = journalSizeLimit;
         _tempStoreMode = tempStoreMode;
         _syncMode = syncMode;
+        _busyTimeout = busyTimeout;
         _customPragma = customPragma;
 
         InitialCommand = BuildCommandText();
@@ -80,6 +83,14 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
     private string BuildCommandText()
     {
         var sb = new StringBuilder();
+
+        // First, so the remaining pragmas are covered by it. SQLite defaults to 0, which makes any
+        // lock conflict fall through to Microsoft.Data.Sqlite's 150ms poll until CommandTimeout.
+        if (_busyTimeout > 0)
+        {
+            sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA busy_timeout={_busyTimeout};");
+        }
+
         if (_cacheSize.HasValue)
         {
             sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA cache_size={_cacheSize.Value};");
