@@ -32,7 +32,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// Outer bound on the driver's lock-wait fallback, in seconds. Kept above
     /// <see cref="DefaultBusyTimeoutMs"/> so SQLite's busy handler does the waiting.
     /// </summary>
-    private const int DefaultCommandTimeoutSeconds = 30;
+    private const int DefaultCommandTimeoutSeconds = 60;
 
     private readonly IApplicationPaths _applicationPaths;
     private readonly ILogger<SqliteDatabaseProvider> _logger;

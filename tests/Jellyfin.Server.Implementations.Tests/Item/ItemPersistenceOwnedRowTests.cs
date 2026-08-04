@@ -6,6 +6,7 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Server.Implementations.Item;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -25,9 +26,14 @@ public sealed class ItemPersistenceOwnedRowTests : IDisposable
     private readonly SqliteConnection _connection;
     private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly ItemPersistenceService _service;
+    private readonly IApplicationPaths _applicationPaths;
+    private readonly ILibraryManager? _previousLibraryManager;
+    private readonly IServerConfigurationManager? _previousConfigurationManager;
 
     public ItemPersistenceOwnedRowTests()
     {
+        _applicationPaths = new Mock<IApplicationPaths>().Object;
+
         _connection = new SqliteConnection("Data Source=:memory:");
         _connection.Open();
 
@@ -39,6 +45,11 @@ public sealed class ItemPersistenceOwnedRowTests : IDisposable
         {
             ctx.Database.EnsureCreated();
         }
+
+        // BaseItem resolves these through process-wide statics, so capture whatever is already
+        // installed and put it back in Dispose rather than leaving the mocks behind for other tests.
+        _previousLibraryManager = BaseItem.LibraryManager;
+        _previousConfigurationManager = BaseItem.ConfigurationManager;
 
         var libraryManager = new Mock<ILibraryManager>();
         libraryManager.Setup(l => l.GetCollectionFolders(It.IsAny<BaseItem>()))
@@ -58,7 +69,12 @@ public sealed class ItemPersistenceOwnedRowTests : IDisposable
             NullLogger<ItemPersistenceService>.Instance);
     }
 
-    public void Dispose() => _connection.Dispose();
+    public void Dispose()
+    {
+        BaseItem.LibraryManager = _previousLibraryManager!;
+        BaseItem.ConfigurationManager = _previousConfigurationManager!;
+        _connection.Dispose();
+    }
 
     [Fact]
     public void SaveItems_UpdateExistingItem_ReplacesOwnedRows()
@@ -130,6 +146,6 @@ public sealed class ItemPersistenceOwnedRowTests : IDisposable
     private JellyfinDbContext CreateDbContext() => new(
         _dbOptions,
         NullLogger<JellyfinDbContext>.Instance,
-        new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
+        new SqliteDatabaseProvider(_applicationPaths, NullLogger<SqliteDatabaseProvider>.Instance),
         new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
 }
