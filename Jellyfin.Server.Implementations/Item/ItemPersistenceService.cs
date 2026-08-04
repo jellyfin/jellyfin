@@ -270,10 +270,6 @@ public class ItemPersistenceService : IItemPersistenceService
             }
             else
             {
-                context.BaseItemProviders.Where(e => e.ItemId == entity.Id).ExecuteDelete();
-                context.BaseItemImageInfos.Where(e => e.ItemId == entity.Id).ExecuteDelete();
-                context.BaseItemMetadataFields.Where(e => e.ItemId == entity.Id).ExecuteDelete();
-
                 if (entity.Images is { Count: > 0 })
                 {
                     context.BaseItemImageInfos.AddRange(entity.Images);
@@ -401,6 +397,18 @@ public class ItemPersistenceService : IItemPersistenceService
 
                 context.AncestorIds.RemoveRange(existingAncestorIds);
             }
+        }
+
+        // Owned rows of updated items are rewritten wholesale. Issued here, immediately before the
+        // first flush, because a DELETE is what takes SQLite's single write lock: everything above
+        // is reads and change tracking, and holding the lock across it would block all other
+        // writers for the duration. Batched rather than per-item to keep this to three statements.
+        if (existingItems.Count > 0)
+        {
+            var updatedIds = existingItems.ToArray();
+            context.BaseItemProviders.WhereOneOrMany(updatedIds, e => e.ItemId).ExecuteDelete();
+            context.BaseItemImageInfos.WhereOneOrMany(updatedIds, e => e.ItemId).ExecuteDelete();
+            context.BaseItemMetadataFields.WhereOneOrMany(updatedIds, e => e.ItemId).ExecuteDelete();
         }
 
         context.SaveChanges();
