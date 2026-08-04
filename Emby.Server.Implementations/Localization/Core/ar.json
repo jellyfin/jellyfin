@@ -111,5 +111,15 @@
     "LyricDownloadFailureFromForItem": "فشل تحميل الكلمات من {0} إلى {1}",
     "NameExtraBehindTheScenes": "خلف المشاهد",
     "NameExtraClip": "مقطع",
-    "NameExtraDeletedScene": "المشهد المحذوف"
+    "NameExtraDeletedScene": "المشهد المحذوف",
+    "NameExtraInterview": "مقابلة",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "عيّنة",
+    "NameExtraScene": "مشهد",
+    "NameExtraShort": "قصير",
+    "NameExtraThemeSong": "الاغنية السمة",
+    "NameExtraThemeVideo": "الفيديو السمة",
+    "NameExtraFeaturette": "فيلم قصير إضافي",
+    "NameExtraTrailer": "إعلان ترويجي",
+    "NameExtraUnknown": "إضافي"
 }
