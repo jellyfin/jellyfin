@@ -7864,10 +7864,16 @@ namespace MediaBrowser.Controller.MediaEncoding
                 audioTranscodeParams.Add("-acodec " + GetAudioEncoder(state));
             }
 
-            if (GetAudioEncoder(state).StartsWith("pcm_", StringComparison.Ordinal))
+            // The pcm_* encoders emit raw samples that carry no header of their own, so the header
+            // has to come from the muxer. Only force the matching raw muxer when the client actually
+            // asked for a raw container (added in #10321 for I2S/MCU clients): applying it to every
+            // pcm_* codec also strips the RIFF header from a `stream.wav` request, which then serves
+            // headerless PCM behind an audio/wav content type.
+            var audioEncoder = GetAudioEncoder(state);
+            if (audioEncoder.StartsWith("pcm_", StringComparison.Ordinal)
+                && string.Equals(state.OutputContainer, "pcm", StringComparison.OrdinalIgnoreCase))
             {
-                audioTranscodeParams.Add(string.Concat("-f ", GetAudioEncoder(state).AsSpan(4)));
-                audioTranscodeParams.Add("-ar " + state.BaseRequest.AudioBitRate);
+                audioTranscodeParams.Add(string.Concat("-f ", audioEncoder.AsSpan(4)));
             }
 
             var sampleRate = state.OutputAudioSampleRate;
