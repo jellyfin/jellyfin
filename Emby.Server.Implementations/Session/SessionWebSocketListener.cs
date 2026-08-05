@@ -223,7 +223,7 @@ namespace Emby.Server.Implementations.Session
 
             if (inactive.Count > 0)
             {
-                _logger.LogInformation("Sending ForceKeepAlive message to {0} inactive WebSockets.", inactive.Count);
+                _logger.LogDebug("Sending ForceKeepAlive message to {0} inactive WebSockets.", inactive.Count);
             }
 
             foreach (var webSocket in inactive)

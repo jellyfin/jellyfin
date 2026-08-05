@@ -63,6 +63,14 @@ public sealed partial class BaseItemRepository
         (BaseItemKind.Studio, _getStudiosValueTypes)
     ];
 
+    // The only folder kinds whose children form a single viewing sequence, so playback progress on a
+    // child rolls up to them. Every other folder kind is a container that cannot be resumed.
+    private static readonly BaseItemKind[] _resumableFolderKinds =
+    [
+        BaseItemKind.Series,
+        BaseItemKind.Season
+    ];
+
     /// <summary>
     /// Initializes a new instance of the <see cref="BaseItemRepository"/> class.
     /// </summary>

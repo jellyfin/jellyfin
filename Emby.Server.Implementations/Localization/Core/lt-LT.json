@@ -106,5 +106,19 @@
     "TaskMoveTrickplayImagesDescription": "Perkelia egzistuojančius trickplay failus pagal bibliotekos nustatymus.",
     "TaskDownloadMissingLyricsDescription": "Parsisiųsti dainų žodžius",
     "CleanupUserDataTask": "Naudotojo duomenų valymo užduotis",
-    "CleanupUserDataTaskDescription": "Iš medijos, kurios nebėra bent 90 dienų, išvalo visus naudotojo duomenis (žiūrėjimo būseną, mėgstamiausią būseną ir t. t.)."
+    "CleanupUserDataTaskDescription": "Iš medijos, kurios nebėra bent 90 dienų, išvalo visus naudotojo duomenis (žiūrėjimo būseną, mėgstamiausią būseną ir t. t.).",
+    "LyricDownloadFailureFromForItem": "Nepavyko atsisiųsti dainos žodžių iš {0}, skirto {1}",
+    "NameExtraBehindTheScenes": "Užkulisiuose",
+    "NameExtraClip": "Klipas",
+    "NameExtraDeletedScene": "Ištrinta scena",
+    "NameExtraInterview": "Interviu",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Pavyzdys",
+    "NameExtraScene": "Scena",
+    "NameExtraThemeSong": "Teminė daina",
+    "NameExtraThemeVideo": "Teminis vaizdo įrašas",
+    "NameExtraTrailer": "Anonsas",
+    "NameExtraUnknown": "Papildomas",
+    "Original": "Originalus",
+    "NameExtraFeaturette": "Trumpametražis filmas"
 }
