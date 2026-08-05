@@ -84,8 +84,8 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
     {
         var sb = new StringBuilder();
 
-        // First, so the remaining pragmas are covered by it. SQLite defaults to 0, which makes any
-        // lock conflict fall through to Microsoft.Data.Sqlite's 150ms poll until CommandTimeout.
+        // First, so the remaining pragmas are covered. SQLite defaults to 0, dropping lock conflicts
+        // through to Microsoft.Data.Sqlite's 150ms poll until CommandTimeout.
         if (_busyTimeout > 0)
         {
             sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA busy_timeout={_busyTimeout};");

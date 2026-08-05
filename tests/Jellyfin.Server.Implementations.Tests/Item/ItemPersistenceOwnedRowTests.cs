@@ -46,8 +46,7 @@ public sealed class ItemPersistenceOwnedRowTests : IDisposable
             ctx.Database.EnsureCreated();
         }
 
-        // BaseItem resolves these through process-wide statics, so capture whatever is already
-        // installed and put it back in Dispose rather than leaving the mocks behind for other tests.
+        // BaseItem resolves these through process-wide statics; restored in Dispose.
         _previousLibraryManager = BaseItem.LibraryManager;
         _previousConfigurationManager = BaseItem.ConfigurationManager;
 
@@ -92,8 +91,7 @@ public sealed class ItemPersistenceOwnedRowTests : IDisposable
             Assert.Equal(1, ctx.BaseItemMetadataFields.Count(e => e.ItemId.Equals(id)));
         }
 
-        // Re-save the same, already-existing item with different owned rows: the update path
-        // rewrites all three child tables wholesale rather than merging.
+        // Re-save with different owned rows: the update path rewrites all three tables wholesale.
         _service.SaveItems(
             [CreateBook(id, new() { ["Imdb"] = "tt9999" }, [MetadataField.Name, MetadataField.Genres])],
             CancellationToken.None);

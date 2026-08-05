@@ -15,24 +15,30 @@ namespace Jellyfin.Database.Implementations.Locking;
 /// </summary>
 /// <remarks>
 /// <para>
-/// SQLite permits one writer at a time, so queueing writers in-process lets each take the database
-/// lock uncontended instead of racing for it and generating SQLITE_BUSY retries.
+/// SQLite permits one writer at a time; queueing them in-process lets each take the database lock
+/// uncontended instead of racing for it and generating SQLITE_BUSY retries.
 /// </para>
 /// <para>
-/// Reads are left unsynchronized: in WAL mode they neither block nor are blocked by writers.
+/// Reads are unsynchronized: in WAL mode they neither block nor are blocked by writers.
 /// </para>
 /// <para>
-/// Uses <see cref="SemaphoreSlim"/> rather than <see cref="ReaderWriterLockSlim"/> so the lock can
-/// be held across an <see langword="await"/>.
+/// Held via <see cref="SemaphoreSlim"/> so it survives an <see langword="await"/>.
+/// </para>
+/// <para>
+/// The permit spans an explicit transaction's whole lifetime, matching SQLite: Microsoft.Data.Sqlite
+/// issues BEGIN IMMEDIATE for every isolation level except ReadUncommitted, so the database write
+/// lock is held from BEGIN to commit.
 /// </para>
 /// </remarks>
 public sealed class SerializedWriteLockBehavior : IEntityFrameworkCoreLockingBehavior, IDisposable
 {
     /// <summary>
-    /// How long to queue for the in-process write lock before giving up and letting SQLite's own
-    /// busy handler arbitrate instead. This is a deadlock backstop, not a normal code path.
+    /// How long to queue for the permit before proceeding without it and leaving busy_timeout to
+    /// arbitrate. Reached whenever the holder is slow, not just on nested writes: a write that
+    /// stalls for its full CommandTimeout holds the permit for that whole time, so every queued
+    /// writer times out and then hits the database unsynchronized.
     /// </summary>
-    private static readonly TimeSpan _acquireTimeout = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan _acquireTimeout = TimeSpan.FromSeconds(15);
 
     /// <summary>
     /// Set while this instance owns the permit. Propagates into the guarded call's EF internals so
@@ -43,10 +49,9 @@ public sealed class SerializedWriteLockBehavior : IEntityFrameworkCoreLockingBeh
     private readonly SemaphoreSlim _writeLock = new(1, 1);
 
     /// <summary>
-    /// The explicit transaction owning the write lock, mapped to the connection it was opened on.
-    /// Keyed by transaction because a transaction's lifetime spans separate async flows, and to make
-    /// releasing idempotent across the several end-of-transaction callbacks EF raises. Holds at most
-    /// one entry, since the semaphore admits one writer.
+    /// Explicit transactions owning the permit, mapped to their connection. Keyed by transaction
+    /// because its lifetime spans async flows; removal doubles as the release guard against the
+    /// several end-of-transaction callbacks EF raises. Holds at most one entry.
     /// </summary>
     private readonly ConcurrentDictionary<DbTransaction, DbConnection> _lockedTransactions = new();
 
@@ -192,9 +197,9 @@ public sealed class SerializedWriteLockBehavior : IEntityFrameworkCoreLockingBeh
     }
 
     /// <summary>
-    /// Releases a lock still attributed to a transaction on a connection being closed.
-    /// EF disposes the underlying transaction directly, without raising a commit, rollback or
-    /// failure callback, so a transaction abandoned by an exception has no other release point.
+    /// Releases a permit still held by a transaction on a closing connection. EF disposes the
+    /// underlying transaction without a commit, rollback or failure callback, leaving this the only
+    /// release point for a transaction abandoned by an exception.
     /// </summary>
     private void ReleaseTransactionsOn(DbConnection connection)
     {
@@ -209,8 +214,8 @@ public sealed class SerializedWriteLockBehavior : IEntityFrameworkCoreLockingBeh
 
     /// <summary>
     /// Serializes writes issued outside <c>SaveChanges</c> and outside an explicit transaction:
-    /// ExecuteDelete, ExecuteUpdate, raw SQL and migrations. All execute as non-queries; reads pass
-    /// straight through.
+    /// ExecuteDelete, ExecuteUpdate, raw SQL and migrations, all of which execute as non-queries.
+    /// Reads pass through.
     /// </summary>
     private sealed class WriteSerializingCommandInterceptor : DbCommandInterceptor
     {
@@ -285,9 +290,8 @@ public sealed class SerializedWriteLockBehavior : IEntityFrameworkCoreLockingBeh
     }
 
     /// <summary>
-    /// Holds the write lock for the lifetime of an explicit transaction. Acquires on
-    /// <c>TransactionStarted</c>, where the transaction object exists, so the lock is never held
-    /// without a key to release it by.
+    /// Holds the permit for an explicit transaction's lifetime. Acquires on
+    /// <c>TransactionStarted</c>, where the transaction object exists to key the release on.
     /// </summary>
     private sealed class WriteSerializingTransactionInterceptor : DbTransactionInterceptor
     {

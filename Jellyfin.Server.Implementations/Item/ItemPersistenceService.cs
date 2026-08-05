@@ -259,8 +259,7 @@ public class ItemPersistenceService : IItemPersistenceService
         var ids = tuples.Select(f => f.Item.Id).ToArray();
         var existingItems = context.BaseItems.Where(e => ids.Contains(e.Id)).Select(f => f.Id).ToHashSet();
 
-        // Owned rows of updated items are rewritten wholesale, so clear them in one statement per
-        // table rather than three per item.
+        // Owned rows of updated items are rewritten wholesale; cleared in one statement per table.
         if (existingItems.Count > 0)
         {
             var updatedIds = existingItems.ToArray();

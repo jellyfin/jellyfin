@@ -88,8 +88,7 @@ public class OptimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
     /// <inheritdoc/>
     public void OnSaveChanges(JellyfinDbContext context, Action saveChanges)
     {
-        // Execute rethrows once retries are exhausted; ExecuteAndCapture would return the failure
-        // as a PolicyResult, making a dropped write look like a successful save.
+        // Rethrows once retries are exhausted; a captured failure would surface as a successful save.
         _writePolicy.Execute(saveChanges);
     }
 

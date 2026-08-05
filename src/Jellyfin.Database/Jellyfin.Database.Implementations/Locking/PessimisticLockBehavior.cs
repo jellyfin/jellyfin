@@ -19,12 +19,10 @@ namespace Jellyfin.Database.Implementations.Locking;
 /// </summary>
 /// <remarks>
 /// Unsafe with asynchronous transactions; superseded by <see cref="SerializedWriteLockBehavior"/>.
-/// The <see cref="ReaderWriterLockSlim"/> is held from <c>TransactionStarting</c> to
-/// <c>TransactionCommitted</c>, but is thread-affine and cannot be held across an
-/// <see langword="await"/>. This holds only while continuations resume inline, as they do when
-/// Microsoft.Data.Sqlite completes synchronously. Any genuinely-async continuation inside a
-/// transaction releases on a different thread, throwing <see cref="SynchronizationLockException"/>
-/// or deadlocking a later write that cannot re-enter a lock it does not own.
+/// <see cref="ReaderWriterLockSlim"/> is thread-affine, so holding it from
+/// <c>TransactionStarting</c> to <c>TransactionCommitted</c> works only while continuations resume
+/// inline. A genuinely-async continuation inside a transaction releases on another thread, throwing
+/// <see cref="SynchronizationLockException"/> or deadlocking a later write.
 /// </remarks>
 public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
 {
