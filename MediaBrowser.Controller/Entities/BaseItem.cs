@@ -2221,6 +2221,9 @@ namespace MediaBrowser.Controller.Entities
                 existingImage.Width = image.Width;
                 existingImage.Height = image.Height;
                 existingImage.BlurHash = image.BlurHash;
+                existingImage.Source = image.Source;
+                existingImage.ETag = image.ETag;
+                existingImage.SourceLastModified = image.SourceLastModified;
             }
         }
 
