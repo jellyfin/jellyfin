@@ -496,6 +496,12 @@ namespace MediaBrowser.Controller.Entities
 
         public IReadOnlyList<string> SubtitleLanguages { get; set; }
 
+        /// <summary>
+        /// Gets a value indicating whether some content in the library is hidden from <see cref="User"/>.
+        /// Filters that only exist to hide content can be skipped entirely when this is false.
+        /// </summary>
+        public bool UserHasContentRestrictions { get; private set; }
+
         public void SetUser(User user)
         {
             var maxRating = user.MaxParentalRatingScore;
@@ -519,6 +525,7 @@ namespace MediaBrowser.Controller.Entities
                 .Select(tag => tag.RemoveDiacritics().ToLowerInvariant())
                 .ToArray();
 
+            UserHasContentRestrictions = user.HasContentRestrictions();
             User = user;
         }
 

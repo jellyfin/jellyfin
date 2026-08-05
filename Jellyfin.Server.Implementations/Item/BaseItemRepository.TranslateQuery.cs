@@ -995,21 +995,7 @@ public sealed partial class BaseItemRepository
                 : baseQuery.Where(e => e.Provider!.All(f => f.ProviderId.ToLower() != TvdbProviderName));
         }
 
-        var queryTopParentIds = filter.TopParentIds;
-
-        if (queryTopParentIds.Length > 0)
-        {
-            var includedItemByNameTypes = GetItemByNameTypesInQuery(filter);
-            var enableItemsByName = (filter.IncludeItemsByName ?? false) && includedItemByNameTypes.Count > 0;
-            if (enableItemsByName && includedItemByNameTypes.Count > 0)
-            {
-                baseQuery = baseQuery.Where(e => includedItemByNameTypes.Contains(e.Type) || queryTopParentIds.Any(w => w == e.TopParentId!.Value));
-            }
-            else
-            {
-                baseQuery = baseQuery.WhereOneOrMany(queryTopParentIds, e => e.TopParentId!.Value);
-            }
-        }
+        baseQuery = ApplyTopParentFiltering(context, baseQuery, filter);
 
         if (filter.AncestorIds.Length > 0)
         {
