@@ -527,7 +527,13 @@ namespace MediaBrowser.Controller.Entities
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, IReadOnlyList<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var hasChanges = await base.RefreshedOwnedItems(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
+            var hasChanges = false;
+
+            // The extras of a version group are maintained by its primary.
+            if (!PrimaryVersionId.HasValue)
+            {
+                hasChanges = await base.RefreshedOwnedItems(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
+            }
 
             // Clean up LocalAlternateVersions - remove paths that no longer exist
             if (LocalAlternateVersions.Length > 0)
@@ -588,8 +594,18 @@ namespace MediaBrowser.Controller.Entities
                 {
                     altVideo.OwnerId = Id;
                     altVideo.SetPrimaryVersionId(Id);
+                    altVideo.IsInMixedFolder = IsInMixedFolder;
                     LibraryManager.CreateItem(altVideo, GetParent());
                 }
+            }
+
+            // A version is resolved on its own, so it does not learn whether the folder it sits in
+            // holds other items. It has to share that with the version it belongs to, before the
+            // refresh below acts on it.
+            if (LibraryManager.GetItemById(id) is Video resolvedVersion && resolvedVersion.IsInMixedFolder != IsInMixedFolder)
+            {
+                resolvedVersion.IsInMixedFolder = IsInMixedFolder;
+                await resolvedVersion.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
             }
 
             await RefreshMetadataForOwnedVideo(options, copyTitleMetadata, path, cancellationToken).ConfigureAwait(false);
@@ -671,6 +687,7 @@ namespace MediaBrowser.Controller.Entities
 
                 video.Id = id;
                 video.OwnerId = Id;
+                video.IsInMixedFolder = IsInMixedFolder;
                 LibraryManager.CreateItem(video, parentFolder);
                 newOptions.ForceSave = true;
             }

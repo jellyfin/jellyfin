@@ -2376,6 +2376,7 @@ namespace Emby.Server.Implementations.Library
                             {
                                 altVideo.OwnerId = video.Id;
                                 altVideo.SetPrimaryVersionId(video.Id);
+                                altVideo.IsInMixedFolder = video.IsInMixedFolder;
                                 // ResolveAlternateVersion only sees the alternate's primary file.
                                 // If the alternate is itself a stack (e.g. 1080p part1 + part2),
                                 // detect its parts from sibling files so its AdditionalParts persist.
@@ -2561,6 +2562,8 @@ namespace Emby.Server.Implementations.Library
                 item.DateLastSaved = DateTime.UtcNow;
             }
 
+            ForgetDroppedLocalAlternateVersions(items);
+
             // Resolve and add any local alternate version items that don't exist yet
             // This ensures they exist in the database when LinkedChildren are processed
             var allItems = new List<BaseItem>(items);
@@ -2589,6 +2592,7 @@ namespace Emby.Server.Implementations.Library
                             {
                                 altVideo.OwnerId = video.Id;
                                 altVideo.SetPrimaryVersionId(video.Id);
+                                altVideo.IsInMixedFolder = video.IsInMixedFolder;
                                 // ResolveAlternateVersion only sees the alternate's primary file.
                                 // If the alternate is itself a stack (e.g. 1080p part1 + part2),
                                 // detect its parts from sibling files so its AdditionalParts persist.
@@ -2648,6 +2652,30 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
             => UpdateItemsAsync([item], parent, updateReason, cancellationToken);
+
+        /// <summary>
+        /// Forgets the cached local alternate versions of the supplied items that they no longer list.
+        /// </summary>
+        /// <param name="items">The items about to be saved.</param>
+        private void ForgetDroppedLocalAlternateVersions(IReadOnlyList<BaseItem> items)
+        {
+            foreach (var video in items.OfType<Video>())
+            {
+                var videoType = video.GetType();
+                var keptIds = video.LocalAlternateVersions
+                    .Where(path => !string.IsNullOrEmpty(path))
+                    .Select(path => GetNewItemId(path, videoType))
+                    .ToHashSet();
+
+                foreach (var versionId in GetLocalAlternateVersionIds(video))
+                {
+                    if (!keptIds.Contains(versionId))
+                    {
+                        _cache.TryRemove(versionId, out _);
+                    }
+                }
+            }
+        }
 
         /// <inheritdoc />
         public async Task ReattachUserDataAsync(BaseItem item, CancellationToken cancellationToken)

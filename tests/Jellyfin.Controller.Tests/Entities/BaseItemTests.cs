@@ -1,19 +1,25 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaSegments;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Querying;
 using Moq;
 using Xunit;
 
@@ -291,6 +297,85 @@ public class BaseItemTests
         userDataManager.Verify(
             x => x.SaveUserData(It.IsAny<User>(), It.IsAny<BaseItem>(), It.IsAny<UpdateUserItemDataDto>(), It.IsAny<UserDataSaveReason>()),
             Times.Never);
+    }
+
+    [Theory]
+    // A version file the scan just found beside the episode is not linked yet, so it does not count
+    // towards MediaSourceCount. The episode still has to refresh its owned items, as that is what
+    // creates the item for the version and links it.
+    [InlineData(true, false, true)]
+    [InlineData(false, true, true)]
+    [InlineData(false, false, false)]
+    public void SupportsOwnedItems_EpisodeWithResolvedVersionOrPart_IsTrue(bool hasLocalVersion, bool isStacked, bool expected)
+    {
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager.Setup(x => x.GetLinkedAlternateVersions(It.IsAny<Video>())).Returns(Array.Empty<Video>());
+        libraryManager.Setup(x => x.GetLocalAlternateVersionIds(It.IsAny<Video>())).Returns(Array.Empty<Guid>());
+        BaseItem.LibraryManager = libraryManager.Object;
+
+        var episode = new Episode
+        {
+            Id = Guid.NewGuid(),
+            Path = "/TV/Show/Season 1/S01E01 - 1080p.mkv",
+            LocalAlternateVersions = hasLocalVersion ? ["/TV/Show/Season 1/S01E01 - 720p.mkv"] : [],
+            AdditionalParts = isStacked ? ["/TV/Show/Season 1/S01E01 - 1080p-part2.mkv"] : []
+        };
+
+        var property = typeof(Episode).GetProperty("SupportsOwnedItems", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(property);
+
+        Assert.Equal(expected, (bool)property!.GetValue(episode)!);
+    }
+
+    [Theory]
+    // The season folder is the season's own, so the extras that sit in it are the season's. Whether
+    // the season holds one episode or two must not decide where its extras show up.
+    [InlineData(false, false)]
+    // An episode with a folder of its own keeps the extras in it, as nothing else searches there
+    [InlineData(true, true)]
+    public async Task RefreshedOwnedItems_EpisodeInAContainersOwnFolder_LeavesExtrasToTheContainer(bool episodeHasOwnFolder, bool expectSearch)
+    {
+        var seasonPath = Path.Combine("TV", "Show", "Season 1");
+        var episodeFolder = episodeHasOwnFolder ? Path.Combine(seasonPath, "S01E01") : seasonPath;
+        var episodePath = Path.Combine(episodeFolder, "S01E01 - 1080p.mkv");
+
+        // The season needs a parent of its own, as an item without one maintains no owned items
+        var season = new Season { Id = Guid.NewGuid(), ParentId = Guid.NewGuid(), Path = seasonPath };
+        var episode = new Episode
+        {
+            Id = Guid.NewGuid(),
+            ParentId = season.Id,
+            Path = episodePath,
+            // A version file is what makes an episode maintain owned items at all
+            LocalAlternateVersions = [Path.Combine(episodeFolder, "S01E01 - 720p.mkv")]
+        };
+
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        mediaSourceManager.Setup(x => x.GetPathProtocol(It.IsAny<string>())).Returns(MediaProtocol.File);
+        BaseItem.MediaSourceManager = mediaSourceManager.Object;
+
+        var fileSystem = new Mock<IFileSystem>();
+        fileSystem.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
+        BaseItem.FileSystem = fileSystem.Object;
+
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager.Setup(x => x.GetItemById(season.Id)).Returns(season);
+        libraryManager.Setup(x => x.GetLinkedAlternateVersions(It.IsAny<Video>())).Returns(Array.Empty<Video>());
+        libraryManager.Setup(x => x.GetLocalAlternateVersionIds(It.IsAny<Video>())).Returns(Array.Empty<Guid>());
+        libraryManager.Setup(x => x.GetItemList(It.IsAny<InternalItemsQuery>())).Returns(Array.Empty<BaseItem>());
+        libraryManager.Setup(x => x.FindExtras(It.IsAny<BaseItem>(), It.IsAny<IReadOnlyList<FileSystemMetadata>>(), It.IsAny<IDirectoryService>()))
+            .Returns(Array.Empty<BaseItem>());
+        BaseItem.LibraryManager = libraryManager.Object;
+
+        var method = typeof(BaseItem).GetMethod("RefreshedOwnedItems", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+
+        var options = new MetadataRefreshOptions(Mock.Of<IDirectoryService>());
+        await (Task<bool>)method!.Invoke(episode, [options, Array.Empty<FileSystemMetadata>(), CancellationToken.None])!;
+
+        libraryManager.Verify(
+            x => x.FindExtras(episode, It.IsAny<IReadOnlyList<FileSystemMetadata>>(), It.IsAny<IDirectoryService>()),
+            expectSearch ? Times.Once() : Times.Never());
     }
 
     private static (Video Primary, Video Alt1, Video Alt2) SetupVersionGroup()
