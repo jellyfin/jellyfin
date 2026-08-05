@@ -108,5 +108,18 @@
     "CleanupUserDataTaskDescription": "Odstraní všechna uživatelská data (stav zhlédnutí, oblíbené atd.) z médií, které již neexistují více než 90 dní.",
     "CleanupUserDataTask": "Pročistit uživatelská data",
     "Original": "Originál",
-    "LyricDownloadFailureFromForItem": "Nepodařilo se stáhnout texty pro {1} ze služby {0}"
+    "LyricDownloadFailureFromForItem": "Nepodařilo se stáhnout texty pro {1} ze služby {0}",
+    "NameExtraBehindTheScenes": "Zákulisí",
+    "NameExtraClip": "Klip",
+    "NameExtraDeletedScene": "Vymazaná scéna",
+    "NameExtraFeaturette": "Featurette",
+    "NameExtraInterview": "Rozhovor",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Ukázka",
+    "NameExtraScene": "Scéna",
+    "NameExtraShort": "Krátké",
+    "NameExtraThemeSong": "Úvodní píseň",
+    "NameExtraThemeVideo": "Úvodní video",
+    "NameExtraTrailer": "Upoutávka",
+    "NameExtraUnknown": "Extra"
 }
