@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
-using Jellyfin.LiveTv;
 using Jellyfin.LiveTv.Configuration;
 using Jellyfin.LiveTv.Listings;
 using MediaBrowser.Common.Configuration;
@@ -450,9 +449,23 @@ public class GuideManager : IGuideManager
 
         item.Name = channelInfo.Name;
 
-        if (LiveTvChannelImageHelper.UpdateChannelImageIfNeeded(item, channelInfo.ImagePath, channelInfo.ImageUrl))
+        var currentPrimary = item.GetImageInfo(ImageType.Primary, 0);
+        var imageUrlIsNull = string.IsNullOrWhiteSpace(channelInfo.ImageUrl);
+
+        // Update channel image if image URL has changed
+        if (currentPrimary is null
+            || (!imageUrlIsNull && !string.Equals(currentPrimary.Path, channelInfo.ImageUrl, StringComparison.Ordinal)))
         {
-            forceUpdate = true;
+            if (!string.IsNullOrWhiteSpace(channelInfo.ImagePath))
+            {
+                item.SetImagePath(ImageType.Primary, channelInfo.ImagePath);
+                forceUpdate = true;
+            }
+            else if (!imageUrlIsNull)
+            {
+                item.SetImagePath(ImageType.Primary, channelInfo.ImageUrl);
+                forceUpdate = true;
+            }
         }
 
         if (isNew)
