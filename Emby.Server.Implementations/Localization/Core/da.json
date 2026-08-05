@@ -108,5 +108,18 @@
     "CleanupUserDataTask": "Brugerdata oprydningsopgave",
     "CleanupUserDataTaskDescription": "Rydder alle brugerdata (eks. visning- og favoritstatus) fra medier, der har været utilgængelige i mindst 90 dage.",
     "LyricDownloadFailureFromForItem": "Sangtekster kunne ikke downloades fra {0} til {1}",
-    "Original": "Original"
+    "Original": "Original",
+    "NameExtraBehindTheScenes": "Bag Scenerne",
+    "NameExtraClip": "Klip",
+    "NameExtraDeletedScene": "Slettet Scene",
+    "NameExtraFeaturette": "Featurette",
+    "NameExtraInterview": "Interview",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Smagsprøve",
+    "NameExtraScene": "Scene",
+    "NameExtraShort": "Kort",
+    "NameExtraThemeSong": "Tema Sang",
+    "NameExtraThemeVideo": "Tema Video",
+    "NameExtraTrailer": "Trailer",
+    "NameExtraUnknown": "Ekstra"
 }
