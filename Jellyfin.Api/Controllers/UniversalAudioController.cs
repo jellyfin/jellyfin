@@ -83,6 +83,7 @@ public class UniversalAudioController : BaseJellyfinApiController
     /// <param name="maxAudioSampleRate">Optional. The maximum audio sample rate.</param>
     /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
     /// <param name="enableRemoteMedia">Optional. Whether to enable remote media.</param>
+    /// <param name="playSessionId">Optional. The play session id. Repeating it across requests lets the server reuse the transcode it already produced instead of starting a new one; omitted, a fresh id is generated per request.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <param name="enableRedirection">Whether to enable redirection. Defaults to true.</param>
     /// <response code="200">Audio stream returned.</response>
@@ -113,6 +114,7 @@ public class UniversalAudioController : BaseJellyfinApiController
         [FromQuery] int? maxAudioSampleRate,
         [FromQuery] int? maxAudioBitDepth,
         [FromQuery] bool? enableRemoteMedia,
+        [FromQuery] string? playSessionId = null,
         [FromQuery] bool enableAudioVbrEncoding = true,
         [FromQuery] bool enableRedirection = true)
     {
@@ -136,6 +138,14 @@ public class UniversalAudioController : BaseJellyfinApiController
                 Request,
                 mediaSourceId)
             .ConfigureAwait(false);
+
+        // GetPlaybackInfo mints a fresh play session id on every call, and that id is part of the
+        // transcode's output path. Without honouring a caller-supplied one, two identical requests
+        // land on two different paths and each one re-encodes the whole track from scratch.
+        if (!string.IsNullOrEmpty(playSessionId))
+        {
+            info.PlaySessionId = playSessionId;
+        }
 
         // set device specific data
         foreach (var sourceInfo in info.MediaSources)
