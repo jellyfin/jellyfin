@@ -110,16 +110,56 @@ namespace Emby.Naming.TV
 
                 return CheckMatch(preMatch);
             }
-            else
+
+            var postMatch = ProcessPost().Match(filename);
+            if (postMatch.Success)
             {
-                var postMatch = ProcessPost().Match(filename);
-                if (postMatch.Success && isMixedLibrary && !SeasonKeyword().IsMatch(fileName))
+                if (isMixedLibrary && !SeasonKeyword().IsMatch(fileName))
                 {
                     return (null, false);
                 }
 
                 return CheckMatch(postMatch);
             }
+
+            // Fallback: handle series-prefixed season folders like
+            // "Solar Opposites - Season 1" or "Show (2020) - Season 3".
+            // The anchored ProcessPre/ProcessPost regexes require the season keyword
+            // at the start of the string, which fails when the series name precedes it.
+            // Find each season keyword occurrence and try parsing from that position.
+            // Iterate all keyword matches to handle cases like "The Series Finale - Season 1"
+            // where the series name itself contains a season keyword (e.g. "Series").
+            var keywordMatches = SeasonKeyword().Matches(filename);
+            foreach (Match kwMatch in keywordMatches)
+            {
+                // Skip keyword matches that have a digit immediately before them —
+                // this indicates an episode pattern like "Episode 1 Season 2"
+                if (kwMatch.Index > 0 && char.IsDigit(filename[kwMatch.Index - 1]))
+                {
+                    continue;
+                }
+
+                if (isMixedLibrary && !SeasonKeyword().IsMatch(fileName))
+                {
+                    return (null, false);
+                }
+
+                var fromKeyword = filename[kwMatch.Index..];
+
+                preMatch = ProcessPre().Match(fromKeyword);
+                if (preMatch.Success)
+                {
+                    return CheckMatch(preMatch);
+                }
+
+                postMatch = ProcessPost().Match(fromKeyword);
+                if (postMatch.Success)
+                {
+                    return CheckMatch(postMatch);
+                }
+            }
+
+            return (null, false);
         }
 
         private static (int? SeasonNumber, bool IsSeasonFolder) CheckMatch(Match match)
@@ -129,11 +169,39 @@ namespace Emby.Naming.TV
             {
                 if (int.TryParse(numberString.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var seasonNumber))
                 {
-                    return (seasonNumber, true);
+                    return (SanitizeSeasonNumber(seasonNumber), true);
                 }
             }
 
             return (null, false);
+        }
+
+        /// <summary>
+        /// Sanitizes a season number that may have absorbed an adjacent year value
+        /// due to CleanNameRegex removing delimiters (e.g. "Season 7 (2023)" becomes
+        /// "Season72023" after cleaning, which would parse as 72023).
+        /// If the number ends with a plausible 4-digit year (1900-2099), strip it.
+        /// </summary>
+        private static int? SanitizeSeasonNumber(int seasonNumber)
+        {
+            // No TV show has 10,000+ seasons — if we got a number this large,
+            // it likely absorbed an adjacent year like "Season 7 2023" → 72023.
+            if (seasonNumber >= 10000)
+            {
+                var suffix = seasonNumber % 10000;
+                // Check if the last 4 digits look like a plausible year
+                if (suffix >= 1900 && suffix <= 2099)
+                {
+                    var prefix = seasonNumber / 10000;
+                    // Only strip if the remaining prefix is a reasonable season number (1-99)
+                    if (prefix > 0 && prefix < 100)
+                    {
+                        return (int)prefix;
+                    }
+                }
+            }
+
+            return seasonNumber;
         }
 
         /// <summary>
