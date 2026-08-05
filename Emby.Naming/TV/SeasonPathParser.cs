@@ -193,10 +193,11 @@ namespace Emby.Naming.TV
                 if (suffix >= 1900 && suffix <= 2099)
                 {
                     var prefix = seasonNumber / 10000;
-                    // Only strip if the remaining prefix is a reasonable season number (1-99)
-                    if (prefix > 0 && prefix < 100)
+                    // Only strip if the remaining prefix is a reasonable season number (1-99).
+                    // prefix is always >= 1 here since seasonNumber >= 10000.
+                    if (prefix < 100)
                     {
-                        return (int)prefix;
+                        return prefix;
                     }
                 }
             }
