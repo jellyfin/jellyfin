@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Emby.Naming.TV
@@ -129,12 +130,13 @@ namespace Emby.Naming.TV
             // Find each season keyword occurrence and try parsing from that position.
             // Iterate all keyword matches to handle cases like "The Series Finale - Season 1"
             // where the series name itself contains a season keyword (e.g. "Series").
-            var keywordMatches = SeasonKeyword().Matches(filename);
-            foreach (Match kwMatch in keywordMatches)
+            // Iterate each season keyword position in the folder name.
+            // Only the Index is needed — the Match object is not used beyond that.
+            foreach (var idx in SeasonKeyword().Matches(filename).Select(m => m.Index))
             {
                 // Skip keyword matches that have a digit immediately before them —
                 // this indicates an episode pattern like "Episode 1 Season 2"
-                if (kwMatch.Index > 0 && char.IsDigit(filename[kwMatch.Index - 1]))
+                if (idx > 0 && char.IsDigit(filename[idx - 1]))
                 {
                     continue;
                 }
@@ -144,7 +146,7 @@ namespace Emby.Naming.TV
                     return (null, false);
                 }
 
-                var fromKeyword = filename[kwMatch.Index..];
+                var fromKeyword = filename[idx..];
 
                 preMatch = ProcessPre().Match(fromKeyword);
                 if (preMatch.Success)
