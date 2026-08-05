@@ -117,13 +117,17 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             person.Role = person.Role?.Trim() ?? string.Empty;
         }
 
+        // Project the values every comparison below needs once, so neither the case folding nor the
+        // enum formatting is repeated per candidate.
+        var credits = people.Select(e => (Person: e, LoweredName: e.Name.ToLowerInvariant(), PersonType: e.Type.ToString(), LoweredRole: e.Role.ToLowerInvariant()));
+
         // multiple metadata providers can provide the _same_ credit; dedupe case-insensitively.
         // The role is part of the key because one person can hold several credits of the same type
         // on an item, e.g. a Writer credited for both the Novel and the Screenplay.
-        people = people.DistinctBy(e => e.Name.ToLowerInvariant() + "-" + e.Type + "-" + e.Role.ToLowerInvariant()).ToArray();
+        var distinctCredits = credits.DistinctBy(e => (e.LoweredName, e.PersonType, e.LoweredRole)).ToArray();
 
-        var distinctPersons = people.DistinctBy(e => e.Name.ToLowerInvariant() + "-" + e.Type).ToArray();
-        var personKeys = distinctPersons.Select(e => e.Name.ToLowerInvariant() + "-" + e.Type).ToArray();
+        var distinctPersons = distinctCredits.DistinctBy(e => (e.LoweredName, e.PersonType)).ToArray();
+        var personKeys = distinctPersons.Select(e => e.LoweredName + "-" + e.PersonType).ToArray();
 
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
@@ -136,24 +140,44 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             .Select(f => f.item)
             .ToArray();
 
+        var existingPersonKeys = existingPersons.Select(e => (e.Name.ToLowerInvariant(), e.PersonType ?? string.Empty)).ToHashSet();
+
         var toAdd = distinctPersons
-            .Where(e => !existingPersons.Any(f => string.Equals(f.Name, e.Name, StringComparison.OrdinalIgnoreCase) && f.PersonType == e.Type.ToString()))
-            .Select(Map)
+            .Where(e => !existingPersonKeys.Contains((e.LoweredName, e.PersonType)))
+            .Select(e => Map(e.Person))
             .ToArray();
         context.Peoples.AddRange(toAdd);
         context.SaveChanges();
 
-        var personsEntities = toAdd.Concat(existingPersons).ToArray();
+        // The Peoples table can hold case-only duplicates, so keep the first match per key just as
+        // the previous First() lookup did.
+        var personsEntities = new Dictionary<(string LoweredName, string PersonType), People>();
+        foreach (var entity in toAdd.Concat(existingPersons))
+        {
+            personsEntities.TryAdd((entity.Name.ToLowerInvariant(), entity.PersonType ?? string.Empty), entity);
+        }
 
         var existingMaps = context.PeopleBaseItemMap.Include(e => e.People).Where(e => e.ItemId == itemId).ToList();
+        var existingMapsByCredit = new Dictionary<(string LoweredName, string PersonType, string LoweredRole), PeopleBaseItemMap>();
+        foreach (var map in existingMaps)
+        {
+            existingMapsByCredit.TryAdd((map.People.Name.ToLowerInvariant(), map.People.PersonType ?? string.Empty, map.Role?.ToLowerInvariant() ?? string.Empty), map);
+        }
 
         var listOrder = 0;
 
-        foreach (var person in people)
+        foreach (var credit in distinctCredits)
         {
-            var entityPerson = personsEntities.First(e => string.Equals(e.Name, person.Name, StringComparison.OrdinalIgnoreCase) && e.PersonType == person.Type.ToString());
-            var existingMap = existingMaps.FirstOrDefault(e => string.Equals(e.People.Name, person.Name, StringComparison.OrdinalIgnoreCase) && e.People.PersonType == person.Type.ToString() && e.Role == person.Role);
-            if (existingMap is null)
+            var entityPerson = personsEntities[(credit.LoweredName, credit.PersonType)];
+            if (existingMapsByCredit.TryGetValue((credit.LoweredName, credit.PersonType, credit.LoweredRole), out var existingMap))
+            {
+                // Update the order for existing mappings
+                existingMap.ListOrder = listOrder;
+                existingMap.SortOrder = credit.Person.SortOrder;
+                // person mapping already exists so remove from list
+                existingMaps.Remove(existingMap);
+            }
+            else
             {
                 context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
                 {
@@ -162,17 +186,9 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                     People = null!,
                     PeopleId = entityPerson.Id,
                     ListOrder = listOrder,
-                    SortOrder = person.SortOrder,
-                    Role = person.Role
+                    SortOrder = credit.Person.SortOrder,
+                    Role = credit.Person.Role
                 });
-            }
-            else
-            {
-                // Update the order for existing mappings
-                existingMap.ListOrder = listOrder;
-                existingMap.SortOrder = person.SortOrder;
-                // person mapping already exists so remove from list
-                existingMaps.Remove(existingMap);
             }
 
             listOrder++;
