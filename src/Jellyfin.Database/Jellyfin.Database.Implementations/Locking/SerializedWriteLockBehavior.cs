@@ -35,10 +35,10 @@ public sealed class SerializedWriteLockBehavior : IEntityFrameworkCoreLockingBeh
     private static readonly TimeSpan _acquireTimeout = TimeSpan.FromSeconds(60);
 
     /// <summary>
-    /// Set for the duration of an operation that owns the write lock. Propagates down into that
-    /// operation's EF internals, making the nested interceptors no-ops.
+    /// Set while this instance owns the permit. Propagates into the guarded call's EF internals so
+    /// the nested interceptors skip re-acquiring.
     /// </summary>
-    private static readonly AsyncLocal<bool> _holdsWriteLock = new();
+    private readonly AsyncLocal<bool> _holdsWriteLock = new();
 
     private readonly SemaphoreSlim _writeLock = new(1, 1);
 
@@ -265,7 +265,7 @@ public sealed class SerializedWriteLockBehavior : IEntityFrameworkCoreLockingBeh
             }
 
             // The semaphore is not reentrant; taking it again under an owning operation deadlocks.
-            if (_holdsWriteLock.Value)
+            if (_owner._holdsWriteLock.Value)
             {
                 return false;
             }
@@ -300,7 +300,7 @@ public sealed class SerializedWriteLockBehavior : IEntityFrameworkCoreLockingBeh
 
         public override DbTransaction TransactionStarted(DbConnection connection, TransactionEndEventData eventData, DbTransaction result)
         {
-            if (!_holdsWriteLock.Value && _owner.Acquire())
+            if (!_owner._holdsWriteLock.Value && _owner.Acquire())
             {
                 _owner.TrackTransaction(result, connection);
             }
@@ -310,7 +310,7 @@ public sealed class SerializedWriteLockBehavior : IEntityFrameworkCoreLockingBeh
 
         public override async ValueTask<DbTransaction> TransactionStartedAsync(DbConnection connection, TransactionEndEventData eventData, DbTransaction result, CancellationToken cancellationToken = default)
         {
-            if (!_holdsWriteLock.Value && await _owner.AcquireAsync(cancellationToken).ConfigureAwait(false))
+            if (!_owner._holdsWriteLock.Value && await _owner.AcquireAsync(cancellationToken).ConfigureAwait(false))
             {
                 _owner.TrackTransaction(result, connection);
             }
