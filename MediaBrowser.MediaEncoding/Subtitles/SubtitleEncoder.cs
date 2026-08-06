@@ -45,6 +45,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ISubtitleParser _subtitleParser;
         private readonly IPathManager _pathManager;
+        private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
         /// The _semaphoreLocks.
@@ -63,7 +64,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             IHttpClientFactory httpClientFactory,
             IMediaSourceManager mediaSourceManager,
             ISubtitleParser subtitleParser,
-            IPathManager pathManager)
+            IPathManager pathManager,
+            IServerConfigurationManager serverConfigurationManager)
         {
             _logger = logger;
             _fileSystem = fileSystem;
@@ -73,6 +75,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _mediaSourceManager = mediaSourceManager;
             _subtitleParser = subtitleParser;
             _pathManager = pathManager;
+            _serverConfigurationManager = serverConfigurationManager;
         }
 
         internal MemoryStream ConvertSubtitles(
@@ -695,6 +698,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             IReadOnlyList<string> outputPaths,
             CancellationToken cancellationToken)
         {
+            var timeoutMinutes = _serverConfigurationManager.GetEncodingOptions().SubtitleExtractionTimeoutMinutes;
+            request = request with { Timeout = TimeSpan.FromMinutes(timeoutMinutes) };
+
             var result = await _ffRunner.RunAsync(request, cancellationToken).ConfigureAwait(false);
             var ffmpegError = result.Stderr;
 
@@ -820,6 +826,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             ArgumentException.ThrowIfNullOrEmpty(outputPath);
 
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath)));
+
             var request = new SubtitleExtractRequest
             {
                 Input = inputPath,
