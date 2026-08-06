@@ -27,9 +27,16 @@ public enum LinkedChildType
 
     /// <summary>
     /// Linked alternate version (different item ID) created automatically by the library scan,
-    /// e.g. same-numbered episodes of a series spread across multiple folders. Managed by the
-    /// scan rather than the user, so it is re-evaluated on every scan instead of being treated
-    /// as a manual merge.
+    /// e.g. same-numbered episodes of a series or copies of a movie spread across multiple folders.
+    /// Managed by the scan rather than the user, so it is re-evaluated on every scan instead of
+    /// being treated as a manual merge.
     /// </summary>
-    AutoLinkedAlternateVersion = 4
+    AutoLinkedAlternateVersion = 4,
+
+    /// <summary>
+    /// Not a version link: records that the user split these two items apart, so the library scan
+    /// must never merge them into a version group again. Stored with a negative sort order to keep
+    /// it clear of the version links the item itself owns.
+    /// </summary>
+    ExcludedAlternateVersion = 5
 }

@@ -56,4 +56,25 @@ public interface ILinkedChildrenService
     /// <param name="childId">The child item ID.</param>
     /// <param name="childType">The type of linked child relationship.</param>
     void UpsertLinkedChild(Guid parentId, Guid childId, LinkedChildType childType);
+
+    /// <summary>
+    /// Gets every recorded pair of items the user split apart, as an item to excluded items map.
+    /// The relationship is symmetric, so both items of a pair are present as a key.
+    /// </summary>
+    /// <returns>A map of item ID to the IDs it must not be auto-merged with.</returns>
+    IReadOnlyDictionary<Guid, IReadOnlyList<Guid>> GetAutoMergeExclusions();
+
+    /// <summary>
+    /// Records that the given items must never be auto-merged with <paramref name="itemId"/> again.
+    /// Pairs that are already recorded are left untouched.
+    /// </summary>
+    /// <param name="itemId">The item the user split the others away from.</param>
+    /// <param name="excludedItemIds">The items that were split away.</param>
+    void AddAutoMergeExclusions(Guid itemId, IReadOnlyList<Guid> excludedItemIds);
+
+    /// <summary>
+    /// Drops the recorded exclusions between the given items, re-allowing them to be auto-merged.
+    /// </summary>
+    /// <param name="itemIds">The items whose mutual exclusions are dropped.</param>
+    void RemoveAutoMergeExclusions(IReadOnlyList<Guid> itemIds);
 }

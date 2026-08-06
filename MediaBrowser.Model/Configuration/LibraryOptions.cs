@@ -12,14 +12,14 @@ namespace MediaBrowser.Model.Configuration
 
         public LibraryOptions()
         {
-            TypeOptions = Array.Empty<TypeOptions>();
-            DisabledSubtitleFetchers = Array.Empty<string>();
-            DisabledMediaSegmentProviders = Array.Empty<string>();
-            MediaSegmentProviderOrder = Array.Empty<string>();
-            SubtitleFetcherOrder = Array.Empty<string>();
-            DisabledLocalMetadataReaders = Array.Empty<string>();
-            DisabledLyricFetchers = Array.Empty<string>();
-            LyricFetcherOrder = Array.Empty<string>();
+            TypeOptions = [];
+            DisabledSubtitleFetchers = [];
+            DisabledMediaSegmentProviders = [];
+            MediaSegmentProviderOrder = [];
+            SubtitleFetcherOrder = [];
+            DisabledLocalMetadataReaders = [];
+            DisabledLyricFetchers = [];
+            LyricFetcherOrder = [];
 
             SkipSubtitlesIfAudioTrackMatches = true;
             RequirePerfectSubtitleMatch = true;
@@ -30,14 +30,15 @@ namespace MediaBrowser.Model.Configuration
             SaveSubtitlesWithMedia = true;
             SaveLyricsWithMedia = false;
             SaveTrickplayWithMedia = false;
-            PathInfos = Array.Empty<MediaPathInfo>();
+            PathInfos = [];
             EnableAutomaticSeriesGrouping = true;
+            EnableAutomaticMovieVersionGrouping = true;
             SeasonZeroDisplayName = "Specials";
 
             PreferNonstandardArtistsTag = false;
             UseCustomTagDelimiters = false;
             CustomTagDelimiters = _defaultTagDelimiters;
-            DelimiterWhitelist = Array.Empty<string>();
+            DelimiterWhitelist = [];
         }
 
         public bool Enabled { get; set; } = true;
@@ -64,6 +65,8 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableInternetProviders { get; set; }
 
         public bool EnableAutomaticSeriesGrouping { get; set; }
+
+        public bool EnableAutomaticMovieVersionGrouping { get; set; }
 
         public bool EnableEmbeddedTitles { get; set; }
 

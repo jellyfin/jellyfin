@@ -139,8 +139,10 @@ public static class BaseItemMapper
             if (entity.LinkedChildEntities is not null)
             {
                 video.LinkedAlternateVersions = entity.LinkedChildEntities
-                    // LocalAlternateVersion links belong to Video.LocalAlternateVersions, not here
-                    .Where(e => e.ChildType == Database.Implementations.Entities.LinkedChildType.LinkedAlternateVersion)
+                    // LocalAlternateVersion links belong to Video.LocalAlternateVersions, and
+                    // ExcludedAlternateVersion rows are not versions at all, so neither belongs here.
+                    .Where(e => e.ChildType is Database.Implementations.Entities.LinkedChildType.LinkedAlternateVersion
+                        or Database.Implementations.Entities.LinkedChildType.AutoLinkedAlternateVersion)
                     .OrderBy(e => e.SortOrder)
                     .Select(e => new LinkedChild
                     {

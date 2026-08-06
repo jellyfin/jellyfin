@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 
@@ -16,16 +17,22 @@ namespace Emby.Server.Implementations.Library;
 public class VideoVersionManager : IVideoVersionManager
 {
     private readonly ILibraryManager _libraryManager;
+    private readonly ILinkedChildrenService _linkedChildrenService;
     private readonly ILogger<VideoVersionManager> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VideoVersionManager"/> class.
     /// </summary>
     /// <param name="libraryManager">The library manager.</param>
+    /// <param name="linkedChildrenService">The linked children service.</param>
     /// <param name="logger">The logger.</param>
-    public VideoVersionManager(ILibraryManager libraryManager, ILogger<VideoVersionManager> logger)
+    public VideoVersionManager(
+        ILibraryManager libraryManager,
+        ILinkedChildrenService linkedChildrenService,
+        ILogger<VideoVersionManager> logger)
     {
         _libraryManager = libraryManager;
+        _linkedChildrenService = linkedChildrenService;
         _logger = logger;
     }
 
@@ -41,6 +48,12 @@ public class VideoVersionManager : IVideoVersionManager
 
         var items = videos.OrderBy(i => i.Id).ToList();
         var linkType = autoGrouped ? LinkedChildType.AutoLinkedAlternateVersion : LinkedChildType.LinkedAlternateVersion;
+
+        if (!autoGrouped)
+        {
+            // Merging by hand overrides an earlier manual split of the same items.
+            _linkedChildrenService.RemoveAutoMergeExclusions([.. items.Select(i => i.Id)]);
+        }
 
         // Prefer an existing primary that already has multiple sources, otherwise pick the
         // plain video file with the highest resolution.
@@ -202,6 +215,7 @@ public class VideoVersionManager : IVideoVersionManager
             primary.Name,
             primary.Id);
 
+        var splitIds = new List<Guid>();
         foreach (var link in _libraryManager.GetLinkedAlternateVersions(primary))
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -210,11 +224,17 @@ public class VideoVersionManager : IVideoVersionManager
             link.LinkedAlternateVersions = [];
 
             await link.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+
+            splitIds.Add(link.Id);
         }
 
         primary.LinkedAlternateVersions = [];
         primary.SetPrimaryVersionId(null);
         await primary.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+
+        // Splitting is an explicit user decision, so remember it: the library scan would otherwise
+        // auto-merge the very same items again on its next run.
+        _linkedChildrenService.AddAutoMergeExclusions(primary.Id, splitIds);
 
         return true;
     }

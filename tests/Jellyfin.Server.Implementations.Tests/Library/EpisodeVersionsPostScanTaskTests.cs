@@ -47,6 +47,9 @@ public class EpisodeVersionsPostScanTaskTests
         _linkedChildrenService
             .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion))
             .Returns([]);
+        _linkedChildrenService
+            .Setup(x => x.GetAutoMergeExclusions())
+            .Returns(new Dictionary<Guid, IReadOnlyList<Guid>>());
 
         _videoVersionManager
             .Setup(x => x.MergeVersionsAsync(It.IsAny<IReadOnlyList<Video>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
@@ -142,6 +145,29 @@ public class EpisodeVersionsPostScanTaskTests
             Times.Never);
         _videoVersionManager.Verify(
             x => x.RemoveVersionLinkAsync(It.IsAny<Video>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Run_UserSplitTheVersionsApart_DoesNotMergeThemAgain()
+    {
+        AddSeries("/Shows/Spider Noir S01 (BW)");
+        AddSeries("/Shows/Spider Noir S01 (Color)");
+        var bw = AddEpisode("/Shows/Spider Noir S01 (BW)/S01E01.mkv", 1, 1);
+        var color = AddEpisode("/Shows/Spider Noir S01 (Color)/S01E01.mkv", 1, 1);
+
+        _linkedChildrenService
+            .Setup(x => x.GetAutoMergeExclusions())
+            .Returns(new Dictionary<Guid, IReadOnlyList<Guid>>
+            {
+                [bw.Id] = [color.Id],
+                [color.Id] = [bw.Id]
+            });
+
+        await _task.Run(new Progress<double>(), CancellationToken.None);
+
+        _videoVersionManager.Verify(
+            x => x.MergeVersionsAsync(It.IsAny<IReadOnlyList<Video>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 

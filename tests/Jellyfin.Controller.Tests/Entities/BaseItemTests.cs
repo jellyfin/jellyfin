@@ -222,9 +222,9 @@ public class BaseItemTests
     }
 
     [Theory]
-    // Scan-managed (auto-linked) versions are not user-splittable, so they surface as plain
-    // default sources; user-merged versions keep the splittable grouping marker.
-    [InlineData(LinkedChildType.AutoLinkedAlternateVersion, MediaSourceType.Default)]
+    // Linked versions surface as splittable groupings no matter who linked them: the user must be
+    // able to split a scan-made group apart, and that decision is remembered across scans.
+    [InlineData(LinkedChildType.AutoLinkedAlternateVersion, MediaSourceType.Grouping)]
     [InlineData(LinkedChildType.LinkedAlternateVersion, MediaSourceType.Grouping)]
     public void GetAllItemsForMediaSources_LinkedVersionType_MapsToSourceType(LinkedChildType linkType, MediaSourceType expectedType)
     {

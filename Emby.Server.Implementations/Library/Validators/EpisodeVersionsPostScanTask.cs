@@ -78,6 +78,7 @@ public class EpisodeVersionsPostScanTask : ILibraryPostScanTask
                     && seasonIndexes.Where(i => i.HasValue).GroupBy(i => i!.Value).Any(d => d.Count() > 1)))
             .ToList();
 
+        var exclusions = _linkedChildrenService.GetAutoMergeExclusions();
         var reconciledPrimaryIds = new HashSet<Guid>();
         var numComplete = 0;
         foreach (var group in candidates)
@@ -86,7 +87,7 @@ public class EpisodeVersionsPostScanTask : ILibraryPostScanTask
 
             try
             {
-                await ReconcileSeriesGroup(group.Key, reconciledPrimaryIds, cancellationToken).ConfigureAwait(false);
+                await ReconcileSeriesGroup(group.Key, exclusions, reconciledPrimaryIds, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
@@ -102,7 +103,11 @@ public class EpisodeVersionsPostScanTask : ILibraryPostScanTask
         progress.Report(100);
     }
 
-    private async Task ReconcileSeriesGroup(string seriesKey, HashSet<Guid> reconciledPrimaryIds, CancellationToken cancellationToken)
+    private async Task ReconcileSeriesGroup(
+        string seriesKey,
+        IReadOnlyDictionary<Guid, IReadOnlyList<Guid>> exclusions,
+        HashSet<Guid> reconciledPrimaryIds,
+        CancellationToken cancellationToken)
     {
         var episodes = _libraryManager.GetItemList(new InternalItemsQuery
         {
@@ -179,9 +184,9 @@ public class EpisodeVersionsPostScanTask : ILibraryPostScanTask
             }
 
             var memberIds = members.Select(m => m.Id).ToHashSet();
-            var mergeable = members
-                .Where(m => !m.PrimaryVersionId.HasValue || memberIds.Contains(m.PrimaryVersionId.Value))
-                .ToList();
+            var mergeable = FilterUserSplitVersions(
+                members.Where(m => !m.PrimaryVersionId.HasValue || memberIds.Contains(m.PrimaryVersionId.Value)),
+                exclusions);
             if (mergeable.Count < 2)
             {
                 continue;
@@ -212,6 +217,40 @@ public class EpisodeVersionsPostScanTask : ILibraryPostScanTask
     }
 
     /// <summary>
+    /// Drops the members of a version group that the user split apart from one another.
+    /// </summary>
+    private static List<Episode> FilterUserSplitVersions(
+        IEnumerable<Episode> members,
+        IReadOnlyDictionary<Guid, IReadOnlyList<Guid>> exclusions)
+    {
+        var candidates = members.ToList();
+
+        // The group's current primary claims its slot first, then the unmerged members, so an
+        // exclusion drops the copy the user split away instead of breaking an untouched merge.
+        var groupPrimaryIds = candidates
+            .Where(m => m.PrimaryVersionId.HasValue)
+            .Select(m => m.PrimaryVersionId!.Value)
+            .ToHashSet();
+
+        var mergeable = new List<Episode>();
+        foreach (var member in candidates
+            .OrderBy(m => groupPrimaryIds.Contains(m.Id) ? 0 : 1)
+            .ThenBy(m => m.PrimaryVersionId.HasValue)
+            .ThenBy(m => m.Id))
+        {
+            if (exclusions.TryGetValue(member.Id, out var excludedIds)
+                && mergeable.Exists(m => excludedIds.Contains(m.Id)))
+            {
+                continue;
+            }
+
+            mergeable.Add(member);
+        }
+
+        return mergeable;
+    }
+
+    /// <summary>
     /// Unlinks auto-created version links whose primary was not part of any reconciled group.
     /// </summary>
     private async Task CleanupOrphanedAutoLinks(HashSet<Guid> reconciledPrimaryIds, CancellationToken cancellationToken)
@@ -221,7 +260,8 @@ public class EpisodeVersionsPostScanTask : ILibraryPostScanTask
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (reconciledPrimaryIds.Contains(parentId) || _libraryManager.GetItemById(parentId) is not Video primary)
+            // Only episodes; auto links of other item types are owned by their own post-scan task.
+            if (reconciledPrimaryIds.Contains(parentId) || _libraryManager.GetItemById(parentId) is not Episode primary)
             {
                 continue;
             }

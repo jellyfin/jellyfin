@@ -7,6 +7,7 @@ using Emby.Server.Implementations.Library;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaSegments;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -18,11 +19,13 @@ namespace Jellyfin.Server.Implementations.Tests.Library;
 public class VideoVersionManagerTests
 {
     private readonly Mock<ILibraryManager> _libraryManager;
+    private readonly Mock<ILinkedChildrenService> _linkedChildrenService;
     private readonly VideoVersionManager _manager;
 
     public VideoVersionManagerTests()
     {
         _libraryManager = new Mock<ILibraryManager>();
+        _linkedChildrenService = new Mock<ILinkedChildrenService>();
         _libraryManager.Setup(x => x.GetLocalAlternateVersionIds(It.IsAny<Video>())).Returns(Array.Empty<Guid>());
         _libraryManager.Setup(x => x.GetLinkedAlternateVersions(It.IsAny<Video>())).Returns(Array.Empty<Video>());
         _libraryManager.Setup(x => x.RerouteLinkedChildReferencesAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).Returns(Task.CompletedTask);
@@ -38,7 +41,10 @@ public class VideoVersionManagerTests
         BaseItem.MediaSourceManager = mediaSourceManager.Object;
         BaseItem.MediaSegmentManager = segmentManager.Object;
 
-        _manager = new VideoVersionManager(_libraryManager.Object, NullLogger<VideoVersionManager>.Instance);
+        _manager = new VideoVersionManager(
+            _libraryManager.Object,
+            _linkedChildrenService.Object,
+            NullLogger<VideoVersionManager>.Instance);
     }
 
     [Theory]
@@ -214,6 +220,46 @@ public class VideoVersionManagerTests
         Assert.Null(primary.PrimaryVersionId);
         Assert.Empty(primary.LinkedAlternateVersions);
         Assert.Null(alternate.PrimaryVersionId);
+    }
+
+    [Fact]
+    public async Task SplitVersionsAsync_RecordsExclusionSoTheScanDoesNotRemergeThem()
+    {
+        var primary = CreateVideo("/Movies/Blade Runner (1982)/Blade Runner (1982).mkv");
+        var alternate = CreateVideo("/Movies 4K/Blade Runner (1982)/Blade Runner (1982).mkv");
+        alternate.PrimaryVersionId = primary.Id;
+        primary.LinkedAlternateVersions = [new LinkedChild { ItemId = alternate.Id, Type = LinkedChildType.AutoLinkedAlternateVersion }];
+        _libraryManager.Setup(x => x.GetLinkedAlternateVersions(primary)).Returns([alternate]);
+
+        Assert.True(await _manager.SplitVersionsAsync(primary, CancellationToken.None));
+
+        _linkedChildrenService.Verify(
+            x => x.AddAutoMergeExclusions(primary.Id, It.Is<IReadOnlyList<Guid>>(ids => ids.Count == 1 && ids[0].Equals(alternate.Id))),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task MergeVersionsAsync_ManualMerge_ClearsEarlierExclusion()
+    {
+        var videoA = CreateVideo("/Movies/Blade Runner (1982)/Blade Runner (1982).mkv");
+        var videoB = CreateVideo("/Movies 4K/Blade Runner (1982)/Blade Runner (1982).mkv");
+
+        await _manager.MergeVersionsAsync([videoA, videoB], false, CancellationToken.None);
+
+        _linkedChildrenService.Verify(
+            x => x.RemoveAutoMergeExclusions(It.Is<IReadOnlyList<Guid>>(ids => ids.Contains(videoA.Id) && ids.Contains(videoB.Id))),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task MergeVersionsAsync_AutoMerge_LeavesExclusionsAlone()
+    {
+        var videoA = CreateVideo("/Movies/Blade Runner (1982)/Blade Runner (1982).mkv");
+        var videoB = CreateVideo("/Movies 4K/Blade Runner (1982)/Blade Runner (1982).mkv");
+
+        await _manager.MergeVersionsAsync([videoA, videoB], true, CancellationToken.None);
+
+        _linkedChildrenService.Verify(x => x.RemoveAutoMergeExclusions(It.IsAny<IReadOnlyList<Guid>>()), Times.Never);
     }
 
     [Fact]
