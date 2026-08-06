@@ -88,13 +88,13 @@ public class OptimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
     /// <inheritdoc/>
     public void OnSaveChanges(JellyfinDbContext context, Action saveChanges)
     {
-        _writePolicy.ExecuteAndCapture(saveChanges);
+        _writePolicy.Execute(saveChanges);
     }
 
     /// <inheritdoc/>
     public async Task OnSaveChangesAsync(JellyfinDbContext context, Func<Task> saveChanges)
     {
-        await _writeAsyncPolicy.ExecuteAndCaptureAsync(saveChanges).ConfigureAwait(false);
+        await _writeAsyncPolicy.ExecuteAsync(saveChanges).ConfigureAwait(false);
     }
 
     private sealed class TransactionLockingInterceptor : DbTransactionInterceptor
