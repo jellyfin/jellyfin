@@ -108,5 +108,17 @@
     "CleanupUserDataTaskDescription": "Legalább 90 napja nem elérhető médiákhoz kapcsolódó összes felhasználói adat (pl. megtekintési állapot, kedvencek) törlése.",
     "CleanupUserDataTask": "Felhasználói adatok tisztítása feladat",
     "Original": "Eredeti",
-    "LyricDownloadFailureFromForItem": "Dalszöveg letöltése {0}-tól {1}-hez sikertelen"
+    "LyricDownloadFailureFromForItem": "Dalszöveg letöltése {0}-tól {1}-hez sikertelen",
+    "NameExtraBehindTheScenes": "Színfalak mögött",
+    "NameExtraClip": "Klip",
+    "NameExtraDeletedScene": "Törölt jelenet",
+    "NameExtraFeaturette": "Kísérő film",
+    "NameExtraInterview": "Interjú",
+    "NameExtraSample": "Minta",
+    "NameExtraScene": "Jelenet",
+    "NameExtraShort": "Rövidfilm",
+    "NameExtraThemeSong": "Főcímdal",
+    "NameExtraThemeVideo": "Főcímvideó",
+    "NameExtraTrailer": "Előzetes",
+    "NameExtraUnknown": "Extra"
 }
