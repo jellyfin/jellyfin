@@ -119,5 +119,7 @@
     "NameExtraThemeSong": "Titellied",
     "NameExtraThemeVideo": "Titelvideo",
     "NameExtraTrailer": "Trailer",
-    "NameExtraUnknown": "Extra"
+    "NameExtraUnknown": "Extra",
+    "NameExtraClip": "Clip",
+    "NameExtraFeaturette": "Hinter den Kulissen"
 }
