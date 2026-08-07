@@ -24,6 +24,7 @@ public static class JellyfinQueryHelperExtensions
     private static readonly MethodInfo _containsMethodGenericCache = typeof(Enumerable).GetMethods(BindingFlags.Public | BindingFlags.Static).First(m => m.Name == nameof(Enumerable.Contains) && m.GetParameters().Length == 2);
     private static readonly MethodInfo _efParameterInstruction = typeof(EF).GetMethod(nameof(EF.Parameter), BindingFlags.Public | BindingFlags.Static)!;
     private static readonly ConcurrentDictionary<Type, MethodInfo> _containsQueryCache = new();
+    private static readonly ConcurrentDictionary<Type, MethodInfo> _efParameterCache = new();
 
     /// <summary>
     /// Builds an optimised query checking one property against a list of values while maintaining an optimal query.
@@ -65,7 +66,7 @@ public static class JellyfinQueryHelperExtensions
         {
             var value = Expression.Call(
                 null,
-                _efParameterInstruction.MakeGenericMethod(typeof(TProperty)),
+                EfParameterFor(typeof(TProperty)),
                 Expression.Constant(oneOf[0], typeof(TProperty)));
 
             return Expression.Lambda<Func<TEntity, bool>>(
@@ -83,9 +84,14 @@ public static class JellyfinQueryHelperExtensions
             Expression.Call(
                 null,
                 containsMethodInfo,
-                Expression.Call(null, _efParameterInstruction.MakeGenericMethod(oneOf.GetType()), Expression.Constant(oneOf)),
+                Expression.Call(null, EfParameterFor(oneOf.GetType()), Expression.Constant(oneOf)),
                 property.Body),
             parameter);
+    }
+
+    private static MethodInfo EfParameterFor(Type type)
+    {
+        return _efParameterCache.GetOrAdd(type, static (key) => _efParameterInstruction.MakeGenericMethod(key));
     }
 
     /// <summary>
@@ -246,16 +252,6 @@ public static class JellyfinQueryHelperExtensions
         IReadOnlyList<string> existenceOnly,
         IReadOnlyList<string> specificValues)
     {
-        if (specificValues.Count == 0)
-        {
-            return existenceOnly.OneOrManyExpressionBuilder<BaseItemProvider, string>(p => p.ProviderId);
-        }
-
-        if (existenceOnly.Count == 0)
-        {
-            return specificValues.OneOrManyExpressionBuilder<BaseItemProvider, string>(p => p.ProviderId + ":" + p.ProviderValue);
-        }
-
         var byProvider = existenceOnly.OneOrManyExpressionBuilder<BaseItemProvider, string>(p => p.ProviderId);
         var byPair = specificValues.OneOrManyExpressionBuilder<BaseItemProvider, string>(p => p.ProviderId + ":" + p.ProviderValue);
 
