@@ -14,6 +14,9 @@ public class PeopleConfiguration : IEntityTypeConfiguration<People>
     {
         builder.HasKey(e => e.Id);
         builder.HasIndex(e => e.Name);
+        // A person is looked up and deduplicated by its clean name, paired with the type for the
+        // lookups that keep an Actor and a Director credit for the same human apart.
+        builder.HasIndex(e => new { e.CleanName, e.PersonType });
         builder.HasMany(e => e.BaseItems);
     }
 }

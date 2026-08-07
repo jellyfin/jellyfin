@@ -96,6 +96,54 @@ public sealed class PeopleRepositoryUpdatePeopleTests : IDisposable
         Assert.Equal("Hero", map.Role);
     }
 
+    [Theory]
+    // Diacritics, punctuation and spacing are all spelling, not identity.
+    [InlineData("Zoe Saldaña", "Zoe Saldana")]
+    [InlineData("Yûki Kaji", "Yuki Kaji")]
+    [InlineData("A. J. Cook", "A.J. Cook")]
+    [InlineData("Brian O'Neill", "Brian O’Neill")]
+    [InlineData("Anne-Marie", "Anne Marie")]
+    public void UpdatePeople_CreditsDifferingOnlyInSpelling_AreOnePerson(string first, string second)
+    {
+        _repository.UpdatePeople(_itemId, [
+            CreatePerson(first, PersonKind.Actor, "Hero"),
+            CreatePerson(second, PersonKind.Actor, "Hero")
+        ]);
+
+        using var ctx = CreateDbContext();
+        Assert.Single(ctx.Peoples);
+        Assert.Single(ctx.PeopleBaseItemMap);
+    }
+
+    [Fact]
+    public void UpdatePeople_CreditForAnExistingPersonSpelledDifferently_ReusesThatPerson()
+    {
+        _repository.UpdatePeople(_itemId, [CreatePerson("Zoe Saldaña", PersonKind.Actor, "Hero")]);
+        Guid personId;
+        using (var before = CreateDbContext())
+        {
+            personId = before.Peoples.Single().Id;
+        }
+
+        _repository.UpdatePeople(_itemId, [CreatePerson("Zoe Saldana", PersonKind.Actor, "Hero")]);
+
+        using var ctx = CreateDbContext();
+        Assert.Equal(personId, ctx.Peoples.Single().Id);
+        Assert.Equal(personId, ctx.PeopleBaseItemMap.Single().PeopleId);
+    }
+
+    [Fact]
+    public void UpdatePeople_DifferentPeople_StayApart()
+    {
+        _repository.UpdatePeople(_itemId, [
+            CreatePerson("Ken'ichi Ogata", PersonKind.Actor, "Hero"),
+            CreatePerson("Kenichi Ogata", PersonKind.Actor, "Hero")
+        ]);
+
+        using var ctx = CreateDbContext();
+        Assert.Equal(2, ctx.Peoples.Count());
+    }
+
     [Fact]
     public void UpdatePeople_SamePersonAsDifferentTypes_CreatesOnePersonPerType()
     {

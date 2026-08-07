@@ -366,8 +366,8 @@ public sealed partial class BaseItemRepository
                 .WhereOneOrMany(filter.PersonIds, b => b.Id)
                 .Join(
                     context.Peoples,
-                    b => b.Name,
-                    p => p.Name,
+                    b => b.CleanName,
+                    p => p.CleanName,
                     (b, p) => p.Id);
 
             baseQuery = baseQuery
@@ -377,7 +377,8 @@ public sealed partial class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.Person))
         {
-            baseQuery = baseQuery.Where(e => e.Peoples!.Any(f => f.People.Name == filter.Person));
+            var cleanPerson = filter.Person.GetCleanValue();
+            baseQuery = baseQuery.Where(e => e.Peoples!.Any(f => f.People.CleanName == cleanPerson));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.ExternalSeriesId))
@@ -888,7 +889,7 @@ public sealed partial class BaseItemRepository
         if (filter.IsDeadPerson.HasValue && filter.IsDeadPerson.Value)
         {
             baseQuery = baseQuery
-                .Where(e => !context.Peoples.Any(f => f.Name == e.Name));
+                .Where(e => !context.Peoples.Any(f => f.CleanName == e.CleanName));
         }
 
         if (filter.Years.Length > 0)

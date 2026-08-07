@@ -1206,7 +1206,17 @@ namespace Emby.Server.Implementations.Library
                 return item;
             }
 
-            return null;
+            // The id is a hash of the name as written, so a spelling that differs in diacritics or
+            // punctuation hashes elsewhere. The person is still the same one, so fall back to the
+            // clean name that everything else identifies a person by.
+            return GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = [BaseItemKind.Person],
+                Name = name,
+                OrderBy = [(ItemSortBy.DateCreated, SortOrder.Ascending)],
+                Limit = 1,
+                DtoOptions = new DtoOptions(true)
+            }).OfType<Person>().FirstOrDefault();
         }
 
         /// <summary>
@@ -3666,6 +3676,80 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
+        /// <inheritdoc />
+        public Person? GetOrCreatePerson(string name)
+        {
+            var personEntity = GetPerson(name);
+            if (personEntity is not null)
+            {
+                return personEntity;
+            }
+
+            personEntity = CreatePerson(name);
+            if (personEntity is not null)
+            {
+                CreateItems([personEntity], null, CancellationToken.None);
+            }
+
+            return personEntity;
+        }
+
+        /// <summary>
+        /// Builds an unsaved person for a credited name, or returns null if its folder cannot be created.
+        /// </summary>
+        private Person? CreatePerson(string name)
+        {
+            try
+            {
+                var path = Person.GetPath(name);
+                var info = Directory.CreateDirectory(path);
+                var personEntity = new Person()
+                {
+                    Name = name,
+                    Id = GetItemByNameId<Person>(path),
+                    DateCreated = info.CreationTimeUtc,
+                    DateModified = info.LastWriteTimeUtc,
+                    Path = path
+                };
+
+                personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
+                return personEntity;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to create person {Name}", name);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Checks whether a person carries a name other than the one its folder was created for.
+        /// </summary>
+        private bool WasRenamed(Person person)
+        {
+            if (string.IsNullOrEmpty(person.Name) || string.IsNullOrEmpty(person.Path))
+            {
+                return false;
+            }
+
+            try
+            {
+                // The path still spells the name the person was created with, so requiring the id to
+                // derive from the path but not from the name is what makes this a rename. Without the
+                // path half, an id that derives from neither - a metadata folder that has moved out of
+                // the data directory, changed item id settings - makes every person look renamed, on
+                // every scan. Names that differ from the credited one only by path normalisation (a
+                // trailing period, characters invalid in a filename) still resolve to the same id.
+                return GetItemByNameId<Person>(person.Path).Equals(person.Id)
+                    && !GetItemByNameId<Person>(Person.GetPath(person.Name)).Equals(person.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to resolve the path of person {Name}", person.Name);
+                return false;
+            }
+        }
+
         private async Task SavePeopleMetadataAsync(IEnumerable<PersonInfo> people, CancellationToken cancellationToken)
         {
             foreach (var person in people)
@@ -3679,28 +3763,30 @@ namespace Emby.Server.Implementations.Library
 
                 if (personEntity is null)
                 {
-                    try
+                    personEntity = CreatePerson(person.Name);
+                    if (personEntity is null)
                     {
-                        var path = Person.GetPath(person.Name);
-                        var info = Directory.CreateDirectory(path);
-                        personEntity = new Person()
-                        {
-                            Name = person.Name,
-                            Id = GetItemByNameId<Person>(path),
-                            DateCreated = info.CreationTimeUtc,
-                            DateModified = info.LastWriteTimeUtc,
-                            Path = path
-                        };
-
-                        personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
-                        saveEntity = true;
-                        createEntity = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Failed to create person {Name}", person.Name);
                         continue;
                     }
+
+                    saveEntity = true;
+                    createEntity = true;
+                }
+                else if (!personEntity.IsLocked
+                    && !personEntity.LockedFields.Contains(MetadataField.Name)
+                    && !string.Equals(personEntity.Name.GetCleanValue(), person.Name.GetCleanValue(), StringComparison.Ordinal)
+                    && WasRenamed(personEntity))
+                {
+                    // A person's id is derived from the credited name, so an entity that carries a name it
+                    // can no longer be found under was renamed away from its own folder by a provider.
+                    // Every credit links by name, so restore the one the item credits it with. Locking the
+                    // name is how a person keeps one the credits disagree with, and a different spelling of
+                    // the same name is not a rename at all: it resolves by its clean name either way, so
+                    // correcting a person's diacritics survives the scan.
+                    _logger.LogInformation("Restoring name of renamed person {PersonId} from {CurrentName} to {CreditedName}", personEntity.Id, personEntity.Name, person.Name);
+                    personEntity.Name = person.Name;
+                    personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
+                    saveEntity = true;
                 }
 
                 foreach (var id in person.ProviderIds)
