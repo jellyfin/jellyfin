@@ -59,8 +59,6 @@ namespace Jellyfin.Server.Implementations.Tests.Users
                 "{ this is not valid json",
                 TestContext.Current.CancellationToken);
 
-            // Previously this threw an unhandled JsonException, resulting in a 500 error
-            // for every password reset attempt until the corrupt file was removed manually.
             var ex = await Record.ExceptionAsync(() => _provider.RedeemPasswordResetPin("1234"));
 
             Assert.IsType<ResourceNotFoundException>(ex);
@@ -99,9 +97,6 @@ namespace Jellyfin.Server.Implementations.Tests.Users
             var nullFile = Path.Combine(_passwordResetFileBaseDir, "passwordreset-null.json");
             await File.WriteAllTextAsync(nullFile, "null", TestContext.Current.CancellationToken);
 
-            // A file that deserializes to null isn't unambiguously corrupt the way a
-            // JsonException is, so unlike the corrupt-JSON case it should be left in place
-            // for an administrator to investigate rather than being deleted automatically.
             var ex = await Record.ExceptionAsync(() => _provider.RedeemPasswordResetPin("1234"));
 
             Assert.IsType<ResourceNotFoundException>(ex);
@@ -121,12 +116,6 @@ namespace Jellyfin.Server.Implementations.Tests.Users
             Assert.All(_logger.Messages, message => Assert.DoesNotContain(_passwordResetFileBaseDir, message, StringComparison.Ordinal));
         }
 
-        /// <summary>
-        /// A minimal <see cref="ILogger{TCategoryName}"/> that records the formatted text of
-        /// every log message, so tests can assert on what would actually be written to the log
-        /// without depending on a specific logging framework.
-        /// </summary>
-        /// <typeparam name="T">The logging category.</typeparam>
         private sealed class RecordingLogger<T> : ILogger<T>
         {
             public List<string> Messages { get; } = new();

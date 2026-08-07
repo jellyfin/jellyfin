@@ -58,11 +58,7 @@ namespace Jellyfin.Server.Implementations.Users
             var usersReset = new List<string>();
             foreach (var resetFile in Directory.EnumerateFiles(_passwordResetFileBaseDir, $"{BaseResetFileName}*"))
             {
-                // Reset file names embed a hash derived from the target username, so avoid
-                // logging the raw path/file name verbatim. Log a short, non-reversible
-                // identifier instead so an administrator can still correlate log entries
-                // with a specific file (e.g. to cross-reference file system timestamps)
-                // without the sensitive value being written to the log in clear text.
+                // Hash path to avoid logging sensitive file names verbatim.
                 var resetFileId = resetFile.GetMD5().ToString("N", CultureInfo.InvariantCulture)[..8];
 
                 SerializablePasswordReset? spr;
@@ -76,10 +72,7 @@ namespace Jellyfin.Server.Implementations.Users
                 }
                 catch (JsonException ex)
                 {
-                    // A reset file can be left in a corrupt/partial state if the server was
-                    // terminated while it was being written. Such a file can never be parsed
-                    // successfully, so it is safe - and necessary, to avoid it being re-parsed
-                    // and re-logged on every future redemption attempt - to delete it.
+                    // File is unrecoverably corrupt; delete it so it won't be retried.
                     _logger.LogWarning(ex, "Deleting corrupt password reset file (id {ResetFileId}) that failed to deserialize", resetFileId);
                     File.Delete(resetFile);
                     continue;
@@ -87,10 +80,6 @@ namespace Jellyfin.Server.Implementations.Users
 
                 if (spr is null)
                 {
-                    // The file contained valid JSON that deserialized to null. This is not the
-                    // same kind of unambiguous, unrecoverable corruption as a JsonException, so
-                    // it is left in place rather than deleted, in case it is a symptom of a
-                    // different underlying issue an administrator may want to investigate.
                     _logger.LogWarning("Ignoring password reset file (id {ResetFileId}) that deserialized to null", resetFileId);
                     continue;
                 }
