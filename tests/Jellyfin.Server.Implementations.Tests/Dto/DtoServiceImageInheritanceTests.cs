@@ -14,6 +14,7 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using Moq;
 using Xunit;
 
@@ -153,6 +154,55 @@ public class DtoServiceImageInheritanceTests
         // The artist lookup is batched once for the whole set, never once per album.
         libraryManager.Verify(x => x.GetArtists(It.IsAny<IReadOnlyList<string>>()), Times.Once);
         libraryManager.Verify(x => x.GetArtist(It.IsAny<string>(), It.IsAny<DtoOptions>()), Times.Never);
+    }
+
+    [Fact]
+    public void GetBaseItemDtos_Items_ResolvePeopleFromBatch_WithoutPerItemLookup()
+    {
+        static MusicAlbum MakeAlbum() => new MusicAlbum
+        {
+            Id = Guid.NewGuid(),
+            Name = "Album",
+            ImageInfos = []
+        };
+
+        var albumOne = MakeAlbum();
+        var albumTwo = MakeAlbum();
+
+        var libraryManager = new Mock<ILibraryManager>();
+
+        // DtoService resolves people for every item in ONE batch (GetPeopleByItems) before the
+        // per-item loop. A regression to the per-item path would call GetPeople(BaseItem) once per
+        // item (the N+1); it is intentionally left unset so such a regression fails here.
+        libraryManager
+            .Setup(x => x.GetPeopleByItems(It.IsAny<IReadOnlyList<Guid>>()))
+            .Returns(new Dictionary<Guid, IReadOnlyList<PersonInfo>>
+            {
+                [albumOne.Id] = [new PersonInfo { ItemId = albumOne.Id, Name = "Some Actor", Type = PersonKind.Actor }],
+                [albumTwo.Id] = [new PersonInfo { ItemId = albumTwo.Id, Name = "Some Actor", Type = PersonKind.Actor }]
+            });
+
+        // AttachPeople still resolves each distinct name to its Person entity to attach images.
+        libraryManager
+            .Setup(x => x.GetPerson("Some Actor"))
+            .Returns(new Person { Id = Guid.NewGuid(), Name = "Some Actor" });
+
+        var dtoService = BuildDtoService(libraryManager);
+
+        var options = new DtoOptions(false) { Fields = [ItemFields.People] };
+        var dtos = dtoService.GetBaseItemDtos([albumOne, albumTwo], options);
+
+        Assert.Equal(2, dtos.Count);
+        foreach (var dto in dtos)
+        {
+            Assert.NotNull(dto.People);
+            Assert.Single(dto.People);
+            Assert.Equal("Some Actor", dto.People[0].Name);
+        }
+
+        // People are batched once for the whole set, never once per item.
+        libraryManager.Verify(x => x.GetPeopleByItems(It.IsAny<IReadOnlyList<Guid>>()), Times.Once);
+        libraryManager.Verify(x => x.GetPeople(It.IsAny<BaseItem>()), Times.Never);
     }
 
     private static DtoService BuildDtoService(BaseItem displayParent)
