@@ -84,7 +84,9 @@ public class CollectionPostScanTask : ILibraryPostScanTask
 
                     var tmdbCollectionId = movie.TryGetProviderId(MetadataProvider.TmdbCollection, out var id) ? id : null;
 
-                    var key = string.IsNullOrEmpty(tmdbCollectionId) ? movie.CollectionName : tmdbCollectionId;
+                    var key = string.IsNullOrEmpty(tmdbCollectionId)
+                        ? "name=" + movie.CollectionName
+                        : "id=" + tmdbCollectionId;
 
                     if (!collectionGroups.TryGetValue(key, out var group))
                     {
