@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using TMDbLib.Objects.TvShows;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 {
@@ -53,6 +54,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             if (!seasonNumber.HasValue || !TmdbUtils.TryParseTmdbId(seriesTmdbId, out var seriesId))
             {
                 return result;
+            }
+
+            var seriesId = Convert.ToInt32(seriesTmdbId, CultureInfo.InvariantCulture);
+
+            // When the series is ordered by an episode group, the season number counts groups rather than TMDb
+            // seasons, so the group has to be resolved instead of fetching a season that holds unrelated episodes.
+            var groupCollection = await _tmdbClientManager
+                .GetSeriesGroupAsync(seriesId, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken)
+                .ConfigureAwait(false);
+
+            var group = groupCollection?.Groups?.Find(g => g.Order == seasonNumber.Value);
+            if (group is not null)
+            {
+                return MapGroupToSeason(group, seasonNumber.Value, config.ImportSeasonName);
             }
 
             var seasonResult = await _tmdbClientManager
@@ -155,6 +170,44 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Maps an episode group to a season.
+        /// </summary>
+        /// <remarks>
+        /// A group spans whatever TMDb seasons its episodes come from, so only the group's own name and the air date
+        /// of its first episode describe it. TMDb has neither an overview, artwork nor credits for a group.
+        /// </remarks>
+        /// <param name="group">The episode group the season maps to.</param>
+        /// <param name="seasonNumber">The season number.</param>
+        /// <param name="importSeasonName">Whether the season name should be imported.</param>
+        /// <returns>The season metadata.</returns>
+        internal static MetadataResult<Season> MapGroupToSeason(TvGroup group, int seasonNumber, bool importSeasonName)
+        {
+            var airDate = group.Episodes?
+                .Where(e => e.AirDate.HasValue)
+                .Min(e => e.AirDate);
+
+            var season = new Season
+            {
+                IndexNumber = seasonNumber,
+                PremiereDate = airDate,
+                ProductionYear = airDate?.Year
+            };
+
+            if (importSeasonName)
+            {
+                season.Name = group.Name;
+            }
+
+            season.TrySetProviderId(TmdbUtils.EpisodeGroupProviderKey, group.Id);
+
+            return new MetadataResult<Season>
+            {
+                HasMetadata = true,
+                Item = season
+            };
         }
 
         /// <inheritdoc />
