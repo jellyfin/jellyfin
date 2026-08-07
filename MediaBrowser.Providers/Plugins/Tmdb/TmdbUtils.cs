@@ -34,6 +34,15 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public const string ApiKey = "4219e299c89411838049ab0dab19ebd5";
 
         /// <summary>
+        /// Provider id holding the TMDb episode group a series is ordered by, and the group a season maps to.
+        /// </summary>
+        /// <remarks>
+        /// Derived from the series display order on every refresh, so it is deliberately not exposed as an
+        /// <see cref="Controller.Providers.IExternalId"/> for the user to edit.
+        /// </remarks>
+        public const string EpisodeGroupProviderKey = "TmdbEpisodeGroup";
+
+        /// <summary>
         /// The crew types to keep.
         /// </summary>
         public static readonly string[] WantedCrewTypes =
@@ -91,6 +100,28 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             // id. Reporting that as "no id" lets the caller fall back to a search and repair the id,
             // instead of throwing on every refresh of the item.
             return int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out tmdbId) && tmdbId > 0;
+        }
+
+        /// <summary>
+        /// Maps a series display order to the matching TMDb episode group type.
+        /// </summary>
+        /// <param name="displayOrder">The series display order.</param>
+        /// <returns>The matching <see cref="TvGroupType"/>, or <c>null</c> if the order has no TMDb counterpart.</returns>
+        public static TvGroupType? GetEpisodeGroupType(string? displayOrder)
+        {
+            // Lowercased because the order can also come from an NFO written by a third party tool.
+            // The Tvdb-only orders (alternate, regional, altdvd) intentionally have no TMDb counterpart.
+            return displayOrder?.ToLowerInvariant() switch
+            {
+                "originalairdate" => TvGroupType.OriginalAirDate,
+                "absolute" => TvGroupType.Absolute,
+                "dvd" => TvGroupType.DVD,
+                "digital" => TvGroupType.Digital,
+                "storyarc" => TvGroupType.StoryArc,
+                "production" => TvGroupType.Production,
+                "tv" => TvGroupType.TV,
+                _ => null
+            };
         }
 
         /// <summary>
