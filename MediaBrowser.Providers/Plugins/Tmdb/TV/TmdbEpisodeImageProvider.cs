@@ -71,11 +71,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
+            var episodeGroup = series.GetProviderId(TmdbEpisodeGroupId.ProviderKey);
             var language = item.GetPreferredMetadataLanguage();
 
             // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
             var episodeResult = await _tmdbClientManager
-                .GetEpisodeAsync(seriesTmdbId, seasonNumber, episodeNumber.Value, series.DisplayOrder, null, null, null, cancellationToken)
+                .GetEpisodeAsync(seriesTmdbId, seasonNumber, episodeNumber.Value, episodeGroup, null, null, null, cancellationToken)
                 .ConfigureAwait(false);
 
             var stills = episodeResult?.Images?.Stills;
