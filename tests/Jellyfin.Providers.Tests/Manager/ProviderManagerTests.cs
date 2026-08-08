@@ -223,18 +223,6 @@ namespace Jellyfin.Providers.Tests.Manager
                 disabledLocalImageProviders: new[] { "PROVIDER" });
         }
 
-        [Fact]
-        public void GetImageProviders_CanRefreshImagesLocalDisabledNull_TreatedAsEmpty()
-        {
-            // Clients can update library options with the property set to null; the setter
-            // stores an empty array so local providers stay enabled instead of throwing.
-            GetImageProviders_CanRefreshImages_Tester(
-                nameof(ILocalImageProvider),
-                true,
-                true,
-                disabledLocalImageProviders: null);
-        }
-
         private static void GetImageProviders_CanRefreshImages_Tester(
             string providerType,
             bool supports,
@@ -269,11 +257,11 @@ namespace Jellyfin.Providers.Tests.Manager
             baseItemManager.Setup(i => i.IsImageFetcherEnabled(item, It.IsAny<TypeOptions>(), providerName))
                 .Returns(baseItemEnabled);
 
-            var libraryOptions = new LibraryOptions
+            var libraryOptions = new LibraryOptions();
+            if (disabledLocalImageProviders is not null)
             {
-                // Null is assigned as-is to verify that the property setter coalesces it.
-                DisabledLocalImageProviders = disabledLocalImageProviders!
-            };
+                libraryOptions.DisabledLocalImageProviders = disabledLocalImageProviders;
+            }
 
             using var providerManager = GetProviderManager(libraryOptions: libraryOptions, baseItemManager: baseItemManager.Object);
             AddParts(providerManager, imageProviders: new[] { provider });

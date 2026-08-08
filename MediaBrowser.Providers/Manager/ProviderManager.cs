@@ -432,11 +432,11 @@ namespace MediaBrowser.Providers.Manager
                 return true;
             }
 
-            // Local image providers are not part of the image fetcher list; they are opted out of
-            // per library instead, and are enabled unless explicitly disabled.
+            // Local image providers are not part of the image fetcher list and are enabled
+            // unless the library opts out of them.
             if (provider is ILocalImageProvider)
             {
-                return !libraryOptions.DisabledLocalImageProviders.Contains(provider.Name, StringComparison.OrdinalIgnoreCase);
+                return libraryOptions.DisabledLocalImageProviders?.Contains(provider.Name, StringComparison.OrdinalIgnoreCase) != true;
             }
 
             if (item.IsLocked && refreshOptions.ImageRefreshMode != MetadataRefreshMode.FullRefresh)

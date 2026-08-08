@@ -10,8 +10,6 @@ namespace MediaBrowser.Model.Configuration
     {
         private static readonly string[] _defaultTagDelimiters = ["/", "|", ";", "\\"];
 
-        private string[] _disabledLocalImageProviders = Array.Empty<string>();
-
         public LibraryOptions()
         {
             TypeOptions = Array.Empty<TypeOptions>();
@@ -96,21 +94,7 @@ namespace MediaBrowser.Model.Configuration
 
         public string[]? LocalMetadataReaderOrder { get; set; }
 
-        /// <summary>
-        /// Gets or sets the names of local image providers that are disabled for this library.
-        /// </summary>
-        /// <remarks>
-        /// Empty by default, which preserves the historical behaviour of always applying every
-        /// local image provider. Assigning null stores an empty array, so options deserialized
-        /// from a client request with the property set to null cannot break image refreshes.
-        /// Note that "Internal Images" reads the internal metadata folder,
-        /// which is where artwork uploaded through the API or the web client is stored.
-        /// </remarks>
-        public string[] DisabledLocalImageProviders
-        {
-            get => _disabledLocalImageProviders;
-            set => _disabledLocalImageProviders = value ?? Array.Empty<string>();
-        }
+        public string[] DisabledLocalImageProviders { get; set; }
 
         public string[] DisabledSubtitleFetchers { get; set; }
 
