@@ -174,6 +174,13 @@ public static class BaseItemMapper
             hasAlbumArtists.AlbumArtists = entity.AlbumArtists?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? [];
         }
 
+        if (dto is Audio audioItem)
+        {
+            audioItem.SortAlbum = entity.SortAlbum;
+            audioItem.SortArtist = entity.SortArtist;
+            audioItem.SortAlbumArtist = entity.SortAlbumArtist;
+        }
+
         if (dto is LiveTvProgram program)
         {
             program.ShowId = entity.ShowId;
@@ -346,6 +353,13 @@ public static class BaseItemMapper
         if (dto is IHasAlbumArtist hasAlbumArtists)
         {
             entity.AlbumArtists = hasAlbumArtists.AlbumArtists is not null ? string.Join('|', hasAlbumArtists.AlbumArtists.Distinct(StringComparer.OrdinalIgnoreCase)) : null;
+        }
+
+        if (dto is Audio audioItem)
+        {
+            entity.SortAlbum = audioItem.SortAlbum;
+            entity.SortArtist = audioItem.SortArtist;
+            entity.SortAlbumArtist = audioItem.SortAlbumArtist;
         }
 
         if (dto is LiveTvProgram program)
