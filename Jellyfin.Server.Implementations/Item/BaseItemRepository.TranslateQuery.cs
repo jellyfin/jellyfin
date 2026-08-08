@@ -178,17 +178,18 @@ public sealed partial class BaseItemRepository
         if (!string.IsNullOrEmpty(filter.SearchTerm))
         {
             var cleanedSearchTerm = filter.SearchTerm.GetCleanValue();
-            var originalSearchTerm = filter.SearchTerm;
+            var searchTermLower = filter.SearchTerm.ToLowerInvariant();
             if (SearchWildcardTerms.Any(f => cleanedSearchTerm.Contains(f)))
             {
                 cleanedSearchTerm = $"%{cleanedSearchTerm.Trim('%')}%";
-                var likeSearchTerm = $"%{originalSearchTerm.Trim('%')}%";
-                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!, cleanedSearchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeSearchTerm)));
+                var likeSearchTerm = $"%{searchTermLower.Trim('%')}%";
+                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!, cleanedSearchTerm) || (e.OriginalTitle != null &&
+                    EF.Functions.Like(JellyfinDbContext.UnicodeLower(e.OriginalTitle)!, likeSearchTerm)));
             }
             else
             {
-                var likeSearchTerm = $"%{originalSearchTerm}%";
-                baseQuery = baseQuery.Where(e => e.CleanName!.Contains(cleanedSearchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeSearchTerm)));
+                baseQuery = baseQuery.Where(e => e.CleanName!.Contains(cleanedSearchTerm) || (e.OriginalTitle != null &&
+                    JellyfinDbContext.UnicodeLower(e.OriginalTitle)!.Contains(searchTermLower)));
             }
         }
 
