@@ -975,8 +975,7 @@ namespace Emby.Server.Implementations.Library
             // Filter content based on ignore rules
             if (args.IsDirectory)
             {
-                var filtered = args.GetActualFileSystemChildren().ToArray();
-                args.FileSystemChildren = filtered ?? [];
+                args.FileSystemChildren = args.GetActualFileSystemChildren().ToArray();
             }
 
             return ResolveItem(args, resolvers);
