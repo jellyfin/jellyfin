@@ -12,7 +12,7 @@ using MediaBrowser.Model.Entities;
 namespace Emby.Naming.Common
 {
     /// <summary>
-    /// Big ugly class containing lot of different naming options that should be split and injected instead of passes everywhere.
+    /// Big ugly class containing a lot of different naming options that should be split and injected instead of passes everywhere.
     /// </summary>
     public class NamingOptions
     {
@@ -292,6 +292,37 @@ namespace Emby.Naming.Common
                 ".xm",
                 ".xsp",
                 ".ymf"
+            ];
+
+            ComicFileExtensions =
+            [
+                ".cb7",
+                ".cbr",
+                ".cbt",
+                ".cbz"
+            ];
+
+            ArchiveHtmlFileExtensions =
+            [
+                ".epub",
+                ".ibooks",
+                ".kepub"
+            ];
+
+            BinaryHtmlFileExtensions =
+            [
+                ".azw",
+                ".azw3",
+                ".mobi",
+                ".kfx"
+            ];
+
+            BookFileExtensions =
+            [
+                ".pdf",
+                .. ComicFileExtensions,
+                .. ArchiveHtmlFileExtensions,
+                .. BinaryHtmlFileExtensions
             ];
 
             MediaFlagDelimiters =
@@ -791,6 +822,26 @@ namespace Emby.Naming.Common
         /// Gets or sets list of audio file extensions.
         /// </summary>
         public string[] AudioFileExtensions { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of extensions used by comics for images stored directly in an archive file.
+        /// </summary>
+        public string[] ComicFileExtensions { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of book file extensions that use HTML and are internally equivalent to EPUB files.
+        /// </summary>
+        public string[] ArchiveHtmlFileExtensions { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of book file extensions that package HTML in bespoke containers and formats.
+        /// </summary>
+        public string[] BinaryHtmlFileExtensions { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of all supported book and comic file extensions. This does not include audiobooks.
+        /// </summary>
+        public string[] BookFileExtensions { get; set; }
 
         /// <summary>
         /// Gets or sets list of external media flag delimiters.
