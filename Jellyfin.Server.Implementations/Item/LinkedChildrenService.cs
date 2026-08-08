@@ -60,7 +60,7 @@ public class LinkedChildrenService : ILinkedChildrenService
     }
 
     /// <inheritdoc/>
-    public IReadOnlySet<Guid> GetItemsWithAlternateVersions(IReadOnlyList<Guid> itemIds)
+    public IReadOnlySet<Guid> GetItemIdsWithAlternateVersions(IReadOnlyList<Guid> itemIds)
     {
         if (itemIds.Count == 0)
         {
@@ -69,15 +69,13 @@ public class LinkedChildrenService : ILinkedChildrenService
 
         using var dbContext = _dbProvider.CreateDbContext();
 
-        var parentIds = dbContext.LinkedChildren
+        return dbContext.LinkedChildren
             .Where(lc => (lc.ChildType == DbLinkedChildType.LocalAlternateVersion
                     || lc.ChildType == DbLinkedChildType.LinkedAlternateVersion)
                 && itemIds.Contains(lc.ParentId))
             .Select(lc => lc.ParentId)
             .Distinct()
-            .ToArray();
-
-        return parentIds.ToHashSet();
+            .ToHashSet();
     }
 
     /// <inheritdoc/>

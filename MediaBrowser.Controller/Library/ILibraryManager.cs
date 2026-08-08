@@ -261,7 +261,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="itemIds">The item IDs to check.</param>
         /// <returns>The set of item IDs that have alternate versions.</returns>
-        IReadOnlySet<Guid> GetItemsWithAlternateVersions(IReadOnlyList<Guid> itemIds);
+        IReadOnlySet<Guid> GetItemIdsWithAlternateVersions(IReadOnlyList<Guid> itemIds);
 
         /// <summary>
         /// Creates or updates a LinkedChild entry linking a parent to a child item.

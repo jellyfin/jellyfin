@@ -261,7 +261,7 @@ namespace Emby.Server.Implementations.Dto
                 var versionItemIds = accessibleItems.OfType<Video>().Select(i => i.Id).ToList();
                 if (versionItemIds.Count > 0)
                 {
-                    alternateVersionItemIds = _libraryManager.GetItemsWithAlternateVersions(versionItemIds);
+                    alternateVersionItemIds = _libraryManager.GetItemIdsWithAlternateVersions(versionItemIds);
                 }
             }
 
@@ -1314,13 +1314,15 @@ namespace Emby.Server.Implementations.Dto
                 if (options.ContainsField(ItemFields.MediaSourceCount))
                 {
                     // A video with no primary version and no alternate versions always has a single
-                    // media source. When the batch has already determined this item owns no alternate
-                    // versions, skip the per-item alternate-version queries entirely (the common case).
-                    var hasNoAlternateVersions = alternateVersionItemIds is not null
-                        && !video.PrimaryVersionId.HasValue
-                        && !alternateVersionItemIds.Contains(video.Id);
+                    // media source. Only compute the count for videos that might have more: a primary
+                    // version, or membership in the batch's set of items that own alternate versions.
+                    // Without the batch we can't rule it out, so fall back to computing (the single-item
+                    // path). Everything else is the common case and keeps the default count of one.
+                    var mayHaveAlternateVersions = alternateVersionItemIds is null
+                        || video.PrimaryVersionId.HasValue
+                        || alternateVersionItemIds.Contains(video.Id);
 
-                    if (!hasNoAlternateVersions)
+                    if (mayHaveAlternateVersions)
                     {
                         // Match the per-user filtering of the media sources: versions the user cannot
                         // access are not selectable, so they must not count towards the badge either.

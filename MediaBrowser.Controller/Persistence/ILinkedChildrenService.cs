@@ -26,7 +26,7 @@ public interface ILinkedChildrenService
     /// </summary>
     /// <param name="itemIds">The item IDs to check.</param>
     /// <returns>The set of item IDs that have alternate versions.</returns>
-    IReadOnlySet<Guid> GetItemsWithAlternateVersions(IReadOnlyList<Guid> itemIds);
+    IReadOnlySet<Guid> GetItemIdsWithAlternateVersions(IReadOnlyList<Guid> itemIds);
 
     /// <summary>
     /// Gets all artist matches from the database.

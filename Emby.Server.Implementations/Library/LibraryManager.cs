@@ -2235,9 +2235,9 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public IReadOnlySet<Guid> GetItemsWithAlternateVersions(IReadOnlyList<Guid> itemIds)
+        public IReadOnlySet<Guid> GetItemIdsWithAlternateVersions(IReadOnlyList<Guid> itemIds)
         {
-            return _linkedChildrenService.GetItemsWithAlternateVersions(itemIds);
+            return _linkedChildrenService.GetItemIdsWithAlternateVersions(itemIds);
         }
 
         /// <inheritdoc />

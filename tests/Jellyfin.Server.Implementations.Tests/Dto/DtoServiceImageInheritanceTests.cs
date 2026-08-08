@@ -222,11 +222,11 @@ public class DtoServiceImageInheritanceTests
         var libraryManager = new Mock<ILibraryManager>();
 
         // DtoService detects which videos own alternate versions in ONE batch
-        // (GetItemsWithAlternateVersions) before the per-item loop. Videos absent from that set have a
+        // (GetItemIdsWithAlternateVersions) before the per-item loop. Videos absent from that set have a
         // single media source, so the per-item GetLinkedAlternateVersions/GetLocalAlternateVersionIds
         // queries (the N+1) must be skipped entirely. Here neither movie has alternate versions.
         libraryManager
-            .Setup(x => x.GetItemsWithAlternateVersions(It.IsAny<IReadOnlyList<Guid>>()))
+            .Setup(x => x.GetItemIdsWithAlternateVersions(It.IsAny<IReadOnlyList<Guid>>()))
             .Returns(new HashSet<Guid>());
 
         var dtoService = BuildDtoService(libraryManager);
@@ -236,11 +236,52 @@ public class DtoServiceImageInheritanceTests
 
         Assert.Equal(2, dtos.Count);
 
+        // A single media source is the default, so the count is left unset (the client treats null as one).
+        foreach (var dto in dtos)
+        {
+            Assert.Null(dto.MediaSourceCount);
+        }
+
         // The alternate-version check is batched once for the whole set, and the per-item lookups are
         // never reached because the batch already ruled out alternate versions.
-        libraryManager.Verify(x => x.GetItemsWithAlternateVersions(It.IsAny<IReadOnlyList<Guid>>()), Times.Once);
+        libraryManager.Verify(x => x.GetItemIdsWithAlternateVersions(It.IsAny<IReadOnlyList<Guid>>()), Times.Once);
         libraryManager.Verify(x => x.GetLinkedAlternateVersions(It.IsAny<Video>()), Times.Never);
         libraryManager.Verify(x => x.GetLocalAlternateVersionIds(It.IsAny<Video>()), Times.Never);
+    }
+
+    [Fact]
+    public void GetBaseItemDtos_VideoInAlternateVersionBatch_ResolvesRealCount()
+    {
+        var movie = new Movie
+        {
+            Id = Guid.NewGuid(),
+            Name = "Movie",
+            ImageInfos = []
+        };
+
+        var libraryManager = new Mock<ILibraryManager>();
+
+        // This movie IS in the batch set, so the fast path must not short-circuit it: the per-item
+        // lookups still run and the count is computed exactly as it was before batching. Two linked
+        // alternate versions plus the movie itself is a count of three.
+        libraryManager
+            .Setup(x => x.GetItemIdsWithAlternateVersions(It.IsAny<IReadOnlyList<Guid>>()))
+            .Returns(new HashSet<Guid> { movie.Id });
+        libraryManager
+            .Setup(x => x.GetLinkedAlternateVersions(It.IsAny<Video>()))
+            .Returns([new Movie { Id = Guid.NewGuid() }, new Movie { Id = Guid.NewGuid() }]);
+        libraryManager
+            .Setup(x => x.GetLocalAlternateVersionIds(It.IsAny<Video>()))
+            .Returns([]);
+
+        var dtoService = BuildDtoService(libraryManager);
+
+        var options = new DtoOptions(false) { Fields = [ItemFields.MediaSourceCount] };
+        var dtos = dtoService.GetBaseItemDtos([movie], options);
+
+        Assert.Single(dtos);
+        Assert.Equal(3, dtos[0].MediaSourceCount);
+        libraryManager.Verify(x => x.GetItemIdsWithAlternateVersions(It.IsAny<IReadOnlyList<Guid>>()), Times.Once);
     }
 
     private static DtoService BuildDtoService(BaseItem displayParent)
