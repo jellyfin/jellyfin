@@ -49,6 +49,7 @@ public sealed partial class BaseItemRepository
 
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
+        dbQuery = ApplyAdjacencyFilter(context, dbQuery, filter);
 
         if (filter.EnableTotalRecordCount)
         {
@@ -75,6 +76,7 @@ public sealed partial class BaseItemRepository
         dbQuery = TranslateQuery(dbQuery, context, filter);
 
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
+        dbQuery = ApplyAdjacencyFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
 
         var hasRandomSort = filter.OrderBy.Any(e => e.OrderBy == ItemSortBy.Random);
@@ -167,7 +169,10 @@ public sealed partial class BaseItemRepository
                 .Where(album => albumIdsWithMatchingTrack.Contains(album.Id));
         }
 
-        var orderedAlbums = topAlbumsQuery
+        // The album is what gets returned, and neither branch above reads it through the
+        // user's filters, so its own parental restrictions have to be applied here: a
+        // matching track does not make an album the user may not see visible.
+        var orderedAlbums = ApplyParentalRestrictions(context, topAlbumsQuery, filter)
             .OrderByDescending(album => album.DateCreated)
             .ThenByDescending(album => album.Id);
 
@@ -418,6 +423,40 @@ public sealed partial class BaseItemRepository
             }
 
             seriesResults.Add((seasonId, seriesId, maxDate, mostRecentEpisodeId));
+        }
+
+        // Step 5b: A container is what gets returned, so it has to pass the user's access
+        // filters on its own - a matching episode does not make a Season or Series the user
+        // may not see visible. Containers that don't pass are replaced by their episode.
+        if (RequiresParentalRestrictions(filter) && entitiesToFetch.Count > 0)
+        {
+            var allowedContainerIds = ApplyParentalRestrictions(
+                    context,
+                    context.BaseItems.AsNoTracking().Where(e => entitiesToFetch.Contains(e.Id)),
+                    filter)
+                .Select(e => e.Id)
+                .ToHashSet();
+
+            for (var i = 0; i < seriesResults.Count; i++)
+            {
+                var (seasonId, seriesId, maxDate, mostRecentEpisodeId) = seriesResults[i];
+                if (seasonId.HasValue && !allowedContainerIds.Contains(seasonId.Value))
+                {
+                    seasonId = null;
+                }
+
+                if (seriesId.HasValue && !allowedContainerIds.Contains(seriesId.Value))
+                {
+                    seriesId = null;
+                }
+
+                if (seasonId is null && seriesId is null)
+                {
+                    entitiesToFetch.Add(mostRecentEpisodeId);
+                }
+
+                seriesResults[i] = (seasonId, seriesId, maxDate, mostRecentEpisodeId);
+            }
         }
 
         // Step 6: Fetch the Season/Series entities we decided to return

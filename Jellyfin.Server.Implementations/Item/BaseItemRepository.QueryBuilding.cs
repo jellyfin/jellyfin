@@ -35,9 +35,38 @@ public sealed partial class BaseItemRepository
     {
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
+        dbQuery = ApplyAdjacencyFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
         dbQuery = ApplyNavigations(dbQuery, filter);
         return dbQuery;
+    }
+
+    /// <summary>
+    /// Trims an ordered query down to the AdjacentTo item and its immediate neighbours.
+    /// </summary>
+    private IQueryable<BaseItemEntity> ApplyAdjacencyFilter(JellyfinDbContext context, IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
+    {
+        if (filter.AdjacentTo.IsNullOrEmpty())
+        {
+            return dbQuery;
+        }
+
+        // Adjacency is relative to the result set and the order the query asked for, so the ids have
+        // to be read back in that order.
+        var orderedIds = dbQuery.Select(e => e.Id).ToList();
+        var index = orderedIds.IndexOf(filter.AdjacentTo.Value);
+        if (index < 0)
+        {
+            // The item isn't part of this result set, so it has no neighbours in it either.
+            return dbQuery.Take(0);
+        }
+
+        var start = Math.Max(index - 1, 0);
+        var adjacentIds = orderedIds.GetRange(start, Math.Min(index + 2, orderedIds.Count) - start);
+
+        var adjacentQuery = context.BaseItems.AsNoTracking().AsSingleQuery().Where(e => adjacentIds.Contains(e.Id));
+
+        return ApplyOrder(adjacentQuery, filter, context);
     }
 
     private IQueryable<BaseItemEntity> ApplyQueryPaging(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
@@ -244,8 +273,8 @@ public sealed partial class BaseItemRepository
             dbQuery = dbQuery.Include(e => e.Images);
         }
 
-        // Include LinkedChildEntities for container types and videos that use them
-        // (BoxSet, Playlist, CollectionFolder for manual linking; Video, Movie for alternate versions).
+        // Include LinkedChildEntities for container types and videos that use them (BoxSet, Playlist,
+        // CollectionFolder for manual linking; every video type for alternate versions).
         // When IncludeItemTypes is empty (any type may be returned), always include them to ensure
         // LinkedChildren are loaded before items are saved back, preventing accidental deletion.
         var linkedChildTypes = new[]
@@ -254,7 +283,10 @@ public sealed partial class BaseItemRepository
             BaseItemKind.Playlist,
             BaseItemKind.CollectionFolder,
             BaseItemKind.Video,
-            BaseItemKind.Movie
+            BaseItemKind.Movie,
+            BaseItemKind.Episode,
+            BaseItemKind.MusicVideo,
+            BaseItemKind.Trailer
         };
         if (filter.IncludeItemTypes.Length == 0 || filter.IncludeItemTypes.Any(linkedChildTypes.Contains))
         {
@@ -390,10 +422,22 @@ public sealed partial class BaseItemRepository
 
         var baseQuery = context.BaseItems
             .AsNoTracking()
-            .Where(b => allDescendantIds.Contains(b.Id) && !b.IsFolder && !b.IsVirtualItem);
+            .Where(b => allDescendantIds.Contains(b.Id))
+            .Where(DescendantQueryHelper.IsCountableLeaf);
 
         return ApplyAccessFiltering(context, baseQuery, filter);
     }
+
+    /// <summary>
+    /// Checks whether the user restricts access to items by parental rating or tags.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns><c>true</c> if the query carries parental restrictions.</returns>
+    private static bool RequiresParentalRestrictions(InternalItemsQuery filter)
+        => filter.IncludeInheritedTags.Length > 0
+            || filter.ExcludeInheritedTags.Length > 0
+            || filter.MaxParentalRating is not null
+            || filter.BlockUnratedItems.Length > 0;
 
     /// <summary>
     /// Applies user access filtering to a query.
@@ -405,13 +449,127 @@ public sealed partial class BaseItemRepository
         IQueryable<BaseItemEntity> baseQuery,
         InternalItemsQuery filter)
     {
-        // Apply TopParentIds filtering (library folder access)
-        if (filter.TopParentIds.Length > 0)
+        baseQuery = ApplyTopParentFiltering(context, baseQuery, filter);
+
+        baseQuery = ApplyParentalRestrictions(context, baseQuery, filter);
+
+        // Exclude alternate versions (have PrimaryVersionId set) and owned non-extra items.
+        // Extras (trailers, etc.) have OwnerId set but also have ExtraType set — keep those.
+        if (!filter.IncludeOwnedItems)
         {
-            var topParentIds = filter.TopParentIds;
-            baseQuery = baseQuery.Where(e => topParentIds.Contains(e.TopParentId!.Value));
+            baseQuery = baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
         }
 
+        return baseQuery;
+    }
+
+    /// <summary>
+    /// Restricts a query to the libraries the user may open, exempting requested by-name items.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    /// <param name="baseQuery">The query to filter.</param>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The filtered query.</returns>
+    private IQueryable<BaseItemEntity> ApplyTopParentFiltering(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> baseQuery,
+        InternalItemsQuery filter)
+    {
+        var queryTopParentIds = filter.TopParentIds;
+        if (queryTopParentIds.Length == 0)
+        {
+            return baseQuery;
+        }
+
+        var exemptedItemByNameTypes = GetExemptedItemByNameTypes(filter);
+        if (exemptedItemByNameTypes.Count == 0)
+        {
+            return baseQuery.WhereOneOrMany(queryTopParentIds, e => e.TopParentId!.Value);
+        }
+
+        baseQuery = baseQuery.Where(e => exemptedItemByNameTypes.Contains(e.Type) || queryTopParentIds.Any(w => w == e.TopParentId!.Value));
+        if (filter.UserHasContentRestrictions)
+        {
+            baseQuery = ApplyItemByNameAccessFiltering(baseQuery, context, filter, exemptedItemByNameTypes, queryTopParentIds);
+        }
+
+        return baseQuery;
+    }
+
+    /// <summary>
+    /// Returns the by-name types a query asks for, which carry no TopParentId to filter on.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The type names exempt from library filtering.</returns>
+    private List<string> GetExemptedItemByNameTypes(InternalItemsQuery filter)
+    {
+        var includedItemByNameTypes = GetItemByNameTypesInQuery(filter);
+        if ((filter.IncludeItemsByName ?? false) && includedItemByNameTypes.Count > 0)
+        {
+            return includedItemByNameTypes;
+        }
+
+        return _itemByNameKinds.Where(filter.IncludeItemTypes.Contains).Select(e => _itemTypeLookup.BaseItemKindNames[e]!).ToList();
+    }
+
+    /// <summary>
+    /// Keeps a by-name row only when at least one item behind its name is reachable for the user.
+    /// </summary>
+    /// <param name="baseQuery">The query to filter.</param>
+    /// <param name="context">The database context.</param>
+    /// <param name="filter">The query filter.</param>
+    /// <param name="itemByNameTypes">The exempted by-name type names.</param>
+    /// <param name="topParentIds">The libraries the user may open.</param>
+    /// <returns>The filtered query.</returns>
+    private IQueryable<BaseItemEntity> ApplyItemByNameAccessFiltering(
+        IQueryable<BaseItemEntity> baseQuery,
+        JellyfinDbContext context,
+        InternalItemsQuery filter,
+        IReadOnlyList<string> itemByNameTypes,
+        Guid[] topParentIds)
+    {
+        // IncludeOwnedItems: a credit on an alternate version of a reachable movie still counts.
+        var accessibleItems = ApplyAccessFiltering(
+            context,
+            context.BaseItems.AsNoTracking(),
+            new InternalItemsQuery(filter.User) { TopParentIds = topParentIds, IncludeOwnedItems = true });
+
+        var personType = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
+        if (itemByNameTypes.Contains(personType))
+        {
+            baseQuery = baseQuery.Where(e => e.Type != personType
+                || context.Peoples.Any(p => p.Name == e.Name
+                    && context.PeopleBaseItemMap.Any(m => m.PeopleId == p.Id && accessibleItems.Any(i => i.Id == m.ItemId))));
+        }
+
+        foreach (var (kind, valueTypes) in _itemByNameValueTypes)
+        {
+            var typeName = _itemTypeLookup.BaseItemKindNames[kind];
+            if (!itemByNameTypes.Contains(typeName))
+            {
+                continue;
+            }
+
+            baseQuery = baseQuery.Where(e => e.Type != typeName
+                || context.ItemValues.Any(v => valueTypes.Contains(v.Type) && v.CleanValue == e.CleanName
+                    && context.ItemValuesMap.Any(m => m.ItemValueId == v.ItemValueId && accessibleItems.Any(i => i.Id == m.ItemId))));
+        }
+
+        return baseQuery;
+    }
+
+    /// <summary>
+    /// Applies the user's parental rating and tag restrictions to a query.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    /// <param name="baseQuery">The query to filter.</param>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The filtered query.</returns>
+    private IQueryable<BaseItemEntity> ApplyParentalRestrictions(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> baseQuery,
+        InternalItemsQuery filter)
+    {
         // Apply parental rating filtering
         if (filter.MaxParentalRating is not null)
         {
@@ -462,13 +620,6 @@ public sealed partial class BaseItemRepository
                 || e.Type == personTypeName);
         }
 
-        // Exclude alternate versions (have PrimaryVersionId set) and owned non-extra items.
-        // Extras (trailers, etc.) have OwnerId set but also have ExtraType set — keep those.
-        if (!filter.IncludeOwnedItems)
-        {
-            baseQuery = baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
-        }
-
         return baseQuery;
     }
 
@@ -510,7 +661,7 @@ public sealed partial class BaseItemRepository
 
         var leafItems = context.BaseItems
             .AsNoTracking()
-            .Where(e => !e.IsFolder && !e.IsVirtualItem);
+            .Where(DescendantQueryHelper.IsCountableLeaf);
 
         return ApplyAccessFiltering(context, leafItems, new InternalItemsQuery(user) { IncludeOwnedItems = includeOwnedItems });
     }

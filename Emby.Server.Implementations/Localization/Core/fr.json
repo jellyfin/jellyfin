@@ -108,5 +108,18 @@
     "CleanupUserDataTaskDescription": "Nettoie toutes les données utilisateur (état de la montre, statut favori, etc.) des supports qui ne sont plus présents depuis au moins 90 jours.",
     "CleanupUserDataTask": "Tâche de nettoyage des données utilisateur",
     "LyricDownloadFailureFromForItem": "Le téléchargement des paroles à échoué de {0} pour {1}",
-    "Original": "Original"
+    "Original": "Original",
+    "NameExtraBehindTheScenes": "Dans Les Coulisses",
+    "NameExtraClip": "Clip",
+    "NameExtraDeletedScene": "Scène supprimée",
+    "NameExtraFeaturette": "Court-métrage",
+    "NameExtraInterview": "Entrevue",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Échantillon",
+    "NameExtraScene": "Scène",
+    "NameExtraShort": "Court-métrage",
+    "NameExtraThemeSong": "Thème musical",
+    "NameExtraThemeVideo": "Générique",
+    "NameExtraTrailer": "Bande-annonce",
+    "NameExtraUnknown": "Extra"
 }

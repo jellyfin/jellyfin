@@ -592,6 +592,16 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
+        /// Gets the absolute URL of an episode still.
+        /// </summary>
+        /// <param name="stillPath">The relative URL of the still.</param>
+        /// <returns>The absolute URL.</returns>
+        public string? GetStillUrl(string? stillPath)
+        {
+            return GetUrl(Plugin.Instance.Configuration.StillSize, stillPath);
+        }
+
+        /// <summary>
         /// Converts poster <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
         /// </summary>
         /// <param name="images">The input images.</param>

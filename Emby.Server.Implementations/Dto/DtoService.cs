@@ -242,6 +242,17 @@ namespace Emby.Server.Implementations.Dto
                 artistsBatch = _libraryManager.GetArtists(artistNames.ToArray());
             }
 
+            // Batch-fetch people across all items to avoid one GetPeople query per item.
+            IReadOnlyDictionary<Guid, IReadOnlyList<PersonInfo>>? peopleBatch = null;
+            if (options.ContainsField(ItemFields.People))
+            {
+                var peopleItemIds = accessibleItems.Where(i => i.SupportsPeople).Select(i => i.Id).ToList();
+                if (peopleItemIds.Count > 0)
+                {
+                    peopleBatch = _libraryManager.GetPeopleByItems(peopleItemIds);
+                }
+            }
+
             for (int index = 0; index < accessibleItems.Count; index++)
             {
                 var item = accessibleItems[index];
@@ -255,7 +266,8 @@ namespace Emby.Server.Implementations.Dto
                     childCountBatch,
                     playedCountBatch,
                     artistsBatch,
-                    resumeDataBatch?.GetValueOrDefault(item.Id));
+                    resumeDataBatch?.GetValueOrDefault(item.Id),
+                    peopleBatch);
 
                 if (item is LiveTvChannel tvChannel)
                 {
@@ -317,7 +329,8 @@ namespace Emby.Server.Implementations.Dto
             Dictionary<Guid, int>? childCountBatch = null,
             Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null,
             IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null,
-            VersionResumeData? resumeData = null)
+            VersionResumeData? resumeData = null,
+            IReadOnlyDictionary<Guid, IReadOnlyList<PersonInfo>>? peopleBatch = null)
         {
             var dto = new BaseItemDto
             {
@@ -331,7 +344,15 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.ContainsField(ItemFields.People))
             {
-                AttachPeople(dto, item, user);
+                IReadOnlyList<PersonInfo>? prefetchedPeople = null;
+                if (peopleBatch is not null)
+                {
+                    // The batch omits items with no people, so a miss means "no people",
+                    // not "not fetched". Use an empty list to skip the per-item query.
+                    prefetchedPeople = peopleBatch.GetValueOrDefault(item.Id) ?? [];
+                }
+
+                AttachPeople(dto, item, user, prefetchedPeople);
             }
 
             if (options.ContainsField(ItemFields.PrimaryImageAspectRatio))
@@ -742,12 +763,18 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
         /// <param name="user">The requesting user.</param>
-        private void AttachPeople(BaseItemDto dto, BaseItem item, User? user = null)
+        /// <param name="prefetchedPeople">People fetched in batch by the caller; when null the people are queried per item.</param>
+        private void AttachPeople(BaseItemDto dto, BaseItem item, User? user = null, IReadOnlyList<PersonInfo>? prefetchedPeople = null)
         {
+            // When rendering a page of items the caller batch-fetches people for every item up
+            // front and passes them in, avoiding one GetPeople query per item. Fall back to the
+            // per-item query for the single item path where no batch is available.
+            var source = prefetchedPeople ?? _libraryManager.GetPeople(item);
+
             // Ordering by person type to ensure actors and artists are at the front.
             // This is taking advantage of the fact that they both begin with A
             // This should be improved in the future
-            var people = _libraryManager.GetPeople(item).OrderBy(i => i.SortOrder ?? int.MaxValue)
+            var people = source.OrderBy(i => i.SortOrder ?? int.MaxValue)
                 .ThenBy(i =>
                 {
                     if (i.IsType(PersonKind.Actor))

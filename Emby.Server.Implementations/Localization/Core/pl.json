@@ -108,5 +108,18 @@
     "CleanupUserDataTaskDescription": "Usuwa wszystkie dane użytkownika (stan oglądanych, status ulubionych itp.) z mediów, które nie są dostępne od co najmniej 90 dni.",
     "CleanupUserDataTask": "Zadanie czyszczenia danych użytkownika",
     "Original": "Oryginalny",
-    "LyricDownloadFailureFromForItem": "Błąd podczas pobierania tekstu piosenki z {0} dla {1}"
+    "LyricDownloadFailureFromForItem": "Błąd podczas pobierania tekstu piosenki z {0} dla {1}",
+    "NameExtraBehindTheScenes": "Za kulisami",
+    "NameExtraClip": "Urywek",
+    "NameExtraDeletedScene": "Usunięta scena",
+    "NameExtraFeaturette": "Film średniometrażowy",
+    "NameExtraInterview": "Wywiad",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Fragment",
+    "NameExtraScene": "Scena",
+    "NameExtraShort": "Film krótkometrażowy",
+    "NameExtraThemeSong": "Czołówka",
+    "NameExtraThemeVideo": "Wideo wprowadzające",
+    "NameExtraTrailer": "Zwiastun",
+    "NameExtraUnknown": "Dodatek"
 }

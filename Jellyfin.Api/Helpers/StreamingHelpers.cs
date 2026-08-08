@@ -198,11 +198,6 @@ public static class StreamingHelpers
             state.OutputAudioBitrate = encodingHelper.GetAudioBitrateParam(streamingRequest.AudioBitRate, streamingRequest.AudioCodec, state.AudioStream, state.OutputAudioChannels) ?? 0;
         }
 
-        if (outputAudioCodec.StartsWith("pcm_", StringComparison.Ordinal))
-        {
-            containerInternal = ".pcm";
-        }
-
         if (state.VideoRequest is not null)
         {
             state.OutputVideoCodec = state.Request.VideoCodec;

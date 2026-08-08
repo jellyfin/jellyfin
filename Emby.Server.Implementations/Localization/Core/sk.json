@@ -108,5 +108,18 @@
     "CleanupUserDataTask": "Prečistiť používateľské dáta",
     "CleanupUserDataTaskDescription": "Vyčistí všetky dáta používateľa (stav sledovania, stav obľúbených atď.) z médií, ktoré už neexistujú aspoň 90 dní.",
     "LyricDownloadFailureFromForItem": "Text piesne sa nepodarilo stiahnuť z {0} pre {1}",
-    "Original": "Originál"
+    "Original": "Originál",
+    "NameExtraBehindTheScenes": "Zo zákulisia",
+    "NameExtraClip": "Klip",
+    "NameExtraDeletedScene": "Vystrihnutá scéna",
+    "NameExtraFeaturette": "Bonus",
+    "NameExtraInterview": "Rozhovor",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Ukážka",
+    "NameExtraScene": "Scéna",
+    "NameExtraShort": "Krátky film",
+    "NameExtraThemeSong": "Úvodná pieseň",
+    "NameExtraThemeVideo": "Úvodné video",
+    "NameExtraTrailer": "Trailer",
+    "NameExtraUnknown": "Extra"
 }
