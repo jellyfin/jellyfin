@@ -108,5 +108,14 @@
     "CleanupUserDataTask": "Tác vụ dọn dẹp dữ liệu người dùng",
     "CleanupUserDataTaskDescription": "Làm sạch tất cả dữ liệu người dùng (trạng thái xem, trạng thái yêu thích, v.v.) từ phương tiện không còn có mặt trong ít nhất 90 ngày.",
     "Original": "Gốc",
-    "LyricDownloadFailureFromForItem": "Lời bài hát không tải xuống được từ {0} cho {1}"
+    "LyricDownloadFailureFromForItem": "Lời bài hát không tải xuống được từ {0} cho {1}",
+    "NameExtraBehindTheScenes": "Hậu Trường",
+    "NameExtraDeletedScene": "Cảnh Bị Xóa",
+    "NameExtraInterview": "Phỏng vấn",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Mẫu",
+    "NameExtraScene": "Cảnh",
+    "NameExtraShort": "Ngắn",
+    "NameExtraThemeSong": "Bài Hát Chủ Đề",
+    "NameExtraThemeVideo": "Video Chủ Đề"
 }
