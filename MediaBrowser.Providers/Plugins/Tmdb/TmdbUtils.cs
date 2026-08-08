@@ -63,6 +63,18 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         private static partial Regex NonWordRegex();
 
         /// <summary>
+        /// Tries to parse a TMDb provider identifier.
+        /// </summary>
+        /// <param name="providerId">The provider identifier.</param>
+        /// <param name="tmdbId">The parsed TMDb identifier.</param>
+        /// <returns><see langword="true"/> when the identifier is a positive integer.</returns>
+        public static bool TryParseTmdbId(string? providerId, out int tmdbId)
+        {
+            return int.TryParse(providerId, NumberStyles.None, CultureInfo.InvariantCulture, out tmdbId)
+                && tmdbId > 0;
+        }
+
+        /// <summary>
         /// Cleans the name according to TMDb requirements.
         /// </summary>
         /// <param name="name">The name of the entity.</param>

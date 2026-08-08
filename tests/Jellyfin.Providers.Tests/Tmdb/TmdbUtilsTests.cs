@@ -6,6 +6,27 @@ namespace Jellyfin.Providers.Tests.Tmdb
     public static class TmdbUtilsTests
     {
         [Theory]
+        [InlineData("123", 123)]
+        [InlineData("2147483647", 2147483647)]
+        public static void TryParseTmdbId_Valid_Success(string input, int expected)
+        {
+            Assert.True(TmdbUtils.TryParseTmdbId(input, out var actual));
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("nm123")]
+        [InlineData("0")]
+        [InlineData("-1")]
+        [InlineData("2147483648")]
+        public static void TryParseTmdbId_Invalid_ReturnsFalse(string? input)
+        {
+            Assert.False(TmdbUtils.TryParseTmdbId(input, out _));
+        }
+
+        [Theory]
         [InlineData("de", "de")]
         [InlineData("En", "En")]
         [InlineData("de-de", "de-DE")]

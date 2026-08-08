@@ -37,9 +37,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(PersonLookupInfo searchInfo, CancellationToken cancellationToken)
         {
-            if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var personTmdbId))
+            if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var personTmdbId)
+                && TmdbUtils.TryParseTmdbId(personTmdbId, out var parsedPersonTmdbId))
             {
-                var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                var personResult = await _tmdbClientManager.GetPersonAsync(parsedPersonTmdbId, searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
 
                 if (personResult is not null)
                 {
@@ -89,7 +90,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         /// <inheritdoc />
         public async Task<MetadataResult<Person>> GetMetadata(PersonLookupInfo info, CancellationToken cancellationToken)
         {
-            var personTmdbId = Convert.ToInt32(info.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
+            var personTmdbId = TmdbUtils.TryParseTmdbId(
+                info.GetProviderId(MetadataProvider.Tmdb), out var parsedPersonTmdbId)
+                ? parsedPersonTmdbId
+                : 0;
 
             // We don't already have an Id, need to fetch it
             if (personTmdbId <= 0)
