@@ -47,7 +47,7 @@ public class SeasonPathParserTests
     [InlineData("/Drive/Season 02", "/Drive", 2, true)]
     [InlineData("/Drive/Seinfeld/S02", "/Seinfeld", 2, true)]
     [InlineData("/Drive/Seinfeld/2", "/Seinfeld", 2, true)]
-    [InlineData("/Drive/Seinfeld Season 2", "/Drive", null, false)]
+    [InlineData("/Drive/Seinfeld Season 2", "/Drive", 2, true)]
     [InlineData("/Drive/Season 2009", "/Drive", 2009, true)]
     [InlineData("/Drive/Season1", "/Drive", 1, true)]
     [InlineData("The Wonder Years/The.Wonder.Years.S04.PDTV.x264-JCH", "/The Wonder Years", 4, true)]
@@ -76,6 +76,41 @@ public class SeasonPathParserTests
     [InlineData("The Wonder Years/The Wonder Years Season 01 1080p", "/The Wonder Years", 1, true)]
 
     public void GetSeasonNumberFromPathTest(string path, string? parentPath, int? seasonNumber, bool isSeasonDirectory)
+    {
+        var result = SeasonPathParser.Parse(path, parentPath, true, true);
+
+        Assert.Equal(result.SeasonNumber is not null, result.Success);
+        Assert.Equal(seasonNumber, result.SeasonNumber);
+        Assert.Equal(isSeasonDirectory, result.IsSeasonFolder);
+    }
+
+    [Theory]
+    // Series-prefixed season folders: "{SeriesName} - Season {N}" (Sonarr default naming)
+    [InlineData("/Drive/Series/Solar Opposites/Solar Opposites - Season 1", "/Drive/Series", 1, true)]
+    [InlineData("/Drive/Series/The Office/The Office Season 2", "/Drive/Series", 2, true)]
+    [InlineData("/Drive/Series/Friends/Friends - Staffel 5", "/Drive/Series", 5, true)]
+    [InlineData("/Drive/Series/Friends/Friends - Säsong 3", "/Drive/Series", 3, true)]
+    [InlineData("/Drive/Series/The Boys/The Boys - Temporada 4", "/Drive/Series", 4, true)]
+    // Series-prefixed with year: "{SeriesName} (2020) - Season {N}"
+    [InlineData("/Drive/Series/Solar Opposites (2020)/Solar Opposites (2020) - Season 1", "/Drive/Series", 1, true)]
+    [InlineData("/Drive/Series/Star Trek Discovery (2017)/Star Trek Discovery (2017) - Season 3", "/Drive/Series", 3, true)]
+    // Series name containing a season keyword (e.g. "The Series Finale - Season 1")
+    // Should still find the actual season number
+    [InlineData("/Drive/TV/The Series Finale/The Series Finale - Season 1", "/Drive/TV", 1, true)]
+    // Season with year suffix: "Season 7 (2023)" — should parse as 7, not 72023
+    [InlineData("/Drive/Series/Rick and Morty/Rick and Morty - Season 7 (2023)", "/Drive/Series", 7, true)]
+    [InlineData("/Drive/Series/Show/Show - Season 4 (2024)", "/Drive/Series", 4, true)]
+    // Standard naming still works exactly as before
+    [InlineData("/Drive/Series/Season 1", "/Drive/Series", 1, true)]
+    [InlineData("/Drive/Series/S01", "/Drive/Series", 1, true)]
+    [InlineData("/Drive/Series/Staffel 1", "/Drive/Series", 1, true)]
+    // Defensive: ensure non-season-keyword-containing words don't false-match
+    [InlineData("/Drive/Series/Reasoning/Reasoning - S01", "/Drive/Series", 1, true)]
+    [InlineData("/Drive/Series/The Reason/The Reason S02", "/Drive/Series", 2, true)]
+    // Year edge cases: should NOT sanitize when the "year" part isn't actually a year
+    [InlineData("/Drive/Series/Season 2009", "/Drive", 2009, true)]
+    [InlineData("/Drive/Series/Season 100", "/Drive", 100, true)]
+    public void GetSeasonNumberFromPathSeriesPrefixTest(string path, string? parentPath, int? seasonNumber, bool isSeasonDirectory)
     {
         var result = SeasonPathParser.Parse(path, parentPath, true, true);
 
