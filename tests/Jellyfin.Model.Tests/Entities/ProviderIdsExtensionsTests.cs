@@ -186,6 +186,49 @@ namespace Jellyfin.Model.Tests.Entities
             Assert.Null(nullProvider.ProviderIds);
         }
 
+        [Theory]
+        [InlineData(nameof(MetadataProvider.Imdb), "tt0113375", true)]
+        [InlineData(nameof(MetadataProvider.Imdb), "nm0000123", true)]
+        [InlineData(nameof(MetadataProvider.Imdb), "0113375", true)]
+        [InlineData(nameof(MetadataProvider.Imdb), "https://www.imdb.com/title/tt0113375", false)]
+        [InlineData(nameof(MetadataProvider.Tmdb), "11", true)]
+        [InlineData(nameof(MetadataProvider.Tmdb), "nm0000123", false)]
+        [InlineData(nameof(MetadataProvider.Tmdb), "0", false)]
+        [InlineData(nameof(MetadataProvider.Tmdb), "-11", false)]
+        [InlineData(nameof(MetadataProvider.TmdbCollection), "nm0000123", false)]
+        [InlineData(nameof(MetadataProvider.AudioDbArtist), "111239", true)]
+        [InlineData(nameof(MetadataProvider.AudioDbArtist), "a3cb23fc-acd3-4ce0-8f36-1e5aa6a18432", false)]
+        [InlineData(nameof(MetadataProvider.MusicBrainzArtist), "a3cb23fc-acd3-4ce0-8f36-1e5aa6a18432", true)]
+        [InlineData(nameof(MetadataProvider.MusicBrainzArtist), "111239", false)]
+        [InlineData(nameof(MetadataProvider.MusicBrainzAlbum), "not-an-mbid", false)]
+        [InlineData(nameof(MetadataProvider.Tvdb), "anything-goes", true)]
+        [InlineData("SomePlugin", "anything-goes", true)]
+        [InlineData(nameof(MetadataProvider.Tmdb), null, false)]
+        [InlineData(null, "11", false)]
+        public void IsValidProviderId_ChecksKnownFormats(string? name, string? value, bool expected)
+        {
+            Assert.Equal(expected, ProviderIdsExtensions.IsValidProviderId(name, value));
+        }
+
+        [Fact]
+        public void TrySetProviderId_ForeignId_False()
+        {
+            var provider = new ProviderIdsExtensionsTestsObject();
+
+            Assert.False(provider.TrySetProviderId(MetadataProvider.Tmdb, "nm0000123"));
+            Assert.Empty(provider.ProviderIds);
+        }
+
+        [Fact]
+        public void TrySetProviderId_ForeignId_KeepsExisting()
+        {
+            var provider = new ProviderIdsExtensionsTestsObject();
+            provider.ProviderIds[MetadataProvider.Tmdb.ToString()] = "11";
+
+            Assert.False(provider.TrySetProviderId(MetadataProvider.Tmdb, "nm0000123"));
+            Assert.Equal("11", provider.GetProviderId(MetadataProvider.Tmdb));
+        }
+
         [Fact]
         public void RemoveProviderId_Null_Remove()
         {

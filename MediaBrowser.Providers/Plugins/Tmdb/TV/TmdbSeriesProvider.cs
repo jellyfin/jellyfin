@@ -54,10 +54,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
-            if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var tmdbId))
+            if (searchInfo.TryGetTmdbId(out var tmdbId))
             {
                 var series = await _tmdbClientManager
-                    .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken)
+                    .GetSeriesAsync(tmdbId, searchInfo.MetadataLanguage, searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (series is not null)

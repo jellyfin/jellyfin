@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -61,7 +59,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             var language = item.GetPreferredMetadataLanguage();
             var countryCode = item.GetPreferredMetadataCountryCode();
 
-            var movieTmdbId = Convert.ToInt32(item.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
+            item.TryGetTmdbId(out var movieTmdbId);
             if (movieTmdbId <= 0)
             {
                 var movieImdbId = item.GetProviderId(MetadataProvider.Imdb);
