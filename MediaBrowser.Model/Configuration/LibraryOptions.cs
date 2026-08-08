@@ -18,6 +18,7 @@ namespace MediaBrowser.Model.Configuration
             MediaSegmentProviderOrder = Array.Empty<string>();
             SubtitleFetcherOrder = Array.Empty<string>();
             DisabledLocalMetadataReaders = Array.Empty<string>();
+            DisabledLocalImageProviders = Array.Empty<string>();
             DisabledLyricFetchers = Array.Empty<string>();
             LyricFetcherOrder = Array.Empty<string>();
 
@@ -92,6 +93,8 @@ namespace MediaBrowser.Model.Configuration
         public string[] DisabledLocalMetadataReaders { get; set; }
 
         public string[]? LocalMetadataReaderOrder { get; set; }
+
+        public string[] DisabledLocalImageProviders { get; set; }
 
         public string[] DisabledSubtitleFetchers { get; set; }
 
