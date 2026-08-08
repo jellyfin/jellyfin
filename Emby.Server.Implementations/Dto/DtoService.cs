@@ -789,6 +789,9 @@ namespace Emby.Server.Implementations.Dto
             // Keyed by the clean name the person was resolved with, not by the name the resolved item
             // carries: a person is looked up by a hash of its name, so an item that a provider renamed
             // or spelled differently still resolves and must not be dropped from the cast for it.
+            // Ordinal, not OrdinalIgnoreCase: GetCleanValue has already lowercased and transliterated
+            // both sides, so an exact comparison is the whole point - case folding again here would
+            // quietly accept names the database, which compares the stored clean name, would not.
             var cleanNames = new string[people.Count];
             var dictionary = new Dictionary<string, Person>(StringComparer.Ordinal);
             // Tracked separately from the dictionary so a name that resolves to nothing is not looked up

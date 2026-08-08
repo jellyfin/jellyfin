@@ -25,9 +25,6 @@ public sealed class DuplicatePeopleMerger
 {
     private const string PersonType = "MediaBrowser.Controller.Entities.Person";
 
-    // Well under SQLite's variable limit, so a candidate set of any size still costs a handful of queries.
-    private const int ParameterChunkSize = 500;
-
     private readonly ILogger _logger;
     private readonly ILibraryManager _libraryManager;
     private readonly IItemPersistenceService _persistenceService;
@@ -81,9 +78,9 @@ public sealed class DuplicatePeopleMerger
         // Counted for every candidate up front: asking per group turns a few queries into one per
         // duplicate, which on a large library is where all the time goes.
         var candidateIds = groups.SelectMany(g => g.Select(p => p.Id)).ToList();
-        var userDataCounts = await CountByItemAsync(candidateIds, ids => context.UserData.Where(u => ids.Contains(u.ItemId)).Select(u => u.ItemId), cancellationToken).ConfigureAwait(false);
-        var asParentCounts = await CountByItemAsync(candidateIds, ids => context.LinkedChildren.Where(l => ids.Contains(l.ParentId)).Select(l => l.ParentId), cancellationToken).ConfigureAwait(false);
-        var asChildCounts = await CountByItemAsync(candidateIds, ids => context.LinkedChildren.Where(l => ids.Contains(l.ChildId)).Select(l => l.ChildId), cancellationToken).ConfigureAwait(false);
+        var userDataCounts = await DuplicateItemMerge.CountReferencesAsync(candidateIds, ids => context.UserData.Where(u => ids.Contains(u.ItemId)).Select(u => u.ItemId), cancellationToken).ConfigureAwait(false);
+        var asParentCounts = await DuplicateItemMerge.CountReferencesAsync(candidateIds, ids => context.LinkedChildren.Where(l => ids.Contains(l.ParentId)).Select(l => l.ParentId), cancellationToken).ConfigureAwait(false);
+        var asChildCounts = await DuplicateItemMerge.CountReferencesAsync(candidateIds, ids => context.LinkedChildren.Where(l => ids.Contains(l.ChildId)).Select(l => l.ChildId), cancellationToken).ConfigureAwait(false);
 
         var idsToDelete = new List<Guid>();
         foreach (var group in groups)
@@ -111,59 +108,8 @@ public sealed class DuplicatePeopleMerger
 
             foreach (var dup in stats.Where(s => s.Id != keeper.Id))
             {
-                var keeperId = keeper.Id;
-                var dupId = dup.Id;
-
-                await context.BaseItems
-                    .Where(b => b.ParentId == dupId)
-                    .ExecuteUpdateAsync(s => s.SetProperty(b => b.ParentId, keeperId), cancellationToken)
-                    .ConfigureAwait(false);
-
-                await context.BaseItems
-                    .Where(b => b.OwnerId == dupId)
-                    .ExecuteUpdateAsync(s => s.SetProperty(b => b.OwnerId, keeperId), cancellationToken)
-                    .ConfigureAwait(false);
-
-                await context.AncestorIds
-                    .Where(a => a.ParentItemId == dupId
-                        && context.AncestorIds.Any(k => k.ParentItemId == keeperId && k.ItemId == a.ItemId))
-                    .ExecuteDeleteAsync(cancellationToken)
-                    .ConfigureAwait(false);
-                await context.AncestorIds
-                    .Where(a => a.ParentItemId == dupId)
-                    .ExecuteUpdateAsync(s => s.SetProperty(a => a.ParentItemId, keeperId), cancellationToken)
-                    .ConfigureAwait(false);
-
-                await context.LinkedChildren
-                    .Where(l => l.ParentId == dupId
-                        && context.LinkedChildren.Any(k => k.ParentId == keeperId && k.ChildId == l.ChildId))
-                    .ExecuteDeleteAsync(cancellationToken)
-                    .ConfigureAwait(false);
-                await context.LinkedChildren
-                    .Where(l => l.ParentId == dupId)
-                    .ExecuteUpdateAsync(s => s.SetProperty(l => l.ParentId, keeperId), cancellationToken)
-                    .ConfigureAwait(false);
-                await context.LinkedChildren
-                    .Where(l => l.ChildId == dupId
-                        && context.LinkedChildren.Any(k => k.ChildId == keeperId && k.ParentId == l.ParentId))
-                    .ExecuteDeleteAsync(cancellationToken)
-                    .ConfigureAwait(false);
-                await context.LinkedChildren
-                    .Where(l => l.ChildId == dupId)
-                    .ExecuteUpdateAsync(s => s.SetProperty(l => l.ChildId, keeperId), cancellationToken)
-                    .ConfigureAwait(false);
-
-                await context.UserData
-                    .Where(u => u.ItemId == dupId
-                        && context.UserData.Any(k => k.ItemId == keeperId && k.UserId == u.UserId && k.CustomDataKey == u.CustomDataKey))
-                    .ExecuteDeleteAsync(cancellationToken)
-                    .ConfigureAwait(false);
-                await context.UserData
-                    .Where(u => u.ItemId == dupId)
-                    .ExecuteUpdateAsync(s => s.SetProperty(u => u.ItemId, keeperId), cancellationToken)
-                    .ConfigureAwait(false);
-
-                idsToDelete.Add(dupId);
+                await DuplicateItemMerge.RedirectReferencesAsync(context, dup.Id, keeper.Id, cancellationToken).ConfigureAwait(false);
+                idsToDelete.Add(dup.Id);
             }
 
             _logger.LogDebug(
@@ -173,68 +119,9 @@ public sealed class DuplicatePeopleMerger
                 stats.Count - 1);
         }
 
-        if (idsToDelete.Count == 0)
-        {
-            return;
-        }
-
-        // Resolve via LibraryManager so DeleteItemsUnsafeFast can also remove the
-        // %MetadataPath%/People/<Letter>/<Name> directories the duplicate stubs left behind.
-        // Delete in batches so we never issue one massive delete transaction and progress stays visible.
-        _logger.LogInformation("Deleting {Count} duplicate Person BaseItems...", idsToDelete.Count);
-        const int DeleteBatchSize = 500;
-        var deletedSoFar = 0;
-        for (var offset = 0; offset < idsToDelete.Count; offset += DeleteBatchSize)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var batchIds = idsToDelete.GetRange(offset, Math.Min(DeleteBatchSize, idsToDelete.Count - offset));
-
-            var itemsToDelete = batchIds
-                .Select(id => _libraryManager.GetItemById(id))
-                .Where(item => item is not null)
-                .ToList();
-            if (itemsToDelete.Count > 0)
-            {
-                _libraryManager.DeleteItemsUnsafeFast(itemsToDelete!);
-            }
-
-            var deletedIds = itemsToDelete.Select(i => i!.Id).ToHashSet();
-            var unresolvedIds = batchIds.Where(id => !deletedIds.Contains(id)).ToList();
-            if (unresolvedIds.Count > 0)
-            {
-                _persistenceService.DeleteItem(unresolvedIds);
-            }
-
-            deletedSoFar += batchIds.Count;
-            _logger.LogInformation("Deleting duplicate Person BaseItems: {Deleted}/{Total}", deletedSoFar, idsToDelete.Count);
-        }
-    }
-
-    /// <summary>
-    /// Counts the rows each candidate id is referenced by, in chunks small enough for the parameter limit.
-    /// </summary>
-    private static async Task<Dictionary<Guid, int>> CountByItemAsync(
-        IReadOnlyList<Guid> candidateIds,
-        Func<Guid[], IQueryable<Guid>> referencesOf,
-        CancellationToken cancellationToken)
-    {
-        var counts = new Dictionary<Guid, int>();
-        foreach (var chunk in candidateIds.Chunk(ParameterChunkSize))
-        {
-            var rows = await referencesOf(chunk)
-                .GroupBy(id => id)
-                .Select(g => new { Id = g.Key, Count = g.Count() })
-                .ToListAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            foreach (var row in rows)
-            {
-                counts[row.Id] = counts.GetValueOrDefault(row.Id) + row.Count;
-            }
-        }
-
-        return counts;
+        await DuplicateItemMerge
+            .DeleteMergedItemsAsync(idsToDelete, "Person BaseItems", _logger, _libraryManager, _persistenceService, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -270,7 +157,7 @@ public sealed class DuplicatePeopleMerger
         _logger.LogInformation("Found {Count} groups of {Kind} duplicate Peoples rows.", groups.Count, duplicateKind);
 
         var candidateIds = groups.SelectMany(g => g.Select(p => p.Id)).ToList();
-        var mapCounts = await CountByItemAsync(
+        var mapCounts = await DuplicateItemMerge.CountReferencesAsync(
             candidateIds,
             ids => context.PeopleBaseItemMap.Where(m => ids.Contains(m.PeopleId)).Select(m => m.PeopleId),
             cancellationToken).ConfigureAwait(false);

@@ -156,6 +156,11 @@ namespace Jellyfin.Extensions
         /// </summary>
         /// <param name="value">The string to normalize.</param>
         /// <returns>The normalized string, or the original if null/whitespace.</returns>
+        /// <remarks>
+        /// The result is already lowercased and transliterated, so two clean values are compared with
+        /// <see cref="StringComparison.Ordinal"/>. Folding case again would accept pairs that the
+        /// database, which compares the stored clean value, treats as different.
+        /// </remarks>
         public static string GetCleanValue(this string value)
         {
             if (string.IsNullOrWhiteSpace(value))
