@@ -61,7 +61,8 @@ namespace Jellyfin.Server.Implementations.Tests.Users
             var invalidAuthProvider = new InvalidAuthProvider();
             var defaultPasswordResetProvider = new DefaultPasswordResetProvider(
                 configManager.Object,
-                appHost.Object);
+                appHost.Object,
+                NullLogger<DefaultPasswordResetProvider>.Instance);
 
             _userManager = new UserManager(
                 factory.Object,
