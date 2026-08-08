@@ -110,6 +110,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     try
                     {
                         var mediaInfo = await GetMediaInfo(pathInfo.Path, _type, cancellationToken).ConfigureAwait(false);
+                        var foundStream = false;
 
                         if (mediaInfo.MediaStreams.Count == 1)
                         {
@@ -124,6 +125,7 @@ namespace MediaBrowser.Providers.MediaInfo
                                 mediaStream.IsHearingImpaired = pathInfo.IsHearingImpaired || mediaStream.IsHearingImpaired;
 
                                 mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
+                                foundStream = true;
                             }
                         }
                         else
@@ -136,15 +138,22 @@ namespace MediaBrowser.Providers.MediaInfo
                                     mediaStream.Index = startIndex++;
 
                                     mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
+                                    foundStream = true;
                                 }
                             }
+                        }
+
+                        if (!foundStream)
+                        {
+                            TryAddManualStream(mediaStreams, pathInfo, ref startIndex);
                         }
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error getting external streams from {Path}", pathInfo.Path);
-
-                        continue;
+                        if (!TryAddManualStream(mediaStreams, pathInfo, ref startIndex))
+                        {
+                            _logger.LogError(ex, "Error getting external streams from {Path}", pathInfo.Path);
+                        }
                     }
                 }
             }
@@ -334,7 +343,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="mediaStream">The <see cref="MediaStream"/> object.</param>
         /// <param name="pathInfo">The <see cref="ExternalPathParserResult"/> object.</param>
         /// <returns>The modified mediaStream.</returns>
-        private MediaStream MergeMetadata(MediaStream mediaStream, ExternalPathParserResult pathInfo)
+        protected MediaStream MergeMetadata(MediaStream mediaStream, ExternalPathParserResult pathInfo)
         {
             mediaStream.Path = pathInfo.Path;
             mediaStream.IsExternal = true;
@@ -342,6 +351,18 @@ namespace MediaBrowser.Providers.MediaInfo
             mediaStream.Language = string.IsNullOrEmpty(mediaStream.Language) ? (string.IsNullOrEmpty(pathInfo.Language) ? null : pathInfo.Language) : mediaStream.Language;
 
             return mediaStream;
+        }
+
+        /// <summary>
+        /// Tries to add a manual stream if automatic detection failed.
+        /// </summary>
+        /// <param name="mediaStreams">The list of media streams.</param>
+        /// <param name="pathInfo">The path info.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <returns>True if a stream was added.</returns>
+        protected virtual bool TryAddManualStream(ICollection<MediaStream> mediaStreams, ExternalPathParserResult pathInfo, ref int startIndex)
+        {
+            return false;
         }
     }
 }
