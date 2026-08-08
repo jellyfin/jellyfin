@@ -72,6 +72,12 @@ namespace MediaBrowser.Model.Dto
         public int BookCount { get; set; }
 
         /// <summary>
+        /// Gets or sets the audio book count.
+        /// </summary>
+        /// <value>The audio book count.</value>
+        public int AudioBookCount { get; set; }
+
+        /// <summary>
         /// Gets or sets the item count.
         /// </summary>
         /// <value>The item count.</value>
@@ -83,7 +89,7 @@ namespace MediaBrowser.Model.Dto
         /// <returns>The total of the counts.</returns>
         public int TotalItemCount()
         {
-            return MovieCount + SeriesCount + EpisodeCount + ArtistCount + ProgramCount + TrailerCount + SongCount + AlbumCount + MusicVideoCount + BoxSetCount + BookCount;
+            return MovieCount + SeriesCount + EpisodeCount + ArtistCount + ProgramCount + TrailerCount + SongCount + AlbumCount + MusicVideoCount + BoxSetCount + BookCount + AudioBookCount;
         }
     }
 }
