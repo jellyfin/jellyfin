@@ -105,12 +105,25 @@ public class LibraryStructureController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> RemoveVirtualFolder(
         [FromQuery] string name,
         [FromQuery] bool refreshLibrary = false)
     {
-        // TODO: refactor! this relies on an FileNotFound exception to return NotFound when attempting to remove a library that does not exist.
-        await _libraryManager.RemoveVirtualFolder(name, refreshLibrary).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
+
+        var virtualFolder = _libraryManager.GetVirtualFolders(true)
+            .FirstOrDefault(folder => string.Equals(folder.Name, name, StringComparison.Ordinal));
+
+        if (virtualFolder is null)
+        {
+            return NotFound("The media library does not exist.");
+        }
+
+        await _libraryManager.RemoveVirtualFolder(virtualFolder.Name, refreshLibrary).ConfigureAwait(false);
 
         return NoContent();
     }
