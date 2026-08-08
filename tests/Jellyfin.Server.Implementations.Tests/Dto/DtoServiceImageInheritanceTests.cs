@@ -192,6 +192,7 @@ public class DtoServiceImageInheritanceTests
             mediaSourceManager.Object,
             new Lazy<ILiveTvManager>(() => liveTvManager.Object),
             trickplayManager.Object,
-            chapterManager.Object);
+            chapterManager.Object,
+            new Mock<IItemListManager>().Object);
     }
 }

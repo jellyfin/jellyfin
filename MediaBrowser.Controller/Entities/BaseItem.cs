@@ -2605,6 +2605,18 @@ namespace MediaBrowser.Controller.Entities
             return userItemData is not null && (userItemData.IsFavorite || (userItemData.Likes ?? false));
         }
 
+        /// <summary>
+        /// Determines whether this item is in a pre-resolved watchlist membership set.
+        /// </summary>
+        /// <param name="watchlistedItemIds">The identifiers of items in the user's default watchlist.</param>
+        /// <returns><c>true</c> if this item is in the user's default watchlist; otherwise, <c>false</c>.</returns>
+        public bool IsWatchlisted(IReadOnlySet<Guid> watchlistedItemIds)
+        {
+            ArgumentNullException.ThrowIfNull(watchlistedItemIds);
+
+            return watchlistedItemIds.Contains(Id);
+        }
+
         public virtual bool IsUnplayed(User user, UserItemData userItemData)
         {
             ArgumentNullException.ThrowIfNull(user);

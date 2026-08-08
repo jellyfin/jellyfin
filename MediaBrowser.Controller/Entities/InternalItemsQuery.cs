@@ -106,6 +106,8 @@ namespace MediaBrowser.Controller.Entities
             || IsFavorite.HasValue
             || IsFavoriteOrLiked.HasValue
             || IsLiked.HasValue
+            || ItemListId.HasValue
+            || IsInWatchlist.HasValue
             || IsPlayed.HasValue
             || IsResumable.HasValue
             || IsFolder.HasValue
@@ -183,6 +185,21 @@ namespace MediaBrowser.Controller.Entities
         public bool? IsFavoriteOrLiked { get; set; }
 
         public bool? IsLiked { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier of the item list to filter by.
+        /// </summary>
+        public Guid? ItemListId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to filter by membership in the user's default watchlist.
+        /// </summary>
+        public bool? IsInWatchlist { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pre-resolved identifiers of items in the relevant item list.
+        /// </summary>
+        public IReadOnlyCollection<Guid>? ItemListMemberIds { get; set; }
 
         public bool? IsPlayed { get; set; }
 
@@ -572,6 +589,9 @@ namespace MediaBrowser.Controller.Entities
                         break;
                     case ItemFilter.IsFavorite:
                         IsFavorite = true;
+                        break;
+                    case ItemFilter.IsInWatchlist:
+                        IsInWatchlist = true;
                         break;
                     case ItemFilter.IsResumable:
                         IsResumable = true;

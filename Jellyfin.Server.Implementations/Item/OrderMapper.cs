@@ -58,6 +58,14 @@ public static class OrderMapper
             (ItemSortBy.IsFolder, _) => e => e.IsFolder,
             (ItemSortBy.IsPlayed, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.Played,
             (ItemSortBy.IsUnplayed, _) => e => !e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.Played,
+            (ItemSortBy.DateAddedToList, _) => e => jellyfinDbContext.ItemListBaseItemMap
+                .Where(uli => uli.ItemId == e.Id
+                    && (query.ItemListId.HasValue
+                        ? uli.ItemListId == query.ItemListId.Value
+                        : uli.ItemList!.UserId == query.User!.Id && uli.ItemList!.IsDefault))
+                .OrderBy(uli => uli.ItemListId)
+                .Select(uli => (DateTime?)uli.DateAdded)
+                .FirstOrDefault(),
             (ItemSortBy.DateLastContentAdded, _) => e => e.DateLastMediaAdded,
             (ItemSortBy.Artist, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.Artist).OrderBy(f => f.ItemValue.CleanValue).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
             (ItemSortBy.AlbumArtist, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.AlbumArtist).OrderBy(f => f.ItemValue.CleanValue).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),

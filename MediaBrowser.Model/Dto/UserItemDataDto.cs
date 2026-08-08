@@ -44,6 +44,24 @@ namespace MediaBrowser.Model.Dto
         public bool IsFavorite { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this item is in the user's default watchlist.
+        /// </summary>
+        /// <value><c>true</c> if this item is in the user's default watchlist; otherwise, <c>false</c>.</value>
+        public bool IsWatchlisted { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this item is in any of the user's lists.
+        /// </summary>
+        /// <value><c>true</c> if this item is in any of the user's lists; otherwise, <c>false</c>.</value>
+        public bool IsInAnyUserList { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifiers of the user lists containing this item.
+        /// </summary>
+        /// <value>The user list identifiers.</value>
+        public Guid[]? UserListIds { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="UserItemDataDto" /> is likes.
         /// </summary>
         /// <value><c>null</c> if [likes] contains no value, <c>true</c> if [likes]; otherwise, <c>false</c>.</value>

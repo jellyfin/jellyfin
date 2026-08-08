@@ -153,5 +153,10 @@ public enum ViewType
     /// <summary>
     /// Shows videos.
     /// </summary>
-    Videos = 29
+    Videos = 29,
+
+    /// <summary>
+    /// Shows watchlist.
+    /// </summary>
+    Watchlist = 30
 }

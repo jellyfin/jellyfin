@@ -136,6 +136,14 @@ public class ItemPersistenceService : IItemPersistenceService
         context.ItemValuesMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ParentId).ExecuteDelete();
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ChildId).ExecuteDelete();
+        // Compare on ItemId.Value: WhereOneOrMany builds an Expression.Equal against a boxed
+        // constant, which cannot be typed as Nullable<Guid> and throws for a nullable property.
+        context.ItemListBaseItemMap
+            .Where(e => e.ItemId.HasValue)
+            .WhereOneOrMany(relatedItems, e => e.ItemId!.Value)
+            .ExecuteUpdate(e => e
+                .SetProperty(f => f.ItemId, (Guid?)null)
+                .SetProperty(f => f.RetentionDate, date));
         context.BaseItems.WhereOneOrMany(relatedItems, e => e.Id).ExecuteDelete();
         context.KeyframeData.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.MediaSegments.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
@@ -215,6 +223,15 @@ public class ItemPersistenceService : IItemPersistenceService
 
                 await dbContext.UserData
                     .Where(e => e.ItemId == BaseItemRepository.PlaceholderId)
+                    .Where(e => userKeys.Contains(e.CustomDataKey))
+                    .ExecuteUpdateAsync(
+                        e => e
+                            .SetProperty(f => f.ItemId, item.Id)
+                            .SetProperty(f => f.RetentionDate, retentionDate),
+                        cancellationToken).ConfigureAwait(false);
+
+                await dbContext.ItemListBaseItemMap
+                    .Where(e => e.ItemId == null)
                     .Where(e => userKeys.Contains(e.CustomDataKey))
                     .ExecuteUpdateAsync(
                         e => e

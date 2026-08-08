@@ -121,7 +121,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
     /// <param name="excludeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
     /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on the item type. This allows multiple, comma delimited.</param>
-    /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
+    /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes, IsInWatchlist.</param>
     /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not.</param>
     /// <param name="mediaTypes">Optional filter by MediaType. Allows multiple, comma delimited.</param>
     /// <param name="imageTypes">Optional. If specified, results will be filtered based on those containing image types. This allows multiple, comma delimited.</param>
@@ -167,6 +167,8 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="subtitleLanguages">Optional. If specified, results will be filtered based on subtitle language. This allows multiple, comma delimited values.</param>
     /// <param name="enableTotalRecordCount">Optional. Enable the total record count.</param>
     /// <param name="enableImages">Optional, include image information in output.</param>
+    /// <param name="userListId">Optional filter by user list id.</param>
+    /// <param name="isInWatchlist">Optional filter by items that are in the user's default watchlist, or not.</param>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
     [HttpGet("Items")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -258,7 +260,9 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] audioLanguages,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] subtitleLanguages,
         [FromQuery] bool enableTotalRecordCount = true,
-        [FromQuery] bool? enableImages = true)
+        [FromQuery] bool? enableImages = true,
+        [FromQuery] Guid? userListId = null,
+        [FromQuery] bool? isInWatchlist = null)
     {
         var isApiKey = User.GetIsApiKey();
         // if api key is used (auth.IsApiKey == true), then `user` will be null throughout this method
@@ -387,6 +391,8 @@ public class ItemsController : BaseJellyfinApiController
             Recursive = recursive ?? false,
             OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder),
             IsFavorite = isFavorite,
+            ItemListId = userListId,
+            IsInWatchlist = isInWatchlist,
             Limit = searchResultScores is null ? limit : null,
             StartIndex = searchResultScores is null ? startIndex : null,
             IsMissing = isMissing,
@@ -673,7 +679,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
     /// <param name="excludeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
     /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on the item type. This allows multiple, comma delimited.</param>
-    /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
+    /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes, IsInWatchlist.</param>
     /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not.</param>
     /// <param name="mediaTypes">Optional filter by MediaType. Allows multiple, comma delimited.</param>
     /// <param name="imageTypes">Optional. If specified, results will be filtered based on those containing image types. This allows multiple, comma delimited.</param>
@@ -717,6 +723,8 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="genreIds">Optional. If specified, results will be filtered based on genre id. This allows multiple, pipe delimited.</param>
     /// <param name="enableTotalRecordCount">Optional. Enable the total record count.</param>
     /// <param name="enableImages">Optional, include image information in output.</param>
+    /// <param name="userListId">Optional filter by user list id.</param>
+    /// <param name="isInWatchlist">Optional filter by items that are in the user's default watchlist, or not.</param>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
     [HttpGet("Users/{userId}/Items")]
     [Obsolete("Kept for backwards compatibility")]
@@ -807,7 +815,9 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] studioIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] genreIds,
         [FromQuery] bool enableTotalRecordCount = true,
-        [FromQuery] bool? enableImages = true)
+        [FromQuery] bool? enableImages = true,
+        [FromQuery] Guid? userListId = null,
+        [FromQuery] bool? isInWatchlist = null)
         => await GetItems(
             userId,
             maxOfficialRating,
@@ -896,7 +906,9 @@ public class ItemsController : BaseJellyfinApiController
             [],
             [],
             enableTotalRecordCount,
-            enableImages).ConfigureAwait(false);
+            enableImages,
+            userListId: userListId,
+            isInWatchlist: isInWatchlist).ConfigureAwait(false);
 
     /// <summary>
     /// Gets items based on a query.

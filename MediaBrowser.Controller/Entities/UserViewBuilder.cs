@@ -91,6 +91,9 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.moviefavorites:
                     return GetFavoriteMovies(queryParent, user, query);
 
+                case CollectionType.moviewatchlist:
+                    return GetWatchlistMovies(queryParent, user, query);
+
                 case CollectionType.movielatest:
                     return GetMovieLatest(queryParent, user, query);
 
@@ -112,8 +115,14 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.tvfavoriteepisodes:
                     return GetFavoriteEpisodes(queryParent, user, query);
 
+                case CollectionType.tvwatchlistepisodes:
+                    return GetWatchlistEpisodes(queryParent, user, query);
+
                 case CollectionType.tvfavoriteseries:
                     return GetFavoriteSeries(queryParent, user, query);
+
+                case CollectionType.tvwatchlistseries:
+                    return GetWatchlistSeries(queryParent, user, query);
 
                 default:
                     {
@@ -154,7 +163,8 @@ namespace MediaBrowser.Controller.Entities
                 GetUserView(CollectionType.moviemovies, "Movies", "2", parent),
                 GetUserView(CollectionType.moviecollection, "Collections", "3", parent),
                 GetUserView(CollectionType.moviefavorites, "Favorites", "4", parent),
-                GetUserView(CollectionType.moviegenres, "Genres", "5", parent)
+                GetUserView(CollectionType.moviegenres, "Genres", "5", parent),
+                GetUserView(CollectionType.moviewatchlist, "Watchlist", "6", parent)
             };
 
             return GetResult(list, query);
@@ -171,6 +181,17 @@ namespace MediaBrowser.Controller.Entities
             return _libraryManager.GetItemsResult(query);
         }
 
+        private QueryResult<BaseItem> GetWatchlistMovies(Folder parent, User user, InternalItemsQuery query)
+        {
+            query.Recursive = true;
+            query.Parent = parent;
+            query.SetUser(user);
+            query.IsInWatchlist = true;
+            query.IncludeItemTypes = [BaseItemKind.Movie];
+
+            return _libraryManager.GetItemsResult(query);
+        }
+
         private QueryResult<BaseItem> GetFavoriteSeries(Folder parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
@@ -182,12 +203,34 @@ namespace MediaBrowser.Controller.Entities
             return _libraryManager.GetItemsResult(query);
         }
 
+        private QueryResult<BaseItem> GetWatchlistSeries(Folder parent, User user, InternalItemsQuery query)
+        {
+            query.Recursive = true;
+            query.Parent = parent;
+            query.SetUser(user);
+            query.IsInWatchlist = true;
+            query.IncludeItemTypes = [BaseItemKind.Series];
+
+            return _libraryManager.GetItemsResult(query);
+        }
+
         private QueryResult<BaseItem> GetFavoriteEpisodes(Folder parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
+            query.IncludeItemTypes = [BaseItemKind.Episode];
+
+            return _libraryManager.GetItemsResult(query);
+        }
+
+        private QueryResult<BaseItem> GetWatchlistEpisodes(Folder parent, User user, InternalItemsQuery query)
+        {
+            query.Recursive = true;
+            query.Parent = parent;
+            query.SetUser(user);
+            query.IsInWatchlist = true;
             query.IncludeItemTypes = [BaseItemKind.Episode];
 
             return _libraryManager.GetItemsResult(query);
@@ -323,7 +366,9 @@ namespace MediaBrowser.Controller.Entities
                 GetUserView(CollectionType.tvshowseries, "Shows", "3", parent),
                 GetUserView(CollectionType.tvfavoriteseries, "HeaderFavoriteShows", "4", parent),
                 GetUserView(CollectionType.tvfavoriteepisodes, "HeaderFavoriteEpisodes", "5", parent),
-                GetUserView(CollectionType.tvgenres, "Genres", "6", parent)
+                GetUserView(CollectionType.tvgenres, "Genres", "6", parent),
+                GetUserView(CollectionType.tvwatchlistseries, "HeaderWatchlistShows", "7", parent),
+                GetUserView(CollectionType.tvwatchlistepisodes, "HeaderWatchlistEpisodes", "8", parent)
             };
 
             return GetResult(list, query);
@@ -590,6 +635,23 @@ namespace MediaBrowser.Controller.Entities
             {
                 userData ??= userDataManager.GetUserData(user, item);
                 if (userData.IsFavorite != query.IsFavorite.Value)
+                {
+                    return false;
+                }
+            }
+
+            if (query.ItemListId.HasValue && query.ItemListMemberIds is not null)
+            {
+                if (!query.ItemListMemberIds.Contains(item.Id))
+                {
+                    return false;
+                }
+            }
+
+            if (query.IsInWatchlist.HasValue && query.ItemListMemberIds is not null)
+            {
+                var isInWatchlist = query.ItemListMemberIds.Contains(item.Id);
+                if (isInWatchlist != query.IsInWatchlist.Value)
                 {
                     return false;
                 }

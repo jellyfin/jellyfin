@@ -468,6 +468,30 @@ public sealed partial class BaseItemRepository
             }
         }
 
+        if (filter.ItemListId.HasValue)
+        {
+            var listItemIds = context.ItemListBaseItemMap
+                .Where(uli => uli.ItemListId == filter.ItemListId.Value && uli.ItemId != null)
+                .Select(uli => uli.ItemId);
+
+            baseQuery = baseQuery.Where(e => listItemIds.Contains(e.Id));
+        }
+
+        if (filter.IsInWatchlist.HasValue && filter.User is not null)
+        {
+            var userId = filter.User.Id;
+            var defaultListIds = context.ItemLists
+                .Where(ul => ul.UserId == userId && ul.IsDefault)
+                .Select(ul => ul.Id);
+            var watchlistItemIds = context.ItemListBaseItemMap
+                .Where(uli => defaultListIds.Contains(uli.ItemListId) && uli.ItemId != null)
+                .Select(uli => uli.ItemId);
+
+            baseQuery = filter.IsInWatchlist.Value
+                ? baseQuery.Where(e => watchlistItemIds.Contains(e.Id))
+                : baseQuery.Where(e => !watchlistItemIds.Contains(e.Id));
+        }
+
         if (filter.IsPlayed.HasValue)
         {
             var userId = filter.User!.Id;

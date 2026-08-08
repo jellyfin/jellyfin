@@ -154,6 +154,7 @@ namespace Jellyfin.Server
             services.AddHostedService<NfoUserDataSaver>();
             services.AddHostedService<LibraryChangedNotifier>();
             services.AddHostedService<UserDataChangeNotifier>();
+            services.AddHostedService<WatchlistAutoRemover>();
             services.AddHostedService<RecordingNotifier>();
         }
 

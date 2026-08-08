@@ -47,6 +47,7 @@ using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Udp;
 using Jellyfin.Server.Implementations.FullSystemBackup;
 using Jellyfin.Server.Implementations.Item;
+using Jellyfin.Server.Implementations.Library;
 using Jellyfin.Server.Implementations.MediaSegments;
 using Jellyfin.Server.Implementations.SystemBackupService;
 using MediaBrowser.Common;
@@ -571,6 +572,7 @@ namespace Emby.Server.Implementations
 
             // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required
             serviceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
+            serviceCollection.AddTransient(provider => new Lazy<ILibraryManager>(provider.GetRequiredService<ILibraryManager>));
             serviceCollection.AddTransient(provider => new Lazy<IProviderManager>(provider.GetRequiredService<IProviderManager>));
             serviceCollection.AddTransient(provider => new Lazy<IUserViewManager>(provider.GetRequiredService<IUserViewManager>));
             serviceCollection.AddTransient(provider => new Lazy<IExternalDataManager>(provider.GetRequiredService<IExternalDataManager>));
@@ -611,6 +613,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ILimitedConcurrencyLibraryScheduler, LimitedConcurrencyLibraryScheduler>();
 
             serviceCollection.AddSingleton<IPlaylistManager, PlaylistManager>();
+            serviceCollection.AddSingleton<IItemListManager, ItemListManager>();
 
             serviceCollection.AddSingleton<ISyncPlayManager, SyncPlayManager>();
 
