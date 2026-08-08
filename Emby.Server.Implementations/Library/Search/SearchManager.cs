@@ -92,37 +92,33 @@ public class SearchManager : ISearchManager
         await Task.WhenAll(externalTask, internalTask).ConfigureAwait(false);
 
         var externalResults = await externalTask.ConfigureAwait(false);
-        var fromExternal = externalResults.Count > 0;
-        IReadOnlyList<SearchResult> results;
-        if (fromExternal)
-        {
-            results = externalResults;
-        }
-        else
-        {
-            results = await internalTask.ConfigureAwait(false);
-            if (_internalProviders.Length > 0)
-            {
-                _logger.LogDebug("No results from external providers, using internal provider results");
-            }
-        }
 
         // Internal providers apply user-access filtering inline in their queries. External
         // providers don't know about user permissions, so they may return IDs from hidden
-        // libraries or items the user is otherwise blocked from. Run the post-filter only
-        // when results came from externals to close that gap. The Items controller's second
-        // roundtrip via folder.GetItems applies most of these again, but it does not restrict
-        // by TopParentIds when ItemIds is set.
-        if (fromExternal && results.Count > 0 && query.UserId.HasValue && !query.UserId.Value.IsEmpty())
+        // libraries or items the user is otherwise blocked from. Filter them here to close
+        // that gap. The Items controller's second roundtrip via folder.GetItems applies most
+        // of these again, but it does not restrict by TopParentIds when ItemIds is set.
+        if (externalResults.Count > 0 && query.UserId.HasValue && !query.UserId.Value.IsEmpty())
         {
             var user = _userManager.GetUserById(query.UserId.Value);
             if (user is not null)
             {
-                results = await FilterByUserAccessAsync(results, user, query, cancellationToken).ConfigureAwait(false);
+                externalResults = await FilterByUserAccessAsync(externalResults, user, query, cancellationToken).ConfigureAwait(false);
             }
         }
 
-        return results;
+        if (externalResults.Count > 0)
+        {
+            return externalResults;
+        }
+
+        var internalResults = await internalTask.ConfigureAwait(false);
+        if (_internalProviders.Length > 0)
+        {
+            _logger.LogDebug("No results from external providers, using internal provider results");
+        }
+
+        return internalResults;
     }
 
     private async Task<IReadOnlyList<SearchResult>> FilterByUserAccessAsync(
