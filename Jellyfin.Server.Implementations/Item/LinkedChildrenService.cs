@@ -70,9 +70,9 @@ public class LinkedChildrenService : ILinkedChildrenService
         using var dbContext = _dbProvider.CreateDbContext();
 
         return dbContext.LinkedChildren
-            .Where(lc => (lc.ChildType == DbLinkedChildType.LocalAlternateVersion
-                    || lc.ChildType == DbLinkedChildType.LinkedAlternateVersion)
-                && itemIds.Contains(lc.ParentId))
+            .Where(lc => lc.ChildType == DbLinkedChildType.LocalAlternateVersion
+                || lc.ChildType == DbLinkedChildType.LinkedAlternateVersion)
+            .WhereOneOrMany(itemIds as IList<Guid> ?? itemIds.ToList(), lc => lc.ParentId)
             .Select(lc => lc.ParentId)
             .Distinct()
             .ToHashSet();
