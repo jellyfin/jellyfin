@@ -1,5 +1,6 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.MediaEncoding.Keyframes;
 
 namespace Jellyfin.MediaEncoding.Hls.Extractors;
@@ -19,7 +20,7 @@ public interface IKeyframeExtractor
     /// </summary>
     /// <param name="itemId">The item id.</param>
     /// <param name="filePath">The path to the file.</param>
-    /// <param name="keyframeData">The keyframes.</param>
-    /// <returns>A value indicating whether the keyframe extraction was successful.</returns>
-    bool TryExtractKeyframes(Guid itemId, string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData);
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The keyframes, or <c>null</c> when this extractor cannot handle the file.</returns>
+    Task<KeyframeData?> ExtractKeyframesAsync(Guid itemId, string filePath, CancellationToken cancellationToken);
 }

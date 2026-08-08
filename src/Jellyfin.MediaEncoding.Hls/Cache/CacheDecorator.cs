@@ -1,9 +1,9 @@
 #pragma warning disable CA1826 // Do not use Enumerable methods on indexable collections
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.MediaEncoding.Hls.Extractors;
 using Jellyfin.MediaEncoding.Keyframes;
 using MediaBrowser.Controller.Persistence;
@@ -40,22 +40,24 @@ public class CacheDecorator : IKeyframeExtractor
     public bool IsMetadataBased => _keyframeExtractor.IsMetadataBased;
 
     /// <inheritdoc />
-    public bool TryExtractKeyframes(Guid itemId, string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData)
+    public async Task<KeyframeData?> ExtractKeyframesAsync(Guid itemId, string filePath, CancellationToken cancellationToken)
     {
-        keyframeData = _keyframeRepository.GetKeyframeData(itemId).FirstOrDefault();
-        if (keyframeData is null)
+        var keyframeData = _keyframeRepository.GetKeyframeData(itemId).FirstOrDefault();
+        if (keyframeData is not null)
         {
-            if (!_keyframeExtractor.TryExtractKeyframes(itemId, filePath, out var result))
-            {
-                _logger.LogDebug("Failed to extract keyframes using {ExtractorName}", _keyframeExtractorName);
-                return false;
-            }
-
-            _logger.LogDebug("Successfully extracted keyframes using {ExtractorName}", _keyframeExtractorName);
-            keyframeData = result;
-            _keyframeRepository.SaveKeyframeDataAsync(itemId, keyframeData, CancellationToken.None).GetAwaiter().GetResult();
+            return keyframeData;
         }
 
-        return true;
+        keyframeData = await _keyframeExtractor.ExtractKeyframesAsync(itemId, filePath, cancellationToken).ConfigureAwait(false);
+        if (keyframeData is null)
+        {
+            _logger.LogDebug("Failed to extract keyframes using {ExtractorName}", _keyframeExtractorName);
+            return null;
+        }
+
+        _logger.LogDebug("Successfully extracted keyframes using {ExtractorName}", _keyframeExtractorName);
+        await _keyframeRepository.SaveKeyframeDataAsync(itemId, keyframeData, cancellationToken).ConfigureAwait(false);
+
+        return keyframeData;
     }
 }

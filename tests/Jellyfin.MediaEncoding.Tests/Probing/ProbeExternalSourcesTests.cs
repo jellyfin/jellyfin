@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.MediaEncoding.FFProcessing;
+using MediaBrowser.Controller.MediaEncoding.FFProcessing.Requests;
 using MediaBrowser.MediaEncoding.Encoder;
+using MediaBrowser.MediaEncoding.FFProcessing;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -24,7 +27,9 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
                 Mock.Of<IBlurayExaminer>(),
                 Mock.Of<ILocalizationManager>(),
                 new ConfigurationBuilder().Build(),
-                Mock.Of<IServerConfigurationManager>());
+                Mock.Of<IServerConfigurationManager>(),
+                new FFPaths(),
+                Mock.Of<IFFRunner>());
 
             var userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)";
             var req = new MediaBrowser.Controller.MediaEncoding.MediaInfoRequest()

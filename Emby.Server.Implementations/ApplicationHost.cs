@@ -71,6 +71,8 @@ using MediaBrowser.Controller.LibraryTaskScheduler;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.MediaEncoding.FFProcessing;
+using MediaBrowser.Controller.MediaEncoding.FFProcessing.Requests;
 using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
@@ -415,7 +417,7 @@ namespace Emby.Server.Implementations
         /// Runs the startup tasks.
         /// </summary>
         /// <returns><see cref="Task" />.</returns>
-        public Task RunStartupTasksAsync()
+        public async Task RunStartupTasksAsync()
         {
             Logger.LogInformation("Running startup tasks");
 
@@ -426,7 +428,7 @@ namespace Emby.Server.Implementations
             ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
             ConfigurationManager.NamedConfigurationUpdated += OnConfigurationUpdated;
 
-            var ffmpegValid = Resolve<IMediaEncoder>().SetFFmpegPath();
+            var ffmpegValid = await Resolve<IMediaEncoder>().SetFFmpegPathAsync().ConfigureAwait(false);
 
             if (!ffmpegValid)
             {
@@ -436,8 +438,6 @@ namespace Emby.Server.Implementations
             Logger.LogInformation("ServerId: {ServerId}", SystemId);
             Logger.LogInformation("Core startup complete");
             CoreStartupHasCompleted = true;
-
-            return Task.CompletedTask;
         }
 
         private void EnsureStartupWizardIntegrity()
@@ -564,7 +564,9 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IKeyframeRepository, KeyframeRepository>();
             serviceCollection.AddSingleton<IItemTypeLookup, ItemTypeLookup>();
 
+            serviceCollection.AddSingleton<IFFPaths, MediaBrowser.MediaEncoding.FFProcessing.FFPaths>();
             serviceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();
+            serviceCollection.AddSingleton<IFFRunner, MediaBrowser.MediaEncoding.FFProcessing.FFRunner>();
             serviceCollection.AddSingleton<EncodingHelper>();
             serviceCollection.AddSingleton<IPathManager, PathManager>();
             serviceCollection.AddSingleton<IExternalDataManager, ExternalDataManager>();

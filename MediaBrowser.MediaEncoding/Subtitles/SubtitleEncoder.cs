@@ -21,6 +21,8 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.MediaEncoding.FFProcessing;
+using MediaBrowser.Controller.MediaEncoding.FFProcessing.Requests;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -38,6 +40,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly ILogger<SubtitleEncoder> _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IMediaEncoder _mediaEncoder;
+        private readonly IFFRunner _ffRunner;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ISubtitleParser _subtitleParser;
@@ -57,6 +60,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             ILogger<SubtitleEncoder> logger,
             IFileSystem fileSystem,
             IMediaEncoder mediaEncoder,
+            IFFRunner ffRunner,
             IHttpClientFactory httpClientFactory,
             IMediaSourceManager mediaSourceManager,
             ISubtitleParser subtitleParser,
@@ -66,6 +70,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _logger = logger;
             _fileSystem = fileSystem;
             _mediaEncoder = mediaEncoder;
+            _ffRunner = ffRunner;
             _httpClientFactory = httpClientFactory;
             _mediaSourceManager = mediaSourceManager;
             _subtitleParser = subtitleParser;
@@ -440,24 +445,16 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             var encodingParam = await GetSubtitleFileCharacterSet(subtitleStream, subtitleStream.Language, mediaSource, cancellationToken).ConfigureAwait(false);
 
-            // FFmpeg automatically convert character encoding when it is UTF-16
-            // If we specify character encoding, it rejects with "do not specify a character encoding" and "Unable to recode subtitle event"
-            if ((inputPath.EndsWith(".smi", StringComparison.Ordinal) || inputPath.EndsWith(".sami", StringComparison.Ordinal)) &&
-                (encodingParam.Equals("UTF-16BE", StringComparison.OrdinalIgnoreCase) ||
-                 encodingParam.Equals("UTF-16LE", StringComparison.OrdinalIgnoreCase)))
+            var request = new SubtitleConvertRequest
             {
-                encodingParam = string.Empty;
-            }
-            else if (!string.IsNullOrEmpty(encodingParam))
-            {
-                encodingParam = " -sub_charenc " + encodingParam;
-            }
-
-            var args = string.Format(CultureInfo.InvariantCulture, "-y {0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath);
+                Input = inputPath,
+                OutputPath = outputPath,
+                SourceCharacterEncoding = encodingParam
+            };
 
             await ExtractSubtitlesForFile(
                 inputPath,
-                args,
+                request,
                 [outputPath],
                 cancellationToken).ConfigureAwait(false);
 
@@ -593,10 +590,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 var inputPath = _mediaEncoder.GetInputArgument(mksFile, mediaSource);
                 var outputPaths = new List<string>();
-                var args = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "-y -i {0}",
-                    inputPath);
+                var targets = new List<SubtitleTarget>();
 
                 foreach (var subtitleStream in subtitleStreams)
                 {
@@ -611,9 +605,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         continue;
                     }
 
-                    var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
-                    // FFmpeg does not provide an .idx/.sub muxer, so VobSub streams must be written as MKS files.
-                    var outputFormatOption = MediaStream.IsVobSubFormat(subtitleStream.Codec) ? " -f matroska" : string.Empty;
                     var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
 
                     if (streamIndex == -1)
@@ -625,16 +616,18 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new FileNotFoundException($"Calculated path ({outputPath}) is not valid."));
 
                     outputPaths.Add(outputPath);
-                    args += string.Format(
-                        CultureInfo.InvariantCulture,
-                        " -map 0:{0} -an -vn -c:s {1}{2} -flush_packets 1 \"{3}\"",
+                    targets.Add(new SubtitleTarget(
                         streamIndex,
-                        outputCodec,
-                        outputFormatOption,
-                        outputPath);
+                        outputPath,
+                        IsCodecCopyable(subtitleStream.Codec),
+                        MediaStream.IsVobSubFormat(subtitleStream.Codec)));
                 }
 
-                await ExtractSubtitlesForFile(inputPath, args, outputPaths, cancellationToken).ConfigureAwait(false);
+                await ExtractSubtitlesForFile(
+                    inputPath,
+                    new SubtitleExtractRequest { Input = inputPath, Targets = targets },
+                    outputPaths,
+                    cancellationToken).ConfigureAwait(false);
 
                 foreach (var outputPath in outputPaths)
                 {
@@ -650,10 +643,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             var inputPath = _mediaEncoder.GetInputArgument(mediaSource.Path, mediaSource);
             var outputPaths = new List<string>();
-            var args = string.Format(
-                CultureInfo.InvariantCulture,
-                "-y -i {0}",
-                inputPath);
+            var targets = new List<SubtitleTarget>();
 
             foreach (var subtitleStream in subtitleStreams)
             {
@@ -669,9 +659,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     continue;
                 }
 
-                var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
-                // FFmpeg does not provide an .idx/.sub muxer, so VobSub streams must be written as MKS files.
-                var outputFormatOption = MediaStream.IsVobSubFormat(subtitleStream.Codec) ? " -f matroska" : string.Empty;
                 var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
 
                 if (streamIndex == -1)
@@ -683,18 +670,20 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new FileNotFoundException($"Calculated path ({outputPath}) is not valid."));
 
                 outputPaths.Add(outputPath);
-                args += string.Format(
-                    CultureInfo.InvariantCulture,
-                    " -map 0:{0} -an -vn -c:s {1}{2} -flush_packets 1 \"{3}\"",
+                targets.Add(new SubtitleTarget(
                     streamIndex,
-                    outputCodec,
-                    outputFormatOption,
-                    outputPath);
+                    outputPath,
+                    IsCodecCopyable(subtitleStream.Codec),
+                    MediaStream.IsVobSubFormat(subtitleStream.Codec)));
             }
 
             if (outputPaths.Count > 0)
             {
-                await ExtractSubtitlesForFile(inputPath, args, outputPaths, cancellationToken).ConfigureAwait(false);
+                await ExtractSubtitlesForFile(
+                    inputPath,
+                    new SubtitleExtractRequest { Input = inputPath, Targets = targets },
+                    outputPaths,
+                    cancellationToken).ConfigureAwait(false);
 
                 foreach (var outputPath in outputPaths)
                 {
@@ -705,15 +694,19 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         private async Task ExtractSubtitlesForFile(
             string inputPath,
-            string args,
+            FFRequest request,
             IReadOnlyList<string> outputPaths,
             CancellationToken cancellationToken)
         {
-            var (exitCode, ffmpegError) = await RunSubtitleExtractionProcess(args, cancellationToken).ConfigureAwait(false);
+            var timeoutMinutes = _serverConfigurationManager.GetEncodingOptions().SubtitleExtractionTimeoutMinutes;
+            request = request with { Timeout = TimeSpan.FromMinutes(timeoutMinutes) };
+
+            var result = await _ffRunner.RunAsync(request, cancellationToken).ConfigureAwait(false);
+            var ffmpegError = result.Stderr;
 
             var failed = false;
 
-            if (exitCode == -1)
+            if (!result.Succeeded)
             {
                 failed = true;
 
@@ -833,106 +826,24 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             ArgumentException.ThrowIfNullOrEmpty(outputPath);
 
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath)));
-            var processArgs = string.Format(
-                CultureInfo.InvariantCulture,
-                "-y -i {0} -copyts -map 0:{1} -an -vn -c:s {2} \"{3}\"",
-                inputPath,
-                subtitleStreamIndex,
-                outputCodec,
-                outputPath);
+
+            var request = new SubtitleExtractRequest
+            {
+                Input = inputPath,
+                Targets = [new SubtitleTarget(
+                    subtitleStreamIndex,
+                    outputPath,
+                    string.Equals(outputCodec, "copy", StringComparison.OrdinalIgnoreCase),
+                    false)]
+            };
 
             await ExtractSubtitlesForFile(
                 inputPath,
-                processArgs,
+                request,
                 [outputPath],
                 cancellationToken).ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Runs ffmpeg to extract or convert subtitles, capturing its exit code and stderr output.
-        /// </summary>
-        /// <remarks>
-        /// stdin is redirected and closed, and <c>-nostdin</c> is prepended to the arguments, so ffmpeg can never
-        /// block reading an inherited stdin handle (which happens when Jellyfin runs as a service, e.g. under NSSM,
-        /// and stalls subtitle extraction until the timeout). stderr is redirected and drained so a full pipe buffer
-        /// cannot deadlock ffmpeg and so its output can be surfaced on failure; stdout is left un-redirected as it is
-        /// unused for subtitle extraction.
-        /// </remarks>
-        /// <param name="arguments">The ffmpeg command line arguments.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The ffmpeg exit code (-1 on timeout) and its captured stderr output.</returns>
-        private async Task<(int ExitCode, string StandardError)> RunSubtitleExtractionProcess(string arguments, CancellationToken cancellationToken)
-        {
-            int exitCode;
-            var standardError = string.Empty;
-
-            using (var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    RedirectStandardInput = true,
-                    RedirectStandardError = true,
-                    FileName = _mediaEncoder.EncoderPath,
-                    Arguments = "-nostdin " + arguments,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    ErrorDialog = false
-                },
-                EnableRaisingEvents = true
-            })
-            {
-                _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
-
-                try
-                {
-                    process.Start();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error starting ffmpeg");
-                    throw;
-                }
-
-                // Close stdin so ffmpeg observes EOF instead of blocking on an inherited handle.
-                process.StandardInput.Close();
-
-                // Begin draining stderr before waiting for exit; a full stderr pipe buffer would otherwise deadlock ffmpeg.
-                var standardErrorTask = process.StandardError.ReadToEndAsync(CancellationToken.None);
-                var timeoutMinutes = _serverConfigurationManager.GetEncodingOptions().SubtitleExtractionTimeoutMinutes;
-                using var waitSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                waitSource.CancelAfter(TimeSpan.FromMinutes(timeoutMinutes));
-
-                try
-                {
-                    await process.WaitForExitAsync(waitSource.Token).ConfigureAwait(false);
-                    exitCode = process.ExitCode;
-                }
-                catch (OperationCanceledException)
-                {
-                    process.Kill(true);
-                    exitCode = -1;
-                }
-
-                try
-                {
-                    standardError = await standardErrorTask.ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    // Reading ffmpeg output was cancelled; nothing more to capture.
-                }
-            }
-
-            return (exitCode, standardError);
-        }
-
-        /// <summary>
-        /// Sets the ass font.
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <c>System.Threading.CancellationToken.None</c>.</param>
-        /// <returns>Task.</returns>
         private async Task SetAssFont(string file, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("Setting ass font within {File}", file);

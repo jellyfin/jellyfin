@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +13,8 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.MediaEncoding.FFProcessing;
+using MediaBrowser.Controller.MediaEncoding.FFProcessing.Requests;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
@@ -29,7 +29,7 @@ public partial class AudioNormalizationTask : IScheduledTask
 {
     private readonly IItemPersistenceService _persistenceService;
     private readonly ILibraryManager _libraryManager;
-    private readonly IMediaEncoder _mediaEncoder;
+    private readonly IFFRunner _ffRunner;
     private readonly IApplicationPaths _applicationPaths;
     private readonly ILocalizationManager _localization;
     private readonly ILogger<AudioNormalizationTask> _logger;
@@ -41,24 +41,24 @@ public partial class AudioNormalizationTask : IScheduledTask
     /// </summary>
     /// <param name="persistenceService">Instance of the <see cref="IItemPersistenceService"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
-    /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
     /// <param name="applicationPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="localizationManager">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{AudioNormalizationTask}"/> interface.</param>
+    /// <param name="ffRunner">Instance of the <see cref="IFFRunner"/> interface.</param>
     public AudioNormalizationTask(
         IItemPersistenceService persistenceService,
         ILibraryManager libraryManager,
-        IMediaEncoder mediaEncoder,
         IApplicationPaths applicationPaths,
         ILocalizationManager localizationManager,
-        ILogger<AudioNormalizationTask> logger)
+        ILogger<AudioNormalizationTask> logger,
+        IFFRunner ffRunner)
     {
         _persistenceService = persistenceService;
         _libraryManager = libraryManager;
-        _mediaEncoder = mediaEncoder;
         _applicationPaths = applicationPaths;
         _localization = localizationManager;
         _logger = logger;
+        _ffRunner = ffRunner;
     }
 
     /// <inheritdoc />
@@ -116,8 +116,7 @@ public partial class AudioNormalizationTask : IScheduledTask
                         try
                         {
                             a.LUFS = await CalculateLUFSAsync(
-                                string.Format(CultureInfo.InvariantCulture, "-f concat -safe 0 -i \"{0}\"", tempFile),
-                                OperatingSystem.IsWindows(), // Wait for process to exit on Windows before we try deleting the concat file
+                                new LoudnessRequest { Path = tempFile, IsConcatPlaylist = true },
                                 cancellationToken).ConfigureAwait(false);
                             toSaveDbItems.Add(a);
                         }
@@ -174,8 +173,7 @@ public partial class AudioNormalizationTask : IScheduledTask
                 if (!t.NormalizationGain.HasValue && !t.LUFS.HasValue && t.IsFileProtocol)
                 {
                     t.LUFS = await CalculateLUFSAsync(
-                        string.Format(CultureInfo.InvariantCulture, "-i \"{0}\"", t.Path.Replace("\"", "\\\"", StringComparison.Ordinal)),
-                        false,
+                        new LoudnessRequest { Path = t.Path.Replace("\"", "\\\"", StringComparison.Ordinal) },
                         cancellationToken).ConfigureAwait(false);
                     toSaveDbItems.Add(t);
                 }
@@ -225,72 +223,24 @@ public partial class AudioNormalizationTask : IScheduledTask
         };
     }
 
-    private async Task<float?> CalculateLUFSAsync(string inputArgs, bool waitForExit, CancellationToken cancellationToken)
+    private async Task<float?> CalculateLUFSAsync(LoudnessRequest request, CancellationToken cancellationToken)
     {
-        var args = $"-hide_banner {inputArgs} -af ebur128=framelog=verbose -f null -";
+        // ebur128 reports the summary on stderr at the end of the run, so it survives the runner's
+        // bounded tail however long the input is.
+        var result = await _ffRunner.RunAsync(request, cancellationToken).ConfigureAwait(false);
 
-        using (var process = new Process()
+        if (!result.Succeeded)
         {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = _mediaEncoder.EncoderPath,
-                Arguments = args,
-                StandardErrorEncoding = Encoding.UTF8,
-                RedirectStandardError = true
-            },
-        })
-        {
-            _logger.LogDebug("Starting ffmpeg with arguments: {Arguments}", args);
-            try
-            {
-                process.Start();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error starting ffmpeg with arguments: {Arguments}", args);
-                return null;
-            }
-
-            try
-            {
-                process.PriorityClass = ProcessPriorityClass.BelowNormal;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Error setting ffmpeg process priority");
-            }
-
-            using var reader = process.StandardError;
-            float? lufs = null;
-            var foundLufs = false;
-            await foreach (var line in reader.ReadAllLinesAsync(cancellationToken).ConfigureAwait(false))
-            {
-                if (foundLufs)
-                {
-                    continue;
-                }
-
-                Match match = LUFSRegex().Match(line);
-                if (!match.Success)
-                {
-                    continue;
-                }
-
-                lufs = float.Parse(match.Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
-                foundLufs = true;
-            }
-
-            if (lufs is null)
-            {
-                _logger.LogError("Failed to find LUFS value in output");
-            }
-
-            if (waitForExit)
-            {
-                await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
-            }
-
-            return lufs;
+            return null;
         }
+
+        var match = LUFSRegex().Match(result.Stderr);
+        if (!match.Success)
+        {
+            _logger.LogError("Failed to find LUFS value for {Path}", request.Path);
+            return null;
+        }
+
+        return float.Parse(match.Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
     }
 }

@@ -1,5 +1,6 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.MediaEncoding.Keyframes;
 using Microsoft.Extensions.Logging;
 using Extractor = Jellyfin.MediaEncoding.Keyframes.Matroska.MatroskaKeyframeExtractor;
@@ -24,25 +25,24 @@ public class MatroskaKeyframeExtractor : IKeyframeExtractor
     public bool IsMetadataBased => true;
 
     /// <inheritdoc />
-    public bool TryExtractKeyframes(Guid itemId, string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData)
+    public Task<KeyframeData?> ExtractKeyframesAsync(Guid itemId, string filePath, CancellationToken cancellationToken)
     {
         if (!filePath.AsSpan().EndsWith(".mkv", StringComparison.OrdinalIgnoreCase))
         {
-            keyframeData = null;
-            return false;
+            return Task.FromResult<KeyframeData?>(null);
         }
 
         try
         {
-            keyframeData = Extractor.GetKeyframeData(filePath);
-            return keyframeData.KeyframeTicks.Count > 0;
+            // Reading the container index is pure file work, so there is nothing to await here.
+            var keyframeData = Extractor.GetKeyframeData(filePath);
+            return Task.FromResult(keyframeData.KeyframeTicks.Count > 0 ? keyframeData : null);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Extracting keyframes from {FilePath} using matroska metadata failed", filePath);
         }
 
-        keyframeData = null;
-        return false;
+        return Task.FromResult<KeyframeData?>(null);
     }
 }

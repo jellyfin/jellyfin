@@ -4,62 +4,12 @@
 
 using System;
 using System.Globalization;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
-    public class JobLogger
+    public static class JobLogger
     {
-        private readonly ILogger _logger;
-
-        public JobLogger(ILogger logger)
-        {
-            _logger = logger;
-        }
-
-        public async Task StartStreamingLog(EncodingJobInfo state, StreamReader reader, Stream target)
-        {
-            try
-            {
-                using (target)
-                using (reader)
-                {
-                    string line = await reader.ReadLineAsync().ConfigureAwait(false);
-                    while (line is not null && reader.BaseStream.CanRead)
-                    {
-                        ParseLogLine(line, state);
-
-                        var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
-
-                        // If ffmpeg process is closed, the state is disposed, so don't write to target in that case
-                        if (!target.CanWrite)
-                        {
-                            break;
-                        }
-
-                        await target.WriteAsync(bytes).ConfigureAwait(false);
-
-                        // Check again, the stream could have been closed
-                        if (!target.CanWrite)
-                        {
-                            break;
-                        }
-
-                        await target.FlushAsync().ConfigureAwait(false);
-                        line = await reader.ReadLineAsync().ConfigureAwait(false);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error reading ffmpeg log");
-            }
-        }
-
-        private void ParseLogLine(string line, EncodingJobInfo state)
+        public static void ParseLogLine(string line, EncodingJobInfo state)
         {
             float? framerate = null;
             double? percent = null;

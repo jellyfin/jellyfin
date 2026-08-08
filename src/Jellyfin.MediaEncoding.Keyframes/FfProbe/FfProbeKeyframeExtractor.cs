@@ -18,6 +18,9 @@ public static class FfProbeKeyframeExtractor
     /// <param name="ffProbePath">The path to the ffprobe executable.</param>
     /// <param name="filePath">The file path.</param>
     /// <returns>An instance of <see cref="KeyframeData"/>.</returns>
+    [Obsolete("Spawns an unsupervised process: no timeout, no cancellation and no stderr capture. "
+        + "Jellyfin now runs this through IFFRunner and only parses here. Retained for external "
+        + "callers; use ParseStream with your own supervised process instead.")]
     public static KeyframeData GetKeyframeData(string ffProbePath, string filePath)
     {
         using var process = new Process
@@ -34,9 +37,8 @@ public static class FfProbeKeyframeExtractor
                 UseShellExecute = false,
                 StandardOutputEncoding = Encoding.UTF8,
                 RedirectStandardOutput = true,
-
                 WindowStyle = ProcessWindowStyle.Hidden,
-                ErrorDialog = false,
+                ErrorDialog = false
             },
             EnableRaisingEvents = true
         };
@@ -44,14 +46,14 @@ public static class FfProbeKeyframeExtractor
         try
         {
             process.Start();
+
             try
             {
                 process.PriorityClass = ProcessPriorityClass.BelowNormal;
             }
             catch
             {
-                // We do not care if process priority setting fails
-                // Ideally log a warning but this does not have a logger available
+                // Not fatal; priority is an optimisation.
             }
 
             return ParseStream(process.StandardOutput);
@@ -67,14 +69,19 @@ public static class FfProbeKeyframeExtractor
             }
             catch
             {
-                // We do not care if this fails
+                // Best effort.
             }
 
             throw;
         }
     }
 
-    internal static KeyframeData ParseStream(StreamReader reader)
+    /// <summary>
+    /// Parses ffprobe's CSV output into keyframe data.
+    /// </summary>
+    /// <param name="reader">The ffprobe standard output.</param>
+    /// <returns>An instance of <see cref="KeyframeData"/>.</returns>
+    public static KeyframeData ParseStream(StreamReader reader)
     {
         var keyframes = new List<long>();
         double streamDuration = 0;
