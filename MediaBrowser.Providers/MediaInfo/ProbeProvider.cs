@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Naming.Common;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -46,6 +47,7 @@ namespace MediaBrowser.Providers.MediaInfo
         IHasItemChangeMonitor
     {
         private readonly ILogger<ProbeProvider> _logger;
+        private readonly NamingOptions _namingOptions;
         private readonly AudioResolver _audioResolver;
         private readonly SubtitleResolver _subtitleResolver;
         private readonly LyricResolver _lyricResolver;
@@ -87,6 +89,7 @@ namespace MediaBrowser.Providers.MediaInfo
             IMediaStreamRepository mediaStreamRepository)
         {
             _logger = loggerFactory.CreateLogger<ProbeProvider>();
+            _namingOptions = namingOptions;
             _audioResolver = new AudioResolver(loggerFactory.CreateLogger<AudioResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
             _subtitleResolver = new SubtitleResolver(loggerFactory.CreateLogger<SubtitleResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
             _lyricResolver = new LyricResolver(loggerFactory.CreateLogger<LyricResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
@@ -226,39 +229,32 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             long pageCount;
-            switch (Path.GetExtension(item.Path).ToLowerInvariant())
+            var extension = Path.GetExtension(item.Path)?.ToLowerInvariant();
+
+            if (_namingOptions.ComicFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
             {
-                case ".cb7":
-                case ".cbr":
-                case ".cbt":
-                case ".cbz":
-                    using (var stream = File.OpenRead(item.Path))
-                    using (var archive = ArchiveFactory.OpenArchive(stream))
-                    {
-                        pageCount = archive.Entries.Count(e => !e.IsDirectory);
-                    }
-
-                    break;
-
+                // SharpCompress is required to support non-ZIP archives
+                using var stream = File.OpenRead(item.Path);
+                using var archive = ArchiveFactory.OpenArchive(stream);
+                pageCount = archive.Entries.Count(e => !e.IsDirectory);
+            }
+            else if (string.Equals(extension, ".pdf", StringComparison.OrdinalIgnoreCase))
+            {
 #pragma warning disable CA1416
-                case ".pdf":
-                    using (var stream = File.OpenRead(item.Path))
-                    {
-                        pageCount = Conversion.GetPageCount(stream);
-                    }
-
-                    break;
+                using var stream = File.OpenRead(item.Path);
+                pageCount = Conversion.GetPageCount(stream);
 #pragma warning restore CA1416
-
-                case ".epub":
-                    // TODO process CFI and store as a string when multiple progress types are supported
-                    // current progress value is percentage stored as a proportion of one second worth of ticks
-                    item.RunTimeTicks = TimeSpan.TicksPerSecond;
-
-                    return Task.FromResult(ItemUpdateType.MetadataImport);
-
-                default:
-                    return _cachedTask;
+            }
+            else if (_namingOptions.ArchiveHtmlFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
+            {
+                // TODO process CFI and store as a string when multiple progress types are supported
+                // current progress value is percentage stored as a proportion of one second worth of ticks
+                item.RunTimeTicks = TimeSpan.TicksPerSecond;
+                return Task.FromResult(ItemUpdateType.MetadataImport);
+            }
+            else
+            {
+                return _cachedTask;
             }
 
             // TODO use page count without modification when multiple progress types are supported
