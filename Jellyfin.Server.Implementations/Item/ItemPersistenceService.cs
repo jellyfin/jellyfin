@@ -270,10 +270,6 @@ public class ItemPersistenceService : IItemPersistenceService
             }
             else
             {
-                context.BaseItemProviders.Where(e => e.ItemId == entity.Id).ExecuteDelete();
-                context.BaseItemImageInfos.Where(e => e.ItemId == entity.Id).ExecuteDelete();
-                context.BaseItemMetadataFields.Where(e => e.ItemId == entity.Id).ExecuteDelete();
-
                 if (entity.Images is { Count: > 0 })
                 {
                     context.BaseItemImageInfos.AddRange(entity.Images);
@@ -401,6 +397,15 @@ public class ItemPersistenceService : IItemPersistenceService
 
                 context.AncestorIds.RemoveRange(existingAncestorIds);
             }
+        }
+
+        // Owned rows of updated items are rewritten wholesale; cleared in one statement per table.
+        if (existingItems.Count > 0)
+        {
+            var updatedIds = existingItems.ToArray();
+            context.BaseItemProviders.WhereOneOrMany(updatedIds, e => e.ItemId).ExecuteDelete();
+            context.BaseItemImageInfos.WhereOneOrMany(updatedIds, e => e.ItemId).ExecuteDelete();
+            context.BaseItemMetadataFields.WhereOneOrMany(updatedIds, e => e.ItemId).ExecuteDelete();
         }
 
         context.SaveChanges();
