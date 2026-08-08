@@ -22,6 +22,18 @@ namespace Jellyfin.Database.Providers.Sqlite;
 public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 {
     private const string BackupFolderName = "SQLiteBackups";
+
+    /// <summary>
+    /// Time SQLite waits on a locked database before returning SQLITE_BUSY, in milliseconds.
+    /// </summary>
+    private const int DefaultBusyTimeoutMs = 5_000;
+
+    /// <summary>
+    /// Outer bound on the driver's lock-wait fallback, in seconds. Kept above
+    /// <see cref="DefaultBusyTimeoutMs"/> so SQLite's busy handler does the waiting.
+    /// </summary>
+    private const int DefaultCommandTimeoutSeconds = 60;
+
     private readonly IApplicationPaths _applicationPaths;
     private readonly ILogger<SqliteDatabaseProvider> _logger;
 
@@ -60,6 +72,8 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 
         var customOptions = databaseConfiguration.CustomProviderOptions?.Options;
 
+        var busyTimeout = GetOption(customOptions, "busytimeout", int.Parse, () => DefaultBusyTimeoutMs);
+
         var sqliteConnectionBuilder = new SqliteConnectionStringBuilder
         {
             DataSource = GetOption(customOptions, "path", e => e, () => Path.Combine(_applicationPaths.DataPath, "jellyfin.db")),
@@ -69,7 +83,9 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             // so busy_timeout is skipped and the command fails at CommandTimeout instead.
             Cache = GetOption(customOptions, "cache", Enum.Parse<SqliteCacheMode>, () => SqliteCacheMode.Private),
             Pooling = GetOption(customOptions, "pooling", e => e.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase), () => true),
-            DefaultTimeout = GetOption(customOptions, "command-timeout", int.Parse, () => 60)
+
+            // Bounds only the driver's lock-wait poll, not the runtime of an executing query.
+            DefaultTimeout = GetOption(customOptions, "command-timeout", int.Parse, () => DefaultCommandTimeoutSeconds)
         };
 
         var connectionString = sqliteConnectionBuilder.ToString();
@@ -92,6 +108,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
                 GetOption(customOptions, "journalsizelimit", int.Parse, () => 134_217_728),
                 GetOption(customOptions, "tempstoremode", int.Parse, () => 2),
                 GetOption(customOptions, "syncmode", int.Parse, () => 1),
+                busyTimeout,
                 customOptions?.Where(e => e.Key.StartsWith("#PRAGMA:", StringComparison.OrdinalIgnoreCase)).ToDictionary(e => e.Key["#PRAGMA:".Length..], e => e.Value) ?? []));
 
         var enableSensitiveDataLogging = GetOption(customOptions, "EnableSensitiveDataLogging", e => e.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase), () => false);
