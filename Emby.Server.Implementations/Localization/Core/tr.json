@@ -118,5 +118,8 @@
     "NameExtraSample": "Örnek",
     "NameExtraScene": "Sahne",
     "NameExtraShort": "Kısa",
-    "NameExtraThemeSong": "Tema Müziği"
+    "NameExtraThemeSong": "Tema Müziği",
+    "NameExtraThemeVideo": "Tema Videosu",
+    "NameExtraTrailer": "Fragman",
+    "NameExtraUnknown": "Fazladan"
 }
