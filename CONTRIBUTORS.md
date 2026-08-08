@@ -144,6 +144,7 @@
  - [sorinyo2004](https://github.com/sorinyo2004)
  - [Soumyadip Auddy](https://github.com/SoumyadipAuddy)
  - [sparky8251](https://github.com/sparky8251)
+ - [Speenah](https://github.com/Speenah)
  - [spookbits](https://github.com/spookbits)
  - [ssenart](https://github.com/ssenart)
  - [stanionascu](https://github.com/stanionascu)
