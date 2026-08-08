@@ -21,6 +21,15 @@ public class People
     public required string Name { get; set; }
 
     /// <summary>
+    /// Gets or Sets the sanitized Name, the key a person is identified by.
+    /// </summary>
+    /// <remarks>
+    /// Matches <see cref="ItemValue.CleanValue"/> and BaseItemEntity.CleanName, so a person is the same
+    /// person across spellings that only differ in casing, diacritics or punctuation.
+    /// </remarks>
+    public required string CleanName { get; set; }
+
+    /// <summary>
     /// Gets or Sets the Type.
     /// </summary>
     public string? PersonType { get; set; }

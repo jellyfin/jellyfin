@@ -813,22 +813,41 @@ namespace Emby.Server.Implementations.Dto
 
             var list = new List<BaseItemPerson>();
 
-            Dictionary<string, Person> dictionary = people.Select(p => p.Name)
-                .Distinct(StringComparer.OrdinalIgnoreCase).Select(c =>
+            // Keyed by the clean name the person was resolved with, not by the name the resolved item
+            // carries: a person is looked up by a hash of its name, so an item that a provider renamed
+            // or spelled differently still resolves and must not be dropped from the cast for it.
+            // Ordinal, not OrdinalIgnoreCase: GetCleanValue has already lowercased and transliterated
+            // both sides, so an exact comparison is the whole point - case folding again here would
+            // quietly accept names the database, which compares the stored clean name, would not.
+            var cleanNames = new string[people.Count];
+            var dictionary = new Dictionary<string, Person>(StringComparer.Ordinal);
+            // Tracked separately from the dictionary so a name that resolves to nothing is not looked up
+            // again for every further credit that shares it.
+            var resolved = new HashSet<string>(StringComparer.Ordinal);
+            for (var i = 0; i < people.Count; i++)
+            {
+                var name = people[i].Name;
+                var cleanName = string.IsNullOrEmpty(name) ? string.Empty : name.GetCleanValue();
+                cleanNames[i] = cleanName;
+
+                if (cleanName.Length == 0 || !resolved.Add(cleanName))
                 {
-                    try
+                    continue;
+                }
+
+                try
+                {
+                    var entity = _libraryManager.GetPerson(name);
+                    if (entity is not null && (user is null || entity.IsVisible(user)))
                     {
-                        return _libraryManager.GetPerson(c);
+                        dictionary[cleanName] = entity;
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error getting person {Name}", c);
-                        return null;
-                    }
-                }).Where(i => i is not null)
-                .Where(i => user is null || i!.IsVisible(user))
-                .DistinctBy(x => x!.Name, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(i => i!.Name, StringComparer.OrdinalIgnoreCase)!; // null values got filtered out
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error getting person {Name}", name);
+                }
+            }
 
             for (var i = 0; i < people.Count; i++)
             {
@@ -841,7 +860,7 @@ namespace Emby.Server.Implementations.Dto
                     Type = person.Type
                 };
 
-                if (dictionary.TryGetValue(person.Name, out Person? entity))
+                if (dictionary.TryGetValue(cleanNames[i], out Person? entity))
                 {
                     baseItemPerson.PrimaryImageTag = GetTagAndFillBlurhash(dto, entity, ImageType.Primary);
                     baseItemPerson.Id = entity.Id;

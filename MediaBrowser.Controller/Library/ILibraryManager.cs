@@ -107,6 +107,13 @@ namespace MediaBrowser.Controller.Library
         Person? GetPerson(string name);
 
         /// <summary>
+        /// Gets a Person, creating and saving it if it does not exist yet.
+        /// </summary>
+        /// <param name="name">The name of the person.</param>
+        /// <returns>The person, or <c>null</c> if it could not be created.</returns>
+        Person? GetOrCreatePerson(string name);
+
+        /// <summary>
         /// Finds the by path.
         /// </summary>
         /// <param name="path">The path.</param>

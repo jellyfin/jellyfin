@@ -52,6 +52,7 @@ public class PeopleValidator
         var people = _libraryManager.GetPeopleNames(new InternalPeopleQuery());
 
         var numComplete = 0;
+        var numCreated = 0;
 
         var numPeople = people.Count;
 
@@ -68,8 +69,17 @@ public class PeopleValidator
                 var item = _libraryManager.GetPerson(person);
                 if (item is null)
                 {
-                    _logger.LogWarning("Failed to get person: {Name}", person);
-                    continue;
+                    // Credits are only linked to a person by name, so a credited name without an item is
+                    // invisible everywhere: it is dropped from cast lists and matches nothing on the
+                    // person page. Create it here instead of leaving the credit stranded.
+                    item = _libraryManager.GetOrCreatePerson(person);
+                    if (item is null)
+                    {
+                        _logger.LogWarning("Failed to get or create person: {Name}", person);
+                        continue;
+                    }
+
+                    numCreated++;
                 }
 
                 var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
@@ -115,6 +125,6 @@ public class PeopleValidator
 
         progress.Report(100);
 
-        _logger.LogInformation("People validation complete");
+        _logger.LogInformation("People validation complete, created {Amount} missing people", numCreated);
     }
 }

@@ -603,10 +603,12 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
     private People GetPerson(SqliteDataReader reader)
     {
+        var name = reader.GetString(1);
         var item = new People
         {
             Id = Guid.NewGuid(),
-            Name = reader.GetString(1),
+            Name = name,
+            CleanName = name.GetCleanValue(),
         };
 
         if (reader.TryGetString(3, out var type))
