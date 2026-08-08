@@ -2235,6 +2235,12 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
+        public IReadOnlySet<Guid> GetItemsWithAlternateVersions(IReadOnlyList<Guid> itemIds)
+        {
+            return _linkedChildrenService.GetItemsWithAlternateVersions(itemIds);
+        }
+
+        /// <inheritdoc />
         public void UpsertLinkedChild(Guid parentId, Guid childId, MediaBrowser.Controller.Entities.LinkedChildType childType)
         {
             _linkedChildrenService.UpsertLinkedChild(parentId, childId, childType);

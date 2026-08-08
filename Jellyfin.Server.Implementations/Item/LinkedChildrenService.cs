@@ -60,6 +60,27 @@ public class LinkedChildrenService : ILinkedChildrenService
     }
 
     /// <inheritdoc/>
+    public IReadOnlySet<Guid> GetItemsWithAlternateVersions(IReadOnlyList<Guid> itemIds)
+    {
+        if (itemIds.Count == 0)
+        {
+            return new HashSet<Guid>();
+        }
+
+        using var dbContext = _dbProvider.CreateDbContext();
+
+        var parentIds = dbContext.LinkedChildren
+            .Where(lc => (lc.ChildType == DbLinkedChildType.LocalAlternateVersion
+                    || lc.ChildType == DbLinkedChildType.LinkedAlternateVersion)
+                && itemIds.Contains(lc.ParentId))
+            .Select(lc => lc.ParentId)
+            .Distinct()
+            .ToArray();
+
+        return parentIds.ToHashSet();
+    }
+
+    /// <inheritdoc/>
     public IReadOnlyDictionary<string, MusicArtist[]> FindArtists(IReadOnlyList<string> artistNames)
     {
         using var dbContext = _dbProvider.CreateDbContext();

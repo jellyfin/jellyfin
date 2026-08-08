@@ -256,6 +256,14 @@ namespace MediaBrowser.Controller.Library
         IEnumerable<Video> GetLinkedAlternateVersions(Video video);
 
         /// <summary>
+        /// Gets, in a single query, the subset of the supplied items that own at least one alternate
+        /// version (local or linked). Items absent from the result have no alternate versions.
+        /// </summary>
+        /// <param name="itemIds">The item IDs to check.</param>
+        /// <returns>The set of item IDs that have alternate versions.</returns>
+        IReadOnlySet<Guid> GetItemsWithAlternateVersions(IReadOnlyList<Guid> itemIds);
+
+        /// <summary>
         /// Creates or updates a LinkedChild entry linking a parent to a child item.
         /// </summary>
         /// <param name="parentId">The parent item ID.</param>

@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
@@ -205,6 +206,43 @@ public class DtoServiceImageInheritanceTests
         libraryManager.Verify(x => x.GetPeople(It.IsAny<BaseItem>()), Times.Never);
     }
 
+    [Fact]
+    public void GetBaseItemDtos_Videos_ResolveMediaSourceCountFromBatch_WithoutPerItemLookup()
+    {
+        static Movie MakeMovie() => new Movie
+        {
+            Id = Guid.NewGuid(),
+            Name = "Movie",
+            ImageInfos = []
+        };
+
+        var movieOne = MakeMovie();
+        var movieTwo = MakeMovie();
+
+        var libraryManager = new Mock<ILibraryManager>();
+
+        // DtoService detects which videos own alternate versions in ONE batch
+        // (GetItemsWithAlternateVersions) before the per-item loop. Videos absent from that set have a
+        // single media source, so the per-item GetLinkedAlternateVersions/GetLocalAlternateVersionIds
+        // queries (the N+1) must be skipped entirely. Here neither movie has alternate versions.
+        libraryManager
+            .Setup(x => x.GetItemsWithAlternateVersions(It.IsAny<IReadOnlyList<Guid>>()))
+            .Returns(new HashSet<Guid>());
+
+        var dtoService = BuildDtoService(libraryManager);
+
+        var options = new DtoOptions(false) { Fields = [ItemFields.MediaSourceCount] };
+        var dtos = dtoService.GetBaseItemDtos([movieOne, movieTwo], options);
+
+        Assert.Equal(2, dtos.Count);
+
+        // The alternate-version check is batched once for the whole set, and the per-item lookups are
+        // never reached because the batch already ruled out alternate versions.
+        libraryManager.Verify(x => x.GetItemsWithAlternateVersions(It.IsAny<IReadOnlyList<Guid>>()), Times.Once);
+        libraryManager.Verify(x => x.GetLinkedAlternateVersions(It.IsAny<Video>()), Times.Never);
+        libraryManager.Verify(x => x.GetLocalAlternateVersionIds(It.IsAny<Video>()), Times.Never);
+    }
+
     private static DtoService BuildDtoService(BaseItem displayParent)
     {
         var libraryManager = new Mock<ILibraryManager>();
@@ -230,6 +268,10 @@ public class DtoServiceImageInheritanceTests
         imageProcessor
             .Setup(x => x.GetImageCacheTag(It.IsAny<BaseItem>(), It.IsAny<ItemImageInfo>()))
             .Returns<BaseItem, ItemImageInfo>((_, image) => image.Path);
+
+        // Video.IsActiveRecording() dereferences this static during DTO building.
+        Video.RecordingsManager = recordingsManager.Object;
+        BaseItem.LibraryManager = libraryManager.Object;
 
         return new DtoService(
             logger.Object,
