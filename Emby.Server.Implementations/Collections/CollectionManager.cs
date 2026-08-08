@@ -335,6 +335,32 @@ namespace Emby.Server.Implementations.Collections
 
             var allBoxSets = GetCollections(user).ToList();
 
+            // Build the BoxSet nesting graph.
+            var boxSetsById = new Dictionary<Guid, BoxSet>();
+            foreach (var boxSet in allBoxSets)
+            {
+                boxSetsById[boxSet.Id] = boxSet;
+            }
+
+            var childBoxSetIds = new Dictionary<Guid, List<Guid>>();
+            var nestedBoxSetIds = new HashSet<Guid>();
+            foreach (var boxSet in allBoxSets)
+            {
+                var children = new List<Guid>();
+                foreach (var child in boxSet.GetLinkedChildren(user))
+                {
+                    if (child is BoxSet && boxSetsById.ContainsKey(child.Id))
+                    {
+                        children.Add(child.Id);
+                        nestedBoxSetIds.Add(child.Id);
+                    }
+                }
+
+                childBoxSetIds[boxSet.Id] = children;
+            }
+
+            var rootBoxSets = allBoxSets.Where(b => !nestedBoxSetIds.Contains(b.Id)).ToList();
+
             foreach (var item in items)
             {
                 if (item is ISupportsBoxSetGrouping)
@@ -342,9 +368,9 @@ namespace Emby.Server.Implementations.Collections
                     var itemId = item.Id;
 
                     var itemIsInBoxSet = false;
-                    foreach (var boxSet in allBoxSets)
+                    foreach (var boxSet in rootBoxSets)
                     {
-                        if (!boxSet.ContainsLinkedChildByItemId(itemId))
+                        if (!BoxSetContainsItem(boxSet, itemId, childBoxSetIds, boxSetsById, new HashSet<Guid>()))
                         {
                             continue;
                         }
@@ -387,6 +413,44 @@ namespace Emby.Server.Implementations.Collections
             }
 
             return results.Values;
+        }
+
+        /// <summary>
+        /// Determines whether <paramref name="itemId"/> is a direct member of <paramref name="boxSet"/>
+        /// or of any BoxSet nested within it. <paramref name="visited"/> guards against cycles.
+        /// </summary>
+        private static bool BoxSetContainsItem(
+            BoxSet boxSet,
+            Guid itemId,
+            Dictionary<Guid, List<Guid>> childBoxSetIds,
+            Dictionary<Guid, BoxSet> boxSetsById,
+            HashSet<Guid> visited)
+        {
+            if (!visited.Add(boxSet.Id))
+            {
+                return false;
+            }
+
+            if (boxSet.ContainsLinkedChildByItemId(itemId))
+            {
+                return true;
+            }
+
+            if (!childBoxSetIds.TryGetValue(boxSet.Id, out var nestedIds))
+            {
+                return false;
+            }
+
+            foreach (var nestedId in nestedIds)
+            {
+                if (boxSetsById.TryGetValue(nestedId, out var nested)
+                    && BoxSetContainsItem(nested, itemId, childBoxSetIds, boxSetsById, visited))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
