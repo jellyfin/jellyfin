@@ -1,5 +1,9 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Api.Controllers;
+using MediaBrowser.Controller.MediaEncoding;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Jellyfin.Api.Tests.Controllers
@@ -40,6 +44,78 @@ namespace Jellyfin.Api.Tests.Controllers
                 new double[] { 6, 3.3333333 });
 
             return data;
+        }
+
+        [Fact]
+        public async Task WaitForActiveTranscodingRequests_WaitsUntilRequestCompletes()
+        {
+            var job = new TranscodingJob(NullLogger<TranscodingJob>.Instance)
+            {
+                ActiveRequestCount = 1
+            };
+
+            var waitTask = DynamicHlsController.WaitForActiveTranscodingRequests(job, CancellationToken.None);
+            Assert.False(waitTask.IsCompleted);
+
+            job.DecrementActiveRequestCount();
+
+            await waitTask;
+        }
+
+        [Fact]
+        public async Task WaitForActiveTranscodingRequests_WaitsForEveryRequest()
+        {
+            var job = new TranscodingJob(NullLogger<TranscodingJob>.Instance)
+            {
+                ActiveRequestCount = 2
+            };
+
+            var waitTask = DynamicHlsController.WaitForActiveTranscodingRequests(job, CancellationToken.None);
+            job.DecrementActiveRequestCount();
+
+            await Task.Delay(150, TestContext.Current.CancellationToken);
+            Assert.False(waitTask.IsCompleted);
+
+            job.DecrementActiveRequestCount();
+
+            await waitTask;
+        }
+
+        [Fact]
+        public async Task WaitForActiveTranscodingRequests_ReturnsWithoutAnActiveRequest()
+        {
+            var job = new TranscodingJob(NullLogger<TranscodingJob>.Instance);
+
+            await DynamicHlsController.WaitForActiveTranscodingRequests(job, CancellationToken.None);
+            await DynamicHlsController.WaitForActiveTranscodingRequests(null, CancellationToken.None);
+        }
+
+        [Fact]
+        public async Task WaitForActiveTranscodingRequests_ObservesCancellation()
+        {
+            var job = new TranscodingJob(NullLogger<TranscodingJob>.Instance)
+            {
+                ActiveRequestCount = 1
+            };
+            using var cancellationTokenSource = new CancellationTokenSource();
+
+            var waitTask = DynamicHlsController.WaitForActiveTranscodingRequests(job, cancellationTokenSource.Token);
+            await cancellationTokenSource.CancelAsync();
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => waitTask);
+        }
+
+        [Fact]
+        public async Task ActiveRequestCount_UpdatesAtomically()
+        {
+            const int RequestCount = 1000;
+            var job = new TranscodingJob(NullLogger<TranscodingJob>.Instance);
+
+            await Task.WhenAll(
+                Task.Run(() => Parallel.For(0, RequestCount, _ => job.IncrementActiveRequestCount())),
+                Task.Run(() => Parallel.For(0, RequestCount, _ => job.DecrementActiveRequestCount())));
+
+            Assert.Equal(0, job.ActiveRequestCount);
         }
     }
 }
