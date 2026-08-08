@@ -36,6 +36,8 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library
@@ -46,7 +48,6 @@ namespace Emby.Server.Implementations.Library
         private const char LiveStreamIdDelimiter = '_';
 
         private readonly IServerApplicationHost _appHost;
-        private readonly IItemRepository _itemRepo;
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IFileSystem _fileSystem;
@@ -66,7 +67,6 @@ namespace Emby.Server.Implementations.Library
 
         public MediaSourceManager(
             IServerApplicationHost appHost,
-            IItemRepository itemRepo,
             IApplicationPaths applicationPaths,
             ILocalizationManager localizationManager,
             IUserManager userManager,
@@ -80,7 +80,6 @@ namespace Emby.Server.Implementations.Library
             IMediaAttachmentRepository mediaAttachmentRepository)
         {
             _appHost = appHost;
-            _itemRepo = itemRepo;
             _userManager = userManager;
             _libraryManager = libraryManager;
             _logger = logger;
