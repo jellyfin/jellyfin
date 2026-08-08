@@ -8,10 +8,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Jellyfin.Server.Implementations.Migrations
+namespace Jellyfin.Database.Providers.Sqlite.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    [Migration("20260802172635_AddAudioSkipAndPartialPlayTracking")]
+    [Migration("20260808152425_AddAudioSkipAndPartialPlayTracking")]
     partial class AddAudioSkipAndPartialPlayTracking
     {
         /// <inheritdoc />
@@ -1061,11 +1061,11 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "PeopleId", "Role");
 
-                    b.HasIndex("PeopleId");
-
                     b.HasIndex("ItemId", "ListOrder");
 
                     b.HasIndex("ItemId", "SortOrder");
+
+                    b.HasIndex("PeopleId", "ItemId");
 
                     b.ToTable("PeopleBaseItemMap");
 
