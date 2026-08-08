@@ -73,6 +73,14 @@ namespace MediaBrowser.Common.Plugins
         public bool IsEnabledAndSupported => _supported && Manifest.Status >= PluginStatus.Active;
 
         /// <summary>
+        /// Gets or sets a value indicating whether a restart is required for the plugin's state to take effect.
+        /// </summary>
+        /// <remarks>
+        /// Memory only. <see cref="Manifest"/> holds the state that is persisted to disk.
+        /// </remarks>
+        public bool RestartRequired { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether the plugin has a manifest.
         /// </summary>
         public PluginManifest Manifest { get; }
@@ -108,7 +116,7 @@ namespace MediaBrowser.Common.Plugins
         public PluginInfo GetPluginInfo()
         {
             var inst = Instance?.GetPluginInfo() ?? new PluginInfo(Manifest.Name, Version, Manifest.Description, Manifest.Id, true);
-            inst.Status = Manifest.Status;
+            inst.Status = RestartRequired ? PluginStatus.Restart : Manifest.Status;
             inst.HasImage = !string.IsNullOrEmpty(Manifest.ImagePath) || !string.IsNullOrEmpty(Manifest.ImageResourceName);
             return inst;
         }
