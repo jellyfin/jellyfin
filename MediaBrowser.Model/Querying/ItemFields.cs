@@ -21,6 +21,11 @@ namespace MediaBrowser.Model.Querying
         CanDownload,
 
         /// <summary>
+        /// The can export.
+        /// </summary>
+        CanExport,
+
+        /// <summary>
         /// The channel information.
         /// </summary>
         ChannelInfo,
