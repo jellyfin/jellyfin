@@ -1,14 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace MediaBrowser.Model.Entities;
 
 /// <summary>
 /// Class ProviderIdsExtensions.
 /// </summary>
-public static class ProviderIdsExtensions
+public static partial class ProviderIdsExtensions
 {
     /// <summary>
     /// Case-insensitive dictionary of <see cref="MetadataProvider"/> string representation.
@@ -19,6 +21,27 @@ public static class ProviderIdsExtensions
                 enumValue => enumValue.ToString(),
                 enumValue => enumValue.ToString(),
                 StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// The known id formats, keyed by provider name.
+    /// </summary>
+    private static readonly Dictionary<string, Func<string, bool>> _providerIdValidators =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            [MetadataProvider.Imdb.ToString()] = value => ImdbIdRegex().IsMatch(value),
+            [MetadataProvider.Tmdb.ToString()] = IsPositiveNumber,
+            [MetadataProvider.TmdbCollection.ToString()] = IsPositiveNumber,
+            [MetadataProvider.AudioDbArtist.ToString()] = IsPositiveNumber,
+            [MetadataProvider.AudioDbAlbum.ToString()] = IsPositiveNumber,
+
+            // Every MusicBrainz id is an MBID.
+            [MetadataProvider.MusicBrainzAlbum.ToString()] = IsGuid,
+            [MetadataProvider.MusicBrainzAlbumArtist.ToString()] = IsGuid,
+            [MetadataProvider.MusicBrainzArtist.ToString()] = IsGuid,
+            [MetadataProvider.MusicBrainzReleaseGroup.ToString()] = IsGuid,
+            [MetadataProvider.MusicBrainzRecording.ToString()] = IsGuid,
+            [MetadataProvider.MusicBrainzTrack.ToString()] = IsGuid
+        };
 
     /// <summary>
     /// Checks if this instance has an id for the given provider.
@@ -102,6 +125,26 @@ public static class ProviderIdsExtensions
     }
 
     /// <summary>
+    /// Checks whether a value can be an id of the given provider.
+    /// </summary>
+    /// <param name="name">The provider name.</param>
+    /// <param name="value">The provider id.</param>
+    /// <returns><c>true</c> if the value has a plausible format for the provider; otherwise, <c>false</c>.</returns>
+    /// <remarks>
+    /// Providers regularly hand out an id belonging to a different service, e.g. an IMDb person id in the
+    /// TMDb field. Such an id is not just useless, it also makes the owning provider fail for the item.
+    /// </remarks>
+    public static bool IsValidProviderId(string? name, string? value)
+    {
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        return !_providerIdValidators.TryGetValue(name, out var isValid) || isValid(value);
+    }
+
+    /// <summary>
     /// Sets a provider id.
     /// </summary>
     /// <param name="instance">The instance.</param>
@@ -116,7 +159,8 @@ public static class ProviderIdsExtensions
         // When name contains a '=' it can't be deserialized from the database
         if (string.IsNullOrWhiteSpace(name)
             || string.IsNullOrWhiteSpace(value)
-            || name.Contains('=', StringComparison.Ordinal))
+            || name.Contains('=', StringComparison.Ordinal)
+            || !IsValidProviderId(name, value))
         {
             return false;
         }
@@ -213,4 +257,15 @@ public static class ProviderIdsExtensions
 
         instance.ProviderIds?.Remove(provider.ToString());
     }
+
+    private static bool IsPositiveNumber(string value)
+        => long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var id) && id > 0;
+
+    private static bool IsGuid(string value)
+        => Guid.TryParse(value, CultureInfo.InvariantCulture, out _);
+
+    // An IMDb id is a type prefix (tt for titles, nm for people, co for companies, ...) followed by
+    // digits. The prefix is optional because a bare number has always been accepted for a title.
+    [GeneratedRegex(@"^(tt|nm|co|ev|ch|ni)?[0-9]+$", RegexOptions.IgnoreCase)]
+    private static partial Regex ImdbIdRegex();
 }

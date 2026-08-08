@@ -858,7 +858,10 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (refreshResult.UpdateType > ItemUpdateType.None)
                 {
-                    if (!options.RemoveOldMetadata)
+                    // A provider that failed contributed nothing, so the result is not the complete
+                    // replacement the caller asked for. Keeping the existing values stops a provider being
+                    // temporarily unreachable, or choking on a bad id, from deleting the data it owns.
+                    if (!options.RemoveOldMetadata || refreshResult.Failures > 0)
                     {
                         // Add existing metadata to provider result if it does not exist there
                         MergeData(metadata, temp, [], false, false);
@@ -932,6 +935,8 @@ namespace MediaBrowser.Providers.Manager
                     {
                         result.Provider = provider.Name;
 
+                        LogInvalidProviderIds(result.Item, providerName, logName);
+
                         MergeData(result, temp, [], replaceData, false);
                         MergeNewData(temp.Item, id);
 
@@ -957,12 +962,40 @@ namespace MediaBrowser.Providers.Manager
             return refreshResult;
         }
 
+        /// <summary>
+        /// Reports the ids a provider returned that cannot belong to the provider they are filed under.
+        /// </summary>
+        /// <remarks>
+        /// The ids are dropped when merging, this names the provider that produced them so the source of a
+        /// recurring bad id can be found.
+        /// </remarks>
+        private void LogInvalidProviderIds(TItemType item, string providerName, string logName)
+        {
+            if (item?.ProviderIds is null || !Logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            foreach (var (key, value) in item.ProviderIds)
+            {
+                if (!ProviderIdsExtensions.IsValidProviderId(key, value))
+                {
+                    Logger.LogDebug("Discarding {Key} id '{Value}' returned by {Provider} for {Item}", key, value, providerName, logName);
+                }
+            }
+        }
+
         private void MergeNewData(TItemType source, TIdType lookupInfo)
         {
             // Copy new provider id's that may have been obtained
             foreach (var providerId in source.ProviderIds)
             {
                 var key = providerId.Key;
+
+                if (!ProviderIdsExtensions.IsValidProviderId(key, providerId.Value))
+                {
+                    continue;
+                }
 
                 // Don't replace existing Id's.
                 lookupInfo.ProviderIds.TryAdd(key, providerId.Value);
@@ -1174,6 +1207,13 @@ namespace MediaBrowser.Providers.Manager
             foreach (var id in source.ProviderIds)
             {
                 var key = id.Key;
+
+                // An id that cannot belong to the provider it is filed under only breaks that provider on
+                // the next refresh, so never let one in - not even when replacing all metadata.
+                if (!ProviderIdsExtensions.IsValidProviderId(key, id.Value))
+                {
+                    continue;
+                }
 
                 // Don't replace existing Id's.
                 if (replaceData)
