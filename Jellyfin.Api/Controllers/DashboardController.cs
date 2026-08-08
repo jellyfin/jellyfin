@@ -53,14 +53,14 @@ public class DashboardController : BaseJellyfinApiController
     public ActionResult<IEnumerable<ConfigurationPageInfo>> GetConfigurationPages(
         [FromQuery] bool? enableInMainMenu)
     {
-        var configPages = _pluginManager.Plugins.SelectMany(GetConfigPages).ToList();
+        IEnumerable<ConfigurationPageInfo> configPages = _pluginManager.Plugins.SelectMany(GetConfigPages);
 
         if (enableInMainMenu.HasValue)
         {
-            configPages = configPages.Where(p => p.EnableInMainMenu == enableInMainMenu.Value).ToList();
+            configPages = configPages.Where(p => p.EnableInMainMenu == enableInMainMenu.Value);
         }
 
-        return configPages;
+        return Ok(configPages);
     }
 
     /// <summary>
