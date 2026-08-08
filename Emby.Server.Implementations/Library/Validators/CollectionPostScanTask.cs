@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Validators;
@@ -46,7 +47,7 @@ public class CollectionPostScanTask : ILibraryPostScanTask
     /// <returns>Task.</returns>
     public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        var collectionNameMoviesMap = new Dictionary<string, HashSet<Guid>>();
+        var collectionGroups = new Dictionary<string, CollectionGroup>();
 
         foreach (var library in _libraryManager.RootFolder.Children)
         {
@@ -74,17 +75,26 @@ public class CollectionPostScanTask : ILibraryPostScanTask
 
                 foreach (var m in movies)
                 {
-                    if (m is Movie movie && !string.IsNullOrEmpty(movie.CollectionName) && !movie.PrimaryVersionId.HasValue)
+                    if (m is not Movie movie
+                        || string.IsNullOrEmpty(movie.CollectionName)
+                        || movie.PrimaryVersionId.HasValue)
                     {
-                        if (collectionNameMoviesMap.TryGetValue(movie.CollectionName, out var movieList))
-                        {
-                            movieList.Add(movie.Id);
-                        }
-                        else
-                        {
-                            collectionNameMoviesMap[movie.CollectionName] = new HashSet<Guid> { movie.Id };
-                        }
+                        continue;
                     }
+
+                    var tmdbCollectionId = movie.TryGetProviderId(MetadataProvider.TmdbCollection, out var id) ? id : null;
+
+                    var key = string.IsNullOrEmpty(tmdbCollectionId)
+                        ? "name=" + movie.CollectionName
+                        : "id=" + tmdbCollectionId;
+
+                    if (!collectionGroups.TryGetValue(key, out var group))
+                    {
+                        group = new CollectionGroup(movie.CollectionName, tmdbCollectionId);
+                        collectionGroups[key] = group;
+                    }
+
+                    group.MovieIds.Add(movie.Id);
                 }
 
                 if (movies.Count < pagesize)
@@ -97,7 +107,7 @@ public class CollectionPostScanTask : ILibraryPostScanTask
         }
 
         var numComplete = 0;
-        var count = collectionNameMoviesMap.Count;
+        var count = collectionGroups.Count;
 
         if (count == 0)
         {
@@ -112,27 +122,51 @@ public class CollectionPostScanTask : ILibraryPostScanTask
             Recursive = true
         });
 
-        foreach (var (collectionName, movieIds) in collectionNameMoviesMap)
+        foreach (var group in collectionGroups.Values)
         {
             try
             {
-                var boxSet = boxSets.FirstOrDefault(b => b?.Name == collectionName) as BoxSet;
+                BoxSet? boxSet = null;
+
+                // Prefer the stable TMDB collection id. The box set stores it under the Tmdb
+                // provider key, while movies store it under TmdbCollection
+                if (!string.IsNullOrEmpty(group.TmdbCollectionId))
+                {
+                    boxSet = boxSets
+                        .OfType<BoxSet>()
+                        .FirstOrDefault(b =>
+                            b.TryGetProviderId(MetadataProvider.Tmdb, out var id)
+                            && string.Equals(id, group.TmdbCollectionId, StringComparison.Ordinal));
+                }
+
+                // Fall back to name for legacy box sets that don't have an id yet.
+                boxSet ??= boxSets.FirstOrDefault(b => b?.Name == group.Name) as BoxSet;
+
                 if (boxSet is null)
                 {
                     // won't automatically create collection if only one movie in it
-                    if (movieIds.Count >= 2)
+                    if (group.MovieIds.Count >= 2)
                     {
-                        boxSet = await _collectionManager.CreateCollectionAsync(new CollectionCreationOptions
+                        var options = new CollectionCreationOptions
                         {
-                            Name = collectionName,
-                        }).ConfigureAwait(false);
+                            Name = group.Name,
+                        };
 
-                        await _collectionManager.AddToCollectionAsync(boxSet.Id, movieIds).ConfigureAwait(false);
+                        // Stamp the stable collection id so future scans can match this box set by id
+                        // even after the user renames it
+                        if (!string.IsNullOrEmpty(group.TmdbCollectionId))
+                        {
+                            options.SetProviderId(MetadataProvider.Tmdb, group.TmdbCollectionId);
+                        }
+
+                        boxSet = await _collectionManager.CreateCollectionAsync(options).ConfigureAwait(false);
+
+                        await _collectionManager.AddToCollectionAsync(boxSet.Id, group.MovieIds).ConfigureAwait(false);
                     }
                 }
                 else
                 {
-                    await _collectionManager.AddToCollectionAsync(boxSet.Id, movieIds).ConfigureAwait(false);
+                    await _collectionManager.AddToCollectionAsync(boxSet.Id, group.MovieIds).ConfigureAwait(false);
                 }
 
                 numComplete++;
@@ -144,10 +178,25 @@ public class CollectionPostScanTask : ILibraryPostScanTask
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error refreshing {CollectionName} with {@MovieIds}", collectionName, movieIds);
+                _logger.LogError(ex, "Error refreshing {CollectionName} with {@MovieIds}", group.Name, group.MovieIds);
             }
         }
 
         progress.Report(100);
+    }
+
+    private sealed class CollectionGroup
+    {
+        public CollectionGroup(string name, string? tmdbCollectionId)
+        {
+            Name = name;
+            TmdbCollectionId = tmdbCollectionId;
+        }
+
+        public string Name { get; }
+
+        public string? TmdbCollectionId { get; }
+
+        public HashSet<Guid> MovieIds { get; } = new();
     }
 }
