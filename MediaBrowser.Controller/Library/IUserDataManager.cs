@@ -41,6 +41,11 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the user data.
         /// </summary>
+        /// <remarks>
+        /// The result is cached and may be shared with other callers holding a different
+        /// <see cref="BaseItem"/> instance for the same item, so it must not be mutated without
+        /// being saved through <see cref="SaveUserData(User, BaseItem, UserItemData, UserDataSaveReason, CancellationToken)"/>.
+        /// </remarks>
         /// <param name="user">User to use.</param>
         /// <param name="item">Item to use.</param>
         /// <returns>User data.</returns>

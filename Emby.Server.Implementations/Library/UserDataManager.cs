@@ -79,6 +79,10 @@ namespace Emby.Server.Implementations.Library
 
             var userId = user.InternalId;
             var cacheKey = GetCacheKey(userId, item.Id);
+
+            // the loop above leaves the last key on the object, but reads resolve to the first
+            // key that has a row, and the save just created one for every key
+            userData.Key = keys[0];
             _cache.AddOrUpdate(cacheKey, userData);
             item.UserData = dbContext.UserData.Where(e => e.ItemId == item.Id).AsNoTracking().ToArray(); // rehydrate the cached userdata
 
@@ -186,24 +190,14 @@ namespace Emby.Server.Implementations.Library
             foreach (var item in items)
             {
                 var cacheKey = GetCacheKey(user.InternalId, item.Id);
-                if (_cache.TryGet(cacheKey, out var cachedData))
+                var userData = ResolveCachedUserData(user, item, cacheKey);
+                if (userData is not null)
                 {
-                    result[item.Id] = cachedData;
+                    result[item.Id] = userData;
                 }
                 else
                 {
-                    var userDataRow = ResolveUserDataRow(item, item.UserData?.Where(e => e.UserId.Equals(user.Id)));
-                    var userData = userDataRow is not null ? Map(userDataRow) : null;
-                    if (userData is not null)
-                    {
-                        result[item.Id] = userData;
-                        _cache.AddOrUpdate(cacheKey, userData);
-                    }
-                    else
-                    {
-                        var keys = item.GetUserDataKeys();
-                        itemsNeedingQuery.Add((item, keys));
-                    }
+                    itemsNeedingQuery.Add((item, item.GetUserDataKeys()));
                 }
             }
 
@@ -353,11 +347,71 @@ namespace Emby.Server.Implementations.Library
         public UserItemData? GetUserData(User user, BaseItem item)
         {
             ArgumentNullException.ThrowIfNull(user);
-            var row = ResolveUserDataRow(item, item.UserData?.Where(e => e.UserId.Equals(user.Id)));
-            return row is not null ? Map(row) : new UserItemData()
+            ArgumentNullException.ThrowIfNull(item);
+
+            var cacheKey = GetCacheKey(user.InternalId, item.Id);
+            var userData = ResolveCachedUserData(user, item, cacheKey);
+            if (userData is not null)
             {
-                Key = item.GetUserDataKeys()[0],
-            };
+                return userData;
+            }
+
+            // A null collection means the item was materialized without its user data, not that
+            // there are no rows. Returning defaults there makes the next save, which writes every
+            // column, wipe whatever is actually stored. An empty collection is a real "no rows".
+            if (item.UserData is null)
+            {
+                using var dbContext = _repository.CreateDbContext();
+                var rows = dbContext.UserData
+                    .AsNoTracking()
+                    .Where(e => e.UserId.Equals(user.Id) && e.ItemId.Equals(item.Id))
+                    .ToArray();
+
+                var row = ResolveUserDataRow(item, rows);
+                if (row is not null)
+                {
+                    userData = Map(row);
+                }
+            }
+
+            if (userData is null)
+            {
+                var keys = item.GetUserDataKeys();
+                userData = new UserItemData
+                {
+                    Key = keys.Count > 0 ? keys[0] : string.Empty
+                };
+            }
+
+            _cache.AddOrUpdate(cacheKey, userData);
+            return userData;
+        }
+
+        /// <summary>
+        /// Resolves user data from the cache, falling back to the rows already attached to the item.
+        /// Both public reads share this so a save through one <see cref="BaseItem"/> instance is
+        /// visible to reads through any other instance of the same item.
+        /// </summary>
+        /// <param name="user">The user the data belongs to.</param>
+        /// <param name="item">The item to resolve data for.</param>
+        /// <param name="cacheKey">The cache key for <paramref name="user"/> and <paramref name="item"/>.</param>
+        /// <returns>The resolved data, or <c>null</c> when neither source can answer.</returns>
+        private UserItemData? ResolveCachedUserData(User user, BaseItem item, string cacheKey)
+        {
+            if (_cache.TryGet(cacheKey, out var cachedData))
+            {
+                return cachedData;
+            }
+
+            var row = ResolveUserDataRow(item, item.UserData?.Where(e => e.UserId.Equals(user.Id)));
+            if (row is null)
+            {
+                return null;
+            }
+
+            var userData = Map(row);
+            _cache.AddOrUpdate(cacheKey, userData);
+            return userData;
         }
 
         /// <summary>
