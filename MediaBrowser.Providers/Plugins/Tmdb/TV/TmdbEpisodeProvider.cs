@@ -136,17 +136,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                     if (result.Count > 1)
                     {
-                        var name = new StringBuilder(episodeResult.Name);
-                        var overview = new StringBuilder(episodeResult.Overview);
-
-                        for (int i = 1; i < result.Count; i++)
+                        if (result.Any(episode => !string.IsNullOrWhiteSpace(episode.Name)))
                         {
-                            name.Append(" / ").Append(result[i].Name);
-                            overview.Append(" / ").Append(result[i].Overview);
+                            var episodeNames = result.Select(episode => episode.Name);
+                            episodeResult.Name = string.Join(" / ", episodeNames);
                         }
 
-                        episodeResult.Name = name.ToString();
-                        episodeResult.Overview = overview.ToString();
+                        if (result.Any(episode => !string.IsNullOrWhiteSpace(episode.Overview)))
+                        {
+                            var episodeOverviews = result.Select(episode => episode.Overview);
+                            episodeResult.Overview = string.Join(" / ", episodeOverviews);
+                        }
                     }
                 }
                 else
