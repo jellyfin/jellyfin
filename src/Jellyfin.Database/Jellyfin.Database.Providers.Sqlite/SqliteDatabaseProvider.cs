@@ -26,7 +26,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <summary>
     /// Time SQLite waits on a locked database before returning SQLITE_BUSY, in milliseconds.
     /// </summary>
-    private const int DefaultBusyTimeoutMs = 5_000;
+    private const int DefaultBusyTimeoutMs = 100;
 
     /// <summary>
     /// Outer bound on the driver's lock-wait fallback, in seconds. Kept above
