@@ -370,14 +370,16 @@ public sealed partial class BaseItemRepository
                     p => p.Name,
                     (b, p) => p.Id);
 
+            var personTypes = filter.PersonTypes;
             baseQuery = baseQuery
                 .Where(e => context.PeopleBaseItemMap
-                    .Any(m => m.ItemId == e.Id && peopleEntityIds.Contains(m.PeopleId)));
+                    .Any(m => m.ItemId == e.Id && peopleEntityIds.Contains(m.PeopleId) && (personTypes.Length == 0 || personTypes.Contains(m.People.PersonType))));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.Person))
         {
-            baseQuery = baseQuery.Where(e => e.Peoples!.Any(f => f.People.Name == filter.Person));
+            var personTypes = filter.PersonTypes;
+            baseQuery = baseQuery.Where(e => e.Peoples!.Any(f => f.People.Name == filter.Person && (personTypes.Length == 0 || personTypes.Contains(f.People.PersonType))));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.ExternalSeriesId))
