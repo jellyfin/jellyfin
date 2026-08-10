@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -93,6 +95,45 @@ namespace Jellyfin.Providers.Tests.Manager
 
             Assert.False(item.HasProviderId(MetadataProvider.Tmdb));
             Assert.Equal("tt0113375", item.GetProviderId(MetadataProvider.Imdb));
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RefreshWithProviders_ForeignPersonProviderId_NotStored(bool replaceAllMetadata)
+        {
+            var item = new Movie { Name = "Test Movie" };
+            var existing = new MetadataResult<Movie> { Item = item };
+            existing.AddPerson(new PersonInfo { Name = "Some Actor", Type = PersonKind.Actor });
+
+            var provider = new Mock<IRemoteMetadataProvider<Movie, MovieInfo>>(MockBehavior.Loose);
+            provider.Setup(p => p.Name).Returns("Provider");
+            provider.Setup(p => p.GetMetadata(It.IsAny<MovieInfo>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(() =>
+                {
+                    var person = new PersonInfo { Name = "Some Actor", Type = PersonKind.Actor };
+                    person.ProviderIds[MetadataProvider.Tmdb.ToString()] = "nm0000123";
+                    person.ProviderIds[MetadataProvider.Imdb.ToString()] = "nm0000123";
+
+                    var found = new MetadataResult<Movie> { HasMetadata = true, Item = new Movie { Name = "Test Movie" } };
+                    found.AddPerson(person);
+                    return found;
+                });
+
+            var service = new TestMetadataService();
+            await service.RefreshWithProvidersInternal(
+                existing,
+                new MovieInfo { Name = item.Name },
+                new MetadataRefreshOptions(Mock.Of<IDirectoryService>())
+                {
+                    MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                    ReplaceAllMetadata = replaceAllMetadata
+                },
+                [provider.Object]).ConfigureAwait(true);
+
+            var mergedPerson = Assert.Single(existing.People);
+            Assert.False(mergedPerson.HasProviderId(MetadataProvider.Tmdb));
+            Assert.Equal("nm0000123", mergedPerson.GetProviderId(MetadataProvider.Imdb));
         }
 
         private sealed class TestMetadataService : MetadataService<Movie, MovieInfo>

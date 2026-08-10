@@ -1137,6 +1137,8 @@ namespace MediaBrowser.Providers.Manager
 
             if (!lockedFields.Contains(MetadataField.Cast))
             {
+                RemoveInvalidProviderIds(sourceResult.People);
+
                 if (replaceData || targetResult.People is null || targetResult.People.Count == 0)
                 {
                     targetResult.People = sourceResult.People;
@@ -1287,6 +1289,32 @@ namespace MediaBrowser.Providers.Manager
                 if (replaceData || string.IsNullOrEmpty(target.PreferredMetadataLanguage))
                 {
                     target.PreferredMetadataLanguage = source.PreferredMetadataLanguage;
+                }
+            }
+        }
+
+        private static void RemoveInvalidProviderIds(IReadOnlyList<PersonInfo> people)
+        {
+            if (people is null)
+            {
+                return;
+            }
+
+            foreach (var person in people)
+            {
+                if (person.ProviderIds is null || person.ProviderIds.Count == 0)
+                {
+                    continue;
+                }
+
+                var invalidKeys = person.ProviderIds
+                    .Where(id => !ProviderIdsExtensions.IsValidProviderId(id.Key, id.Value))
+                    .Select(id => id.Key)
+                    .ToArray();
+
+                foreach (var key in invalidKeys)
+                {
+                    person.ProviderIds.Remove(key);
                 }
             }
         }
