@@ -58,7 +58,6 @@ namespace Jellyfin.Server.Implementations.Users
             var usersReset = new List<string>();
             foreach (var resetFile in Directory.EnumerateFiles(_passwordResetFileBaseDir, $"{BaseResetFileName}*"))
             {
-                // Hash path to avoid logging sensitive file names verbatim.
                 var resetFileId = resetFile.GetMD5().ToString("N", CultureInfo.InvariantCulture)[..8];
 
                 SerializablePasswordReset? spr;
@@ -72,7 +71,6 @@ namespace Jellyfin.Server.Implementations.Users
                 }
                 catch (JsonException ex)
                 {
-                    // File is unrecoverably corrupt; delete it so it won't be retried.
                     _logger.LogWarning(ex, "Deleting corrupt password reset file (id {ResetFileId}) that failed to deserialize", resetFileId);
                     File.Delete(resetFile);
                     continue;
