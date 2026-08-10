@@ -27,6 +27,15 @@ public interface ILinkedChildrenService
     IReadOnlyList<Guid> GetParentIdsWithChildType(LinkedChildType childType);
 
     /// <summary>
+    /// Gets, in a single query, the subset of the supplied items that own at least one alternate
+    /// version (local or linked). Items absent from the result have no alternate versions, so their
+    /// media source count is one.
+    /// </summary>
+    /// <param name="itemIds">The item IDs to check.</param>
+    /// <returns>The set of item IDs that have alternate versions.</returns>
+    IReadOnlySet<Guid> GetItemIdsWithAlternateVersions(IReadOnlyList<Guid> itemIds);
+
+    /// <summary>
     /// Gets all artist matches from the database.
     /// </summary>
     /// <param name="artistNames">The names of the artists.</param>

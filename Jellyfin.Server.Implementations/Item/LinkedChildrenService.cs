@@ -72,6 +72,25 @@ public class LinkedChildrenService : ILinkedChildrenService
     }
 
     /// <inheritdoc/>
+    public IReadOnlySet<Guid> GetItemIdsWithAlternateVersions(IReadOnlyList<Guid> itemIds)
+    {
+        if (itemIds.Count == 0)
+        {
+            return new HashSet<Guid>();
+        }
+
+        using var dbContext = _dbProvider.CreateDbContext();
+
+        return dbContext.LinkedChildren
+            .Where(lc => lc.ChildType == DbLinkedChildType.LocalAlternateVersion
+                || lc.ChildType == DbLinkedChildType.LinkedAlternateVersion)
+            .WhereOneOrMany(itemIds as IList<Guid> ?? itemIds.ToList(), lc => lc.ParentId)
+            .Select(lc => lc.ParentId)
+            .Distinct()
+            .ToHashSet();
+    }
+
+    /// <inheritdoc/>
     public IReadOnlyDictionary<string, MusicArtist[]> FindArtists(IReadOnlyList<string> artistNames)
     {
         using var dbContext = _dbProvider.CreateDbContext();

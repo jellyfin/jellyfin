@@ -2234,6 +2234,12 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
+        public IReadOnlySet<Guid> GetItemIdsWithAlternateVersions(IReadOnlyList<Guid> itemIds)
+        {
+            return _linkedChildrenService.GetItemIdsWithAlternateVersions(itemIds);
+        }
+
+        /// <inheritdoc />
         public void UpsertLinkedChild(Guid parentId, Guid childId, MediaBrowser.Controller.Entities.LinkedChildType childType)
         {
             _linkedChildrenService.UpsertLinkedChild(parentId, childId, childType);
@@ -3534,6 +3540,12 @@ namespace Emby.Server.Implementations.Library
         public IReadOnlyDictionary<Guid, IReadOnlyList<string>> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes)
         {
             return _peopleRepository.GetPeopleNamesByItems(itemIds, personTypes);
+        }
+
+        /// <inheritdoc/>
+        public IReadOnlyDictionary<Guid, IReadOnlyList<PersonInfo>> GetPeopleByItems(IReadOnlyList<Guid> itemIds)
+        {
+            return _peopleRepository.GetPeopleByItems(itemIds);
         }
 
         public void UpdatePeople(BaseItem item, List<PersonInfo> people)

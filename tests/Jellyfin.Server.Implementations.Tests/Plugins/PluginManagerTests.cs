@@ -293,7 +293,84 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
             Assert.Equal(packageInfo.Versions[0].Version, result.Version);
         }
 
-        private PackageInfo GenerateTestPackage()
+        [Fact]
+        public async Task DisablePlugin_CatalogRefresh_StaysDisabled()
+        {
+            var pluginRoot = Path.Combine(_tempPath, "plugins");
+            var pluginDir = CreateTestPlugin(pluginRoot, "Disable Me", PluginStatus.Active);
+
+            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, pluginRoot, new Version(1, 0));
+            var plugin = Assert.Single(pluginManager.Plugins);
+
+            pluginManager.DisablePlugin(plugin);
+
+            Assert.Equal(PluginStatus.Disabled, pluginManager.LoadManifest(pluginDir).Manifest.Status);
+
+            // The web shows that a restart is required, but the persisted state must not change.
+            Assert.Equal(PluginStatus.Restart, plugin.GetPluginInfo().Status);
+            Assert.Equal(PluginStatus.Disabled, plugin.Manifest.Status);
+            Assert.True(plugin.Manifest.AutoUpdate);
+
+            // Every catalog fetch rewrites the manifests of installed plugins from the in-memory status.
+            var packageInfo = GenerateTestPackage(plugin.Id);
+            await pluginManager.PopulateManifest(packageInfo, new Version(1, 0), pluginDir, plugin.Manifest.Status);
+
+            Assert.Equal(PluginStatus.Disabled, pluginManager.LoadManifest(pluginDir).Manifest.Status);
+        }
+
+        [Fact]
+        public void Constructor_DisabledPluginSortingBeforeEnabledPlugin_IsNotDeleted()
+        {
+            var pluginRoot = Path.Combine(_tempPath, "plugins");
+            var disabledDir = CreateTestPlugin(pluginRoot, "AAA Disabled", PluginStatus.Disabled);
+            CreateTestPlugin(pluginRoot, "ZZZ Active", PluginStatus.Active);
+
+            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, pluginRoot, new Version(1, 0));
+
+            Assert.True(Directory.Exists(disabledDir));
+            Assert.Contains(pluginManager.Plugins, p => string.Equals(p.Name, "AAA Disabled", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void LoadAssemblies_DisabledPluginWithSupersededVersion_DoesNotRevertToOldVersion()
+        {
+            var pluginRoot = Path.Combine(_tempPath, "plugins");
+            var id = Guid.NewGuid();
+            var oldDir = CreateTestPlugin(pluginRoot, "Two Versions", PluginStatus.Superseded, new Version(1, 0), id);
+            var newDir = CreateTestPlugin(pluginRoot, "Two Versions_2.0", PluginStatus.Disabled, new Version(2, 0), id, "Two Versions");
+
+            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, pluginRoot, new Version(1, 0));
+
+            Assert.Empty(pluginManager.LoadAssemblies());
+
+            // Neither version may be touched: the old one stays superseded instead of being loaded
+            // as a stand-in for the version the user disabled.
+            Assert.Equal(PluginStatus.Superseded, pluginManager.LoadManifest(oldDir).Manifest.Status);
+            Assert.Equal(PluginStatus.Disabled, pluginManager.LoadManifest(newDir).Manifest.Status);
+        }
+
+        private string CreateTestPlugin(string root, string folderName, PluginStatus status, Version? version = null, Guid? id = null, string? name = null)
+        {
+            var dir = Path.Combine(root, folderName);
+            Directory.CreateDirectory(dir);
+            FileHelper.CreateEmpty(Path.Combine(dir, "some.dll"));
+
+            var manifest = new PluginManifest
+            {
+                Id = id ?? Guid.NewGuid(),
+                Name = name ?? folderName,
+                Status = status,
+                AutoUpdate = true,
+                TargetAbi = "1.0",
+                Version = (version ?? new Version(1, 0)).ToString()
+            };
+
+            File.WriteAllText(Path.Combine(dir, "meta.json"), JsonSerializer.Serialize(manifest, _options));
+
+            return dir;
+        }
+
+        private PackageInfo GenerateTestPackage(Guid? id = null)
         {
             var fixture = new Fixture();
             fixture.Customize<PackageInfo>(c => c.Without(x => x.Versions).Without(x => x.ImageUrl));
@@ -305,6 +382,10 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
 
             var packageInfo = fixture.Create<PackageInfo>();
             packageInfo.Versions = new[] { versionInfo };
+            if (id.HasValue)
+            {
+                packageInfo.Id = id.Value;
+            }
 
             return packageInfo;
         }

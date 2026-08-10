@@ -163,6 +163,8 @@ namespace MediaBrowser.Providers.Manager
             _externalUrlProviders = externalUrlProviders.OrderBy(i => i.Name).ToArray();
 
             _savers = metadataSavers.ToArray();
+
+            ClearMetadataProviderCache();
         }
 
         /// <inheritdoc/>

@@ -108,5 +108,18 @@
     "CleanupUserDataTask": "Kullanıcı verisi temizleme görevi",
     "CleanupUserDataTaskDescription": "En az 90 gün boyunca artık mevcut olmayan medyadaki tüm kullanıcı verilerini (İzleme durumu, favori durumu vb.) temizler.",
     "LyricDownloadFailureFromForItem": "{1} şarkı sözleri {0} adresinden indirilemedi",
-    "Original": "Orijinal"
+    "Original": "Orijinal",
+    "NameExtraBehindTheScenes": "Kamera Arkası",
+    "NameExtraClip": "Klip",
+    "NameExtraDeletedScene": "Silinmiş Sahne",
+    "NameExtraFeaturette": "Kısa film",
+    "NameExtraInterview": "Röportaj",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Örnek",
+    "NameExtraScene": "Sahne",
+    "NameExtraShort": "Kısa",
+    "NameExtraThemeSong": "Tanıtım Müziği",
+    "NameExtraThemeVideo": "Tanıtım Videosu",
+    "NameExtraTrailer": "Fragman",
+    "NameExtraUnknown": "Fazladan"
 }
