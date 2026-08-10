@@ -555,7 +555,7 @@ public sealed partial class BaseItemRepository
 
         if (filter.ArtistIds.Length > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItemMultipleTypes(context, [ItemValueType.Artist, ItemValueType.AlbumArtist], filter.ArtistIds);
+            baseQuery = baseQuery.WhereReferencedItem(context, [ItemValueType.Artist, ItemValueType.AlbumArtist], filter.ArtistIds);
         }
 
         if (filter.AlbumArtistIds.Length > 0)
@@ -586,12 +586,12 @@ public sealed partial class BaseItemRepository
 
         if (filter.ExcludeArtistIds.Length > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItemMultipleTypes(context, [ItemValueType.Artist, ItemValueType.AlbumArtist], filter.ExcludeArtistIds, true);
+            baseQuery = baseQuery.WhereReferencedItem(context, [ItemValueType.Artist, ItemValueType.AlbumArtist], filter.ExcludeArtistIds, true);
         }
 
         if (filter.GenreIds.Count > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Genre, filter.GenreIds.ToArray());
+            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Genre, filter.GenreIds);
         }
 
         if (filter.Genres.Count > 0)
@@ -617,7 +617,7 @@ public sealed partial class BaseItemRepository
 
         if (filter.StudioIds.Length > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Studios, filter.StudioIds.ToArray());
+            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Studios, filter.StudioIds);
         }
 
         if (filter.OfficialRatings.Length > 0)
@@ -961,17 +961,6 @@ public sealed partial class BaseItemRepository
         if (filter.HasAnyProviderIds is not null && filter.HasAnyProviderIds.Count > 0)
         {
             baseQuery = baseQuery.WhereHasAnyProviderIds(filter.HasAnyProviderIds);
-        }
-
-        if (filter.HasAnyProviderIds is not null && filter.HasAnyProviderIds.Count > 0)
-        {
-            var includeAny = filter.HasAnyProviderIds
-                .SelectMany(kvp => kvp.Value.Select(v => $"{kvp.Key}:{v}"))
-                .ToArray();
-            if (includeAny.Length > 0)
-            {
-                baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId + ":" + f.ProviderValue)!.Any(f => includeAny.Contains(f)));
-            }
         }
 
         if (filter.HasImdbId.HasValue)
