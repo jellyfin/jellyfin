@@ -12,9 +12,7 @@ namespace MediaBrowser.Controller.Drawing
             var newSize = DrawingUtils.Resize(originalImageSize, options.Width ?? 0, options.Height ?? 0, options.MaxWidth ?? 0, options.MaxHeight ?? 0);
             newSize = DrawingUtils.ResizeFill(newSize, options.FillWidth, options.FillHeight);
 
-            // Never encode larger than the source. Upscaling adds no detail, and the requested
-            // width/height are caller-controlled, so without this an unauthenticated request can
-            // pin a CPU and allocate several GB encoding a single image.
+            // Never encode larger than the source.
             return DrawingUtils.ScaleDownToFit(newSize, originalImageSize);
         }
     }
