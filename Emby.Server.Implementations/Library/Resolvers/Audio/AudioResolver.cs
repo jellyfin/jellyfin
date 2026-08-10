@@ -114,16 +114,17 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
                 var isMusicCollectionType = collectionType == CollectionType.music;
 
-                // Use regular audio type for mixed libraries, owned items and music
-                if (isMixedCollectionType ||
+                // .m4b is an audiobook-specific container; treat it as AudioBook in all library types
+                // so that resume position is saved correctly regardless of where the file lives.
+                if (isBooksCollectionType || extension.Equals(".m4b", StringComparison.OrdinalIgnoreCase))
+                {
+                    item = new AudioBook();
+                }
+                else if (isMixedCollectionType ||
                     args.Parent is null ||
                     isMusicCollectionType)
                 {
                     item = new MediaBrowser.Controller.Entities.Audio.Audio();
-                }
-                else if (isBooksCollectionType)
-                {
-                    item = new AudioBook();
                 }
 
                 if (item is not null)
