@@ -72,7 +72,7 @@ public class LinkedChildrenService : ILinkedChildrenService
         return dbContext.LinkedChildren
             .Where(lc => lc.ChildType == DbLinkedChildType.LocalAlternateVersion
                 || lc.ChildType == DbLinkedChildType.LinkedAlternateVersion)
-            .WhereOneOrMany(itemIds as IList<Guid> ?? itemIds.ToList(), lc => lc.ParentId)
+            .WhereOneOrMany(itemIds, lc => lc.ParentId)
             .Select(lc => lc.ParentId)
             .Distinct()
             .ToHashSet();
