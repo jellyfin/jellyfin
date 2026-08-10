@@ -356,7 +356,7 @@ public sealed partial class BaseItemRepository
             }
             else
             {
-                baseQuery = baseQuery.Where(e => e.StartDate > now && e.EndDate < now);
+                baseQuery = baseQuery.Where(e => e.StartDate > now || e.EndDate < now);
             }
         }
 
