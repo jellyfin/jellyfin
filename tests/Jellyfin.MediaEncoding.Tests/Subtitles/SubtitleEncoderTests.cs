@@ -290,12 +290,12 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
 
             var result = SubtitleEncoder.NormalizeMovTextAss(Input, 1080);
 
-            // Fontsize ~= 0.0605 * PlayResY (halved from an initial 0.121 VLC-matched
-            // calibration that rendered ~2x too large against the actual deployment font).
-            // 1080 * 0.0605 = 65. MarginV (~2.31% = 25) and Outline (~6% of Fontsize = 4)
-            // scale independently of that halving. OutlineColour/BackColour are forced to
-            // fully opaque (&H00000000) since ffmpeg writes them with a transparent alpha
-            // byte (&Hff......), making the outline/shadow invisible regardless of width.
+            // Fontsize is derived from the frame height rather than from the track's own
+            // byte (41), the way VLC's FontSizeConvert does: 1080 * 0.0605 = 65. MarginV
+            // (~2.31% = 25) and Outline (~6% of Fontsize = 4) follow. This track authors no background box
+            // (ffmpeg emits it as &Hff...... = fully transparent), so the invisible
+            // OutlineColour/BackColour are substituted with opaque black; BorderStyle
+            // stays 1 (outline + shadow).
             Assert.Contains(
                 "Style: Default,Arial,65,&Hffffff,&Hffffff,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,4,0,2,10,10,25,1",
                 result,
@@ -323,14 +323,96 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
             Assert.EndsWith(centerAlignment + ",10,10,25,1", result, StringComparison.Ordinal);
         }
 
-        [Fact]
-        public void NormalizeMovTextAss_PerLineAlignmentOverrideTag_RemapsToCenter()
+        public static TheoryData<string, int?, int?, bool> ShouldExtractMovTextAsAss_TestData()
         {
-            const string Input = "Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,{\\an1}Left-aligned override.";
+            return new TheoryData<string, int?, int?, bool>
+            {
+                { "mov_text", 1920, 1080, true },
+                // Without real dimensions the decoder would fall back to 384x288 and the
+                // style could not be normalized, so ASS would be worse than SubRip here.
+                { "mov_text", null, null, false },
+                { "mov_text", 0, 0, false },
+                { "mov_text", 1920, null, false },
+                { "subrip", 1920, 1080, false },
+                { "dvbsub", 1920, 1080, false }
+            };
+        }
+
+        [Theory]
+        [MemberData(nameof(ShouldExtractMovTextAsAss_TestData))]
+        public void ShouldExtractMovTextAsAss_OnlyForMovTextWithKnownVideoSize(string codec, int? width, int? height, bool expected)
+        {
+            var mediaSource = new MediaSourceInfo
+            {
+                MediaStreams = width is null && height is null
+                    ? []
+                    : [new MediaStream { Type = MediaStreamType.Video, Width = width, Height = height }]
+            };
+
+            var subtitleStream = new MediaStream { Type = MediaStreamType.Subtitle, Codec = codec };
+
+            Assert.Equal(expected, SubtitleEncoder.ShouldExtractMovTextAsAss(subtitleStream, mediaSource));
+        }
+
+        [Fact]
+        public void NormalizeMovTextAss_CrlfLineEndings_StyleRewrittenAndLineEndingsPreserved()
+        {
+            // ff_ass_subtitle_header_full builds the header with CRLF and the current ASS
+            // muxer normalizes it back to LF on the way out, so today's extracted files are
+            // LF. This pins down the other case anyway: the Style regex is anchored with
+            // RegexOptions.Multiline, whose '$' matches before the LF, so a CR would land
+            // inside the match and has to survive the field split and rejoin intact.
+            const string Input =
+                "[V4+ Styles]\r\n" +
+                "Style: Default,Arial,41,&Hffffff,&Hffffff,&Hff000000,&Hff000000,0,0,0,0,100,100,0,0,1,1,0,1,10,10,10,1\r\n" +
+                "\r\n" +
+                "[Events]\r\n" +
+                "Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,Line one.\r\n";
 
             var result = SubtitleEncoder.NormalizeMovTextAss(Input, 1080);
 
-            Assert.Contains("{\\an2}", result, StringComparison.Ordinal);
+            Assert.Contains(
+                "Style: Default,Arial,65,&Hffffff,&Hffffff,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,4,0,2,10,10,25,1\r\n",
+                result,
+                StringComparison.Ordinal);
+            Assert.DoesNotContain("1\r,", result, StringComparison.Ordinal);
+        }
+
+        [Theory]
+        // Opaque black, which is how ffmpeg's own mov_text muxer authors the track
+        // (back_alpha 255 -> (255 - 255) << 24 = 0). Verified against a real remux.
+        [InlineData("&H0")]
+        // A coloured background at 25% transparency.
+        [InlineData("&H40403020")]
+        public void NormalizeMovTextAss_TrackAuthorsABorderColour_ColourAndBorderStylePreserved(string colour)
+        {
+            var input = "Style: Default,Arial,41,&Hffffff,&Hffffff," + colour + "," + colour
+                + ",0,0,0,0,100,100,0,0,1,1,0,2,10,10,10,1";
+
+            var result = SubtitleEncoder.NormalizeMovTextAss(input, 1080);
+
+            // Nothing was invisible here, so the authored colour survives untouched and
+            // BorderStyle stays on ffmpeg's outline (1). Only the size-derived fields move.
+            Assert.Contains(
+                "Style: Default,Arial,65,&Hffffff,&Hffffff," + colour + "," + colour
+                    + ",0,0,0,0,100,100,0,0,1,4,0,2,10,10,25,1",
+                result,
+                StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void NormalizeMovTextAss_UnparseableOutlineColour_LeavesColoursAndBorderStyleAlone()
+        {
+            const string Input = "Style: Default,Arial,41,&Hffffff,&Hffffff,not-a-colour,&Hff000000,0,0,0,0,100,100,0,0,1,1,0,2,10,10,10,1";
+
+            var result = SubtitleEncoder.NormalizeMovTextAss(Input, 1080);
+
+            // Font size, outline width and margin are still normalized, but the colour
+            // fields are not guessed at.
+            Assert.Contains(
+                "Style: Default,Arial,65,&Hffffff,&Hffffff,not-a-colour,&Hff000000,0,0,0,0,100,100,0,0,1,4,0,2,10,10,25,1",
+                result,
+                StringComparison.Ordinal);
         }
 
         [Fact]
