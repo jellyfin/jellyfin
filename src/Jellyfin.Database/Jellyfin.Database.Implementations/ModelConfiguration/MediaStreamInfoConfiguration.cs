@@ -13,5 +13,6 @@ public class MediaStreamInfoConfiguration : IEntityTypeConfiguration<MediaStream
     public void Configure(EntityTypeBuilder<MediaStreamInfo> builder)
     {
         builder.HasKey(e => new { e.ItemId, e.StreamIndex });
+        builder.HasIndex(e => new { e.StreamType, e.ItemId });
     }
 }

@@ -1012,6 +1012,8 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "StreamIndex");
 
+                    b.HasIndex("StreamType", "ItemId");
+
                     b.ToTable("MediaStreamInfos");
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
