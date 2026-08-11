@@ -62,6 +62,9 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override string[] PhysicalLocations => PhysicalLocationsList;
 
+        [JsonIgnore]
+        protected override bool SupportsDirectoryMtimePruning => false;
+
         public string[] PhysicalLocationsList { get; set; }
 
         public Guid[] PhysicalFolderIds { get; set; }
