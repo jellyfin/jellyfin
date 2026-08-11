@@ -80,7 +80,7 @@
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.2.3" />
     <PackageVersion Include="System.Text.Json" Version="10.0.10" />
     <PackageVersion Include="TagLibSharp" Version="2.3.0" />
-    <PackageVersion Include="z440.atl.core" Version="7.15.3" />
+    <PackageVersion Include="z440.atl.core" Version="7.16.0" />
     <PackageVersion Include="TMDbLib" Version="3.0.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.6.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
