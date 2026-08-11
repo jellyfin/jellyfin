@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -83,26 +84,27 @@ public class LinkedChildrenService : ILinkedChildrenService
     {
         using var dbContext = _dbProvider.CreateDbContext();
 
-        var lowerNames = artistNames.Select(n => n.ToLowerInvariant()).ToArray();
+        var cleanNames = artistNames.Select(n => (Original: n, Clean: n.GetCleanValue())).ToArray();
+        var cleanValues = cleanNames.Select(x => x.Clean).ToArray();
+
         var artists = dbContext.BaseItems
             .AsNoTracking()
             .Where(e => e.Type == _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]!)
-            .Where(e => lowerNames.Contains(e.Name!.ToLower()))
+            .Where(e => cleanValues.Contains(e.CleanName))
             .ToArray();
 
         var lookup = artists
-            .GroupBy(e => e.Name!, StringComparer.OrdinalIgnoreCase)
+            .GroupBy(e => e.CleanName!)
             .ToDictionary(
                 g => g.Key,
-                g => g.Select(f => _queryHelpers.DeserializeBaseItem(f)).Where(dto => dto is not null).Cast<MusicArtist>().ToArray(),
-                StringComparer.OrdinalIgnoreCase);
+                g => g.Select(f => _queryHelpers.DeserializeBaseItem(f)).Where(dto => dto is not null).Cast<MusicArtist>().ToArray());
 
-        var result = new Dictionary<string, MusicArtist[]>(artistNames.Count);
-        foreach (var name in artistNames)
+        var result = new Dictionary<string, MusicArtist[]>(cleanNames.Length);
+        foreach (var (original, clean) in cleanNames)
         {
-            if (lookup.TryGetValue(name, out var artistArray))
+            if (lookup.TryGetValue(clean, out var artistArray))
             {
-                result[name] = artistArray;
+                result[original] = artistArray;
             }
         }
 
