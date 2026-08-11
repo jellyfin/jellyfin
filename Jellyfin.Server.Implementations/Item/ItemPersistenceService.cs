@@ -684,16 +684,7 @@ public class ItemPersistenceService : IItemPersistenceService
     {
         var list = new List<(ItemValueType, string)>();
 
-        if (item is IHasArtist hasArtist)
-        {
-            list.AddRange(hasArtist.Artists.Select(i => ((ItemValueType)0, i)));
-        }
-
-        if (item is IHasAlbumArtist hasAlbumArtist)
-        {
-            list.AddRange(hasAlbumArtist.AlbumArtists.Select(i => (ItemValueType.AlbumArtist, i)));
-        }
-
+        // Artists are credits, not values, keyed on the artist item. See UpdatePeople.
         list.AddRange(item.Genres.Select(i => (ItemValueType.Genre, i)));
         list.AddRange(item.Studios.Select(i => (ItemValueType.Studios, i)));
         list.AddRange(item.Tags.Select(i => (ItemValueType.Tags, i)));
