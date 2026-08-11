@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Emby.Server.Implementations.Data;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Locking;
@@ -182,6 +183,26 @@ public sealed class BaseItemRepositoryByNameTotalCountTests : IDisposable
                 ItemValueId = valueId,
                 Item = song,
                 ItemValue = itemValue
+            });
+
+            // The artist listing is driven by the credit, not by the value the song carries.
+            var creditId = Guid.Parse($"dddddddd-0000-0000-0000-{i:D12}");
+            ctx.Peoples.Add(new People
+            {
+                Id = creditId,
+                Name = name,
+                CleanName = cleanName,
+                ItemId = artistId,
+                PersonType = nameof(PersonKind.Artist)
+            });
+            ctx.PeopleBaseItemMap.Add(new PeopleBaseItemMap
+            {
+                Item = null!,
+                ItemId = songId,
+                People = null!,
+                PeopleId = creditId,
+                ListOrder = 0,
+                Role = string.Empty
             });
         }
 
