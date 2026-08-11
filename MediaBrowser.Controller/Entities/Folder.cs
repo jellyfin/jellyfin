@@ -405,295 +405,17 @@ namespace MediaBrowser.Controller.Entities
 
             if (IsFileProtocol)
             {
-                IEnumerable<BaseItem> nonCachedChildren = [];
+                if (CanSkipDiskValidation(refreshOptions, directoryService))
+                {
+                    Logger.LogDebug("Directory contents unchanged since last scan, skipping child validation: {Path}", Path);
 
-                try
-                {
-                    nonCachedChildren = GetNonCachedChildren(directoryService);
+                    var cachedChildren = GetActualChildrenDictionary();
+                    validChildren.AddRange(cachedChildren.Values);
+                    accessibleChildren.AddRange(cachedChildren.Values);
                 }
-                catch (IOException ex)
+                else if (!await ValidateChildrenFromDisk(progress, recursive, allowRemoveRoot, directoryService, validChildren, accessibleChildren, cancellationToken).ConfigureAwait(false))
                 {
-                    Logger.LogError(ex, "Error retrieving children from file system");
-                }
-                catch (SecurityException ex)
-                {
-                    Logger.LogError(ex, "Error retrieving children from file system");
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error retrieving children");
                     return;
-                }
-
-                progress.Report(ProgressHelpers.RetrievedChildren);
-
-                if (recursive)
-                {
-                    ProviderManager.OnRefreshProgress(this, ProgressHelpers.RetrievedChildren);
-                }
-
-                // Build a dictionary of the current children we have now by Id so we can compare quickly and easily
-                var currentChildren = GetActualChildrenDictionary();
-
-                // Create a list for our validated children
-                var newItems = new List<BaseItem>();
-                var actuallyRemoved = new List<BaseItem>();
-
-                // Build a reverse path→item lookup for detecting type changes
-                var currentChildrenByPath = new Dictionary<string, BaseItem>(StringComparer.OrdinalIgnoreCase);
-                foreach (var kvp in currentChildren)
-                {
-                    if (!string.IsNullOrEmpty(kvp.Value.Path))
-                    {
-                        currentChildrenByPath.TryAdd(kvp.Value.Path, kvp.Value);
-                    }
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                foreach (var child in nonCachedChildren)
-                {
-                    if (!IsLibraryFolderAccessible(directoryService, child, allowRemoveRoot))
-                    {
-                        // Preserve inaccessible items so they aren't treated as removed.
-                        if (currentChildren.TryGetValue(child.Id, out var childrenToKeep))
-                        {
-                            validChildren.Add(childrenToKeep);
-                        }
-
-                        continue;
-                    }
-
-                    if (currentChildren.TryGetValue(child.Id, out BaseItem currentChild))
-                    {
-                        validChildren.Add(currentChild);
-                        accessibleChildren.Add(currentChild);
-
-                        if (currentChild.UpdateFromResolvedItem(child) > ItemUpdateType.None)
-                        {
-                            await currentChild.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            // metadata is up-to-date; make sure DB has correct images dimensions and hash
-                            await LibraryManager.UpdateImagesAsync(currentChild).ConfigureAwait(false);
-                        }
-
-                        continue;
-                    }
-
-                    // Check if an existing item occupies the same path with different type/ID
-                    if (!string.IsNullOrEmpty(child.Path)
-                        && currentChildrenByPath.TryGetValue(child.Path, out var staleItem)
-                        && !staleItem.Id.Equals(child.Id))
-                    {
-                        Logger.LogInformation(
-                            "Item type changed at {Path}: {OldType} -> {NewType}, removing stale entry",
-                            child.Path,
-                            staleItem.GetType().Name,
-                            child.GetType().Name);
-
-                        currentChildren.Remove(staleItem.Id);
-                        currentChildrenByPath.Remove(child.Path);
-                        staleItem.SetParent(null);
-                        LibraryManager.DeleteItem(staleItem, new DeleteOptions { DeleteFileLocation = false }, this, false);
-                        actuallyRemoved.Add(staleItem);
-                    }
-
-                    // Brand new item - needs to be added
-                    child.SetParent(this);
-                    newItems.Add(child);
-                    validChildren.Add(child);
-                    accessibleChildren.Add(child);
-                }
-
-                // That's all the new and changed ones - now see if any have been removed and need cleanup
-                var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
-
-                // If it's an AggregateFolder, don't remove
-                // Collect replaced primaries for deferred deletion (after CreateItems)
-                var replacedPrimaries = new List<(Video OldPrimary, Video NewPrimary)>();
-
-                // Build a set of paths that are alternate versions of valid children
-                // These items should not be deleted - they're managed by their primary video
-                var alternateVersionPaths = validChildren
-                    .OfType<Video>()
-                    .SelectMany(v => v.LocalAlternateVersions ?? [])
-                    .Where(p => !string.IsNullOrEmpty(p))
-                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-                if (itemsRemoved.Count > 0)
-                {
-                    foreach (var item in itemsRemoved)
-                    {
-                        if (!item.CanDelete())
-                        {
-                            Logger.LogDebug("Item marked as non-removable, skipping: {Path}", item.Path ?? item.Name);
-                            continue;
-                        }
-
-                        // Skip items that are alternate versions of another video
-                        if (item is Video video)
-                        {
-                            // Check if path is in LocalAlternateVersions of any valid child
-                            if (!string.IsNullOrEmpty(item.Path) && alternateVersionPaths.Contains(item.Path))
-                            {
-                                Logger.LogDebug("Item path matches an alternate version, skipping deletion: {Path}", item.Path);
-                                continue;
-                            }
-                        }
-
-                        // Defer deletion if this primary video is being replaced by a new primary
-                        // that takes over its alternates. Deleting now would trigger premature
-                        // promotion inside DeleteItem and write stale paths to collection NFOs.
-                        if (item is Video primaryVideo
-                            && !primaryVideo.PrimaryVersionId.HasValue
-                            && primaryVideo.OwnerId.IsEmpty()
-                            && (primaryVideo.LocalAlternateVersions ?? []).Any(p => alternateVersionPaths.Contains(p)))
-                        {
-                            var newPrimary = newItems
-                                .OfType<Video>()
-                                .FirstOrDefault(v => (v.LocalAlternateVersions ?? [])
-                                    .Any(p => (primaryVideo.LocalAlternateVersions ?? [])
-                                        .Any(op => string.Equals(op, p, StringComparison.OrdinalIgnoreCase))));
-                            if (newPrimary is not null)
-                            {
-                                Logger.LogDebug("Deferring deletion of replaced primary: {Path}", item.Path);
-                                replacedPrimaries.Add((primaryVideo, newPrimary));
-                                actuallyRemoved.Add(item);
-                                item.SetParent(null);
-                                continue;
-                            }
-                        }
-
-                        if (item.IsFileProtocol)
-                        {
-                            Logger.LogDebug("Removed item: {Path}", item.Path);
-
-                            actuallyRemoved.Add(item);
-                            item.SetParent(null);
-                            LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }, this, false);
-                        }
-                    }
-                }
-
-                if (newItems.Count > 0)
-                {
-                    LibraryManager.CreateItems(newItems, this, cancellationToken);
-                }
-
-                // Process deferred replaced-primary deletions now that new primaries exist in DB/cache.
-                // This avoids the premature promotion that would occur if DeleteItem ran before CreateItems.
-                foreach (var (oldPrimary, newPrimary) in replacedPrimaries)
-                {
-                    Logger.LogInformation(
-                        "Processing deferred deletion of replaced primary {OldName} ({OldId}), new primary {NewName} ({NewId})",
-                        oldPrimary.Name,
-                        oldPrimary.Id,
-                        newPrimary.Name,
-                        newPrimary.Id);
-
-                    // Reroute collection/playlist references from old primary to new primary
-                    await LibraryManager.RerouteLinkedChildReferencesAsync(oldPrimary.Id, newPrimary.Id).ConfigureAwait(false);
-
-                    // Transfer alternates from old primary to new primary
-                    var localAlternateIds = LibraryManager.GetLocalAlternateVersionIds(oldPrimary).ToHashSet();
-                    var allAlternateIds = localAlternateIds
-                        .Concat(LibraryManager.GetLinkedAlternateVersions(oldPrimary).Select(v => v.Id))
-                        .Distinct()
-                        .ToList();
-
-                    foreach (var altId in allAlternateIds)
-                    {
-                        if (LibraryManager.GetItemById(altId) is Video altVideo && !altVideo.Id.Equals(newPrimary.Id))
-                        {
-                            altVideo.SetPrimaryVersionId(newPrimary.Id);
-                            altVideo.OwnerId = localAlternateIds.Contains(altVideo.Id) ? newPrimary.Id : Guid.Empty;
-                            await altVideo.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
-                        }
-                    }
-
-                    // Clear alternate arrays so DeleteItem won't trigger promotion
-                    oldPrimary.LocalAlternateVersions = [];
-                    oldPrimary.LinkedAlternateVersions = [];
-
-                    // Safe to delete now — no promotion will happen
-                    LibraryManager.DeleteItem(oldPrimary, new DeleteOptions { DeleteFileLocation = false }, this, false);
-                }
-
-                // Demote old primaries that are now alternate versions of newly created primaries.
-                // This handles the case where a new file is added that becomes the new primary
-                // (e.g. movie-2 added, movie-3 was primary → movie-3 needs demotion).
-                // Items in replacedPrimaries are excluded (already in actuallyRemoved).
-                var oldPrimariesToDemote = new List<(Video OldPrimary, Video NewPrimary)>();
-                foreach (var item in itemsRemoved.Except(actuallyRemoved))
-                {
-                    if (item is Video video
-                        && video.OwnerId.IsEmpty()
-                        && !string.IsNullOrEmpty(item.Path)
-                        && alternateVersionPaths.Contains(item.Path))
-                    {
-                        var newPrimary = newItems
-                            .OfType<Video>()
-                            .FirstOrDefault(v => (v.LocalAlternateVersions ?? [])
-                                .Any(p => string.Equals(p, item.Path, StringComparison.OrdinalIgnoreCase)));
-                        if (newPrimary is not null)
-                        {
-                            oldPrimariesToDemote.Add((video, newPrimary));
-                        }
-                    }
-                }
-
-                foreach (var (oldPrimary, newPrimary) in oldPrimariesToDemote)
-                {
-                    Logger.LogInformation(
-                        "Demoting old primary {OldName} ({OldId}) to alternate of new primary {NewName} ({NewId})",
-                        oldPrimary.Name,
-                        oldPrimary.Id,
-                        newPrimary.Name,
-                        newPrimary.Id);
-
-                    // First: update old primary's alternate items to point to new primary.
-                    // Order matters — update alternates FIRST so they don't get orphan-deleted
-                    // when old primary's arrays are cleared.
-                    var oldAlternateIds = LibraryManager.GetLocalAlternateVersionIds(oldPrimary)
-                        .Concat(LibraryManager.GetLinkedAlternateVersions(oldPrimary).Select(v => v.Id))
-                        .Distinct()
-                        .ToList();
-
-                    foreach (var altId in oldAlternateIds)
-                    {
-                        if (LibraryManager.GetItemById(altId) is Video altVideo && !altVideo.Id.Equals(newPrimary.Id))
-                        {
-                            altVideo.SetPrimaryVersionId(newPrimary.Id);
-                            altVideo.OwnerId = newPrimary.Id;
-                            await altVideo.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
-                        }
-                    }
-
-                    // Then: demote old primary — clear its arrays and set it as alternate of new primary
-                    oldPrimary.LocalAlternateVersions = [];
-                    oldPrimary.LinkedAlternateVersions = [];
-                    oldPrimary.SetPrimaryVersionId(newPrimary.Id);
-                    oldPrimary.OwnerId = newPrimary.Id;
-                    await oldPrimary.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
-
-                    // Re-route playlist/collection references from old primary to new primary
-                    await LibraryManager.RerouteLinkedChildReferencesAsync(oldPrimary.Id, newPrimary.Id).ConfigureAwait(false);
-                }
-
-                // After removing items, reattach any detached user data to remaining children
-                // that share the same user data keys (eg. same episode replaced with a new file).
-                if (actuallyRemoved.Count > 0)
-                {
-                    var removedKeys = actuallyRemoved.SelectMany(i => i.GetUserDataKeys()).ToHashSet();
-                    foreach (var child in validChildren)
-                    {
-                        if (child.GetUserDataKeys().Any(removedKeys.Contains))
-                        {
-                            await child.ReattachUserDataAsync(cancellationToken).ConfigureAwait(false);
-                        }
-                    }
                 }
             }
             else
@@ -770,6 +492,356 @@ namespace MediaBrowser.Controller.Entities
                     await RefreshMetadataRecursive(accessibleChildren, refreshOptions, recursive, innerProgress, cancellationToken).ConfigureAwait(false);
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether this folder's own directory contents can be assumed unchanged since the
+        /// last time they were validated against disk, letting the (comparatively expensive) directory
+        /// listing and database diff in <see cref="ValidateChildrenFromDisk"/> be skipped for this pass.
+        /// </summary>
+        /// <remarks>
+        /// This relies on the folder's own directory mtime, which the OS updates whenever an entry is
+        /// added, removed, or renamed directly within it. It does not, by itself, tell us whether a
+        /// deeper descendant changed - callers still need to recurse into known subfolders so each one
+        /// can make the same check against its own directory.
+        /// </remarks>
+        private bool CanSkipDiskValidation(MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        {
+            // A folder that has never completed a full refresh cycle can't be trusted: DateModified is
+            // already populated (set the moment it was resolved from disk), but its children have never
+            // actually been enumerated yet - most notably true for an item created earlier in this very
+            // scan pass.
+            if (DateLastRefreshed == DateTime.MinValue || DateModified == DateTime.MinValue || string.IsNullOrEmpty(Path))
+            {
+                return false;
+            }
+
+            // Folders backed by more than one physical location (library roots, collection folders)
+            // can't be represented by a single directory's mtime - they already have their own
+            // change-detection logic in RequiresRefresh().
+            if (this is AggregateFolder || this is CollectionFolder)
+            {
+                return false;
+            }
+
+            // Explicit force-rescan requests must always perform a real, full validation.
+            if (refreshOptions is not null
+                && (refreshOptions.ReplaceAllMetadata || (refreshOptions.RefreshPaths?.Length ?? 0) > 0))
+            {
+                return false;
+            }
+
+            if (!LibraryManager.GetLibraryOptions(this).EnableDirectoryMtimePruning)
+            {
+                return false;
+            }
+
+            var info = directoryService.GetFileSystemEntry(Path);
+
+            return info is not null && info.Exists && !this.HasChanged(info.LastWriteTimeUtc);
+        }
+
+        /// <summary>
+        /// Lists this folder's children directly from disk and reconciles them against the database,
+        /// creating new items, removing items that are no longer present, and updating anything whose
+        /// resolved metadata changed. Newly resolved and still-valid items are appended to
+        /// <paramref name="validChildren"/> and <paramref name="accessibleChildren"/> as they're found.
+        /// </summary>
+        /// <returns><see langword="false"/> if an unrecoverable error occurred and the caller should abort validating this folder entirely; otherwise <see langword="true"/>.</returns>
+        private async Task<bool> ValidateChildrenFromDisk(IProgress<double> progress, bool recursive, bool allowRemoveRoot, IDirectoryService directoryService, List<BaseItem> validChildren, List<BaseItem> accessibleChildren, CancellationToken cancellationToken)
+        {
+            IEnumerable<BaseItem> nonCachedChildren = [];
+
+            try
+            {
+                nonCachedChildren = GetNonCachedChildren(directoryService);
+            }
+            catch (IOException ex)
+            {
+                Logger.LogError(ex, "Error retrieving children from file system");
+            }
+            catch (SecurityException ex)
+            {
+                Logger.LogError(ex, "Error retrieving children from file system");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error retrieving children");
+                return false;
+            }
+
+            progress.Report(ProgressHelpers.RetrievedChildren);
+
+            if (recursive)
+            {
+                ProviderManager.OnRefreshProgress(this, ProgressHelpers.RetrievedChildren);
+            }
+
+            // Build a dictionary of the current children we have now by Id so we can compare quickly and easily
+            var currentChildren = GetActualChildrenDictionary();
+
+            // Create a list for our validated children
+            var newItems = new List<BaseItem>();
+            var actuallyRemoved = new List<BaseItem>();
+
+            // Build a reverse path→item lookup for detecting type changes
+            var currentChildrenByPath = new Dictionary<string, BaseItem>(StringComparer.OrdinalIgnoreCase);
+            foreach (var kvp in currentChildren)
+            {
+                if (!string.IsNullOrEmpty(kvp.Value.Path))
+                {
+                    currentChildrenByPath.TryAdd(kvp.Value.Path, kvp.Value);
+                }
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            foreach (var child in nonCachedChildren)
+            {
+                if (!IsLibraryFolderAccessible(directoryService, child, allowRemoveRoot))
+                {
+                    // Preserve inaccessible items so they aren't treated as removed.
+                    if (currentChildren.TryGetValue(child.Id, out var childrenToKeep))
+                    {
+                        validChildren.Add(childrenToKeep);
+                    }
+
+                    continue;
+                }
+
+                if (currentChildren.TryGetValue(child.Id, out BaseItem currentChild))
+                {
+                    validChildren.Add(currentChild);
+                    accessibleChildren.Add(currentChild);
+
+                    if (currentChild.UpdateFromResolvedItem(child) > ItemUpdateType.None)
+                    {
+                        await currentChild.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        // metadata is up-to-date; make sure DB has correct images dimensions and hash
+                        await LibraryManager.UpdateImagesAsync(currentChild).ConfigureAwait(false);
+                    }
+
+                    continue;
+                }
+
+                // Check if an existing item occupies the same path with different type/ID
+                if (!string.IsNullOrEmpty(child.Path)
+                    && currentChildrenByPath.TryGetValue(child.Path, out var staleItem)
+                    && !staleItem.Id.Equals(child.Id))
+                {
+                    Logger.LogInformation(
+                        "Item type changed at {Path}: {OldType} -> {NewType}, removing stale entry",
+                        child.Path,
+                        staleItem.GetType().Name,
+                        child.GetType().Name);
+
+                    currentChildren.Remove(staleItem.Id);
+                    currentChildrenByPath.Remove(child.Path);
+                    staleItem.SetParent(null);
+                    LibraryManager.DeleteItem(staleItem, new DeleteOptions { DeleteFileLocation = false }, this, false);
+                    actuallyRemoved.Add(staleItem);
+                }
+
+                // Brand new item - needs to be added
+                child.SetParent(this);
+                newItems.Add(child);
+                validChildren.Add(child);
+                accessibleChildren.Add(child);
+            }
+
+            // That's all the new and changed ones - now see if any have been removed and need cleanup
+            var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
+
+            // If it's an AggregateFolder, don't remove
+            // Collect replaced primaries for deferred deletion (after CreateItems)
+            var replacedPrimaries = new List<(Video OldPrimary, Video NewPrimary)>();
+
+            // Build a set of paths that are alternate versions of valid children
+            // These items should not be deleted - they're managed by their primary video
+            var alternateVersionPaths = validChildren
+                .OfType<Video>()
+                .SelectMany(v => v.LocalAlternateVersions ?? [])
+                .Where(p => !string.IsNullOrEmpty(p))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            if (itemsRemoved.Count > 0)
+            {
+                foreach (var item in itemsRemoved)
+                {
+                    if (!item.CanDelete())
+                    {
+                        Logger.LogDebug("Item marked as non-removable, skipping: {Path}", item.Path ?? item.Name);
+                        continue;
+                    }
+
+                    // Skip items that are alternate versions of another video
+                    if (item is Video video)
+                    {
+                        // Check if path is in LocalAlternateVersions of any valid child
+                        if (!string.IsNullOrEmpty(item.Path) && alternateVersionPaths.Contains(item.Path))
+                        {
+                            Logger.LogDebug("Item path matches an alternate version, skipping deletion: {Path}", item.Path);
+                            continue;
+                        }
+                    }
+
+                    // Defer deletion if this primary video is being replaced by a new primary
+                    // that takes over its alternates. Deleting now would trigger premature
+                    // promotion inside DeleteItem and write stale paths to collection NFOs.
+                    if (item is Video primaryVideo
+                        && !primaryVideo.PrimaryVersionId.HasValue
+                        && primaryVideo.OwnerId.IsEmpty()
+                        && (primaryVideo.LocalAlternateVersions ?? []).Any(p => alternateVersionPaths.Contains(p)))
+                    {
+                        var newPrimary = newItems
+                            .OfType<Video>()
+                            .FirstOrDefault(v => (v.LocalAlternateVersions ?? [])
+                                .Any(p => (primaryVideo.LocalAlternateVersions ?? [])
+                                    .Any(op => string.Equals(op, p, StringComparison.OrdinalIgnoreCase))));
+                        if (newPrimary is not null)
+                        {
+                            Logger.LogDebug("Deferring deletion of replaced primary: {Path}", item.Path);
+                            replacedPrimaries.Add((primaryVideo, newPrimary));
+                            actuallyRemoved.Add(item);
+                            item.SetParent(null);
+                            continue;
+                        }
+                    }
+
+                    if (item.IsFileProtocol)
+                    {
+                        Logger.LogDebug("Removed item: {Path}", item.Path);
+
+                        actuallyRemoved.Add(item);
+                        item.SetParent(null);
+                        LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }, this, false);
+                    }
+                }
+            }
+
+            if (newItems.Count > 0)
+            {
+                LibraryManager.CreateItems(newItems, this, cancellationToken);
+            }
+
+            // Process deferred replaced-primary deletions now that new primaries exist in DB/cache.
+            // This avoids the premature promotion that would occur if DeleteItem ran before CreateItems.
+            foreach (var (oldPrimary, newPrimary) in replacedPrimaries)
+            {
+                Logger.LogInformation(
+                    "Processing deferred deletion of replaced primary {OldName} ({OldId}), new primary {NewName} ({NewId})",
+                    oldPrimary.Name,
+                    oldPrimary.Id,
+                    newPrimary.Name,
+                    newPrimary.Id);
+
+                // Reroute collection/playlist references from old primary to new primary
+                await LibraryManager.RerouteLinkedChildReferencesAsync(oldPrimary.Id, newPrimary.Id).ConfigureAwait(false);
+
+                // Transfer alternates from old primary to new primary
+                var localAlternateIds = LibraryManager.GetLocalAlternateVersionIds(oldPrimary).ToHashSet();
+                var allAlternateIds = localAlternateIds
+                    .Concat(LibraryManager.GetLinkedAlternateVersions(oldPrimary).Select(v => v.Id))
+                    .Distinct()
+                    .ToList();
+
+                foreach (var altId in allAlternateIds)
+                {
+                    if (LibraryManager.GetItemById(altId) is Video altVideo && !altVideo.Id.Equals(newPrimary.Id))
+                    {
+                        altVideo.SetPrimaryVersionId(newPrimary.Id);
+                        altVideo.OwnerId = localAlternateIds.Contains(altVideo.Id) ? newPrimary.Id : Guid.Empty;
+                        await altVideo.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+
+                // Clear alternate arrays so DeleteItem won't trigger promotion
+                oldPrimary.LocalAlternateVersions = [];
+                oldPrimary.LinkedAlternateVersions = [];
+
+                // Safe to delete now — no promotion will happen
+                LibraryManager.DeleteItem(oldPrimary, new DeleteOptions { DeleteFileLocation = false }, this, false);
+            }
+
+            // Demote old primaries that are now alternate versions of newly created primaries.
+            // This handles the case where a new file is added that becomes the new primary
+            // (e.g. movie-2 added, movie-3 was primary → movie-3 needs demotion).
+            // Items in replacedPrimaries are excluded (already in actuallyRemoved).
+            var oldPrimariesToDemote = new List<(Video OldPrimary, Video NewPrimary)>();
+            foreach (var item in itemsRemoved.Except(actuallyRemoved))
+            {
+                if (item is Video video
+                    && video.OwnerId.IsEmpty()
+                    && !string.IsNullOrEmpty(item.Path)
+                    && alternateVersionPaths.Contains(item.Path))
+                {
+                    var newPrimary = newItems
+                        .OfType<Video>()
+                        .FirstOrDefault(v => (v.LocalAlternateVersions ?? [])
+                            .Any(p => string.Equals(p, item.Path, StringComparison.OrdinalIgnoreCase)));
+                    if (newPrimary is not null)
+                    {
+                        oldPrimariesToDemote.Add((video, newPrimary));
+                    }
+                }
+            }
+
+            foreach (var (oldPrimary, newPrimary) in oldPrimariesToDemote)
+            {
+                Logger.LogInformation(
+                    "Demoting old primary {OldName} ({OldId}) to alternate of new primary {NewName} ({NewId})",
+                    oldPrimary.Name,
+                    oldPrimary.Id,
+                    newPrimary.Name,
+                    newPrimary.Id);
+
+                // First: update old primary's alternate items to point to new primary.
+                // Order matters — update alternates FIRST so they don't get orphan-deleted
+                // when old primary's arrays are cleared.
+                var oldAlternateIds = LibraryManager.GetLocalAlternateVersionIds(oldPrimary)
+                    .Concat(LibraryManager.GetLinkedAlternateVersions(oldPrimary).Select(v => v.Id))
+                    .Distinct()
+                    .ToList();
+
+                foreach (var altId in oldAlternateIds)
+                {
+                    if (LibraryManager.GetItemById(altId) is Video altVideo && !altVideo.Id.Equals(newPrimary.Id))
+                    {
+                        altVideo.SetPrimaryVersionId(newPrimary.Id);
+                        altVideo.OwnerId = newPrimary.Id;
+                        await altVideo.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+
+                // Then: demote old primary — clear its arrays and set it as alternate of new primary
+                oldPrimary.LocalAlternateVersions = [];
+                oldPrimary.LinkedAlternateVersions = [];
+                oldPrimary.SetPrimaryVersionId(newPrimary.Id);
+                oldPrimary.OwnerId = newPrimary.Id;
+                await oldPrimary.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+
+                // Re-route playlist/collection references from old primary to new primary
+                await LibraryManager.RerouteLinkedChildReferencesAsync(oldPrimary.Id, newPrimary.Id).ConfigureAwait(false);
+            }
+
+            // After removing items, reattach any detached user data to remaining children
+            // that share the same user data keys (eg. same episode replaced with a new file).
+            if (actuallyRemoved.Count > 0)
+            {
+                var removedKeys = actuallyRemoved.SelectMany(i => i.GetUserDataKeys()).ToHashSet();
+                foreach (var child in validChildren)
+                {
+                    if (child.GetUserDataKeys().Any(removedKeys.Contains))
+                    {
+                        await child.ReattachUserDataAsync(cancellationToken).ConfigureAwait(false);
+                    }
+                }
+            }
+
+            return true;
         }
 
         private async Task RefreshMetadataRecursive(IList<BaseItem> children, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)

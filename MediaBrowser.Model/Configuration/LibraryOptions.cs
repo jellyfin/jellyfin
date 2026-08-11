@@ -74,6 +74,13 @@ namespace MediaBrowser.Model.Configuration
         public int AutomaticRefreshIntervalDays { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether a folder's own directory modified time can be trusted
+        /// to skip re-scanning its contents when unchanged. Disable this for libraries on network shares
+        /// (e.g. NFS, SMB) where directory modification times may not be updated reliably or promptly.
+        /// </summary>
+        public bool EnableDirectoryMtimePruning { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets the preferred metadata language.
         /// </summary>
         /// <value>The preferred metadata language.</value>
