@@ -624,16 +624,16 @@ public sealed partial class BaseItemRepository
 
         if (tags.Count > 0)
         {
-            var cleanValues = tags.Select(e => e.GetCleanValue()).ToArray().OneOrManyExpressionBuilder<ItemValueMap, string>(f => f.ItemValue.CleanValue);
+            var cleanValues = tags.Select(e => e.GetCleanValue()).ToArray().OneOrManyExpressionBuilder<BaseItemTag, string>(f => f.CleanValue);
             baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.AsQueryable().Where(f => f.ItemValue.Type == ItemValueType.Tags).Any(cleanValues));
+                    .Where(e => e.ItemTags!.AsQueryable().Any(cleanValues));
         }
 
         if (excludeTags.Count > 0)
         {
-            var cleanValues = excludeTags.Select(e => e.GetCleanValue()).ToArray().OneOrManyExpressionBuilder<ItemValueMap, string>(f => f.ItemValue.CleanValue);
+            var cleanValues = excludeTags.Select(e => e.GetCleanValue()).ToArray().OneOrManyExpressionBuilder<BaseItemTag, string>(f => f.CleanValue);
             baseQuery = baseQuery
-                    .Where(e => !e.ItemValues!.AsQueryable().Where(f => f.ItemValue.Type == ItemValueType.Tags).Any(cleanValues));
+                    .Where(e => !e.ItemTags!.AsQueryable().Any(cleanValues));
         }
 
         if (filter.StudioIds.Length > 0)
@@ -1039,8 +1039,8 @@ public sealed partial class BaseItemRepository
         if (filter.ExcludeInheritedTags.Length > 0)
         {
             var excludedTags = filter.ExcludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
-            var blockedTagItemIds = context.ItemValuesMap
-                .Where(f => f.ItemValue.Type == ItemValueType.Tags && excludedTags.Contains(f.ItemValue.CleanValue))
+            var blockedTagItemIds = context.BaseItemTags
+                .Where(f => excludedTags.Contains(f.CleanValue))
                 .Select(f => f.ItemId);
 
             baseQuery = baseQuery.Where(e =>
@@ -1055,8 +1055,8 @@ public sealed partial class BaseItemRepository
             var includeTags = filter.IncludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
             var isPlaylistOnlyQuery = includeTypes.Length == 1 && includeTypes.FirstOrDefault() == BaseItemKind.Playlist;
             var personTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
-            var allowedTagItemIds = context.ItemValuesMap
-                .Where(f => f.ItemValue.Type == ItemValueType.Tags && includeTags.Contains(f.ItemValue.CleanValue))
+            var allowedTagItemIds = context.BaseItemTags
+                .Where(f => includeTags.Contains(f.CleanValue))
                 .Select(f => f.ItemId);
 
             baseQuery = baseQuery.Where(e =>
