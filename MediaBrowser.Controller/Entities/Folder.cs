@@ -516,11 +516,11 @@ namespace MediaBrowser.Controller.Entities
         /// </remarks>
         private bool CanSkipDiskValidation(MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
-            // A folder that has never completed a full refresh cycle can't be trusted: DateModified is
-            // already populated (set the moment it was resolved from disk), but its children have never
-            // actually been enumerated yet - most notably true for an item created earlier in this very
-            // scan pass.
-            if (DateLastRefreshed == DateTime.MinValue || DateModified == DateTime.MinValue || string.IsNullOrEmpty(Path))
+            // DirectoryMTime is only ever written by StampDirectoryModifiedTime below, right after a
+            // successful full validation - so MinValue unambiguously means "children never listed yet"
+            // (e.g. an item created earlier in this very scan pass). It is deliberately not compared
+            // against DateModified, which unrelated metadata-refresh code can update independently.
+            if (DirectoryMTime == DateTime.MinValue || string.IsNullOrEmpty(Path))
             {
                 return false;
             }
@@ -544,7 +544,7 @@ namespace MediaBrowser.Controller.Entities
 
             var info = directoryService.GetFileSystemEntry(Path);
 
-            return info is not null && info.Exists && !this.HasChanged(info.LastWriteTimeUtc);
+            return info is not null && info.Exists && !this.HasDirectoryMTimeChanged(info.LastWriteTimeUtc);
         }
 
         /// <summary>
@@ -951,12 +951,12 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var selfInfo = directoryService.GetFileSystemEntry(Path);
-            if (selfInfo is null || !selfInfo.Exists || !this.HasChanged(selfInfo.LastWriteTimeUtc))
+            if (selfInfo is null || !selfInfo.Exists || !this.HasDirectoryMTimeChanged(selfInfo.LastWriteTimeUtc))
             {
                 return;
             }
 
-            DateModified = selfInfo.LastWriteTimeUtc;
+            DirectoryMTime = selfInfo.LastWriteTimeUtc;
             await UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
         }
 

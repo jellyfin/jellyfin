@@ -128,5 +128,22 @@ namespace MediaBrowser.Controller.Entities
             ArgumentNullException.ThrowIfNull(source);
             return source.DateModified.Subtract(asOf).Duration().TotalSeconds > 1;
         }
+
+        /// <summary>
+        /// Determines if a folder's on-disk directory mtime differs from the value recorded the last
+        /// time its children were fully validated from disk. Deliberately compares against
+        /// <see cref="BaseItem.DirectoryMTime"/> rather than <see cref="BaseItem.DateModified"/>, since the
+        /// latter can be updated by unrelated metadata-refresh code at unpredictable times within a scan.
+        /// </summary>
+        /// <param name="source">The source object.</param>
+        /// <param name="asOf">The timestamp to detect changes as of.</param>
+        /// <typeparam name="T">Source type.</typeparam>
+        /// <returns>Whether the folder's directory contents have changed.</returns>
+        public static bool HasDirectoryMTimeChanged<T>(this T source, DateTime asOf)
+            where T : BaseItem
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            return source.DirectoryMTime.Subtract(asOf).Duration().TotalSeconds > 1;
+        }
     }
 }

@@ -72,6 +72,12 @@ public class BaseItemEntity
 
     public DateTime? DateLastSaved { get; set; }
 
+    /// <summary>
+    /// Gets or sets the on-disk directory modified time recorded the last time this folder's children
+    /// were fully validated from disk during a library scan. Only meaningful for folder-type items.
+    /// </summary>
+    public DateTime? DirectoryMTime { get; set; }
+
     public bool IsInMixedFolder { get; set; }
 
     public string? Studios { get; set; }

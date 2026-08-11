@@ -436,6 +436,16 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public DateTime DateLastRefreshed { get; set; }
 
+        /// <summary>
+        /// Gets or sets the on-disk directory modified time recorded the last time this folder's children
+        /// were fully validated from disk during a library scan. Deliberately separate from
+        /// <see cref="DateModified"/>, which is also written by unrelated metadata-refresh code and cannot
+        /// be trusted as a "children already re-listed" signal. Only meaningful for folder-type items; see
+        /// <see cref="Folder.CanSkipDiskValidation"/>.
+        /// </summary>
+        [JsonIgnore]
+        public DateTime DirectoryMTime { get; set; }
+
         [JsonIgnore]
         public bool IsLocked { get; set; }
 

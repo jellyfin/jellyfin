@@ -192,6 +192,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<DateTime?>("DateModified")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("DirectoryMTime")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("EndDate")
                         .HasColumnType("TEXT");
 
