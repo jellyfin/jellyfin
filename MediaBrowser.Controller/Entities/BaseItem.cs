@@ -88,7 +88,7 @@ namespace MediaBrowser.Controller.Entities
             Model.Entities.ExtraType.Short
         };
 
-        private static readonly char[] VersionDelimiters = ['-', '_', '.'];
+        private protected static readonly char[] VersionDelimiters = ['-', '_', '.'];
 
         private string _sortName;
 
@@ -770,6 +770,17 @@ namespace MediaBrowser.Controller.Entities
 
         [JsonIgnore]
         protected virtual bool SupportsOwnedItems => !ParentId.IsEmpty() && IsFileProtocol;
+
+        /// <summary>
+        /// Gets a value indicating whether this item searches the folder it lives in for its own extras.
+        /// </summary>
+        [JsonIgnore]
+        protected virtual bool SearchesContainingFolderForExtras =>
+            IsFileProtocol
+            && SupportsOwnedItems
+            && !IsInMixedFolder
+            && this is not (ICollectionFolder or UserRootFolder or AggregateFolder)
+            && GetType() != typeof(Folder);
 
         [JsonIgnore]
         public virtual bool SupportsPeople => false;
@@ -1528,7 +1539,14 @@ namespace MediaBrowser.Controller.Entities
         /// <returns><c>true</c> if any items have changed, else <c>false</c>.</returns>
         protected virtual async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, IReadOnlyList<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
-            if (!IsFileProtocol || !SupportsOwnedItems || IsInMixedFolder || this is ICollectionFolder or UserRootFolder or AggregateFolder || this.GetType() == typeof(Folder))
+            if (!SearchesContainingFolderForExtras)
+            {
+                return false;
+            }
+
+            if (GetParent() is Folder container
+                && container.SearchesContainingFolderForExtras
+                && string.Equals(container.Path, ContainingFolderPath, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -1543,19 +1561,33 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<bool> RefreshExtras(BaseItem item, MetadataRefreshOptions options, IReadOnlyList<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var extras = LibraryManager.FindExtras(item, fileSystemChildren, options.DirectoryService).ToArray();
-            var newExtraIds = Array.ConvertAll(extras, x => x.Id);
-
+            // An extra is owned by the version it is named after, so all of them are maintained together.
             var currentExtras = LibraryManager.GetItemList(new InternalItemsQuery()
             {
-                OwnerIds = [item.Id]
-            });
+                OwnerIds = item.GetOwnedVersionIds()
+            }).Where(e => e.ExtraType.HasValue).ToList();
 
             var currentExtraIds = currentExtras.Select(e => e.Id).ToArray();
 
+            // Snapshot the persisted names before resolving, as FindExtras corrects the name on the
+            // items it hands back and may well hand back these very instances.
+            var currentExtraNames = new Dictionary<Guid, string>();
+            foreach (var extra in currentExtras)
+            {
+                currentExtraNames[extra.Id] = extra.Name;
+            }
+
+            var extras = LibraryManager.FindExtras(item, fileSystemChildren, options.DirectoryService).ToArray();
+            var newExtraIds = Array.ConvertAll(extras, x => x.Id);
+
+            var renamedExtraIds = extras
+                .Where(e => currentExtraNames.TryGetValue(e.Id, out var oldName) && !string.Equals(oldName, e.Name, StringComparison.Ordinal))
+                .Select(e => e.Id)
+                .ToHashSet();
+
             var extrasChanged = !currentExtraIds.OrderBy(x => x).SequenceEqual(newExtraIds.OrderBy(x => x));
 
-            if (!extrasChanged && !options.ReplaceAllMetadata && options.MetadataRefreshMode != MetadataRefreshMode.FullRefresh)
+            if (!extrasChanged && renamedExtraIds.Count == 0 && !options.ReplaceAllMetadata && options.MetadataRefreshMode != MetadataRefreshMode.FullRefresh)
             {
                 // The owner's dates may only have become known after its extras were created, so keep
                 // them in sync even when there is nothing to refresh.
@@ -1570,12 +1602,11 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            var ownerId = item.Id;
-
             var tasks = extras.Select(i =>
             {
+                var ownerId = item.GetOwnerIdForExtra(i);
                 var subOptions = new MetadataRefreshOptions(options);
-                if (!i.OwnerId.Equals(ownerId) || !i.ParentId.IsEmpty())
+                if (!i.OwnerId.Equals(ownerId) || !i.ParentId.IsEmpty() || renamedExtraIds.Contains(i.Id))
                 {
                     subOptions.ForceSave = true;
                 }
@@ -2918,6 +2949,25 @@ namespace MediaBrowser.Controller.Entities
         protected virtual Guid[] GetExtraOwnerIds()
         {
             return [Id];
+        }
+
+        /// <summary>
+        /// Gets the ids of this item and the versions of it whose extras it maintains.
+        /// </summary>
+        /// <returns>An array containing the version ids.</returns>
+        protected virtual Guid[] GetOwnedVersionIds()
+        {
+            return [Id];
+        }
+
+        /// <summary>
+        /// Gets the id of the version an extra belongs to.
+        /// </summary>
+        /// <param name="extra">The extra.</param>
+        /// <returns>The id of the owning version.</returns>
+        protected virtual Guid GetOwnerIdForExtra(BaseItem extra)
+        {
+            return Id;
         }
 
         /// <summary>

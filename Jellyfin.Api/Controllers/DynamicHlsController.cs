@@ -1456,22 +1456,16 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         var segmentExtension = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer);
 
-        TranscodingJob? job;
-
-        if (System.IO.File.Exists(segmentPath))
-        {
-            job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
-            _logger.LogDebug("returning {0} [it exists, try 1]", segmentPath);
-            return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
-        }
-
+        // Keep segment selection and transcoding replacement under the same playlist lock.
+        // An out-of-order request must not replace a job while another request is using its output.
         using (await _transcodeManager.LockAsync(playlistPath, cancellationToken).ConfigureAwait(false))
         {
+            TranscodingJob? job;
             var startTranscoding = false;
             if (System.IO.File.Exists(segmentPath))
             {
                 job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
-                _logger.LogDebug("returning {0} [it exists, try 2]", segmentPath);
+                _logger.LogDebug("returning {0} [it exists]", segmentPath);
                 return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
             }
 
@@ -1505,6 +1499,9 @@ public class DynamicHlsController : BaseJellyfinApiController
                 // If the playlist doesn't already exist, startup ffmpeg
                 try
                 {
+                    var currentJob = _transcodeManager.GetTranscodingJob(playlistPath, TranscodingJobType);
+                    await WaitForActiveTranscodingRequests(currentJob, cancellationToken).ConfigureAwait(false);
+
                     await _transcodeManager.KillTranscodingJobs(streamingRequest.DeviceId, streamingRequest.PlaySessionId, p => false)
                         .ConfigureAwait(false);
 
@@ -1540,11 +1537,19 @@ public class DynamicHlsController : BaseJellyfinApiController
                     await job.TranscodingThrottler.UnpauseTranscoding().ConfigureAwait(false);
                 }
             }
-        }
 
-        _logger.LogDebug("returning {0} [general case]", segmentPath);
-        job ??= _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
-        return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
+            _logger.LogDebug("returning {0} [general case]", segmentPath);
+            job ??= _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
+            return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    internal static async Task WaitForActiveTranscodingRequests(TranscodingJob? job, CancellationToken cancellationToken)
+    {
+        while (job?.ActiveRequestCount > 0)
+        {
+            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private static double[] GetSegmentLengths(StreamState state)
@@ -1607,8 +1612,9 @@ public class DynamicHlsController : BaseJellyfinApiController
 
             if (state.VideoStream is not null && state.IsOutputVideo)
             {
-                // fMP4 needs this flag to write the audio packet DTS/PTS including the initial delay into MOOF::TRAF::TFDT
-                hlsArguments += $" {(useLegacySegmentOption ? "-hls_ts_options" : "-hls_segment_options")} movflags=+frag_discont";
+                // fMP4 needs frag_discont to write the audio packet DTS/PTS including the initial delay into MOOF::TRAF::TFDT
+                // HLS does not use SIDX, and skipping it avoids FFmpeg rewriting open-GOP boundary packet PTS
+                hlsArguments += $" {(useLegacySegmentOption ? "-hls_ts_options" : "-hls_segment_options")} movflags=+frag_discont+skip_sidx";
             }
 
             segmentFormat = "fmp4" + outputFmp4HeaderArg;

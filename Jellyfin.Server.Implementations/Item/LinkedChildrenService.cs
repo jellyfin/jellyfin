@@ -60,6 +60,25 @@ public class LinkedChildrenService : ILinkedChildrenService
     }
 
     /// <inheritdoc/>
+    public IReadOnlySet<Guid> GetItemIdsWithAlternateVersions(IReadOnlyList<Guid> itemIds)
+    {
+        if (itemIds.Count == 0)
+        {
+            return new HashSet<Guid>();
+        }
+
+        using var dbContext = _dbProvider.CreateDbContext();
+
+        return dbContext.LinkedChildren
+            .Where(lc => lc.ChildType == DbLinkedChildType.LocalAlternateVersion
+                || lc.ChildType == DbLinkedChildType.LinkedAlternateVersion)
+            .WhereOneOrMany(itemIds, lc => lc.ParentId)
+            .Select(lc => lc.ParentId)
+            .Distinct()
+            .ToHashSet();
+    }
+
+    /// <inheritdoc/>
     public IReadOnlyDictionary<string, MusicArtist[]> FindArtists(IReadOnlyList<string> artistNames)
     {
         using var dbContext = _dbProvider.CreateDbContext();
@@ -159,12 +178,16 @@ public class LinkedChildrenService : ILinkedChildrenService
 
         if (existingLink is null)
         {
+            var nextSortOrder = (context.LinkedChildren
+                .Where(lc => lc.ParentId == parentId)
+                .Max(lc => (int?)lc.SortOrder) ?? -1) + 1;
+
             context.LinkedChildren.Add(new Jellyfin.Database.Implementations.Entities.LinkedChildEntity
             {
                 ParentId = parentId,
                 ChildId = childId,
                 ChildType = dbChildType,
-                SortOrder = null
+                SortOrder = nextSortOrder
             });
         }
         else

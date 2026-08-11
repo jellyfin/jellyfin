@@ -108,5 +108,18 @@
     "CleanupUserDataTask": "Aufgabe zur Bereinigung von Benutzerdaten",
     "CleanupUserDataTaskDescription": "Löscht alle Benutzerdaten (Abspielstatus, Favoritenstatus, usw.) von Medien, die seit mindestens 90 Tagen nicht mehr vorhanden sind.",
     "Original": "Original",
-    "LyricDownloadFailureFromForItem": "Fehler beim Download der Songtexte von {0} für {1}"
+    "LyricDownloadFailureFromForItem": "Fehler beim Download der Songtexte von {0} für {1}",
+    "NameExtraBehindTheScenes": "Behind The Scenes",
+    "NameExtraDeletedScene": "Entfernte Szene",
+    "NameExtraInterview": "Interview",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Ausschnitt",
+    "NameExtraScene": "Szene",
+    "NameExtraShort": "Kurzfilm",
+    "NameExtraThemeSong": "Titellied",
+    "NameExtraThemeVideo": "Titelvideo",
+    "NameExtraTrailer": "Trailer",
+    "NameExtraUnknown": "Extra",
+    "NameExtraClip": "Clip",
+    "NameExtraFeaturette": "Hinter den Kulissen"
 }

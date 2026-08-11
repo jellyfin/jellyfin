@@ -144,11 +144,6 @@ public sealed partial class BaseItemRepository
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        if (!filter.Limit.HasValue)
-        {
-            filter.EnableTotalRecordCount = false;
-        }
-
         using var context = _dbProvider.CreateDbContext();
 
         var innerQueryFilter = TranslateQuery(context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId)), context, new InternalItemsQuery(filter.User)

@@ -172,6 +172,7 @@
  - [whooo](https://github.com/whooo)
  - [WiiPlayer2](https://github.com/WiiPlayer2)
  - [WillWill56](https://github.com/WillWill56)
+ - [WizardOfYendor1](https://github.com/WizardOfYendor1)
  - [wtayl0r](https://github.com/wtayl0r)
  - [Wuerfelbecher](https://github.com/Wuerfelbecher)
  - [Wunax](https://github.com/Wunax)
@@ -235,6 +236,7 @@
  - [Lampan-git](https://github.com/Lampan-git)
  - [elio42](https://github.com/elio42)
  - [rwebster85](https://github.com/rwebster85)
+ - [Florin-Popescu](https://github.com/Florin-Popescu)
 
 # Emby Contributors
 

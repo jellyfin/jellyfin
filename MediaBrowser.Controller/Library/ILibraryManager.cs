@@ -256,6 +256,14 @@ namespace MediaBrowser.Controller.Library
         IEnumerable<Video> GetLinkedAlternateVersions(Video video);
 
         /// <summary>
+        /// Gets, in a single query, the subset of the supplied items that own at least one alternate
+        /// version (local or linked). Items absent from the result have no alternate versions.
+        /// </summary>
+        /// <param name="itemIds">The item IDs to check.</param>
+        /// <returns>The set of item IDs that have alternate versions.</returns>
+        IReadOnlySet<Guid> GetItemIdsWithAlternateVersions(IReadOnlyList<Guid> itemIds);
+
+        /// <summary>
         /// Creates or updates a LinkedChild entry linking a parent to a child item.
         /// </summary>
         /// <param name="parentId">The parent item ID.</param>
@@ -604,6 +612,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="personTypes">The person types to include.</param>
         /// <returns>A dictionary mapping each item ID to its distinct people names. Items with no matching people are omitted.</returns>
         IReadOnlyDictionary<Guid, IReadOnlyList<string>> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes);
+
+        /// <summary>
+        /// Gets the people for multiple items in a single query, keyed by item id.
+        /// </summary>
+        /// <param name="itemIds">The item IDs.</param>
+        /// <returns>A dictionary mapping each item ID to its people. Items with no people are omitted.</returns>
+        IReadOnlyDictionary<Guid, IReadOnlyList<PersonInfo>> GetPeopleByItems(IReadOnlyList<Guid> itemIds);
 
         /// <summary>
         /// Queries the items.

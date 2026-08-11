@@ -163,6 +163,23 @@ public static class UserEntityExtensions
     }
 
     /// <summary>
+    /// Checks whether any library, parental rating or tag rule keeps content from this user.
+    /// </summary>
+    /// <param name="entity">The user to check.</param>
+    /// <returns><c>True</c> if some content in the library is hidden from this user.</returns>
+    public static bool HasContentRestrictions(this User entity)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+
+        return !entity.HasPermission(PermissionKind.EnableAllFolders)
+            || entity.GetPreference(PreferenceKind.BlockedMediaFolders).Length > 0
+            || entity.MaxParentalRatingScore.HasValue
+            || entity.GetPreference(PreferenceKind.BlockedTags).Length > 0
+            || entity.GetPreference(PreferenceKind.AllowedTags).Length > 0
+            || entity.GetPreference(PreferenceKind.BlockUnratedItems).Length > 0;
+    }
+
+    /// <summary>
     /// Initializes the default permissions for a user. Should only be called on user creation.
     /// </summary>
     /// <param name="entity">The entity to update.</param>

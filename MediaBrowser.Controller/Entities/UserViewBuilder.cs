@@ -461,11 +461,12 @@ namespace MediaBrowser.Controller.Entities
                     var counts = libraryManager.GetPlayedAndTotalCountBatch(folderIds, user);
                     var isPlayedValue = query.IsPlayed.Value;
 
-                    return itemList.Where(i =>
+                    return itemList.Where(item =>
                     {
-                        if (i.IsFolder && counts.TryGetValue(i.Id, out var c))
+                        if (item is Folder)
                         {
-                            return (c.Total > 0 && c.Played == c.Total) == isPlayedValue;
+                            var itemCount = counts.GetValueOrDefault(item.Id);
+                            return (itemCount.Played >= itemCount.Total) == isPlayedValue;
                         }
 
                         return true;
@@ -490,6 +491,13 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var itemsArray = totalRecordLimit.HasValue ? items.Take(totalRecordLimit.Value).ToArray() : items.ToArray();
+
+            // Adjacency is defined by the order the query asked for, so it has to run after sorting but before paging.
+            if (!query.AdjacentTo.IsNullOrEmpty())
+            {
+                itemsArray = FilterForAdjacency(itemsArray, query.AdjacentTo.Value).ToArray();
+            }
+
             var totalCount = itemsArray.Length;
 
             if (query.Limit.HasValue && query.Limit.Value > 0)
@@ -886,26 +894,32 @@ namespace MediaBrowser.Controller.Entities
             return _userViewManager.GetUserSubView(parent.Id, type, localizationKey, sortName);
         }
 
-        public static IEnumerable<BaseItem> FilterForAdjacency(List<BaseItem> list, Guid adjacentTo)
+        /// <summary>
+        /// Trims an ordered list down to the requested item and its immediate neighbours.
+        /// </summary>
+        /// <param name="list">The items in the order the query returned them.</param>
+        /// <param name="adjacentTo">The id of the item to return the neighbours of.</param>
+        /// <returns>The previous item, the requested item and the next item, in order.</returns>
+        public static IEnumerable<BaseItem> FilterForAdjacency(IReadOnlyList<BaseItem> list, Guid adjacentTo)
         {
-            var adjacentToItem = list.FirstOrDefault(i => i.Id.Equals(adjacentTo));
-
-            var index = list.IndexOf(adjacentToItem);
-
-            var previousId = Guid.Empty;
-            var nextId = Guid.Empty;
-
-            if (index > 0)
+            var index = -1;
+            for (var i = 0; i < list.Count; i++)
             {
-                previousId = list[index - 1].Id;
+                if (list[i].Id.Equals(adjacentTo))
+                {
+                    index = i;
+                    break;
+                }
             }
 
-            if (index < list.Count - 1)
+            // The item isn't part of this result set, so it has no neighbours in it either.
+            if (index < 0)
             {
-                nextId = list[index + 1].Id;
+                return [];
             }
 
-            return list.Where(i => i.Id.Equals(previousId) || i.Id.Equals(nextId) || i.Id.Equals(adjacentTo));
+            var start = Math.Max(index - 1, 0);
+            return list.Skip(start).Take(Math.Min(index + 2, list.Count) - start);
         }
     }
 }

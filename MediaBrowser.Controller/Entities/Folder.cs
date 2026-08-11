@@ -43,11 +43,7 @@ namespace MediaBrowser.Controller.Entities
     public class Folder : BaseItem
     {
         private IEnumerable<BaseItem> _children;
-
-        public Folder()
-        {
-            LinkedChildren = Array.Empty<LinkedChild>();
-        }
+        private LinkedChild[] _linkedChildren = [];
 
         public static IUserViewManager UserViewManager { get; set; }
 
@@ -63,7 +59,27 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the linked children.
         /// </summary>
         [JsonIgnore]
-        public LinkedChild[] LinkedChildren { get; set; }
+        public LinkedChild[] LinkedChildren
+        {
+            get => _linkedChildren;
+            set
+            {
+                _linkedChildren = value;
+
+                // Assigning the collection means the caller knows the complete set of links.
+                LinkedChildrenLoaded = true;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether <see cref="LinkedChildren"/> holds the stored set of links.
+        /// </summary>
+        /// <remarks>
+        /// An unloaded instance carries an empty array that means "unknown", not "no children" —
+        /// persisting it would delete every link the item has.
+        /// </remarks>
+        [JsonIgnore]
+        public bool LinkedChildrenLoaded { get; private set; }
 
         [JsonIgnore]
         public DateTime? DateLastMediaAdded { get; set; }
@@ -1085,15 +1101,7 @@ namespace MediaBrowser.Controller.Entities
                 items = ApplyNameFilter(items, query);
             }
 
-            var filteredItems = items as IReadOnlyList<BaseItem> ?? items.ToList();
-            var result = UserViewBuilder.SortAndPage(filteredItems, null, query, LibraryManager);
-
-            if (query.EnableTotalRecordCount)
-            {
-                result.TotalRecordCount = filteredItems.Count;
-            }
-
-            return result;
+            return UserViewBuilder.SortAndPage(items, null, query, LibraryManager);
         }
 
         private static IEnumerable<BaseItem> ApplyNameFilter(IEnumerable<BaseItem> items, InternalItemsQuery query)

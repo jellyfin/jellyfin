@@ -31,7 +31,7 @@ namespace Jellyfin.Drawing;
 public sealed class ImageProcessor : IImageProcessor, IDisposable
 {
     // Increment this when there's a change requiring caches to be invalidated
-    private const char Version = '3';
+    private const char Version = '4';
 
     private static readonly HashSet<string> _transparentImageTypes
         = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".webp", ".gif", ".svg" };
@@ -251,6 +251,33 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     /// <summary>
     /// Gets the cache file path based on a set of parameters.
     /// </summary>
+    /// <param name="originalPath">The original image path.</param>
+    /// <param name="dateModified">The source image modification date.</param>
+    /// <param name="format">The output format.</param>
+    /// <param name="options">The image processing options.</param>
+    /// <returns>The transformed image cache path.</returns>
+    internal string GetCacheFilePath(
+        string originalPath,
+        DateTime dateModified,
+        ImageFormat format,
+        ImageProcessingOptions options)
+        => GetCacheFilePath(
+            originalPath,
+            options.Width,
+            options.Height,
+            options.MaxWidth,
+            options.MaxHeight,
+            options.FillWidth,
+            options.FillHeight,
+            options.Quality,
+            dateModified,
+            format,
+            options.PercentPlayed,
+            options.UnplayedCount,
+            options.Blur,
+            options.BackgroundColor,
+            options.ForegroundLayer);
+
     private string GetCacheFilePath(
         string originalPath,
         int? width,
@@ -318,13 +345,13 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
 
         if (percentPlayed > 0)
         {
-            filename.Append(",p=");
-            filename.Append(percentPlayed);
+            filename.Append(",pp=");
+            filename.Append(percentPlayed.ToString(CultureInfo.InvariantCulture));
         }
 
         if (unwatchedCount.HasValue)
         {
-            filename.Append(",p=");
+            filename.Append(",uc=");
             filename.Append(unwatchedCount.Value);
         }
 
