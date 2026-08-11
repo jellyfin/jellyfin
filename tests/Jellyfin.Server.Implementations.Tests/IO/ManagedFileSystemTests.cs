@@ -57,6 +57,24 @@ public partial class ManagedFileSystemTests
         Directory.Delete(destinationDir, true);
     }
 
+    [Fact]
+    public void GetFileSystemInfo_Directory_PopulatesLastWriteTimeUtc()
+    {
+        var directory = Directory.CreateTempSubdirectory();
+        try
+        {
+            var metadata = _sut.GetFileSystemInfo(directory.FullName);
+
+            Assert.True(metadata.Exists);
+            Assert.True(metadata.IsDirectory);
+            Assert.NotEqual(default, metadata.LastWriteTimeUtc);
+        }
+        finally
+        {
+            directory.Delete();
+        }
+    }
+
     [Theory]
     [InlineData("/Volumes/Library/Sample/Music/Playlists/", "../Beethoven/Misc/Moonlight Sonata.mp3", "/Volumes/Library/Sample/Music/Beethoven/Misc/Moonlight Sonata.mp3")]
     [InlineData("/Volumes/Library/Sample/Music/Playlists/", "../../Beethoven/Misc/Moonlight Sonata.mp3", "/Volumes/Library/Sample/Beethoven/Misc/Moonlight Sonata.mp3")]

@@ -252,11 +252,11 @@ namespace Emby.Server.Implementations.IO
             if (result.Exists)
             {
                 result.IsDirectory = info is DirectoryInfo || (info.Attributes & FileAttributes.Directory) == FileAttributes.Directory;
+                result.CreationTimeUtc = GetCreationTimeUtc(info);
+                result.LastWriteTimeUtc = GetLastWriteTimeUtc(info);
 
                 if (info is FileInfo fileInfo)
                 {
-                    result.CreationTimeUtc = GetCreationTimeUtc(info);
-                    result.LastWriteTimeUtc = GetLastWriteTimeUtc(info);
                     if (fileInfo.LinkTarget is not null)
                     {
                         try

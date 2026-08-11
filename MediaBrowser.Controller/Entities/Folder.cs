@@ -841,6 +841,20 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
+            // Record this folder's current directory mtime so a future scan can tell whether its
+            // contents need to be re-listed from disk at all (see CanSkipDiskValidation). This is
+            // tracked independently of the generic metadata-refresh pass, which does not reliably
+            // keep a folder's own DateModified in sync with its directory's mtime.
+            if (!string.IsNullOrEmpty(Path))
+            {
+                var selfInfo = directoryService.GetFileSystemEntry(Path);
+                if (selfInfo is not null && selfInfo.Exists && this.HasChanged(selfInfo.LastWriteTimeUtc))
+                {
+                    DateModified = selfInfo.LastWriteTimeUtc;
+                    await UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
             return true;
         }
 
