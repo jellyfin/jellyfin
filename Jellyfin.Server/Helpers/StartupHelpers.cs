@@ -236,7 +236,7 @@ public static class StartupHelpers
         // Get a stream of the resource contents
         // NOTE: The .csproj name is used instead of the assembly name in the resource path
         const string ResourcePath = "Jellyfin.Server.Resources.Configuration.logging.json";
-        Stream resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath)
+        Stream resource = typeof(StartupHelpers).Assembly.GetManifestResourceStream(ResourcePath)
                           ?? throw new InvalidOperationException($"Invalid resource path: '{ResourcePath}'");
         await using (resource.ConfigureAwait(false))
         {
