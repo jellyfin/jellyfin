@@ -83,10 +83,12 @@ public sealed partial class BaseItemRepository
 
     /// <summary>
     /// Materializes the given filtered, ordered and paged query as dtos, attaching all navigations
-    /// the filter requests. When any collection include is needed, the items are loaded in two
-    /// steps (id projection first, then a split query bounded to those ids) to avoid the
-    /// multiplicative row explosion of loading several collection includes in a single query.
-    /// This also pins non-deterministic orderings (e.g. random sort) to a single evaluation.
+    /// the filter requests. For limited (paged) queries the items are loaded in two steps
+    /// (id projection first, then a split query bounded to those ids) to avoid the multiplicative
+    /// row explosion of loading several collection includes in a single query. This also pins
+    /// non-deterministic orderings (e.g. random sort) to a single evaluation. Unbounded queries
+    /// stay on the single-query path: their id list can span the whole result set, where the
+    /// per-id parameter and memory cost outweighs the row-explosion savings.
     /// </summary>
     /// <param name="context">The database context.</param>
     /// <param name="filter">The query filter.</param>
@@ -94,12 +96,10 @@ public sealed partial class BaseItemRepository
     /// <returns>The materialized items in query order.</returns>
     private IReadOnlyList<BaseItemDto> LoadItems(JellyfinDbContext context, InternalItemsQuery filter, IQueryable<BaseItemEntity> dbQuery)
     {
-        // ApplyNavigations returns the query unchanged when nothing needs to be included; in that
-        // case no row explosion is possible and the extra id roundtrip would only cost time.
-        var withNavigations = ApplyNavigations(dbQuery, filter);
-        if (ReferenceEquals(withNavigations, dbQuery))
+        if (!filter.Limit.HasValue)
         {
-            return dbQuery.AsEnumerable()
+            return ApplyNavigations(dbQuery, filter)
+                .AsEnumerable()
                 .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
                 .OfType<BaseItemDto>()
                 .ToArray();
@@ -114,9 +114,9 @@ public sealed partial class BaseItemRepository
     /// </summary>
     /// <remarks>
     /// Every id is re-bound as a JSON parameter for each split query, so parameter and memory cost
-    /// scale with the page size; callers without a limit (unbounded GetItemList) materialize the
-    /// ids of the full result set. The split queries also run without a transaction: items deleted
-    /// between the id projection and this load simply drop out when the order is restored.
+    /// scale with the page size; callers must therefore only route limited queries here. The split
+    /// queries also run without a transaction: items deleted between the id projection and this
+    /// load simply drop out when the order is restored.
     /// </remarks>
     /// <param name="context">The database context.</param>
     /// <param name="filter">The query filter.</param>
