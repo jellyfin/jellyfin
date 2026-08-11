@@ -79,6 +79,7 @@
     <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="10.2.3" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.2.3" />
     <PackageVersion Include="System.Text.Json" Version="10.0.10" />
+    <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12" />
     <PackageVersion Include="TagLibSharp" Version="2.3.0" />
     <PackageVersion Include="z440.atl.core" Version="7.16.0" />
     <PackageVersion Include="TMDbLib" Version="3.0.0" />
