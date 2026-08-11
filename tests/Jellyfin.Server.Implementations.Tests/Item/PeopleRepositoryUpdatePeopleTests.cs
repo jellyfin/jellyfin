@@ -231,8 +231,7 @@ public sealed class PeopleRepositoryUpdatePeopleTests : IDisposable
     [Fact]
     public void UpdatePeople_ExistingCreditWithoutALink_AdoptsTheResolvedPerson()
     {
-        // Written before the person item existed, so it has nothing to point at until a later scan
-        // resolves one. Adopting it here is what stops the credit waiting for people validation.
+        // Written before the person item existed, so it has nothing to point at until a scan resolves one.
         _repository.UpdatePeople(_itemId, [CreatePerson("Person A", PersonKind.Actor, "Hero")]);
 
         var personItemId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
@@ -252,8 +251,7 @@ public sealed class PeopleRepositoryUpdatePeopleTests : IDisposable
         person.PersonItemId = personItemId;
         _repository.UpdatePeople(_itemId, [person]);
 
-        // A credit that already points somewhere is never repointed: the id is the link, so
-        // overwriting it is how a person would lose everything it is credited on.
+        // A credit that already points somewhere is never repointed.
         var rewritten = CreatePerson("Person A", PersonKind.Actor, "Hero");
         rewritten.PersonItemId = AddPersonItem("Person A Elsewhere");
         _repository.UpdatePeople(_itemId, [rewritten]);
@@ -263,18 +261,18 @@ public sealed class PeopleRepositoryUpdatePeopleTests : IDisposable
     }
 
     [Fact]
-    public void LinkPeopleToItem_FillsOnlyTheCreditsThatHaveNoPerson()
+    public void LinkCreditsToItem_FillsOnlyTheCreditsThatHaveNoItem()
     {
         _repository.UpdatePeople(_itemId, [CreatePerson("Person A", PersonKind.Actor, "Hero")]);
         var linked = CreatePerson("Person B", PersonKind.Actor, "Sidekick");
         linked.PersonItemId = AddPersonItem("Person B");
         _repository.UpdatePeople(_itemId, [CreatePerson("Person A", PersonKind.Actor, "Hero"), linked]);
 
-        Assert.Equal(["Person A"], _repository.GetUnlinkedPeopleNames());
+        Assert.Equal(["Person A"], _repository.GetUnlinkedCredits().Select(e => e.Name));
 
         var personItemId = AddPersonItem("Person A");
-        Assert.Equal(1, _repository.LinkPeopleToItem("Person A", personItemId));
-        Assert.Empty(_repository.GetUnlinkedPeopleNames());
+        Assert.Equal(1, _repository.LinkCreditsToItem("Person A", PersonKind.Actor, personItemId));
+        Assert.Empty(_repository.GetUnlinkedCredits());
 
         using var ctx = CreateDbContext();
         Assert.Equal(personItemId, ctx.Peoples.Single(e => e.Name == "Person A").ItemId);
@@ -282,19 +280,18 @@ public sealed class PeopleRepositoryUpdatePeopleTests : IDisposable
     }
 
     [Fact]
-    public void LinkPeopleToItem_CreditPointingAtAnItemThatIsGone_IsReResolved()
+    public void LinkCreditsToItem_CreditPointingAtAnItemThatIsGone_IsReResolved()
     {
-        // Item ids are derived from the name and the id settings, so they are not permanent. A link
-        // that no longer resolves has nothing to protect, unlike one that still points somewhere.
+        // Item ids are derived from the name and the id settings, so they are not permanent.
         var stale = CreatePerson("Person A", PersonKind.Actor, "Hero");
         stale.PersonItemId = Guid.Parse("99999999-9999-9999-9999-999999999999");
         _repository.UpdatePeople(_itemId, [stale]);
 
-        Assert.Equal(["Person A"], _repository.GetUnlinkedPeopleNames());
+        Assert.Equal(["Person A"], _repository.GetUnlinkedCredits().Select(e => e.Name));
 
         var personItemId = AddPersonItem("Person A");
-        Assert.Equal(1, _repository.LinkPeopleToItem("Person A", personItemId));
-        Assert.Empty(_repository.GetUnlinkedPeopleNames());
+        Assert.Equal(1, _repository.LinkCreditsToItem("Person A", PersonKind.Actor, personItemId));
+        Assert.Empty(_repository.GetUnlinkedCredits());
 
         using var ctx = CreateDbContext();
         Assert.Equal(personItemId, ctx.Peoples.Single().ItemId);
@@ -303,9 +300,7 @@ public sealed class PeopleRepositoryUpdatePeopleTests : IDisposable
     [Fact]
     public void GetPeople_PersonCreditedUnderTwoSpellings_IsListedOnce()
     {
-        // After a rename, older media still credit the old spelling while new media credit the new
-        // one, so the person holds a row per spelling. /Persons lists people, not spellings: both
-        // rows resolve to the one person item and it has to appear once.
+        // After a rename the person holds a row per spelling; /Persons lists people, not spellings.
         var personItemId = AddPersonItem("Zoe Saldana");
 
         var oldSpelling = CreatePerson("Zoe Saldana", PersonKind.Actor, "Hero");
@@ -328,12 +323,44 @@ public sealed class PeopleRepositoryUpdatePeopleTests : IDisposable
     }
 
     [Fact]
-    public void LinkPeopleToItem_MatchesOnTheCleanName()
+    public void LinkCreditsToItem_SameNameDifferentKinds_LinksOnlyTheMatchingKind()
+    {
+        // The Artist resolves to a MusicArtist and the Composer to a Person.
+        _repository.UpdatePeople(_itemId, [
+            CreatePerson("Miles Davis", PersonKind.Artist, string.Empty),
+            CreatePerson("Miles Davis", PersonKind.Composer, string.Empty)
+        ]);
+
+        var artistItemId = AddPersonItem("Miles Davis");
+        Assert.Equal(1, _repository.LinkCreditsToItem("Miles Davis", PersonKind.Artist, artistItemId));
+
+        using var ctx = CreateDbContext();
+        Assert.Equal(artistItemId, ctx.Peoples.Single(e => e.PersonType == nameof(PersonKind.Artist)).ItemId);
+        Assert.Equal(Guid.Empty, ctx.Peoples.Single(e => e.PersonType == nameof(PersonKind.Composer)).ItemId);
+    }
+
+    [Fact]
+    public void GetUnlinkedCredits_ReturnsTheKindWithTheName()
+    {
+        _repository.UpdatePeople(_itemId, [
+            CreatePerson("Miles Davis", PersonKind.Artist, string.Empty),
+            CreatePerson("Miles Davis", PersonKind.Composer, string.Empty)
+        ]);
+
+        var unlinked = _repository.GetUnlinkedCredits();
+
+        Assert.Equal(
+            [PersonKind.Artist, PersonKind.Composer],
+            unlinked.Select(e => e.Type).OrderBy(e => e.ToString(), StringComparer.Ordinal).ToArray());
+    }
+
+    [Fact]
+    public void LinkCreditsToItem_MatchesOnTheCleanName()
     {
         _repository.UpdatePeople(_itemId, [CreatePerson("Zoe Saldaña", PersonKind.Actor, "Hero")]);
 
         var personItemId = AddPersonItem("Zoe Saldana");
-        Assert.Equal(1, _repository.LinkPeopleToItem("Zoe Saldana", personItemId));
+        Assert.Equal(1, _repository.LinkCreditsToItem("Zoe Saldana", PersonKind.Actor, personItemId));
 
         using var ctx = CreateDbContext();
         Assert.Equal(personItemId, ctx.Peoples.Single().ItemId);
@@ -349,10 +376,7 @@ public sealed class PeopleRepositoryUpdatePeopleTests : IDisposable
         };
     }
 
-    /// <summary>
-    /// Adds the person item a credit can be linked to. A link only counts as live while the item it
-    /// points at exists, so a test about keeping one has to create it.
-    /// </summary>
+    // A link only counts as live while the item it points at exists.
     private Guid AddPersonItem(string name)
     {
         var id = Guid.NewGuid();

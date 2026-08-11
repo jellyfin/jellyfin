@@ -3594,11 +3594,13 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private Dictionary<Guid, Person> ResolvePeople(IReadOnlyList<PersonInfo> people)
+        private Dictionary<Guid, BaseItem> ResolvePeople(IReadOnlyList<PersonInfo> people)
         {
-            var byCleanName = new Dictionary<string, Person>(StringComparer.Ordinal);
-            var attempted = new HashSet<string>(StringComparer.Ordinal);
-            var resolved = new Dictionary<Guid, Person>();
+            // Keyed by kind as well as name: the same human can be an Artist on one credit and a
+            // Composer on another, which resolve to different items.
+            var byCredit = new Dictionary<(string CleanName, bool IsArtist), BaseItem>();
+            var attempted = new HashSet<(string CleanName, bool IsArtist)>();
+            var resolved = new Dictionary<Guid, BaseItem>();
 
             foreach (var person in people)
             {
@@ -3607,28 +3609,47 @@ namespace Emby.Server.Implementations.Library
                     continue;
                 }
 
-                var cleanName = person.Name.GetCleanValue();
-                if (attempted.Add(cleanName))
+                var isArtist = IsMusicArtistCredit(person.Type);
+                var key = (person.Name.GetCleanValue(), isArtist);
+
+                if (attempted.Add(key))
                 {
                     // The id identifies the human, the spelling only how this release wrote it down.
-                    var entity = FindPersonByProviderIds(person) ?? GetOrCreatePerson(person.Name);
+                    var entity = FindByProviderIds(person, isArtist ? BaseItemKind.MusicArtist : BaseItemKind.Person)
+                        ?? GetOrCreateCreditItem(person.Name, person.Type);
                     if (entity is not null)
                     {
-                        byCleanName[cleanName] = entity;
+                        byCredit[key] = entity;
                         resolved[entity.Id] = entity;
                     }
                 }
 
-                if (byCleanName.TryGetValue(cleanName, out var personEntity))
+                if (byCredit.TryGetValue(key, out var creditEntity))
                 {
-                    person.PersonItemId = personEntity.Id;
+                    person.PersonItemId = creditEntity.Id;
                 }
             }
 
             return resolved;
         }
 
-        private Person? FindPersonByProviderIds(PersonInfo person)
+        private static bool IsMusicArtistCredit(PersonKind kind)
+            => kind is PersonKind.Artist or PersonKind.AlbumArtist;
+
+        private MusicArtist? GetOrCreateArtist(string name)
+        {
+            try
+            {
+                return GetArtist(name);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to get or create artist {Name}", name);
+                return null;
+            }
+        }
+
+        private BaseItem? FindByProviderIds(PersonInfo person, BaseItemKind kind)
         {
             if (person.ProviderIds.Count == 0)
             {
@@ -3649,15 +3670,17 @@ namespace Emby.Server.Implementations.Library
                 return null;
             }
 
-            // Oldest first, so a library holding two people for one human resolves to a stable one.
+            // Scoped to the kind: a provider key is not unique across types, a TMDb person id and a
+            // TMDb movie id both live under "Tmdb". Oldest first, so a library holding two entries
+            // for one human resolves to a stable one.
             return GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = [BaseItemKind.Person],
+                IncludeItemTypes = [kind],
                 HasAnyProviderId = providerIds,
                 OrderBy = [(ItemSortBy.DateCreated, SortOrder.Ascending)],
                 Limit = 1,
                 DtoOptions = new DtoOptions(true)
-            }).OfType<Person>().FirstOrDefault();
+            }).FirstOrDefault();
         }
 
         public async Task<ItemImageInfo> ConvertImageToLocal(BaseItem item, ItemImageInfo image, int imageIndex, bool removeOnFailure)
@@ -3787,15 +3810,21 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public IReadOnlyList<string> GetUnlinkedPeopleNames()
+        public IReadOnlyList<PersonInfo> GetUnlinkedCredits()
         {
-            return _peopleRepository.GetUnlinkedPeopleNames();
+            return _peopleRepository.GetUnlinkedCredits();
         }
 
         /// <inheritdoc />
-        public int LinkPeopleToItem(string name, Guid personItemId)
+        public int LinkCreditsToItem(string name, PersonKind kind, Guid itemId)
         {
-            return _peopleRepository.LinkPeopleToItem(name, personItemId);
+            return _peopleRepository.LinkCreditsToItem(name, kind, itemId);
+        }
+
+        /// <inheritdoc />
+        public BaseItem? GetOrCreateCreditItem(string name, PersonKind kind)
+        {
+            return IsMusicArtistCredit(kind) ? GetOrCreateArtist(name) : GetOrCreatePerson(name);
         }
 
         // Null when the person's folder cannot be created.
@@ -3825,7 +3854,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         private async Task SavePeopleMetadataAsync(
-            IReadOnlyDictionary<Guid, Person> personEntities,
+            IReadOnlyDictionary<Guid, BaseItem> personEntities,
             IReadOnlyList<PersonInfo> people,
             CancellationToken cancellationToken)
         {

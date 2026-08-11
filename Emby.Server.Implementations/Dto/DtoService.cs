@@ -827,10 +827,10 @@ namespace Emby.Server.Implementations.Dto
 
             var list = new List<BaseItemPerson>();
 
-            // Resolved by the id the credit carries, so a renamed person keeps its cast entry.
+            // Resolved by the id the credit carries, so a renamed entry keeps its place in the list.
             // The cache holds nulls so an unresolvable credit is not looked up once per occurrence.
-            var resolvedPeople = new Person?[people.Count];
-            var byId = new Dictionary<Guid, Person?>();
+            var resolvedPeople = new BaseItem?[people.Count];
+            var byId = new Dictionary<Guid, BaseItem?>();
             for (var i = 0; i < people.Count; i++)
             {
                 var person = people[i];
@@ -843,7 +843,7 @@ namespace Emby.Server.Implementations.Dto
                 {
                     if (!byId.TryGetValue(person.PersonItemId, out var entity))
                     {
-                        entity = VisibleTo(_libraryManager.GetItemById(person.PersonItemId) as Person, user);
+                        entity = VisibleTo(_libraryManager.GetItemById(person.PersonItemId), user);
                         byId[person.PersonItemId] = entity;
                     }
 
@@ -866,7 +866,7 @@ namespace Emby.Server.Implementations.Dto
                     Type = person.Type
                 };
 
-                if (resolvedPeople[i] is Person entity)
+                if (resolvedPeople[i] is BaseItem entity)
                 {
                     baseItemPerson.PrimaryImageTag = GetTagAndFillBlurhash(dto, entity, ImageType.Primary);
                     baseItemPerson.Id = entity.Id;
@@ -897,8 +897,8 @@ namespace Emby.Server.Implementations.Dto
             dto.People = list.ToArray();
         }
 
-        private static Person? VisibleTo(Person? person, User? user)
-            => person is not null && (user is null || person.IsVisible(user)) ? person : null;
+        private static BaseItem? VisibleTo(BaseItem? item, User? user)
+            => item is not null && (user is null || item.IsVisible(user)) ? item : null;
 
         /// <summary>
         /// Attaches the studios.

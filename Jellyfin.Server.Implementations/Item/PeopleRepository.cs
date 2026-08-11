@@ -205,28 +205,47 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<string> GetUnlinkedPeopleNames()
+    public IReadOnlyList<PersonInfo> GetUnlinkedCredits()
     {
         using var context = _dbProvider.CreateDbContext();
 
-        return context.Peoples
+        // The kind decides what the credit belongs to: an Artist resolves to a MusicArtist.
+        var rows = context.Peoples
             .AsNoTracking()
             .Where(p => !context.BaseItems.Any(b => b.Id == p.ItemId))
-            .Select(p => p.Name)
+            .Select(p => new { p.Name, p.PersonType })
             .Distinct()
             .ToArray();
+
+        var credits = new List<PersonInfo>(rows.Length);
+        foreach (var row in rows)
+        {
+            var credit = new PersonInfo { Name = row.Name };
+            if (Enum.TryParse<PersonKind>(row.PersonType, out var kind))
+            {
+                credit.Type = kind;
+            }
+
+            credits.Add(credit);
+        }
+
+        return credits;
     }
 
     /// <inheritdoc/>
-    public int LinkPeopleToItem(string name, Guid personItemId)
+    public int LinkCreditsToItem(string name, PersonKind kind, Guid itemId)
     {
         var cleanName = name.GetCleanValue();
+        var personType = kind.ToString();
 
         using var context = _dbProvider.CreateDbContext();
 
+        // On the kind as well as the name, or a Composer credit would be pointed at a MusicArtist.
         return context.Peoples
-            .Where(p => p.CleanName == cleanName && !context.BaseItems.Any(b => b.Id == p.ItemId))
-            .ExecuteUpdate(s => s.SetProperty(p => p.ItemId, personItemId));
+            .Where(p => p.CleanName == cleanName
+                && p.PersonType == personType
+                && !context.BaseItems.Any(b => b.Id == p.ItemId))
+            .ExecuteUpdate(s => s.SetProperty(p => p.ItemId, itemId));
     }
 
     /// <inheritdoc/>
