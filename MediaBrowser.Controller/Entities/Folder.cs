@@ -570,14 +570,11 @@ namespace MediaBrowser.Controller.Entities
 
             // Build a dictionary of the current children we have now by Id so we can compare quickly and easily
             var currentChildren = GetActualChildrenDictionary();
-            var currentChildrenByPath = BuildChildrenByPathLookup(currentChildren);
-            var newItems = new List<BaseItem>();
-            var actuallyRemoved = new List<BaseItem>();
+            var state = new ChildReconciliationState(validChildren, accessibleChildren, currentChildren, BuildChildrenByPathLookup(currentChildren));
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await ReconcileDiskChildren(nonCachedChildren, directoryService, allowRemoveRoot, currentChildren, currentChildrenByPath, validChildren, accessibleChildren, newItems, actuallyRemoved, cancellationToken)
-                .ConfigureAwait(false);
+            await ReconcileDiskChildren(nonCachedChildren, directoryService, allowRemoveRoot, state, cancellationToken).ConfigureAwait(false);
 
             // That's all the new and changed ones - now see if any have been removed and need cleanup
             var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
@@ -591,12 +588,12 @@ namespace MediaBrowser.Controller.Entities
 
             if (itemsRemoved.Count > 0)
             {
-                RemoveMissingItems(itemsRemoved, newItems, alternateVersionPaths, actuallyRemoved, replacedPrimaries);
+                RemoveMissingItems(itemsRemoved, state, alternateVersionPaths, replacedPrimaries);
             }
 
-            if (newItems.Count > 0)
+            if (state.NewItems.Count > 0)
             {
-                LibraryManager.CreateItems(newItems, this, cancellationToken);
+                LibraryManager.CreateItems(state.NewItems, this, cancellationToken);
             }
 
             // Process deferred replaced-primary deletions now that new primaries exist in DB/cache.
@@ -607,12 +604,12 @@ namespace MediaBrowser.Controller.Entities
             // This handles the case where a new file is added that becomes the new primary
             // (e.g. movie-2 added, movie-3 was primary → movie-3 needs demotion).
             // Items in replacedPrimaries are excluded (already in actuallyRemoved).
-            var oldPrimariesToDemote = GetPrimariesToDemote(itemsRemoved.Except(actuallyRemoved), newItems, alternateVersionPaths);
+            var oldPrimariesToDemote = GetPrimariesToDemote(itemsRemoved.Except(state.ActuallyRemoved), state.NewItems, alternateVersionPaths);
             await DemoteReplacedPrimaries(oldPrimariesToDemote, cancellationToken).ConfigureAwait(false);
 
             // After removing items, reattach any detached user data to remaining children
             // that share the same user data keys (eg. same episode replaced with a new file).
-            await ReattachDetachedUserData(validChildren, actuallyRemoved, cancellationToken).ConfigureAwait(false);
+            await ReattachDetachedUserData(validChildren, state.ActuallyRemoved, cancellationToken).ConfigureAwait(false);
 
             // Record this folder's current directory mtime so a future scan can tell whether its
             // contents need to be re-listed from disk at all (see CanSkipDiskValidation). This is
@@ -677,12 +674,7 @@ namespace MediaBrowser.Controller.Entities
             IEnumerable<BaseItem> nonCachedChildren,
             IDirectoryService directoryService,
             bool allowRemoveRoot,
-            Dictionary<Guid, BaseItem> currentChildren,
-            Dictionary<string, BaseItem> currentChildrenByPath,
-            List<BaseItem> validChildren,
-            List<BaseItem> accessibleChildren,
-            List<BaseItem> newItems,
-            List<BaseItem> actuallyRemoved,
+            ChildReconciliationState state,
             CancellationToken cancellationToken)
         {
             foreach (var child in nonCachedChildren)
@@ -690,18 +682,18 @@ namespace MediaBrowser.Controller.Entities
                 if (!IsLibraryFolderAccessible(directoryService, child, allowRemoveRoot))
                 {
                     // Preserve inaccessible items so they aren't treated as removed.
-                    if (currentChildren.TryGetValue(child.Id, out var childrenToKeep))
+                    if (state.CurrentChildren.TryGetValue(child.Id, out var childrenToKeep))
                     {
-                        validChildren.Add(childrenToKeep);
+                        state.ValidChildren.Add(childrenToKeep);
                     }
 
                     continue;
                 }
 
-                if (currentChildren.TryGetValue(child.Id, out BaseItem currentChild))
+                if (state.CurrentChildren.TryGetValue(child.Id, out BaseItem currentChild))
                 {
-                    validChildren.Add(currentChild);
-                    accessibleChildren.Add(currentChild);
+                    state.ValidChildren.Add(currentChild);
+                    state.AccessibleChildren.Add(currentChild);
 
                     if (currentChild.UpdateFromResolvedItem(child) > ItemUpdateType.None)
                     {
@@ -716,21 +708,21 @@ namespace MediaBrowser.Controller.Entities
                     continue;
                 }
 
-                RemoveStaleItemAtSamePath(child, currentChildren, currentChildrenByPath, actuallyRemoved);
+                RemoveStaleItemAtSamePath(child, state);
 
                 // Brand new item - needs to be added
                 child.SetParent(this);
-                newItems.Add(child);
-                validChildren.Add(child);
-                accessibleChildren.Add(child);
+                state.NewItems.Add(child);
+                state.ValidChildren.Add(child);
+                state.AccessibleChildren.Add(child);
             }
         }
 
-        private void RemoveStaleItemAtSamePath(BaseItem child, Dictionary<Guid, BaseItem> currentChildren, Dictionary<string, BaseItem> currentChildrenByPath, List<BaseItem> actuallyRemoved)
+        private void RemoveStaleItemAtSamePath(BaseItem child, ChildReconciliationState state)
         {
             // Check if an existing item occupies the same path with different type/ID
             if (string.IsNullOrEmpty(child.Path)
-                || !currentChildrenByPath.TryGetValue(child.Path, out var staleItem)
+                || !state.CurrentChildrenByPath.TryGetValue(child.Path, out var staleItem)
                 || staleItem.Id.Equals(child.Id))
             {
                 return;
@@ -742,18 +734,17 @@ namespace MediaBrowser.Controller.Entities
                 staleItem.GetType().Name,
                 child.GetType().Name);
 
-            currentChildren.Remove(staleItem.Id);
-            currentChildrenByPath.Remove(child.Path);
+            state.CurrentChildren.Remove(staleItem.Id);
+            state.CurrentChildrenByPath.Remove(child.Path);
             staleItem.SetParent(null);
             LibraryManager.DeleteItem(staleItem, new DeleteOptions { DeleteFileLocation = false }, this, false);
-            actuallyRemoved.Add(staleItem);
+            state.ActuallyRemoved.Add(staleItem);
         }
 
         private void RemoveMissingItems(
             List<BaseItem> itemsRemoved,
-            List<BaseItem> newItems,
+            ChildReconciliationState state,
             HashSet<string> alternateVersionPaths,
-            List<BaseItem> actuallyRemoved,
             List<(Video OldPrimary, Video NewPrimary)> replacedPrimaries)
         {
             foreach (var item in itemsRemoved)
@@ -771,7 +762,7 @@ namespace MediaBrowser.Controller.Entities
                     continue;
                 }
 
-                if (TryDeferReplacedPrimaryDeletion(item, newItems, alternateVersionPaths, actuallyRemoved, replacedPrimaries))
+                if (TryDeferReplacedPrimaryDeletion(item, state.NewItems, alternateVersionPaths, state.ActuallyRemoved, replacedPrimaries))
                 {
                     continue;
                 }
@@ -780,7 +771,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     Logger.LogDebug("Removed item: {Path}", item.Path);
 
-                    actuallyRemoved.Add(item);
+                    state.ActuallyRemoved.Add(item);
                     item.SetParent(null);
                     LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }, this, false);
                 }
@@ -2191,6 +2182,33 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Bundles the mutable collections threaded through disk-child reconciliation so helper method
+        /// signatures don't keep growing every time another step needs access to one of them.
+        /// </summary>
+        private sealed class ChildReconciliationState
+        {
+            public ChildReconciliationState(List<BaseItem> validChildren, List<BaseItem> accessibleChildren, Dictionary<Guid, BaseItem> currentChildren, Dictionary<string, BaseItem> currentChildrenByPath)
+            {
+                ValidChildren = validChildren;
+                AccessibleChildren = accessibleChildren;
+                CurrentChildren = currentChildren;
+                CurrentChildrenByPath = currentChildrenByPath;
+            }
+
+            public List<BaseItem> ValidChildren { get; }
+
+            public List<BaseItem> AccessibleChildren { get; }
+
+            public Dictionary<Guid, BaseItem> CurrentChildren { get; }
+
+            public Dictionary<string, BaseItem> CurrentChildrenByPath { get; }
+
+            public List<BaseItem> NewItems { get; } = [];
+
+            public List<BaseItem> ActuallyRemoved { get; } = [];
         }
 
         /// <summary>
