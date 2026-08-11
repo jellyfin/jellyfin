@@ -1537,8 +1537,6 @@ namespace Emby.Server.Implementations.Library
                 progress.Report(percent * 100);
             }
 
-            _persistenceService.UpdateInheritedValues();
-
             progress.Report(100);
         }
 
