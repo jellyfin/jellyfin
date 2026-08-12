@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Extensions;
 using Jellyfin.Server.ServerSetupApp;
@@ -30,6 +31,7 @@ public class NormalizePeopleIdentity : IAsyncMigrationRoutine
 {
     private const int BatchSize = 1000;
     private const string PersonItemType = "MediaBrowser.Controller.Entities.Person";
+    private const string MusicArtistItemType = "MediaBrowser.Controller.Entities.Audio.MusicArtist";
 
     private readonly IStartupLogger<NormalizePeopleIdentity> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
@@ -124,64 +126,68 @@ public class NormalizePeopleIdentity : IAsyncMigrationRoutine
 
     private async Task FillItemIdsAsync(JellyfinDbContext context, CancellationToken cancellationToken)
     {
-        var personItems = await context.BaseItems
-            .AsNoTracking()
-            .Where(b => b.Type == PersonItemType && b.Name != null)
-            .Select(b => new { b.Id, b.Name, b.DateCreated })
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        // Oldest first, so duplicates the merge could not collapse resolve to a stable one.
-        var itemsByCleanName = new Dictionary<string, Guid>(StringComparer.Ordinal);
-        foreach (var item in personItems.OrderBy(p => p.DateCreated))
+        // An Artist credit belongs to a MusicArtist, everything else to a Person.
+        var itemsByCredit = new Dictionary<(bool IsArtist, string CleanName), Guid>();
+        foreach (var (type, isArtist) in new[] { (PersonItemType, false), (MusicArtistItemType, true) })
         {
-            var key = KeyOf(item.Name!);
-            if (!string.IsNullOrEmpty(key))
+            var items = await context.BaseItems
+                .AsNoTracking()
+                .Where(b => b.Type == type && b.Name != null)
+                .Select(b => new { b.Id, b.Name, b.DateCreated })
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            // Oldest first, so duplicates the merge could not collapse resolve to a stable one.
+            foreach (var item in items.OrderBy(i => i.DateCreated))
             {
-                itemsByCleanName.TryAdd(key, item.Id);
+                var key = KeyOf(item.Name!);
+                if (!string.IsNullOrEmpty(key))
+                {
+                    itemsByCredit.TryAdd((isArtist, key), item.Id);
+                }
             }
         }
 
         var stored = await context.Peoples
             .AsNoTracking()
-            .Select(p => new { p.Id, p.Name, p.CleanName, p.ItemId })
+            .Select(p => new { p.Id, p.Name, p.CleanName, p.PersonType, p.ItemId })
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        // Created here so every credit leaves the migration linked, deterministically spelled.
-        var missing = stored
-            .Where(p => !itemsByCleanName.ContainsKey(p.CleanName))
-            .GroupBy(p => p.CleanName, StringComparer.Ordinal)
-            .Select(g => g.Select(p => p.Name).Order(StringComparer.Ordinal).First())
-            .ToArray();
-
+        var links = new List<(Guid Id, Guid ItemId)>();
         var created = 0;
-        foreach (var name in missing)
+
+        foreach (var credit in stored)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Null when the folder cannot be created; the credit stays unlinked and is retried later.
-            var personItem = _libraryManager.GetOrCreatePerson(name);
-            if (personItem is not null)
+            var kind = Enum.TryParse<PersonKind>(credit.PersonType, out var parsed) ? parsed : PersonKind.Unknown;
+            var key = (kind is PersonKind.Artist or PersonKind.AlbumArtist, credit.CleanName);
+
+            if (!itemsByCredit.TryGetValue(key, out var itemId))
             {
-                itemsByCleanName[KeyOf(name)] = personItem.Id;
+                // Created here so every credit leaves the migration linked.
+                var item = _libraryManager.GetOrCreateCreditItem(credit.Name, kind);
+                if (item is null)
+                {
+                    continue;
+                }
+
+                itemId = item.Id;
+                itemsByCredit[key] = itemId;
                 created++;
             }
-        }
 
-        _logger.LogInformation("Created {Count} missing person items for credits that had none.", created);
-
-        var links = new List<(Guid Id, Guid ItemId)>();
-        foreach (var person in stored)
-        {
-            if (itemsByCleanName.TryGetValue(person.CleanName, out var itemId) && !person.ItemId.Equals(itemId))
+            if (!credit.ItemId.Equals(itemId))
             {
-                links.Add((person.Id, itemId));
+                links.Add((credit.Id, itemId));
             }
         }
 
+        _logger.LogInformation("Created {Count} missing by-name items for credits that had none.", created);
+
         _logger.LogInformation(
-            "Linked {Count} of {Total} people to their person item.",
+            "Linked {Count} of {Total} credits to their item.",
             links.Count,
             stored.Count);
 
