@@ -137,6 +137,13 @@ namespace MediaBrowser.Controller.Library
         int LinkCreditsToItem(string name, PersonKind kind, Guid itemId);
 
         /// <summary>
+        /// Resolves the genres and studios the given items name to the by-name items they belong to,
+        /// creating the ones the library does not hold yet. Has to run before saving them.
+        /// </summary>
+        /// <param name="items">The items to resolve.</param>
+        void ResolveItemByNameLinks(IReadOnlyList<BaseItem> items);
+
+        /// <summary>
         /// Finds the by path.
         /// </summary>
         /// <param name="path">The path.</param>

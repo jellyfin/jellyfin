@@ -13,12 +13,16 @@ public sealed class BaseItemRepositoryItemValueTests : SqliteDbTestFixture
     private readonly BaseItemRepository _repository;
     private readonly string _audioTypeName;
     private readonly string _movieTypeName;
+    private readonly string _genreTypeName;
+    private readonly string _musicGenreTypeName;
 
     public BaseItemRepositoryItemValueTests()
     {
         var itemTypeLookup = new ItemTypeLookup();
         _audioTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio];
         _movieTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie];
+        _genreTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Genre];
+        _musicGenreTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicGenre];
         _repository = CreateBaseItemRepository(itemTypeLookup);
     }
 
@@ -37,33 +41,20 @@ public sealed class BaseItemRepositoryItemValueTests : SqliteDbTestFixture
             IsFolder = false,
             IsVirtualItem = false
         };
-        var genre = new ItemValue
-        {
-            ItemValueId = Guid.NewGuid(),
-            Type = ItemValueType.Genre,
-            Value = "Genre Leak",
-            CleanValue = "genre leak"
-        };
-        var excludedGenre = new ItemValue
-        {
-            ItemValueId = Guid.NewGuid(),
-            Type = ItemValueType.Genre,
-            Value = "Excluded Genre",
-            CleanValue = "excluded genre"
-        };
+        var genre = CreateByNameEntity(_genreTypeName, "Genre Leak");
+        var excludedGenre = CreateByNameEntity(_genreTypeName, "Excluded Genre");
 
         using (var context = CreateDbContext())
         {
-            context.BaseItems.AddRange(firstItem, secondItem, excludedItem);
-            context.ItemValues.AddRange(genre, excludedGenre);
+            context.BaseItems.AddRange(firstItem, secondItem, excludedItem, genre, excludedGenre);
             context.BaseItemTags.AddRange(
                 CreateTag(firstItem, "Alpha", "alpha"),
                 CreateTag(firstItem, "alpha", "alpha"),
                 CreateTag(secondItem, "Beta", "beta"),
                 CreateTag(excludedItem, "Excluded Tag", "excluded tag"));
-            context.ItemValuesMap.AddRange(
-                CreateMap(firstItem, genre),
-                CreateMap(excludedItem, excludedGenre));
+            context.BaseItemGenres.AddRange(
+                CreateGenreLink(firstItem, genre),
+                CreateGenreLink(excludedItem, excludedGenre));
             context.SaveChanges();
         }
 
@@ -91,18 +82,18 @@ public sealed class BaseItemRepositoryItemValueTests : SqliteDbTestFixture
             IsFolder = false,
             IsVirtualItem = false
         };
-        var genre = CreateItemValue(ItemValueType.Genre, "Genre Leak", "genre leak");
+        var genre = CreateByNameEntity(_genreTypeName, "Genre Leak");
 
         using (var context = CreateDbContext())
         {
             context.BaseItems.AddRange(movie, otherMovie, audio);
-            context.ItemValues.Add(genre);
+            context.BaseItems.Add(genre);
             context.BaseItemTags.AddRange(
                 CreateTag(movie, "Alpha", "alpha"),
                 CreateTag(movie, "alpha", "alpha"),
                 CreateTag(otherMovie, "Beta", "beta"),
                 CreateTag(audio, "Excluded Tag", "excluded tag"));
-            context.ItemValuesMap.Add(CreateMap(movie, genre));
+            context.BaseItemGenres.Add(CreateGenreLink(movie, genre));
             context.SaveChanges();
         }
 
@@ -115,7 +106,7 @@ public sealed class BaseItemRepositoryItemValueTests : SqliteDbTestFixture
     }
 
     [Fact]
-    public void GetGenreNames_GroupsAndFiltersMappedItemValues()
+    public void GetGenreNames_ListsOnlyLinkedGenresOfTheirKind()
     {
         var movie = CreateMovieEntity(Guid.NewGuid(), "Movie");
         var audio = new BaseItemEntity
@@ -127,19 +118,16 @@ public sealed class BaseItemRepositoryItemValueTests : SqliteDbTestFixture
             IsFolder = false,
             IsVirtualItem = false
         };
-        var movieGenre = CreateItemValue(ItemValueType.Genre, "Movie Genre", "movie genre");
-        var duplicateMovieGenre = CreateItemValue(ItemValueType.Genre, "movie genre", "movie genre");
-        var musicGenre = CreateItemValue(ItemValueType.Genre, "Music Genre", "music genre");
-        var orphanedGenre = CreateItemValue(ItemValueType.Genre, "Orphaned Genre", "orphaned genre");
+        var movieGenre = CreateByNameEntity(_genreTypeName, "Movie Genre");
+        var musicGenre = CreateByNameEntity(_musicGenreTypeName, "Music Genre");
+        var orphanedGenre = CreateByNameEntity(_genreTypeName, "Orphaned Genre");
 
         using (var context = CreateDbContext())
         {
-            context.BaseItems.AddRange(movie, audio);
-            context.ItemValues.AddRange(movieGenre, duplicateMovieGenre, musicGenre, orphanedGenre);
-            context.ItemValuesMap.AddRange(
-                CreateMap(movie, movieGenre),
-                CreateMap(movie, duplicateMovieGenre),
-                CreateMap(audio, musicGenre));
+            context.BaseItems.AddRange(movie, audio, movieGenre, musicGenre, orphanedGenre);
+            context.BaseItemGenres.AddRange(
+                CreateGenreLink(movie, movieGenre),
+                CreateGenreLink(audio, musicGenre));
             context.SaveChanges();
         }
 
@@ -172,25 +160,26 @@ public sealed class BaseItemRepositoryItemValueTests : SqliteDbTestFixture
         };
     }
 
-    private static ItemValueMap CreateMap(BaseItemEntity item, ItemValue itemValue)
+    private static BaseItemEntity CreateByNameEntity(string type, string name)
     {
-        return new ItemValueMap
+        return new BaseItemEntity
         {
-            ItemId = item.Id,
-            ItemValueId = itemValue.ItemValueId,
-            Item = item,
-            ItemValue = itemValue
+            Id = Guid.NewGuid(),
+            Type = type,
+            Name = name,
+            CleanName = name.ToLowerInvariant(),
+            IsFolder = true,
+            IsVirtualItem = false
         };
     }
 
-    private static ItemValue CreateItemValue(ItemValueType type, string value, string cleanValue)
+    private static BaseItemGenre CreateGenreLink(BaseItemEntity item, BaseItemEntity genre)
     {
-        return new ItemValue
+        return new BaseItemGenre
         {
-            ItemValueId = Guid.NewGuid(),
-            Type = type,
-            Value = value,
-            CleanValue = cleanValue
+            ItemId = item.Id,
+            Item = item,
+            GenreItemId = genre.Id
         };
     }
 }

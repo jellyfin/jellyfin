@@ -121,21 +121,11 @@ public sealed class BaseItemRepositoryByNameItemCountsTests : SqliteDbTestFixtur
         };
         ctx.BaseItems.Add(tagged);
 
-        var itemValue = new ItemValue
-        {
-            ItemValueId = Guid.Parse("ffffffff-0000-0000-0000-000000000001"),
-            Type = ItemValueType.Genre,
-            Value = Name,
-            CleanValue = CleanName
-        };
-
-        ctx.ItemValues.Add(itemValue);
-        ctx.ItemValuesMap.Add(new ItemValueMap
+        ctx.BaseItemGenres.Add(new BaseItemGenre
         {
             ItemId = taggedId,
-            ItemValueId = itemValue.ItemValueId,
             Item = tagged,
-            ItemValue = itemValue
+            GenreItemId = genreId
         });
 
         ctx.SaveChanges();

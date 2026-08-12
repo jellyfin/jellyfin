@@ -439,6 +439,23 @@ namespace Jellyfin.Server.Implementations.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemGenre", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GenreItemId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ItemId", "GenreItemId");
+
+                    b.HasIndex("GenreItemId", "ItemId");
+
+                    b.ToTable("BaseItemGenres");
+
+                    b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
+                });
+
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemImageInfo", b =>
                 {
                     b.Property<Guid>("Id")
@@ -512,6 +529,23 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("ProviderId", "ItemId", "ProviderValue");
 
                     b.ToTable("BaseItemProviders");
+
+                    b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
+                });
+
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemStudio", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("StudioItemId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ItemId", "StudioItemId");
+
+                    b.HasIndex("StudioItemId", "ItemId");
+
+                    b.ToTable("BaseItemStudios");
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -1555,6 +1589,17 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("Owner");
                 });
 
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemGenre", b =>
+                {
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+                });
+
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemImageInfo", b =>
                 {
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
@@ -1581,6 +1626,17 @@ namespace Jellyfin.Server.Implementations.Migrations
                 {
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
                         .WithMany("Provider")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+                });
+
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemStudio", b =>
+                {
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
+                        .WithMany()
                         .HasForeignKey("ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

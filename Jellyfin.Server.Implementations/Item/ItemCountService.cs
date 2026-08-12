@@ -129,12 +129,15 @@ public class ItemCountService : IItemCountService
         return GetItemCountsForNameItems(kind, [id], relatedItemKinds, accessFilter)[id];
     }
 
-    private static ItemValueType[] GetItemValueTypes(BaseItemKind kind)
+    // Genres and studios are linked to the items carrying them; null for every other kind.
+    private static IQueryable<NameLink>? GetNameLinks(JellyfinDbContext context, BaseItemKind kind)
         => kind switch
         {
-            BaseItemKind.Genre or BaseItemKind.MusicGenre => [ItemValueType.Genre],
-            BaseItemKind.Studio => [ItemValueType.Studios],
-            _ => []
+            BaseItemKind.Genre or BaseItemKind.MusicGenre => context.BaseItemGenres.AsNoTracking()
+                .Select(g => new NameLink { Key = g.GenreItemId, ItemId = g.ItemId }),
+            BaseItemKind.Studio => context.BaseItemStudios.AsNoTracking()
+                .Select(l => new NameLink { Key = l.StudioItemId, ItemId = l.ItemId }),
+            _ => null
         };
 
     /// <inheritdoc />
@@ -174,10 +177,10 @@ public class ItemCountService : IItemCountService
             context.BaseItems.AsNoTracking().Where(e => typeNames.Contains(e.Type)),
             accessFilter);
 
-        var valueTypes = GetItemValueTypes(kind);
-        if (valueTypes.Length > 0)
+        var links = GetNameLinks(context, kind);
+        if (links is not null)
         {
-            CountByItemValue(context, related, kind, relatedItemKinds, valueTypes, nameItems, result);
+            CountByLink(related, kind, relatedItemKinds, links, nameItems, result);
         }
         else if (kind is BaseItemKind.Person or BaseItemKind.MusicArtist)
         {
@@ -191,64 +194,44 @@ public class ItemCountService : IItemCountService
         return result;
     }
 
-    private void CountByItemValue(
-        JellyfinDbContext context,
+    private void CountByLink(
         IQueryable<BaseItemEntity> related,
         BaseItemKind kind,
         BaseItemKind[] relatedItemKinds,
-        ItemValueType[] valueTypes,
+        IQueryable<NameLink> links,
         NameItem[] nameItems,
         Dictionary<Guid, ItemCounts> result)
     {
-        var cleanNames = nameItems
-            .Select(n => n.CleanName)
-            .OfType<string>()
-            .Distinct(StringComparer.Ordinal)
+        var ids = nameItems.Select(n => n.Id).ToArray();
+        var keyedLinks = links.WhereOneOrMany(ids, l => l.Key);
+
+        var grouped = keyedLinks
+            .Join(related, l => l.ItemId, e => e.Id, (l, e) => new { l.Key, e.Type, e.Id })
+            .GroupBy(x => new { x.Key, x.Type })
+            .Select(g => new { g.Key.Key, g.Key.Type, Count = g.Select(x => x.Id).Distinct().Count() })
             .ToArray();
-
-        if (cleanNames.Length == 0)
-        {
-            return;
-        }
-
-        var grouped = context.ItemValuesMap.AsNoTracking()
-            .Where(ivm => valueTypes.Contains(ivm.ItemValue.Type))
-            .WhereOneOrMany(cleanNames, ivm => ivm.ItemValue.CleanValue)
-            .Join(related, ivm => ivm.ItemId, e => e.Id, (ivm, e) => new { ivm.ItemValue.CleanValue, e.Type, e.Id })
-            .GroupBy(x => new { x.CleanValue, x.Type })
-            .Select(g => new { g.Key.CleanValue, g.Key.Type, Count = g.Select(x => x.Id).Distinct().Count() })
-            .ToArray();
-
-        var byCleanName = grouped
-            .GroupBy(g => g.CleanValue, StringComparer.Ordinal)
-            .ToDictionary(g => g.Key, g => g.Select(x => (x.Type, x.Count)).ToArray(), StringComparer.Ordinal);
 
         var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
         var episodeRollUp = RollsUpEpisodes(kind, relatedItemKinds)
                 && Array.Exists(grouped, g => string.Equals(g.Type, seriesTypeName, StringComparison.Ordinal))
-            ? CountEpisodesOfTaggedSeriesByCleanName(context, related, valueTypes, cleanNames)
+            ? CountEpisodesOfLinkedSeries(related, keyedLinks)
             : null;
 
-        foreach (var nameItem in nameItems)
+        foreach (var group in grouped.GroupBy(g => g.Key))
         {
-            if (nameItem.CleanName is null || !byCleanName.TryGetValue(nameItem.CleanName, out var counts))
-            {
-                continue;
-            }
-
-            var itemCounts = ItemCountBuilder.Build(_itemTypeLookup, counts);
+            var itemCounts = ItemCountBuilder.Build(_itemTypeLookup, group.Select(x => (x.Type, x.Count)));
 
             if (episodeRollUp is not null)
             {
-                var rollUp = episodeRollUp.GetValueOrDefault(nameItem.CleanName);
+                var rollUp = episodeRollUp.GetValueOrDefault(group.Key);
 
-                // Episodes of a tagged series count towards it even when untagged themselves, and
-                // a tagged episode of a tagged series must not be counted a second time.
-                var directEpisodeCount = itemCounts.EpisodeCount - rollUp.TaggedEpisodesOfTaggedSeries;
-                ItemCountBuilder.SetEpisodeCount(itemCounts, rollUp.EpisodesOfTaggedSeries + directEpisodeCount);
+                // Episodes of a linked series count towards it even when not linked themselves, and
+                // a linked episode of a linked series must not be counted a second time.
+                var directEpisodeCount = itemCounts.EpisodeCount - rollUp.LinkedEpisodesOfLinkedSeries;
+                ItemCountBuilder.SetEpisodeCount(itemCounts, rollUp.EpisodesOfLinkedSeries + directEpisodeCount);
             }
 
-            result[nameItem.Id] = itemCounts;
+            result[group.Key] = itemCounts;
         }
     }
 
@@ -321,59 +304,47 @@ public class ItemCountService : IItemCountService
             && relatedItemKinds.Contains(BaseItemKind.Episode)
             && relatedItemKinds.Contains(BaseItemKind.Series);
 
-    private Dictionary<string, (int EpisodesOfTaggedSeries, int TaggedEpisodesOfTaggedSeries)> CountEpisodesOfTaggedSeriesByCleanName(
-        JellyfinDbContext context,
+    private Dictionary<Guid, (int EpisodesOfLinkedSeries, int LinkedEpisodesOfLinkedSeries)> CountEpisodesOfLinkedSeries(
         IQueryable<BaseItemEntity> related,
-        ItemValueType[] valueTypes,
-        string[] cleanNames)
+        IQueryable<NameLink> keyedLinks)
     {
         var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
         var episodeTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
 
-        var taggedValues = context.ItemValuesMap.AsNoTracking()
-            .Where(ivm => valueTypes.Contains(ivm.ItemValue.Type))
-            .WhereOneOrMany(cleanNames, ivm => ivm.ItemValue.CleanValue);
-
-        // The series carrying each clean name. Distinct, because one item can be mapped to the
-        // same clean name once per value type.
-        var taggedSeries = taggedValues
+        var linkedSeries = keyedLinks
             .Join(
                 related.Where(e => e.Type == seriesTypeName),
-                ivm => ivm.ItemId,
+                l => l.ItemId,
                 e => e.Id,
-                (ivm, e) => new { ivm.ItemValue.CleanValue, SeriesId = e.Id })
+                (l, e) => new { l.Key, SeriesId = e.Id })
             .Distinct();
 
         var episodes = related.Where(e => e.Type == episodeTypeName && e.SeriesId != null);
 
-        var episodesOfTaggedSeries = taggedSeries
-            .Join(episodes, s => s.SeriesId, e => e.SeriesId!.Value, (s, e) => new { s.CleanValue, e.Id })
-            .GroupBy(x => x.CleanValue)
-            .Select(g => new { CleanValue = g.Key, Count = g.Select(x => x.Id).Distinct().Count() })
+        var episodesOfLinkedSeries = linkedSeries
+            .Join(episodes, s => s.SeriesId, e => e.SeriesId!.Value, (s, e) => new { s.Key, e.Id })
+            .GroupBy(x => x.Key)
+            .Select(g => new { Key = g.Key, Count = g.Select(x => x.Id).Distinct().Count() })
             .ToArray();
 
-        // Episodes that carry the clean name themselves *and* belong to a series carrying it. The
-        // roll-up already counts those, so they have to come off the directly tagged ones.
-        var taggedEpisodesOfTaggedSeries = taggedValues
-            .Join(episodes, ivm => ivm.ItemId, e => e.Id, (ivm, e) => new { ivm.ItemValue.CleanValue, e.Id, e.SeriesId })
+        // Episodes linked themselves *and* belonging to a linked series. The roll-up already counts
+        // those, so they have to come off the directly linked ones.
+        var linkedEpisodesOfLinkedSeries = keyedLinks
+            .Join(episodes, l => l.ItemId, e => e.Id, (l, e) => new { l.Key, e.Id, e.SeriesId })
             .Join(
-                taggedSeries,
-                e => new { e.CleanValue, SeriesId = e.SeriesId!.Value },
-                s => new { s.CleanValue, s.SeriesId },
-                (e, s) => new { e.CleanValue, e.Id })
-            .GroupBy(x => x.CleanValue)
-            .Select(g => new { CleanValue = g.Key, Count = g.Select(x => x.Id).Distinct().Count() })
-            .ToArray();
+                linkedSeries,
+                e => new { e.Key, SeriesId = e.SeriesId!.Value },
+                s => new { s.Key, s.SeriesId },
+                (e, s) => new { e.Key, e.Id })
+            .GroupBy(x => x.Key)
+            .Select(g => new { Key = g.Key, Count = g.Select(x => x.Id).Distinct().Count() })
+            .ToDictionary(x => x.Key, x => x.Count);
 
-        var taggedLookup = taggedEpisodesOfTaggedSeries
-            .ToDictionary(x => x.CleanValue, x => x.Count, StringComparer.Ordinal);
-
-        // Every clean name in taggedLookup came from an episode of a tagged series, so it always
-        // has a row in episodesOfTaggedSeries too - no second merge pass is needed.
-        var result = new Dictionary<string, (int EpisodesOfTaggedSeries, int TaggedEpisodesOfTaggedSeries)>(StringComparer.Ordinal);
-        foreach (var entry in episodesOfTaggedSeries)
+        // Every key in the second came from an episode of a linked series, so it has a row in the first.
+        var result = new Dictionary<Guid, (int EpisodesOfLinkedSeries, int LinkedEpisodesOfLinkedSeries)>();
+        foreach (var entry in episodesOfLinkedSeries)
         {
-            result[entry.CleanValue] = (entry.Count, taggedLookup.GetValueOrDefault(entry.CleanValue));
+            result[entry.Key] = (entry.Count, linkedEpisodesOfLinkedSeries.GetValueOrDefault(entry.Key));
         }
 
         return result;
@@ -728,4 +699,14 @@ public class ItemCountService : IItemCountService
     /// <param name="Name">The name of the by-name item.</param>
     /// <param name="CleanName">The cleaned name of the by-name item.</param>
     private sealed record NameItem(Guid Id, string? Name, string? CleanName);
+
+    /// <summary>
+    /// A link from an item to the genre or studio it carries.
+    /// </summary>
+    private sealed class NameLink
+    {
+        public Guid Key { get; init; }
+
+        public Guid ItemId { get; init; }
+    }
 }

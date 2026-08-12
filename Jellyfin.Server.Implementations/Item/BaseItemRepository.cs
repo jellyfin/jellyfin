@@ -40,9 +40,6 @@ public sealed partial class BaseItemRepository
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly ILogger<BaseItemRepository> _logger;
 
-    private static readonly IReadOnlyList<ItemValueType> _getStudiosValueTypes = [ItemValueType.Studios];
-    private static readonly IReadOnlyList<ItemValueType> _getGenreValueTypes = [ItemValueType.Genre];
-
     private static readonly BaseItemKind[] _itemByNameKinds =
     [
         BaseItemKind.Person,
@@ -52,18 +49,17 @@ public sealed partial class BaseItemRepository
         BaseItemKind.Studio
     ];
 
-    // The by-name kinds reached through credits rather than through the values an item carries.
+    // The by-name kinds reached through credits rather than through a link table of their own.
     private static readonly BaseItemKind[] _creditedByNameKinds =
     [
         BaseItemKind.Person,
         BaseItemKind.MusicArtist
     ];
 
-    private static readonly (BaseItemKind Kind, IReadOnlyList<ItemValueType> ValueTypes)[] _itemByNameValueTypes =
+    private static readonly BaseItemKind[] _genreByNameKinds =
     [
-        (BaseItemKind.Genre, _getGenreValueTypes),
-        (BaseItemKind.MusicGenre, _getGenreValueTypes),
-        (BaseItemKind.Studio, _getStudiosValueTypes)
+        BaseItemKind.Genre,
+        BaseItemKind.MusicGenre
     ];
 
     // The only folder kinds whose children form a single viewing sequence, so playback progress on a

@@ -65,7 +65,11 @@ public static class OrderMapper
             // Alphabetically first of the credited names, as before, not the first billed.
             (ItemSortBy.Artist, _) => e => e.Peoples!.Where(f => f.People.PersonType == ArtistCreditKind).OrderBy(f => f.People.CleanName).Select(f => f.People.CleanName).FirstOrDefault(),
             (ItemSortBy.AlbumArtist, _) => e => e.Peoples!.Where(f => f.People.PersonType == AlbumArtistCreditKind).OrderBy(f => f.People.CleanName).Select(f => f.People.CleanName).FirstOrDefault(),
-            (ItemSortBy.Studio, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.Studios).OrderBy(f => f.ItemValue.CleanValue).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
+            (ItemSortBy.Studio, _) => e => jellyfinDbContext.BaseItemStudios
+                .Where(f => f.ItemId == e.Id)
+                .Join(jellyfinDbContext.BaseItems, f => f.StudioItemId, b => b.Id, (f, b) => b.CleanName)
+                .OrderBy(f => f)
+                .FirstOrDefault(),
             (ItemSortBy.OfficialRating, _) => e => e.InheritedParentalRatingValue,
             (ItemSortBy.SeriesSortName, _) => e => e.SeriesName,
             (ItemSortBy.Album, _) => e => e.Album,

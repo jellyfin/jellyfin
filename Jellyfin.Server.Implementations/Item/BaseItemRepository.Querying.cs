@@ -632,16 +632,10 @@ public sealed partial class BaseItemRepository
             .OrderBy(t => t)
             .ToArray();
 
-        var genres = context.ItemValuesMap
-            .Join(
-                context.ItemValues,
-                ivm => ivm.ItemValueId,
-                iv => iv.ItemValueId,
-                (ivm, iv) => new { ivm.ItemId, iv.Type, iv.CleanValue, iv.Value })
-            .Where(iv => iv.Type == ItemValueType.Genre)
-            .Where(iv => matchingItemIds.Contains(iv.ItemId))
-            .GroupBy(iv => iv.CleanValue)
-            .Select(g => g.Min(iv => iv.Value))
+        var genres = context.BaseItemGenres
+            .Where(g => matchingItemIds.Contains(g.ItemId))
+            .Join(context.BaseItems, g => g.GenreItemId, b => b.Id, (g, b) => b.Name!)
+            .Distinct()
             .OrderBy(g => g)
             .ToArray();
 
