@@ -345,8 +345,6 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
-                _libraryManager.UpdatePeople(audio, people);
-
                 if (options.ReplaceAllMetadata && performers.Length != 0)
                 {
                     audio.Artists = performers;
@@ -372,6 +370,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     audio.AlbumArtists = albumArtists;
                 }
+
+                // After the artist lists, which the credits are completed from.
+                _libraryManager.UpdatePeople(audio, people);
             }
 
             if (!audio.LockedFields.Contains(MetadataField.Name) && !string.IsNullOrEmpty(trackTitle))

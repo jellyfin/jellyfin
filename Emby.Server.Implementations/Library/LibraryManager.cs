@@ -3721,11 +3721,43 @@ namespace Emby.Server.Implementations.Library
 
             if (people is not null)
             {
-                people = people.Where(e => e is not null).ToArray();
+                people = WithArtistCredits(item, people.Where(e => e is not null).ToList());
 
                 var personEntities = ResolvePeople(people);
                 _peopleRepository.UpdatePeople(item.Id, people);
                 await SavePeopleMetadataAsync(personEntities, people, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        // The artist lists are what the editor, the NFO readers, ffprobe and channels write, and the
+        // credits are all a query reads, so every name on them needs a credit of its own.
+        private static List<PersonInfo> WithArtistCredits(BaseItem item, List<PersonInfo> people)
+        {
+            AddArtistCredits(people, (item as IHasAlbumArtist)?.AlbumArtists, PersonKind.AlbumArtist);
+            AddArtistCredits(people, (item as IHasArtist)?.Artists, PersonKind.Artist);
+            return people;
+        }
+
+        private static void AddArtistCredits(List<PersonInfo> people, IReadOnlyList<string>? names, PersonKind kind)
+        {
+            if (names is null)
+            {
+                return;
+            }
+
+            foreach (var name in names)
+            {
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    continue;
+                }
+
+                // A credit the caller already has keeps its provider ids.
+                var cleanName = name.GetCleanValue();
+                if (!people.Any(p => p.Type == kind && string.Equals(p.Name.GetCleanValue(), cleanName, StringComparison.Ordinal)))
+                {
+                    people.Add(new PersonInfo { Name = name.Trim(), Type = kind });
+                }
             }
         }
 
@@ -3745,6 +3777,17 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 var isArtist = IsMusicArtistCredit(person.Type);
+
+                // Already linked: resolving again by name could pick another human of that name.
+                if (!person.PersonItemId.IsEmpty()
+                    && GetItemById(person.PersonItemId) is { } linked
+                    && (linked is MusicArtist) == isArtist
+                    && linked.FindConflictingProvider(person.ProviderIds) is null)
+                {
+                    resolved[linked.Id] = linked;
+                    continue;
+                }
+
                 var key = (person.Name.GetCleanValue(), isArtist, GetProviderIdSignature(person.ProviderIds));
 
                 if (attempted.Add(key))

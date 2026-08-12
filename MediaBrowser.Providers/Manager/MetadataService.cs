@@ -318,11 +318,19 @@ namespace MediaBrowser.Providers.Manager
                 await result.Item.ReattachUserDataAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            if (result.Item.SupportsPeople && result.People is not null)
+            var people = result.People;
+
+            // No provider touched the cast, but the artist lists may have changed and need their credits.
+            if (people is null && result.Item is IHasArtist or IHasAlbumArtist)
+            {
+                people = LibraryManager.GetPeople(result.Item);
+            }
+
+            if (result.Item.SupportsPeople && people is not null)
             {
                 var baseItem = result.Item;
 
-                await LibraryManager.UpdatePeopleAsync(baseItem, result.People, cancellationToken).ConfigureAwait(false);
+                await LibraryManager.UpdatePeopleAsync(baseItem, people, cancellationToken).ConfigureAwait(false);
             }
         }
 
