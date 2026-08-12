@@ -20,6 +20,9 @@ namespace Jellyfin.Server.Implementations.Item;
 /// </summary>
 public static class OrderMapper
 {
+    private const string ArtistCreditKind = nameof(PersonKind.Artist);
+    private const string AlbumArtistCreditKind = nameof(PersonKind.AlbumArtist);
+
     /// <summary>
     /// Creates Func to be executed later with a given BaseItemEntity input for sorting items on query.
     /// </summary>
@@ -59,8 +62,9 @@ public static class OrderMapper
             (ItemSortBy.IsPlayed, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.Played,
             (ItemSortBy.IsUnplayed, _) => e => !e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.Played,
             (ItemSortBy.DateLastContentAdded, _) => e => e.DateLastMediaAdded,
-            (ItemSortBy.Artist, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.Artist).OrderBy(f => f.ItemValue.CleanValue).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
-            (ItemSortBy.AlbumArtist, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.AlbumArtist).OrderBy(f => f.ItemValue.CleanValue).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
+            // Alphabetically first of the credited names, as before, not the first billed.
+            (ItemSortBy.Artist, _) => e => e.Peoples!.Where(f => f.People.PersonType == ArtistCreditKind).OrderBy(f => f.People.CleanName).Select(f => f.People.CleanName).FirstOrDefault(),
+            (ItemSortBy.AlbumArtist, _) => e => e.Peoples!.Where(f => f.People.PersonType == AlbumArtistCreditKind).OrderBy(f => f.People.CleanName).Select(f => f.People.CleanName).FirstOrDefault(),
             (ItemSortBy.Studio, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.Studios).OrderBy(f => f.ItemValue.CleanValue).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
             (ItemSortBy.OfficialRating, _) => e => e.InheritedParentalRatingValue,
             (ItemSortBy.SeriesSortName, _) => e => e.SeriesName,

@@ -624,7 +624,7 @@ public sealed class ItemCountServiceTests : IDisposable
     }
 
     /// <summary>
-    /// Seeds one artist and a single album tagged with it as both artist and album artist.
+    /// Seeds one artist and a single album crediting it as both artist and album artist.
     /// </summary>
     /// <returns>The id of the seeded artist.</returns>
     private Guid SeedArtistWithAlbum()
@@ -646,24 +646,19 @@ public sealed class ItemCountServiceTests : IDisposable
         context.BaseItems.Add(album);
         context.SaveChanges();
 
-        foreach (var type in new[] { ItemValueType.Artist, ItemValueType.AlbumArtist })
+        foreach (var kind in new[] { PersonKind.Artist, PersonKind.AlbumArtist })
         {
-            var itemValue = new ItemValue
-            {
-                ItemValueId = Guid.NewGuid(),
-                Type = type,
-                Value = Name,
-                CleanValue = Name
-            };
-            context.ItemValues.Add(itemValue);
+            var credit = new People { Id = Guid.NewGuid(), Name = Name, CleanName = Name, PersonType = kind.ToString(), ItemId = artistId };
+            context.Peoples.Add(credit);
             context.SaveChanges();
 
-            context.ItemValuesMap.Add(new ItemValueMap
+            context.PeopleBaseItemMap.Add(new PeopleBaseItemMap
             {
                 ItemId = albumId,
-                ItemValueId = itemValue.ItemValueId,
+                PeopleId = credit.Id,
                 Item = null!,
-                ItemValue = null!
+                People = null!,
+                Role = string.Empty
             });
         }
 
@@ -737,7 +732,7 @@ public sealed class ItemCountServiceTests : IDisposable
         var ids = new List<Guid>(count);
         using var context = CreateDbContext();
 
-        ItemValue? taggedValue = null;
+        People? credit = null;
         taggedArtistId = Guid.Empty;
 
         for (var i = 0; i < count; i++)
@@ -755,14 +750,8 @@ public sealed class ItemCountServiceTests : IDisposable
             if (i == 0)
             {
                 taggedArtistId = artistId;
-                taggedValue = new ItemValue
-                {
-                    ItemValueId = Guid.NewGuid(),
-                    Type = ItemValueType.Artist,
-                    Value = name,
-                    CleanValue = name
-                };
-                context.ItemValues.Add(taggedValue);
+                credit = new People { Id = Guid.NewGuid(), Name = name, CleanName = name, PersonType = nameof(PersonKind.Artist), ItemId = artistId };
+                context.Peoples.Add(credit);
             }
         }
 
@@ -774,7 +763,7 @@ public sealed class ItemCountServiceTests : IDisposable
         context.BaseItems.Add(album);
         context.SaveChanges();
 
-        Tag(context, albumId, taggedValue!.ItemValueId);
+        context.PeopleBaseItemMap.Add(new PeopleBaseItemMap { ItemId = albumId, PeopleId = credit!.Id, Item = null!, People = null!, Role = string.Empty });
         context.SaveChanges();
 
         return ids;
@@ -868,7 +857,7 @@ public sealed class ItemCountServiceTests : IDisposable
             person.CleanName = personName;
             context.BaseItems.Add(person);
 
-            var people = new People { Id = Guid.NewGuid(), Name = personName, CleanName = personName };
+            var people = new People { Id = Guid.NewGuid(), Name = personName, CleanName = personName, ItemId = personId };
             context.Peoples.Add(people);
 
             var year = 2000 + i;
