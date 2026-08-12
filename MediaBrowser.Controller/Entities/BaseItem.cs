@@ -647,6 +647,20 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public string[] Tags { get; set; }
 
+        /// <summary>
+        /// Gets or sets the genre items <see cref="Genres"/> resolved to, or <c>null</c> when they have
+        /// not been resolved. Only <see cref="ILibraryManager.ResolveItemByNameLinks"/> can fill it in.
+        /// </summary>
+        [JsonIgnore]
+        public IReadOnlyList<Guid> GenreItemIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the studio items <see cref="Studios"/> resolved to, or <c>null</c> when they have
+        /// not been resolved. See <see cref="GenreItemIds"/>.
+        /// </summary>
+        [JsonIgnore]
+        public IReadOnlyList<Guid> StudioItemIds { get; set; }
+
         [JsonIgnore]
         public string[] ProductionLocations { get; set; }
 

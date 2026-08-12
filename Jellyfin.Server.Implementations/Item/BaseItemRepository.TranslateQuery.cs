@@ -669,14 +669,22 @@ public sealed partial class BaseItemRepository
 
         if (filter.GenreIds.Count > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Genre, filter.GenreIds);
+            // Flat sub-selects rather than a correlated Any, so the index can be seeked.
+            var genreFilter = filter.GenreIds.OneOrManyExpressionBuilder<BaseItemGenre, Guid>(f => f.GenreItemId);
+            var genreItemIds = context.BaseItemGenres.Where(genreFilter).Select(f => f.ItemId);
+            baseQuery = baseQuery.Where(e => genreItemIds.Contains(e.Id));
         }
 
         if (filter.Genres.Count > 0)
         {
-            var cleanGenres = filter.Genres.Select(e => e.GetCleanValue()).ToArray().OneOrManyExpressionBuilder<ItemValueMap, string>(f => f.ItemValue.CleanValue);
-            baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.AsQueryable().Where(f => f.ItemValue.Type == ItemValueType.Genre).Any(cleanGenres));
+            var cleanGenres = filter.Genres.Select(e => e.GetCleanValue()).ToArray().OneOrManyExpressionBuilder<BaseItemEntity, string>(f => f.CleanName!);
+            var genreTypeNames = _genreByNameKinds.Select(e => _itemTypeLookup.BaseItemKindNames[e]).ToArray();
+            var namedGenreIds = context.BaseItems
+                .Where(f => genreTypeNames.Contains(f.Type))
+                .Where(cleanGenres)
+                .Select(f => f.Id);
+            var genreItemIds = context.BaseItemGenres.Where(f => namedGenreIds.Contains(f.GenreItemId)).Select(f => f.ItemId);
+            baseQuery = baseQuery.Where(e => genreItemIds.Contains(e.Id));
         }
 
         if (tags.Count > 0)
@@ -695,7 +703,9 @@ public sealed partial class BaseItemRepository
 
         if (filter.StudioIds.Length > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Studios, filter.StudioIds);
+            var studioFilter = filter.StudioIds.OneOrManyExpressionBuilder<BaseItemStudio, Guid>(f => f.StudioItemId);
+            var studioItemIds = context.BaseItemStudios.Where(studioFilter).Select(f => f.ItemId);
+            baseQuery = baseQuery.Where(e => studioItemIds.Contains(e.Id));
         }
 
         if (filter.OfficialRatings.Length > 0)
@@ -992,16 +1002,17 @@ public sealed partial class BaseItemRepository
                     .Where(e => !context.Peoples.Any(p => _artistCreditKinds.Contains(p.PersonType) && p.ItemId == e.Id));
         }
 
+        // Keyed on the link, so a renamed studio or genre is not deleted as dead by validation.
         if (filter.IsDeadStudio.HasValue && filter.IsDeadStudio.Value)
         {
             baseQuery = baseQuery
-                    .Where(e => !context.ItemValues.Where(f => _getStudiosValueTypes.Contains(f.Type)).Any(f => f.Value == e.Name));
+                    .Where(e => !context.BaseItemStudios.Any(f => f.StudioItemId == e.Id));
         }
 
         if (filter.IsDeadGenre.HasValue && filter.IsDeadGenre.Value)
         {
             baseQuery = baseQuery
-                    .Where(e => !context.ItemValues.Where(f => _getGenreValueTypes.Contains(f.Type)).Any(f => f.Value == e.Name));
+                    .Where(e => !context.BaseItemGenres.Any(f => f.GenreItemId == e.Id));
         }
 
         if (filter.IsDeadPerson.HasValue && filter.IsDeadPerson.Value)

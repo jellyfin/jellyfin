@@ -1219,7 +1219,8 @@ namespace Emby.Server.Implementations.Library
                 return item;
             }
 
-            // The id hashes the name as written, so a different spelling hashes elsewhere.
+            // The id is a hash of the name as written, so a different spelling hashes elsewhere.
+            // Fall back to the clean name that everything else identifies a person by.
             return GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = [BaseItemKind.Person],
@@ -1310,6 +1311,86 @@ namespace Emby.Server.Implementations.Library
         public MusicArtist GetArtist(string name, DtoOptions options)
         {
             return CreateItemByName<MusicArtist>(MusicArtist.GetPath, name, options);
+        }
+
+        /// <inheritdoc />
+        public void ResolveItemByNameLinks(IReadOnlyList<BaseItem> items)
+        {
+            ArgumentNullException.ThrowIfNull(items);
+
+            // Distinct genres and studios are far fewer than the items naming them, and a miss
+            // creates a folder and an item.
+            var genreIds = new Dictionary<(string Name, bool IsMusic), Guid>();
+            var studioIds = new Dictionary<string, Guid>(StringComparer.Ordinal);
+
+            foreach (var item in items)
+            {
+                // Which kind of genre item a name belongs to follows from what is naming it, as in
+                // DtoService.GetGenreId.
+                var isMusic = item is IHasMusicGenres;
+
+                item.GenreItemIds = ResolveByNameIds(item.Genres, name =>
+                {
+                    var key = (name, isMusic);
+                    if (!genreIds.TryGetValue(key, out var id))
+                    {
+                        id = GetItemByNameIdOrEmpty(() => isMusic ? GetMusicGenre(name) : GetGenre(name), "genre", name);
+                        genreIds[key] = id;
+                    }
+
+                    return id;
+                });
+
+                item.StudioItemIds = ResolveByNameIds(item.Studios, name =>
+                {
+                    if (!studioIds.TryGetValue(name, out var id))
+                    {
+                        id = GetItemByNameIdOrEmpty(() => GetStudio(name), "studio", name);
+                        studioIds[name] = id;
+                    }
+
+                    return id;
+                });
+            }
+        }
+
+        private static IReadOnlyList<Guid> ResolveByNameIds(string[] names, Func<string, Guid> resolve)
+        {
+            if (names is null || names.Length == 0)
+            {
+                return [];
+            }
+
+            var ids = new List<Guid>(names.Length);
+            foreach (var name in names)
+            {
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    continue;
+                }
+
+                var id = resolve(name);
+                if (!id.IsEmpty() && !ids.Contains(id))
+                {
+                    ids.Add(id);
+                }
+            }
+
+            return ids;
+        }
+
+        // Empty leaves that one name unlinked rather than failing the whole save.
+        private Guid GetItemByNameIdOrEmpty(Func<BaseItem> getOrCreate, string kind, string name)
+        {
+            try
+            {
+                return getOrCreate().Id;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to get or create {Kind} {Name}", kind, name);
+                return Guid.Empty;
+            }
         }
 
         private T CreateItemByName<T>(Func<string, string> getPathFn, string name, DtoOptions options, string? identitySuffix = null)
@@ -2422,6 +2503,8 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
+            ResolveItemByNameLinks(allItems);
+
             _persistenceService.SaveItems(allItems, cancellationToken);
 
             foreach (var item in allItems)
@@ -2643,6 +2726,8 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
             }
+
+            ResolveItemByNameLinks(allItems);
 
             _persistenceService.SaveItems(allItems, cancellationToken);
 
@@ -3756,8 +3841,9 @@ namespace Emby.Server.Implementations.Library
                 return null;
             }
 
-            // Scoped to the kind, because a provider key is not unique across types. Oldest first, so a
-            // library holding two entries for one human resolves to a stable one.
+            // Scoped to the kind: a provider key is not unique across types, a TMDb person id and a
+            // TMDb movie id both live under "Tmdb". Oldest first, so a library holding two entries
+            // for one human resolves to a stable one.
             return GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = [kind],

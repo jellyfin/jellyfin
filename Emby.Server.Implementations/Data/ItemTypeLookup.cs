@@ -1,5 +1,6 @@
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Channels;
 using Emby.Server.Implementations.Playlists;
 using Jellyfin.Data.Enums;
@@ -17,12 +18,11 @@ namespace Emby.Server.Implementations.Data;
 public class ItemTypeLookup : IItemTypeLookup
 {
     /// <inheritdoc />
-    public IReadOnlyList<string> MusicGenreTypes { get; } = [
-         typeof(Audio).FullName!,
-         typeof(MusicVideo).FullName!,
-         typeof(MusicAlbum).FullName!,
-         typeof(MusicArtist).FullName!,
-    ];
+    // From the interface, because a hand-written list drifts (AudioBook is an Audio).
+    public IReadOnlyList<string> MusicGenreTypes { get; } = [.. typeof(BaseItem).Assembly
+        .GetTypes()
+        .Where(e => !e.IsAbstract && e.IsAssignableTo(typeof(IHasMusicGenres)))
+        .Select(e => e.FullName!)];
 
     /// <inheritdoc />
     public IReadOnlyDictionary<BaseItemKind, string> BaseItemKindNames { get; } = new Dictionary<BaseItemKind, string>()
