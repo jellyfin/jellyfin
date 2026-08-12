@@ -1,4 +1,4 @@
-﻿#pragma warning disable RS0030 // Do not use banned APIs: Guid == is required inside EF expression trees to mirror the production query shapes.
+#pragma warning disable RS0030 // Do not use banned APIs: Guid == is required inside EF expression trees to mirror the production query shapes.
 
 using System;
 using System.Linq;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Enums;
