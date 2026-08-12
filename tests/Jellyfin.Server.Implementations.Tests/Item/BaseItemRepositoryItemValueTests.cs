@@ -37,40 +37,12 @@ public sealed class BaseItemRepositoryItemValueTests : SqliteDbTestFixture
             IsFolder = false,
             IsVirtualItem = false
         };
-        var firstTag = new ItemValue
-        {
-            ItemValueId = Guid.NewGuid(),
-            Type = ItemValueType.Tags,
-            Value = "Alpha",
-            CleanValue = "alpha"
-        };
-        var duplicateTag = new ItemValue
-        {
-            ItemValueId = Guid.NewGuid(),
-            Type = ItemValueType.Tags,
-            Value = "alpha",
-            CleanValue = "alpha"
-        };
-        var secondTag = new ItemValue
-        {
-            ItemValueId = Guid.NewGuid(),
-            Type = ItemValueType.Tags,
-            Value = "Beta",
-            CleanValue = "beta"
-        };
         var genre = new ItemValue
         {
             ItemValueId = Guid.NewGuid(),
             Type = ItemValueType.Genre,
             Value = "Genre Leak",
             CleanValue = "genre leak"
-        };
-        var excludedTag = new ItemValue
-        {
-            ItemValueId = Guid.NewGuid(),
-            Type = ItemValueType.Tags,
-            Value = "Excluded Tag",
-            CleanValue = "excluded tag"
         };
         var excludedGenre = new ItemValue
         {
@@ -83,13 +55,14 @@ public sealed class BaseItemRepositoryItemValueTests : SqliteDbTestFixture
         using (var context = CreateDbContext())
         {
             context.BaseItems.AddRange(firstItem, secondItem, excludedItem);
-            context.ItemValues.AddRange(firstTag, duplicateTag, secondTag, genre, excludedTag, excludedGenre);
+            context.ItemValues.AddRange(genre, excludedGenre);
+            context.BaseItemTags.AddRange(
+                CreateTag(firstItem, "Alpha", "alpha"),
+                CreateTag(firstItem, "alpha", "alpha"),
+                CreateTag(secondItem, "Beta", "beta"),
+                CreateTag(excludedItem, "Excluded Tag", "excluded tag"));
             context.ItemValuesMap.AddRange(
-                CreateMap(firstItem, firstTag),
-                CreateMap(firstItem, duplicateTag),
-                CreateMap(secondItem, secondTag),
                 CreateMap(firstItem, genre),
-                CreateMap(excludedItem, excludedTag),
                 CreateMap(excludedItem, excludedGenre));
             context.SaveChanges();
         }
@@ -118,22 +91,18 @@ public sealed class BaseItemRepositoryItemValueTests : SqliteDbTestFixture
             IsFolder = false,
             IsVirtualItem = false
         };
-        var tag = CreateItemValue(ItemValueType.Tags, "Alpha", "alpha");
-        var duplicateTag = CreateItemValue(ItemValueType.Tags, "alpha", "alpha");
-        var otherTag = CreateItemValue(ItemValueType.Tags, "Beta", "beta");
         var genre = CreateItemValue(ItemValueType.Genre, "Genre Leak", "genre leak");
-        var excludedTag = CreateItemValue(ItemValueType.Tags, "Excluded Tag", "excluded tag");
 
         using (var context = CreateDbContext())
         {
             context.BaseItems.AddRange(movie, otherMovie, audio);
-            context.ItemValues.AddRange(tag, duplicateTag, otherTag, genre, excludedTag);
-            context.ItemValuesMap.AddRange(
-                CreateMap(movie, tag),
-                CreateMap(movie, duplicateTag),
-                CreateMap(otherMovie, otherTag),
-                CreateMap(movie, genre),
-                CreateMap(audio, excludedTag));
+            context.ItemValues.Add(genre);
+            context.BaseItemTags.AddRange(
+                CreateTag(movie, "Alpha", "alpha"),
+                CreateTag(movie, "alpha", "alpha"),
+                CreateTag(otherMovie, "Beta", "beta"),
+                CreateTag(audio, "Excluded Tag", "excluded tag"));
+            context.ItemValuesMap.Add(CreateMap(movie, genre));
             context.SaveChanges();
         }
 
@@ -189,6 +158,17 @@ public sealed class BaseItemRepositoryItemValueTests : SqliteDbTestFixture
             IsMovie = true,
             IsFolder = false,
             IsVirtualItem = false
+        };
+    }
+
+    private static BaseItemTag CreateTag(BaseItemEntity item, string value, string cleanValue)
+    {
+        return new BaseItemTag
+        {
+            ItemId = item.Id,
+            Item = item,
+            Value = value,
+            CleanValue = cleanValue
         };
     }
 

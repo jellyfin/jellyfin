@@ -170,6 +170,8 @@ public class BaseItemEntity
 
     public ICollection<ItemValueMap>? ItemValues { get; set; }
 
+    public ICollection<BaseItemTag>? ItemTags { get; set; }
+
     public ICollection<MediaStreamInfo>? MediaStreams { get; set; }
 
     public ICollection<Chapter>? Chapters { get; set; }
