@@ -1312,7 +1312,7 @@ namespace Emby.Server.Implementations.Library
             return CreateItemByName<MusicArtist>(MusicArtist.GetPath, name, options);
         }
 
-        private T CreateItemByName<T>(Func<string, string> getPathFn, string name, DtoOptions options)
+        private T CreateItemByName<T>(Func<string, string> getPathFn, string name, DtoOptions options, string? identitySuffix = null)
             where T : BaseItem, new()
         {
             if (typeof(T) == typeof(MusicArtist))
@@ -1334,7 +1334,8 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var path = getPathFn(name);
+            // Into the path only: the name stays what the entity is called, and the id follows the folder.
+            var path = getPathFn(name + identitySuffix);
             var id = GetItemByNameId<T>(path);
             var item = GetItemById(id) as T;
             if (item is null)
@@ -3593,12 +3594,13 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private Dictionary<Guid, Person> ResolvePeople(IReadOnlyList<PersonInfo> people)
+        private Dictionary<Guid, BaseItem> ResolvePeople(IReadOnlyList<PersonInfo> people)
         {
+            // Keyed by kind as well as name: an Artist and a Composer credit resolve to different items.
             // The ids are part of the key, because one name can be two humans on the same release.
-            var byCredit = new Dictionary<(string CleanName, string Ids), Person>();
-            var attempted = new HashSet<(string CleanName, string Ids)>();
-            var resolved = new Dictionary<Guid, Person>();
+            var byCredit = new Dictionary<(string CleanName, bool IsArtist, string Ids), BaseItem>();
+            var attempted = new HashSet<(string CleanName, bool IsArtist, string Ids)>();
+            var resolved = new Dictionary<Guid, BaseItem>();
 
             foreach (var person in people)
             {
@@ -3607,11 +3609,14 @@ namespace Emby.Server.Implementations.Library
                     continue;
                 }
 
-                var key = (person.Name.GetCleanValue(), GetProviderIdSignature(person.ProviderIds));
+                var isArtist = IsMusicArtistCredit(person.Type);
+                var key = (person.Name.GetCleanValue(), isArtist, GetProviderIdSignature(person.ProviderIds));
+
                 if (attempted.Add(key))
                 {
                     // The id identifies the human, the spelling only how this release wrote it down.
-                    var entity = FindPersonByProviderIds(person) ?? GetOrCreatePerson(person.Name, person.ProviderIds);
+                    var entity = FindByProviderIds(person, isArtist ? BaseItemKind.MusicArtist : BaseItemKind.Person)
+                        ?? GetOrCreateCreditItem(person.Name, person.Type, person.ProviderIds);
                     if (entity is not null)
                     {
                         byCredit[key] = entity;
@@ -3619,9 +3624,9 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
 
-                if (byCredit.TryGetValue(key, out var personEntity))
+                if (byCredit.TryGetValue(key, out var creditEntity))
                 {
-                    person.PersonItemId = personEntity.Id;
+                    person.PersonItemId = creditEntity.Id;
                 }
             }
 
@@ -3676,7 +3681,27 @@ namespace Emby.Server.Implementations.Library
             return conflict is null ? null : GetIdentitySuffix(conflict, providerIds[conflict]);
         }
 
-        private Person? FindPersonByProviderIds(PersonInfo person)
+        private static bool IsMusicArtistCredit(PersonKind kind)
+            => kind is PersonKind.Artist or PersonKind.AlbumArtist;
+
+        private MusicArtist? GetOrCreateArtist(string name, IReadOnlyDictionary<string, string>? providerIds)
+        {
+            try
+            {
+                return CreateItemByName<MusicArtist>(
+                    MusicArtist.GetPath,
+                    name,
+                    new DtoOptions(true),
+                    GetCreditIdentitySuffix(BaseItemKind.MusicArtist, name, providerIds));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to get or create artist {Name}", name);
+                return null;
+            }
+        }
+
+        private BaseItem? FindByProviderIds(PersonInfo person, BaseItemKind kind)
         {
             if (person.ProviderIds.Count == 0)
             {
@@ -3697,15 +3722,16 @@ namespace Emby.Server.Implementations.Library
                 return null;
             }
 
-            // Oldest first, so a library holding two people for one human resolves to a stable one.
+            // Scoped to the kind, because a provider key is not unique across types. Oldest first, so a
+            // library holding two entries for one human resolves to a stable one.
             return GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = [BaseItemKind.Person],
+                IncludeItemTypes = [kind],
                 HasAnyProviderId = providerIds,
                 OrderBy = [(ItemSortBy.DateCreated, SortOrder.Ascending)],
                 Limit = 1,
                 DtoOptions = new DtoOptions(true)
-            }).OfType<Person>().FirstOrDefault();
+            }).FirstOrDefault();
         }
 
         public async Task<ItemImageInfo> ConvertImageToLocal(BaseItem item, ItemImageInfo image, int imageIndex, bool removeOnFailure)
@@ -3841,15 +3867,28 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public IReadOnlyList<string> GetUnlinkedPeopleNames()
+        public IReadOnlyList<PersonInfo> GetUnlinkedCredits()
         {
-            return _peopleRepository.GetUnlinkedPeopleNames();
+            return _peopleRepository.GetUnlinkedCredits();
         }
 
         /// <inheritdoc />
-        public int LinkPeopleToItem(string name, Guid personItemId)
+        public int LinkCreditsToItem(string name, PersonKind kind, Guid itemId)
         {
-            return _peopleRepository.LinkPeopleToItem(name, personItemId);
+            return _peopleRepository.LinkCreditsToItem(name, kind, itemId);
+        }
+
+        /// <inheritdoc />
+        public BaseItem? GetOrCreateCreditItem(string name, PersonKind kind)
+        {
+            return GetOrCreateCreditItem(name, kind, null);
+        }
+
+        private BaseItem? GetOrCreateCreditItem(string name, PersonKind kind, IReadOnlyDictionary<string, string>? providerIds)
+        {
+            return IsMusicArtistCredit(kind)
+                ? GetOrCreateArtist(name, providerIds)
+                : GetOrCreatePerson(name, providerIds);
         }
 
         // Null when the person's folder cannot be created.
@@ -3880,7 +3919,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         private async Task SavePeopleMetadataAsync(
-            IReadOnlyDictionary<Guid, Person> personEntities,
+            IReadOnlyDictionary<Guid, BaseItem> personEntities,
             IReadOnlyList<PersonInfo> people,
             CancellationToken cancellationToken)
         {
