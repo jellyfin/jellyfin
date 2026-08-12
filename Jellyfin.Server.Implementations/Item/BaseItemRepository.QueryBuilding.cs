@@ -608,8 +608,8 @@ public sealed partial class BaseItemRepository
         if (filter.ExcludeInheritedTags.Length > 0)
         {
             var excludedTags = filter.ExcludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
-            var blockedTagItemIds = context.ItemValuesMap
-                .Where(f => f.ItemValue.Type == ItemValueType.Tags && excludedTags.Contains(f.ItemValue.CleanValue))
+            var blockedTagItemIds = context.BaseItemTags
+                .Where(f => excludedTags.Contains(f.CleanValue))
                 .Select(f => f.ItemId);
 
             baseQuery = baseQuery.Where(e =>
@@ -624,8 +624,8 @@ public sealed partial class BaseItemRepository
         {
             var includeTags = filter.IncludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
             var personTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
-            var allowedTagItemIds = context.ItemValuesMap
-                .Where(f => f.ItemValue.Type == ItemValueType.Tags && includeTags.Contains(f.ItemValue.CleanValue))
+            var allowedTagItemIds = context.BaseItemTags
+                .Where(f => includeTags.Contains(f.CleanValue))
                 .Select(f => f.ItemId);
 
             baseQuery = baseQuery.Where(e =>
