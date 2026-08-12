@@ -140,18 +140,13 @@ public class ItemCountService : IItemCountService
         IQueryable<BaseItemEntity> baseQuery;
         switch (kind)
         {
+            // Both the same: a credit points at its item, and the id already says which kind that is.
             case BaseItemKind.Person:
+            case BaseItemKind.MusicArtist:
                 baseQuery = ItemsById(context, context.PeopleBaseItemMap
                     .AsNoTracking()
-                    .Where(m => m.People.Name == item.Name)
+                    .Where(m => m.People.ItemId.Equals(id))
                     .Select(m => m.ItemId));
-                break;
-            case BaseItemKind.MusicArtist:
-                baseQuery = ItemsById(context, context.ItemValuesMap
-                    .AsNoTracking()
-                    .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
-                        && (ivm.ItemValue.Type == ItemValueType.Artist || ivm.ItemValue.Type == ItemValueType.AlbumArtist))
-                    .Select(ivm => ivm.ItemId));
                 break;
             case BaseItemKind.Genre:
             case BaseItemKind.MusicGenre:

@@ -546,11 +546,17 @@ public sealed partial class BaseItemRepository
             context.BaseItems.AsNoTracking(),
             new InternalItemsQuery(filter.User) { TopParentIds = topParentIds, IncludeOwnedItems = true });
 
-        var personType = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
-        if (itemByNameTypes.Contains(personType))
+        // People and artists are reached through the credits pointing at them.
+        foreach (var kind in _creditedByNameKinds)
         {
-            baseQuery = baseQuery.Where(e => e.Type != personType
-                || context.Peoples.Any(p => p.Name == e.Name
+            var typeName = _itemTypeLookup.BaseItemKindNames[kind];
+            if (!itemByNameTypes.Contains(typeName))
+            {
+                continue;
+            }
+
+            baseQuery = baseQuery.Where(e => e.Type != typeName
+                || context.Peoples.Any(p => p.ItemId.Equals(e.Id)
                     && context.PeopleBaseItemMap.Any(m => m.PeopleId == p.Id && accessibleItems.Any(i => i.Id == m.ItemId))));
         }
 

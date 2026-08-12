@@ -31,6 +31,10 @@ public sealed partial class BaseItemRepository
     private static readonly string TmdbProviderName = MetadataProvider.Tmdb.ToString().ToLowerInvariant();
     private static readonly string TvdbProviderName = MetadataProvider.Tvdb.ToString().ToLowerInvariant();
 
+    private static readonly string[] _artistCreditKinds = [nameof(PersonKind.Artist), nameof(PersonKind.AlbumArtist)];
+    private static readonly string[] _albumArtistCreditKinds = [nameof(PersonKind.AlbumArtist)];
+    private static readonly string[] _trackArtistCreditKinds = [nameof(PersonKind.Artist)];
+
     // A fresh expression per access: EF rejects a query tree that reuses one lambda parameter
     // instance across several lambdas, and this filter is combined into a tree more than once.
     private static Expression<Func<BaseItemEntity, bool>> IsFolderFilter => e => e.IsFolder;
@@ -67,6 +71,29 @@ public sealed partial class BaseItemRepository
             .Where(v => v.PrimaryVersionId != null)
             .Where(bound)
             .Select(v => v.PrimaryVersionId!.Value);
+
+    private static IQueryable<Guid> ArtistCreditIds(
+        JellyfinDbContext context,
+        IReadOnlyList<Guid> artistIds,
+        string[] kinds)
+        => context.Peoples
+            .WhereOneOrMany(artistIds, p => p.ItemId)
+            .Where(p => kinds.Contains(p.PersonType))
+            .Select(p => p.Id);
+
+    private static IQueryable<BaseItemEntity> WhereCreditedTo(
+        IQueryable<BaseItemEntity> baseQuery,
+        JellyfinDbContext context,
+        IReadOnlyList<Guid> artistIds,
+        string[] kinds,
+        bool invert = false)
+    {
+        var creditIds = ArtistCreditIds(context, artistIds, kinds);
+
+        return invert
+            ? baseQuery.Where(e => !context.PeopleBaseItemMap.Any(m => m.ItemId == e.Id && creditIds.Contains(m.PeopleId)))
+            : baseQuery.Where(e => context.PeopleBaseItemMap.Any(m => m.ItemId == e.Id && creditIds.Contains(m.PeopleId)));
+    }
 
     /// <inheritdoc />
     public IQueryable<BaseItemEntity> TranslateQuery(
@@ -611,28 +638,23 @@ public sealed partial class BaseItemRepository
 
         if (filter.ArtistIds.Length > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItem(context, [ItemValueType.Artist, ItemValueType.AlbumArtist], filter.ArtistIds);
+            baseQuery = WhereCreditedTo(baseQuery, context, filter.ArtistIds, _artistCreditKinds);
         }
 
         if (filter.AlbumArtistIds.Length > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.AlbumArtist, filter.AlbumArtistIds);
+            baseQuery = WhereCreditedTo(baseQuery, context, filter.AlbumArtistIds, _albumArtistCreditKinds);
         }
 
         if (filter.ContributingArtistIds.Length > 0)
         {
-            var contributingNames = context.BaseItems
-                .Where(b => filter.ContributingArtistIds.Contains(b.Id))
-                .Select(b => b.CleanName);
+            // Credited on the release but not filed under - the guest on someone else's record.
+            var trackCreditIds = ArtistCreditIds(context, filter.ContributingArtistIds, _trackArtistCreditKinds);
+            var albumCreditIds = ArtistCreditIds(context, filter.ContributingArtistIds, _albumArtistCreditKinds);
 
             baseQuery = baseQuery.Where(e =>
-                e.ItemValues!.Any(ivm =>
-                    ivm.ItemValue.Type == ItemValueType.Artist &&
-                    contributingNames.Contains(ivm.ItemValue.CleanValue))
-                &&
-                !e.ItemValues!.Any(ivm =>
-                    ivm.ItemValue.Type == ItemValueType.AlbumArtist &&
-                    contributingNames.Contains(ivm.ItemValue.CleanValue)));
+                context.PeopleBaseItemMap.Any(m => m.ItemId == e.Id && trackCreditIds.Contains(m.PeopleId))
+                && !context.PeopleBaseItemMap.Any(m => m.ItemId == e.Id && albumCreditIds.Contains(m.PeopleId)));
         }
 
         if (filter.AlbumIds.Length > 0)
@@ -642,7 +664,7 @@ public sealed partial class BaseItemRepository
 
         if (filter.ExcludeArtistIds.Length > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItem(context, [ItemValueType.Artist, ItemValueType.AlbumArtist], filter.ExcludeArtistIds, true);
+            baseQuery = WhereCreditedTo(baseQuery, context, filter.ExcludeArtistIds, _artistCreditKinds, true);
         }
 
         if (filter.GenreIds.Count > 0)
@@ -965,8 +987,9 @@ public sealed partial class BaseItemRepository
 
         if (filter.IsDeadArtist.HasValue && filter.IsDeadArtist.Value)
         {
+            // Keyed on the link, so a renamed artist is not deleted as dead by artist validation.
             baseQuery = baseQuery
-                    .Where(e => !context.ItemValues.Where(f => _getAllArtistsValueTypes.Contains(f.Type)).Any(f => f.Value == e.Name));
+                    .Where(e => !context.Peoples.Any(p => _artistCreditKinds.Contains(p.PersonType) && p.ItemId == e.Id));
         }
 
         if (filter.IsDeadStudio.HasValue && filter.IsDeadStudio.Value)
