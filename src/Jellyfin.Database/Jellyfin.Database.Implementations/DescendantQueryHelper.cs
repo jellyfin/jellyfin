@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -85,7 +85,6 @@ public static class DescendantQueryHelper
             .Distinct()
             .ToHashSet();
 
-        // The callers want only descendants, and an item is never its own descendant.
         descendants.ExceptWith(parentIds);
 
         return descendants;
@@ -122,16 +121,18 @@ public static class DescendantQueryHelper
 
         var linkParents = ResolveLinkParents(context, matchingItemIds, hierarchyAncestors);
 
-        // The link parents are resolved ids, so they are read back as a sub-select to keep the result
-        // composable. An id without a BaseItem row could never match a caller's row anyway.
-        var linkedParents = context.BaseItems
-            .WhereOneOrMany(linkParents, e => e.Id)
-            .Select(e => e.Id);
+        // Read back as a sub-select so the result stays composable. LinkedChildren is the cheapest
+        // source: owning a link is what put an id in the set, and ParentId is its leading key.
+        var linkedParents = context.LinkedChildren
+            .WhereOneOrMany(linkParents, e => e.ParentId)
+            .Select(e => e.ParentId);
 
         var linkedParentAncestors = context.AncestorIds
             .WhereOneOrMany(linkParents, e => e.ItemId)
             .Select(e => e.ParentItemId);
 
+        // The chain an item carries stops at its collection folders, so this hop crosses that seam to
+        // the UserRootFolder above them. One statement for both sides beats a sub-select per side.
         var seamAncestors = context.AncestorIds
             .Where(e => hierarchyAncestors.Contains(e.ItemId) || linkedParentAncestors.Contains(e.ItemId))
             .Select(e => e.ParentItemId);
@@ -173,17 +174,11 @@ public static class DescendantQueryHelper
         return direct.Concat(indirect);
     }
 
-    /// <summary>
-    /// Resolves every folder that reaches one of the matching items through a linked edge.
-    /// </summary>
-    /// <returns>The ids of the folders whose linked children lead, at any depth, to a matching item.</returns>
+    // Resolves the folders whose linked children lead, at any depth, to a matching item.
     private static List<Guid> ResolveLinkParents(JellyfinDbContext context, IQueryable<Guid> matchingItemIds, IQueryable<Guid> ancestorsOfMatches)
     {
-        // A link sits above the closure as well as above another link: a BoxSet holds a Series whose
-        // episode matches, and another BoxSet holds that BoxSet. So the hop repeats until it stops
-        // finding anything new, and each hop takes the links landing on the set itself or on a folder
-        // that contains it. Only folders owning linked children are ever collected, which bounds this
-        // by the number of BoxSets and Playlists rather than by the item count.
+        // A link sits above the closure and above another link alike, so the hop repeats until nothing
+        // new turns up. Only link owners are collected, which bounds it by BoxSets and Playlists.
         var resolved = context.LinkedChildren
             .Where(e => matchingItemIds.Contains(e.ChildId) || ancestorsOfMatches.Contains(e.ChildId))
             .Select(e => e.ParentId)
@@ -214,7 +209,7 @@ public static class DescendantQueryHelper
             frontier = [];
             foreach (var id in next)
             {
-                // Cyclic links (a BoxSet holding itself, directly or not) terminate on the resolved set.
+                // Cyclic links terminate on the resolved set.
                 if (resolved.Add(id))
                 {
                     frontier.Add(id);
@@ -225,16 +220,10 @@ public static class DescendantQueryHelper
         return [.. resolved];
     }
 
-    /// <summary>
-    /// Resolves the roots the descendant sub-selects have to be anchored on.
-    /// </summary>
-    /// <returns>
-    /// The roots whose AncestorIds closure belongs to the result, and the roots whose LinkedChildren
-    /// belong to the result.
-    /// </returns>
+    // Resolves the roots the descendant sub-selects are anchored on: those contributing their closure,
+    // and those contributing their linked children.
     private static (List<Guid> ClosureRoots, List<Guid> LinkRoots) ResolveLinkedRoots(JellyfinDbContext context, Guid parentId)
     {
-        // A folder found through the closure needs no closure hop of its own.
         var closureRoots = new List<Guid> { parentId };
         var linkRoots = new List<Guid> { parentId };
         var visited = new HashSet<Guid> { parentId };
@@ -248,18 +237,20 @@ public static class DescendantQueryHelper
                 .WhereOneOrMany(frontier, e => e.ParentId)
                 .Select(e => e.ChildId);
 
-            // Folders that own linked children, i.e. the only items whose links are worth following.
-            var linkOwners = context.BaseItems
-                .Where(e => e.IsFolder
-                    && (closureIds.Contains(e.Id) || linkedIds.Contains(e.Id))
-                    && context.LinkedChildren.Any(l => l.ParentId.Equals(e.Id)))
-                .Select(e => e.Id)
-                .ToArray();
-
             var linkedFolders = context.BaseItems
                 .Where(e => e.IsFolder && linkedIds.Contains(e.Id))
                 .Select(e => e.Id)
                 .ToHashSet();
+
+            // Folders whose own links have to be followed. Driven off LinkedChildren because owning a
+            // link is the rare property, so the folder check only reaches rows that can qualify. That
+            // check stays: a non-folder owns links too (a movie and its alternate versions).
+            var linkOwners = context.LinkedChildren
+                .Where(e => (closureIds.Contains(e.ParentId) || linkedIds.Contains(e.ParentId))
+                    && e.Parent!.IsFolder)
+                .Select(e => e.ParentId)
+                .Distinct()
+                .ToArray();
 
             frontier = [];
             foreach (var id in linkOwners.Concat(linkedFolders))
@@ -272,8 +263,7 @@ public static class DescendantQueryHelper
                 frontier.Add(id);
                 linkRoots.Add(id);
 
-                // Only a folder reached through a link contributes a closure that is not covered by
-                // the roots already collected.
+                // Only a folder reached through a link adds a closure the roots so far do not cover.
                 if (linkedFolders.Contains(id))
                 {
                     closureRoots.Add(id);
