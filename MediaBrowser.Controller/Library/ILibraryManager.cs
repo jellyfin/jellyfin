@@ -138,10 +138,17 @@ namespace MediaBrowser.Controller.Library
 
         /// <summary>
         /// Resolves the genres and studios the given items name to the by-name items they belong to,
-        /// creating the ones the library does not hold yet. Has to run before saving them.
+        /// creating the ones the library does not hold yet. Has to run before saving the items.
         /// </summary>
         /// <param name="items">The items to resolve.</param>
         void ResolveItemByNameLinks(IReadOnlyList<BaseItem> items);
+
+        /// <summary>
+        /// Gets the genre and studio items the given items link to.
+        /// </summary>
+        /// <param name="itemIds">The items to look up.</param>
+        /// <returns>The links, keyed by item id. Items with no links are absent.</returns>
+        IReadOnlyDictionary<Guid, ItemByNameLinks> GetItemByNameLinks(IReadOnlyList<Guid> itemIds);
 
         /// <summary>
         /// Finds the by path.

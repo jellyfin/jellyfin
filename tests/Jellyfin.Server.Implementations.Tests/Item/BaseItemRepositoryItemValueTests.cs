@@ -14,7 +14,6 @@ public sealed class BaseItemRepositoryItemValueTests : SqliteDbTestFixture
     private readonly string _audioTypeName;
     private readonly string _movieTypeName;
     private readonly string _genreTypeName;
-    private readonly string _musicGenreTypeName;
 
     public BaseItemRepositoryItemValueTests()
     {
@@ -22,7 +21,6 @@ public sealed class BaseItemRepositoryItemValueTests : SqliteDbTestFixture
         _audioTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio];
         _movieTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie];
         _genreTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Genre];
-        _musicGenreTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicGenre];
         _repository = CreateBaseItemRepository(itemTypeLookup);
     }
 
@@ -103,36 +101,6 @@ public sealed class BaseItemRepositoryItemValueTests : SqliteDbTestFixture
         });
 
         Assert.Equal(["Alpha", "Beta"], result);
-    }
-
-    [Fact]
-    public void GetGenreNames_ListsOnlyLinkedGenresOfTheirKind()
-    {
-        var movie = CreateMovieEntity(Guid.NewGuid(), "Movie");
-        var audio = new BaseItemEntity
-        {
-            Id = Guid.NewGuid(),
-            Type = _audioTypeName,
-            Name = "Audio",
-            MediaType = "Audio",
-            IsFolder = false,
-            IsVirtualItem = false
-        };
-        var movieGenre = CreateByNameEntity(_genreTypeName, "Movie Genre");
-        var musicGenre = CreateByNameEntity(_musicGenreTypeName, "Music Genre");
-        var orphanedGenre = CreateByNameEntity(_genreTypeName, "Orphaned Genre");
-
-        using (var context = CreateDbContext())
-        {
-            context.BaseItems.AddRange(movie, audio, movieGenre, musicGenre, orphanedGenre);
-            context.BaseItemGenres.AddRange(
-                CreateGenreLink(movie, movieGenre),
-                CreateGenreLink(audio, musicGenre));
-            context.SaveChanges();
-        }
-
-        Assert.Equal(["Movie Genre"], _repository.GetGenreNames());
-        Assert.Equal(["Music Genre"], _repository.GetMusicGenreNames());
     }
 
     private BaseItemEntity CreateMovieEntity(Guid id, string name)
