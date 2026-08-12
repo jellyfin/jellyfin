@@ -1,5 +1,6 @@
 using System;
 using Emby.Server.Implementations.Library;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Model.Entities;
 using Xunit;
 
@@ -114,5 +115,64 @@ public class MediaStreamSelectorTests
         var languagePref = new[] { "eng", "fre" };
 
         Assert.Equal(expectedScore, MediaStreamSelector.GetStreamScore(stream, languagePref));
+    }
+
+    [Theory]
+    [InlineData(new[] { "eng", "swe" }, 2)] // eng preferred when both present
+    [InlineData(new[] { "swe", "eng" }, 1)] // swe preferred when both present
+    public void GetDefaultSubtitleStreamIndex_Always_PrefersEarlierLanguage(
+        string[] preferredLanguages,
+        int expectedIndex)
+    {
+        var streams = new MediaStream[]
+        {
+            new() { Index = 0, Type = MediaStreamType.Video },
+            new() { Index = 1, Type = MediaStreamType.Subtitle, Language = "swe", IsForced = false },
+            new() { Index = 2, Type = MediaStreamType.Subtitle, Language = "eng", IsForced = false },
+        };
+
+        Assert.Equal(
+            expectedIndex,
+            MediaStreamSelector.GetDefaultSubtitleStreamIndex(
+                streams,
+                preferredLanguages,
+                SubtitlePlaybackMode.Always,
+                "jpn"));
+    }
+
+    [Fact]
+    public void GetDefaultSubtitleStreamIndex_Always_FallsBackWhenPreferredMissing()
+    {
+        var streams = new MediaStream[]
+        {
+            new() { Index = 0, Type = MediaStreamType.Video },
+            new() { Index = 1, Type = MediaStreamType.Subtitle, Language = "swe", IsForced = false },
+        };
+
+        Assert.Equal(
+            1,
+            MediaStreamSelector.GetDefaultSubtitleStreamIndex(
+                streams,
+                new[] { "eng", "swe" },
+                SubtitlePlaybackMode.Always,
+                "jpn"));
+    }
+
+    [Fact]
+    public void GetDefaultSubtitleStreamIndex_Smart_FallsBackWhenPreferredMissing()
+    {
+        var streams = new MediaStream[]
+        {
+            new() { Index = 0, Type = MediaStreamType.Video },
+            new() { Index = 1, Type = MediaStreamType.Subtitle, Language = "swe", IsForced = false },
+        };
+
+        Assert.Equal(
+            1,
+            MediaStreamSelector.GetDefaultSubtitleStreamIndex(
+                streams,
+                new[] { "eng", "swe" },
+                SubtitlePlaybackMode.Smart,
+                "jpn"));
     }
 }

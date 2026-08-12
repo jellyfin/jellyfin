@@ -60,11 +60,14 @@ namespace Emby.Server.Implementations.Library
             else if (mode == SubtitlePlaybackMode.Smart)
             {
                 // Only attempt to load subtitles if the audio language is not one of the user's preferred subtitle languages.
+                // Prefer earlier entries in the preference list (e.g. eng before swe in "eng,swe").
                 // If no subtitles of preferred language available, use none.
                 // If the audio language is one of the user's preferred subtitle languages behave like OnlyForced.
                 if (!preferredLanguages.Contains(audioTrackLanguage, StringComparison.OrdinalIgnoreCase))
                 {
-                    stream = sortedStreams.FirstOrDefault(x => MatchesPreferredLanguage(x.Language, preferredLanguages));
+                    stream = PreferPreferredLanguageOrder(
+                        sortedStreams.Where(x => MatchesPreferredLanguage(x.Language, preferredLanguages)),
+                        preferredLanguages);
                 }
                 else
                 {
@@ -73,9 +76,12 @@ namespace Emby.Server.Implementations.Library
             }
             else if (mode == SubtitlePlaybackMode.Always)
             {
-                // Always load (full/non-forced) subtitles of the user's preferred subtitle language if possible, otherwise OnlyForced behaviour.
-                stream = sortedStreams.FirstOrDefault(x => !x.IsForced && MatchesPreferredLanguage(x.Language, preferredLanguages)) ??
-                    BehaviorOnlyForced(sortedStreams, preferredLanguages).FirstOrDefault();
+                // Always load (full/non-forced) subtitles of the user's preferred subtitle language(s) if possible,
+                // preferring earlier languages in the list, otherwise OnlyForced behaviour.
+                stream = PreferPreferredLanguageOrder(
+                        sortedStreams.Where(x => !x.IsForced && MatchesPreferredLanguage(x.Language, preferredLanguages)),
+                        preferredLanguages)
+                    ?? BehaviorOnlyForced(sortedStreams, preferredLanguages).FirstOrDefault();
             }
             else if (mode == SubtitlePlaybackMode.OnlyForced)
             {
@@ -149,6 +155,23 @@ namespace Emby.Server.Implementations.Library
             {
                 stream.Score = GetStreamScore(stream, preferredLanguages);
             }
+        }
+
+        private static MediaStream? PreferPreferredLanguageOrder(
+            IEnumerable<MediaStream> candidates,
+            IReadOnlyList<string> preferredLanguages)
+        {
+            // Lower index in preferredLanguages = higher priority (Emby-style "swe,eng" chains).
+            return candidates
+                .OrderBy(s =>
+                {
+                    var index = preferredLanguages.FindIndex(
+                        x => string.Equals(x, s.Language, StringComparison.OrdinalIgnoreCase));
+                    return index == -1 ? int.MaxValue : index;
+                })
+                .ThenByDescending(s => s.IsExternal)
+                .ThenByDescending(s => s.IsDefault)
+                .FirstOrDefault();
         }
 
         private static bool MatchesPreferredLanguage(string language, IReadOnlyList<string> preferredLanguages)

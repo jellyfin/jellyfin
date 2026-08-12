@@ -381,13 +381,42 @@ namespace Emby.Server.Implementations.Library
                 return [];
             }
 
-            var culture = _localizationManager.FindLanguageInfo(language);
-            if (culture is not null)
+            // Emby-compatible priority list: "eng,swe" / "swe,eng" (comma or semicolon).
+            // Earlier languages win when choosing a default subtitle/audio stream.
+            var parts = language.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (parts.Length == 0)
             {
-                return culture.Name.Contains('-', StringComparison.OrdinalIgnoreCase) ? [culture.Name] : culture.ThreeLetterISOLanguageNames;
+                return [];
             }
 
-            return [language];
+            var result = new List<string>(parts.Length * 2);
+            foreach (var part in parts)
+            {
+                var culture = _localizationManager.FindLanguageInfo(part);
+                if (culture is not null)
+                {
+                    if (culture.Name.Contains('-', StringComparison.OrdinalIgnoreCase))
+                    {
+                        result.Add(culture.Name);
+                    }
+                    else
+                    {
+                        foreach (var iso in culture.ThreeLetterISOLanguageNames)
+                        {
+                            if (!result.Contains(iso, StringComparison.OrdinalIgnoreCase))
+                            {
+                                result.Add(iso);
+                            }
+                        }
+                    }
+                }
+                else if (!result.Contains(part, StringComparison.OrdinalIgnoreCase))
+                {
+                    result.Add(part);
+                }
+            }
+
+            return result;
         }
 
         private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
