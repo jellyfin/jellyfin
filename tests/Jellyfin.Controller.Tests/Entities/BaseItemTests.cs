@@ -28,6 +28,35 @@ namespace Jellyfin.Controller.Tests.Entities;
 public class BaseItemTests
 {
     [Theory]
+    [InlineData(null, false)]
+    [InlineData(200L, false)]
+    [InlineData(100L, true)]
+    public void RequiresRefresh_FileSizeWithSameModificationDate_ReturnsExpected(long? itemSize, bool expected)
+    {
+        const string TestPath = "/media/movie.mkv";
+        var lastWriteTime = new DateTime(2026, 8, 7, 0, 0, 0, DateTimeKind.Utc);
+        var fileSystem = new Mock<IFileSystem>();
+        fileSystem.Setup(x => x.GetFileSystemInfo(TestPath))
+            .Returns(new FileSystemMetadata
+            {
+                Exists = true,
+                IsDirectory = false,
+                LastWriteTimeUtc = lastWriteTime,
+                Length = 200
+            });
+        BaseItem.FileSystem = fileSystem.Object;
+
+        var item = new Video
+        {
+            Path = TestPath,
+            DateModified = lastWriteTime,
+            Size = itemSize
+        };
+
+        Assert.Equal(expected, item.RequiresRefresh());
+    }
+
+    [Theory]
     [InlineData("", "")]
     [InlineData("1", "0000000001")]
     [InlineData("t", "t")]
