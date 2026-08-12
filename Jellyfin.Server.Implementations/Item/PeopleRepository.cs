@@ -46,18 +46,15 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         }
         else
         {
-            // The Peoples table has one row per (Name, PersonType), so the same person can
-            // appear multiple times (e.g. as Actor and GuestStar). Collapse to one row per
-            // name so /Persons doesn't return the same BaseItem id repeatedly, keeping the
-            // lowest id per lowercased name so case-only duplicates collapse together.
+            // Collapsed on the person item, because /Persons lists people rather than spellings.
             var candidates = dbQuery;
             dbQuery = candidates
-                .Where(p => !candidates.Any(other => other.Name.ToLower() == p.Name.ToLower() && other.Id < p.Id))
-                .OrderBy(e => e.Name.ToLower());
+                .Where(p => !candidates.Any(other => other.ItemId == p.ItemId && other.Id < p.Id))
+                .OrderBy(e => e.CleanName);
 
             if (filter.EnableTotalRecordCount)
             {
-                distinctNameCount = candidates.Select(e => e.Name.ToLower()).Distinct().Count();
+                distinctNameCount = candidates.Select(e => e.ItemId).Distinct().Count();
             }
         }
 
@@ -117,59 +114,75 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             person.Role = person.Role?.Trim() ?? string.Empty;
         }
 
-        // Project the values every comparison below needs once, so neither the case folding nor the
-        // enum formatting is repeated per candidate.
-        var credits = people.Select(e => (Person: e, LoweredName: e.Name.ToLowerInvariant(), PersonType: e.Type.ToString(), LoweredRole: e.Role.ToLowerInvariant()));
+        // Projected once so neither the normalisation nor the enum formatting repeats per candidate.
+        // The resolved item is part of the identity: one name can be two people, and each owns a row.
+        var credits = people.Select(e => (
+            Person: e,
+            ItemId: e.PersonItemId,
+            CleanName: e.Name.GetCleanValue(),
+            PersonType: e.Type.ToString(),
+            LoweredRole: e.Role.ToLowerInvariant()));
 
-        // multiple metadata providers can provide the _same_ credit; dedupe case-insensitively.
+        // multiple metadata providers can provide the _same_ credit; dedupe on the clean name.
         // The role is part of the key because one person can hold several credits of the same type
         // on an item, e.g. a Writer credited for both the Novel and the Screenplay.
-        var distinctCredits = credits.DistinctBy(e => (e.LoweredName, e.PersonType, e.LoweredRole)).ToArray();
+        var distinctCredits = credits.DistinctBy(e => (e.ItemId, e.CleanName, e.PersonType, e.LoweredRole)).ToArray();
 
-        var distinctPersons = distinctCredits.DistinctBy(e => (e.LoweredName, e.PersonType)).ToArray();
-        var personKeys = distinctPersons.Select(e => e.LoweredName + "-" + e.PersonType).ToArray();
+        var distinctPersons = distinctCredits.DistinctBy(e => (e.ItemId, e.CleanName, e.PersonType)).ToArray();
+        var cleanNames = distinctPersons.Select(e => e.CleanName).ToArray();
 
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
-        var existingPersons = context.Peoples.Select(e => new
+        var existingPersons = context.Peoples
+            .Where(p => cleanNames.Contains(p.CleanName))
+            .ToArray();
+
+        // This person's row, or one still waiting for an item, which a resolved credit adopts.
+        People? MatchRow((Guid ItemId, string CleanName, string PersonType) credit)
         {
-            item = e,
-            SelectionKey = e.Name.ToLower() + "-" + e.PersonType
-        })
-            .Where(p => personKeys.Contains(p.SelectionKey))
-            .Select(f => f.item)
-            .ToArray();
+            var named = existingPersons.Where(e =>
+                string.Equals(e.CleanName, credit.CleanName, StringComparison.Ordinal)
+                && string.Equals(e.PersonType ?? string.Empty, credit.PersonType, StringComparison.Ordinal));
 
-        var existingPersonKeys = existingPersons.Select(e => (e.Name.ToLowerInvariant(), e.PersonType ?? string.Empty)).ToHashSet();
+            return named.FirstOrDefault(e => e.ItemId.Equals(credit.ItemId))
+                ?? (credit.ItemId.IsEmpty() ? null : named.FirstOrDefault(e => e.ItemId.IsEmpty()));
+        }
 
-        var toAdd = distinctPersons
-            .Where(e => !existingPersonKeys.Contains((e.LoweredName, e.PersonType)))
-            .Select(e => Map(e.Person))
-            .ToArray();
+        var personsEntities = new Dictionary<(Guid ItemId, string CleanName, string PersonType), People>();
+        var toAdd = new List<People>();
+        foreach (var person in distinctPersons)
+        {
+            var key = (person.ItemId, person.CleanName, person.PersonType);
+            var row = MatchRow(key);
+            if (row is null)
+            {
+                row = Map(person.Person);
+                toAdd.Add(row);
+            }
+            else if (row.ItemId.IsEmpty())
+            {
+                row.ItemId = person.ItemId;
+            }
+
+            personsEntities[key] = row;
+        }
+
         context.Peoples.AddRange(toAdd);
         context.SaveChanges();
 
-        // The Peoples table can hold case-only duplicates, so keep the first match per key just as
-        // the previous First() lookup did.
-        var personsEntities = new Dictionary<(string LoweredName, string PersonType), People>();
-        foreach (var entity in toAdd.Concat(existingPersons))
-        {
-            personsEntities.TryAdd((entity.Name.ToLowerInvariant(), entity.PersonType ?? string.Empty), entity);
-        }
-
         var existingMaps = context.PeopleBaseItemMap.Include(e => e.People).Where(e => e.ItemId == itemId).ToList();
-        var existingMapsByCredit = new Dictionary<(string LoweredName, string PersonType, string LoweredRole), PeopleBaseItemMap>();
+        var existingMapsByCredit = new Dictionary<(Guid PeopleId, string LoweredRole), PeopleBaseItemMap>();
         foreach (var map in existingMaps)
         {
-            existingMapsByCredit.TryAdd((map.People.Name.ToLowerInvariant(), map.People.PersonType ?? string.Empty, map.Role?.ToLowerInvariant() ?? string.Empty), map);
+            existingMapsByCredit.TryAdd((map.PeopleId, map.Role?.ToLowerInvariant() ?? string.Empty), map);
         }
 
         var listOrder = 0;
 
         foreach (var credit in distinctCredits)
         {
-            var entityPerson = personsEntities[(credit.LoweredName, credit.PersonType)];
-            if (existingMapsByCredit.TryGetValue((credit.LoweredName, credit.PersonType, credit.LoweredRole), out var existingMap))
+            var entityPerson = personsEntities[(credit.ItemId, credit.CleanName, credit.PersonType)];
+            if (existingMapsByCredit.TryGetValue((entityPerson.Id, credit.LoweredRole), out var existingMap))
             {
                 // Update the order for existing mappings
                 existingMap.ListOrder = listOrder;
@@ -198,6 +211,31 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         context.SaveChanges();
         transaction.Commit();
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<string> GetUnlinkedPeopleNames()
+    {
+        using var context = _dbProvider.CreateDbContext();
+
+        return context.Peoples
+            .AsNoTracking()
+            .Where(p => !context.BaseItems.Any(b => b.Id == p.ItemId))
+            .Select(p => p.Name)
+            .Distinct()
+            .ToArray();
+    }
+
+    /// <inheritdoc/>
+    public int LinkPeopleToItem(string name, Guid personItemId)
+    {
+        var cleanName = name.GetCleanValue();
+
+        using var context = _dbProvider.CreateDbContext();
+
+        return context.Peoples
+            .Where(p => p.CleanName == cleanName && !context.BaseItems.Any(b => b.Id == p.ItemId))
+            .ExecuteUpdate(s => s.SetProperty(p => p.ItemId, personItemId));
     }
 
     /// <inheritdoc/>
@@ -250,6 +288,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                 m.Role,
                 m.SortOrder,
                 m.People.Id,
+                PersonItemId = m.People.ItemId,
                 m.People.Name,
                 m.People.PersonType
             })
@@ -265,6 +304,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                 {
                     ItemId = row.ItemId,
                     Id = row.Id,
+                    PersonItemId = row.PersonItemId,
                     Name = row.Name,
                     Role = row.Role,
                     SortOrder = row.SortOrder
@@ -299,6 +339,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         var personInfo = new PersonInfo()
         {
             Id = people.Id,
+            PersonItemId = people.ItemId,
             Name = people.Name,
             Role = mapping?.Role,
             SortOrder = mapping?.SortOrder
@@ -316,6 +357,8 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         var personInfo = new People()
         {
             Name = people.Name,
+            CleanName = people.Name.GetCleanValue(),
+            ItemId = people.PersonItemId,
             PersonType = people.Type.ToString(),
             Id = people.Id,
         };
@@ -334,11 +377,11 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                 .Where(u => u.UserId.Equals(userId) && u.IsFavorite == isFavorite)
                 .Select(u => u.ItemId);
 
-            var favoriteNames = context.BaseItems
+            var favoritePersonIds = context.BaseItems
                 .Where(b => b.Type == personType && favoriteItemIds.Contains(b.Id))
-                .Select(b => b.Name);
+                .Select(b => b.Id);
 
-            query = query.Where(e => favoriteNames.Contains(e.Name));
+            query = query.Where(e => favoritePersonIds.Contains(e.ItemId));
         }
 
         if (filter.AccessFilter is not null)
@@ -382,25 +425,28 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             query = query.Where(e => e.BaseItems!.Any(w => w.ItemId == filter.ItemId && w.ListOrder <= filter.MaxListOrder.Value));
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.NameContains))
+        var cleanNameContains = filter.NameContains?.GetCleanValue();
+        if (!string.IsNullOrEmpty(cleanNameContains))
         {
-            var nameContainsUpper = filter.NameContains.ToUpper();
-            query = query.Where(e => e.Name.ToUpper().Contains(nameContainsUpper));
+            query = query.Where(e => e.CleanName.Contains(cleanNameContains));
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
+        var cleanNameStartsWith = filter.NameStartsWith?.GetCleanValue();
+        if (!string.IsNullOrEmpty(cleanNameStartsWith))
         {
-            query = query.Where(e => e.Name.StartsWith(filter.NameStartsWith.ToLowerInvariant()));
+            query = query.Where(e => e.CleanName.StartsWith(cleanNameStartsWith));
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.NameLessThan))
+        var cleanNameLessThan = filter.NameLessThan?.GetCleanValue();
+        if (!string.IsNullOrEmpty(cleanNameLessThan))
         {
-            query = query.Where(e => e.Name.CompareTo(filter.NameLessThan.ToLowerInvariant()) < 0);
+            query = query.Where(e => e.CleanName.CompareTo(cleanNameLessThan) < 0);
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.NameStartsWithOrGreater))
+        var cleanNameStartsWithOrGreater = filter.NameStartsWithOrGreater?.GetCleanValue();
+        if (!string.IsNullOrEmpty(cleanNameStartsWithOrGreater))
         {
-            query = query.Where(e => e.Name.CompareTo(filter.NameStartsWithOrGreater.ToLowerInvariant()) >= 0);
+            query = query.Where(e => e.CleanName.CompareTo(cleanNameStartsWithOrGreater) >= 0);
         }
 
         return query;
