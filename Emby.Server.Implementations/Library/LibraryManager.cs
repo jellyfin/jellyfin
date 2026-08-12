@@ -1573,8 +1573,6 @@ namespace Emby.Server.Implementations.Library
                 Math.Truncate(phaseElapsed.TotalMinutes),
                 phaseElapsed.Seconds);
 
-            _persistenceService.UpdateInheritedValues();
-
             progress.Report(100);
         }
 

@@ -121,19 +121,17 @@ public sealed class BaseItemRepositoryItemValueTests : SqliteDbTestFixture
         var tag = CreateItemValue(ItemValueType.Tags, "Alpha", "alpha");
         var duplicateTag = CreateItemValue(ItemValueType.Tags, "alpha", "alpha");
         var otherTag = CreateItemValue(ItemValueType.Tags, "Beta", "beta");
-        var inheritedTag = CreateItemValue(ItemValueType.InheritedTags, "Inherited", "inherited");
         var genre = CreateItemValue(ItemValueType.Genre, "Genre Leak", "genre leak");
         var excludedTag = CreateItemValue(ItemValueType.Tags, "Excluded Tag", "excluded tag");
 
         using (var context = CreateDbContext())
         {
             context.BaseItems.AddRange(movie, otherMovie, audio);
-            context.ItemValues.AddRange(tag, duplicateTag, otherTag, inheritedTag, genre, excludedTag);
+            context.ItemValues.AddRange(tag, duplicateTag, otherTag, genre, excludedTag);
             context.ItemValuesMap.AddRange(
                 CreateMap(movie, tag),
                 CreateMap(movie, duplicateTag),
                 CreateMap(otherMovie, otherTag),
-                CreateMap(movie, inheritedTag),
                 CreateMap(movie, genre),
                 CreateMap(audio, excludedTag));
             context.SaveChanges();
