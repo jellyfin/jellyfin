@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -103,22 +104,11 @@ public interface IItemRepository
     QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery filter);
 
     /// <summary>
-    /// Gets all music genre names.
+    /// Gets the genre and studio items the given items link to.
     /// </summary>
-    /// <returns>The list of music genre names.</returns>
-    IReadOnlyList<string> GetMusicGenreNames();
-
-    /// <summary>
-    /// Gets all studio names.
-    /// </summary>
-    /// <returns>The list of studio names.</returns>
-    IReadOnlyList<string> GetStudioNames();
-
-    /// <summary>
-    /// Gets all genre names.
-    /// </summary>
-    /// <returns>The list of genre names.</returns>
-    IReadOnlyList<string> GetGenreNames();
+    /// <param name="itemIds">The items to look up.</param>
+    /// <returns>The links, keyed by item id. Items with no links are absent.</returns>
+    IReadOnlyDictionary<Guid, ItemByNameLinks> GetItemByNameLinks(IReadOnlyList<Guid> itemIds);
 
     /// <summary>
     /// Gets all language codes of the matching base items and the provided stream type.

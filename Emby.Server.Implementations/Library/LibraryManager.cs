@@ -1219,8 +1219,7 @@ namespace Emby.Server.Implementations.Library
                 return item;
             }
 
-            // The id is a hash of the name as written, so a different spelling hashes elsewhere.
-            // Fall back to the clean name that everything else identifies a person by.
+            // The id hashes the name as written, so a different spelling hashes elsewhere.
             return GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = [BaseItemKind.Person],
@@ -1314,27 +1313,34 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
+        public IReadOnlyDictionary<Guid, ItemByNameLinks> GetItemByNameLinks(IReadOnlyList<Guid> itemIds)
+        {
+            return _itemRepository.GetItemByNameLinks(itemIds);
+        }
+
+        /// <inheritdoc />
         public void ResolveItemByNameLinks(IReadOnlyList<BaseItem> items)
         {
             ArgumentNullException.ThrowIfNull(items);
 
-            // Distinct genres and studios are far fewer than the items naming them, and a miss
-            // creates a folder and an item.
-            var genreIds = new Dictionary<(string Name, bool IsMusic), Guid>();
+            // Keyed on the clean name, so two spellings stay one genre.
+            var genreIds = new Dictionary<(string CleanName, bool IsMusic), Guid>();
             var studioIds = new Dictionary<string, Guid>(StringComparer.Ordinal);
+            var learned = new List<BaseItem>();
 
             foreach (var item in items)
             {
-                // Which kind of genre item a name belongs to follows from what is naming it, as in
-                // DtoService.GetGenreId.
                 var isMusic = item is IHasMusicGenres;
+                var genreInfos = ByName(item.GenreInfos);
+                var studioInfos = ByName(item.StudioInfos);
 
                 item.GenreItemIds = ResolveByNameIds(item.Genres, name =>
                 {
-                    var key = (name, isMusic);
+                    var key = (name.GetCleanValue(), isMusic);
                     if (!genreIds.TryGetValue(key, out var id))
                     {
-                        id = GetItemByNameIdOrEmpty(() => isMusic ? GetMusicGenre(name) : GetGenre(name), "genre", name);
+                        var kind = isMusic ? BaseItemKind.MusicGenre : BaseItemKind.Genre;
+                        id = ResolveByNameItem(kind, name, genreInfos.GetValueOrDefault(name), learned);
                         genreIds[key] = id;
                     }
 
@@ -1343,15 +1349,41 @@ namespace Emby.Server.Implementations.Library
 
                 item.StudioItemIds = ResolveByNameIds(item.Studios, name =>
                 {
-                    if (!studioIds.TryGetValue(name, out var id))
+                    var key = name.GetCleanValue();
+                    if (!studioIds.TryGetValue(key, out var id))
                     {
-                        id = GetItemByNameIdOrEmpty(() => GetStudio(name), "studio", name);
-                        studioIds[name] = id;
+                        id = ResolveByNameItem(BaseItemKind.Studio, name, studioInfos.GetValueOrDefault(name), learned);
+                        studioIds[key] = id;
                     }
 
                     return id;
                 });
             }
+
+            // Saved directly, because CreateItems raises ItemAdded for an item that already exists.
+            if (learned.Count > 0)
+            {
+                _persistenceService.SaveItems(learned, CancellationToken.None);
+            }
+        }
+
+        private static Dictionary<string, ItemByNameInfo> ByName(IReadOnlyList<ItemByNameInfo> infos)
+        {
+            if (infos is null || infos.Count == 0)
+            {
+                return [];
+            }
+
+            var byName = new Dictionary<string, ItemByNameInfo>(infos.Count, StringComparer.OrdinalIgnoreCase);
+            foreach (var info in infos)
+            {
+                if (info?.Name is not null)
+                {
+                    byName[info.Name] = info;
+                }
+            }
+
+            return byName;
         }
 
         private static IReadOnlyList<Guid> ResolveByNameIds(string[] names, Func<string, Guid> resolve)
@@ -1379,18 +1411,86 @@ namespace Emby.Server.Implementations.Library
             return ids;
         }
 
-        // Empty leaves that one name unlinked rather than failing the whole save.
-        private Guid GetItemByNameIdOrEmpty(Func<BaseItem> getOrCreate, string kind, string name)
+        private Guid ResolveByNameItem(BaseItemKind kind, string name, ItemByNameInfo? info, List<BaseItem> learned)
         {
             try
             {
-                return getOrCreate().Id;
+                // Clean name before creating one: a new item takes its id from the spelling and would
+                // split a genre the library already holds.
+                var item = FindByProviderIds(info?.ProviderIds, kind);
+                if (item is null)
+                {
+                    var named = FindByCleanName(kind, name);
+                    item = named.FirstOrDefault(e => e.FindConflictingProvider(info?.ProviderIds) is null);
+                    if (item is null)
+                    {
+                        // Every item of this name belongs to something else, so file this one under its own id.
+                        var conflict = named.Count == 0 ? null : named[0].FindConflictingProvider(info!.ProviderIds);
+                        item = GetOrCreateByNameItem(
+                            kind,
+                            name,
+                            conflict is null ? null : GetIdentitySuffix(conflict, info!.ProviderIds[conflict]));
+                    }
+                }
+
+                if (item is null)
+                {
+                    return Guid.Empty;
+                }
+
+                if (LearnProviderIds(item, info))
+                {
+                    learned.Add(item);
+                }
+
+                return item.Id;
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed to get or create {Kind} {Name}", kind, name);
                 return Guid.Empty;
             }
+        }
+
+        private BaseItem GetOrCreateByNameItem(BaseItemKind kind, string name, string? identitySuffix)
+        {
+            var options = new DtoOptions(true);
+            return kind switch
+            {
+                BaseItemKind.Studio => CreateItemByName<Studio>(Studio.GetPath, name, options, identitySuffix),
+                BaseItemKind.MusicGenre => CreateItemByName<MusicGenre>(MusicGenre.GetPath, name, options, identitySuffix),
+                _ => CreateItemByName<Genre>(Genre.GetPath, name, options, identitySuffix)
+            };
+        }
+
+        private static bool LearnProviderIds(BaseItem item, ItemByNameInfo? info)
+        {
+            if (info is null || info.ProviderIds.Count == 0)
+            {
+                return false;
+            }
+
+            var learned = false;
+            foreach (var (provider, value) in info.ProviderIds)
+            {
+                // Only ids the item lacks: overwriting a disagreeing one hands it another entity's identity.
+                if (string.IsNullOrWhiteSpace(provider)
+                    || string.IsNullOrWhiteSpace(value)
+                    || !string.IsNullOrEmpty(item.GetProviderId(provider)))
+                {
+                    continue;
+                }
+
+                item.SetProviderId(provider, value);
+                learned = true;
+            }
+
+            if (learned)
+            {
+                item.DateLastSaved = DateTime.UtcNow;
+            }
+
+            return learned;
         }
 
         private T CreateItemByName<T>(Func<string, string> getPathFn, string name, DtoOptions options, string? identitySuffix = null)
@@ -3786,13 +3886,18 @@ namespace Emby.Server.Implementations.Library
 
         private BaseItem? FindByProviderIds(PersonInfo person, BaseItemKind kind)
         {
-            if (person.ProviderIds.Count == 0)
+            return FindByProviderIds(person.ProviderIds, kind);
+        }
+
+        private BaseItem? FindByProviderIds(IReadOnlyDictionary<string, string>? ids, BaseItemKind kind)
+        {
+            if (ids is null || ids.Count == 0)
             {
                 return null;
             }
 
             var providerIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var (provider, value) in person.ProviderIds)
+            foreach (var (provider, value) in ids)
             {
                 if (!string.IsNullOrWhiteSpace(provider) && !string.IsNullOrWhiteSpace(value))
                 {
@@ -3805,9 +3910,8 @@ namespace Emby.Server.Implementations.Library
                 return null;
             }
 
-            // Scoped to the kind: a provider key is not unique across types, a TMDb person id and a
-            // TMDb movie id both live under "Tmdb". Oldest first, so a library holding two entries
-            // for one human resolves to a stable one.
+            // Scoped to the kind, because a provider key is not unique across types. Oldest first, so a
+            // library holding two entries for one human resolves to a stable one.
             return GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = [kind],

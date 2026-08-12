@@ -7,6 +7,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -17,7 +18,6 @@ namespace Jellyfin.Server.Implementations.Item;
 
 public sealed partial class BaseItemRepository
 {
-    // What the by-name item is reached through.
     private enum ByNameLink
     {
         Credit,
@@ -62,12 +62,6 @@ public sealed partial class BaseItemRepository
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<string> GetStudioNames()
-    {
-        return GetLinkedByNameNames(BaseItemKind.Studio);
-    }
-
-    /// <inheritdoc />
     public IReadOnlyList<string> GetAllArtistNames()
     {
         using var context = _dbProvider.CreateDbContext();
@@ -86,15 +80,53 @@ public sealed partial class BaseItemRepository
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<string> GetMusicGenreNames()
+    public IReadOnlyDictionary<Guid, ItemByNameLinks> GetItemByNameLinks(IReadOnlyList<Guid> itemIds)
     {
-        return GetLinkedByNameNames(BaseItemKind.MusicGenre);
-    }
+        ArgumentNullException.ThrowIfNull(itemIds);
 
-    /// <inheritdoc />
-    public IReadOnlyList<string> GetGenreNames()
-    {
-        return GetLinkedByNameNames(BaseItemKind.Genre);
+        if (itemIds.Count == 0)
+        {
+            return new Dictionary<Guid, ItemByNameLinks>();
+        }
+
+        using var context = _dbProvider.CreateDbContext();
+
+        var genres = context.BaseItemGenres
+            .AsNoTracking()
+            .WhereOneOrMany(itemIds, e => e.ItemId)
+            .Join(
+                context.BaseItems,
+                e => e.GenreItemId,
+                b => b.Id,
+                (e, b) => new { e.ItemId, LinkedId = b.Id, b.Name })
+            .ToList();
+
+        var studios = context.BaseItemStudios
+            .AsNoTracking()
+            .WhereOneOrMany(itemIds, e => e.ItemId)
+            .Join(
+                context.BaseItems,
+                e => e.StudioItemId,
+                b => b.Id,
+                (e, b) => new { e.ItemId, LinkedId = b.Id, b.Name })
+            .ToList();
+
+        var genresByItem = genres
+            .GroupBy(e => e.ItemId)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<NameGuidPair>)[.. g.Select(e => new NameGuidPair { Id = e.LinkedId, Name = e.Name ?? string.Empty })]);
+        var studiosByItem = studios
+            .GroupBy(e => e.ItemId)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<NameGuidPair>)[.. g.Select(e => new NameGuidPair { Id = e.LinkedId, Name = e.Name ?? string.Empty })]);
+
+        var result = new Dictionary<Guid, ItemByNameLinks>(genresByItem.Count + studiosByItem.Count);
+        foreach (var itemId in genresByItem.Keys.Concat(studiosByItem.Keys).Distinct())
+        {
+            result[itemId] = new ItemByNameLinks(
+                genresByItem.GetValueOrDefault(itemId) ?? [],
+                studiosByItem.GetValueOrDefault(itemId) ?? []);
+        }
+
+        return result;
     }
 
     /// <inheritdoc />
@@ -131,24 +163,6 @@ public sealed partial class BaseItemRepository
             .ToArray();
     }
 
-    // From the links, so a genre or studio is listed under the name its item carries now.
-    private string[] GetLinkedByNameNames(BaseItemKind kind)
-    {
-        using var context = _dbProvider.CreateDbContext();
-
-        var typeName = _itemTypeLookup.BaseItemKindNames[kind];
-        var linkedIds = kind == BaseItemKind.Studio
-            ? context.BaseItemStudios.Select(e => e.StudioItemId)
-            : context.BaseItemGenres.Select(e => e.GenreItemId);
-
-        return context.BaseItems
-            .AsNoTracking()
-            .Where(e => e.Type == typeName && e.Name != null && linkedIds.Contains(e.Id))
-            .Select(e => e.Name!)
-            .Distinct()
-            .ToArray();
-    }
-
     private QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetItemsByName(
         InternalItemsQuery filter,
         ByNameLink link,
@@ -157,7 +171,7 @@ public sealed partial class BaseItemRepository
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        if (link == ByNameLink.Credit == (personKinds is null))
+        if ((link == ByNameLink.Credit) != (personKinds is not null))
         {
             throw new ArgumentException("Credit kinds apply to credits and nothing else.", nameof(personKinds));
         }

@@ -105,6 +105,8 @@ namespace MediaBrowser.Controller.Entities
             Tags = Array.Empty<string>();
             Genres = Array.Empty<string>();
             Studios = Array.Empty<string>();
+            GenreInfos = Array.Empty<ItemByNameInfo>();
+            StudioInfos = Array.Empty<ItemByNameInfo>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             LockedFields = Array.Empty<MetadataField>();
             ImageInfos = Array.Empty<ItemImageInfo>();
@@ -644,18 +646,35 @@ namespace MediaBrowser.Controller.Entities
         public string[] Tags { get; set; }
 
         /// <summary>
-        /// Gets or sets the genre items <see cref="Genres"/> resolved to, or <c>null</c> when they have
-        /// not been resolved. Only <see cref="ILibraryManager.ResolveItemByNameLinks"/> can fill it in.
+        /// Gets or sets the ids the provider that named <see cref="Genres"/> knows those genres by.
         /// </summary>
         [JsonIgnore]
-        public IReadOnlyList<Guid> GenreItemIds { get; set; }
+        public IReadOnlyList<ItemByNameInfo> GenreInfos { get; set; }
 
         /// <summary>
-        /// Gets or sets the studio items <see cref="Studios"/> resolved to, or <c>null</c> when they have
-        /// not been resolved. See <see cref="GenreItemIds"/>.
+        /// Gets or sets the ids the provider that named <see cref="Studios"/> knows those studios by.
+        /// See <see cref="GenreInfos"/>.
         /// </summary>
         [JsonIgnore]
-        public IReadOnlyList<Guid> StudioItemIds { get; set; }
+        public IReadOnlyList<ItemByNameInfo> StudioInfos { get; set; }
+
+        // Annotated against the file, so a caller sees unresolved is a state it has to handle.
+#nullable enable annotations
+
+        /// <summary>
+        /// Gets or sets the genre items <see cref="Genres"/> resolved to, or <c>null</c> when they have not
+        /// been resolved by <see cref="ILibraryManager.ResolveItemByNameLinks"/>.
+        /// </summary>
+        [JsonIgnore]
+        public IReadOnlyList<Guid>? GenreItemIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the studio items <see cref="Studios"/> resolved to. See <see cref="GenreItemIds"/>.
+        /// </summary>
+        [JsonIgnore]
+        public IReadOnlyList<Guid>? StudioItemIds { get; set; }
+
+#nullable disable
 
         [JsonIgnore]
         public string[] ProductionLocations { get; set; }
@@ -2143,6 +2162,38 @@ namespace MediaBrowser.Controller.Entities
         public void SetStudios(IEnumerable<string> names)
         {
             Studios = names.Trimmed().Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+            StudioInfos = Array.Empty<ItemByNameInfo>();
+        }
+
+        /// <summary>
+        /// Sets the studios along with the ids the provider knows them by.
+        /// </summary>
+        /// <param name="studios">The studios.</param>
+        public void SetStudios(IEnumerable<ItemByNameInfo> studios)
+        {
+            StudioInfos = Distinct(studios);
+            Studios = StudioInfos.Select(e => e.Name).ToArray();
+        }
+
+        /// <summary>
+        /// Sets the genres along with the ids the provider knows them by.
+        /// </summary>
+        /// <param name="genres">The genres.</param>
+        public void SetGenres(IEnumerable<ItemByNameInfo> genres)
+        {
+            GenreInfos = Distinct(genres);
+            Genres = GenreInfos.Select(e => e.Name).ToArray();
+        }
+
+        private static IReadOnlyList<ItemByNameInfo> Distinct(IEnumerable<ItemByNameInfo> infos)
+        {
+            ArgumentNullException.ThrowIfNull(infos);
+
+            return infos
+                .Where(e => !string.IsNullOrWhiteSpace(e?.Name))
+                .Select(e => new ItemByNameInfo(e.Name.Trim()) { ProviderIds = e.ProviderIds })
+                .DistinctBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
         }
 
         /// <summary>

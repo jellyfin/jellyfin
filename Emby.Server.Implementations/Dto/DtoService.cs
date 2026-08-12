@@ -260,6 +260,16 @@ namespace Emby.Server.Implementations.Dto
                 personItemBatch = GetPersonItems(peopleBatch.Values.SelectMany(e => e).Select(e => e.PersonItemId), null);
             }
 
+            IReadOnlyDictionary<Guid, ItemByNameLinks>? byNameLinkBatch = null;
+            if (options.ContainsField(ItemFields.Genres) || options.ContainsField(ItemFields.Studios))
+            {
+                var linkedItemIds = accessibleItems.Select(i => i.Id).ToList();
+                if (linkedItemIds.Count > 0)
+                {
+                    byNameLinkBatch = _libraryManager.GetItemByNameLinks(linkedItemIds);
+                }
+            }
+
             // Batch-detect which videos own alternate versions to avoid the per-item alternate-version
             // queries in MediaSourceCount. Videos absent from this set have a single media source.
             IReadOnlySet<Guid>? alternateVersionItemIds = null;
@@ -288,7 +298,8 @@ namespace Emby.Server.Implementations.Dto
                     resumeDataBatch?.GetValueOrDefault(item.Id),
                     peopleBatch,
                     personItemBatch,
-                    alternateVersionItemIds);
+                    alternateVersionItemIds,
+                    byNameLinkBatch?.GetValueOrDefault(item.Id) ?? ItemByNameLinks.Empty);
 
                 if (item is LiveTvChannel tvChannel)
                 {
@@ -353,7 +364,8 @@ namespace Emby.Server.Implementations.Dto
             VersionResumeData? resumeData = null,
             IReadOnlyDictionary<Guid, IReadOnlyList<PersonInfo>>? peopleBatch = null,
             IReadOnlyDictionary<Guid, BaseItem>? personItemBatch = null,
-            IReadOnlySet<Guid>? alternateVersionItemIds = null)
+            IReadOnlySet<Guid>? alternateVersionItemIds = null,
+            ItemByNameLinks? byNameLinks = null)
         {
             var dto = new BaseItemDto
             {
@@ -363,6 +375,14 @@ namespace Emby.Server.Implementations.Dto
             if (item.SourceType == SourceType.Channel)
             {
                 dto.SourceType = item.SourceType.ToString();
+            }
+
+            // Fetched here when the batch did not, so a single item reports the ids a listing does.
+            if (byNameLinks is null)
+            {
+                byNameLinks = options.ContainsField(ItemFields.Genres) || options.ContainsField(ItemFields.Studios)
+                    ? _libraryManager.GetItemByNameLinks([item.Id]).GetValueOrDefault(item.Id) ?? ItemByNameLinks.Empty
+                    : ItemByNameLinks.Empty;
             }
 
             if (options.ContainsField(ItemFields.People))
@@ -419,10 +439,10 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.ContainsField(ItemFields.Studios))
             {
-                AttachStudios(dto, item);
+                AttachStudios(dto, item, byNameLinks);
             }
 
-            AttachBasicFields(dto, item, owner, options, artistsBatch, user, alternateVersionItemIds);
+            AttachBasicFields(dto, item, owner, options, artistsBatch, user, alternateVersionItemIds, byNameLinks);
 
             if (options.ContainsField(ItemFields.CanDelete))
             {
@@ -923,8 +943,15 @@ namespace Emby.Server.Implementations.Dto
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
-        private void AttachStudios(BaseItemDto dto, BaseItem item)
+        /// <param name="links">The genre and studio items the item links to.</param>
+        private void AttachStudios(BaseItemDto dto, BaseItem item, ItemByNameLinks? links)
         {
+            if (links is { Studios.Count: > 0 })
+            {
+                dto.Studios = InNameOrder(item.Studios, links.Studios);
+                return;
+            }
+
             dto.Studios = item.Studios
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Select(i => new NameGuidPair
@@ -935,8 +962,14 @@ namespace Emby.Server.Implementations.Dto
                 .ToArray();
         }
 
-        private void AttachGenreItems(BaseItemDto dto, BaseItem item)
+        private void AttachGenreItems(BaseItemDto dto, BaseItem item, ItemByNameLinks? links)
         {
+            if (links is { Genres.Count: > 0 })
+            {
+                dto.GenreItems = InNameOrder(item.Genres, links.Genres);
+                return;
+            }
+
             dto.GenreItems = item.Genres
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Select(i => new NameGuidPair
@@ -945,6 +978,20 @@ namespace Emby.Server.Implementations.Dto
                     Id = GetGenreId(i, item)
                 })
                 .ToArray();
+        }
+
+        // A link whose item is called something else sorts last.
+        private static NameGuidPair[] InNameOrder(string[] names, IReadOnlyList<NameGuidPair> linked)
+        {
+            var order = new Dictionary<string, int>(names.Length, StringComparer.OrdinalIgnoreCase);
+            for (var i = 0; i < names.Length; i++)
+            {
+                order.TryAdd(names[i], i);
+            }
+
+            return [.. linked
+                .OrderBy(e => order.TryGetValue(e.Name, out var index) ? index : int.MaxValue)
+                .ThenBy(e => e.Name, StringComparer.OrdinalIgnoreCase)];
         }
 
         private Guid GetGenreId(string name, BaseItem owner)
@@ -1031,7 +1078,8 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="artistsBatch">Optional pre-fetched artist lookup shared across a batch of items.</param>
         /// <param name="user">The user, for per-user values such as the accessible media source count.</param>
         /// <param name="alternateVersionItemIds">Optional pre-fetched set of item IDs that own alternate versions, shared across a batch of items.</param>
-        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem? owner, DtoOptions options, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null, User? user = null, IReadOnlySet<Guid>? alternateVersionItemIds = null)
+        /// <param name="byNameLinks">Optional pre-fetched genre and studio links.</param>
+        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem? owner, DtoOptions options, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null, User? user = null, IReadOnlySet<Guid>? alternateVersionItemIds = null, ItemByNameLinks? byNameLinks = null)
         {
             if (options.ContainsField(ItemFields.DateCreated))
             {
@@ -1074,7 +1122,7 @@ namespace Emby.Server.Implementations.Dto
             if (options.ContainsField(ItemFields.Genres))
             {
                 dto.Genres = item.Genres;
-                AttachGenreItems(dto, item);
+                AttachGenreItems(dto, item, byNameLinks);
             }
 
             if (options.EnableImages)
