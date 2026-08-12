@@ -25,10 +25,6 @@ namespace Jellyfin.Server.Migrations.Routines;
 [JellyfinMigrationBackup(JellyfinDb = true)]
 public class ConvertGenreAndStudioValuesToLinks : IAsyncMigrationRoutine
 {
-    private const int BatchSize = 500;
-
-    private static readonly ItemValueType[] _convertedValueTypes = [ItemValueType.Genre, ItemValueType.Studios];
-
     private readonly IStartupLogger<ConvertGenreAndStudioValuesToLinks> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
     private readonly ILibraryManager _libraryManager;
@@ -62,11 +58,8 @@ public class ConvertGenreAndStudioValuesToLinks : IAsyncMigrationRoutine
         var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
-            var values = await context.ItemValues
-                .AsNoTracking()
-                .Where(v => _convertedValueTypes.Contains(v.Type))
-                .Select(v => new { v.ItemValueId, v.Type, v.Value, v.CleanValue })
-                .ToListAsync(cancellationToken)
+            var values = await LegacyItemValues
+                .ReadValuesAsync(context, [LegacyItemValues.Genre, LegacyItemValues.Studio], cancellationToken)
                 .ConfigureAwait(false);
 
             if (values.Count == 0)
@@ -97,70 +90,57 @@ public class ConvertGenreAndStudioValuesToLinks : IAsyncMigrationRoutine
             var linked = 0;
             var unresolved = 0;
 
-            foreach (var batch in values.Chunk(BatchSize))
+            // A chunk at a time, because a value has a link for every item carrying it.
+            foreach (var chunk in values.Chunk(LegacyItemValues.ValueChunkSize))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var valueIds = batch.Select(v => v.ItemValueId).ToArray();
-                var maps = (await context.ItemValuesMap
-                        .AsNoTracking()
-                        .Where(m => valueIds.Contains(m.ItemValueId))
-                        .Select(m => new { m.ItemValueId, m.ItemId, ItemType = m.Item.Type })
-                        .ToListAsync(cancellationToken)
-                        .ConfigureAwait(false))
-                    .ToLookup(m => m.ItemValueId, m => (m.ItemId, m.ItemType));
-
-                if (maps.Count == 0)
+                var links = await LegacyItemValues.ReadLinksAsync(context, chunk, cancellationToken).ConfigureAwait(false);
+                foreach (var link in links)
                 {
-                    continue;
-                }
+                    var value = link.Value;
+                    var kind = value.Type == LegacyItemValues.Studio
+                        ? BaseItemKind.Studio
+                        : _itemTypeLookup.MusicGenreTypes.Contains(link.ItemType)
+                            ? BaseItemKind.MusicGenre
+                            : BaseItemKind.Genre;
 
-                foreach (var value in batch)
-                {
-                    foreach (var (itemId, itemType) in maps[value.ItemValueId])
+                    var byNameId = ResolveByNameItem(kind, value.Value, value.CleanValue);
+                    if (byNameId.IsEmpty())
                     {
-                        var kind = value.Type == ItemValueType.Studios
-                            ? BaseItemKind.Studio
-                            : _itemTypeLookup.MusicGenreTypes.Contains(itemType)
-                                ? BaseItemKind.MusicGenre
-                                : BaseItemKind.Genre;
+                        unresolved++;
+                        continue;
+                    }
 
-                        var byNameId = ResolveByNameItem(kind, value.Value, value.CleanValue);
-                        if (byNameId.IsEmpty())
+                    if (kind == BaseItemKind.Studio)
+                    {
+                        if (existingStudioLinks.Add((link.ItemId, byNameId)))
                         {
-                            unresolved++;
-                            continue;
-                        }
-
-                        if (kind == BaseItemKind.Studio)
-                        {
-                            if (existingStudioLinks.Add((itemId, byNameId)))
-                            {
-                                context.BaseItemStudios.Add(new BaseItemStudio
-                                {
-                                    Item = null!,
-                                    ItemId = itemId,
-                                    StudioItemId = byNameId
-                                });
-
-                                linked++;
-                            }
-                        }
-                        else if (existingGenreLinks.Add((itemId, byNameId)))
-                        {
-                            context.BaseItemGenres.Add(new BaseItemGenre
+                            context.BaseItemStudios.Add(new BaseItemStudio
                             {
                                 Item = null!,
-                                ItemId = itemId,
-                                GenreItemId = byNameId
+                                ItemId = link.ItemId,
+                                StudioItemId = byNameId
                             });
 
                             linked++;
                         }
                     }
+                    else if (existingGenreLinks.Add((link.ItemId, byNameId)))
+                    {
+                        context.BaseItemGenres.Add(new BaseItemGenre
+                        {
+                            Item = null!,
+                            ItemId = link.ItemId,
+                            GenreItemId = byNameId
+                        });
+
+                        linked++;
+                    }
                 }
 
                 await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                context.ChangeTracker.Clear();
             }
 
             _logger.LogInformation("Created {Links} genre and studio links.", linked);
@@ -170,16 +150,11 @@ public class ConvertGenreAndStudioValuesToLinks : IAsyncMigrationRoutine
             }
 
             // Last, so a failure part-way leaves the values to try again from.
-            var removedMaps = await context.ItemValuesMap
-                .Where(m => _convertedValueTypes.Contains(m.ItemValue.Type))
-                .ExecuteDeleteAsync(cancellationToken)
-                .ConfigureAwait(false);
-            var removedValues = await context.ItemValues
-                .Where(v => _convertedValueTypes.Contains(v.Type))
-                .ExecuteDeleteAsync(cancellationToken)
+            var removed = await LegacyItemValues
+                .DeleteAsync(context, [LegacyItemValues.Genre, LegacyItemValues.Studio], cancellationToken)
                 .ConfigureAwait(false);
 
-            _logger.LogInformation("Removed {Values} genre and studio values and {Maps} of their item links.", removedValues, removedMaps);
+            _logger.LogInformation("Removed {Values} genre and studio values.", removed);
         }
     }
 
@@ -192,19 +167,19 @@ public class ConvertGenreAndStudioValuesToLinks : IAsyncMigrationRoutine
 
         var items = await context.BaseItems
             .AsNoTracking()
-            .Where(b => typeNames.Contains(b.Type) && b.CleanName != null)
-            .Select(b => new { b.Id, b.Type, b.CleanName, b.DateCreated })
+            .Where(b => typeNames.Contains(b.Type) && b.Name != null)
+            .Select(b => new { b.Id, b.Type, b.Name, b.DateCreated })
             .OrderBy(b => b.DateCreated)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
         foreach (var item in items)
         {
-            _byNameItems.TryAdd((kindsByTypeName[item.Type!], item.CleanName!), item.Id);
+            // Cleaned here, because an older server filled the column by an older rule.
+            _byNameItems.TryAdd((kindsByTypeName[item.Type!], item.Name!.GetCleanValue()), item.Id);
         }
     }
 
-    // Empty loses that one name rather than the whole migration.
     private Guid ResolveByNameItem(BaseItemKind kind, string name, string cleanName)
     {
         var key = (kind, cleanName);

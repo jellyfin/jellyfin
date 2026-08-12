@@ -26,10 +26,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 [JellyfinMigrationBackup(JellyfinDb = true)]
 public class ConvertArtistValuesToCredits : IAsyncMigrationRoutine
 {
-    private const int BatchSize = 500;
     private const string MusicArtistItemType = "MediaBrowser.Controller.Entities.Audio.MusicArtist";
-
-    private static readonly ItemValueType[] _artistValueTypes = [ItemValueType.Artist, ItemValueType.AlbumArtist];
 
     private readonly IStartupLogger<ConvertArtistValuesToCredits> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
@@ -53,6 +50,18 @@ public class ConvertArtistValuesToCredits : IAsyncMigrationRoutine
         var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
+            var values = await LegacyItemValues
+                .ReadValuesAsync(context, [LegacyItemValues.Artist, LegacyItemValues.AlbumArtist], cancellationToken)
+                .ConfigureAwait(false);
+
+            if (values.Count == 0)
+            {
+                _logger.LogInformation("No artist values to convert.");
+                return;
+            }
+
+            _logger.LogInformation("Converting {Count} artist values into credits.", values.Count);
+
             var artistItems = await context.BaseItems
                 .AsNoTracking()
                 .Where(b => b.Type == MusicArtistItemType && b.Name != null)
@@ -69,21 +78,6 @@ public class ConvertArtistValuesToCredits : IAsyncMigrationRoutine
                     itemsByCleanName.TryAdd(key, artist.Id);
                 }
             }
-
-            var values = await context.ItemValues
-                .AsNoTracking()
-                .Where(v => _artistValueTypes.Contains(v.Type))
-                .Select(v => new { v.ItemValueId, v.Type, v.Value, v.CleanValue })
-                .ToListAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            if (values.Count == 0)
-            {
-                _logger.LogInformation("No artist values to convert.");
-                return;
-            }
-
-            _logger.LogInformation("Converting {Count} artist values into credits.", values.Count);
 
             // One credit row per (clean name, kind), as the writer keys them.
             var creditsByKey = (await context.Peoples
@@ -107,27 +101,16 @@ public class ConvertArtistValuesToCredits : IAsyncMigrationRoutine
             var converted = 0;
             var linked = 0;
 
-            foreach (var batch in values.Chunk(BatchSize))
+            // A chunk at a time, because a value has a link for every release carrying it.
+            foreach (var chunk in values.Chunk(LegacyItemValues.ValueChunkSize))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var valueIds = batch.Select(v => v.ItemValueId).ToArray();
-                var maps = (await context.ItemValuesMap
-                        .AsNoTracking()
-                        .Where(m => valueIds.Contains(m.ItemValueId))
-                        .Select(m => new { m.ItemId, m.ItemValueId })
-                        .ToListAsync(cancellationToken)
-                        .ConfigureAwait(false))
-                    .ToLookup(m => m.ItemValueId, m => m.ItemId);
-
-                if (maps.Count == 0)
+                var links = await LegacyItemValues.ReadLinksAsync(context, chunk, cancellationToken).ConfigureAwait(false);
+                foreach (var link in links)
                 {
-                    continue;
-                }
-
-                foreach (var value in batch)
-                {
-                    var kind = value.Type == ItemValueType.AlbumArtist
+                    var value = link.Value;
+                    var kind = value.Type == LegacyItemValues.AlbumArtist
                         ? nameof(PersonKind.AlbumArtist)
                         : nameof(PersonKind.Artist);
                     var key = (value.CleanValue, kind);
@@ -153,42 +136,35 @@ public class ConvertArtistValuesToCredits : IAsyncMigrationRoutine
                         credit.ItemId = artistItemId;
                     }
 
-                    foreach (var itemId in maps[value.ItemValueId])
+                    // A release that already credits this artist keeps its role and billing order.
+                    if (existingLinks.Add((link.ItemId, credit.Id)))
                     {
-                        // A release that already credits this artist keeps its role and billing order.
-                        if (existingLinks.Add((itemId, credit.Id)))
+                        context.PeopleBaseItemMap.Add(new PeopleBaseItemMap
                         {
-                            context.PeopleBaseItemMap.Add(new PeopleBaseItemMap
-                            {
-                                Item = null!,
-                                ItemId = itemId,
-                                People = null!,
-                                PeopleId = credit.Id,
-                                ListOrder = 0,
-                                Role = string.Empty
-                            });
+                            Item = null!,
+                            ItemId = link.ItemId,
+                            People = null!,
+                            PeopleId = credit.Id,
+                            ListOrder = 0,
+                            Role = string.Empty
+                        });
 
-                            linked++;
-                        }
+                        linked++;
                     }
                 }
 
                 await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                context.ChangeTracker.Clear();
             }
 
             _logger.LogInformation("Created {Credits} credits and {Links} release links.", converted, linked);
 
             // Last, so a failure part-way leaves the values to try again from.
-            var removedMaps = await context.ItemValuesMap
-                .Where(m => _artistValueTypes.Contains(m.ItemValue.Type))
-                .ExecuteDeleteAsync(cancellationToken)
-                .ConfigureAwait(false);
-            var removedValues = await context.ItemValues
-                .Where(v => _artistValueTypes.Contains(v.Type))
-                .ExecuteDeleteAsync(cancellationToken)
+            var removed = await LegacyItemValues
+                .DeleteAsync(context, [LegacyItemValues.Artist, LegacyItemValues.AlbumArtist], cancellationToken)
                 .ConfigureAwait(false);
 
-            _logger.LogInformation("Removed {Values} artist values and {Maps} of their release links.", removedValues, removedMaps);
+            _logger.LogInformation("Removed {Values} artist values.", removed);
         }
     }
 
