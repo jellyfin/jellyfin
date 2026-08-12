@@ -331,25 +331,10 @@ namespace Emby.Server.Implementations.Dto
             return returnItems;
         }
 
+        // Through the batch path, so a single item pays one query per lookup rather than the N+1 form
+        // of every one of them. Visibility is the caller's to decide, as it was here.
         public BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User? user = null, BaseItem? owner = null)
-        {
-            var dto = GetBaseItemDtoInternal(item, options, user, owner, null);
-            if (item is LiveTvChannel tvChannel)
-            {
-                LivetvManager.AddChannelInfo(new[] { (dto, tvChannel) }, options, user);
-            }
-            else if (item is LiveTvProgram)
-            {
-                LivetvManager.AddInfoToProgramDto(new[] { (item, dto) }, options.Fields, user).GetAwaiter().GetResult();
-            }
-
-            if (options.ContainsField(ItemFields.ItemCounts))
-            {
-                SetItemByNameInfo(dto, user);
-            }
-
-            return dto;
-        }
+            => GetBaseItemDtos([item], options, user, owner, skipVisibilityCheck: true)[0];
 
         private BaseItemDto GetBaseItemDtoInternal(
             BaseItem item,
