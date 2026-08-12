@@ -41,7 +41,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         /// <inheritdoc />
         public async Task<MetadataResult<Season>> GetMetadata(SeasonInfo info, CancellationToken cancellationToken)
         {
-            var result = new MetadataResult<Season>();
+            var result = new MetadataResult<Season>
+            {
+                ResultLanguage = info.MetadataLanguage
+            };
             var config = Plugin.Instance.Configuration;
 
             info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string? seriesTmdbId);

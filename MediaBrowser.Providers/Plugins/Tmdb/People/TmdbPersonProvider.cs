@@ -101,7 +101,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 }
             }
 
-            var result = new MetadataResult<Person>();
+            var result = new MetadataResult<Person>
+            {
+                ResultLanguage = info.MetadataLanguage
+            };
 
             if (personTmdbId > 0)
             {
