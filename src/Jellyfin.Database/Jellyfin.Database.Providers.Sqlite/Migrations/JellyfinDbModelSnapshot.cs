@@ -1012,7 +1012,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "StreamIndex");
 
-                    b.HasIndex("StreamType", "ItemId");
+                    b.HasIndex("StreamType", "ItemId", "Language", "IsExternal");
 
                     b.ToTable("MediaStreamInfos");
 

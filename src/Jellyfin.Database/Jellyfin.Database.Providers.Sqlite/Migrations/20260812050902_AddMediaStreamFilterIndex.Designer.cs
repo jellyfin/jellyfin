@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Database.Providers.Sqlite.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    [Migration("20260811145224_AddMediaStreamTypeItemIdIndex")]
-    partial class AddMediaStreamTypeItemIdIndex
+    [Migration("20260812050902_AddMediaStreamFilterIndex")]
+    partial class AddMediaStreamFilterIndex
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1015,7 +1015,7 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
 
                     b.HasKey("ItemId", "StreamIndex");
 
-                    b.HasIndex("StreamType", "ItemId");
+                    b.HasIndex("StreamType", "ItemId", "Language", "IsExternal");
 
                     b.ToTable("MediaStreamInfos");
 
