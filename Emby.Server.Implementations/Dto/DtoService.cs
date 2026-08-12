@@ -253,6 +253,13 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
+            // Batch-fetch the items the credits resolve to, so a page of casts is one query.
+            IReadOnlyDictionary<Guid, BaseItem>? personItemBatch = null;
+            if (peopleBatch is not null)
+            {
+                personItemBatch = GetPersonItems(peopleBatch.Values.SelectMany(e => e).Select(e => e.PersonItemId), null);
+            }
+
             // Batch-detect which videos own alternate versions to avoid the per-item alternate-version
             // queries in MediaSourceCount. Videos absent from this set have a single media source.
             IReadOnlySet<Guid>? alternateVersionItemIds = null;
@@ -280,6 +287,7 @@ namespace Emby.Server.Implementations.Dto
                     artistsBatch,
                     resumeDataBatch?.GetValueOrDefault(item.Id),
                     peopleBatch,
+                    personItemBatch,
                     alternateVersionItemIds);
 
                 if (item is LiveTvChannel tvChannel)
@@ -344,6 +352,7 @@ namespace Emby.Server.Implementations.Dto
             IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null,
             VersionResumeData? resumeData = null,
             IReadOnlyDictionary<Guid, IReadOnlyList<PersonInfo>>? peopleBatch = null,
+            IReadOnlyDictionary<Guid, BaseItem>? personItemBatch = null,
             IReadOnlySet<Guid>? alternateVersionItemIds = null)
         {
             var dto = new BaseItemDto
@@ -366,7 +375,7 @@ namespace Emby.Server.Implementations.Dto
                     prefetchedPeople = peopleBatch.GetValueOrDefault(item.Id) ?? [];
                 }
 
-                AttachPeople(dto, item, user, prefetchedPeople);
+                AttachPeople(dto, item, user, prefetchedPeople, personItemBatch);
             }
 
             if (options.ContainsField(ItemFields.PrimaryImageAspectRatio))
@@ -771,6 +780,29 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
+        // One query for the credits of the whole batch: an item can carry hundreds, and reading them
+        // one at a time is what makes the first request after a restart slow.
+        private IReadOnlyDictionary<Guid, BaseItem> GetPersonItems(IEnumerable<Guid> personItemIds, BaseItem? item)
+        {
+            var ids = personItemIds.Where(e => !e.IsEmpty()).Distinct().ToArray();
+            if (ids.Length == 0)
+            {
+                return new Dictionary<Guid, BaseItem>();
+            }
+
+            try
+            {
+                return _libraryManager
+                    .GetItemList(new InternalItemsQuery { ItemIds = ids, DtoOptions = new DtoOptions(true) })
+                    .ToDictionary(e => e.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting the people of {Item}", item?.Name);
+                return new Dictionary<Guid, BaseItem>();
+            }
+        }
+
         /// <summary>
         /// Attaches People DTO's to a DTOBaseItem.
         /// </summary>
@@ -778,7 +810,13 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="item">The item.</param>
         /// <param name="user">The requesting user.</param>
         /// <param name="prefetchedPeople">People fetched in batch by the caller; when null the people are queried per item.</param>
-        private void AttachPeople(BaseItemDto dto, BaseItem item, User? user = null, IReadOnlyList<PersonInfo>? prefetchedPeople = null)
+        /// <param name="prefetchedPersonItems">The items the credits resolve to, fetched in batch by the caller.</param>
+        private void AttachPeople(
+            BaseItemDto dto,
+            BaseItem item,
+            User? user = null,
+            IReadOnlyList<PersonInfo>? prefetchedPeople = null,
+            IReadOnlyDictionary<Guid, BaseItem>? prefetchedPersonItems = null)
         {
             // When rendering a page of items the caller batch-fetches people for every item up
             // front and passes them in, avoiding one GetPeople query per item. Fall back to the
@@ -827,22 +865,13 @@ namespace Emby.Server.Implementations.Dto
 
             var list = new List<BaseItemPerson>();
 
-            Dictionary<string, Person> dictionary = people.Select(p => p.Name)
-                .Distinct(StringComparer.OrdinalIgnoreCase).Select(c =>
-                {
-                    try
-                    {
-                        return _libraryManager.GetPerson(c);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error getting person {Name}", c);
-                        return null;
-                    }
-                }).Where(i => i is not null)
-                .Where(i => user is null || i!.IsVisible(user))
-                .DistinctBy(x => x!.Name, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(i => i!.Name, StringComparer.OrdinalIgnoreCase)!; // null values got filtered out
+            // Resolved by the id the credit carries, so a renamed person keeps its cast entry.
+            var byId = prefetchedPersonItems ?? GetPersonItems(people.Select(e => e.PersonItemId), item);
+            var resolvedPeople = new Person?[people.Count];
+            for (var i = 0; i < people.Count; i++)
+            {
+                resolvedPeople[i] = VisibleTo(byId.GetValueOrDefault(people[i].PersonItemId) as Person, user);
+            }
 
             for (var i = 0; i < people.Count; i++)
             {
@@ -855,7 +884,7 @@ namespace Emby.Server.Implementations.Dto
                     Type = person.Type
                 };
 
-                if (dictionary.TryGetValue(person.Name, out Person? entity))
+                if (resolvedPeople[i] is Person entity)
                 {
                     baseItemPerson.PrimaryImageTag = GetTagAndFillBlurhash(dto, entity, ImageType.Primary);
                     baseItemPerson.Id = entity.Id;
@@ -885,6 +914,9 @@ namespace Emby.Server.Implementations.Dto
 
             dto.People = list.ToArray();
         }
+
+        private static Person? VisibleTo(Person? person, User? user)
+            => person is not null && (user is null || person.IsVisible(user)) ? person : null;
 
         /// <summary>
         /// Attaches the studios.
