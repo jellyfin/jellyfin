@@ -190,6 +190,74 @@ public static class ProviderIdsExtensions
         => instance.SetProviderId(provider.ToString(), value);
 
     /// <summary>
+    /// Checks whether a provider gives both the same id, which says they are the same entity.
+    /// </summary>
+    /// <param name="instance">The instance.</param>
+    /// <param name="providerIds">The ids to compare against.</param>
+    /// <returns><c>true</c> if a provider they both know agrees.</returns>
+    public static bool SharesProviderId(this IHasProviderIds instance, IReadOnlyDictionary<string, string>? providerIds)
+    {
+        ArgumentNullException.ThrowIfNull(instance);
+
+        if (providerIds is null || instance.ProviderIds is null)
+        {
+            return false;
+        }
+
+        foreach (var (provider, value) in providerIds)
+        {
+            if (!string.IsNullOrWhiteSpace(value)
+                && string.Equals(instance.GetProviderId(provider), value, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Gets the provider whose id says the two are different entities, or <c>null</c> when they can
+    /// be the same.
+    /// </summary>
+    /// <param name="instance">The instance.</param>
+    /// <param name="providerIds">The ids to compare against.</param>
+    /// <returns>The name of the disagreeing provider, or <c>null</c>.</returns>
+    /// <remarks>
+    /// Agreeing anywhere wins: one provider reusing an id is likelier than two entities sharing a
+    /// name and an id.
+    /// </remarks>
+    public static string? FindConflictingProvider(this IHasProviderIds instance, IReadOnlyDictionary<string, string>? providerIds)
+    {
+        ArgumentNullException.ThrowIfNull(instance);
+
+        if (providerIds is null || instance.ProviderIds is null)
+        {
+            return null;
+        }
+
+        string? conflict = null;
+        foreach (var provider in providerIds.Keys.Order(StringComparer.Ordinal))
+        {
+            var value = providerIds[provider];
+            var known = instance.GetProviderId(provider);
+            if (string.IsNullOrWhiteSpace(value) || string.IsNullOrWhiteSpace(known))
+            {
+                continue;
+            }
+
+            if (string.Equals(known, value, StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            conflict ??= provider;
+        }
+
+        return conflict;
+    }
+
+    /// <summary>
     /// Removes a provider id.
     /// </summary>
     /// <param name="instance">The instance.</param>

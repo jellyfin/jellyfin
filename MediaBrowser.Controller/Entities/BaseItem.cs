@@ -837,6 +837,26 @@ namespace MediaBrowser.Controller.Entities
             return Id.ToString("N", CultureInfo.InvariantCulture);
         }
 
+        /// <summary>
+        /// Gets what the folder of a by-name item carries beyond its name, which is what tells two
+        /// entities of one name apart.
+        /// </summary>
+        /// <returns>The suffix, or an empty string.</returns>
+        protected string GetIdentitySuffix()
+        {
+            if (string.IsNullOrEmpty(Path) || string.IsNullOrEmpty(Name))
+            {
+                return string.Empty;
+            }
+
+            var folder = System.IO.Path.GetFileName(Path);
+            var named = (FileSystem is null ? Name : FileSystem.GetValidFilename(Name)).Trim().TrimEnd('.');
+
+            return folder.Length > named.Length && folder.StartsWith(named, StringComparison.Ordinal)
+                ? folder[named.Length..]
+                : string.Empty;
+        }
+
         public virtual bool CanDelete()
         {
             if (SourceType == SourceType.Channel)
