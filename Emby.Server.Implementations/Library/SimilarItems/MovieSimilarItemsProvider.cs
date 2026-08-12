@@ -37,7 +37,6 @@ public sealed class MovieSimilarItemsProvider : ILocalSimilarItemsProvider<Movie
     private static readonly (ItemValueType Type, int Weight)[] _itemValueDimensions =
     [
         (ItemValueType.Genre, GenreWeight),
-        (ItemValueType.Tags, TagWeight),
         (ItemValueType.Studios, StudioWeight)
     ];
 
@@ -266,6 +265,24 @@ public sealed class MovieSimilarItemsProvider : ILocalSimilarItemsProvider<Movie
 
             var keyToCandidates = candidateRows.GroupBy(r => r.Key).ToDictionary(g => g.Key, g => g.Select(x => x.ItemId).ToList());
             ApplyDimensionScores(sourceIds, sourceMap, keyToCandidates, weight, result);
+        }
+
+        var tagSourceRows = await context.BaseItemTags.AsNoTracking()
+            .Where(t => sourceIds.Contains(t.ItemId))
+            .Select(t => new { t.ItemId, Key = t.CleanValue })
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        var tagSourceMap = tagSourceRows.GroupBy(r => r.ItemId).ToDictionary(g => g.Key, g => g.Select(x => x.Key).ToHashSet());
+        var allTagKeys = tagSourceMap.Values.SelectMany(v => v).Distinct().ToList();
+        if (allTagKeys.Count > 0)
+        {
+            var tagCandidateRows = await context.BaseItemTags.AsNoTracking()
+                .Where(t => allTagKeys.Contains(t.CleanValue))
+                .Select(t => new { t.ItemId, Key = t.CleanValue })
+                .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+            var tagToCandidates = tagCandidateRows.GroupBy(r => r.Key).ToDictionary(g => g.Key, g => g.Select(x => x.ItemId).ToList());
+            ApplyDimensionScores(sourceIds, tagSourceMap, tagToCandidates, TagWeight, result);
         }
 
         var personSourceRows = await context.PeopleBaseItemMap.AsNoTracking()
