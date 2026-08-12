@@ -106,9 +106,12 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
         await using (context.ConfigureAwait(false))
         {
             IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 3));
+            // The item is part of the key: rows pointing at different people are different humans.
             var dupQuery = context.Peoples
-                    .GroupBy(e => new { e.Name, e.PersonType })
+                    .GroupBy(e => new { e.Name, e.PersonType, e.ItemId })
                     .Where(e => e.Count() > 1)
+                    .OrderBy(e => e.Key.Name)
+                    .ThenBy(e => e.Key.PersonType)
                     .Select(e => e.Select(f => f.Id).ToArray());
 
             var total = dupQuery.Count();
