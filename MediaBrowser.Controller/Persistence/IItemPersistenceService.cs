@@ -39,9 +39,4 @@ public interface IItemPersistenceService
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     Task ReattachUserDataAsync(BaseItem item, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Updates inherited values.
-    /// </summary>
-    void UpdateInheritedValues();
 }
