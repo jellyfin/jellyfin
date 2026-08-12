@@ -2685,7 +2685,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return reasons;
         }
 
-        public int GetVideoBitrateParamValue(BaseEncodingJobOptions request, MediaStream videoStream, string outputVideoCodec)
+        public int? GetVideoBitrateParamValue(BaseEncodingJobOptions request, MediaStream videoStream, string outputVideoCodec)
         {
             var bitrate = request.VideoBitRate;
 
@@ -2726,7 +2726,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // applies when a LiveStreamId is set (M3U/HDHR sources). Plugin streams and other
             // sources that bypass the LiveTV pipeline are not covered by it.
             const int MaxSaneBitrate = 400_000_000; // 400 Mbps
-            return Math.Min(bitrate ?? 0, MaxSaneBitrate);
+            return bitrate.HasValue ? Math.Min(bitrate.Value, MaxSaneBitrate) : null;
         }
 
         private int GetMinBitrate(int sourceBitrate, int requestedBitrate)

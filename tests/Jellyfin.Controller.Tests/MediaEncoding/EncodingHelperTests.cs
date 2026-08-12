@@ -261,6 +261,17 @@ public class EncodingHelperTests
         Assert.Contains("-ar 48000", args, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void GetVideoBitrateParamValue_WithoutRequestedBitrate_PreservesNullForVaapi()
+    {
+        var request = new VideoRequestDto();
+        var video = new MediaStream { Type = MediaStreamType.Video, Codec = "hevc" };
+
+        var bitrate = CreateHelper().GetVideoBitrateParamValue(request, video, "h264_vaapi");
+
+        Assert.Null(bitrate);
+    }
+
     private static EncodingJobInfo BuildAudioState(string audioCodec, int requestedSampleRate, string? outputContainer = null)
     {
         var audio = new MediaStream { Index = 0, Type = MediaStreamType.Audio, Codec = "flac", SampleRate = 96000 };
