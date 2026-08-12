@@ -132,8 +132,6 @@ public class ItemPersistenceService : IItemPersistenceService
         context.Chapters.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.CustomItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.ItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDelete();
-        context.ItemValuesMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.BaseItemTags.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         // Both ends of the link. The ItemId side is what the foreign key would cascade anyway; the
         // GenreItemId and StudioItemId side has no key behind it, so deleting a genre or studio item
@@ -657,15 +655,15 @@ public class ItemPersistenceService : IItemPersistenceService
         JellyfinDbContext context,
         List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey)> tuples)
     {
-        var withGenres = tuples.Select(e => e.Item).Where(e => e.GenreItemIds is not null).ToArray();
+        var withGenres = tuples.Select(e => e.Item).Where(e => e.GenreItemIds is not null).Select(e => (e.Id, GenreItemIds: e.GenreItemIds!)).ToArray();
         if (withGenres.Length > 0)
         {
-            var genreItemIds = withGenres.Select(e => e.Id).ToArray();
-            var existingGenres = context.BaseItemGenres.Where(e => genreItemIds.Contains(e.ItemId)).ToList();
+            var itemIds = withGenres.Select(e => e.Id).ToArray();
+            var existingGenres = context.BaseItemGenres.WhereOneOrMany(itemIds, e => e.ItemId).ToLookup(e => e.ItemId);
 
             foreach (var item in withGenres)
             {
-                var itemGenres = existingGenres.Where(e => e.ItemId == item.Id).ToList();
+                var itemGenres = existingGenres[item.Id].ToList();
                 foreach (var genreId in item.GenreItemIds)
                 {
                     var existingLink = itemGenres.FirstOrDefault(e => e.GenreItemId == genreId);
@@ -688,15 +686,15 @@ public class ItemPersistenceService : IItemPersistenceService
             }
         }
 
-        var withStudios = tuples.Select(e => e.Item).Where(e => e.StudioItemIds is not null).ToArray();
+        var withStudios = tuples.Select(e => e.Item).Where(e => e.StudioItemIds is not null).Select(e => (e.Id, StudioItemIds: e.StudioItemIds!)).ToArray();
         if (withStudios.Length > 0)
         {
-            var studioItemIds = withStudios.Select(e => e.Id).ToArray();
-            var existingStudios = context.BaseItemStudios.Where(e => studioItemIds.Contains(e.ItemId)).ToList();
+            var itemIds = withStudios.Select(e => e.Id).ToArray();
+            var existingStudios = context.BaseItemStudios.WhereOneOrMany(itemIds, e => e.ItemId).ToLookup(e => e.ItemId);
 
             foreach (var item in withStudios)
             {
-                var itemStudios = existingStudios.Where(e => e.ItemId == item.Id).ToList();
+                var itemStudios = existingStudios[item.Id].ToList();
                 foreach (var studioId in item.StudioItemIds)
                 {
                     var existingLink = itemStudios.FirstOrDefault(e => e.StudioItemId == studioId);

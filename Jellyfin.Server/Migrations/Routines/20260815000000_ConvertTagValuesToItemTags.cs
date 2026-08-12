@@ -1,7 +1,6 @@
 #pragma warning disable RS0030 // Do not use banned APIs
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,8 +19,6 @@ namespace Jellyfin.Server.Migrations.Routines;
 [JellyfinMigrationBackup(JellyfinDb = true)]
 public class ConvertTagValuesToItemTags : IAsyncMigrationRoutine
 {
-    private const int BatchSize = 500;
-
     private readonly IStartupLogger<ConvertTagValuesToItemTags> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
 
@@ -44,11 +41,8 @@ public class ConvertTagValuesToItemTags : IAsyncMigrationRoutine
         var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
-            var values = await context.ItemValues
-                .AsNoTracking()
-                .Where(v => v.Type == ItemValueType.Tags)
-                .Select(v => new { v.ItemValueId, v.Value, v.CleanValue })
-                .ToListAsync(cancellationToken)
+            var values = await LegacyItemValues
+                .ReadValuesAsync(context, [LegacyItemValues.Tag], cancellationToken)
                 .ConfigureAwait(false);
 
             if (values.Count == 0)
@@ -60,7 +54,7 @@ public class ConvertTagValuesToItemTags : IAsyncMigrationRoutine
             _logger.LogInformation("Converting {Count} tag values into item tags.", values.Count);
 
             // Keyed as the table is, so a rerun after a part-way failure adds nothing twice.
-            var existingTags = (await context.BaseItemTags
+            var written = (await context.BaseItemTags
                     .AsNoTracking()
                     .Select(t => new { t.ItemId, t.Value })
                     .ToListAsync(cancellationToken)
@@ -68,63 +62,44 @@ public class ConvertTagValuesToItemTags : IAsyncMigrationRoutine
                 .Select(t => (t.ItemId, t.Value))
                 .ToHashSet();
 
-            var written = 0;
+            var added = 0;
 
-            foreach (var batch in values.Chunk(BatchSize))
+            // A chunk at a time, because a value has a link for every item carrying it.
+            foreach (var chunk in values.Chunk(LegacyItemValues.ValueChunkSize))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var valueIds = batch.Select(v => v.ItemValueId).ToArray();
-                var maps = (await context.ItemValuesMap
-                        .AsNoTracking()
-                        .Where(m => valueIds.Contains(m.ItemValueId))
-                        .Select(m => new { m.ItemId, m.ItemValueId })
-                        .ToListAsync(cancellationToken)
-                        .ConfigureAwait(false))
-                    .ToLookup(m => m.ItemValueId, m => m.ItemId);
-
-                if (maps.Count == 0)
+                var links = await LegacyItemValues.ReadLinksAsync(context, chunk, cancellationToken).ConfigureAwait(false);
+                foreach (var link in links)
                 {
-                    continue;
-                }
-
-                foreach (var value in batch)
-                {
-                    foreach (var itemId in maps[value.ItemValueId])
+                    if (!written.Add((link.ItemId, link.Value.Value)))
                     {
-                        if (!existingTags.Add((itemId, value.Value)))
-                        {
-                            continue;
-                        }
-
-                        context.BaseItemTags.Add(new BaseItemTag
-                        {
-                            Item = null!,
-                            ItemId = itemId,
-                            Value = value.Value,
-                            CleanValue = value.CleanValue
-                        });
-
-                        written++;
+                        continue;
                     }
+
+                    context.BaseItemTags.Add(new BaseItemTag
+                    {
+                        Item = null!,
+                        ItemId = link.ItemId,
+                        Value = link.Value.Value,
+                        CleanValue = link.Value.CleanValue
+                    });
+
+                    added++;
                 }
 
                 await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                context.ChangeTracker.Clear();
             }
 
-            _logger.LogInformation("Wrote {Tags} item tags.", written);
+            _logger.LogInformation("Wrote {Tags} item tags.", added);
 
             // Last, so a failure part-way leaves the values to try again from.
-            var removedMaps = await context.ItemValuesMap
-                .Where(m => m.ItemValue.Type == ItemValueType.Tags)
-                .ExecuteDeleteAsync(cancellationToken)
-                .ConfigureAwait(false);
-            var removedValues = await context.ItemValues
-                .Where(v => v.Type == ItemValueType.Tags)
-                .ExecuteDeleteAsync(cancellationToken)
+            var removed = await LegacyItemValues
+                .DeleteAsync(context, [LegacyItemValues.Tag], cancellationToken)
                 .ConfigureAwait(false);
 
-            _logger.LogInformation("Removed {Values} tag values and {Maps} of their item links.", removedValues, removedMaps);
+            _logger.LogInformation("Removed {Values} tag values.", removed);
         }
     }
 }
