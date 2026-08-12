@@ -996,6 +996,13 @@ namespace MediaBrowser.Providers.Manager
                         LogInvalidProviderIds(result, providerName, logName);
 
                         MergeData(result, temp, [], replaceData, false);
+
+                        // A secondary provider regularly knows people the primary missed.
+                        if (!replaceData)
+                        {
+                            temp.People = AddMissingPeople(result.People, temp.People);
+                        }
+
                         MergeNewData(temp.Item, id);
 
                         refreshResult.UpdateType |= ItemUpdateType.MetadataDownload;
@@ -1234,6 +1241,8 @@ namespace MediaBrowser.Providers.Manager
 
                 if (replaceData || targetResult.People is null || targetResult.People.Count == 0)
                 {
+                    // An empty list is how a provider states an item has no cast, and this is the only path
+                    // that can drop a credit.
                     targetResult.People = sourceResult.People;
                 }
                 else if (sourceResult.People is not null && sourceResult.People.Count > 0)
@@ -1421,10 +1430,12 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
+        // Only enriches what target already holds: it is about to become the item's cast, so adding
+        // here would make a removed credit immortal. AddMissingPeople unions two provider results.
         private static void MergePeople(IReadOnlyList<PersonInfo> source, IReadOnlyList<PersonInfo> target)
         {
-            var sourceByName = source.ToLookup(p => p.Name.RemoveDiacritics(), StringComparer.OrdinalIgnoreCase);
-            var targetByName = target.ToLookup(p => p.Name.RemoveDiacritics(), StringComparer.OrdinalIgnoreCase);
+            var sourceByName = source.ToLookup(p => p.Name.GetCleanValue(), StringComparer.Ordinal);
+            var targetByName = target.ToLookup(p => p.Name.GetCleanValue(), StringComparer.Ordinal);
 
             foreach (var name in targetByName.Select(g => g.Key))
             {
@@ -1436,10 +1447,43 @@ namespace MediaBrowser.Providers.Manager
                     continue;
                 }
 
+                // Paired on the ids rather than on position, taking each source once: the wrong pairing
+                // writes one human's data onto the other. Agreement first.
+                var matches = new PersonInfo[targetPeople.Length];
+                var taken = new bool[sourcePeople.Length];
+                for (var pass = 0; pass < 2; pass++)
+                {
+                    for (var i = 0; i < targetPeople.Length; i++)
+                    {
+                        if (matches[i] is not null)
+                        {
+                            continue;
+                        }
+
+                        for (var j = 0; j < sourcePeople.Length; j++)
+                        {
+                            if (taken[j]
+                                || targetPeople[i].FindConflictingProvider(sourcePeople[j].ProviderIds) is not null
+                                || (pass == 0 && !targetPeople[i].SharesProviderId(sourcePeople[j].ProviderIds)))
+                            {
+                                continue;
+                            }
+
+                            matches[i] = sourcePeople[j];
+                            taken[j] = true;
+                            break;
+                        }
+                    }
+                }
+
                 for (int i = 0; i < targetPeople.Length; i++)
                 {
                     var person = targetPeople[i];
-                    var personInSource = i < sourcePeople.Length ? sourcePeople[i] : sourcePeople[0];
+                    var personInSource = matches[i];
+                    if (personInSource is null)
+                    {
+                        continue;
+                    }
 
                     foreach (var providerId in personInSource.ProviderIds)
                     {
@@ -1462,6 +1506,39 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns <paramref name="target"/> with the people it does not know at all appended, after its own ordering.
+        /// </summary>
+        /// <param name="source">The result to take the additional people from.</param>
+        /// <param name="target">The result to add them to.</param>
+        /// <returns><paramref name="target"/> itself when it already knows everyone, otherwise a new list.</returns>
+        internal static IReadOnlyList<PersonInfo> AddMissingPeople(IReadOnlyList<PersonInfo> source, IReadOnlyList<PersonInfo> target)
+        {
+            if (source is null || source.Count == 0 || target is null || target.Count == 0)
+            {
+                return target;
+            }
+
+            var known = target.Where(p => !string.IsNullOrEmpty(p.Name))
+                .ToLookup(p => p.Name.GetCleanValue(), StringComparer.Ordinal);
+
+            List<PersonInfo> merged = null;
+            foreach (var person in source)
+            {
+                // A name the target already holds can still be another human, and only the ids say so.
+                if (string.IsNullOrEmpty(person.Name)
+                    || known[person.Name.GetCleanValue()].Any(p => p.FindConflictingProvider(person.ProviderIds) is null))
+                {
+                    continue;
+                }
+
+                merged ??= target.ToList();
+                PeopleHelper.AddPerson(merged, person);
+            }
+
+            return merged ?? target;
         }
 
         private static void MergeDisplayOrder(BaseItem source, BaseItem target, bool replaceData)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -238,8 +239,8 @@ namespace Jellyfin.Providers.Tests.Manager
         {
             // PersonInfo in list is changed by merge, create new for every call
             List<PersonInfo> GetOldValue()
-                => new()
-                {
+                =>
+                [
                     new PersonInfo
                     {
                         Name = "Name 1",
@@ -248,7 +249,7 @@ namespace Jellyfin.Providers.Tests.Manager
                             { "Provider 1", "1234" }
                         }
                     }
-                };
+                ];
 
             // overwrite provider id
             var overwriteNewValue = new List<PersonInfo>
@@ -259,18 +260,19 @@ namespace Jellyfin.Providers.Tests.Manager
                 }
             };
             Assert.False(TestMergeBaseItemDataPerson(GetOldValue(), overwriteNewValue, null, false, out var result));
-            // People not already in target are not merged into it from source
+            // The target is about to become the item's cast, so adding here would make a dropped credit
+            // impossible to remove.
             List<PersonInfo> actual = (List<PersonInfo>)result!;
             Assert.Single(actual);
             Assert.Equal("Name 1", actual[0].Name);
 
             Assert.True(TestMergeBaseItemDataPerson(GetOldValue(), overwriteNewValue, null, true, out _));
-            Assert.True(TestMergeBaseItemDataPerson(new List<PersonInfo>(), overwriteNewValue, null, false, out _));
+            Assert.True(TestMergeBaseItemDataPerson([], overwriteNewValue, null, false, out _));
             Assert.True(TestMergeBaseItemDataPerson(null, overwriteNewValue, null, false, out _));
 
             Assert.False(TestMergeBaseItemDataPerson(GetOldValue(), overwriteNewValue, MetadataField.Cast, true, out _));
 
-            // providers merge but don't overwrite existing keys
+            // providers merge but don't overwrite existing keys, for a credit the ids agree on
             var mergeNewValue = new List<PersonInfo>
             {
                 new()
@@ -278,7 +280,7 @@ namespace Jellyfin.Providers.Tests.Manager
                     Name = "Name 1",
                     ProviderIds = new Dictionary<string, string>
                     {
-                        { "Provider 1", "5678" },
+                        { "Provider 1", "1234" },
                         { "Provider 2", "5678" }
                     }
                 }
@@ -319,8 +321,121 @@ namespace Jellyfin.Providers.Tests.Manager
             Assert.Equal("Name 1", actual[0].Name);
             Assert.Equal("URL 1", actual[0].ImageUrl);
 
-            // empty source can be forced to overwrite a target with data
-            Assert.True(TestMergeBaseItemDataPerson(GetOldValue(), new List<PersonInfo>(), null, true, out _));
+            // An empty list is how a provider states an item has no cast.
+            Assert.True(TestMergeBaseItemDataPerson(GetOldValue(), [], null, true, out _));
+
+            // A credit of the same name that the ids say is somebody else is left alone.
+            var otherPerson = new List<PersonInfo>
+            {
+                new()
+                {
+                    Name = "Name 1",
+                    ImageUrl = "URL 2",
+                    ProviderIds = new Dictionary<string, string>
+                    {
+                        { "Provider 1", "5678" },
+                        { "Provider 2", "5678" }
+                    }
+                }
+            };
+            TestMergeBaseItemDataPerson(GetOldValue(), otherPerson, null, false, out result);
+            actual = (List<PersonInfo>)result!;
+            var untouched = Assert.Single(actual);
+            Assert.Equal("1234", untouched.ProviderIds["Provider 1"]);
+            Assert.Single(untouched.ProviderIds);
+            Assert.Null(untouched.ImageUrl);
+        }
+
+        [Fact]
+        public void MergeBaseItemData_MergePeople_PairsTwoOfOneNameOnTheirIds()
+        {
+            static PersonInfo Person(string id, string? imageUrl) => new()
+            {
+                Name = "John Smith",
+                ImageUrl = imageUrl,
+                ProviderIds = new Dictionary<string, string> { { "Provider 1", id } }
+            };
+
+            var target = new List<PersonInfo> { Person("1", null), Person("2", null) };
+
+            // Reversed, so pairing them by position would hand each the other's picture.
+            var source = new List<PersonInfo> { Person("2", "URL 2"), Person("1", "URL 1") };
+
+            TestMergeBaseItemDataPerson(target, source, null, false, out var result);
+
+            var actual = (List<PersonInfo>)result!;
+            Assert.Equal(2, actual.Count);
+            Assert.Equal("URL 1", actual[0].ImageUrl);
+            Assert.Equal("URL 2", actual[1].ImageUrl);
+        }
+
+        [Fact]
+        public void AddMissingPeople_SameNameWithADifferentProviderId_IsAppended()
+        {
+            var target = new List<PersonInfo>
+            {
+                new()
+                {
+                    Name = "John Smith",
+                    Type = PersonKind.Actor,
+                    ProviderIds = new Dictionary<string, string> { { "Provider 1", "1" } }
+                }
+            };
+
+            var source = new List<PersonInfo>
+            {
+                new()
+                {
+                    Name = "John Smith",
+                    Type = PersonKind.Actor,
+                    ProviderIds = new Dictionary<string, string> { { "Provider 1", "2" } }
+                },
+                new()
+                {
+                    Name = "John Smith",
+                    Type = PersonKind.Actor,
+                    ProviderIds = new Dictionary<string, string> { { "Provider 1", "1" } }
+                }
+            };
+
+            var merged = MetadataService<Movie, MovieInfo>.AddMissingPeople(source, target)!;
+
+            Assert.Equal(2, merged.Count);
+            Assert.Equal("1", merged[0].ProviderIds["Provider 1"]);
+            Assert.Equal("2", merged[1].ProviderIds["Provider 1"]);
+        }
+
+        [Fact]
+        public void AddMissingPeople_OnlyAppendsUnknownNames()
+        {
+            var target = new List<PersonInfo>
+            {
+                new() { Name = "Zoe Saldaña", Type = PersonKind.Actor },
+                new() { Name = "Sam Worthington", Type = PersonKind.Actor }
+            };
+
+            var source = new List<PersonInfo>
+            {
+                new() { Name = "Zoe Saldana", Type = PersonKind.Actor },
+                new() { Name = "Sigourney Weaver", Type = PersonKind.Actor }
+            };
+
+            var merged = MetadataService<Movie, MovieInfo>.AddMissingPeople(source, target)!;
+
+            Assert.Equal(3, merged.Count);
+            Assert.Equal("Zoe Saldaña", merged[0].Name);
+            Assert.Equal("Sam Worthington", merged[1].Name);
+            Assert.Equal("Sigourney Weaver", merged[2].Name);
+        }
+
+        [Fact]
+        public void AddMissingPeople_EmptyOrNullInput_ReturnsTargetUnchanged()
+        {
+            var target = new List<PersonInfo> { new() { Name = "Name 1" } };
+
+            Assert.Same(target, MetadataService<Movie, MovieInfo>.AddMissingPeople(null, target));
+            Assert.Same(target, MetadataService<Movie, MovieInfo>.AddMissingPeople([], target));
+            Assert.Null(MetadataService<Movie, MovieInfo>.AddMissingPeople(target, null));
         }
 
         private static bool TestMergeBaseItemDataPerson(List<PersonInfo>? oldValue, List<PersonInfo>? newValue, MetadataField? lockField, bool replaceData, out object? actualValue)
