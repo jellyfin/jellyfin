@@ -1,14 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Implementations.MatchCriteria;
-using Jellyfin.Database.Providers.Sqlite;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
@@ -17,30 +13,17 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// Verifies the descendant traversals against the SQLite provider: the sets they resolve, and that
 /// they stay sub-selects instead of inlining every descendant id into the statement.
 /// </summary>
-public sealed class DescendantQueryHelperTests : IDisposable
+public sealed class DescendantQueryHelperTests : SqliteDbTestFixture
 {
     private const string FolderType = "MediaBrowser.Controller.Entities.Folder";
     private const string BoxSetType = "MediaBrowser.Controller.Entities.Movies.BoxSet";
     private const string MovieType = "MediaBrowser.Controller.Entities.Movies.Movie";
 
     private readonly Dictionary<Guid, int> _linkCounters = new();
-    private readonly SqliteConnection _connection;
-    private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
 
     public DescendantQueryHelperTests()
     {
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
-        _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-
-        using var ctx = CreateDbContext();
-        ctx.Database.EnsureCreated();
     }
-
-    public void Dispose() => _connection.Dispose();
 
     [Fact]
     public void GetAllDescendantIds_Hierarchy_ReturnsEveryLevelWithoutTheParent()
@@ -95,7 +78,6 @@ public sealed class DescendantQueryHelperTests : IDisposable
         {
             var descendants = DescendantQueryHelper.GetAllDescendantIds(ctx, boxSet).ToHashSet();
 
-            // The link reaches the series, and the series' own closure reaches the episode.
             Assert.Contains(series, descendants);
             Assert.Contains(episode, descendants);
         }
@@ -117,7 +99,7 @@ public sealed class DescendantQueryHelperTests : IDisposable
 
             AddLink(ctx, outer, inner);
             AddLink(ctx, inner, movie);
-            // Cycle back to the outer set: the traversal must not spin on it.
+            // The traversal must not spin on this cycle.
             AddLink(ctx, inner, outer);
             ctx.SaveChanges();
         }
@@ -179,8 +161,8 @@ public sealed class DescendantQueryHelperTests : IDisposable
             AddItem(ctx, boxSet, BoxSetType, isFolder: true);
             AddItem(ctx, linkedMovie, MovieType);
 
-            // How production writes it: an item carries its own chain plus its collection folder, but
-            // not the user root above that folder - so one hop from the user root stops there.
+            // An item carries its own chain plus its collection folder, but not the user root above
+            // it, so one hop from the user root stops at the collection folder.
             AddAncestors(ctx, collectionFolder, userRoot);
             AddAncestors(ctx, series, collectionFolder);
             AddAncestors(ctx, episode, series, collectionFolder);
@@ -264,7 +246,6 @@ public sealed class DescendantQueryHelperTests : IDisposable
             AddLink(ctx, boxSet, series);
             AddStream(ctx, episode, MediaStreamTypeEntity.Subtitle);
 
-            // A second collection, over an item without subtitles, must not be picked up.
             AddFolder(ctx, otherLibrary);
             AddItem(ctx, otherBoxSet, BoxSetType, isFolder: true);
             AddItem(ctx, silentMovie, MovieType);
@@ -302,7 +283,7 @@ public sealed class DescendantQueryHelperTests : IDisposable
 
             AddLink(ctx, outer, inner);
             AddLink(ctx, inner, movie);
-            // Cycle back to the outer set: resolving the link parents must not spin on it.
+            // Resolving the link parents must not spin on this cycle.
             AddLink(ctx, inner, outer);
             AddStream(ctx, movie, MediaStreamTypeEntity.Subtitle);
 
@@ -337,8 +318,7 @@ public sealed class DescendantQueryHelperTests : IDisposable
             AddFolder(ctx, series);
             AddItem(ctx, episode, MovieType);
 
-            // How production writes it: an item carries its own chain plus its collection folder, but
-            // not the user root above that folder - so the closure is not transitive at this seam.
+            // The closure is not transitive at this seam: no item records the user root.
             AddAncestors(ctx, episode, series, collectionFolder);
             AddAncestors(ctx, series, collectionFolder);
             AddAncestors(ctx, collectionFolder, userRoot);
@@ -419,8 +399,8 @@ public sealed class DescendantQueryHelperTests : IDisposable
         var smallSql = CountingQuery(ctx, small).ToQueryString();
         var largeSql = CountingQuery(ctx, large).ToQueryString();
 
-        // Reading the ids into memory and passing them back as AsQueryable() makes EF inline one
-        // literal per descendant, which is what made a large library allocate megabytes per call.
+        // Reading the ids into memory and handing them back as AsQueryable() makes EF inline one
+        // literal per descendant, which is what allocated megabytes per call.
         Assert.Equal(smallSql.Length, largeSql.Length);
         Assert.Contains("AncestorIds", smallSql, StringComparison.Ordinal);
         Assert.Equal(10, CountingQuery(ctx, small).Count());
@@ -505,11 +485,4 @@ public sealed class DescendantQueryHelperTests : IDisposable
             SortOrder = sortOrder
         });
     }
-
-    private JellyfinDbContext CreateDbContext()
-        => new JellyfinDbContext(
-            _dbOptions,
-            NullLogger<JellyfinDbContext>.Instance,
-            new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
-            new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
 }

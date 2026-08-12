@@ -1,45 +1,30 @@
-using System;
+﻿using System;
 using System.Linq;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using Jellyfin.Database.Implementations.Locking;
-using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
-public sealed class PeopleRepositoryUpdatePeopleTests : IDisposable
+public sealed class PeopleRepositoryUpdatePeopleTests : SqliteDbTestFixture
 {
     private static readonly Guid _itemId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 
-    private readonly SqliteConnection _connection;
-    private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly PeopleRepository _repository;
 
     public PeopleRepositoryUpdatePeopleTests()
     {
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
-        _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-
         var itemTypeLookup = new ItemTypeLookup();
 
         using (var ctx = CreateDbContext())
         {
-            ctx.Database.EnsureCreated();
             ctx.BaseItems.Add(new BaseItemEntity
             {
                 Id = _itemId,
@@ -53,18 +38,10 @@ public sealed class PeopleRepositoryUpdatePeopleTests : IDisposable
             ctx.SaveChanges();
         }
 
-        var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
-        factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
-
         _repository = new PeopleRepository(
-            factory.Object,
+            CreateDbContextFactory(),
             itemTypeLookup,
             new Mock<IItemQueryHelpers>().Object);
-    }
-
-    public void Dispose()
-    {
-        _connection.Dispose();
     }
 
     [Fact]
@@ -173,14 +150,5 @@ public sealed class PeopleRepositoryUpdatePeopleTests : IDisposable
             Type = type,
             Role = role
         };
-    }
-
-    private JellyfinDbContext CreateDbContext()
-    {
-        return new JellyfinDbContext(
-            _dbOptions,
-            NullLogger<JellyfinDbContext>.Instance,
-            new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
-            new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
     }
 }

@@ -1,51 +1,29 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Database.Implementations;
-using Jellyfin.Database.Implementations.Locking;
-using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Server.Implementations.Item;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
-public sealed class ItemPersistenceOwnedRowTests : IDisposable
+public sealed class ItemPersistenceOwnedRowTests : SqliteDbTestFixture
 {
-    private readonly SqliteConnection _connection;
-    private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly ItemPersistenceService _service;
-    private readonly IApplicationPaths _applicationPaths;
     private readonly ILibraryManager? _previousLibraryManager;
     private readonly IServerConfigurationManager? _previousConfigurationManager;
 
     public ItemPersistenceOwnedRowTests()
     {
-        _applicationPaths = new Mock<IApplicationPaths>().Object;
-
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
-        _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-
-        using (var ctx = CreateDbContext())
-        {
-            ctx.Database.EnsureCreated();
-        }
-
         // BaseItem resolves these through process-wide statics; restored in Dispose.
         _previousLibraryManager = BaseItem.LibraryManager;
         _previousConfigurationManager = BaseItem.ConfigurationManager;
@@ -59,20 +37,17 @@ public sealed class ItemPersistenceOwnedRowTests : IDisposable
         configurationManager.Setup(c => c.Configuration).Returns(new ServerConfiguration());
         BaseItem.ConfigurationManager = configurationManager.Object;
 
-        var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
-        factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
-
         _service = new ItemPersistenceService(
-            factory.Object,
+            CreateDbContextFactory(),
             new Mock<IServerApplicationHost>().Object,
             NullLogger<ItemPersistenceService>.Instance);
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
         BaseItem.LibraryManager = _previousLibraryManager!;
         BaseItem.ConfigurationManager = _previousConfigurationManager!;
-        _connection.Dispose();
+        base.Dispose(disposing);
     }
 
     [Fact]
@@ -140,10 +115,4 @@ public sealed class ItemPersistenceOwnedRowTests : IDisposable
         book.SetImage(new ItemImageInfo { Path = "/img/primary.jpg", Type = ImageType.Primary }, 0);
         return book;
     }
-
-    private JellyfinDbContext CreateDbContext() => new(
-        _dbOptions,
-        NullLogger<JellyfinDbContext>.Instance,
-        new SqliteDatabaseProvider(_applicationPaths, NullLogger<SqliteDatabaseProvider>.Instance),
-        new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
 }

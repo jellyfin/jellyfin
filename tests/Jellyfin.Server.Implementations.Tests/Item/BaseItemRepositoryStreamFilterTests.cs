@@ -1,37 +1,25 @@
-using System;
+﻿using System;
 using System.Linq;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using Jellyfin.Database.Implementations.Locking;
-using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Server.Implementations.Item;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Configuration;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 using Xunit;
 using LinkedChildType = Jellyfin.Database.Implementations.Entities.LinkedChildType;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
 /// <summary>
-/// Covers the filters that resolve "folders with a matching descendant" through
-/// <see cref="DescendantQueryHelper.GetFolderIdsMatching"/>, both in their positive and their
-/// negated form, so the sub-selects they build stay translatable on the SQLite provider.
+/// Covers the filters resolving "folders with a matching descendant" through
+/// <see cref="DescendantQueryHelper.GetFolderIdsMatching"/>, positive and negated.
 /// </summary>
-public sealed class BaseItemRepositoryStreamFilterTests : IDisposable
+public sealed class BaseItemRepositoryStreamFilterTests : SqliteDbTestFixture
 {
     private const string FolderType = "MediaBrowser.Controller.Entities.Folder";
     private const string BoxSetType = "MediaBrowser.Controller.Entities.Movies.BoxSet";
     private const string MovieType = "MediaBrowser.Controller.Entities.Movies.Movie";
 
-    private readonly SqliteConnection _connection;
-    private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly BaseItemRepository _repository;
 
     private readonly Guid _library = Guid.NewGuid();
@@ -43,34 +31,13 @@ public sealed class BaseItemRepositoryStreamFilterTests : IDisposable
 
     public BaseItemRepositoryStreamFilterTests()
     {
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
-        _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-
         using (var ctx = CreateDbContext())
         {
-            ctx.Database.EnsureCreated();
             Seed(ctx);
         }
 
-        var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
-        factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
-
-        var serverConfigurationManager = new Mock<IServerConfigurationManager>();
-        serverConfigurationManager.Setup(c => c.Configuration).Returns(new ServerConfiguration());
-
-        _repository = new BaseItemRepository(
-            factory.Object,
-            new Mock<IServerApplicationHost>().Object,
-            new ItemTypeLookup(),
-            serverConfigurationManager.Object,
-            NullLogger<BaseItemRepository>.Instance);
+        _repository = CreateBaseItemRepository(new ItemTypeLookup());
     }
-
-    public void Dispose() => _connection.Dispose();
 
     [Fact]
     public void HasSubtitles_MatchesTheItemAndItsParentFolder()
@@ -115,7 +82,6 @@ public sealed class BaseItemRepositoryStreamFilterTests : IDisposable
     {
         var ids = _repository.GetItemIdsList(new InternalItemsQuery { HasSubtitles = true });
 
-        // The collection links the series, and the subtitles hang off the series' episode.
         Assert.Contains(_linkedSeries, ids);
         Assert.Contains(_collection, ids);
     }
@@ -214,11 +180,4 @@ public sealed class BaseItemRepositoryStreamFilterTests : IDisposable
 
         context.SaveChanges();
     }
-
-    private JellyfinDbContext CreateDbContext()
-        => new JellyfinDbContext(
-            _dbOptions,
-            NullLogger<JellyfinDbContext>.Instance,
-            new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
-            new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
 }
