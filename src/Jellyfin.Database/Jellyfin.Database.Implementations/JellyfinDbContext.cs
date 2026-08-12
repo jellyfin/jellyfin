@@ -134,6 +134,16 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<BaseItemTag> BaseItemTags => Set<BaseItemTag>();
 
     /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> linking items to the genre items they carry.
+    /// </summary>
+    public DbSet<BaseItemGenre> BaseItemGenres => Set<BaseItemGenre>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> linking items to the studio items they carry.
+    /// </summary>
+    public DbSet<BaseItemStudio> BaseItemStudios => Set<BaseItemStudio>();
+
+    /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/>.
     /// </summary>
     public DbSet<MediaStreamInfo> MediaStreamInfos => Set<MediaStreamInfo>();

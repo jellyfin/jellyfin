@@ -135,6 +135,10 @@ public class ItemPersistenceService : IItemPersistenceService
         context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDelete();
         context.ItemValuesMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.BaseItemTags.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        context.BaseItemGenres.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        context.BaseItemStudios.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        context.BaseItemGenres.WhereOneOrMany(relatedItems, e => e.GenreItemId).ExecuteDelete();
+        context.BaseItemStudios.WhereOneOrMany(relatedItems, e => e.StudioItemId).ExecuteDelete();
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ParentId).ExecuteDelete();
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ChildId).ExecuteDelete();
         context.BaseItems.WhereOneOrMany(relatedItems, e => e.Id).ExecuteDelete();
@@ -272,67 +276,8 @@ public class ItemPersistenceService : IItemPersistenceService
             }
         }
 
-        var itemValueMaps = tuples
-            .Select(e => (e.Item, Values: GetItemValuesToSave(e.Item)))
-            .ToArray();
-        var allListedItemValues = itemValueMaps
-            .SelectMany(f => f.Values)
-            .Distinct()
-            .ToArray();
-
-        var types = allListedItemValues.Select(e => e.MagicNumber).Distinct().ToArray();
-        var values = allListedItemValues.Select(e => e.Value).Distinct().ToArray();
-        var allListedItemValuesSet = allListedItemValues.ToHashSet();
-
-        var existingValues = context.ItemValues
-            .Where(e => types.Contains(e.Type) && values.Contains(e.Value))
-            .AsEnumerable()
-            .Where(e => allListedItemValuesSet.Contains((e.Type, e.Value)))
-            .ToArray();
-        var missingItemValues = allListedItemValues.Except(existingValues.Select(f => (MagicNumber: f.Type, f.Value))).Select(f => new ItemValue()
-        {
-            CleanValue = f.Value.GetCleanValue(),
-            ItemValueId = Guid.NewGuid(),
-            Type = f.MagicNumber,
-            Value = f.Value
-        }).ToArray();
-        context.ItemValues.AddRange(missingItemValues);
-
-        var itemValuesStore = existingValues
-            .Concat(missingItemValues)
-            .ToDictionary(e => (e.Type, e.Value));
-        var valueMap = itemValueMaps
-            .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore[(e.MagicNumber, e.Value)]).DistinctBy(e => e.ItemValueId).ToArray()))
-            .ToArray();
-
-        var mappedValues = context.ItemValuesMap.Where(e => ids.Contains(e.ItemId)).ToList();
-
-        foreach (var item in valueMap)
-        {
-            var itemMappedValues = mappedValues.Where(e => e.ItemId == item.Item.Id).ToList();
-            foreach (var itemValue in item.Values)
-            {
-                var existingItem = itemMappedValues.FirstOrDefault(f => f.ItemValueId == itemValue.ItemValueId);
-                if (existingItem is null)
-                {
-                    context.ItemValuesMap.Add(new ItemValueMap()
-                    {
-                        Item = null!,
-                        ItemId = item.Item.Id,
-                        ItemValue = null!,
-                        ItemValueId = itemValue.ItemValueId
-                    });
-                }
-                else
-                {
-                    itemMappedValues.Remove(existingItem);
-                }
-            }
-
-            context.ItemValuesMap.RemoveRange(itemMappedValues);
-        }
-
         UpdateTags(context, tuples, ids);
+        UpdateItemByNameLinks(context, tuples);
 
         var itemsWithAncestors = tuples
             .Where(t => t.Item.SupportsAncestors && t.AncestorIds != null)
@@ -704,16 +649,71 @@ public class ItemPersistenceService : IItemPersistenceService
         }
     }
 
-    private static List<(ItemValueType MagicNumber, string Value)> GetItemValuesToSave(BaseItemDto item)
+    // Ids that were never resolved mean unknown, not none, so those links are left alone.
+    private static void UpdateItemByNameLinks(
+        JellyfinDbContext context,
+        List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey)> tuples)
     {
-        var list = new List<(ItemValueType, string)>();
+        var withGenres = tuples.Select(e => e.Item).Where(e => e.GenreItemIds is not null).ToArray();
+        if (withGenres.Length > 0)
+        {
+            var genreItemIds = withGenres.Select(e => e.Id).ToArray();
+            var existingGenres = context.BaseItemGenres.Where(e => genreItemIds.Contains(e.ItemId)).ToList();
 
-        // Artists are credits, not values, keyed on the artist item. See UpdatePeople.
-        list.AddRange(item.Genres.Select(i => (ItemValueType.Genre, i)));
-        list.AddRange(item.Studios.Select(i => (ItemValueType.Studios, i)));
+            foreach (var item in withGenres)
+            {
+                var itemGenres = existingGenres.Where(e => e.ItemId == item.Id).ToList();
+                foreach (var genreId in item.GenreItemIds)
+                {
+                    var existingLink = itemGenres.FirstOrDefault(e => e.GenreItemId == genreId);
+                    if (existingLink is null)
+                    {
+                        context.BaseItemGenres.Add(new BaseItemGenre()
+                        {
+                            Item = null!,
+                            ItemId = item.Id,
+                            GenreItemId = genreId
+                        });
+                    }
+                    else
+                    {
+                        itemGenres.Remove(existingLink);
+                    }
+                }
 
-        list.RemoveAll(i => string.IsNullOrWhiteSpace(i.Item2));
+                context.BaseItemGenres.RemoveRange(itemGenres);
+            }
+        }
 
-        return list;
+        var withStudios = tuples.Select(e => e.Item).Where(e => e.StudioItemIds is not null).ToArray();
+        if (withStudios.Length > 0)
+        {
+            var studioItemIds = withStudios.Select(e => e.Id).ToArray();
+            var existingStudios = context.BaseItemStudios.Where(e => studioItemIds.Contains(e.ItemId)).ToList();
+
+            foreach (var item in withStudios)
+            {
+                var itemStudios = existingStudios.Where(e => e.ItemId == item.Id).ToList();
+                foreach (var studioId in item.StudioItemIds)
+                {
+                    var existingLink = itemStudios.FirstOrDefault(e => e.StudioItemId == studioId);
+                    if (existingLink is null)
+                    {
+                        context.BaseItemStudios.Add(new BaseItemStudio()
+                        {
+                            Item = null!,
+                            ItemId = item.Id,
+                            StudioItemId = studioId
+                        });
+                    }
+                    else
+                    {
+                        itemStudios.Remove(existingLink);
+                    }
+                }
+
+                context.BaseItemStudios.RemoveRange(itemStudios);
+            }
+        }
     }
 }
