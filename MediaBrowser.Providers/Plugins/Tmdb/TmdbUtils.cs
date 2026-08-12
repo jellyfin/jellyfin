@@ -7,8 +7,10 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
+using TMDbLib.Objects.Companies;
 using TMDbLib.Objects.General;
 using TMDbLib.Objects.TvShows;
+using ItemByNameInfo = MediaBrowser.Controller.Entities.ItemByNameInfo;
 using PersonInfo = MediaBrowser.Controller.Entities.PersonInfo;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb
@@ -332,6 +334,54 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             return string.Equals(imageLanguage, "xx", StringComparison.OrdinalIgnoreCase)
                 ? string.Empty
                 : imageLanguage;
+        }
+
+        /// <summary>
+        /// Carries a genre across with the id TMDb knows it by.
+        /// </summary>
+        /// <param name="genre">The genre.</param>
+        /// <returns>The genre and its TMDb id.</returns>
+        public static ItemByNameInfo ToItemByNameInfo(Genre genre)
+        {
+            ArgumentNullException.ThrowIfNull(genre);
+
+            return WithTmdbId(genre.Name, genre.Id, MetadataProvider.Tmdb);
+        }
+
+        /// <summary>
+        /// Carries a production company across with the id TMDb knows it by.
+        /// </summary>
+        /// <param name="company">The company.</param>
+        /// <returns>The studio and its TMDb id.</returns>
+        public static ItemByNameInfo ToItemByNameInfo(ProductionCompany company)
+        {
+            ArgumentNullException.ThrowIfNull(company);
+
+            return WithTmdbId(company.Name, company.Id, MetadataProvider.Tmdb);
+        }
+
+        /// <summary>
+        /// Carries a network across with the id TMDb knows it by.
+        /// </summary>
+        /// <param name="network">The network.</param>
+        /// <returns>The studio and its TMDb id.</returns>
+        public static ItemByNameInfo ToItemByNameInfo(NetworkWithLogo network)
+        {
+            ArgumentNullException.ThrowIfNull(network);
+
+            // Its own key: network 49 and production company 49 are unrelated studios.
+            return WithTmdbId(network.Name, network.Id, MetadataProvider.TmdbNetwork);
+        }
+
+        private static ItemByNameInfo WithTmdbId(string? name, int id, MetadataProvider provider)
+        {
+            var info = new ItemByNameInfo(name?.Trim() ?? string.Empty);
+            if (id > 0)
+            {
+                info.SetProviderId(provider, id.ToString(CultureInfo.InvariantCulture));
+            }
+
+            return info;
         }
 
         /// <summary>

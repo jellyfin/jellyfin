@@ -6,7 +6,9 @@ using System.Linq;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -17,7 +19,9 @@ namespace Jellyfin.Server.Implementations.Item;
 
 public sealed partial class BaseItemRepository
 {
-    // What the by-name item is reached through.
+    // How many items one pass of a rename holds, bounding a rename of a genre the whole library carries.
+    private const int RenameChunkSize = 500;
+
     private enum ByNameLink
     {
         Credit,
@@ -62,12 +66,6 @@ public sealed partial class BaseItemRepository
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<string> GetStudioNames()
-    {
-        return GetLinkedByNameNames(BaseItemKind.Studio);
-    }
-
-    /// <inheritdoc />
     public IReadOnlyList<string> GetAllArtistNames()
     {
         using var context = _dbProvider.CreateDbContext();
@@ -86,15 +84,168 @@ public sealed partial class BaseItemRepository
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<string> GetMusicGenreNames()
+    public IReadOnlyDictionary<Guid, ItemByNameLinks> GetItemByNameLinks(IReadOnlyList<Guid> itemIds)
     {
-        return GetLinkedByNameNames(BaseItemKind.MusicGenre);
+        ArgumentNullException.ThrowIfNull(itemIds);
+
+        if (itemIds.Count == 0)
+        {
+            return new Dictionary<Guid, ItemByNameLinks>();
+        }
+
+        using var context = _dbProvider.CreateDbContext();
+
+        var genres = context.BaseItemGenres
+            .AsNoTracking()
+            .WhereOneOrMany(itemIds, e => e.ItemId)
+            .Join(
+                context.BaseItems,
+                e => e.GenreItemId,
+                b => b.Id,
+                (e, b) => new { e.ItemId, LinkedId = b.Id, b.Name })
+            .ToList();
+
+        var studios = context.BaseItemStudios
+            .AsNoTracking()
+            .WhereOneOrMany(itemIds, e => e.ItemId)
+            .Join(
+                context.BaseItems,
+                e => e.StudioItemId,
+                b => b.Id,
+                (e, b) => new { e.ItemId, LinkedId = b.Id, b.Name })
+            .ToList();
+
+        var genresByItem = genres
+            .GroupBy(e => e.ItemId)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<NameGuidPair>)[.. g.Select(e => new NameGuidPair { Id = e.LinkedId, Name = e.Name ?? string.Empty })]);
+        var studiosByItem = studios
+            .GroupBy(e => e.ItemId)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<NameGuidPair>)[.. g.Select(e => new NameGuidPair { Id = e.LinkedId, Name = e.Name ?? string.Empty })]);
+
+        var result = new Dictionary<Guid, ItemByNameLinks>(genresByItem.Count + studiosByItem.Count);
+        foreach (var itemId in genresByItem.Keys.Concat(studiosByItem.Keys).Distinct())
+        {
+            result[itemId] = new ItemByNameLinks(
+                genresByItem.GetValueOrDefault(itemId) ?? [],
+                studiosByItem.GetValueOrDefault(itemId) ?? []);
+        }
+
+        return result;
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<string> GetGenreNames()
+    public ByNameRename RenameByNameLinks(Guid byNameItemId, BaseItemKind kind, string newName)
     {
-        return GetLinkedByNameNames(BaseItemKind.Genre);
+        ArgumentException.ThrowIfNullOrEmpty(newName);
+
+        using var context = _dbProvider.CreateDbContext();
+
+        // One transaction over the whole rename, opened before anything is read. Committing it in
+        // pieces would leave the by-name item and the items naming it disagreeing if anything failed
+        // part way, and the next save of one of those items would resolve its old spelling to a second
+        // by-name item. Reading inside it also means the set of links cannot grow behind the rewrite.
+        using var transaction = context.Database.BeginTransaction();
+
+        var previousName = context.BaseItems
+            .AsNoTracking()
+            .Where(e => e.Id.Equals(byNameItemId))
+            .Select(e => e.Name)
+            .FirstOrDefault();
+
+        if (string.IsNullOrEmpty(previousName) || string.Equals(previousName, newName, StringComparison.Ordinal))
+        {
+            return ByNameRename.None;
+        }
+
+        var isStudio = kind == BaseItemKind.Studio;
+
+        // Materialised rather than composed: an AsNoTracking sub-query carries that flag into the
+        // query it is composed into, and the rewrite below needs the items tracked to be saved.
+        var linkedIds = isStudio
+            ? context.BaseItemStudios.AsNoTracking().Where(e => e.StudioItemId.Equals(byNameItemId)).Select(e => e.ItemId).ToArray()
+            : context.BaseItemGenres.AsNoTracking().Where(e => e.GenreItemId.Equals(byNameItemId)).Select(e => e.ItemId).ToArray();
+
+        var rewritten = new List<Guid>();
+
+        // The change tracker is emptied between chunks, so what it holds stays bounded however many
+        // items carry the name. The transaction still covers all of them.
+        foreach (var chunk in linkedIds.Chunk(RenameChunkSize))
+        {
+            var linked = context.BaseItems.WhereOneOrMany(chunk, e => e.Id).ToList();
+            var changedInChunk = 0;
+
+            foreach (var item in linked)
+            {
+                var names = isStudio ? item.Studios : item.Genres;
+                if (string.IsNullOrEmpty(names) || !TryRename(names, previousName, newName, out var updated))
+                {
+                    continue;
+                }
+
+                if (isStudio)
+                {
+                    item.Studios = updated;
+                }
+                else
+                {
+                    item.Genres = updated;
+                }
+
+                rewritten.Add(item.Id);
+                changedInChunk++;
+            }
+
+            if (changedInChunk > 0)
+            {
+                context.SaveChanges();
+            }
+
+            context.ChangeTracker.Clear();
+        }
+
+        // Last and in the same transaction, so the name the items now carry is the one the by-name item
+        // ends up with, whether or not the caller goes on to save it.
+        var byNameItem = context.BaseItems.FirstOrDefault(e => e.Id.Equals(byNameItemId));
+        if (byNameItem is null)
+        {
+            // Gone since the name was read, so there is nothing to rename and nothing to have rewritten.
+            transaction.Rollback();
+            return ByNameRename.None;
+        }
+
+        byNameItem.Name = newName;
+        byNameItem.CleanName = newName.GetCleanValue();
+        context.SaveChanges();
+
+        transaction.Commit();
+
+        return new ByNameRename(previousName, rewritten);
+    }
+
+    // The names sit in one delimited column, so the whole value is rewritten rather than a substring of
+    // it: replacing "Sci-Fi" inside "Sci-Fi Horror" would corrupt a name that merely contains it.
+    private static bool TryRename(string names, string previousName, string newName, out string updated)
+    {
+        var parts = names.Split('|');
+        var changed = false;
+        for (var i = 0; i < parts.Length; i++)
+        {
+            if (string.Equals(parts[i], previousName, StringComparison.OrdinalIgnoreCase))
+            {
+                parts[i] = newName;
+                changed = true;
+            }
+        }
+
+        if (!changed)
+        {
+            updated = names;
+            return false;
+        }
+
+        // Deduplicated, because the item may already carry the name it is being renamed onto.
+        updated = string.Join('|', parts.Distinct(StringComparer.OrdinalIgnoreCase));
+        return true;
     }
 
     /// <inheritdoc />
@@ -131,24 +282,6 @@ public sealed partial class BaseItemRepository
             .ToArray();
     }
 
-    // From the links, so a genre or studio is listed under the name its item carries now.
-    private string[] GetLinkedByNameNames(BaseItemKind kind)
-    {
-        using var context = _dbProvider.CreateDbContext();
-
-        var typeName = _itemTypeLookup.BaseItemKindNames[kind];
-        var linkedIds = kind == BaseItemKind.Studio
-            ? context.BaseItemStudios.Select(e => e.StudioItemId)
-            : context.BaseItemGenres.Select(e => e.GenreItemId);
-
-        return context.BaseItems
-            .AsNoTracking()
-            .Where(e => e.Type == typeName && e.Name != null && linkedIds.Contains(e.Id))
-            .Select(e => e.Name!)
-            .Distinct()
-            .ToArray();
-    }
-
     private QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetItemsByName(
         InternalItemsQuery filter,
         ByNameLink link,
@@ -157,7 +290,7 @@ public sealed partial class BaseItemRepository
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        if (link == ByNameLink.Credit == (personKinds is null))
+        if ((link == ByNameLink.Credit) != (personKinds is not null))
         {
             throw new ArgumentException("Credit kinds apply to credits and nothing else.", nameof(personKinds));
         }

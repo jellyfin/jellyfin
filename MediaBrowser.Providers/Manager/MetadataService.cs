@@ -586,6 +586,10 @@ namespace MediaBrowser.Providers.Manager
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToArray();
 
+                item.GenreInfos = children.SelectMany(i => i.GenreInfos)
+                    .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
                 if (currentList.Length != item.Genres.Length || !currentList.Order().SequenceEqual(item.Genres.Order(), StringComparer.OrdinalIgnoreCase))
                 {
                     updateType |= ItemUpdateType.MetadataEdit;
@@ -605,6 +609,10 @@ namespace MediaBrowser.Providers.Manager
 
                 item.Studios = children.SelectMany(i => i.Studios)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+                item.StudioInfos = children.SelectMany(i => i.StudioInfos)
+                    .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
                     .ToArray();
 
                 if (currentList.Length != item.Studios.Length || !currentList.Order().SequenceEqual(item.Studios.Order(), StringComparer.OrdinalIgnoreCase))
@@ -1195,6 +1203,16 @@ namespace MediaBrowser.Providers.Manager
                 if (replaceData || target.Genres.Length == 0)
                 {
                     target.Genres = source.Genres;
+                    target.GenreInfos = source.GenreInfos;
+                }
+                else
+                {
+                    // The names the target keeps, but the ids the source knows them by are still worth
+                    // having: without them the genres resolve by name alone.
+                    target.GenreInfos = target.GenreInfos
+                        .Concat(source.GenreInfos)
+                        .DistinctBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
+                        .ToArray();
                 }
             }
 
@@ -1277,10 +1295,16 @@ namespace MediaBrowser.Providers.Manager
                 if (replaceData || target.Studios.Length == 0)
                 {
                     target.Studios = source.Studios;
+                    target.StudioInfos = source.StudioInfos;
                 }
                 else
                 {
                     target.Studios = target.Studios.Concat(source.Studios).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+
+                    target.StudioInfos = target.StudioInfos
+                        .Concat(source.StudioInfos)
+                        .DistinctBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
+                        .ToArray();
                 }
             }
 

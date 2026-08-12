@@ -90,5 +90,24 @@ namespace MediaBrowser.Model.Entities
         /// The MusicBrainz recording provider.
         /// </summary>
         MusicBrainzRecording = 20,
+
+        /// <summary>
+        /// The MusicBrainz genre provider.
+        /// </summary>
+        MusicBrainzGenre = 21,
+
+        /// <summary>
+        /// The MusicBrainz label provider.
+        /// </summary>
+        MusicBrainzLabel = 22,
+
+        /// <summary>
+        /// The TMDb network provider.
+        /// </summary>
+        /// <remarks>
+        /// TMDb numbers networks and production companies separately, so a network cannot share the
+        /// key a company is stored under.
+        /// </remarks>
+        TmdbNetwork = 23,
     }
 }
