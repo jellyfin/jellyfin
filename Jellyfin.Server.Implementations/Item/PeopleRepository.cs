@@ -287,28 +287,52 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<string> GetUnlinkedPeopleNames()
+    public IReadOnlyList<PersonInfo> GetUnlinkedCredits()
     {
         using var context = _dbProvider.CreateDbContext();
 
-        return context.Peoples
+        // The kind decides what the credit belongs to: an Artist resolves to a MusicArtist.
+        var rows = context.Peoples
             .AsNoTracking()
             .Where(p => !context.BaseItems.Any(b => b.Id == p.ItemId))
-            .Select(p => p.Name)
+            .Select(p => new { p.Name, p.PersonType })
             .Distinct()
             .ToArray();
+
+        var credits = new List<PersonInfo>(rows.Length);
+        foreach (var row in rows)
+        {
+            // Anything that is not a kind's name, numbers included, is a plain person credit.
+            var credit = new PersonInfo { Name = row.Name };
+            if (!string.IsNullOrEmpty(row.PersonType)
+                && !char.IsDigit(row.PersonType[0])
+                && Enum.TryParse<PersonKind>(row.PersonType, out var kind))
+            {
+                credit.Type = kind;
+            }
+
+            credits.Add(credit);
+        }
+
+        return credits;
     }
 
     /// <inheritdoc/>
-    public int LinkPeopleToItem(string name, Guid personItemId)
+    public int LinkCreditsToItem(string name, PersonKind kind, Guid itemId)
     {
         var cleanName = name.GetCleanValue();
+        string[] artistKinds = [nameof(PersonKind.Artist), nameof(PersonKind.AlbumArtist)];
+        var isArtist = artistKinds.Contains(kind.ToString());
 
         using var context = _dbProvider.CreateDbContext();
 
+        // On the side of the kind as well as the name, or a Composer credit would be pointed at a
+        // MusicArtist. Only the side: a type that parses to no kind still has to be linked somewhere.
         return context.Peoples
-            .Where(p => p.CleanName == cleanName && !context.BaseItems.Any(b => b.Id == p.ItemId))
-            .ExecuteUpdate(s => s.SetProperty(p => p.ItemId, personItemId));
+            .Where(p => p.CleanName == cleanName
+                && (p.PersonType != null && artistKinds.Contains(p.PersonType)) == isArtist
+                && !context.BaseItems.Any(b => b.Id == p.ItemId))
+            .ExecuteUpdate(s => s.SetProperty(p => p.ItemId, itemId));
     }
 
     /// <inheritdoc/>

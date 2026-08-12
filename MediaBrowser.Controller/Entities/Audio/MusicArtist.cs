@@ -151,7 +151,9 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public override string CreatePresentationUniqueKey()
         {
-            return "Artist-" + (Name ?? string.Empty).RemoveDiacritics();
+            // A library folder artist shares the key with its by-name twin; one filed under an
+            // identity suffix is another human of the same name and must not collapse into it.
+            return "Artist-" + (Name ?? string.Empty).RemoveDiacritics() + (IsAccessedByName ? GetIdentitySuffix() : string.Empty);
         }
 
         public override UnratedItem GetBlockUnratedType()

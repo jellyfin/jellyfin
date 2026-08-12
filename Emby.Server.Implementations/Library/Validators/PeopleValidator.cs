@@ -53,9 +53,9 @@ public class PeopleValidator
         }
 
         // Only credits with no live item: one already linked may be credited under another name than
-        // its person's, and getting its person by name would create a phantom the sweep then deletes.
-        var unlinked = _libraryManager.GetUnlinkedPeopleNames();
-        var numCreated = 0;
+        // its item's, and getting its item by name would create a phantom the sweep then deletes.
+        // Every kind: an Artist credit belongs to a MusicArtist, not a Person.
+        var unlinked = _libraryManager.GetUnlinkedCredits();
         var numLinked = 0;
 
         IProgress<double> linkProgress = new Progress<double>(val => progress.Report(val / 2));
@@ -63,23 +63,17 @@ public class PeopleValidator
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var name = unlinked[i];
+            var credit = unlinked[i];
             try
             {
-                var existing = _libraryManager.GetPerson(name);
-                var item = existing ?? _libraryManager.GetOrCreatePerson(name);
+                var item = _libraryManager.GetOrCreateCreditItem(credit.Name, credit.Type);
                 if (item is null)
                 {
-                    _logger.LogWarning("Failed to get or create person: {Name}", name);
+                    _logger.LogWarning("Failed to get or create the item for {Kind} credit {Name}", credit.Type, credit.Name);
                     continue;
                 }
 
-                if (existing is null)
-                {
-                    numCreated++;
-                }
-
-                numLinked += _libraryManager.LinkPeopleToItem(name, item.Id);
+                numLinked += _libraryManager.LinkCreditsToItem(credit.Name, credit.Type, item.Id);
             }
             catch (OperationCanceledException)
             {
@@ -88,7 +82,7 @@ public class PeopleValidator
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error linking credits of {PersonName}", name);
+                _logger.LogError(ex, "Error linking {Kind} credit {Name}", credit.Type, credit.Name);
             }
 
             linkProgress.Report(100d * (i + 1) / unlinked.Count);
@@ -142,8 +136,7 @@ public class PeopleValidator
         }
 
         _logger.LogInformation(
-            "Created {Created} missing people, linked {Linked} credits, deleted {Dead} dead people and refreshed {Refreshed} out of {Total}",
-            numCreated,
+            "Linked {Linked} credits, deleted {Dead} dead people and refreshed {Refreshed} out of {Total}",
             numLinked,
             deadEntities.Count,
             refreshed,

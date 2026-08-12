@@ -114,18 +114,27 @@ namespace MediaBrowser.Controller.Library
         Person? GetOrCreatePerson(string name);
 
         /// <summary>
-        /// Gets the names of the credits that are not linked to a person item yet.
-        /// </summary>
-        /// <returns>The list of credited names whose person item is still unknown.</returns>
-        IReadOnlyList<string> GetUnlinkedPeopleNames();
-
-        /// <summary>
-        /// Links the credits of a name that have no person item yet to the given one.
+        /// Gets the item a credit belongs to, creating it when the library does not hold it yet.
         /// </summary>
         /// <param name="name">The credited name.</param>
-        /// <param name="personItemId">The person item to link them to.</param>
+        /// <param name="kind">The kind of credit, which decides what it belongs to.</param>
+        /// <returns>The item, or <c>null</c> if it could not be created.</returns>
+        BaseItem? GetOrCreateCreditItem(string name, PersonKind kind);
+
+        /// <summary>
+        /// Gets the credits that are not linked to an item yet, by name and kind.
+        /// </summary>
+        /// <returns>The list of credits whose item is still unknown.</returns>
+        IReadOnlyList<PersonInfo> GetUnlinkedCredits();
+
+        /// <summary>
+        /// Links the credits of a name and kind that have no item yet to the given one.
+        /// </summary>
+        /// <param name="name">The credited name.</param>
+        /// <param name="kind">The kind of credit, which decides what it belongs to.</param>
+        /// <param name="itemId">The item to link the credits to.</param>
         /// <returns>The number of credits that were linked.</returns>
-        int LinkPeopleToItem(string name, Guid personItemId);
+        int LinkCreditsToItem(string name, PersonKind kind, Guid itemId);
 
         /// <summary>
         /// Finds the by path.
