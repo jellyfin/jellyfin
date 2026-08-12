@@ -557,7 +557,7 @@ public sealed partial class BaseItemRepository
         if (itemByNameTypes.Contains(personType))
         {
             baseQuery = baseQuery.Where(e => e.Type != personType
-                || context.Peoples.Any(p => p.Name == e.Name
+                || context.Peoples.Any(p => p.ItemId == e.Id
                     && context.PeopleBaseItemMap.Any(m => m.PeopleId == p.Id && accessibleItems.Any(i => i.Id == m.ItemId))));
         }
 
