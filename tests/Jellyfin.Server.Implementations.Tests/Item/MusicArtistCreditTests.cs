@@ -319,42 +319,6 @@ public sealed class MusicArtistCreditTests : IDisposable
     }
 
     [Fact]
-    public void GetItemList_IsDeadArtist_IgnoresAnyArtistValueLeftBehind()
-    {
-        using (var ctx = CreateDbContext())
-        {
-            ctx.PeopleBaseItemMap.RemoveRange(ctx.PeopleBaseItemMap);
-            ctx.Peoples.RemoveRange(ctx.Peoples);
-
-            var value = new ItemValue
-            {
-                ItemValueId = Guid.NewGuid(),
-                Type = ItemValueType.AlbumArtist,
-                Value = "Miles Davis",
-                CleanValue = "miles davis"
-            };
-            ctx.ItemValues.Add(value);
-            ctx.ItemValuesMap.Add(new ItemValueMap
-            {
-                Item = null!,
-                ItemId = _albumId,
-                ItemValue = null!,
-                ItemValueId = value.ItemValueId
-            });
-            ctx.SaveChanges();
-        }
-
-        var result = _repository.GetItemList(new InternalItemsQuery
-        {
-            IncludeItemTypes = [BaseItemKind.MusicArtist],
-            IsDeadArtist = true
-        });
-
-        var item = Assert.Single(result);
-        Assert.Equal(_artistItemId, item.Id);
-    }
-
-    [Fact]
     public void GetItemList_IsDeadArtist_DoesNotClaimARenamedArtist()
     {
         Rename("Miles Dewey Davis III");

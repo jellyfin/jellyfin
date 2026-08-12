@@ -24,7 +24,7 @@ public class People
     /// Gets or Sets the sanitized Name, the key a person is identified by.
     /// </summary>
     /// <remarks>
-    /// Matches <see cref="ItemValue.CleanValue"/> and BaseItemEntity.CleanName.
+    /// Matches BaseItemEntity.CleanName and BaseItemTag.CleanValue.
     /// </remarks>
     public required string CleanName { get; set; }
 

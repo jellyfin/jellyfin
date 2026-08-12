@@ -13,7 +13,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 
 /// <summary>
 /// The by-name endpoints (artists, album artists, genres, studios) all funnel through
-/// <c>GetItemValues</c>. A query without a <c>Limit</c> used to have its total record count
+/// <c>GetItemsByName</c>. A query without a <c>Limit</c> used to have its total record count
 /// silently disabled, so callers got a populated <c>Items</c> array next to a zero total.
 /// </summary>
 public sealed class BaseItemRepositoryByNameTotalCountTests : SqliteDbTestFixture
@@ -102,7 +102,6 @@ public sealed class BaseItemRepositoryByNameTotalCountTests : SqliteDbTestFixtur
 
             var artistId = Guid.Parse($"aaaaaaaa-0000-0000-0000-{i:D12}");
             var songId = Guid.Parse($"55555555-0000-0000-0000-{i:D12}");
-            var valueId = Guid.Parse($"cccccccc-0000-0000-0000-{i:D12}");
 
             var artist = new BaseItemEntity
             {
@@ -127,26 +126,9 @@ public sealed class BaseItemRepositoryByNameTotalCountTests : SqliteDbTestFixtur
                 IsVirtualItem = false
             };
 
-            var itemValue = new ItemValue
-            {
-                ItemValueId = valueId,
-                Type = ItemValueType.Artist,
-                Value = name,
-                CleanValue = cleanName
-            };
-
             ctx.BaseItems.Add(artist);
             ctx.BaseItems.Add(song);
-            ctx.ItemValues.Add(itemValue);
-            ctx.ItemValuesMap.Add(new ItemValueMap
-            {
-                ItemId = songId,
-                ItemValueId = valueId,
-                Item = song,
-                ItemValue = itemValue
-            });
 
-            // The artist listing is driven by the credit, not by the value the song carries.
             var creditId = Guid.Parse($"dddddddd-0000-0000-0000-{i:D12}");
             ctx.Peoples.Add(new People
             {
