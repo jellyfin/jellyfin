@@ -390,6 +390,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         var personInfo = new People()
         {
             Name = people.Name,
+            CleanName = people.Name.GetCleanValue(),
             PersonType = people.Type.ToString(),
             Id = people.Id,
         };
