@@ -86,7 +86,7 @@
     "TasksMaintenanceCategory": "Priežiūra",
     "TaskCleanActivityLog": "Išvalyti veiklos žurnalą",
     "Undefined": "Neapibrėžtas",
-    "Forced": "Priverstinai",
+    "Forced": "Priverstinis",
     "Default": "Numatytas",
     "TaskCleanActivityLogDescription": "Ištrina senesnius nei nustatytas amžius veiklos žurnalo įrašus.",
     "TaskOptimizeDatabase": "Optimizuoti duomenų bazę",
