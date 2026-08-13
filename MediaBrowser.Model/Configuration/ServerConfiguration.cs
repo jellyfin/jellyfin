@@ -97,6 +97,12 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public string MetadataPath { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the collections path.
+    /// </summary>
+    /// <value>The collections path.</value>
+    public string CollectionsPath { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the preferred metadata language.
     /// </summary>
     /// <value>The preferred metadata language.</value>
