@@ -77,9 +77,13 @@ namespace Emby.Server.Implementations.Library
             else if (mode == SubtitlePlaybackMode.Always)
             {
                 // Always load (full/non-forced) subtitles of the user's preferred subtitle language(s) if possible,
-                // preferring earlier languages in the list, otherwise OnlyForced behaviour.
+                // preferring earlier languages in the list. If none of the preferred languages exist, still show
+                // any non-forced track (Always means subtitles on) before falling back to OnlyForced.
                 stream = PreferPreferredLanguageOrder(
                         sortedStreams.Where(x => !x.IsForced && MatchesPreferredLanguage(x.Language, preferredLanguages)),
+                        preferredLanguages)
+                    ?? PreferPreferredLanguageOrder(
+                        sortedStreams.Where(x => !x.IsForced),
                         preferredLanguages)
                     ?? BehaviorOnlyForced(sortedStreams, preferredLanguages).FirstOrDefault();
             }
@@ -138,9 +142,18 @@ namespace Emby.Server.Implementations.Library
             }
             else if (mode == SubtitlePlaybackMode.Always)
             {
-                // Always load (full/non-forced) subtitles of the user's preferred subtitle language if possible, otherwise OnlyForced behavior.
+                // Preferred language(s) first; if none match, score any non-forced track; else OnlyForced.
                 filteredStreams = sortedStreams.Where(s => !s.IsForced && MatchesPreferredLanguage(s.Language, preferredLanguages))
-                    .ToList() ?? BehaviorOnlyForced(sortedStreams, preferredLanguages);
+                    .ToList();
+                if (filteredStreams.Count == 0)
+                {
+                    filteredStreams = sortedStreams.Where(s => !s.IsForced).ToList();
+                }
+
+                if (filteredStreams.Count == 0)
+                {
+                    filteredStreams = BehaviorOnlyForced(sortedStreams, preferredLanguages);
+                }
             }
             else if (mode == SubtitlePlaybackMode.OnlyForced)
             {

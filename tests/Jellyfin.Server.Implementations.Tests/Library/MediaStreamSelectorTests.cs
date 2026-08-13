@@ -159,6 +159,26 @@ public class MediaStreamSelectorTests
     }
 
     [Fact]
+    public void GetDefaultSubtitleStreamIndex_Always_FallsBackToAnyNonForcedWhenPreferredAbsent()
+    {
+        // Single preferred language missing → still enable a full track (not OnlyForced/none).
+        var streams = new MediaStream[]
+        {
+            new() { Index = 0, Type = MediaStreamType.Video },
+            new() { Index = 1, Type = MediaStreamType.Subtitle, Language = "eng", IsForced = false },
+            new() { Index = 2, Type = MediaStreamType.Subtitle, Language = "eng", IsForced = true },
+        };
+
+        Assert.Equal(
+            1,
+            MediaStreamSelector.GetDefaultSubtitleStreamIndex(
+                streams,
+                new[] { "swe" },
+                SubtitlePlaybackMode.Always,
+                "jpn"));
+    }
+
+    [Fact]
     public void GetDefaultSubtitleStreamIndex_Smart_FallsBackWhenPreferredMissing()
     {
         var streams = new MediaStream[]

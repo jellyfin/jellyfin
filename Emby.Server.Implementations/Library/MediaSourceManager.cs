@@ -419,6 +419,59 @@ namespace Emby.Server.Implementations.Library
             return result;
         }
 
+        /// <summary>
+        /// If the preference only contains Swedish or only English, append the other so Always/Smart
+        /// can fall back (Emby-style). Dashboard UI is a single select and routinely drops CSV lists.
+        /// </summary>
+        private IReadOnlyList<string> EnsureSwedishEnglishFallbackChain(IReadOnlyList<string> preferred)
+        {
+            static bool IsSwedish(string lang) =>
+                string.Equals(lang, "swe", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(lang, "sv", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(lang, "sv-se", StringComparison.OrdinalIgnoreCase);
+
+            static bool IsEnglish(string lang) =>
+                string.Equals(lang, "eng", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(lang, "en", StringComparison.OrdinalIgnoreCase)
+                || lang.StartsWith("en-", StringComparison.OrdinalIgnoreCase);
+
+            if (preferred.Count == 0)
+            {
+                return NormalizeLanguage("swe,eng");
+            }
+
+            var hasSwe = preferred.Any(IsSwedish);
+            var hasEng = preferred.Any(IsEnglish);
+            if (hasSwe && hasEng)
+            {
+                return preferred;
+            }
+
+            var merged = new List<string>(preferred);
+            if (hasSwe && !hasEng)
+            {
+                foreach (var code in NormalizeLanguage("eng"))
+                {
+                    if (!merged.Contains(code, StringComparison.OrdinalIgnoreCase))
+                    {
+                        merged.Add(code);
+                    }
+                }
+            }
+            else if (hasEng && !hasSwe)
+            {
+                foreach (var code in NormalizeLanguage("swe"))
+                {
+                    if (!merged.Contains(code, StringComparison.OrdinalIgnoreCase))
+                    {
+                        merged.Add(code);
+                    }
+                }
+            }
+
+            return merged;
+        }
+
         private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
         {
             if (userData is not null
@@ -437,6 +490,8 @@ namespace Emby.Server.Implementations.Library
             }
 
             var preferredSubs = NormalizeLanguage(user.SubtitleLanguagePreference);
+            // Dashboard single-select often wipes "swe,eng" down to one language; keep Emby-style pair.
+            preferredSubs = EnsureSwedishEnglishFallbackChain(preferredSubs);
 
             var defaultAudioIndex = source.DefaultAudioStreamIndex;
             var audioLanguage = defaultAudioIndex is null
