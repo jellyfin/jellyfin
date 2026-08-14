@@ -33,13 +33,10 @@ namespace MediaBrowser.Controller.Entities
             get => _rating;
             set
             {
-                if (value.HasValue)
+                // NaN compares false against every bound, so it must be rejected explicitly.
+                if (value.HasValue && (!double.IsFinite(value.Value) || value.Value < 0 || value.Value > 10))
                 {
-                    // NaN compares false against every bound, so it must be rejected explicitly.
-                    if (!double.IsFinite(value.Value) || value.Value < 0 || value.Value > 10)
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(value), "A 0 to 10 rating is required for UserItemData.");
-                    }
+                    throw new ArgumentOutOfRangeException(nameof(value), "A 0 to 10 rating is required for UserItemData.");
                 }
 
                 _rating = value;
