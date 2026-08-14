@@ -29,6 +29,12 @@ public sealed class BaseItemRepositoryStreamFilterTests : SqliteDbTestFixture
     private readonly Guid _linkedSeries = Guid.NewGuid();
     private readonly Guid _linkedEpisode = Guid.NewGuid();
 
+    // A version group in a library of its own, so it cannot move the assertions above: an SD primary
+    // that carries nothing, and a 4K second file carrying the subtitles, chapter image and audio.
+    private readonly Guid _versionLibrary = Guid.NewGuid();
+    private readonly Guid _versionedMovie = Guid.NewGuid();
+    private readonly Guid _alternateVersion = Guid.NewGuid();
+
     public BaseItemRepositoryStreamFilterTests()
     {
         using (var ctx = CreateDbContext())
@@ -105,6 +111,74 @@ public sealed class BaseItemRepositoryStreamFilterTests : SqliteDbTestFixture
         Assert.DoesNotContain(_withoutSubtitles, ids);
     }
 
+    [Fact]
+    public void HasSubtitles_MatchesAnItemWhoseAlternateVersionCarriesThem()
+    {
+        var ids = _repository.GetItemIdsList(new InternalItemsQuery { HasSubtitles = true });
+
+        Assert.Contains(_versionedMovie, ids);
+        Assert.Contains(_versionLibrary, ids);
+        // The second file is never listed on its own, which is why its tracks have to count for the primary.
+        Assert.DoesNotContain(_alternateVersion, ids);
+    }
+
+    [Fact]
+    public void HasSubtitles_Negated_ExcludesAnItemWhoseAlternateVersionCarriesThem()
+    {
+        var ids = _repository.GetItemIdsList(new InternalItemsQuery { HasSubtitles = false });
+
+        Assert.DoesNotContain(_versionedMovie, ids);
+        Assert.DoesNotContain(_versionLibrary, ids);
+    }
+
+    [Fact]
+    public void SubtitleLanguages_MatchesTheLanguageOnAnAlternateVersion()
+    {
+        Assert.Contains(_versionedMovie, _repository.GetItemIdsList(new InternalItemsQuery { SubtitleLanguages = ["ger"] }));
+        Assert.DoesNotContain(_versionedMovie, _repository.GetItemIdsList(new InternalItemsQuery { SubtitleLanguages = ["fre"] }));
+    }
+
+    [Fact]
+    public void HasNoSubtitleTrackWithLanguage_ExcludesAnItemWhoseAlternateVersionHasIt()
+    {
+        var ids = _repository.GetItemIdsList(new InternalItemsQuery { HasNoSubtitleTrackWithLanguage = "ger" });
+
+        Assert.DoesNotContain(_versionedMovie, ids);
+        Assert.DoesNotContain(_versionLibrary, ids);
+    }
+
+    [Fact]
+    public void AudioLanguages_MatchesTheLanguageOnAnAlternateVersion()
+    {
+        Assert.Contains(_versionedMovie, _repository.GetItemIdsList(new InternalItemsQuery { AudioLanguages = ["fre"] }));
+    }
+
+    [Fact]
+    public void HasNoAudioTrackWithLanguage_ExcludesAnItemWhoseAlternateVersionHasIt()
+    {
+        Assert.DoesNotContain(_versionedMovie, _repository.GetItemIdsList(new InternalItemsQuery { HasNoAudioTrackWithLanguage = "fre" }));
+    }
+
+    [Fact]
+    public void HasChapterImages_MatchesAnItemWhoseAlternateVersionCarriesThem()
+    {
+        Assert.Contains(_versionedMovie, _repository.GetItemIdsList(new InternalItemsQuery { HasChapterImages = true }));
+    }
+
+    [Fact]
+    public void Is4K_MatchesAnItemWhoseAlternateVersionIs4K()
+    {
+        // The primary file is SD; the resolution a caller can actually play is the 4K second file's.
+        Assert.Contains(_versionedMovie, _repository.GetItemIdsList(new InternalItemsQuery { Is4K = true }));
+    }
+
+    [Fact]
+    public void MinWidth_MatchesAnItemWhoseAlternateVersionIsWideEnough()
+    {
+        Assert.Contains(_versionedMovie, _repository.GetItemIdsList(new InternalItemsQuery { MinWidth = 3000 }));
+        Assert.DoesNotContain(_withSubtitles, _repository.GetItemIdsList(new InternalItemsQuery { MinWidth = 3000 }));
+    }
+
     private void Seed(JellyfinDbContext context)
     {
         context.BaseItems.Add(new BaseItemEntity { Id = _library, Type = FolderType, Name = "Library", IsFolder = true });
@@ -178,6 +252,63 @@ public sealed class BaseItemRepositoryStreamFilterTests : SqliteDbTestFixture
             Item = null!
         });
 
+        SeedVersionGroup(context);
+
         context.SaveChanges();
+    }
+
+    // An SD primary whose only extras live on a 4K second file, so every filter has to reach through
+    // PrimaryVersionId to answer correctly.
+    private void SeedVersionGroup(JellyfinDbContext context)
+    {
+        context.BaseItems.Add(new BaseItemEntity { Id = _versionLibrary, Type = FolderType, Name = "Version library", IsFolder = true });
+        context.BaseItems.Add(new BaseItemEntity { Id = _versionedMovie, Type = MovieType, Name = "Versioned movie", Width = 720, Height = 480 });
+        context.BaseItems.Add(new BaseItemEntity
+        {
+            Id = _alternateVersion,
+            Type = MovieType,
+            Name = "Versioned movie 4K",
+            PrimaryVersionId = _versionedMovie,
+            Width = 3840,
+            Height = 2160
+        });
+
+        foreach (var itemId in new[] { _versionedMovie, _alternateVersion })
+        {
+            context.AncestorIds.Add(new AncestorId
+            {
+                ItemId = itemId,
+                ParentItemId = _versionLibrary,
+                Item = null!,
+                ParentItem = null!
+            });
+        }
+
+        context.MediaStreamInfos.Add(new MediaStreamInfo
+        {
+            ItemId = _alternateVersion,
+            StreamIndex = 0,
+            StreamType = MediaStreamTypeEntity.Subtitle,
+            Language = "ger",
+            Item = null!
+        });
+
+        context.MediaStreamInfos.Add(new MediaStreamInfo
+        {
+            ItemId = _alternateVersion,
+            StreamIndex = 1,
+            StreamType = MediaStreamTypeEntity.Audio,
+            Language = "fre",
+            Item = null!
+        });
+
+        context.Chapters.Add(new Chapter
+        {
+            ItemId = _alternateVersion,
+            ChapterIndex = 0,
+            StartPositionTicks = 0,
+            ImagePath = "/alternate-chapter.jpg",
+            Item = null!
+        });
     }
 }

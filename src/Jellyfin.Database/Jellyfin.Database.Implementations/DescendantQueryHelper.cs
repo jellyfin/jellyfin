@@ -102,17 +102,7 @@ public static class DescendantQueryHelper
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(criteria);
 
-        var matchingItemIds = criteria switch
-        {
-            HasSubtitles => context.MediaStreamInfos
-                .Where(ms => ms.StreamType == MediaStreamTypeEntity.Subtitle)
-                .Select(ms => ms.ItemId),
-            HasChapterImages => context.Chapters
-                .Where(c => c.ImagePath != null)
-                .Select(c => c.ItemId),
-            HasMediaStreamType m => GetMatchingMediaStreamItemIds(context, m),
-            _ => throw new ArgumentOutOfRangeException(nameof(criteria), $"Unknown criteria type: {criteria.GetType().Name}")
-        };
+        var matchingItemIds = GetItemIdsMatching(context, criteria);
 
         // One hop up the closure covers every ancestor level.
         var hierarchyAncestors = context.AncestorIds
@@ -144,7 +134,63 @@ public static class DescendantQueryHelper
             .Distinct();
     }
 
-    private static IQueryable<Guid> GetMatchingMediaStreamItemIds(JellyfinDbContext context, HasMediaStreamType criteria)
+    /// <summary>
+    /// Gets a queryable of the IDs of the items whose media matches the criteria.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="criteria">The matching criteria to apply.</param>
+    /// <returns>Queryable of item IDs.</returns>
+    /// <remarks>
+    /// An alternate version is a second file for its primary version and is never listed on its own, so a
+    /// track only that file carries is reported against the primary: the item a caller can actually see.
+    /// </remarks>
+    public static IQueryable<Guid> GetItemIdsMatching(JellyfinDbContext context, FolderMatchCriteria criteria)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(criteria);
+
+        return MatchingMediaOwners(context, criteria)
+            .Select(e => e.PrimaryVersionId ?? e.Id);
+    }
+
+    /// <summary>
+    /// Gets a queryable of the IDs of the primary versions whose alternate version's media matches the
+    /// criteria.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="criteria">The matching criteria to apply.</param>
+    /// <returns>Queryable of primary version item IDs.</returns>
+    /// <remarks>
+    /// For callers that already test an item's own media with their own indexed predicate: this covers
+    /// exactly what such a predicate misses, and the filtered PrimaryVersionId index keeps it to the few
+    /// items that have versions at all.
+    /// </remarks>
+    public static IQueryable<Guid> GetPrimaryVersionIdsMatching(JellyfinDbContext context, FolderMatchCriteria criteria)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(criteria);
+
+        return MatchingMediaOwners(context, criteria)
+            .Where(e => e.PrimaryVersionId.HasValue)
+            .Select(e => e.PrimaryVersionId!.Value);
+    }
+
+    // The items whose own media matches, as their BaseItems rows so the version group can be read off
+    // them. One definition of "matches" per criteria, so the projections above cannot drift apart.
+    private static IQueryable<BaseItemEntity> MatchingMediaOwners(JellyfinDbContext context, FolderMatchCriteria criteria)
+        => criteria switch
+        {
+            HasSubtitles => context.MediaStreamInfos
+                .Where(ms => ms.StreamType == MediaStreamTypeEntity.Subtitle)
+                .Select(ms => ms.Item),
+            HasChapterImages => context.Chapters
+                .Where(c => c.ImagePath != null)
+                .Select(c => c.Item),
+            HasMediaStreamType m => GetMatchingMediaStreams(context, m).Select(ms => ms.Item),
+            _ => throw new ArgumentOutOfRangeException(nameof(criteria), $"Unknown criteria type: {criteria.GetType().Name}")
+        };
+
+    private static IQueryable<MediaStreamInfo> GetMatchingMediaStreams(JellyfinDbContext context, HasMediaStreamType criteria)
     {
         var query = context.MediaStreamInfos
             .Where(ms => ms.StreamType == criteria.StreamType
@@ -157,7 +203,7 @@ public static class DescendantQueryHelper
             query = query.Where(ms => ms.IsExternal == isExternal);
         }
 
-        return query.Select(ms => ms.ItemId);
+        return query;
     }
 
     private static IQueryable<Guid> ClosureDescendants(JellyfinDbContext context, IReadOnlyList<Guid> roots)
