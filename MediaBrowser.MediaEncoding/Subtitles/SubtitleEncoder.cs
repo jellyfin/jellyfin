@@ -501,7 +501,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 && mediaSource.VideoStream is { Width: > 0, Height: > 0 };
         }
 
-        private string GetExtractableSubtitleFormat(MediaStream subtitleStream, MediaSourceInfo mediaSource)
+        private static string GetExtractableSubtitleFormat(MediaStream subtitleStream, MediaSourceInfo mediaSource)
         {
             if (string.Equals(subtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(subtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase)
@@ -523,7 +523,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
         }
 
-        private string GetExtractableSubtitleFileExtension(MediaStream subtitleStream, MediaSourceInfo mediaSource)
+        private static string GetExtractableSubtitleFileExtension(MediaStream subtitleStream, MediaSourceInfo mediaSource)
         {
             // Using .pgssub as file extension is not allowed by ffmpeg. The file extension for pgs subtitles is .sup.
             if (string.Equals(subtitleStream.Codec, "pgssub", StringComparison.OrdinalIgnoreCase))
@@ -684,6 +684,60 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
         }
 
+        /// <summary>
+        /// Tells libavcodec's mov_text decoder the real frame size for a tx3g stream, and records
+        /// its output for the style normalization that follows the extraction.
+        /// </summary>
+        /// <remarks>
+        /// The decoder resolves the track's embedded font size against the frame size, but falls
+        /// back to a 384x288 reference when it isn't told the real one, which inflates burned-in
+        /// text several times over. -width/-height are private AVOptions of that decoder and are
+        /// applied through a stream specifier, so they can only ever reach the tx3g stream they
+        /// are meant for -- any other subtitle stream of the same file is extracted with
+        /// -c:s copy and never even instantiates a decoder.
+        /// See https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/movtextdec.c.
+        /// </remarks>
+        private static void AppendMovTextDecoderOptions(
+            MediaSourceInfo mediaSource,
+            MediaStream subtitleStream,
+            int streamIndex,
+            string outputPath,
+            StringBuilder inputOptions,
+            List<string> movTextOutputPaths)
+        {
+            if (!ShouldExtractMovTextAsAss(subtitleStream, mediaSource))
+            {
+                return;
+            }
+
+            var videoStream = mediaSource.VideoStream;
+
+            inputOptions.Append(CultureInfo.InvariantCulture, $" -width:{streamIndex} {videoStream.Width} -height:{streamIndex} {videoStream.Height}");
+            movTextOutputPaths.Add(outputPath);
+        }
+
+        /// <summary>
+        /// Applies <see cref="FixMovTextStyle"/> to every tx3g track extracted for this source.
+        /// </summary>
+        /// <remarks>
+        /// Only mov_text outputs are collected in <paramref name="movTextOutputPaths"/>, and
+        /// ExtractSubtitlesForFile throws unless every output was written, so each of these is
+        /// guaranteed to exist by the time this runs. A non-empty list also implies a video
+        /// stream with a usable height, since that is what put the entries there.
+        /// </remarks>
+        private async Task NormalizeMovTextOutputs(
+            MediaSourceInfo mediaSource,
+            List<string> movTextOutputPaths,
+            CancellationToken cancellationToken)
+        {
+            var videoHeight = mediaSource.VideoStream?.Height ?? 0;
+
+            foreach (var movTextOutputPath in movTextOutputPaths)
+            {
+                await FixMovTextStyle(movTextOutputPath, videoHeight, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
         private async Task ExtractAllExtractableSubtitlesInternal(
             MediaSourceInfo mediaSource,
             List<MediaStream> subtitleStreams,
@@ -694,7 +748,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var movTextOutputPaths = new List<string>();
             var inputOptions = new StringBuilder();
             var mapOptions = new StringBuilder();
-            var videoStream = mediaSource.VideoStream;
 
             foreach (var subtitleStream in subtitleStreams)
             {
@@ -723,17 +776,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new FileNotFoundException($"Calculated path ({outputPath}) is not valid."));
 
-                // The mov_text (tx3g) decoder resolves its embedded font size against the frame
-                // size, but falls back to a 384x288 reference if it isn't told the real one,
-                // which inflates burned-in text several times over. These are private AVOptions
-                // of that decoder, applied through a stream specifier so they can only ever
-                // reach the tx3g stream they are meant for.
-                // https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/movtextdec.c
-                if (ShouldExtractMovTextAsAss(subtitleStream, mediaSource))
-                {
-                    inputOptions.Append(CultureInfo.InvariantCulture, $" -width:{streamIndex} {videoStream!.Width} -height:{streamIndex} {videoStream.Height}");
-                    movTextOutputPaths.Add(outputPath);
-                }
+                AppendMovTextDecoderOptions(mediaSource, subtitleStream, streamIndex, outputPath, inputOptions, movTextOutputPaths);
 
                 outputPaths.Add(outputPath);
                 mapOptions.Append(CultureInfo.InvariantCulture, $" -map 0:{streamIndex} -an -vn -c:s {outputCodec}{outputFormatOption} -flush_packets 1 \"{outputPath}\"");
@@ -745,16 +788,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 await ExtractSubtitlesForFile(inputPath, args, outputPaths, cancellationToken).ConfigureAwait(false);
 
-                // Only mov_text outputs land in movTextOutputPaths, and ExtractSubtitlesForFile
-                // throws unless every output was written, so each of these is guaranteed to
-                // exist by this point. Any other subtitle stream of the same file is untouched.
-                if (videoStream is { Height: > 0 } movTextReference)
-                {
-                    foreach (var movTextOutputPath in movTextOutputPaths)
-                    {
-                        await FixMovTextStyle(movTextOutputPath, movTextReference.Height.Value, cancellationToken).ConfigureAwait(false);
-                    }
-                }
+                await NormalizeMovTextOutputs(mediaSource, movTextOutputPaths, cancellationToken).ConfigureAwait(false);
 
                 foreach (var outputPath in outputPaths)
                 {
