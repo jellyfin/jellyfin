@@ -333,7 +333,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        return UpdateUserItemRatingInternal(user, item, null);
+        return UpdateUserItemRatingInternal(user, item, null, null);
     }
 
     /// <summary>
@@ -357,16 +357,20 @@ public class UserLibraryController : BaseJellyfinApiController
     /// </summary>
     /// <param name="userId">User id.</param>
     /// <param name="itemId">Item id.</param>
-    /// <param name="likes">Whether this <see cref="UpdateUserItemRating" /> is likes.</param>
+    /// <param name="likes">Whether this <see cref="UpdateUserItemRating" /> is likes. Ignored when <paramref name="rating"/> is supplied.</param>
+    /// <param name="rating">The user's personal rating for the item, from 0 to 10. Takes precedence over <paramref name="likes"/>.</param>
     /// <response code="200">Item rating updated.</response>
+    /// <response code="400">Rating is outside the range 0 to 10.</response>
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
     [HttpPost("UserItems/{itemId}/Rating")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Tags("UserData")]
     public ActionResult<UserItemDataDto?> UpdateUserItemRating(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId,
-        [FromQuery] bool? likes)
+        [FromQuery] bool? likes,
+        [FromQuery, Range(0.0, 10.0)] double? rating)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var user = _userManager.GetUserById(userId.Value);
@@ -383,7 +387,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        return UpdateUserItemRatingInternal(user, item, likes);
+        return UpdateUserItemRatingInternal(user, item, likes, rating);
     }
 
     /// <summary>
@@ -402,7 +406,7 @@ public class UserLibraryController : BaseJellyfinApiController
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId,
         [FromQuery] bool? likes)
-        => UpdateUserItemRating(userId, itemId, likes);
+        => UpdateUserItemRating(userId, itemId, likes, null);
 
     /// <summary>
     /// Gets local trailers for an item.
@@ -694,15 +698,24 @@ public class UserLibraryController : BaseJellyfinApiController
     /// </summary>
     /// <param name="user">The user.</param>
     /// <param name="item">The item.</param>
-    /// <param name="likes">if set to <c>true</c> [likes].</param>
-    private UserItemDataDto? UpdateUserItemRatingInternal(User user, BaseItem item, bool? likes)
+    /// <param name="likes">if set to <c>true</c> [likes]. Ignored when <paramref name="rating"/> has a value.</param>
+    /// <param name="rating">The 0 to 10 rating to store. Takes precedence over <paramref name="likes"/>.</param>
+    private UserItemDataDto? UpdateUserItemRatingInternal(User user, BaseItem item, bool? likes, double? rating)
     {
         // Get the user data for this item
         var data = _userDataRepository.GetUserData(user, item);
 
         if (data is not null)
         {
-            data.Likes = likes;
+            // Likes is derived from Rating, so an explicit rating always wins.
+            if (rating.HasValue)
+            {
+                data.Rating = rating;
+            }
+            else
+            {
+                data.Likes = likes;
+            }
 
             _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
         }
