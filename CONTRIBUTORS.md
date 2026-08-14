@@ -143,6 +143,7 @@
  - [Smith00101010](https://github.com/Smith00101010)
  - [sorinyo2004](https://github.com/sorinyo2004)
  - [Soumyadip Auddy](https://github.com/SoumyadipAuddy)
+ - [st7105](https://github.com/st7105)
  - [sparky8251](https://github.com/sparky8251)
  - [spookbits](https://github.com/spookbits)
  - [ssenart](https://github.com/ssenart)
