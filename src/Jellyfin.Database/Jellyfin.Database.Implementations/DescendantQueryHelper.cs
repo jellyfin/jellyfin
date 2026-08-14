@@ -177,9 +177,17 @@ public static class DescendantQueryHelper
     // Resolves the folders whose linked children lead, at any depth, to a matching item.
     private static List<Guid> ResolveLinkParents(JellyfinDbContext context, IQueryable<Guid> matchingItemIds, IQueryable<Guid> ancestorsOfMatches)
     {
+        // An alternate version is a second file for the item that links it, not a child of it, so that
+        // edge is not walked. It is also the one link a non-folder owns, and there is one per remuxed
+        // movie: walking it would swell this list from the BoxSet and Playlist count to the item count,
+        // and the list is bound into every statement the returned queryable is embedded in.
+        var containerLinks = context.LinkedChildren
+            .Where(e => e.ChildType != LinkedChildType.LocalAlternateVersion
+                && e.ChildType != LinkedChildType.LinkedAlternateVersion);
+
         // A link sits above the closure and above another link alike, so the hop repeats until nothing
-        // new turns up. Only link owners are collected, which bounds it by BoxSets and Playlists.
-        var resolved = context.LinkedChildren
+        // new turns up.
+        var resolved = containerLinks
             .Where(e => matchingItemIds.Contains(e.ChildId) || ancestorsOfMatches.Contains(e.ChildId))
             .Select(e => e.ParentId)
             .Distinct()
@@ -193,11 +201,11 @@ public static class DescendantQueryHelper
                 .WhereOneOrMany(frontier, e => e.ItemId)
                 .Select(e => e.ParentItemId);
 
-            var directLinkParents = context.LinkedChildren
+            var directLinkParents = containerLinks
                 .WhereOneOrMany(frontier, e => e.ChildId)
                 .Select(e => e.ParentId);
 
-            var indirectLinkParents = context.LinkedChildren
+            var indirectLinkParents = containerLinks
                 .Where(e => containingFolders.Contains(e.ChildId))
                 .Select(e => e.ParentId);
 

@@ -364,6 +364,44 @@ public sealed class DescendantQueryHelperTests : SqliteDbTestFixture
     }
 
     [Fact]
+    public void GetFolderIdsMatching_AlternateVersionLinks_AreNotWalked()
+    {
+        var collections = Guid.NewGuid();
+        var boxSet = Guid.NewGuid();
+        var library = Guid.NewGuid();
+        var movie = Guid.NewGuid();
+        var alternateVersion = Guid.NewGuid();
+
+        using (var ctx = CreateDbContext())
+        {
+            AddFolder(ctx, collections);
+            AddItem(ctx, boxSet, BoxSetType, isFolder: true);
+            AddFolder(ctx, library);
+            AddItem(ctx, movie, MovieType);
+            AddItem(ctx, alternateVersion, MovieType);
+
+            AddAncestors(ctx, boxSet, collections);
+            AddAncestors(ctx, movie, library);
+            AddAncestors(ctx, alternateVersion, library);
+            // Only the second file carries the subtitles, and it hangs off the movie by an alternate
+            // version link. The movie is not a folder, so that link is not a parent-child edge.
+            AddLink(ctx, movie, alternateVersion, LinkedChildType.LocalAlternateVersion);
+            AddLink(ctx, boxSet, movie);
+            AddStream(ctx, alternateVersion, MediaStreamTypeEntity.Subtitle);
+            ctx.SaveChanges();
+        }
+
+        using (var ctx = CreateDbContext())
+        {
+            var folders = DescendantQueryHelper.GetFolderIdsMatching(ctx, new HasSubtitles()).ToHashSet();
+
+            // The library still matches: the alternate version carries its own closure. The box set does
+            // not, matching the descendant side, which does not follow a non-folder's links either.
+            Assert.Equal([library], folders);
+        }
+    }
+
+    [Fact]
     public void GetOwnedDescendantIds_IgnoresLinkedChildren()
     {
         var boxSet = Guid.NewGuid();
@@ -472,7 +510,7 @@ public sealed class DescendantQueryHelperTests : SqliteDbTestFixture
     }
 
     // LinkedChildren is keyed on (ParentId, SortOrder), so every link of a parent needs its own slot.
-    private void AddLink(JellyfinDbContext context, Guid parentId, Guid childId)
+    private void AddLink(JellyfinDbContext context, Guid parentId, Guid childId, LinkedChildType childType = LinkedChildType.Manual)
     {
         _linkCounters.TryGetValue(parentId, out var sortOrder);
         _linkCounters[parentId] = sortOrder + 1;
@@ -481,7 +519,7 @@ public sealed class DescendantQueryHelperTests : SqliteDbTestFixture
         {
             ParentId = parentId,
             ChildId = childId,
-            ChildType = LinkedChildType.Manual,
+            ChildType = childType,
             SortOrder = sortOrder
         });
     }
