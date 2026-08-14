@@ -8,17 +8,17 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Jellyfin.Server.Implementations.Migrations
+namespace Jellyfin.Database.Providers.Sqlite.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    [Migration("20260708224751_AddOidcExternalIdentities")]
+    [Migration("20260814195920_AddOidcExternalIdentities")]
     partial class AddOidcExternalIdentities
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
@@ -375,6 +375,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("Path");
 
                     b.HasIndex("PresentationUniqueKey");
+
+                    b.HasIndex("PrimaryVersionId")
+                        .HasFilter("\"PrimaryVersionId\" IS NOT NULL");
 
                     b.HasIndex("SeasonId");
 
@@ -815,22 +818,20 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<Guid>("ParentId")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
                     b.Property<Guid>("ChildId")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("ChildType")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("SortOrder")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("ParentId", "ChildId");
+                    b.HasKey("ParentId", "SortOrder");
 
                     b.HasIndex("ChildId", "ChildType");
 
                     b.HasIndex("ParentId", "ChildType");
-
-                    b.HasIndex("ParentId", "SortOrder");
 
                     b.ToTable("LinkedChildren", (string)null);
 
@@ -1060,11 +1061,11 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "PeopleId", "Role");
 
-                    b.HasIndex("PeopleId");
-
                     b.HasIndex("ItemId", "ListOrder");
 
                     b.HasIndex("ItemId", "SortOrder");
+
+                    b.HasIndex("PeopleId", "ItemId");
 
                     b.ToTable("PeopleBaseItemMap");
 
@@ -1228,6 +1229,29 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
 
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.Security.DeviceOptions", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CustomName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DeviceId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceId")
+                        .IsUnique();
+
+                    b.ToTable("DeviceOptions");
+
+                    b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
+                });
+
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.Security.OidcExternalIdentity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1268,36 +1292,13 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProviderId", "Issuer", "Subject")
-                        .IsUnique();
-
                     b.HasIndex("UserId", "ProviderId")
                         .IsUnique();
 
-                    b.ToTable("OidcExternalIdentities");
-
-                    b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
-                });
-
-            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.Security.DeviceOptions", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("CustomName")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DeviceId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DeviceId")
+                    b.HasIndex("ProviderId", "Issuer", "Subject")
                         .IsUnique();
 
-                    b.ToTable("DeviceOptions");
+                    b.ToTable("OidcExternalIdentities");
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
