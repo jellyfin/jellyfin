@@ -55,7 +55,12 @@ public static class OrderMapper
             (ItemSortBy.Random, _) => e => EF.Functions.Random(),
             (ItemSortBy.PlayCount, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.PlayCount,
             (ItemSortBy.IsFavoriteOrLiked, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).Select(f => (bool?)f.IsFavorite).FirstOrDefault() ?? false,
-            (ItemSortBy.UserRating, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).Select(f => f.Rating).FirstOrDefault(),
+            (ItemSortBy.UserRating, not null) => e =>
+                jellyfinDbContext.UserData
+                    .Where(w => w.UserId == query.User.Id && w.ItemId == e.Id)
+                    .OrderBy(w => w.CustomDataKey)
+                    .Select(w => w.Rating)
+                    .FirstOrDefault(),
             (ItemSortBy.IsFolder, _) => e => e.IsFolder,
             (ItemSortBy.IsPlayed, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.Played,
             (ItemSortBy.IsUnplayed, _) => e => !e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.Played,
