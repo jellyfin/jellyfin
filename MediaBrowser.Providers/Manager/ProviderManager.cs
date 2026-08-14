@@ -58,6 +58,12 @@ namespace MediaBrowser.Providers.Manager
         /// </summary>
         private const long MaxRemoteImageSizeBytes = 30 * 1024 * 1024;
 
+        /// <summary>
+        /// Copy buffer size for remote image downloads. Kept small so the rented array stays in a
+        /// pooled bucket well below the large object heap threshold.
+        /// </summary>
+        private const int RemoteImageCopyBufferSize = 8192;
+
         private readonly Lock _refreshQueueLock = new();
         private readonly ILogger<ProviderManager> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -276,8 +282,11 @@ namespace MediaBrowser.Providers.Manager
             var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             await using (contentStream.ConfigureAwait(false))
             {
-                using var memoryStream = new MemoryStream();
-                var buffer = ArrayPool<byte>.Shared.Rent(81920);
+                // Pre-size from the advertised length when it is present and sane, so the common case
+                // does not repeatedly double the backing array.
+                var initialCapacity = (int)Math.Clamp(response.Content.Headers.ContentLength ?? 0, 0, MaxRemoteImageSizeBytes);
+                using var memoryStream = new MemoryStream(initialCapacity);
+                var buffer = ArrayPool<byte>.Shared.Rent(RemoteImageCopyBufferSize);
                 try
                 {
                     int bytesRead;
