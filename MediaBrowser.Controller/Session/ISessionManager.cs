@@ -238,23 +238,26 @@ namespace MediaBrowser.Controller.Session
         /// <summary>
         /// Adds the additional user.
         /// </summary>
+        /// <param name="controllingSessionId">The controlling session identifier.</param>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="userId">The user identifier.</param>
-        void AddAdditionalUser(string sessionId, Guid userId);
+        void AddAdditionalUser(string controllingSessionId, string sessionId, Guid userId);
 
         /// <summary>
         /// Removes the additional user.
         /// </summary>
+        /// <param name="controllingSessionId">The controlling session identifier.</param>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="userId">The user identifier.</param>
-        void RemoveAdditionalUser(string sessionId, Guid userId);
+        void RemoveAdditionalUser(string controllingSessionId, string sessionId, Guid userId);
 
         /// <summary>
         /// Reports the now viewing item.
         /// </summary>
+        /// <param name="controllingSessionId">The controlling session identifier.</param>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="itemId">The item identifier.</param>
-        void ReportNowViewingItem(string sessionId, string itemId);
+        void ReportNowViewingItem(string controllingSessionId, string sessionId, string itemId);
 
         /// <summary>
         /// Authenticates the new session.
@@ -268,9 +271,10 @@ namespace MediaBrowser.Controller.Session
         /// <summary>
         /// Reports the capabilities.
         /// </summary>
+        /// <param name="controllingSessionId">The controlling session identifier.</param>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="capabilities">The capabilities.</param>
-        void ReportCapabilities(string sessionId, ClientCapabilities capabilities);
+        void ReportCapabilities(string controllingSessionId, string sessionId, ClientCapabilities capabilities);
 
         /// <summary>
         /// Reports the transcoding information.
