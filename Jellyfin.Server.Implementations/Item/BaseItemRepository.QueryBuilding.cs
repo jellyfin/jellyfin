@@ -113,10 +113,8 @@ public sealed partial class BaseItemRepository
             var groupedIds = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.Min(x => x.Id));
             dbQuery = context.BaseItems.AsNoTracking().Where(e => groupedIds.Contains(e.Id));
         }
-        else
-        {
-            dbQuery = dbQuery.Distinct();
-        }
+
+        // No else branch: without grouping there is nothing to de-duplicate.
 
         if (filter.CollapseBoxSetItems == true)
         {
