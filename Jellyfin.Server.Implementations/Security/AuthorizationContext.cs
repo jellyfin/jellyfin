@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Queries;
 using Jellyfin.Database.Implementations;
@@ -20,6 +21,17 @@ namespace Jellyfin.Server.Implementations.Security
 {
     public class AuthorizationContext : IAuthorizationContext
     {
+        /// <summary>
+        /// How long a device's last activity may go stale before it is written back.
+        /// </summary>
+        private static readonly TimeSpan _activityUpdateInterval = TimeSpan.FromMinutes(3);
+
+        /// <summary>
+        /// Guards the read-then-write of a device's last activity, so a burst of parallel requests
+        /// produces one database write instead of one per request.
+        /// </summary>
+        private static readonly Lock _activityLock = new();
+
         private readonly IDbContextFactory<JellyfinDbContext> _jellyfinDbProvider;
         private readonly IUserManager _userManager;
         private readonly IDeviceManager _deviceManager;
@@ -174,10 +186,15 @@ namespace Jellyfin.Server.Implementations.Security
                     }
                 }
 
-                if ((DateTime.UtcNow - device.DateLastActivity).TotalMinutes > 3)
+                // The device is the instance the manager caches.
+                lock (_activityLock)
                 {
-                    device.DateLastActivity = DateTime.UtcNow;
-                    updateToken = true;
+                    var now = DateTime.UtcNow;
+                    if (now - device.DateLastActivity > _activityUpdateInterval)
+                    {
+                        device.DateLastActivity = now;
+                        updateToken = true;
+                    }
                 }
 
                 authInfo.User = _userManager.GetUserById(device.UserId);
