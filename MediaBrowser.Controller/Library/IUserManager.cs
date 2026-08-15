@@ -82,6 +82,15 @@ namespace MediaBrowser.Controller.Library
         Task UpdateUserAsync(User user);
 
         /// <summary>
+        /// Records that a user was active. Writes at most once per minute per user, so this can be
+        /// called on every request rather than going through <see cref="UpdateUserAsync"/>.
+        /// </summary>
+        /// <param name="userId">The id of the user.</param>
+        /// <param name="activityDate">When the activity happened.</param>
+        /// <returns>A task representing the update of the activity date.</returns>
+        Task RecordUserActivityAsync(Guid userId, DateTime activityDate);
+
+        /// <summary>
         /// Creates a user with the specified name.
         /// </summary>
         /// <param name="name">The name of the new user.</param>

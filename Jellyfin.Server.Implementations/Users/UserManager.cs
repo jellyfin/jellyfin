@@ -56,6 +56,9 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly ConcurrentDictionary<Guid, User> _userCache = new();
         private long _cacheVersion;
 
+        private static readonly TimeSpan ActivityWriteInterval = TimeSpan.FromSeconds(60);
+        private readonly ConcurrentDictionary<Guid, DateTime> _lastActivityWrite = new();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager"/> class.
         /// </summary>
@@ -152,6 +155,52 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             return user;
+        }
+
+        /// <inheritdoc/>
+        public async Task RecordUserActivityAsync(Guid userId, DateTime activityDate)
+        {
+            if (!ClaimActivityWrite(userId, activityDate))
+            {
+                return;
+            }
+
+            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+            await using (dbContext.ConfigureAwait(false))
+            {
+                await dbContext.Users
+                    .Where(u => u.Id == userId)
+                    .ExecuteUpdateAsync(e => e.SetProperty(f => f.LastActivityDate, activityDate))
+                    .ConfigureAwait(false);
+            }
+
+            InvalidateUser(userId);
+        }
+
+        private bool ClaimActivityWrite(Guid userId, DateTime activityDate)
+        {
+            while (true)
+            {
+                if (!_lastActivityWrite.TryGetValue(userId, out var written))
+                {
+                    if (_lastActivityWrite.TryAdd(userId, activityDate))
+                    {
+                        return true;
+                    }
+
+                    continue;
+                }
+
+                if (activityDate - written < ActivityWriteInterval)
+                {
+                    return false;
+                }
+
+                if (_lastActivityWrite.TryUpdate(userId, activityDate, written))
+                {
+                    return true;
+                }
+            }
         }
 
         private void InvalidateUser(Guid userId)
@@ -397,6 +446,8 @@ namespace Jellyfin.Server.Implementations.Users
                     dbContext.Users.Remove(user);
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
                     InvalidateUser(userId);
+
+                    _lastActivityWrite.TryRemove(userId, out _);
                 }
             }
 

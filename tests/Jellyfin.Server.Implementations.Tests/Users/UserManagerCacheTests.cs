@@ -127,6 +127,48 @@ public sealed class UserManagerCacheTests : IDisposable
     }
 
     [Fact]
+    public async Task RecordUserActivityAsync_MakesTheNewDateVisible()
+    {
+        var created = await _userManager.CreateUserAsync("activity-user");
+        var before = _userManager.GetUserById(created.Id);
+        var activityDate = DateTime.UtcNow;
+
+        await _userManager.RecordUserActivityAsync(created.Id, activityDate);
+
+        var after = _userManager.GetUserById(created.Id);
+        Assert.NotSame(before, after);
+        Assert.Equal(activityDate, after!.LastActivityDate!.Value, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public async Task RecordUserActivityAsync_WithinTheInterval_DoesNotWriteAgain()
+    {
+        var created = await _userManager.CreateUserAsync("throttled-user");
+        var first = DateTime.UtcNow;
+        await _userManager.RecordUserActivityAsync(created.Id, first);
+
+        // Every request of an active session calls this; only one write a minute may reach the row.
+        await _userManager.RecordUserActivityAsync(created.Id, first.AddSeconds(5));
+
+        var stored = _userManager.GetUserById(created.Id);
+        Assert.Equal(first, stored!.LastActivityDate!.Value, TimeSpan.FromMilliseconds(500));
+    }
+
+    [Fact]
+    public async Task RecordUserActivityAsync_AfterTheInterval_WritesAgain()
+    {
+        var created = await _userManager.CreateUserAsync("stale-user");
+        var first = DateTime.UtcNow;
+        await _userManager.RecordUserActivityAsync(created.Id, first);
+
+        var later = first.AddMinutes(2);
+        await _userManager.RecordUserActivityAsync(created.Id, later);
+
+        var stored = _userManager.GetUserById(created.Id);
+        Assert.Equal(later, stored!.LastActivityDate!.Value, TimeSpan.FromMilliseconds(500));
+    }
+
+    [Fact]
     public async Task RenameUser_MakesTheNewNameVisible()
     {
         var created = await _userManager.CreateUserAsync("old-name");
