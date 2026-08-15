@@ -182,6 +182,13 @@ namespace Jellyfin.Server.Extensions
                         options.Scope.Add(scope);
                     }
 
+                    // OpenIdConnectOptions deletes the "iss" claim by default, and the
+                    // handler runs the claim actions whether or not the UserInfo endpoint
+                    // is used. External identities are keyed on issuer and subject, so
+                    // dropping "iss" makes every sign-in fail validation. Keep the claim
+                    // that the handler already validated against the authority metadata.
+                    options.ClaimActions.Remove("iss");
+
                     options.ClaimActions.MapUniqueJsonKey(provider.UsernameClaim, provider.UsernameClaim);
                     options.ClaimActions.MapUniqueJsonKey(provider.EmailClaim, provider.EmailClaim);
                     options.ClaimActions.MapJsonKey(provider.RoleClaim, provider.RoleClaim);
