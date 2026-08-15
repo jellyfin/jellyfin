@@ -24,7 +24,7 @@ public sealed partial class BaseItemRepository
         PrepareFilterQuery(filter);
 
         using var context = _dbProvider.CreateDbContext();
-        return ApplyQueryFilter(context.BaseItems.AsNoTracking().Where(e => e.Id != EF.Constant(PlaceholderId)), context, filter).Select(e => e.Id).ToArray();
+        return ApplyQueryFilter(context.BaseItems.AsNoTracking().Where(e => e.Id != EF.Constant(PlaceholderId)), context, filter).ToArray();
     }
 
     /// <inheritdoc />

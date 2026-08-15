@@ -31,14 +31,15 @@ public sealed partial class BaseItemRepository
         return dbQuery;
     }
 
-    private IQueryable<BaseItemEntity> ApplyQueryFilter(IQueryable<BaseItemEntity> dbQuery, JellyfinDbContext context, InternalItemsQuery filter)
+    private IQueryable<Guid> ApplyQueryFilter(IQueryable<BaseItemEntity> dbQuery, JellyfinDbContext context, InternalItemsQuery filter)
     {
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyAdjacencyFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
-        dbQuery = ApplyNavigations(dbQuery, filter);
-        return dbQuery;
+
+        // No navigations: nothing is deserialized, and an Include is dropped by a scalar projection anyway.
+        return dbQuery.Select(e => e.Id);
     }
 
     /// <summary>
