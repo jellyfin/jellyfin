@@ -40,7 +40,8 @@ namespace MediaBrowser.Controller.Library
         Task InitializeAsync();
 
         /// <summary>
-        /// Gets a user by Id.
+        /// Gets a user by Id. The instance is cached and shared between callers, so treat it as
+        /// read-only and go through the update methods to change a user, its policy or its config.
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>The user with the specified Id, or <c>null</c> if the user doesn't exist.</returns>
