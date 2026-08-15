@@ -990,8 +990,10 @@ public sealed partial class BaseItemRepository
 
         if (filter.AncestorIds.Length > 0)
         {
+            // Read the descendants through IX_AncestorIds_ParentItemId and match ids against that.
             var ancestorFilter = filter.AncestorIds.OneOrManyExpressionBuilder<AncestorId, Guid>(f => f.ParentItemId);
-            baseQuery = baseQuery.Where(e => e.Parents!.AsQueryable().Any(ancestorFilter));
+            var descendantIds = context.AncestorIds.Where(ancestorFilter).Select(a => a.ItemId);
+            baseQuery = baseQuery.Where(e => descendantIds.Contains(e.Id));
         }
 
         if (filter.LinkedChildAncestorIds.Length > 0)
