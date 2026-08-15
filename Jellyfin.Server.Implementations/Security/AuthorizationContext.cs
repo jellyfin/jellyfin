@@ -126,71 +126,73 @@ namespace Jellyfin.Server.Implementations.Security
                 return authInfo;
             }
 
-            var dbContext = await _jellyfinDbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var device = _deviceManager.GetDevices(
+                new DeviceQuery { AccessToken = token }).Items.FirstOrDefault();
+
+            if (device is not null)
             {
-                var device = _deviceManager.GetDevices(
-                    new DeviceQuery { AccessToken = token }).Items.FirstOrDefault();
+                authInfo.IsAuthenticated = true;
+                var updateToken = false;
 
-                if (device is not null)
+                // TODO: Remove these checks for IsNullOrWhiteSpace
+                if (string.IsNullOrWhiteSpace(authInfo.Client))
                 {
-                    authInfo.IsAuthenticated = true;
-                    var updateToken = false;
+                    authInfo.Client = device.AppName;
+                }
 
-                    // TODO: Remove these checks for IsNullOrWhiteSpace
-                    if (string.IsNullOrWhiteSpace(authInfo.Client))
-                    {
-                        authInfo.Client = device.AppName;
-                    }
+                if (string.IsNullOrWhiteSpace(authInfo.DeviceId))
+                {
+                    authInfo.DeviceId = device.DeviceId;
+                }
 
-                    if (string.IsNullOrWhiteSpace(authInfo.DeviceId))
-                    {
-                        authInfo.DeviceId = device.DeviceId;
-                    }
+                // Temporary. TODO - allow clients to specify that the token has been shared with a casting device
+                var allowTokenInfoUpdate = !authInfo.Client.Contains("chromecast", StringComparison.OrdinalIgnoreCase);
 
-                    // Temporary. TODO - allow clients to specify that the token has been shared with a casting device
-                    var allowTokenInfoUpdate = !authInfo.Client.Contains("chromecast", StringComparison.OrdinalIgnoreCase);
-
-                    if (string.IsNullOrWhiteSpace(authInfo.Device))
+                if (string.IsNullOrWhiteSpace(authInfo.Device))
+                {
+                    authInfo.Device = device.DeviceName;
+                }
+                else if (!string.Equals(authInfo.Device, device.DeviceName, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (allowTokenInfoUpdate)
                     {
-                        authInfo.Device = device.DeviceName;
-                    }
-                    else if (!string.Equals(authInfo.Device, device.DeviceName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (allowTokenInfoUpdate)
-                        {
-                            updateToken = true;
-                            device.DeviceName = authInfo.Device;
-                        }
-                    }
-
-                    if (string.IsNullOrWhiteSpace(authInfo.Version))
-                    {
-                        authInfo.Version = device.AppVersion;
-                    }
-                    else if (!string.Equals(authInfo.Version, device.AppVersion, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (allowTokenInfoUpdate)
-                        {
-                            updateToken = true;
-                            device.AppVersion = authInfo.Version;
-                        }
-                    }
-
-                    if ((DateTime.UtcNow - device.DateLastActivity).TotalMinutes > 3)
-                    {
-                        device.DateLastActivity = DateTime.UtcNow;
                         updateToken = true;
-                    }
-
-                    authInfo.User = _userManager.GetUserById(device.UserId);
-
-                    if (updateToken)
-                    {
-                        await _deviceManager.UpdateDevice(device).ConfigureAwait(false);
+                        device.DeviceName = authInfo.Device;
                     }
                 }
-                else
+
+                if (string.IsNullOrWhiteSpace(authInfo.Version))
+                {
+                    authInfo.Version = device.AppVersion;
+                }
+                else if (!string.Equals(authInfo.Version, device.AppVersion, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (allowTokenInfoUpdate)
+                    {
+                        updateToken = true;
+                        device.AppVersion = authInfo.Version;
+                    }
+                }
+
+                if ((DateTime.UtcNow - device.DateLastActivity).TotalMinutes > 3)
+                {
+                    device.DateLastActivity = DateTime.UtcNow;
+                    updateToken = true;
+                }
+
+                authInfo.User = _userManager.GetUserById(device.UserId);
+
+                if (updateToken)
+                {
+                    await _deviceManager.UpdateDevice(device).ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                // Only the API key branch reads from the database, so the context is created
+                // here rather than for every authenticated request.
+                var dbContext = await _jellyfinDbProvider.CreateDbContextAsync().ConfigureAwait(false);
+                await using (dbContext.ConfigureAwait(false))
                 {
                     var key = await dbContext.ApiKeys.FirstOrDefaultAsync(apiKey => apiKey.AccessToken == token).ConfigureAwait(false);
                     if (key is not null)
@@ -216,9 +218,9 @@ namespace Jellyfin.Server.Implementations.Security
                         authInfo.IsApiKey = true;
                     }
                 }
-
-                return authInfo;
             }
+
+            return authInfo;
         }
 
         /// <summary>
