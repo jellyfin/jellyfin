@@ -1078,9 +1078,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int>("Kind")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("Permission_Permissions_Guid")
-                        .HasColumnType("TEXT");
-
                     b.Property<uint>("RowVersion")
                         .IsConcurrencyToken()
                         .HasColumnType("INTEGER");
@@ -1110,9 +1107,6 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.Property<int>("Kind")
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid?>("Preference_Preferences_Guid")
-                        .HasColumnType("TEXT");
 
                     b.Property<uint>("RowVersion")
                         .IsConcurrencyToken()

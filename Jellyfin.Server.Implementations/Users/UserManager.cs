@@ -225,17 +225,8 @@ namespace Jellyfin.Server.Implementations.Users
                         ?? throw new ResourceNotFoundException(nameof(user.Id));
 
                     dbContext.Entry(dbUser).CurrentValues.SetValues(user);
-                    dbUser.Permissions.Clear();
-                    foreach (var permission in user.Permissions)
-                    {
-                        dbUser.Permissions.Add(new Permission(permission.Kind, permission.Value));
-                    }
-
-                    dbUser.Preferences.Clear();
-                    foreach (var preference in user.Preferences)
-                    {
-                        dbUser.Preferences.Add(new Preference(preference.Kind, preference.Value));
-                    }
+                    SyncPermissions(dbContext, dbUser, user.Permissions);
+                    SyncPreferences(dbContext, dbUser, user.Preferences);
 
                     dbUser.AccessSchedules.Clear();
                     foreach (var accessSchedule in user.AccessSchedules)
@@ -266,6 +257,63 @@ namespace Jellyfin.Server.Implementations.Users
 
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
                 }
+            }
+        }
+
+        private static void SyncPermissions(JellyfinDbContext dbContext, User dbUser, ICollection<Permission> source)
+        {
+            var incoming = new Dictionary<PermissionKind, bool>();
+            foreach (var permission in source)
+            {
+                incoming[permission.Kind] = permission.Value;
+            }
+
+            foreach (var existing in dbUser.Permissions.ToList())
+            {
+                if (incoming.Remove(existing.Kind, out var value))
+                {
+                    // EF only marks the row modified if the value actually differs, so an update that
+                    // touches nothing but the user row - a session activity stamp - writes no children.
+                    existing.Value = value;
+                }
+                else
+                {
+                    // Removing from the navigation alone would only sever the relationship. UserId is
+                    // nullable, so EF would null it instead of deleting, stranding a row that the
+                    // cascade can never reach again.
+                    dbContext.Permissions.Remove(existing);
+                }
+            }
+
+            foreach (var (kind, value) in incoming)
+            {
+                dbUser.Permissions.Add(new Permission(kind, value));
+            }
+        }
+
+        private static void SyncPreferences(JellyfinDbContext dbContext, User dbUser, ICollection<Preference> source)
+        {
+            var incoming = new Dictionary<PreferenceKind, string>();
+            foreach (var preference in source)
+            {
+                incoming[preference.Kind] = preference.Value;
+            }
+
+            foreach (var existing in dbUser.Preferences.ToList())
+            {
+                if (incoming.Remove(existing.Kind, out var value))
+                {
+                    existing.Value = value;
+                }
+                else
+                {
+                    dbContext.Preferences.Remove(existing);
+                }
+            }
+
+            foreach (var (kind, value) in incoming)
+            {
+                dbUser.Preferences.Add(new Preference(kind, value));
             }
         }
 
