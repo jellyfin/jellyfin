@@ -225,8 +225,8 @@ namespace Jellyfin.Server.Implementations.Users
                         ?? throw new ResourceNotFoundException(nameof(user.Id));
 
                     dbContext.Entry(dbUser).CurrentValues.SetValues(user);
-                    SyncPermissions(dbContext, dbUser, user.Permissions);
-                    SyncPreferences(dbContext, dbUser, user.Preferences);
+                    SyncPermissions(dbUser, user.Permissions);
+                    SyncPreferences(dbUser, user.Preferences);
 
                     dbUser.AccessSchedules.Clear();
                     foreach (var accessSchedule in user.AccessSchedules)
@@ -260,7 +260,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
         }
 
-        private static void SyncPermissions(JellyfinDbContext dbContext, User dbUser, ICollection<Permission> source)
+        private static void SyncPermissions(User dbUser, ICollection<Permission> source)
         {
             var incoming = new Dictionary<PermissionKind, bool>();
             foreach (var permission in source)
@@ -278,10 +278,7 @@ namespace Jellyfin.Server.Implementations.Users
                 }
                 else
                 {
-                    // Removing from the navigation alone would only sever the relationship. UserId is
-                    // nullable, so EF would null it instead of deleting, stranding a row that the
-                    // cascade can never reach again.
-                    dbContext.Permissions.Remove(existing);
+                    dbUser.Permissions.Remove(existing);
                 }
             }
 
@@ -291,7 +288,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
         }
 
-        private static void SyncPreferences(JellyfinDbContext dbContext, User dbUser, ICollection<Preference> source)
+        private static void SyncPreferences(User dbUser, ICollection<Preference> source)
         {
             var incoming = new Dictionary<PreferenceKind, string>();
             foreach (var preference in source)
@@ -307,7 +304,7 @@ namespace Jellyfin.Server.Implementations.Users
                 }
                 else
                 {
-                    dbContext.Preferences.Remove(existing);
+                    dbUser.Preferences.Remove(existing);
                 }
             }
 

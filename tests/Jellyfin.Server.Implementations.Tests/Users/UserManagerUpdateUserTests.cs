@@ -90,21 +90,19 @@ public sealed class UserManagerUpdateUserTests : IDisposable
         var permissionCount = user.Permissions.Count;
         var preferenceCount = user.Preferences.Count;
 
-        // Severing the relationship instead of deleting left a full row set behind on every
-        // update, with a null UserId that no cascade can ever reach.
         user.LastActivityDate = DateTime.UtcNow;
         await _userManager.UpdateUserAsync(user);
         await _userManager.UpdateUserAsync(user);
 
         await using var context = CreateDbContext();
-        Assert.Empty(await context.Permissions
-            .Where(permission => !permission.UserId.HasValue)
-            .ToListAsync(TestContext.Current.CancellationToken));
-        Assert.Empty(await context.Preferences
-            .Where(preference => !preference.UserId.HasValue)
-            .ToListAsync(TestContext.Current.CancellationToken));
         Assert.Equal(permissionCount, await context.Permissions.CountAsync(TestContext.Current.CancellationToken));
         Assert.Equal(preferenceCount, await context.Preferences.CountAsync(TestContext.Current.CancellationToken));
+        Assert.All(
+            await context.Permissions.ToListAsync(TestContext.Current.CancellationToken),
+            permission => Assert.Equal(user.Id, permission.UserId));
+        Assert.All(
+            await context.Preferences.ToListAsync(TestContext.Current.CancellationToken),
+            preference => Assert.Equal(user.Id, preference.UserId));
     }
 
     [Fact]
@@ -138,11 +136,8 @@ public sealed class UserManagerUpdateUserTests : IDisposable
         Assert.Equal(new[] { "spoilers" }, reloaded.GetPreference(PreferenceKind.BlockedTags));
         Assert.DoesNotContain(reloaded.Permissions, permission => permission.Kind == PermissionKind.EnableAllChannels);
 
-        // A removed kind has to be deleted, not detached.
         await using var context = CreateDbContext();
-        Assert.Empty(await context.Permissions
-            .Where(permission => !permission.UserId.HasValue)
-            .ToListAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(reloaded.Permissions.Count, await context.Permissions.CountAsync(TestContext.Current.CancellationToken));
     }
 
     private JellyfinDbContext CreateDbContext()
