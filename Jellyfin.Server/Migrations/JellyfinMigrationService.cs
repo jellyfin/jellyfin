@@ -6,10 +6,11 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.Migrations;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Server.Implementations.SystemBackupService;
-using Jellyfin.Server.Migrations.Stages;
+using Emby.Server.Implementations.Migrations.Stages;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.SystemBackupService;
@@ -34,6 +35,7 @@ internal class JellyfinMigrationService
     private readonly IBackupService? _backupService;
     private readonly IJellyfinDatabaseProvider? _jellyfinDatabaseProvider;
     private readonly IApplicationPaths _applicationPaths;
+    private readonly IMigrationAssemblyProvider _assemblyProvider;
     private (string? LibraryDb, string? JellyfinDb, BackupManifestDto? FullBackup) _backupKey;
 
     /// <summary>
@@ -45,13 +47,15 @@ internal class JellyfinMigrationService
     /// <param name="applicationPaths">Application paths for library.db backup.</param>
     /// <param name="backupService">The jellyfin backup service.</param>
     /// <param name="jellyfinDatabaseProvider">The jellyfin database provider.</param>
+    /// <param name="assemblyProvider">Provider for migration assemblies.</param>
     public JellyfinMigrationService(
         IDbContextFactory<JellyfinDbContext> dbContextFactory,
         ILoggerFactory loggerFactory,
         IStartupLogger<JellyfinMigrationService> startupLogger,
         IApplicationPaths applicationPaths,
         IBackupService? backupService = null,
-        IJellyfinDatabaseProvider? jellyfinDatabaseProvider = null)
+        IJellyfinDatabaseProvider? jellyfinDatabaseProvider = null,
+        IMigrationAssemblyProvider? assemblyProvider = null)
     {
         _dbContextFactory = dbContextFactory;
         _loggerFactory = loggerFactory;
@@ -59,33 +63,49 @@ internal class JellyfinMigrationService
         _backupService = backupService;
         _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
         _applicationPaths = applicationPaths;
+        _assemblyProvider = assemblyProvider ?? new MigrationAssemblyProvider();
 #pragma warning disable CS0618 // Type or member is obsolete
-        Migrations = [.. typeof(IMigrationRoutine).Assembly.GetTypes().Where(e => typeof(IMigrationRoutine).IsAssignableFrom(e) || typeof(IAsyncMigrationRoutine).IsAssignableFrom(e))
-            .Select(e => (Type: e, Metadata: e.GetCustomAttribute<JellyfinMigrationAttribute>(), Backup: e.GetCustomAttributes<JellyfinMigrationBackupAttribute>()))
-            .Where(e => e.Metadata is not null)
-            .GroupBy(e => e.Metadata!.Stage)
-            .Select(f =>
-            {
-                var stage = new MigrationStage(f.Key);
-                foreach (var item in f)
+        Migrations = new HashSet<MigrationStage>(DiscoverMigrations());
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        IEnumerable<MigrationStage> DiscoverMigrations()
+        {
+            var candidateAssemblies = _assemblyProvider.GetMigrationAssemblies();
+
+            var allCandidates = candidateAssemblies
+                .SelectMany(a => a.GetTypes())
+#pragma warning disable CS0618
+                .Where(e => typeof(IMigrationRoutine).IsAssignableFrom(e) || typeof(IAsyncMigrationRoutine).IsAssignableFrom(e))
+                .Select(e => (Type: e, Metadata: e.GetCustomAttribute<JellyfinMigrationAttribute>(), Backup: e.GetCustomAttributes<JellyfinMigrationBackupAttribute>()))
+#pragma warning restore CS0618
+                .Where(e => e.Metadata is not null)
+                .GroupBy(e => e.Metadata!.Stage)
+                .Select(f =>
                 {
-                    JellyfinMigrationBackupAttribute? backupMetadata = null;
-                    if (item.Backup?.Any() == true)
+                    var stage = new MigrationStage(f.Key);
+                    foreach (var item in f)
                     {
-                        backupMetadata = item.Backup.Aggregate(MergeBackupAttributes);
+                        JellyfinMigrationBackupAttribute? backupMetadata = null;
+                        if (item.Backup?.Any() == true)
+                        {
+                            backupMetadata = item.Backup.Aggregate(MergeBackupAttributes);
+                        }
+
+                        stage.Add(new(item.Type, item.Metadata!, backupMetadata));
                     }
 
-                    stage.Add(new(item.Type, item.Metadata!, backupMetadata));
-                }
+                    return stage;
+                });
 
-                return stage;
-            })];
-#pragma warning restore CS0618 // Type or member is obsolete
+            return allCandidates;
+        }
     }
 
     private interface IInternalMigration
     {
         Task PerformAsync(IStartupLogger logger);
+        string MigrationFullName { get; }
+        string? MigrationNamespace { get; }
     }
 
     private HashSet<MigrationStage> Migrations { get; set; }
@@ -237,7 +257,7 @@ internal class JellyfinMigrationService
 
                 // Surface generic "Running migration X of Y" progress in the always-visible startup UI header.
                 SetupServer.ReportActivity(StartupActivity.Migration(completedMigrations + 1, completedMigrations + pendingMigrations.Length));
-                var migrationLogger = logger.With(_loggerFactory.CreateLogger(item.Migration.GetType().Name)).BeginGroup($"{item.Key}");
+                var migrationLogger = logger.With(_loggerFactory.CreateLogger(item.Migration.MigrationFullName)).BeginGroup($"{item.Key}{(item.Migration.MigrationNamespace is not null ? $" ({item.Migration.MigrationNamespace})" : "")}");
                 try
                 {
                     migrationLogger.LogInformation("Perform migration {Name}", item.Key);
@@ -455,6 +475,9 @@ internal class JellyfinMigrationService
             _dbContext = dbContext;
         }
 
+        public string MigrationFullName => _codeMigration.MigrationType.FullName ?? _codeMigration.MigrationType.Name;
+        public string? MigrationNamespace => _codeMigration.MigrationType.Namespace;
+
         public async Task PerformAsync(IStartupLogger logger)
         {
             await _codeMigration.Perform(_serviceProvider, logger, CancellationToken.None).ConfigureAwait(false);
@@ -475,6 +498,9 @@ internal class JellyfinMigrationService
             _databaseMigrationInfo = databaseMigrationInfo;
             _jellyfinDbContext = jellyfinDbContext;
         }
+
+        public string MigrationFullName => _databaseMigrationInfo.Value.FullName ?? _databaseMigrationInfo.Value.Name;
+        public string? MigrationNamespace => _databaseMigrationInfo.Value.Namespace;
 
         public async Task PerformAsync(IStartupLogger logger)
         {
