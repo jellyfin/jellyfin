@@ -60,9 +60,14 @@ internal sealed class CodeMigration
     /// <param name="cancellationToken">Cancellation token.</param>
     public async Task Perform(IServiceProvider? serviceProvider, IStartupLogger logger, CancellationToken cancellationToken)
     {
+        if (serviceProvider is null)
+        {
+            return;
+        }
+
         if (typeof(IAsyncMigrationRoutine).IsAssignableFrom(MigrationType))
         {
-            var instance = ActivatorUtilities.CreateInstance(serviceProvider!, MigrationType);
+            var instance = ActivatorUtilities.CreateInstance(serviceProvider, MigrationType);
             if (instance is IAsyncMigrationRoutine asyncRoutine)
             {
                 await asyncRoutine.PerformAsync(cancellationToken).ConfigureAwait(false);
@@ -73,7 +78,7 @@ internal sealed class CodeMigration
 #pragma warning disable CS0618
         if (typeof(IMigrationRoutine).IsAssignableFrom(MigrationType))
         {
-            var instance = ActivatorUtilities.CreateInstance(serviceProvider!, MigrationType);
+            var instance = ActivatorUtilities.CreateInstance(serviceProvider, MigrationType);
             if (instance is IMigrationRoutine syncRoutine)
             {
 #pragma warning disable CS0618 // Type or member is obsolete

@@ -35,46 +35,69 @@ internal class MigrationAssemblyProvider : IMigrationAssemblyProvider
 
         if (_pluginManager is not null)
         {
-            foreach (var plugin in _pluginManager.Plugins)
+            LoadPluginAssemblies(assemblies);
+        }
+
+        return assemblies;
+    }
+
+    private void LoadPluginAssemblies(HashSet<Assembly> assemblies)
+    {
+        var manager = _pluginManager;
+        if (manager is null)
+        {
+            return;
+        }
+
+        foreach (var plugin in manager.Plugins.Where(p => p.IsEnabledAndSupported))
+        {
+            foreach (var dllFile in plugin.DllFiles)
             {
-                if (!plugin.IsEnabledAndSupported)
+                var dllPath = ResolveDllPath(plugin, dllFile);
+                if (!File.Exists(dllPath))
                 {
                     continue;
                 }
 
-                foreach (var dllFile in plugin.DllFiles)
-                {
-                    var dllPath = Path.IsPathRooted(dllFile)
-                        ? dllFile
-                        : Path.Combine(Path.GetDirectoryName(plugin.Path)!, dllFile);
-
-                    if (!File.Exists(dllPath))
-                    {
-                        continue;
-                    }
-
-                    try
-                    {
-                        var assembly = Assembly.LoadFrom(dllPath);
-                        assemblies.Add(assembly);
-                    }
-                    catch (ReflectionTypeLoadException)
-                    {
-                        // Skip assemblies that fail to load completely
-                    }
-                    catch (FileLoadException)
-                    {
-                        // Already loaded or incompatible
-                    }
-                    catch (IOException)
-                    {
-                        // Skip assemblies that can't be read
-                    }
-                }
+                LoadAssemblySafe(assemblies, dllPath);
             }
         }
+    }
 
-        return assemblies;
+    private static string ResolveDllPath(LocalPlugin plugin, string dllFile)
+    {
+        if (Path.IsPathRooted(dllFile))
+        {
+            return dllFile;
+        }
+
+        var directory = Path.GetDirectoryName(plugin.Path);
+        if (directory is null)
+        {
+            return dllFile;
+        }
+
+        return Path.Combine(directory, dllFile);
+    }
+
+    private static void LoadAssemblySafe(HashSet<Assembly> assemblies, string dllPath)
+    {
+        try
+        {
+            assemblies.Add(Assembly.Load(dllPath));
+        }
+        catch (ReflectionTypeLoadException)
+        {
+            // Skip assemblies that fail to load completely
+        }
+        catch (FileLoadException)
+        {
+            // Already loaded or incompatible
+        }
+        catch (IOException)
+        {
+            // Skip assemblies that can't be read
+        }
     }
 
     private sealed class AssemblyEqualityComparer : IEqualityComparer<Assembly>

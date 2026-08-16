@@ -86,7 +86,7 @@ internal class JellyfinMigrationService
                     foreach (var item in f)
                     {
                         JellyfinMigrationBackupAttribute? backupMetadata = null;
-                        if (item.Backup?.Any() == true)
+                        if (item.Backup?.Any())
                         {
                             backupMetadata = item.Backup.Aggregate(MergeBackupAttributes);
                         }
