@@ -268,7 +268,7 @@ namespace Jellyfin.Server.Implementations.Users
                 incoming[permission.Kind] = permission.Value;
             }
 
-            foreach (var existing in dbUser.Permissions.ToList())
+            foreach (var existing in dbUser.Permissions)
             {
                 if (incoming.Remove(existing.Kind, out var value))
                 {
