@@ -42,6 +42,25 @@ public sealed partial class BaseItemRepository
         IQueryable<BaseItemEntity> baseQuery,
         JellyfinDbContext context,
         InternalItemsQuery filter)
+        => TranslateQuery(baseQuery, context, filter, isCorrelatedSubQuery: false);
+
+    /// <summary>
+    /// Translates a query filter onto a queryable.
+    /// </summary>
+    /// <param name="baseQuery">The query to filter.</param>
+    /// <param name="context">The database context.</param>
+    /// <param name="filter">The query filter.</param>
+    /// <param name="isCorrelatedSubQuery">
+    /// Whether the result will be embedded in a subquery that runs once per row of an outer query.
+    /// Filters that read a set of ids have to be materialised there, so that the set is built once
+    /// rather than rebuilt for every correlated row.
+    /// </param>
+    /// <returns>The filtered query.</returns>
+    private IQueryable<BaseItemEntity> TranslateQuery(
+        IQueryable<BaseItemEntity> baseQuery,
+        JellyfinDbContext context,
+        InternalItemsQuery filter,
+        bool isCorrelatedSubQuery)
     {
         const int HDWidth = 1200;
         const int UHDWidth = 3800;
@@ -1009,13 +1028,19 @@ public sealed partial class BaseItemRepository
 
         if (filter.AncestorIds.Length == 1 && AncestorShouldDriveQuery(context, filter))
         {
-            // Read the descendants through IX_AncestorIds_ParentItemId and match ids against those.
+            // Read the descendants through IX_AncestorIds_ParentItemId.
             var ancestorId = filter.AncestorIds[0];
-            baseQuery = baseQuery.Join(
-                context.AncestorIds.Where(a => a.ParentItemId == ancestorId),
-                e => e.Id,
-                a => a.ItemId,
-                (e, a) => e);
+            var ancestorRows = context.AncestorIds.Where(a => a.ParentItemId == ancestorId);
+
+            if (isCorrelatedSubQuery)
+            {
+                var descendantIds = ancestorRows.Select(a => a.ItemId);
+                baseQuery = baseQuery.Where(e => descendantIds.Contains(e.Id));
+            }
+            else
+            {
+                baseQuery = baseQuery.Join(ancestorRows, e => e.Id, a => a.ItemId, (e, a) => e);
+            }
         }
         else if (filter.AncestorIds.Length > 0)
         {
