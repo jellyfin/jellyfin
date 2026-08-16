@@ -108,5 +108,9 @@
     "CleanupUserDataTaskDescription": "Apaga todos os dados de utilizador (estados de reprodução, favoritos, etc) de arquivos média não presentes há 90 dias ou mais.",
     "CleanupUserDataTask": "Limpeza de dados de utilizador",
     "Original": "Original",
-    "LyricDownloadFailureFromForItem": "Erro ao descarregar letras de {0} para {1}"
+    "LyricDownloadFailureFromForItem": "Erro ao descarregar letras de {0} para {1}",
+    "NameExtraDeletedScene": "Cena Cortada",
+    "NameExtraInterview": "Entrevista",
+    "NameExtraUnknown": "Extra",
+    "NameExtraBehindTheScenes": "Bastidores"
 }
