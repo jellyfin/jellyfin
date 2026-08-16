@@ -33,6 +33,11 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     // Increment this when there's a change requiring caches to be invalidated
     private const char Version = '4';
 
+    // Long-edge size for processing intermediates. Large enough to cover all UI thumbnail
+    // sizes at 2× DPR; small enough to decode cheaply (~150KB WebP vs ~2MB source JPEG).
+    private const int IntermediateSize = 1280;
+    private const int IntermediateQuality = 90;
+
     private static readonly HashSet<string> _transparentImageTypes
         = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".webp", ".gif", ".svg" };
 
@@ -198,10 +203,27 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
             {
                 string resultPath;
 
+                // Use the processing intermediate as encode source when available, avoiding
+                // repeated full-resolution JPEG decodes for every new size variant.
+                // Skip the intermediate for auto-orient (Photo items) and for requests
+                // larger than the intermediate itself.
+                var requestedMax = Math.Max(
+                    Math.Max(options.FillWidth ?? 0, options.FillHeight ?? 0),
+                    Math.Max(options.MaxWidth ?? 0, options.MaxHeight ?? 0));
+                var intermediatePath = GetIntermediatePath(originalImagePath);
+                var useIntermediate = !autoOrient
+                    && (requestedMax == 0 || requestedMax <= IntermediateSize)
+                    && File.Exists(intermediatePath);
+
+                var encodeSource = useIntermediate ? intermediatePath : originalImagePath;
+                var encodeDateModified = useIntermediate
+                    ? _fileSystem.GetLastWriteTimeUtc(intermediatePath)
+                    : dateModified;
+
                 // Limit number of parallel (more precisely: concurrent) image encodings to prevent a high memory usage
                 using (await _parallelEncodingLimit.LockAsync().ConfigureAwait(false))
                 {
-                    resultPath = _imageEncoder.EncodeImage(originalImagePath, dateModified, cacheFilePath, autoOrient, orientation, quality, options, outputFormat);
+                    resultPath = _imageEncoder.EncodeImage(encodeSource, encodeDateModified, cacheFilePath, autoOrient, orientation, quality, options, outputFormat);
                 }
 
                 if (string.Equals(resultPath, originalImagePath, StringComparison.OrdinalIgnoreCase))
@@ -545,6 +567,45 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         var prefix = filename.Slice(0, 1);
 
         return Path.Join(path, prefix, filename);
+    }
+
+    private string GetIntermediatePath(string originalPath)
+        => GetCachePath(ResizedImageCachePath, originalPath + ",intermediate,v=1", ".webp");
+
+    /// <inheritdoc />
+    public async Task GenerateIntermediateAsync(string sourcePath, DateTime dateModified, CancellationToken cancellationToken)
+    {
+        var intermediatePath = GetIntermediatePath(sourcePath);
+        if (File.Exists(intermediatePath))
+        {
+            return;
+        }
+
+        if (!_imageEncoder.SupportsImageEncoding)
+        {
+            return;
+        }
+
+        var options = new ImageProcessingOptions
+        {
+            MaxWidth = IntermediateSize,
+            MaxHeight = IntermediateSize,
+            Quality = IntermediateQuality,
+            SupportedOutputFormats = [ImageFormat.Webp]
+        };
+
+        Directory.CreateDirectory(Path.GetDirectoryName(intermediatePath)!);
+
+        using (await _parallelEncodingLimit.LockAsync().ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Double-checked: another request may have generated it while we waited.
+            if (!File.Exists(intermediatePath))
+            {
+                _imageEncoder.EncodeImage(sourcePath, dateModified, intermediatePath, false, null, IntermediateQuality, options, ImageFormat.Webp);
+            }
+        }
     }
 
     /// <inheritdoc />

@@ -102,6 +102,8 @@
     "TaskRefreshPeopleDescription": "Updates metadata for actors and directors in your media library.",
     "TaskRefreshTrickplayImages": "Generate Trickplay Images",
     "TaskRefreshTrickplayImagesDescription": "Creates trickplay previews for videos in enabled libraries.",
+    "TaskGenerateImageIntermediates": "Generate Image Processing Intermediates",
+    "TaskGenerateImageIntermediatesDescription": "Pre-generates downscaled intermediates for library images. Subsequent thumbnail requests decode from the small intermediate instead of the full-resolution source, reducing CPU cost — especially on low-power hardware.",
     "TaskUpdatePlugins": "Update Plugins",
     "TaskUpdatePluginsDescription": "Downloads and installs updates for plugins that are configured to update automatically.",
     "TaskCleanTranscode": "Clean Transcode Directory",

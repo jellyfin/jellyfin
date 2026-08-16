@@ -102,6 +102,17 @@ namespace MediaBrowser.Controller.Drawing
         Task<(string Path, string? MimeType, DateTime DateModified)> ProcessImage(ImageProcessingOptions options);
 
         /// <summary>
+        /// Generates and caches a downscaled processing intermediate for the given source image.
+        /// The intermediate is used as the decode source for all subsequent thumbnail requests,
+        /// avoiding repeated full-resolution JPEG decodes.
+        /// </summary>
+        /// <param name="sourcePath">Path to the original source image.</param>
+        /// <param name="dateModified">Last-modified date of the source image.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task GenerateIntermediateAsync(string sourcePath, DateTime dateModified, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Gets the supported image output formats.
         /// </summary>
         /// <returns><see cref="IReadOnlyCollection{ImageOutput}" />.</returns>

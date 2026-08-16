@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
@@ -44,6 +45,7 @@ namespace MediaBrowser.Providers.Manager
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
+        private readonly IImageProcessor _imageProcessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageSaver" /> class.
@@ -52,12 +54,14 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="libraryMonitor">The directory watchers.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="logger">The logger.</param>
-        public ImageSaver(IServerConfigurationManager config, ILibraryMonitor libraryMonitor, IFileSystem fileSystem, ILogger logger)
+        /// <param name="imageProcessor">The image processor.</param>
+        public ImageSaver(IServerConfigurationManager config, ILibraryMonitor libraryMonitor, IFileSystem fileSystem, ILogger logger, IImageProcessor imageProcessor)
         {
             _config = config;
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
             _logger = logger;
+            _imageProcessor = imageProcessor;
         }
 
         private bool EnableExtraThumbsDuplication
@@ -170,6 +174,23 @@ namespace MediaBrowser.Providers.Manager
                     savedPaths.Add(savedPath);
                 }
             }
+
+            // Fire-and-forget: generate a downscaled processing intermediate so that all
+            // subsequent thumbnail requests for this image use the cheap intermediate as
+            // decode source rather than the full-resolution original.
+            var intermediatSourcePath = savedPaths[0];
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var fileInfo = new FileInfo(intermediatSourcePath);
+                    await _imageProcessor.GenerateIntermediateAsync(intermediatSourcePath, fileInfo.LastWriteTimeUtc, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to generate processing intermediate for {Path}", intermediatSourcePath);
+                }
+            });
 
             // Set the path into the item
             SetImagePath(item, type, imageIndex, savedPaths[0]);
