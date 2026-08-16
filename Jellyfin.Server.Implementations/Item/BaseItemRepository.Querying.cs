@@ -611,52 +611,45 @@ public sealed partial class BaseItemRepository
 
         var matchingItemIds = baseQuery.Select(e => e.Id);
 
-        var years = baseQuery
-            .Where(e => e.ProductionYear != null && e.ProductionYear > 0)
-            .Select(e => e.ProductionYear!.Value)
+        var yearsAndRatings = baseQuery
+            .Select(e => new { e.ProductionYear, e.OfficialRating })
             .Distinct()
-            .OrderBy(y => y)
             .ToArray();
 
-        var officialRatings = baseQuery
-            .Where(e => e.OfficialRating != null && e.OfficialRating != string.Empty)
-            .Select(e => e.OfficialRating!)
+        var namedValues = context.ItemValuesMap
+            .Where(ivm => (ivm.ItemValue.Type == ItemValueType.Tags || ivm.ItemValue.Type == ItemValueType.Genre)
+                && matchingItemIds.Contains(ivm.ItemId))
+            .Select(ivm => new { ivm.ItemValue.Type, ivm.ItemValue.CleanValue, ivm.ItemValue.Value })
             .Distinct()
-            .OrderBy(r => r)
-            .ToArray();
-
-        var tags = context.ItemValuesMap
-            .Join(
-                context.ItemValues,
-                ivm => ivm.ItemValueId,
-                iv => iv.ItemValueId,
-                (ivm, iv) => new { ivm.ItemId, iv.Type, iv.CleanValue, iv.Value })
-            .Where(iv => iv.Type == ItemValueType.Tags)
-            .Where(iv => matchingItemIds.Contains(iv.ItemId))
-            .GroupBy(iv => iv.CleanValue)
-            .Select(g => g.Min(iv => iv.Value))
-            .OrderBy(t => t)
-            .ToArray();
-
-        var genres = context.ItemValuesMap
-            .Join(
-                context.ItemValues,
-                ivm => ivm.ItemValueId,
-                iv => iv.ItemValueId,
-                (ivm, iv) => new { ivm.ItemId, iv.Type, iv.CleanValue, iv.Value })
-            .Where(iv => iv.Type == ItemValueType.Genre)
-            .Where(iv => matchingItemIds.Contains(iv.ItemId))
-            .GroupBy(iv => iv.CleanValue)
-            .Select(g => g.Min(iv => iv.Value))
-            .OrderBy(g => g)
+            .ToArray()
+            .GroupBy(v => (v.Type, v.CleanValue))
+            .Select(g => new { g.Key.Type, Value = g.Select(v => v.Value).Min(StringComparer.Ordinal)! })
             .ToArray();
 
         return new QueryFiltersLegacy
         {
-            Years = years,
-            OfficialRatings = officialRatings,
-            Tags = tags,
-            Genres = genres
+            Years = yearsAndRatings
+                .Where(e => e.ProductionYear > 0)
+                .Select(e => e.ProductionYear!.Value)
+                .Distinct()
+                .Order()
+                .ToArray(),
+            OfficialRatings = yearsAndRatings
+                .Where(e => !string.IsNullOrEmpty(e.OfficialRating))
+                .Select(e => e.OfficialRating!)
+                .Distinct(StringComparer.Ordinal)
+                .Order(StringComparer.Ordinal)
+                .ToArray(),
+            Tags = namedValues
+                .Where(v => v.Type == ItemValueType.Tags)
+                .Select(v => v.Value)
+                .Order(StringComparer.Ordinal)
+                .ToArray(),
+            Genres = namedValues
+                .Where(v => v.Type == ItemValueType.Genre)
+                .Select(v => v.Value)
+                .Order(StringComparer.Ordinal)
+                .ToArray()
         };
     }
 }
