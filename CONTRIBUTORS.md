@@ -237,6 +237,7 @@
  - [elio42](https://github.com/elio42)
  - [rwebster85](https://github.com/rwebster85)
  - [Florin-Popescu](https://github.com/Florin-Popescu)
+ - [mysticalsoap](https://github.com/mysticalsoap)
 
 # Emby Contributors
 
@@ -300,4 +301,3 @@
  - [tikuf](https://github.com/tikuf/)
  - [Tim Hobbs](https://github.com/timhobbs)
  - [SvenVandenbrande](https://github.com/SvenVandenbrande)
- - [mysticalsoap](https://github.com/mysticalsoap)
