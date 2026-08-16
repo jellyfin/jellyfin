@@ -238,6 +238,7 @@
  - [elio42](https://github.com/elio42)
  - [rwebster85](https://github.com/rwebster85)
  - [Florin-Popescu](https://github.com/Florin-Popescu)
+ - [excelsior](https://github.com/excelsior-dev)
 
 # Emby Contributors
 
