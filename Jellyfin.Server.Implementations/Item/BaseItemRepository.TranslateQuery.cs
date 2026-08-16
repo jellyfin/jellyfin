@@ -25,6 +25,8 @@ namespace Jellyfin.Server.Implementations.Item;
 
 public sealed partial class BaseItemRepository
 {
+    private const int AncestorProbeLimit = 10000;
+
     private static readonly IReadOnlyList<char> SearchWildcardTerms = ['%', '_', '[', ']', '^'];
 
     private static readonly string ImdbProviderName = MetadataProvider.Imdb.ToString().ToLowerInvariant();
@@ -1005,8 +1007,9 @@ public sealed partial class BaseItemRepository
 
         baseQuery = ApplyTopParentFiltering(context, baseQuery, filter);
 
-        if (filter.AncestorIds.Length == 1)
+        if (filter.AncestorIds.Length == 1 && AncestorShouldDriveQuery(context, filter))
         {
+            // Read the descendants through IX_AncestorIds_ParentItemId and match ids against those.
             var ancestorId = filter.AncestorIds[0];
             baseQuery = baseQuery.Join(
                 context.AncestorIds.Where(a => a.ParentItemId == ancestorId),
@@ -1014,7 +1017,7 @@ public sealed partial class BaseItemRepository
                 a => a.ItemId,
                 (e, a) => e);
         }
-        else if (filter.AncestorIds.Length > 1)
+        else if (filter.AncestorIds.Length > 0)
         {
             var ancestorFilter = filter.AncestorIds.OneOrManyExpressionBuilder<AncestorId, Guid>(f => f.ParentItemId);
             baseQuery = baseQuery.Where(e => e.Parents!.AsQueryable().Any(ancestorFilter));
@@ -1205,5 +1208,39 @@ public sealed partial class BaseItemRepository
         }
 
         return baseQuery;
+    }
+
+    /// <summary>
+    /// Decides whether an ancestor filter should drive the query or be tested per row.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    /// <param name="filter">The query filter, carrying exactly one ancestor id.</param>
+    /// <returns><c>true</c> when reading the ancestor's descendants is the cheaper way round.</returns>
+    private bool AncestorShouldDriveQuery(JellyfinDbContext context, InternalItemsQuery filter)
+    {
+        // A join reads every descendant of the ancestor; an EXISTS runs once per row the rest of the
+        // query keeps. The smaller side should drive, and SQLite cannot work that out on its own
+        // because statistics are averaged across the whole table.
+        var otherSideCount = filter.ItemIds.Length > 0 ? filter.ItemIds.Length : AncestorProbeLimit;
+
+        if (filter.IncludeItemTypes.Length > 0)
+        {
+            var typeNames = filter.IncludeItemTypes
+                .Select(f => _itemTypeLookup.BaseItemKindNames.GetValueOrDefault(f))
+                .Where(e => e is not null)
+                .ToArray()!;
+
+            otherSideCount = Math.Min(
+                otherSideCount,
+                context.BaseItems.WhereOneOrMany(typeNames, e => e.Type!).Take(AncestorProbeLimit).Count());
+        }
+
+        var ancestorId = filter.AncestorIds[0];
+        var descendantCount = context.AncestorIds
+            .Where(a => a.ParentItemId == ancestorId)
+            .Take(AncestorProbeLimit)
+            .Count();
+
+        return descendantCount <= otherSideCount;
     }
 }
