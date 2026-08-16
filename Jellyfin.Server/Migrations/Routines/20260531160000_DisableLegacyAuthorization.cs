@@ -1,3 +1,5 @@
+using Emby.Server.Implementations.Migrations;
+using Stages = Emby.Server.Implementations.Migrations.Stages;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;

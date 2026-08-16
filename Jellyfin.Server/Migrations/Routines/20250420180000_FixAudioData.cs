@@ -1,3 +1,4 @@
+using Emby.Server.Implementations.Migrations;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Data.Enums;

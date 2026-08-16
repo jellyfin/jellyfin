@@ -1,3 +1,5 @@
+using Emby.Server.Implementations.Migrations;
+using Stages = Emby.Server.Implementations.Migrations.Stages;
 using System;
 using System.IO;
 using System.Xml;

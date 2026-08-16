@@ -83,4 +83,7 @@
     </None>
   </ItemGroup>
 
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);SA1122;SA1201;SA1208;SA1209;SA1210;SA1402;SA1516;SA1615;SA1649</NoWarn>
+  </PropertyGroup>
 </Project>

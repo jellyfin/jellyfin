@@ -1,3 +1,4 @@
+using Emby.Server.Implementations.Migrations;
 #pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
 
 using System;

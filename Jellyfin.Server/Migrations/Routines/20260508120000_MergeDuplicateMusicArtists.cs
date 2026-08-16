@@ -1,3 +1,4 @@
+using Emby.Server.Implementations.Migrations;
 #pragma warning disable RS0030 // Do not use banned APIs
 
 using System;
