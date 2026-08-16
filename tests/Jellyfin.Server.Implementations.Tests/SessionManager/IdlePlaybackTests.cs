@@ -21,9 +21,9 @@ namespace Jellyfin.Server.Implementations.Tests.SessionManager;
 public class IdlePlaybackTests
 {
     [Theory]
-    [InlineData(null, 0)]
+    [InlineData(null, null)]
     [InlineData(123456789L, 123456789L)]
-    public async Task CheckForIdlePlayback_StopsAtLastClientReportedPosition(long? clientPositionTicks, long expectedPositionTicks)
+    public async Task CheckForIdlePlayback_StopsAtLastClientReportedPosition(long? clientPositionTicks, long? expectedPositionTicks)
     {
         var playbackStopped = new TaskCompletionSource<long?>(TaskCreationOptions.RunContinuationsAsynchronously);
         var eventManager = new Mock<IEventManager>();
