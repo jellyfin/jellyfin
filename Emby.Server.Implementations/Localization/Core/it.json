@@ -118,5 +118,7 @@
     "NameExtraSample": "Campione",
     "NameExtraShort": "Corto",
     "NameExtraThemeSong": "Sigla musicale",
-    "NameExtraTrailer": "Trailer"
+    "NameExtraTrailer": "Trailer",
+    "NameExtraFeaturette": "Caratteristica",
+    "NameExtraThemeVideo": "Video tematico"
 }
