@@ -988,12 +988,19 @@ public sealed partial class BaseItemRepository
 
         baseQuery = ApplyTopParentFiltering(context, baseQuery, filter);
 
-        if (filter.AncestorIds.Length > 0)
+        if (filter.AncestorIds.Length == 1)
         {
-            // Read the descendants through IX_AncestorIds_ParentItemId and match ids against that.
+            var ancestorId = filter.AncestorIds[0];
+            baseQuery = baseQuery.Join(
+                context.AncestorIds.Where(a => a.ParentItemId == ancestorId),
+                e => e.Id,
+                a => a.ItemId,
+                (e, a) => e);
+        }
+        else if (filter.AncestorIds.Length > 1)
+        {
             var ancestorFilter = filter.AncestorIds.OneOrManyExpressionBuilder<AncestorId, Guid>(f => f.ParentItemId);
-            var descendantIds = context.AncestorIds.Where(ancestorFilter).Select(a => a.ItemId);
-            baseQuery = baseQuery.Where(e => descendantIds.Contains(e.Id));
+            baseQuery = baseQuery.Where(e => e.Parents!.AsQueryable().Any(ancestorFilter));
         }
 
         if (filter.LinkedChildAncestorIds.Length > 0)
