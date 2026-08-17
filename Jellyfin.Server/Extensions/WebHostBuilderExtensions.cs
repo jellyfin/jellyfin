@@ -2,14 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using Jellyfin.Server.Helpers;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -37,6 +41,8 @@ public static class WebHostBuilderExtensions
         ILogger logger)
     {
         return builder
+            .ConfigureServices((_, services) =>
+                services.ConfigureIPv6OnlyWildcardSocket(appHost.ConfigurationManager.GetNetworkConfiguration()))
             .UseKestrel((builderContext, options) =>
             {
                 SetupJellyfinWebServer(
@@ -51,6 +57,38 @@ public static class WebHostBuilderExtensions
                     options);
             })
             .UseStartup(context => new Startup(appHost, context.Configuration));
+    }
+
+    /// <summary>
+    /// Configures Kestrel's socket transport to keep an <see cref="IPAddress.IPv6Any"/> bind IPv6-only when
+    /// IPv4 is disabled. Kestrel upgrades an IPv6Any bind to dual-mode by default, which would otherwise
+    /// also listen on all IPv4 addresses.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="networkConfiguration">The network configuration.</param>
+    public static void ConfigureIPv6OnlyWildcardSocket(this IServiceCollection services, NetworkConfiguration networkConfiguration)
+    {
+        if (networkConfiguration.EnableIPv4 || !networkConfiguration.EnableIPv6)
+        {
+            return;
+        }
+
+        services.Configure<SocketTransportOptions>(options => options.CreateBoundListenSocket = CreateIPv6OnlyBoundListenSocket);
+    }
+
+    private static Socket CreateIPv6OnlyBoundListenSocket(EndPoint endpoint)
+    {
+        if (endpoint is not IPEndPoint ipEndPoint || !ipEndPoint.Address.Equals(IPAddress.IPv6Any))
+        {
+            return SocketTransportOptions.CreateDefaultBoundListenSocket(endpoint);
+        }
+
+        var socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp)
+        {
+            DualMode = false
+        };
+        socket.Bind(ipEndPoint);
+        return socket;
     }
 
     /// <summary>
