@@ -7270,6 +7270,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 analyzeDurationArgument = "-analyzeduration " + ffmpegAnalyzeDuration;
             }
+            else
+            {
+                // Provide a fast default (1.5s) instead of letting ffmpeg use its 5s default
+                analyzeDurationArgument = "-analyzeduration 1500000";
+            }
 
             return analyzeDurationArgument;
         }
