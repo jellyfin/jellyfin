@@ -143,6 +143,7 @@
  - [Smith00101010](https://github.com/Smith00101010)
  - [sorinyo2004](https://github.com/sorinyo2004)
  - [Soumyadip Auddy](https://github.com/SoumyadipAuddy)
+ - [st7105](https://github.com/st7105)
  - [sparky8251](https://github.com/sparky8251)
  - [spookbits](https://github.com/spookbits)
  - [ssenart](https://github.com/ssenart)
@@ -237,6 +238,7 @@
  - [elio42](https://github.com/elio42)
  - [rwebster85](https://github.com/rwebster85)
  - [Florin-Popescu](https://github.com/Florin-Popescu)
+ - [martin-77](https://github.com/martin-77)
  - [mysticalsoap](https://github.com/mysticalsoap)
 
 # Emby Contributors
