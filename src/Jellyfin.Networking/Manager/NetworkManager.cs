@@ -828,25 +828,17 @@ public class NetworkManager : INetworkManager, IDisposable
 
         // No bind address and no exclusions, so listen on all interfaces.
         var result = new List<IPData>();
-        if (readIpv4 && readIpv6)
+        if (readIpv6)
         {
-            // Kestrel source code shows it uses Sockets.DualMode - so this also covers IPAddress.Any by default
+            // Kestrel upgrades an IPv6Any bind to dual-mode by default; when IPv4 is disabled the server
+            // keeps the wildcard socket IPv6-only via SocketTransportOptions.CreateBoundListenSocket.
+            // Binding the wildcard instead of individual addresses also avoids bind failures for addresses
+            // that are enumerated but not (yet) usable, e.g. during IPv6 duplicate address detection.
             result.Add(new IPData(IPAddress.IPv6Any, NetworkConstants.IPv6Any));
         }
         else if (readIpv4)
         {
             result.Add(new IPData(IPAddress.Any, NetworkConstants.IPv4Any));
-        }
-        else if (readIpv6)
-        {
-            // Cannot use IPv6Any as Kestrel will bind to IPv4 addresses too.
-            foreach (var iface in knownInterfaces)
-            {
-                if (iface.AddressFamily == AddressFamily.InterNetworkV6)
-                {
-                    result.Add(iface);
-                }
-            }
         }
 
         return result;

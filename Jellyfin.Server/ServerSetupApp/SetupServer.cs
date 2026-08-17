@@ -106,6 +106,7 @@ public sealed class SetupServer : IDisposable
                 serv.AddSingleton(this);
                 serv.AddHealthChecks()
                     .AddCheck<SetupHealthcheck>("StartupCheck");
+                serv.ConfigureIPv6OnlyWildcardSocket(config);
                 serv.Configure<ForwardedHeadersOptions>(options =>
                 {
                     ApiServiceCollectionExtensions.ConfigureForwardHeaders(config, options);
