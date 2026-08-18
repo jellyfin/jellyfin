@@ -225,12 +225,14 @@ namespace Jellyfin.Server.Implementations.Users
                         ?? throw new ResourceNotFoundException(nameof(user.Id));
 
                     dbContext.Entry(dbUser).CurrentValues.SetValues(user);
+                    dbContext.Permissions.RemoveRange(dbUser.Permissions);
                     dbUser.Permissions.Clear();
                     foreach (var permission in user.Permissions)
                     {
                         dbUser.Permissions.Add(new Permission(permission.Kind, permission.Value));
                     }
 
+                    dbContext.Preferences.RemoveRange(dbUser.Preferences);
                     dbUser.Preferences.Clear();
                     foreach (var preference in user.Preferences)
                     {
