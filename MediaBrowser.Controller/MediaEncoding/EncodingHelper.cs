@@ -1431,6 +1431,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var requestHasDOVI = requestedRangeTypes.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
             var requestHasDOVIwithEL = requestedRangeTypes.Contains(VideoRangeType.DOVIWithEL.ToString(), StringComparison.OrdinalIgnoreCase);
             var requestHasDOVIwithELHDR10plus = requestedRangeTypes.Contains(VideoRangeType.DOVIWithELHDR10Plus.ToString(), StringComparison.OrdinalIgnoreCase);
+            var requestHasDOVIwithHDR10plus = requestedRangeTypes.Contains(VideoRangeType.DOVIWithHDR10Plus.ToString(), StringComparison.OrdinalIgnoreCase);
 
             var shouldRemoveHdr10Plus = false;
             // Case 1: Client supports HDR10, does not support DOVI with EL but EL presets
@@ -1454,8 +1455,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return DynamicHdrMetadataRemovalPlan.RemoveDovi;
             }
 
-            // If the client is a Dolby Vision Player, remove the HDR10+ metadata to avoid playback issues
-            shouldRemoveHdr10Plus = shouldRemoveHdr10Plus || (requestHasDOVI && videoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10Plus);
+            // If the client is a Dolby Vision Player, remove the HDR10+ metadata to avoid playback issues,
+            // unless the client explicitly declares support for their coexistence (DOVIWithHDR10Plus)
+            shouldRemoveHdr10Plus = shouldRemoveHdr10Plus || (requestHasDOVI && !requestHasDOVIwithHDR10plus && videoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10Plus);
             return shouldRemoveHdr10Plus ? DynamicHdrMetadataRemovalPlan.RemoveHdr10Plus : DynamicHdrMetadataRemovalPlan.None;
         }
 
