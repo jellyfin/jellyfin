@@ -396,6 +396,12 @@ namespace Emby.Server.Implementations.Library
                     query.Limit = limit;
                     return _libraryManager.GetLatestItemList(query, parents, CollectionType.movies);
                 }
+
+                if (collectionType is null)
+                {
+                    query.Limit = limit;
+                    return _libraryManager.GetLatestItemList(query, parents, CollectionType.unknown);
+                }
             }
 
             return _libraryManager.GetItemList(query, parents);
