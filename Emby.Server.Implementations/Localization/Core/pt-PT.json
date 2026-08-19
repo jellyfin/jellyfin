@@ -102,7 +102,7 @@
     "TaskExtractMediaSegments": "Analisar segmentos multimédia",
     "TaskDownloadMissingLyrics": "Transferir letras em falta",
     "TaskMoveTrickplayImages": "Migrar localização das imagens de trickplay",
-    "TaskDownloadMissingLyricsDescription": "Transfere letras para músicas.",
+    "TaskDownloadMissingLyricsDescription": "Transfere letras de músicas",
     "TaskExtractMediaSegmentsDescription": "Extrai ou obtém segmentos multimédia de plugins com MediaSegment ativado.",
     "TaskMoveTrickplayImagesDescription": "Move os ficheiros de trickplay existentes de acordo com as definições da biblioteca.",
     "CleanupUserDataTaskDescription": "Remove todos os dados de utilizador (estado de reprodução, estado de favorito, etc.) de conteúdos multimédia que já não estejam presentes há pelo menos 90 dias.",
