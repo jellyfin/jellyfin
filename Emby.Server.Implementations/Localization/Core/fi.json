@@ -108,5 +108,10 @@
     "CleanupUserDataTask": "Käyttäjätietojen puhdistustehtävä",
     "CleanupUserDataTaskDescription": "Puhdistaa kaikki käyttäjätiedot (katselutila, suosikit ym.) medioista, joita ei ole ollut saatavilla yli 90 päivään.",
     "LyricDownloadFailureFromForItem": "Sanoitusten lataus kohteesta {0} kappaleelle {1} epäonnistui",
-    "Original": "Alkuperäinen"
+    "Original": "Alkuperäinen",
+    "NameExtraBehindTheScenes": "Kulissien Takana",
+    "NameExtraClip": "Klippi",
+    "NameExtraDeletedScene": "Poistettu Kohtaus",
+    "NameExtraFeaturette": "Lyhytelokuva",
+    "NameExtraInterview": "Haastattelu"
 }

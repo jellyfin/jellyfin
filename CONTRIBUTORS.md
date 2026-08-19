@@ -143,6 +143,7 @@
  - [Smith00101010](https://github.com/Smith00101010)
  - [sorinyo2004](https://github.com/sorinyo2004)
  - [Soumyadip Auddy](https://github.com/SoumyadipAuddy)
+ - [st7105](https://github.com/st7105)
  - [sparky8251](https://github.com/sparky8251)
  - [spookbits](https://github.com/spookbits)
  - [ssenart](https://github.com/ssenart)
@@ -237,6 +238,8 @@
  - [elio42](https://github.com/elio42)
  - [rwebster85](https://github.com/rwebster85)
  - [Florin-Popescu](https://github.com/Florin-Popescu)
+ - [m0g3r](https://github.com/m0g3r)
+ - [martin-77](https://github.com/martin-77)
 
 # Emby Contributors
 
@@ -247,7 +250,7 @@
  - [Mark2xv](https://github.com/Mark2xv)
  - [ScottRapsey](https://github.com/ScottRapsey)
  - [skynet600](https://github.com/skynet600)
- - [Cheesegeezer](https://githum.com/Cheesegeezer)
+ - [Cheesegeezer](https://github.com/Cheesegeezer)
  - [Radeon](https://github.com/radeonorama)
  - [gcw07](https://github.com/gcw07)
  - [SivaramAdhiappan](https://github.com/shivaram1190)
