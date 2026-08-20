@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
+using Jellyfin.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -21,7 +22,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -454,7 +454,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 encodingParam = " -sub_charenc " + encodingParam;
             }
 
-            var args = string.Format(CultureInfo.InvariantCulture, "-y {0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, EncodingUtils.NormalizePath(inputPath), EncodingUtils.NormalizePath(outputPath));
+            var args = string.Format(CultureInfo.InvariantCulture, "-y {0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath.EscapeProcessArgument(), outputPath.EscapeProcessArgument());
 
             await ExtractSubtitlesForFile(
                 inputPath,
@@ -632,7 +632,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         streamIndex,
                         outputCodec,
                         outputFormatOption,
-                        EncodingUtils.NormalizePath(outputPath));
+                        outputPath.EscapeProcessArgument());
                 }
 
                 await ExtractSubtitlesForFile(inputPath, args, outputPaths, cancellationToken).ConfigureAwait(false);
@@ -690,7 +690,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     streamIndex,
                     outputCodec,
                     outputFormatOption,
-                    EncodingUtils.NormalizePath(outputPath));
+                    outputPath.EscapeProcessArgument());
             }
 
             if (outputPaths.Count > 0)

@@ -174,7 +174,7 @@ public partial class AudioNormalizationTask : IScheduledTask
                 if (!t.NormalizationGain.HasValue && !t.LUFS.HasValue && t.IsFileProtocol)
                 {
                     t.LUFS = await CalculateLUFSAsync(
-                        string.Format(CultureInfo.InvariantCulture, "-i \"{0}\"", t.Path.Replace("\"", "\\\"", StringComparison.Ordinal)),
+                        string.Format(CultureInfo.InvariantCulture, "-i \"{0}\"", t.Path.EscapeProcessArgument()),
                         false,
                         cancellationToken).ConfigureAwait(false);
                     toSaveDbItems.Add(t);
