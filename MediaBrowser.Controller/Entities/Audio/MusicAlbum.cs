@@ -197,30 +197,37 @@ namespace MediaBrowser.Controller.Entities.Audio
             // Refresh current item
             await RefreshMetadata(parentRefreshOptions, cancellationToken).ConfigureAwait(false);
 
-            if (!refreshOptions.IsAutomated)
-            {
-                await RefreshArtists(refreshOptions, cancellationToken).ConfigureAwait(false);
-            }
+            await RefreshArtists(refreshOptions, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task RefreshArtists(MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
-            foreach (var i in this.GetAllArtists())
+            // This should not be necessary but we're seeing some cases of it
+            var names = this.GetAllArtists().Where(i => !string.IsNullOrEmpty(i)).ToArray();
+            if (names.Length == 0)
             {
-                // This should not be necessary but we're seeing some cases of it
-                if (string.IsNullOrEmpty(i))
-                {
-                    continue;
-                }
+                return;
+            }
 
-                var artist = LibraryManager.GetArtist(i);
+            var existing = LibraryManager.GetArtists(names);
+
+            foreach (var name in names)
+            {
+                // The entity must exist even for automated refreshes, or the name cannot be resolved
+                // into ArtistItems and clients show no artist at all
+                var artist = existing.TryGetValue(name, out var artists) && artists.Length > 0
+                    ? artists.OrderBy(i => i.IsAccessedByName ? 1 : 0).First()
+                    : LibraryManager.GetArtist(name);
 
                 if (!artist.IsAccessedByName)
                 {
                     continue;
                 }
 
-                await artist.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                if (!refreshOptions.IsAutomated)
+                {
+                    await artist.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                }
             }
         }
     }

@@ -25,6 +25,8 @@ using Xunit;
 
 namespace Jellyfin.Controller.Tests.Entities;
 
+// put tests that mock the static LibraryManager in the same collection to avoid test interference
+[Collection("LibraryManagerTests")]
 public class BaseItemTests
 {
     [Theory]
