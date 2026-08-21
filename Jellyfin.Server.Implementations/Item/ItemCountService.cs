@@ -292,11 +292,11 @@ public class ItemCountService : IItemCountService
     private IQueryable<BaseItemEntity> BuildGroupedDescendantsQuery(JellyfinDbContext dbContext, InternalItemsQuery filter, Guid ancestorId)
     {
         var ancestorIds = GetPresentationKeyGroups(dbContext, [ancestorId])[ancestorId];
-        var descendantIds = DescendantQueryHelper.GetAllDescendantIdsBatch(dbContext, ancestorIds);
+        var descendantIds = DescendantQueryHelper.GetAllDescendantIdsBatch(dbContext, ancestorIds).ToArray();
 
         var baseQuery = dbContext.BaseItems
             .AsNoTracking()
-            .Where(b => descendantIds.Contains(b.Id))
+            .WhereOneOrMany(descendantIds, b => b.Id)
             .Where(DescendantQueryHelper.IsCountableLeaf);
 
         return _queryHelpers.ApplyAccessFiltering(dbContext, baseQuery, filter);
@@ -309,9 +309,9 @@ public class ItemCountService : IItemCountService
         ArgumentNullException.ThrowIfNull(filter.User);
         using var dbContext = _dbProvider.CreateDbContext();
 
-        var allDescendantIds = DescendantQueryHelper.GetAllDescendantIds(dbContext, parentId);
+        var allDescendantIds = DescendantQueryHelper.GetAllDescendantIdsBatch(dbContext, [parentId]).ToArray();
         var baseQuery = dbContext.BaseItems
-            .Where(b => allDescendantIds.Contains(b.Id))
+            .WhereOneOrMany(allDescendantIds, b => b.Id)
             .Where(DescendantQueryHelper.IsCountableLeaf);
         baseQuery = _queryHelpers.ApplyAccessFiltering(dbContext, baseQuery, filter);
 
