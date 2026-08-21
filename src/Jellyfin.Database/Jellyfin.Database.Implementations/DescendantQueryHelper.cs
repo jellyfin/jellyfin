@@ -40,6 +40,31 @@ public static class DescendantQueryHelper
     }
 
     /// <summary>
+    /// Gets all descendant IDs for multiple parent items in a single traversal.
+    /// Traverses AncestorIds and LinkedChildren, like <see cref="GetAllDescendantIds"/>.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="parentIds">Parent item IDs.</param>
+    /// <returns>Set of all descendant item IDs (excluding the parent IDs themselves).</returns>
+    public static HashSet<Guid> GetAllDescendantIdsBatch(JellyfinDbContext context, IReadOnlyList<Guid> parentIds)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(parentIds);
+
+        if (parentIds.Count == 0)
+        {
+            return [];
+        }
+
+        var seedSet = new HashSet<Guid>(parentIds);
+        var descendants = TraverseHierarchyDown(context, seedSet);
+
+        descendants.ExceptWith(seedSet);
+
+        return descendants;
+    }
+
+    /// <summary>
     /// Gets a queryable of all owned descendant IDs for a parent item.
     /// Traverses only AncestorIds (hierarchical ownership), NOT LinkedChildren (associations).
     /// Use this for deletion to avoid destroying items that are merely linked (e.g. movies in a BoxSet).
