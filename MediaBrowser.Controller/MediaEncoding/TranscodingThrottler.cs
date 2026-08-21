@@ -59,7 +59,7 @@ public class TranscodingThrottler : IDisposable
             try
             {
                 var resumeKey = _mediaEncoder.IsPkeyPauseSupported ? "u" : Environment.NewLine;
-                await _job.Process!.StandardInput.WriteAsync(resumeKey).ConfigureAwait(false);
+                await _job.Session!.SendKeyAsync(resumeKey, CancellationToken.None).ConfigureAwait(false);
                 _isPaused = false;
             }
             catch (Exception ex)
@@ -135,7 +135,7 @@ public class TranscodingThrottler : IDisposable
 
             try
             {
-                await _job.Process!.StandardInput.WriteAsync(pauseKey).ConfigureAwait(false);
+                await _job.Session!.SendKeyAsync(pauseKey, CancellationToken.None).ConfigureAwait(false);
                 _isPaused = true;
             }
             catch (Exception ex)

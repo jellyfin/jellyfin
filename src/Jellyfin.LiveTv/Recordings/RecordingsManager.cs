@@ -22,6 +22,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.MediaEncoding.FFProcessing;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
@@ -45,6 +46,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     private readonly ILibraryMonitor _libraryMonitor;
     private readonly IProviderManager _providerManager;
     private readonly IMediaEncoder _mediaEncoder;
+    private readonly IFFRunner _ffRunner;
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IStreamHelper _streamHelper;
     private readonly TimerManager _timerManager;
@@ -66,6 +68,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     /// <param name="libraryMonitor">The <see cref="ILibraryMonitor"/>.</param>
     /// <param name="providerManager">The <see cref="IProviderManager"/>.</param>
     /// <param name="mediaEncoder">The <see cref="IMediaEncoder"/>.</param>
+    /// <param name="ffRunner">The <see cref="IFFRunner"/>.</param>
     /// <param name="mediaSourceManager">The <see cref="IMediaSourceManager"/>.</param>
     /// <param name="streamHelper">The <see cref="IStreamHelper"/>.</param>
     /// <param name="timerManager">The <see cref="TimerManager"/>.</param>
@@ -80,6 +83,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         ILibraryMonitor libraryMonitor,
         IProviderManager providerManager,
         IMediaEncoder mediaEncoder,
+        IFFRunner ffRunner,
         IMediaSourceManager mediaSourceManager,
         IStreamHelper streamHelper,
         TimerManager timerManager,
@@ -94,6 +98,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         _libraryMonitor = libraryMonitor;
         _providerManager = providerManager;
         _mediaEncoder = mediaEncoder;
+        _ffRunner = ffRunner;
         _mediaSourceManager = mediaSourceManager;
         _streamHelper = streamHelper;
         _timerManager = timerManager;
@@ -794,7 +799,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             || !(mediaSource.Container ?? string.Empty).EndsWith("ts", StringComparison.OrdinalIgnoreCase)
             || (mediaSource.Protocol != MediaProtocol.File && mediaSource.Protocol != MediaProtocol.Http))
         {
-            return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _config);
+            return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _ffRunner);
         }
 
         return new DirectRecorder(_logger, _httpClientFactory, _streamHelper);

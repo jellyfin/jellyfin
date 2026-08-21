@@ -51,6 +51,36 @@ public class StreamState : EncodingJobInfo, IDisposable
     public VideoRequestDto? VideoRequest => Request as VideoRequestDto;
 
     /// <summary>
+    /// Gets how much work this request asks of FFmpeg.
+    /// <para>
+    /// Computed rather than stored: <c>TryStreamCopy</c> runs once while the state is built and
+    /// again after a live stream is opened, and the HLS master-playlist builder deliberately
+    /// rewrites <see cref="EncodingJobInfo.OutputVideoCodec"/> and restores it while emitting
+    /// variant entries. A cached value would be wrong in both cases.
+    /// </para>
+    /// </summary>
+    public StreamMode StreamMode
+    {
+        get
+        {
+            var audioCopied = EncodingHelper.IsCopyCodec(OutputAudioCodec);
+
+            if (VideoRequest is null)
+            {
+                // Audio-only: there is no video to copy, so copying the audio is the whole job.
+                return audioCopied ? StreamMode.Remux : StreamMode.Transcode;
+            }
+
+            if (!EncodingHelper.IsCopyCodec(OutputVideoCodec))
+            {
+                return StreamMode.Transcode;
+            }
+
+            return audioCopied ? StreamMode.Remux : StreamMode.DirectStream;
+        }
+    }
+
+    /// <summary>
     /// Gets or sets the direct stream provider.
     /// </summary>
     /// <remarks>

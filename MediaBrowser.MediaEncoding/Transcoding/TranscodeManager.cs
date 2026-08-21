@@ -19,6 +19,8 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.MediaEncoding.FFProcessing;
+using MediaBrowser.Controller.MediaEncoding.FFProcessing.Requests;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
@@ -42,6 +44,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
     private readonly ISessionManager _sessionManager;
     private readonly EncodingHelper _encodingHelper;
     private readonly IMediaEncoder _mediaEncoder;
+    private readonly IFFRunner _ffRunner;
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IAttachmentExtractor _attachmentExtractor;
 
@@ -65,6 +68,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
     /// <param name="sessionManager">The <see cref="ISessionManager"/>.</param>
     /// <param name="encodingHelper">The <see cref="EncodingHelper"/>.</param>
     /// <param name="mediaEncoder">The <see cref="IMediaEncoder"/>.</param>
+    /// <param name="ffRunner">The <see cref="IFFRunner"/>.</param>
     /// <param name="mediaSourceManager">The <see cref="IMediaSourceManager"/>.</param>
     /// <param name="attachmentExtractor">The <see cref="IAttachmentExtractor"/>.</param>
     public TranscodeManager(
@@ -76,6 +80,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         ISessionManager sessionManager,
         EncodingHelper encodingHelper,
         IMediaEncoder mediaEncoder,
+        IFFRunner ffRunner,
         IMediaSourceManager mediaSourceManager,
         IAttachmentExtractor attachmentExtractor)
     {
@@ -87,6 +92,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         _sessionManager = sessionManager;
         _encodingHelper = encodingHelper;
         _mediaEncoder = mediaEncoder;
+        _ffRunner = ffRunner;
         _mediaSourceManager = mediaSourceManager;
         _attachmentExtractor = attachmentExtractor;
 
@@ -414,53 +420,22 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             }
         }
 
-        var process = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                WindowStyle = ProcessWindowStyle.Hidden,
-                CreateNoWindow = true,
-                UseShellExecute = false,
-
-                // Must consume both stdout and stderr or deadlocks may occur
-                // RedirectStandardOutput = true,
-                StandardErrorEncoding = Encoding.UTF8,
-                RedirectStandardError = true,
-                RedirectStandardInput = true,
-                FileName = _mediaEncoder.EncoderPath,
-                Arguments = commandLineArguments,
-                WorkingDirectory = string.IsNullOrWhiteSpace(workingDirectory) ? string.Empty : workingDirectory,
-                ErrorDialog = false
-            },
-            EnableRaisingEvents = true
-        };
-
         var transcodingJob = OnTranscodeBeginning(
             outputPath,
             state.Request.PlaySessionId,
             state.MediaSource.LiveStreamId,
             Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
             transcodingJobType,
-            process,
             state.Request.DeviceId,
             state,
             cancellationTokenSource);
 
-        _logger.LogInformation("{Filename} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
-
-        var logFilePrefix = "FFmpeg.Transcode-";
-        if (state.VideoRequest is not null
-            && EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
+        var logFilePrefix = state.StreamMode switch
         {
-            logFilePrefix = EncodingHelper.IsCopyCodec(state.OutputAudioCodec)
-                ? "FFmpeg.Remux-"
-                : "FFmpeg.DirectStream-";
-        }
-
-        if (state.VideoRequest is null && EncodingHelper.IsCopyCodec(state.OutputAudioCodec))
-        {
-            logFilePrefix = "FFmpeg.Remux-";
-        }
+            StreamMode.Remux => "FFmpeg.Remux-",
+            StreamMode.DirectStream => "FFmpeg.DirectStream-",
+            _ => "FFmpeg.Transcode-"
+        };
 
         var logFilePath = Path.Combine(
             _serverConfigurationManager.ApplicationPaths.LogDirectoryPath,
@@ -475,35 +450,71 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             IODefaults.FileStreamBufferSize,
             FileOptions.Asynchronous);
 
+        var request = new StreamRequest
+        {
+            Delivery = transcodingJobType == TranscodingJobType.Progressive ? FFDelivery.Progressive : FFDelivery.Hls,
+            Mode = state.StreamMode,
+            Arguments = commandLineArguments,
+            WorkingDirectory = workingDirectory ?? string.Empty,
+
+            // One read serves both the log file and the progress feed.
+            Stderr = new JobLogSink(_logger, state, logStream)
+        };
+
         await JsonSerializer.SerializeAsync(logStream, state.MediaSource, cancellationToken: cancellationTokenSource.Token).ConfigureAwait(false);
-        var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(
-            Environment.NewLine
-            + Environment.NewLine
-            + process.StartInfo.FileName + " " + process.StartInfo.Arguments
-            + Environment.NewLine
-            + Environment.NewLine);
 
-        await logStream.WriteAsync(commandLineLogMessageBytes, cancellationTokenSource.Token).ConfigureAwait(false);
+        // Ask the runner rather than pairing the encoder path with our own arguments. The runner adds
+        // the global flags — the derived -loglevel, -stats, the overwrite flag — so those two strings
+        // are not the whole command, and a header built from them would not reproduce when pasted
+        // into a shell. This is the artifact people attach to bug reports; it has to be real.
+        //
+        // Written before StartAsync, and this is why the request is built first: JobLogSink starts
+        // writing FFmpeg's stderr into the same stream the moment the process is up, so a header
+        // written afterwards would interleave with it.
+        await logStream.WriteAsync(
+            Encoding.UTF8.GetBytes(
+                Environment.NewLine + Environment.NewLine
+                + _ffRunner.GetCommandLine(request)
+                + Environment.NewLine + Environment.NewLine),
+            cancellationTokenSource.Token).ConfigureAwait(false);
 
-        process.Exited += (_, _) => OnFfMpegProcessExited(process, transcodingJob, state);
-
+        IFFSession session;
         try
         {
-            process.Start();
+            session = await _ffRunner.StartAsync(request, cancellationTokenSource.Token).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error starting FFmpeg");
             OnTranscodeFailedToStart(outputPath, transcodingJobType, state);
 
+            // Nothing will complete, so the exit path that normally closes this never runs.
+            await logStream.DisposeAsync().ConfigureAwait(false);
+
             throw;
+        }
+
+        transcodingJob.Session = session;
+
+        // Not awaited: the caller must be able to stop playback while this is still running.
+        _ = ReportExitAsync();
+
+        async Task ReportExitAsync()
+        {
+            try
+            {
+                var result = await session.Completion.ConfigureAwait(false);
+                OnFfMpegProcessExited(result, transcodingJob, state, logStream);
+            }
+            catch (Exception ex)
+            {
+                // Nothing awaits this, so an escape here would be lost entirely.
+                _logger.LogError(ex, "Error finalising the transcode for {Path}", outputPath);
+            }
         }
 
         _logger.LogDebug("Launched FFmpeg process");
         state.TranscodingJob = transcodingJob;
-
-        // Important - don't await the log task or we won't be able to kill FFmpeg when the user stops playback
-        _ = new JobLogger(_logger).StartStreamingLog(state, process.StandardError, logStream);
 
         // Wait for the file to exist before proceeding
         var ffmpegTargetFile = state.WaitForPath ?? outputPath;
@@ -580,7 +591,6 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         string? liveStreamId,
         string transcodingJobId,
         TranscodingJobType type,
-        Process process,
         string? deviceId,
         StreamState state,
         CancellationTokenSource cancellationTokenSource)
@@ -591,7 +601,6 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             {
                 Type = type,
                 Path = path,
-                Process = process,
                 ActiveRequestCount = 1,
                 DeviceId = deviceId,
                 CancellationTokenSource = cancellationTokenSource,
@@ -638,23 +647,29 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         }
     }
 
-    private void OnFfMpegProcessExited(Process process, TranscodingJob job, StreamState state)
+    private void OnFfMpegProcessExited(FFResult result, TranscodingJob job, StreamState state, Stream logStream)
     {
         job.HasExited = true;
-        job.ExitCode = process.ExitCode;
+        job.ExitCode = result.ExitCode;
 
         ReportTranscodingProgress(job, state, null, null, null, null, null);
 
         _logger.LogDebug("Disposing stream resources");
         state.Dispose();
+        logStream.Dispose();
 
-        if (process.ExitCode == 0)
+        if (result.Succeeded)
         {
             _logger.LogInformation("FFmpeg exited with code 0");
         }
+        else if (result.StopReason == FFStopReason.Cancelled)
+        {
+            // Playback stopped, which is not a failure.
+            _logger.LogDebug("FFmpeg stopped for {Path}", job.Path);
+        }
         else
         {
-            _logger.LogError("FFmpeg exited with code {0}", process.ExitCode);
+            _logger.LogError("FFmpeg exited with code {ExitCode}", result.ExitCode);
         }
 
         job.Dispose();

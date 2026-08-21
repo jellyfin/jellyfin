@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
+using MediaBrowser.Controller.MediaEncoding.FFProcessing;
 using MediaBrowser.Model.Dto;
 using Microsoft.Extensions.Logging;
 
@@ -60,7 +61,7 @@ public sealed class TranscodingJob : IDisposable
     /// <summary>
     /// Gets or sets the process.
     /// </summary>
-    public Process? Process { get; set; }
+    public IFFSession? Session { get; set; }
 
     /// <summary>
     /// Gets or sets the active request count.
@@ -265,22 +266,14 @@ public sealed class TranscodingJob : IDisposable
             TranscodingThrottler?.Stop().GetAwaiter().GetResult();
             TranscodingSegmentCleaner?.Stop();
 
-            var process = Process;
-
             if (!HasExited)
             {
                 try
                 {
-                    _logger.LogInformation("Stopping ffmpeg process with q command for {Path}", Path);
+                    _logger.LogInformation("Stopping ffmpeg process for {Path}", Path);
 
-                    process!.StandardInput.WriteLine("q");
-
-                    // Need to wait because killing is asynchronous.
-                    if (!process.WaitForExit(5000))
-                    {
-                        _logger.LogInformation("Killing FFmpeg process for {Path}", Path);
-                        process.Kill();
-                    }
+                    // Sends q, waits the action's grace period, then kills the tree.
+                    Session!.StopAsync(CancellationToken.None).GetAwaiter().GetResult();
                 }
                 catch (InvalidOperationException)
                 {
@@ -293,8 +286,7 @@ public sealed class TranscodingJob : IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
-        Process?.Dispose();
-        Process = null;
+        Session = null;
         _killTimer?.Dispose();
         _killTimer = null;
         CancellationTokenSource?.Dispose();
