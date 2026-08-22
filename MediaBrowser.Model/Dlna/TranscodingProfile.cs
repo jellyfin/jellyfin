@@ -141,6 +141,7 @@ public class TranscodingProfile
     /// Gets or sets a value indicating whether breaking the video stream on non-keyframes is supported.
     /// </summary>
     [DefaultValue(false)]
+    [XmlIgnore]
     [XmlAttribute("breakOnNonKeyFrames")]
     [Obsolete("This is always false")]
     public bool? BreakOnNonKeyFrames { get; set; }
