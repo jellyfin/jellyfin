@@ -328,17 +328,8 @@ namespace Jellyfin.Server.Implementations.Users
                         ?? throw new ResourceNotFoundException(nameof(user.Id));
 
                     dbContext.Entry(dbUser).CurrentValues.SetValues(user);
-                    dbUser.Permissions.Clear();
-                    foreach (var permission in user.Permissions)
-                    {
-                        dbUser.Permissions.Add(new Permission(permission.Kind, permission.Value));
-                    }
-
-                    dbUser.Preferences.Clear();
-                    foreach (var preference in user.Preferences)
-                    {
-                        dbUser.Preferences.Add(new Preference(preference.Kind, preference.Value));
-                    }
+                    SyncPermissions(dbUser, user.Permissions);
+                    SyncPreferences(dbUser, user.Preferences);
 
                     dbUser.AccessSchedules.Clear();
                     foreach (var accessSchedule in user.AccessSchedules)
@@ -370,6 +361,60 @@ namespace Jellyfin.Server.Implementations.Users
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
                     InvalidateUser(user.Id);
                 }
+            }
+        }
+
+        private static void SyncPermissions(User dbUser, ICollection<Permission> source)
+        {
+            var incoming = new Dictionary<PermissionKind, bool>();
+            foreach (var permission in source)
+            {
+                incoming[permission.Kind] = permission.Value;
+            }
+
+            foreach (var existing in dbUser.Permissions)
+            {
+                if (incoming.Remove(existing.Kind, out var value))
+                {
+                    // EF only marks the row modified if the value actually differs, so an update that
+                    // touches nothing but the user row - a session activity stamp - writes no children.
+                    existing.Value = value;
+                }
+                else
+                {
+                    dbUser.Permissions.Remove(existing);
+                }
+            }
+
+            foreach (var (kind, value) in incoming)
+            {
+                dbUser.Permissions.Add(new Permission(kind, value));
+            }
+        }
+
+        private static void SyncPreferences(User dbUser, ICollection<Preference> source)
+        {
+            var incoming = new Dictionary<PreferenceKind, string>();
+            foreach (var preference in source)
+            {
+                incoming[preference.Kind] = preference.Value;
+            }
+
+            foreach (var existing in dbUser.Preferences)
+            {
+                if (incoming.Remove(existing.Kind, out var value))
+                {
+                    existing.Value = value;
+                }
+                else
+                {
+                    dbUser.Preferences.Remove(existing);
+                }
+            }
+
+            foreach (var (kind, value) in incoming)
+            {
+                dbUser.Preferences.Add(new Preference(kind, value));
             }
         }
 
