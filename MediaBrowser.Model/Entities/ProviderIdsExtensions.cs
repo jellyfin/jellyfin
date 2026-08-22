@@ -159,8 +159,15 @@ public static partial class ProviderIdsExtensions
         // When name contains a '=' it can't be deserialized from the database
         if (string.IsNullOrWhiteSpace(name)
             || string.IsNullOrWhiteSpace(value)
-            || name.Contains('=', StringComparison.Ordinal)
-            || !IsValidProviderId(name, value))
+            || name.Contains('=', StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        name = name.Trim();
+        value = value.Trim();
+
+        if (!IsValidProviderId(name, value))
         {
             return false;
         }
@@ -197,7 +204,6 @@ public static partial class ProviderIdsExtensions
     /// <param name="instance">The instance.</param>
     /// <param name="name">The name, this should not contain a '=' character.</param>
     /// <param name="value">The value.</param>
-    /// <remarks>Due to how deserialization from the database works the name cannot contain '='.</remarks>
     public static void SetProviderId(this IHasProviderIds instance, string name, string value)
     {
         ArgumentNullException.ThrowIfNull(instance);
@@ -210,17 +216,27 @@ public static partial class ProviderIdsExtensions
             throw new ArgumentException("Provider id name cannot contain '='", nameof(name));
         }
 
-        // Ensure it exists
-        instance.ProviderIds ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        instance.TrySetProviderId(name, value);
+    }
 
-        // Match on internal MetadataProvider enum string values before adding arbitrary providers
-        if (_metadataProviderEnumDictionary.TryGetValue(name, out var enumValue))
+    /// <summary>
+    /// Replaces all provider ids, dropping the ones that cannot belong to the provider they are filed under.
+    /// </summary>
+    /// <param name="instance">The instance.</param>
+    /// <param name="providerIds">The provider ids to set.</param>
+    public static void SetProviderIds(this IHasProviderIds instance, IReadOnlyDictionary<string, string>? providerIds)
+    {
+        ArgumentNullException.ThrowIfNull(instance);
+
+        instance.ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (providerIds is null)
         {
-            instance.ProviderIds[enumValue] = value;
+            return;
         }
-        else
+
+        foreach (var (name, value) in providerIds)
         {
-            instance.ProviderIds[name] = value;
+            instance.TrySetProviderId(name, value);
         }
     }
 
@@ -259,7 +275,7 @@ public static partial class ProviderIdsExtensions
     }
 
     private static bool IsPositiveNumber(string value)
-        => long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var id) && id > 0;
+        => int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var id) && id > 0;
 
     private static bool IsGuid(string value)
         => Guid.TryParse(value, CultureInfo.InvariantCulture, out _);

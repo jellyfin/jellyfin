@@ -229,6 +229,66 @@ namespace Jellyfin.Model.Tests.Entities
             Assert.Equal("11", provider.GetProviderId(MetadataProvider.Tmdb));
         }
 
+        [Theory]
+        [InlineData(nameof(MetadataProvider.Imdb), " tt0113375 ")]
+        [InlineData(" Imdb", ExampleImdbId)]
+        public void TrySetProviderId_SurroundingWhitespace_Trimmed(string name, string value)
+        {
+            var provider = new ProviderIdsExtensionsTestsObject();
+
+            Assert.True(provider.TrySetProviderId(name, value));
+            Assert.Equal(ExampleImdbId, provider.GetProviderId(MetadataProvider.Imdb));
+        }
+
+        [Fact]
+        public void SetProviderIds_ReplacesAll()
+        {
+            var provider = new ProviderIdsExtensionsTestsObject();
+            provider.ProviderIds[MetadataProvider.Tvdb.ToString()] = "12345";
+
+            provider.SetProviderIds(new Dictionary<string, string>
+            {
+                [MetadataProvider.Imdb.ToString()] = ExampleImdbId
+            });
+
+            Assert.Equal(ExampleImdbId, provider.GetProviderId(MetadataProvider.Imdb));
+            Assert.False(provider.HasProviderId(MetadataProvider.Tvdb));
+        }
+
+        [Fact]
+        public void SetProviderIds_ForeignId_Dropped()
+        {
+            var provider = new ProviderIdsExtensionsTestsObject();
+
+            provider.SetProviderIds(new Dictionary<string, string>
+            {
+                [MetadataProvider.Tmdb.ToString()] = "nm0000123",
+                [MetadataProvider.Imdb.ToString()] = ExampleImdbId,
+                [MetadataProvider.Tvdb.ToString()] = string.Empty
+            });
+
+            Assert.False(provider.HasProviderId(MetadataProvider.Tmdb));
+            Assert.False(provider.HasProviderId(MetadataProvider.Tvdb));
+            Assert.Equal(ExampleImdbId, provider.GetProviderId(MetadataProvider.Imdb));
+        }
+
+        [Fact]
+        public void SetProviderIds_Null_Clears()
+        {
+            var provider = new ProviderIdsExtensionsTestsObject();
+            provider.ProviderIds[MetadataProvider.Imdb.ToString()] = ExampleImdbId;
+
+            provider.SetProviderIds(null);
+
+            Assert.Empty(provider.ProviderIds);
+        }
+
+        [Fact]
+        public void SetProviderIds_NullInstance_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => ProviderIdsExtensions.SetProviderIds(null!, new Dictionary<string, string>()));
+        }
+
         [Fact]
         public void RemoveProviderId_Null_Remove()
         {
