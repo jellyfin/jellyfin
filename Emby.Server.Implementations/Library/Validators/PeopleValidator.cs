@@ -50,8 +50,11 @@ public class PeopleValidator
     public async Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
     {
         var people = _libraryManager.GetPeopleNames(new InternalPeopleQuery());
+        var unlinked = _libraryManager.GetUnlinkedPeopleNames().ToHashSet(StringComparer.Ordinal);
 
         var numComplete = 0;
+        var numCreated = 0;
+        var numLinked = 0;
 
         var numPeople = people.Count;
 
@@ -68,8 +71,20 @@ public class PeopleValidator
                 var item = _libraryManager.GetPerson(person);
                 if (item is null)
                 {
-                    _logger.LogWarning("Failed to get person: {Name}", person);
-                    continue;
+                    // A credited name without an item is invisible everywhere, so create it here.
+                    item = _libraryManager.GetOrCreatePerson(person);
+                    if (item is null)
+                    {
+                        _logger.LogWarning("Failed to get or create person: {Name}", person);
+                        continue;
+                    }
+
+                    numCreated++;
+                }
+
+                if (unlinked.Contains(person))
+                {
+                    numLinked += _libraryManager.LinkPeopleToItem(person, item.Id);
                 }
 
                 var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
@@ -115,6 +130,6 @@ public class PeopleValidator
 
         progress.Report(100);
 
-        _logger.LogInformation("People validation complete");
+        _logger.LogInformation("People validation complete, created {Created} missing people and linked {Linked} credits", numCreated, numLinked);
     }
 }

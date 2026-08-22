@@ -34,6 +34,20 @@ public interface IPeopleRepository
     IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery filter);
 
     /// <summary>
+    /// Gets the names of the credits that are not linked to a person item yet.
+    /// </summary>
+    /// <returns>The list of credited names whose person item is still unknown.</returns>
+    IReadOnlyList<string> GetUnlinkedPeopleNames();
+
+    /// <summary>
+    /// Links the credits of a name that have no person item yet to the given one.
+    /// </summary>
+    /// <param name="name">The credited name.</param>
+    /// <param name="personItemId">The person item to link them to.</param>
+    /// <returns>The number of credits that were linked.</returns>
+    int LinkPeopleToItem(string name, Guid personItemId);
+
+    /// <summary>
     /// Gets the distinct people names per item for multiple items efficiently by querying from the mapping table.
     /// </summary>
     /// <param name="itemIds">The item IDs to get people for.</param>
