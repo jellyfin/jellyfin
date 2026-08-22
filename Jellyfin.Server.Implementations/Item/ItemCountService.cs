@@ -318,13 +318,14 @@ public class ItemCountService : IItemCountService
         var parentIdsArray = parentIds.ToArray();
 
         var hierarchicalCounts = dbContext.BaseItems
-            .Where(b => b.ParentId.HasValue && parentIdsArray.Contains(b.ParentId.Value))
+            .Where(b => b.ParentId.HasValue)
+            .WhereOneOrMany(parentIdsArray, b => b.ParentId!.Value)
             .GroupBy(b => b.ParentId!.Value)
             .Select(g => new { ParentId = g.Key, Count = g.Count() })
             .ToDictionary(x => x.ParentId, x => x.Count);
 
         var linkedCounts = dbContext.LinkedChildren
-            .Where(lc => parentIdsArray.Contains(lc.ParentId))
+            .WhereOneOrMany(parentIdsArray, lc => lc.ParentId)
             .GroupBy(lc => lc.ParentId)
             .Select(g => new { ParentId = g.Key, Count = g.Count() })
             .ToDictionary(x => x.ParentId, x => x.Count);
