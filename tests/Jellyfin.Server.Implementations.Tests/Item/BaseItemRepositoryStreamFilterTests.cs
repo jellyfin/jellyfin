@@ -35,6 +35,29 @@ public sealed class BaseItemRepositoryStreamFilterTests : SqliteDbTestFixture
     private readonly Guid _versionedMovie = Guid.NewGuid();
     private readonly Guid _alternateVersion = Guid.NewGuid();
 
+    // A series in the same library, so the folder branch of the resolution filter has a version group
+    // to reach through as well: an SD episode whose second file is 4K.
+    private readonly Guid _versionedSeries = Guid.NewGuid();
+    private readonly Guid _versionedEpisode = Guid.NewGuid();
+    private readonly Guid _episodeAlternate = Guid.NewGuid();
+
+    // An unprobed primary: only its second file carries dimensions, and they are SD.
+    private readonly Guid _unprobedMovie = Guid.NewGuid();
+    private readonly Guid _unprobedAlternate = Guid.NewGuid();
+
+    // A plain SD movie with no second file, as the control the version groups are read against.
+    private readonly Guid _sdMovie = Guid.NewGuid();
+
+    // An unprobed primary whose only second file is HD, so the HD bucket has to place it off nulls.
+    private readonly Guid _hdOnlyByVersion = Guid.NewGuid();
+    private readonly Guid _hdOnlyAlternate = Guid.NewGuid();
+
+    // Three files for one movie: the HD one would place it in the HD bucket on its own, the 4K one has
+    // to win. Only a group holding both can tell the HD bucket's upper guard from its lower one.
+    private readonly Guid _threeWayMovie = Guid.NewGuid();
+    private readonly Guid _threeWayHd = Guid.NewGuid();
+    private readonly Guid _threeWay4K = Guid.NewGuid();
+
     public BaseItemRepositoryStreamFilterTests()
     {
         using (var ctx = CreateDbContext())
@@ -179,6 +202,90 @@ public sealed class BaseItemRepositoryStreamFilterTests : SqliteDbTestFixture
         Assert.DoesNotContain(_withSubtitles, _repository.GetItemIdsList(new InternalItemsQuery { MinWidth = 3000 }));
     }
 
+    [Fact]
+    public void MaxWidth_ExcludesAnItemWhoseAlternateVersionBreachesTheBound()
+    {
+        // The SD primary is narrow enough on its own, but the 4K second file is what a caller would play.
+        Assert.DoesNotContain(_versionedMovie, _repository.GetItemIdsList(new InternalItemsQuery { MaxWidth = 1920 }));
+        Assert.Contains(_sdMovie, _repository.GetItemIdsList(new InternalItemsQuery { MaxWidth = 1920 }));
+    }
+
+    [Fact]
+    public void MaxHeight_ExcludesAnItemWhoseAlternateVersionBreachesTheBound()
+    {
+        Assert.DoesNotContain(_versionedMovie, _repository.GetItemIdsList(new InternalItemsQuery { MaxHeight = 1080 }));
+        Assert.Contains(_sdMovie, _repository.GetItemIdsList(new InternalItemsQuery { MaxHeight = 1080 }));
+    }
+
+    [Fact]
+    public void IsHD_False_ExcludesAnSdPrimaryWhoseAlternateVersionIsBetter()
+    {
+        var ids = _repository.GetItemIdsList(new InternalItemsQuery { IsHD = false });
+
+        // 720x480 on its own, but the version group tops out at 4K.
+        Assert.DoesNotContain(_versionedMovie, ids);
+        Assert.Contains(_sdMovie, ids);
+    }
+
+    [Fact]
+    public void IsHD_False_MatchesAPrimaryPlacedOnlyByItsAlternateVersion()
+    {
+        // The primary carries no dimensions at all; the SD second file is the group's best.
+        Assert.Contains(_unprobedMovie, _repository.GetItemIdsList(new InternalItemsQuery { IsHD = false }));
+    }
+
+    [Fact]
+    public void IsHD_True_ExcludesAnItemWhoseVersionGroupReaches4K()
+    {
+        var ids = _repository.GetItemIdsList(new InternalItemsQuery { IsHD = true });
+
+        Assert.DoesNotContain(_versionedMovie, ids);
+        Assert.DoesNotContain(_unprobedMovie, ids);
+        // The 1920-wide second file alone would say HD; the 4K third file is the group's best.
+        Assert.DoesNotContain(_threeWayMovie, ids);
+    }
+
+    [Fact]
+    public void Is4K_MatchesAnItemWhoseVersionGroupHoldsBothHdAnd4K()
+    {
+        Assert.Contains(_threeWayMovie, _repository.GetItemIdsList(new InternalItemsQuery { Is4K = true }));
+    }
+
+    [Fact]
+    public void IsHD_True_MatchesAPrimaryPlacedOnlyByItsAlternateVersion()
+    {
+        // The primary carries no dimensions of its own; the HD second file is the group's best.
+        Assert.Contains(_hdOnlyByVersion, _repository.GetItemIdsList(new InternalItemsQuery { IsHD = true }));
+    }
+
+    [Fact]
+    public void Is4K_MatchesTheSeriesOfAnEpisodeWhoseAlternateVersionIs4K()
+    {
+        // The folder branch buckets a descendant the same way the item branch buckets a top-level item.
+        Assert.Contains(_versionedSeries, _repository.GetItemIdsList(new InternalItemsQuery { Is4K = true }));
+    }
+
+    [Fact]
+    public void IsHD_False_ExcludesTheSeriesOfAnSdEpisodeWithABetterAlternateVersion()
+    {
+        // Before the version group was consulted on descendants too, the SD episode alone matched here
+        // while the same pair at top level did not.
+        Assert.DoesNotContain(_versionedSeries, _repository.GetItemIdsList(new InternalItemsQuery { IsHD = false }));
+    }
+
+    [Theory]
+    [InlineData("und")]
+    [InlineData("UND")]
+    public void HasNoAudioTrackWithLanguage_TreatsUndeterminedCaseInsensitively(string language)
+    {
+        var ids = _repository.GetItemIdsList(new InternalItemsQuery { HasNoAudioTrackWithLanguage = language });
+
+        // The alternate version carries an audio track with no language, which is what "und" stands for,
+        // so the item it is reported against does have one.
+        Assert.DoesNotContain(_unprobedMovie, ids);
+        Assert.Contains(_versionedMovie, ids);
+    }
+
     private void Seed(JellyfinDbContext context)
     {
         context.BaseItems.Add(new BaseItemEntity { Id = _library, Type = FolderType, Name = "Library", IsFolder = true });
@@ -302,6 +409,9 @@ public sealed class BaseItemRepositoryStreamFilterTests : SqliteDbTestFixture
             Item = null!
         });
 
+        SeedVersionedSeries(context);
+        SeedUnprobedVersionGroup(context);
+
         context.Chapters.Add(new Chapter
         {
             ItemId = _alternateVersion,
@@ -310,5 +420,134 @@ public sealed class BaseItemRepositoryStreamFilterTests : SqliteDbTestFixture
             ImagePath = "/alternate-chapter.jpg",
             Item = null!
         });
+    }
+
+    // The same SD primary / 4K second file pair one level down, so the resolution filter has to answer
+    // for the series off its descendants.
+    private void SeedVersionedSeries(JellyfinDbContext context)
+    {
+        context.BaseItems.Add(new BaseItemEntity { Id = _versionedSeries, Type = FolderType, Name = "Versioned series", IsFolder = true });
+        context.BaseItems.Add(new BaseItemEntity { Id = _versionedEpisode, Type = MovieType, Name = "Versioned episode", Width = 720, Height = 480 });
+        context.BaseItems.Add(new BaseItemEntity
+        {
+            Id = _episodeAlternate,
+            Type = MovieType,
+            Name = "Versioned episode 4K",
+            PrimaryVersionId = _versionedEpisode,
+            Width = 3840,
+            Height = 2160
+        });
+
+        context.AncestorIds.Add(new AncestorId
+        {
+            ItemId = _versionedSeries,
+            ParentItemId = _versionLibrary,
+            Item = null!,
+            ParentItem = null!
+        });
+
+        foreach (var itemId in new[] { _versionedEpisode, _episodeAlternate })
+        {
+            context.AncestorIds.Add(new AncestorId
+            {
+                ItemId = itemId,
+                ParentItemId = _versionedSeries,
+                Item = null!,
+                ParentItem = null!
+            });
+        }
+    }
+
+    // A primary that was never probed, so only its second file can place it in a bucket. Its audio track
+    // declares no language, which is what the "und" filters stand in for.
+    private void SeedUnprobedVersionGroup(JellyfinDbContext context)
+    {
+        context.BaseItems.Add(new BaseItemEntity { Id = _sdMovie, Type = MovieType, Name = "SD movie", Width = 720, Height = 480 });
+        context.AncestorIds.Add(new AncestorId
+        {
+            ItemId = _sdMovie,
+            ParentItemId = _versionLibrary,
+            Item = null!,
+            ParentItem = null!
+        });
+
+        context.BaseItems.Add(new BaseItemEntity { Id = _unprobedMovie, Type = MovieType, Name = "Unprobed movie" });
+        context.BaseItems.Add(new BaseItemEntity
+        {
+            Id = _unprobedAlternate,
+            Type = MovieType,
+            Name = "Unprobed movie SD",
+            PrimaryVersionId = _unprobedMovie,
+            Width = 720,
+            Height = 480
+        });
+
+        foreach (var itemId in new[] { _unprobedMovie, _unprobedAlternate })
+        {
+            context.AncestorIds.Add(new AncestorId
+            {
+                ItemId = itemId,
+                ParentItemId = _versionLibrary,
+                Item = null!,
+                ParentItem = null!
+            });
+        }
+
+        context.MediaStreamInfos.Add(new MediaStreamInfo
+        {
+            ItemId = _unprobedAlternate,
+            StreamIndex = 0,
+            StreamType = MediaStreamTypeEntity.Audio,
+            Item = null!
+        });
+
+        SeedMixedVersionGroups(context);
+    }
+
+    // The two groups that separate the HD bucket's lower bound from its upper one: one that only a 4K
+    // third file keeps out of HD, and one that only an HD second file puts into it.
+    private void SeedMixedVersionGroups(JellyfinDbContext context)
+    {
+        context.BaseItems.Add(new BaseItemEntity { Id = _threeWayMovie, Type = MovieType, Name = "Three-way movie", Width = 720, Height = 480 });
+        context.BaseItems.Add(new BaseItemEntity
+        {
+            Id = _threeWayHd,
+            Type = MovieType,
+            Name = "Three-way movie HD",
+            PrimaryVersionId = _threeWayMovie,
+            Width = 1920,
+            Height = 1080
+        });
+        context.BaseItems.Add(new BaseItemEntity
+        {
+            Id = _threeWay4K,
+            Type = MovieType,
+            Name = "Three-way movie 4K",
+            PrimaryVersionId = _threeWayMovie,
+            Width = 3840,
+            Height = 2160
+        });
+
+        context.BaseItems.Add(new BaseItemEntity { Id = _hdOnlyByVersion, Type = MovieType, Name = "HD only by version" });
+        context.BaseItems.Add(new BaseItemEntity
+        {
+            Id = _hdOnlyAlternate,
+            Type = MovieType,
+            Name = "HD only by version, HD file",
+            PrimaryVersionId = _hdOnlyByVersion,
+            Width = 1920,
+            Height = 1080
+        });
+
+        foreach (var itemId in new[] { _threeWayMovie, _threeWayHd, _threeWay4K, _hdOnlyByVersion, _hdOnlyAlternate })
+        {
+            context.AncestorIds.Add(new AncestorId
+            {
+                ItemId = itemId,
+                ParentItemId = _versionLibrary,
+                Item = null!,
+                ParentItem = null!
+            });
+        }
     }
 }

@@ -36,8 +36,8 @@ public sealed partial class BaseItemRepository
     private static Expression<Func<BaseItemEntity, bool>> IsFolderFilter => e => e.IsFolder;
 
     // "und" is the language filters' stand-in for a track that declares no language at all.
-    private static bool IsUndetermined(string language)
-        => string.Equals(language, "und", StringComparison.OrdinalIgnoreCase);
+    private static string NormalizeLanguage(string language)
+        => string.Equals(language, "und", StringComparison.OrdinalIgnoreCase) ? "und" : language;
 
     // The primary versions whose alternate version satisfies a dimension bound. Anchored on
     // PrimaryVersionId so the filtered index carries it rather than a scan of every item.
@@ -82,40 +82,57 @@ public sealed partial class BaseItemRepository
                 include4K = true;
             }
 
-            // A 4K remux of an SD primary is a version of the same item, so the resolution a caller
-            // filters on is the best any of the item's versions offers, not just the primary file's.
-            // The filtered PrimaryVersionId index keeps this to the few items that have versions.
-            var versionsAtResolution = context.BaseItems
-                .Where(v => v.PrimaryVersionId != null
-                    && v.Width > 0
-                    && ((includeSD && v.Width < HDWidth)
-                        || (includeHD && v.Width >= HDWidth && !(v.Width >= UHDWidth || v.Height >= UHDHeight))
-                        || (include4K && (v.Width >= UHDWidth || v.Height >= UHDHeight))))
-                .Select(v => v.PrimaryVersionId!.Value);
+            // A 4K remux of an SD primary is a version of the same item, so the bucket a caller filters
+            // on is the best any of the item's versions offers, not just the primary file's. Three sets,
+            // because a bucket is as much about what the version group does not have as what it does, and
+            // because an unprobed primary can still be placed by a version that does carry dimensions.
+            // The filtered PrimaryVersionId index keeps all three to the few items that have versions.
+            var versionsSd = VersionsMatchingDimension(context, v => v.Width > 0 && v.Width < HDWidth);
+            var versionsHd = VersionsMatchingDimension(context, v => v.Width >= HDWidth);
+            var versions4K = VersionsMatchingDimension(context, v => v.Width >= UHDWidth || v.Height >= UHDHeight);
 
-            // Non-folders: check own resolution directly (no subquery).
-            // Folders (Series, BoxSets): EXISTS check on descendants/linked children.
-            // Using navigation properties (a.Item, lc.Child) produces efficient
-            // EXISTS + JOIN instead of nested IN (SELECT ...) subqueries.
+            // Only the SD test needs the Width > 0 guard against a row with no dimensions: such a row
+            // cannot reach the HD or 4K bound anyway, and EF lowers the HD bucket's negated "not itself
+            // 4K" guard to CASE WHEN ... THEN 0 ELSE 1, which already reads unknown as not 4K rather
+            // than propagating a null. Folders (Series, BoxSets) answer on their descendants, bucketed
+            // exactly as a top-level item is so that the two cannot disagree; the navigation properties
+            // (a.Item, lc.Child) give EXISTS + JOIN rather than nested IN (SELECT ...).
             baseQuery = baseQuery.Where(e =>
                 (!e.IsFolder
-                    && ((e.Width > 0
-                            && ((includeSD && e.Width < HDWidth)
-                                || (includeHD && e.Width >= HDWidth && !(e.Width >= UHDWidth || e.Height >= UHDHeight))
-                                || (include4K && (e.Width >= UHDWidth || e.Height >= UHDHeight))))
-                        || versionsAtResolution.Contains(e.Id)))
+                    && ((includeSD
+                            && ((e.Width > 0 && e.Width < HDWidth) || versionsSd.Contains(e.Id))
+                            && !versionsHd.Contains(e.Id)
+                            && !versions4K.Contains(e.Id))
+                        || (includeHD
+                            && (e.Width >= HDWidth || versionsHd.Contains(e.Id))
+                            && !(e.Width >= UHDWidth || e.Height >= UHDHeight)
+                            && !versions4K.Contains(e.Id))
+                        || (include4K
+                            && (e.Width >= UHDWidth || e.Height >= UHDHeight || versions4K.Contains(e.Id)))))
                 || (e.IsFolder
                     && (e.Children!.Any(a =>
-                            a.Item.Width > 0
-                            && ((includeSD && a.Item.Width < HDWidth)
-                                || (includeHD && a.Item.Width >= HDWidth && !(a.Item.Width >= UHDWidth || a.Item.Height >= UHDHeight))
-                                || (include4K && (a.Item.Width >= UHDWidth || a.Item.Height >= UHDHeight))))
+                            (includeSD
+                                && ((a.Item.Width > 0 && a.Item.Width < HDWidth) || versionsSd.Contains(a.ItemId))
+                                && !versionsHd.Contains(a.ItemId)
+                                && !versions4K.Contains(a.ItemId))
+                            || (includeHD
+                                && (a.Item.Width >= HDWidth || versionsHd.Contains(a.ItemId))
+                                && !(a.Item.Width >= UHDWidth || a.Item.Height >= UHDHeight)
+                                && !versions4K.Contains(a.ItemId))
+                            || (include4K
+                                && (a.Item.Width >= UHDWidth || a.Item.Height >= UHDHeight || versions4K.Contains(a.ItemId))))
                         || context.LinkedChildren.Any(lc =>
                             lc.ParentId == e.Id
-                            && lc.Child!.Width > 0
-                            && ((includeSD && lc.Child.Width < HDWidth)
-                                || (includeHD && lc.Child.Width >= HDWidth && !(lc.Child.Width >= UHDWidth || lc.Child.Height >= UHDHeight))
-                                || (include4K && (lc.Child.Width >= UHDWidth || lc.Child.Height >= UHDHeight)))))));
+                            && ((includeSD
+                                    && ((lc.Child!.Width > 0 && lc.Child!.Width < HDWidth) || versionsSd.Contains(lc.ChildId))
+                                    && !versionsHd.Contains(lc.ChildId)
+                                    && !versions4K.Contains(lc.ChildId))
+                                || (includeHD
+                                    && (lc.Child!.Width >= HDWidth || versionsHd.Contains(lc.ChildId))
+                                    && !(lc.Child!.Width >= UHDWidth || lc.Child!.Height >= UHDHeight)
+                                    && !versions4K.Contains(lc.ChildId))
+                                || (include4K
+                                    && (lc.Child!.Width >= UHDWidth || lc.Child!.Height >= UHDHeight || versions4K.Contains(lc.ChildId))))))));
         }
 
         // Same reasoning as the resolution filter: a dimension bound is met if any version meets it.
@@ -132,17 +149,19 @@ public sealed partial class BaseItemRepository
             baseQuery = baseQuery.Where(e => e.Height >= minHeight || versionsTallEnough.Contains(e.Id));
         }
 
+        // An upper bound inverts that: it is met only if no version breaches it, since the item's
+        // resolution is the best its version group offers.
         if (maxWidth.HasValue)
         {
-            var versionsNarrowEnough = VersionsMatchingDimension(context, v => v.Width <= maxWidth);
-            baseQuery = baseQuery.Where(e => e.Width <= maxWidth || versionsNarrowEnough.Contains(e.Id));
+            var versionsTooWide = VersionsMatchingDimension(context, v => v.Width > maxWidth);
+            baseQuery = baseQuery.Where(e => e.Width <= maxWidth && !versionsTooWide.Contains(e.Id));
         }
 
         if (filter.MaxHeight.HasValue)
         {
             var maxHeight = filter.MaxHeight;
-            var versionsShortEnough = VersionsMatchingDimension(context, v => v.Height <= maxHeight);
-            baseQuery = baseQuery.Where(e => e.Height <= maxHeight || versionsShortEnough.Contains(e.Id));
+            var versionsTooTall = VersionsMatchingDimension(context, v => v.Height > maxHeight);
+            baseQuery = baseQuery.Where(e => e.Height <= maxHeight && !versionsTooTall.Contains(e.Id));
         }
 
         if (filter.IsLocked.HasValue)
@@ -793,8 +812,8 @@ public sealed partial class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoAudioTrackWithLanguage))
         {
-            var lang = filter.HasNoAudioTrackWithLanguage;
-            var undetermined = IsUndetermined(lang);
+            var lang = NormalizeLanguage(filter.HasNoAudioTrackWithLanguage);
+            var undetermined = string.Equals(lang, "und", StringComparison.Ordinal);
             var criteria = new HasMediaStreamType(MediaStreamTypeEntity.Audio, lang);
             // A track only an alternate version carries still belongs to the item a caller sees, so the
             // item's own streams alone do not decide this. Same for every stream filter below.
@@ -812,8 +831,8 @@ public sealed partial class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoInternalSubtitleTrackWithLanguage))
         {
-            var lang = filter.HasNoInternalSubtitleTrackWithLanguage;
-            var undetermined = IsUndetermined(lang);
+            var lang = NormalizeLanguage(filter.HasNoInternalSubtitleTrackWithLanguage);
+            var undetermined = string.Equals(lang, "und", StringComparison.Ordinal);
             var criteria = new HasMediaStreamType(MediaStreamTypeEntity.Subtitle, lang, IsExternal: false);
             var versionsWithSubtitles = DescendantQueryHelper.GetPrimaryVersionIdsMatching(context, criteria);
             var foldersWithSubtitles = DescendantQueryHelper.GetFolderIdsMatching(context, criteria);
@@ -829,8 +848,8 @@ public sealed partial class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoExternalSubtitleTrackWithLanguage))
         {
-            var lang = filter.HasNoExternalSubtitleTrackWithLanguage;
-            var undetermined = IsUndetermined(lang);
+            var lang = NormalizeLanguage(filter.HasNoExternalSubtitleTrackWithLanguage);
+            var undetermined = string.Equals(lang, "und", StringComparison.Ordinal);
             var criteria = new HasMediaStreamType(MediaStreamTypeEntity.Subtitle, lang, IsExternal: true);
             var versionsWithSubtitles = DescendantQueryHelper.GetPrimaryVersionIdsMatching(context, criteria);
             var foldersWithSubtitles = DescendantQueryHelper.GetFolderIdsMatching(context, criteria);
@@ -846,8 +865,8 @@ public sealed partial class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoSubtitleTrackWithLanguage))
         {
-            var lang = filter.HasNoSubtitleTrackWithLanguage;
-            var undetermined = IsUndetermined(lang);
+            var lang = NormalizeLanguage(filter.HasNoSubtitleTrackWithLanguage);
+            var undetermined = string.Equals(lang, "und", StringComparison.Ordinal);
             var criteria = new HasMediaStreamType(MediaStreamTypeEntity.Subtitle, lang);
             var versionsWithSubtitles = DescendantQueryHelper.GetPrimaryVersionIdsMatching(context, criteria);
             var foldersWithSubtitles = DescendantQueryHelper.GetFolderIdsMatching(context, criteria);

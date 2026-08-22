@@ -102,20 +102,25 @@ public static class DescendantQueryHelper
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(criteria);
 
-        var matchingItemIds = GetItemIdsMatching(context, criteria);
+        // Both sides of a version group can hold a folder a caller would see as matching: the
+        // alternate carries its own AncestorIds rows and may sit in a different library than the
+        // primary it is reported against, and the primary is the item that becomes visible.
+        var reportedItemIds = MatchingMediaOwnerIds(context, criteria)
+            .Concat(GetPrimaryVersionIdsMatching(context, criteria))
+            .Distinct();
 
         // One hop up the closure covers every ancestor level.
         var hierarchyAncestors = context.AncestorIds
-            .Where(e => matchingItemIds.Contains(e.ItemId))
+            .Where(e => reportedItemIds.Contains(e.ItemId))
             .Select(e => e.ParentItemId);
 
-        var linkParents = ResolveLinkParents(context, matchingItemIds, hierarchyAncestors);
+        var linkParents = ResolveLinkParents(context, reportedItemIds, hierarchyAncestors);
 
-        // Read back as a sub-select so the result stays composable. LinkedChildren is the cheapest
-        // source: owning a link is what put an id in the set, and ParentId is its leading key.
-        var linkedParents = context.LinkedChildren
-            .WhereOneOrMany(linkParents, e => e.ParentId)
-            .Select(e => e.ParentId);
+        // Read back as a sub-select so the result stays composable. Off the primary key, which is one
+        // row per id: LinkedChildren would yield one row per link and lean on the outer Distinct.
+        var linkedParents = context.BaseItems
+            .WhereOneOrMany(linkParents, e => e.Id)
+            .Select(e => e.Id);
 
         var linkedParentAncestors = context.AncestorIds
             .WhereOneOrMany(linkParents, e => e.ItemId)
@@ -135,25 +140,6 @@ public static class DescendantQueryHelper
     }
 
     /// <summary>
-    /// Gets a queryable of the IDs of the items whose media matches the criteria.
-    /// </summary>
-    /// <param name="context">Database context.</param>
-    /// <param name="criteria">The matching criteria to apply.</param>
-    /// <returns>Queryable of item IDs.</returns>
-    /// <remarks>
-    /// An alternate version is a second file for its primary version and is never listed on its own, so a
-    /// track only that file carries is reported against the primary: the item a caller can actually see.
-    /// </remarks>
-    public static IQueryable<Guid> GetItemIdsMatching(JellyfinDbContext context, FolderMatchCriteria criteria)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(criteria);
-
-        return MatchingMediaOwners(context, criteria)
-            .Select(e => e.PrimaryVersionId ?? e.Id);
-    }
-
-    /// <summary>
     /// Gets a queryable of the IDs of the primary versions whose alternate version's media matches the
     /// criteria.
     /// </summary>
@@ -170,23 +156,47 @@ public static class DescendantQueryHelper
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(criteria);
 
-        return MatchingMediaOwners(context, criteria)
-            .Where(e => e.PrimaryVersionId.HasValue)
-            .Select(e => e.PrimaryVersionId!.Value);
+        // Anchored on the alternates rather than on the matches: "has a primary version" is served by
+        // the partial PrimaryVersionId index, which holds only the few items that are second files, so
+        // this costs a seek each into the stream index instead of a second pass over every stream row.
+        var alternates = context.BaseItems.Where(v => v.PrimaryVersionId.HasValue);
+
+        if (criteria is HasChapterImages)
+        {
+            return alternates
+                .Where(v => context.Chapters.Any(c => c.ItemId.Equals(v.Id) && c.ImagePath != null))
+                .Select(v => v.PrimaryVersionId!.Value);
+        }
+
+        var matchingStreams = MatchingMediaStreams(context, criteria);
+
+        return alternates
+            .Where(v => matchingStreams.Any(ms => ms.ItemId.Equals(v.Id)))
+            .Select(v => v.PrimaryVersionId!.Value);
     }
 
-    // The items whose own media matches, as their BaseItems rows so the version group can be read off
-    // them. One definition of "matches" per criteria, so the projections above cannot drift apart.
-    private static IQueryable<BaseItemEntity> MatchingMediaOwners(JellyfinDbContext context, FolderMatchCriteria criteria)
+    // The ids of the items whose own media matches. Kept to the stream and chapter tables so their
+    // covering indexes answer this outright: projecting the BaseItems navigation instead would add a
+    // primary-key lookup per stream row rather than one per matching item, and the leading key of both
+    // indexes leaves the ids already grouped, so the Distinct costs no sort.
+    private static IQueryable<Guid> MatchingMediaOwnerIds(JellyfinDbContext context, FolderMatchCriteria criteria)
+        => criteria is HasChapterImages
+            ? context.Chapters
+                .Where(c => c.ImagePath != null)
+                .Select(c => c.ItemId)
+                .Distinct()
+            : MatchingMediaStreams(context, criteria)
+                .Select(ms => ms.ItemId)
+                .Distinct();
+
+    // The stream rows a criteria matches. One definition, so the owner projection and the alternate
+    // projection cannot drift apart despite reading it from opposite ends.
+    private static IQueryable<MediaStreamInfo> MatchingMediaStreams(JellyfinDbContext context, FolderMatchCriteria criteria)
         => criteria switch
         {
             HasSubtitles => context.MediaStreamInfos
-                .Where(ms => ms.StreamType == MediaStreamTypeEntity.Subtitle)
-                .Select(ms => ms.Item),
-            HasChapterImages => context.Chapters
-                .Where(c => c.ImagePath != null)
-                .Select(c => c.Item),
-            HasMediaStreamType m => GetMatchingMediaStreams(context, m).Select(ms => ms.Item),
+                .Where(ms => ms.StreamType == MediaStreamTypeEntity.Subtitle),
+            HasMediaStreamType m => GetMatchingMediaStreams(context, m),
             _ => throw new ArgumentOutOfRangeException(nameof(criteria), $"Unknown criteria type: {criteria.GetType().Name}")
         };
 
