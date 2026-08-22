@@ -46,7 +46,7 @@ namespace Emby.Server.Implementations.Session
     /// <summary>
     /// Class SessionManager.
     /// </summary>
-    public sealed class SessionManager : ISessionManager, IAsyncDisposable
+    public sealed class SessionManager : ISessionManager, IExternalSessionCreator, IAsyncDisposable
     {
         private readonly IUserDataManager _userDataManager;
         private readonly IServerConfigurationManager _config;
@@ -1640,10 +1640,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            ArgumentException.ThrowIfNullOrEmpty(request.App);
-            ArgumentException.ThrowIfNullOrEmpty(request.DeviceId);
-            ArgumentException.ThrowIfNullOrEmpty(request.DeviceName);
-            ArgumentException.ThrowIfNullOrEmpty(request.AppVersion);
+            ValidateSessionRequest(request);
 
             User user = null;
             if (!request.UserId.IsEmpty())
@@ -1668,6 +1665,46 @@ namespace Emby.Server.Implementations.Session
                 throw new AuthenticationException("Invalid username or password entered.");
             }
 
+            return await CreateSessionForValidatedUser(user, request).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task<AuthenticationResult> CreateExternalSession(ExternalAuthenticationRequest request)
+        {
+            CheckDisposed();
+
+            ArgumentNullException.ThrowIfNull(request);
+
+            var sessionRequest = new AuthenticationRequest
+            {
+                UserId = request.UserId,
+                App = request.App,
+                AppVersion = request.AppVersion,
+                DeviceId = request.DeviceId,
+                DeviceName = request.DeviceName,
+                RemoteEndPoint = request.RemoteEndPoint
+            };
+
+            ValidateSessionRequest(sessionRequest);
+
+            var user = _userManager.GetUserById(request.UserId);
+            if (user is null)
+            {
+                await _eventManager.PublishAsync(new AuthenticationRequestEventArgs(sessionRequest)).ConfigureAwait(false);
+                throw new AuthenticationException("External authentication user was not found.");
+            }
+
+            var now = DateTime.UtcNow;
+            user.LastActivityDate = now;
+            user.LastLoginDate = now;
+            user.InvalidLoginAttemptCount = 0;
+            await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
+
+            return await CreateSessionForValidatedUser(user, sessionRequest).ConfigureAwait(false);
+        }
+
+        private async Task<AuthenticationResult> CreateSessionForValidatedUser(User user, AuthenticationRequest request)
+        {
             if (!string.IsNullOrEmpty(request.DeviceId)
                 && !_deviceManager.CanAccessDevice(user, request.DeviceId))
             {
@@ -1702,6 +1739,14 @@ namespace Emby.Server.Implementations.Session
 
             await _eventManager.PublishAsync(new AuthenticationResultEventArgs(returnResult)).ConfigureAwait(false);
             return returnResult;
+        }
+
+        private static void ValidateSessionRequest(AuthenticationRequest request)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(request.App);
+            ArgumentException.ThrowIfNullOrEmpty(request.DeviceId);
+            ArgumentException.ThrowIfNullOrEmpty(request.DeviceName);
+            ArgumentException.ThrowIfNullOrEmpty(request.AppVersion);
         }
 
         internal async Task<string> GetAuthorizationToken(User user, string deviceId, string app, string appVersion, string deviceName)
