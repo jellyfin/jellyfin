@@ -240,6 +240,7 @@
  - [Florin-Popescu](https://github.com/Florin-Popescu)
  - [m0g3r](https://github.com/m0g3r)
  - [martin-77](https://github.com/martin-77)
+ - [Oggeb1](https://github.com/Oggeb1)
 
 # Emby Contributors
 
