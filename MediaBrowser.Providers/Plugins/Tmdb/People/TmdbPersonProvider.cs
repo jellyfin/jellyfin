@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
@@ -37,9 +36,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(PersonLookupInfo searchInfo, CancellationToken cancellationToken)
         {
-            if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var personTmdbId))
+            if (searchInfo.TryGetTmdbId(out var personTmdbId))
             {
-                var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                var personResult = await _tmdbClientManager.GetPersonAsync(personTmdbId, searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
 
                 if (personResult is not null)
                 {
@@ -89,7 +88,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         /// <inheritdoc />
         public async Task<MetadataResult<Person>> GetMetadata(PersonLookupInfo info, CancellationToken cancellationToken)
         {
-            var personTmdbId = Convert.ToInt32(info.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
+            // A person can carry another provider's id under the TMDb key, which is no more usable here
+            // than no id at all, so both take the search path and get the stored id repaired.
+            info.TryGetTmdbId(out var personTmdbId);
 
             // We don't already have an Id, need to fetch it
             if (personTmdbId <= 0)
