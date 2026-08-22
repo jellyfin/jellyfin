@@ -134,6 +134,7 @@ public class ItemPersistenceService : IItemPersistenceService
         context.ItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDelete();
         context.ItemValuesMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        context.BaseItemTags.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ParentId).ExecuteDelete();
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ChildId).ExecuteDelete();
         context.BaseItems.WhereOneOrMany(relatedItems, e => e.Id).ExecuteDelete();
@@ -145,18 +146,6 @@ public class ItemPersistenceService : IItemPersistenceService
         context.Peoples.WhereOneOrMany(query, e => e.Id).Where(e => e.BaseItems!.Count == 0).ExecuteDelete();
         context.TrickplayInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.SaveChanges();
-        transaction.Commit();
-    }
-
-    /// <inheritdoc />
-    public void UpdateInheritedValues()
-    {
-        using var context = _dbProvider.CreateDbContext();
-        using var transaction = context.Database.BeginTransaction();
-
-        context.ItemValuesMap.Where(e => e.ItemValue.Type == ItemValueType.InheritedTags).ExecuteDelete();
-        context.SaveChanges();
-
         transaction.Commit();
     }
 
@@ -238,7 +227,7 @@ public class ItemPersistenceService : IItemPersistenceService
         ArgumentNullException.ThrowIfNull(items);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var tuples = new List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey, List<string> InheritedTags)>();
+        var tuples = new List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey)>();
         foreach (var item in items.GroupBy(e => e.Id).Select(e => e.Last()).Where(e => e.Id != BaseItemRepository.PlaceholderId))
         {
             var ancestorIds = item.SupportsAncestors ?
@@ -248,9 +237,8 @@ public class ItemPersistenceService : IItemPersistenceService
             var topParent = item.GetTopParent();
 
             var userdataKey = item.GetUserDataKeys();
-            var inheritedTags = item.GetInheritedTags();
 
-            tuples.Add((item, ancestorIds, topParent, userdataKey, inheritedTags));
+            tuples.Add((item, ancestorIds, topParent, userdataKey));
         }
 
         using var context = _dbProvider.CreateDbContext();
@@ -285,7 +273,7 @@ public class ItemPersistenceService : IItemPersistenceService
         }
 
         var itemValueMaps = tuples
-            .Select(e => (e.Item, Values: GetItemValuesToSave(e.Item, e.InheritedTags)))
+            .Select(e => (e.Item, Values: GetItemValuesToSave(e.Item)))
             .ToArray();
         var allListedItemValues = itemValueMaps
             .SelectMany(f => f.Values)
@@ -343,6 +331,8 @@ public class ItemPersistenceService : IItemPersistenceService
 
             context.ItemValuesMap.RemoveRange(itemMappedValues);
         }
+
+        UpdateTags(context, tuples, ids);
 
         var itemsWithAncestors = tuples
             .Where(t => t.Item.SupportsAncestors && t.AncestorIds != null)
@@ -680,25 +670,47 @@ public class ItemPersistenceService : IItemPersistenceService
         transaction.Commit();
     }
 
-    private static List<(ItemValueType MagicNumber, string Value)> GetItemValuesToSave(BaseItemDto item, List<string> inheritedTags)
+    private static void UpdateTags(
+        JellyfinDbContext context,
+        List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey)> tuples,
+        Guid[] ids)
+    {
+        var existingTags = context.BaseItemTags.Where(e => ids.Contains(e.ItemId)).ToList();
+
+        foreach (var (item, _, _, _) in tuples)
+        {
+            var itemTags = existingTags.Where(e => e.ItemId == item.Id).ToList();
+
+            foreach (var tag in item.Tags.Where(e => !string.IsNullOrWhiteSpace(e)).Distinct(StringComparer.Ordinal))
+            {
+                var existingTag = itemTags.FirstOrDefault(e => string.Equals(e.Value, tag, StringComparison.Ordinal));
+                if (existingTag is null)
+                {
+                    context.BaseItemTags.Add(new BaseItemTag()
+                    {
+                        Item = null!,
+                        ItemId = item.Id,
+                        Value = tag,
+                        CleanValue = tag.GetCleanValue()
+                    });
+                }
+                else
+                {
+                    itemTags.Remove(existingTag);
+                }
+            }
+
+            context.BaseItemTags.RemoveRange(itemTags);
+        }
+    }
+
+    private static List<(ItemValueType MagicNumber, string Value)> GetItemValuesToSave(BaseItemDto item)
     {
         var list = new List<(ItemValueType, string)>();
 
-        if (item is IHasArtist hasArtist)
-        {
-            list.AddRange(hasArtist.Artists.Select(i => ((ItemValueType)0, i)));
-        }
-
-        if (item is IHasAlbumArtist hasAlbumArtist)
-        {
-            list.AddRange(hasAlbumArtist.AlbumArtists.Select(i => (ItemValueType.AlbumArtist, i)));
-        }
-
+        // Artists are credits, not values, keyed on the artist item. See UpdatePeople.
         list.AddRange(item.Genres.Select(i => (ItemValueType.Genre, i)));
         list.AddRange(item.Studios.Select(i => (ItemValueType.Studios, i)));
-        list.AddRange(item.Tags.Select(i => (ItemValueType.Tags, i)));
-
-        list.AddRange(inheritedTags.Select(i => (ItemValueType.InheritedTags, i)));
 
         list.RemoveAll(i => string.IsNullOrWhiteSpace(i.Item2));
 

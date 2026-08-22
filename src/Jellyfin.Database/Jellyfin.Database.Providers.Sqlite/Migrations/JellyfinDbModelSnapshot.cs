@@ -505,9 +505,32 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "ProviderId");
 
+                    b.HasIndex("ProviderId", "ProviderValue");
+
                     b.HasIndex("ProviderId", "ItemId", "ProviderValue");
 
                     b.ToTable("BaseItemProviders");
+
+                    b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
+                });
+
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemTag", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CleanValue")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ItemId", "Value");
+
+                    b.HasIndex("CleanValue", "ItemId");
+
+                    b.ToTable("BaseItemTags");
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -1023,6 +1046,13 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("CleanName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -1032,7 +1062,11 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ItemId");
+
                     b.HasIndex("Name");
+
+                    b.HasIndex("CleanName", "PersonType");
 
                     b.ToTable("Peoples");
 
@@ -1550,6 +1584,17 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("Item");
                 });
 
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemTag", b =>
+                {
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
+                        .WithMany("ItemTags")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+                });
+
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemTrailerType", b =>
                 {
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
@@ -1745,6 +1790,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("Extras");
 
                     b.Navigation("Images");
+
+                    b.Navigation("ItemTags");
 
                     b.Navigation("ItemValues");
 

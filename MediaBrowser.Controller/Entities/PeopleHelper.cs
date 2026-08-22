@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
@@ -35,20 +36,22 @@ namespace MediaBrowser.Controller.Entities
                 person.Type = PersonKind.Writer;
             }
 
+            var cleanName = person.Name.GetCleanValue();
+
             // Check for dupes based on the combination of Name, Type and Role.
-            var existing = people.FirstOrDefault(p => IsSameCredit(p, person)
+            var existing = people.FirstOrDefault(p => IsSameCredit(p, cleanName, person.Type)
                 && string.Equals(p.Role ?? string.Empty, person.Role ?? string.Empty, StringComparison.OrdinalIgnoreCase));
 
             if (existing is null)
             {
                 if (string.IsNullOrEmpty(person.Role))
                 {
-                    existing = people.FirstOrDefault(p => IsSameCredit(p, person));
+                    existing = people.FirstOrDefault(p => IsSameCredit(p, cleanName, person.Type));
                 }
                 else
                 {
                     // If the person already exists without a role and we have one, fill it in
-                    existing = people.FirstOrDefault(p => IsSameCredit(p, person) && string.IsNullOrEmpty(p.Role));
+                    existing = people.FirstOrDefault(p => IsSameCredit(p, cleanName, person.Type) && string.IsNullOrEmpty(p.Role));
                     if (existing is not null)
                     {
                         existing.Role = person.Role;
@@ -71,20 +74,20 @@ namespace MediaBrowser.Controller.Entities
             MergeExisting(existing, person);
         }
 
-        private static bool IsSameCredit(PersonInfo existing, PersonInfo person)
+        private static bool IsSameCredit(PersonInfo existing, string cleanName, PersonKind kind)
         {
-            if (!string.Equals(existing.Name, person.Name, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(existing.Name.GetCleanValue(), cleanName, StringComparison.Ordinal))
             {
                 return false;
             }
 
             // Actor and GuestStar describe the same credit, a guest star is just a promoted actor.
-            if (IsCastKind(existing.Type) && IsCastKind(person.Type))
+            if (IsCastKind(existing.Type) && IsCastKind(kind))
             {
                 return true;
             }
 
-            return existing.Type == person.Type;
+            return existing.Type == kind;
         }
 
         private static bool IsCastKind(PersonKind kind)

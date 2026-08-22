@@ -171,6 +171,7 @@ public class DtoServiceImageInheritanceTests
         var albumTwo = MakeAlbum();
 
         var libraryManager = new Mock<ILibraryManager>();
+        var personItem = new Person { Id = Guid.NewGuid(), Name = "Some Actor" };
 
         // DtoService resolves people for every item in ONE batch (GetPeopleByItems) before the
         // per-item loop. A regression to the per-item path would call GetPeople(BaseItem) once per
@@ -179,14 +180,14 @@ public class DtoServiceImageInheritanceTests
             .Setup(x => x.GetPeopleByItems(It.IsAny<IReadOnlyList<Guid>>()))
             .Returns(new Dictionary<Guid, IReadOnlyList<PersonInfo>>
             {
-                [albumOne.Id] = [new PersonInfo { ItemId = albumOne.Id, Name = "Some Actor", Type = PersonKind.Actor }],
-                [albumTwo.Id] = [new PersonInfo { ItemId = albumTwo.Id, Name = "Some Actor", Type = PersonKind.Actor }]
+                [albumOne.Id] = [new PersonInfo { ItemId = albumOne.Id, PersonItemId = personItem.Id, Name = "Some Actor", Type = PersonKind.Actor }],
+                [albumTwo.Id] = [new PersonInfo { ItemId = albumTwo.Id, PersonItemId = personItem.Id, Name = "Some Actor", Type = PersonKind.Actor }]
             });
 
-        // AttachPeople still resolves each distinct name to its Person entity to attach images.
+        // AttachPeople resolves each credit to its Person entity by id, to attach images.
         libraryManager
-            .Setup(x => x.GetPerson("Some Actor"))
-            .Returns(new Person { Id = Guid.NewGuid(), Name = "Some Actor" });
+            .Setup(x => x.GetItemById(personItem.Id))
+            .Returns(personItem);
 
         var dtoService = BuildDtoService(libraryManager);
 
