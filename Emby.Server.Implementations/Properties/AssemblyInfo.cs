@@ -16,7 +16,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 [assembly: NeutralResourcesLanguage("en")]
 [assembly: InternalsVisibleTo("Jellyfin.Server.Implementations.Tests")]
+[assembly: InternalsVisibleTo("Jellyfin.Server.Tests")]
 [assembly: InternalsVisibleTo("Emby.Server.Implementations.Fuzz")]
+[assembly: InternalsVisibleTo("jellyfin")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from

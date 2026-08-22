@@ -1,3 +1,4 @@
+using Emby.Server.Implementations.Migrations;
 using System;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;

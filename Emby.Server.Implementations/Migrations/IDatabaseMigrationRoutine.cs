@@ -1,8 +1,7 @@
-using System;
-using Jellyfin.Server.Implementations;
+using Emby.Server.Implementations.Migrations;
 using Microsoft.EntityFrameworkCore;
 
-namespace Jellyfin.Server.Migrations;
+namespace Emby.Server.Implementations.Migrations;
 
 /// <summary>
 /// Defines a migration that operates on the Database.

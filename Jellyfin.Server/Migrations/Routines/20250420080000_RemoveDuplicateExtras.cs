@@ -1,3 +1,4 @@
+using Emby.Server.Implementations.Migrations;
 using System;
 using System.Globalization;
 using System.IO;

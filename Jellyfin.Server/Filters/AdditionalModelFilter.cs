@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json.Nodes;
 using Jellyfin.Extensions;
-using Jellyfin.Server.Migrations;
+using Emby.Server.Implementations.Migrations;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;

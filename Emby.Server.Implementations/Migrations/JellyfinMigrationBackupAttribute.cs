@@ -1,9 +1,9 @@
 using System;
 
-namespace Jellyfin.Server.Migrations;
+namespace Emby.Server.Implementations.Migrations;
 
 /// <summary>
-/// Marks an <see cref="JellyfinMigrationAttribute"/> migration and instructs the <see cref="JellyfinMigrationService"/> to perform a backup.
+/// Marks an <see cref="JellyfinMigrationAttribute"/> migration and instructs the <c>JellyfinMigrationService</c> to perform a backup.
 /// </summary>
 [AttributeUsage(System.AttributeTargets.Class, Inherited = true, AllowMultiple = true)]
 public sealed class JellyfinMigrationBackupAttribute : System.Attribute

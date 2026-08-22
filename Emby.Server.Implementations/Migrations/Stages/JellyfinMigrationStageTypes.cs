@@ -1,7 +1,7 @@
-namespace Jellyfin.Server.Migrations.Stages;
+namespace Emby.Server.Implementations.Migrations.Stages;
 
 /// <summary>
-/// Defines the stages the <see cref="JellyfinMigrationService"/> supports.
+/// Defines the stages the migration service supports.
 /// </summary>
 #pragma warning disable CA1008 // Enums should have zero value
 public enum JellyfinMigrationStageTypes

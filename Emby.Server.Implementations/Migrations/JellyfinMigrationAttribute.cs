@@ -2,9 +2,9 @@
 
 using System;
 using System.Globalization;
-using Jellyfin.Server.Migrations.Stages;
+using Emby.Server.Implementations.Migrations.Stages;
 
-namespace Jellyfin.Server.Migrations;
+namespace Emby.Server.Implementations.Migrations;
 
 /// <summary>
 /// Declares an class as an migration with its set metadata.

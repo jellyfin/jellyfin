@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
 using Emby.Server.Implementations;
+using Emby.Server.Implementations.Migrations.Stages;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
 using Jellyfin.Server.ServerSetupApp;
@@ -112,9 +113,9 @@ namespace Jellyfin.Server.Integration.Tests
             appHost.ServiceProvider = host.Services;
             var applicationPaths = appHost.ServiceProvider.GetRequiredService<IApplicationPaths>();
             Program.ApplyStartupMigrationAsync((ServerApplicationPaths)applicationPaths, appHost.ServiceProvider.GetRequiredService<IConfiguration>(), new()).GetAwaiter().GetResult();
-            Program.ApplyCoreMigrationsAsync(appHost.ServiceProvider, Migrations.Stages.JellyfinMigrationStageTypes.CoreInitialisation).GetAwaiter().GetResult();
+            Program.ApplyCoreMigrationsAsync(appHost.ServiceProvider, JellyfinMigrationStageTypes.CoreInitialisation).GetAwaiter().GetResult();
             appHost.InitializeServices(Mock.Of<IConfiguration>()).GetAwaiter().GetResult();
-            Program.ApplyCoreMigrationsAsync(appHost.ServiceProvider, Migrations.Stages.JellyfinMigrationStageTypes.AppInitialisation).GetAwaiter().GetResult();
+            Program.ApplyCoreMigrationsAsync(appHost.ServiceProvider, JellyfinMigrationStageTypes.AppInitialisation).GetAwaiter().GetResult();
             host.Start();
 
             appHost.RunStartupTasksAsync().GetAwaiter().GetResult();

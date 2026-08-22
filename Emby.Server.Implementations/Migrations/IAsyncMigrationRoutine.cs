@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Jellyfin.Server.Migrations;
+namespace Emby.Server.Implementations.Migrations;
 
 /// <summary>
 /// Interface that describes a migration routine.

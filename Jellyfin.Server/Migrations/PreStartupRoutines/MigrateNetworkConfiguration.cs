@@ -1,3 +1,5 @@
+using Emby.Server.Implementations.Migrations;
+using Stages = Emby.Server.Implementations.Migrations.Stages;
 #pragma warning disable CS0618 // obsolete
 
 using System;
