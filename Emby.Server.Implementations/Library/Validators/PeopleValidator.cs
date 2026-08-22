@@ -49,9 +49,15 @@ public class PeopleValidator
     /// <returns>Task.</returns>
     public async Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
     {
-        var people = _libraryManager.GetPeopleNames(new InternalPeopleQuery());
+        var numLinked = LinkUnresolvedCredits(cancellationToken);
+
+        // Person kinds only: an Artist credit belongs to a MusicArtist, refreshed by the music library.
+        var people = _libraryManager.GetPeopleNames(new InternalPeopleQuery(
+            [],
+            [nameof(PersonKind.Artist), nameof(PersonKind.AlbumArtist)]));
 
         var numComplete = 0;
+        var numCreated = 0;
 
         var numPeople = people.Count;
 
@@ -68,8 +74,15 @@ public class PeopleValidator
                 var item = _libraryManager.GetPerson(person);
                 if (item is null)
                 {
-                    _logger.LogWarning("Failed to get person: {Name}", person);
-                    continue;
+                    // A credited name without an item is invisible everywhere, so create it here.
+                    item = _libraryManager.GetOrCreatePerson(person);
+                    if (item is null)
+                    {
+                        _logger.LogWarning("Failed to get or create person: {Name}", person);
+                        continue;
+                    }
+
+                    numCreated++;
                 }
 
                 var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
@@ -115,6 +128,46 @@ public class PeopleValidator
 
         progress.Report(100);
 
-        _logger.LogInformation("People validation complete");
+        _logger.LogInformation("People validation complete, created {Created} missing people and linked {Linked} credits", numCreated, numLinked);
+    }
+
+    // Every kind, not just the Person ones refreshed below.
+    private int LinkUnresolvedCredits(CancellationToken cancellationToken)
+    {
+        var unlinked = _libraryManager.GetUnlinkedCredits();
+        if (unlinked.Count == 0)
+        {
+            return 0;
+        }
+
+        _logger.LogDebug("Found {Amount} credits with no item", unlinked.Count);
+
+        var numLinked = 0;
+        foreach (var credit in unlinked)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                var item = _libraryManager.GetOrCreateCreditItem(credit.Name, credit.Type);
+                if (item is null)
+                {
+                    _logger.LogWarning("Failed to get or create the item for {Kind} credit {Name}", credit.Type, credit.Name);
+                    continue;
+                }
+
+                numLinked += _libraryManager.LinkCreditsToItem(credit.Name, credit.Type, item.Id);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error linking {Kind} credit {Name}", credit.Type, credit.Name);
+            }
+        }
+
+        return numLinked;
     }
 }

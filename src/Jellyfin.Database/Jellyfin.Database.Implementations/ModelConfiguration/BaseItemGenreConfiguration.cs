@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Jellyfin.Database.Implementations.ModelConfiguration;
 
 /// <summary>
-/// itemvalues Configuration.
+/// BaseItemGenre configuration.
 /// </summary>
-public class ItemValuesMapConfiguration : IEntityTypeConfiguration<ItemValueMap>
+public class BaseItemGenreConfiguration : IEntityTypeConfiguration<BaseItemGenre>
 {
     /// <inheritdoc/>
-    public void Configure(EntityTypeBuilder<ItemValueMap> builder)
+    public void Configure(EntityTypeBuilder<BaseItemGenre> builder)
     {
-        builder.HasKey(e => new { e.ItemValueId, e.ItemId });
+        builder.HasKey(e => new { e.ItemId, e.GenreItemId });
         builder.HasOne(e => e.Item);
-        builder.HasOne(e => e.ItemValue);
+        builder.HasIndex(e => new { e.GenreItemId, e.ItemId });
     }
 }

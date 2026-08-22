@@ -129,7 +129,7 @@ public class ItemCountService : IItemCountService
 
         var item = context.BaseItems.AsNoTracking()
             .Where(e => e.Id == id)
-            .Select(e => new { e.Name, e.CleanName })
+            .Select(e => new { e.Name })
             .FirstOrDefault();
 
         if (item is null)
@@ -140,33 +140,26 @@ public class ItemCountService : IItemCountService
         IQueryable<BaseItemEntity> baseQuery;
         switch (kind)
         {
+            // Both the same: a credit points at its item, and the id already says which kind that is.
             case BaseItemKind.Person:
+            case BaseItemKind.MusicArtist:
                 baseQuery = ItemsById(context, context.PeopleBaseItemMap
                     .AsNoTracking()
-                    .Where(m => m.People.Name == item.Name)
+                    .Where(m => m.People.ItemId.Equals(id))
                     .Select(m => m.ItemId));
-                break;
-            case BaseItemKind.MusicArtist:
-                baseQuery = ItemsById(context, context.ItemValuesMap
-                    .AsNoTracking()
-                    .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
-                        && (ivm.ItemValue.Type == ItemValueType.Artist || ivm.ItemValue.Type == ItemValueType.AlbumArtist))
-                    .Select(ivm => ivm.ItemId));
                 break;
             case BaseItemKind.Genre:
             case BaseItemKind.MusicGenre:
-                baseQuery = ItemsById(context, context.ItemValuesMap
+                baseQuery = ItemsById(context, context.BaseItemGenres
                     .AsNoTracking()
-                    .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
-                        && ivm.ItemValue.Type == ItemValueType.Genre)
-                    .Select(ivm => ivm.ItemId));
+                    .Where(g => g.GenreItemId == id)
+                    .Select(g => g.ItemId));
                 break;
             case BaseItemKind.Studio:
-                baseQuery = ItemsById(context, context.ItemValuesMap
+                baseQuery = ItemsById(context, context.BaseItemStudios
                     .AsNoTracking()
-                    .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
-                        && ivm.ItemValue.Type == ItemValueType.Studios)
-                    .Select(ivm => ivm.ItemId));
+                    .Where(s => s.StudioItemId == id)
+                    .Select(s => s.ItemId));
                 break;
             case BaseItemKind.Year:
                 if (int.TryParse(item.Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))

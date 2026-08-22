@@ -196,6 +196,60 @@ namespace Jellyfin.Model.Tests.Entities
             Assert.Empty(provider.ProviderIds);
         }
 
+        [Fact]
+        public void FindConflictingProvider_NothingInCommon_Null()
+        {
+            var provider = new ProviderIdsExtensionsTestsObject();
+            provider.ProviderIds[MetadataProvider.Imdb.ToString()] = ExampleImdbId;
+
+            Assert.Null(provider.FindConflictingProvider(new Dictionary<string, string>
+            {
+                [MetadataProvider.Tmdb.ToString()] = "42"
+            }));
+        }
+
+        [Fact]
+        public void FindConflictingProvider_SameProviderDifferentValue_TheProvider()
+        {
+            var provider = new ProviderIdsExtensionsTestsObject();
+            provider.ProviderIds[MetadataProvider.Tmdb.ToString()] = "1";
+
+            Assert.Equal(
+                MetadataProvider.Tmdb.ToString(),
+                provider.FindConflictingProvider(new Dictionary<string, string>
+                {
+                    [MetadataProvider.Tmdb.ToString()] = "2"
+                }));
+        }
+
+        [Fact]
+        public void FindConflictingProvider_OneProviderAgrees_Null()
+        {
+            var provider = new ProviderIdsExtensionsTestsObject();
+            provider.ProviderIds[MetadataProvider.Tmdb.ToString()] = "1";
+            provider.ProviderIds[MetadataProvider.Imdb.ToString()] = ExampleImdbId;
+
+            // The same entity under two spellings, with one provider having reissued an id.
+            Assert.Null(provider.FindConflictingProvider(new Dictionary<string, string>
+            {
+                [MetadataProvider.Tmdb.ToString()] = "1",
+                [MetadataProvider.Imdb.ToString()] = "tt0000001"
+            }));
+        }
+
+        [Fact]
+        public void FindConflictingProvider_NoIdsEitherSide_Null()
+        {
+            var provider = new ProviderIdsExtensionsTestsObject();
+
+            Assert.Null(provider.FindConflictingProvider(null));
+            Assert.Null(provider.FindConflictingProvider(new Dictionary<string, string>()));
+            Assert.Null(ProviderIdsExtensionsTestsObject.Empty.FindConflictingProvider(new Dictionary<string, string>
+            {
+                [MetadataProvider.Tmdb.ToString()] = "1"
+            }));
+        }
+
         private sealed class ProviderIdsExtensionsTestsObject : IHasProviderIds
         {
             public static readonly ProviderIdsExtensionsTestsObject Empty = new ProviderIdsExtensionsTestsObject();

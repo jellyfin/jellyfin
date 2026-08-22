@@ -625,21 +625,17 @@ public sealed partial class BaseItemRepository
             .OrderBy(r => r)
             .ToArray();
 
-        var tags = context.ItemValuesMap
-            .Where(ivm => ivm.ItemValue.Type == ItemValueType.Tags)
-            .Where(ivm => matchingItemIds.Contains(ivm.ItemId))
-            .Select(ivm => ivm.ItemValue)
-            .GroupBy(iv => iv.CleanValue)
-            .Select(g => g.Min(iv => iv.Value))
+        var tags = context.BaseItemTags
+            .Where(t => matchingItemIds.Contains(t.ItemId))
+            .GroupBy(t => t.CleanValue)
+            .Select(g => g.Min(t => t.Value))
             .OrderBy(t => t)
             .ToArray();
 
-        var genres = context.ItemValuesMap
-            .Where(ivm => ivm.ItemValue.Type == ItemValueType.Genre)
-            .Where(ivm => matchingItemIds.Contains(ivm.ItemId))
-            .Select(ivm => ivm.ItemValue)
-            .GroupBy(iv => iv.CleanValue)
-            .Select(g => g.Min(iv => iv.Value))
+        var genres = context.BaseItemGenres
+            .Where(g => matchingItemIds.Contains(g.ItemId))
+            .Join(context.BaseItems, g => g.GenreItemId, b => b.Id, (g, b) => b.Name!)
+            .Distinct()
             .OrderBy(g => g)
             .ToArray();
 

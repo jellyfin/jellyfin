@@ -1,12 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Validators;
@@ -20,7 +19,6 @@ public class GenresValidator
     /// The library manager.
     /// </summary>
     private readonly ILibraryManager _libraryManager;
-    private readonly IItemRepository _itemRepo;
 
     /// <summary>
     /// The logger.
@@ -32,12 +30,10 @@ public class GenresValidator
     /// </summary>
     /// <param name="libraryManager">The library manager.</param>
     /// <param name="logger">The logger.</param>
-    /// <param name="itemRepo">The item repository.</param>
-    public GenresValidator(ILibraryManager libraryManager, ILogger<GenresValidator> logger, IItemRepository itemRepo)
+    public GenresValidator(ILibraryManager libraryManager, ILogger<GenresValidator> logger)
     {
         _libraryManager = libraryManager;
         _logger = logger;
-        _itemRepo = itemRepo;
     }
 
     /// <summary>
@@ -48,37 +44,22 @@ public class GenresValidator
     /// <returns>Task.</returns>
     public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        var names = _itemRepo.GetGenreNames();
-        var existingGenreIds = _libraryManager.GetItemIds(new InternalItemsQuery
+        var genres = _libraryManager.GetItemList(new InternalItemsQuery
         {
             IncludeItemTypes = [BaseItemKind.Genre]
-        }).ToHashSet();
-
-        var existingGenres = _libraryManager.GetItemList(new InternalItemsQuery
-        {
-            IncludeItemTypes = [BaseItemKind.Genre]
-        }).Cast<Genre>()
-        .GroupBy(g => g.Name, StringComparer.OrdinalIgnoreCase)
-        .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+        });
 
         var numComplete = 0;
-        var count = names.Count;
+        var count = genres.Count;
         var refreshed = 0;
 
-        foreach (var name in names)
+        foreach (var item in genres)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Genre? item = null;
-                if (existingGenres.TryGetValue(name, out var existingGenre))
-                {
-                    item = existingGenre;
-                }
-
-                // Fall back to GetGenre if not found (creates new item if needed)
-                item ??= _libraryManager.GetGenre(name);
-
-                if (!existingGenreIds.Contains(item.Id))
+                if (item.DateLastRefreshed == default)
                 {
                     await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                     refreshed++;
@@ -91,7 +72,7 @@ public class GenresValidator
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error refreshing {GenreName}", name);
+                _logger.LogError(ex, "Error refreshing {GenreName}", item.Name);
             }
 
             numComplete++;
@@ -110,6 +91,21 @@ public class GenresValidator
             IsDeadGenre = true,
             IsLocked = false
         });
+
+        // An unpopulated link table reads as every genre being unused, and deleting one takes its
+        // artwork with it.
+        var totalGenres = _libraryManager.GetCount(new InternalItemsQuery
+        {
+            IncludeItemTypes = [BaseItemKind.Genre, BaseItemKind.MusicGenre],
+            IsLocked = false
+        });
+
+        if (totalGenres > 0 && deadEntities.Count == totalGenres)
+        {
+            _logger.LogWarning("Every genre looks unused, which means the links are missing rather than the genres. Skipping cleanup");
+            progress.Report(100);
+            return;
+        }
 
         foreach (var item in deadEntities)
         {

@@ -256,23 +256,23 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             series.Overview = seriesResult.Overview;
 
-            var studios = Enumerable.Empty<string>();
+            var studios = Enumerable.Empty<ItemByNameInfo>();
 
             if (seriesResult.Networks is not null)
             {
-                studios = studios.Concat(seriesResult.Networks.Select(i => i.Name).OfType<string>());
+                studios = studios.Concat(seriesResult.Networks.Select(TmdbUtils.ToItemByNameInfo));
             }
 
             if (seriesResult.ProductionCompanies is not null)
             {
-                studios = studios.Concat(seriesResult.ProductionCompanies.Select(i => i.Name).OfType<string>());
+                studios = studios.Concat(seriesResult.ProductionCompanies.Select(TmdbUtils.ToItemByNameInfo));
             }
 
             series.SetStudios(studios);
 
             if (seriesResult.Genres is not null)
             {
-                series.Genres = seriesResult.Genres.Select(i => i.Name).ToArray();
+                series.SetGenres(seriesResult.Genres.Select(TmdbUtils.ToItemByNameInfo));
             }
 
             if (seriesResult.Keywords?.Results is not null)

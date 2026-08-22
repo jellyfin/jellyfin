@@ -187,7 +187,7 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var items = await _libraryManager.GetIntros(item, user).ConfigureAwait(false);
         var dtoOptions = new DtoOptions();
-        var dtos = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray();
+        var dtos = _dtoService.GetBaseItemDtos([.. items], dtoOptions, user, skipVisibilityCheck: true).ToArray();
 
         return new QueryResult<BaseItemDto>(dtos);
     }
@@ -434,8 +434,14 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var dtoOptions = new DtoOptions();
 
-        return Ok(item.GetExtras([ExtraType.Trailer], user)
-            .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item)));
+        IEnumerable<BaseItemDto> trailers = _dtoService.GetBaseItemDtos(
+            [.. item.GetExtras([ExtraType.Trailer], user)],
+            dtoOptions,
+            user,
+            item,
+            skipVisibilityCheck: true);
+
+        return Ok(trailers);
     }
 
     /// <summary>
@@ -484,10 +490,14 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var dtoOptions = new DtoOptions();
 
-        return Ok(item
-            .GetExtras(user)
-            .Where(i => i.ExtraType.HasValue && BaseItem.DisplayExtraTypes.Contains(i.ExtraType.Value))
-            .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item)));
+        IEnumerable<BaseItemDto> specialFeatures = _dtoService.GetBaseItemDtos(
+            [.. item.GetExtras(user).Where(i => i.ExtraType.HasValue && BaseItem.DisplayExtraTypes.Contains(i.ExtraType.Value))],
+            dtoOptions,
+            user,
+            item,
+            skipVisibilityCheck: true);
+
+        return Ok(specialFeatures);
     }
 
     /// <summary>

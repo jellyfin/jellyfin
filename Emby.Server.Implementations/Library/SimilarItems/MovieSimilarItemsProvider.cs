@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
-using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -33,13 +32,6 @@ public sealed class MovieSimilarItemsProvider : ILocalSimilarItemsProvider<Movie
     // Caps the batch fan-out so downstream IN-list sizes (per-source scores, accessible-id
     // load, navigation includes) stay bounded regardless of caller input.
     private const int MaxBatchSourceItems = 64;
-
-    private static readonly (ItemValueType Type, int Weight)[] _itemValueDimensions =
-    [
-        (ItemValueType.Genre, GenreWeight),
-        (ItemValueType.Tags, TagWeight),
-        (ItemValueType.Studios, StudioWeight)
-    ];
 
     private static readonly Dictionary<string, int> _personTypeWeights = new(StringComparer.Ordinal)
     {
@@ -245,27 +237,58 @@ public sealed class MovieSimilarItemsProvider : ILocalSimilarItemsProvider<Movie
             result[id] = [];
         }
 
-        foreach (var (valueType, weight) in _itemValueDimensions)
+        var genreSourceRows = await context.BaseItemGenres.AsNoTracking()
+            .Where(m => sourceIds.Contains(m.ItemId))
+            .Select(m => new { m.ItemId, Key = m.GenreItemId })
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        var genreSourceMap = genreSourceRows.GroupBy(r => r.ItemId).ToDictionary(g => g.Key, g => g.Select(x => x.Key).ToHashSet());
+        var allGenreKeys = genreSourceMap.Values.SelectMany(v => v).Distinct().ToList();
+        if (allGenreKeys.Count > 0)
         {
-            var sourceRows = await context.ItemValuesMap.AsNoTracking()
-                .Where(m => sourceIds.Contains(m.ItemId) && m.ItemValue.Type == valueType)
-                .Select(m => new { m.ItemId, Key = m.ItemValue.CleanValue })
+            var genreCandidateRows = await context.BaseItemGenres.AsNoTracking()
+                .Where(m => allGenreKeys.Contains(m.GenreItemId))
+                .Select(m => new { m.ItemId, Key = m.GenreItemId })
                 .ToListAsync(cancellationToken).ConfigureAwait(false);
 
-            var sourceMap = sourceRows.GroupBy(r => r.ItemId).ToDictionary(g => g.Key, g => g.Select(x => x.Key).ToHashSet());
-            var allKeys = sourceMap.Values.SelectMany(v => v).Distinct().ToList();
-            if (allKeys.Count == 0)
-            {
-                continue;
-            }
+            var genreToCandidates = genreCandidateRows.GroupBy(r => r.Key).ToDictionary(g => g.Key, g => g.Select(x => x.ItemId).ToList());
+            ApplyDimensionScores(sourceIds, genreSourceMap, genreToCandidates, GenreWeight, result);
+        }
 
-            var candidateRows = await context.ItemValuesMap.AsNoTracking()
-                .Where(m => m.ItemValue.Type == valueType && allKeys.Contains(m.ItemValue.CleanValue))
-                .Select(m => new { m.ItemId, Key = m.ItemValue.CleanValue })
+        var studioSourceRows = await context.BaseItemStudios.AsNoTracking()
+            .Where(m => sourceIds.Contains(m.ItemId))
+            .Select(m => new { m.ItemId, Key = m.StudioItemId })
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        var studioSourceMap = studioSourceRows.GroupBy(r => r.ItemId).ToDictionary(g => g.Key, g => g.Select(x => x.Key).ToHashSet());
+        var allStudioKeys = studioSourceMap.Values.SelectMany(v => v).Distinct().ToList();
+        if (allStudioKeys.Count > 0)
+        {
+            var studioCandidateRows = await context.BaseItemStudios.AsNoTracking()
+                .Where(m => allStudioKeys.Contains(m.StudioItemId))
+                .Select(m => new { m.ItemId, Key = m.StudioItemId })
                 .ToListAsync(cancellationToken).ConfigureAwait(false);
 
-            var keyToCandidates = candidateRows.GroupBy(r => r.Key).ToDictionary(g => g.Key, g => g.Select(x => x.ItemId).ToList());
-            ApplyDimensionScores(sourceIds, sourceMap, keyToCandidates, weight, result);
+            var studioToCandidates = studioCandidateRows.GroupBy(r => r.Key).ToDictionary(g => g.Key, g => g.Select(x => x.ItemId).ToList());
+            ApplyDimensionScores(sourceIds, studioSourceMap, studioToCandidates, StudioWeight, result);
+        }
+
+        var tagSourceRows = await context.BaseItemTags.AsNoTracking()
+            .Where(t => sourceIds.Contains(t.ItemId))
+            .Select(t => new { t.ItemId, Key = t.CleanValue })
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        var tagSourceMap = tagSourceRows.GroupBy(r => r.ItemId).ToDictionary(g => g.Key, g => g.Select(x => x.Key).ToHashSet());
+        var allTagKeys = tagSourceMap.Values.SelectMany(v => v).Distinct().ToList();
+        if (allTagKeys.Count > 0)
+        {
+            var tagCandidateRows = await context.BaseItemTags.AsNoTracking()
+                .Where(t => allTagKeys.Contains(t.CleanValue))
+                .Select(t => new { t.ItemId, Key = t.CleanValue })
+                .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+            var tagToCandidates = tagCandidateRows.GroupBy(r => r.Key).ToDictionary(g => g.Key, g => g.Select(x => x.ItemId).ToList());
+            ApplyDimensionScores(sourceIds, tagSourceMap, tagToCandidates, TagWeight, result);
         }
 
         var personSourceRows = await context.PeopleBaseItemMap.AsNoTracking()
