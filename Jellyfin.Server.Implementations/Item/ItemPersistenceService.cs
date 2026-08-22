@@ -447,11 +447,14 @@ public class ItemPersistenceService : IItemPersistenceService
                 && existingLinks.Count > 0)
             {
                 // A video only owns its alternate version links; any other link on that parent is
-                // written by the folder branch below and must survive.
+                // written by the folder branch below and must survive. ExcludedAlternateVersion rows
+                // record a user decision that outlives the item's version links, so they survive too.
                 var staleLinks = item.Item is Folder
                     ? existingLinks
                     : existingLinks
-                        .Where(e => e.ChildType is DbLinkedChildType.LocalAlternateVersion or DbLinkedChildType.LinkedAlternateVersion)
+                        .Where(e => e.ChildType is DbLinkedChildType.LocalAlternateVersion
+                            or DbLinkedChildType.LinkedAlternateVersion
+                            or DbLinkedChildType.AutoLinkedAlternateVersion)
                         .ToList();
 
                 if (staleLinks.Count > 0)
@@ -602,7 +605,10 @@ public class ItemPersistenceService : IItemPersistenceService
                     {
                         if (linkedChild.ItemId.HasValue && !linkedChild.ItemId.Value.IsEmpty())
                         {
-                            newLinkedChildren.Add((linkedChild.ItemId.Value, LinkedChildType.LinkedAlternateVersion));
+                            var linkType = linkedChild.Type == LinkedChildType.AutoLinkedAlternateVersion
+                                ? LinkedChildType.AutoLinkedAlternateVersion
+                                : LinkedChildType.LinkedAlternateVersion;
+                            newLinkedChildren.Add((linkedChild.ItemId.Value, linkType));
                         }
                     }
                 }

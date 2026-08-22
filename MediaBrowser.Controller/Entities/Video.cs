@@ -852,9 +852,10 @@ namespace MediaBrowser.Controller.Entities
                 ? []
                 : LibraryManager.GetLinkedAlternateVersions(primary).ToList();
 
-            // Grouping marks user-merged (splittable) sources. The primary is only such a source when
-            // this video is linked onto it; for local (file-based) alternates the primary is just
-            // another default source.
+            // Grouping marks linked (splittable) sources, whether the link was made by the user or by
+            // the scan: splitting a scan-made group is remembered, so the scan will not undo it. The
+            // primary is only such a source when this video is linked onto it; for local (file-based)
+            // alternates the primary is just another default source.
             var primaryType = primaryLinked.Any(i => i.Id.Equals(Id))
                 ? MediaSourceType.Grouping
                 : MediaSourceType.Default;
