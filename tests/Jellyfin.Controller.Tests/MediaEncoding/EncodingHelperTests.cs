@@ -12,10 +12,13 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
 
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
+using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
+using JellyfinConfig = MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 
 namespace Jellyfin.Controller.Tests.MediaEncoding;
 
@@ -322,12 +325,11 @@ public class EncodingHelperTests
         };
     }
 
-    private static EncodingHelper CreateHelper()
+    private static EncodingHelper CreateHelper(IConfiguration? configuration = null)
     {
         var appPaths = Mock.Of<IApplicationPaths>();
         var mediaEncoder = new Mock<IMediaEncoder>();
         var subtitleEncoder = new Mock<ISubtitleEncoder>();
-        var config = new Mock<IConfiguration>();
         var configurationManager = new Mock<IConfigurationManager>();
         var pathManager = new Mock<IPathManager>();
 
@@ -335,8 +337,54 @@ public class EncodingHelperTests
             appPaths,
             mediaEncoder.Object,
             subtitleEncoder.Object,
-            config.Object,
+            configuration ?? new Mock<IConfiguration>().Object,
             configurationManager.Object,
             pathManager.Object);
+    }
+
+    private static IConfiguration BuildConfig(params (string Key, string? Value)[] values)
+    {
+        var items = new List<KeyValuePair<string, string?>>();
+        foreach (var (key, value) in values)
+        {
+            items.Add(new KeyValuePair<string, string?>(key, value));
+        }
+
+        return new ConfigurationBuilder().AddInMemoryCollection(items).Build();
+    }
+
+    [Fact]
+    public void GetInputModifier_OnlySharedProbeSizeSet_FallsBackToSharedValue()
+    {
+        var config = BuildConfig((JellyfinConfig.FfmpegProbeSizeKey, "1G"));
+        var state = BuildState(subtitle: null, deliveryMethod: null);
+
+        var modifier = CreateHelper(config).GetInputModifier(state, new EncodingOptions(), "mp4");
+
+        Assert.Contains("-probesize 1G", modifier, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void GetInputModifier_PlaybackProbeSizeSet_OverridesSharedValue()
+    {
+        var config = BuildConfig(
+            (JellyfinConfig.FfmpegProbeSizeKey, "1G"),
+            (JellyfinConfig.FfmpegPlaybackProbeSizeKey, "50M"));
+        var state = BuildState(subtitle: null, deliveryMethod: null);
+
+        var modifier = CreateHelper(config).GetInputModifier(state, new EncodingOptions(), "mp4");
+
+        Assert.Contains("-probesize 50M", modifier, StringComparison.Ordinal);
+        Assert.DoesNotContain("-probesize 1G", modifier, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void GetInputModifier_NoProbeSizeConfigured_OmitsArgument()
+    {
+        var state = BuildState(subtitle: null, deliveryMethod: null);
+
+        var modifier = CreateHelper(BuildConfig()).GetInputModifier(state, new EncodingOptions(), "mp4");
+
+        Assert.DoesNotContain("-probesize", modifier, StringComparison.Ordinal);
     }
 }
