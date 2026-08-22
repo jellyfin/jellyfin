@@ -110,7 +110,7 @@ public sealed partial class BaseItemRepository
         PrepareFilterQuery(filter);
 
         // Early exit if collection type is not supported
-        if (collectionType is not CollectionType.movies and not CollectionType.tvshows and not CollectionType.music)
+        if (collectionType is not CollectionType.movies and not CollectionType.tvshows and not CollectionType.music and not CollectionType.unknown)
         {
             return [];
         }
@@ -121,30 +121,27 @@ public sealed partial class BaseItemRepository
         var baseQuery = PrepareItemQuery(context, filter);
         baseQuery = TranslateQuery(baseQuery, context, filter);
 
-        if (collectionType == CollectionType.tvshows)
+        if (collectionType is CollectionType.tvshows)
         {
             return GetLatestTvShowItems(context, baseQuery, filter, limit);
         }
 
         if (collectionType is CollectionType.movies)
         {
-            // Pick, per PresentationUniqueKey, the newest item; return the newest `limit` of those.
-            // Build up until limit by streaming through results and deduplicating on the fly.
-            var orderedIds = baseQuery
-                .Where(e => e.PresentationUniqueKey != null)
-                .OrderByDescending(e => e.DateCreated)
-                .ThenByDescending(e => e.Id)
-                .Select(e => new { e.Id, e.PresentationUniqueKey });
+            return GetLatestMovieItems(context, baseQuery, filter, limit);
+        }
 
-            // DistinctBy and Take are lazy, so enumeration stops as soon as limit distinct keys are read.
-            var firstIds = orderedIds
-                .AsEnumerable()
-                .DistinctBy(row => row.PresentationUniqueKey)
-                .Select(row => row.Id)
+        if (collectionType is CollectionType.unknown)
+        {
+            var moviesQuery = baseQuery.Where(e => e.SeriesName == null);
+            var latestMovies = GetLatestMovieItems(context, moviesQuery, filter, limit);
+            var latestShows = GetLatestTvShowItems(context, baseQuery, filter, limit);
+
+            return latestMovies.Concat(latestShows)
+                .OrderByDescending(dto => dto.DateCreated)
+                .ThenByDescending(dto => dto.Id)
                 .Take(limit ?? int.MaxValue)
                 .ToList();
-
-            return LoadLatestByIds(context, firstIds, filter);
         }
 
         var musicAlbumTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicAlbum]!;
@@ -223,6 +220,39 @@ public sealed partial class BaseItemRepository
             .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
             .Where(dto => dto != null)
             .ToArray()!;
+    }
+
+    /// <summary>
+    /// Gets the latest movies, deduplicated so each movie only appears once.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    /// <param name="baseQuery">The query to pull movies from, with filters already applied.</param>
+    /// <param name="filter">The original query filter, used when loading the final items.</param>
+    /// <param name="limit">How many items to return.</param>
+    /// <returns>The latest movies, newest first.</returns>
+    private IReadOnlyList<BaseItemDto> GetLatestMovieItems(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> baseQuery,
+        InternalItemsQuery filter,
+        int? limit)
+    {
+        // Pick, per PresentationUniqueKey, the newest item; return the newest `limit` of those.
+        // Build up until limit by streaming through results and deduplicating on the fly.
+        var orderedIds = baseQuery
+            .Where(e => e.PresentationUniqueKey != null)
+            .OrderByDescending(e => e.DateCreated)
+            .ThenByDescending(e => e.Id)
+            .Select(e => new { e.Id, e.PresentationUniqueKey });
+
+        // DistinctBy and Take are lazy, so enumeration stops as soon as limit distinct keys are read.
+        var firstIds = orderedIds
+            .AsEnumerable()
+            .DistinctBy(row => row.PresentationUniqueKey)
+            .Select(row => row.Id)
+            .Take(limit ?? int.MaxValue)
+            .ToList();
+
+        return LoadLatestByIds(context, firstIds, filter);
     }
 
     /// <summary>

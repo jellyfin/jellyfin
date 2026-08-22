@@ -351,7 +351,11 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (!filter.ItemId.IsEmpty())
         {
-            query = query.Where(e => e.BaseItems!.Any(w => w.ItemId.Equals(filter.ItemId)));
+            var itemId = filter.ItemId;
+            query = query.Where(e => context.PeopleBaseItemMap
+                .Where(m => m.ItemId.Equals(itemId))
+                .Select(m => m.PeopleId)
+                .Contains(e.Id));
         }
 
         if (filter.ParentId != null)
@@ -361,7 +365,11 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (!filter.AppearsInItemId.IsEmpty())
         {
-            query = query.Where(e => e.BaseItems!.Any(w => w.ItemId.Equals(filter.AppearsInItemId)));
+            var appearsInItemId = filter.AppearsInItemId;
+            query = query.Where(e => context.PeopleBaseItemMap
+                .Where(m => m.ItemId.Equals(appearsInItemId))
+                .Select(m => m.PeopleId)
+                .Contains(e.Id));
         }
 
         var queryPersonTypes = filter.PersonTypes.Where(IsValidPersonType).ToList();
