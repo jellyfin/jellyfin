@@ -146,22 +146,26 @@ public sealed partial class BaseItemRepository
 
         using var context = _dbProvider.CreateDbContext();
 
-        var innerQueryFilter = TranslateQuery(context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId)), context, new InternalItemsQuery(filter.User)
-        {
-            ExcludeItemTypes = filter.ExcludeItemTypes,
-            IncludeItemTypes = filter.IncludeItemTypes,
-            MediaTypes = filter.MediaTypes,
-            AncestorIds = filter.AncestorIds,
-            ItemIds = filter.ItemIds,
-            TopParentIds = filter.TopParentIds,
-            ParentId = filter.ParentId,
-            IsAiring = filter.IsAiring,
-            IsMovie = filter.IsMovie,
-            IsSports = filter.IsSports,
-            IsKids = filter.IsKids,
-            IsNews = filter.IsNews,
-            IsSeries = filter.IsSeries
-        });
+        var innerQueryFilter = TranslateQuery(
+            context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId)),
+            context,
+            new InternalItemsQuery(filter.User)
+            {
+                ExcludeItemTypes = filter.ExcludeItemTypes,
+                IncludeItemTypes = filter.IncludeItemTypes,
+                MediaTypes = filter.MediaTypes,
+                AncestorIds = filter.AncestorIds,
+                ItemIds = filter.ItemIds,
+                TopParentIds = filter.TopParentIds,
+                ParentId = filter.ParentId,
+                IsAiring = filter.IsAiring,
+                IsMovie = filter.IsMovie,
+                IsSports = filter.IsSports,
+                IsKids = filter.IsKids,
+                IsNews = filter.IsNews,
+                IsSeries = filter.IsSeries
+            },
+            isCorrelatedSubQuery: true);
 
         var innerQuery = PrepareItemQuery(context, filter)
             .Where(e => e.Type == returnType)

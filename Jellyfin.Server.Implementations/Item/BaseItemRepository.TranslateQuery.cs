@@ -25,6 +25,8 @@ namespace Jellyfin.Server.Implementations.Item;
 
 public sealed partial class BaseItemRepository
 {
+    private const int AncestorProbeLimit = 10000;
+
     private static readonly IReadOnlyList<char> SearchWildcardTerms = ['%', '_', '[', ']', '^'];
 
     private static readonly string ImdbProviderName = MetadataProvider.Imdb.ToString().ToLowerInvariant();
@@ -40,6 +42,25 @@ public sealed partial class BaseItemRepository
         IQueryable<BaseItemEntity> baseQuery,
         JellyfinDbContext context,
         InternalItemsQuery filter)
+        => TranslateQuery(baseQuery, context, filter, isCorrelatedSubQuery: false);
+
+    /// <summary>
+    /// Translates a query filter onto a queryable.
+    /// </summary>
+    /// <param name="baseQuery">The query to filter.</param>
+    /// <param name="context">The database context.</param>
+    /// <param name="filter">The query filter.</param>
+    /// <param name="isCorrelatedSubQuery">
+    /// Whether the result will be embedded in a subquery that runs once per row of an outer query.
+    /// Filters that read a set of ids have to be materialised there, so that the set is built once
+    /// rather than rebuilt for every correlated row.
+    /// </param>
+    /// <returns>The filtered query.</returns>
+    private IQueryable<BaseItemEntity> TranslateQuery(
+        IQueryable<BaseItemEntity> baseQuery,
+        JellyfinDbContext context,
+        InternalItemsQuery filter,
+        bool isCorrelatedSubQuery)
     {
         const int HDWidth = 1200;
         const int UHDWidth = 3800;
@@ -501,30 +522,52 @@ public sealed partial class BaseItemRepository
             var inProgress = context.UserData
                 .Where(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0);
 
+            // Resume queries surface the version that was actually played, which may be an alternate.
+            // Match each version on its own progress rather than coalescing onto the primary.
+            var inProgressIds = inProgress.Select(ud => ud.ItemId);
+            var playedIds = context.UserData
+                .Where(ud => ud.UserId == userId && ud.Played)
+                .Select(ud => ud.ItemId);
+
+            // Whether the query can return folders at all.
+            var canReturnFolders = filter.IsFolder != false
+                && (filter.MediaTypes.Length == 0 || filter.MediaTypes.Contains(MediaType.Unknown));
+
+            // Whether any folder it can return could be resumable. Folder kinds outside
+            // _resumableFolderKinds are never resumable, but they are still folders the query returns.
+            var canReturnResumableFolders = canReturnFolders
+                && (filter.IncludeItemTypes.Length == 0 || filter.IncludeItemTypes.Any(_resumableFolderKinds.Contains));
+
             // Series and Seasons are resumable when a descendant is in progress, or when they hold both
             // played and unplayed descendants (partially watched). Alternate versions keep their own
             // progress, so they count towards the in-progress check but not towards the played/unplayed one.
-            var leafItems = GetAccessFilteredLeafItemsQuery(context, filter.User!);
-            var inProgressLeafItems = GetAccessFilteredLeafItemsQuery(context, filter.User!, includeOwnedItems: true)
-                .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0));
+            // The IsFolder test is left off so the not-resumable side can negate this condition alone.
+            Expression<Func<BaseItemEntity, bool>>? resumableFolderCondition = null;
+            if (canReturnResumableFolders)
+            {
+                var leafItems = GetAccessFilteredLeafItemsQuery(context, filter.User!);
+                var ownedLeafItems = GetAccessFilteredLeafItemsQuery(context, filter.User!, includeOwnedItems: true);
 
-            // Every other folder kind is a container rather than one continuous piece of media
-            var resumableFolderTypes = _resumableFolderKinds
-                .Select(kind => _itemTypeLookup.BaseItemKindNames.GetValueOrDefault(kind))
-                .ToArray();
-            var folderIsResumableFilter = IsFolderFilter.And(e => resumableFolderTypes.Contains(e.Type))
-                .And(BuildHasDescendantFilter(context, inProgressLeafItems)
-                    .Or(BuildHasDescendantFilter(context, leafItems.Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played)))
-                        .And(BuildHasDescendantFilter(context, leafItems.Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played))))));
+                // Every other folder kind is a container rather than one continuous piece of media
+                var resumableFolderTypes = _resumableFolderKinds
+                    .Select(kind => _itemTypeLookup.BaseItemKindNames.GetValueOrDefault(kind))
+                    .ToArray();
+
+                Expression<Func<BaseItemEntity, bool>> isResumableFolderType = e => resumableFolderTypes.Contains(e.Type);
+
+                resumableFolderCondition = isResumableFolderType
+                    .And(BuildHasSeededDescendantFilter(context, inProgressIds, ownedLeafItems)
+                        .Or(BuildHasSeededDescendantFilter(context, playedIds, leafItems)
+                            .And(BuildHasDescendantFilter(context, leafItems.Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played))))));
+            }
 
             if (isResumable)
             {
-                // Resume queries surface the version that was actually played, which may be an alternate.
-                // Match each version on its own progress rather than coalescing onto the primary.
-                var inProgressIds = inProgress.Select(ud => ud.ItemId);
+                var leafIsResumableFilter = IsFolderFilter.Not().And(e => inProgressIds.Contains(e.Id));
 
-                baseQuery = baseQuery.Where(folderIsResumableFilter
-                    .Or(IsFolderFilter.Not().And(e => inProgressIds.Contains(e.Id))));
+                baseQuery = baseQuery.Where(resumableFolderCondition is null
+                    ? leafIsResumableFilter
+                    : IsFolderFilter.And(resumableFolderCondition).Or(leafIsResumableFilter));
 
                 // When several versions of the same item are in progress, keep only the most recently played one, use id as tiebreaker.
                 // Only in-progress siblings can eliminate a candidate: a version without progress has a NULL max LastPlayedDate,
@@ -550,8 +593,18 @@ public sealed partial class BaseItemRepository
                 var resumableMovieIds = inProgress
                     .Join(context.BaseItems, ud => ud.ItemId, bi => bi.Id, (ud, bi) => bi.PrimaryVersionId ?? bi.Id);
 
-                baseQuery = baseQuery.Where(IsFolderFilter.And(folderIsResumableFilter.Not())
-                    .Or(IsFolderFilter.Not().And(e => !resumableMovieIds.Contains(e.Id))));
+                var leafIsNotResumableFilter = IsFolderFilter.Not().And(e => !resumableMovieIds.Contains(e.Id));
+
+                // A folder the query can return but that is never resumable (MusicAlbum, BoxSet, ...)
+                // still belongs in a not-resumable result, so keep every folder when no resumable
+                // folder kind is in play instead of dropping the folder side of the predicate.
+                Expression<Func<BaseItemEntity, bool>>? folderIsNotResumableFilter = resumableFolderCondition is not null
+                    ? IsFolderFilter.And(resumableFolderCondition.Not())
+                    : canReturnFolders ? IsFolderFilter : null;
+
+                baseQuery = baseQuery.Where(folderIsNotResumableFilter is null
+                    ? leafIsNotResumableFilter
+                    : folderIsNotResumableFilter.Or(leafIsNotResumableFilter));
             }
         }
 
@@ -988,7 +1041,23 @@ public sealed partial class BaseItemRepository
 
         baseQuery = ApplyTopParentFiltering(context, baseQuery, filter);
 
-        if (filter.AncestorIds.Length > 0)
+        if (filter.AncestorIds.Length == 1 && AncestorShouldDriveQuery(context, filter))
+        {
+            // Read the descendants through IX_AncestorIds_ParentItemId.
+            var ancestorId = filter.AncestorIds[0];
+            var ancestorRows = context.AncestorIds.Where(a => a.ParentItemId == ancestorId);
+
+            if (isCorrelatedSubQuery)
+            {
+                var descendantIds = ancestorRows.Select(a => a.ItemId);
+                baseQuery = baseQuery.Where(e => descendantIds.Contains(e.Id));
+            }
+            else
+            {
+                baseQuery = baseQuery.Join(ancestorRows, e => e.Id, a => a.ItemId, (e, a) => e);
+            }
+        }
+        else if (filter.AncestorIds.Length > 0)
         {
             var ancestorFilter = filter.AncestorIds.OneOrManyExpressionBuilder<AncestorId, Guid>(f => f.ParentItemId);
             baseQuery = baseQuery.Where(e => e.Parents!.AsQueryable().Any(ancestorFilter));
@@ -1179,5 +1248,52 @@ public sealed partial class BaseItemRepository
         }
 
         return baseQuery;
+    }
+
+    /// <summary>
+    /// Decides whether an ancestor filter should drive the query or be tested per row.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    /// <param name="filter">The query filter, carrying exactly one ancestor id.</param>
+    /// <returns><c>true</c> when reading the ancestor's descendants is the cheaper way round.</returns>
+    private bool AncestorShouldDriveQuery(JellyfinDbContext context, InternalItemsQuery filter)
+    {
+        // A join reads every descendant of the ancestor; an EXISTS runs once per row the rest of the
+        // query keeps. The smaller side should drive, and SQLite cannot work that out on its own
+        // because statistics are averaged across the whole table.
+
+        // A direct-parent filter narrows to the ancestor's children, which are a subset of its
+        // descendants, so testing those rows can never cost more than reading the whole subtree.
+        if (!filter.ParentId.IsEmpty())
+        {
+            return false;
+        }
+
+        var otherSideCount = filter.ItemIds.Length > 0 ? filter.ItemIds.Length : AncestorProbeLimit;
+
+        if (filter.IncludeItemTypes.Length > 0)
+        {
+            var typeNames = filter.IncludeItemTypes
+                .Select(f => _itemTypeLookup.BaseItemKindNames.GetValueOrDefault(f))
+                .Where(e => e is not null)
+                .ToArray()!;
+
+            otherSideCount = Math.Min(
+                otherSideCount,
+                context.BaseItems.WhereOneOrMany(typeNames, e => e.Type!).Take(AncestorProbeLimit).Count());
+        }
+
+        var ancestorId = filter.AncestorIds[0];
+        var descendantCount = context.AncestorIds
+            .Where(a => a.ParentItemId == ancestorId)
+            .Take(AncestorProbeLimit)
+            .Count();
+
+        // Both probes stop at AncestorProbeLimit, so two saturated counts compare equal and pick the
+        // join. That is deliberate: at that size the join walks IX_AncestorIds_ParentItemId once,
+        // while an EXISTS pays a correlated index probe for every row of an equally large type set.
+        // Measured on a 330k-item library, Episode under a 42k-descendant folder is 63ms joined
+        // against 150ms per-row, and Audio under a 26k-descendant folder is 38ms against 90ms.
+        return descendantCount <= otherSideCount;
     }
 }
