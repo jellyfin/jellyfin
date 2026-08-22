@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
 using TMDbLib.Objects.General;
+using TMDbLib.Objects.TvShows;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb
 {
@@ -29,6 +30,15 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// API key to use when performing an API call.
         /// </summary>
         public const string ApiKey = "4219e299c89411838049ab0dab19ebd5";
+
+        /// <summary>
+        /// Provider id holding the TMDb episode group a series is ordered by, and the group a season maps to.
+        /// </summary>
+        /// <remarks>
+        /// Derived from the series display order on every refresh, so it is deliberately not exposed as an
+        /// <see cref="Controller.Providers.IExternalId"/> for the user to edit.
+        /// </remarks>
+        public const string EpisodeGroupProviderKey = "TmdbEpisodeGroup";
 
         /// <summary>
         /// The crew types to keep.
@@ -62,6 +72,28 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
         [GeneratedRegex(@"[\W_-[·]]+")]
         private static partial Regex NonWordRegex();
+
+        /// <summary>
+        /// Maps a series display order to the matching TMDb episode group type.
+        /// </summary>
+        /// <param name="displayOrder">The series display order.</param>
+        /// <returns>The matching <see cref="TvGroupType"/>, or <c>null</c> if the order has no TMDb counterpart.</returns>
+        public static TvGroupType? GetEpisodeGroupType(string? displayOrder)
+        {
+            // Lowercased because the order can also come from an NFO written by a third party tool.
+            // The Tvdb-only orders (alternate, regional, altdvd) intentionally have no TMDb counterpart.
+            return displayOrder?.ToLowerInvariant() switch
+            {
+                "originalairdate" => TvGroupType.OriginalAirDate,
+                "absolute" => TvGroupType.Absolute,
+                "dvd" => TvGroupType.DVD,
+                "digital" => TvGroupType.Digital,
+                "storyarc" => TvGroupType.StoryArc,
+                "production" => TvGroupType.Production,
+                "tv" => TvGroupType.TV,
+                _ => null
+            };
+        }
 
         /// <summary>
         /// Gets the TMDb id of an item, if it has one TMDb can be queried with.

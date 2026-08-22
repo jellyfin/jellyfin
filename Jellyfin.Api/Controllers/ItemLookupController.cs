@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.Models.LookupDtos;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Providers = MediaBrowser.Controller.Providers;
 
 namespace Jellyfin.Api.Controllers;
 
@@ -30,7 +31,7 @@ namespace Jellyfin.Api.Controllers;
 [Authorize]
 public class ItemLookupController : BaseJellyfinApiController
 {
-    private readonly IProviderManager _providerManager;
+    private readonly Providers.IProviderManager _providerManager;
     private readonly IFileSystem _fileSystem;
     private readonly ILibraryManager _libraryManager;
     private readonly ILogger<ItemLookupController> _logger;
@@ -38,12 +39,12 @@ public class ItemLookupController : BaseJellyfinApiController
     /// <summary>
     /// Initializes a new instance of the <see cref="ItemLookupController"/> class.
     /// </summary>
-    /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+    /// <param name="providerManager">Instance of the <see cref="Providers.IProviderManager"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{ItemLookupController}"/> interface.</param>
     public ItemLookupController(
-        IProviderManager providerManager,
+        Providers.IProviderManager providerManager,
         IFileSystem fileSystem,
         ILibraryManager libraryManager,
         ILogger<ItemLookupController> logger)
@@ -88,7 +89,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [HttpPost("Items/RemoteSearch/Movie")]
     public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetMovieRemoteSearchResults([FromBody, Required] RemoteSearchQuery<MovieInfo> query)
     {
-        var results = await _providerManager.GetRemoteSearchResults<Movie, MovieInfo>(query, CancellationToken.None)
+        var results = await _providerManager.GetRemoteSearchResults<Movie, Providers.MovieInfo>(query.ToLookupQuery(searchInfo => searchInfo.ToLookupInfo()), CancellationToken.None)
             .ConfigureAwait(false);
         return Ok(results);
     }
@@ -105,7 +106,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [HttpPost("Items/RemoteSearch/Trailer")]
     public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetTrailerRemoteSearchResults([FromBody, Required] RemoteSearchQuery<TrailerInfo> query)
     {
-        var results = await _providerManager.GetRemoteSearchResults<Trailer, TrailerInfo>(query, CancellationToken.None)
+        var results = await _providerManager.GetRemoteSearchResults<Trailer, Providers.TrailerInfo>(query.ToLookupQuery(searchInfo => searchInfo.ToLookupInfo()), CancellationToken.None)
             .ConfigureAwait(false);
         return Ok(results);
     }
@@ -122,7 +123,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [HttpPost("Items/RemoteSearch/MusicVideo")]
     public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetMusicVideoRemoteSearchResults([FromBody, Required] RemoteSearchQuery<MusicVideoInfo> query)
     {
-        var results = await _providerManager.GetRemoteSearchResults<MusicVideo, MusicVideoInfo>(query, CancellationToken.None)
+        var results = await _providerManager.GetRemoteSearchResults<MusicVideo, Providers.MusicVideoInfo>(query.ToLookupQuery(searchInfo => searchInfo.ToLookupInfo()), CancellationToken.None)
             .ConfigureAwait(false);
         return Ok(results);
     }
@@ -139,7 +140,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [HttpPost("Items/RemoteSearch/Series")]
     public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetSeriesRemoteSearchResults([FromBody, Required] RemoteSearchQuery<SeriesInfo> query)
     {
-        var results = await _providerManager.GetRemoteSearchResults<Series, SeriesInfo>(query, CancellationToken.None)
+        var results = await _providerManager.GetRemoteSearchResults<Series, Providers.SeriesInfo>(query.ToLookupQuery(searchInfo => searchInfo.ToLookupInfo()), CancellationToken.None)
             .ConfigureAwait(false);
         return Ok(results);
     }
@@ -156,7 +157,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [HttpPost("Items/RemoteSearch/BoxSet")]
     public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetBoxSetRemoteSearchResults([FromBody, Required] RemoteSearchQuery<BoxSetInfo> query)
     {
-        var results = await _providerManager.GetRemoteSearchResults<BoxSet, BoxSetInfo>(query, CancellationToken.None)
+        var results = await _providerManager.GetRemoteSearchResults<BoxSet, Providers.BoxSetInfo>(query.ToLookupQuery(searchInfo => searchInfo.ToLookupInfo()), CancellationToken.None)
             .ConfigureAwait(false);
         return Ok(results);
     }
@@ -173,7 +174,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [HttpPost("Items/RemoteSearch/MusicArtist")]
     public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetMusicArtistRemoteSearchResults([FromBody, Required] RemoteSearchQuery<ArtistInfo> query)
     {
-        var results = await _providerManager.GetRemoteSearchResults<MusicArtist, ArtistInfo>(query, CancellationToken.None)
+        var results = await _providerManager.GetRemoteSearchResults<MusicArtist, Providers.ArtistInfo>(query.ToLookupQuery(searchInfo => searchInfo.ToLookupInfo()), CancellationToken.None)
             .ConfigureAwait(false);
         return Ok(results);
     }
@@ -190,7 +191,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [HttpPost("Items/RemoteSearch/MusicAlbum")]
     public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetMusicAlbumRemoteSearchResults([FromBody, Required] RemoteSearchQuery<AlbumInfo> query)
     {
-        var results = await _providerManager.GetRemoteSearchResults<MusicAlbum, AlbumInfo>(query, CancellationToken.None)
+        var results = await _providerManager.GetRemoteSearchResults<MusicAlbum, Providers.AlbumInfo>(query.ToLookupQuery(searchInfo => searchInfo.ToLookupInfo()), CancellationToken.None)
             .ConfigureAwait(false);
         return Ok(results);
     }
@@ -208,7 +209,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [Authorize(Policy = Policies.RequiresElevation)]
     public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetPersonRemoteSearchResults([FromBody, Required] RemoteSearchQuery<PersonLookupInfo> query)
     {
-        var results = await _providerManager.GetRemoteSearchResults<Person, PersonLookupInfo>(query, CancellationToken.None)
+        var results = await _providerManager.GetRemoteSearchResults<Person, Providers.PersonLookupInfo>(query.ToLookupQuery(searchInfo => searchInfo.ToLookupInfo()), CancellationToken.None)
             .ConfigureAwait(false);
         return Ok(results);
     }
@@ -225,7 +226,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [HttpPost("Items/RemoteSearch/Book")]
     public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetBookRemoteSearchResults([FromBody, Required] RemoteSearchQuery<BookInfo> query)
     {
-        var results = await _providerManager.GetRemoteSearchResults<Book, BookInfo>(query, CancellationToken.None)
+        var results = await _providerManager.GetRemoteSearchResults<Book, Providers.BookInfo>(query.ToLookupQuery(searchInfo => searchInfo.ToLookupInfo()), CancellationToken.None)
             .ConfigureAwait(false);
         return Ok(results);
     }
@@ -267,10 +268,10 @@ public class ItemLookupController : BaseJellyfinApiController
         item.SetProviderIds(searchResult.ProviderIds);
         await _providerManager.RefreshFullItem(
             item,
-            new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+            new Providers.MetadataRefreshOptions(new Providers.DirectoryService(_fileSystem))
             {
-                MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
-                ImageRefreshMode = MetadataRefreshMode.FullRefresh,
+                MetadataRefreshMode = Providers.MetadataRefreshMode.FullRefresh,
+                ImageRefreshMode = Providers.MetadataRefreshMode.FullRefresh,
                 ReplaceAllMetadata = true,
                 ReplaceAllImages = replaceAllImages,
                 SearchResult = searchResult,
