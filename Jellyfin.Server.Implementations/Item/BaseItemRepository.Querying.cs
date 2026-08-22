@@ -57,9 +57,8 @@ public sealed partial class BaseItemRepository
         }
 
         dbQuery = ApplyQueryPaging(dbQuery, filter);
-        dbQuery = ApplyNavigations(dbQuery, filter);
 
-        result.Items = dbQuery.AsEnumerable().Where(e => e != null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto != null).ToArray()!;
+        result.Items = LoadItems(context, filter, dbQuery);
         result.StartIndex = filter.StartIndex ?? 0;
         return result;
     }
@@ -79,28 +78,65 @@ public sealed partial class BaseItemRepository
         dbQuery = ApplyAdjacencyFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
 
-        var hasRandomSort = filter.OrderBy.Any(e => e.OrderBy == ItemSortBy.Random);
-        if (hasRandomSort)
-        {
-            var orderedIds = dbQuery.AsNoTracking().Select(e => e.Id).ToList();
-            if (orderedIds.Count == 0)
-            {
-                return Array.Empty<BaseItemDto>();
-            }
+        return LoadItems(context, filter, dbQuery);
+    }
 
-            var itemsById = ApplyNavigations(context.BaseItems.AsNoTracking().WhereOneOrMany(orderedIds, e => e.Id), filter)
-                .AsSplitQuery()
+    /// <summary>
+    /// Materializes the given filtered, ordered and paged query as dtos, attaching all navigations
+    /// the filter requests. For limited (paged) queries the items are loaded in two steps
+    /// (id projection first, then a split query bounded to those ids) to avoid the multiplicative
+    /// row explosion of loading several collection includes in a single query. This also pins
+    /// non-deterministic orderings (e.g. random sort) to a single evaluation. Unbounded queries
+    /// stay on the single-query path: their id list can span the whole result set, where the
+    /// per-id parameter and memory cost outweighs the row-explosion savings.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    /// <param name="filter">The query filter.</param>
+    /// <param name="dbQuery">The prepared, filtered, ordered and paged query.</param>
+    /// <returns>The materialized items in query order.</returns>
+    private IReadOnlyList<BaseItemDto> LoadItems(JellyfinDbContext context, InternalItemsQuery filter, IQueryable<BaseItemEntity> dbQuery)
+    {
+        if (!filter.Limit.HasValue)
+        {
+            return ApplyNavigations(dbQuery, filter)
                 .AsEnumerable()
                 .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
-                .Where(dto => dto != null)
-                .ToDictionary(i => i!.Id);
-
-            return orderedIds.Where(itemsById.ContainsKey).Select(id => itemsById[id]).ToArray()!;
+                .OfType<BaseItemDto>()
+                .ToArray();
         }
 
-        dbQuery = ApplyNavigations(dbQuery, filter);
+        return LoadOrderedItemsById(context, filter, dbQuery.AsNoTracking().Select(e => e.Id).ToList());
+    }
 
-        return dbQuery.AsEnumerable().Where(e => e != null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto != null).ToArray()!;
+    /// <summary>
+    /// Loads the given items with all requested navigations attached, using split queries, and
+    /// returns them in the order of <paramref name="orderedIds"/>.
+    /// </summary>
+    /// <remarks>
+    /// Every id is re-bound as a JSON parameter for each split query, so parameter and memory cost
+    /// scale with the page size; callers must therefore only route limited queries here. The split
+    /// queries also run without a transaction: items deleted between the id projection and this
+    /// load simply drop out when the order is restored.
+    /// </remarks>
+    /// <param name="context">The database context.</param>
+    /// <param name="filter">The query filter.</param>
+    /// <param name="orderedIds">The ids to load, in the order the result should have.</param>
+    /// <returns>The materialized items in the given order.</returns>
+    private IReadOnlyList<BaseItemDto> LoadOrderedItemsById(JellyfinDbContext context, InternalItemsQuery filter, List<Guid> orderedIds)
+    {
+        if (orderedIds.Count == 0)
+        {
+            return Array.Empty<BaseItemDto>();
+        }
+
+        var itemsById = ApplyNavigations(context.BaseItems.AsNoTracking().WhereOneOrMany(orderedIds, e => e.Id), filter)
+            .AsSplitQuery()
+            .AsEnumerable()
+            .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
+            .OfType<BaseItemDto>()
+            .ToDictionary(i => i.Id);
+
+        return orderedIds.Where(itemsById.ContainsKey).Select(id => itemsById[id]).ToArray();
     }
 
     /// <inheritdoc/>
