@@ -939,6 +939,10 @@ namespace MediaBrowser.Providers.Manager
         private async Task<RefreshResult> ExecuteRemoteProviders(MetadataResult<TItemType> temp, string logName, bool replaceData, TIdType id, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, CancellationToken cancellationToken)
         {
             var refreshResult = new RefreshResult();
+            var preferredLanguage = id?.MetadataLanguage;
+
+            var overviewIsFallback = false;
+            var taglineIsFallback = false;
 
             if (id is not null)
             {
@@ -957,6 +961,26 @@ namespace MediaBrowser.Providers.Manager
                     if (result.HasMetadata)
                     {
                         result.Provider = provider.Name;
+
+                        if (MetadataLanguageUtils.MatchesPreferredLanguage(result.ResultLanguage, preferredLanguage))
+                        {
+                            if (overviewIsFallback && !string.IsNullOrEmpty(result.Item.Overview))
+                            {
+                                temp.Item.Overview = null;
+                                overviewIsFallback = false;
+                            }
+
+                            if (taglineIsFallback && !string.IsNullOrEmpty(result.Item.Tagline))
+                            {
+                                temp.Item.Tagline = null;
+                                taglineIsFallback = false;
+                            }
+                        }
+                        else
+                        {
+                            overviewIsFallback |= string.IsNullOrEmpty(temp.Item.Overview) && !string.IsNullOrEmpty(result.Item.Overview);
+                            taglineIsFallback |= string.IsNullOrEmpty(temp.Item.Tagline) && !string.IsNullOrEmpty(result.Item.Tagline);
+                        }
 
                         LogInvalidProviderIds(result, providerName, logName);
 
