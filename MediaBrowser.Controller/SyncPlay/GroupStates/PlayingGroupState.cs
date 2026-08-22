@@ -18,12 +18,18 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
     public class PlayingGroupState : AbstractGroupState
     {
         /// <summary>
+        /// The logger.
+        /// </summary>
+        private readonly ILogger<PlayingGroupState> _logger;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PlayingGroupState"/> class.
         /// </summary>
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
         public PlayingGroupState(ILoggerFactory loggerFactory)
             : base(loggerFactory)
         {
+            _logger = loggerFactory.CreateLogger<PlayingGroupState>();
         }
 
         /// <inheritdoc />
@@ -64,7 +70,14 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             if (!prevState.Equals(Type))
             {
                 // Pick a suitable time that accounts for latency.
-                var delayMillis = Math.Max(context.GetHighestPing() * 2, context.DefaultPing);
+                var highestPing = context.GetHighestPing();
+                var delayMillis = Math.Max(highestPing * 2, context.DefaultPing);
+
+                _logger.LogInformation(
+                    "[SyncPlayMetrics] Group {GroupId} resuming with delay {DelayMillis}ms (highest ping {HighestPing}ms).",
+                    context.GroupId,
+                    delayMillis,
+                    highestPing);
 
                 // Unpause group and set starting point in future.
                 // Clients will start playback at LastActivity (datetime) from PositionTicks (playback position).

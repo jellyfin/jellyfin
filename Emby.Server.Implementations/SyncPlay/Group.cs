@@ -27,6 +27,31 @@ namespace Emby.Server.Implementations.SyncPlay
     public class Group : IGroupStateContext
     {
         /// <summary>
+        /// Smoothing factor applied when a new ping sample is higher than the current average
+        /// ("attack"). Weighted more heavily than <see cref="PingDecreaseSmoothingFactor"/> so a
+        /// real increase in latency is reflected quickly, since under-compensating for a session
+        /// that just got slower is worse than briefly over-compensating for one that got faster.
+        /// </summary>
+        private const double PingIncreaseSmoothingFactor = 0.5;
+
+        /// <summary>
+        /// Smoothing factor applied when a new ping sample is lower than the current average
+        /// ("decay"). Kept low so a single good sample does not immediately erase the
+        /// compensation accumulated for an otherwise unstable connection.
+        /// </summary>
+        private const double PingDecreaseSmoothingFactor = 0.2;
+
+        /// <summary>
+        /// Age, in milliseconds, after which a session's last reported ping is considered stale and
+        /// no longer trusted for latency compensation. jellyfin-web's steady-state ping interval is
+        /// 60 seconds (3 "greedy" pings ~1s apart at first, then throttled down) - this must stay
+        /// comfortably above that or a perfectly healthy session gets treated as stale between its
+        /// own routine pings. 90s gives one interval of margin without letting a truly gone session
+        /// hold a stale value for too long.
+        /// </summary>
+        private const long PingStaleAfterMs = 90000;
+
+        /// <summary>
         /// The logger.
         /// </summary>
         private readonly ILogger<Group> _logger;
@@ -438,7 +463,29 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             if (_participants.TryGetValue(session.Id, out GroupMember value))
             {
-                value.Ping = ping;
+                var previousPing = value.Ping;
+                if ((DateTime.UtcNow - value.LastPingUpdate).TotalMilliseconds > PingStaleAfterMs)
+                {
+                    // Use the raw sample  when we don't have an established smoothed average
+                    // or use raw sample if our last ping update is stale.
+                    value.Ping = ping;
+                }
+                else
+                {
+                    // Asymmetric smoothing: react quickly to a jump in latency, decay slowly
+                    // from one, see PingIncreaseSmoothingFactor/PingDecreaseSmoothingFactor.
+                    var smoothingFactor = ping > value.Ping ? PingIncreaseSmoothingFactor : PingDecreaseSmoothingFactor;
+                    value.Ping = (long)((smoothingFactor * ping) + ((1 - smoothingFactor) * value.Ping));
+                }
+
+                value.LastPingUpdate = DateTime.UtcNow;
+
+                _logger.LogDebug(
+                    "[SyncPlayMetrics] Session {SessionId} reported ping {RawPing}ms, smoothed {PreviousPing}ms -> {SmoothedPing}ms.",
+                    session.Id,
+                    ping,
+                    previousPing,
+                    value.Ping);
             }
         }
 
@@ -446,10 +493,31 @@ namespace Emby.Server.Implementations.SyncPlay
         public long GetHighestPing()
         {
             long max = long.MinValue;
+            var now = DateTime.UtcNow;
             foreach (var session in _participants.Values)
             {
-                max = Math.Max(max, session.Ping);
+                // A session that stopped reporting its ping is arguably more likely to be
+                // struggling than fine, but falling back to the default avoids letting one
+                // stale, inflated value keep the whole group waiting indefinitely - a stuck
+                // session should surface as a buffering/ready timeout instead, not an ever-growing
+                // resume delay for everyone else.
+                var isStale = (now - session.LastPingUpdate).TotalMilliseconds > PingStaleAfterMs;
+                var ping = isStale ? DefaultPing : session.Ping;
+
+                if (isStale)
+                {
+                    _logger.LogDebug(
+                        "[SyncPlayMetrics] Session {SessionId} ping is stale ({StalePing}ms, last updated {LastUpdate:o}), falling back to default {DefaultPing}ms.",
+                        session.SessionId,
+                        session.Ping,
+                        session.LastPingUpdate,
+                        DefaultPing);
+                }
+
+                max = Math.Max(max, ping);
             }
+
+            _logger.LogDebug("[SyncPlayMetrics] Group {GroupId} highest ping is {HighestPing}ms.", GroupId, max);
 
             return max;
         }
