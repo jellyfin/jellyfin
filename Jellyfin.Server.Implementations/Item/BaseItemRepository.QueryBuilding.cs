@@ -120,7 +120,14 @@ public sealed partial class BaseItemRepository
 
         if (filter.CollapseBoxSetItems == true)
         {
-            dbQuery = ApplyBoxSetCollapsing(context, dbQuery, filter.CollapseBoxSetItemTypes);
+            // The collections library lists every BoxSet, nested ones included, so collapsing
+            // (and the nested roll-up it performs) only applies when the query is grouping
+            // non-BoxSet items into collections. When BoxSets are the requested type we leave
+            // the query untouched so all of them are returned.
+            if (!filter.IncludeItemTypes.Contains(BaseItemKind.BoxSet))
+            {
+                dbQuery = ApplyBoxSetCollapsing(context, dbQuery, filter.CollapseBoxSetItemTypes);
+            }
 
             // Name filters run after collapse so BoxSets match by their own name, not a child's.
             dbQuery = ApplyNameFilters(dbQuery, filter);
@@ -189,8 +196,20 @@ public sealed partial class BaseItemRepository
             .Select(x => x.ParentId)
             .Distinct();
 
-        var collapsedIds = nonCollapsibleIds.Union(collapsibleNotInBoxSet).Union(boxSetIds);
-        return context.BaseItems.AsNoTracking().Where(e => collapsedIds.Contains(e.Id));
+        // Roll surfaced BoxSets up to their outermost ancestor so nested collections are
+        // represented by their root and are not surfaced separately at the top level.
+        var nestingLinks = GetBoxSetNestingLinks(context, boxSetTypeName);
+        if (nestingLinks.Count == 0)
+        {
+            var collapsedIds = nonCollapsibleIds.Union(collapsibleNotInBoxSet).Union(boxSetIds);
+            return context.BaseItems.AsNoTracking().Where(e => collapsedIds.Contains(e.Id));
+        }
+
+        var keepIds = nonCollapsibleIds.Union(collapsibleNotInBoxSet);
+        var rootBoxSetIds = RollUpToRootBoxSets(boxSetIds.ToList(), nestingLinks);
+        var keepItems = context.BaseItems.AsNoTracking().Where(e => keepIds.Contains(e.Id));
+        var rootBoxSetItems = context.BaseItems.AsNoTracking().WhereOneOrMany(rootBoxSetIds, e => e.Id);
+        return keepItems.Union(rootBoxSetItems);
     }
 
     private static IQueryable<BaseItemEntity> ApplyBoxSetCollapsingAll(
@@ -218,8 +237,85 @@ public sealed partial class BaseItemRepository
             .Select(e => e.Id)
             .Where(id => !childrenInBoxSet.Contains(id));
 
-        var collapsedIds = notInBoxSet.Union(boxSetIds);
-        return context.BaseItems.AsNoTracking().Where(e => collapsedIds.Contains(e.Id));
+        // Roll surfaced BoxSets up to their outermost ancestor so nested collections are
+        // represented by their root and are not surfaced separately at the top level.
+        var nestingLinks = GetBoxSetNestingLinks(context, boxSetTypeName);
+        if (nestingLinks.Count == 0)
+        {
+            var collapsedIds = notInBoxSet.Union(boxSetIds);
+            return context.BaseItems.AsNoTracking().Where(e => collapsedIds.Contains(e.Id));
+        }
+
+        var rootBoxSetIds = RollUpToRootBoxSets(boxSetIds.ToList(), nestingLinks);
+        var notInBoxSetItems = context.BaseItems.AsNoTracking().Where(e => notInBoxSet.Contains(e.Id));
+        var rootBoxSetItems = context.BaseItems.AsNoTracking().WhereOneOrMany(rootBoxSetIds, e => e.Id);
+        return notInBoxSetItems.Union(rootBoxSetItems);
+    }
+
+    /// <summary>
+    /// Returns every manual link where a BoxSet is nested inside another BoxSet, as (child, parent) pairs.
+    /// </summary>
+    private static List<(Guid Child, Guid Parent)> GetBoxSetNestingLinks(JellyfinDbContext context, string boxSetTypeName)
+    {
+        var boxSetIds = context.BaseItems
+            .Where(bi => bi.Type == boxSetTypeName)
+            .Select(bi => bi.Id);
+
+        return context.LinkedChildren
+            .Where(lc => lc.ChildType == Database.Implementations.Entities.LinkedChildType.Manual
+                && boxSetIds.Contains(lc.ParentId)
+                && boxSetIds.Contains(lc.ChildId))
+            .Select(lc => new { lc.ChildId, lc.ParentId })
+            .AsEnumerable()
+            .Select(x => (x.ChildId, x.ParentId))
+            .ToList();
+    }
+
+    /// <summary>
+    /// Walks the BoxSet nesting graph upwards and returns the outermost (root) BoxSets for the supplied ids.
+    /// </summary>
+    private static List<Guid> RollUpToRootBoxSets(
+        IEnumerable<Guid> boxSetIds,
+        IReadOnlyList<(Guid Child, Guid Parent)> nestingLinks)
+    {
+        var parentsByChild = nestingLinks
+            .GroupBy(l => l.Child)
+            .ToDictionary(g => g.Key, g => g.Select(l => l.Parent).ToArray());
+
+        var roots = new HashSet<Guid>();
+        var visited = new HashSet<Guid>();
+        var stack = new Stack<Guid>();
+
+        foreach (var id in boxSetIds)
+        {
+            visited.Clear();
+            stack.Clear();
+            stack.Push(id);
+
+            while (stack.Count > 0)
+            {
+                var current = stack.Pop();
+                if (!visited.Add(current))
+                {
+                    continue;
+                }
+
+                if (parentsByChild.TryGetValue(current, out var parents))
+                {
+                    foreach (var parent in parents)
+                    {
+                        stack.Push(parent);
+                    }
+                }
+                else
+                {
+                    // No parent BoxSet: this is an outermost collection.
+                    roots.Add(current);
+                }
+            }
+        }
+
+        return roots.ToList();
     }
 
     private static IQueryable<BaseItemEntity> ApplyNameFilters(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
