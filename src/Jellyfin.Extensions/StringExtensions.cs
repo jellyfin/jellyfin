@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using ICU4N.Text;
 
@@ -172,6 +173,42 @@ namespace Jellyfin.Extensions
             cleaned = Regex.Replace(cleaned, @"\s+", " ").Trim();
 
             return cleaned;
+        }
+
+        /// <summary>
+        /// Escapes an argument so that it survives command line parsing as a single argument when it is wrapped in double quotes by the caller.
+        /// </summary>
+        /// <param name="value">The argument to escape.</param>
+        /// <returns>The escaped argument.</returns>
+        public static string EscapeProcessArgument(this string value)
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            var span = value.AsSpan();
+            if (!span.Contains('"'))
+            {
+                var trailing = span.Length - span.TrimEnd('\\').Length;
+                return trailing == 0 ? value : string.Concat(value, new string('\\', trailing));
+            }
+
+            var escaped = new StringBuilder(value.Length + 8);
+            var backslashes = 0;
+
+            foreach (var character in span)
+            {
+                if (character == '\\')
+                {
+                    backslashes++;
+                    continue;
+                }
+
+                escaped
+                    .Append('\\', character == '"' ? (backslashes * 2) + 1 : backslashes)
+                    .Append(character);
+                backslashes = 0;
+            }
+
+            return escaped.Append('\\', backslashes * 2).ToString();
         }
     }
 }
