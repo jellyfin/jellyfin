@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,6 +27,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Configuration;
@@ -705,7 +707,6 @@ public class LibraryController : BaseJellyfinApiController
 
         // Quotes are valid in linux. They'll possibly cause issues here.
         var filename = Path.GetFileName(item.Path)?.Replace("\"", string.Empty, StringComparison.Ordinal);
-
         var filePath = item.Path;
         if (item.IsFileProtocol)
         {
@@ -718,6 +719,113 @@ public class LibraryController : BaseJellyfinApiController
         }
 
         return PhysicalFile(filePath, MimeTypes.GetMimeType(filePath), filename, true);
+    }
+
+    /// <summary>
+    /// Exports item media.
+    /// </summary>
+    /// <param name="itemId">The item id.</param>
+    /// <response code="200">Media downloaded.</response>
+    /// <response code="404">Item not found.</response>
+    /// <returns>A <see cref="FileResult"/> containing the media stream.</returns>
+    /// <exception cref="ArgumentException">User can't download or item can't be downloaded.</exception>
+    [HttpGet("Items/{itemId}/Export")]
+    [Authorize(Policy = Policies.Download)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesFile("video/*", "audio/*")]
+    public async Task<ActionResult> GetExport([FromRoute, Required] Guid itemId)
+    {
+        var userId = User.GetUserId();
+        var user = userId.IsEmpty()
+            ? null
+            : _userManager.GetUserById(userId);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (user is not null)
+        {
+            if (!item.CanExport(user))
+            {
+                throw new ArgumentException("Item does not support exporting");
+            }
+        }
+        else
+        {
+            if (!item.CanExport())
+            {
+                throw new ArgumentException("Item does not support exporting");
+            }
+        }
+
+        if (user is not null)
+        {
+            await LogDownloadAsync(item, user).ConfigureAwait(false);
+        }
+
+        if (item.GetType() == typeof(Playlist))
+        {
+            Response.Headers.Append("Content-Disposition", "attachment; filename=\"Playlist.zip\"");
+
+            var playlist = (Playlist)item;
+            var playlistFile = playlist.GetPlaylistAsFileBytes(user);
+
+            List<(string, byte[])> filesVirtual = [("Playlist.m3u8", playlistFile)];
+            List<(string, string)> filesDisk = playlist.GetChildPaths(user)
+                .Select(path => (path.TrimStart('/'), path))
+                .ToList();
+
+            await WriteZipAsStream(Response.Body, filesVirtual, filesDisk).ConfigureAwait(false);
+            return new EmptyResult();
+        }
+        else if (item.GetType() == typeof(MusicAlbum))
+        {
+            var album = (MusicAlbum)item;
+            var fileName = string.Join("_", album.Name.Split(Path.GetInvalidFileNameChars()));
+            Response.Headers.Append("Content-Disposition", $"attachment; filename=\"{fileName}.zip\"");
+
+            List<(string, byte[])> filesVirtual = [];
+            List<(string, string)> filesDisk = album.Tracks
+                .Select(track => (Path.GetFileName(track.Path), track.Path))
+                .ToList();
+
+            await WriteZipAsStream(Response.Body, filesVirtual, filesDisk).ConfigureAwait(false);
+            return new EmptyResult();
+        }
+        else
+        {
+            throw new ArgumentException("Item does not support exporting");
+        }
+    }
+
+    private static async Task WriteZipAsStream(Stream stream, List<(string FileName, byte[] FileBytes)> filesVirtual, List<(string FileName, string FilePath)> filesDisk)
+    {
+        using (ZipArchive archive = new ZipArchive(new PositionWrapperStream(stream), ZipArchiveMode.Create))
+        {
+            foreach (var file in filesVirtual)
+            {
+                var entry = archive.CreateEntry(file.FileName);
+                var rawEntryStream = await entry.OpenAsync().ConfigureAwait(false);
+                await using (var entryStream = rawEntryStream.ConfigureAwait(false))
+                {
+                    await rawEntryStream.WriteAsync(file.FileBytes).ConfigureAwait(false);
+                }
+            }
+
+            foreach (var file in filesDisk)
+            {
+                var entry = archive.CreateEntry(file.FileName, CompressionLevel.NoCompression);
+                var rawEntryStream = await entry.OpenAsync().ConfigureAwait(false);
+                await using (var entryStream = rawEntryStream.ConfigureAwait(false))
+                using (var fileStream = System.IO.File.OpenRead(file.FilePath))
+                {
+                    await fileStream.CopyToAsync(rawEntryStream).ConfigureAwait(false);
+                }
+            }
+        }
     }
 
     /// <summary>

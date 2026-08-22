@@ -897,6 +897,11 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
+        public virtual bool CanExport()
+        {
+            return false;
+        }
+
         public virtual bool IsAuthorizedToDownload(User user)
         {
             return user.HasPermission(PermissionKind.EnableContentDownloading);
@@ -905,6 +910,11 @@ namespace MediaBrowser.Controller.Entities
         public bool CanDownload(User user)
         {
             return CanDownload() && IsAuthorizedToDownload(user);
+        }
+
+        public bool CanExport(User user)
+        {
+            return CanExport() && IsAuthorizedToDownload(user);
         }
 
         /// <inheritdoc />
