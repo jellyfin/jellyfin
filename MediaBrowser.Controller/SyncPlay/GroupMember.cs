@@ -52,6 +52,20 @@ namespace MediaBrowser.Controller.SyncPlay
         public bool IsBuffering { get; set; }
 
         /// <summary>
+        /// Gets or sets the time at which this member started its current buffering period.
+        /// </summary>
+        /// <value>The date the member started buffering, or <c>null</c> if not buffering.</value>
+        public DateTime? BufferingSince { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this member has caught up with the group at least
+        /// once since the last group-wide buffering reset (see <see cref="IGroupStateContext.SetAllBuffering"/>).
+        /// Distinguishes a client still preparing its first playback from one re-buffering due to network lag.
+        /// </summary>
+        /// <value><c>true</c> if the member has caught up since the last group-wide reset; <c>false</c> otherwise.</value>
+        public bool HasCaughtUpSinceReset { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this member is following group playback.
         /// </summary>
         /// <value><c>true</c> to ignore member on group wait; <c>false</c> if they're following group playback.</value>
