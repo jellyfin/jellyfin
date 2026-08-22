@@ -11,14 +11,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Database.Providers.Sqlite.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    [Migration("20260815063607_RemoveOrphanedUserPermissionsAndPreferences")]
-    partial class RemoveOrphanedUserPermissionsAndPreferences
+    [Migration("20260812050902_AddMediaStreamFilterIndex")]
+    partial class AddMediaStreamFilterIndex
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.10");
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
@@ -1083,11 +1083,14 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
                     b.Property<int>("Kind")
                         .HasColumnType("INTEGER");
 
+                    b.Property<Guid?>("Permission_Permissions_Guid")
+                        .HasColumnType("TEXT");
+
                     b.Property<uint>("RowVersion")
                         .IsConcurrencyToken()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("Value")
@@ -1096,7 +1099,8 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("UserId", "Kind")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("Permissions");
 
@@ -1112,11 +1116,14 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
                     b.Property<int>("Kind")
                         .HasColumnType("INTEGER");
 
+                    b.Property<Guid?>("Preference_Preferences_Guid")
+                        .HasColumnType("TEXT");
+
                     b.Property<uint>("RowVersion")
                         .IsConcurrencyToken()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Value")
@@ -1127,7 +1134,8 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("UserId", "Kind")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("Preferences");
 
@@ -1696,8 +1704,7 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.User", null)
                         .WithMany("Permissions")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.Preference", b =>
@@ -1705,8 +1712,7 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.User", null)
                         .WithMany("Preferences")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.Security.Device", b =>
