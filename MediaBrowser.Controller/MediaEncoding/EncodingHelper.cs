@@ -7415,6 +7415,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 inputModifier += " -stream_loop -1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2";
             }
+            else if (state.InputProtocol == MediaProtocol.Http)
+            {
+                // Reconnect a remote HTTP source (e.g. a .strm-backed VOD item) if it drops before EOF.
+                // No -stream_loop/-reconnect_at_eof/-reconnect_streamed: VOD is finite and seekable.
+                inputModifier += " -reconnect 1 -reconnect_delay_max 2";
+            }
 
             return inputModifier;
         }
