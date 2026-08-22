@@ -113,5 +113,13 @@
     "TaskAudioNormalization": "Ljóðjavnan",
     "TaskAudioNormalizationDescription": "Kannar fílur fyri dátum til ljóðjavnan.",
     "NameExtraSample": "Kut",
-    "TaskRefreshTrickplayImages": "Framleið Trickplay-myndir"
+    "TaskRefreshTrickplayImages": "Framleið Trickplay-myndir",
+    "TaskRefreshTrickplayImagesDescription": "Framleiðir trickplay-myndir fyri kykmyndir í søvnunm har tað er virkt.",
+    "TaskMoveTrickplayImages": "Flyt Trickplay-myndagoymslustað",
+    "TaskMoveTrickplayImagesDescription": "Flytur verandi trickplay-fílur sambært savnsstillingunum.",
+    "NameExtraThemeVideo": "Eyðkenniskykmynd",
+    "NameExtraDeletedScene": "Úrtikin mynd (scena)",
+    "NameExtraScene": "Mynd (scena)",
+    "NameExtraUnknown": "Eykatilfar",
+    "Original": "Upprunalig(t/ur)"
 }
