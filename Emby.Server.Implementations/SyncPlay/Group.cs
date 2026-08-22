@@ -115,6 +115,14 @@ namespace Emby.Server.Implementations.SyncPlay
         public string GroupName { get; private set; }
 
         /// <summary>
+        /// Gets the username of the group's host: the creating session's username, reassigned
+        /// when the host's last session leaves while other participants remain
+        /// (see <see cref="SessionLeave"/>). Always identifies a current member of the group.
+        /// </summary>
+        /// <value>The host's username.</value>
+        public string HostUsername { get; private set; }
+
+        /// <summary>
         /// Gets the group identifier.
         /// </summary>
         /// <value>The group identifier.</value>
@@ -251,6 +259,7 @@ namespace Emby.Server.Implementations.SyncPlay
         public void CreateGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken)
         {
             GroupName = request.GroupName;
+            HostUsername = session.UserName;
             AddSession(session);
 
             var sessionIsPlayingAnItem = session.FullNowPlayingItem is not null;
@@ -315,6 +324,21 @@ namespace Emby.Server.Implementations.SyncPlay
 
             RemoveSession(session);
 
+            // The host left but the group lives on: promote the longest-standing remaining member.
+            // The check is by username so a host with multiple sessions keeps the role until the
+            // last one leaves.
+            if (_participants.Count > 0
+                && !_participants.Values.Any(member => string.Equals(member.UserName, HostUsername, StringComparison.OrdinalIgnoreCase)))
+            {
+                HostUsername = _participants.Values
+                    .OrderBy(member => member.JoinedAt)
+                    .ThenBy(member => member.SessionId, StringComparer.Ordinal)
+                    .First()
+                    .UserName;
+
+                _logger.LogInformation("Host of group {GroupId} left, new host is {HostUsername}.", GroupId.ToString(), HostUsername);
+            }
+
             var updateSession = new SyncPlayGroupLeftUpdate(GroupId, GroupId.ToString());
             SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, updateSession, cancellationToken);
 
@@ -356,7 +380,7 @@ namespace Emby.Server.Implementations.SyncPlay
         public GroupInfoDto GetInfo()
         {
             var participants = _participants.Values.Select(session => session.UserName).Distinct().ToList();
-            return new GroupInfoDto(GroupId, GroupName, _state.Type, participants, DateTime.UtcNow);
+            return new GroupInfoDto(GroupId, GroupName, _state.Type, participants, DateTime.UtcNow, HostUsername);
         }
 
         /// <summary>
