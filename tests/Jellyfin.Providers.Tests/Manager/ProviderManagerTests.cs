@@ -198,6 +198,31 @@ namespace Jellyfin.Providers.Tests.Manager
             GetImageProviders_CanRefreshImages_Tester(providerType, true, expected, baseItemEnabled: enabled);
         }
 
+        [Theory]
+        [InlineData(nameof(ILocalImageProvider), false, true)]
+        [InlineData(nameof(ILocalImageProvider), true, false)]
+        // the opt-out list must only apply to local providers
+        [InlineData(nameof(IRemoteImageProvider), true, true)]
+        [InlineData(nameof(IDynamicImageProvider), true, true)]
+        public void GetImageProviders_CanRefreshImagesLocalDisabled_WhenNotOptedOut(string providerType, bool disableLocal, bool expected)
+        {
+            GetImageProviders_CanRefreshImages_Tester(
+                providerType,
+                true,
+                expected,
+                disabledLocalImageProviders: disableLocal ? new[] { "provider" } : null);
+        }
+
+        [Fact]
+        public void GetImageProviders_CanRefreshImagesLocalDisabled_IsCaseInsensitive()
+        {
+            GetImageProviders_CanRefreshImages_Tester(
+                nameof(ILocalImageProvider),
+                true,
+                false,
+                disabledLocalImageProviders: new[] { "PROVIDER" });
+        }
+
         private static void GetImageProviders_CanRefreshImages_Tester(
             string providerType,
             bool supports,
@@ -205,7 +230,8 @@ namespace Jellyfin.Providers.Tests.Manager
             bool errorOnSupported = false,
             bool itemLocked = false,
             bool fullRefresh = false,
-            bool baseItemEnabled = true)
+            bool baseItemEnabled = true,
+            string[]? disabledLocalImageProviders = null)
         {
             var item = new Movie
             {
@@ -231,7 +257,13 @@ namespace Jellyfin.Providers.Tests.Manager
             baseItemManager.Setup(i => i.IsImageFetcherEnabled(item, It.IsAny<TypeOptions>(), providerName))
                 .Returns(baseItemEnabled);
 
-            using var providerManager = GetProviderManager(baseItemManager: baseItemManager.Object);
+            var libraryOptions = new LibraryOptions();
+            if (disabledLocalImageProviders is not null)
+            {
+                libraryOptions.DisabledLocalImageProviders = disabledLocalImageProviders;
+            }
+
+            using var providerManager = GetProviderManager(libraryOptions: libraryOptions, baseItemManager: baseItemManager.Object);
             AddParts(providerManager, imageProviders: new[] { provider });
 
             var actualProviders = providerManager.GetImageProviders(item, refreshOptions).ToArray();
