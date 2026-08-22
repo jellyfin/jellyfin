@@ -137,11 +137,15 @@ public class ImageController : BaseJellyfinApiController
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
 
-            user.ProfileImage = new Database.Implementations.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + extension));
+            // Save the file before mutating the user. The instance is shared and cached, so a
+            // failed write would otherwise leave it pointing at an image that was never created.
+            var profileImagePath = Path.Combine(userDataPath, "profile" + extension);
 
             await _providerManager
-                .SaveImage(stream, mimeType, user.ProfileImage.Path)
+                .SaveImage(stream, mimeType, profileImagePath)
                 .ConfigureAwait(false);
+
+            user.ProfileImage = new Database.Implementations.Entities.ImageInfo(profileImagePath);
             await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
 
             return NoContent();

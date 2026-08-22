@@ -1,6 +1,7 @@
 #pragma warning disable RS0030 // Do not use banned APIs
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -52,6 +53,11 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         private readonly LockHelper _userLock = new();
+        private readonly ConcurrentDictionary<Guid, User> _userCache = new();
+        private long _cacheVersion;
+
+        private static readonly TimeSpan ActivityWriteInterval = TimeSpan.FromSeconds(60);
+        private readonly ConcurrentDictionary<Guid, DateTime> _lastActivityWrite = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager"/> class.
@@ -127,9 +133,103 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
 
+            if (_userCache.TryGetValue(id, out var cached))
+            {
+                return cached;
+            }
+
+            var version = Interlocked.Read(ref _cacheVersion);
+
             using var dbContext = _dbProvider.CreateDbContext();
-            return UserQuery(dbContext)
+            var user = UserQuery(dbContext)
                 .FirstOrDefault(user => user.Id == id);
+
+            if (user is not null)
+            {
+                // Publish first, then check.
+                _userCache[id] = user;
+                if (Interlocked.Read(ref _cacheVersion) != version)
+                {
+                    _userCache.TryRemove(id, out _);
+                }
+            }
+
+            return user;
+        }
+
+        /// <inheritdoc/>
+        public async Task RecordUserActivityAsync(Guid userId, DateTime activityDate)
+        {
+            if (!ClaimActivityWrite(userId, activityDate, out var previousWrite))
+            {
+                return;
+            }
+
+            try
+            {
+                var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+                await using (dbContext.ConfigureAwait(false))
+                {
+                    await dbContext.Users
+                        .Where(u => u.Id == userId)
+                        .ExecuteUpdateAsync(e => e.SetProperty(f => f.LastActivityDate, activityDate))
+                        .ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                // The claim was taken before the write, so release it.
+                if (previousWrite.HasValue)
+                {
+                    _lastActivityWrite.TryUpdate(userId, previousWrite.Value, activityDate);
+                }
+                else
+                {
+                    _lastActivityWrite.TryRemove(new KeyValuePair<Guid, DateTime>(userId, activityDate));
+                }
+
+                // Recording activity is best effort and must not fail the request.
+                _logger.LogWarning(ex, "Failed to record last activity date for user {UserId}.", userId);
+            }
+            finally
+            {
+                InvalidateUser(userId);
+            }
+        }
+
+        private bool ClaimActivityWrite(Guid userId, DateTime activityDate, out DateTime? previousWrite)
+        {
+            while (true)
+            {
+                if (!_lastActivityWrite.TryGetValue(userId, out var written))
+                {
+                    if (_lastActivityWrite.TryAdd(userId, activityDate))
+                    {
+                        previousWrite = null;
+                        return true;
+                    }
+
+                    continue;
+                }
+
+                if (activityDate - written < ActivityWriteInterval)
+                {
+                    previousWrite = null;
+                    return false;
+                }
+
+                if (_lastActivityWrite.TryUpdate(userId, activityDate, written))
+                {
+                    previousWrite = written;
+                    return true;
+                }
+            }
+        }
+
+        private void InvalidateUser(Guid userId)
+        {
+            Interlocked.Increment(ref _cacheVersion);
+            _userCache.TryRemove(userId, out _);
         }
 
         private static IQueryable<User> UserQuery(JellyfinDbContext dbContext)
@@ -201,6 +301,7 @@ namespace Jellyfin.Server.Implementations.Users
                     user.Username = newName;
                     user.NormalizedUsername = newName.ToUpperInvariant();
                     await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
+                    InvalidateUser(userId);
                 }
             }
 
@@ -212,6 +313,8 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task UpdateUserAsync(User user)
         {
+            InvalidateUser(user.Id);
+
             using (await _userLock.LockAsync(user.Id).ConfigureAwait(false))
             {
                 var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
@@ -256,6 +359,7 @@ namespace Jellyfin.Server.Implementations.Users
                     }
 
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                    InvalidateUser(user.Id);
                 }
             }
         }
@@ -409,6 +513,9 @@ namespace Jellyfin.Server.Implementations.Users
 
                     dbContext.Users.Remove(user);
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                    InvalidateUser(userId);
+
+                    _lastActivityWrite.TryRemove(userId, out _);
                 }
             }
 
@@ -442,6 +549,7 @@ namespace Jellyfin.Server.Implementations.Users
 
                     await GetAuthenticationProvider(dbUser).ChangePassword(dbUser, newPassword).ConfigureAwait(false);
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                    InvalidateUser(userId);
                 }
             }
 
@@ -685,6 +793,9 @@ namespace Jellyfin.Server.Implementations.Users
                         dbContext.Update(user);
                         await dbContext.SaveChangesAsync()
                             .ConfigureAwait(false);
+
+                        InvalidateUser(user.Id);
+
                         await _eventManager.PublishAsync(new UserLockedOutEventArgs(user)).ConfigureAwait(false);
                         _logger.LogWarning(
                             "Disabling user {Username} due to {Attempts} unsuccessful login attempts.",
@@ -702,6 +813,8 @@ namespace Jellyfin.Server.Implementations.Users
                         user.Username,
                         remoteEndPoint);
                 }
+
+                InvalidateUser(user.Id);
             }
 
             return success ? user : null;
@@ -840,6 +953,7 @@ namespace Jellyfin.Server.Implementations.Users
 
                     dbContext.Update(user);
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                    InvalidateUser(userId);
                 }
             }
         }
@@ -917,6 +1031,7 @@ namespace Jellyfin.Server.Implementations.Users
 
                     dbContext.Update(user);
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                    InvalidateUser(userId);
                 }
             }
         }
@@ -928,6 +1043,8 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 return;
             }
+
+            InvalidateUser(user.Id);
 
             using (await _userLock.LockAsync(user.Id).ConfigureAwait(false))
             {
@@ -947,6 +1064,7 @@ namespace Jellyfin.Server.Implementations.Users
                         dbContext.Remove(dbUser.ProfileImage);
                         dbUser.ProfileImage = null;
                         await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                        InvalidateUser(user.Id);
                     }
                 }
 
