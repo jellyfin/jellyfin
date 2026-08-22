@@ -557,16 +557,15 @@ public class SubtitleController : BaseJellyfinApiController
         if (!string.IsNullOrEmpty(fallbackFontPath))
         {
             var fontFile = _fileSystem.GetFiles(fallbackFontPath)
-                .First(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
-            var fileSize = fontFile?.Length;
+                .FirstOrDefault(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
 
-            if (fontFile is not null && fileSize is not null && fileSize > 0)
+            if (fontFile is not null && fontFile.Length > 0)
             {
-                _logger.LogDebug("Fallback font size is {FileSize} Bytes", fileSize);
+                _logger.LogDebug("Fallback font size is {FileSize} Bytes", fontFile.Length);
                 return PhysicalFile(fontFile.FullName, MimeTypes.GetMimeType(fontFile.FullName));
             }
 
-            _logger.LogWarning("The selected font is null or empty");
+            _logger.LogWarning("The selected fallback font {Font} was not found or is empty", name);
         }
         else
         {
