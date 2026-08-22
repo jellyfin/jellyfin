@@ -236,6 +236,53 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         return result;
     }
 
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<Guid, IReadOnlyList<PersonInfo>> GetPeopleByItems(IReadOnlyList<Guid> itemIds)
+    {
+        using var context = _dbProvider.CreateDbContext();
+        var rows = context.PeopleBaseItemMap
+            .AsNoTracking()
+            .Where(m => itemIds.Contains(m.ItemId))
+            .OrderBy(m => m.ListOrder)
+            .Select(m => new
+            {
+                m.ItemId,
+                m.Role,
+                m.SortOrder,
+                m.People.Id,
+                m.People.Name,
+                m.People.PersonType
+            })
+            .ToList();
+
+        var result = new Dictionary<Guid, IReadOnlyList<PersonInfo>>();
+        foreach (var group in rows.GroupBy(r => r.ItemId))
+        {
+            var people = new List<PersonInfo>();
+            foreach (var row in group)
+            {
+                var personInfo = new PersonInfo
+                {
+                    ItemId = row.ItemId,
+                    Id = row.Id,
+                    Name = row.Name,
+                    Role = row.Role,
+                    SortOrder = row.SortOrder
+                };
+                if (Enum.TryParse<PersonKind>(row.PersonType, out var kind))
+                {
+                    personInfo.Type = kind;
+                }
+
+                people.Add(personInfo);
+            }
+
+            result[group.Key] = people;
+        }
+
+        return result;
+    }
+
     private IEnumerable<PersonInfo> MapCredits(People people)
     {
         var mappings = people.BaseItems;
@@ -304,7 +351,11 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (!filter.ItemId.IsEmpty())
         {
-            query = query.Where(e => e.BaseItems!.Any(w => w.ItemId.Equals(filter.ItemId)));
+            var itemId = filter.ItemId;
+            query = query.Where(e => context.PeopleBaseItemMap
+                .Where(m => m.ItemId.Equals(itemId))
+                .Select(m => m.PeopleId)
+                .Contains(e.Id));
         }
 
         if (filter.ParentId != null)
@@ -314,7 +365,11 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (!filter.AppearsInItemId.IsEmpty())
         {
-            query = query.Where(e => e.BaseItems!.Any(w => w.ItemId.Equals(filter.AppearsInItemId)));
+            var appearsInItemId = filter.AppearsInItemId;
+            query = query.Where(e => context.PeopleBaseItemMap
+                .Where(m => m.ItemId.Equals(appearsInItemId))
+                .Select(m => m.PeopleId)
+                .Contains(e.Id));
         }
 
         var queryPersonTypes = filter.PersonTypes.Where(IsValidPersonType).ToList();

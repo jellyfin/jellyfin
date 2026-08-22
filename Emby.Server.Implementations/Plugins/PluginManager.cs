@@ -255,6 +255,14 @@ namespace Emby.Server.Implementations.Plugins
             }
 
             _plugins.Add(plugin);
+
+            // Updating a disabled plugin must not enable it again.
+            if (plugin.Manifest.Status == PluginStatus.Disabled)
+            {
+                ProcessAlternative(plugin);
+                return;
+            }
+
             EnablePlugin(plugin);
         }
 
@@ -632,9 +640,10 @@ namespace Emby.Server.Implementations.Plugins
                 return;
             }
 
-            var predecessor = _plugins.OrderByDescending(p => p.Version)
-                .FirstOrDefault(p => p.Id.Equals(plugin.Id) && p.IsEnabledAndSupported && p.Version != plugin.Version);
-            if (predecessor is not null)
+            var successor = _plugins.FirstOrDefault(p => p.Id.Equals(plugin.Id)
+                && p.Version > plugin.Version
+                && (p.IsEnabledAndSupported || p.Manifest.Status == PluginStatus.Disabled));
+            if (successor is not null)
             {
                 return;
             }
@@ -763,6 +772,8 @@ namespace Emby.Server.Implementations.Plugins
                 var entry = versions[x];
                 if (!string.Equals(lastName, entry.Name, StringComparison.OrdinalIgnoreCase))
                 {
+                    lastName = string.Empty;
+
                     if (!TryGetPluginDlls(entry, out var allowedDlls))
                     {
                         _logger.LogError("One or more assembly paths was invalid. Marking plugin {Plugin} as \"Malfunctioned\".", entry.Name);
@@ -772,15 +783,18 @@ namespace Emby.Server.Implementations.Plugins
 
                     entry.DllFiles = allowedDlls;
 
+                    // Only clean up older versions when this version will actually be loaded.
                     if (entry.IsEnabledAndSupported)
                     {
                         lastName = entry.Name;
-                        continue;
                     }
+
+                    continue;
                 }
 
                 if (string.IsNullOrEmpty(lastName))
                 {
+                    // Unnamed plugin, so there is nothing to match older versions against.
                     continue;
                 }
 
@@ -891,9 +905,9 @@ namespace Emby.Server.Implementations.Plugins
 
             if (previousVersion is null)
             {
-                // This value is memory only - so that the web will show restart required.
-                plugin.Manifest.Status = PluginStatus.Restart;
-                plugin.Manifest.AutoUpdate = false;
+                // Memory only, so that the web will show restart required. The manifest must keep
+                // holding the persisted state, or a later save would write the wrong state to disk.
+                plugin.RestartRequired = true;
                 return;
             }
 
@@ -906,9 +920,7 @@ namespace Emby.Server.Implementations.Plugins
                 _logger.LogError("Unable to supercede version {Version} of {Name}", previousVersion.Version, previousVersion.Name);
             }
 
-            // This value is memory only - so that the web will show restart required.
-            plugin.Manifest.Status = PluginStatus.Restart;
-            plugin.Manifest.AutoUpdate = false;
+            plugin.RestartRequired = true;
         }
     }
 }

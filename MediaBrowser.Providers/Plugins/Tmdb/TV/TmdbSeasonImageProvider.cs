@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -57,9 +55,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             var season = (Season)item;
             var series = season?.Series;
 
-            var seriesTmdbId = Convert.ToInt32(series?.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
+            var seriesTmdbId = 0;
 
-            if (seriesTmdbId <= 0 || season?.IndexNumber is null)
+            if (season?.IndexNumber is null || series?.TryGetTmdbId(out seriesTmdbId) != true)
             {
                 return [];
             }

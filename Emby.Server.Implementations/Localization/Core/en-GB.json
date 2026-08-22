@@ -108,5 +108,17 @@
     "CleanupUserDataTask": "User data cleanup task",
     "CleanupUserDataTaskDescription": "Cleans all user data (Watch state, favourite status etc) from media that is no longer present for at least 90 days.",
     "LyricDownloadFailureFromForItem": "Lyrics failed to download from {0} for {1}",
-    "Original": "Original"
+    "Original": "Original",
+    "NameExtraBehindTheScenes": "Behind The Scenes",
+    "NameExtraClip": "Clip",
+    "NameExtraDeletedScene": "Deleted Scene",
+    "NameExtraFeaturette": "Featurette",
+    "NameExtraInterview": "Interview",
+    "NameExtraSample": "Sample",
+    "NameExtraScene": "Scene",
+    "NameExtraShort": "Short",
+    "NameExtraThemeSong": "Theme Song",
+    "NameExtraThemeVideo": "Theme Video",
+    "NameExtraTrailer": "Trailer",
+    "NameExtraUnknown": "Extra"
 }

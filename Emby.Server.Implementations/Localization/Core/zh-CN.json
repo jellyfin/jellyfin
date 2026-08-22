@@ -115,11 +115,11 @@
     "NameExtraFeaturette": "花絮",
     "NameExtraInterview": "采访",
     "NameExtraNumbered": "{0} {1}",
-    "NameExtraSample": "样本",
-    "NameExtraScene": "场景",
-    "NameExtraShort": "短片",
+    "NameExtraSample": "试看",
+    "NameExtraScene": "精选片段",
+    "NameExtraShort": "短篇",
     "NameExtraThemeSong": "主题曲",
     "NameExtraThemeVideo": "主题视频",
     "NameExtraTrailer": "预告片",
-    "NameExtraUnknown": "额外"
+    "NameExtraUnknown": "额外内容"
 }

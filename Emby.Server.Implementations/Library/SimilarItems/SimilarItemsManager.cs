@@ -183,6 +183,7 @@ public class SimilarItemsManager : ISimilarItemsManager
                     // Collect references in batches and resolve against local library.
                     // Stop fetching once we have enough resolved local items.
                     const int BatchSize = 20;
+                    const int MaxRemoteReferenceFetchLimit = 500;
                     var remaining = requestedLimit - allResults.Count;
                     var collectedReferences = new List<SimilarItemReference>();
                     var pendingBatch = new List<SimilarItemReference>();
@@ -199,7 +200,7 @@ public class SimilarItemsManager : ISimilarItemsManager
                             remaining -= resolvedItems.Count;
                             pendingBatch.Clear();
 
-                            if (remaining <= 0)
+                            if (remaining <= 0 || collectedReferences.Count >= MaxRemoteReferenceFetchLimit)
                             {
                                 break;
                             }

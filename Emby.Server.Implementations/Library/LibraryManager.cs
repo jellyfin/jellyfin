@@ -412,6 +412,13 @@ namespace Emby.Server.Implementations.Library
             }
 
             _persistenceService.DeleteItem([.. pathMaps.Select(f => f.Item.Id)]);
+
+            // Evict the deleted items from the cache and announce each removal.
+            foreach (var (item, _, _) in pathMaps)
+            {
+                _cache.TryRemove(item.Id, out _);
+                ReportItemRemoved(item, item.GetOwner() ?? item.GetParent());
+            }
         }
 
         public void DeleteItem(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem)
@@ -609,6 +616,12 @@ namespace Emby.Server.Implementations.Library
             {
                 folder.Children = null;
                 folder.UserData = null;
+            }
+
+            // Announce the descendants before the item itself.
+            foreach (var child in children)
+            {
+                ReportItemRemoved(child, item);
             }
 
             ReportItemRemoved(item, parent);
@@ -1901,14 +1914,14 @@ namespace Emby.Server.Implementations.Library
             }
 
             // Optimize by querying against top level views
-            query.TopParentIds = parents.SelectMany(i => GetTopParentIdsForQuery(i, query.User)).ToArray();
-            query.AncestorIds = [];
-
-            // Prevent searching in all libraries due to empty filter
-            if (query.TopParentIds.Length == 0)
+            var topParentIds = parents.SelectMany(i => GetTopParentIdsForQuery(i, query.User)).ToArray();
+            if (topParentIds.Length == 0)
             {
-                query.TopParentIds = [Guid.NewGuid()];
+                return;
             }
+
+            query.TopParentIds = topParentIds;
+            query.AncestorIds = [];
         }
 
         public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery query)
@@ -1954,12 +1967,15 @@ namespace Emby.Server.Implementations.Library
             if (parents.All(i => i is ICollectionFolder || i is UserView))
             {
                 // Optimize by querying against top level views
-                query.TopParentIds = parents.SelectMany(i => GetTopParentIdsForQuery(i, query.User)).ToArray();
+                var topParentIds = parents.SelectMany(i => GetTopParentIdsForQuery(i, query.User)).ToArray();
 
-                // Prevent searching in all libraries due to empty filter
-                if (query.TopParentIds.Length == 0)
+                if (topParentIds.Length > 0)
                 {
-                    query.TopParentIds = [Guid.NewGuid()];
+                    query.TopParentIds = topParentIds;
+                }
+                else
+                {
+                    SetAncestorIds(query, parents);
                 }
             }
             else if (parents.Count == 1 && parents.First() is Folder folder
@@ -1983,17 +1999,22 @@ namespace Emby.Server.Implementations.Library
             }
             else
             {
-                // We need to be able to query from any arbitrary ancestor up the tree
-                query.AncestorIds = parents.SelectMany(i => i.GetIdsForAncestorQuery()).ToArray();
-
-                // Prevent searching in all libraries due to empty filter
-                if (query.AncestorIds.Length == 0)
-                {
-                    query.AncestorIds = [Guid.NewGuid()];
-                }
+                SetAncestorIds(query, parents);
             }
 
             query.Parent = null;
+        }
+
+        private static void SetAncestorIds(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents)
+        {
+            // We need to be able to query from any arbitrary ancestor up the tree
+            query.AncestorIds = parents.SelectMany(i => i.GetIdsForAncestorQuery()).ToArray();
+
+            // Prevent searching in all libraries due to empty filter
+            if (query.AncestorIds.Length == 0)
+            {
+                query.AncestorIds = [Guid.NewGuid()];
+            }
         }
 
         private void AddUserToQuery(InternalItemsQuery query, User user, bool allowExternalContent = true)
@@ -2232,6 +2253,12 @@ namespace Emby.Server.Implementations.Library
             }
 
             return [];
+        }
+
+        /// <inheritdoc />
+        public IReadOnlySet<Guid> GetItemIdsWithAlternateVersions(IReadOnlyList<Guid> itemIds)
+        {
+            return _linkedChildrenService.GetItemIdsWithAlternateVersions(itemIds);
         }
 
         /// <inheritdoc />
@@ -3535,6 +3562,12 @@ namespace Emby.Server.Implementations.Library
         public IReadOnlyDictionary<Guid, IReadOnlyList<string>> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes)
         {
             return _peopleRepository.GetPeopleNamesByItems(itemIds, personTypes);
+        }
+
+        /// <inheritdoc/>
+        public IReadOnlyDictionary<Guid, IReadOnlyList<PersonInfo>> GetPeopleByItems(IReadOnlyList<Guid> itemIds)
+        {
+            return _peopleRepository.GetPeopleByItems(itemIds);
         }
 
         public void UpdatePeople(BaseItem item, List<PersonInfo> people)

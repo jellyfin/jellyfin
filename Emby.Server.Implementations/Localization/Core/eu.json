@@ -108,5 +108,18 @@
     "CleanupUserDataTaskDescription": "Gutxienez 90 egunez dagoeneko existitzen ez den multimediatik erabiltzaile-datu guztiak (ikusteko egoera, gogokoen egoera, etab.) garbitzen ditu.",
     "CleanupUserDataTask": "Erabiltzaileen datuak garbitzeko zeregina",
     "LyricDownloadFailureFromForItem": "Ezin izan dira {1}-ren letrak deskargatu {0}-tik",
-    "Original": "Jatorrizkoa"
+    "Original": "Jatorrizkoa",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Lagina",
+    "NameExtraScene": "Eszena",
+    "NameExtraShort": "Laburra",
+    "NameExtraThemeSong": "Gai-abestia",
+    "NameExtraThemeVideo": "Gai-bideoa",
+    "NameExtraBehindTheScenes": "Eszenen atzean",
+    "NameExtraClip": "Klipa",
+    "NameExtraDeletedScene": "Ezabatutako eszena",
+    "NameExtraFeaturette": "Erreportajea",
+    "NameExtraInterview": "Elkarrizketa",
+    "NameExtraTrailer": "Trailerra",
+    "NameExtraUnknown": "Extra"
 }

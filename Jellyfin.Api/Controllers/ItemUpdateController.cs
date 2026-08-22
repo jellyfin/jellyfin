@@ -428,15 +428,7 @@ public class ItemUpdateController : BaseJellyfinApiController
 
         if (request.ProviderIds is not null)
         {
-            foreach (var pair in request.ProviderIds.ToList())
-            {
-                if (string.IsNullOrEmpty(pair.Value))
-                {
-                    request.ProviderIds.Remove(pair.Key);
-                }
-            }
-
-            item.ProviderIds = request.ProviderIds;
+            item.SetProviderIds(request.ProviderIds);
         }
 
         if (item is Video video)

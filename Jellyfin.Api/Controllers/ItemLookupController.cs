@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using Microsoft.AspNetCore.Authorization;
@@ -264,7 +265,7 @@ public class ItemLookupController : BaseJellyfinApiController
             searchResult.ProviderIds);
 
         // Since the refresh process won't erase provider Ids, we need to set this explicitly now.
-        item.ProviderIds = searchResult.ProviderIds;
+        item.SetProviderIds(searchResult.ProviderIds);
         await _providerManager.RefreshFullItem(
             item,
             new Providers.MetadataRefreshOptions(new Providers.DirectoryService(_fileSystem))
