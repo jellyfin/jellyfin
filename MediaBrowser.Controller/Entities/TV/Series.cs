@@ -3,6 +3,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -16,6 +17,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
+using Microsoft.Extensions.Logging;
 using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
 
 namespace MediaBrowser.Controller.Entities.TV
@@ -25,6 +27,11 @@ namespace MediaBrowser.Controller.Entities.TV
     /// </summary>
     public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IMetadataContainer, ISupportsBoxSetGrouping
     {
+        /// <summary>
+        /// Maximum time a single child item's metadata refresh may run before it is abandoned.
+        /// </summary>
+        private static readonly TimeSpan _childMetadataRefreshTimeout = TimeSpan.FromSeconds(60);
+
         public Series()
         {
             AirDays = Array.Empty<DayOfWeek>();
@@ -327,41 +334,16 @@ namespace MediaBrowser.Controller.Entities.TV
             // Refresh bottom up, seasons and episodes first, then the series
             var items = GetRecursiveChildren();
 
+            var seasons = items.OfType<Season>().ToArray();
+            var others = items.Where(i => i is not Season).ToArray();
+
             var totalItems = items.Count;
-            var numComplete = 0;
+            var seasonsShare = totalItems == 0 ? 0 : (seasons.Length * 100d) / totalItems;
+            var failedItems = new ConcurrentBag<BaseItem>();
 
-            // Refresh seasons
-            foreach (var item in items)
+            async Task RefreshChildAsync(BaseItem item)
             {
-                if (item is not Season)
-                {
-                    continue;
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (refreshOptions.RefreshItem(item))
-                {
-                    await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-                }
-
-                numComplete++;
-                double percent = numComplete;
-                percent /= totalItems;
-                progress.Report(percent * 100);
-            }
-
-            // Refresh episodes and other children
-            foreach (var item in items)
-            {
-                if (item is Season)
-                {
-                    continue;
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                bool skipItem = item is Episode episode
+                var skipItem = item is Episode episode
                     && refreshOptions.MetadataRefreshMode != MetadataRefreshMode.FullRefresh
                     && !refreshOptions.ReplaceAllMetadata
                     && episode.IsMissingEpisode
@@ -369,18 +351,67 @@ namespace MediaBrowser.Controller.Entities.TV
                     && episode.PremiereDate.HasValue
                     && (DateTime.UtcNow - episode.PremiereDate.Value).TotalDays > 30;
 
-                if (!skipItem)
+                if (skipItem || !refreshOptions.RefreshItem(item))
                 {
-                    if (refreshOptions.RefreshItem(item))
-                    {
-                        await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-                    }
+                    return;
                 }
 
-                numComplete++;
-                double percent = numComplete;
-                percent /= totalItems;
-                progress.Report(percent * 100);
+                using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeoutCts.CancelAfter(_childMetadataRefreshTimeout);
+
+                try
+                {
+                    await item.RefreshMetadata(refreshOptions, timeoutCts.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+                {
+                    failedItems.Add(item);
+                    Logger.LogError(
+                        ex,
+                        "Timed out after {Timeout} refreshing metadata for {ItemType} '{ItemName}' ({ItemPath})",
+                        _childMetadataRefreshTimeout,
+                        item.GetType().Name,
+                        item.Name,
+                        item.Path);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    failedItems.Add(item);
+                    Logger.LogError(
+                        ex,
+                        "Error refreshing metadata for {ItemType} '{ItemName}' ({ItemPath})",
+                        item.GetType().Name,
+                        item.Name,
+                        item.Path);
+                }
+            }
+
+            // Refresh seasons, then episodes and other children.
+            var seasonsProgress = new Progress<double>(p => progress.Report(seasonsShare * (p / 100)));
+            await LimitedConcurrencyLibraryScheduler
+                .Enqueue(
+                    seasons,
+                    (item, _) => RefreshChildAsync(item),
+                    seasonsProgress,
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            var othersProgress = new Progress<double>(p => progress.Report(seasonsShare + ((100 - seasonsShare) * (p / 100))));
+            await LimitedConcurrencyLibraryScheduler
+                .Enqueue(
+                    others,
+                    (item, _) => RefreshChildAsync(item),
+                    othersProgress,
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!failedItems.IsEmpty)
+            {
+                Logger.LogWarning(
+                    "Failed to refresh metadata for {FailedCount} of {TotalCount} child items in series '{SeriesName}'",
+                    failedItems.Count,
+                    totalItems,
+                    Name);
             }
 
             refreshOptions = new MetadataRefreshOptions(refreshOptions);
