@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Controllers;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
@@ -690,11 +691,12 @@ public class DynamicHlsHelper
 
             var url = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}&ApiKey={3}",
+                "{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}&ApiKey={3}&VttTimestampMapMpegts={4}",
                 state.Request.MediaSourceId,
                 stream.Index.ToString(CultureInfo.InvariantCulture),
                 30.ToString(CultureInfo.InvariantCulture),
-                user.GetToken());
+                user.GetToken(),
+                GetVttTimestampMapMpegts(state.Request.SegmentContainer).ToString(CultureInfo.InvariantCulture));
 
             var line = string.Format(
                 CultureInfo.InvariantCulture,
@@ -707,6 +709,20 @@ public class DynamicHlsHelper
 
             builder.AppendLine(line);
         }
+    }
+
+    /// <summary>
+    /// Gets the WebVTT X-TIMESTAMP-MAP MPEGTS offset appropriate for the given HLS segment container.
+    /// fMP4 segments start at PTS 0, unlike legacy MPEG-TS segments which start at the historical 10 second offset.
+    /// </summary>
+    /// <param name="segmentContainer">The HLS segment container, e.g. "ts" or "mp4".</param>
+    /// <returns>The MPEGTS offset to embed in the WebVTT X-TIMESTAMP-MAP header.</returns>
+    internal static long GetVttTimestampMapMpegts(string? segmentContainer)
+    {
+        var segmentExtension = EncodingHelper.GetSegmentFileExtension(segmentContainer);
+        return string.Equals(segmentExtension, ".mp4", StringComparison.OrdinalIgnoreCase)
+            ? 0
+            : SubtitleController.DefaultVttTimestampMapMpegts;
     }
 
     /// <summary>
