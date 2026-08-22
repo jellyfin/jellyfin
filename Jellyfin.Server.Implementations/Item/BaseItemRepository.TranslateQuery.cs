@@ -529,15 +529,21 @@ public sealed partial class BaseItemRepository
                 .Where(ud => ud.UserId == userId && ud.Played)
                 .Select(ud => ud.ItemId);
 
+            // Whether the query can return folders at all.
             var canReturnFolders = filter.IsFolder != false
-                && (filter.MediaTypes.Length == 0 || filter.MediaTypes.Contains(MediaType.Unknown))
+                && (filter.MediaTypes.Length == 0 || filter.MediaTypes.Contains(MediaType.Unknown));
+
+            // Whether any folder it can return could be resumable. Folder kinds outside
+            // _resumableFolderKinds are never resumable, but they are still folders the query returns.
+            var canReturnResumableFolders = canReturnFolders
                 && (filter.IncludeItemTypes.Length == 0 || filter.IncludeItemTypes.Any(_resumableFolderKinds.Contains));
 
             // Series and Seasons are resumable when a descendant is in progress, or when they hold both
             // played and unplayed descendants (partially watched). Alternate versions keep their own
             // progress, so they count towards the in-progress check but not towards the played/unplayed one.
-            Expression<Func<BaseItemEntity, bool>>? folderIsResumableFilter = null;
-            if (canReturnFolders)
+            // The IsFolder test is left off so the not-resumable side can negate this condition alone.
+            Expression<Func<BaseItemEntity, bool>>? resumableFolderCondition = null;
+            if (canReturnResumableFolders)
             {
                 var leafItems = GetAccessFilteredLeafItemsQuery(context, filter.User!);
                 var ownedLeafItems = GetAccessFilteredLeafItemsQuery(context, filter.User!, includeOwnedItems: true);
@@ -547,7 +553,9 @@ public sealed partial class BaseItemRepository
                     .Select(kind => _itemTypeLookup.BaseItemKindNames.GetValueOrDefault(kind))
                     .ToArray();
 
-                folderIsResumableFilter = IsFolderFilter.And(e => resumableFolderTypes.Contains(e.Type))
+                Expression<Func<BaseItemEntity, bool>> isResumableFolderType = e => resumableFolderTypes.Contains(e.Type);
+
+                resumableFolderCondition = isResumableFolderType
                     .And(BuildHasSeededDescendantFilter(context, inProgressIds, ownedLeafItems)
                         .Or(BuildHasSeededDescendantFilter(context, playedIds, leafItems)
                             .And(BuildHasDescendantFilter(context, leafItems.Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played))))));
@@ -557,9 +565,9 @@ public sealed partial class BaseItemRepository
             {
                 var leafIsResumableFilter = IsFolderFilter.Not().And(e => inProgressIds.Contains(e.Id));
 
-                baseQuery = baseQuery.Where(folderIsResumableFilter is null
+                baseQuery = baseQuery.Where(resumableFolderCondition is null
                     ? leafIsResumableFilter
-                    : folderIsResumableFilter.Or(leafIsResumableFilter));
+                    : IsFolderFilter.And(resumableFolderCondition).Or(leafIsResumableFilter));
 
                 // When several versions of the same item are in progress, keep only the most recently played one, use id as tiebreaker.
                 // Only in-progress siblings can eliminate a candidate: a version without progress has a NULL max LastPlayedDate,
@@ -587,9 +595,16 @@ public sealed partial class BaseItemRepository
 
                 var leafIsNotResumableFilter = IsFolderFilter.Not().And(e => !resumableMovieIds.Contains(e.Id));
 
-                baseQuery = baseQuery.Where(folderIsResumableFilter is null
+                // A folder the query can return but that is never resumable (MusicAlbum, BoxSet, ...)
+                // still belongs in a not-resumable result, so keep every folder when no resumable
+                // folder kind is in play instead of dropping the folder side of the predicate.
+                Expression<Func<BaseItemEntity, bool>>? folderIsNotResumableFilter = resumableFolderCondition is not null
+                    ? IsFolderFilter.And(resumableFolderCondition.Not())
+                    : canReturnFolders ? IsFolderFilter : null;
+
+                baseQuery = baseQuery.Where(folderIsNotResumableFilter is null
                     ? leafIsNotResumableFilter
-                    : IsFolderFilter.And(folderIsResumableFilter.Not()).Or(leafIsNotResumableFilter));
+                    : folderIsNotResumableFilter.Or(leafIsNotResumableFilter));
             }
         }
 
@@ -1246,6 +1261,14 @@ public sealed partial class BaseItemRepository
         // A join reads every descendant of the ancestor; an EXISTS runs once per row the rest of the
         // query keeps. The smaller side should drive, and SQLite cannot work that out on its own
         // because statistics are averaged across the whole table.
+
+        // A direct-parent filter narrows to the ancestor's children, which are a subset of its
+        // descendants, so testing those rows can never cost more than reading the whole subtree.
+        if (!filter.ParentId.IsEmpty())
+        {
+            return false;
+        }
+
         var otherSideCount = filter.ItemIds.Length > 0 ? filter.ItemIds.Length : AncestorProbeLimit;
 
         if (filter.IncludeItemTypes.Length > 0)
@@ -1266,6 +1289,11 @@ public sealed partial class BaseItemRepository
             .Take(AncestorProbeLimit)
             .Count();
 
+        // Both probes stop at AncestorProbeLimit, so two saturated counts compare equal and pick the
+        // join. That is deliberate: at that size the join walks IX_AncestorIds_ParentItemId once,
+        // while an EXISTS pays a correlated index probe for every row of an equally large type set.
+        // Measured on a 330k-item library, Episode under a 42k-descendant folder is 63ms joined
+        // against 150ms per-row, and Audio under a 26k-descendant folder is 38ms against 90ms.
         return descendantCount <= otherSideCount;
     }
 }
