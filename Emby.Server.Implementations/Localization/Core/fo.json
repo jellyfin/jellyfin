@@ -111,5 +111,7 @@
     "NameExtraNumbered": "{0} {1}",
     "NameExtraFeaturette": "Stuttur heimildarfilmur",
     "TaskAudioNormalization": "Ljóðjavnan",
-    "TaskAudioNormalizationDescription": "Kannar fílur fyri dátum til ljóðjavnan."
+    "TaskAudioNormalizationDescription": "Kannar fílur fyri dátum til ljóðjavnan.",
+    "NameExtraSample": "Kut",
+    "TaskRefreshTrickplayImages": "Framleið Trickplay-myndir"
 }
