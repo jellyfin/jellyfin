@@ -150,7 +150,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     public Task<string> MigrationBackupFast(CancellationToken cancellationToken)
     {
         var key = DateTime.UtcNow.ToString("yyyyMMddhhmmss", CultureInfo.InvariantCulture);
-        var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
+        var path = GetDatabasePath();
         var backupFile = Path.Combine(_applicationPaths.DataPath, BackupFolderName);
         Directory.CreateDirectory(backupFile);
 
@@ -164,7 +164,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     {
         // ensure there are absolutely no dangling Sqlite connections.
         SqliteConnection.ClearAllPools();
-        var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
+        var path = GetDatabasePath();
         var backupFile = Path.Combine(_applicationPaths.DataPath, BackupFolderName, $"{key}_jellyfin.db");
 
         if (!File.Exists(backupFile))
@@ -190,6 +190,17 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 
         File.Delete(backupFile);
         return Task.CompletedTask;
+    }
+
+    private string GetDatabasePath()
+    {
+        if (DbContextFactory is null)
+        {
+            throw new InvalidOperationException("The database provider has not been initialized.");
+        }
+
+        using var dbContext = DbContextFactory.CreateDbContext();
+        return dbContext.Database.GetDbConnection().DataSource;
     }
 
     /// <inheritdoc/>
