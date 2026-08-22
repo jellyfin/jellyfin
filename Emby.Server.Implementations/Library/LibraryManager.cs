@@ -1914,14 +1914,14 @@ namespace Emby.Server.Implementations.Library
             }
 
             // Optimize by querying against top level views
-            query.TopParentIds = parents.SelectMany(i => GetTopParentIdsForQuery(i, query.User)).ToArray();
-            query.AncestorIds = [];
-
-            // Prevent searching in all libraries due to empty filter
-            if (query.TopParentIds.Length == 0)
+            var topParentIds = parents.SelectMany(i => GetTopParentIdsForQuery(i, query.User)).ToArray();
+            if (topParentIds.Length == 0)
             {
-                query.TopParentIds = [Guid.NewGuid()];
+                return;
             }
+
+            query.TopParentIds = topParentIds;
+            query.AncestorIds = [];
         }
 
         public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery query)
@@ -1967,12 +1967,15 @@ namespace Emby.Server.Implementations.Library
             if (parents.All(i => i is ICollectionFolder || i is UserView))
             {
                 // Optimize by querying against top level views
-                query.TopParentIds = parents.SelectMany(i => GetTopParentIdsForQuery(i, query.User)).ToArray();
+                var topParentIds = parents.SelectMany(i => GetTopParentIdsForQuery(i, query.User)).ToArray();
 
-                // Prevent searching in all libraries due to empty filter
-                if (query.TopParentIds.Length == 0)
+                if (topParentIds.Length > 0)
                 {
-                    query.TopParentIds = [Guid.NewGuid()];
+                    query.TopParentIds = topParentIds;
+                }
+                else
+                {
+                    SetAncestorIds(query, parents);
                 }
             }
             else if (parents.Count == 1 && parents.First() is Folder folder
@@ -1996,17 +1999,22 @@ namespace Emby.Server.Implementations.Library
             }
             else
             {
-                // We need to be able to query from any arbitrary ancestor up the tree
-                query.AncestorIds = parents.SelectMany(i => i.GetIdsForAncestorQuery()).ToArray();
-
-                // Prevent searching in all libraries due to empty filter
-                if (query.AncestorIds.Length == 0)
-                {
-                    query.AncestorIds = [Guid.NewGuid()];
-                }
+                SetAncestorIds(query, parents);
             }
 
             query.Parent = null;
+        }
+
+        private static void SetAncestorIds(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents)
+        {
+            // We need to be able to query from any arbitrary ancestor up the tree
+            query.AncestorIds = parents.SelectMany(i => i.GetIdsForAncestorQuery()).ToArray();
+
+            // Prevent searching in all libraries due to empty filter
+            if (query.AncestorIds.Length == 0)
+            {
+                query.AncestorIds = [Guid.NewGuid()];
+            }
         }
 
         private void AddUserToQuery(InternalItemsQuery query, User user, bool allowExternalContent = true)
