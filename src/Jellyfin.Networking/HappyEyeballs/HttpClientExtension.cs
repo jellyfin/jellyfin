@@ -24,7 +24,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading;
@@ -105,7 +107,29 @@ public static class HttpClientExtension
 
         try
         {
-            await socket.ConnectAsync(context.DnsEndPoint, cancellationToken).ConfigureAwait(false);
+            var dnsEndPoint = context.DnsEndPoint;
+
+            // Resolve the destination ourselves and connect to the validated address so that the
+            // SSRF guard below cannot be bypassed via DNS rebinding (the connection targets the
+            // exact address that was checked). Resolving per address family also preserves the
+            // Happy Eyeballs fallback behaviour.
+            var addresses = await ResolveAddressesAsync(dnsEndPoint.Host, addressFamily, cancellationToken).ConfigureAwait(false);
+            if (addresses.Length == 0)
+            {
+                // Nothing to try for this family; let the other Happy Eyeballs attempt win.
+                throw new SocketException((int)SocketError.HostNotFound);
+            }
+
+            // Fail closed if any resolved address.
+            foreach (var address in addresses)
+            {
+                if (IsRestrictedAddress(address))
+                {
+                    throw new HttpRequestException($"Blocked attempt to connect to a restricted address '{address}' for host '{dnsEndPoint.Host}'.");
+                }
+            }
+
+            await socket.ConnectAsync(addresses, dnsEndPoint.Port, cancellationToken).ConfigureAwait(false);
             // The stream should take the ownership of the underlying socket,
             // closing it when it's disposed.
             return new NetworkStream(socket, ownsSocket: true);
@@ -115,5 +139,83 @@ public static class HttpClientExtension
             socket.Dispose();
             throw;
         }
+    }
+
+    private static async Task<IPAddress[]> ResolveAddressesAsync(string host, AddressFamily addressFamily, CancellationToken cancellationToken)
+    {
+        if (IPAddress.TryParse(host, out var literal))
+        {
+            // An IPv4-mapped literal is reachable from the IPv6 socket, everything else has to match.
+            var usable = literal.AddressFamily == addressFamily
+                || (addressFamily == AddressFamily.InterNetworkV6 && literal.AddressFamily == AddressFamily.InterNetwork);
+            return usable ? [literal] : [];
+        }
+
+        return await Dns.GetHostAddressesAsync(host, addressFamily, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Returns whether the address must not be connected to.
+    /// Unique local addresses (fc00::/7) and RFC1918 ranges are deliberately allowed so LAN tuners
+    /// and local metadata services keep working; only host-scoped and link-scoped destinations,
+    /// which is where the interesting server-side targets live, are rejected.
+    /// </summary>
+    /// <param name="address">The resolved destination address.</param>
+    /// <returns><c>true</c> if the address must not be connected to; otherwise <c>false</c>.</returns>
+    internal static bool IsRestrictedAddress(IPAddress address)
+    {
+        if (address.IsIPv4MappedToIPv6)
+        {
+            address = address.MapToIPv4();
+        }
+
+        if (address.AddressFamily == AddressFamily.InterNetwork)
+        {
+            var bytes = address.GetAddressBytes();
+            return bytes[0] switch
+            {
+                // "This network" (0.0.0.0/8). 0.0.0.0 reaches the local host on Linux and Windows.
+                0 => true,
+                // Loopback (127.0.0.0/8).
+                127 => true,
+                // Link-local (169.254.0.0/16), which contains the 169.254.169.254 cloud metadata endpoint.
+                169 when bytes[1] == 254 => true,
+                // Multicast (224.0.0.0/4) plus reserved and limited broadcast (240.0.0.0/4).
+                >= 224 => true,
+                _ => false
+            };
+        }
+
+        return IPAddress.IsLoopback(address)
+            || address.IsIPv6LinkLocal
+            || address.IsIPv6SiteLocal
+            || address.IsIPv6Multicast
+            || IsRestrictedEmbeddedIPv4(address);
+    }
+
+    private static bool IsRestrictedEmbeddedIPv4(IPAddress address)
+    {
+        var bytes = address.GetAddressBytes();
+
+        // 6to4 (2002::/16) carries the IPv4 address in the next four bytes.
+        if (bytes[0] == 0x20 && bytes[1] == 0x02)
+        {
+            return IsRestrictedAddress(new IPAddress(bytes.AsSpan(2, 4)));
+        }
+
+        // NAT64 well-known prefix (64:ff9b::/96).
+        if (bytes[0] == 0x00 && bytes[1] == 0x64 && bytes[2] == 0xFF && bytes[3] == 0x9B
+            && !bytes.AsSpan(4, 8).ContainsAnyExcept((byte)0))
+        {
+            return IsRestrictedAddress(new IPAddress(bytes.AsSpan(12, 4)));
+        }
+
+        // Deprecated IPv4-compatible form (::a.b.c.d). Also catches the unspecified address (::).
+        if (!bytes.AsSpan(0, 12).ContainsAnyExcept((byte)0))
+        {
+            return IsRestrictedAddress(new IPAddress(bytes.AsSpan(12, 4)));
+        }
+
+        return false;
     }
 }

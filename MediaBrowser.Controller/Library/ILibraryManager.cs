@@ -713,6 +713,15 @@ namespace MediaBrowser.Controller.Library
 
         Task RemoveVirtualFolder(string name, bool refreshLibrary);
 
+        /// <summary>
+        /// Resolves a caller-supplied virtual folder name to its fully-qualified path beneath the user
+        /// views root, guarding against path traversal and absolute-path injection.
+        /// </summary>
+        /// <param name="name">The caller-supplied virtual folder name.</param>
+        /// <returns>The fully-qualified, validated virtual folder path.</returns>
+        /// <exception cref="ArgumentException">The name is empty or resolves outside the user views root.</exception>
+        string GetValidatedVirtualFolderPath(string name);
+
         void AddMediaPath(string virtualFolderName, MediaPathInfo mediaPath);
 
         void UpdateMediaPath(string virtualFolderName, MediaPathInfo mediaPath);

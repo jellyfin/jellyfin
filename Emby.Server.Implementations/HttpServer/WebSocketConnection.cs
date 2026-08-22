@@ -37,6 +37,13 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         private readonly WebSocket _socket;
 
+        /// <summary>
+        /// Serializes sends. The WebSocket API permits only a single outstanding send at a time;
+        /// without this, an overlapping send (e.g. a broadcast racing the keep-alive timer) throws
+        /// <see cref="InvalidOperationException"/>.
+        /// </summary>
+        private readonly SemaphoreSlim _sendLock = new(1, 1);
+
         private bool _disposed = false;
 
         /// <summary>
@@ -102,14 +109,28 @@ namespace Emby.Server.Implementations.HttpServer
         public async Task SendAsync(OutboundWebSocketMessage message, CancellationToken cancellationToken)
         {
             var json = JsonSerializer.SerializeToUtf8Bytes(message, _jsonOptions);
-            await _socket.SendAsync(json, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
+            await SendBytesAsync(json, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
         public async Task SendAsync<T>(OutboundWebSocketMessage<T> message, CancellationToken cancellationToken)
         {
             var json = JsonSerializer.SerializeToUtf8Bytes(message, _jsonOptions);
-            await _socket.SendAsync(json, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
+            await SendBytesAsync(json, cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task SendBytesAsync(byte[] json, CancellationToken cancellationToken)
+        {
+            // Only one send may be in flight on a WebSocket at a time; serialize concurrent senders.
+            await _sendLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await _socket.SendAsync(json, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _sendLock.Release();
+            }
         }
 
         /// <inheritdoc />
@@ -274,6 +295,7 @@ namespace Emby.Server.Implementations.HttpServer
             if (dispose)
             {
                 _socket.Dispose();
+                _sendLock.Dispose();
             }
 
             _disposed = true;
@@ -299,6 +321,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             _socket.Dispose();
+            _sendLock.Dispose();
         }
     }
 }

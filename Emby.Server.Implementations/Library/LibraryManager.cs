@@ -3775,6 +3775,32 @@ namespace Emby.Server.Implementations.Library
             });
         }
 
+        /// <summary>
+        /// Resolves a caller-supplied virtual folder name to its path beneath the user views root,
+        /// guarding against path traversal and absolute-path injection. The name is first stripped of
+        /// path separators (matching <see cref="AddVirtualFolder"/>), then the resolved path is asserted
+        /// to be a direct child of the user views root before it is returned.
+        /// </summary>
+        /// <param name="name">The caller-supplied virtual folder name.</param>
+        /// <returns>The fully-qualified, validated virtual folder path.</returns>
+        public string GetValidatedVirtualFolderPath(string name)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
+            var sanitizedName = _fileSystem.GetValidFilename(name.Trim());
+            var fullRootPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(rootFolderPath));
+            var fullPath = Path.GetFullPath(Path.Combine(fullRootPath, sanitizedName));
+
+            // The sanitized name must resolve to a direct child of the user views root.
+            if (!string.Equals(Path.GetDirectoryName(fullPath), fullRootPath, StringComparison.Ordinal))
+            {
+                throw new ArgumentException("Invalid virtual folder name.", nameof(name));
+            }
+
+            return fullPath;
+        }
+
         public void AddMediaPath(string virtualFolderName, MediaPathInfo mediaPath)
         {
             AddMediaPathInternal(virtualFolderName, mediaPath, true);
@@ -3796,8 +3822,7 @@ namespace Emby.Server.Implementations.Library
                 throw new FileNotFoundException("The path does not exist.");
             }
 
-            var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
-            var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
+            var virtualFolderPath = GetValidatedVirtualFolderPath(virtualFolderName);
 
             CreateShortcut(virtualFolderPath, pathInfo);
 
@@ -3817,8 +3842,7 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentNullException.ThrowIfNull(mediaPath);
 
-            var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
-            var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
+            var virtualFolderPath = GetValidatedVirtualFolderPath(virtualFolderName);
 
             var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
 
@@ -3855,9 +3879,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(name));
             }
 
-            var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
-
-            var path = Path.Combine(rootFolderPath, name);
+            var path = GetValidatedVirtualFolderPath(name);
 
             if (!Directory.Exists(path))
             {
@@ -3922,8 +3944,7 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentException.ThrowIfNullOrEmpty(mediaPath);
 
-            var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
-            var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
+            var virtualFolderPath = GetValidatedVirtualFolderPath(virtualFolderName);
 
             if (!Directory.Exists(virtualFolderPath))
             {
