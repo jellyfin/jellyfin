@@ -122,12 +122,47 @@ public sealed class AuthorizationContextDeviceActivityTests : IDisposable
         deviceManager.Verify(m => m.UpdateDevice(It.IsAny<Device>()), Times.Never);
     }
 
-    private static HttpRequest CreateRequest()
+    [Fact]
+    public async Task GetAuthorizationInfo_FailedDeviceWrite_RetriesOnTheNextRequest()
+    {
+        var stale = DateTime.UtcNow.AddMinutes(-10);
+        var device = new Device(Guid.NewGuid(), "Jellyfin Web", "1.0.0", "Chrome", "device-1")
+        {
+            DateLastActivity = stale
+        };
+
+        var updates = 0;
+        var deviceManager = new Mock<IDeviceManager>();
+        deviceManager.Setup(m => m.GetDevices(It.IsAny<DeviceQuery>()))
+            .Returns(() => new QueryResult<Device>(new List<Device> { device }));
+        deviceManager.Setup(m => m.UpdateDevice(It.IsAny<Device>()))
+            .Returns(() => Interlocked.Increment(ref updates) == 1
+                ? Task.FromException(new InvalidOperationException("write failed"))
+                : Task.CompletedTask);
+
+        var sut = CreateAuthorizationContext(deviceManager.Object);
+
+        // The device is the cached instance, so the values a failed write left on it have to go back:
+        // the next request compares against that instance and would otherwise find nothing to update.
+        var first = await sut.GetAuthorizationInfo(CreateRequest("Firefox"));
+        Assert.True(first.IsAuthenticated);
+        Assert.Equal("Chrome", device.DeviceName);
+        Assert.Equal(stale, device.DateLastActivity);
+
+        var second = await sut.GetAuthorizationInfo(CreateRequest("Firefox"));
+        Assert.True(second.IsAuthenticated);
+        Assert.Equal("Firefox", device.DeviceName);
+        Assert.True(device.DateLastActivity > DateTime.UtcNow.AddMinutes(-1));
+        Assert.Equal(2, updates);
+    }
+
+    private static HttpRequest CreateRequest(string deviceName = "Chrome")
     {
         var context = new DefaultHttpContext();
-        // Client, Device and Version match the stored device so only the activity timestamp is stale.
+        // Client and Version match the stored device, so only the activity timestamp is stale unless
+        // the caller passes a device name the stored device does not have.
         context.Request.Headers.Authorization =
-            $"MediaBrowser Token=\"{Token}\", Client=\"Jellyfin Web\", Device=\"Chrome\", DeviceId=\"device-1\", Version=\"1.0.0\"";
+            $"MediaBrowser Token=\"{Token}\", Client=\"Jellyfin Web\", Device=\"{deviceName}\", DeviceId=\"device-1\", Version=\"1.0.0\"";
         return context.Request;
     }
 
@@ -141,7 +176,8 @@ public sealed class AuthorizationContextDeviceActivityTests : IDisposable
             new Mock<IUserManager>().Object,
             deviceManager,
             new Mock<IServerApplicationHost>().Object,
-            configurationManager.Object);
+            configurationManager.Object,
+            NullLogger<AuthorizationContext>.Instance);
     }
 
     private IDbContextFactory<JellyfinDbContext> CreateDbContextFactory()

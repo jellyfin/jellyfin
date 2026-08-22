@@ -15,6 +15,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Server.Implementations.Security
@@ -37,19 +38,22 @@ namespace Jellyfin.Server.Implementations.Security
         private readonly IDeviceManager _deviceManager;
         private readonly IServerApplicationHost _serverApplicationHost;
         private readonly IServerConfigurationManager _configurationManager;
+        private readonly ILogger<AuthorizationContext> _logger;
 
         public AuthorizationContext(
             IDbContextFactory<JellyfinDbContext> jellyfinDb,
             IUserManager userManager,
             IDeviceManager deviceManager,
             IServerApplicationHost serverApplicationHost,
-            IServerConfigurationManager configurationManager)
+            IServerConfigurationManager configurationManager,
+            ILogger<AuthorizationContext> logger)
         {
             _jellyfinDbProvider = jellyfinDb;
             _userManager = userManager;
             _deviceManager = deviceManager;
             _serverApplicationHost = serverApplicationHost;
             _configurationManager = configurationManager;
+            _logger = logger;
         }
 
         public Task<AuthorizationInfo> GetAuthorizationInfo(HttpContext requestContext)
@@ -146,6 +150,12 @@ namespace Jellyfin.Server.Implementations.Security
                 authInfo.IsAuthenticated = true;
                 var updateToken = false;
 
+                // The device is the instance the manager caches, so everything below mutates shared
+                // state before it is written.
+                (string Previous, string Stamped)? deviceNameChange = null;
+                (string Previous, string Stamped)? appVersionChange = null;
+                (DateTime Previous, DateTime Stamped)? activityChange = null;
+
                 // TODO: Remove these checks for IsNullOrWhiteSpace
                 if (string.IsNullOrWhiteSpace(authInfo.Client))
                 {
@@ -169,6 +179,7 @@ namespace Jellyfin.Server.Implementations.Security
                     if (allowTokenInfoUpdate)
                     {
                         updateToken = true;
+                        deviceNameChange = (device.DeviceName, authInfo.Device);
                         device.DeviceName = authInfo.Device;
                     }
                 }
@@ -182,16 +193,17 @@ namespace Jellyfin.Server.Implementations.Security
                     if (allowTokenInfoUpdate)
                     {
                         updateToken = true;
+                        appVersionChange = (device.AppVersion, authInfo.Version);
                         device.AppVersion = authInfo.Version;
                     }
                 }
 
-                // The device is the instance the manager caches.
                 lock (_activityLock)
                 {
                     var now = DateTime.UtcNow;
                     if (now - device.DateLastActivity > _activityUpdateInterval)
                     {
+                        activityChange = (device.DateLastActivity, now);
                         device.DateLastActivity = now;
                         updateToken = true;
                     }
@@ -201,7 +213,41 @@ namespace Jellyfin.Server.Implementations.Security
 
                 if (updateToken)
                 {
-                    await _deviceManager.UpdateDevice(device).ConfigureAwait(false);
+                    try
+                    {
+                        await _deviceManager.UpdateDevice(device).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Every rollback is conditional: a later request may already have moved the
+                        // value on, and that one owns it.
+                        if (deviceNameChange is { } name
+                            && string.Equals(device.DeviceName, name.Stamped, StringComparison.Ordinal))
+                        {
+                            device.DeviceName = name.Previous;
+                        }
+
+                        if (appVersionChange is { } appVersion
+                            && string.Equals(device.AppVersion, appVersion.Stamped, StringComparison.Ordinal))
+                        {
+                            device.AppVersion = appVersion.Previous;
+                        }
+
+                        if (activityChange is { } activity)
+                        {
+                            lock (_activityLock)
+                            {
+                                if (device.DateLastActivity == activity.Stamped)
+                                {
+                                    device.DateLastActivity = activity.Previous;
+                                }
+                            }
+                        }
+
+                        // Refreshing the device is bookkeeping for an already authorized request, so
+                        // a failed write must not turn that request into an error.
+                        _logger.LogWarning(ex, "Failed to update device {DeviceId}.", device.DeviceId);
+                    }
                 }
             }
             else

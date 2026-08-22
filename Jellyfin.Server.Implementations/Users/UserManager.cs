@@ -160,24 +160,44 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task RecordUserActivityAsync(Guid userId, DateTime activityDate)
         {
-            if (!ClaimActivityWrite(userId, activityDate))
+            if (!ClaimActivityWrite(userId, activityDate, out var previousWrite))
             {
                 return;
             }
 
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            try
             {
-                await dbContext.Users
-                    .Where(u => u.Id == userId)
-                    .ExecuteUpdateAsync(e => e.SetProperty(f => f.LastActivityDate, activityDate))
-                    .ConfigureAwait(false);
+                var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+                await using (dbContext.ConfigureAwait(false))
+                {
+                    await dbContext.Users
+                        .Where(u => u.Id == userId)
+                        .ExecuteUpdateAsync(e => e.SetProperty(f => f.LastActivityDate, activityDate))
+                        .ConfigureAwait(false);
+                }
             }
+            catch (Exception ex)
+            {
+                // The claim was taken before the write, so release it.
+                if (previousWrite.HasValue)
+                {
+                    _lastActivityWrite.TryUpdate(userId, previousWrite.Value, activityDate);
+                }
+                else
+                {
+                    _lastActivityWrite.TryRemove(new KeyValuePair<Guid, DateTime>(userId, activityDate));
+                }
 
-            InvalidateUser(userId);
+                // Recording activity is best effort and must not fail the request.
+                _logger.LogWarning(ex, "Failed to record last activity date for user {UserId}.", userId);
+            }
+            finally
+            {
+                InvalidateUser(userId);
+            }
         }
 
-        private bool ClaimActivityWrite(Guid userId, DateTime activityDate)
+        private bool ClaimActivityWrite(Guid userId, DateTime activityDate, out DateTime? previousWrite)
         {
             while (true)
             {
@@ -185,6 +205,7 @@ namespace Jellyfin.Server.Implementations.Users
                 {
                     if (_lastActivityWrite.TryAdd(userId, activityDate))
                     {
+                        previousWrite = null;
                         return true;
                     }
 
@@ -193,11 +214,13 @@ namespace Jellyfin.Server.Implementations.Users
 
                 if (activityDate - written < ActivityWriteInterval)
                 {
+                    previousWrite = null;
                     return false;
                 }
 
                 if (_lastActivityWrite.TryUpdate(userId, activityDate, written))
                 {
+                    previousWrite = written;
                     return true;
                 }
             }

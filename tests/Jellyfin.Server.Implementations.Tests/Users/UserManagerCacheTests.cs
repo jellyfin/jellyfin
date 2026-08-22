@@ -37,6 +37,8 @@ public sealed class UserManagerCacheTests : IDisposable
     private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly UserManager _userManager;
 
+    private bool _writesFail;
+
     public UserManagerCacheTests()
     {
         _connection = new SqliteConnection("Data Source=:memory:");
@@ -169,6 +171,49 @@ public sealed class UserManagerCacheTests : IDisposable
     }
 
     [Fact]
+    public async Task RecordUserActivityAsync_FailedWrite_DoesNotConsumeTheWriteSlot()
+    {
+        var created = await _userManager.CreateUserAsync("retry-user");
+        var first = DateTime.UtcNow;
+
+        _writesFail = true;
+        // Best effort: the request that happened to trigger the write must not fail with it.
+        await _userManager.RecordUserActivityAsync(created.Id, first);
+        _writesFail = false;
+
+        Assert.Null(_userManager.GetUserById(created.Id)!.LastActivityDate);
+
+        // And the slot the failed write claimed has to be free again, or the next request inside the
+        // interval is throttled against a timestamp that was never stored.
+        var second = first.AddSeconds(5);
+        await _userManager.RecordUserActivityAsync(created.Id, second);
+
+        var stored = _userManager.GetUserById(created.Id);
+        Assert.Equal(second, stored!.LastActivityDate!.Value, TimeSpan.FromMilliseconds(500));
+    }
+
+    [Fact]
+    public async Task RecordUserActivityAsync_FailedWriteAfterASuccess_RestoresTheStoredDate()
+    {
+        var created = await _userManager.CreateUserAsync("retry-stale-user");
+        var first = DateTime.UtcNow;
+        await _userManager.RecordUserActivityAsync(created.Id, first);
+
+        _writesFail = true;
+        var failed = first.AddMinutes(2);
+        await _userManager.RecordUserActivityAsync(created.Id, failed);
+        _writesFail = false;
+
+        // The claim went back to the date that is actually stored, so the next request is stale
+        // enough to write instead of waiting out another interval from a date nothing wrote.
+        var retry = failed.AddSeconds(5);
+        await _userManager.RecordUserActivityAsync(created.Id, retry);
+
+        var stored = _userManager.GetUserById(created.Id);
+        Assert.Equal(retry, stored!.LastActivityDate!.Value, TimeSpan.FromMilliseconds(500));
+    }
+
+    [Fact]
     public async Task RenameUser_MakesTheNewNameVisible()
     {
         var created = await _userManager.CreateUserAsync("old-name");
@@ -234,7 +279,10 @@ public sealed class UserManagerCacheTests : IDisposable
     {
         var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
         factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
-        factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>())).ReturnsAsync(CreateDbContext);
+        factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>()))
+            .Returns(() => _writesFail
+                ? Task.FromException<JellyfinDbContext>(new InvalidOperationException("database unavailable"))
+                : Task.FromResult(CreateDbContext()));
 
         return factory.Object;
     }
