@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
@@ -70,6 +71,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
         /// <param name="mediaAttachmentRepository">Instance of the <see cref="IMediaAttachmentRepository"/> interface.</param>
         /// <param name="mediaStreamRepository">Instance of the <see cref="IMediaStreamRepository"/> interface.</param>
+        /// <param name="pathManager">Instance of the <see cref="IPathManager"/> interface.</param>
         public ProbeProvider(
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
@@ -84,7 +86,8 @@ namespace MediaBrowser.Providers.MediaInfo
             NamingOptions namingOptions,
             ILyricManager lyricManager,
             IMediaAttachmentRepository mediaAttachmentRepository,
-            IMediaStreamRepository mediaStreamRepository)
+            IMediaStreamRepository mediaStreamRepository,
+            IPathManager pathManager)
         {
             _logger = loggerFactory.CreateLogger<ProbeProvider>();
             _audioResolver = new AudioResolver(loggerFactory.CreateLogger<AudioResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
@@ -114,7 +117,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 _lyricResolver,
                 lyricManager,
                 mediaStreamRepository,
-                chapterManager);
+                chapterManager,
+                pathManager);
         }
 
         /// <inheritdoc />
