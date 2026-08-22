@@ -108,5 +108,18 @@
     "CleanupUserDataTask": "Задача очистки пользовательских данных",
     "CleanupUserDataTaskDescription": "Очищает все пользовательские данные (состояние просмотра, статус избранного и т.д.) с медиа, отсутствующих по меньшей мере в течение 90 дней.",
     "Original": "Оригинальный",
-    "LyricDownloadFailureFromForItem": "Не получилось скачать текст песни с {0} для {1}"
+    "LyricDownloadFailureFromForItem": "Не получилось скачать текст песни с {0} для {1}",
+    "NameExtraBehindTheScenes": "За кадром",
+    "NameExtraClip": "Отрывок",
+    "NameExtraDeletedScene": "Удалённая сцена",
+    "NameExtraFeaturette": "Короткометражка",
+    "NameExtraInterview": "Интервью",
+    "NameExtraSample": "Образец",
+    "NameExtraScene": "Сцена",
+    "NameExtraThemeSong": "Заглавная песня",
+    "NameExtraThemeVideo": "Заглавное видео",
+    "NameExtraTrailer": "Трейлер",
+    "NameExtraUnknown": "Дополнительный материал",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraShort": "Короткометражка"
 }

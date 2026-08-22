@@ -412,6 +412,13 @@ namespace Emby.Server.Implementations.Library
             }
 
             _persistenceService.DeleteItem([.. pathMaps.Select(f => f.Item.Id)]);
+
+            // Evict the deleted items from the cache and announce each removal.
+            foreach (var (item, _, _) in pathMaps)
+            {
+                _cache.TryRemove(item.Id, out _);
+                ReportItemRemoved(item, item.GetOwner() ?? item.GetParent());
+            }
         }
 
         public void DeleteItem(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem)
@@ -609,6 +616,12 @@ namespace Emby.Server.Implementations.Library
             {
                 folder.Children = null;
                 folder.UserData = null;
+            }
+
+            // Announce the descendants before the item itself.
+            foreach (var child in children)
+            {
+                ReportItemRemoved(child, item);
             }
 
             ReportItemRemoved(item, parent);
@@ -2232,6 +2245,12 @@ namespace Emby.Server.Implementations.Library
             }
 
             return [];
+        }
+
+        /// <inheritdoc />
+        public IReadOnlySet<Guid> GetItemIdsWithAlternateVersions(IReadOnlyList<Guid> itemIds)
+        {
+            return _linkedChildrenService.GetItemIdsWithAlternateVersions(itemIds);
         }
 
         /// <inheritdoc />
