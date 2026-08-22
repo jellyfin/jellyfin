@@ -107,6 +107,36 @@ namespace MediaBrowser.Controller.Library
         Person? GetPerson(string name);
 
         /// <summary>
+        /// Gets a Person, creating and saving it if it does not exist yet.
+        /// </summary>
+        /// <param name="name">The name of the person.</param>
+        /// <returns>The person, or <c>null</c> if it could not be created.</returns>
+        Person? GetOrCreatePerson(string name);
+
+        /// <summary>
+        /// Gets the item a credit belongs to, creating it when the library does not hold it yet.
+        /// </summary>
+        /// <param name="name">The credited name.</param>
+        /// <param name="kind">The kind of credit, which decides what it belongs to.</param>
+        /// <returns>The item, or <c>null</c> if it could not be created.</returns>
+        BaseItem? GetOrCreateCreditItem(string name, PersonKind kind);
+
+        /// <summary>
+        /// Gets the credits that are not linked to an item yet, by name and kind.
+        /// </summary>
+        /// <returns>The list of credits whose item is still unknown.</returns>
+        IReadOnlyList<PersonInfo> GetUnlinkedCredits();
+
+        /// <summary>
+        /// Links the credits of a name and kind that have no item yet to the given one.
+        /// </summary>
+        /// <param name="name">The credited name.</param>
+        /// <param name="kind">The kind of credit, which decides what it belongs to.</param>
+        /// <param name="itemId">The item to link the credits to.</param>
+        /// <returns>The number of credits that were linked.</returns>
+        int LinkCreditsToItem(string name, PersonKind kind, Guid itemId);
+
+        /// <summary>
         /// Finds the by path.
         /// </summary>
         /// <param name="path">The path.</param>

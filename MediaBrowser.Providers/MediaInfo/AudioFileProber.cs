@@ -298,27 +298,34 @@ namespace MediaBrowser.Providers.MediaInfo
                 else
                 {
                     // Standard music track handling
-                    foreach (var albumArtist in albumArtists)
+                    var albumArtistIds = GetAlignedMusicBrainzIds(track, libraryOptions, albumArtists.Length, "MUSICBRAINZ_ALBUMARTISTID", "MusicBrainz Album Artist Id");
+                    var performerIds = GetAlignedMusicBrainzIds(track, libraryOptions, performers.Length, "MUSICBRAINZ_ARTISTID", "MusicBrainz Artist Id");
+
+                    for (var i = 0; i < albumArtists.Length; i++)
                     {
-                        if (!string.IsNullOrWhiteSpace(albumArtist))
+                        if (!string.IsNullOrWhiteSpace(albumArtists[i]))
                         {
-                            PeopleHelper.AddPerson(people, new PersonInfo
+                            var person = new PersonInfo
                             {
-                                Name = albumArtist,
+                                Name = albumArtists[i],
                                 Type = PersonKind.AlbumArtist
-                            });
+                            };
+                            person.TrySetProviderId(MetadataProvider.MusicBrainzAlbumArtist, albumArtistIds?[i]);
+                            PeopleHelper.AddPerson(people, person);
                         }
                     }
 
-                    foreach (var performer in performers)
+                    for (var i = 0; i < performers.Length; i++)
                     {
-                        if (!string.IsNullOrWhiteSpace(performer))
+                        if (!string.IsNullOrWhiteSpace(performers[i]))
                         {
-                            PeopleHelper.AddPerson(people, new PersonInfo
+                            var person = new PersonInfo
                             {
-                                Name = performer,
+                                Name = performers[i],
                                 Type = PersonKind.Artist
-                            });
+                            };
+                            person.TrySetProviderId(MetadataProvider.MusicBrainzArtist, performerIds?[i]);
+                            PeopleHelper.AddPerson(people, person);
                         }
                     }
 
@@ -588,7 +595,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private List<string> SplitWithCustomDelimiter(string val, char[] tagDelimiters, string[] whitelist)
+        private static List<string> SplitWithCustomDelimiter(string val, char[] tagDelimiters, string[] whitelist)
         {
             var items = new List<string>();
             var temp = val;
@@ -612,6 +619,53 @@ namespace MediaBrowser.Providers.MediaInfo
             items.AddRange(items2);
 
             return items;
+        }
+
+        private string[]? GetAlignedMusicBrainzIds(Track track, MediaBrowser.Model.Configuration.LibraryOptions libraryOptions, int artistCount, string tagName, string alternateTagName)
+        {
+            if (artistCount == 0
+                || (!TryGetSanitizedAdditionalFields(track, tagName, out var tag)
+                    && !TryGetSanitizedAdditionalFields(track, alternateTagName, out tag))
+                || string.IsNullOrEmpty(tag))
+            {
+                return null;
+            }
+
+            var ids = AlignMusicBrainzIds(
+                tag,
+                artistCount,
+                libraryOptions.UseCustomTagDelimiters ? libraryOptions.GetCustomTagDelimiters() : null,
+                libraryOptions.DelimiterWhitelist);
+
+            if (ids is null)
+            {
+                _logger.LogDebug("Ignoring {Tag} for {Path}: it does not list one id per artist", tagName, track.Path);
+            }
+
+            return ids;
+        }
+
+        // The tag lists one id per artist in the same order as the name tag. When the counts disagree
+        // nothing can say which id belongs to which artist, and guessing merges two artists permanently.
+        internal static string[]? AlignMusicBrainzIds(string tag, int artistCount, char[]? tagDelimiters, string[] whitelist)
+        {
+            if (artistCount == 0 || string.IsNullOrEmpty(tag))
+            {
+                return null;
+            }
+
+            var ids = tag.Split(InternalValueSeparator);
+            if (tagDelimiters is not null)
+            {
+                ids = ids.SelectMany(i => SplitWithCustomDelimiter(i, tagDelimiters, whitelist)).ToArray();
+            }
+
+            if (ids.Length != artistCount || ids.Any(string.IsNullOrWhiteSpace))
+            {
+                return null;
+            }
+
+            return ids;
         }
 
         // MusicBrainz IDs are multi-value tags, so we need to split them

@@ -115,8 +115,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
 
                 var item = new Person
                 {
-                    // Take name from incoming info, don't rename the person
-                    // TODO: This should go in PersonMetadataService, not each person provider
+                    // PersonMetadataService enforces this for every provider; explicit here.
                     Name = info.Name,
                     HomePageUrl = person.Homepage,
                     Overview = person.Biography,

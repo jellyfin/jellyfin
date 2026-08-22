@@ -156,6 +156,11 @@ namespace Jellyfin.Extensions
         /// </summary>
         /// <param name="value">The string to normalize.</param>
         /// <returns>The normalized string, or the original if null/whitespace.</returns>
+        /// <remarks>
+        /// The result is already lowercased and transliterated, so two clean values are compared with
+        /// <see cref="StringComparison.Ordinal"/>. Folding case again would accept pairs that the
+        /// database, which compares the stored clean value, treats as different.
+        /// </remarks>
         public static string GetCleanValue(this string value)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -166,13 +171,31 @@ namespace Jellyfin.Extensions
             // Remove diacritics and convert to lowercase
             var cleaned = value.RemoveDiacritics().ToLowerInvariant();
 
-            // Replace all punctuation and special characters with spaces
-            cleaned = Regex.Replace(cleaned, @"[^\p{L}\p{N}\s]", " ");
+            // Everything that is not a letter or a digit separates words, so punctuation and whitespace
+            // alike collapse into a single space and leading/trailing runs drop out. Same result the two
+            // regex passes gave, written out because this runs for every credit comparison and for every
+            // name that ends up in a Clean* column.
+            var builder = new StringBuilder(cleaned.Length);
+            var pendingSeparator = false;
+            foreach (var c in cleaned)
+            {
+                if (char.IsLetter(c) || char.IsNumber(c))
+                {
+                    if (pendingSeparator && builder.Length > 0)
+                    {
+                        builder.Append(' ');
+                    }
 
-            // Collapse multiple spaces into single space and trim
-            cleaned = Regex.Replace(cleaned, @"\s+", " ").Trim();
+                    pendingSeparator = false;
+                    builder.Append(c);
+                }
+                else
+                {
+                    pendingSeparator = true;
+                }
+            }
 
-            return cleaned;
+            return builder.ToString();
         }
 
         /// <summary>
