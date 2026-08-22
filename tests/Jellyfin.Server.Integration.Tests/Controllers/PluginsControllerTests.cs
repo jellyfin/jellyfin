@@ -9,10 +9,10 @@ using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers;
 
-public sealed class PluginsControllerTests : IClassFixture<JellyfinApplicationFactory>
+[Collection("Controller collection")]
+public sealed class PluginsControllerTests
 {
     private readonly JellyfinApplicationFactory _factory;
-    private static string? _accessToken;
 
     public PluginsControllerTests(JellyfinApplicationFactory factory)
     {
@@ -33,7 +33,7 @@ public sealed class PluginsControllerTests : IClassFixture<JellyfinApplicationFa
     public async Task GetPlugins_Authorized_ReturnsCorrectResponse()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var response = await client.GetAsync("/Plugins", TestContext.Current.CancellationToken);
 
