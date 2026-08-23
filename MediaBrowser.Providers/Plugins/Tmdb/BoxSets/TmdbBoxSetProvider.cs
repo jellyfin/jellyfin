@@ -114,7 +114,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                 }
             }
 
-            var result = new MetadataResult<BoxSet>();
+            var result = new MetadataResult<BoxSet>
+            {
+                ResultLanguage = language
+            };
 
             if (tmdbId > 0)
             {

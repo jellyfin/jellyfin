@@ -204,7 +204,7 @@ public class ComicBookInfoProvider : IComicProvider
     {
         try
         {
-            return CultureInfo.GetCultureInfo(language).DisplayName;
+            return CultureInfo.GetCultureInfo(language).TwoLetterISOLanguageName;
         }
         catch (CultureNotFoundException)
         {
