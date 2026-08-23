@@ -209,7 +209,10 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (hasRefreshedMetadata && hasRefreshedImages)
+            var attemptedFetch = refreshOptions.MetadataRefreshMode > MetadataRefreshMode.ValidationOnly
+                || refreshOptions.ImageRefreshMode > MetadataRefreshMode.ValidationOnly;
+
+            if (hasRefreshedMetadata && hasRefreshedImages && attemptedFetch)
             {
                 item.DateLastRefreshed = DateTime.UtcNow;
                 updateType |= item.OnMetadataChanged();
