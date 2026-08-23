@@ -1,3 +1,4 @@
+using Emby.Server.Implementations.Migrations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Server.Implementations.Item;
-using Jellyfin.Server.Migrations.Stages;
+using Emby.Server.Implementations.Migrations.Stages;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;

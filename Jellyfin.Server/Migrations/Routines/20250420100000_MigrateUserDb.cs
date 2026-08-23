@@ -1,3 +1,4 @@
+using Emby.Server.Implementations.Migrations;
 using System;
 using System.IO;
 using Emby.Server.Implementations.Data;

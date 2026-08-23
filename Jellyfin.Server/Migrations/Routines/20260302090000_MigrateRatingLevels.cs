@@ -1,3 +1,4 @@
+using Emby.Server.Implementations.Migrations;
 using System.Linq;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Server.ServerSetupApp;
