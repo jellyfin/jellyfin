@@ -243,8 +243,8 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
 
             var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
             {
-                ImageRefreshMode = hasImage ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default,
-                MetadataRefreshMode = hasOverview ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default
+                ImageRefreshMode = hasImage ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.FullRefresh,
+                MetadataRefreshMode = hasOverview ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.FullRefresh
             };
 
             await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
