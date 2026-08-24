@@ -420,41 +420,40 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 return;
             }
 
-            if (!string.IsNullOrWhiteSpace(result.Director))
-            {
-                var person = new PersonInfo
-                {
-                    Name = result.Director.Trim(),
-                    Type = PersonKind.Director
-                };
+            AddPeople(itemResult, result.Director, PersonKind.Director);
+            AddPeople(itemResult, result.Writer, PersonKind.Writer);
+            AddPeople(itemResult, result.Actors, PersonKind.Actor);
+        }
 
-                itemResult.AddPerson(person);
+        internal static void AddPeople<T>(MetadataResult<T> itemResult, string credits, PersonKind type)
+            where T : BaseItem
+        {
+            if (string.IsNullOrWhiteSpace(credits))
+            {
+                return;
             }
 
-            if (!string.IsNullOrWhiteSpace(result.Writer))
+            foreach (var credit in credits.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
-                var person = new PersonInfo
+                // OMDb annotates the credited role in parentheses, e.g. "Mari Okada (screenplay)". The same
+                // person can be credited more than once this way, so strip it and let AddPerson deduplicate.
+                var name = credit;
+                var annotation = name.IndexOf('(', StringComparison.Ordinal);
+                if (annotation >= 0)
                 {
-                    Name = result.Writer.Trim(),
-                    Type = PersonKind.Writer
-                };
-
-                itemResult.AddPerson(person);
-            }
-
-            if (!string.IsNullOrWhiteSpace(result.Actors))
-            {
-                var actorList = result.Actors.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                foreach (var actor in actorList)
-                {
-                    var person = new PersonInfo
-                    {
-                        Name = actor,
-                        Type = PersonKind.Actor
-                    };
-
-                    itemResult.AddPerson(person);
+                    name = name[..annotation].TrimEnd();
                 }
+
+                if (string.IsNullOrEmpty(name))
+                {
+                    continue;
+                }
+
+                itemResult.AddPerson(new PersonInfo
+                {
+                    Name = name,
+                    Type = type
+                });
             }
         }
 
