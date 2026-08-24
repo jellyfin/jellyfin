@@ -27,6 +27,9 @@ namespace MediaBrowser.Providers.Plugins.Omdb
     /// <summary>Provider for OMDB service.</summary>
     public class OmdbProvider
     {
+        /// <summary>Generational suffixes that OMDb separates from the name with a comma.</summary>
+        private static readonly string[] NameSuffixes = ["Jr", "Jnr", "Sr", "Snr", "II", "III", "IV", "V"];
+
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -425,6 +428,11 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             AddPeople(itemResult, result.Actors, PersonKind.Actor);
         }
 
+        /// <summary>Adds the people from a comma separated OMDb credit list.</summary>
+        /// <typeparam name="T">The item type.</typeparam>
+        /// <param name="itemResult">The metadata result to add the people to.</param>
+        /// <param name="credits">The comma separated OMDb credit list.</param>
+        /// <param name="type">The kind of person each credit describes.</param>
         internal static void AddPeople<T>(MetadataResult<T> itemResult, string credits, PersonKind type)
             where T : BaseItem
         {
@@ -432,6 +440,8 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             {
                 return;
             }
+
+            var names = new List<string>();
 
             foreach (var credit in credits.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
@@ -444,17 +454,37 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     name = name[..annotation].TrimEnd();
                 }
 
-                if (string.IsNullOrEmpty(name))
+                if (name.Length == 0)
                 {
                     continue;
                 }
 
+                // A generational suffix is separated from the name it belongs to by the same comma the list
+                // uses, e.g. "Jack Salvatore, Jr.", so it has to be joined back instead of becoming a credit.
+                if (names.Count > 0 && IsNameSuffix(name))
+                {
+                    names[^1] = names[^1] + ", " + name;
+                    continue;
+                }
+
+                names.Add(name);
+            }
+
+            foreach (var name in names)
+            {
                 itemResult.AddPerson(new PersonInfo
                 {
                     Name = name,
                     Type = type
                 });
             }
+        }
+
+        private static bool IsNameSuffix(string value)
+        {
+            var suffix = value.EndsWith('.') ? value[..^1] : value;
+
+            return NameSuffixes.Contains(suffix, StringComparer.OrdinalIgnoreCase);
         }
 
         private static bool IsConfiguredForEnglish(BaseItem item, string language)

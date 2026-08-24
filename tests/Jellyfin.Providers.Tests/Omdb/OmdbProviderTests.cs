@@ -35,6 +35,22 @@ namespace Jellyfin.Providers.Tests.Omdb
         }
 
         [Theory]
+        [InlineData("Jack Salvatore, Jr.", "Jack Salvatore, Jr.")]
+        [InlineData("Efrem Zimbalist, Jr., Tom Hanks", "Efrem Zimbalist, Jr.|Tom Hanks")]
+        [InlineData("Tom Hanks, Sammy Davis, Jr", "Tom Hanks|Sammy Davis, Jr")]
+        [InlineData("Harold Ramis, Ken Griffey, III (voice)", "Harold Ramis|Ken Griffey, III")]
+        [InlineData("Robert Downey Jr., Gwyneth Paltrow", "Robert Downey Jr.|Gwyneth Paltrow")]
+        [InlineData("Jr., Tom Hanks", "Jr.|Tom Hanks")]
+        public void AddPeople_GenerationalSuffix_StaysWithItsName(string credits, string expected)
+        {
+            var result = new MetadataResult<Movie>();
+
+            OmdbProvider.AddPeople(result, credits, PersonKind.Actor);
+
+            Assert.Equal(expected.Split('|'), result.People!.Select(p => p.Name));
+        }
+
+        [Theory]
         [InlineData(null)]
         [InlineData("")]
         [InlineData("   ")]
