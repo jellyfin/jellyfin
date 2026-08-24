@@ -91,8 +91,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string? tmdbId);
 
-            var seriesTmdbId = Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture);
-            if (seriesTmdbId <= 0)
+            if (!TmdbUtils.TryParseTmdbId(tmdbId, out var seriesTmdbId))
             {
                 return metadataResult;
             }

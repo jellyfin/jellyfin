@@ -87,7 +87,7 @@
     "TaskCleanActivityLog": "Išvalyti veiklos žurnalą",
     "Undefined": "Neapibrėžtas",
     "Forced": "Priverstinis",
-    "Default": "Numatytas",
+    "Default": "Numatytasis",
     "TaskCleanActivityLogDescription": "Ištrina senesnius nei nustatytas amžius veiklos žurnalo įrašus.",
     "TaskOptimizeDatabase": "Optimizuoti duomenų bazę",
     "TaskKeyframeExtractorDescription": "Iš vaizdo įrašo paruošia reikšminius kadrus, kad būtų sukuriamas tikslenis HLS grojaraštis. Šios užduoties vykdymas gali ilgai užtrukti.",
