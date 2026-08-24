@@ -2527,9 +2527,15 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
 
-                if (!File.Exists(image.Path))
+                if (string.IsNullOrEmpty(image.Path) || !File.Exists(image.Path))
                 {
-                    _logger.LogWarning("Image not found at {ImagePath}", image.Path);
+                    _logger.LogWarning(
+                        "{ImageType} image for {ItemName} ({ItemId}) not found at \"{ImagePath}\", source was {SourcePath}",
+                        img.Type,
+                        item.Name,
+                        item.Id,
+                        image.Path,
+                        img.Path);
                     continue;
                 }
 
@@ -3603,7 +3609,20 @@ namespace Emby.Server.Implementations.Library
 
                     await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
-                    return item.GetImageInfo(image.Type, imageIndex);
+                    var localImage = item.GetImageInfo(image.Type, imageIndex);
+                    if (localImage is null)
+                    {
+                        throw new InvalidOperationException(string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Downloaded {0} image {1} from {2} is not attached to {3} ({4})",
+                            image.Type,
+                            imageIndex,
+                            url,
+                            item.Name,
+                            item.Id));
+                    }
+
+                    return localImage;
                 }
                 catch (HttpRequestException ex)
                 {
@@ -3625,7 +3644,13 @@ namespace Emby.Server.Implementations.Library
                 await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
             }
 
-            throw new InvalidOperationException("Unable to convert any images to local");
+            throw new InvalidOperationException(string.Format(
+                CultureInfo.InvariantCulture,
+                "Unable to convert any {0} image url in \"{1}\" to a local file for {2} ({3})",
+                image.Type,
+                image.Path,
+                item.Name,
+                item.Id));
         }
 
         public async Task AddVirtualFolder(string name, CollectionTypeOptions? collectionType, LibraryOptions options, bool refreshLibrary)
