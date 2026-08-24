@@ -426,9 +426,21 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
         var canRemoveUnrootedItems = inaccessiblePaths.Count == 0;
         var skippedUnrootedItems = 0;
 
+        _logger.LogInformation("Checking {Total} items for missing files...", itemsWithPaths.Count);
+
         var staleIds = new List<Guid>();
+        var checkedItems = 0;
+        const int progressLogStep = 10000;
         foreach (var item in itemsWithPaths)
         {
+            // One filesystem stat per item, so a large library spends minutes in this loop.
+            if (checkedItems > 0 && checkedItems % progressLogStep == 0)
+            {
+                _logger.LogInformation("Checking items for missing files: {Checked}/{Total}", checkedItems, itemsWithPaths.Count);
+            }
+
+            checkedItems++;
+
             // Expand virtual path placeholders (%AppDataPath%, %MetadataPath%) to real paths
             var path = _appHost.ExpandVirtualPath(item.Path!);
 
@@ -480,7 +492,7 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
             return;
         }
 
-        _logger.LogInformation("Found {Count} stale items to remove.", staleIds.Count);
+        _logger.LogInformation("Found {Count} stale items to remove, resolving them for deletion...", staleIds.Count);
 
         var itemsToDelete = staleIds
             .Select(id => _libraryManager.GetItemById(id))
@@ -500,8 +512,17 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
         var options = new DeleteOptions { DeleteFileLocation = false, DeleteFromExternalProvider = false };
         var deleted = 0;
+        var processed = 0;
+        const int progressLogStep = 500;
         foreach (var item in items)
         {
+            if (processed > 0 && processed % progressLogStep == 0)
+            {
+                _logger.LogInformation("Deleting items: {Processed}/{Total}", processed, items.Count);
+            }
+
+            processed++;
+
             try
             {
                 _libraryManager.DeleteItem(item, options);

@@ -199,9 +199,9 @@ internal class JellyfinMigrationService
             while (true)
             {
                 // A single migration can change which migrations still apply: IMigrator.MigrateAsync treats its argument as the
-                // state to end up in, so it reverts everything applied after it, and a reverted migration can take code migrations
-                // with it (AddNormalizedUsername.Down drops the UpdateNormalizedUsername history row). Anything computed before
-                // that point is stale, so only ever run the next migration and then work out the pending set again.
+                // state to end up in, so one call can apply several database migrations at once, and a code migration can add or
+                // remove history rows. Anything computed before that point is stale, so only ever run the next migration and then
+                // work out the pending set again.
                 var appliedMigrations = await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false);
                 var pendingCodeMigrations = migrationStage
                     .Where(e => appliedMigrations.All(f => f.MigrationId != e.BuildCodeMigrationId()))
@@ -211,8 +211,23 @@ internal class JellyfinMigrationService
                 (string Key, InternalDatabaseMigration Migration)[] pendingDatabaseMigrations = [];
                 if (stage is JellyfinMigrationStageTypes.CoreInitialisation)
                 {
+                    // IMigrator.MigrateAsync reverts every applied migration that sorts after its target. A pending migration
+                    // older than an applied one is normal whenever branches with interleaved timestamps get merged, and reverting
+                    // is never what we want there: it drops schema and data, and SQLite cannot even generate most Down operations
+                    // (AlterColumn throws), which fails startup outright. So never let the target move backwards - cap it at the
+                    // newest applied database migration, which applies the straggler and leaves everything newer in place.
+                    var newestAppliedDatabaseMigration = migrationsAssembly.Migrations.Keys
+                        .Where(key => appliedMigrations.Any(e => string.Equals(e.MigrationId, key, StringComparison.Ordinal)))
+                        .OrderByDescending(key => key, StringComparer.Ordinal)
+                        .FirstOrDefault();
+
                     pendingDatabaseMigrations = migrationsAssembly.Migrations.Where(f => appliedMigrations.All(e => e.MigrationId != f.Key))
-                       .Select(e => (Key: e.Key, Migration: new InternalDatabaseMigration(e, dbContext)))
+                       .Select(e => (
+                           Key: e.Key,
+                           Migration: new InternalDatabaseMigration(
+                               e,
+                               string.CompareOrdinal(e.Key, newestAppliedDatabaseMigration) > 0 ? e.Key : newestAppliedDatabaseMigration!,
+                               dbContext)))
                        .ToArray();
                 }
 
@@ -468,18 +483,31 @@ internal class JellyfinMigrationService
     private class InternalDatabaseMigration : IInternalMigration
     {
         private readonly JellyfinDbContext _jellyfinDbContext;
+        private readonly string _targetMigration;
         private KeyValuePair<string, TypeInfo> _databaseMigrationInfo;
 
-        public InternalDatabaseMigration(KeyValuePair<string, TypeInfo> databaseMigrationInfo, JellyfinDbContext jellyfinDbContext)
+        public InternalDatabaseMigration(KeyValuePair<string, TypeInfo> databaseMigrationInfo, string targetMigration, JellyfinDbContext jellyfinDbContext)
         {
             _databaseMigrationInfo = databaseMigrationInfo;
+            _targetMigration = targetMigration;
             _jellyfinDbContext = jellyfinDbContext;
         }
 
         public async Task PerformAsync(IStartupLogger logger)
         {
             var migrator = _jellyfinDbContext.GetService<IMigrator>();
-            await migrator.MigrateAsync(_databaseMigrationInfo.Key).ConfigureAwait(false);
+
+            // The target is this migration, or the newest applied one when this migration sorts before it: everything
+            // still pending up to that point gets applied, nothing already applied gets reverted.
+            if (!string.Equals(_targetMigration, _databaseMigrationInfo.Key, StringComparison.Ordinal))
+            {
+                logger.LogInformation(
+                    "Migration {Name} sorts before the already applied {Applied} and is applied out of order.",
+                    _databaseMigrationInfo.Key,
+                    _targetMigration);
+            }
+
+            await migrator.MigrateAsync(_targetMigration).ConfigureAwait(false);
         }
     }
 }
