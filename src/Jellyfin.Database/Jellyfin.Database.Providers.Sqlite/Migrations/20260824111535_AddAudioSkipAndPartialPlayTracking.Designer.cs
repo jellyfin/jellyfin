@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Database.Providers.Sqlite.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    [Migration("20260822005539_AddAudioSkipAndPartialPlayTracking")]
+    [Migration("20260824111535_AddAudioSkipAndPartialPlayTracking")]
     partial class AddAudioSkipAndPartialPlayTracking
     {
         /// <inheritdoc />
@@ -1014,6 +1014,8 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("ItemId", "StreamIndex");
+
+                    b.HasIndex("StreamType", "ItemId", "Language", "IsExternal");
 
                     b.ToTable("MediaStreamInfos");
 
