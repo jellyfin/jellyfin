@@ -48,6 +48,10 @@ namespace MediaBrowser.Controller.Entities
 
         public const string ThemeSongFileName = "theme";
 
+        // Well below the 255 byte limit of the common Linux filesystems and the 255 character limit
+        // of Windows, so the files inside the folder still fit within MAX_PATH.
+        private const int MaxItemByNameFolderNameBytes = 128;
+
         /// <summary>
         /// The supported image extensions.
         /// </summary>
@@ -939,6 +943,43 @@ namespace MediaBrowser.Controller.Entities
         protected virtual string CreateSortName()
         {
             return GetSortName(Name, EnableAlphaNumericSorting, ConfigurationManager.Configuration);
+        }
+
+        /// <summary>
+        /// Turns an item-by-name entity's name into a folder name every supported filesystem accepts.
+        /// </summary>
+        /// <param name="name">The entity's name.</param>
+        /// <returns>The folder name.</returns>
+        public static string GetItemByNameFolderName(string name)
+        {
+            // Trim the period at the end because windows will have a hard time with that
+            var validName = FileSystem.GetValidFilename(name).Trim().TrimEnd('.');
+
+            // Most Linux filesystems cap a path component at 255 bytes, so a name past that cannot be
+            // turned into a folder at all - and an entity with no folder can never be created, which
+            // leaves the credit behind it stuck: not refreshable, not deletable, retried on every scan.
+            // Only broken provider data gets this long, but it still has to resolve to something, so
+            // keep a readable prefix and let a hash of the whole name tell two of them apart.
+            if (Encoding.UTF8.GetByteCount(validName) <= MaxItemByNameFolderNameBytes)
+            {
+                return validName;
+            }
+
+            var suffix = "-" + validName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            var budget = MaxItemByNameFolderNameBytes - suffix.Length;
+            var length = Math.Min(validName.Length, budget);
+            while (length > 0 && Encoding.UTF8.GetByteCount(validName.AsSpan(0, length)) > budget)
+            {
+                length--;
+            }
+
+            // Never cut a surrogate pair in half, the lone half is not a valid file name character.
+            if (length > 0 && char.IsHighSurrogate(validName[length - 1]))
+            {
+                length--;
+            }
+
+            return string.Concat(validName.AsSpan(0, length).TrimEnd().TrimEnd('.'), suffix);
         }
 
         /// <summary>
