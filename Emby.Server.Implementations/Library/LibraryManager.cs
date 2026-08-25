@@ -2933,7 +2933,8 @@ namespace Emby.Server.Implementations.Library
                 "views",
                 _fileSystem.GetValidFilename(viewType.ToString()));
 
-            var id = GetNewItemId(path + "_namedview_" + name, typeof(UserView));
+            // The display name is localized, so it must not take part in the id.
+            var id = GetNewItemId(path + "_namedview_" + viewType.ToString(), typeof(UserView));
 
             var item = GetItemById(id) as UserView;
 
@@ -2957,6 +2958,13 @@ namespace Emby.Server.Implementations.Library
 
                 refresh = true;
             }
+            else if (!string.Equals(item.Name, name, StringComparison.Ordinal))
+            {
+                item.Name = name;
+                item.ForcedSortName = sortName;
+
+                refresh = true;
+            }
 
             if (refresh)
             {
@@ -2977,7 +2985,9 @@ namespace Emby.Server.Implementations.Library
             var parentIdString = parentId.IsEmpty()
                 ? null
                 : parentId.ToString("N", CultureInfo.InvariantCulture);
-            var idValues = "38_namedview_" + name + user.Id.ToString("N", CultureInfo.InvariantCulture) + (parentIdString ?? string.Empty) + (viewType?.ToString() ?? string.Empty);
+
+            // The name is either localized (grouped views) or the library folder's own name.
+            var idValues = "38_namedview_" + user.Id.ToString("N", CultureInfo.InvariantCulture) + (parentIdString ?? string.Empty) + (viewType?.ToString() ?? string.Empty);
 
             var id = GetNewItemId(idValues, typeof(UserView));
 
@@ -3006,6 +3016,11 @@ namespace Emby.Server.Implementations.Library
                 CreateItem(item, null);
 
                 isNew = true;
+            }
+            else if (!string.Equals(item.Name, name, StringComparison.Ordinal))
+            {
+                item.Name = name;
+                item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
             }
 
             var lastRefreshedUtc = item.DateLastRefreshed;
@@ -3108,7 +3123,7 @@ namespace Emby.Server.Implementations.Library
             var parentIdString = parentId.IsEmpty()
                 ? null
                 : parentId.ToString("N", CultureInfo.InvariantCulture);
-            var idValues = "37_namedview_" + name + (parentIdString ?? string.Empty) + (viewType?.ToString() ?? string.Empty);
+            var idValues = "37_namedview_" + (parentIdString ?? string.Empty) + (viewType?.ToString() ?? string.Empty);
             if (!string.IsNullOrEmpty(uniqueId))
             {
                 idValues += uniqueId;
@@ -3142,9 +3157,10 @@ namespace Emby.Server.Implementations.Library
                 isNew = true;
             }
 
-            if (viewType != item.ViewType)
+            if (viewType != item.ViewType || !string.Equals(item.Name, name, StringComparison.Ordinal))
             {
                 item.ViewType = viewType;
+                item.Name = name;
                 item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
             }
 
