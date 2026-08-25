@@ -166,4 +166,35 @@ public static class FileSystemHelper
 
         return ResolveLinkTarget(fileInfo.FullName, returnFinalTarget);
     }
+
+    /// <summary>
+    /// Combines a caller supplied name with a parent directory, making sure the name cannot escape that directory.
+    /// </summary>
+    /// <param name="parentPath">The directory the name has to resolve inside of.</param>
+    /// <param name="name">The name of the child.</param>
+    /// <returns>
+    /// The full path of the child, or <c>null</c> if <paramref name="name"/> is not the name of a direct child
+    /// of <paramref name="parentPath"/>.
+    /// </returns>
+    public static string? GetChildPath(string parentPath, string name)
+    {
+        if (string.IsNullOrWhiteSpace(name) || name.Contains('\0', StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        // Rejects directory separators, and on Windows also volume separators, as those make the name more than a single segment.
+        if (!string.Equals(Path.GetFileName(name), name, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var fullPath = Path.GetFullPath(Path.Combine(parentPath, name));
+        var fullParentPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(parentPath));
+
+        // Catches the remaining relative names, "." and "..", which are valid single segments.
+        return string.Equals(Path.GetDirectoryName(fullPath), fullParentPath, StringComparison.Ordinal)
+            ? fullPath
+            : null;
+    }
 }
