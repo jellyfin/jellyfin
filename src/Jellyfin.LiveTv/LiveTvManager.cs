@@ -1262,7 +1262,7 @@ namespace Jellyfin.LiveTv
 
         public Folder GetInternalLiveTvFolder(CancellationToken cancellationToken)
         {
-            var name = _localization.GetLocalizedString("HeaderLiveTV");
+            var name = _localization.GetServerLocalizedString("HeaderLiveTV");
             return _libraryManager.GetNamedView(name, CollectionType.livetv, name);
         }
 

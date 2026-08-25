@@ -99,7 +99,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                         args.LibraryOptions.SeasonZeroDisplayName :
                         string.Format(
                             CultureInfo.InvariantCulture,
-                            _localization.GetLocalizedString("NameSeasonNumber"),
+                            _localization.GetServerLocalizedString("NameSeasonNumber"),
                             seasonNumber,
                             args.LibraryOptions.PreferredMetadataLanguage);
                 }
