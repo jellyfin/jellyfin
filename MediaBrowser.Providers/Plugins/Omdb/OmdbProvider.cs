@@ -443,7 +443,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             var names = new List<string>();
 
-            foreach (var credit in credits.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            foreach (var credit in SplitCredits(credits))
             {
                 // OMDb annotates the credited role in parentheses, e.g. "Mari Okada (screenplay)". The same
                 // person can be credited more than once this way, so strip it and let AddPerson deduplicate.
@@ -451,9 +451,10 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 var annotation = name.IndexOf('(', StringComparison.Ordinal);
                 if (annotation >= 0)
                 {
-                    name = name[..annotation].TrimEnd();
+                    name = name[..annotation];
                 }
 
+                name = name.Trim();
                 if (name.Length == 0)
                 {
                     continue;
@@ -478,6 +479,33 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     Type = type
                 });
             }
+        }
+
+        // Only the commas between credits, never one inside an annotation: "Jerry Siegel (created by:
+        // Superman, Superboy)" is one credit, and splitting it blindly invents a person called "Superboy)".
+        private static IEnumerable<string> SplitCredits(string credits)
+        {
+            var depth = 0;
+            var start = 0;
+
+            for (var i = 0; i < credits.Length; i++)
+            {
+                switch (credits[i])
+                {
+                    case '(':
+                        depth++;
+                        break;
+                    case ')':
+                        depth = Math.Max(0, depth - 1);
+                        break;
+                    case ',' when depth == 0:
+                        yield return credits[start..i];
+                        start = i + 1;
+                        break;
+                }
+            }
+
+            yield return credits[start..];
         }
 
         private static bool IsNameSuffix(string value)

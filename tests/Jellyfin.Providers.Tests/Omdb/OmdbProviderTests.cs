@@ -35,6 +35,20 @@ namespace Jellyfin.Providers.Tests.Omdb
         }
 
         [Theory]
+        [InlineData(
+            "Jerry Siegel (created by: Superman, Superboy), Bob Kane (created by: Batman)",
+            "Jerry Siegel|Bob Kane")]
+        [InlineData("Alan Moore (created by: John Constantine)", "Alan Moore")]
+        public void AddPeople_CommaInsideAnAnnotation_StaysOneCredit(string credits, string expected)
+        {
+            var result = new MetadataResult<Movie>();
+
+            OmdbProvider.AddPeople(result, credits, PersonKind.Writer);
+
+            Assert.Equal(expected.Split('|'), result.People!.Select(p => p.Name));
+        }
+
+        [Theory]
         [InlineData("Jack Salvatore, Jr.", "Jack Salvatore, Jr.")]
         [InlineData("Efrem Zimbalist, Jr., Tom Hanks", "Efrem Zimbalist, Jr.|Tom Hanks")]
         [InlineData("Tom Hanks, Sammy Davis, Jr", "Tom Hanks|Sammy Davis, Jr")]
