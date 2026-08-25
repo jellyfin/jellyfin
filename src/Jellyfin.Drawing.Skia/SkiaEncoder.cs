@@ -11,6 +11,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
+using Svg;
 using Svg.Skia;
 
 namespace Jellyfin.Drawing.Skia;
@@ -47,6 +48,13 @@ public class SkiaEncoder : IImageEncoder
     /// The sampling options, used for downscaling images, equivalent to old high quality filter settings when not upscaling.
     /// </summary>
     public static readonly SKSamplingOptions DefaultSamplingOptions = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear);
+
+    static SkiaEncoder()
+    {
+        SvgDocument.ResolveExternalElements = ExternalType.None;
+        SvgDocument.ResolveExternalImages = ExternalType.None;
+        SvgDocument.ResolveExternalXmlEntites = ExternalType.None;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SkiaEncoder"/> class.
@@ -183,6 +191,12 @@ public class SkiaEncoder : IImageEncoder
         var extension = Path.GetExtension(path.AsSpan());
         if (extension.Equals(".svg", StringComparison.OrdinalIgnoreCase))
         {
+            if (!SvgSecurityValidator.IsSafe(path, _logger))
+            {
+                _logger.LogError("Refusing to determine dimensions for SVG with external references {FilePath}", path);
+                return default;
+            }
+
             using var svg = new SKSvg();
             try
             {
@@ -443,6 +457,12 @@ public class SkiaEncoder : IImageEncoder
         if (!File.Exists(path))
         {
             throw new FileNotFoundException("File not found", path);
+        }
+
+        if (!SvgSecurityValidator.IsSafe(path, _logger))
+        {
+            _logger.LogError("Refusing to render SVG with external references {FilePath}", path);
+            return null;
         }
 
         using var svg = SKSvg.CreateFromFile(path);
