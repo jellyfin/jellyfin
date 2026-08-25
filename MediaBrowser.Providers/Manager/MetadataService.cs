@@ -212,22 +212,30 @@ namespace MediaBrowser.Providers.Manager
             var attemptedFetch = refreshOptions.MetadataRefreshMode > MetadataRefreshMode.ValidationOnly
                 || refreshOptions.ImageRefreshMode > MetadataRefreshMode.ValidationOnly;
 
+            var refreshStampNeedsSaving = false;
+
             if (hasRefreshedMetadata && hasRefreshedImages && attemptedFetch)
             {
                 item.DateLastRefreshed = DateTime.UtcNow;
                 updateType |= item.OnMetadataChanged();
+
+                // A full refresh queries every provider whether or not anything looks stale. When they all
+                // come back empty the stamp is the only thing that changed, and without it nothing records
+                // that the lookup happened, so the next pass repeats the same fruitless queries forever.
+                refreshStampNeedsSaving = refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh
+                    || refreshOptions.ImageRefreshMode == MetadataRefreshMode.FullRefresh;
             }
 
-            updateType = await SaveInternal(item, refreshOptions, updateType, isFirstRefresh, requiresRefresh, metadataResult, cancellationToken).ConfigureAwait(false);
+            updateType = await SaveInternal(item, refreshOptions, updateType, isFirstRefresh, requiresRefresh, refreshStampNeedsSaving, metadataResult, cancellationToken).ConfigureAwait(false);
 
             await AfterMetadataRefresh(itemOfType, refreshOptions, cancellationToken).ConfigureAwait(false);
 
             return updateType;
 
-            async Task<ItemUpdateType> SaveInternal(BaseItem item, MetadataRefreshOptions refreshOptions, ItemUpdateType updateType, bool isFirstRefresh, bool requiresRefresh, MetadataResult<TItemType> metadataResult, CancellationToken cancellationToken)
+            async Task<ItemUpdateType> SaveInternal(BaseItem item, MetadataRefreshOptions refreshOptions, ItemUpdateType updateType, bool isFirstRefresh, bool requiresRefresh, bool refreshStampNeedsSaving, MetadataResult<TItemType> metadataResult, CancellationToken cancellationToken)
             {
                 // Save if changes were made, or it's never been saved before
-                if (refreshOptions.ForceSave || updateType > ItemUpdateType.None || isFirstRefresh || refreshOptions.ReplaceAllMetadata || requiresRefresh)
+                if (refreshOptions.ForceSave || updateType > ItemUpdateType.None || isFirstRefresh || refreshOptions.ReplaceAllMetadata || requiresRefresh || refreshStampNeedsSaving)
                 {
                     if (item.IsFileProtocol)
                     {

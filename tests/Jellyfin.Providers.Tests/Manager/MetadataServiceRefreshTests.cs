@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
@@ -228,6 +230,88 @@ namespace Jellyfin.Providers.Tests.Manager
             Assert.Equal("nm0000123", mergedPerson.GetProviderId(MetadataProvider.Imdb));
         }
 
+        [Theory]
+        [InlineData(MetadataRefreshMode.FullRefresh, true)]
+        [InlineData(MetadataRefreshMode.Default, false)]
+        public async Task RefreshMetadata_ProvidersFoundNothing_PersistsRefreshDateOnFullRefresh(MetadataRefreshMode mode, bool expectSaved)
+        {
+            var item = new TestItem
+            {
+                Id = Guid.NewGuid(),
+                Name = "Test Item",
+                PreferredMetadataLanguage = "en",
+                PreferredMetadataCountryCode = "US",
+                DateLastRefreshed = DateTime.UtcNow.AddDays(-60),
+                DateLastSaved = DateTime.UtcNow.AddDays(-60)
+            };
+            item.PresentationUniqueKey = item.CreatePresentationUniqueKey();
+
+            var stampBefore = item.DateLastRefreshed;
+
+            var provider = new Mock<IRemoteMetadataProvider<TestItem, ItemLookupInfo>>(MockBehavior.Loose);
+            provider.Setup(p => p.Name).Returns("Provider");
+            provider.Setup(p => p.GetMetadata(It.IsAny<ItemLookupInfo>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new MetadataResult<TestItem> { HasMetadata = false });
+
+            var libraryManager = new Mock<ILibraryManager>(MockBehavior.Loose);
+            libraryManager.Setup(l => l.GetLibraryOptions(It.IsAny<BaseItem>())).Returns(new LibraryOptions());
+
+            var providerManager = new Mock<IProviderManager>(MockBehavior.Loose);
+            providerManager.Setup(p => p.GetImageProviders(It.IsAny<BaseItem>(), It.IsAny<ImageRefreshOptions>()))
+                .Returns(Array.Empty<IImageProvider>());
+            providerManager.Setup(p => p.GetMetadataProviders<TestItem>(It.IsAny<BaseItem>(), It.IsAny<LibraryOptions>()))
+                .Returns(new[] { (IMetadataProvider<TestItem>)provider.Object });
+            providerManager.Setup(p => p.GetMetadataSavers(It.IsAny<BaseItem>(), It.IsAny<LibraryOptions>()))
+                .Returns(Array.Empty<IMetadataSaver>());
+
+            var itemRepository = new Mock<IItemRepository>(MockBehavior.Loose);
+            itemRepository.Setup(r => r.ItemExistsAsync(It.IsAny<Guid>())).ReturnsAsync(true);
+
+            var service = new TestItemMetadataService(libraryManager.Object, providerManager.Object, itemRepository.Object);
+
+            await service.RefreshMetadata(
+                item,
+                new MetadataRefreshOptions(Mock.Of<IDirectoryService>())
+                {
+                    MetadataRefreshMode = mode,
+                    ImageRefreshMode = mode
+                },
+                CancellationToken.None).ConfigureAwait(true);
+
+            // Nothing was found, so on a full refresh the advanced stamp is the only reason to write the row.
+            Assert.Equal(expectSaved, item.Saved);
+
+            if (expectSaved)
+            {
+                Assert.True(item.DateLastRefreshed > stampBefore);
+            }
+        }
+
+        /// <summary>
+        /// Stands in for a real item so the refresh stays off the shared BaseItem statics, which other
+        /// test classes in this assembly overwrite while xUnit runs them in parallel.
+        /// </summary>
+        internal sealed class TestItem : BaseItem
+        {
+            public bool Saved { get; private set; }
+
+            public override bool RequiresRefresh() => false;
+
+            public override bool IsSaveLocalMetadataEnabled() => false;
+
+            public override string CreatePresentationUniqueKey() => Id.ToString("N", CultureInfo.InvariantCulture);
+
+            public override ItemUpdateType OnMetadataChanged() => ItemUpdateType.None;
+
+            public override bool BeforeMetadataRefresh(bool replaceAllMetadata) => false;
+
+            public override Task UpdateToRepositoryAsync(ItemUpdateType updateReason, CancellationToken cancellationToken)
+            {
+                Saved = true;
+                return Task.CompletedTask;
+            }
+        }
+
         private sealed class TestMetadataService : MetadataService<Movie, MovieInfo>
         {
             public TestMetadataService()
@@ -248,6 +332,21 @@ namespace Jellyfin.Providers.Tests.Manager
                 MetadataRefreshOptions options,
                 ICollection<IMetadataProvider> providers)
                 => RefreshWithProviders(metadata, id, options, providers, ImageProvider, false, CancellationToken.None);
+        }
+
+        private sealed class TestItemMetadataService : MetadataService<TestItem, ItemLookupInfo>
+        {
+            public TestItemMetadataService(ILibraryManager libraryManager, IProviderManager providerManager, IItemRepository itemRepository)
+                : base(
+                    Mock.Of<IServerConfigurationManager>(),
+                    NullLogger<MetadataService<TestItem, ItemLookupInfo>>.Instance,
+                    providerManager,
+                    Mock.Of<IFileSystem>(),
+                    libraryManager,
+                    Mock.Of<IExternalDataManager>(),
+                    itemRepository)
+            {
+            }
         }
     }
 }
