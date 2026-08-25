@@ -35,6 +35,27 @@ public sealed partial class BaseItemRepository
     // instance across several lambdas, and this filter is combined into a tree more than once.
     private static Expression<Func<BaseItemEntity, bool>> IsFolderFilter => e => e.IsFolder;
 
+    // Shared by the isPlayed filter and the IsPlayed/IsUnplayed ordering so the two cannot disagree.
+    private Expression<Func<BaseItemEntity, bool>> BuildIsPlayedFilter(JellyfinDbContext context, User user)
+    {
+        var userId = user.Id;
+
+        // Leaf items carry their own played state.
+        var playedItemIds = context.UserData
+            .Where(ud => ud.UserId == userId && ud.Played)
+            .Select(ud => ud.ItemId);
+
+        // Folders (Series, Seasons, BoxSets, albums, ...) have none and count as played once no
+        // descendant is left unplayed, matching what the DTO reports for them. This has to key off
+        // the item itself rather than off the requested item types: tag and collection listings mix
+        // folders and leaf items in a single query.
+        var unplayedLeafItems = GetAccessFilteredLeafItemsQuery(context, user)
+            .Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
+
+        return IsFolderFilter.And(BuildHasDescendantFilter(context, unplayedLeafItems).Not())
+            .Or(IsFolderFilter.Not().And(e => playedItemIds.Contains(e.Id)));
+    }
+
     // "und" is the language filters' stand-in for a track that declares no language at all.
     private static string NormalizeLanguage(string language)
         => string.Equals(language, "und", StringComparison.OrdinalIgnoreCase) ? "und" : language;
@@ -523,22 +544,7 @@ public sealed partial class BaseItemRepository
 
         if (filter.IsPlayed.HasValue)
         {
-            var userId = filter.User!.Id;
-
-            // Leaf items carry their own played state.
-            var playedItemIds = context.UserData
-                .Where(ud => ud.UserId == userId && ud.Played)
-                .Select(ud => ud.ItemId);
-
-            // Folders (Series, Seasons, BoxSets, albums, ...) have none and count as played once no
-            // descendant is left unplayed, matching what the DTO reports for them. This has to key off
-            // the item itself rather than off the requested item types: tag and collection listings mix
-            // folders and leaf items in a single query.
-            var unplayedLeafItems = GetAccessFilteredLeafItemsQuery(context, filter.User!)
-                .Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
-
-            var isPlayedFilter = IsFolderFilter.And(BuildHasDescendantFilter(context, unplayedLeafItems).Not())
-                .Or(IsFolderFilter.Not().And(e => playedItemIds.Contains(e.Id)));
+            var isPlayedFilter = BuildIsPlayedFilter(context, filter.User!);
 
             baseQuery = baseQuery.Where(filter.IsPlayed.Value ? isPlayedFilter : isPlayedFilter.Not());
         }
