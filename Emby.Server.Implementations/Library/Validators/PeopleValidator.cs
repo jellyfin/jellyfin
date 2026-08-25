@@ -49,6 +49,14 @@ public class PeopleValidator
     /// <returns>Task.</returns>
     public async Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
     {
+        // Before the refresh below walks them: a credit no item maps to any more stands for nothing,
+        // and while it is there the person it names cannot reach the dead-person sweep either.
+        var numOrphaned = _libraryManager.DeleteOrphanedCredits();
+        if (numOrphaned > 0)
+        {
+            _logger.LogDebug("Deleted {Amount} credits no item maps to", numOrphaned);
+        }
+
         var people = _libraryManager.GetPeopleNames(new InternalPeopleQuery());
 
         var numComplete = 0;
@@ -115,6 +123,6 @@ public class PeopleValidator
 
         progress.Report(100);
 
-        _logger.LogInformation("People validation complete");
+        _logger.LogInformation("People validation complete, deleted {Orphaned} orphaned credits", numOrphaned);
     }
 }

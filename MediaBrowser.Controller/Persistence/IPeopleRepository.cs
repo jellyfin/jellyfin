@@ -34,6 +34,12 @@ public interface IPeopleRepository
     IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery filter);
 
     /// <summary>
+    /// Deletes every credit that no item maps to any more.
+    /// </summary>
+    /// <returns>The number of credits that were deleted.</returns>
+    int DeleteOrphanedCredits();
+
+    /// <summary>
     /// Gets the distinct people names per item for multiple items efficiently by querying from the mapping table.
     /// </summary>
     /// <param name="itemIds">The item IDs to get people for.</param>

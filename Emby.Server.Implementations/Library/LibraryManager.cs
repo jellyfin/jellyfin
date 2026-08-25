@@ -3581,6 +3581,12 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc/>
+        public int DeleteOrphanedCredits()
+        {
+            return _peopleRepository.DeleteOrphanedCredits();
+        }
+
+        /// <inheritdoc/>
         public IReadOnlyDictionary<Guid, IReadOnlyList<string>> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes)
         {
             return _peopleRepository.GetPeopleNamesByItems(itemIds, personTypes);
