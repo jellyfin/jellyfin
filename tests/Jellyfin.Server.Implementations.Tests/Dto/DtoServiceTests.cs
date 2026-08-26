@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using Emby.Server.Implementations.Dto;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Drawing;
@@ -21,11 +23,13 @@ namespace Jellyfin.Server.Implementations.Tests.Dto;
 public class DtoServiceTests
 {
     private readonly Mock<ILibraryManager> _libraryManagerMock;
+    private readonly Mock<IUserDataManager> _userDataManagerMock;
     private readonly DtoService _dtoService;
 
     public DtoServiceTests()
     {
         _libraryManagerMock = new Mock<ILibraryManager>();
+        _userDataManagerMock = new Mock<IUserDataManager>();
 
         var imageProcessor = new Mock<IImageProcessor>();
         // Deterministic tag derived from the image so each item gets a distinct, assertable tag.
@@ -42,7 +46,7 @@ public class DtoServiceTests
         _dtoService = new DtoService(
             NullLogger<DtoService>.Instance,
             _libraryManagerMock.Object,
-            new Mock<IUserDataManager>().Object,
+            _userDataManagerMock.Object,
             imageProcessor.Object,
             new Mock<IProviderManager>().Object,
             new Mock<IRecordingsManager>().Object,
@@ -103,6 +107,57 @@ public class DtoServiceTests
         Assert.NotNull(dto.ImageTags);
         Assert.True(dto.ImageTags.ContainsKey(ImageType.Primary));
         Assert.Null(dto.ParentPrimaryImageItemId);
+    }
+
+    [Fact]
+    public void GetBaseItemDtos_SeasonWithNoRealEpisodes_ReportsVirtualEpisodesAsChildCount()
+    {
+        // No episode has aired yet, so RecursiveItemCount is 0. ChildCount must still report the
+        // virtual episodes clients get back for the season. This deliberately does not track
+        // Season.IsVirtualItem: that flag is recomputed only on a full refresh, so a season can
+        // carry it while already holding real episodes.
+        var (season, user) = BuildSeason(playedCount: 0, totalCount: 0, childCount: 10);
+        var options = new DtoOptions(false) { EnableImages = false, Fields = [ItemFields.ChildCount, ItemFields.RecursiveItemCount] };
+
+        var dto = _dtoService.GetBaseItemDtos([season], options, user, skipVisibilityCheck: true)[0];
+
+        Assert.Equal(0, dto.RecursiveItemCount);
+        Assert.Equal(10, dto.ChildCount);
+    }
+
+    [Fact]
+    public void GetBaseItemDtos_SeasonWithRealEpisodes_KeepsRecursiveItemCountAsChildCount()
+    {
+        var (season, user) = BuildSeason(playedCount: 2, totalCount: 9, childCount: 11);
+        var options = new DtoOptions(false) { EnableImages = false, Fields = [ItemFields.ChildCount, ItemFields.RecursiveItemCount] };
+
+        var dto = _dtoService.GetBaseItemDtos([season], options, user, skipVisibilityCheck: true)[0];
+
+        Assert.Equal(9, dto.RecursiveItemCount);
+        // The shortcut still wins over the batched child count, which also counts virtual episodes.
+        Assert.Equal(9, dto.ChildCount);
+    }
+
+    private (Season Season, User User) BuildSeason(int playedCount, int totalCount, int childCount)
+    {
+        var user = new User("user", "auth-provider", "reset-provider");
+        var season = new Season { Id = Guid.NewGuid(), Name = "Season 2", SeriesId = Guid.NewGuid() };
+
+        _userDataManagerMock
+            .Setup(x => x.GetUserDataBatch(It.IsAny<IReadOnlyList<BaseItem>>(), user))
+            .Returns(new Dictionary<Guid, UserItemData> { [season.Id] = new UserItemData { Key = "key" } });
+        _userDataManagerMock
+            .Setup(x => x.GetResumeUserDataBatch(It.IsAny<IReadOnlyList<BaseItem>>(), user))
+            .Returns(new Dictionary<Guid, VersionResumeData>());
+
+        _libraryManagerMock
+            .Setup(x => x.GetPlayedAndTotalCountBatch(It.IsAny<IReadOnlyList<Guid>>(), user))
+            .Returns(new Dictionary<Guid, (int Played, int Total)> { [season.Id] = (playedCount, totalCount) });
+        _libraryManagerMock
+            .Setup(x => x.GetChildCountBatch(It.IsAny<IReadOnlyList<Guid>>(), It.IsAny<Guid?>()))
+            .Returns(new Dictionary<Guid, int> { [season.Id] = childCount });
+
+        return (season, user);
     }
 
     private (Episode Episode, Season Season, Series Series) BuildEpisode(bool seasonHasPoster, bool seriesHasPoster = true)
