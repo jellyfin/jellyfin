@@ -120,5 +120,6 @@
     "NameExtraThemeSong": "Theme Song",
     "NameExtraThemeVideo": "Theme Video",
     "NameExtraTrailer": "Trailer",
-    "NameExtraUnknown": "Extra"
+    "NameExtraUnknown": "Extra",
+    "NameExtraNumbered": "{0} {1}"
 }
