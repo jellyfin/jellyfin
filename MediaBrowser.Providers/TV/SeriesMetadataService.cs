@@ -364,7 +364,7 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
         foreach (var episode in episodes)
         {
             var season = seasons.FirstOrDefault(i => i.IndexNumber == episode.ParentIndexNumber);
-            if (season is null || episode.SeasonId.Equals(season.Id))
+            if (season is null || (episode.SeasonId.Equals(season.Id) && episode.ParentId.Equals(season.Id)))
             {
                 continue;
             }
@@ -372,6 +372,11 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
             // Assign the correct season id and name to episode.
             episode.SeasonId = season.Id;
             episode.SeasonName = season.Name;
+
+            // We need to set ParentId here for episodes in virtual seasons (e.g., flat structures), otherwise it retains the
+            // ParentId from the series.
+            episode.SetParent(season);
+
             await episode.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
         }
     }
