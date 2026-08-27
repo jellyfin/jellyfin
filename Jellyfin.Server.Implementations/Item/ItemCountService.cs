@@ -249,9 +249,49 @@ public class ItemCountService : IItemCountService
             }
         }
 
+        if (kind is BaseItemKind.Studio or BaseItemKind.Genre or BaseItemKind.MusicGenre
+            && relatedItemKinds.Contains(BaseItemKind.Episode)
+            && relatedItemKinds.Contains(BaseItemKind.Series))
+        {
+            var rolledUpEpisodeCount = CountEpisodesOfTaggedSeries(context, baseQuery, accessFilter, out var directEpisodeCount);
+            totalCount += rolledUpEpisodeCount - result.EpisodeCount + directEpisodeCount;
+            result.EpisodeCount = rolledUpEpisodeCount + directEpisodeCount;
+        }
+
         result.ItemCount = totalCount;
 
         return result;
+    }
+
+    private int CountEpisodesOfTaggedSeries(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> taggedItems,
+        InternalItemsQuery accessFilter,
+        out int unrelatedEpisodeCount)
+    {
+        var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
+        var episodeTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
+
+        var taggedSeriesIds = taggedItems.Where(e => e.Type == seriesTypeName).Select(e => e.Id);
+        unrelatedEpisodeCount = taggedItems.Count(e => e.Type == episodeTypeName
+            && (e.SeriesId == null || !taggedSeriesIds.Contains(e.SeriesId.Value)));
+
+        // Materialised so the episode count drives off IX_BaseItems_SeriesId.
+        var seriesIds = taggedItems
+            .Where(e => e.Type == seriesTypeName)
+            .Select(e => e.Id)
+            .ToArray();
+
+        if (seriesIds.Length == 0)
+        {
+            return 0;
+        }
+
+        var episodes = context.BaseItems.AsNoTracking()
+            .Where(e => e.Type == episodeTypeName && e.SeriesId != null)
+            .WhereOneOrMany(seriesIds, e => e.SeriesId!.Value);
+
+        return _queryHelpers.ApplyAccessFiltering(context, episodes, accessFilter).Count();
     }
 
     private static IQueryable<BaseItemEntity> ItemsById(JellyfinDbContext context, IQueryable<Guid> itemIds)
