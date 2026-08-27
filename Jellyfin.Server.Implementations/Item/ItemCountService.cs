@@ -242,9 +242,58 @@ public class ItemCountService : IItemCountService
             }
         }
 
+        // Only for the links a series passes down to every one of its episodes. A person credited on
+        // the series did not necessarily work on each episode, and an episode carries its own year.
+        if (kind is BaseItemKind.Studio or BaseItemKind.Genre or BaseItemKind.MusicGenre
+            && relatedItemKinds.Contains(BaseItemKind.Episode)
+            && relatedItemKinds.Contains(BaseItemKind.Series))
+        {
+            // A studio or genre is normally only written on the series, so its episodes have to be
+            // counted through it. Episodes carrying the link themselves are already in
+            // result.EpisodeCount and must not be counted a second time.
+            var rolledUpEpisodeCount = CountEpisodesOfLinkedSeries(context, baseQuery, accessFilter, out var unrelatedEpisodeCount);
+            totalCount += rolledUpEpisodeCount + unrelatedEpisodeCount - result.EpisodeCount;
+            result.EpisodeCount = rolledUpEpisodeCount + unrelatedEpisodeCount;
+        }
+
         result.ItemCount = totalCount;
 
         return result;
+    }
+
+    /// <summary>
+    /// Counts the episodes below the series in <paramref name="linkedItems"/>, and the linked episodes that no series in it covers.
+    /// </summary>
+    private int CountEpisodesOfLinkedSeries(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> linkedItems,
+        InternalItemsQuery accessFilter,
+        out int unrelatedEpisodeCount)
+    {
+        var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
+        var episodeTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
+
+        var linkedSeriesIds = linkedItems.Where(e => e.Type == seriesTypeName).Select(e => e.Id);
+        unrelatedEpisodeCount = linkedItems.Count(e => e.Type == episodeTypeName
+            && (e.SeriesId == null || !linkedSeriesIds.Contains(e.SeriesId.Value)));
+
+        // Materialised so the episode count drives off IX_BaseItems_SeriesId instead of leaving
+        // SQLite free to scan every episode in the library.
+        var seriesIds = linkedItems
+            .Where(e => e.Type == seriesTypeName)
+            .Select(e => e.Id)
+            .ToArray();
+
+        if (seriesIds.Length == 0)
+        {
+            return 0;
+        }
+
+        var episodes = context.BaseItems.AsNoTracking()
+            .Where(e => e.Type == episodeTypeName && e.SeriesId != null)
+            .WhereOneOrMany(seriesIds, e => e.SeriesId!.Value);
+
+        return _queryHelpers.ApplyAccessFiltering(context, episodes, accessFilter).Count();
     }
 
     private static IQueryable<BaseItemEntity> ItemsById(JellyfinDbContext context, IQueryable<Guid> itemIds)
