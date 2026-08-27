@@ -1146,29 +1146,31 @@ namespace MediaBrowser.Model.Dlna
         {
             if (!string.IsNullOrEmpty(audioCodec))
             {
+                var channels = audioChannels ?? 0;
+
                 // Default to a higher bitrate for stream copy
                 if (string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(audioCodec, "mp3", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(audioCodec, "eac3", StringComparison.OrdinalIgnoreCase))
                 {
-                    if ((audioChannels ?? 0) < 2)
+                    if (channels < 2)
                     {
                         return 128000;
                     }
 
-                    return (audioChannels ?? 0) >= 6 ? 640000 : 384000;
+                    return channels >= 6 ? 640000 : 384000;
                 }
 
                 if (string.Equals(audioCodec, "flac", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(audioCodec, "alac", StringComparison.OrdinalIgnoreCase))
                 {
-                    if ((audioChannels ?? 0) < 2)
+                    if (channels < 2)
                     {
                         return 768000;
                     }
 
-                    return (audioChannels ?? 0) >= 6 ? 3584000 : 1536000;
+                    return channels >= 6 ? 3584000 : 1536000;
                 }
             }
 
