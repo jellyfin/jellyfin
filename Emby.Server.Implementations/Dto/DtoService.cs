@@ -253,6 +253,23 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
+            // Batch-fetch the items the credits resolve to, so a page of casts is one query.
+            IReadOnlyDictionary<Guid, BaseItem>? personItemBatch = null;
+            if (peopleBatch is not null)
+            {
+                personItemBatch = GetPersonItems(peopleBatch.Values.SelectMany(e => e).Select(e => e.PersonItemId), null);
+            }
+
+            IReadOnlyDictionary<Guid, ItemByNameLinks>? byNameLinkBatch = null;
+            if (options.ContainsField(ItemFields.Genres) || options.ContainsField(ItemFields.Studios))
+            {
+                var linkedItemIds = accessibleItems.Select(i => i.Id).ToList();
+                if (linkedItemIds.Count > 0)
+                {
+                    byNameLinkBatch = _libraryManager.GetItemByNameLinks(linkedItemIds);
+                }
+            }
+
             // Batch-detect which videos own alternate versions to avoid the per-item alternate-version
             // queries in MediaSourceCount. Videos absent from this set have a single media source.
             IReadOnlySet<Guid>? alternateVersionItemIds = null;
@@ -280,7 +297,9 @@ namespace Emby.Server.Implementations.Dto
                     artistsBatch,
                     resumeDataBatch?.GetValueOrDefault(item.Id),
                     peopleBatch,
-                    alternateVersionItemIds);
+                    personItemBatch,
+                    alternateVersionItemIds,
+                    byNameLinkBatch?.GetValueOrDefault(item.Id) ?? ItemByNameLinks.Empty);
 
                 if (item is LiveTvChannel tvChannel)
                 {
@@ -312,25 +331,10 @@ namespace Emby.Server.Implementations.Dto
             return returnItems;
         }
 
+        // Through the batch path, so a single item pays one query per lookup rather than the N+1 form
+        // of every one of them. Visibility is the caller's to decide, as it was here.
         public BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User? user = null, BaseItem? owner = null)
-        {
-            var dto = GetBaseItemDtoInternal(item, options, user, owner, null);
-            if (item is LiveTvChannel tvChannel)
-            {
-                LivetvManager.AddChannelInfo(new[] { (dto, tvChannel) }, options, user);
-            }
-            else if (item is LiveTvProgram)
-            {
-                LivetvManager.AddInfoToProgramDto(new[] { (item, dto) }, options.Fields, user).GetAwaiter().GetResult();
-            }
-
-            if (options.ContainsField(ItemFields.ItemCounts))
-            {
-                SetItemByNameInfo(dto, user);
-            }
-
-            return dto;
-        }
+            => GetBaseItemDtos([item], options, user, owner, skipVisibilityCheck: true)[0];
 
         private BaseItemDto GetBaseItemDtoInternal(
             BaseItem item,
@@ -344,7 +348,9 @@ namespace Emby.Server.Implementations.Dto
             IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null,
             VersionResumeData? resumeData = null,
             IReadOnlyDictionary<Guid, IReadOnlyList<PersonInfo>>? peopleBatch = null,
-            IReadOnlySet<Guid>? alternateVersionItemIds = null)
+            IReadOnlyDictionary<Guid, BaseItem>? personItemBatch = null,
+            IReadOnlySet<Guid>? alternateVersionItemIds = null,
+            ItemByNameLinks? byNameLinks = null)
         {
             var dto = new BaseItemDto
             {
@@ -354,6 +360,14 @@ namespace Emby.Server.Implementations.Dto
             if (item.SourceType == SourceType.Channel)
             {
                 dto.SourceType = item.SourceType.ToString();
+            }
+
+            // Fetched here when the batch did not, so a single item reports the ids a listing does.
+            if (byNameLinks is null)
+            {
+                byNameLinks = options.ContainsField(ItemFields.Genres) || options.ContainsField(ItemFields.Studios)
+                    ? _libraryManager.GetItemByNameLinks([item.Id]).GetValueOrDefault(item.Id) ?? ItemByNameLinks.Empty
+                    : ItemByNameLinks.Empty;
             }
 
             if (options.ContainsField(ItemFields.People))
@@ -366,7 +380,7 @@ namespace Emby.Server.Implementations.Dto
                     prefetchedPeople = peopleBatch.GetValueOrDefault(item.Id) ?? [];
                 }
 
-                AttachPeople(dto, item, user, prefetchedPeople);
+                AttachPeople(dto, item, user, prefetchedPeople, personItemBatch);
             }
 
             if (options.ContainsField(ItemFields.PrimaryImageAspectRatio))
@@ -410,10 +424,10 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.ContainsField(ItemFields.Studios))
             {
-                AttachStudios(dto, item);
+                AttachStudios(dto, item, byNameLinks);
             }
 
-            AttachBasicFields(dto, item, owner, options, artistsBatch, user, alternateVersionItemIds);
+            AttachBasicFields(dto, item, owner, options, artistsBatch, user, alternateVersionItemIds, byNameLinks);
 
             if (options.ContainsField(ItemFields.CanDelete))
             {
@@ -506,7 +520,10 @@ namespace Emby.Server.Implementations.Dto
         /// Some callers already have the counts extracted so no reason to retrieve them again.
         public BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem>? taggedItems, User? user = null)
         {
-            var dto = GetBaseItemDtoInternal(item, options, user);
+            // Empty rather than unfetched: a by-name item carries no genres or studios of its own, so
+            // every row of a listing that runs through here would pay a lookup that can only come back
+            // with nothing.
+            var dto = GetBaseItemDtoInternal(item, options, user, byNameLinks: ItemByNameLinks.Empty);
 
             if (options.ContainsField(ItemFields.ItemCounts)
                 && taggedItems is not null
@@ -771,6 +788,29 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
+        // One query for the credits of the whole batch: an item can carry hundreds, and reading them
+        // one at a time is what makes the first request after a restart slow.
+        private IReadOnlyDictionary<Guid, BaseItem> GetPersonItems(IEnumerable<Guid> personItemIds, BaseItem? item)
+        {
+            var ids = personItemIds.Where(e => !e.IsEmpty()).Distinct().ToArray();
+            if (ids.Length == 0)
+            {
+                return new Dictionary<Guid, BaseItem>();
+            }
+
+            try
+            {
+                return _libraryManager
+                    .GetItemList(new InternalItemsQuery { ItemIds = ids, DtoOptions = new DtoOptions(true) })
+                    .ToDictionary(e => e.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting the people of {Item}", item?.Name);
+                return new Dictionary<Guid, BaseItem>();
+            }
+        }
+
         /// <summary>
         /// Attaches People DTO's to a DTOBaseItem.
         /// </summary>
@@ -778,7 +818,13 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="item">The item.</param>
         /// <param name="user">The requesting user.</param>
         /// <param name="prefetchedPeople">People fetched in batch by the caller; when null the people are queried per item.</param>
-        private void AttachPeople(BaseItemDto dto, BaseItem item, User? user = null, IReadOnlyList<PersonInfo>? prefetchedPeople = null)
+        /// <param name="prefetchedPersonItems">The items the credits resolve to, fetched in batch by the caller.</param>
+        private void AttachPeople(
+            BaseItemDto dto,
+            BaseItem item,
+            User? user = null,
+            IReadOnlyList<PersonInfo>? prefetchedPeople = null,
+            IReadOnlyDictionary<Guid, BaseItem>? prefetchedPersonItems = null)
         {
             // When rendering a page of items the caller batch-fetches people for every item up
             // front and passes them in, avoiding one GetPeople query per item. Fall back to the
@@ -827,22 +873,13 @@ namespace Emby.Server.Implementations.Dto
 
             var list = new List<BaseItemPerson>();
 
-            Dictionary<string, Person> dictionary = people.Select(p => p.Name)
-                .Distinct(StringComparer.OrdinalIgnoreCase).Select(c =>
-                {
-                    try
-                    {
-                        return _libraryManager.GetPerson(c);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error getting person {Name}", c);
-                        return null;
-                    }
-                }).Where(i => i is not null)
-                .Where(i => user is null || i!.IsVisible(user))
-                .DistinctBy(x => x!.Name, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(i => i!.Name, StringComparer.OrdinalIgnoreCase)!; // null values got filtered out
+            // Resolved by the id the credit carries, so a renamed entry keeps its place in the list.
+            var byId = prefetchedPersonItems ?? GetPersonItems(people.Select(e => e.PersonItemId), item);
+            var resolvedPeople = new BaseItem?[people.Count];
+            for (var i = 0; i < people.Count; i++)
+            {
+                resolvedPeople[i] = VisibleTo(byId.GetValueOrDefault(people[i].PersonItemId), user);
+            }
 
             for (var i = 0; i < people.Count; i++)
             {
@@ -855,7 +892,7 @@ namespace Emby.Server.Implementations.Dto
                     Type = person.Type
                 };
 
-                if (dictionary.TryGetValue(person.Name, out Person? entity))
+                if (resolvedPeople[i] is BaseItem entity)
                 {
                     baseItemPerson.PrimaryImageTag = GetTagAndFillBlurhash(dto, entity, ImageType.Primary);
                     baseItemPerson.Id = entity.Id;
@@ -886,33 +923,87 @@ namespace Emby.Server.Implementations.Dto
             dto.People = list.ToArray();
         }
 
+        private static BaseItem? VisibleTo(BaseItem? item, User? user)
+            => item is not null && (user is null || item.IsVisible(user)) ? item : null;
+
         /// <summary>
         /// Attaches the studios.
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
-        private void AttachStudios(BaseItemDto dto, BaseItem item)
+        /// <param name="links">The genre and studio items the item links to.</param>
+        private void AttachStudios(BaseItemDto dto, BaseItem item, ItemByNameLinks? links)
         {
-            dto.Studios = item.Studios
-                .Where(i => !string.IsNullOrEmpty(i))
-                .Select(i => new NameGuidPair
-                {
-                    Name = i,
-                    Id = _libraryManager.GetStudioId(i)
-                })
-                .ToArray();
+            dto.Studios = MergeLinks(item.Studios, links?.Studios, _libraryManager.GetStudioId);
         }
 
-        private void AttachGenreItems(BaseItemDto dto, BaseItem item)
+        private void AttachGenreItems(BaseItemDto dto, BaseItem item, ItemByNameLinks? links)
         {
-            dto.GenreItems = item.Genres
-                .Where(i => !string.IsNullOrEmpty(i))
-                .Select(i => new NameGuidPair
+            dto.GenreItems = MergeLinks(item.Genres, links?.Genres, i => GetGenreId(i, item));
+        }
+
+        // Matched on the clean value, because two spellings are one genre. A name no link claims is still
+        // reported under the id its own spelling hashes to, because a link that never resolved is not the
+        // same as the genre being gone. A link that claims no name means a rename, and then the links are
+        // the only truthful answer, so the unclaimed names are left out rather than reported twice.
+        private static NameGuidPair[] MergeLinks(string[] names, IReadOnlyList<NameGuidPair>? linked, Func<string, Guid> idFor)
+        {
+            if (linked is null || linked.Count == 0)
+            {
+                return [.. names
+                    .Where(e => !string.IsNullOrEmpty(e))
+                    .Select(e => new NameGuidPair { Name = e, Id = idFor(e) })];
+            }
+
+            var byCleanName = new Dictionary<string, NameGuidPair>(linked.Count, StringComparer.Ordinal);
+            foreach (var pair in linked)
+            {
+                byCleanName.TryAdd(pair.Name.GetCleanValue(), pair);
+            }
+
+            var result = new List<NameGuidPair>(Math.Max(names.Length, linked.Count));
+            var claimed = new HashSet<string>(byCleanName.Count, StringComparer.Ordinal);
+            var unclaimed = new List<string>();
+
+            foreach (var name in names)
+            {
+                if (string.IsNullOrEmpty(name))
                 {
-                    Name = i,
-                    Id = GetGenreId(i, item)
-                })
-                .ToArray();
+                    continue;
+                }
+
+                var cleanName = name.GetCleanValue();
+                if (byCleanName.TryGetValue(cleanName, out var pair))
+                {
+                    if (claimed.Add(cleanName))
+                    {
+                        result.Add(pair);
+                    }
+                }
+                else
+                {
+                    unclaimed.Add(name);
+                }
+            }
+
+            if (claimed.Count == byCleanName.Count)
+            {
+                // Every link is accounted for, so a name without one failed to resolve rather than
+                // having been renamed out from under the item.
+                result.AddRange(unclaimed.Select(e => new NameGuidPair { Name = e, Id = idFor(e) }));
+                return [.. result];
+            }
+
+            // A renamed item sorts last, as the item does not name it any more.
+            foreach (var pair in linked)
+            {
+                if (claimed.Add(pair.Name.GetCleanValue()))
+                {
+                    result.Add(pair);
+                }
+            }
+
+            return [.. result];
         }
 
         private Guid GetGenreId(string name, BaseItem owner)
@@ -999,7 +1090,8 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="artistsBatch">Optional pre-fetched artist lookup shared across a batch of items.</param>
         /// <param name="user">The user, for per-user values such as the accessible media source count.</param>
         /// <param name="alternateVersionItemIds">Optional pre-fetched set of item IDs that own alternate versions, shared across a batch of items.</param>
-        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem? owner, DtoOptions options, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null, User? user = null, IReadOnlySet<Guid>? alternateVersionItemIds = null)
+        /// <param name="byNameLinks">Optional pre-fetched genre and studio links.</param>
+        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem? owner, DtoOptions options, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null, User? user = null, IReadOnlySet<Guid>? alternateVersionItemIds = null, ItemByNameLinks? byNameLinks = null)
         {
             if (options.ContainsField(ItemFields.DateCreated))
             {
@@ -1042,7 +1134,7 @@ namespace Emby.Server.Implementations.Dto
             if (options.ContainsField(ItemFields.Genres))
             {
                 dto.Genres = item.Genres;
-                AttachGenreItems(dto, item);
+                AttachGenreItems(dto, item, byNameLinks);
             }
 
             if (options.EnableImages)

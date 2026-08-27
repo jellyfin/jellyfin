@@ -245,17 +245,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             if (movieResult.ProductionCompanies is not null)
             {
-                movie.SetStudios(movieResult.ProductionCompanies.Select(c => c.Name));
+                movie.SetStudios(movieResult.ProductionCompanies.Select(TmdbUtils.ToItemByNameInfo));
             }
 
             var genres = movieResult.Genres;
 
             if (genres is not null)
             {
-                foreach (var genre in genres.Select(g => g.Name).Trimmed())
-                {
-                    movie.AddGenre(genre);
-                }
+                movie.SetGenres(genres.Select(TmdbUtils.ToItemByNameInfo));
             }
 
             if (movieResult.Keywords?.Keywords is not null)

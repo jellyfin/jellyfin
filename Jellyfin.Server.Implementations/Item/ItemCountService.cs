@@ -129,7 +129,7 @@ public class ItemCountService : IItemCountService
 
         var item = context.BaseItems.AsNoTracking()
             .Where(e => e.Id == id)
-            .Select(e => new { e.Name, e.CleanName })
+            .Select(e => new { e.Name })
             .FirstOrDefault();
 
         if (item is null)
@@ -140,33 +140,26 @@ public class ItemCountService : IItemCountService
         IQueryable<BaseItemEntity> baseQuery;
         switch (kind)
         {
+            // Both the same: a credit points at its item, and the id already says which kind that is.
             case BaseItemKind.Person:
+            case BaseItemKind.MusicArtist:
                 baseQuery = ItemsById(context, context.PeopleBaseItemMap
                     .AsNoTracking()
-                    .Where(m => m.People.Name == item.Name)
+                    .Where(m => m.People.ItemId.Equals(id))
                     .Select(m => m.ItemId));
-                break;
-            case BaseItemKind.MusicArtist:
-                baseQuery = ItemsById(context, context.ItemValuesMap
-                    .AsNoTracking()
-                    .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
-                        && (ivm.ItemValue.Type == ItemValueType.Artist || ivm.ItemValue.Type == ItemValueType.AlbumArtist))
-                    .Select(ivm => ivm.ItemId));
                 break;
             case BaseItemKind.Genre:
             case BaseItemKind.MusicGenre:
-                baseQuery = ItemsById(context, context.ItemValuesMap
+                baseQuery = ItemsById(context, context.BaseItemGenres
                     .AsNoTracking()
-                    .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
-                        && ivm.ItemValue.Type == ItemValueType.Genre)
-                    .Select(ivm => ivm.ItemId));
+                    .Where(g => g.GenreItemId == id)
+                    .Select(g => g.ItemId));
                 break;
             case BaseItemKind.Studio:
-                baseQuery = ItemsById(context, context.ItemValuesMap
+                baseQuery = ItemsById(context, context.BaseItemStudios
                     .AsNoTracking()
-                    .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
-                        && ivm.ItemValue.Type == ItemValueType.Studios)
-                    .Select(ivm => ivm.ItemId));
+                    .Where(s => s.StudioItemId == id)
+                    .Select(s => s.ItemId));
                 break;
             case BaseItemKind.Year:
                 if (int.TryParse(item.Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
@@ -249,9 +242,58 @@ public class ItemCountService : IItemCountService
             }
         }
 
+        // Only for the links a series passes down to every one of its episodes. A person credited on
+        // the series did not necessarily work on each episode, and an episode carries its own year.
+        if (kind is BaseItemKind.Studio or BaseItemKind.Genre or BaseItemKind.MusicGenre
+            && relatedItemKinds.Contains(BaseItemKind.Episode)
+            && relatedItemKinds.Contains(BaseItemKind.Series))
+        {
+            // A studio or genre is normally only written on the series, so its episodes have to be
+            // counted through it. Episodes carrying the link themselves are already in
+            // result.EpisodeCount and must not be counted a second time.
+            var rolledUpEpisodeCount = CountEpisodesOfLinkedSeries(context, baseQuery, accessFilter, out var unrelatedEpisodeCount);
+            totalCount += rolledUpEpisodeCount + unrelatedEpisodeCount - result.EpisodeCount;
+            result.EpisodeCount = rolledUpEpisodeCount + unrelatedEpisodeCount;
+        }
+
         result.ItemCount = totalCount;
 
         return result;
+    }
+
+    /// <summary>
+    /// Counts the episodes below the series in <paramref name="linkedItems"/>, and the linked episodes that no series in it covers.
+    /// </summary>
+    private int CountEpisodesOfLinkedSeries(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> linkedItems,
+        InternalItemsQuery accessFilter,
+        out int unrelatedEpisodeCount)
+    {
+        var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
+        var episodeTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
+
+        var linkedSeriesIds = linkedItems.Where(e => e.Type == seriesTypeName).Select(e => e.Id);
+        unrelatedEpisodeCount = linkedItems.Count(e => e.Type == episodeTypeName
+            && (e.SeriesId == null || !linkedSeriesIds.Contains(e.SeriesId.Value)));
+
+        // Materialised so the episode count drives off IX_BaseItems_SeriesId instead of leaving
+        // SQLite free to scan every episode in the library.
+        var seriesIds = linkedItems
+            .Where(e => e.Type == seriesTypeName)
+            .Select(e => e.Id)
+            .ToArray();
+
+        if (seriesIds.Length == 0)
+        {
+            return 0;
+        }
+
+        var episodes = context.BaseItems.AsNoTracking()
+            .Where(e => e.Type == episodeTypeName && e.SeriesId != null)
+            .WhereOneOrMany(seriesIds, e => e.SeriesId!.Value);
+
+        return _queryHelpers.ApplyAccessFiltering(context, episodes, accessFilter).Count();
     }
 
     private static IQueryable<BaseItemEntity> ItemsById(JellyfinDbContext context, IQueryable<Guid> itemIds)

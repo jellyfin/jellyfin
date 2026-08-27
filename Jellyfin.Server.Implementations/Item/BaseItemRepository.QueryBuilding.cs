@@ -546,15 +546,8 @@ public sealed partial class BaseItemRepository
             context.BaseItems.AsNoTracking(),
             new InternalItemsQuery(filter.User) { TopParentIds = topParentIds, IncludeOwnedItems = true });
 
-        var personType = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
-        if (itemByNameTypes.Contains(personType))
-        {
-            baseQuery = baseQuery.Where(e => e.Type != personType
-                || context.Peoples.Any(p => p.Name == e.Name
-                    && context.PeopleBaseItemMap.Any(m => m.PeopleId == p.Id && accessibleItems.Any(i => i.Id == m.ItemId))));
-        }
-
-        foreach (var (kind, valueTypes) in _itemByNameValueTypes)
+        // People and artists are reached through the credits pointing at them.
+        foreach (var kind in _creditedByNameKinds)
         {
             var typeName = _itemTypeLookup.BaseItemKindNames[kind];
             if (!itemByNameTypes.Contains(typeName))
@@ -563,8 +556,27 @@ public sealed partial class BaseItemRepository
             }
 
             baseQuery = baseQuery.Where(e => e.Type != typeName
-                || context.ItemValues.Any(v => valueTypes.Contains(v.Type) && v.CleanValue == e.CleanName
-                    && context.ItemValuesMap.Any(m => m.ItemValueId == v.ItemValueId && accessibleItems.Any(i => i.Id == m.ItemId))));
+                || context.Peoples.Any(p => p.ItemId.Equals(e.Id)
+                    && context.PeopleBaseItemMap.Any(m => m.PeopleId == p.Id && accessibleItems.Any(i => i.Id == m.ItemId))));
+        }
+
+        foreach (var kind in _genreByNameKinds)
+        {
+            var typeName = _itemTypeLookup.BaseItemKindNames[kind];
+            if (!itemByNameTypes.Contains(typeName))
+            {
+                continue;
+            }
+
+            baseQuery = baseQuery.Where(e => e.Type != typeName
+                || context.BaseItemGenres.Any(g => g.GenreItemId == e.Id && accessibleItems.Any(i => i.Id == g.ItemId)));
+        }
+
+        var studioTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Studio];
+        if (itemByNameTypes.Contains(studioTypeName))
+        {
+            baseQuery = baseQuery.Where(e => e.Type != studioTypeName
+                || context.BaseItemStudios.Any(s => s.StudioItemId == e.Id && accessibleItems.Any(i => i.Id == s.ItemId)));
         }
 
         return baseQuery;
@@ -602,8 +614,8 @@ public sealed partial class BaseItemRepository
         if (filter.ExcludeInheritedTags.Length > 0)
         {
             var excludedTags = filter.ExcludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
-            var blockedTagItemIds = context.ItemValuesMap
-                .Where(f => f.ItemValue.Type == ItemValueType.Tags && excludedTags.Contains(f.ItemValue.CleanValue))
+            var blockedTagItemIds = context.BaseItemTags
+                .Where(f => excludedTags.Contains(f.CleanValue))
                 .Select(f => f.ItemId);
 
             baseQuery = baseQuery.Where(e =>
@@ -618,8 +630,8 @@ public sealed partial class BaseItemRepository
         {
             var includeTags = filter.IncludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
             var personTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
-            var allowedTagItemIds = context.ItemValuesMap
-                .Where(f => f.ItemValue.Type == ItemValueType.Tags && includeTags.Contains(f.ItemValue.CleanValue))
+            var allowedTagItemIds = context.BaseItemTags
+                .Where(f => includeTags.Contains(f.CleanValue))
                 .Select(f => f.ItemId);
 
             baseQuery = baseQuery.Where(e =>

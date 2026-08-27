@@ -6,12 +6,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
-using Jellyfin.Database.Implementations;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Data;
@@ -20,31 +18,30 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
 {
     private readonly ILibraryManager _libraryManager;
     private readonly ILogger<CleanDatabaseScheduledTask> _logger;
-    private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IPathManager _pathManager;
 
     public CleanDatabaseScheduledTask(
         ILibraryManager libraryManager,
         ILogger<CleanDatabaseScheduledTask> logger,
-        IDbContextFactory<JellyfinDbContext> dbProvider,
         IPathManager pathManager)
     {
         _libraryManager = libraryManager;
         _logger = logger;
-        _dbProvider = dbProvider;
         _pathManager = pathManager;
     }
 
-    public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
+    public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
     {
         var deadItemsProgress = new Progress<double>(val => progress.Report(val * 0.8));
-        await CleanDeadItems(cancellationToken, deadItemsProgress).ConfigureAwait(false);
+        CleanDeadItems(cancellationToken, deadItemsProgress);
 
         var playlistProgress = new Progress<double>(val => progress.Report(80 + (val * 0.2)));
-        await CleanOrphanedFilePlaylistsAsync(cancellationToken, playlistProgress).ConfigureAwait(false);
+        CleanOrphanedFilePlaylists(cancellationToken, playlistProgress);
+
+        return Task.CompletedTask;
     }
 
-    private async Task CleanDeadItems(CancellationToken cancellationToken, IProgress<double> progress)
+    private void CleanDeadItems(CancellationToken cancellationToken, IProgress<double> progress)
     {
         var itemIds = _libraryManager.GetItemIds(new InternalItemsQuery
         {
@@ -55,8 +52,6 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
         var numItems = itemIds.Count + 1;
 
         _logger.LogDebug("Cleaning {Number} items with dead parents", numItems);
-
-        IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 2));
 
         foreach (var itemId in itemIds)
         {
@@ -103,27 +98,13 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
             numComplete++;
             double percent = numComplete;
             percent /= numItems;
-            subProgress.Report(percent * 100);
-        }
-
-        subProgress = new Progress<double>((val) => progress.Report((val / 2) + 50));
-        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await using (context.ConfigureAwait(false))
-        {
-            var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
-            await using (transaction.ConfigureAwait(false))
-            {
-                await context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-                subProgress.Report(50);
-                await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-                subProgress.Report(100);
-            }
+            progress.Report(percent * 100);
         }
 
         progress.Report(100);
     }
 
-    private async Task CleanOrphanedFilePlaylistsAsync(CancellationToken cancellationToken, IProgress<double> progress)
+    private void CleanOrphanedFilePlaylists(CancellationToken cancellationToken, IProgress<double> progress)
     {
         var playlists = _libraryManager.GetItemList(new InternalItemsQuery
         {

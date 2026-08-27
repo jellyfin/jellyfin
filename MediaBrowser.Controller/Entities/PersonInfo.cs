@@ -28,6 +28,11 @@ namespace MediaBrowser.Controller.Entities
         public Guid ItemId { get; set; }
 
         /// <summary>
+        /// Gets or sets the id of the Person item this credit resolves to.
+        /// </summary>
+        public Guid PersonItemId { get; set; }
+
+        /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>

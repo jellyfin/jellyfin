@@ -6,7 +6,9 @@ using System.Linq;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -17,70 +19,233 @@ namespace Jellyfin.Server.Implementations.Item;
 
 public sealed partial class BaseItemRepository
 {
+    // How many items one pass of a rename holds, bounding a rename of a genre the whole library carries.
+    private const int RenameChunkSize = 500;
+
+    private enum ByNameLink
+    {
+        Credit,
+        Genre,
+        Studio
+    }
+
     /// <inheritdoc />
     public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetAllArtists(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, _getAllArtistsValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]);
+        return GetItemsByName(filter, ByNameLink.Credit, _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist], _artistCreditKinds);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetArtists(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, _getArtistValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]);
+        return GetItemsByName(filter, ByNameLink.Credit, _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist], _trackArtistCreditKinds);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetAlbumArtists(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, _getAlbumArtistValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]);
+        return GetItemsByName(filter, ByNameLink.Credit, _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist], _albumArtistCreditKinds);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetStudios(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, _getStudiosValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.Studio]);
+        return GetItemsByName(filter, ByNameLink.Studio, _itemTypeLookup.BaseItemKindNames[BaseItemKind.Studio]);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetGenres(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, _getGenreValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.Genre]);
+        return GetItemsByName(filter, ByNameLink.Genre, _itemTypeLookup.BaseItemKindNames[BaseItemKind.Genre]);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetMusicGenres(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, _getGenreValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicGenre]);
-    }
-
-    /// <inheritdoc />
-    public IReadOnlyList<string> GetStudioNames()
-    {
-        return GetItemValueNames(_getStudiosValueTypes, [], []);
+        return GetItemsByName(filter, ByNameLink.Genre, _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicGenre]);
     }
 
     /// <inheritdoc />
     public IReadOnlyList<string> GetAllArtistNames()
     {
-        return GetItemValueNames(_getAllArtistsValueTypes, [], []);
+        using var context = _dbProvider.CreateDbContext();
+
+        // From the credits, so a renamed artist is listed under the name its item carries now.
+        return context.Peoples
+            .AsNoTracking()
+            .Where(p => _artistCreditKinds.Contains(p.PersonType))
+            .Join(
+                context.BaseItems.Where(b => b.Type == _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]),
+                p => p.ItemId,
+                b => b.Id,
+                (p, b) => b.Name!)
+            .Distinct()
+            .ToArray();
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<string> GetMusicGenreNames()
+    public IReadOnlyDictionary<Guid, ItemByNameLinks> GetItemByNameLinks(IReadOnlyList<Guid> itemIds)
     {
-        return GetItemValueNames(
-            _getGenreValueTypes,
-            _itemTypeLookup.MusicGenreTypes,
-            []);
+        ArgumentNullException.ThrowIfNull(itemIds);
+
+        if (itemIds.Count == 0)
+        {
+            return new Dictionary<Guid, ItemByNameLinks>();
+        }
+
+        using var context = _dbProvider.CreateDbContext();
+
+        var genres = context.BaseItemGenres
+            .AsNoTracking()
+            .WhereOneOrMany(itemIds, e => e.ItemId)
+            .Join(
+                context.BaseItems,
+                e => e.GenreItemId,
+                b => b.Id,
+                (e, b) => new { e.ItemId, LinkedId = b.Id, b.Name })
+            .ToList();
+
+        var studios = context.BaseItemStudios
+            .AsNoTracking()
+            .WhereOneOrMany(itemIds, e => e.ItemId)
+            .Join(
+                context.BaseItems,
+                e => e.StudioItemId,
+                b => b.Id,
+                (e, b) => new { e.ItemId, LinkedId = b.Id, b.Name })
+            .ToList();
+
+        var genresByItem = genres
+            .GroupBy(e => e.ItemId)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<NameGuidPair>)[.. g.Select(e => new NameGuidPair { Id = e.LinkedId, Name = e.Name ?? string.Empty })]);
+        var studiosByItem = studios
+            .GroupBy(e => e.ItemId)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<NameGuidPair>)[.. g.Select(e => new NameGuidPair { Id = e.LinkedId, Name = e.Name ?? string.Empty })]);
+
+        var result = new Dictionary<Guid, ItemByNameLinks>(genresByItem.Count + studiosByItem.Count);
+        foreach (var itemId in genresByItem.Keys.Concat(studiosByItem.Keys).Distinct())
+        {
+            result[itemId] = new ItemByNameLinks(
+                genresByItem.GetValueOrDefault(itemId) ?? [],
+                studiosByItem.GetValueOrDefault(itemId) ?? []);
+        }
+
+        return result;
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<string> GetGenreNames()
+    public ByNameRename RenameByNameLinks(Guid byNameItemId, BaseItemKind kind, string newName)
     {
-        return GetItemValueNames(
-            _getGenreValueTypes,
-            [],
-            _itemTypeLookup.MusicGenreTypes);
+        ArgumentException.ThrowIfNullOrEmpty(newName);
+
+        using var context = _dbProvider.CreateDbContext();
+
+        // One transaction over the whole rename, opened before anything is read. Committing it in
+        // pieces would leave the by-name item and the items naming it disagreeing if anything failed
+        // part way, and the next save of one of those items would resolve its old spelling to a second
+        // by-name item. Reading inside it also means the set of links cannot grow behind the rewrite.
+        using var transaction = context.Database.BeginTransaction();
+
+        var previousName = context.BaseItems
+            .AsNoTracking()
+            .Where(e => e.Id.Equals(byNameItemId))
+            .Select(e => e.Name)
+            .FirstOrDefault();
+
+        if (string.IsNullOrEmpty(previousName) || string.Equals(previousName, newName, StringComparison.Ordinal))
+        {
+            return ByNameRename.None;
+        }
+
+        var isStudio = kind == BaseItemKind.Studio;
+
+        // Materialised rather than composed: an AsNoTracking sub-query carries that flag into the
+        // query it is composed into, and the rewrite below needs the items tracked to be saved.
+        var linkedIds = isStudio
+            ? context.BaseItemStudios.AsNoTracking().Where(e => e.StudioItemId.Equals(byNameItemId)).Select(e => e.ItemId).ToArray()
+            : context.BaseItemGenres.AsNoTracking().Where(e => e.GenreItemId.Equals(byNameItemId)).Select(e => e.ItemId).ToArray();
+
+        var rewritten = new List<Guid>();
+
+        // The change tracker is emptied between chunks, so what it holds stays bounded however many
+        // items carry the name. The transaction still covers all of them.
+        foreach (var chunk in linkedIds.Chunk(RenameChunkSize))
+        {
+            var linked = context.BaseItems.WhereOneOrMany(chunk, e => e.Id).ToList();
+            var changedInChunk = 0;
+
+            foreach (var item in linked)
+            {
+                var names = isStudio ? item.Studios : item.Genres;
+                if (string.IsNullOrEmpty(names) || !TryRename(names, previousName, newName, out var updated))
+                {
+                    continue;
+                }
+
+                if (isStudio)
+                {
+                    item.Studios = updated;
+                }
+                else
+                {
+                    item.Genres = updated;
+                }
+
+                rewritten.Add(item.Id);
+                changedInChunk++;
+            }
+
+            if (changedInChunk > 0)
+            {
+                context.SaveChanges();
+            }
+
+            context.ChangeTracker.Clear();
+        }
+
+        // Last and in the same transaction, so the name the items now carry is the one the by-name item
+        // ends up with, whether or not the caller goes on to save it.
+        var byNameItem = context.BaseItems.FirstOrDefault(e => e.Id.Equals(byNameItemId));
+        if (byNameItem is null)
+        {
+            // Gone since the name was read, so there is nothing to rename and nothing to have rewritten.
+            transaction.Rollback();
+            return ByNameRename.None;
+        }
+
+        byNameItem.Name = newName;
+        byNameItem.CleanName = newName.GetCleanValue();
+        context.SaveChanges();
+
+        transaction.Commit();
+
+        return new ByNameRename(previousName, rewritten);
+    }
+
+    // The names sit in one delimited column, so the whole value is rewritten rather than a substring of
+    // it: replacing "Sci-Fi" inside "Sci-Fi Horror" would corrupt a name that merely contains it.
+    private static bool TryRename(string names, string previousName, string newName, out string updated)
+    {
+        var parts = names.Split('|');
+        var changed = false;
+        for (var i = 0; i < parts.Length; i++)
+        {
+            if (string.Equals(parts[i], previousName, StringComparison.OrdinalIgnoreCase))
+            {
+                parts[i] = newName;
+                changed = true;
+            }
+        }
+
+        if (!changed)
+        {
+            updated = names;
+            return false;
+        }
+
+        // Deduplicated, because the item may already carry the name it is being renamed onto.
+        updated = string.Join('|', parts.Distinct(StringComparer.OrdinalIgnoreCase));
+        return true;
     }
 
     /// <inheritdoc />
@@ -117,32 +282,18 @@ public sealed partial class BaseItemRepository
             .ToArray();
     }
 
-    private string[] GetItemValueNames(IReadOnlyList<ItemValueType> itemValueTypes, IReadOnlyList<string> withItemTypes, IReadOnlyList<string> excludeItemTypes)
-    {
-        using var context = _dbProvider.CreateDbContext();
-
-        var query = context.ItemValuesMap
-            .AsNoTracking()
-            .Where(e => itemValueTypes.Any(w => w == e.ItemValue.Type));
-        if (withItemTypes.Count > 0)
-        {
-            query = query.Where(e => withItemTypes.Contains(e.Item.Type));
-        }
-
-        if (excludeItemTypes.Count > 0)
-        {
-            query = query.Where(e => !excludeItemTypes.Contains(e.Item.Type));
-        }
-
-        return query.Select(e => e.ItemValue)
-            .GroupBy(e => e.CleanValue)
-            .Select(g => g.Min(v => v.Value)!)
-            .ToArray();
-    }
-
-    private QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetItemValues(InternalItemsQuery filter, IReadOnlyList<ItemValueType> itemValueTypes, string returnType)
+    private QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetItemsByName(
+        InternalItemsQuery filter,
+        ByNameLink link,
+        string returnType,
+        string[]? personKinds = null)
     {
         ArgumentNullException.ThrowIfNull(filter);
+
+        if ((link == ByNameLink.Credit) != (personKinds is not null))
+        {
+            throw new ArgumentException("Credit kinds apply to credits and nothing else.", nameof(personKinds));
+        }
 
         using var context = _dbProvider.CreateDbContext();
 
@@ -163,16 +314,35 @@ public sealed partial class BaseItemRepository
             IsSeries = filter.IsSeries
         });
 
-        var innerQuery = PrepareItemQuery(context, filter)
-            .Where(e => e.Type == returnType)
-            .Where(e => context.ItemValuesMap
-                .Where(ivm => itemValueTypes.Contains(ivm.ItemValue.Type) && ivm.ItemValue.CleanValue == e.CleanName)
+        var byName = PrepareItemQuery(context, filter).Where(e => e.Type == returnType);
+
+        var innerQuery = link switch
+        {
+            ByNameLink.Credit => byName.Where(e => context.PeopleBaseItemMap
+                .Where(m => m.People.ItemId.Equals(e.Id) && personKinds!.Contains(m.People.PersonType))
                 .Join(
                     innerQueryFilter,
-                    ivm => ivm.ItemId,
+                    m => m.ItemId,
                     g => g.Id,
-                    (ivm, g) => ivm.ItemId)
-                .Any());
+                    (m, g) => m.ItemId)
+                .Any()),
+            ByNameLink.Genre => byName.Where(e => context.BaseItemGenres
+                .Where(m => m.GenreItemId == e.Id)
+                .Join(
+                    innerQueryFilter,
+                    m => m.ItemId,
+                    g => g.Id,
+                    (m, g) => m.ItemId)
+                .Any()),
+            _ => byName.Where(e => context.BaseItemStudios
+                .Where(m => m.StudioItemId == e.Id)
+                .Join(
+                    innerQueryFilter,
+                    m => m.ItemId,
+                    g => g.Id,
+                    (m, g) => m.ItemId)
+                .Any()),
+        };
 
         var outerQueryFilter = new InternalItemsQuery(filter.User)
         {
@@ -246,18 +416,21 @@ public sealed partial class BaseItemRepository
         }
 
         result.StartIndex = filter.StartIndex ?? 0;
-        if (filter.IncludeItemTypes.Length > 0)
+        var page = query.AsEnumerable().Where(e => e is not null).ToList();
+
+        if (filter.DtoOptions.ContainsField(ItemFields.ItemCounts))
         {
-            var countsByCleanName = BuildItemCountsByCleanName(context, filter, itemValueTypes);
+            // Only the items on this page need counting, which keeps the work proportional to the
+            // page instead of to every genre, studio or artist in the library.
+            var countsByItem = BuildItemCountsByLinkedItem(context, filter, link, personKinds, page.Select(e => e.Id).ToList());
+
             result.Items =
             [
-                .. query
-                    .AsEnumerable()
-                    .Where(e => e is not null)
+                .. page
                     .Select(e =>
                     {
                         var item = DeserializeBaseItem(e, filter.SkipDeserialization);
-                        countsByCleanName.TryGetValue(e.CleanName ?? string.Empty, out var itemCount);
+                        var itemCount = countsByItem.GetValueOrDefault(e.Id);
                         return (item, itemCount);
                     })
                     .Where(x => x.item is not null)
@@ -268,9 +441,7 @@ public sealed partial class BaseItemRepository
         {
             result.Items =
             [
-                .. query
-                    .AsEnumerable()
-                    .Where(e => e != null)
+                .. page
                     .Select(e => DeserializeBaseItem(e, filter.SkipDeserialization))
                     .Where(item => item != null)
                     .Select(item => (item!, (ItemCounts?)null))
@@ -280,15 +451,23 @@ public sealed partial class BaseItemRepository
         return result;
     }
 
-    private Dictionary<string, ItemCounts> BuildItemCountsByCleanName(
+    private Dictionary<Guid, ItemCounts> BuildItemCountsByLinkedItem(
         Database.Implementations.JellyfinDbContext context,
         InternalItemsQuery filter,
-        IReadOnlyList<ItemValueType> itemValueTypes)
+        ByNameLink link,
+        string[]? personKinds,
+        IReadOnlyList<Guid> keys)
     {
-        var typeSubQuery = new InternalItemsQuery(filter.User)
+        if (keys.Count == 0)
+        {
+            return [];
+        }
+
+        // The counts describe everything the item is linked to, not only the types the list was
+        // filtered down to. GET /Studios/{name} answers that way and the two have to agree.
+        var scopeQuery = new InternalItemsQuery(filter.User)
         {
             ExcludeItemTypes = filter.ExcludeItemTypes,
-            IncludeItemTypes = filter.IncludeItemTypes,
             MediaTypes = filter.MediaTypes,
             AncestorIds = filter.AncestorIds,
             ExcludeItemIds = filter.ExcludeItemIds,
@@ -298,34 +477,133 @@ public sealed partial class BaseItemRepository
             IsPlayed = filter.IsPlayed
         };
 
-        var itemCountQuery = TranslateQuery(context.BaseItems.AsNoTracking().Where(e => e.Id != EF.Constant(PlaceholderId)), context, typeSubQuery)
-            .Where(e => e.ItemValues!.Any(f => itemValueTypes!.Contains(f.ItemValue.Type)));
+        var scopedItems = TranslateQuery(context.BaseItems.AsNoTracking().Where(e => e.Id != EF.Constant(PlaceholderId)), context, scopeQuery);
+
+        // Joined from the link table rather than walked through a navigation: SelectMany needs SQL APPLY.
+        // The scope is joined in as well rather than checked as "ItemId IN (SELECT Id FROM BaseItems
+        // WHERE ...)": that form makes SQLite scan every item in the library before the keys narrow it.
+        IQueryable<ByNameLinkRow> links = link switch
+        {
+            ByNameLink.Credit => context.PeopleBaseItemMap
+                .AsNoTracking()
+                .Where(m => personKinds!.Contains(m.People.PersonType))
+                .Select(m => new ByNameLinkRow { Key = m.People.ItemId, ItemId = m.ItemId }),
+            ByNameLink.Genre => context.BaseItemGenres
+                .AsNoTracking()
+                .Select(m => new ByNameLinkRow { Key = m.GenreItemId, ItemId = m.ItemId }),
+            _ => context.BaseItemStudios
+                .AsNoTracking()
+                .Select(m => new ByNameLinkRow { Key = m.StudioItemId, ItemId = m.ItemId }),
+        };
+
+        links = links.WhereOneOrMany(keys, l => l.Key);
+
+        var rawCounts = links
+            .Join(
+                scopedItems,
+                l => l.ItemId,
+                e => e.Id,
+                (l, e) => new { l.Key, e.Type, e.SeriesId })
+            .GroupBy(x => new { x.Key, x.Type, x.SeriesId })
+            .Select(g => new { g.Key.Key, g.Key.Type, g.Key.SeriesId, Count = g.Count() })
+            .ToList();
 
         var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
-        var movieTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie];
         var episodeTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
+
+        // A series passes its genres and studios down to every one of its episodes; a credit on the
+        // series says nothing about who worked on a given episode.
+        // Grouping by series as well costs nothing here and saves a second pass over the same rows:
+        // it is what tells an episode carrying the link itself apart from one that inherits it.
+        var episodeCounts = link == ByNameLink.Credit
+            ? rawCounts
+                .Where(x => x.Type == episodeTypeName)
+                .GroupBy(x => x.Key)
+                .ToDictionary(g => g.Key, g => g.Sum(x => x.Count))
+            : BuildEpisodeCountsByLinkedItem(
+                scopedItems,
+                links,
+                rawCounts
+                    .Where(x => x.Type == episodeTypeName)
+                    .Select(x => (x.Key, x.SeriesId, x.Count))
+                    .ToList(),
+                seriesTypeName,
+                episodeTypeName);
+
+        return FoldCounts(rawCounts.Select(x => (x.Key, x.Type, x.Count)), episodeCounts, episodeTypeName);
+    }
+
+    /// <summary>
+    /// Counts the episodes an item stands for: the ones linked to it plus the ones below a series that is.
+    /// </summary>
+    private static Dictionary<Guid, int> BuildEpisodeCountsByLinkedItem(
+        IQueryable<BaseItemEntity> scopedItems,
+        IQueryable<ByNameLinkRow> links,
+        IReadOnlyList<(Guid Key, Guid? SeriesId, int Count)> linkedEpisodes,
+        string seriesTypeName,
+        string episodeTypeName)
+    {
+        // Resolved in steps rather than as one union: each of these drives off an index, while the
+        // single-statement form leaves SQLite free to scan every episode in the library instead.
+        var linkedSeries = links
+            .Join(
+                scopedItems.Where(e => e.Type == seriesTypeName),
+                l => l.ItemId,
+                e => e.Id,
+                (l, e) => new { l.Key, SeriesId = e.Id })
+            .ToList();
+
+        var seriesIds = linkedSeries.Select(x => x.SeriesId).Distinct().ToArray();
+        var episodesPerSeries = seriesIds.Length == 0
+            ? new Dictionary<Guid, int>()
+            : scopedItems
+                .Where(e => e.Type == episodeTypeName && e.SeriesId != null)
+                .WhereOneOrMany(seriesIds, e => e.SeriesId!.Value)
+                .GroupBy(e => e.SeriesId!.Value)
+                .Select(g => new { SeriesId = g.Key, Count = g.Count() })
+                .ToDictionary(x => x.SeriesId, x => x.Count);
+
+        var episodeCounts = new Dictionary<Guid, int>();
+        var seriesByKey = new Dictionary<Guid, HashSet<Guid>>();
+        foreach (var group in linkedSeries.GroupBy(x => x.Key))
+        {
+            var series = group.Select(x => x.SeriesId).ToHashSet();
+            seriesByKey[group.Key] = series;
+            episodeCounts[group.Key] = series.Sum(id => episodesPerSeries.GetValueOrDefault(id));
+        }
+
+        foreach (var row in linkedEpisodes)
+        {
+            // Already covered by the series it belongs to.
+            if (row.SeriesId is not null
+                && seriesByKey.TryGetValue(row.Key, out var series)
+                && series.Contains(row.SeriesId.Value))
+            {
+                continue;
+            }
+
+            episodeCounts[row.Key] = episodeCounts.GetValueOrDefault(row.Key) + row.Count;
+        }
+
+        return episodeCounts;
+    }
+
+    private Dictionary<Guid, ItemCounts> FoldCounts(
+        IEnumerable<(Guid Key, string Type, int Count)> rawCounts,
+        Dictionary<Guid, int> episodeCounts,
+        string episodeTypeName)
+    {
+        var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
+        var movieTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie];
         var musicAlbumTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicAlbum];
         var musicArtistTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist];
+        var musicVideoTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicVideo];
+        var programTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.LiveTvProgram];
         var audioTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio];
         var trailerTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Trailer];
-        var itemIds = itemCountQuery.Select(e => e.Id);
 
-        // Rewrite query to avoid SelectMany on navigation properties (which requires SQL APPLY, not supported on SQLite)
-        // Instead, start from ItemValueMaps and join with BaseItems.
-        var rawCounts = context.ItemValuesMap
-            .Where(ivm => itemValueTypes.Contains(ivm.ItemValue.Type))
-            .Where(ivm => itemIds.Contains(ivm.ItemId))
-            .Join(
-                context.BaseItems,
-                ivm => ivm.ItemId,
-                e => e.Id,
-                (ivm, e) => new { CleanName = ivm.ItemValue.CleanValue, e.Type })
-            .GroupBy(x => new { x.CleanName, x.Type })
-            .Select(g => new { g.Key.CleanName, g.Key.Type, Count = g.Count() })
-            .AsEnumerable();
-
-        var countsByCleanName = new Dictionary<string, ItemCounts>();
-        foreach (var group in rawCounts.GroupBy(x => x.CleanName))
+        var countsByKey = new Dictionary<Guid, ItemCounts>();
+        foreach (var group in rawCounts.GroupBy(x => x.Key))
         {
             var counts = new ItemCounts();
             foreach (var row in group)
@@ -333,10 +611,6 @@ public sealed partial class BaseItemRepository
                 if (row.Type == seriesTypeName)
                 {
                     counts.SeriesCount += row.Count;
-                }
-                else if (row.Type == episodeTypeName)
-                {
-                    counts.EpisodeCount += row.Count;
                 }
                 else if (row.Type == movieTypeName)
                 {
@@ -350,6 +624,14 @@ public sealed partial class BaseItemRepository
                 {
                     counts.ArtistCount += row.Count;
                 }
+                else if (row.Type == musicVideoTypeName)
+                {
+                    counts.MusicVideoCount += row.Count;
+                }
+                else if (row.Type == programTypeName)
+                {
+                    counts.ProgramCount += row.Count;
+                }
                 else if (row.Type == audioTypeName)
                 {
                     counts.SongCount += row.Count;
@@ -360,9 +642,28 @@ public sealed partial class BaseItemRepository
                 }
             }
 
-            countsByCleanName[group.Key] = counts;
+            // Episodes are counted separately: a series usually holds the link on their behalf.
+            counts.EpisodeCount = episodeCounts.GetValueOrDefault(group.Key);
+            counts.ItemCount = counts.TotalItemCount();
+            countsByKey[group.Key] = counts;
         }
 
-        return countsByCleanName;
+        // An item nothing but the episodes below a linked series stands for has no row of its own.
+        foreach (var (key, episodeCount) in episodeCounts)
+        {
+            if (!countsByKey.ContainsKey(key))
+            {
+                countsByKey[key] = new ItemCounts { EpisodeCount = episodeCount, ItemCount = episodeCount };
+            }
+        }
+
+        return countsByKey;
+    }
+
+    private sealed class ByNameLinkRow
+    {
+        public Guid Key { get; set; }
+
+        public Guid ItemId { get; set; }
     }
 }
