@@ -191,9 +191,9 @@ public class SkiaEncoder : IImageEncoder
         var extension = Path.GetExtension(path.AsSpan());
         if (extension.Equals(".svg", StringComparison.OrdinalIgnoreCase))
         {
-            if (!SvgSecurityValidator.IsSafe(path, _logger))
+            if (!SvgSecurityValidator.IsSafe(path, out var reason))
             {
-                _logger.LogError("Refusing to determine dimensions for SVG with external references {FilePath}", path);
+                _logger.LogError("Refusing to determine dimensions for SVG {FilePath}: {Reason}", path, reason);
                 return default;
             }
 
@@ -459,9 +459,9 @@ public class SkiaEncoder : IImageEncoder
             throw new FileNotFoundException("File not found", path);
         }
 
-        if (!SvgSecurityValidator.IsSafe(path, _logger))
+        if (!SvgSecurityValidator.IsSafe(path, out var reason))
         {
-            _logger.LogError("Refusing to render SVG with external references {FilePath}", path);
+            _logger.LogError("Refusing to render SVG {FilePath}: {Reason}", path, reason);
             return null;
         }
 
