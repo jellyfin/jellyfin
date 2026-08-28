@@ -7,8 +7,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
@@ -16,11 +18,13 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.SimilarItems;
@@ -35,6 +39,8 @@ public class SimilarItemsManager : ISimilarItemsManager
     private readonly ILibraryManager _libraryManager;
     private readonly IFileSystem _fileSystem;
     private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
+    private readonly IItemQueryHelpers _queryHelpers;
     private ISimilarItemsProvider[] _similarItemsProviders = [];
 
     /// <summary>
@@ -45,18 +51,24 @@ public class SimilarItemsManager : ISimilarItemsManager
     /// <param name="libraryManager">The library manager.</param>
     /// <param name="fileSystem">The file system.</param>
     /// <param name="serverConfigurationManager">The server configuration manager.</param>
+    /// <param name="dbProvider">The database context factory.</param>
+    /// <param name="queryHelpers">The shared item query helpers.</param>
     public SimilarItemsManager(
         ILogger<SimilarItemsManager> logger,
         IServerApplicationPaths appPaths,
         ILibraryManager libraryManager,
         IFileSystem fileSystem,
-        IServerConfigurationManager serverConfigurationManager)
+        IServerConfigurationManager serverConfigurationManager,
+        IDbContextFactory<JellyfinDbContext> dbProvider,
+        IItemQueryHelpers queryHelpers)
     {
         _logger = logger;
         _appPaths = appPaths;
         _libraryManager = libraryManager;
         _fileSystem = fileSystem;
         _serverConfigurationManager = serverConfigurationManager;
+        _dbProvider = dbProvider;
+        _queryHelpers = queryHelpers;
     }
 
     /// <inheritdoc/>
@@ -230,11 +242,64 @@ public class SimilarItemsManager : ISimilarItemsManager
             }
         }
 
-        return allResults
+        var ordered = allResults
             .OrderByDescending(x => x.Score)
             .Select(x => x.Item)
             .Take(requestedLimit)
             .ToList();
+
+        return await FilterByLibraryAccessAsync(ordered, user, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<IReadOnlyList<BaseItem>> FilterByLibraryAccessAsync(
+        IReadOnlyList<BaseItem> candidates,
+        User? user,
+        CancellationToken cancellationToken)
+    {
+        if (candidates.Count == 0 || user is null)
+        {
+            return candidates;
+        }
+
+        var accessFilter = SimilarItemsAccessFilter.Build(user, _libraryManager);
+
+        // No accessible libraries means nothing to compare against, and an empty TopParentIds set
+        // would disable the filter rather than reject everything.
+        if (accessFilter.TopParentIds.Length == 0)
+        {
+            return candidates;
+        }
+
+        Guid[] candidateIds = [.. candidates.Select(c => c.Id)];
+
+        var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
+        {
+            var baseQuery = dbContext.BaseItems
+                .AsNoTracking()
+                .WhereOneOrMany(candidateIds, e => e.Id);
+
+            baseQuery = _queryHelpers.ApplyAccessFiltering(dbContext, baseQuery, accessFilter);
+
+            var allowedCount = await baseQuery.CountAsync(cancellationToken).ConfigureAwait(false);
+            if (allowedCount == candidates.Count)
+            {
+                return candidates;
+            }
+
+            var allowedIds = await baseQuery
+                .Select(e => e.Id)
+                .ToHashSetAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            var filtered = candidates.Where(c => allowedIds.Contains(c.Id)).ToList();
+            _logger.LogDebug(
+                "Dropped {Dropped} of {Total} similar-item candidates due to user access filtering",
+                candidates.Count - filtered.Count,
+                candidates.Count);
+
+            return filtered;
+        }
     }
 
     /// <inheritdoc/>
@@ -376,19 +441,39 @@ public class SimilarItemsManager : ISimilarItemsManager
 
         var batchResults = await batchProvider.GetBatchSimilarItemsAsync(baselineItems, query, cancellationToken).ConfigureAwait(false);
 
+        // Filter once across every category rather than per baseline, so a batch provider costs one
+        // access query no matter how many categories it produced.
+        var allItems = batchResults.Values.SelectMany(items => items).DistinctBy(item => item.Id).ToList();
+        var allowed = await FilterByLibraryAccessAsync(allItems, query.User, cancellationToken).ConfigureAwait(false);
+
+        HashSet<Guid>? allowedIds = allowed.Count == allItems.Count
+            ? null
+            : [.. allowed.Select(item => item.Id)];
+
         var recommendations = new List<SimilarItemsRecommendation>(baselineItems.Count);
         foreach (var baseline in baselineItems)
         {
-            if (batchResults.TryGetValue(baseline.Id, out var similar) && similar.Count > 0)
+            if (!batchResults.TryGetValue(baseline.Id, out var similar) || similar.Count == 0)
             {
-                recommendations.Add(new SimilarItemsRecommendation
-                {
-                    BaselineItemName = baseline.Name,
-                    CategoryId = baseline.Id,
-                    RecommendationType = recommendationType,
-                    Items = similar
-                });
+                continue;
             }
+
+            if (allowedIds is not null)
+            {
+                similar = similar.Where(item => allowedIds.Contains(item.Id)).ToList();
+                if (similar.Count == 0)
+                {
+                    continue;
+                }
+            }
+
+            recommendations.Add(new SimilarItemsRecommendation
+            {
+                BaselineItemName = baseline.Name,
+                CategoryId = baseline.Id,
+                RecommendationType = recommendationType,
+                Items = similar
+            });
         }
 
         return recommendations;
