@@ -107,5 +107,7 @@
     "TaskMoveTrickplayImages": "Перанесці месцазнаходжанне выявы Trickplay",
     "CleanupUserDataTask": "Задача па ачыстцы даных карыстальніка",
     "CleanupUserDataTaskDescription": "Ачышчае ўсе даныя карыстальніка (стан прагляду, абранае і г.д.) для медыяфайлаў, што адсутнічаюць больш за 90 дзён.",
-    "LyricDownloadFailureFromForItem": "Не ўдалося загрузіць тэкст песні з {0} для {1}"
+    "LyricDownloadFailureFromForItem": "Не ўдалося загрузіць тэкст песні з {0} для {1}",
+    "NameExtraDeletedScene": "Выдаленая сцэна",
+    "NameExtraInterview": "Інтэрв'ю"
 }
