@@ -109,5 +109,8 @@
     "CleanupUserDataTaskDescription": "Ачышчае ўсе даныя карыстальніка (стан прагляду, абранае і г.д.) для медыяфайлаў, што адсутнічаюць больш за 90 дзён.",
     "LyricDownloadFailureFromForItem": "Не ўдалося загрузіць тэкст песні з {0} для {1}",
     "NameExtraDeletedScene": "Выдаленая сцэна",
-    "NameExtraInterview": "Інтэрв'ю"
+    "NameExtraInterview": "Інтэрв'ю",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraScene": "Сцэна",
+    "NameExtraTrailer": "Трэйлер"
 }
