@@ -4,42 +4,27 @@ using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using Jellyfin.Database.Implementations.Locking;
-using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
-public sealed class PeopleRepositoryUpdatePeopleTests : IDisposable
+public sealed class PeopleRepositoryUpdatePeopleTests : SqliteDbTestFixture
 {
     private static readonly Guid _itemId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 
-    private readonly SqliteConnection _connection;
-    private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly PeopleRepository _repository;
 
     public PeopleRepositoryUpdatePeopleTests()
     {
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
-        _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-
         var itemTypeLookup = new ItemTypeLookup();
 
         using (var ctx = CreateDbContext())
         {
-            ctx.Database.EnsureCreated();
             ctx.BaseItems.Add(new BaseItemEntity
             {
                 Id = _itemId,
@@ -53,18 +38,10 @@ public sealed class PeopleRepositoryUpdatePeopleTests : IDisposable
             ctx.SaveChanges();
         }
 
-        var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
-        factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
-
         _repository = new PeopleRepository(
-            factory.Object,
+            CreateDbContextFactory(),
             itemTypeLookup,
             new Mock<IItemQueryHelpers>().Object);
-    }
-
-    public void Dispose()
-    {
-        _connection.Dispose();
     }
 
     [Fact]
@@ -165,6 +142,79 @@ public sealed class PeopleRepositoryUpdatePeopleTests : IDisposable
         Assert.Equal("Hero", map.Role);
     }
 
+    [Fact]
+    public void UpdatePeople_CreditDroppedByTheProvider_LeavesNoCreditRowBehind()
+    {
+        _repository.UpdatePeople(_itemId, [
+            CreatePerson("Person A", PersonKind.Actor, "Hero"),
+            CreatePerson("Person B", PersonKind.Actor, "Villain")
+        ]);
+
+        _repository.UpdatePeople(_itemId, [CreatePerson("Person A", PersonKind.Actor, "Hero")]);
+
+        using var ctx = CreateDbContext();
+        Assert.Equal(["Person A"], ctx.Peoples.Select(e => e.Name).ToArray());
+    }
+
+    [Fact]
+    public void UpdatePeople_CreditStillHeldByAnotherItem_IsKept()
+    {
+        _repository.UpdatePeople(_itemId, [CreatePerson("Person A", PersonKind.Actor, "Hero")]);
+        _repository.UpdatePeople(AddMovie("Other Movie"), [CreatePerson("Person A", PersonKind.Actor, "Hero")]);
+
+        _repository.UpdatePeople(_itemId, []);
+
+        using var after = CreateDbContext();
+        Assert.Single(after.Peoples);
+        Assert.Single(after.PeopleBaseItemMap);
+    }
+
+    [Fact]
+    public void DeleteOrphanedCredits_CreditNoItemMapsTo_IsDeleted()
+    {
+        _repository.UpdatePeople(_itemId, [CreatePerson("Person A", PersonKind.Actor, "Hero")]);
+        using (var ctx = CreateDbContext())
+        {
+            // The state a credit was left in before UpdatePeople cleaned up after itself.
+            ctx.PeopleBaseItemMap.RemoveRange(ctx.PeopleBaseItemMap);
+            ctx.SaveChanges();
+        }
+
+        Assert.Equal(1, _repository.DeleteOrphanedCredits());
+
+        using var after = CreateDbContext();
+        Assert.Empty(after.Peoples);
+    }
+
+    [Fact]
+    public void DeleteOrphanedCredits_CreditAnItemMapsTo_IsKept()
+    {
+        _repository.UpdatePeople(_itemId, [CreatePerson("Person A", PersonKind.Actor, "Hero")]);
+
+        Assert.Equal(0, _repository.DeleteOrphanedCredits());
+
+        using var after = CreateDbContext();
+        Assert.Single(after.Peoples);
+    }
+
+    private Guid AddMovie(string name)
+    {
+        var id = Guid.NewGuid();
+        using var ctx = CreateDbContext();
+        ctx.BaseItems.Add(new BaseItemEntity
+        {
+            Id = id,
+            Type = new ItemTypeLookup().BaseItemKindNames[BaseItemKind.Movie],
+            Name = name,
+            MediaType = "Video",
+            IsMovie = true,
+            IsFolder = false,
+            IsVirtualItem = false
+        });
+        ctx.SaveChanges();
+        return id;
+    }
+
     private static PersonInfo CreatePerson(string name, PersonKind type, string role)
     {
         return new PersonInfo
@@ -173,14 +223,5 @@ public sealed class PeopleRepositoryUpdatePeopleTests : IDisposable
             Type = type,
             Role = role
         };
-    }
-
-    private JellyfinDbContext CreateDbContext()
-    {
-        return new JellyfinDbContext(
-            _dbOptions,
-            NullLogger<JellyfinDbContext>.Instance,
-            new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
-            new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
     }
 }

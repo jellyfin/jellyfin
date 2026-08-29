@@ -12,6 +12,7 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
+using Jellyfin.Server.Implementations.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -323,10 +324,21 @@ public sealed partial class BaseItemRepository
             orderedQuery = query.OrderBy(relevanceExpression);
         }
 
+        // Folders carry no played flag of their own, so these two keys go through the same predicate
+        // the isPlayed filter uses rather than through the stored-column lookup in OrderMapper.
+        Expression<Func<BaseItemEntity, object?>> MapOrderByField(ItemSortBy sortBy) => sortBy switch
+        {
+            ItemSortBy.IsPlayed when filter.User is not null
+                => AsOrderKey(BuildIsPlayedFilter(context, filter.User)),
+            ItemSortBy.IsUnplayed when filter.User is not null
+                => AsOrderKey(BuildIsPlayedFilter(context, filter.User).Not()),
+            _ => OrderMapper.MapOrderByField(sortBy, filter, context)
+        };
+
         if (orderBy.Length > 0)
         {
             var firstOrdering = orderBy[0];
-            var expression = OrderMapper.MapOrderByField(firstOrdering.OrderBy, filter, context);
+            var expression = MapOrderByField(firstOrdering.OrderBy);
 
             if (orderedQuery is null)
             {
@@ -350,7 +362,7 @@ public sealed partial class BaseItemRepository
 
             foreach (var item in orderBy.Skip(1))
             {
-                expression = OrderMapper.MapOrderByField(item.OrderBy, filter, context);
+                expression = MapOrderByField(item.OrderBy);
                 orderedQuery = item.SortOrder == SortOrder.Ascending
                     ? orderedQuery.ThenBy(expression)
                     : orderedQuery.ThenByDescending(expression);
@@ -665,6 +677,9 @@ public sealed partial class BaseItemRepository
 
         return ApplyAccessFiltering(context, leafItems, new InternalItemsQuery(user) { IncludeOwnedItems = includeOwnedItems });
     }
+
+    private static Expression<Func<BaseItemEntity, object?>> AsOrderKey(Expression<Func<BaseItemEntity, bool>> predicate)
+        => Expression.Lambda<Func<BaseItemEntity, object?>>(Expression.Convert(predicate.Body, typeof(object)), predicate.Parameters);
 
     /// <inheritdoc />
     public Expression<Func<BaseItemEntity, bool>> BuildHasDescendantFilter(JellyfinDbContext context, IQueryable<BaseItemEntity> descendants)

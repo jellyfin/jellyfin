@@ -107,7 +107,8 @@ namespace Emby.Server.Implementations.Collections
                 SaveLocalMetadata = true
             };
 
-            var name = _localizationManager.GetLocalizedString("Collections");
+            // This names a library for the whole server, so ignore the requesting client's language.
+            var name = _localizationManager.GetServerLocalizedString("Collections");
 
             await _libraryManager.AddVirtualFolder(name, CollectionTypeOptions.boxsets, libraryOptions, true).ConfigureAwait(false);
 

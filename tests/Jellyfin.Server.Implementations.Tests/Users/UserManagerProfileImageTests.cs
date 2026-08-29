@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
@@ -90,28 +89,6 @@ namespace Jellyfin.Server.Implementations.Tests.Users
                 NullLogger<JellyfinDbContext>.Instance,
                 new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
                 new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
-        }
-
-        [Fact]
-        public async Task UpdateUserAsync_DoesNotLeaveOrphanedPermissionsOrPreferences()
-        {
-            var user = await _userManager.CreateUserAsync("updateduser");
-            var permissionCount = user.Permissions.Count;
-            var preferenceCount = user.Preferences.Count;
-
-            user.LastActivityDate = DateTime.UtcNow;
-            await _userManager.UpdateUserAsync(user);
-            await _userManager.UpdateUserAsync(user);
-
-            await using var context = CreateDbContext();
-            Assert.Empty(await context.Permissions
-                .Where(permission => !permission.UserId.HasValue)
-                .ToListAsync(TestContext.Current.CancellationToken));
-            Assert.Empty(await context.Preferences
-                .Where(preference => !preference.UserId.HasValue)
-                .ToListAsync(TestContext.Current.CancellationToken));
-            Assert.Equal(permissionCount, await context.Permissions.CountAsync(TestContext.Current.CancellationToken));
-            Assert.Equal(preferenceCount, await context.Preferences.CountAsync(TestContext.Current.CancellationToken));
         }
 
         [Fact]

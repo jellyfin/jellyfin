@@ -611,7 +611,11 @@ namespace Emby.Server.Implementations.Dto
                     // For these types we can try to optimize and assume these values will be equal
                     if (item is MusicAlbum || item is Season || item is Playlist)
                     {
-                        dto.ChildCount = dto.RecursiveItemCount;
+                        if (dto.RecursiveItemCount > 0)
+                        {
+                            dto.ChildCount = dto.RecursiveItemCount;
+                        }
+
                         var folderChildCount = folder.LinkedChildren.Length;
                         // The default is an empty array, so we can't reliably use the count when it's empty
                         if (folderChildCount > 0)

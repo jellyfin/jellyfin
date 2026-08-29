@@ -177,33 +177,14 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
         var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
         var personTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
 
+        List<Guid> peopleIds;
+
         var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
-            const int PartitionSize = 100;
-
-            var numPeople = await context.BaseItems
-                .AsNoTracking()
-                .Where(b => b.Type == personTypeName)
-                .Where(b => b.DateLastRefreshed == null || b.DateLastRefreshed < thirtyDaysAgo)
-                .Where(b =>
-                    !b.Images!.Any(i => i.ImageType == ImageInfoImageType.Primary) ||
-                    string.IsNullOrEmpty(b.Overview))
-                .CountAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            _logger.LogDebug("Found {Count} people needing image/overview refresh", numPeople);
-
-            if (numPeople == 0)
-            {
-                progress.Report(100);
-                return;
-            }
-
-            var numComplete = 0;
-            var numRefreshed = 0;
-
-            await foreach (var entry in context.BaseItems
+            // Read the candidates in one go rather than paging them. A refresh stamps the person and takes
+            // it out of this set, so a growing offset over a shrinking set walks past people it never visits.
+            peopleIds = await context.BaseItems
                 .AsNoTracking()
                 .Where(b => b.Type == personTypeName)
                 .Where(b => b.DateLastRefreshed == null || b.DateLastRefreshed < thirtyDaysAgo)
@@ -211,22 +192,36 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
                     !b.Images!.Any(i => i.ImageType == ImageInfoImageType.Primary) ||
                     string.IsNullOrEmpty(b.Overview))
                 .OrderBy(b => b.Id)
-                .WithPartitionProgress(partition => _logger.LogDebug("Processing people partition {Partition}", partition))
-                .PartitionEagerAsync(PartitionSize, cancellationToken)
-                .WithCancellation(cancellationToken)
-                .ConfigureAwait(false))
-            {
-                if (await RefreshPersonAsync(entry.Id, cancellationToken).ConfigureAwait(false))
-                {
-                    numRefreshed++;
-                }
+                .Select(b => b.Id)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+        }
 
-                numComplete++;
-                progress.Report(100.0 * numComplete / numPeople);
+        _logger.LogDebug("Found {Count} people needing image/overview refresh", peopleIds.Count);
+
+        if (peopleIds.Count == 0)
+        {
+            progress.Report(100);
+            return;
+        }
+
+        var numComplete = 0;
+        var numRefreshed = 0;
+
+        foreach (var personId in peopleIds)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (await RefreshPersonAsync(personId, cancellationToken).ConfigureAwait(false))
+            {
+                numRefreshed++;
             }
 
-            _logger.LogInformation("Refreshed metadata for {Count} people missing images or overview", numRefreshed);
+            numComplete++;
+            progress.Report(100.0 * numComplete / peopleIds.Count);
         }
+
+        _logger.LogInformation("Refreshed metadata for {Count} people missing images or overview", numRefreshed);
     }
 
     private async Task<bool> RefreshPersonAsync(Guid personId, CancellationToken cancellationToken)
@@ -243,8 +238,8 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
 
             var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
             {
-                ImageRefreshMode = hasImage ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default,
-                MetadataRefreshMode = hasOverview ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default
+                ImageRefreshMode = hasImage ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.FullRefresh,
+                MetadataRefreshMode = hasOverview ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.FullRefresh
             };
 
             await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);

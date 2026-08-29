@@ -21,7 +21,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         {
             var localizationMock = new Mock<ILocalizationManager>();
             localizationMock
-                .Setup(l => l.GetLocalizedString(It.IsAny<string>()))
+                .Setup(l => l.GetServerLocalizedString(It.IsAny<string>()))
                 .Returns("Season {0}");
 
             _resolver = new SeasonResolver(

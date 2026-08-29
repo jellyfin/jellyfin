@@ -194,10 +194,42 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             listOrder++;
         }
 
+        var droppedCredits = existingMaps.Select(e => e.PeopleId).Distinct().ToArray();
         context.PeopleBaseItemMap.RemoveRange(existingMaps);
 
         context.SaveChanges();
+
+        // Nothing else ever deletes a credit row, so one left without a single mapping outlives the
+        // credit it stood for: it keeps a person of that name off the dead-person sweep, which only
+        // sees items no credit names, and keeps the name in every by-name list. That is how a credit
+        // a provider dropped, or one a broken provider result invented, becomes impossible to clean up.
+        DeleteCreditsWithoutMapping(context, droppedCredits);
+
+        context.SaveChanges();
         transaction.Commit();
+    }
+
+    /// <inheritdoc/>
+    public int DeleteOrphanedCredits()
+    {
+        using var context = _dbProvider.CreateDbContext();
+
+        return DeleteCreditsWithoutMapping(context, null);
+    }
+
+    // A null candidate list sweeps every credit, anything else only the ones just unmapped.
+    private int DeleteCreditsWithoutMapping(JellyfinDbContext context, IReadOnlyList<Guid>? candidates)
+    {
+        if (candidates is not null && candidates.Count == 0)
+        {
+            return 0;
+        }
+
+        var credits = candidates is null
+            ? context.Peoples.AsQueryable()
+            : context.Peoples.WhereOneOrMany(candidates, e => e.Id);
+
+        return credits.Where(e => !context.PeopleBaseItemMap.Any(f => f.PeopleId == e.Id)).ExecuteDelete();
     }
 
     /// <inheritdoc/>
@@ -351,7 +383,11 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (!filter.ItemId.IsEmpty())
         {
-            query = query.Where(e => e.BaseItems!.Any(w => w.ItemId.Equals(filter.ItemId)));
+            var itemId = filter.ItemId;
+            query = query.Where(e => context.PeopleBaseItemMap
+                .Where(m => m.ItemId.Equals(itemId))
+                .Select(m => m.PeopleId)
+                .Contains(e.Id));
         }
 
         if (filter.ParentId != null)
@@ -361,7 +397,11 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (!filter.AppearsInItemId.IsEmpty())
         {
-            query = query.Where(e => e.BaseItems!.Any(w => w.ItemId.Equals(filter.AppearsInItemId)));
+            var appearsInItemId = filter.AppearsInItemId;
+            query = query.Where(e => context.PeopleBaseItemMap
+                .Where(m => m.ItemId.Equals(appearsInItemId))
+                .Select(m => m.PeopleId)
+                .Contains(e.Id));
         }
 
         var queryPersonTypes = filter.PersonTypes.Where(IsValidPersonType).ToList();
