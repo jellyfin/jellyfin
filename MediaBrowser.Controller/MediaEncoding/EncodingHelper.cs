@@ -7946,7 +7946,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public static int GetSubtitleStreamIndexForFfmpeg(MediaSourceInfo mediaSource, MediaStream subtitleStream)
         {
             var index = FindIndex(mediaSource.MediaStreams, subtitleStream);
-            if (index == -1 || mediaSource.VideoType != VideoType.BluRay)
+            if (index == -1 || subtitleStream.IsExternal || mediaSource.VideoType != VideoType.BluRay)
             {
                 return index;
             }
