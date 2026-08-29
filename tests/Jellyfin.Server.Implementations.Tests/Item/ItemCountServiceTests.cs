@@ -198,6 +198,78 @@ public sealed class ItemCountServiceTests : IDisposable
         Assert.Equal(2, result[seriesB]);
     }
 
+    [Fact]
+    public void GetChildCountBatch_FlatSeriesStructure_CountsEpisodesUnderTheirSeason()
+    {
+        var (seriesId, seasonId) = SeedSeries(flat: true, virtualEpisodes: false);
+
+        var result = _service.GetChildCountBatch([seriesId, seasonId], null);
+
+        Assert.Equal(2, result[seasonId]);
+
+        // The series holds the season, not the episodes: counting those here would double them up.
+        Assert.Equal(1, result[seriesId]);
+    }
+
+    [Fact]
+    public void GetChildCountBatch_SeasonFolderStructure_CountsEachEpisodeOnce()
+    {
+        var (seriesId, seasonId) = SeedSeries(flat: false, virtualEpisodes: false);
+
+        var result = _service.GetChildCountBatch([seriesId, seasonId], null);
+
+        Assert.Equal(2, result[seasonId]);
+        Assert.Equal(1, result[seriesId]);
+    }
+
+    [Fact]
+    public void GetChildCountBatch_MissingEpisodes_CountedUnlessTheUserHidesThem()
+    {
+        var (_, seasonId) = SeedSeries(flat: false, virtualEpisodes: true);
+        var user = new User("count-test", "provider", "reset");
+
+        user.DisplayMissingEpisodes = true;
+        Assert.Equal(2, _service.GetChildCountBatch([seasonId], user)[seasonId]);
+
+        // Nothing this user can open, so nothing to report.
+        user.DisplayMissingEpisodes = false;
+        Assert.Equal(0, _service.GetChildCountBatch([seasonId], user)[seasonId]);
+    }
+
+    [Fact]
+    public void GetChildCountBatch_NoUser_CountsMissingEpisodes()
+    {
+        var (_, seasonId) = SeedSeries(flat: false, virtualEpisodes: true);
+
+        Assert.Equal(2, _service.GetChildCountBatch([seasonId], null)[seasonId]);
+    }
+
+    private (Guid SeriesId, Guid SeasonId) SeedSeries(bool flat, bool virtualEpisodes)
+    {
+        var seriesId = Guid.NewGuid();
+        var seasonId = Guid.NewGuid();
+
+        using var context = CreateDbContext();
+        context.BaseItems.Add(CreateItem(seriesId));
+        context.BaseItems.Add(CreateItem(seasonId, seriesId));
+
+        // Flat: the episodes sit in the series folder, so ParentId points at the series and only
+        // SeasonId ties them to the season they belong to.
+        for (var i = 0; i < 2; i++)
+        {
+            var episode = CreateItem(Guid.NewGuid(), flat ? seriesId : seasonId);
+            episode.Type = "MediaBrowser.Controller.Entities.TV.Episode";
+            episode.IsFolder = false;
+            episode.IsVirtualItem = virtualEpisodes;
+            episode.SeasonId = seasonId;
+            context.BaseItems.Add(episode);
+        }
+
+        context.SaveChanges();
+
+        return (seriesId, seasonId);
+    }
+
     private (User User, Guid SeriesA, Guid SeriesB) SeedMergedSeries(out Guid playedLeafId)
     {
         var user = new User("count-test", "provider", "reset");

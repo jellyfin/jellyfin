@@ -80,7 +80,7 @@ public interface IItemCountService
     /// Batch-fetches child counts for multiple parent folders.
     /// </summary>
     /// <param name="parentIds">The list of parent folder IDs.</param>
-    /// <param name="userId">The user ID for access filtering.</param>
+    /// <param name="user">The user the counts are for, or null to count without a user's preferences.</param>
     /// <returns>Dictionary mapping parent ID to child count.</returns>
-    Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, Guid? userId);
+    Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, User? user);
 }

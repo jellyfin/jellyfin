@@ -192,7 +192,7 @@ namespace Emby.Server.Implementations.Dto
                 var folderIds = accessibleItems.OfType<Folder>().Select(f => f.Id).ToList();
                 if (folderIds.Count > 0)
                 {
-                    childCountBatch = _libraryManager.GetChildCountBatch(folderIds, user?.Id);
+                    childCountBatch = _libraryManager.GetChildCountBatch(folderIds, user);
                 }
             }
 
@@ -700,7 +700,8 @@ namespace Emby.Server.Implementations.Dto
                 return count;
             }
 
-            // Fall back to individual query for special cases (Series, Season, etc.)
+            // Only reached when no batch was computed: the batch holds an entry for every folder it
+            // was asked about, zero included.
             return folder.GetChildCount(user);
         }
 

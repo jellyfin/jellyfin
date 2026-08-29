@@ -1745,9 +1745,9 @@ namespace Emby.Server.Implementations.Library
             return _countService.GetItemCountsForNameItem(kind, id, relatedItemKinds, query);
         }
 
-        public Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, Guid? userId)
+        public Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, User? user)
         {
-            return _countService.GetChildCountBatch(parentIds, userId);
+            return _countService.GetChildCountBatch(parentIds, user);
         }
 
         /// <inheritdoc/>
