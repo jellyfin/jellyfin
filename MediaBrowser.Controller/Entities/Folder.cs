@@ -81,7 +81,7 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public bool LinkedChildrenLoaded { get; private set; }
 
-        [JsonIgnore]
+        [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
         public DateTime? DateLastMediaAdded { get; set; }
 
         [JsonIgnore]

@@ -230,9 +230,10 @@ public static class BaseItemMapper
         // dto.UserDataKey = entity.UserDataKey;
 
         if (dto is Folder folder)
-        {
-            folder.DateLastMediaAdded = entity.DateLastMediaAdded ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
-            if (entity.LinkedChildEntities is not null)
+            {
+                // Preserve null from the database instead of mapping to DateTime.MinValue
+                folder.DateLastMediaAdded = entity.DateLastMediaAdded;
+                if (entity.LinkedChildEntities is not null)
             {
                 folder.LinkedChildren = entity.LinkedChildEntities
                     .OrderBy(e => e.SortOrder)
@@ -415,7 +416,8 @@ public static class BaseItemMapper
 
         if (dto is Folder folder)
         {
-            entity.DateLastMediaAdded = folder.DateLastMediaAdded == DateTime.MinValue ? null : folder.DateLastMediaAdded;
+            // Preserve null when persisting; don't treat DateTime.MinValue as a special sentinel
+            entity.DateLastMediaAdded = folder.DateLastMediaAdded;
             entity.IsFolder = folder.IsFolder;
         }
 

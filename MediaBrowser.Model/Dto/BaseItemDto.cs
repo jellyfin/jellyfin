@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Model.Drawing;
@@ -64,6 +65,7 @@ namespace MediaBrowser.Model.Dto
         /// <value>The date created.</value>
         public DateTime? DateCreated { get; set; }
 
+        [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
         public DateTime? DateLastMediaAdded { get; set; }
 
         public ExtraType? ExtraType { get; set; }

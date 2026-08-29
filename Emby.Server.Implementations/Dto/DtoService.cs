@@ -663,7 +663,49 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.ContainsField(ItemFields.DateLastMediaAdded))
                 {
-                    dto.DateLastMediaAdded = folder.DateLastMediaAdded;
+                    // If the persisted DateLastMediaAdded is missing, compute it from the folder's children
+                    // This forces the API to present a sensible value without waiting for an async metadata update.
+                    if (folder.DateLastMediaAdded.HasValue)
+                    {
+                        dto.DateLastMediaAdded = folder.DateLastMediaAdded;
+                    }
+                    else
+                    {
+                        DateTime? computed = null;
+                        try
+                        {
+                            // Iterate children and find the newest non-folder, non-virtual child's DateCreated
+                            var children = folder.Children;
+                            if (children is not null)
+                            {
+                                foreach (var child in children)
+                                {
+                                    if (child == null)
+                                    {
+                                        continue;
+                                    }
+
+                                    if (child.IsFolder || child.IsVirtualItem)
+                                    {
+                                        continue;
+                                    }
+
+                                    var childDate = child.DateCreated;
+                                    if (childDate != DateTime.MinValue && (computed is null || childDate > computed.Value))
+                                    {
+                                        computed = childDate;
+                                    }
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            // Swallow any exceptions from loading children to avoid breaking DTO creation
+                            computed = null;
+                        }
+
+                        dto.DateLastMediaAdded = computed;
+                    }
                 }
             }
             else
