@@ -378,6 +378,18 @@ public class ItemsController : BaseJellyfinApiController
             }
         }
 
+        // Accept legacy/field-based sort name "DateLastMediaAdded" in the query string and
+        // map it to the server enum ItemSortBy.DateLastContentAdded so clients can use
+        // the field name when requesting sort order.
+        if ((sortBy is null || sortBy.Length == 0) && Request.Query.TryGetValue("sortBy", out var rawSort))
+        {
+            var raw = rawSort.ToString();
+            if (!string.IsNullOrEmpty(raw) && raw.Contains("DateLastMediaAdded", StringComparison.OrdinalIgnoreCase))
+            {
+                sortBy = new[] { ItemSortBy.DateLastContentAdded };
+            }
+        }
+
         var query = new InternalItemsQuery(user)
         {
             IsPlayed = isPlayed,
@@ -385,7 +397,7 @@ public class ItemsController : BaseJellyfinApiController
             IncludeItemTypes = includeItemTypes,
             ExcludeItemTypes = excludeItemTypes,
             Recursive = recursive ?? false,
-            OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder),
+            OrderBy = RequestHelpers.GetOrderBy(sortBy ?? Array.Empty<ItemSortBy>(), sortOrder),
             IsFavorite = isFavorite,
             Limit = searchResultScores is null ? limit : null,
             StartIndex = searchResultScores is null ? startIndex : null,

@@ -58,7 +58,14 @@ public static class OrderMapper
             (ItemSortBy.IsFolder, _) => e => e.IsFolder,
             (ItemSortBy.IsPlayed, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.Played,
             (ItemSortBy.IsUnplayed, _) => e => !e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.Played,
-            (ItemSortBy.DateLastContentAdded, _) => e => e.DateLastMediaAdded,
+            // Use persisted DateLastMediaAdded when present. Otherwise compute from the newest
+            // non-folder/non-virtual child's DateCreated. As a final fallback use the item's
+            // own DateCreated so leaf media still sort sensibly.
+            (ItemSortBy.DateLastContentAdded, _) => e =>
+                (e.DateLastMediaAdded ?? jellyfinDbContext.BaseItems
+                    .Where(b => b.ParentId == e.Id && !b.IsFolder && !b.IsVirtualItem)
+                    .Select(b => (DateTime?)b.DateCreated)
+                    .Max()) ?? e.DateCreated,
             (ItemSortBy.Artist, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.Artist).OrderBy(f => f.ItemValue.CleanValue).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
             (ItemSortBy.AlbumArtist, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.AlbumArtist).OrderBy(f => f.ItemValue.CleanValue).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
             (ItemSortBy.Studio, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.Studios).OrderBy(f => f.ItemValue.CleanValue).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),

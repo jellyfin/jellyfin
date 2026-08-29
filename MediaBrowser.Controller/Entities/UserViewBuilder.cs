@@ -496,6 +496,61 @@ namespace MediaBrowser.Controller.Entities
         {
             if (query.OrderBy.Count > 0)
             {
+                // Ensure folders have DateLastMediaAdded computed when sorting by DateLastContentAdded
+                try
+                {
+                    if (query.OrderBy.Any(o => o.OrderBy == Jellyfin.Data.Enums.ItemSortBy.DateLastContentAdded))
+                    {
+                        foreach (var it in items)
+                        {
+                            if (it is MediaBrowser.Controller.Entities.Folder folder)
+                            {
+                                try
+                                {
+                                    // Only compute when missing to avoid extra work
+                                    if (!folder.DateLastMediaAdded.HasValue)
+                                    {
+                                        DateTime? computed = null;
+                                        // children may be lazily loaded; iterate safely
+                                        var children = folder.Children;
+                                        if (children is not null)
+                                        {
+                                            foreach (var child in children)
+                                            {
+                                                if (child == null)
+                                                {
+                                                    continue;
+                                                }
+
+                                                if (child.IsFolder || child.IsVirtualItem)
+                                                {
+                                                    continue;
+                                                }
+
+                                                var cd = child.DateCreated;
+                                                if (cd != DateTime.MinValue && (computed is null || cd > computed.Value))
+                                                {
+                                                    computed = cd;
+                                                }
+                                            }
+                                        }
+
+                                        folder.DateLastMediaAdded = computed ?? (DateTime?)folder.DateCreated;
+                                    }
+                                }
+                                catch
+                                {
+                                    // Swallow per-folder errors to avoid breaking the request
+                                }
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // Ignore any errors computing DateLastMediaAdded so sorting can still proceed
+                }
+
                 items = libraryManager.Sort(items, query.User, query.OrderBy);
             }
 

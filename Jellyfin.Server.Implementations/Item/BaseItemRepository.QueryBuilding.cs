@@ -17,6 +17,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using BaseItemEntity = Jellyfin.Database.Implementations.Entities.BaseItemEntity;
 
 namespace Jellyfin.Server.Implementations.Item;
@@ -306,7 +307,33 @@ public sealed partial class BaseItemRepository
     public IQueryable<BaseItemEntity> ApplyOrder(IQueryable<BaseItemEntity> query, InternalItemsQuery filter, JellyfinDbContext context)
     {
         var orderBy = filter.OrderBy.Where(e => e.OrderBy != ItemSortBy.Default).ToArray();
+
+        // If the client didn't supply any explicit ordering but a parentId is present,
+        // default to DateLastContentAdded descending so recently-updated folders appear first.
+        if (orderBy.Length == 0 && filter.ParentId != Guid.Empty)
+        {
+            orderBy = new[] { (ItemSortBy.DateLastContentAdded, Jellyfin.Database.Implementations.Enums.SortOrder.Descending) };
+        }
+
         var hasSearch = !string.IsNullOrEmpty(filter.SearchTerm);
+
+        // Log requested ordering for debugging server-side ordering issues
+        try
+        {
+            if (orderBy.Length > 0)
+            {
+                var keys = string.Join(", ", orderBy.Select(o => o.OrderBy.ToString() + ":" + o.SortOrder));
+                _logger.LogInformation("ApplyOrder called with order keys: {OrderKeys}", keys);
+            }
+            else
+            {
+                _logger.LogInformation("ApplyOrder called with no explicit order keys; defaulting to SortName");
+            }
+        }
+        catch
+        {
+            // Swallow logging exceptions to avoid affecting request handling
+        }
 
         // SeriesDatePlayed requires special handling to avoid correlated subqueries.
         // Instead of running a MAX() subquery per-row in ORDER BY, we pre-aggregate
