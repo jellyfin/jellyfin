@@ -129,6 +129,17 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
             var tmdbId = justName.GetAttributeValue("tmdbid");
             item.TrySetProviderId(MetadataProvider.Tmdb, tmdbId);
+
+            // Anime databases model a single cour as its own entry, so a multi-season
+            // series maps to one of these ids per season rather than one per series.
+            var anidbId = justName.GetAttributeValue("anidbid");
+            item.TrySetProviderId("AniDB", anidbId);
+
+            var aniListId = justName.GetAttributeValue("anilistid");
+            item.TrySetProviderId("AniList", aniListId);
+
+            var aniSearchId = justName.GetAttributeValue("anisearchid");
+            item.TrySetProviderId("AniSearch", aniSearchId);
         }
     }
 }
