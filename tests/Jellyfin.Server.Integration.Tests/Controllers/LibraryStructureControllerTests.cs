@@ -114,6 +114,58 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    [Theory]
+    [Priority(1)]
+    [InlineData("..")]
+    [InlineData("../..")]
+    [InlineData(".")]
+    [InlineData("test/../..")]
+    [InlineData("/var/lib/jellyfin/data")]
+    public async Task DeleteLibrary_PathTraversal_NotFound(string name)
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+
+        using var response = await client.DeleteAsync($"Library/VirtualFolders?name={Uri.EscapeDataString(name)}", TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Theory]
+    [Priority(1)]
+    [InlineData("..")]
+    [InlineData("../..")]
+    [InlineData(".")]
+    [InlineData("test/../..")]
+    [InlineData("/var/lib/jellyfin/data")]
+    public async Task RenameLibrary_PathTraversalNewName_BadRequest(string newName)
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+
+        using var response = await client.PostAsync(
+            $"Library/VirtualFolders/Name?name=test&newName={Uri.EscapeDataString(newName)}",
+            null,
+            TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [Priority(1)]
+    [InlineData("..")]
+    [InlineData("../..")]
+    [InlineData("/var/lib/jellyfin/data")]
+    public async Task RenameLibrary_PathTraversalName_NotFound(string name)
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+
+        using var response = await client.PostAsync(
+            $"Library/VirtualFolders/Name?name={Uri.EscapeDataString(name)}&newName=renamed",
+            null,
+            TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
     [Fact]
     [Priority(1)]
     public async Task DeleteLibrary_Valid_Success()
