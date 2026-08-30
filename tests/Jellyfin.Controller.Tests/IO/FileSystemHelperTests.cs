@@ -13,7 +13,6 @@ public class FileSystemHelperTests
     [InlineData("Movies")]
     [InlineData("My Movies")]
     [InlineData("..2")]
-    [InlineData("...")]
     [InlineData("a.b")]
     public void GetChildPath_ValidName_ReturnsPathInsideParent(string name)
     {
@@ -48,6 +47,25 @@ public class FileSystemHelperTests
 
         // On Windows these are rejected outright, on other platforms a backslash is a legal file name character.
         Assert.True(path is null || string.Equals(Path.GetDirectoryName(path), _parentPath, StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("...")]
+    [InlineData("Movies.")]
+    [InlineData("Movies ")]
+    public void GetChildPath_TrailingDotOrSpace_RejectedOnWindows(string name)
+    {
+        var path = FileSystemHelper.GetChildPath(_parentPath, name);
+
+        if (OperatingSystem.IsWindows())
+        {
+            // Windows trims trailing dots and spaces, so the name would resolve to the parent or to a different child.
+            Assert.Null(path);
+        }
+        else
+        {
+            Assert.Equal(Path.Combine(_parentPath, name), path);
+        }
     }
 
     [Fact]

@@ -193,8 +193,13 @@ public static class FileSystemHelper
         var fullParentPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(parentPath));
 
         // Catches the remaining relative names, "." and "..", which are valid single segments.
-        return string.Equals(Path.GetDirectoryName(fullPath), fullParentPath, StringComparison.Ordinal)
-            ? fullPath
-            : null;
+        if (!string.Equals(Path.GetDirectoryName(fullPath), fullParentPath, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        // Windows strips trailing dots and spaces, so a name like "..." resolves to the parent directory itself
+        // and a name like "Movies." to a different child. Reject anything normalization did not leave intact.
+        return string.Equals(Path.GetFileName(fullPath), name, StringComparison.Ordinal) ? fullPath : null;
     }
 }

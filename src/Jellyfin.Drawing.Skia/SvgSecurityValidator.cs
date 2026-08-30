@@ -83,48 +83,48 @@ internal static class SvgSecurityValidator
                 switch (reader.NodeType)
                 {
                     case XmlNodeType.DocumentType:
-                    {
-                        var subset = reader.Value;
-                        if (!string.IsNullOrEmpty(subset)
-                            && (subset.Contains("SYSTEM", StringComparison.OrdinalIgnoreCase)
-                                || subset.Contains("PUBLIC", StringComparison.OrdinalIgnoreCase)))
                         {
-                            return "The document declares an external DTD entity";
+                            var subset = reader.Value;
+                            if (!string.IsNullOrEmpty(subset)
+                                && (subset.Contains("SYSTEM", StringComparison.OrdinalIgnoreCase)
+                                    || subset.Contains("PUBLIC", StringComparison.OrdinalIgnoreCase)))
+                            {
+                                return "The document declares an external DTD entity";
+                            }
+
+                            break;
                         }
 
-                        break;
-                    }
-
                     case XmlNodeType.Element when reader.HasAttributes:
-                    {
-                        for (var i = 0; i < reader.AttributeCount; i++)
                         {
-                            reader.MoveToAttribute(i);
-                            var isHref = reader.LocalName.Equals("href", StringComparison.OrdinalIgnoreCase);
-                            var reason = isHref
-                                ? ValidateReference(reader.Value, depth, "href")
-                                : ValidateCss(reader.Value, depth);
+                            for (var i = 0; i < reader.AttributeCount; i++)
+                            {
+                                reader.MoveToAttribute(i);
+                                var isHref = reader.LocalName.Equals("href", StringComparison.OrdinalIgnoreCase);
+                                var reason = isHref
+                                    ? ValidateReference(reader.Value, depth, "href")
+                                    : ValidateCss(reader.Value, depth);
+                                if (reason is not null)
+                                {
+                                    return reason;
+                                }
+                            }
+
+                            reader.MoveToElement();
+                            break;
+                        }
+
+                    case XmlNodeType.Text:
+                    case XmlNodeType.CDATA:
+                        {
+                            var reason = ValidateCss(reader.Value, depth);
                             if (reason is not null)
                             {
                                 return reason;
                             }
+
+                            break;
                         }
-
-                        reader.MoveToElement();
-                        break;
-                    }
-
-                    case XmlNodeType.Text:
-                    case XmlNodeType.CDATA:
-                    {
-                        var reason = ValidateCss(reader.Value, depth);
-                        if (reason is not null)
-                        {
-                            return reason;
-                        }
-
-                        break;
-                    }
                 }
             }
 
