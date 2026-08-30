@@ -80,6 +80,14 @@ namespace Jellyfin.Api.Auth.DefaultAuthorizationPolicy
             // It's not great to have this check, but parental schedule must usually be honored except in a few rare cases
             if (requirement.ValidateParentalSchedule && !user.IsParentalScheduleAllowed())
             {
+                // Tell the client why it was refused. Without this the resulting 403 is
+                // indistinguishable from an ordinary permission denial, and clients render
+                // it as an empty library rather than an actionable message.
+                if (_httpContextAccessor.HttpContext is not null)
+                {
+                    _httpContextAccessor.HttpContext.Response.Headers[ApplicationErrorCodes.HeaderName] = ApplicationErrorCodes.ParentalControl;
+                }
+
                 context.Fail();
                 return Task.CompletedTask;
             }

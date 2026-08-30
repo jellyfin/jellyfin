@@ -3,6 +3,7 @@ using System.IO;
 using System.Net.Mime;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
@@ -92,6 +93,14 @@ public class ExceptionMiddleware
             context.Response.StatusCode = GetStatusCode(ex);
             context.Response.ContentType = MediaTypeNames.Text.Plain;
 
+            // Tell the client why it was refused. Without this a parental-control
+            // rejection is an indistinguishable 403 and clients render it as an
+            // empty library rather than an actionable message.
+            if (IsParentalControlRejection(ex))
+            {
+                context.Response.Headers[ApplicationErrorCodes.HeaderName] = ApplicationErrorCodes.ParentalControl;
+            }
+
             // Don't send exception unless the server is in a Development environment
             var errorContent = _hostEnvironment.IsDevelopment()
                     ? NormalizeExceptionMessage(ex.Message)
@@ -118,6 +127,29 @@ public class ExceptionMiddleware
         }
 
         return ex;
+    }
+
+    /// <summary>
+    /// Checks whether an exception, or anything it wraps, is a parental control rejection.
+    /// </summary>
+    /// <remarks>
+    /// The chain has to be walked because <c>UserController</c> catches
+    /// <see cref="SecurityException"/> and rethrows a plain one to prefix the remote IP to
+    /// the message, which erases the original type.
+    /// </remarks>
+    /// <param name="ex">The exception to inspect.</param>
+    /// <returns><c>true</c> if the exception or any inner exception is a <see cref="ParentalControlException"/>.</returns>
+    private static bool IsParentalControlRejection(Exception? ex)
+    {
+        for (var current = ex; current is not null; current = current.InnerException)
+        {
+            if (current is ParentalControlException)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static int GetStatusCode(Exception ex)
