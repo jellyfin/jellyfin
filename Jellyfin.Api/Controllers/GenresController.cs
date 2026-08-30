@@ -116,14 +116,12 @@ public class GenresController : BaseJellyfinApiController
             NameLessThan = nameLessThan,
             NameStartsWith = nameStartsWith,
             NameStartsWithOrGreater = nameStartsWithOrGreater,
-            NameInitials = [.. nameInitialQuery.NameInitials],
-            ExcludeNameInitials = [.. nameInitialQuery.ExcludeNameInitials],
-            NameInitialSortOrder = [.. nameInitialQuery.NameInitialSortOrder],
             DtoOptions = dtoOptions,
             SearchTerm = searchTerm,
             EnableTotalRecordCount = enableTotalRecordCount,
             OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder)
         };
+        nameInitialQuery.ApplyTo(query);
 
         if (parentId.HasValue)
         {

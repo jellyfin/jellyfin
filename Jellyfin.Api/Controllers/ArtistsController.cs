@@ -148,9 +148,6 @@ public class ArtistsController : BaseJellyfinApiController
             NameLessThan = nameLessThan,
             NameStartsWith = nameStartsWith,
             NameStartsWithOrGreater = nameStartsWithOrGreater,
-            NameInitials = [.. nameInitialQuery.NameInitials],
-            ExcludeNameInitials = [.. nameInitialQuery.ExcludeNameInitials],
-            NameInitialSortOrder = [.. nameInitialQuery.NameInitialSortOrder],
             Tags = tags,
             OfficialRatings = officialRatings,
             Genres = genres,
@@ -166,6 +163,7 @@ public class ArtistsController : BaseJellyfinApiController
             EnableTotalRecordCount = enableTotalRecordCount,
             OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder)
         };
+        nameInitialQuery.ApplyTo(query);
 
         if (parentId.HasValue)
         {
@@ -325,9 +323,6 @@ public class ArtistsController : BaseJellyfinApiController
             NameLessThan = nameLessThan,
             NameStartsWith = nameStartsWith,
             NameStartsWithOrGreater = nameStartsWithOrGreater,
-            NameInitials = [.. nameInitialQuery.NameInitials],
-            ExcludeNameInitials = [.. nameInitialQuery.ExcludeNameInitials],
-            NameInitialSortOrder = [.. nameInitialQuery.NameInitialSortOrder],
             Tags = tags,
             OfficialRatings = officialRatings,
             Genres = genres,
@@ -343,6 +338,7 @@ public class ArtistsController : BaseJellyfinApiController
             EnableTotalRecordCount = enableTotalRecordCount,
             OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder)
         };
+        nameInitialQuery.ApplyTo(query);
 
         if (parentId.HasValue)
         {

@@ -398,9 +398,6 @@ public class ItemsController : BaseJellyfinApiController
             NameLessThan = nameLessThan,
             NameStartsWith = nameStartsWith,
             NameStartsWithOrGreater = nameStartsWithOrGreater,
-            NameInitials = [.. nameInitialQuery.NameInitials],
-            ExcludeNameInitials = [.. nameInitialQuery.ExcludeNameInitials],
-            NameInitialSortOrder = [.. nameInitialQuery.NameInitialSortOrder],
             HasImdbId = hasImdbId,
             IsPlaceHolder = isPlaceHolder,
             IsLocked = isLocked,
@@ -459,6 +456,7 @@ public class ItemsController : BaseJellyfinApiController
             SubtitleLanguages = subtitleLanguages,
             LinkedChildAncestorIds = linkedChildAncestorIds,
         };
+        nameInitialQuery.ApplyTo(query);
 
         if (ids.Length != 0 || !string.IsNullOrWhiteSpace(searchTerm))
         {

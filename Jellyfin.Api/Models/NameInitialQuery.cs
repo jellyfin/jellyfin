@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Jellyfin.Api.ModelBinders;
+using MediaBrowser.Controller.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api.Models;
@@ -29,4 +30,15 @@ public class NameInitialQuery
     [FromQuery(Name = "nameInitialSortOrder")]
     [ModelBinder(typeof(CommaDelimitedCollectionModelBinder))]
     public IReadOnlyList<string> NameInitialSortOrder { get; set; } = [];
+
+    /// <summary>
+    /// Applies the name-initial query options to an internal items query.
+    /// </summary>
+    /// <param name="query">The internal items query.</param>
+    internal void ApplyTo(InternalItemsQuery query)
+    {
+        query.NameInitials = [.. NameInitials];
+        query.ExcludeNameInitials = [.. ExcludeNameInitials];
+        query.NameInitialSortOrder = [.. NameInitialSortOrder];
+    }
 }
