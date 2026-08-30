@@ -758,9 +758,9 @@ namespace MediaBrowser.Controller.Library
         /// Returns the count of immediate children (non-recursive) for each parent.
         /// </summary>
         /// <param name="parentIds">The list of parent folder IDs.</param>
-        /// <param name="userId">The user ID for access filtering.</param>
+        /// <param name="user">The user the counts are for, or null to count without a user's preferences.</param>
         /// <returns>Dictionary mapping parent ID to child count.</returns>
-        Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, Guid? userId);
+        Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, User? user);
 
         /// <summary>
         /// Batch-fetches played and total counts for multiple folder items.
