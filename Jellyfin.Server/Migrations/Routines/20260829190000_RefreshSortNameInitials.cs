@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
-using Jellyfin.Extensions;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -43,58 +42,65 @@ public class RefreshSortNameInitials : IAsyncMigrationRoutine
     /// <inheritdoc />
     public async Task PerformAsync(CancellationToken cancellationToken)
     {
-        const int Limit = 10000;
-        var updatedCount = 0;
-        var processedInPartition = 0;
+        const int BatchSize = 10000;
         var configuration = _configurationManager.Configuration;
         var personType = typeof(Person).ToString();
-        var sw = Stopwatch.StartNew();
+        var stopwatch = Stopwatch.StartNew();
+        var updatedCount = 0;
+        var totalCount = 0;
 
-        using var context = _dbProvider.CreateDbContext();
-        var records = context.BaseItems.Count();
-        _logger.LogInformation("Refreshing SortNameInitial for {Count} library items", records);
-
-        await foreach (var item in context.BaseItems
-                          .OrderBy(e => e.Id)
-                          .WithPartitionProgress(partition => _logger.LogInformation(
-                              "Processed: {Offset}/{Total} - Updated: {UpdatedCount} - Time: {Elapsed}",
-                              partition * Limit,
-                              records,
-                              updatedCount,
-                              sw.Elapsed))
-                          .PartitionEagerAsync(Limit, cancellationToken)
-                          .WithCancellation(cancellationToken)
-                          .ConfigureAwait(false))
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
         {
-            var enableAlphaNumericSorting = !string.Equals(item.Type, personType, StringComparison.Ordinal);
-            var sourceName = !string.IsNullOrEmpty(item.ForcedSortName) ? item.ForcedSortName : item.Name;
-            var newInitial = BaseItem.GetSortNameInitial(sourceName, enableAlphaNumericSorting, configuration);
+            totalCount = await context.BaseItems.CountAsync(cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation("Refreshing SortNameInitial for {Count} library items", totalCount);
 
-            if (!string.Equals(newInitial, item.SortNameInitial, StringComparison.Ordinal))
+            for (var offset = 0; offset < totalCount; offset += BatchSize)
             {
-                item.SortNameInitial = newInitial;
-                updatedCount++;
-            }
+                cancellationToken.ThrowIfCancellationRequested();
 
-            processedInPartition++;
-            if (processedInPartition >= Limit)
-            {
+                var items = await context.BaseItems
+                    .OrderBy(item => item.Id)
+                    .Skip(offset)
+                    .Take(BatchSize)
+                    .ToListAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (items.Count == 0)
+                {
+                    break;
+                }
+
+                foreach (var item in items)
+                {
+                    var sourceName = string.IsNullOrEmpty(item.ForcedSortName) ? item.Name : item.ForcedSortName;
+                    var enableAlphaNumericSorting = !string.Equals(item.Type, personType, StringComparison.Ordinal);
+                    var initial = BaseItem.GetSortNameInitial(sourceName, enableAlphaNumericSorting, configuration);
+                    if (string.Equals(initial, item.SortNameInitial, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    item.SortNameInitial = initial;
+                    updatedCount++;
+                }
+
                 await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                 context.ChangeTracker.Clear();
-                processedInPartition = 0;
-            }
-        }
 
-        if (processedInPartition > 0)
-        {
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            context.ChangeTracker.Clear();
+                _logger.LogInformation(
+                    "Processed {Processed}/{Total} library items - Updated: {UpdatedCount} - Time: {Elapsed}",
+                    Math.Min(offset + items.Count, totalCount),
+                    totalCount,
+                    updatedCount,
+                    stopwatch.Elapsed);
+            }
         }
 
         _logger.LogInformation(
             "Refreshed SortNameInitial for {UpdatedCount} out of {TotalCount} items in {Time}",
             updatedCount,
-            records,
-            sw.Elapsed);
+            totalCount,
+            stopwatch.Elapsed);
     }
 }
