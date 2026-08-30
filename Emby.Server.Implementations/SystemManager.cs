@@ -78,7 +78,10 @@ public class SystemManager : ISystemManager
             StartupWizardCompleted = _configurationManager.CommonConfiguration.IsStartupWizardCompleted,
             SupportsLibraryMonitor = true,
             PackageName = _startupOptions.PackageName,
-            CastReceiverApplications = _configurationManager.Configuration.CastReceiverApplications
+            CastReceiverApplications = _configurationManager.Configuration.CastReceiverApplications,
+            EnableLocalizedAlphabetNavigation = _configurationManager.Configuration.EnableLocalizedAlphabetNavigation,
+            LocalizedAlphabetLocale = _configurationManager.Configuration.UICulture,
+            LocalizedAlphabetAdditionalScripts = _configurationManager.Configuration.LocalizedAlphabetAdditionalScripts
         };
     }
 

@@ -1001,6 +1001,40 @@ namespace MediaBrowser.Controller.Entities
                 return name.TrimStart();
             }
 
+            return ModifySortChunks(GetPreTransliterationSortName(name, configuration));
+        }
+
+        /// <summary>
+        /// Gets the first sortable letter or digit before diacritics are removed or the name is transliterated.
+        /// </summary>
+        /// <param name="name">The raw name to inspect.</param>
+        /// <param name="enableAlphaNumericSorting">Whether alphanumeric sorting rules should be applied.</param>
+        /// <param name="configuration">The server configuration providing the sort rules.</param>
+        /// <returns>The normalized first sortable Unicode scalar, or <c>null</c> when none is present.</returns>
+        public static string GetSortNameInitial(string name, bool enableAlphaNumericSorting, ServerConfiguration configuration)
+        {
+            if (name is null)
+            {
+                return null;
+            }
+
+            var sortable = enableAlphaNumericSorting
+                ? GetPreTransliterationSortName(name, configuration)
+                : name.TrimStart().ToLowerInvariant();
+
+            foreach (var rune in sortable.Normalize().EnumerateRunes())
+            {
+                if (Rune.IsLetterOrDigit(rune))
+                {
+                    return rune.ToString();
+                }
+            }
+
+            return null;
+        }
+
+        private static string GetPreTransliterationSortName(string name, ServerConfiguration configuration)
+        {
             var sortable = name.Trim().ToLowerInvariant();
 
             foreach (var search in configuration.SortRemoveWords)
@@ -1031,7 +1065,7 @@ namespace MediaBrowser.Controller.Entities
                 sortable = sortable.Replace(replaceChar, " ", StringComparison.Ordinal);
             }
 
-            return ModifySortChunks(sortable);
+            return sortable;
         }
 
         internal static string ModifySortChunks(ReadOnlySpan<char> name)

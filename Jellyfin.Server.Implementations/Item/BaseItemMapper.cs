@@ -249,6 +249,10 @@ public static class BaseItemMapper
         entity.PremiereDate = dto.PremiereDate;
         entity.ProductionYear = dto.ProductionYear;
         entity.SortName = dto.SortName;
+        entity.SortNameInitial = BaseItemDto.GetSortNameInitial(
+            !string.IsNullOrEmpty(dto.ForcedSortName) ? dto.ForcedSortName : dto.Name,
+            dto.EnableAlphaNumericSorting,
+            BaseItemDto.ConfigurationManager.Configuration);
         entity.ForcedSortName = dto.ForcedSortName;
         entity.RunTimeTicks = dto.RunTimeTicks;
         entity.PreferredMetadataLanguage = dto.PreferredMetadataLanguage;

@@ -161,6 +161,9 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="nameStartsWithOrGreater">Optional filter by items whose name is sorted equally or greater than a given input string.</param>
     /// <param name="nameStartsWith">Optional filter by items whose name is sorted equally than a given input string.</param>
     /// <param name="nameLessThan">Optional filter by items whose name is equally or lesser than a given input string.</param>
+    /// <param name="nameInitials">Optional filter by the pre-transliteration sort-name initial. Allows multiple, comma delimited.</param>
+    /// <param name="excludeNameInitials">Optional filter excluding pre-transliteration sort-name initials. Allows multiple, comma delimited.</param>
+    /// <param name="nameInitialSortOrder">Optional ordered list of pre-transliteration initials used to group SortName/Name ordering. Allows multiple, comma delimited.</param>
     /// <param name="studioIds">Optional. If specified, results will be filtered based on studio id. This allows multiple, pipe delimited.</param>
     /// <param name="genreIds">Optional. If specified, results will be filtered based on genre id. This allows multiple, pipe delimited.</param>
     /// <param name="audioLanguages">Optional. If specified, results will be filtered based on audio language. This allows multiple, comma delimited values.</param>
@@ -253,6 +256,9 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] string? nameStartsWithOrGreater,
         [FromQuery] string? nameStartsWith,
         [FromQuery] string? nameLessThan,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] nameInitials,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] excludeNameInitials,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] nameInitialSortOrder,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] studioIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] genreIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] audioLanguages,
@@ -395,6 +401,9 @@ public class ItemsController : BaseJellyfinApiController
             NameLessThan = nameLessThan,
             NameStartsWith = nameStartsWith,
             NameStartsWithOrGreater = nameStartsWithOrGreater,
+            NameInitials = nameInitials,
+            ExcludeNameInitials = excludeNameInitials,
+            NameInitialSortOrder = nameInitialSortOrder,
             HasImdbId = hasImdbId,
             IsPlaceHolder = isPlaceHolder,
             IsLocked = isLocked,
@@ -713,6 +722,9 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="nameStartsWithOrGreater">Optional filter by items whose name is sorted equally or greater than a given input string.</param>
     /// <param name="nameStartsWith">Optional filter by items whose name is sorted equally than a given input string.</param>
     /// <param name="nameLessThan">Optional filter by items whose name is equally or lesser than a given input string.</param>
+    /// <param name="nameInitials">Optional filter by the pre-transliteration sort-name initial. Allows multiple, comma delimited.</param>
+    /// <param name="excludeNameInitials">Optional filter excluding pre-transliteration sort-name initials. Allows multiple, comma delimited.</param>
+    /// <param name="nameInitialSortOrder">Optional ordered list of pre-transliteration initials used to group SortName/Name ordering. Allows multiple, comma delimited.</param>
     /// <param name="studioIds">Optional. If specified, results will be filtered based on studio id. This allows multiple, pipe delimited.</param>
     /// <param name="genreIds">Optional. If specified, results will be filtered based on genre id. This allows multiple, pipe delimited.</param>
     /// <param name="enableTotalRecordCount">Optional. Enable the total record count.</param>
@@ -804,6 +816,9 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] string? nameStartsWithOrGreater,
         [FromQuery] string? nameStartsWith,
         [FromQuery] string? nameLessThan,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] nameInitials,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] excludeNameInitials,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] nameInitialSortOrder,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] studioIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] genreIds,
         [FromQuery] bool enableTotalRecordCount = true,
@@ -891,6 +906,9 @@ public class ItemsController : BaseJellyfinApiController
             nameStartsWithOrGreater,
             nameStartsWith,
             nameLessThan,
+            nameInitials,
+            excludeNameInitials,
+            nameInitialSortOrder,
             studioIds,
             genreIds,
             [],

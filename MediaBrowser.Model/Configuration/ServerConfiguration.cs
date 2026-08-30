@@ -196,6 +196,16 @@ public class ServerConfiguration : BaseApplicationConfiguration
 
     public string UICulture { get; set; } = "en-US";
 
+    /// <summary>
+    /// Gets or sets a value indicating whether localized alphabet navigation is enabled.
+    /// </summary>
+    public bool EnableLocalizedAlphabetNavigation { get; set; }
+
+    /// <summary>
+    /// Gets or sets additional writing-system codes enabled for alphabet navigation.
+    /// </summary>
+    public string[] LocalizedAlphabetAdditionalScripts { get; set; } = Array.Empty<string>();
+
     public bool SaveMetadataHidden { get; set; } = false;
 
     public NameValuePair[] ContentTypes { get; set; } = Array.Empty<NameValuePair>();

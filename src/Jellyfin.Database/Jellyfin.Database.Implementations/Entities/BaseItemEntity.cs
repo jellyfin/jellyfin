@@ -50,6 +50,8 @@ public class BaseItemEntity
 
     public string? SortName { get; set; }
 
+    public string? SortNameInitial { get; set; }
+
     public string? ForcedSortName { get; set; }
 
     public long? RunTimeTicks { get; set; }

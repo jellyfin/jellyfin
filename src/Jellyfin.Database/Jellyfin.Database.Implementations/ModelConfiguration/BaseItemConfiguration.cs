@@ -37,6 +37,7 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasIndex(e => e.ParentId);
         builder.HasIndex(e => e.OwnerId);
         builder.HasIndex(e => e.Name);
+        builder.HasIndex(e => e.SortNameInitial);
         builder.HasIndex(e => new { e.ExtraType, e.OwnerId });
         builder.HasIndex(e => e.PresentationUniqueKey);
         // covering index

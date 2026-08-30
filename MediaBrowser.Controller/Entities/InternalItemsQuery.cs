@@ -44,6 +44,9 @@ namespace MediaBrowser.Controller.Entities
             OwnerIds = [];
             ExtraTypes = [];
             MediaTypes = [];
+            NameInitials = [];
+            ExcludeNameInitials = [];
+            NameInitialSortOrder = [];
             OfficialRatings = [];
             OrderBy = [];
             OwnerIds = [];
@@ -161,6 +164,8 @@ namespace MediaBrowser.Controller.Entities
             || !string.IsNullOrEmpty(NameStartsWith)
             || !string.IsNullOrEmpty(NameStartsWithOrGreater)
             || !string.IsNullOrEmpty(NameLessThan)
+            || NameInitials.Length > 0
+            || ExcludeNameInitials.Length > 0
             || !string.IsNullOrEmpty(NameContains)
             || !string.IsNullOrEmpty(MinSortName)
             || !string.IsNullOrEmpty(Name)
@@ -223,6 +228,12 @@ namespace MediaBrowser.Controller.Entities
         public string? NameStartsWith { get; set; }
 
         public string? NameLessThan { get; set; }
+
+        public string[] NameInitials { get; set; }
+
+        public string[] ExcludeNameInitials { get; set; }
+
+        public string[] NameInitialSortOrder { get; set; }
 
         public string? NameContains { get; set; }
 

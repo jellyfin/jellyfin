@@ -243,7 +243,40 @@ public sealed partial class BaseItemRepository
             dbQuery = dbQuery.Where(e => e.SortName!.ToLower().CompareTo(lessThanLower) < 0);
         }
 
+        if (filter.NameInitials.Length > 0)
+        {
+            var initials = NormalizeNameInitials(filter.NameInitials);
+            dbQuery = dbQuery.Where(e => e.SortNameInitial != null && initials.Contains(e.SortNameInitial));
+        }
+
+        if (filter.ExcludeNameInitials.Length > 0)
+        {
+            var excludedInitials = NormalizeNameInitials(filter.ExcludeNameInitials);
+            dbQuery = dbQuery.Where(e => e.SortNameInitial == null || !excludedInitials.Contains(e.SortNameInitial));
+        }
+
         return dbQuery;
+    }
+
+    private static string[] NormalizeNameInitials(IEnumerable<string> initials)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var normalizedInitials = new List<string>();
+        foreach (var value in initials)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            var normalized = value.Normalize().ToLowerInvariant();
+            if (seen.Add(normalized))
+            {
+                normalizedInitials.Add(normalized);
+            }
+        }
+
+        return normalizedInitials.ToArray();
     }
 
     /// <inheritdoc />
@@ -318,6 +351,19 @@ public sealed partial class BaseItemRepository
 
         IOrderedQueryable<BaseItemEntity>? orderedQuery = null;
 
+        var nameInitialSortOrder = NormalizeNameInitials(filter.NameInitialSortOrder);
+        var useNameInitialSortOrder = !hasSearch
+            && nameInitialSortOrder.Length > 0
+            && (orderBy.Length == 0 || orderBy[0].OrderBy is ItemSortBy.SortName or ItemSortBy.Name);
+        if (useNameInitialSortOrder)
+        {
+            var initialRankExpression = BuildNameInitialSortRankExpression(nameInitialSortOrder);
+            var sortOrder = orderBy.Length > 0 ? orderBy[0].SortOrder : SortOrder.Ascending;
+            orderedQuery = sortOrder == SortOrder.Ascending
+                ? query.OrderBy(initialRankExpression)
+                : query.OrderByDescending(initialRankExpression);
+        }
+
         if (hasSearch)
         {
             var relevanceExpression = OrderMapper.MapSearchRelevanceOrder(filter.SearchTerm!);
@@ -381,6 +427,23 @@ public sealed partial class BaseItemRepository
         }
 
         return orderedQuery;
+    }
+
+    private static Expression<Func<BaseItemEntity, int>> BuildNameInitialSortRankExpression(IReadOnlyList<string> initials)
+    {
+        var entity = Expression.Parameter(typeof(BaseItemEntity), "e");
+        var initial = Expression.Property(entity, nameof(BaseItemEntity.SortNameInitial));
+        Expression rank = Expression.Constant(0); // Other / # sorts before the configured alphabets.
+
+        for (var index = initials.Count - 1; index >= 0; index--)
+        {
+            rank = Expression.Condition(
+                Expression.Equal(initial, Expression.Constant(initials[index], typeof(string))),
+                Expression.Constant(index + 1),
+                rank);
+        }
+
+        return Expression.Lambda<Func<BaseItemEntity, int>>(rank, entity);
     }
 
     private IQueryable<BaseItemEntity> ApplySeriesDatePlayedOrder(

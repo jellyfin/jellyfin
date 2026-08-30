@@ -333,6 +333,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<string>("SortName")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("SortNameInitial")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("TEXT");
 
@@ -381,6 +384,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("SeriesId");
 
                     b.HasIndex("SeriesName");
+
+                    b.HasIndex("SortNameInitial");
 
                     b.HasIndex("ExtraType", "OwnerId");
 

@@ -80,6 +80,31 @@ public class BaseItemTests
     }
 
     [Theory]
+    [InlineData("Ωμέγα", "ω")]
+    [InlineData("Ψυχή", "ψ")]
+    [InlineData("The Ωμέγα", "ω")]
+    [InlineData("+ F1", "f")]
+    [InlineData("1917", "1")]
+    [InlineData("🎬 Ωμέγα", "ω")]
+    public void GetSortNameInitial_PreservesNativeScript(string value, string expected)
+    {
+        var config = new ServerConfiguration
+        {
+            SortRemoveWords = ["the", "a", "an"],
+            SortRemoveCharacters = [",", "&", "-", "{", "}", "'"],
+            SortReplaceCharacters = [".", "+", "%"]
+        };
+
+        Assert.Equal(expected, BaseItem.GetSortNameInitial(value, true, config));
+    }
+
+    [Fact]
+    public void GetSortNameInitial_WithoutAlphaNumericSorting_PreservesNativeScript()
+    {
+        Assert.Equal("ω", BaseItem.GetSortNameInitial("  Ωμέγα", false, new ServerConfiguration()));
+    }
+
+    [Theory]
     [InlineData("", "")]
     [InlineData("1", "0000000001")]
     [InlineData("t", "t")]

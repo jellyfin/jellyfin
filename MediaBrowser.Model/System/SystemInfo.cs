@@ -127,6 +127,21 @@ public class SystemInfo : PublicSystemInfo
     public IReadOnlyList<CastReceiverApplication> CastReceiverApplications { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether localized alphabet navigation is enabled.
+    /// </summary>
+    public bool EnableLocalizedAlphabetNavigation { get; set; }
+
+    /// <summary>
+    /// Gets or sets the locale used to choose the primary alphabet.
+    /// </summary>
+    public string LocalizedAlphabetLocale { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets additional writing-system codes enabled for alphabet navigation.
+    /// </summary>
+    public string[] LocalizedAlphabetAdditionalScripts { get; set; } = Array.Empty<string>();
+
+    /// <summary>
     /// Gets or sets a value indicating whether this instance has update available.
     /// </summary>
     /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>
