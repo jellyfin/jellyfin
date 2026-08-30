@@ -231,10 +231,28 @@ namespace MediaBrowser.Providers.MediaInfo
                 return Array.Empty<ExternalPathParserResult>();
             }
 
+            // VobSub .sub payloads only carry per-track language metadata when read via
+            // their paired .idx file, so probe the .idx instead and skip the .sub. Pairing
+            // requires the same directory (ffprobe can't resolve a split pair) and an
+            // ordinal comparison (ffprobe matches the .sub by exact case on case-sensitive
+            // filesystems, so a looser match could suppress a .sub with no working .idx).
+            // An .idx file with no paired .sub cannot be probed at all, so it is left out
+            // entirely rather than surfaced (which would otherwise fail every probe and,
+            // since the .idx would keep "existing" from Jellyfin's point of view, prevent
+            // stale subtitle stream metadata from ever being cleared once the .sub is gone).
+            HashSet<string>? pairedVobSubKeys = _type == DlnaProfileType.Subtitle
+                ? GetPairedVobSubKeys(files)
+                : null;
+
             var externalPathInfos = new List<ExternalPathParserResult>();
             ReadOnlySpan<char> prefix = video.FileNameWithoutExtension;
             foreach (var file in files)
             {
+                if (IsSuppressedVobSubFile(file, pairedVobSubKeys))
+                {
+                    continue;
+                }
+
                 var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file.AsSpan());
                 if (fileNameWithoutExtension.Length >= prefix.Length
                     && prefix.Equals(fileNameWithoutExtension[..prefix.Length], StringComparison.OrdinalIgnoreCase)
@@ -302,6 +320,77 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             return externalPathInfos;
+        }
+
+        /// <summary>
+        /// Determines whether a candidate file is part of a VobSub .idx/.sub pair that
+        /// should be resolved to only its .idx file, or an .idx file with no paired .sub
+        /// that cannot be probed at all.
+        /// </summary>
+        /// <param name="file">The full path to the candidate file.</param>
+        /// <param name="pairedVobSubKeys">The set of pairing keys with both an .idx and .sub present, or null if not applicable.</param>
+        /// <returns><c>true</c> if the file should be suppressed; otherwise, <c>false</c>.</returns>
+        private static bool IsSuppressedVobSubFile(string file, HashSet<string>? pairedVobSubKeys)
+        {
+            if (pairedVobSubKeys is null)
+            {
+                return false;
+            }
+
+            var extension = Path.GetExtension(file.AsSpan());
+            if (extension.Equals(".sub", StringComparison.OrdinalIgnoreCase))
+            {
+                // A paired .idx exists; probe it instead of the .sub payload.
+                return pairedVobSubKeys.Contains(GetVobSubPairingKey(file));
+            }
+
+            if (extension.Equals(".idx", StringComparison.OrdinalIgnoreCase))
+            {
+                // Without its .sub payload, the .idx cannot be probed for any data.
+                return !pairedVobSubKeys.Contains(GetVobSubPairingKey(file));
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Builds the set of directory+basename keys that have both an .idx and a .sub
+        /// file present, in a single pass over the candidate files.
+        /// </summary>
+        /// <param name="files">The candidate files to search.</param>
+        /// <returns>The set of pairing keys with both an .idx and .sub present.</returns>
+        private static HashSet<string> GetPairedVobSubKeys(IEnumerable<string> files)
+        {
+            var idxKeys = new HashSet<string>(StringComparer.Ordinal);
+            var subKeys = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var file in files)
+            {
+                var extension = Path.GetExtension(file.AsSpan());
+                if (extension.Equals(".idx", StringComparison.OrdinalIgnoreCase))
+                {
+                    idxKeys.Add(GetVobSubPairingKey(file));
+                }
+                else if (extension.Equals(".sub", StringComparison.OrdinalIgnoreCase))
+                {
+                    subKeys.Add(GetVobSubPairingKey(file));
+                }
+            }
+
+            idxKeys.IntersectWith(subKeys);
+            return idxKeys;
+        }
+
+        /// <summary>
+        /// Builds a directory+basename key used to pair a VobSub .idx file with its .sub
+        /// payload only when both live in the same directory.
+        /// </summary>
+        /// <param name="file">The full path to the file.</param>
+        /// <returns>A key combining the containing directory and file name without extension.</returns>
+        private static string GetVobSubPairingKey(string file)
+        {
+            var directory = Path.GetDirectoryName(file) ?? string.Empty;
+            var baseName = Path.GetFileNameWithoutExtension(file);
+            return Path.Combine(directory, baseName);
         }
 
         /// <summary>
