@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Api.Models;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Model.Dto;
@@ -297,9 +298,7 @@ public class TrailersController : BaseJellyfinApiController
                 nameStartsWithOrGreater,
                 nameStartsWith,
                 nameLessThan,
-                [],
-                [],
-                [],
+                new NameInitialQuery(),
                 studioIds,
                 genreIds,
                 audioLanguages,
