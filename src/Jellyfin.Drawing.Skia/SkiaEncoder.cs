@@ -21,6 +21,14 @@ namespace Jellyfin.Drawing.Skia;
 public class SkiaEncoder : IImageEncoder
 {
     private const string SvgFormat = "svg";
+
+    /// <summary>
+    /// The maximum number of pixels (width * height) an image may declare before it is rejected.
+    /// Guards against tiny "dimension bomb" images whose header advertises enormous dimensions,
+    /// which would otherwise cause a huge bitmap allocation and OOM/crash before any pixels are read.
+    /// </summary>
+    private const long MaxImagePixels = 100_000_000L;
+
     private static readonly HashSet<string> _transparentImageTypes = new(StringComparer.OrdinalIgnoreCase) { ".png", ".gif", ".webp" };
     private readonly ILogger<SkiaEncoder> _logger;
     private readonly IApplicationPaths _appPaths;
@@ -337,6 +345,20 @@ public class SkiaEncoder : IImageEncoder
         return (SKEncodedOrigin)orientation.Value;
     }
 
+    private void ValidateImageDimensions(string path, int width, int height)
+    {
+        if (width <= 0 || height <= 0 || (long)width * height > MaxImagePixels)
+        {
+            throw new ArgumentException(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "Image dimensions {0}x{1} for '{2}' are invalid or exceed the maximum allowed size",
+                    width,
+                    height,
+                    path));
+        }
+    }
+
     /// <summary>
     /// Decode an image.
     /// </summary>
@@ -368,6 +390,8 @@ public class SkiaEncoder : IImageEncoder
                 throw new ArgumentException("Cannot decode images with multiple frames");
             }
 
+            ValidateImageDimensions(path, codec.Info.Width, codec.Info.Height);
+
             // create the bitmap
             SKBitmap? bitmap = null;
             try
@@ -389,7 +413,18 @@ public class SkiaEncoder : IImageEncoder
             }
         }
 
-        var resultBitmap = SKBitmap.Decode(NormalizePath(path));
+        var normalizedPath = NormalizePath(path);
+
+        // Validate the advertised dimensions before letting Skia allocate the full bitmap internally.
+        using (var boundsCodec = SKCodec.Create(normalizedPath, out SKCodecResult boundsResult))
+        {
+            if (boundsCodec is not null && boundsResult == SKCodecResult.Success)
+            {
+                ValidateImageDimensions(path, boundsCodec.Info.Width, boundsCodec.Info.Height);
+            }
+        }
+
+        var resultBitmap = SKBitmap.Decode(normalizedPath);
 
         if (resultBitmap is null)
         {

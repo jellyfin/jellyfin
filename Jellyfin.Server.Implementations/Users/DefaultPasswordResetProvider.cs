@@ -11,6 +11,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Users;
 
@@ -51,6 +52,7 @@ namespace Jellyfin.Server.Implementations.Users
         public async Task<PinRedeemResult> RedeemPasswordResetPin(string pin)
         {
             var userManager = _appHost.Resolve<IUserManager>();
+            var sessionManager = _appHost.Resolve<ISessionManager>();
             var usersReset = new List<string>();
             foreach (var resetFile in Directory.EnumerateFiles(_passwordResetFileBaseDir, $"{BaseResetFileName}*"))
             {
@@ -75,6 +77,8 @@ namespace Jellyfin.Server.Implementations.Users
                         ?? throw new ResourceNotFoundException($"User with a username of {spr.UserName} not found");
 
                     await userManager.ChangePassword(resetUser.Id, pin).ConfigureAwait(false);
+                    await sessionManager.RevokeUserTokens(resetUser.Id, null).ConfigureAwait(false);
+
                     usersReset.Add(resetUser.Username);
                     File.Delete(resetFile);
                 }

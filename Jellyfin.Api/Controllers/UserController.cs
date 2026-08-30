@@ -291,6 +291,7 @@ public class UserController : BaseJellyfinApiController
         if (request.ResetPassword)
         {
             await _userManager.ResetPassword(user.Id).ConfigureAwait(false);
+            await _sessionManager.RevokeUserTokens(user.Id, null).ConfigureAwait(false);
         }
         else
         {

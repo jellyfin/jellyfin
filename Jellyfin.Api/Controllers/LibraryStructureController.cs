@@ -147,8 +147,8 @@ public class LibraryStructureController : BaseJellyfinApiController
 
         var rootFolderPath = _appPaths.DefaultUserViewsPath;
 
-        var currentPath = Path.Combine(rootFolderPath, name);
-        var newPath = Path.Combine(rootFolderPath, newName);
+        var currentPath = _libraryManager.GetValidatedVirtualFolderPath(name);
+        var newPath = _libraryManager.GetValidatedVirtualFolderPath(newName);
 
         if (!Directory.Exists(currentPath))
         {
