@@ -109,6 +109,8 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
             var dupQuery = context.Peoples
                     .GroupBy(e => new { e.Name, e.PersonType })
                     .Where(e => e.Count() > 1)
+                    .OrderBy(e => e.Key.Name)
+                    .ThenBy(e => e.Key.PersonType)
                     .Select(e => e.Select(f => f.Id).ToArray());
 
             var total = dupQuery.Count();
