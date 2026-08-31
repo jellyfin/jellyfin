@@ -1213,14 +1213,7 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public Person? GetPerson(string name)
         {
-            var path = Person.GetPath(name);
-            var id = GetItemByNameId<Person>(path);
-            if (GetItemById(id) is Person item)
-            {
-                return item;
-            }
-
-            return null;
+            return GetItemByName<Person>(Person.GetPath, name, new DtoOptions(true));
         }
 
         /// <inheritdoc />
@@ -1250,12 +1243,14 @@ namespace Emby.Server.Implementations.Library
             return item;
         }
 
-        /// <summary>
-        /// Gets the studio.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>Task{Studio}.</returns>
-        public Studio GetStudio(string name)
+        /// <inheritdoc />
+        public Studio? GetStudio(string name)
+        {
+            return GetItemByName<Studio>(Studio.GetPath, name, new DtoOptions(true));
+        }
+
+        /// <inheritdoc />
+        public Studio GetOrCreateStudio(string name)
         {
             return CreateItemByName<Studio>(Studio.GetPath, name, new DtoOptions(true));
         }
@@ -1275,22 +1270,26 @@ namespace Emby.Server.Implementations.Library
             return GetItemByNameId<MusicGenre>(MusicGenre.GetPath(name));
         }
 
-        /// <summary>
-        /// Gets the genre.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>Task{Genre}.</returns>
-        public Genre GetGenre(string name)
+        /// <inheritdoc />
+        public Genre? GetGenre(string name)
+        {
+            return GetItemByName<Genre>(Genre.GetPath, name, new DtoOptions(true));
+        }
+
+        /// <inheritdoc />
+        public Genre GetOrCreateGenre(string name)
         {
             return CreateItemByName<Genre>(Genre.GetPath, name, new DtoOptions(true));
         }
 
-        /// <summary>
-        /// Gets the music genre.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>Task{MusicGenre}.</returns>
-        public MusicGenre GetMusicGenre(string name)
+        /// <inheritdoc />
+        public MusicGenre? GetMusicGenre(string name)
+        {
+            return GetItemByName<MusicGenre>(MusicGenre.GetPath, name, new DtoOptions(true));
+        }
+
+        /// <inheritdoc />
+        public MusicGenre GetOrCreateMusicGenre(string name)
         {
             return CreateItemByName<MusicGenre>(MusicGenre.GetPath, name, new DtoOptions(true));
         }
@@ -1312,12 +1311,8 @@ namespace Emby.Server.Implementations.Library
             return CreateItemByName<Year>(Year.GetPath, name, new DtoOptions(true));
         }
 
-        /// <summary>
-        /// Gets a Genre.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>Task{Genre}.</returns>
-        public MusicArtist GetArtist(string name)
+        /// <inheritdoc />
+        public MusicArtist? GetArtist(string name)
         {
             return GetArtist(name, new DtoOptions(true));
         }
@@ -1327,12 +1322,33 @@ namespace Emby.Server.Implementations.Library
             return _linkedChildrenService.FindArtists(names);
         }
 
-        public MusicArtist GetArtist(string name, DtoOptions options)
+        /// <inheritdoc />
+        public MusicArtist? GetArtist(string name, DtoOptions options)
+        {
+            return GetItemByName<MusicArtist>(MusicArtist.GetPath, name, options);
+        }
+
+        /// <inheritdoc />
+        public MusicArtist GetOrCreateArtist(string name)
+        {
+            return GetOrCreateArtist(name, new DtoOptions(true));
+        }
+
+        /// <inheritdoc />
+        public MusicArtist GetOrCreateArtist(string name, DtoOptions options)
         {
             return CreateItemByName<MusicArtist>(MusicArtist.GetPath, name, options);
         }
 
-        private T CreateItemByName<T>(Func<string, string> getPathFn, string name, DtoOptions options)
+        /// <summary>
+        /// Looks up an item-by-name entity without creating it.
+        /// </summary>
+        /// <typeparam name="T">The item type.</typeparam>
+        /// <param name="getPathFn">Builds the item-by-name path for a name.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="options">The dto options, only used to resolve music artists by name.</param>
+        /// <returns>The item, or <c>null</c> when none exists for the name.</returns>
+        private T? GetItemByName<T>(Func<string, string> getPathFn, string name, DtoOptions options)
             where T : BaseItem, new()
         {
             if (typeof(T) == typeof(MusicArtist))
@@ -1354,23 +1370,30 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var path = getPathFn(name);
-            var id = GetItemByNameId<T>(path);
-            var item = GetItemById(id) as T;
-            if (item is null)
-            {
-                var info = Directory.CreateDirectory(path);
-                item = new T
-                {
-                    Name = name,
-                    Id = id,
-                    DateCreated = info.CreationTimeUtc,
-                    DateModified = info.LastWriteTimeUtc,
-                    Path = path
-                };
+            return GetItemById(GetItemByNameId<T>(getPathFn(name))) as T;
+        }
 
-                CreateItem(item, null);
+        private T CreateItemByName<T>(Func<string, string> getPathFn, string name, DtoOptions options)
+            where T : BaseItem, new()
+        {
+            var existing = GetItemByName<T>(getPathFn, name, options);
+            if (existing is not null)
+            {
+                return existing;
             }
+
+            var path = getPathFn(name);
+            var info = Directory.CreateDirectory(path);
+            var item = new T
+            {
+                Name = name,
+                Id = GetItemByNameId<T>(path),
+                DateCreated = info.CreationTimeUtc,
+                DateModified = info.LastWriteTimeUtc,
+                Path = path
+            };
+
+            CreateItem(item, null);
 
             return item;
         }

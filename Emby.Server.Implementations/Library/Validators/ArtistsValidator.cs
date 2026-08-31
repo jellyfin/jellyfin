@@ -75,8 +75,8 @@ public class ArtistsValidator
                     item = artists.OrderBy(i => i.IsAccessedByName ? 1 : 0).First();
                 }
 
-                // Fall back to GetArtist if not found (creates new item if needed)
-                item ??= _libraryManager.GetArtist(name);
+                // Fall back to creating the item if the name has none yet
+                item ??= _libraryManager.GetOrCreateArtist(name);
 
                 // A name with no item is nothing to refresh, and nothing to keep alive either.
                 if (item is not null)

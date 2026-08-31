@@ -61,7 +61,7 @@ public class MusicGenresValidator
         {
             try
             {
-                var item = _libraryManager.GetMusicGenre(name);
+                var item = _libraryManager.GetOrCreateMusicGenre(name);
                 if (!existingMusicGenreIds.Contains(item.Id))
                 {
                     await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);

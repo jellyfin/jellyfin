@@ -141,15 +141,23 @@ public class StudiosController : BaseJellyfinApiController
     /// <param name="name">Studio name.</param>
     /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
     /// <response code="200">Studio returned.</response>
-    /// <returns>An <see cref="OkResult"/> containing the studio.</returns>
+    /// <response code="404">Studio not found.</response>
+    /// <returns>An <see cref="OkResult"/> containing the studio on success,
+    /// or a <see cref="NotFoundResult"/> if the studio was not found.</returns>
     [HttpGet("{name}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<BaseItemDto> GetStudio([FromRoute, Required] string name, [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions();
 
         var item = _libraryManager.GetStudio(name);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
         if (!userId.IsNullOrEmpty())
         {
             var user = _userManager.GetUserById(userId.Value);
