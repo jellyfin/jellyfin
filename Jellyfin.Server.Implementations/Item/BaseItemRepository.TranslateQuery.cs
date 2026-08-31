@@ -1091,6 +1091,12 @@ public sealed partial class BaseItemRepository
             baseQuery = baseQuery.Where(e => e.Parents!.AsQueryable().Any(ancestorFilter));
         }
 
+        if (filter.DescendantOfId.HasValue)
+        {
+            var descendantIds = DescendantQueryHelper.GetAllDescendantIds(context, filter.DescendantOfId.Value);
+            baseQuery = baseQuery.Where(e => descendantIds.Contains(e.Id));
+        }
+
         if (filter.LinkedChildAncestorIds.Length > 0)
         {
             // Keep folder-like items (BoxSets, Playlists) whose linked children descend from any of the requested ancestor ids.

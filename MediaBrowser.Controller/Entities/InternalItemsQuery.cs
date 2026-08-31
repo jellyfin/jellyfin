@@ -103,6 +103,7 @@ namespace MediaBrowser.Controller.Entities
             || SubtitleLanguages.Count > 0
             || LinkedChildAncestorIds.Length > 0
             || AncestorIds.Length > 0
+            || DescendantOfId.HasValue
             || IsFavorite.HasValue
             || IsFavoriteOrLiked.HasValue
             || IsLiked.HasValue
@@ -367,6 +368,13 @@ namespace MediaBrowser.Controller.Entities
         /// Useful for filtering BoxSets/Playlists to only those that contain items from a specific library.
         /// </summary>
         public Guid[] LinkedChildAncestorIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id of a folder whose descendants the items must be part of.
+        /// Unlike <see cref="AncestorIds"/> this also follows the linked children of BoxSets and
+        /// Playlists, so it reaches the items below a linked folder (a Series' episodes, for example).
+        /// </summary>
+        public Guid? DescendantOfId { get; set; }
 
         public Guid[] TopParentIds { get; set; }
 
