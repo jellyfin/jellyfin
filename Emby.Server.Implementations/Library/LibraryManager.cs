@@ -1984,18 +1984,10 @@ namespace Emby.Server.Implementations.Library
             {
                 // Playlists and BoxSets store their contents in LinkedChildren and never
                 // populate AncestorIds for those items, so a recursive AncestorIds query
-                // would return zero rows. Resolve to the linked child IDs up front and
-                // route through the existing indexed ItemIds filter.
-                query.ItemIds = folder.LinkedChildren
-                    .Where(lc => lc.ItemId.HasValue && !lc.ItemId.Value.IsEmpty())
-                    .Select(lc => lc.ItemId!.Value)
-                    .ToArray();
-
-                // Empty linked-children should still return empty rather than scanning everything.
-                if (query.ItemIds.Length == 0)
-                {
-                    query.ItemIds = [Guid.NewGuid()];
-                }
+                // would return zero rows. Filter by the descendant set instead, which follows
+                // the links and keeps descending, so a linked folder contributes what is below
+                // it as well - the episodes of a Series added to a collection, for example.
+                query.DescendantOfId = folder.Id;
             }
             else
             {
