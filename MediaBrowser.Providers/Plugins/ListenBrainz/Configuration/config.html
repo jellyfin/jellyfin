@@ -7,7 +7,6 @@
     <div id="configPage" data-role="page" class="page type-interior pluginConfigurationPage configPage" data-require="emby-input,emby-button,emby-select">
         <div data-role="content">
             <div class="content-primary">
-                <img id="listenBrainzLogo" alt="ListenBrainz" style="max-width:240px;display:block;margin:0 auto 1em;" />
                 <h1>ListenBrainz</h1>
                 <p>Get similar artist recommendations from ListenBrainz Labs.</p>
                 <form class="configForm">
@@ -59,18 +58,6 @@
             document.querySelector('.configPage')
                 .addEventListener('pageshow', function () {
                     Dashboard.showLoadingMsg();
-
-                    // The logo is served as the plugin's embedded image, which is addressed by id and version.
-                    ApiClient.getInstalledPlugins().then(function (plugins) {
-                        var wantedId = ListenBrainzPluginConfig.uniquePluginId.replace(/-/g, '');
-                        var plugin = plugins.filter(function (installed) {
-                            return (installed.Id || '').replace(/-/g, '').toLowerCase() === wantedId;
-                        })[0];
-
-                        if (plugin) {
-                            document.querySelector('#listenBrainzLogo').src = ApiClient.getUrl('Plugins/' + plugin.Id + '/' + plugin.Version + '/Image');
-                        }
-                    });
 
                     ApiClient.getPluginConfiguration(ListenBrainzPluginConfig.uniquePluginId).then(function (config) {
                         var labsServer = document.querySelector('#labsServer');

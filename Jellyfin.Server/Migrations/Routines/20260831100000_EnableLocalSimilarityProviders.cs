@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations.Routines;
@@ -57,59 +58,69 @@ internal class EnableLocalSimilarityProviders : IAsyncMigrationRoutine
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var options = virtualFolder.LibraryOptions;
-            if (options?.TypeOptions is null || options.TypeOptions.Length == 0)
-            {
-                continue;
-            }
-
-            // Some virtual folders don't have a proper item id.
-            if (!Guid.TryParse(virtualFolder.ItemId, out var folderId))
-            {
-                continue;
-            }
-
-            var collectionFolder = _libraryManager.GetItemById<CollectionFolder>(folderId);
-            if (collectionFolder is null)
-            {
-                _logger.LogWarning("Could not find collection folder for virtual folder '{LibraryName}' with id '{FolderId}'. Skipping.", virtualFolder.Name, folderId);
-                continue;
-            }
-
-            var changed = false;
-            foreach (var typeOptions in options.TypeOptions)
-            {
-                if (typeOptions.Type is null || !localProvidersByType.TryGetValue(typeOptions.Type, out var localProviders))
-                {
-                    continue;
-                }
-
-                var enabled = typeOptions.SimilarItemProviders ?? [];
-                var missing = localProviders.Where(name => !enabled.Contains(name, StringComparer.OrdinalIgnoreCase)).ToArray();
-                if (missing.Length == 0)
-                {
-                    continue;
-                }
-
-                // Local providers rank ahead of remote ones, and the enabled list doubles as the
-                // priority order when no explicit order was saved.
-                typeOptions.SimilarItemProviders = [.. missing, .. enabled];
-                if (typeOptions.SimilarItemProviderOrder is { Length: > 0 } order)
-                {
-                    typeOptions.SimilarItemProviderOrder = [.. missing, .. order];
-                }
-
-                changed = true;
-                _logger.LogInformation("Enabled local similarity providers {Providers} for '{ItemType}' in library '{LibraryName}'.", missing, typeOptions.Type, virtualFolder.Name);
-            }
-
-            if (changed)
-            {
-                collectionFolder.UpdateLibraryOptions(options);
-            }
+            EnableLocalProviders(virtualFolder, localProvidersByType);
         }
 
         return Task.CompletedTask;
+    }
+
+    private void EnableLocalProviders(VirtualFolderInfo virtualFolder, Dictionary<string, string[]> localProvidersByType)
+    {
+        var options = virtualFolder.LibraryOptions;
+        if (options?.TypeOptions is null || options.TypeOptions.Length == 0)
+        {
+            return;
+        }
+
+        // Some virtual folders don't have a proper item id.
+        if (!Guid.TryParse(virtualFolder.ItemId, out var folderId))
+        {
+            return;
+        }
+
+        var collectionFolder = _libraryManager.GetItemById<CollectionFolder>(folderId);
+        if (collectionFolder is null)
+        {
+            _logger.LogWarning("Could not find collection folder for virtual folder '{LibraryName}' with id '{FolderId}'. Skipping.", virtualFolder.Name, folderId);
+            return;
+        }
+
+        var changed = false;
+        foreach (var typeOptions in options.TypeOptions)
+        {
+            changed |= EnableLocalProviders(typeOptions, localProvidersByType, virtualFolder.Name);
+        }
+
+        if (changed)
+        {
+            collectionFolder.UpdateLibraryOptions(options);
+        }
+    }
+
+    private bool EnableLocalProviders(TypeOptions typeOptions, Dictionary<string, string[]> localProvidersByType, string libraryName)
+    {
+        if (typeOptions.Type is null || !localProvidersByType.TryGetValue(typeOptions.Type, out var localProviders))
+        {
+            return false;
+        }
+
+        var enabled = typeOptions.SimilarItemProviders ?? [];
+        var missing = localProviders.Where(name => !enabled.Contains(name, StringComparer.OrdinalIgnoreCase)).ToArray();
+        if (missing.Length == 0)
+        {
+            return false;
+        }
+
+        // Local providers rank ahead of remote ones, and the enabled list doubles as the
+        // priority order when no explicit order was saved.
+        typeOptions.SimilarItemProviders = [.. missing, .. enabled];
+        if (typeOptions.SimilarItemProviderOrder is { Length: > 0 } order)
+        {
+            typeOptions.SimilarItemProviderOrder = [.. missing, .. order];
+        }
+
+        _logger.LogInformation("Enabled local similarity providers {Providers} for '{ItemType}' in library '{LibraryName}'.", missing, typeOptions.Type, libraryName);
+        return true;
     }
 
     private Dictionary<string, string[]> GetLocalProvidersByItemType()
