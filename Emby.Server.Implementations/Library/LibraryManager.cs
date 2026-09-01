@@ -1204,6 +1204,12 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
+        public Guid GetPersonId(string name)
+        {
+            return GetItemByNameId<Person>(Person.GetPath(name));
+        }
+
+        /// <inheritdoc />
         public Person? GetPerson(string name)
         {
             var path = Person.GetPath(name);

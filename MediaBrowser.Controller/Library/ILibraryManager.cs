@@ -707,6 +707,14 @@ namespace MediaBrowser.Controller.Library
         /// <returns><c>true</c> if ignored, <c>false</c> otherwise.</returns>
         bool IgnoreFile(FileSystemMetadata file, BaseItem parent);
 
+        /// <summary>
+        /// Gets the id a <see cref="Person"/> item for the name would have, without looking it up
+        /// or creating it.
+        /// </summary>
+        /// <param name="name">The name of the person.</param>
+        /// <returns>The item id for the name.</returns>
+        Guid GetPersonId(string name);
+
         Guid GetStudioId(string name);
 
         Guid GetGenreId(string name);

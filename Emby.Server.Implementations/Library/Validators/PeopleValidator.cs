@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -58,6 +59,8 @@ public class PeopleValidator
             IncludeItemTypes = [BaseItemKind.Person]
         }).ToHashSet();
 
+        var (newNames, deadIds) = PartitionCreditsByPersonId(names, _libraryManager.GetPersonId, existingPersonIds);
+
         var numComplete = 0;
         var count = names.Count;
         var refreshed = 0;
@@ -96,14 +99,18 @@ public class PeopleValidator
             progress.Report(percent);
         }
 
-        _logger.LogInformation("Refreshed metadata for {RefreshedCount} new people out of {TotalCount} total", refreshed, count);
+        _logger.LogInformation(
+            "Refreshed metadata for {RefreshedCount} people out of {TotalCount} total, {NewCount} of which had no item yet",
+            refreshed,
+            count,
+            newNames.Count);
 
-        var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
-        {
-            IncludeItemTypes = [BaseItemKind.Person],
-            IsDeadPerson = true,
-            IsLocked = false
-        });
+        // A person somebody locked is theirs, not ours, however little the library still credits them.
+        var deadEntities = deadIds
+            .Select(_libraryManager.GetItemById)
+            .OfType<Person>()
+            .Where(item => !item.IsLocked)
+            .ToList();
 
         foreach (var item in deadEntities)
         {
@@ -113,5 +120,40 @@ public class PeopleValidator
         _libraryManager.DeleteItemsUnsafeFast(deadEntities, deleteSourceFiles: true);
 
         progress.Report(100);
+    }
+
+    /// <summary>
+    /// Splits the person items into the ones a credit still calls for and the ones nothing does.
+    /// </summary>
+    /// <param name="creditNames">Every name credited on an item, from the people table.</param>
+    /// <param name="getPersonId">Maps a credit name to the id its person item has.</param>
+    /// <param name="existingPersonIds">The ids of the person items that exist.</param>
+    /// <returns>The credits needing an item, and the ids of the items nothing credits.</returns>
+    internal static (List<string> NewNames, List<Guid> DeadIds) PartitionCreditsByPersonId(
+        IReadOnlyList<string> creditNames,
+        Func<string, Guid> getPersonId,
+        IReadOnlySet<Guid> existingPersonIds)
+    {
+        ArgumentNullException.ThrowIfNull(creditNames);
+        ArgumentNullException.ThrowIfNull(getPersonId);
+        ArgumentNullException.ThrowIfNull(existingPersonIds);
+
+        var newNames = new List<string>();
+        var liveIds = new HashSet<Guid>();
+
+        foreach (var name in creditNames)
+        {
+            var personId = getPersonId(name);
+
+            // Distinct credit names can normalize onto one id; only the first of them needs an item.
+            if (liveIds.Add(personId) && !existingPersonIds.Contains(personId))
+            {
+                newNames.Add(name);
+            }
+        }
+
+        var deadIds = existingPersonIds.Where(id => !liveIds.Contains(id)).ToList();
+
+        return (newNames, deadIds);
     }
 }
