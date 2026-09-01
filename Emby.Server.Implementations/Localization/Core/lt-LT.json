@@ -100,7 +100,7 @@
     "TaskAudioNormalization": "Garso normalizavimas",
     "TaskAudioNormalizationDescription": "Skenuoja failus, ieškant garso normalizavimo duomenų.",
     "TaskExtractMediaSegments": "Medijos segmentų nuskaitymas",
-    "TaskDownloadMissingLyrics": "Parsisiųsti trūkstamus dainų tekstus",
+    "TaskDownloadMissingLyrics": "Parsisiųsti trūkstamus dainų žodžius",
     "TaskExtractMediaSegmentsDescription": "Ištraukia arba gauna medijos segmentus iš MediaSegment ijungtų įskiepių.",
     "TaskMoveTrickplayImages": "Pakeisti Trickplay atvaizdų vietą",
     "TaskMoveTrickplayImagesDescription": "Perkelia egzistuojančius Trickplay failus pagal bibliotekos nustatymus.",
