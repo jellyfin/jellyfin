@@ -15,7 +15,6 @@ using Emby.Naming.Common;
 using Emby.Naming.TV;
 using Emby.Naming.Video;
 using Emby.Server.Implementations.Library.Resolvers;
-using Emby.Server.Implementations.Library.Validators;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks.Tasks;
 using Emby.Server.Implementations.Sorting;
@@ -35,7 +34,6 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
@@ -75,7 +73,6 @@ namespace Emby.Server.Implementations.Library
         private readonly Lazy<IProviderManager> _providerManagerFactory;
         private readonly Lazy<IUserViewManager> _userViewManagerFactory;
         private readonly IServerApplicationHost _appHost;
-        private readonly IMediaEncoder _mediaEncoder;
         private readonly IFileSystem _fileSystem;
         private readonly IItemRepository _itemRepository;
         private readonly IItemPersistenceService _persistenceService;
@@ -122,7 +119,6 @@ namespace Emby.Server.Implementations.Library
         /// <param name="fileSystem">The file system.</param>
         /// <param name="providerManagerFactory">The provider manager.</param>
         /// <param name="userViewManagerFactory">The user view manager.</param>
-        /// <param name="mediaEncoder">The media encoder.</param>
         /// <param name="itemRepository">The item repository.</param>
         /// <param name="persistenceService">The item persistence service.</param>
         /// <param name="nextUpService">The next up service.</param>
@@ -148,7 +144,6 @@ namespace Emby.Server.Implementations.Library
             IFileSystem fileSystem,
             Lazy<IProviderManager> providerManagerFactory,
             Lazy<IUserViewManager> userViewManagerFactory,
-            IMediaEncoder mediaEncoder,
             IItemRepository itemRepository,
             IItemPersistenceService persistenceService,
             INextUpService nextUpService,
@@ -174,7 +169,6 @@ namespace Emby.Server.Implementations.Library
             _fileSystem = fileSystem;
             _providerManagerFactory = providerManagerFactory;
             _userViewManagerFactory = userViewManagerFactory;
-            _mediaEncoder = mediaEncoder;
             _itemRepository = itemRepository;
             _persistenceService = persistenceService;
             _nextUpService = nextUpService;
@@ -1222,6 +1216,33 @@ namespace Emby.Server.Implementations.Library
             return null;
         }
 
+        /// <inheritdoc />
+        public Person GetOrCreatePerson(string name)
+        {
+            var existing = GetPerson(name);
+            if (existing is not null)
+            {
+                return existing;
+            }
+
+            var path = Person.GetPath(name);
+            var info = Directory.CreateDirectory(path);
+            var item = new Person
+            {
+                Name = name,
+                Id = GetItemByNameId<Person>(path),
+                DateCreated = info.CreationTimeUtc,
+                DateModified = info.LastWriteTimeUtc,
+                Path = path
+            };
+
+            item.PresentationUniqueKey = item.CreatePresentationUniqueKey();
+
+            CreateItem(item, null);
+
+            return item;
+        }
+
         /// <summary>
         /// Gets the studio.
         /// </summary>
@@ -1352,15 +1373,6 @@ namespace Emby.Server.Implementations.Library
         {
             var forceCaseInsensitiveId = _configurationManager.Configuration.EnableNormalizedItemByNameIds;
             return GetNewItemIdInternal(path, typeof(T), forceCaseInsensitiveId);
-        }
-
-        /// <inheritdoc />
-        public Task ValidatePeopleAsync(IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            // Ensure the location is available.
-            Directory.CreateDirectory(_configurationManager.ApplicationPaths.PeoplePath);
-
-            return new PeopleValidator(this, _logger, _fileSystem).ValidatePeople(cancellationToken, progress);
         }
 
         /// <summary>
@@ -3746,27 +3758,14 @@ namespace Emby.Server.Implementations.Library
 
                 var itemUpdateType = ItemUpdateType.MetadataDownload;
                 var saveEntity = false;
-                var createEntity = false;
                 var personEntity = GetPerson(person.Name);
 
                 if (personEntity is null)
                 {
                     try
                     {
-                        var path = Person.GetPath(person.Name);
-                        var info = Directory.CreateDirectory(path);
-                        personEntity = new Person()
-                        {
-                            Name = person.Name,
-                            Id = GetItemByNameId<Person>(path),
-                            DateCreated = info.CreationTimeUtc,
-                            DateModified = info.LastWriteTimeUtc,
-                            Path = path
-                        };
-
-                        personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
+                        personEntity = GetOrCreatePerson(person.Name);
                         saveEntity = true;
-                        createEntity = true;
                     }
                     catch (Exception ex)
                     {
@@ -3800,11 +3799,6 @@ namespace Emby.Server.Implementations.Library
 
                 if (saveEntity)
                 {
-                    if (createEntity)
-                    {
-                        CreateItems([personEntity], null, CancellationToken.None);
-                    }
-
                     await RunMetadataSavers(personEntity, itemUpdateType).ConfigureAwait(false);
                     personEntity.DateLastSaved = DateTime.UtcNow;
 

@@ -107,6 +107,13 @@ namespace MediaBrowser.Controller.Library
         Person? GetPerson(string name);
 
         /// <summary>
+        /// Gets a Person, creating and persisting it if no item exists for the name yet.
+        /// </summary>
+        /// <param name="name">The name of the person.</param>
+        /// <returns>The person.</returns>
+        Person GetOrCreatePerson(string name);
+
+        /// <summary>
         /// Finds the by path.
         /// </summary>
         /// <param name="path">The path.</param>
@@ -151,15 +158,6 @@ namespace MediaBrowser.Controller.Library
         /// <returns>Task{Year}.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Throws if year is invalid.</exception>
         Year GetYear(int value);
-
-        /// <summary>
-        /// Validate and refresh the People sub-set of the IBN.
-        /// The items are stored in the db but not loaded into memory until actually requested by an operation.
-        /// </summary>
-        /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task ValidatePeopleAsync(IProgress<double> progress, CancellationToken cancellationToken);
 
         /// <summary>
         /// Reloads the root media folder.
