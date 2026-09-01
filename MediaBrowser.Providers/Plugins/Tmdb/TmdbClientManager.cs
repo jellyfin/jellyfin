@@ -25,16 +25,19 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
     {
         private const int CacheDurationInHours = 1;
 
-        private readonly IMemoryCache _memoryCache;
+        // Sized in TMDb records - see EstimateSize - rather than in responses, because the responses
+        // differ in weight by orders of magnitude.
+        private const int CacheSizeLimit = 100_000;
+
+        private readonly MemoryCache _memoryCache;
         private readonly TMDbClient _tmDbClient;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TmdbClientManager"/> class.
         /// </summary>
-        /// <param name="memoryCache">An instance of <see cref="IMemoryCache"/>.</param>
-        public TmdbClientManager(IMemoryCache memoryCache)
+        public TmdbClientManager()
         {
-            _memoryCache = memoryCache;
+            _memoryCache = new MemoryCache(new MemoryCacheOptions { SizeLimit = CacheSizeLimit });
 
             var apiKey = Plugin.Instance.Configuration.TmdbApiKey;
             apiKey = string.IsNullOrEmpty(apiKey) ? TmdbUtils.ApiKey : apiKey;
@@ -78,7 +81,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (movie is not null)
             {
-                _memoryCache.Set(key, movie, TimeSpan.FromHours(CacheDurationInHours));
+                Cache(key, movie);
             }
 
             return movie;
@@ -112,7 +115,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (collection is not null)
             {
-                _memoryCache.Set(key, collection, TimeSpan.FromHours(CacheDurationInHours));
+                Cache(key, collection);
             }
 
             return collection;
@@ -152,7 +155,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (series is not null)
             {
-                _memoryCache.Set(key, series, TimeSpan.FromHours(CacheDurationInHours));
+                Cache(key, series);
             }
 
             return series;
@@ -208,7 +211,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (group is not null)
             {
-                _memoryCache.Set(key, group, TimeSpan.FromHours(CacheDurationInHours));
+                Cache(key, group);
             }
 
             return group;
@@ -244,7 +247,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (season is not null)
             {
-                _memoryCache.Set(key, season, TimeSpan.FromHours(CacheDurationInHours));
+                Cache(key, season);
             }
 
             return season;
@@ -296,7 +299,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (episode is not null)
             {
-                _memoryCache.Set(key, episode, TimeSpan.FromHours(CacheDurationInHours));
+                Cache(key, episode);
             }
 
             return episode;
@@ -328,7 +331,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (person is not null)
             {
-                _memoryCache.Set(key, person, TimeSpan.FromHours(CacheDurationInHours));
+                Cache(key, person);
             }
 
             return person;
@@ -366,7 +369,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (result is not null)
             {
-                _memoryCache.Set(key, result, TimeSpan.FromHours(CacheDurationInHours));
+                Cache(key, result);
             }
 
             return result;
@@ -397,7 +400,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (searchResults?.Results?.Count > 0)
             {
-                _memoryCache.Set(key, searchResults, TimeSpan.FromHours(CacheDurationInHours));
+                CacheSearch(key, searchResults);
             }
 
             return searchResults?.Results;
@@ -425,7 +428,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (searchResults?.Results?.Count > 0)
             {
-                _memoryCache.Set(key, searchResults, TimeSpan.FromHours(CacheDurationInHours));
+                CacheSearch(key, searchResults);
             }
 
             return searchResults?.Results;
@@ -468,7 +471,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (searchResults?.Results?.Count > 0)
             {
-                _memoryCache.Set(key, searchResults, TimeSpan.FromHours(CacheDurationInHours));
+                CacheSearch(key, searchResults);
             }
 
             return searchResults?.Results;
@@ -498,7 +501,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (searchResults?.Results?.Count > 0)
             {
-                _memoryCache.Set(key, searchResults, TimeSpan.FromHours(CacheDurationInHours));
+                CacheSearch(key, searchResults);
             }
 
             return searchResults?.Results;
@@ -753,6 +756,84 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             return _tmDbClient.Config;
         }
 
+        /// <summary>
+        /// Stores a response under the shared expiry, weighed by what it costs to keep.
+        /// </summary>
+        private void Cache<T>(string key, T value)
+            where T : class
+            => _memoryCache.Set(
+                key,
+                value,
+                new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(CacheDurationInHours),
+                    Size = EstimateSize(value)
+                });
+
+        /// <summary>
+        /// Stores a page of search results, whose weight is simply how many there are.
+        /// </summary>
+        private void CacheSearch<T>(string key, SearchContainer<T> results)
+            => _memoryCache.Set(
+                key,
+                results,
+                new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(CacheDurationInHours),
+                    Size = 1 + Count(results.Results)
+                });
+
+        private static long Count<T>(IReadOnlyCollection<T>? items) => items?.Count ?? 0;
+
+        /// <summary>
+        /// Estimates what keeping a response costs, counting the sub-records that dominate it.
+        /// </summary>
+        private static long EstimateSize(object? value) => value switch
+        {
+            TvShow series => 1
+                + Count(series.Credits?.Cast) + Count(series.Credits?.Crew)
+                + EstimateAggregateSize(series.AggregateCredits)
+                + Count(series.Seasons),
+            TvSeason season => 1
+                + Count(season.Credits?.Cast) + Count(season.Credits?.Crew)
+                + Count(season.Episodes),
+            TvEpisode episode => 1
+                + Count(episode.Credits?.Cast) + Count(episode.Credits?.Crew)
+                + Count(episode.Credits?.GuestStars),
+            Movie movie => 1 + Count(movie.Credits?.Cast) + Count(movie.Credits?.Crew),
+            Collection collection => 1 + Count(collection.Parts),
+            TvGroupCollection groups => 1 + Count(groups.Groups),
+            FindContainer found => 1
+                + Count(found.MovieResults) + Count(found.TvResults)
+                + Count(found.PersonResults) + Count(found.TvEpisode) + Count(found.TvSeason),
+            _ => 1
+        };
+
+        /// <summary>
+        /// Weighs aggregate credits, where each person carries one record per episode they worked on.
+        /// </summary>
+        private static long EstimateAggregateSize(CreditsAggregate? credits)
+        {
+            if (credits is null)
+            {
+                return 0;
+            }
+
+            var size = Count(credits.Cast) + Count(credits.Crew);
+
+            foreach (var cast in credits.Cast ?? [])
+            {
+                size += Count(cast.Roles);
+            }
+
+            foreach (var crew in credits.Crew ?? [])
+            {
+                size += Count(crew.Jobs);
+            }
+
+            return size;
+        }
+
         /// <inheritdoc />
         public void Dispose()
         {
@@ -768,7 +849,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         {
             if (disposing)
             {
-                _memoryCache?.Dispose();
+                _memoryCache.Dispose();
                 _tmDbClient?.Dispose();
             }
         }
