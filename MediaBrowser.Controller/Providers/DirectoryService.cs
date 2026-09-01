@@ -1,22 +1,32 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using BitFaster.Caching.Lru;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Providers
 {
     public class DirectoryService : IDirectoryService
     {
-        // TODO make static and switch to FastConcurrentLru.
-        private readonly ConcurrentDictionary<string, FileSystemMetadata[]> _cache = new(StringComparer.Ordinal);
+        private const int DirectoryCacheSize = 2048;
+        private const int FileCacheSize = 4096;
 
-        private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache = new(StringComparer.Ordinal);
+        // A bounded LRU sizes its table up front, so it costs several kilobytes while still empty.
+        // One instance is a DI singleton and lives for the process, but the library code also news
+        // one up per item in several loops and hands it to QueueRefresh, which holds on to it until
+        // the refresh runs. Those instances usually ask about a single path, so each cache waits
+        // until something actually looks in it.
+        private readonly Lazy<FastConcurrentLru<string, FileSystemMetadata[]>> _cache
+            = new(static () => new(Environment.ProcessorCount, DirectoryCacheSize, StringComparer.Ordinal));
 
-        private readonly ConcurrentDictionary<string, List<string>> _filePathCache = new(StringComparer.Ordinal);
+        private readonly Lazy<FastConcurrentLru<string, FileSystemMetadata>> _fileCache
+            = new(static () => new(Environment.ProcessorCount, FileCacheSize, StringComparer.Ordinal));
+
+        private readonly Lazy<FastConcurrentLru<string, List<string>>> _filePathCache
+            = new(static () => new(Environment.ProcessorCount, DirectoryCacheSize, StringComparer.Ordinal));
 
         private readonly IFileSystem _fileSystem;
 
@@ -27,7 +37,7 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
-            return _cache.GetOrAdd(
+            return _cache.Value.GetOrAdd(
                 path,
                 static (p, fileSystem) =>
                 {
@@ -89,13 +99,16 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata? GetFileSystemEntry(string path)
         {
-            if (!_fileCache.TryGetValue(path, out var result))
+            if (!_fileCache.Value.TryGet(path, out var result))
             {
                 var file = _fileSystem.GetFileSystemInfo(path);
+
+                // Only a hit is remembered. A miss is the one answer that changes on its own, when
+                // the file the path names turns up.
                 if (file?.Exists ?? false)
                 {
                     result = file;
-                    _fileCache.TryAdd(path, result);
+                    _fileCache.Value.AddOrUpdate(path, result);
                 }
             }
 
@@ -109,10 +122,10 @@ namespace MediaBrowser.Controller.Providers
         {
             if (clearCache)
             {
-                _filePathCache.TryRemove(path, out _);
+                _filePathCache.Value.TryRemove(path, out _);
             }
 
-            var filePaths = _filePathCache.GetOrAdd(
+            var filePaths = _filePathCache.Value.GetOrAdd(
                 path,
                 static (p, fileSystem) =>
                 {

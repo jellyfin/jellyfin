@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Linq;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
@@ -247,6 +248,66 @@ namespace Jellyfin.Controller.Tests
 
             Assert.Equal(cachedPaths, result);
             Assert.Equal(newPaths, secondResult);
+        }
+
+        [Fact]
+        public void GetFileSystemEntries_RepeatedPath_ReadsTheFileSystemOnce()
+        {
+            var fileSystemMock = new Mock<IFileSystem>(MockBehavior.Strict);
+            fileSystemMock.Setup(f => f.GetFileSystemEntries(LowerCasePath))
+                .Returns(_lowerCaseFileSystemMetadata);
+
+            var directoryService = new DirectoryService(fileSystemMock.Object);
+
+            directoryService.GetFileSystemEntries(LowerCasePath);
+            directoryService.GetFileSystemEntries(LowerCasePath);
+
+            fileSystemMock.Verify(f => f.GetFileSystemEntries(LowerCasePath), Times.Once);
+        }
+
+        [Fact]
+        public void GetFileSystemEntries_FarMorePathsThanTheCacheHolds_EvictsInsteadOfGrowing()
+        {
+            // The service is a singleton, so the cache has to give entries back rather than hold every
+            // path the server ever saw. Asking for far more paths than it can hold must push the first
+            // one out, which shows up as the file system being read for it a second time.
+            const int PathCount = 40000;
+
+            var fileSystemMock = new Mock<IFileSystem>();
+            fileSystemMock.Setup(f => f.GetFileSystemEntries(It.IsAny<string>()))
+                .Returns(_lowerCaseFileSystemMetadata);
+
+            var directoryService = new DirectoryService(fileSystemMock.Object);
+
+            var firstPath = "/music/artist0";
+            directoryService.GetFileSystemEntries(firstPath);
+
+            for (var i = 1; i < PathCount; i++)
+            {
+                directoryService.GetFileSystemEntries("/music/artist" + i.ToString(CultureInfo.InvariantCulture));
+            }
+
+            directoryService.GetFileSystemEntries(firstPath);
+
+            fileSystemMock.Verify(f => f.GetFileSystemEntries(firstPath), Times.Exactly(2));
+        }
+
+        [Fact]
+        public void GetFileSystemEntry_MissingPath_IsNotRemembered()
+        {
+            const string MissingPath = "/music/not-here";
+
+            var fileSystemMock = new Mock<IFileSystem>();
+            fileSystemMock.SetupSequence(f => f.GetFileSystemInfo(MissingPath))
+                .Returns(new FileSystemMetadata { FullName = MissingPath, Exists = false })
+                .Returns(new FileSystemMetadata { FullName = MissingPath, Exists = true });
+
+            var directoryService = new DirectoryService(fileSystemMock.Object);
+
+            Assert.Null(directoryService.GetFileSystemEntry(MissingPath));
+
+            // The one answer that changes on its own: the file turning up has to be visible.
+            Assert.NotNull(directoryService.GetFileSystemEntry(MissingPath));
         }
     }
 }
