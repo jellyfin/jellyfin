@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -377,6 +378,122 @@ namespace Jellyfin.Providers.Tests.Manager
             GetMetadataProviders_CanRefreshMetadata_Tester(providerType, expected, ownedItem: true);
         }
 
+        [Fact]
+        public async Task QueueRefresh_ManyItemsQueuedFromManyThreads_ProcessesEveryOne()
+        {
+            // The queue is filled from whichever thread wants a refresh and drained by a processor of
+            // its own, so an unsynchronised PriorityQueue can lose entries outright, and a processor
+            // that stands down before releasing its flag leaves whatever was queued in that gap with
+            // nobody to drain it. Either way an item silently never gets refreshed.
+            const int ItemCount = 2000;
+
+            var queued = Enumerable.Range(0, ItemCount).Select(_ => Guid.NewGuid()).ToArray();
+            var processed = new ConcurrentBag<Guid>();
+            var allProcessed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var libraryManager = new Mock<ILibraryManager>();
+            libraryManager.Setup(i => i.GetItemById(It.IsAny<Guid>()))
+                .Returns((Guid id) =>
+                {
+                    // Returning null drains the entry without needing the whole refresh machinery.
+                    processed.Add(id);
+                    if (processed.Count == ItemCount)
+                    {
+                        allProcessed.TrySetResult();
+                    }
+
+                    return null;
+                });
+
+            using var providerManager = GetProviderManager(libraryManager: libraryManager.Object);
+
+            await Parallel.ForEachAsync(
+                queued,
+                TestContext.Current.CancellationToken,
+                (id, _) =>
+                {
+                    providerManager.QueueRefresh(id, new MetadataRefreshOptions(Mock.Of<IDirectoryService>()), RefreshPriority.Normal);
+                    return ValueTask.CompletedTask;
+                });
+
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+            timeout.CancelAfter(TimeSpan.FromSeconds(30));
+
+            try
+            {
+                await allProcessed.Task.WaitAsync(timeout.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Fall through, so the assertions below name what was lost rather than the wait.
+            }
+
+            Assert.Empty(providerManager.GetRefreshQueue());
+            Assert.Equal(queued.Order().ToArray(), processed.Order().ToArray());
+        }
+
+        [Fact]
+        public async Task QueueRefresh_RefreshCancelsForItsOwnReasons_KeepsDrainingTheQueue()
+        {
+            // MetadataService rethrows OperationCanceledException out of a provider, so an HTTP
+            // timeout against an unreachable metadata server arrives here looking exactly like a
+            // shutdown. Treating it as one stops the processor and strands the rest of the queue.
+            const int ItemCount = 200;
+
+            var queued = Enumerable.Range(0, ItemCount).Select(_ => Guid.NewGuid()).ToArray();
+            var processed = new ConcurrentBag<Guid>();
+            var allProcessed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var allQueued = new ManualResetEventSlim(false);
+            var cancelledOnce = false;
+
+            var libraryManager = new Mock<ILibraryManager>();
+            libraryManager.Setup(i => i.GetItemById(It.IsAny<Guid>()))
+                .Returns((Guid id) =>
+                {
+                    if (!cancelledOnce)
+                    {
+                        cancelledOnce = true;
+
+                        // Hold the first entry until the whole batch is queued, so everything that
+                        // follows it is already waiting when the cancellation lands.
+                        allQueued.Wait(TimeSpan.FromSeconds(30));
+                        throw new OperationCanceledException("provider timed out");
+                    }
+
+                    processed.Add(id);
+                    if (processed.Count == ItemCount - 1)
+                    {
+                        allProcessed.TrySetResult();
+                    }
+
+                    return null;
+                });
+
+            using var providerManager = GetProviderManager(libraryManager: libraryManager.Object);
+
+            foreach (var id in queued)
+            {
+                providerManager.QueueRefresh(id, new MetadataRefreshOptions(Mock.Of<IDirectoryService>()), RefreshPriority.Normal);
+            }
+
+            allQueued.Set();
+
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+            timeout.CancelAfter(TimeSpan.FromSeconds(30));
+
+            try
+            {
+                await allProcessed.Task.WaitAsync(timeout.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Fall through, so the assertions below name what was left stranded.
+            }
+
+            Assert.Empty(providerManager.GetRefreshQueue());
+            Assert.Equal(ItemCount - 1, processed.Count);
+        }
+
         private static void GetMetadataProviders_CanRefreshMetadata_Tester(
             string providerType,
             bool expected,
@@ -554,15 +671,20 @@ namespace Jellyfin.Providers.Tests.Manager
         private static ProviderManager GetProviderManager(
             ServerConfiguration? serverConfiguration = null,
             LibraryOptions? libraryOptions = null,
-            IBaseItemManager? baseItemManager = null)
+            IBaseItemManager? baseItemManager = null,
+            ILibraryManager? libraryManager = null)
         {
             var serverConfigurationManager = new Mock<IServerConfigurationManager>(MockBehavior.Strict);
             serverConfigurationManager.Setup(i => i.Configuration)
                 .Returns(serverConfiguration ?? new ServerConfiguration());
 
-            var libraryManager = new Mock<ILibraryManager>(MockBehavior.Strict);
-            libraryManager.Setup(i => i.GetLibraryOptions(It.IsAny<BaseItem>()))
-                .Returns(libraryOptions ?? new LibraryOptions());
+            if (libraryManager is null)
+            {
+                var libraryManagerMock = new Mock<ILibraryManager>(MockBehavior.Strict);
+                libraryManagerMock.Setup(i => i.GetLibraryOptions(It.IsAny<BaseItem>()))
+                    .Returns(libraryOptions ?? new LibraryOptions());
+                libraryManager = libraryManagerMock.Object;
+            }
 
             var providerManager = new ProviderManager(
                 Mock.Of<IHttpClientFactory>(),
@@ -572,7 +694,7 @@ namespace Jellyfin.Providers.Tests.Manager
                 _logger,
                 Mock.Of<IFileSystem>(),
                 Mock.Of<IServerApplicationPaths>(),
-                libraryManager.Object,
+                libraryManager,
                 baseItemManager!,
                 Mock.Of<ILyricManager>(),
                 Mock.Of<IMemoryCache>(),
