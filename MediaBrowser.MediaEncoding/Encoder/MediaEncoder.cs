@@ -1152,6 +1152,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     process.Process.PriorityClass = ProcessPriorityClass.BelowNormal;
                 }
+                catch (InvalidOperationException)
+                {
+                    // The process finished before its priority could be lowered. That says nothing
+                    // about whether the platform allows it, so keep the capability for the next one.
+                }
                 catch (Exception ex)
                 {
                     _canSetProcessPriority = false;
@@ -1361,11 +1366,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return _configurationManager.GetEncodingOptions().EnableSubtitleExtraction;
         }
 
-        private sealed class ProcessWrapper : IDisposable
+        internal sealed class ProcessWrapper : IDisposable
         {
             private readonly MediaEncoder _mediaEncoder;
 
+            // The exit event is raised on the thread pool, so it writes the state below while the
+            // caller that started the process is reading it.
+            private readonly Lock _exitLock = new();
+
             private bool _disposed = false;
+
+            private bool _hasExited;
+
+            private int? _exitCode;
 
             public ProcessWrapper(Process process, MediaEncoder mediaEncoder)
             {
@@ -1376,49 +1389,84 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             public Process Process { get; }
 
-            public bool HasExited { get; private set; }
+            // The exit event can lag behind the wait that returned, so ask the process rather than
+            // report one that has exited as still running.
+            public bool HasExited => ReadExitState().HasExited;
 
-            public int? ExitCode { get; private set; }
+            // As above: rather than report no exit code for a process that has one.
+            public int? ExitCode => ReadExitState().ExitCode;
+
+            private (bool HasExited, int? ExitCode) ReadExitState()
+            {
+                lock (_exitLock)
+                {
+                    if (!_hasExited && !_disposed)
+                    {
+                        try
+                        {
+                            if (Process.HasExited)
+                            {
+                                _hasExited = true;
+                                _exitCode = Process.ExitCode;
+                            }
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            // No process is associated with this object, or it was disposed from
+                            // under us - ObjectDisposedException derives from this one.
+                        }
+                    }
+
+                    return (_hasExited, _exitCode);
+                }
+            }
 
             private void OnProcessExited(object sender, EventArgs e)
             {
                 var process = (Process)sender;
 
-                HasExited = true;
-
-                try
+                lock (_exitLock)
                 {
-                    ExitCode = process.ExitCode;
-                }
-                catch
-                {
+                    _hasExited = true;
+
+                    try
+                    {
+                        _exitCode = process.ExitCode;
+                    }
+                    catch
+                    {
+                    }
                 }
 
-                DisposeProcess(process);
+                // Only stop tracking it. The caller that started the process still holds it to read
+                // its output and its exit code, so disposing it here handed whoever was quickest to
+                // exit - an ffprobe on a file it rejects outright - an ObjectDisposedException.
+                Untrack();
             }
 
-            private void DisposeProcess(Process process)
+            private void Untrack()
             {
                 lock (_mediaEncoder._runningProcessesLock)
                 {
                     _mediaEncoder._runningProcesses.Remove(this);
                 }
-
-                process.Dispose();
             }
 
             public void Dispose()
             {
-                if (!_disposed)
+                lock (_exitLock)
                 {
-                    if (Process is not null)
+                    if (_disposed)
                     {
-                        Process.Exited -= OnProcessExited;
-                        DisposeProcess(Process);
+                        return;
                     }
+
+                    _disposed = true;
                 }
 
-                _disposed = true;
+                Process.Exited -= OnProcessExited;
+                Untrack();
+                Process.Dispose();
             }
         }
     }
