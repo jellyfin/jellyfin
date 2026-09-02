@@ -432,12 +432,18 @@ namespace MediaBrowser.Controller.Entities
 
         public string? HasNoSubtitleTrackWithLanguage { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to return only items nothing names any more.
+        /// </summary>
         public bool? IsDeadArtist { get; set; }
 
         public bool? IsDeadStudio { get; set; }
 
         public bool? IsDeadGenre { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to return only items nothing names any more.
+        /// </summary>
         public bool? IsDeadPerson { get; set; }
 
         /// <summary>
