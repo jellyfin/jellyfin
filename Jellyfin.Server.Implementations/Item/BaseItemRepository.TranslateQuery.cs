@@ -1291,12 +1291,14 @@ public sealed partial class BaseItemRepository
             var hidingCollectionIds = context.BaseItems
                 .Where(bs => bs.Type == boxSetTypeName
                     && bs.Data != null
-                    && bs.Data.Contains(BoxSet.HideItemsFromLibraryDataMarker))
+                    && (bs.Data.Contains(BoxSet.HideItemsFromLibraryDataMarker)
+                        || bs.Data.Contains("\"HideItemsFromLibrary\": true")
+                        || bs.Data.Contains("\"hideItemsFromLibrary\":true")
+                        || bs.Data.Contains("\"hideItemsFromLibrary\": true")))
                 .Select(bs => bs.Id);
 
             var hiddenChildIds = context.LinkedChildren
-                .Where(lc => lc.ChildType == Database.Implementations.Entities.LinkedChildType.Manual
-                    && hidingCollectionIds.Contains(lc.ParentId))
+                .Where(lc => hidingCollectionIds.Contains(lc.ParentId))
                 .Select(lc => lc.ChildId);
 
             baseQuery = baseQuery.Where(e => !hiddenChildIds.Contains(e.Id));

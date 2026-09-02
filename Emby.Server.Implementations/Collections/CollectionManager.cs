@@ -338,12 +338,16 @@ namespace Emby.Server.Implementations.Collections
                 throw new ArgumentException("No collection exists with the supplied collectionId " + collectionId);
             }
 
-            if (collection.HideItemsFromLibrary == hide)
+            collection.HideItemsFromLibrary = hide;
+
+            // Older collections often store path-based LinkedChildren only in memory.
+            // Library queries hide members using the LinkedChildren table, so resolve ItemIds and persist them.
+            var resolvedChildren = collection.GetLinkedChildren();
+            if (resolvedChildren.Count > 0)
             {
-                return;
+                collection.LinkedChildren = resolvedChildren.Select(LinkedChild.Create).ToArray();
             }
 
-            collection.HideItemsFromLibrary = hide;
             await collection.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 

@@ -123,7 +123,7 @@ public class CollectionController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> SetHideItemsFromLibrary(
         [FromRoute, Required] Guid collectionId,
-        [FromQuery] bool hide = true)
+        [FromQuery, Required] bool hide)
     {
         await _collectionManager.SetHideItemsFromLibraryAsync(collectionId, hide).ConfigureAwait(false);
         return NoContent();

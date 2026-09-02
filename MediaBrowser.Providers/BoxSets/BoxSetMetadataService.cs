@@ -68,6 +68,11 @@ public class BoxSetMetadataService : MetadataService<BoxSet, BoxSetInfo>
         var sourceItem = source.Item;
         var targetItem = target.Item;
 
+        if (sourceItem.HideItemsFromLibrary)
+        {
+            targetItem.HideItemsFromLibrary = true;
+        }
+
         if (mergeMetadataSettings)
         {
             // Only merge LinkedChildren from metadata for external collections (not managed by Jellyfin).
