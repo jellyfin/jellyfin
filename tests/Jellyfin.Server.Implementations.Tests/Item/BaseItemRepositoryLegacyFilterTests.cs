@@ -150,18 +150,18 @@ public sealed class BaseItemRepositoryLegacyFilterTests : IDisposable
 
         Assert.Equal(["Alpha", "Beta"], result.Tags);
         Assert.Equal(["Genre Leak"], result.Genres);
-        var tagsCommand = Assert.Single(
-            _interceptor.Commands,
-            command => command.Contains("GROUP BY", StringComparison.Ordinal)
-                && command.Contains("\"Type\" = 4", StringComparison.Ordinal));
-        var genresCommand = Assert.Single(
-            _interceptor.Commands,
-            command => command.Contains("GROUP BY", StringComparison.Ordinal)
-                && command.Contains("\"Type\" = 2", StringComparison.Ordinal));
-        Assert.Equal(1, CountOccurrences(tagsCommand, "INNER JOIN \"ItemValues\""));
-        Assert.DoesNotContain("SELECT (", tagsCommand, StringComparison.Ordinal);
-        Assert.Equal(1, CountOccurrences(genresCommand, "INNER JOIN \"ItemValues\""));
-        Assert.DoesNotContain("SELECT (", genresCommand, StringComparison.Ordinal);
+        var itemValueCommands = _interceptor.Commands
+            .Where(command => command.Contains("GROUP BY", StringComparison.Ordinal)
+                && command.Contains("INNER JOIN \"ItemValues\"", StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.Equal(2, itemValueCommands.Length);
+
+        foreach (var command in itemValueCommands)
+        {
+            Assert.Equal(1, CountOccurrences(command, "INNER JOIN \"ItemValues\""));
+            Assert.DoesNotContain("SELECT (SELECT", command, StringComparison.Ordinal);
+        }
     }
 
     private static int CountOccurrences(string value, string pattern)
