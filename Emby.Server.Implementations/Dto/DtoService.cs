@@ -26,6 +26,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
 using Book = MediaBrowser.Controller.Entities.Book;
+using BoxSet = MediaBrowser.Controller.Entities.Movies.BoxSet;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
 using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
@@ -1103,6 +1104,11 @@ namespace Emby.Server.Implementations.Dto
             if (item is IHasDisplayOrder hasDisplayOrder)
             {
                 dto.DisplayOrder = hasDisplayOrder.DisplayOrder;
+            }
+
+            if (item is BoxSet boxSet)
+            {
+                dto.HideItemsFromLibrary = boxSet.HideItemsFromLibrary;
             }
 
             if (item is IHasCollectionType hasCollectionType)

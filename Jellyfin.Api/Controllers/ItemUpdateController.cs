@@ -12,6 +12,7 @@ using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -406,6 +407,11 @@ public class ItemUpdateController : BaseJellyfinApiController
         if (item is IHasDisplayOrder hasDisplayOrder)
         {
             hasDisplayOrder.DisplayOrder = request.DisplayOrder;
+        }
+
+        if (item is BoxSet boxSet && request.HideItemsFromLibrary.HasValue)
+        {
+            boxSet.HideItemsFromLibrary = request.HideItemsFromLibrary.Value;
         }
 
         if (item is IHasAspectRatio hasAspectRatio)

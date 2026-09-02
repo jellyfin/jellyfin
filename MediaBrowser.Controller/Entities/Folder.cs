@@ -931,6 +931,11 @@ namespace MediaBrowser.Controller.Entities
                 query.Parent = this;
             }
 
+            if (this is BoxSet || GetBaseItemKind() == BaseItemKind.Playlist)
+            {
+                query.ExcludeItemsHiddenByCollections = false;
+            }
+
             // BoxSets and Playlists can have per-user visibility (shares/open access) that is stored in the
             // serialized item data and cannot be evaluated by the database query, so filter them in memory.
             if (query.IncludeItemTypes.Length > 0
@@ -1099,6 +1104,14 @@ namespace MediaBrowser.Controller.Entities
                 // but the BoxSet's own name may not match. Re-apply name filtering so BoxSets
                 // appear under the correct letter (e.g. "Jump Street" under J, not under #).
                 items = ApplyNameFilter(items, query);
+            }
+
+            if (query.ExcludeItemsHiddenByCollections
+                && this is not BoxSet
+                && GetBaseItemKind() != BaseItemKind.Playlist
+                && CollectionManager is not null)
+            {
+                items = CollectionManager.ExcludeItemsHiddenByCollections(items);
             }
 
             return UserViewBuilder.SortAndPage(items, null, query, LibraryManager);

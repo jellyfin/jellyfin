@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Xml;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Providers;
 using Microsoft.Extensions.Logging;
 
@@ -27,6 +29,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
         {
             switch (reader.Name)
             {
+                case "HideItemsFromLibrary":
+                    itemResult.Item.HideItemsFromLibrary = string.Equals(reader.ReadNormalizedString(), "true", StringComparison.OrdinalIgnoreCase);
+                    break;
+
                 case "CollectionItems":
 
                     if (!reader.IsEmptyElement)

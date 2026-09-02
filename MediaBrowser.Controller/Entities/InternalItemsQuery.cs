@@ -61,6 +61,7 @@ namespace MediaBrowser.Controller.Entities
             SkipDeserialization = false;
             AudioLanguages = [];
             SubtitleLanguages = [];
+            ExcludeItemsHiddenByCollections = true;
         }
 
         public InternalItemsQuery(User? user)
@@ -212,6 +213,13 @@ namespace MediaBrowser.Controller.Entities
         public bool? IsUnaired { get; set; }
 
         public bool? CollapseBoxSetItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether items that belong to a collection with
+        /// hide-from-library enabled should be excluded. Defaults to true. Disabled when
+        /// querying inside a collection or playlist so those items remain visible there.
+        /// </summary>
+        public bool ExcludeItemsHiddenByCollections { get; set; }
 
         /// <summary>
         /// Gets or sets the item types that should be collapsed into box sets.

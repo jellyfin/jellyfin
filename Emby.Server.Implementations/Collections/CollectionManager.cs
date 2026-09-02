@@ -182,6 +182,7 @@ namespace Emby.Server.Implementations.Collections
                     Name = name,
                     Path = path,
                     IsLocked = options.IsLocked,
+                    HideItemsFromLibrary = options.HideItemsFromLibrary,
                     ProviderIds = options.ProviderIds,
                     DateCreated = info.CreationTimeUtc,
                     DateModified = info.LastWriteTimeUtc
@@ -327,6 +328,58 @@ namespace Emby.Server.Implementations.Collections
                 RefreshPriority.High);
 
             ItemsRemovedFromCollection?.Invoke(this, new CollectionModifiedEventArgs(collection, itemList));
+        }
+
+        /// <inheritdoc />
+        public async Task SetHideItemsFromLibraryAsync(Guid collectionId, bool hide)
+        {
+            if (_libraryManager.GetItemById(collectionId) is not BoxSet collection)
+            {
+                throw new ArgumentException("No collection exists with the supplied collectionId " + collectionId);
+            }
+
+            if (collection.HideItemsFromLibrary == hide)
+            {
+                return;
+            }
+
+            collection.HideItemsFromLibrary = hide;
+            await collection.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<BaseItem> ExcludeItemsHiddenByCollections(IEnumerable<BaseItem> items)
+        {
+            var hidingCollections = GetHidingCollections();
+            if (hidingCollections.Count == 0)
+            {
+                return items;
+            }
+
+            return items.Where(item =>
+            {
+                var itemId = item.Id;
+                foreach (var collection in hidingCollections)
+                {
+                    if (collection.ContainsLinkedChildByItemId(itemId))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+        }
+
+        private IReadOnlyList<BoxSet> GetHidingCollections()
+        {
+            var folder = GetCollectionsFolder(false).GetAwaiter().GetResult();
+            if (folder is null)
+            {
+                return [];
+            }
+
+            return folder.Children.OfType<BoxSet>().Where(c => c.HideItemsFromLibrary).ToList();
         }
 
         /// <inheritdoc />

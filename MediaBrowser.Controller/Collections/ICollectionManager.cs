@@ -50,12 +50,27 @@ namespace MediaBrowser.Controller.Collections
         Task RemoveFromCollectionAsync(Guid collectionId, IEnumerable<Guid> itemIds);
 
         /// <summary>
+        /// Sets whether items in the collection are hidden from the main library.
+        /// </summary>
+        /// <param name="collectionId">The collection identifier.</param>
+        /// <param name="hide">Whether to hide collection members from the main library.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task SetHideItemsFromLibraryAsync(Guid collectionId, bool hide);
+
+        /// <summary>
         /// Collapses the items within box sets.
         /// </summary>
         /// <param name="items">The items.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         IEnumerable<BaseItem> CollapseItemsWithinBoxSets(IEnumerable<BaseItem> items, User user);
+
+        /// <summary>
+        /// Excludes items that belong to a collection with hide-from-library enabled.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns>Items that are not hidden by a collection.</returns>
+        IEnumerable<BaseItem> ExcludeItemsHiddenByCollections(IEnumerable<BaseItem> items);
 
         /// <summary>
         /// Gets the collections accessible to the supplied user that contain the provided item.

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml;
@@ -39,8 +40,17 @@ namespace MediaBrowser.LocalMetadata.Savers
         }
 
         /// <inheritdoc />
-        protected override Task WriteCustomElementsAsync(BaseItem item, XmlWriter writer)
-            => Task.CompletedTask;
+        protected override async Task WriteCustomElementsAsync(BaseItem item, XmlWriter writer)
+        {
+            if (item is BoxSet boxSet)
+            {
+                await writer.WriteElementStringAsync(
+                    null,
+                    "HideItemsFromLibrary",
+                    null,
+                    boxSet.HideItemsFromLibrary.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()).ConfigureAwait(false);
+            }
+        }
 
         /// <inheritdoc />
         protected override string GetLocalSavePath(BaseItem item)

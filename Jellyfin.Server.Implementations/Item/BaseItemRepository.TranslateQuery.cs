@@ -17,6 +17,7 @@ using Jellyfin.Database.Implementations.MatchCriteria;
 using Jellyfin.Extensions;
 using Jellyfin.Server.Implementations.Extensions;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Model.Entities;
 using Microsoft.EntityFrameworkCore;
 using BaseItemEntity = Jellyfin.Database.Implementations.Entities.BaseItemEntity;
@@ -1279,6 +1280,26 @@ public sealed partial class BaseItemRepository
                         e.Data.Contains("\"AirsAfterSeasonNumber\":" + seasonStr)
                         || e.Data.Contains("\"AirsBeforeSeasonNumber\":" + seasonStr))));
             }
+        }
+
+        if (filter.ExcludeItemsHiddenByCollections
+            && filter.ParentType != BaseItemKind.BoxSet
+            && filter.ParentType != BaseItemKind.Playlist
+            && !filter.DescendantOfId.HasValue)
+        {
+            var boxSetTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.BoxSet];
+            var hidingCollectionIds = context.BaseItems
+                .Where(bs => bs.Type == boxSetTypeName
+                    && bs.Data != null
+                    && bs.Data.Contains(BoxSet.HideItemsFromLibraryDataMarker))
+                .Select(bs => bs.Id);
+
+            var hiddenChildIds = context.LinkedChildren
+                .Where(lc => lc.ChildType == Database.Implementations.Entities.LinkedChildType.Manual
+                    && hidingCollectionIds.Contains(lc.ParentId))
+                .Select(lc => lc.ChildId);
+
+            baseQuery = baseQuery.Where(e => !hiddenChildIds.Contains(e.Id));
         }
 
         return baseQuery;

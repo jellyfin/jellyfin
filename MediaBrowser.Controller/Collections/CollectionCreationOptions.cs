@@ -23,6 +23,8 @@ namespace MediaBrowser.Controller.Collections
 
         public bool IsLocked { get; set; }
 
+        public bool HideItemsFromLibrary { get; set; }
+
         public Dictionary<string, string> ProviderIds { get; set; }
 
         public IReadOnlyList<string> ItemIdList { get; set; }

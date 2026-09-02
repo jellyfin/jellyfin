@@ -21,6 +21,12 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// </summary>
     public class BoxSet : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<BoxSetInfo>
     {
+        /// <summary>
+        /// JSON fragment written into serialized item data when <see cref="HideItemsFromLibrary"/> is enabled.
+        /// Library queries use this marker to exclude collection members from the main library.
+        /// </summary>
+        public const string HideItemsFromLibraryDataMarker = "\"HideItemsFromLibrary\":true";
+
         public BoxSet()
         {
             DisplayOrder = "PremiereDate";
@@ -44,6 +50,12 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// </summary>
         /// <value>The display order.</value>
         public string DisplayOrder { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether items in this collection should be hidden from the main library.
+        /// Items remain visible when viewing the collection itself.
+        /// </summary>
+        public bool HideItemsFromLibrary { get; set; }
 
         [JsonIgnore]
         private bool IsLegacyBoxSet

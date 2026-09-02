@@ -425,6 +425,13 @@ namespace MediaBrowser.Model.Dto
         public string DisplayOrder { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether items in this collection should be hidden from the main library.
+        /// Only applies to collections (box sets). Items remain visible when viewing the collection itself.
+        /// </summary>
+        /// <value>Whether collection members are hidden from the main library.</value>
+        public bool? HideItemsFromLibrary { get; set; }
+
+        /// <summary>
         /// Gets or sets the album id.
         /// </summary>
         /// <value>The album id.</value>

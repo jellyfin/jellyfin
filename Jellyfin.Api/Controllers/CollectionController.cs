@@ -44,6 +44,7 @@ public class CollectionController : BaseJellyfinApiController
     /// <param name="ids">Item Ids to add to the collection.</param>
     /// <param name="parentId">Optional. Create the collection within a specific folder.</param>
     /// <param name="isLocked">Whether or not to lock the new collection.</param>
+    /// <param name="hideItemsFromLibrary">Whether items in the collection should be hidden from the main library.</param>
     /// <response code="200">Collection created.</response>
     /// <returns>A <see cref="CollectionCreationOptions"/> with information about the new collection.</returns>
     [HttpPost]
@@ -52,13 +53,15 @@ public class CollectionController : BaseJellyfinApiController
         [FromQuery] string? name,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] ids,
         [FromQuery] Guid? parentId,
-        [FromQuery] bool isLocked = false)
+        [FromQuery] bool isLocked = false,
+        [FromQuery] bool hideItemsFromLibrary = false)
     {
         var userId = User.GetUserId();
 
         var item = await _collectionManager.CreateCollectionAsync(new CollectionCreationOptions
         {
             IsLocked = isLocked,
+            HideItemsFromLibrary = hideItemsFromLibrary,
             Name = name,
             ParentId = parentId,
             ItemIdList = ids,
@@ -106,6 +109,23 @@ public class CollectionController : BaseJellyfinApiController
         [FromQuery, Required, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] ids)
     {
         await _collectionManager.RemoveFromCollectionAsync(collectionId, ids).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Sets whether items in a collection are hidden from the main library.
+    /// </summary>
+    /// <param name="collectionId">The collection id.</param>
+    /// <param name="hide">Whether to hide collection members from the main library.</param>
+    /// <response code="204">Setting updated.</response>
+    /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+    [HttpPost("{collectionId}/HideItemsFromLibrary")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<ActionResult> SetHideItemsFromLibrary(
+        [FromRoute, Required] Guid collectionId,
+        [FromQuery] bool hide = true)
+    {
+        await _collectionManager.SetHideItemsFromLibraryAsync(collectionId, hide).ConfigureAwait(false);
         return NoContent();
     }
 }

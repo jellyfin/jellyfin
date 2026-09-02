@@ -70,6 +70,34 @@ public class ItemUpdateControllerTests
         Assert.Equal("tt1234567", movie.ProviderIds["Imdb"]);
     }
 
+    [Fact]
+    public async Task UpdateItem_WhenHideItemsFromLibrarySupplied_SetsBoxSetFlag()
+    {
+        var collection = new BoxSet();
+        var request = new BaseItemDto
+        {
+            HideItemsFromLibrary = true
+        };
+
+        await InvokeUpdateItem(request, collection);
+
+        Assert.True(collection.HideItemsFromLibrary);
+    }
+
+    [Fact]
+    public async Task UpdateItem_WhenHideItemsFromLibraryOmitted_LeavesExistingFlag()
+    {
+        var collection = new BoxSet
+        {
+            HideItemsFromLibrary = true
+        };
+        var request = new BaseItemDto();
+
+        await InvokeUpdateItem(request, collection);
+
+        Assert.True(collection.HideItemsFromLibrary);
+    }
+
     private Task InvokeUpdateItem(BaseItemDto request, BaseItem item)
     {
         return _subject.UpdateItem(request, item);
