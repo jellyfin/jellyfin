@@ -16,6 +16,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -34,6 +35,7 @@ public class LibraryStructureController : BaseJellyfinApiController
     private readonly IServerApplicationPaths _appPaths;
     private readonly ILibraryManager _libraryManager;
     private readonly ILibraryMonitor _libraryMonitor;
+    private readonly IDirectoryService _directoryService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LibraryStructureController"/> class.
@@ -41,14 +43,17 @@ public class LibraryStructureController : BaseJellyfinApiController
     /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/> interface.</param>
     /// <param name="libraryMonitor">Instance of <see cref="ILibraryMonitor"/> interface.</param>
+    /// <param name="directoryService">Instance of <see cref="IDirectoryService"/> interface.</param>
     public LibraryStructureController(
         IServerConfigurationManager serverConfigurationManager,
         ILibraryManager libraryManager,
-        ILibraryMonitor libraryMonitor)
+        ILibraryMonitor libraryMonitor,
+        IDirectoryService directoryService)
     {
         _appPaths = serverConfigurationManager.ApplicationPaths;
         _libraryManager = libraryManager;
         _libraryMonitor = libraryMonitor;
+        _directoryService = directoryService;
     }
 
     /// <summary>
@@ -183,6 +188,11 @@ public class LibraryStructureController : BaseJellyfinApiController
             }
 
             Directory.Move(currentPath, newPath);
+
+            // The directory caches are shared, so the validation below would otherwise resolve the
+            // libraries root from a listing taken before the folder was moved.
+            _directoryService.Invalidate(currentPath);
+            _directoryService.Invalidate(newPath);
         }
         finally
         {

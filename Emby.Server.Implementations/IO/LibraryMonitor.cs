@@ -8,6 +8,7 @@ using Emby.Server.Implementations.Library;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -21,6 +22,7 @@ namespace Emby.Server.Implementations.IO
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
+        private readonly IDirectoryService _directoryService;
         private readonly DotIgnoreIgnoreRule _dotIgnoreIgnoreRule;
 
         /// <summary>
@@ -47,6 +49,7 @@ namespace Emby.Server.Implementations.IO
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="fileSystem">The filesystem.</param>
+        /// <param name="directoryService">The directory service.</param>
         /// <param name="appLifetime">The <see cref="IHostApplicationLifetime"/>.</param>
         /// <param name="dotIgnoreIgnoreRule">The .ignore rule handler.</param>
         public LibraryMonitor(
@@ -54,6 +57,7 @@ namespace Emby.Server.Implementations.IO
             ILibraryManager libraryManager,
             IServerConfigurationManager configurationManager,
             IFileSystem fileSystem,
+            IDirectoryService directoryService,
             IHostApplicationLifetime appLifetime,
             DotIgnoreIgnoreRule dotIgnoreIgnoreRule)
         {
@@ -61,6 +65,7 @@ namespace Emby.Server.Implementations.IO
             _logger = logger;
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
+            _directoryService = directoryService;
             _dotIgnoreIgnoreRule = dotIgnoreIgnoreRule;
 
             appLifetime.ApplicationStarted.Register(Start);
@@ -362,6 +367,12 @@ namespace Emby.Server.Implementations.IO
             {
                 return;
             }
+
+            // Something changed on disk that the server did not necessarily do itself, so whatever is
+            // cached about that path and its folder is now a guess. This sits above the checks below
+            // because a change we deliberately do not refresh for still has to be read correctly the
+            // next time somebody looks at that folder.
+            _directoryService.Invalidate(path);
 
             // Ignore certain files, If the parent of an ignored path has a change event, ignore that too
             foreach (var i in _tempIgnoredPaths.Keys)

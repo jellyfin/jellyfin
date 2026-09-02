@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using BitFaster.Caching.Lru;
 using MediaBrowser.Model.IO;
 
@@ -11,33 +12,20 @@ namespace MediaBrowser.Controller.Providers
 {
     public class DirectoryService : IDirectoryService
     {
-        private const int DirectoryCacheSize = 2048;
-        private const int FileCacheSize = 4096;
-
-        // A bounded LRU sizes its table up front, so it costs several kilobytes while still empty.
-        // One instance is a DI singleton and lives for the process, but the library code also news
-        // one up per item in several loops and hands it to QueueRefresh, which holds on to it until
-        // the refresh runs. Those instances usually ask about a single path, so each cache waits
-        // until something actually looks in it.
-        private readonly Lazy<FastConcurrentLru<string, FileSystemMetadata[]>> _cache
-            = new(static () => new(Environment.ProcessorCount, DirectoryCacheSize, StringComparer.Ordinal));
-
-        private readonly Lazy<FastConcurrentLru<string, FileSystemMetadata>> _fileCache
-            = new(static () => new(Environment.ProcessorCount, FileCacheSize, StringComparer.Ordinal));
-
-        private readonly Lazy<FastConcurrentLru<string, List<string>>> _filePathCache
-            = new(static () => new(Environment.ProcessorCount, DirectoryCacheSize, StringComparer.Ordinal));
+        private static readonly ConditionalWeakTable<IFileSystem, DirectoryCache> _caches = [];
 
         private readonly IFileSystem _fileSystem;
+        private readonly DirectoryCache _cache;
 
         public DirectoryService(IFileSystem fileSystem)
         {
             _fileSystem = fileSystem;
+            _cache = _caches.GetValue(fileSystem, static _ => new DirectoryCache());
         }
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
-            return _cache.Value.GetOrAdd(
+            return _cache.Entries.GetOrAdd(
                 path,
                 static (p, fileSystem) =>
                 {
@@ -99,7 +87,7 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata? GetFileSystemEntry(string path)
         {
-            if (!_fileCache.Value.TryGet(path, out var result))
+            if (!_cache.Files.TryGet(path, out var result))
             {
                 var file = _fileSystem.GetFileSystemInfo(path);
 
@@ -108,7 +96,7 @@ namespace MediaBrowser.Controller.Providers
                 if (file?.Exists ?? false)
                 {
                     result = file;
-                    _fileCache.Value.AddOrUpdate(path, result);
+                    _cache.Files.AddOrUpdate(path, result);
                 }
             }
 
@@ -122,10 +110,12 @@ namespace MediaBrowser.Controller.Providers
         {
             if (clearCache)
             {
-                _filePathCache.Value.TryRemove(path, out _);
+                // Only what is remembered about this directory. Invalidate() also drops the parent,
+                // which a write needs but which is needless churn on a shared cache here.
+                Forget(path);
             }
 
-            var filePaths = _filePathCache.Value.GetOrAdd(
+            return _cache.FilePaths.GetOrAdd(
                 path,
                 static (p, fileSystem) =>
                 {
@@ -139,13 +129,52 @@ namespace MediaBrowser.Controller.Providers
                     }
                 },
                 _fileSystem);
+        }
 
-            return filePaths;
+        public void Invalidate(string path)
+        {
+            // Everything remembered about the path itself, and the listing of the directory holding
+            // it, since writing a file changes what its directory contains. The caches belong to the
+            // file system rather than to this instance, so this is felt by every reader of it.
+            Forget(path);
+
+            var parent = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(parent))
+            {
+                Forget(parent);
+            }
         }
 
         public bool IsAccessible(string path)
         {
             return _fileSystem.GetFileSystemEntryPaths(path).Any();
+        }
+
+        private void Forget(string path)
+        {
+            _cache.Entries.TryRemove(path, out _);
+            _cache.Files.TryRemove(path, out _);
+            _cache.FilePaths.TryRemove(path, out _);
+        }
+
+        private sealed class DirectoryCache
+        {
+            private const int DirectoryCacheSize = 2048;
+            private const int FileCacheSize = 8192;
+
+            // A DirectoryService no longer bounds how long its answers are trusted by dying, so a
+            // lifetime does. This is a staleness bound, not a snapshot: a long refresh can outlive it
+            // and re-read a directory partway through.
+            private static readonly TimeSpan _entryLifetime = TimeSpan.FromMinutes(1);
+
+            public ConcurrentTLru<string, FileSystemMetadata[]> Entries { get; }
+                = new(Environment.ProcessorCount, DirectoryCacheSize, StringComparer.Ordinal, _entryLifetime);
+
+            public ConcurrentTLru<string, FileSystemMetadata> Files { get; }
+                = new(Environment.ProcessorCount, FileCacheSize, StringComparer.Ordinal, _entryLifetime);
+
+            public ConcurrentTLru<string, List<string>> FilePaths { get; }
+                = new(Environment.ProcessorCount, DirectoryCacheSize, StringComparer.Ordinal, _entryLifetime);
         }
     }
 }

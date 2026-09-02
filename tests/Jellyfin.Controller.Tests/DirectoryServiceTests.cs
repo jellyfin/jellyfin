@@ -268,10 +268,10 @@ namespace Jellyfin.Controller.Tests
         [Fact]
         public void GetFileSystemEntries_FarMorePathsThanTheCacheHolds_EvictsInsteadOfGrowing()
         {
-            // The service is a singleton, so the cache has to give entries back rather than hold every
-            // path the server ever saw. Asking for far more paths than it can hold must push the first
-            // one out, which shows up as the file system being read for it a second time.
-            const int PathCount = 40000;
+            // The cache outlives every DirectoryService that reads it, so it has to give entries back
+            // rather than hold every path the server ever saw. Asking for more paths than it can hold
+            // must push the first one out, which shows up as the file system being read for it twice.
+            const int PathCount = 8192;
 
             var fileSystemMock = new Mock<IFileSystem>();
             fileSystemMock.Setup(f => f.GetFileSystemEntries(It.IsAny<string>()))
@@ -279,17 +279,132 @@ namespace Jellyfin.Controller.Tests
 
             var directoryService = new DirectoryService(fileSystemMock.Object);
 
-            var firstPath = "/music/artist0";
-            directoryService.GetFileSystemEntries(firstPath);
+            const string FirstPath = "/music/artist0";
+            directoryService.GetFileSystemEntries(FirstPath);
 
             for (var i = 1; i < PathCount; i++)
             {
                 directoryService.GetFileSystemEntries("/music/artist" + i.ToString(CultureInfo.InvariantCulture));
             }
 
-            directoryService.GetFileSystemEntries(firstPath);
+            directoryService.GetFileSystemEntries(FirstPath);
 
-            fileSystemMock.Verify(f => f.GetFileSystemEntries(firstPath), Times.Exactly(2));
+            fileSystemMock.Verify(f => f.GetFileSystemEntries(FirstPath), Times.Exactly(2));
+        }
+
+        [Fact]
+        public void GetFileSystemEntries_SecondServiceOverSameFileSystem_ReusesTheFirstAnswer()
+        {
+            // The library code news up a DirectoryService per item, so what one of them learned about
+            // a directory has to be worth something to the next one reading the same file system.
+            var fileSystemMock = new Mock<IFileSystem>();
+            fileSystemMock.Setup(f => f.GetFileSystemEntries(LowerCasePath))
+                .Returns(_lowerCaseFileSystemMetadata);
+
+            new DirectoryService(fileSystemMock.Object).GetFileSystemEntries(LowerCasePath);
+            var result = new DirectoryService(fileSystemMock.Object).GetFileSystemEntries(LowerCasePath);
+
+            Assert.Equal(_lowerCaseFileSystemMetadata, result);
+            fileSystemMock.Verify(f => f.GetFileSystemEntries(LowerCasePath), Times.Once);
+        }
+
+        [Fact]
+        public void GetFileSystemEntries_SeparateFileSystems_DoNotShareAnswers()
+        {
+            var firstFileSystem = new Mock<IFileSystem>();
+            firstFileSystem.Setup(f => f.GetFileSystemEntries(LowerCasePath))
+                .Returns(_lowerCaseFileSystemMetadata);
+            var secondFileSystem = new Mock<IFileSystem>();
+            secondFileSystem.Setup(f => f.GetFileSystemEntries(LowerCasePath))
+                .Returns(_upperCaseFileSystemMetadata);
+
+            var firstResult = new DirectoryService(firstFileSystem.Object).GetFileSystemEntries(LowerCasePath);
+            var secondResult = new DirectoryService(secondFileSystem.Object).GetFileSystemEntries(LowerCasePath);
+
+            Assert.Equal(_lowerCaseFileSystemMetadata, firstResult);
+            Assert.Equal(_upperCaseFileSystemMetadata, secondResult);
+        }
+
+        [Fact]
+        public void Invalidate_GivenADirectory_DropsBothTheListingAndTheFilePaths()
+        {
+            // Clearing only one of the two views of a directory leaves the other one answering from
+            // before whatever was just written there.
+            var fileSystemMock = new Mock<IFileSystem>();
+            fileSystemMock.SetupSequence(f => f.GetFileSystemEntries(LowerCasePath))
+                .Returns(_lowerCaseFileSystemMetadata)
+                .Returns(_upperCaseFileSystemMetadata);
+            fileSystemMock.SetupSequence(f => f.GetFilePaths(LowerCasePath, false))
+                .Returns(new[] { LowerCasePath + "/Song 2.mp3" })
+                .Returns(new[] { LowerCasePath + "/Song 2.mp3", LowerCasePath + "/Song 2.srt" });
+
+            var directoryService = new DirectoryService(fileSystemMock.Object);
+            directoryService.GetFileSystemEntries(LowerCasePath);
+            directoryService.GetFilePaths(LowerCasePath);
+
+            directoryService.Invalidate(LowerCasePath);
+
+            Assert.Equal(_upperCaseFileSystemMetadata, directoryService.GetFileSystemEntries(LowerCasePath));
+            Assert.Equal(2, directoryService.GetFilePaths(LowerCasePath).Count);
+        }
+
+        [Fact]
+        public void Invalidate_GivenAFile_DropsTheListingOfTheDirectoryHoldingIt()
+        {
+            // Downloading a subtitle changes what its folder contains, not just the one path.
+            const string NewFile = LowerCasePath + "/Song 2.srt";
+
+            var fileSystemMock = new Mock<IFileSystem>();
+            fileSystemMock.SetupSequence(f => f.GetFileSystemEntries(LowerCasePath))
+                .Returns(_lowerCaseFileSystemMetadata)
+                .Returns(_upperCaseFileSystemMetadata);
+
+            var directoryService = new DirectoryService(fileSystemMock.Object);
+            directoryService.GetFileSystemEntries(LowerCasePath);
+
+            directoryService.Invalidate(NewFile);
+
+            Assert.Equal(_upperCaseFileSystemMetadata, directoryService.GetFileSystemEntries(LowerCasePath));
+        }
+
+        [Fact]
+        public void Invalidate_OnOneService_IsSeenByAnotherOverTheSameFileSystem()
+        {
+            // Whoever writes the file and whoever refreshes the item hold different services, so
+            // invalidating has to reach the cache both of them read.
+            var fileSystemMock = new Mock<IFileSystem>();
+            fileSystemMock.SetupSequence(f => f.GetFileSystemEntries(LowerCasePath))
+                .Returns(_lowerCaseFileSystemMetadata)
+                .Returns(_upperCaseFileSystemMetadata);
+
+            new DirectoryService(fileSystemMock.Object).GetFileSystemEntries(LowerCasePath);
+            new DirectoryService(fileSystemMock.Object).Invalidate(LowerCasePath + "/Song 2.srt");
+
+            var result = new DirectoryService(fileSystemMock.Object).GetFileSystemEntries(LowerCasePath);
+
+            Assert.Equal(_upperCaseFileSystemMetadata, result);
+        }
+
+        [Fact]
+        public void GetFilePaths_ClearingTheCache_KeepsTheParentDirectory()
+        {
+            // Re-reading one directory is not a reason to make the server list the library folder
+            // holding it again, which the shared cache would otherwise have to do.
+            const string ParentPath = "/music";
+
+            var fileSystemMock = new Mock<IFileSystem>();
+            fileSystemMock.Setup(f => f.GetFilePaths(LowerCasePath))
+                .Returns(new[] { LowerCasePath + "/Song 2.mp3" });
+            fileSystemMock.Setup(f => f.GetFileSystemEntries(ParentPath))
+                .Returns(_lowerCaseFileSystemMetadata);
+
+            var directoryService = new DirectoryService(fileSystemMock.Object);
+            directoryService.GetFileSystemEntries(ParentPath);
+
+            directoryService.GetFilePaths(LowerCasePath, true);
+
+            directoryService.GetFileSystemEntries(ParentPath);
+            fileSystemMock.Verify(f => f.GetFileSystemEntries(ParentPath), Times.Once);
         }
 
         [Fact]

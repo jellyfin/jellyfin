@@ -23,6 +23,12 @@ namespace MediaBrowser.Controller.Providers
 
         IReadOnlyList<string> GetFilePaths(string path, bool clearCache);
 
+        /// <summary>
+        /// Forgets what is cached about a path and about the directory containing it.
+        /// </summary>
+        /// <param name="path">The file or directory path that changed.</param>
+        void Invalidate(string path);
+
         bool IsAccessible(string path);
     }
 }
