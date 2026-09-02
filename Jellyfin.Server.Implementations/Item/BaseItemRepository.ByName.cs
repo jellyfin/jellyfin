@@ -121,20 +121,22 @@ public sealed partial class BaseItemRepository
     {
         using var context = _dbProvider.CreateDbContext();
 
-        var query = context.ItemValuesMap
-            .AsNoTracking()
-            .Where(e => itemValueTypes.Any(w => w == e.ItemValue.Type));
+        var maps = context.ItemValuesMap.AsNoTracking();
         if (withItemTypes.Count > 0)
         {
-            query = query.Where(e => withItemTypes.Contains(e.Item.Type));
+            maps = maps.Where(e => withItemTypes.Contains(e.Item.Type));
         }
 
         if (excludeItemTypes.Count > 0)
         {
-            query = query.Where(e => !excludeItemTypes.Contains(e.Item.Type));
+            maps = maps.Where(e => !excludeItemTypes.Contains(e.Item.Type));
         }
 
-        return query.Select(e => e.ItemValue)
+        return context.ItemValues
+            .AsNoTracking()
+            .WhereOneOrMany(itemValueTypes, e => e.Type)
+            .Where(e => maps.Any(m => m.ItemValueId == e.ItemValueId))
+            .Select(e => new { e.CleanValue, e.Value })
             .GroupBy(e => e.CleanValue)
             .Select(g => g.Min(v => v.Value)!)
             .ToArray();
