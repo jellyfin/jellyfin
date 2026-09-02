@@ -270,11 +270,8 @@ public static class StartupHelpers
                 .ReadFrom.Configuration(configuration)
                 .Enrich.FromLogContext()
                 .Enrich.WithThreadId()
-                .WriteTo.Async(e =>
-                {
-                    e.Providers(startupLogger);
-                    e.Providers(RuntimeLoggerProviders);
-                })
+                .WriteTo.Providers(startupLogger)
+                .WriteTo.Providers(RuntimeLoggerProviders)
                 .CreateLogger();
         }
         catch (Exception ex)

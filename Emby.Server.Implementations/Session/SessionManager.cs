@@ -30,6 +30,7 @@ using MediaBrowser.Controller.Events.Session;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.Telemetry;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
@@ -783,6 +784,12 @@ namespace Emby.Server.Implementations.Session
 
             session.StartAutomaticProgress(info);
 
+            PlaybackMetrics.OnPlaybackStarted(
+                info.PlaySessionId,
+                info.SessionId,
+                info.PlayMethod,
+                libraryItem?.MediaType ?? MediaType.Unknown);
+
             var users = GetUsers(session);
 
             if (libraryItem is not null)
@@ -916,6 +923,12 @@ namespace Emby.Server.Implementations.Session
             {
                 ClearTranscodingInfo(session.DeviceId);
             }
+
+            PlaybackMetrics.OnPlaybackProgress(
+                info.PlaySessionId,
+                info.SessionId,
+                info.PlayMethod,
+                libraryItem?.MediaType ?? MediaType.Unknown);
 
             var users = GetUsers(session);
 
@@ -1136,6 +1149,8 @@ namespace Emby.Server.Implementations.Session
                     playedToCompletion = OnPlaybackStopped(user, progressItem, info.PositionTicks, info.Failed);
                 }
             }
+
+            PlaybackMetrics.OnPlaybackStopped(info.PlaySessionId, info.SessionId, playedToCompletion, info.Failed);
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
             {

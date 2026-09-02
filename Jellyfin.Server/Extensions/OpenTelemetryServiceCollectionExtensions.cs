@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Jellyfin.Server.Telemetry;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Telemetry;
+using MediaBrowser.Controller.Telemetry;
 using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -130,6 +131,13 @@ public static class OpenTelemetryServiceCollectionExtensions
                 {
                     metrics.AddRuntimeInstrumentation();
                 }
+
+                metrics.AddView(
+                    PlaybackMetrics.PlaybackDurationName,
+                    new ExplicitBucketHistogramConfiguration
+                    {
+                        Boundaries = [10, 30, 60, 120, 300, 600, 1200, 1800, 2700, 3600, 5400, 7200, 10800]
+                    });
 
                 metrics.AddOtlpExporter((exporter, reader) =>
                 {
