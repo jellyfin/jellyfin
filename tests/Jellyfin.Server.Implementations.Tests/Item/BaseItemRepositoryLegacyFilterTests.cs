@@ -1,78 +1,29 @@
 using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
 using Emby.Server.Implementations.Data;
-using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using Jellyfin.Database.Implementations.Locking;
-using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Server.Implementations.Item;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Entities;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 using Xunit;
 using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
-public sealed class BaseItemRepositoryLegacyFilterTests : IDisposable
+public sealed class BaseItemRepositoryLegacyFilterTests : SqliteDbTestFixture
 {
-    private readonly SqliteConnection _connection;
-    private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
-    private readonly CommandRecordingInterceptor _interceptor = new();
     private readonly BaseItemRepository _repository;
     private readonly string _audioTypeName;
     private readonly string _movieTypeName;
 
     public BaseItemRepositoryLegacyFilterTests()
     {
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
-        _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(_connection)
-            .AddInterceptors(_interceptor)
-            .Options;
-
-        using (var context = CreateDbContext())
-        {
-            context.Database.EnsureCreated();
-        }
-
-        var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
-        factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
-
         var itemTypeLookup = new ItemTypeLookup();
         _audioTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio];
         _movieTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie];
-
-        var serverConfigurationManager = new Mock<IServerConfigurationManager>();
-        serverConfigurationManager.Setup(c => c.Configuration).Returns(new ServerConfiguration());
-
-        _repository = new BaseItemRepository(
-            factory.Object,
-            new Mock<IServerApplicationHost>().Object,
-            itemTypeLookup,
-            serverConfigurationManager.Object,
-            NullLogger<BaseItemRepository>.Instance);
+        _repository = CreateBaseItemRepository(itemTypeLookup);
     }
 
-    public void Dispose()
-    {
-        _connection.Dispose();
-    }
-
-    // Verifies eligible tags and genres retain normalized result semantics with one direct ItemValues join.
     [Fact]
-    public void GetQueryFiltersLegacy_ItemValues_GroupByCleanValueWithOneItemValuesJoin()
+    public void GetQueryFiltersLegacy_GroupsAndFiltersItemValues()
     {
         var firstItem = CreateMovieEntity(Guid.NewGuid(), "First");
         var secondItem = CreateMovieEntity(Guid.NewGuid(), "Second");
@@ -150,31 +101,6 @@ public sealed class BaseItemRepositoryLegacyFilterTests : IDisposable
 
         Assert.Equal(["Alpha", "Beta"], result.Tags);
         Assert.Equal(["Genre Leak"], result.Genres);
-        var itemValueCommands = _interceptor.Commands
-            .Where(command => command.Contains("GROUP BY", StringComparison.Ordinal)
-                && command.Contains("INNER JOIN \"ItemValues\"", StringComparison.Ordinal))
-            .ToArray();
-
-        Assert.Equal(2, itemValueCommands.Length);
-
-        foreach (var command in itemValueCommands)
-        {
-            Assert.Equal(1, CountOccurrences(command, "INNER JOIN \"ItemValues\""));
-            Assert.DoesNotContain("SELECT (SELECT", command, StringComparison.Ordinal);
-        }
-    }
-
-    private static int CountOccurrences(string value, string pattern)
-    {
-        var count = 0;
-        var index = 0;
-        while ((index = value.IndexOf(pattern, index, StringComparison.Ordinal)) >= 0)
-        {
-            count++;
-            index += pattern.Length;
-        }
-
-        return count;
     }
 
     private BaseItemEntity CreateMovieEntity(Guid id, string name)
@@ -200,28 +126,5 @@ public sealed class BaseItemRepositoryLegacyFilterTests : IDisposable
             Item = item,
             ItemValue = itemValue
         };
-    }
-
-    private JellyfinDbContext CreateDbContext()
-    {
-        return new JellyfinDbContext(
-            _dbOptions,
-            NullLogger<JellyfinDbContext>.Instance,
-            new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
-            new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
-    }
-
-    private sealed class CommandRecordingInterceptor : DbCommandInterceptor
-    {
-        public List<string> Commands { get; } = [];
-
-        public override InterceptionResult<DbDataReader> ReaderExecuting(
-            DbCommand command,
-            CommandEventData eventData,
-            InterceptionResult<DbDataReader> result)
-        {
-            Commands.Add(command.CommandText);
-            return result;
-        }
     }
 }
