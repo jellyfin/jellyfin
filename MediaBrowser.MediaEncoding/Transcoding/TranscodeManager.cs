@@ -21,6 +21,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Streaming;
+using MediaBrowser.Controller.Telemetry;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -232,6 +233,8 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 #pragma warning restore CA1849
             }
         }
+
+        PlaybackMetrics.OnTranscodeStopped(job.Id);
 
         job.Stop();
 
@@ -603,6 +606,14 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
             _activeTranscodingJobs.Add(job);
 
+            PlaybackMetrics.OnTranscodeStarted(
+                job.Id,
+                type,
+                _serverConfigurationManager.GetEncodingOptions().HardwareAccelerationType,
+                state.ActualOutputVideoCodec,
+                state.ActualOutputAudioCodec,
+                state.TranscodeReasons);
+
             ReportTranscodingProgress(job, state, null, null, null, null, null);
 
             return job;
@@ -622,6 +633,8 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
     private void OnTranscodeFailedToStart(string path, TranscodingJobType type, StreamState state)
     {
+        string? removedJobId = null;
+
         lock (_activeTranscodingJobs)
         {
             var job = _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && string.Equals(j.Path, path, StringComparison.OrdinalIgnoreCase));
@@ -629,8 +642,11 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             if (job is not null)
             {
                 _activeTranscodingJobs.Remove(job);
+                removedJobId = job.Id;
             }
         }
+
+        PlaybackMetrics.OnTranscodeStopped(removedJobId);
 
         if (!string.IsNullOrWhiteSpace(state.Request.DeviceId))
         {
