@@ -3997,7 +3997,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 var isRext = IsVideoStreamHevcRext(state);
-                var outFormat = doCuTonemap ? (isRext ? "p010" : string.Empty) : "yuv420p";
+                var outFormat = doCuTonemap ? (isRext ? "p010" : string.Empty) : (isMjpegEncoder && GetVideoColorBitDepth(state) >= 10 ? "p010" : "yuv420p");
                 var hwScaleFilter = GetHwScaleFilter("scale", "cuda", outFormat, false, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
                 // hw scale
                 mainFilters.Add(hwScaleFilter);
@@ -4018,7 +4018,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 // OUTPUT yuv420p surface(memory)
                 mainFilters.Add("hwdownload");
-                mainFilters.Add("format=yuv420p");
+                mainFilters.Add(isMjpegEncoder && GetVideoColorBitDepth(state) >= 10 ? "format=p010" : "format=yuv420p");
             }
 
             // OUTPUT yuv420p surface(memory)

@@ -175,6 +175,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="enableKeyFrameOnlyExtraction">Whether to only extract key frames.</param>
         /// <param name="encodingHelper">EncodingHelper instance.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">Progress reporter.</param>
         /// <returns>Directory where images where extracted. A given image made before another will always be named with a lower number.</returns>
         Task<string> ExtractVideoImagesOnIntervalAccelerated(
             string inputFile,
@@ -190,7 +191,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             ProcessPriorityClass? priority,
             bool enableKeyFrameOnlyExtraction,
             EncodingHelper encodingHelper,
-            CancellationToken cancellationToken);
+            CancellationToken cancellationToken,
+            IProgress<double> progress = null);
 
         /// <summary>
         /// Gets the media info.

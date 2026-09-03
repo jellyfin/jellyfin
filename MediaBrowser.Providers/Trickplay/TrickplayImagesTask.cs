@@ -44,11 +44,16 @@ public class TrickplayImagesTask : IScheduledTask
         _trickplayManager = trickplayManager;
     }
 
+    private string? _currentDescription;
+
     /// <inheritdoc />
     public string Name => _localization.GetLocalizedString("TaskRefreshTrickplayImages");
 
     /// <inheritdoc />
-    public string Description => _localization.GetLocalizedString("TaskRefreshTrickplayImagesDescription");
+    public string Description =>
+        string.IsNullOrEmpty(_currentDescription)
+            ? _localization.GetLocalizedString("TaskRefreshTrickplayImagesDescription")
+            : _currentDescription;
 
     /// <inheritdoc />
     public string Key => "RefreshTrickplayImages";
@@ -72,45 +77,90 @@ public class TrickplayImagesTask : IScheduledTask
     /// <inheritdoc />
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        var query = new InternalItemsQuery
+        var virtualFolders = _libraryManager.GetVirtualFolders();
+        var eligibleFolders = virtualFolders
+            .Where(vf => vf.LibraryOptions?.EnableTrickplayImageExtraction ?? false)
+            .ToList();
+
+        if (eligibleFolders.Count == 0)
         {
-            MediaTypes = [MediaType.Video],
-            SourceTypes = [SourceType.Library],
-            IsVirtualItem = false,
-            IsFolder = false,
-            Recursive = true,
-            Limit = QueryPageLimit
-        };
+            _logger.LogInformation("No libraries have trickplay extraction enabled.");
+            progress.Report(100);
+            return;
+        }
 
-        var numberOfVideos = _libraryManager.GetCount(query);
-
-        var startIndex = 0;
-        var numComplete = 0;
-
-        while (startIndex < numberOfVideos)
+        var allVideos = new List<Video>();
+        foreach (var folder in eligibleFolders)
         {
-            query.StartIndex = startIndex;
-            var videos = _libraryManager.GetItemList(query).OfType<Video>();
+            if (Guid.TryParse(folder.ItemId, out var folderId))
+            {
+                var query = new InternalItemsQuery
+                {
+                    MediaTypes = [MediaType.Video],
+                    IsVirtualItem = false,
+                    IsFolder = false,
+                    Recursive = true,
+                    ParentId = folderId
+                };
 
-            foreach (var video in videos)
+                allVideos.AddRange(_libraryManager.GetItemList(query).OfType<Video>());
+            }
+        }
+
+        var numberOfVideos = allVideos.Count;
+        _logger.LogInformation("Found {Count} videos in trickplay-enabled libraries.", numberOfVideos);
+
+        if (numberOfVideos == 0)
+        {
+            progress.Report(100);
+            return;
+        }
+
+        var completedCount = 0;
+
+        try
+        {
+            for (var i = 0; i < allVideos.Count; i++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+
+                var video = allVideos[i];
+                var videoIndex = i + 1;
+
+                _currentDescription = $"Video #{videoIndex}/{numberOfVideos}: {video.Name} - 0%";
+                progress.Report(100d * completedCount / numberOfVideos);
 
                 try
                 {
                     var libraryOptions = _libraryManager.GetLibraryOptions(video);
-                    await _trickplayManager.RefreshTrickplayDataAsync(video, false, libraryOptions, cancellationToken).ConfigureAwait(false);
+                    var videoProgress = new Progress<double>(currentProgress =>
+                    {
+                        _currentDescription = $"Video #{videoIndex}/{numberOfVideos}: {video.Name} - {currentProgress:F0}%";
+                        var overall = 100d * (completedCount + (currentProgress / 100d)) / numberOfVideos;
+                        progress.Report(Math.Min(100d, overall));
+                    });
+
+                    _logger.LogInformation("Starting trickplay extraction for Video #{Index}/{Total}: \"{Name}\"", videoIndex, numberOfVideos, video.Name);
+
+                    await _trickplayManager.RefreshTrickplayDataAsync(
+                        video,
+                        false,
+                        libraryOptions,
+                        cancellationToken,
+                        videoProgress).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error creating trickplay files for {ItemName}", video.Name);
                 }
 
-                numComplete++;
-                progress.Report(100d * numComplete / numberOfVideos);
+                completedCount++;
+                progress.Report(100d * completedCount / numberOfVideos);
             }
-
-            startIndex += QueryPageLimit;
+        }
+        finally
+        {
+            _currentDescription = null;
         }
 
         progress.Report(100);

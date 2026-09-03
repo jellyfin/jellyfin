@@ -20,8 +20,14 @@ public interface ITrickplayManager
     /// <param name="replace">Whether or not existing data should be replaced.</param>
     /// <param name="libraryOptions">The library options.</param>
     /// <param name="cancellationToken">CancellationToken to use for operation.</param>
+    /// <param name="progress">Progress reporter.</param>
     /// <returns>Task.</returns>
-    Task RefreshTrickplayDataAsync(Video video, bool replace, LibraryOptions libraryOptions, CancellationToken cancellationToken);
+    Task RefreshTrickplayDataAsync(
+        Video video,
+        bool replace,
+        LibraryOptions libraryOptions,
+        CancellationToken cancellationToken,
+        IProgress<double>? progress = null);
 
     /// <summary>
     /// Creates trickplay tiles out of individual thumbnails.

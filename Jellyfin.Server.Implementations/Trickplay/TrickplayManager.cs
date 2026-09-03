@@ -136,7 +136,12 @@ public class TrickplayManager : ITrickplayManager
     }
 
     /// <inheritdoc />
-    public async Task RefreshTrickplayDataAsync(Video video, bool replace, LibraryOptions libraryOptions, CancellationToken cancellationToken)
+    public async Task RefreshTrickplayDataAsync(
+        Video video,
+        bool replace,
+        LibraryOptions libraryOptions,
+        CancellationToken cancellationToken,
+        IProgress<double>? progress = null)
     {
         var options = _config.Configuration.TrickplayOptions;
         if (!CanGenerateTrickplay(video, options.Interval) || libraryOptions is null)
@@ -192,7 +197,8 @@ public class TrickplayManager : ITrickplayManager
                     width,
                     options,
                     saveWithMedia,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken,
+                    progress).ConfigureAwait(false);
             }
 
             // Cleanup old trickplay files
@@ -228,7 +234,8 @@ public class TrickplayManager : ITrickplayManager
         int width,
         TrickplayOptions options,
         bool saveWithMedia,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        IProgress<double>? progress = null)
     {
         var imgTempDir = string.Empty;
 
@@ -335,7 +342,8 @@ public class TrickplayManager : ITrickplayManager
                     options.ProcessPriority,
                     options.EnableKeyFrameOnlyExtraction,
                     _encodingHelper,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken,
+                    progress).ConfigureAwait(false);
 
                 if (string.IsNullOrEmpty(imgTempDir) || !Directory.Exists(imgTempDir))
                 {
@@ -382,7 +390,33 @@ public class TrickplayManager : ITrickplayManager
             {
                 if (!string.IsNullOrEmpty(imgTempDir))
                 {
-                    Directory.Delete(imgTempDir, true);
+                    try
+                    {
+                        if (Directory.Exists(imgTempDir))
+                        {
+                            Directory.Delete(imgTempDir, true);
+                        }
+                    }
+                    catch (IOException ex)
+                    {
+                        _logger.LogWarning(ex, "Temp trickplay directory {Path} locked by another process. Retrying after brief delay.", imgTempDir);
+                        try
+                        {
+                            await Task.Delay(500).ConfigureAwait(false);
+                            if (Directory.Exists(imgTempDir))
+                            {
+                                Directory.Delete(imgTempDir, true);
+                            }
+                        }
+                        catch (Exception retryEx)
+                        {
+                            _logger.LogWarning(retryEx, "Unable to delete temp trickplay directory {Path}. Will be cleaned up later.", imgTempDir);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Unable to delete temp trickplay directory {Path}.", imgTempDir);
+                    }
                 }
             }
         }

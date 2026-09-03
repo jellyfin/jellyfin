@@ -841,7 +841,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             ProcessPriorityClass? priority,
             bool enableKeyFrameOnlyExtraction,
             EncodingHelper encodingHelper,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            IProgress<double> progress = null)
         {
             var options = allowHwAccel ? _configurationManager.GetEncodingOptions() : new EncodingOptions();
             threads ??= _threads;
@@ -933,7 +934,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     threads,
                     qualityScale,
                     priority,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken,
+                    mediaSource.RunTimeTicks,
+                    interval,
+                    progress,
+                    inputFile).ConfigureAwait(false);
             }
             catch (FfmpegException ex)
             {
@@ -945,7 +950,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _logger.LogWarning(ex, "I-frame trickplay extraction failed, will attempt standard way. Input: {InputFile}", inputFile);
             }
 
-            return await ExtractVideoImagesOnIntervalInternal(inputArg, filterParam, vidEncoder, threads, qualityScale, priority, cancellationToken).ConfigureAwait(false);
+            return await ExtractVideoImagesOnIntervalInternal(
+                    inputArg,
+                    filterParam,
+                    vidEncoder,
+                    threads,
+                    qualityScale,
+                    priority,
+                    cancellationToken,
+                    mediaSource.RunTimeTicks,
+                    interval,
+                    progress,
+                    inputFile).ConfigureAwait(false);
         }
 
         private async Task<string> ExtractVideoImagesOnIntervalInternal(
@@ -955,7 +971,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             int? outputThreads,
             int? qualityScale,
             ProcessPriorityClass? priority,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            long? runtimeTicks = null,
+            TimeSpan? interval = null,
+            IProgress<double> progress = null,
+            string inputFile = null)
         {
             if (string.IsNullOrWhiteSpace(inputArg))
             {
@@ -1052,27 +1072,78 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     bool isResponsive = true;
                     int lastCount = 0;
+                    int lastLoggedCount = 0;
                     var timeoutMs = _configurationManager.Configuration.ImageExtractionTimeoutMs;
                     timeoutMs = timeoutMs <= 0 ? DefaultHdrImageExtractionTimeout : timeoutMs;
+
+                    var expectedImageCount = 0L;
+
+                    if (runtimeTicks is > 0
+                        && interval is { } extractionInterval
+                        && extractionInterval > TimeSpan.Zero)
+                    {
+                        expectedImageCount = Math.Max(
+                            1,
+                            (long)Math.Floor(
+                                TimeSpan.FromTicks(runtimeTicks.Value).TotalSeconds
+                                / extractionInterval.TotalSeconds));
+                    }
+
+                    var lastImageTime = DateTime.UtcNow;
 
                     while (isResponsive && !cancellationToken.IsCancellationRequested)
                     {
                         try
                         {
-                            await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs)).ConfigureAwait(false);
+                            await process.WaitForExitAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
 
                             ranToCompletion = true;
+
+                            var finalJpegCount = _fileSystem.GetFilePaths(targetDirectory).Count();
+
+                            if (progress is not null && expectedImageCount > 0)
+                            {
+                                progress.Report(
+                                    Math.Min(
+                                        100d,
+                                        100d * finalJpegCount / expectedImageCount));
+                            }
+
+                            _logger.LogInformation("Trickplay extraction completed: {FinalCount}/{ExpectedCount} frames for {MediaFile}", finalJpegCount, expectedImageCount, inputFile);
+
                             break;
                         }
                         catch (OperationCanceledException)
                         {
-                            // We don't actually expect the process to be finished in one timeout span, just that one image has been generated.
+                            // Process is still running. Check generated JPEGs and report progress.
                         }
 
                         var jpegCount = _fileSystem.GetFilePaths(targetDirectory).Count();
 
-                        isResponsive = jpegCount > lastCount;
-                        lastCount = jpegCount;
+                        if (jpegCount > lastCount)
+                        {
+                            lastCount = jpegCount;
+                            lastImageTime = DateTime.UtcNow;
+
+                            if (expectedImageCount > 0)
+                            {
+                                var pct = Math.Min(100d, 100d * jpegCount / expectedImageCount);
+                                if (progress is not null)
+                                {
+                                    progress.Report(pct);
+                                }
+
+                                if (jpegCount - lastLoggedCount >= 50 || jpegCount >= expectedImageCount)
+                                {
+                                    lastLoggedCount = jpegCount;
+                                    _logger.LogInformation("Trickplay extraction: {Percent:F1}% ({CurrentCount}/{ExpectedCount} frames) for {MediaFile}", pct, jpegCount, expectedImageCount, inputFile);
+                                }
+                            }
+                        }
+                        else if ((DateTime.UtcNow - lastImageTime).TotalMilliseconds >= timeoutMs)
+                        {
+                            isResponsive = false;
+                        }
                     }
 
                     if (!ranToCompletion)
