@@ -3997,7 +3997,19 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 var isRext = IsVideoStreamHevcRext(state);
-                var outFormat = doCuTonemap ? (isRext ? "p010" : string.Empty) : (isMjpegEncoder && GetVideoColorBitDepth(state) >= 10 ? "p010" : "yuv420p");
+                string outFormat;
+                if (doCuTonemap)
+                {
+                    outFormat = isRext ? "p010" : string.Empty;
+                }
+                else if (isMjpegEncoder && GetVideoColorBitDepth(state) >= 10)
+                {
+                    outFormat = "p010";
+                }
+                else
+                {
+                    outFormat = "yuv420p";
+                }
                 var hwScaleFilter = GetHwScaleFilter("scale", "cuda", outFormat, false, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
                 // hw scale
                 mainFilters.Add(hwScaleFilter);

@@ -204,26 +204,31 @@ public class TrickplayManager : ITrickplayManager
             // Cleanup old trickplay files
             if (Directory.Exists(trickplayDirectory))
             {
-                var existingFolders = Directory.GetDirectories(trickplayDirectory).ToList();
                 var trickplayInfos = await dbContext.TrickplayInfos
                         .AsNoTracking()
                         .Where(i => i.ItemId.Equals(video.Id))
                         .ToListAsync(cancellationToken)
                         .ConfigureAwait(false);
                 var expectedFolders = trickplayInfos.Select(i => GetTrickplayDirectory(video, i.TileWidth, i.TileHeight, i.Width, saveWithMedia)).ToList();
-                var foldersToRemove = existingFolders.Except(expectedFolders);
-                foreach (var folder in foldersToRemove)
-                {
-                    try
-                    {
-                        _logger.LogWarning("Pruning trickplay files for {Item}", video.Path);
-                        Directory.Delete(folder, true);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning("Unable to remove trickplay directory: {Directory}: {Exception}", folder, ex);
-                    }
-                }
+                CleanupOldTrickplayFolders(trickplayDirectory, expectedFolders, video.Path);
+            }
+        }
+    }
+
+    private void CleanupOldTrickplayFolders(string trickplayDirectory, IEnumerable<string> expectedFolders, string videoPath)
+    {
+        var existingFolders = Directory.GetDirectories(trickplayDirectory).ToList();
+        var foldersToRemove = existingFolders.Except(expectedFolders);
+        foreach (var folder in foldersToRemove)
+        {
+            try
+            {
+                _logger.LogWarning("Pruning trickplay files for {Item}", videoPath);
+                Directory.Delete(folder, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("Unable to remove trickplay directory: {Directory}: {Exception}", folder, ex);
             }
         }
     }
@@ -402,7 +407,7 @@ public class TrickplayManager : ITrickplayManager
                         _logger.LogWarning(ex, "Temp trickplay directory {Path} locked by another process. Retrying after brief delay.", imgTempDir);
                         try
                         {
-                            await Task.Delay(500).ConfigureAwait(false);
+                            await Task.Delay(500, CancellationToken.None).ConfigureAwait(false);
                             if (Directory.Exists(imgTempDir))
                             {
                                 Directory.Delete(imgTempDir, true);

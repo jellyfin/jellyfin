@@ -937,8 +937,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     cancellationToken,
                     mediaSource.RunTimeTicks,
                     interval,
-                    progress,
-                    inputFile).ConfigureAwait(false);
+                    progress).ConfigureAwait(false);
             }
             catch (FfmpegException ex)
             {
@@ -960,8 +959,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     cancellationToken,
                     mediaSource.RunTimeTicks,
                     interval,
-                    progress,
-                    inputFile).ConfigureAwait(false);
+                    progress).ConfigureAwait(false);
         }
 
         private async Task<string> ExtractVideoImagesOnIntervalInternal(
@@ -974,8 +972,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             CancellationToken cancellationToken,
             long? runtimeTicks = null,
             TimeSpan? interval = null,
-            IProgress<double> progress = null,
-            string inputFile = null)
+            IProgress<double> progress = null)
         {
             if (string.IsNullOrWhiteSpace(inputArg))
             {
@@ -1109,7 +1106,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                                         100d * finalJpegCount / expectedImageCount));
                             }
 
-                            _logger.LogInformation("Trickplay extraction completed: {FinalCount}/{ExpectedCount} frames for {MediaFile}", finalJpegCount, expectedImageCount, inputFile);
+                            _logger.LogInformation("Trickplay extraction completed: {FinalCount}/{ExpectedCount} frames", finalJpegCount, expectedImageCount);
 
                             break;
                         }
@@ -1136,7 +1133,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                                 if (jpegCount - lastLoggedCount >= 50 || jpegCount >= expectedImageCount)
                                 {
                                     lastLoggedCount = jpegCount;
-                                    _logger.LogInformation("Trickplay extraction: {Percent:F1}% ({CurrentCount}/{ExpectedCount} frames) for {MediaFile}", pct, jpegCount, expectedImageCount, inputFile);
+                                    _logger.LogInformation("Trickplay extraction: {Percent:F1}% ({CurrentCount}/{ExpectedCount} frames)", pct, jpegCount, expectedImageCount);
                                 }
                             }
                         }
