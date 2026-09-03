@@ -113,5 +113,12 @@
     "NameExtraClip": "Klippi",
     "NameExtraDeletedScene": "Poistettu Kohtaus",
     "NameExtraFeaturette": "Lyhytelokuva",
-    "NameExtraInterview": "Haastattelu"
+    "NameExtraInterview": "Haastattelu",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Näyte",
+    "NameExtraScene": "Kohtaus",
+    "NameExtraShort": "Lyhytfilmi",
+    "NameExtraThemeSong": "Tunnusmusiikki",
+    "NameExtraThemeVideo": "Tunnusvideo",
+    "NameExtraTrailer": "Traileri"
 }
