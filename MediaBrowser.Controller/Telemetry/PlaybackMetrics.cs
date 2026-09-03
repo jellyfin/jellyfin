@@ -29,19 +29,21 @@ public static class PlaybackMetrics
     private const string VideoCodecTag = "jellyfin.transcode.video_codec";
     private const string AudioCodecTag = "jellyfin.transcode.audio_codec";
     private const string ReasonTag = "jellyfin.transcode.reason";
+    private const string ClientTag = "jellyfin.client";
 
     private const string OutcomeCompleted = "completed";
     private const string OutcomeAbandoned = "abandoned";
     private const string OutcomeFailed = "failed";
     private const string Unknown = "unknown";
+    private const string OtherClient = "other";
+
+    private const int MaxTrackedClients = 32;
 
     private static readonly ConcurrentDictionary<string, TrackedPlayback> _playback = new(StringComparer.Ordinal);
     private static readonly ConcurrentDictionary<string, TrackedTranscode> _transcodes = new(StringComparer.Ordinal);
 
-    // Both gauges report a zero for every combination seen since startup, so that a series drops to 0 when
-    // playback ends instead of going stale and leaving a gap the dashboard cannot distinguish from downtime.
-    // Bounded by the enums: at most 3 x 5 playback and 2 x 8 transcode combinations.
-    private static readonly ConcurrentDictionary<(PlayMethod PlayMethod, MediaType MediaType), byte> _seenPlaybackTags = new();
+    private static readonly ConcurrentDictionary<string, string> _knownClients = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<(PlayMethod PlayMethod, MediaType MediaType, string Client), byte> _seenPlaybackTags = new();
     private static readonly ConcurrentDictionary<(TranscodingJobType Type, HardwareAccelerationType Acceleration), byte> _seenTranscodeTags = new();
 
     private static readonly Counter<long> _playbackStarted = JellyfinTelemetry.Meter.CreateCounter<long>(
@@ -69,6 +71,16 @@ public static class PlaybackMetrics
         "{job}",
         "Transcoding jobs that ended.");
 
+    private static readonly Histogram<double> _transcodeFramerate = JellyfinTelemetry.Meter.CreateHistogram<double>(
+        "jellyfin.transcode.framerate",
+        "{frame}/s",
+        "Framerate the encoder is achieving, sampled on every progress report.");
+
+    private static readonly Histogram<double> _transcodeSpeed = JellyfinTelemetry.Meter.CreateHistogram<double>(
+        "jellyfin.transcode.speed",
+        "1",
+        "Encoder framerate relative to the framerate of the source. Below 1 the job is slower than realtime and the client will eventually stall.");
+
     private static readonly Counter<long> _transcodeReasons = JellyfinTelemetry.Meter.CreateCounter<long>(
         "jellyfin.transcode.reason",
         "{reason}",
@@ -86,6 +98,18 @@ public static class PlaybackMetrics
         ObserveActiveTranscodes,
         "{job}",
         "Transcoding jobs currently running.");
+
+    private static readonly ObservableGauge<long> _playbackBitrate = JellyfinTelemetry.Meter.CreateObservableGauge(
+        "jellyfin.playback.bitrate",
+        ObservePlaybackBitrate,
+        "bit/s",
+        "Combined bitrate of the media sources playing in active sessions. This is what is read, not what is delivered; for a transcoding session the delivered bitrate is jellyfin.transcode.bitrate.");
+
+    private static readonly ObservableGauge<long> _transcodeBitrate = JellyfinTelemetry.Meter.CreateObservableGauge(
+        "jellyfin.transcode.bitrate",
+        ObserveTranscodeBitrate,
+        "bit/s",
+        "Combined output bitrate of the running transcoding jobs.");
 #pragma warning restore IDE0052
 
     /// <summary>
@@ -95,7 +119,15 @@ public static class PlaybackMetrics
     /// <param name="sessionId">The session id.</param>
     /// <param name="playMethod">How the item is being delivered.</param>
     /// <param name="mediaType">The type of media being played.</param>
-    public static void OnPlaybackStarted(string? playSessionId, string? sessionId, PlayMethod playMethod, MediaType mediaType)
+    /// <param name="client">The name of the client application playing the item.</param>
+    /// <param name="bitrate">The bitrate of the media source, in bits per second, when it is known.</param>
+    public static void OnPlaybackStarted(
+        string? playSessionId,
+        string? sessionId,
+        PlayMethod playMethod,
+        MediaType mediaType,
+        string? client,
+        int? bitrate)
     {
         var key = ResolveKey(playSessionId, sessionId);
         if (key is null)
@@ -103,13 +135,16 @@ public static class PlaybackMetrics
             return;
         }
 
-        _playback[key] = new TrackedPlayback(Stopwatch.GetTimestamp(), playMethod, mediaType);
-        _seenPlaybackTags.TryAdd((playMethod, mediaType), 0);
+        var clientName = NormalizeClient(client);
+
+        _playback[key] = new TrackedPlayback(Stopwatch.GetTimestamp(), playMethod, mediaType, clientName, bitrate > 0 ? bitrate.Value : 0);
+        _seenPlaybackTags.TryAdd((playMethod, mediaType, clientName), 0);
 
         _playbackStarted.Add(
             1,
             new KeyValuePair<string, object?>(PlayMethodTag, Describe(playMethod)),
-            new KeyValuePair<string, object?>(MediaTypeTag, Describe(mediaType)));
+            new KeyValuePair<string, object?>(MediaTypeTag, Describe(mediaType)),
+            new KeyValuePair<string, object?>(ClientTag, clientName));
     }
 
     /// <summary>
@@ -119,7 +154,8 @@ public static class PlaybackMetrics
     /// <param name="sessionId">The session id.</param>
     /// <param name="playMethod">How the item is currently being delivered.</param>
     /// <param name="mediaType">The type of media being played.</param>
-    public static void OnPlaybackProgress(string? playSessionId, string? sessionId, PlayMethod playMethod, MediaType mediaType)
+    /// <param name="client">The name of the client application playing the item.</param>
+    public static void OnPlaybackProgress(string? playSessionId, string? sessionId, PlayMethod playMethod, MediaType mediaType, string? client)
     {
         var key = ResolveKey(playSessionId, sessionId);
         if (key is null)
@@ -127,10 +163,13 @@ public static class PlaybackMetrics
             return;
         }
 
-        _seenPlaybackTags.TryAdd((playMethod, mediaType), 0);
+        var clientName = NormalizeClient(client);
+
+        _seenPlaybackTags.TryAdd((playMethod, mediaType, clientName), 0);
         _playback.AddOrUpdate(
             key,
-            _ => new TrackedPlayback(Stopwatch.GetTimestamp(), playMethod, mediaType),
+            // The bitrate is only known when the media source was resolved, which happens on playback start.
+            _ => new TrackedPlayback(Stopwatch.GetTimestamp(), playMethod, mediaType, clientName, 0),
             (_, existing) => existing.PlayMethod == playMethod && existing.MediaType == mediaType
                 ? existing
                 : existing with { PlayMethod = playMethod, MediaType = mediaType });
@@ -159,24 +198,21 @@ public static class PlaybackMetrics
                 1,
                 new KeyValuePair<string, object?>(PlayMethodTag, Unknown),
                 new KeyValuePair<string, object?>(MediaTypeTag, Unknown),
+                new KeyValuePair<string, object?>(ClientTag, Unknown),
                 new KeyValuePair<string, object?>(OutcomeTag, outcome));
             return;
         }
 
-        var playMethod = Describe(tracked.PlayMethod);
-        var mediaType = Describe(tracked.MediaType);
+        var tags = new TagList
+        {
+            { PlayMethodTag, Describe(tracked.PlayMethod) },
+            { MediaTypeTag, Describe(tracked.MediaType) },
+            { ClientTag, tracked.Client },
+            { OutcomeTag, outcome }
+        };
 
-        _playbackStopped.Add(
-            1,
-            new KeyValuePair<string, object?>(PlayMethodTag, playMethod),
-            new KeyValuePair<string, object?>(MediaTypeTag, mediaType),
-            new KeyValuePair<string, object?>(OutcomeTag, outcome));
-
-        _playbackDuration.Record(
-            Stopwatch.GetElapsedTime(tracked.StartedTimestamp).TotalSeconds,
-            new KeyValuePair<string, object?>(PlayMethodTag, playMethod),
-            new KeyValuePair<string, object?>(MediaTypeTag, mediaType),
-            new KeyValuePair<string, object?>(OutcomeTag, outcome));
+        _playbackStopped.Add(1, tags);
+        _playbackDuration.Record(Stopwatch.GetElapsedTime(tracked.StartedTimestamp).TotalSeconds, tags);
     }
 
     /// <summary>
@@ -217,7 +253,49 @@ public static class PlaybackMetrics
 
         if (!string.IsNullOrEmpty(jobId))
         {
-            _transcodes[jobId] = new TrackedTranscode(type, acceleration);
+            _transcodes[jobId] = new TrackedTranscode(type, acceleration, 0);
+        }
+    }
+
+    /// <summary>
+    /// Records the throughput of a running transcoding job, as reported by ffmpeg.
+    /// </summary>
+    /// <param name="jobId">The transcoding job id.</param>
+    /// <param name="framerate">The framerate the encoder is achieving.</param>
+    /// <param name="bitrate">The output bitrate, in bits per second.</param>
+    /// <param name="sourceFramerate">The framerate of the source, used to put <paramref name="framerate"/> in context.</param>
+    public static void OnTranscodeProgress(string? jobId, float? framerate, int? bitrate, float? sourceFramerate)
+    {
+        // Progress is reported once before ffmpeg has produced any numbers, and for jobs that started
+        // before the metrics existed, so anything unknown is skipped rather than recorded as a zero.
+        if (string.IsNullOrEmpty(jobId) || !_transcodes.TryGetValue(jobId, out var tracked))
+        {
+            return;
+        }
+
+        // Comparing against the value that was read keeps a job that stopped in the meantime from
+        // being resurrected. A lost update is corrected by the next progress report.
+        if (bitrate > 0)
+        {
+            _transcodes.TryUpdate(jobId, tracked with { Bitrate = bitrate.Value }, tracked);
+        }
+
+        if (framerate is not > 0)
+        {
+            return;
+        }
+
+        var tags = new TagList
+        {
+            { TranscodeTypeTag, Describe(tracked.Type) },
+            { HardwareAccelerationTag, Describe(tracked.Acceleration) }
+        };
+
+        _transcodeFramerate.Record(framerate.Value, tags);
+
+        if (sourceFramerate > 0)
+        {
+            _transcodeSpeed.Record(framerate.Value / sourceFramerate.Value, tags);
         }
     }
 
@@ -243,9 +321,24 @@ public static class PlaybackMetrics
 
     private static string Normalize(string? value) => string.IsNullOrEmpty(value) ? Unknown : value;
 
+    private static string NormalizeClient(string? client)
+    {
+        if (string.IsNullOrEmpty(client))
+        {
+            return Unknown;
+        }
+
+        if (_knownClients.TryGetValue(client, out var known))
+        {
+            return known;
+        }
+
+        return _knownClients.Count >= MaxTrackedClients ? OtherClient : _knownClients.GetOrAdd(client, client);
+    }
+
     private static IEnumerable<Measurement<int>> ObserveActiveSessions()
     {
-        var counts = new Dictionary<(PlayMethod, MediaType), int>();
+        var counts = new Dictionary<(PlayMethod, MediaType, string), int>();
         foreach (var combination in _seenPlaybackTags.Keys)
         {
             counts[combination] = 0;
@@ -253,19 +346,45 @@ public static class PlaybackMetrics
 
         foreach (var tracked in _playback.Values)
         {
-            var key = (tracked.PlayMethod, tracked.MediaType);
+            var key = (tracked.PlayMethod, tracked.MediaType, tracked.Client);
             counts.TryGetValue(key, out var current);
             counts[key] = current + 1;
         }
 
         foreach (var (key, count) in counts)
         {
-            yield return new Measurement<int>(
-                count,
-                new KeyValuePair<string, object?>(PlayMethodTag, Describe(key.Item1)),
-                new KeyValuePair<string, object?>(MediaTypeTag, Describe(key.Item2)));
+            yield return new Measurement<int>(count, PlaybackTags(key));
         }
     }
+
+    private static IEnumerable<Measurement<long>> ObservePlaybackBitrate()
+    {
+        var bitrates = new Dictionary<(PlayMethod, MediaType, string), long>();
+        foreach (var combination in _seenPlaybackTags.Keys)
+        {
+            bitrates[combination] = 0;
+        }
+
+        foreach (var tracked in _playback.Values)
+        {
+            var key = (tracked.PlayMethod, tracked.MediaType, tracked.Client);
+            bitrates.TryGetValue(key, out var current);
+            bitrates[key] = current + tracked.Bitrate;
+        }
+
+        foreach (var (key, bitrate) in bitrates)
+        {
+            yield return new Measurement<long>(bitrate, PlaybackTags(key));
+        }
+    }
+
+    private static TagList PlaybackTags((PlayMethod PlayMethod, MediaType MediaType, string Client) key)
+        => new()
+        {
+            { PlayMethodTag, Describe(key.PlayMethod) },
+            { MediaTypeTag, Describe(key.MediaType) },
+            { ClientTag, key.Client }
+        };
 
     private static IEnumerable<Measurement<int>> ObserveActiveTranscodes()
     {
@@ -284,12 +403,37 @@ public static class PlaybackMetrics
 
         foreach (var (key, count) in counts)
         {
-            yield return new Measurement<int>(
-                count,
-                new KeyValuePair<string, object?>(TranscodeTypeTag, Describe(key.Item1)),
-                new KeyValuePair<string, object?>(HardwareAccelerationTag, Describe(key.Item2)));
+            yield return new Measurement<int>(count, TranscodeTags(key));
         }
     }
+
+    private static IEnumerable<Measurement<long>> ObserveTranscodeBitrate()
+    {
+        var bitrates = new Dictionary<(TranscodingJobType, HardwareAccelerationType), long>();
+        foreach (var combination in _seenTranscodeTags.Keys)
+        {
+            bitrates[combination] = 0;
+        }
+
+        foreach (var tracked in _transcodes.Values)
+        {
+            var key = (tracked.Type, tracked.Acceleration);
+            bitrates.TryGetValue(key, out var current);
+            bitrates[key] = current + tracked.Bitrate;
+        }
+
+        foreach (var (key, bitrate) in bitrates)
+        {
+            yield return new Measurement<long>(bitrate, TranscodeTags(key));
+        }
+    }
+
+    private static TagList TranscodeTags((TranscodingJobType Type, HardwareAccelerationType Acceleration) key)
+        => new()
+        {
+            { TranscodeTypeTag, Describe(key.Type) },
+            { HardwareAccelerationTag, Describe(key.Acceleration) }
+        };
 
     private static string Describe(PlayMethod playMethod) => playMethod switch
     {
@@ -328,7 +472,7 @@ public static class PlaybackMetrics
         _ => Unknown
     };
 
-    private sealed record TrackedPlayback(long StartedTimestamp, PlayMethod PlayMethod, MediaType MediaType);
+    private sealed record TrackedPlayback(long StartedTimestamp, PlayMethod PlayMethod, MediaType MediaType, string Client, long Bitrate);
 
-    private sealed record TrackedTranscode(TranscodingJobType Type, HardwareAccelerationType Acceleration);
+    private sealed record TrackedTranscode(TranscodingJobType Type, HardwareAccelerationType Acceleration, long Bitrate);
 }

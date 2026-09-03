@@ -386,12 +386,14 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// Updates the now playing item id.
         /// </summary>
-        /// <returns>Task.</returns>
-        private async Task UpdateNowPlayingItem(SessionInfo session, PlaybackProgressInfo info, BaseItem libraryItem, bool updateLastCheckInTime)
+        /// <returns>The media source that was resolved, or <c>null</c> when the now playing item did not change.</returns>
+        private async Task<MediaSourceInfo> UpdateNowPlayingItem(SessionInfo session, PlaybackProgressInfo info, BaseItem libraryItem, bool updateLastCheckInTime)
         {
+            MediaSourceInfo mediaSource = null;
+
             if (session is null)
             {
-                return;
+                return null;
             }
 
             if (string.IsNullOrEmpty(info.MediaSourceId))
@@ -407,7 +409,6 @@ namespace Emby.Server.Implementations.Session
                 {
                     var runtimeTicks = libraryItem.RunTimeTicks;
 
-                    MediaSourceInfo mediaSource = null;
                     if (libraryItem is IHasMediaSources)
                     {
                         mediaSource = await GetMediaSource(libraryItem, info.MediaSourceId, info.LiveStreamId).ConfigureAwait(false);
@@ -458,6 +459,8 @@ namespace Emby.Server.Implementations.Session
             session.PlayState.RepeatMode = info.RepeatMode;
             session.PlayState.PlaybackOrder = info.PlaybackOrder;
             session.PlaylistItemId = info.PlaylistItemId;
+
+            return mediaSource;
         }
 
         /// <summary>
@@ -775,7 +778,7 @@ namespace Emby.Server.Implementations.Session
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
-            await UpdateNowPlayingItem(session, info, libraryItem, true).ConfigureAwait(false);
+            var mediaSource = await UpdateNowPlayingItem(session, info, libraryItem, true).ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(session.DeviceId) && info.PlayMethod != PlayMethod.Transcode)
             {
@@ -788,7 +791,9 @@ namespace Emby.Server.Implementations.Session
                 info.PlaySessionId,
                 info.SessionId,
                 info.PlayMethod,
-                libraryItem?.MediaType ?? MediaType.Unknown);
+                libraryItem?.MediaType ?? MediaType.Unknown,
+                session.Client,
+                mediaSource?.Bitrate);
 
             var users = GetUsers(session);
 
@@ -928,7 +933,8 @@ namespace Emby.Server.Implementations.Session
                 info.PlaySessionId,
                 info.SessionId,
                 info.PlayMethod,
-                libraryItem?.MediaType ?? MediaType.Unknown);
+                libraryItem?.MediaType ?? MediaType.Unknown,
+                session.Client);
 
             var users = GetUsers(session);
 

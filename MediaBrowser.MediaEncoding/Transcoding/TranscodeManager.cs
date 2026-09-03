@@ -343,6 +343,12 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             job.BitRate = bitRate;
         }
 
+        PlaybackMetrics.OnTranscodeProgress(
+            job?.Id,
+            framerate,
+            bitRate ?? state.TotalOutputBitrate,
+            state.VideoStream?.RealFrameRate ?? state.VideoStream?.AverageFrameRate);
+
         var deviceId = state.Request.DeviceId;
 
         if (!string.IsNullOrWhiteSpace(deviceId))
