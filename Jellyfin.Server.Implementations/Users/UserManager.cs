@@ -25,6 +25,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Telemetry;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Users;
@@ -685,6 +686,7 @@ namespace Jellyfin.Server.Implementations.Users
                         dbContext.Update(user);
                         await dbContext.SaveChangesAsync()
                             .ConfigureAwait(false);
+                        AuthenticationMetrics.OnUserLockedOut();
                         await _eventManager.PublishAsync(new UserLockedOutEventArgs(user)).ConfigureAwait(false);
                         _logger.LogWarning(
                             "Disabling user {Username} due to {Attempts} unsuccessful login attempts.",

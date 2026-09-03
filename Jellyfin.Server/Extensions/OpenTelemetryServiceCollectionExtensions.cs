@@ -139,6 +139,29 @@ public static class OpenTelemetryServiceCollectionExtensions
                         Boundaries = [10, 30, 60, 120, 300, 600, 1200, 1800, 2700, 3600, 5400, 7200, 10800]
                     });
 
+                // The SDK default buckets are shaped for milliseconds, which is useless for a ratio
+                // around 1 and for durations that range from milliseconds to hours.
+                metrics.AddView(
+                    PlaybackMetrics.TranscodeSpeedName,
+                    new ExplicitBucketHistogramConfiguration
+                    {
+                        Boundaries = [0.25, 0.5, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 2, 3, 5, 10]
+                    });
+
+                metrics.AddView(
+                    ProviderMetrics.RefreshDurationName,
+                    new ExplicitBucketHistogramConfiguration
+                    {
+                        Boundaries = [0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 300]
+                    });
+
+                metrics.AddView(
+                    TaskMetrics.TaskDurationName,
+                    new ExplicitBucketHistogramConfiguration
+                    {
+                        Boundaries = [1, 5, 15, 60, 300, 900, 1800, 3600, 7200, 21600]
+                    });
+
                 metrics.AddOtlpExporter((exporter, reader) =>
                 {
                     ConfigureOtlp(exporter, options, OtlpEndpointBuilder.MetricsSignalPath, logger);
