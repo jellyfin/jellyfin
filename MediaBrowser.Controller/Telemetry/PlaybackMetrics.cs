@@ -21,6 +21,11 @@ public static class PlaybackMetrics
     /// </summary>
     public const string PlaybackDurationName = "jellyfin.playback.duration";
 
+    /// <summary>
+    /// The name of the histogram recording encoder throughput relative to the source.
+    /// </summary>
+    public const string TranscodeSpeedName = "jellyfin.transcode.speed";
+
     private const string PlayMethodTag = "jellyfin.play_method";
     private const string MediaTypeTag = "jellyfin.media_type";
     private const string OutcomeTag = "jellyfin.playback.outcome";
@@ -29,20 +34,15 @@ public static class PlaybackMetrics
     private const string VideoCodecTag = "jellyfin.transcode.video_codec";
     private const string AudioCodecTag = "jellyfin.transcode.audio_codec";
     private const string ReasonTag = "jellyfin.transcode.reason";
-    private const string ClientTag = "jellyfin.client";
+    private const string ClientTag = TelemetryTags.ClientTag;
 
     private const string OutcomeCompleted = "completed";
     private const string OutcomeAbandoned = "abandoned";
     private const string OutcomeFailed = "failed";
-    private const string Unknown = "unknown";
-    private const string OtherClient = "other";
-
-    private const int MaxTrackedClients = 32;
+    private const string Unknown = TelemetryTags.Unknown;
 
     private static readonly ConcurrentDictionary<string, TrackedPlayback> _playback = new(StringComparer.Ordinal);
     private static readonly ConcurrentDictionary<string, TrackedTranscode> _transcodes = new(StringComparer.Ordinal);
-
-    private static readonly ConcurrentDictionary<string, string> _knownClients = new(StringComparer.OrdinalIgnoreCase);
     private static readonly ConcurrentDictionary<(PlayMethod PlayMethod, MediaType MediaType, string Client), byte> _seenPlaybackTags = new();
     private static readonly ConcurrentDictionary<(TranscodingJobType Type, HardwareAccelerationType Acceleration), byte> _seenTranscodeTags = new();
 
@@ -77,7 +77,7 @@ public static class PlaybackMetrics
         "Framerate the encoder is achieving, sampled on every progress report.");
 
     private static readonly Histogram<double> _transcodeSpeed = JellyfinTelemetry.Meter.CreateHistogram<double>(
-        "jellyfin.transcode.speed",
+        TranscodeSpeedName,
         "1",
         "Encoder framerate relative to the framerate of the source. Below 1 the job is slower than realtime and the client will eventually stall.");
 
@@ -135,7 +135,7 @@ public static class PlaybackMetrics
             return;
         }
 
-        var clientName = NormalizeClient(client);
+        var clientName = TelemetryTags.Client(client);
 
         _playback[key] = new TrackedPlayback(Stopwatch.GetTimestamp(), playMethod, mediaType, clientName, bitrate > 0 ? bitrate.Value : 0);
         _seenPlaybackTags.TryAdd((playMethod, mediaType, clientName), 0);
@@ -163,7 +163,7 @@ public static class PlaybackMetrics
             return;
         }
 
-        var clientName = NormalizeClient(client);
+        var clientName = TelemetryTags.Client(client);
 
         _seenPlaybackTags.TryAdd((playMethod, mediaType, clientName), 0);
         _playback.AddOrUpdate(
@@ -319,22 +319,7 @@ public static class PlaybackMetrics
     private static string? ResolveKey(string? playSessionId, string? sessionId)
         => string.IsNullOrEmpty(playSessionId) ? (string.IsNullOrEmpty(sessionId) ? null : sessionId) : playSessionId;
 
-    private static string Normalize(string? value) => string.IsNullOrEmpty(value) ? Unknown : value;
-
-    private static string NormalizeClient(string? client)
-    {
-        if (string.IsNullOrEmpty(client))
-        {
-            return Unknown;
-        }
-
-        if (_knownClients.TryGetValue(client, out var known))
-        {
-            return known;
-        }
-
-        return _knownClients.Count >= MaxTrackedClients ? OtherClient : _knownClients.GetOrAdd(client, client);
-    }
+    private static string Normalize(string? value) => TelemetryTags.Normalize(value);
 
     private static IEnumerable<Measurement<int>> ObserveActiveSessions()
     {

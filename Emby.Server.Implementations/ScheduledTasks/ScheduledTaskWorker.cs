@@ -15,6 +15,7 @@ using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Telemetry;
+using MediaBrowser.Controller.Telemetry;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -364,6 +365,8 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
         CurrentCancellationTokenSource.Dispose();
         CurrentCancellationTokenSource = null;
         CurrentProgress = null;
+
+        TaskMetrics.OnTaskCompleted(ScheduledTask.Key, status, endTime - startTime);
 
         OnTaskCompleted(startTime, endTime, status, failureException);
     }

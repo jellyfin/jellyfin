@@ -184,6 +184,8 @@ namespace Emby.Server.Implementations.Session
 
         private void OnSessionStarted(SessionInfo info)
         {
+            SessionMetrics.OnSessionStarted(info.Id, info.Client);
+
             if (!string.IsNullOrEmpty(info.DeviceId))
             {
                 var capabilities = _deviceManager.GetCapabilities(info.DeviceId);
@@ -208,6 +210,8 @@ namespace Emby.Server.Implementations.Session
 
         private async ValueTask OnSessionEnded(SessionInfo info)
         {
+            SessionMetrics.OnSessionEnded(info.Id, info.Client);
+
             EventHelper.QueueEventIfNotNull(
                 SessionEnded,
                 this,
@@ -1717,6 +1721,31 @@ namespace Emby.Server.Implementations.Session
         }
 
         internal async Task<AuthenticationResult> AuthenticateNewSessionInternal(AuthenticationRequest request, bool enforcePassword)
+        {
+            try
+            {
+                var result = await AuthenticateNewSessionCore(request, enforcePassword).ConfigureAwait(false);
+                AuthenticationMetrics.OnAuthenticationAttempt(AuthenticationMetrics.OutcomeSucceeded);
+                return result;
+            }
+            catch (AuthenticationException)
+            {
+                AuthenticationMetrics.OnAuthenticationAttempt(AuthenticationMetrics.OutcomeInvalidCredentials);
+                throw;
+            }
+            catch (SecurityException)
+            {
+                AuthenticationMetrics.OnAuthenticationAttempt(AuthenticationMetrics.OutcomeNotPermitted);
+                throw;
+            }
+            catch (Exception)
+            {
+                AuthenticationMetrics.OnAuthenticationAttempt(AuthenticationMetrics.OutcomeError);
+                throw;
+            }
+        }
+
+        private async Task<AuthenticationResult> AuthenticateNewSessionCore(AuthenticationRequest request, bool enforcePassword)
         {
             CheckDisposed();
 
