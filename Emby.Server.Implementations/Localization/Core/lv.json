@@ -108,5 +108,17 @@
     "CleanupUserDataTask": "Lietotāju datu tīrīšanas uzdevums",
     "CleanupUserDataTaskDescription": "Notīra visus lietotāja datus (skatīšanās stāvokļus, favorītu statusi utt.) no medijiem, kas vairs nav pieejami vismaz 90 dienas.",
     "Original": "Oriģināls",
-    "LyricDownloadFailureFromForItem": "Dziesmu vārdi nevarēja tikt lejupielādēti no {0} priekš {1}"
+    "LyricDownloadFailureFromForItem": "Dziesmu vārdi nevarēja tikt lejupielādēti no {0} priekš {1}",
+    "NameExtraBehindTheScenes": "Aiz kadra",
+    "NameExtraClip": "Klips",
+    "NameExtraDeletedScene": "Izdzēsta aina",
+    "NameExtraFeaturette": "Īsfilma",
+    "NameExtraInterview": "Intervija",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Paraugs",
+    "NameExtraScene": "Aina",
+    "NameExtraShort": "Īsfilma",
+    "NameExtraThemeSong": "Motīvu dziesma",
+    "NameExtraThemeVideo": "Tēmas video",
+    "NameExtraTrailer": "Treileris"
 }
