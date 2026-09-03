@@ -24,18 +24,21 @@ internal static class TelemetryTags
     internal const string Unknown = "unknown";
 
     /// <summary>
-    /// Client names are taken from a request header, so they are attacker controlled. Only the first
-    /// <see cref="MaxTrackedClients"/> distinct names get a series of their own, everything after that
-    /// collapses into <see cref="OtherClient"/>. That bounds both the memory held here and the number
-    /// of series created in the backend.
+    /// The value reported once a bounded tag has seen more distinct values than it tracks.
     /// </summary>
-    private const int MaxTrackedClients = 32;
+    private const string Other = "other";
 
-    private const string OtherClient = "other";
+    /// <summary>
+    /// Client names are taken from a request header, so they are attacker controlled.
+    /// </summary>
+    private static readonly BoundedTagValues _clients = new(32);
 
-    // Maps every casing of a client name onto the first one seen, so that a client naming itself
-    // inconsistently does not end up with a series per casing.
-    private static readonly ConcurrentDictionary<string, string> _knownClients = new(StringComparer.OrdinalIgnoreCase);
+    /// <summary>
+    /// Provider names come from installed plugins rather than from a request, so they are bounded in
+    /// practice. Capped anyway, so that a plugin generating names per item cannot create series without
+    /// limit.
+    /// </summary>
+    private static readonly BoundedTagValues _providers = new(64);
 
     /// <summary>
     /// Returns <paramref name="value"/>, or <see cref="Unknown"/> when it is empty.
@@ -49,20 +52,42 @@ internal static class TelemetryTags
     /// </summary>
     /// <param name="client">The client name as the client reported it.</param>
     /// <returns>The value to report.</returns>
-    internal static string Client(string? client)
+    internal static string Client(string? client) => _clients.Get(client);
+
+    /// <summary>
+    /// Returns the value to report for a provider name, keeping the number of distinct names bounded.
+    /// </summary>
+    /// <param name="provider">The name of the provider.</param>
+    /// <returns>The value to report.</returns>
+    internal static string Provider(string? provider) => _providers.Get(provider);
+
+    /// <summary>
+    /// Maps arbitrary strings onto a bounded set of tag values, so that a caller supplying names
+    /// without limit cannot create series without limit. Every casing of a name maps onto the first
+    /// casing seen, so that a caller naming itself inconsistently does not get a series per casing.
+    /// </summary>
+    private sealed class BoundedTagValues
     {
-        if (string.IsNullOrEmpty(client))
-        {
-            return Unknown;
-        }
+        private readonly ConcurrentDictionary<string, string> _known = new(StringComparer.OrdinalIgnoreCase);
+        private readonly int _limit;
 
-        if (_knownClients.TryGetValue(client, out var known))
-        {
-            return known;
-        }
+        internal BoundedTagValues(int limit) => _limit = limit;
 
-        // Racing callers can push the set a few entries past the cap, which does not matter, the point
-        // is that it stops growing.
-        return _knownClients.Count >= MaxTrackedClients ? OtherClient : _knownClients.GetOrAdd(client, client);
+        internal string Get(string? value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return Unknown;
+            }
+
+            if (_known.TryGetValue(value, out var known))
+            {
+                return known;
+            }
+
+            // Racing callers can push the set a few entries past the cap, which does not matter, the
+            // point is that it stops growing.
+            return _known.Count >= _limit ? Other : _known.GetOrAdd(value, value);
+        }
     }
 }

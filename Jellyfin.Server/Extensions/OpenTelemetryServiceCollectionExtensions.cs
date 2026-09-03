@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Jellyfin.Server.Telemetry;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Telemetry;
@@ -109,6 +110,8 @@ public static class OpenTelemetryServiceCollectionExtensions
 
         if (options.EnableMetrics)
         {
+            EnsureInstrumentsRegistered();
+
             otel.WithMetrics(metrics =>
             {
                 metrics.AddMeter(JellyfinTelemetry.SourceNameWildcard);
@@ -279,6 +282,34 @@ public static class OpenTelemetryServiceCollectionExtensions
         if (options.OtlpCompression is bool compression)
         {
             exporter.Compression = compression ? OtlpExportCompression.GZip : OtlpExportCompression.None;
+        }
+    }
+
+    /// <summary>
+    /// Touches every class holding server owned instruments, so that its instruments exist from
+    /// startup rather than from first use.
+    /// </summary>
+    /// <remarks>
+    /// The instruments live in static fields, and a static field initializer does not run until
+    /// something touches its type. Until then the instrument does not exist, so a gauge that should
+    /// read zero reports nothing at all, a counter has no zero to rate against, and a panel shows
+    /// "no data" instead of an idle server. Referencing one of the name constants is not enough:
+    /// those are compile time constants and get inlined, leaving no reference to trigger the
+    /// initializer.
+    /// </remarks>
+    private static void EnsureInstrumentsRegistered()
+    {
+        foreach (var type in new[]
+        {
+            typeof(AuthenticationMetrics),
+            typeof(LibraryMetrics),
+            typeof(PlaybackMetrics),
+            typeof(ProviderMetrics),
+            typeof(SessionMetrics),
+            typeof(TaskMetrics)
+        })
+        {
+            RuntimeHelpers.RunClassConstructor(type.TypeHandle);
         }
     }
 }

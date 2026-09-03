@@ -319,6 +319,14 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
         activity?.SetTag("jellyfin.task.name", Name);
         activity?.SetTag("jellyfin.task.key", ScheduledTask.Key);
 
+        // A task runs for minutes to hours and issues tens of thousands of database queries. Leaving
+        // the activity current for the body would make every one of those queries a child of a single
+        // trace, which grows past the per trace size limit backends impose and is then dropped whole,
+        // taking the useful spans with it. Detaching means the body's spans get traces of their own;
+        // this span still records that the task ran, how long it took and how it ended.
+        var suspendedActivity = Activity.Current;
+        Activity.Current = null;
+
         ((TaskManager)_taskManager).OnTaskExecuting(this);
 
         progress.ProgressChanged += OnProgressChanged;
@@ -350,6 +358,10 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
             failureException = ex;
 
             status = TaskCompletionStatus.Failed;
+        }
+        finally
+        {
+            Activity.Current = suspendedActivity;
         }
 
         activity?.SetTag("jellyfin.task.status", status.ToString());

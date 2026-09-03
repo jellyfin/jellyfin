@@ -86,7 +86,7 @@ public static class PlaybackMetrics
         "{reason}",
         "Reasons transcoding was required, incremented once per reason on each job.");
 
-#pragma warning disable IDE0052 // Held so the gauges are not collected; their callbacks are the useful part.
+#pragma warning disable IDE0052, CA1823 // Held so the gauges are not collected; their callbacks are the useful part.
     private static readonly ObservableGauge<int> _activeSessions = JellyfinTelemetry.Meter.CreateObservableGauge(
         "jellyfin.playback.sessions.active",
         ObserveActiveSessions,
@@ -110,7 +110,7 @@ public static class PlaybackMetrics
         ObserveTranscodeBitrate,
         "bit/s",
         "Combined output bitrate of the running transcoding jobs.");
-#pragma warning restore IDE0052
+#pragma warning restore IDE0052, CA1823
 
     /// <summary>
     /// Records that a playback session started.

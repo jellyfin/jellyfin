@@ -169,7 +169,7 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <inheritdoc/>
-        public Task<ItemUpdateType> RefreshSingleItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        public async Task<ItemUpdateType> RefreshSingleItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var type = item.GetType();
 
@@ -179,10 +179,18 @@ namespace MediaBrowser.Providers.Manager
             if (service is null)
             {
                 _logger.LogError("Unable to find a metadata service for item of type {TypeName}", type.Name);
-                return Task.FromResult(ItemUpdateType.None);
+                return ItemUpdateType.None;
             }
 
-            return service.RefreshMetadata(item, options, cancellationToken);
+            var startedTimestamp = ProviderMetrics.OnRefreshStarted();
+            try
+            {
+                return await service.RefreshMetadata(item, options, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                ProviderMetrics.OnRefreshCompleted(startedTimestamp, item.GetBaseItemKind());
+            }
         }
 
         /// <inheritdoc/>
@@ -1067,7 +1075,6 @@ namespace MediaBrowser.Providers.Manager
         {
             _logger.LogDebug("OnRefreshStart {Item:N}", item.Id);
             _activeRefreshes[item.Id] = 0;
-            ProviderMetrics.OnRefreshStarted(item.Id);
             try
             {
                 RefreshStarted?.Invoke(this, new GenericEventArgs<BaseItem>(item));
@@ -1084,7 +1091,6 @@ namespace MediaBrowser.Providers.Manager
         {
             _logger.LogDebug("OnRefreshComplete {Item:N}", item.Id);
             _activeRefreshes.TryRemove(item.Id, out _);
-            ProviderMetrics.OnRefreshCompleted(item.Id, item.GetBaseItemKind());
 
             try
             {

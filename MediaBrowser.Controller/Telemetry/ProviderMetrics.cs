@@ -1,8 +1,8 @@
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Threading;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Telemetry;
 
@@ -24,13 +24,12 @@ public static class ProviderMetrics
     private const string OutcomeSucceeded = "succeeded";
     private const string OutcomeFailed = "failed";
 
-    private static readonly ConcurrentDictionary<Guid, long> _refreshes = new();
     private static readonly ConcurrentDictionary<BaseItemKind, string> _kindNames = new();
 
     private static readonly Histogram<double> _refreshDuration = JellyfinTelemetry.Meter.CreateHistogram<double>(
         RefreshDurationName,
         "s",
-        "Wall clock time a metadata refresh of a single item took.");
+        "Wall clock time refreshing the metadata of a single item took.");
 
     private static readonly Counter<long> _subtitleDownloads = JellyfinTelemetry.Meter.CreateCounter<long>(
         "jellyfin.subtitle.downloads",
@@ -42,31 +41,35 @@ public static class ProviderMetrics
         "{download}",
         "Lyric downloads, by provider and outcome.");
 
-#pragma warning disable IDE0052 // Held so the gauge is not collected; its callback is the useful part.
+#pragma warning disable IDE0052, CA1823 // Held so the gauge is not collected; its callback is the useful part.
     private static readonly ObservableGauge<int> _activeRefreshes = JellyfinTelemetry.Meter.CreateObservableGauge(
         "jellyfin.metadata.refresh.active",
-        () => _refreshes.Count,
+        () => Volatile.Read(ref _activeRefreshCount),
         "{refresh}",
-        "Metadata refreshes currently running.");
-#pragma warning restore IDE0052
+        "Metadata refreshes of single items currently running.");
+#pragma warning restore IDE0052, CA1823
+
+    private static int _activeRefreshCount;
 
     /// <summary>
-    /// Records that a metadata refresh started.
+    /// Records that the metadata refresh of a single item started. The returned timestamp has to be
+    /// handed back to <see cref="OnRefreshCompleted"/>, which every caller has to reach.
     /// </summary>
-    /// <param name="itemId">The id of the item being refreshed.</param>
-    public static void OnRefreshStarted(Guid itemId) => _refreshes[itemId] = Stopwatch.GetTimestamp();
-
-    /// <summary>
-    /// Records that a metadata refresh completed.
-    /// </summary>
-    /// <param name="itemId">The id of the item that was refreshed.</param>
-    /// <param name="kind">The kind of the item that was refreshed.</param>
-    public static void OnRefreshCompleted(Guid itemId, BaseItemKind kind)
+    /// <returns>The timestamp the refresh started at.</returns>
+    public static long OnRefreshStarted()
     {
-        if (!_refreshes.TryRemove(itemId, out var startedTimestamp))
-        {
-            return;
-        }
+        Interlocked.Increment(ref _activeRefreshCount);
+        return Stopwatch.GetTimestamp();
+    }
+
+    /// <summary>
+    /// Records that the metadata refresh of a single item completed.
+    /// </summary>
+    /// <param name="startedTimestamp">The timestamp returned by <see cref="OnRefreshStarted"/>.</param>
+    /// <param name="kind">The kind of the item that was refreshed.</param>
+    public static void OnRefreshCompleted(long startedTimestamp, BaseItemKind kind)
+    {
+        Interlocked.Decrement(ref _activeRefreshCount);
 
         _refreshDuration.Record(
             Stopwatch.GetElapsedTime(startedTimestamp).TotalSeconds,
@@ -92,7 +95,7 @@ public static class ProviderMetrics
     private static TagList DownloadTags(string? provider, bool succeeded)
         => new()
         {
-            { ProviderTag, TelemetryTags.Normalize(provider) },
+            { ProviderTag, TelemetryTags.Provider(provider) },
             { OutcomeTag, succeeded ? OutcomeSucceeded : OutcomeFailed }
         };
 }
