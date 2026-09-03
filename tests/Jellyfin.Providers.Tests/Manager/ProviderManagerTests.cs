@@ -381,10 +381,6 @@ namespace Jellyfin.Providers.Tests.Manager
         [Fact]
         public async Task QueueRefresh_ManyItemsQueuedFromManyThreads_ProcessesEveryOne()
         {
-            // The queue is filled from whichever thread wants a refresh and drained by a processor of
-            // its own, so an unsynchronised PriorityQueue can lose entries outright, and a processor
-            // that stands down before releasing its flag leaves whatever was queued in that gap with
-            // nobody to drain it. Either way an item silently never gets refreshed.
             const int ItemCount = 2000;
 
             var queued = Enumerable.Range(0, ItemCount).Select(_ => Guid.NewGuid()).ToArray();
@@ -395,7 +391,7 @@ namespace Jellyfin.Providers.Tests.Manager
             libraryManager.Setup(i => i.GetItemById(It.IsAny<Guid>()))
                 .Returns((Guid id) =>
                 {
-                    // Returning null drains the entry without needing the whole refresh machinery.
+                    // Returning null drains the entry without the whole refresh machinery.
                     processed.Add(id);
                     if (processed.Count == ItemCount)
                     {
@@ -425,7 +421,7 @@ namespace Jellyfin.Providers.Tests.Manager
             }
             catch (OperationCanceledException)
             {
-                // Fall through, so the assertions below name what was lost rather than the wait.
+                // Fall through so the assertions report what was lost.
             }
 
             Assert.Empty(providerManager.GetRefreshQueue());
@@ -435,9 +431,8 @@ namespace Jellyfin.Providers.Tests.Manager
         [Fact]
         public async Task QueueRefresh_RefreshCancelsForItsOwnReasons_KeepsDrainingTheQueue()
         {
-            // MetadataService rethrows OperationCanceledException out of a provider, so an HTTP
-            // timeout against an unreachable metadata server arrives here looking exactly like a
-            // shutdown. Treating it as one stops the processor and strands the rest of the queue.
+            // A provider timeout arrives as an OperationCanceledException, indistinguishable from
+            // a shutdown; treating it as one would strand the rest of the queue.
             const int ItemCount = 200;
 
             var queued = Enumerable.Range(0, ItemCount).Select(_ => Guid.NewGuid()).ToArray();
@@ -454,8 +449,7 @@ namespace Jellyfin.Providers.Tests.Manager
                     {
                         cancelledOnce = true;
 
-                        // Hold the first entry until the whole batch is queued, so everything that
-                        // follows it is already waiting when the cancellation lands.
+                        // Hold the first entry until the whole batch is queued.
                         allQueued.Wait(TimeSpan.FromSeconds(30));
                         throw new OperationCanceledException("provider timed out");
                     }
@@ -487,7 +481,7 @@ namespace Jellyfin.Providers.Tests.Manager
             }
             catch (OperationCanceledException)
             {
-                // Fall through, so the assertions below name what was left stranded.
+                // Fall through so the assertions report what was stranded.
             }
 
             Assert.Empty(providerManager.GetRefreshQueue());

@@ -255,8 +255,7 @@ public class LyricManager : ILyricManager
                 _libraryMonitor.ReportFileSystemChangeComplete(path, false);
             }
 
-            // The refresh below reads the containing folder to find external lyrics, and would find
-            // the deleted one again in a cached listing.
+            // The refresh below would otherwise find the deleted file in a cached listing.
             _directoryService.Invalidate(path);
         }
 
@@ -454,9 +453,7 @@ public class LyricManager : ILyricManager
                     await stream.CopyToAsync(fs).ConfigureAwait(false);
                 }
 
-                // The directory caches are shared and outlive this call, so the refresh that follows
-                // would otherwise resolve external lyrics from a listing taken before this file
-                // landed.
+                // The refresh that follows would otherwise not see the new file.
                 _directoryService.Invalidate(savePath);
 
                 return;

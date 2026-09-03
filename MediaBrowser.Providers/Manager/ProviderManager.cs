@@ -1143,8 +1143,8 @@ namespace MediaBrowser.Providers.Manager
                 return;
             }
 
-            // PriorityQueue is not thread safe, and this runs on whichever thread queued the refresh
-            // while the processor dequeues on its own, so every touch of the queue takes the lock.
+            // PriorityQueue is not thread safe and the processor dequeues concurrently, so every
+            // touch of the queue takes the lock.
             lock (_refreshQueueLock)
             {
                 _refreshQueue.Enqueue((itemId, options), priority);
@@ -1182,10 +1182,8 @@ namespace MediaBrowser.Providers.Manager
             {
                 (Guid ItemId, MetadataRefreshOptions RefreshOptions) refreshItem;
 
-                // Standing down and taking the next entry happen under one lock, and this is the
-                // only place the flag is handed back. Releasing it anywhere else would leave a gap
-                // in which a refresh queued just after the queue ran dry sees a processor that has
-                // already stopped, and waits forever.
+                // Dequeueing and standing down happen under one lock, otherwise a refresh queued
+                // just after the queue ran dry would see a processor that has already stopped.
                 lock (_refreshQueueLock)
                 {
                     if (_disposed
@@ -1213,14 +1211,13 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
-                    // Shutting down. Whatever is still queued keeps its place; the next pass round
-                    // stands the processor down, so the next refresh queued starts one of its own.
+                    // Shutting down: the next pass sees the token and stands the processor down.
                     continue;
                 }
                 catch (Exception ex)
                 {
-                    // A provider that cancelled for its own reasons lands here too, an HTTP timeout
-                    // above all. One unreachable metadata server must not stop the queue draining.
+                    // Includes a provider that cancelled for its own reasons, such as an HTTP
+                    // timeout, which must not stop the queue draining.
                     _logger.LogError(ex, "Error refreshing item");
                 }
             }

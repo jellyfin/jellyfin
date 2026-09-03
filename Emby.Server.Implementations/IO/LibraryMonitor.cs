@@ -368,10 +368,8 @@ namespace Emby.Server.Implementations.IO
                 return;
             }
 
-            // Something changed on disk that the server did not necessarily do itself, so whatever is
-            // cached about that path and its folder is now a guess. This sits above the checks below
-            // because a change we deliberately do not refresh for still has to be read correctly the
-            // next time somebody looks at that folder.
+            // Invalidate before the checks below: a change we deliberately do not refresh for still
+            // has to be read correctly the next time somebody looks at that folder.
             _directoryService.Invalidate(path);
 
             // Ignore certain files, If the parent of an ignored path has a change event, ignore that too

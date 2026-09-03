@@ -284,9 +284,7 @@ namespace MediaBrowser.Providers.Subtitles
                             await stream.CopyToAsync(fs).ConfigureAwait(false);
                         }
 
-                        // The directory caches are shared and outlive this call, so the refresh that
-                        // follows would otherwise resolve external subtitles from a listing taken
-                        // before this file landed.
+                        // The refresh that follows would otherwise not see the new file.
                         _directoryService.Invalidate(path);
 
                         return;
@@ -403,8 +401,7 @@ namespace MediaBrowser.Providers.Subtitles
                 _monitor.ReportFileSystemChangeComplete(path, false);
             }
 
-            // The refresh below reads the containing folder to find external subtitles, and would
-            // find the deleted one again in a cached listing.
+            // The refresh below would otherwise find the deleted file in a cached listing.
             _directoryService.Invalidate(path);
 
             return item.RefreshMetadata(CancellationToken.None);

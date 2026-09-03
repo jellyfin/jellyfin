@@ -91,8 +91,7 @@ namespace MediaBrowser.Controller.Providers
             {
                 var file = _fileSystem.GetFileSystemInfo(path);
 
-                // Only a hit is remembered. A miss is the one answer that changes on its own, when
-                // the file the path names turns up.
+                // Only cache hits: a missing file can turn up later.
                 if (file?.Exists ?? false)
                 {
                     result = file;
@@ -110,8 +109,7 @@ namespace MediaBrowser.Controller.Providers
         {
             if (clearCache)
             {
-                // Only what is remembered about this directory. Invalidate() also drops the parent,
-                // which a write needs but which is needless churn on a shared cache here.
+                // Not Invalidate(), which would also drop the parent listing for no reason here.
                 Forget(path);
             }
 
@@ -133,9 +131,6 @@ namespace MediaBrowser.Controller.Providers
 
         public void Invalidate(string path)
         {
-            // Everything remembered about the path itself, and the listing of the directory holding
-            // it, since writing a file changes what its directory contains. The caches belong to the
-            // file system rather than to this instance, so this is felt by every reader of it.
             Forget(path);
 
             var parent = Path.GetDirectoryName(path);
@@ -162,9 +157,8 @@ namespace MediaBrowser.Controller.Providers
             private const int DirectoryCacheSize = 2048;
             private const int FileCacheSize = 8192;
 
-            // A DirectoryService no longer bounds how long its answers are trusted by dying, so a
-            // lifetime does. This is a staleness bound, not a snapshot: a long refresh can outlive it
-            // and re-read a directory partway through.
+            // The cache outlives the DirectoryService instances reading it, so entries need their
+            // own staleness bound. A long refresh can outlive it and re-read a directory partway.
             private static readonly TimeSpan _entryLifetime = TimeSpan.FromMinutes(1);
 
             public ConcurrentTLru<string, FileSystemMetadata[]> Entries { get; }

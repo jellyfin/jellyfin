@@ -268,9 +268,7 @@ namespace Jellyfin.Controller.Tests
         [Fact]
         public void GetFileSystemEntries_FarMorePathsThanTheCacheHolds_EvictsInsteadOfGrowing()
         {
-            // The cache outlives every DirectoryService that reads it, so it has to give entries back
-            // rather than hold every path the server ever saw. Asking for more paths than it can hold
-            // must push the first one out, which shows up as the file system being read for it twice.
+            // Eviction of the first path shows up as the file system being read for it twice.
             const int PathCount = 8192;
 
             var fileSystemMock = new Mock<IFileSystem>();
@@ -295,8 +293,6 @@ namespace Jellyfin.Controller.Tests
         [Fact]
         public void GetFileSystemEntries_SecondServiceOverSameFileSystem_ReusesTheFirstAnswer()
         {
-            // The library code news up a DirectoryService per item, so what one of them learned about
-            // a directory has to be worth something to the next one reading the same file system.
             var fileSystemMock = new Mock<IFileSystem>();
             fileSystemMock.Setup(f => f.GetFileSystemEntries(LowerCasePath))
                 .Returns(_lowerCaseFileSystemMetadata);
@@ -328,8 +324,6 @@ namespace Jellyfin.Controller.Tests
         [Fact]
         public void Invalidate_GivenADirectory_DropsBothTheListingAndTheFilePaths()
         {
-            // Clearing only one of the two views of a directory leaves the other one answering from
-            // before whatever was just written there.
             var fileSystemMock = new Mock<IFileSystem>();
             fileSystemMock.SetupSequence(f => f.GetFileSystemEntries(LowerCasePath))
                 .Returns(_lowerCaseFileSystemMetadata)
@@ -351,7 +345,6 @@ namespace Jellyfin.Controller.Tests
         [Fact]
         public void Invalidate_GivenAFile_DropsTheListingOfTheDirectoryHoldingIt()
         {
-            // Downloading a subtitle changes what its folder contains, not just the one path.
             const string NewFile = LowerCasePath + "/Song 2.srt";
 
             var fileSystemMock = new Mock<IFileSystem>();
@@ -370,8 +363,6 @@ namespace Jellyfin.Controller.Tests
         [Fact]
         public void Invalidate_OnOneService_IsSeenByAnotherOverTheSameFileSystem()
         {
-            // Whoever writes the file and whoever refreshes the item hold different services, so
-            // invalidating has to reach the cache both of them read.
             var fileSystemMock = new Mock<IFileSystem>();
             fileSystemMock.SetupSequence(f => f.GetFileSystemEntries(LowerCasePath))
                 .Returns(_lowerCaseFileSystemMetadata)
@@ -388,8 +379,6 @@ namespace Jellyfin.Controller.Tests
         [Fact]
         public void GetFilePaths_ClearingTheCache_KeepsTheParentDirectory()
         {
-            // Re-reading one directory is not a reason to make the server list the library folder
-            // holding it again, which the shared cache would otherwise have to do.
             const string ParentPath = "/music";
 
             var fileSystemMock = new Mock<IFileSystem>();
@@ -421,7 +410,6 @@ namespace Jellyfin.Controller.Tests
 
             Assert.Null(directoryService.GetFileSystemEntry(MissingPath));
 
-            // The one answer that changes on its own: the file turning up has to be visible.
             Assert.NotNull(directoryService.GetFileSystemEntry(MissingPath));
         }
     }

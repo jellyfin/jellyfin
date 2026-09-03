@@ -3723,8 +3723,8 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
 
-                // The directory caches are shared, so the validation below would otherwise resolve
-                // the libraries root from a listing taken before this folder was created.
+                // The validation below would otherwise resolve the libraries root from a listing
+                // taken before this folder was created.
                 _directoryService.Invalidate(virtualFolderPath);
             }
             finally

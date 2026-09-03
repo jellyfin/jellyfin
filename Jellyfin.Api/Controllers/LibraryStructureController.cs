@@ -189,8 +189,8 @@ public class LibraryStructureController : BaseJellyfinApiController
 
             Directory.Move(currentPath, newPath);
 
-            // The directory caches are shared, so the validation below would otherwise resolve the
-            // libraries root from a listing taken before the folder was moved.
+            // The validation below would otherwise resolve the libraries root from a listing taken
+            // before the folder was moved.
             _directoryService.Invalidate(currentPath);
             _directoryService.Invalidate(newPath);
         }
