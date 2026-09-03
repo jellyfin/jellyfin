@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
@@ -100,6 +101,50 @@ public static class OpenTelemetryExportTests
         Assert.Contains("/v1/traces", paths);
         Assert.Contains("/v1/metrics", paths);
         Assert.Contains("/v1/logs", paths);
+    }
+
+    /// <summary>
+    /// The instruments live in static fields, so they do not exist until something touches their
+    /// class. A gauge that should read zero on an idle server then reports nothing at all.
+    /// </summary>
+    [Fact]
+    public static void AddJellyfinOpenTelemetry_PublishesInstrumentsWithoutAnyActivity()
+    {
+        var options = new OpenTelemetryOptions
+        {
+            Enabled = true,
+            EnableMetrics = true,
+            InstrumentAspNetCore = false,
+            InstrumentHttpClient = false,
+            InstrumentRuntime = false
+        };
+
+        var services = new ServiceCollection();
+        services.AddJellyfinOpenTelemetry(options, CreateApplicationHost(), NullLogger.Instance);
+
+        var published = new ConcurrentBag<string>();
+        using var listener = new MeterListener
+        {
+            InstrumentPublished = (instrument, _) =>
+            {
+                if (string.Equals(instrument.Meter.Name, JellyfinTelemetry.SourceName, StringComparison.Ordinal))
+                {
+                    published.Add(instrument.Name);
+                }
+            }
+        };
+
+        // Start replays every instrument that already exists.
+        listener.Start();
+
+        Assert.Contains("jellyfin.metadata.refresh.active", published);
+        Assert.Contains("jellyfin.sessions.active", published);
+        Assert.Contains("jellyfin.playback.sessions.active", published);
+        Assert.Contains("jellyfin.transcode.active", published);
+        Assert.Contains("jellyfin.authentication.attempts", published);
+        Assert.Contains("jellyfin.library.changes", published);
+        Assert.Contains("jellyfin.task.executions", published);
+        Assert.Contains("jellyfin.subtitle.downloads", published);
     }
 
     private static int GetFreePort()

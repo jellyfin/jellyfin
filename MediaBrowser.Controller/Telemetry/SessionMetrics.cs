@@ -29,13 +29,13 @@ public static class SessionMetrics
         "{session}",
         "Sessions closed.");
 
-#pragma warning disable IDE0052 // Held so the gauge is not collected; its callback is the useful part.
+#pragma warning disable IDE0052, CA1823 // Held so the gauge is not collected; its callback is the useful part.
     private static readonly ObservableGauge<int> _activeSessions = JellyfinTelemetry.Meter.CreateObservableGauge(
         "jellyfin.sessions.active",
         ObserveActiveSessions,
         "{session}",
         "Sessions currently established.");
-#pragma warning restore IDE0052
+#pragma warning restore IDE0052, CA1823
 
     /// <summary>
     /// Records that a session was established.

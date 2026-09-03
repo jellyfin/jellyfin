@@ -73,21 +73,32 @@ public class ServerMetricsTests
     [Fact]
     public void MetadataRefresh_IsCountedWhileRunning_AndTimedWhenItCompletes()
     {
-        var itemId = Guid.NewGuid();
+        long startedTimestamp = 0;
 
-        var running = MeterCollector.Collect(() => ProviderMetrics.OnRefreshStarted(itemId));
+        var running = MeterCollector.Collect(() => startedTimestamp = ProviderMetrics.OnRefreshStarted());
 
         Assert.Equal(1, MeterCollector.Value(running, "jellyfin.metadata.refresh.active"));
 
-        var completed = MeterCollector.Collect(() => ProviderMetrics.OnRefreshCompleted(itemId, BaseItemKind.Movie));
+        var completed = MeterCollector.Collect(() => ProviderMetrics.OnRefreshCompleted(startedTimestamp, BaseItemKind.Movie));
 
         Assert.Equal(0, MeterCollector.Value(completed, "jellyfin.metadata.refresh.active"));
         Assert.Single(completed, m => m.Matches(ProviderMetrics.RefreshDurationName, (ItemKindTag, "Movie")));
+    }
 
-        // A refresh that was never started, or was already completed, records nothing.
-        var again = MeterCollector.Collect(() => ProviderMetrics.OnRefreshCompleted(itemId, BaseItemKind.Movie));
+    [Fact]
+    public void MetadataRefresh_CountsConcurrentRefreshes()
+    {
+        var first = ProviderMetrics.OnRefreshStarted();
+        var second = ProviderMetrics.OnRefreshStarted();
 
-        Assert.DoesNotContain(again, m => m.Instrument == ProviderMetrics.RefreshDurationName);
+        var both = MeterCollector.Collect(() => { });
+        Assert.Equal(2, MeterCollector.Value(both, "jellyfin.metadata.refresh.active"));
+
+        ProviderMetrics.OnRefreshCompleted(first, BaseItemKind.Movie);
+        ProviderMetrics.OnRefreshCompleted(second, BaseItemKind.Episode);
+
+        var none = MeterCollector.Collect(() => { });
+        Assert.Equal(0, MeterCollector.Value(none, "jellyfin.metadata.refresh.active"));
     }
 
     [Fact]
