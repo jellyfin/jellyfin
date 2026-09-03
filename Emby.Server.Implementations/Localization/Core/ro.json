@@ -111,5 +111,14 @@
     "Original": "Original",
     "NameExtraBehindTheScenes": "În culise",
     "NameExtraClip": "Clip",
-    "NameExtraDeletedScene": "Scenă ștearsă"
+    "NameExtraDeletedScene": "Scenă ștearsă",
+    "NameExtraFeaturette": "Material bonus",
+    "NameExtraInterview": "Interviu",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Monstră",
+    "NameExtraScene": "Scenă",
+    "NameExtraShort": "Scurt",
+    "NameExtraThemeSong": "Audio de Fundal",
+    "NameExtraThemeVideo": "Video de Fundal",
+    "NameExtraTrailer": "Trailer"
 }
