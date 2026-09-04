@@ -1,31 +1,33 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using BitFaster.Caching.Lru;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Providers
 {
     public class DirectoryService : IDirectoryService
     {
-        private static readonly ConditionalWeakTable<IFileSystem, DirectoryCache> _caches = [];
+        // TODO make static and switch to FastConcurrentLru.
+        private readonly ConcurrentDictionary<string, FileSystemMetadata[]> _cache = new(StringComparer.Ordinal);
+
+        private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache = new(StringComparer.Ordinal);
+
+        private readonly ConcurrentDictionary<string, List<string>> _filePathCache = new(StringComparer.Ordinal);
 
         private readonly IFileSystem _fileSystem;
-        private readonly DirectoryCache _cache;
 
         public DirectoryService(IFileSystem fileSystem)
         {
             _fileSystem = fileSystem;
-            _cache = _caches.GetValue(fileSystem, static _ => new DirectoryCache());
         }
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
-            return _cache.Entries.GetOrAdd(
+            return _cache.GetOrAdd(
                 path,
                 static (p, fileSystem) =>
                 {
@@ -87,15 +89,13 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata? GetFileSystemEntry(string path)
         {
-            if (!_cache.Files.TryGet(path, out var result))
+            if (!_fileCache.TryGetValue(path, out var result))
             {
                 var file = _fileSystem.GetFileSystemInfo(path);
-
-                // Only cache hits: a missing file can turn up later.
                 if (file?.Exists ?? false)
                 {
                     result = file;
-                    _cache.Files.AddOrUpdate(path, result);
+                    _fileCache.TryAdd(path, result);
                 }
             }
 
@@ -109,11 +109,10 @@ namespace MediaBrowser.Controller.Providers
         {
             if (clearCache)
             {
-                // Not Invalidate(), which would also drop the parent listing for no reason here.
-                Forget(path);
+                _filePathCache.TryRemove(path, out _);
             }
 
-            return _cache.FilePaths.GetOrAdd(
+            var filePaths = _filePathCache.GetOrAdd(
                 path,
                 static (p, fileSystem) =>
                 {
@@ -127,6 +126,8 @@ namespace MediaBrowser.Controller.Providers
                     }
                 },
                 _fileSystem);
+
+            return filePaths;
         }
 
         public void Invalidate(string path)
@@ -147,28 +148,9 @@ namespace MediaBrowser.Controller.Providers
 
         private void Forget(string path)
         {
-            _cache.Entries.TryRemove(path, out _);
-            _cache.Files.TryRemove(path, out _);
-            _cache.FilePaths.TryRemove(path, out _);
-        }
-
-        private sealed class DirectoryCache
-        {
-            private const int DirectoryCacheSize = 2048;
-            private const int FileCacheSize = 8192;
-
-            // The cache outlives the DirectoryService instances reading it, so entries need their
-            // own staleness bound. A long refresh can outlive it and re-read a directory partway.
-            private static readonly TimeSpan _entryLifetime = TimeSpan.FromMinutes(1);
-
-            public ConcurrentTLru<string, FileSystemMetadata[]> Entries { get; }
-                = new(Environment.ProcessorCount, DirectoryCacheSize, StringComparer.Ordinal, _entryLifetime);
-
-            public ConcurrentTLru<string, FileSystemMetadata> Files { get; }
-                = new(Environment.ProcessorCount, FileCacheSize, StringComparer.Ordinal, _entryLifetime);
-
-            public ConcurrentTLru<string, List<string>> FilePaths { get; }
-                = new(Environment.ProcessorCount, DirectoryCacheSize, StringComparer.Ordinal, _entryLifetime);
+            _cache.TryRemove(path, out _);
+            _fileCache.TryRemove(path, out _);
+            _filePathCache.TryRemove(path, out _);
         }
     }
 }

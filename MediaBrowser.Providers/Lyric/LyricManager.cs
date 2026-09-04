@@ -255,7 +255,7 @@ public class LyricManager : ILyricManager
                 _libraryMonitor.ReportFileSystemChangeComplete(path, false);
             }
 
-            // The refresh below would otherwise find the deleted file in a cached listing.
+            // The injected service is a singleton, so its listing would keep the deleted file.
             _directoryService.Invalidate(path);
         }
 
@@ -453,7 +453,7 @@ public class LyricManager : ILyricManager
                     await stream.CopyToAsync(fs).ConfigureAwait(false);
                 }
 
-                // The refresh that follows would otherwise not see the new file.
+                // The injected service is a singleton, so its listing of the folder is now stale.
                 _directoryService.Invalidate(savePath);
 
                 return;

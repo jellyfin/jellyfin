@@ -189,8 +189,7 @@ public class LibraryStructureController : BaseJellyfinApiController
 
             Directory.Move(currentPath, newPath);
 
-            // The validation below would otherwise resolve the libraries root from a listing taken
-            // before the folder was moved.
+            // The injected service is a singleton, so its listings of both paths are now stale.
             _directoryService.Invalidate(currentPath);
             _directoryService.Invalidate(newPath);
         }

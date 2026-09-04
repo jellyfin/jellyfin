@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Controller.Providers;
@@ -269,62 +268,6 @@ namespace Jellyfin.Controller.Tests
         }
 
         [Fact]
-        public void GetFileSystemEntries_FarMorePathsThanTheCacheHolds_EvictsInsteadOfGrowing()
-        {
-            // Eviction of the first path shows up as the file system being read for it twice.
-            const int PathCount = 8192;
-
-            var fileSystemMock = new Mock<IFileSystem>();
-            fileSystemMock.Setup(f => f.GetFileSystemEntries(It.IsAny<string>()))
-                .Returns(_lowerCaseFileSystemMetadata);
-
-            var directoryService = new DirectoryService(fileSystemMock.Object);
-
-            const string FirstPath = "/music/artist0";
-            directoryService.GetFileSystemEntries(FirstPath);
-
-            for (var i = 1; i < PathCount; i++)
-            {
-                directoryService.GetFileSystemEntries("/music/artist" + i.ToString(CultureInfo.InvariantCulture));
-            }
-
-            directoryService.GetFileSystemEntries(FirstPath);
-
-            fileSystemMock.Verify(f => f.GetFileSystemEntries(FirstPath), Times.Exactly(2));
-        }
-
-        [Fact]
-        public void GetFileSystemEntries_SecondServiceOverSameFileSystem_ReusesTheFirstAnswer()
-        {
-            var fileSystemMock = new Mock<IFileSystem>();
-            fileSystemMock.Setup(f => f.GetFileSystemEntries(_lowerCasePath))
-                .Returns(_lowerCaseFileSystemMetadata);
-
-            new DirectoryService(fileSystemMock.Object).GetFileSystemEntries(_lowerCasePath);
-            var result = new DirectoryService(fileSystemMock.Object).GetFileSystemEntries(_lowerCasePath);
-
-            Assert.Equal(_lowerCaseFileSystemMetadata, result);
-            fileSystemMock.Verify(f => f.GetFileSystemEntries(_lowerCasePath), Times.Once);
-        }
-
-        [Fact]
-        public void GetFileSystemEntries_SeparateFileSystems_DoNotShareAnswers()
-        {
-            var firstFileSystem = new Mock<IFileSystem>();
-            firstFileSystem.Setup(f => f.GetFileSystemEntries(_lowerCasePath))
-                .Returns(_lowerCaseFileSystemMetadata);
-            var secondFileSystem = new Mock<IFileSystem>();
-            secondFileSystem.Setup(f => f.GetFileSystemEntries(_lowerCasePath))
-                .Returns(_upperCaseFileSystemMetadata);
-
-            var firstResult = new DirectoryService(firstFileSystem.Object).GetFileSystemEntries(_lowerCasePath);
-            var secondResult = new DirectoryService(secondFileSystem.Object).GetFileSystemEntries(_lowerCasePath);
-
-            Assert.Equal(_lowerCaseFileSystemMetadata, firstResult);
-            Assert.Equal(_upperCaseFileSystemMetadata, secondResult);
-        }
-
-        [Fact]
         public void Invalidate_GivenADirectory_DropsBothTheListingAndTheFilePaths()
         {
             var fileSystemMock = new Mock<IFileSystem>();
@@ -361,22 +304,6 @@ namespace Jellyfin.Controller.Tests
             directoryService.Invalidate(newFile);
 
             Assert.Equal(_upperCaseFileSystemMetadata, directoryService.GetFileSystemEntries(_lowerCasePath));
-        }
-
-        [Fact]
-        public void Invalidate_OnOneService_IsSeenByAnotherOverTheSameFileSystem()
-        {
-            var fileSystemMock = new Mock<IFileSystem>();
-            fileSystemMock.SetupSequence(f => f.GetFileSystemEntries(_lowerCasePath))
-                .Returns(_lowerCaseFileSystemMetadata)
-                .Returns(_upperCaseFileSystemMetadata);
-
-            new DirectoryService(fileSystemMock.Object).GetFileSystemEntries(_lowerCasePath);
-            new DirectoryService(fileSystemMock.Object).Invalidate(Path.Combine(_lowerCasePath, "Song 2.srt"));
-
-            var result = new DirectoryService(fileSystemMock.Object).GetFileSystemEntries(_lowerCasePath);
-
-            Assert.Equal(_upperCaseFileSystemMetadata, result);
         }
 
         [Fact]

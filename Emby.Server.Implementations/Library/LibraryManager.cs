@@ -3723,8 +3723,7 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
 
-                // The validation below would otherwise resolve the libraries root from a listing
-                // taken before this folder was created.
+                // The injected service is a singleton, so its listing predates this folder.
                 _directoryService.Invalidate(virtualFolderPath);
             }
             finally
