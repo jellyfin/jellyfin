@@ -452,6 +452,12 @@ namespace MediaBrowser.Providers.Manager
                         foundImageTypes.Add(type);
                     }
 
+                    // Preserve user-edited images stored in internal metadata when local images exist in the media folder
+                    if (ShouldPreserveExistingImage(item, currentImage, image, refreshOptions, type))
+                    {
+                        continue;
+                    }
+
                     if (currentImage is null || !string.Equals(currentImage.Path, image.FileInfo.FullName, StringComparison.OrdinalIgnoreCase))
                     {
                         item.SetImagePath(type, image.FileInfo);
@@ -512,6 +518,25 @@ namespace MediaBrowser.Providers.Manager
             }
 
             return changed;
+        }
+
+        private static bool ShouldPreserveExistingImage(BaseItem item, ItemImageInfo currentImage, LocalImageInfo newImage, ImageRefreshOptions refreshOptions, ImageType type)
+        {
+            if (currentImage is null || refreshOptions?.IsReplacingImage(type) == true)
+            {
+                return false;
+            }
+
+            var internalMetadataPath = item.GetInternalMetadataPath();
+            if (string.IsNullOrEmpty(internalMetadataPath)
+                || !currentImage.Path.StartsWith(internalMetadataPath, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            // Only preserve when the new image comes from the media folder
+            return item.ContainingFolderPath is not null
+                && item.ContainingFolderPath.Contains(Path.GetDirectoryName(newImage.FileInfo.FullName), StringComparison.OrdinalIgnoreCase);
         }
 
         private static LocalImageInfo GetFirstLocalImageInfoByType(IReadOnlyList<LocalImageInfo> images, ImageType type)

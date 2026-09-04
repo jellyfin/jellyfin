@@ -127,6 +127,92 @@ namespace Jellyfin.Providers.Tests.Manager
             }
         }
 
+        [Fact]
+        public void MergeImages_UserEditedImageInInternalMetadata_NotReplacedByLocalMediaImage()
+        {
+            const string mediaFolder = "/media/shows/Seinfeld";
+            const string internalMetadataPath = "/config/metadata/library/ab/cd1234567890";
+            const string userEditedImagePath = internalMetadataPath + "/poster.jpg";
+            const string localCoverPath = mediaFolder + "/cover.jpg";
+
+            var item = new Mock<Video>
+            {
+                CallBase = true
+            };
+            item.Setup(m => m.IsSaveLocalMetadataEnabled()).Returns(false);
+            item.Setup(m => m.GetInternalMetadataPath()).Returns(internalMetadataPath);
+            item.Setup(m => m.ContainingFolderPath).Returns(mediaFolder);
+
+            item.Object.SetImagePath(ImageType.Primary, 0, new FileSystemMetadata
+            {
+                FullName = userEditedImagePath,
+            });
+
+            var localImages = new[]
+            {
+                new LocalImageInfo
+                {
+                    Type = ImageType.Primary,
+                    FileInfo = new FileSystemMetadata
+                    {
+                        FullName = localCoverPath
+                    }
+                }
+            };
+
+            var itemImageProvider = GetItemImageProvider(null, null);
+            var changed = itemImageProvider.MergeImages(item.Object, localImages, new ImageRefreshOptions(Mock.Of<IDirectoryService>()));
+
+            Assert.False(changed);
+            Assert.Equal(userEditedImagePath, item.Object.GetImagePath(ImageType.Primary, 0));
+        }
+
+        [Fact]
+        public void MergeImages_UserEditedImageInInternalMetadata_ReplacedWhenForced()
+        {
+            const string mediaFolder = "/media/shows/Seinfeld";
+            const string internalMetadataPath = "/config/metadata/library/ab/cd1234567890";
+            const string userEditedImagePath = internalMetadataPath + "/poster.jpg";
+            const string localCoverPath = mediaFolder + "/cover.jpg";
+
+            var item = new Mock<Video>
+            {
+                CallBase = true
+            };
+            item.Setup(m => m.IsSaveLocalMetadataEnabled()).Returns(false);
+            item.Setup(m => m.GetInternalMetadataPath()).Returns(internalMetadataPath);
+            item.Setup(m => m.ContainingFolderPath).Returns(mediaFolder);
+
+            item.Object.SetImagePath(ImageType.Primary, 0, new FileSystemMetadata
+            {
+                FullName = userEditedImagePath,
+            });
+
+            var localImages = new[]
+            {
+                new LocalImageInfo
+                {
+                    Type = ImageType.Primary,
+                    FileInfo = new FileSystemMetadata
+                    {
+                        FullName = localCoverPath
+                    }
+                }
+            };
+
+            var refreshOptions = new ImageRefreshOptions(Mock.Of<IDirectoryService>())
+            {
+                ImageRefreshMode = MetadataRefreshMode.FullRefresh,
+                ReplaceAllImages = true
+            };
+
+            var itemImageProvider = GetItemImageProvider(null, null);
+            var changed = itemImageProvider.MergeImages(item.Object, localImages, refreshOptions);
+
+            Assert.True(changed);
+            Assert.Equal(localCoverPath, item.Object.GetImagePath(ImageType.Primary, 0));
+        }
+
         [Theory]
         [InlineData(ImageType.Primary, 1, false)]
         [InlineData(ImageType.Backdrop, 2, false)]
