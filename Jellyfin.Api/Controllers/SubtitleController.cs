@@ -20,6 +20,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Entities;
@@ -86,11 +87,13 @@ public class SubtitleController : BaseJellyfinApiController
     /// <param name="itemId">The item id.</param>
     /// <param name="index">The index of the subtitle file.</param>
     /// <response code="204">Subtitle deleted.</response>
+    /// <response code="400">The subtitle is not an external file.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Videos/{itemId}/Subtitles/{index}")]
-    [Authorize(Policy = Policies.RequiresElevation)]
+    [Authorize(Policy = Policies.SubtitleManagement)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteSubtitle(
         [FromRoute, Required] Guid itemId,
@@ -100,6 +103,24 @@ public class SubtitleController : BaseJellyfinApiController
         if (item is null)
         {
             return NotFound();
+        }
+
+        var subtitles = _mediaSourceManager.GetMediaStreams(new MediaStreamQuery
+        {
+            Index = index,
+            ItemId = item.Id,
+            Type = MediaStreamType.Subtitle
+        });
+
+        if (subtitles.Count == 0)
+        {
+            return NotFound();
+        }
+
+        var subtitle = subtitles[0];
+        if (!subtitle.IsExternal || string.IsNullOrEmpty(subtitle.Path))
+        {
+            return BadRequest("Only external subtitle files can be deleted.");
         }
 
         await _subtitleManager.DeleteSubtitles(item, index).ConfigureAwait(false);
