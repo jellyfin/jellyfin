@@ -1524,26 +1524,32 @@ namespace Emby.Server.Implementations.Library
                 {
                     await task.Run(innerProgress, cancellationToken).ConfigureAwait(false);
 
+                    var elapsed = Stopwatch.GetElapsedTime(taskStart);
                     _logger.LogInformation(
-                        "Post-scan task {TaskName} completed in {Elapsed}",
+                        "Post-scan task {TaskName} completed after {Minutes} minute(s) and {Seconds} seconds",
                         taskName,
-                        Stopwatch.GetElapsedTime(taskStart));
+                        Math.Truncate(elapsed.TotalMinutes),
+                        elapsed.Seconds);
                 }
                 catch (OperationCanceledException)
                 {
+                    var elapsed = Stopwatch.GetElapsedTime(taskStart);
                     _logger.LogInformation(
-                        "Post-scan task cancelled after {Elapsed}: {TaskName}",
-                        Stopwatch.GetElapsedTime(taskStart),
-                        taskName);
+                        "Post-scan task {TaskName} cancelled after {Minutes} minute(s) and {Seconds} seconds",
+                        taskName,
+                        Math.Truncate(elapsed.TotalMinutes),
+                        elapsed.Seconds);
                     throw;
                 }
                 catch (Exception ex)
                 {
+                    var elapsed = Stopwatch.GetElapsedTime(taskStart);
                     _logger.LogError(
                         ex,
-                        "Error running post-scan task {TaskName} after {Elapsed}",
+                        "Post-scan task {TaskName} failed after {Minutes} minute(s) and {Seconds} seconds",
                         taskName,
-                        Stopwatch.GetElapsedTime(taskStart));
+                        Math.Truncate(elapsed.TotalMinutes),
+                        elapsed.Seconds);
                 }
 
                 numComplete++;
@@ -1552,9 +1558,11 @@ namespace Emby.Server.Implementations.Library
                 progress.Report(percent * 100);
             }
 
+            var phaseElapsed = Stopwatch.GetElapsedTime(phaseStart);
             _logger.LogInformation(
-                "All post-scan tasks completed in {Elapsed}",
-                Stopwatch.GetElapsedTime(phaseStart));
+                "All post-scan tasks completed after {Minutes} minute(s) and {Seconds} seconds",
+                Math.Truncate(phaseElapsed.TotalMinutes),
+                phaseElapsed.Seconds);
 
             _persistenceService.UpdateInheritedValues();
 
