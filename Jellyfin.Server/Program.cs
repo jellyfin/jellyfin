@@ -61,6 +61,7 @@ namespace Jellyfin.Server
         private static ILogger _logger = NullLogger.Instance;
         private static bool _restartOnShutdown;
         private static IStartupLogger<JellyfinMigrationService>? _migrationLogger;
+        private static bool _optimizeDatabaseAfterMigration;
         private static string? _restoreFromBackup;
 
         /// <summary>
@@ -209,14 +210,15 @@ namespace Jellyfin.Server
                 await jellyfinMigrationService.PrepareSystemForMigration(_logger).ConfigureAwait(false);
                 // "Preparing migrations" carries through the DB read; per-migration progress is reported
                 // as "Running migration X of Y" from inside the step once the pending set is known.
-                await jellyfinMigrationService.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, appHost.ServiceProvider).ConfigureAwait(false);
+                _optimizeDatabaseAfterMigration |= await jellyfinMigrationService.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, appHost.ServiceProvider).ConfigureAwait(false);
 
                 SetupServer.ReportActivity(StartupActivity.InitializingServices);
                 await appHost.InitializeServices(startupConfig).ConfigureAwait(false);
                 _appHost = appHost;
 
-                await jellyfinMigrationService.MigrateStepAsync(JellyfinMigrationStageTypes.AppInitialisation, appHost.ServiceProvider).ConfigureAwait(false);
+                _optimizeDatabaseAfterMigration |= await jellyfinMigrationService.MigrateStepAsync(JellyfinMigrationStageTypes.AppInitialisation, appHost.ServiceProvider).ConfigureAwait(false);
                 await jellyfinMigrationService.CleanupSystemAfterMigration(_logger).ConfigureAwait(false);
+                await OptimizeDatabaseAfterMigrationAsync(appHost.ServiceProvider).ConfigureAwait(false);
                 try
                 {
                     configurationCompleted = true;
@@ -314,7 +316,7 @@ namespace Jellyfin.Server
 
             var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(startupService);
             await jellyfinMigrationService.CheckFirstTimeRunOrMigration(appPaths, startupOptions).ConfigureAwait(false);
-            await jellyfinMigrationService.MigrateStepAsync(Migrations.Stages.JellyfinMigrationStageTypes.PreInitialisation, startupService).ConfigureAwait(false);
+            _optimizeDatabaseAfterMigration |= await jellyfinMigrationService.MigrateStepAsync(Migrations.Stages.JellyfinMigrationStageTypes.PreInitialisation, startupService).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -329,7 +331,31 @@ namespace Jellyfin.Server
         public static async Task ApplyCoreMigrationsAsync(IServiceProvider serviceProvider, Migrations.Stages.JellyfinMigrationStageTypes jellyfinMigrationStage)
         {
             var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(serviceProvider, _migrationLogger!);
-            await jellyfinMigrationService.MigrateStepAsync(jellyfinMigrationStage, serviceProvider).ConfigureAwait(false);
+            _optimizeDatabaseAfterMigration |= await jellyfinMigrationService.MigrateStepAsync(jellyfinMigrationStage, serviceProvider).ConfigureAwait(false);
+        }
+
+        private static async Task OptimizeDatabaseAfterMigrationAsync(IServiceProvider serviceProvider)
+        {
+            if (!_optimizeDatabaseAfterMigration)
+            {
+                return;
+            }
+
+            // Reset first: a restart runs no migrations and must not optimize again.
+            _optimizeDatabaseAfterMigration = false;
+            SetupServer.ReportActivity(StartupActivity.OptimizingDatabase);
+            _logger.LogInformation("Migrations have been applied, optimizing the database... This might take a while");
+
+            try
+            {
+                var databaseProvider = serviceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
+                await databaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // A missed optimization only costs performance, so never fail startup over this.
+                _logger.LogError(ex, "Error while optimizing the database after migration");
+            }
         }
 
         /// <summary>

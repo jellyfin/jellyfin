@@ -183,7 +183,13 @@ internal class JellyfinMigrationService
         }
     }
 
-    public async Task MigrateStepAsync(JellyfinMigrationStageTypes stage, IServiceProvider? serviceProvider)
+    /// <summary>
+    /// Runs all pending migrations of the requested stage.
+    /// </summary>
+    /// <param name="stage">The stage to migrate.</param>
+    /// <param name="serviceProvider">The service provider handed to the migrations.</param>
+    /// <returns>A value indicating whether at least one migration has been applied.</returns>
+    public async Task<bool> MigrateStepAsync(JellyfinMigrationStageTypes stage, IServiceProvider? serviceProvider)
     {
         var logger = _startupLogger.With(_loggerFactory.CreateLogger<JellyfinMigrationService>()).BeginGroup($"Migrate stage {stage}.");
         ICollection<CodeMigration> migrationStage = (Migrations.FirstOrDefault(e => e.Stage == stage) as ICollection<CodeMigration>) ?? [];
@@ -297,6 +303,8 @@ internal class JellyfinMigrationService
 
                 completedMigrations++;
             }
+
+            return completedMigrations > 0;
         }
     }
 
