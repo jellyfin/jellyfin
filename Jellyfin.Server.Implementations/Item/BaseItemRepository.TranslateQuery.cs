@@ -521,6 +521,16 @@ public sealed partial class BaseItemRepository
                 : baseQuery.Where(e => !likedIds.Contains(e.Id));
         }
 
+        if (filter.MinUserRating.HasValue && filter.User is not null)
+        {
+            var minUserRating = filter.MinUserRating.Value;
+            var ratedIds = context.UserData
+                .Where(ud => ud.UserId == filter.User.Id && ud.Rating >= minUserRating)
+                .Select(ud => ud.ItemId);
+
+            baseQuery = baseQuery.Where(e => ratedIds.Contains(e.Id));
+        }
+
         if (filter.IsFavoriteOrLiked.HasValue || filter.IsFavorite.HasValue)
         {
             var favoriteIds = context.UserData

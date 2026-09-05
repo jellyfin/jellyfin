@@ -139,6 +139,7 @@ namespace MediaBrowser.Controller.Entities
             || HasChapterImages.HasValue
             || MinCriticRating.HasValue
             || MinCommunityRating.HasValue
+            || MinUserRating.HasValue
             || MinParentalRating is not null
             || MinIndexNumber.HasValue
             || MinParentAndIndexNumber.HasValue
@@ -340,6 +341,8 @@ namespace MediaBrowser.Controller.Entities
         public double? MinCriticRating { get; set; }
 
         public double? MinCommunityRating { get; set; }
+
+        public double? MinUserRating { get; set; }
 
         public IReadOnlyList<Guid> ChannelIds { get; set; }
 
