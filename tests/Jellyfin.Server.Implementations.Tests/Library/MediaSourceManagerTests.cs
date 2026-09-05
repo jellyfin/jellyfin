@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Castle.Components.DictionaryAdapter;
@@ -11,6 +13,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaSegments;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -21,6 +24,7 @@ using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Library
 {
+    [Collection("BaseItemServiceLocators")]
     public class MediaSourceManagerTests
     {
         private readonly MediaSourceManager _mediaSourceManager;
@@ -57,6 +61,81 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         [InlineData("rtsp://media.example.com:554/twister/audiotrack", MediaProtocol.Rtsp)]
         public void GetPathProtocol_ValidArg_Correct(string path, MediaProtocol expected)
             => Assert.Equal(expected, _mediaSourceManager.GetPathProtocol(path));
+
+        [Theory]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        public async Task GetPlaybackMediaSources_StrmRefreshUsesCurrentDirectoryContents(
+            bool subtitleInitiallyExists,
+            bool subtitleCurrentlyExists)
+        {
+            const string directoryPath = @"C:\media";
+            const string streamPath = @"C:\media\Movie.strm";
+            const string subtitlePath = @"C:\media\Movie.eng.srt";
+
+            IReadOnlyList<string> currentDirectoryContents = subtitleInitiallyExists
+                ? [streamPath, subtitlePath]
+                : [streamPath];
+
+            var fileSystem = new Mock<IFileSystem>();
+            fileSystem
+                .Setup(x => x.GetFilePaths(directoryPath, false))
+                .Returns(() => currentDirectoryContents);
+
+            var cachedDirectoryService = new DirectoryService(fileSystem.Object);
+            _ = cachedDirectoryService.GetFilePaths(directoryPath);
+
+            currentDirectoryContents = subtitleCurrentlyExists
+                ? [streamPath, subtitlePath]
+                : [streamPath];
+
+            IFixture fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
+            fixture.Inject(fileSystem.Object);
+            fixture.Inject<IDirectoryService>(cachedDirectoryService);
+
+            var mediaSourceManager = fixture.Create<MediaSourceManager>();
+            mediaSourceManager.AddParts([]);
+
+            var item = new Mock<Video> { CallBase = true };
+            item
+                .Setup(x => x.GetMediaSources(It.IsAny<bool>()))
+                .Returns(
+                    [
+                        new MediaSourceInfo
+                        {
+                            Id = Guid.NewGuid().ToString("N"),
+                            Path = "https://example.com/Movie.mp4",
+                            Protocol = MediaProtocol.Http,
+                            MediaStreams = [new MediaStream { Type = MediaStreamType.Video }]
+                        }
+                    ]);
+            item.Object.Id = Guid.NewGuid();
+            item.Object.ParentId = Guid.Empty;
+            item.Object.Path = streamPath;
+
+            MetadataRefreshOptions? refreshOptions = null;
+            var providerManager = new Mock<IProviderManager>();
+            providerManager
+                .Setup(x => x.RefreshSingleItem(It.IsAny<BaseItem>(), It.IsAny<MetadataRefreshOptions>(), It.IsAny<CancellationToken>()))
+                .Callback<BaseItem, MetadataRefreshOptions, CancellationToken>((_, options, _) => refreshOptions = options)
+                .ReturnsAsync(ItemUpdateType.None);
+
+            var previousProviderManager = BaseItem.ProviderManager;
+            BaseItem.ProviderManager = providerManager.Object;
+            try
+            {
+                _ = await mediaSourceManager.GetPlaybackMediaSources(item.Object, null, true, false, CancellationToken.None);
+            }
+            finally
+            {
+                BaseItem.ProviderManager = previousProviderManager;
+            }
+
+            Assert.NotNull(refreshOptions);
+            Assert.Equal(
+                subtitleCurrentlyExists,
+                refreshOptions.DirectoryService.GetFilePaths(directoryPath).Contains(subtitlePath, StringComparer.Ordinal));
+        }
 
         [Theory]
         [InlineData(5, "eng", "eng", false, true)]

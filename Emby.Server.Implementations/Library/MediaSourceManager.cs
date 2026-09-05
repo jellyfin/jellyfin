@@ -179,14 +179,18 @@ namespace Emby.Server.Implementations.Library
             var mediaSources = GetStaticMediaSources(item, enablePathSubstitution, user);
             ResolveSymlinkPaths(mediaSources, enablePathSubstitution);
 
+            var isStrm = item.Path?.EndsWith(".strm", StringComparison.OrdinalIgnoreCase) == true;
+
             // If file is strm or main media stream is missing, force a metadata refresh with remote probing
             if (allowMediaProbe && mediaSources[0].Type != MediaSourceType.Placeholder
-                && (item.Path.EndsWith(".strm", StringComparison.OrdinalIgnoreCase)
+                && (isStrm
                     || (item.MediaType == MediaType.Video && mediaSources[0].MediaStreams.All(i => i.Type != MediaStreamType.Video))
                     || (item.MediaType == MediaType.Audio && mediaSources[0].MediaStreams.All(i => i.Type != MediaStreamType.Audio))))
             {
+                // Use a current folder snapshot so remote probing cannot overwrite sidecars with stale cache data.
+                var directoryService = isStrm ? new DirectoryService(_fileSystem) : _directoryService;
                 await item.RefreshMetadata(
-                    new MetadataRefreshOptions(_directoryService)
+                    new MetadataRefreshOptions(directoryService)
                     {
                         EnableRemoteContentProbe = true,
                         MetadataRefreshMode = MetadataRefreshMode.FullRefresh
