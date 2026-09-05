@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -160,6 +161,18 @@ namespace MediaBrowser.Providers.MediaInfo
                 return false;
             }
 
+            // For automated runs, skip before contacting any provider when an external
+            // subtitle file for this language already exists on disk next to the video
+            // (or in its metadata folder). SearchSubtitles consumes provider quota and
+            // GetSubtitles downloads the full content, so this check must happen before
+            // either call — checking only after the download (as TrySaveSubtitle does)
+            // still spends the rate limit on every scheduled task run.
+            if (isAutomated && HasExternalSubtitleFile(video, language))
+            {
+                _logger.LogInformation("External {Language} subtitle already exists for {Path}, skipping provider search", language, video.Path);
+                return false;
+            }
+
             var request = new SubtitleSearchRequest
             {
                 ContentType = mediaType,
@@ -205,6 +218,72 @@ namespace MediaBrowser.Providers.MediaInfo
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error downloading subtitles");
+            }
+
+            return false;
+        }
+
+        private static bool HasExternalSubtitleFile(Video video, string language)
+        {
+            // Mirrors the naming TrySaveSubtitle uses: <video>.<language>[.forced][.sdh].<ext>,
+            // plus the <video>.<language>.<n>.<ext> counter files created on name collisions.
+            if (string.IsNullOrEmpty(video.Path))
+            {
+                return false;
+            }
+
+            var extensions = new[] { "srt", "ass", "ssa", "sub", "vtt", "txt" };
+            var directories = new[] { video.ContainingFolderPath, video.GetInternalMetadataPath() };
+            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(video.Path);
+
+            foreach (var directory in directories)
+            {
+                if (string.IsNullOrEmpty(directory))
+                {
+                    continue;
+                }
+
+                foreach (var file in Directory.EnumerateFiles(directory, fileNameWithoutExtension + ".*"))
+                {
+                    var rest = Path.GetFileName(file).Substring(fileNameWithoutExtension.Length + 1);
+                    var segments = rest.Split('.');
+
+                    // <language>.<ext> at minimum
+                    if (segments.Length < 2)
+                    {
+                        continue;
+                    }
+
+                    if (!string.Equals(segments[0], language, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    if (!extensions.Contains(segments[^1], StringComparer.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    // Middle segments may only be forced/sdh markers or collision counters
+                    var middleValid = true;
+                    foreach (var segment in segments[1..^1])
+                    {
+                        if (string.Equals(segment, "forced", StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(segment, "sdh", StringComparison.OrdinalIgnoreCase)
+                            || int.TryParse(segment, out _))
+                        {
+                            continue;
+                        }
+
+                        middleValid = false;
+                        break;
+                    }
+
+                    if (middleValid)
+                    {
+                        return true;
+                    }
+                }
             }
 
             return false;
