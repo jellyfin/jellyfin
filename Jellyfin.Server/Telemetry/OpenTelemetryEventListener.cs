@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Globalization;
@@ -16,6 +17,18 @@ namespace Jellyfin.Server.Telemetry;
 internal sealed class OpenTelemetryEventListener : EventListener, IHostedService
 {
     private const string EventSourceNamePrefix = "OpenTelemetry";
+
+    /// <summary>
+    /// Events that the SDK raises at warning level but that are the expected outcome of the
+    /// configuration, not a problem to act on.
+    /// </summary>
+    private static readonly HashSet<string> _benignEventNames = new(StringComparer.Ordinal)
+    {
+        // Raised once per instrument published by a Meter the provider does not subscribe to,
+        // e.g. the msquic and other framework-internal meters. Not subscribing to them is the
+        // point of the meter allowlist, and the event's own text says it can be ignored.
+        "MetricInstrumentIgnored"
+    };
 
     /// <summary>
     /// Reporting is throttled because an export failure can itself be logged, exported and fail again.
@@ -58,8 +71,23 @@ internal sealed class OpenTelemetryEventListener : EventListener, IHostedService
         // Sources can be enabled before the base constructor returns, so the logger may not be set yet.
         var logger = _logger;
         if (logger is null
-            || eventData.EventSource?.Name.StartsWith(EventSourceNamePrefix, StringComparison.Ordinal) != true
-            || !ShouldReport())
+            || eventData.EventSource?.Name.StartsWith(EventSourceNamePrefix, StringComparison.Ordinal) != true)
+        {
+            return;
+        }
+
+        // Checked before ShouldReport so that benign chatter does not spend the report budget
+        // and hide a real export failure for the rest of the interval.
+        if (_benignEventNames.Contains(eventData.EventName ?? string.Empty))
+        {
+            logger.LogDebug(
+                "OpenTelemetry reported {EventName}: {Message}",
+                eventData.EventName,
+                FormatMessage(eventData));
+            return;
+        }
+
+        if (!ShouldReport())
         {
             return;
         }
