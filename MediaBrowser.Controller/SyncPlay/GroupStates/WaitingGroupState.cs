@@ -18,6 +18,14 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
     public class WaitingGroupState : AbstractGroupState
     {
         /// <summary>
+        /// The maximum amount of time, in milliseconds, that a session which reports active playback
+        /// may be away from the group position and still be treated as catching up. A session further
+        /// out than this is not recovering, it is playing the wrong position, and is corrected the
+        /// same way a session that reports itself paused would be.
+        /// </summary>
+        private const long MaxCatchUpOffsetMs = 10000;
+
+        /// <summary>
         /// The logger.
         /// </summary>
         private readonly ILogger<WaitingGroupState> _logger;
@@ -450,7 +458,14 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             {
                 // Handle case where session reported as ready but in reality
                 // it has no clue of the real position nor the playback state.
-                if (!request.IsPlaying && Math.Abs(delayTicks) > maxPlaybackOffsetTicks)
+                // A session that reports active playback is allowed to lag while it catches up,
+                // but only within a bounded window: past that it is on the wrong position entirely,
+                // which happens when it has not applied a seek the rest of the group already has.
+                var maxOffsetTicks = request.IsPlaying
+                    ? TimeSpan.FromMilliseconds(MaxCatchUpOffsetMs).Ticks
+                    : maxPlaybackOffsetTicks;
+
+                if (Math.Abs(delayTicks) > maxOffsetTicks)
                 {
                     // Session not ready at all.
                     context.SetBuffering(session, true);
