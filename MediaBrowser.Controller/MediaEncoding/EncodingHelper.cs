@@ -2343,6 +2343,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                     // level option may cause NVENC to fail.
                     // NVENC cannot adjust the given level, just throw an error.
                 }
+                else if (string.Equals(videoEncoder, "h264_videotoolbox", StringComparison.OrdinalIgnoreCase))
+                {
+                    // h264_videotoolbox cannot adjust the given level either. The client's level is a
+                    // decode maximum, not an encoder constraint; when the output does not fit in it
+                    // (e.g. level 4.1 with a 2560x1440 output, or above 62.5 Mbps at 1080p) VideoToolbox
+                    // refuses to create the session ("cannot prepare encoder: -12902", kVTParameterErr).
+                    // Omit the option and let the encoder pick the level that fits the output.
+                }
                 else if (string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
                          || string.Equals(videoEncoder, "hevc_vaapi", StringComparison.OrdinalIgnoreCase)
                          || string.Equals(videoEncoder, "av1_vaapi", StringComparison.OrdinalIgnoreCase))
