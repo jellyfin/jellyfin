@@ -228,7 +228,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             result = new MetadataResult<Series>
             {
-                Item = MapTvShowToSeries(tvShow, info.MetadataCountryCode),
+                Item = MapTvShowToSeries(tvShow, info.MetadataCountryCode, info.DisplayOrder),
                 ResultLanguage = info.MetadataLanguage ?? tvShow.OriginalLanguage
             };
 
@@ -242,7 +242,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             return result;
         }
 
-        private static Series MapTvShowToSeries(TvShow seriesResult, string preferredCountryCode)
+        private static Series MapTvShowToSeries(TvShow seriesResult, string preferredCountryCode, string? displayOrder)
         {
             var series = new Series
             {
@@ -251,6 +251,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             };
 
             series.SetProviderId(MetadataProvider.Tmdb, seriesResult.Id.ToString(CultureInfo.InvariantCulture));
+
+            // The seasons of a series ordered by an episode group belong to that group, not to the series itself.
+            var groupType = TmdbUtils.GetEpisodeGroupType(displayOrder);
+            if (groupType is not null)
+            {
+                var episodeGroup = seriesResult.EpisodeGroups?.Results?.Find(g => g.Type == groupType);
+                series.TrySetProviderId(TmdbUtils.EpisodeGroupProviderKey, episodeGroup?.Id);
+            }
 
             series.CommunityRating = Convert.ToSingle(seriesResult.VoteAverage);
 
