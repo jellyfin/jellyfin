@@ -21,33 +21,73 @@ namespace Jellyfin.Server.Implementations.Tests.SyncPlay;
 public class WaitingGroupStateTests
 {
     [Fact]
-    public void Ready_PlayingSessionFarBehindGroup_IsCorrectedInsteadOfMarkedReady()
+    public void Ready_PlayingSessionReportsPositionFromBeforeSeek_IsCorrected()
     {
         var harness = new GroupHarness();
         var group = harness.Group;
 
-        // The group seeked half an hour in; the lagging session has not applied the seek yet
-        // but still reports that it is playing.
-        group.PositionTicks = TimeSpan.FromMinutes(30).Ticks;
+        group.PositionTicks = TimeSpan.FromMinutes(10).Ticks;
         group.LastActivity = DateTime.UtcNow;
-        group.SetBuffering(harness.First, true);
-        group.SetBuffering(harness.Second, true);
 
         var state = new WaitingGroupState(NullLoggerFactory.Instance) { ResumePlaying = true };
+
+        // One member seeks half an hour in.
+        state.HandleRequest(
+            new SeekGroupRequest(TimeSpan.FromMinutes(40).Ticks),
+            group,
+            GroupStateType.Playing,
+            harness.Second,
+            CancellationToken.None);
+
         harness.Commands.Clear();
 
+        // The other member has not applied the seek yet and reports the old position, still playing.
         state.HandleRequest(
-            new ReadyGroupRequest(DateTime.UtcNow, 0, true, harness.PlaylistItemId),
+            new ReadyGroupRequest(DateTime.UtcNow, TimeSpan.FromMinutes(10).Ticks, true, harness.PlaylistItemId),
             group,
             GroupStateType.Waiting,
             harness.First,
             CancellationToken.None);
 
-        // The session must be seeked back into position, not accepted as ready and handed a
-        // pause command scheduled half an hour into the future.
+        // It must be seeked into position, not accepted as ready and handed a pause command
+        // scheduled the length of the seek into the future.
         Assert.Contains(harness.Commands, c => c.Command == SendCommandType.Seek);
         Assert.DoesNotContain(harness.Commands, c => c.Command == SendCommandType.Pause);
         Assert.True(group.IsBuffering(), "session should still be considered buffering");
+    }
+
+    [Fact]
+    public void Ready_PlayingSessionRecoveringFromALongStall_IsNotSeeked()
+    {
+        var harness = new GroupHarness();
+        var group = harness.Group;
+
+        group.PositionTicks = TimeSpan.FromMinutes(10).Ticks;
+        group.LastActivity = DateTime.UtcNow;
+
+        var state = new WaitingGroupState(NullLoggerFactory.Instance) { ResumePlaying = true };
+
+        // The session reports it is buffering. No seek happens, so the group position stays put.
+        state.HandleRequest(
+            new BufferGroupRequest(DateTime.UtcNow, group.PositionTicks, true, harness.PlaylistItemId),
+            group,
+            GroupStateType.Playing,
+            harness.First,
+            CancellationToken.None);
+
+        harness.Commands.Clear();
+
+        // It recovers 45 seconds later, still behind, and must be waited for rather than seeked
+        // forward past content it already buffered.
+        var behind = group.PositionTicks - TimeSpan.FromSeconds(45).Ticks;
+        state.HandleRequest(
+            new ReadyGroupRequest(DateTime.UtcNow, behind, true, harness.PlaylistItemId),
+            group,
+            GroupStateType.Waiting,
+            harness.First,
+            CancellationToken.None);
+
+        Assert.DoesNotContain(harness.Commands, c => c.Command == SendCommandType.Seek);
     }
 
     [Fact]

@@ -103,6 +103,18 @@ namespace Emby.Server.Implementations.SyncPlay
         public long MaxPlaybackOffset { get; } = 500;
 
         /// <summary>
+        /// Gets the maximum offset, in milliseconds, that a session reporting active playback may be
+        /// behind the group while still being treated as catching up.
+        /// </summary>
+        /// <remarks>
+        /// A session that is merely recovering from a stall is expected to lag and the group waits
+        /// for it. This bounds how long that wait can be asked to last when the group position has
+        /// not moved under the session.
+        /// </remarks>
+        /// <value>The maximum catch-up offset.</value>
+        public long MaxCatchUpOffset { get; } = 60000;
+
+        /// <summary>
         /// Gets the group identifier.
         /// </summary>
         /// <value>The group identifier.</value>
