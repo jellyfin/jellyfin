@@ -180,9 +180,7 @@ namespace Jellyfin.Server
                     })
                     .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(options, appPaths, startupConfig))
                     .UseSerilog()
-                    .ConfigureServices(e => e
-                        .RegisterStartupLogger()
-                        .AddSingleton<IServiceCollection>(e))
+                    .ConfigureServices(e => e.RegisterStartupLogger())
                     .Build();
 
                 /*
@@ -307,7 +305,6 @@ namespace Jellyfin.Server
                 .AddSingleton<ServerApplicationPaths>(appPaths)
                 .RegisterStartupLogger();
 
-            migrationStartupServiceProvider.AddSingleton(migrationStartupServiceProvider);
             var startupService = migrationStartupServiceProvider.BuildServiceProvider();
 
             PrepareDatabaseProvider(startupService);
