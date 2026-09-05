@@ -451,7 +451,9 @@ namespace Emby.Server.Implementations.SyncPlay
                 max = Math.Max(max, session.Ping);
             }
 
-            return max;
+            // A group with no participants has no ping to report. Returning long.MinValue would
+            // overflow the callers that scale this value into ticks, so fall back to the default.
+            return max == long.MinValue ? DefaultPing : max;
         }
 
         /// <inheritdoc />
