@@ -132,7 +132,11 @@ namespace MediaBrowser.Controller.Providers
 
         public bool IsAccessible(string path)
         {
-            return _fileSystem.GetFileSystemEntryPaths(path).Any();
+            // Existence is enough. Requiring children made empty library roots look
+            // "inaccessible", so ValidateChildren skipped them and LibraryMonitor never
+            // watched the path — first imports into a new root stayed invisible until a
+            // manual refresh after the folder was non-empty.
+            return _fileSystem.DirectoryExists(path);
         }
     }
 }
