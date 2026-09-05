@@ -27,6 +27,18 @@ namespace Emby.Server.Implementations.SyncPlay
     public class Group : IGroupStateContext
     {
         /// <summary>
+        /// The maximum time, in milliseconds, a session that is still preparing playback for the first
+        /// time in the current buffering cycle (e.g. waiting on a transcode) can keep the group waiting.
+        /// </summary>
+        private const long PreparingTimeoutMs = 60000;
+
+        /// <summary>
+        /// The maximum time, in milliseconds, a session that has already caught up once in the current
+        /// cycle (and is therefore assumed to be re-buffering from network lag) can keep the group waiting.
+        /// </summary>
+        private const long NetworkLagTimeoutMs = 10000;
+
+        /// <summary>
         /// The logger.
         /// </summary>
         private readonly ILogger<Group> _logger;
@@ -356,7 +368,8 @@ namespace Emby.Server.Implementations.SyncPlay
         public GroupInfoDto GetInfo()
         {
             var participants = _participants.Values.Select(session => session.UserName).Distinct().ToList();
-            return new GroupInfoDto(GroupId, GroupName, _state.Type, participants, DateTime.UtcNow);
+            var bufferingParticipants = GetBufferingParticipants();
+            return new GroupInfoDto(GroupId, GroupName, _state.Type, participants, DateTime.UtcNow, bufferingParticipants);
         }
 
         /// <summary>
@@ -459,6 +472,21 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             if (_participants.TryGetValue(session.Id, out GroupMember value))
             {
+                if (isBuffering)
+                {
+                    if (!value.IsBuffering)
+                    {
+                        value.BufferingSince = DateTime.UtcNow;
+                    }
+                }
+                else
+                {
+                    value.BufferingSince = null;
+
+                    // Any further buffering this cycle is treated as network lag rather than a slow start.
+                    value.HasCaughtUpSinceReset = true;
+                }
+
                 value.IsBuffering = isBuffering;
             }
         }
@@ -468,6 +496,10 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             foreach (var session in _participants.Values)
             {
+                session.BufferingSince = isBuffering ? DateTime.UtcNow : null;
+
+                // A group-wide reset (e.g. seek, playlist change) starts a new cycle for everyone.
+                session.HasCaughtUpSinceReset = false;
                 session.IsBuffering = isBuffering;
             }
         }
@@ -475,15 +507,55 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public bool IsBuffering()
         {
+            var now = DateTime.UtcNow;
             foreach (var session in _participants.Values)
             {
-                if (session.IsBuffering && !session.IgnoreGroupWait)
+                if (!session.IsBuffering || session.IgnoreGroupWait)
                 {
-                    return true;
+                    continue;
                 }
+
+                if (session.BufferingSince.HasValue)
+                {
+                    var timeoutMs = session.HasCaughtUpSinceReset ? NetworkLagTimeoutMs : PreparingTimeoutMs;
+                    var elapsedMs = (now - session.BufferingSince.Value).TotalMilliseconds;
+                    if (elapsedMs > timeoutMs)
+                    {
+                        _logger.LogWarning(
+                            "Session {SessionId} in group {GroupId} did not report ready within {TimeoutMs}ms ({Reason}), no longer waiting on it.",
+                            session.SessionId,
+                            GroupId.ToString(),
+                            timeoutMs,
+                            session.HasCaughtUpSinceReset ? "network lag" : "still preparing");
+
+                        session.IsBuffering = false;
+                        session.BufferingSince = null;
+                        session.HasCaughtUpSinceReset = false;
+                        continue;
+                    }
+                }
+
+                return true;
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Gets the usernames of sessions that are currently buffering and blocking the group.
+        /// </summary>
+        /// <returns>The list of usernames of the sessions still buffering.</returns>
+        private IReadOnlyList<string> GetBufferingParticipants()
+        {
+            // Calling IsBuffering() first ensures stale/timed-out sessions are cleared before reporting.
+            IsBuffering();
+
+            return _participants
+                .Values
+                .Where(member => member.IsBuffering && !member.IgnoreGroupWait)
+                .Select(member => member.UserName)
+                .Distinct()
+                .ToList();
         }
 
         /// <inheritdoc />
