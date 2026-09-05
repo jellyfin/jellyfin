@@ -89,6 +89,46 @@ public class BaseItemTests
     public void BaseItem_ModifySortChunks_Valid(string input, string expected)
         => Assert.Equal(expected, BaseItem.ModifySortChunks(input));
 
+    [Fact]
+    public async Task SwapImagesAsync_Backdrop_SwapsSortOrderAndPersistsImageUpdate()
+    {
+        var item = new Video
+        {
+            ImageInfos =
+            [
+                new ItemImageInfo { Path = "/media/backdrop-a.jpg", Type = ImageType.Backdrop, SortOrder = 0 },
+                new ItemImageInfo { Path = "/media/backdrop-b.jpg", Type = ImageType.Backdrop, SortOrder = 1 },
+                new ItemImageInfo { Path = "/media/backdrop-c.jpg", Type = ImageType.Backdrop, SortOrder = 2 }
+            ]
+        };
+
+        var originalLibraryManager = BaseItem.LibraryManager;
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager
+            .Setup(x => x.UpdateItemAsync(item, It.IsAny<BaseItem>(), ItemUpdateType.ImageUpdate, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        try
+        {
+            BaseItem.LibraryManager = libraryManager.Object;
+
+            await item.SwapImagesAsync(ImageType.Backdrop, 0, 2);
+        }
+        finally
+        {
+            BaseItem.LibraryManager = originalLibraryManager;
+        }
+
+        var orderedImages = item.GetImages(ImageType.Backdrop).ToArray();
+        Assert.Equal(
+            ["/media/backdrop-c.jpg", "/media/backdrop-b.jpg", "/media/backdrop-a.jpg"],
+            orderedImages.Select(i => i.Path));
+        Assert.Equal([0, 1, 2], orderedImages.Select(i => i.SortOrder));
+        libraryManager.Verify(
+            x => x.UpdateItemAsync(item, It.IsAny<BaseItem>(), ItemUpdateType.ImageUpdate, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
     [Theory]
     [InlineData("The Matrix", "matrix")]
     [InlineData("Spider-Man", "spiderman")]
