@@ -76,8 +76,8 @@ public class StudiosValidator
                     item = existingStudio;
                 }
 
-                // Fall back to GetStudio if not found (creates new item if needed)
-                item ??= _libraryManager.GetStudio(name);
+                // Fall back to creating the item if the name has none yet
+                item ??= _libraryManager.GetOrCreateStudio(name);
 
                 if (!existingStudioIds.Contains(item.Id))
                 {
@@ -96,11 +96,7 @@ public class StudiosValidator
             }
 
             numComplete++;
-            double percent = numComplete;
-            percent /= count;
-            percent *= 100;
-
-            progress.Report(percent);
+            progress.Report(numComplete * 100.0 / count);
         }
 
         _logger.LogInformation("Refreshed metadata for {RefreshedCount} new studios out of {TotalCount} total", refreshed, count);
