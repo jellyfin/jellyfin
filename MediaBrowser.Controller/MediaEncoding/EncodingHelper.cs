@@ -7953,6 +7953,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var hiddenStreamsBefore = mediaSource.MediaStreams.Count(s =>
                 s.Type == MediaStreamType.Audio
+                && !s.IsExternal
                 && (string.Equals(s.Codec, "truehd", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(s.Codec, "atmos", StringComparison.OrdinalIgnoreCase))
                 && s.Index < subtitleStream.Index);
