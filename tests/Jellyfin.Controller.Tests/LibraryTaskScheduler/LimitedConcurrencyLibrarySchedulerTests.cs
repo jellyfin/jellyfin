@@ -65,6 +65,7 @@ namespace Jellyfin.Controller.Tests.LibraryTaskScheduler
         /// so a shutdown has to reach them. It does not travel from the linked source back to the one
         /// the cleanup cancels, which is what made them immortal.
         /// </summary>
+        /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
         [Fact]
         public async Task ApplicationStopping_RetiresRunners()
         {
@@ -87,6 +88,7 @@ namespace Jellyfin.Controller.Tests.LibraryTaskScheduler
         /// The cleanup used to be a one shot: it never released the scheduling slot it took, so
         /// every runner spawned after the first pass stayed around for the lifetime of the server.
         /// </summary>
+        /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
         [Fact]
         public async Task Enqueue_RetiresIdleRunnersAfterEveryOperation()
         {
@@ -108,6 +110,7 @@ namespace Jellyfin.Controller.Tests.LibraryTaskScheduler
         /// Disposing used to sit out the rest of the cleanup grace period, holding up shutdown for
         /// up to a minute.
         /// </summary>
+        /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
         [Fact]
         public async Task DisposeAsync_DoesNotWaitOutTheGracePeriod()
         {

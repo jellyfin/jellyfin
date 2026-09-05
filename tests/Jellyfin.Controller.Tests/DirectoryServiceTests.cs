@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Controller.Providers;
@@ -324,6 +325,78 @@ namespace Jellyfin.Controller.Tests
 
             directoryService.GetFileSystemEntries(parentPath);
             fileSystemMock.Verify(f => f.GetFileSystemEntries(parentPath), Times.Once);
+        }
+
+        [Fact]
+        public void GetFileSystemEntries_MoreRecordsThanTheCeiling_DropsCache()
+        {
+            // Charged by the files in a listing, not the number of listings, so a few big folders
+            // reach the limit where a lot of small ones would not.
+            const int FolderCount = 60;
+            var bigListing = new FileSystemMetadata[5000];
+            for (var i = 0; i < bigListing.Length; i++)
+            {
+                bigListing[i] = new FileSystemMetadata
+                {
+                    FullName = "/music/track" + i.ToString(CultureInfo.InvariantCulture),
+                    IsDirectory = false
+                };
+            }
+
+            var fileSystemMock = new Mock<IFileSystem>();
+            fileSystemMock.Setup(f => f.GetFileSystemEntries(It.IsAny<string>()))
+                .Returns(bigListing);
+
+            var directoryService = new DirectoryService(fileSystemMock.Object);
+
+            const string FirstPath = "/music/artist0";
+            directoryService.GetFileSystemEntries(FirstPath);
+
+            for (var i = 1; i < FolderCount; i++)
+            {
+                directoryService.GetFileSystemEntries("/music/artist" + i.ToString(CultureInfo.InvariantCulture));
+            }
+
+            directoryService.GetFileSystemEntries(FirstPath);
+
+            fileSystemMock.Verify(f => f.GetFileSystemEntries(FirstPath), Times.Exactly(2));
+        }
+
+        [Fact]
+        public void GetFileSystemEntries_RepeatedlyInvalidatedFolder_KeepsUnrelatedEntriesCached()
+        {
+            // Invalidating gives the records back, so churning one folder must not add up to the
+            // ceiling and drop everything else with it.
+            const int ChurnCount = 50;
+            var bigListing = new FileSystemMetadata[5000];
+            for (var i = 0; i < bigListing.Length; i++)
+            {
+                bigListing[i] = new FileSystemMetadata
+                {
+                    FullName = "/music/track" + i.ToString(CultureInfo.InvariantCulture),
+                    IsDirectory = false
+                };
+            }
+
+            var fileSystemMock = new Mock<IFileSystem>();
+            fileSystemMock.Setup(f => f.GetFileSystemEntries(It.IsAny<string>()))
+                .Returns(bigListing);
+
+            var directoryService = new DirectoryService(fileSystemMock.Object);
+
+            const string ChurnedPath = "/music/watched";
+            const string StablePath = "/music/untouched";
+            directoryService.GetFileSystemEntries(StablePath);
+
+            for (var i = 0; i < ChurnCount; i++)
+            {
+                directoryService.GetFileSystemEntries(ChurnedPath);
+                directoryService.Invalidate(ChurnedPath);
+            }
+
+            directoryService.GetFileSystemEntries(StablePath);
+
+            fileSystemMock.Verify(f => f.GetFileSystemEntries(StablePath), Times.Once);
         }
 
         [Fact]
