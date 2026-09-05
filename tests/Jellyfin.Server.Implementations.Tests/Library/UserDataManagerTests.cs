@@ -7,6 +7,7 @@ using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Providers.Sqlite;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Configuration;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,8 @@ namespace Jellyfin.Server.Implementations.Tests.Library;
 
 public sealed class UserDataManagerTests : IDisposable
 {
+    private const long ThreeMinuteSongTicks = 3L * 60 * TimeSpan.TicksPerSecond;
+
     private readonly SqliteConnection _connection;
     private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly UserDataManager _userDataManager;
@@ -65,6 +68,24 @@ public sealed class UserDataManagerTests : IDisposable
             new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
     }
 
+    private static UserDataManager CreateManager(int minAudioResumePct = 10, int maxAudioResumePct = 90)
+    {
+        var config = new ServerConfiguration
+        {
+            MinAudioResumePct = minAudioResumePct,
+            MaxAudioResumePct = maxAudioResumePct
+        };
+        var configManager = new Mock<IServerConfigurationManager>();
+        configManager.Setup(m => m.Configuration).Returns(config);
+
+        return new UserDataManager(
+            configManager.Object,
+            Mock.Of<IDbContextFactory<JellyfinDbContext>>());
+    }
+
+    private static long PercentToTicks(long runtimeTicks, int pct)
+        => (long)(runtimeTicks * (pct / 100.0));
+
     private AudioBook CreateAudioBook()
     {
         // GetUserDataKeys(): ["Author-Series-0001Book Title", "<item id N>"]
@@ -90,6 +111,126 @@ public sealed class UserDataManagerTests : IDisposable
             PlaybackPositionTicks = positionTicks
         };
     }
+
+    #region UpdatePlayState Tests
+
+    [Theory]
+    [InlineData(0, false)] // not started
+    [InlineData(5, false)] // skipped, not played
+    [InlineData(9, false)] // skipped, not played
+    [InlineData(10, true)] // partially played
+    [InlineData(50, true)] // partially played
+    [InlineData(90, true)] // partially played
+    [InlineData(91, false)] // fully played, flag cleared
+    [InlineData(100, false)] // fully played, flag cleared
+    public void UpdatePlayState_Audio_SetsPartiallyPlayedCorrectly(int positionPct, bool expectedPartiallyPlayed)
+    {
+        var manager = CreateManager(minAudioResumePct: 10, maxAudioResumePct: 90);
+        var item = new Audio { RunTimeTicks = ThreeMinuteSongTicks };
+        var data = new UserItemData { Key = string.Empty };
+
+        manager.UpdatePlayState(item, data, PercentToTicks(ThreeMinuteSongTicks, positionPct));
+
+        Assert.Equal(expectedPartiallyPlayed, data.PartiallyPlayed);
+    }
+
+    [Fact]
+    public void UpdatePlayState_Audio_FullyPlayed_ClearsPartiallyPlayed()
+    {
+
+        var manager = CreateManager();
+        var item = new Audio { RunTimeTicks = ThreeMinuteSongTicks };
+        var data = new UserItemData { Key = string.Empty, PartiallyPlayed = true };
+
+        manager.UpdatePlayState(item, data, PercentToTicks(ThreeMinuteSongTicks, 95));
+
+        Assert.False(data.PartiallyPlayed);
+        Assert.True(data.Played);
+    }
+
+    [Fact]
+    public void UpdatePlayState_AudioBook_PartiallyPlayedIsNeverSet()
+    {
+
+        var manager = CreateManager(minAudioResumePct: 80, maxAudioResumePct: 95);
+
+        const long sixtyMinuteTicks = 60L * 60 * TimeSpan.TicksPerSecond;
+        var thirtyMinuteTicks = 30L * 60 * TimeSpan.TicksPerSecond;
+
+        var item = new AudioBook { RunTimeTicks = sixtyMinuteTicks };
+        var data = new UserItemData { Key = string.Empty };
+
+        manager.UpdatePlayState(item, data, thirtyMinuteTicks);
+
+        Assert.False(data.PartiallyPlayed);
+    }
+
+    [Theory]
+    [InlineData(0, false)] // not started
+    [InlineData(5, false)] // not played
+    [InlineData(9, false)] // not played
+    [InlineData(10, false)] // partially played
+    [InlineData(50, false)] // partially played
+    [InlineData(90, false)] // partially played
+    [InlineData(91, true)] // fully played
+    [InlineData(100, true)] // fully played
+    public void UpdatePlayState_Audio_ReturnsExpectedCompletion(int positionPct, bool expectedCompletion)
+    {
+        var manager = CreateManager(minAudioResumePct: 10, maxAudioResumePct: 90);
+        var item = new Audio { RunTimeTicks = ThreeMinuteSongTicks };
+        var data = new UserItemData { Key = string.Empty };
+        var result = manager.UpdatePlayState(item, data, PercentToTicks(ThreeMinuteSongTicks, positionPct));
+        Assert.Equal(expectedCompletion, result);
+        Assert.Equal(expectedCompletion, data.Played);
+    }
+
+    [Fact]
+    public void UpdatePlayState_Audio_FullyPlayed_ResetsPositionToZero()
+    {
+        var manager = CreateManager();
+        var item = new Audio { RunTimeTicks = ThreeMinuteSongTicks };
+        var data = new UserItemData { Key = string.Empty };
+
+        manager.UpdatePlayState(item, data, PercentToTicks(ThreeMinuteSongTicks, 95));
+
+        Assert.Equal(0, data.PlaybackPositionTicks);
+        Assert.True(data.Played);
+    }
+
+    [Fact]
+    public void UpdatePlayState_Audio_NeverSetsSkipCount()
+    {
+        var manager = CreateManager();
+        var item = new Audio { RunTimeTicks = ThreeMinuteSongTicks };
+        var data = new UserItemData { Key = string.Empty, SkipCount = 3 };
+
+        manager.UpdatePlayState(item, data, PercentToTicks(ThreeMinuteSongTicks, 2));
+
+        Assert.Equal(3, data.SkipCount); // unchanged
+    }
+
+    [Fact]
+    public void UpdatePlayState_AudioBook_IsNotAffectedByAudioThresholds()
+    {
+        var manager = CreateManager(minAudioResumePct: 80, maxAudioResumePct: 95);
+
+        const long sixtyMinuteTicks = 60L * 60 * TimeSpan.TicksPerSecond;
+        var thirtyMinuteTicks = 30L * 60 * TimeSpan.TicksPerSecond;
+
+        var item = new AudioBook { RunTimeTicks = sixtyMinuteTicks };
+        var data = new UserItemData { Key = string.Empty };
+
+        var result = manager.UpdatePlayState(item, data, thirtyMinuteTicks);
+
+        Assert.False(result);
+        Assert.False(data.Played);
+        Assert.Equal(thirtyMinuteTicks, data.PlaybackPositionTicks);
+        Assert.Equal(0, data.SkipCount);
+    }
+
+    #endregion
+
+    #region GetUserData Tests
 
     [Fact]
     public void GetUserData_RowsUnderCurrentAndRetiredKeys_PrefersCurrentKeyRow()
@@ -206,6 +347,7 @@ public sealed class UserDataManagerTests : IDisposable
         Assert.Equal(222, result[fossilItem.Id].PlaybackPositionTicks);
         Assert.Equal(333, result[retiredItem.Id].PlaybackPositionTicks);
     }
+}
 
     [Fact]
     public void GetUserData_NullUser_ThrowsArgumentNullException()
