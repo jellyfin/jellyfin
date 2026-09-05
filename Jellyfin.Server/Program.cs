@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -72,14 +71,30 @@ namespace Jellyfin.Server
         {
             static Task ErrorParsingArguments(IEnumerable<Error> errors)
             {
-                Environment.ExitCode = 1;
+                Environment.ExitCode = errors.Any(IsBuiltInOptionRequest) ? 0 : 1;
                 return Task.CompletedTask;
+            }
+
+            var builtInOption = args.FirstOrDefault(IsBuiltInOption);
+            if (builtInOption is not null)
+            {
+                return new Parser(static settings => settings.HelpWriter = Console.Out)
+                    .ParseArguments<StartupOptions>(new[] { builtInOption })
+                    .MapResult(static _ => Task.CompletedTask, ErrorParsingArguments);
             }
 
             // Parse the command line arguments and either start the app or exit indicating error
             return Parser.Default.ParseArguments<StartupOptions>(args)
                 .MapResult(StartApp, ErrorParsingArguments);
         }
+
+        private static bool IsBuiltInOption(string arg)
+            => string.Equals(arg, "--help", StringComparison.Ordinal)
+                || string.Equals(arg, "--version", StringComparison.Ordinal);
+
+        private static bool IsBuiltInOptionRequest(Error error)
+            => error.Tag is ErrorType.HelpRequestedError
+                or ErrorType.VersionRequestedError;
 
         private static async Task StartApp(StartupOptions options)
         {
