@@ -27,7 +27,7 @@ public static class StartupActivity
     /// <summary>Bringing up core services and plugins.</summary>
     public const string InitializingServices = "Initializing services";
 
-    /// <summary>Refreshing the database query planner statistics.</summary>
+    /// <summary>Refreshing the database statistics after migrations have run.</summary>
     public const string OptimizingDatabase = "Optimizing database";
 
     /// <summary>Running the final startup tasks.</summary>
