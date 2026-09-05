@@ -181,8 +181,8 @@ namespace Emby.Server.Implementations.SyncPlay
                     {
                         if (existingGroup.GroupId.Equals(request.GroupId))
                         {
-                            // Restore session.
-                            UpdateSessionsCounter(session.UserId, 1);
+                            // Restore session. The session is already in the group and has already
+                            // been counted, so the counter must not be incremented a second time.
                             group.SessionJoin(session, request, cancellationToken);
                             return;
                         }
@@ -400,7 +400,7 @@ namespace Emby.Server.Implementations.SyncPlay
             // Update sessions counter.
             var newSessionsCounter = _activeUsers.AddOrUpdate(
                 userId,
-                1,
+                toAdd,
                 (_, sessionsCounter) => sessionsCounter + toAdd);
 
             // Should never happen.
