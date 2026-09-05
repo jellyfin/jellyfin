@@ -1,5 +1,6 @@
 using System;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -15,9 +16,23 @@ using Xunit;
 
 namespace Jellyfin.Providers.Tests.TV;
 
-public class EpisodeMetadataServiceTests
+// put tests that mock the static LibraryManager in the same collection to avoid test interference
+[Collection("LibraryManagerTests")]
+public sealed class EpisodeMetadataServiceTests : IDisposable
 {
     private readonly TestEpisodeMetadataService _service = new();
+    private readonly ILibraryManager? _previousLibraryManager;
+
+    public EpisodeMetadataServiceTests()
+    {
+        _previousLibraryManager = BaseItem.LibraryManager;
+        BaseItem.LibraryManager = Mock.Of<ILibraryManager>();
+    }
+
+    public void Dispose()
+    {
+        BaseItem.LibraryManager = _previousLibraryManager;
+    }
 
     [Fact]
     public void MergeData_ProviderSeasonOverridesPathDerivedSeason()
@@ -88,6 +103,58 @@ public class EpisodeMetadataServiceTests
         Assert.Equal(1, target.Item.ParentIndexNumber);
     }
 
+    [Theory]
+    [InlineData(2, 1)] // e.g. an nfo with its episodedetails blocks in descending order
+    [InlineData(22, 21)]
+    public void BeforeSave_ReversedEpisodeRange_RestoresOrder(int indexNumber, int indexNumberEnd)
+    {
+        var item = new Episode
+        {
+            IndexNumber = indexNumber,
+            IndexNumberEnd = indexNumberEnd
+        };
+
+        var updateType = _service.BeforeSave(item);
+
+        // The range still covers the same episodes, it is just no longer transposed
+        Assert.Equal(indexNumberEnd, item.IndexNumber);
+        Assert.Equal(indexNumber, item.IndexNumberEnd);
+        Assert.True(updateType.HasFlag(ItemUpdateType.MetadataImport));
+    }
+
+    [Fact]
+    public void BeforeSave_EpisodeRangeWithoutStart_ClearsIndexNumberEnd()
+    {
+        var item = new Episode
+        {
+            IndexNumber = null,
+            IndexNumberEnd = 2
+        };
+
+        var updateType = _service.BeforeSave(item);
+
+        Assert.Null(item.IndexNumberEnd);
+        Assert.Null(item.IndexNumber);
+        Assert.True(updateType.HasFlag(ItemUpdateType.MetadataImport));
+    }
+
+    [Theory]
+    [InlineData(1, 2)] // Regular multi episode file
+    [InlineData(1, 1)] // Degenerate but not contradictory
+    public void BeforeSave_ValidEpisodeRange_KeepsIndexNumberEnd(int indexNumber, int indexNumberEnd)
+    {
+        var item = new Episode
+        {
+            IndexNumber = indexNumber,
+            IndexNumberEnd = indexNumberEnd
+        };
+
+        _service.BeforeSave(item);
+
+        Assert.Equal(indexNumber, item.IndexNumber);
+        Assert.Equal(indexNumberEnd, item.IndexNumberEnd);
+    }
+
     private sealed class TestEpisodeMetadataService : EpisodeMetadataService
     {
         public TestEpisodeMetadataService()
@@ -105,6 +172,11 @@ public class EpisodeMetadataServiceTests
         public void Merge(MetadataResult<Episode> source, MetadataResult<Episode> target, bool replaceData, bool mergeMetadataSettings)
         {
             MergeData(source, target, Array.Empty<MetadataField>(), replaceData, mergeMetadataSettings);
+        }
+
+        public ItemUpdateType BeforeSave(Episode item)
+        {
+            return BeforeSaveInternal(item, false, ItemUpdateType.None);
         }
     }
 }

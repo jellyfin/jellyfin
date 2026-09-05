@@ -44,6 +44,33 @@ public class EpisodeMetadataService : MetadataService<Episode, EpisodeInfo>
     {
         var updatedType = base.BeforeSaveInternal(item, isFullRefresh, updateType);
 
+        // An episode cannot end before it starts. Providers and nfo files occasionally report the range
+        // transposed, which makes clients render the episode number backwards. Both numbers describe the
+        // same set of episodes either way, so restore their order instead of dropping the range.
+        if (item.IndexNumber.HasValue && item.IndexNumberEnd < item.IndexNumber)
+        {
+            Logger.LogWarning(
+                "Correcting reversed episode range {IndexNumber}-{IndexNumberEnd} for {Path}",
+                item.IndexNumber,
+                item.IndexNumberEnd,
+                item.Path);
+
+            (item.IndexNumber, item.IndexNumberEnd) = (item.IndexNumberEnd, item.IndexNumber);
+            updatedType |= ItemUpdateType.MetadataImport;
+        }
+        else if (item.IndexNumberEnd.HasValue && !item.IndexNumber.HasValue)
+        {
+            // Without a first episode the end does not describe a range. Promoting it to the episode number
+            // would invent an identity the metadata never supplied, so drop the orphaned value instead.
+            Logger.LogWarning(
+                "Discarding episode range end {IndexNumberEnd} without an episode number for {Path}",
+                item.IndexNumberEnd,
+                item.Path);
+
+            item.IndexNumberEnd = null;
+            updatedType |= ItemUpdateType.MetadataImport;
+        }
+
         var seriesName = item.FindSeriesName();
         if (!string.Equals(item.SeriesName, seriesName, StringComparison.Ordinal))
         {

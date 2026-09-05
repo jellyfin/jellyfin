@@ -124,6 +124,27 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         }
 
         [Fact]
+        public void Fetch_Valid_MultiEpisode_Unordered_Success()
+        {
+            var result = new MetadataResult<Episode>()
+            {
+                Item = new Episode()
+            };
+
+            _parser.Fetch(result, "Test Data/Rising-Reversed.nfo", CancellationToken.None);
+
+            var item = result.Item;
+            // The episodedetails blocks are stored in descending order, the merged episode must still be in ascending order
+            Assert.Equal("Rising (1) / Rising (2)", item.Name);
+            Assert.Equal(1, item.IndexNumber);
+            Assert.Equal(2, item.IndexNumberEnd);
+            Assert.Equal(1, item.ParentIndexNumber);
+            Assert.Equal("A new Stargate team embarks on a dangerous mission to a distant galaxy, where they discover a mythical lost city -- and a deadly new enemy. / Sheppard tries to convince Weir to mount a rescue mission to free Colonel Sumner, Teyla, and the others captured by the Wraith.", item.Overview);
+            Assert.Equal(new DateTime(2004, 7, 16), item.PremiereDate);
+            Assert.Equal(2004, item.ProductionYear);
+        }
+
+        [Fact]
         public void Fetch_Valid_MultiEpisode_With_Missing_Tags_Success()
         {
             var result = new MetadataResult<Episode>()
