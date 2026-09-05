@@ -91,6 +91,18 @@ namespace Emby.Server.Implementations.SyncPlay
         public long DefaultPing { get; } = 500;
 
         /// <summary>
+        /// Gets the maximum ping, in milliseconds, accepted from a session.
+        /// </summary>
+        /// <remarks>
+        /// Pings are reported by clients and are scaled into the delays used to schedule playback,
+        /// so an unbounded value lets a single session push the whole group's resume point
+        /// arbitrarily far out, or overflow the arithmetic entirely. Anything above this is not a
+        /// usable measurement for synchronisation.
+        /// </remarks>
+        /// <value>The maximum ping.</value>
+        public long MaxPing { get; } = 10000;
+
+        /// <summary>
         /// Gets the maximum time offset error accepted for dates reported by clients, in milliseconds.
         /// </summary>
         /// <value>The maximum time offset error.</value>
@@ -438,7 +450,7 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             if (_participants.TryGetValue(session.Id, out GroupMember value))
             {
-                value.Ping = ping;
+                value.Ping = Math.Clamp(ping, 0, MaxPing);
             }
         }
 

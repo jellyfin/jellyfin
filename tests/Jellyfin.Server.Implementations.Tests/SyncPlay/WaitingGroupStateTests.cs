@@ -53,6 +53,34 @@ public class WaitingGroupStateTests
             $"expected a resume delay of at least {group.DefaultPing} ms, got {scheduledDelay.TotalMilliseconds} ms");
     }
 
+    [Theory]
+    [InlineData(4_000_000_000L)]
+    [InlineData(1_000_000_000_000_000L)]
+    [InlineData(long.MaxValue)]
+    [InlineData(-1L)]
+    public void UpdatePing_ClientReportsAnUnusablePing_IsClampedAndCannotStallTheGroup(long reportedPing)
+    {
+        var harness = new GroupHarness();
+        var group = harness.Group;
+
+        group.UpdatePing(harness.First, reportedPing);
+
+        Assert.InRange(group.GetHighestPing(), 0, group.MaxPing);
+
+        // The reported ping is scaled into the group's resume point, so an unclamped value either
+        // pushes playback months out or overflows the arithmetic outright.
+        var state = new PlayingGroupState(NullLoggerFactory.Instance);
+        var before = DateTime.UtcNow;
+        state.HandleRequest(
+            new UnpauseGroupRequest(),
+            group,
+            GroupStateType.Paused,
+            harness.First,
+            CancellationToken.None);
+
+        Assert.InRange(group.LastActivity - before, TimeSpan.Zero, TimeSpan.FromMinutes(1));
+    }
+
     private sealed class GroupHarness
     {
         public GroupHarness()
@@ -71,6 +99,10 @@ public class WaitingGroupStateTests
 
             sessionManager
                 .Setup(m => m.SendSyncPlayCommand(It.IsAny<string>(), It.IsAny<SendCommand>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            sessionManager
+                .Setup(m => m.SendSyncPlayGroupUpdate(It.IsAny<string>(), It.IsAny<GroupUpdate<GroupStateUpdate>>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
             Group = new SyncPlayGroup(
