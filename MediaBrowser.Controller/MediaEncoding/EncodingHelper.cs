@@ -347,7 +347,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             if (state.VideoStream is null
                 || GetVideoColorBitDepth(state) < 10
-                || !_mediaEncoder.SupportsFilter("tonemapx"))
+                || !_mediaEncoder.SupportsFilter("tonemapx")
+                || state.VideoStream.ColorSpace == "bt709")
             {
                 return false;
             }
@@ -359,7 +360,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             if (state.VideoStream is null
                 || !options.EnableTonemapping
-                || GetVideoColorBitDepth(state) < 10)
+                || GetVideoColorBitDepth(state) < 10
+                || state.VideoStream.ColorSpace == "bt709")
             {
                 return false;
             }
@@ -392,7 +394,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         private bool IsVulkanHwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
         {
-            if (state.VideoStream is null)
+            if (state.VideoStream is null
+                || state.VideoStream.ColorSpace == "bt709")
             {
                 return false;
             }
@@ -407,7 +410,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             if (state.VideoStream is null
                 || !options.EnableVppTonemapping
-                || GetVideoColorBitDepth(state) < 10)
+                || GetVideoColorBitDepth(state) < 10
+                || state.VideoStream.ColorSpace == "bt709")
             {
                 return false;
             }
@@ -431,7 +435,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             if (state.VideoStream is null
                 || !options.EnableVideoToolboxTonemapping
-                || GetVideoColorBitDepth(state) < 10)
+                || GetVideoColorBitDepth(state) < 10
+                || state.VideoStream.ColorSpace == "bt709")
             {
                 return false;
             }
@@ -1435,6 +1440,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             var requestHasDOVI = requestedRangeTypes.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
             var requestHasDOVIwithEL = requestedRangeTypes.Contains(VideoRangeType.DOVIWithEL.ToString(), StringComparison.OrdinalIgnoreCase);
             var requestHasDOVIwithELHDR10plus = requestedRangeTypes.Contains(VideoRangeType.DOVIWithELHDR10Plus.ToString(), StringComparison.OrdinalIgnoreCase);
+
+            if (videoStream.ColorSpace == "bt709" && requestHasDOVI)
+            {
+                return DynamicHdrMetadataRemovalPlan.RemoveDovi;
+            }
 
             var shouldRemoveHdr10Plus = false;
             // Case 1: Client supports HDR10, does not support DOVI with EL but EL presets
