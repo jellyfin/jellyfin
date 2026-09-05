@@ -33,7 +33,9 @@ namespace Emby.Server.Implementations.Updates
     public class InstallationManager : IInstallationManager
     {
         private static readonly SearchValues<char> InvalidPackageNameChars = SearchValues.Create([.. Path.GetInvalidFileNameChars(), '/', '\\']);
-        private static readonly TimeSpan _packageDownloadTimeout = TimeSpan.FromMinutes(10);
+        // Budget for the whole package download. The response headers are already bounded by the
+        // HttpClient timeout; this covers reading the package body, which can be large and slow.
+        private static readonly TimeSpan PackageDownloadTimeout = TimeSpan.FromMinutes(10);
 
         /// <summary>
         /// The logger.
@@ -550,7 +552,7 @@ namespace Emby.Server.Implementations.Updates
             // ResponseHeadersRead keeps the body out of the HttpClient timeout, which otherwise covers
             // the whole download; the package gets the longer budget below instead.
             using var downloadTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            downloadTokenSource.CancelAfter(_packageDownloadTimeout);
+            downloadTokenSource.CancelAfter(PackageDownloadTimeout);
             var downloadToken = downloadTokenSource.Token;
 
             var buffer = new MemoryStream();
