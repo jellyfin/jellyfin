@@ -3,6 +3,7 @@
 #pragma warning disable CA1721, CA1826, CS1591
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -16,6 +17,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using Microsoft.Extensions.Logging;
 using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
 
 namespace MediaBrowser.Controller.Entities.Audio
@@ -26,6 +28,11 @@ namespace MediaBrowser.Controller.Entities.Audio
     [Common.RequiresSourceSerialisation]
     public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>, IMetadataContainer
     {
+        /// <summary>
+        /// Maximum time a single child item's metadata refresh may run before it is abandoned.
+        /// </summary>
+        private static readonly TimeSpan _childMetadataRefreshTimeout = TimeSpan.FromSeconds(60);
+
         public MusicAlbum()
         {
             Artists = Array.Empty<string>();
@@ -167,22 +174,62 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             var items = GetRecursiveChildren();
 
-            var totalItems = items.Count;
-            var numComplete = 0;
-
             var childUpdateType = ItemUpdateType.None;
+            var updateTypeLock = new Lock();
+            var failedItems = new ConcurrentBag<BaseItem>();
 
-            foreach (var item in items)
+            async Task RefreshChildAsync(BaseItem item)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeoutCts.CancelAfter(_childMetadataRefreshTimeout);
 
-                var updateType = await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-                childUpdateType = childUpdateType | updateType;
+                try
+                {
+                    var updateType = await item.RefreshMetadata(refreshOptions, timeoutCts.Token).ConfigureAwait(false);
+                    lock (updateTypeLock)
+                    {
+                        childUpdateType |= updateType;
+                    }
+                }
+                catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+                {
+                    failedItems.Add(item);
+                    Logger.LogError(
+                        ex,
+                        "Timed out after {Timeout} refreshing metadata for {ItemType} '{ItemName}' ({ItemPath})",
+                        _childMetadataRefreshTimeout,
+                        item.GetType().Name,
+                        item.Name,
+                        item.Path);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    failedItems.Add(item);
+                    Logger.LogError(
+                        ex,
+                        "Error refreshing metadata for {ItemType} '{ItemName}' ({ItemPath})",
+                        item.GetType().Name,
+                        item.Name,
+                        item.Path);
+                }
+            }
 
-                numComplete++;
-                double percent = numComplete;
-                percent /= totalItems;
-                progress.Report(percent * 95);
+            var itemsProgress = new Progress<double>(p => progress.Report(p * 0.95));
+            await LimitedConcurrencyLibraryScheduler
+                .Enqueue(
+                    items.ToArray(),
+                    (item, _) => RefreshChildAsync(item),
+                    itemsProgress,
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!failedItems.IsEmpty)
+            {
+                Logger.LogWarning(
+                    "Failed to refresh metadata for {FailedCount} of {TotalCount} child items in album '{AlbumName}'",
+                    failedItems.Count,
+                    items.Count,
+                    Name);
             }
 
             var parentRefreshOptions = refreshOptions;
