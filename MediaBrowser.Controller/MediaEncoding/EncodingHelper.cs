@@ -1303,7 +1303,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                     arg.Append(' ').Append(analyzeDurationArgument);
                 }
 
-                // Apply probesize, too, if configured
                 var ffmpegProbeSizeArgument = GetFfmpegProbesizeArg();
                 if (!string.IsNullOrEmpty(ffmpegProbeSizeArgument))
                 {
@@ -7280,7 +7279,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         private string GetFfmpegProbesizeArg()
         {
-            var ffmpegProbeSize = _config.GetFFmpegProbeSize();
+            var ffmpegProbeSize = _config.GetFFmpegPlaybackProbeSize();
 
             if (!string.IsNullOrEmpty(ffmpegProbeSize))
             {
