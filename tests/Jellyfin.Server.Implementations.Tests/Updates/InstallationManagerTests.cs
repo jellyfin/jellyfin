@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -97,6 +97,32 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
         }
 
         [Fact]
+        public async Task InstallPackage_UnknownChecksumAlgorithm_ThrowsInvalidDataException()
+        {
+            var packageInfo = new InstallationInfo()
+            {
+                Name = "Test",
+                SourceUrl = "https://repo.jellyfin.org/releases/plugin/empty/empty.zip",
+                Checksum = "sha999:3953e8eec12765950f32ec81cd590ac62825f84a355ee74d542516201519f8ae"
+            };
+
+            await Assert.ThrowsAsync<InvalidDataException>(() => _installationManager.InstallPackage(packageInfo, CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task InstallPackage_InvalidChecksumDigestFormat_ThrowsInvalidDataException()
+        {
+            var packageInfo = new InstallationInfo()
+            {
+                Name = "Test",
+                SourceUrl = "https://repo.jellyfin.org/releases/plugin/empty/empty.zip",
+                Checksum = "sha256"
+            };
+
+            await Assert.ThrowsAsync<InvalidDataException>(() => _installationManager.InstallPackage(packageInfo, CancellationToken.None));
+        }
+
+        [Fact]
         public async Task InstallPackage_Valid_Success()
         {
             var packageInfo = new InstallationInfo()
@@ -132,6 +158,34 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
             };
 
             await Assert.ThrowsAsync<InvalidDataException>(() => _installationManager.InstallPackage(packageInfo, CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task InstallPackage_ValidSha256Digest_Success()
+        {
+            var packageInfo = new InstallationInfo()
+            {
+                Name = "Test",
+                SourceUrl = "https://repo.jellyfin.org/releases/plugin/empty/empty.zip",
+                Checksum = "sha256:3953e8eec12765950f32ec81cd590ac62825f84a355ee74d542516201519f8ae"
+            };
+
+            var ex = await Record.ExceptionAsync(() => _installationManager.InstallPackage(packageInfo, CancellationToken.None));
+            Assert.Null(ex);
+        }
+
+        [Fact]
+        public async Task InstallPackage_ValidSha512Digest_Success()
+        {
+            var packageInfo = new InstallationInfo()
+            {
+                Name = "Test",
+                SourceUrl = "https://repo.jellyfin.org/releases/plugin/empty/empty.zip",
+                Checksum = "sha512:a6c651fcbbc74b95dc52647a312c332d9ecf6290821de099fee38797fa1c8057d48f3e99c935601f122d9afac65605515fa014944060177cf9ff18309a28a2d2"
+            };
+
+            var ex = await Record.ExceptionAsync(() => _installationManager.InstallPackage(packageInfo, CancellationToken.None));
+            Assert.Null(ex);
         }
     }
 }
