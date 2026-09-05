@@ -11,7 +11,6 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Events;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
@@ -34,6 +33,7 @@ namespace Emby.Server.Implementations.Updates
     public class InstallationManager : IInstallationManager
     {
         private static readonly SearchValues<char> InvalidPackageNameChars = SearchValues.Create([.. Path.GetInvalidFileNameChars(), '/', '\\']);
+        private static readonly TimeSpan _packageDownloadTimeout = TimeSpan.FromMinutes(10);
 
         /// <summary>
         /// The logger.
@@ -82,8 +82,8 @@ namespace Emby.Server.Implementations.Updates
             IServerConfigurationManager config,
             IPluginManager pluginManager)
         {
-            _currentInstallations = new List<(InstallationInfo, CancellationTokenSource)>();
-            _completedInstallationsInternal = new ConcurrentBag<InstallationInfo>();
+            _currentInstallations = [];
+            _completedInstallationsInternal = [];
 
             _logger = logger;
             _applicationHost = appHost;
@@ -341,8 +341,9 @@ namespace Emby.Server.Implementations.Updates
 
                 _applicationHost.NotifyPendingRestart();
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (linkedToken.IsCancellationRequested)
             {
+                // Only an actually cancelled token is a cancellation.
                 lock (_currentInstallationsLock)
                 {
                     _currentInstallations.Remove(tuple);
@@ -356,7 +357,7 @@ namespace Emby.Server.Implementations.Updates
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Package installation failed");
+                _logger.LogError(ex, "Package installation failed: {Name} {Version}", package.Name, package.Version);
 
                 lock (_currentInstallationsLock)
                 {
@@ -546,12 +547,36 @@ namespace Emby.Server.Implementations.Updates
                 throw new InvalidDataException($"Plugin package name '{package.Name}' resolves outside the plugins directory.");
             }
 
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                .GetAsync(new Uri(package.SourceUrl), cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-            Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await using (stream.ConfigureAwait(false))
+            // ResponseHeadersRead keeps the body out of the HttpClient timeout, which otherwise covers
+            // the whole download; the package gets the longer budget below instead.
+            using var downloadTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            downloadTokenSource.CancelAfter(_packageDownloadTimeout);
+            var downloadToken = downloadTokenSource.Token;
+
+            var buffer = new MemoryStream();
+            await using (buffer.ConfigureAwait(false))
             {
+                try
+                {
+                    using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                        .GetAsync(new Uri(package.SourceUrl), HttpCompletionOption.ResponseHeadersRead, downloadToken).ConfigureAwait(false);
+                    response.EnsureSuccessStatusCode();
+
+                    // The package is read twice, for the checksum and for the extraction, so it has
+                    // to be buffered: the response stream is not seekable.
+                    await response.Content.CopyToAsync(buffer, downloadToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+                {
+                    // Either our budget above or the HttpClient timeout ran out.
+                    throw new TimeoutException(
+                        $"Downloading the package {package.Name} {package.Version} from {package.SourceUrl} timed out.",
+                        ex);
+                }
+
+                buffer.Position = 0;
+                Stream stream = buffer;
+
                 // CA5351: Do Not Use Broken Cryptographic Algorithms
 #pragma warning disable CA5351
                 cancellationToken.ThrowIfCancellationRequested();
