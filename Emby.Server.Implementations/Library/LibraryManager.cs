@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -1507,6 +1508,10 @@ namespace Emby.Server.Implementations.Library
             var numComplete = 0;
             var numTasks = tasks.Count;
 
+            _logger.LogInformation("Running {TaskCount} post-scan task(s)", numTasks);
+
+            var phaseStart = Stopwatch.GetTimestamp();
+
             foreach (var task in tasks)
             {
                 // Prevent access to modified closure
@@ -1524,20 +1529,45 @@ namespace Emby.Server.Implementations.Library
                     progress.Report(innerPercent);
                 });
 
-                _logger.LogDebug("Running post-scan task {0}", task.GetType().Name);
+                var taskName = task.GetType().Name;
+                var taskStart = Stopwatch.GetTimestamp();
+
+                _logger.LogInformation(
+                    "Running post-scan task {TaskNumber}/{TaskCount}: {TaskName}",
+                    currentNumComplete + 1,
+                    numTasks,
+                    taskName);
 
                 try
                 {
                     await task.Run(innerProgress, cancellationToken).ConfigureAwait(false);
+
+                    var elapsed = Stopwatch.GetElapsedTime(taskStart);
+                    _logger.LogInformation(
+                        "Post-scan task {TaskName} completed after {Minutes} minute(s) and {Seconds} seconds",
+                        taskName,
+                        Math.Truncate(elapsed.TotalMinutes),
+                        elapsed.Seconds);
                 }
                 catch (OperationCanceledException)
                 {
-                    _logger.LogInformation("Post-scan task cancelled: {0}", task.GetType().Name);
+                    var elapsed = Stopwatch.GetElapsedTime(taskStart);
+                    _logger.LogInformation(
+                        "Post-scan task {TaskName} cancelled after {Minutes} minute(s) and {Seconds} seconds",
+                        taskName,
+                        Math.Truncate(elapsed.TotalMinutes),
+                        elapsed.Seconds);
                     throw;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error running post-scan task");
+                    var elapsed = Stopwatch.GetElapsedTime(taskStart);
+                    _logger.LogError(
+                        ex,
+                        "Post-scan task {TaskName} failed after {Minutes} minute(s) and {Seconds} seconds",
+                        taskName,
+                        Math.Truncate(elapsed.TotalMinutes),
+                        elapsed.Seconds);
                 }
 
                 numComplete++;
@@ -1545,6 +1575,12 @@ namespace Emby.Server.Implementations.Library
                 percent /= numTasks;
                 progress.Report(percent * 100);
             }
+
+            var phaseElapsed = Stopwatch.GetElapsedTime(phaseStart);
+            _logger.LogInformation(
+                "All post-scan tasks completed after {Minutes} minute(s) and {Seconds} seconds",
+                Math.Truncate(phaseElapsed.TotalMinutes),
+                phaseElapsed.Seconds);
 
             _persistenceService.UpdateInheritedValues();
 
