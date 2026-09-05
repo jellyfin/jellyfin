@@ -163,6 +163,19 @@ public class EncodingHelperTests
         Assert.Contains("-map 1:1", args, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void CanStreamCopyVideo_AlwaysBurnSubtitleWhenEncodingVideo_ReturnsFalse()
+    {
+        var sub = new MediaStream { Index = 2, Type = MediaStreamType.Subtitle, Codec = "srt" };
+        var state = BuildState(sub, SubtitleDeliveryMethod.External);
+        state.BaseRequest.SubtitleStreamIndex = sub.Index;
+        state.BaseRequest.AlwaysBurnInSubtitleWhenTranscoding = true;
+        state.OutputVideoCodec = "h264";
+        state.SupportedVideoCodecs = ["h264"];
+
+        Assert.False(CreateHelper().CanStreamCopyVideo(state, state.VideoStream));
+    }
+
     [Theory]
     [InlineData(SubtitleDeliveryMethod.Embed, true, "movie.idx")]
     [InlineData(SubtitleDeliveryMethod.Encode, true, "movie.idx")]
