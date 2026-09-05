@@ -467,6 +467,13 @@ public class SubtitleController : BaseJellyfinApiController
     /// <param name="endPositionTicks">The end position in ticks.</param>
     /// <param name="copyTimestamps">Whether to copy the timestamps.</param>
     /// <returns>A <see cref="Task{Stream}"/> with the new subtitle file.</returns>
+    /// <remarks>
+    /// Passes <see cref="HttpContext.RequestAborted"/> so that an embedded-subtitle extraction started by
+    /// this request is cancelled when the client goes away (player closed, title switched). Extraction reads
+    /// the source container to EOF, so without this the ffmpeg process keeps reading — and, for remote
+    /// sources such as .strm/HTTP or rclone mounts, keeps downloading the whole file — long after the
+    /// playback that triggered it has stopped.
+    /// </remarks>
     private Task<Stream> EncodeSubtitles(
         Guid id,
         string? mediaSourceId,
@@ -486,7 +493,7 @@ public class SubtitleController : BaseJellyfinApiController
             startPositionTicks,
             endPositionTicks ?? 0,
             copyTimestamps,
-            CancellationToken.None);
+            HttpContext.RequestAborted);
     }
 
     /// <summary>
