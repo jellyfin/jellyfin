@@ -287,6 +287,32 @@ public class EncodingHelperTests
         };
     }
 
+    [Theory]
+    [InlineData("libx264", true)]
+    [InlineData("h264_videotoolbox", false)]
+    public void GetVideoQualityParam_RequestedH264Level_OmittedForVideoToolbox(string videoEncoder, bool expectLevel)
+    {
+        var state = BuildState(subtitle: null, deliveryMethod: null);
+        state.OutputVideoCodec = "h264";
+        state.BaseRequest.Level = "41";
+        var options = new EncodingOptions
+        {
+            HardwareAccelerationType = expectLevel ? HardwareAccelerationType.none : HardwareAccelerationType.videotoolbox
+        };
+
+        var param = CreateHelper().GetVideoQualityParam(state, videoEncoder, options, EncoderPreset.veryfast);
+
+        if (expectLevel)
+        {
+            Assert.Contains(" -level 41", param, StringComparison.Ordinal);
+        }
+        else
+        {
+            // VideoToolbox rejects a level that cannot hold the output (kVTParameterErr -12902).
+            Assert.DoesNotContain("-level", param, StringComparison.Ordinal);
+        }
+    }
+
     private static EncodingJobInfo BuildState(
         MediaStream? subtitle,
         SubtitleDeliveryMethod? deliveryMethod,
