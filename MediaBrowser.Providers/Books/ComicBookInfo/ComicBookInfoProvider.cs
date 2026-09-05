@@ -133,7 +133,7 @@ public class ComicBookInfoProvider : IComicProvider
         return fileInfo.Extension.Equals(".cbz", StringComparison.OrdinalIgnoreCase) ? fileInfo : null;
     }
 
-    private static Book? ReadComicBookMetadata(ComicBookInfoMetadata comic)
+    internal static Book? ReadComicBookMetadata(ComicBookInfoMetadata comic)
     {
         var book = new Book();
         var hasFoundMetadata = false;
@@ -171,7 +171,7 @@ public class ComicBookInfoProvider : IComicProvider
         return hasFoundMetadata ? book : null;
     }
 
-    private static void ReadPeopleMetadata(ComicBookInfoMetadata comic, MetadataResult<Book> metadataResult)
+    internal static void ReadPeopleMetadata(ComicBookInfoMetadata comic, MetadataResult<Book> metadataResult)
     {
         foreach (var person in comic.Credits)
         {
@@ -200,7 +200,7 @@ public class ComicBookInfoProvider : IComicProvider
         }
     }
 
-    private static string? ReadCultureInfoInto(string language)
+    internal static string? ReadCultureInfoInto(string language)
     {
         try
         {
