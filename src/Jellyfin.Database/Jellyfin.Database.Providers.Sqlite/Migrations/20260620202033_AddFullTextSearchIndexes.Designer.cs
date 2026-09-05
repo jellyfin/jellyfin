@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Jellyfin.Server.Implementations.Migrations
+namespace Jellyfin.Database.Providers.Sqlite.Migrations
 {
     [DbContext(typeof(SqliteJellyfinDbContext))]
-    [Migration("20250925203415_ExtendPeopleMapKey")]
-    partial class ExtendPeopleMapKey
+    [Migration("20260620202033_AddFullTextSearchIndexes")]
+    partial class AddFullTextSearchIndexes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
