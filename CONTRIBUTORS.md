@@ -145,6 +145,7 @@
  - [Soumyadip Auddy](https://github.com/SoumyadipAuddy)
  - [st7105](https://github.com/st7105)
  - [sparky8251](https://github.com/sparky8251)
+ - [Speenah](https://github.com/Speenah)
  - [spookbits](https://github.com/spookbits)
  - [ssenart](https://github.com/ssenart)
  - [stanionascu](https://github.com/stanionascu)
