@@ -191,12 +191,14 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
 
                 // Keyed on its own stop source, because cancelling that is what reaches the linked
                 // source the runner waits on. Cancellation does not travel the other way.
+                // Started without the runner's own token: a task cancelled before it is scheduled
+                // never runs its body, so it would never take itself out of _taskRunners again.
                 _taskRunners.Add(
                     stopToken,
                     Task.Factory.StartNew(
                         ItemWorker,
                         (stopToken, combinedSource),
-                        combinedSource.Token,
+                        CancellationToken.None,
                         TaskCreationOptions.PreferFairness,
                         TaskScheduler.Default));
             }
