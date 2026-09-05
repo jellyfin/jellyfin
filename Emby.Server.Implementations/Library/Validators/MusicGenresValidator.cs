@@ -79,11 +79,7 @@ public class MusicGenresValidator
             }
 
             numComplete++;
-            double percent = numComplete;
-            percent /= count;
-            percent *= 100;
-
-            progress.Report(percent);
+            progress.Report(numComplete * 100.0 / count);
         }
 
         _logger.LogInformation("Refreshed metadata for {RefreshedCount} new music genres out of {TotalCount} total", refreshed, count);
