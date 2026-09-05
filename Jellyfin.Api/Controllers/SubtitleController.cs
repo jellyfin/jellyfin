@@ -12,8 +12,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.SubtitleDtos;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
@@ -44,6 +44,7 @@ public class SubtitleController : BaseJellyfinApiController
     private readonly ILibraryManager _libraryManager;
     private readonly ISubtitleManager _subtitleManager;
     private readonly ISubtitleEncoder _subtitleEncoder;
+    private readonly IUserManager _userManager;
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IProviderManager _providerManager;
     private readonly IFileSystem _fileSystem;
@@ -54,6 +55,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// </summary>
     /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="subtitleManager">Instance of <see cref="ISubtitleManager"/> interface.</param>
     /// <param name="subtitleEncoder">Instance of <see cref="ISubtitleEncoder"/> interface.</param>
     /// <param name="mediaSourceManager">Instance of <see cref="IMediaSourceManager"/> interface.</param>
@@ -63,6 +65,7 @@ public class SubtitleController : BaseJellyfinApiController
     public SubtitleController(
         IServerConfigurationManager serverConfigurationManager,
         ILibraryManager libraryManager,
+        IUserManager userManager,
         ISubtitleManager subtitleManager,
         ISubtitleEncoder subtitleEncoder,
         IMediaSourceManager mediaSourceManager,
@@ -72,6 +75,7 @@ public class SubtitleController : BaseJellyfinApiController
     {
         _serverConfigurationManager = serverConfigurationManager;
         _libraryManager = libraryManager;
+        _userManager = userManager;
         _subtitleManager = subtitleManager;
         _subtitleEncoder = subtitleEncoder;
         _mediaSourceManager = mediaSourceManager;
@@ -89,17 +93,33 @@ public class SubtitleController : BaseJellyfinApiController
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Videos/{itemId}/Subtitles/{index}")]
-    [Authorize(Policy = Policies.RequiresElevation)]
+    [Authorize(Policy = Policies.SubtitleManagement)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteSubtitle(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] int index)
     {
+        var userId = User.GetUserId();
+        var isApiKey = User.GetIsApiKey();
+        var user = userId.IsEmpty() && isApiKey
+            ? null
+            : _userManager.GetUserById(userId);
+
+        if (user is null && !isApiKey)
+        {
+            return NotFound();
+        }
+
         var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
         if (item is null)
         {
             return NotFound();
+        }
+
+        if (user is not null && !item.CanDelete(user))
+        {
+            return Unauthorized("Unauthorized access");
         }
 
         await _subtitleManager.DeleteSubtitles(item, index).ConfigureAwait(false);
