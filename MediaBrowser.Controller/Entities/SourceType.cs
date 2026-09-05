@@ -18,6 +18,11 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The item comes from live TV.
         /// </summary>
-        LiveTV = 2
+        LiveTV = 2,
+        
+        /// <summary>
+        /// The item comes from an external source.
+        /// </summary>
+        External = 3
     }
 }
