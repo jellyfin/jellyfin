@@ -422,6 +422,23 @@ public class SyncPlayController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Request to set playback speed in SyncPlay group.
+    /// </summary>
+    /// <param name="requestData">The new playback speed.</param>
+    /// <response code="204">Playback speed update sent to all group members.</response>
+    /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+    [HttpPost("SetPlaybackSpeed")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [Authorize(Policy = Policies.SyncPlayIsInGroup)]
+    public async Task<ActionResult> SyncPlaySetPlaybackSpeed([FromBody, Required] SetPlaybackSpeedRequestDto requestData)
+    {
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var syncPlayRequest = new SetPlaybackSpeedGroupRequest(requestData.PlaybackSpeed);
+        _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Update session ping.
     /// </summary>
     /// <param name="requestData">The new ping.</param>
