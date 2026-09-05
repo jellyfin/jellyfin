@@ -1421,7 +1421,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         private static DynamicHdrMetadataRemovalPlan ShouldRemoveDynamicHdrMetadata(EncodingJobInfo state)
         {
             var videoStream = state.VideoStream;
-
             if (videoStream.VideoRange is not VideoRange.HDR)
             {
                 return DynamicHdrMetadataRemovalPlan.None;
@@ -1438,15 +1437,18 @@ namespace MediaBrowser.Controller.MediaEncoding
             var requestHasDOVIwithEL = requestedRangeTypes.Contains(VideoRangeType.DOVIWithEL.ToString(), StringComparison.OrdinalIgnoreCase);
             var requestHasDOVIwithELHDR10plus = requestedRangeTypes.Contains(VideoRangeType.DOVIWithELHDR10Plus.ToString(), StringComparison.OrdinalIgnoreCase);
 
+            if (videoStream.ColorSpace == "bt709" && requestHasDOVI)
+            {
+                return DynamicHdrMetadataRemovalPlan.RemoveDovi;
+            }
+
             var shouldRemoveHdr10Plus = false;
             // Case 1: Client supports HDR10, does not support DOVI with EL but EL presets
             var shouldRemoveDovi = (!requestHasDOVIwithEL && requestHasHDR10) && videoStream.VideoRangeType == VideoRangeType.DOVIWithEL;
 
             // Case 2: Client supports DOVI, does not support broken DOVI config
             // Client does not report DOVI support should be allowed to copy bad data for remuxing as HDR10 players would not crash
-            shouldRemoveDovi = shouldRemoveDovi || (requestHasDOVI
-                                                    && (videoStream.VideoRangeType == VideoRangeType.DOVIInvalid
-                                                    || videoStream.ColorSpace == "bt709"));
+            shouldRemoveDovi = shouldRemoveDovi || (requestHasDOVI && videoStream.VideoRangeType == VideoRangeType.DOVIInvalid);
 
             // Special case: we have a video with both EL and HDR10+
             // If the client supports EL but not in the case of coexistence with HDR10+, remove HDR10+ for compatibility reasons.
