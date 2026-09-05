@@ -39,6 +39,7 @@ namespace Jellyfin.Api.Controllers;
 public class VideosController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;
+    private readonly IVideoVersionManager _videoVersionManager;
     private readonly IUserManager _userManager;
     private readonly IDtoService _dtoService;
     private readonly IMediaSourceManager _mediaSourceManager;
@@ -54,6 +55,7 @@ public class VideosController : BaseJellyfinApiController
     /// Initializes a new instance of the <see cref="VideosController"/> class.
     /// </summary>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="videoVersionManager">Instance of the <see cref="IVideoVersionManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
@@ -64,6 +66,7 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
     public VideosController(
         ILibraryManager libraryManager,
+        IVideoVersionManager videoVersionManager,
         IUserManager userManager,
         IDtoService dtoService,
         IMediaSourceManager mediaSourceManager,
@@ -74,6 +77,7 @@ public class VideosController : BaseJellyfinApiController
         EncodingHelper encodingHelper)
     {
         _libraryManager = libraryManager;
+        _videoVersionManager = videoVersionManager;
         _userManager = userManager;
         _dtoService = dtoService;
         _mediaSourceManager = mediaSourceManager;
@@ -148,27 +152,10 @@ public class VideosController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (item.LinkedAlternateVersions.Length == 0 && item.PrimaryVersionId.HasValue)
-        {
-            item = _libraryManager.GetItemById<Video>(item.PrimaryVersionId.Value);
-        }
-
-        if (item is null)
+        if (!await _videoVersionManager.SplitVersionsAsync(item, CancellationToken.None).ConfigureAwait(false))
         {
             return NotFound();
         }
-
-        foreach (var link in _libraryManager.GetLinkedAlternateVersions(item))
-        {
-            link.SetPrimaryVersionId(null);
-            link.LinkedAlternateVersions = Array.Empty<LinkedChild>();
-
-            await link.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-        }
-
-        item.LinkedAlternateVersions = Array.Empty<LinkedChild>();
-        item.SetPrimaryVersionId(null);
-        await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
         return NoContent();
     }
@@ -190,7 +177,6 @@ public class VideosController : BaseJellyfinApiController
         var items = ids
             .Select(i => _libraryManager.GetItemById<BaseItem>(i, userId))
             .OfType<Video>()
-            .OrderBy(i => i.Id)
             .ToList();
 
         if (items.Count < 2)
@@ -198,60 +184,7 @@ public class VideosController : BaseJellyfinApiController
             return BadRequest("Please supply at least two videos to merge.");
         }
 
-        var primaryVersion = items.FirstOrDefault(i => i.MediaSourceCount > 1 && !i.PrimaryVersionId.HasValue);
-        if (primaryVersion is null)
-        {
-            primaryVersion = items
-                .OrderBy(i =>
-                {
-                    if (i.Video3DFormat.HasValue || i.VideoType != VideoType.VideoFile)
-                    {
-                        return 1;
-                    }
-
-                    return 0;
-                })
-                .ThenByDescending(i => i.GetDefaultVideoStream()?.Width ?? 0)
-                .First();
-        }
-
-        var alternateVersionsOfPrimary = primaryVersion.LinkedAlternateVersions.ToList();
-
-        foreach (var item in items.Where(i => !i.Id.Equals(primaryVersion.Id)))
-        {
-            item.SetPrimaryVersionId(primaryVersion.Id);
-
-            await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-
-            // Re-route any playlist/collection references from this item to the primary
-            await _libraryManager.RerouteLinkedChildReferencesAsync(item.Id, primaryVersion.Id).ConfigureAwait(false);
-
-            if (!alternateVersionsOfPrimary.Any(i => i.ItemId.HasValue && i.ItemId.Value.Equals(item.Id)))
-            {
-                alternateVersionsOfPrimary.Add(new LinkedChild
-                {
-                    ItemId = item.Id,
-                    Type = LinkedChildType.LinkedAlternateVersion
-                });
-            }
-
-            foreach (var linkedItem in item.LinkedAlternateVersions)
-            {
-                if (linkedItem.ItemId.HasValue && !alternateVersionsOfPrimary.Any(i => i.ItemId.HasValue && i.ItemId.Value.Equals(linkedItem.ItemId.Value)))
-                {
-                    alternateVersionsOfPrimary.Add(linkedItem);
-                }
-            }
-
-            if (item.LinkedAlternateVersions.Length > 0)
-            {
-                item.LinkedAlternateVersions = Array.Empty<LinkedChild>();
-                await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-            }
-        }
-
-        primaryVersion.LinkedAlternateVersions = alternateVersionsOfPrimary.ToArray();
-        await primaryVersion.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+        await _videoVersionManager.MergeVersionsAsync(items, false, CancellationToken.None).ConfigureAwait(false);
         return NoContent();
     }
 
