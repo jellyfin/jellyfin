@@ -157,7 +157,10 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// </summary>
         public void RestoreSortedPlaylist()
         {
-            if (PlayingItemIndex != NoPlayingItemIndex)
+            // The shuffled playlist is only populated while the shuffle mode is active, so there is
+            // nothing to map back when the playlist is already sorted. Guarding on its contents keeps
+            // a redundant request for the sorted mode from indexing an empty list.
+            if (PlayingItemIndex != NoPlayingItemIndex && _shuffledPlaylist.Count > 0)
             {
                 var playingItem = _shuffledPlaylist[PlayingItemIndex];
                 PlayingItemIndex = _sortedPlaylist.IndexOf(playingItem);

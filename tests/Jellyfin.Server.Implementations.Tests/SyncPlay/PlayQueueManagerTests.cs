@@ -143,6 +143,36 @@ public class PlayQueueManagerTests
     }
 
     [Fact]
+    public void SetShuffleMode_SortedWhileAlreadySorted_KeepsPlayingItem()
+    {
+        var queue = CreateQueue(3);
+        queue.SetPlayingItemByIndex(1);
+        var expectedItemId = queue.GetPlayingItemId();
+
+        queue.SetShuffleMode(GroupShuffleMode.Sorted);
+
+        Assert.Equal(GroupShuffleMode.Sorted, queue.ShuffleMode);
+        Assert.Equal(1, queue.PlayingItemIndex);
+        Assert.Equal(expectedItemId, queue.GetPlayingItemId());
+    }
+
+    [Fact]
+    public void SetShuffleMode_SortedTwiceAfterShuffle_KeepsPlayingItem()
+    {
+        var queue = CreateQueue(5);
+        queue.SetPlayingItemByIndex(2);
+        var expectedItemId = queue.GetPlayingItemId();
+
+        queue.SetShuffleMode(GroupShuffleMode.Shuffle);
+        queue.SetShuffleMode(GroupShuffleMode.Sorted);
+        queue.SetShuffleMode(GroupShuffleMode.Sorted);
+
+        Assert.Equal(GroupShuffleMode.Sorted, queue.ShuffleMode);
+        Assert.Equal(5, queue.GetPlaylist().Count);
+        Assert.Equal(expectedItemId, queue.GetPlayingItemId());
+    }
+
+    [Fact]
     public void SetPlayingItemByIndex_InBounds_SetsPlayingItem()
     {
         var queue = CreateQueue(2);
