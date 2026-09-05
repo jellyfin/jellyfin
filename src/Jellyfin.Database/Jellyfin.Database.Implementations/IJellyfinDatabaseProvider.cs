@@ -38,7 +38,7 @@ public interface IJellyfinDatabaseProvider
 
     /// <summary>
     /// If supported this should run any periodic maintaince tasks, reclaiming unused space and refreshing the query
-    /// planner statistics. Also used after migrations have modified the database.
+    /// planner statistics. Also runs on startup once all migrations have been applied.
     /// </summary>
     /// <param name="cancellationToken">The token to abort the operation.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
