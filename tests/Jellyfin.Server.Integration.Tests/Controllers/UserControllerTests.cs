@@ -1,11 +1,14 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.UserDtos;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Model.Dto;
 using Xunit;
@@ -190,6 +193,48 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             // Sanity check, make sure we're testing something
             Assert.NotEqual(TestUsername, userDto.Name);
+        }
+
+        [Fact]
+        [Priority(3)]
+        public async Task AuthenticateByName_OutsideAccessSchedule_ReturnsParentalControlErrorCode()
+        {
+            var adminClient = _factory.CreateClient();
+            adminClient.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(adminClient));
+            var username = $"scheduleRestricted{Guid.NewGuid():N}";
+            using var createResponse = await CreateUserByName(
+                adminClient,
+                new CreateUserByName { Name = username });
+            Assert.Equal(HttpStatusCode.OK, createResponse.StatusCode);
+            var user = await createResponse.Content.ReadFromJsonAsync<UserDto>(_jsonOptions, TestContext.Current.CancellationToken);
+            Assert.NotNull(user);
+
+            user.Policy.AccessSchedules =
+            [
+                new AccessSchedule(DynamicDayOfWeek.Everyday, 24, 24, user.Id)
+            ];
+            using var policyResponse = await adminClient.PostAsJsonAsync(
+                $"Users/{user.Id:N}/Policy",
+                user.Policy,
+                _jsonOptions,
+                TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.NoContent, policyResponse.StatusCode);
+
+            var authenticationClient = _factory.CreateClient();
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/Users/AuthenticateByName");
+            request.Headers.TryAddWithoutValidation(AuthHelper.AuthHeaderName, AuthHelper.DummyAuthHeader);
+            request.Content = JsonContent.Create(
+                new AuthenticateUserByName
+                {
+                    Username = username,
+                    Pw = string.Empty
+                },
+                options: _jsonOptions);
+
+            using var response = await authenticationClient.SendAsync(request, TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+            Assert.Equal("ParentalControl", response.Headers.GetValues("X-Application-Error-Code").Single());
         }
     }
 }
