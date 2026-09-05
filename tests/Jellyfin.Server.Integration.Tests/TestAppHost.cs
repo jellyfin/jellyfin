@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Emby.Server.Implementations;
 using MediaBrowser.Controller;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -23,12 +24,14 @@ namespace Jellyfin.Server.Integration.Tests
             IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             IStartupOptions options,
-            IConfiguration startup)
+            IConfiguration startup,
+            IServerAddressesFeature serverAddresses)
             : base(
                 applicationPaths,
                 loggerFactory,
                 options,
-                startup)
+                startup,
+                serverAddresses)
         {
         }
 
