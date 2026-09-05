@@ -695,7 +695,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 "ogg" or "oga" or "ogv" or "webm" or "webma" => "opus",
                 "m4a" or "m4b" or "mp4" or "mov" or "mkv" or "mka" => "aac",
                 "ts" or "avi" or "flv" or "f4v" or "swf" => "mp3",
-                _ => inferredCodec
+                // Containers that share their name with the codec they carry.
+                "aac" or "ac3" or "alac" or "dts" or "eac3" or "flac" or "mp2" or "mp3" or "opus" or "truehd" or "vorbis" => inferredCodec,
+                // Anything else - manifests such as m3u8/mpd in particular - names a container that
+                // is not an audio codec. Never hand that name to ffmpeg as an encoder.
+                _ => "aac"
             };
         }
 
