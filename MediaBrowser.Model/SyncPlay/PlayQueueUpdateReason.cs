@@ -53,6 +53,11 @@ namespace MediaBrowser.Model.SyncPlay
         /// <summary>
         /// A user is changing shuffle mode.
         /// </summary>
-        ShuffleMode = 9
+        ShuffleMode = 9,
+
+        /// <summary>
+        /// A user has changed the playback speed.
+        /// </summary>
+        PlaybackSpeedChange = 10
     }
 }
