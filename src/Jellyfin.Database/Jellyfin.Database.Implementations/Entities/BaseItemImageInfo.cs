@@ -47,6 +47,21 @@ public class BaseItemImageInfo
 #pragma warning restore CA1819
 
     /// <summary>
+    /// Gets or Sets the remote URL the image was fetched from, if any.
+    /// </summary>
+    public string? Source { get; set; }
+
+    /// <summary>
+    /// Gets or Sets the HTTP ETag of the remote source, used to detect content changes on refresh.
+    /// </summary>
+    public string? ETag { get; set; }
+
+    /// <summary>
+    /// Gets or Sets the HTTP Last-Modified value of the remote source, used to detect content changes on refresh.
+    /// </summary>
+    public DateTime? SourceLastModified { get; set; }
+
+    /// <summary>
     /// Gets or Sets the reference id to the BaseItem.
     /// </summary>
     public required Guid ItemId { get; set; }
