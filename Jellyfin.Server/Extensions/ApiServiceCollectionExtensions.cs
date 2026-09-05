@@ -25,6 +25,7 @@ using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -107,8 +108,9 @@ namespace Jellyfin.Server.Extensions
         /// <param name="serviceCollection">The service collection.</param>
         /// <param name="pluginAssemblies">An IEnumerable containing all plugin assemblies with API controllers.</param>
         /// <param name="config">The <see cref="NetworkConfiguration"/>.</param>
+        /// <param name="serverConfiguration">The <see cref="ServerConfiguration"/>.</param>
         /// <returns>The MVC builder.</returns>
-        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, IEnumerable<Assembly> pluginAssemblies, NetworkConfiguration config)
+        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, IEnumerable<Assembly> pluginAssemblies, NetworkConfiguration config, ServerConfiguration serverConfiguration)
         {
             IMvcBuilder mvcBuilder = serviceCollection
                 .AddCors()
@@ -129,6 +131,11 @@ namespace Jellyfin.Server.Extensions
                     opts.OutputFormatters.Add(new XmlOutputFormatter());
 
                     opts.ModelBinderProviders.Insert(0, new NullableEnumModelBinderProvider());
+
+                    if (!serverConfiguration.EnableObsoleteEndpoints)
+                    {
+                        opts.Conventions.Add(new ObsoleteEndpointConvention());
+                    }
                 })
 
                 // Clear app parts to avoid other assemblies being picked up
