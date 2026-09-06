@@ -1,9 +1,12 @@
 using System;
 using System.Linq;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.XbmcMetadata.Savers;
+using Moq;
 using Xunit;
 
 namespace Jellyfin.XbmcMetadata.Tests.Location
@@ -13,6 +16,8 @@ namespace Jellyfin.XbmcMetadata.Tests.Location
         [Fact]
         public static void Movie_MixedFolder_Success()
         {
+            BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
+
             var movie = new Movie() { Path = "/media/movies/Avengers Endgame.mp4", IsInMixedFolder = true };
 
             var paths = MovieNfoSaver.GetMovieSavePaths(new ItemInfo(movie)).ToArray();
@@ -23,6 +28,8 @@ namespace Jellyfin.XbmcMetadata.Tests.Location
         [Fact]
         public static void Movie_SeparateFolder_Success()
         {
+            BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
+
             var movie = new Movie() { Path = "/media/movies/Avengers Endgame/Avengers Endgame.mp4" };
             var path1 = "/media/movies/Avengers Endgame/Avengers Endgame.nfo";
             var path2 = "/media/movies/Avengers Endgame/movie.nfo";
@@ -44,6 +51,8 @@ namespace Jellyfin.XbmcMetadata.Tests.Location
         [Fact]
         public void Movie_DVD_Success()
         {
+            BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
+
             var movie = new Movie() { Path = "/media/movies/Avengers Endgame", VideoType = VideoType.Dvd };
             var path1 = "/media/movies/Avengers Endgame/Avengers Endgame.nfo";
             var path2 = "/media/movies/Avengers Endgame/VIDEO_TS/VIDEO_TS.nfo";
