@@ -38,22 +38,32 @@ public sealed partial class BaseItemRepository
     // Shared by the isPlayed filter and the IsPlayed/IsUnplayed ordering so the two cannot disagree.
     private Expression<Func<BaseItemEntity, bool>> BuildIsPlayedFilter(JellyfinDbContext context, User user)
     {
-        var userId = user.Id;
+        // Folders (Series, Seasons, BoxSets, albums, ...) carry no played state of their own and count
+        // as played once no descendant is left unplayed.
+        var unplayedLeafItems = GetAccessFilteredLeafItemsQuery(context, user)
+            .Where(BuildLeafIsPlayedFilter(context, user.Id).Not());
 
-        // Leaf items carry their own played state.
+        return IsFolderFilter.And(BuildHasDescendantFilter(context, unplayedLeafItems).Not())
+            .Or(IsFolderFilter.Not().And(BuildLeafIsPlayedFilter(context, user.Id)));
+    }
+
+    private static Expression<Func<BaseItemEntity, bool>> BuildLeafIsPlayedFilter(JellyfinDbContext context, Guid userId)
+    {
         var playedItemIds = context.UserData
             .Where(ud => ud.UserId == userId && ud.Played)
             .Select(ud => ud.ItemId);
 
-        // Folders (Series, Seasons, BoxSets, albums, ...) have none and count as played once no
-        // descendant is left unplayed, matching what the DTO reports for them. This has to key off
-        // the item itself rather than off the requested item types: tag and collection listings mix
-        // folders and leaf items in a single query.
-        var unplayedLeafItems = GetAccessFilteredLeafItemsQuery(context, user)
-            .Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
+        // The primaries of every version group holding a played row, whichever version carries it.
+        var playedGroupIds = context.BaseItems
+            .Where(v => v.PrimaryVersionId != null
+                && context.UserData.Any(ud => ud.UserId == userId
+                    && ud.Played
+                    && (ud.ItemId == v.Id || ud.ItemId == v.PrimaryVersionId)))
+            .Select(v => v.PrimaryVersionId!.Value);
 
-        return IsFolderFilter.And(BuildHasDescendantFilter(context, unplayedLeafItems).Not())
-            .Or(IsFolderFilter.Not().And(e => playedItemIds.Contains(e.Id)));
+        return e => playedItemIds.Contains(e.Id)
+            || playedGroupIds.Contains(e.Id)
+            || (e.PrimaryVersionId != null && playedGroupIds.Contains(e.PrimaryVersionId.Value));
     }
 
     // "und" is the language filters' stand-in for a track that declares no language at all.
