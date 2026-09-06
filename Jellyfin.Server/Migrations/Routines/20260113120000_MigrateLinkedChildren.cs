@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
@@ -47,8 +49,15 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
         _appPaths = appPaths;
     }
 
-    /// <inheritdoc/>
-    public void Perform()
+    /// <inheritdoc />
+    public Task PerformAsync(CancellationToken cancellationToken)
+    {
+        // This routine predates the async interface and has not been ported to async database access yet.
+        PerformCore();
+        return Task.CompletedTask;
+    }
+
+    private void PerformCore()
     {
         using var context = _dbProvider.CreateDbContext();
 

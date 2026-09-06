@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -9,8 +11,8 @@ namespace Jellyfin.Server.Migrations.Routines
     /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
     [JellyfinMigration("2025-04-20T05:00:00", nameof(DisableTranscodingThrottling), "4124C2CD-E939-4FFB-9BE9-9B311C413638")]
-    internal class DisableTranscodingThrottling : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
+    internal class DisableTranscodingThrottling : IAsyncMigrationRoutine
     {
         private readonly ILogger<DisableTranscodingThrottling> _logger;
         private readonly IConfigurationManager _configManager;
@@ -22,7 +24,7 @@ namespace Jellyfin.Server.Migrations.Routines
         }
 
         /// <inheritdoc/>
-        public void Perform()
+        public Task PerformAsync(CancellationToken cancellationToken)
         {
             // Set EnableThrottling to false since it wasn't used before and may introduce issues
             var encoding = _configManager.GetEncodingOptions();
@@ -33,6 +35,8 @@ namespace Jellyfin.Server.Migrations.Routines
 
                 _configManager.SaveConfiguration("encoding", encoding);
             }
+
+            return Task.CompletedTask;
         }
     }
 }

@@ -9,6 +9,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
@@ -59,8 +61,15 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
     }
 
-    /// <inheritdoc/>
-    public void Perform()
+    /// <inheritdoc />
+    public Task PerformAsync(CancellationToken cancellationToken)
+    {
+        // This routine predates the async interface and has not been ported to async database access yet.
+        PerformCore();
+        return Task.CompletedTask;
+    }
+
+    private void PerformCore()
     {
         _logger.LogInformation("Migrating the userdata from library.db may take a while, do not stop Jellyfin.");
 

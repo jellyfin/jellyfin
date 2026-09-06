@@ -2,6 +2,8 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Emby.Server.Implementations.Data;
 using MediaBrowser.Controller;
 using Microsoft.Data.Sqlite;
@@ -14,8 +16,8 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-04-20T08:00:00", nameof(RemoveDuplicateExtras), "ACBE17B7-8435-4A83-8B64-6FCF162CB9BD")]
-internal class RemoveDuplicateExtras : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
+internal class RemoveDuplicateExtras : IAsyncMigrationRoutine
 {
     private const string DbFilename = "library.db";
     private readonly ILogger<RemoveDuplicateExtras> _logger;
@@ -27,8 +29,15 @@ internal class RemoveDuplicateExtras : IMigrationRoutine
         _paths = paths;
     }
 
-    /// <inheritdoc/>
-    public void Perform()
+    /// <inheritdoc />
+    public Task PerformAsync(CancellationToken cancellationToken)
+    {
+        // This routine predates the async interface and has not been ported to async database access yet.
+        PerformCore();
+        return Task.CompletedTask;
+    }
+
+    private void PerformCore()
     {
         var dataPath = _paths.DataPath;
         var dbPath = Path.Combine(dataPath, DbFilename);

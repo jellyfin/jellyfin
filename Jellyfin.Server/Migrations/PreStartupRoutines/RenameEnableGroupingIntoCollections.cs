@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Emby.Server.Implementations;
 using Microsoft.Extensions.Logging;
@@ -11,8 +13,8 @@ namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 /// <inheritdoc />
 #pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-04-20T04:00:00", nameof(RenameEnableGroupingIntoCollections), "E73B777D-CD5C-4E71-957A-B86B3660B7CF", Stage = Stages.JellyfinMigrationStageTypes.PreInitialisation)]
-public class RenameEnableGroupingIntoCollections : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
+public class RenameEnableGroupingIntoCollections : IAsyncMigrationRoutine
 {
     private readonly ServerApplicationPaths _applicationPaths;
     private readonly ILogger<RenameEnableGroupingIntoCollections> _logger;
@@ -29,13 +31,13 @@ public class RenameEnableGroupingIntoCollections : IMigrationRoutine
     }
 
     /// <inheritdoc />
-    public void Perform()
+    public Task PerformAsync(CancellationToken cancellationToken)
     {
         string path = Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "system.xml");
         if (!File.Exists(path))
         {
             _logger.LogWarning("Configuration file not found: {Path}", path);
-            return;
+            return Task.CompletedTask;
         }
 
         try
@@ -53,5 +55,7 @@ public class RenameEnableGroupingIntoCollections : IMigrationRoutine
         {
             _logger.LogError(ex, "An error occurred while updating the XML file: {Message}", ex.Message);
         }
+
+        return Task.CompletedTask;
     }
 }
