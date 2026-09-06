@@ -1600,18 +1600,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         var threads = EncodingHelper.GetNumberOfThreads(state, _encodingOptions, videoCodec);
 
         var mapArgs = state.IsOutputVideo ? _encodingHelper.GetMapArgs(state) : string.Empty;
-        var editGraphPrefix = string.Empty;
-        long? savedEditSeek = null;
-        if (state.IsOutputVideo
-            && _encodingHelper.TryGetSessionEditGraphMapArgs(state, out var filterComplexArg, out var editMapArgs))
-        {
-            editGraphPrefix = filterComplexArg + " ";
-            mapArgs = editMapArgs;
-            savedEditSeek = state.BaseRequest.StartTimeTicks;
-            state.BaseRequest.StartTimeTicks = 0;
-            state.BaseRequest.AllowVideoStreamCopy = false;
-            state.BaseRequest.AllowAudioStreamCopy = false;
-        }
+        var editGraphPrefix = TryStartSessionEditGraph(state, ref mapArgs, out var savedEditSeek);
 
         var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
         var outputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(outputPath);
@@ -1623,10 +1612,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         var segmentContainer = outputExtension.TrimStart('.');
         var inputModifier = _encodingHelper.GetInputModifier(state, _encodingOptions, segmentContainer);
         var inputArgument = _encodingHelper.GetInputArgument(state, _encodingOptions, segmentContainer);
-        if (savedEditSeek.HasValue)
-        {
-            state.BaseRequest.StartTimeTicks = savedEditSeek;
-        }
+        RestoreSessionEditGraphSeek(state, savedEditSeek);
 
         var hlsArguments = $"-hls_playlist_type {(isEventPlaylist ? "event" : "vod")} -hls_list_size 0";
 
@@ -1674,15 +1660,12 @@ public class DynamicHlsController : BaseJellyfinApiController
                 Path.GetFileNameWithoutExtension(outputPath));
         }
 
-        var videoArgs = GetVideoArguments(state, startNumber, isEventPlaylist, segmentContainer);
-        var audioArgs = GetAudioArguments(state);
-        var timestampArgs = "-copyts -avoid_negative_ts disabled";
-        if (!string.IsNullOrEmpty(editGraphPrefix))
-        {
-            videoArgs = GetVideoArgumentsForEditGraph(state, startNumber, isEventPlaylist);
-            audioArgs = GetAudioArgumentsForEditGraph(state);
-            timestampArgs = "-avoid_negative_ts make_zero";
-        }
+        var (videoArgs, audioArgs, timestampArgs) = GetHlsCodecAndTimestampArgs(
+            state,
+            startNumber,
+            isEventPlaylist,
+            segmentContainer,
+            editGraphPrefix);
 
         return string.Format(
             CultureInfo.InvariantCulture,
@@ -1703,6 +1686,52 @@ public class DynamicHlsController : BaseJellyfinApiController
             outputTsArg.EscapeProcessArgument(),
             hlsArguments,
             outputPath.EscapeProcessArgument()).Trim();
+    }
+
+    private string TryStartSessionEditGraph(StreamState state, ref string mapArgs, out long? savedEditSeek)
+    {
+        savedEditSeek = null;
+        if (!state.IsOutputVideo
+            || !_encodingHelper.TryGetSessionEditGraphMapArgs(state, out var filterComplexArg, out var editMapArgs))
+        {
+            return string.Empty;
+        }
+
+        mapArgs = editMapArgs;
+        savedEditSeek = state.BaseRequest.StartTimeTicks;
+        state.BaseRequest.StartTimeTicks = 0;
+        state.BaseRequest.AllowVideoStreamCopy = false;
+        state.BaseRequest.AllowAudioStreamCopy = false;
+        return filterComplexArg + " ";
+    }
+
+    private static void RestoreSessionEditGraphSeek(StreamState state, long? savedEditSeek)
+    {
+        if (savedEditSeek.HasValue)
+        {
+            state.BaseRequest.StartTimeTicks = savedEditSeek;
+        }
+    }
+
+    private (string VideoArgs, string AudioArgs, string TimestampArgs) GetHlsCodecAndTimestampArgs(
+        StreamState state,
+        int startNumber,
+        bool isEventPlaylist,
+        string segmentContainer,
+        string editGraphPrefix)
+    {
+        if (string.IsNullOrEmpty(editGraphPrefix))
+        {
+            return (
+                GetVideoArguments(state, startNumber, isEventPlaylist, segmentContainer),
+                GetAudioArguments(state),
+                "-copyts -avoid_negative_ts disabled");
+        }
+
+        return (
+            GetVideoArgumentsForEditGraph(state, startNumber, isEventPlaylist),
+            GetAudioArgumentsForEditGraph(state),
+            "-avoid_negative_ts make_zero");
     }
 
     private string GetVideoArgumentsForEditGraph(StreamState state, int startNumber, bool isEventPlaylist)

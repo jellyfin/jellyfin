@@ -2951,20 +2951,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         Math.Round(seconds)));
             }
 
-            if (_sessionAudioFilterProviders.Any())
-            {
-                GetPlaySessionAndDeviceId(state, out var playSessionId, out var deviceId);
-                var startSeconds = TimeSpan.FromTicks(state.StartTimeTicks ?? 0).TotalSeconds;
-                foreach (var provider in _sessionAudioFilterProviders)
-                {
-                    var extra = provider.GetAdditionalAudioFilter(playSessionId, deviceId, startSeconds);
-                    if (!string.IsNullOrWhiteSpace(extra))
-                    {
-                        filters.Add(extra.Trim());
-                        break;
-                    }
-                }
-            }
+            AppendSessionAudioFilters(state, filters);
 
             if (filters.Count > 0)
             {
@@ -3009,6 +2996,21 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return false;
+        }
+
+        private void AppendSessionAudioFilters(EncodingJobInfo state, List<string> filters)
+        {
+            GetPlaySessionAndDeviceId(state, out var playSessionId, out var deviceId);
+            var startSeconds = TimeSpan.FromTicks(state.StartTimeTicks ?? 0).TotalSeconds;
+            foreach (var provider in _sessionAudioFilterProviders)
+            {
+                var extra = provider.GetAdditionalAudioFilter(playSessionId, deviceId, startSeconds);
+                if (!string.IsNullOrWhiteSpace(extra))
+                {
+                    filters.Add(extra.Trim());
+                    break;
+                }
+            }
         }
 
         private static void GetPlaySessionAndDeviceId(EncodingJobInfo state, out string playSessionId, out string deviceId)
@@ -7755,7 +7757,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return GetProgressiveVideoFullCommandLineWithEditGraph(
                     state,
                     encodingOptions,
-                    defaultPreset,
                     inputModifier,
                     inputArgument,
                     editGraph,
@@ -7783,7 +7784,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         private string GetProgressiveVideoFullCommandLineWithEditGraph(
             EncodingJobInfo state,
             EncodingOptions encodingOptions,
-            EncoderPreset defaultPreset,
             string inputModifier,
             string inputArgument,
             SessionMediaEditGraph editGraph,
@@ -7844,17 +7844,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Returns true if any edit-graph provider needs a filter graph for this request.
         /// </summary>
         public bool HasSessionEditGraphForRequest(string playSessionId, string deviceId)
-        {
-            foreach (var provider in _sessionMediaEditGraphProviders)
-            {
-                if (provider.HasEditGraph(playSessionId, deviceId))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
+            => _sessionMediaEditGraphProviders.Any(provider => provider.HasEditGraph(playSessionId, deviceId));
 
         /// <summary>
         /// Tries to get a session edit graph for the encoding job.
@@ -7867,65 +7857,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             GetPlaySessionAndDeviceId(state, out var playSessionId, out var deviceId);
-            var duration = state.RunTimeTicks.HasValue
-                ? TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds
-                : 0;
-            var startSeconds = state.BaseRequest?.StartTimeTicks is long ticks && ticks > 0
-                ? TimeSpan.FromTicks(ticks).TotalSeconds
-                : 0;
-
-            var inputLayout = string.Empty;
-            var inputChannels = 0;
-            string stereoDownmix = null;
-            if (state.AudioStream is not null)
-            {
-                inputLayout = DownMixAlgorithmsHelper.InferChannelLayout(state.AudioStream) ?? string.Empty;
-                inputChannels = state.AudioStream.Channels ?? 0;
-                if (state.OutputAudioChannels == 2 && inputChannels > 2)
-                {
-                    foreach (var algo in new[]
-                             {
-                                 DownMixStereoAlgorithms.Rfc7845,
-                                 DownMixStereoAlgorithms.Ac4,
-                                 DownMixStereoAlgorithms.Dave750,
-                                 DownMixStereoAlgorithms.NightmodeDialogue
-                             })
-                    {
-                        if (DownMixAlgorithmsHelper.AlgorithmFilterStrings.TryGetValue((algo, inputLayout), out stereoDownmix)
-                            && !string.IsNullOrWhiteSpace(stereoDownmix))
-                        {
-                            break;
-                        }
-                    }
-
-                    if (string.IsNullOrWhiteSpace(stereoDownmix))
-                    {
-                        stereoDownmix = "aformat=channel_layouts=stereo";
-                    }
-                }
-            }
-
-            TryFillSubtitleBurnIn(
-                state,
-                out var burnInSubInput,
-                out var burnInSubIndex,
-                out var burnInSubFilters,
-                out var burnInTextFilter);
-
-            var context = new SessionMediaEditGraphContext
-            {
-                DurationSeconds = duration,
-                StartTimeSeconds = startSeconds,
-                InputChannelLayout = inputLayout,
-                InputChannelCount = inputChannels,
-                OutputAudioChannels = state.OutputAudioChannels ?? 0,
-                StereoDownmixFilter = stereoDownmix,
-                BurnInGraphicalSubtitleInputIndex = burnInSubInput,
-                BurnInGraphicalSubtitleStreamIndex = burnInSubIndex,
-                BurnInGraphicalSubtitleFilters = burnInSubFilters,
-                BurnInTextSubtitleFilter = burnInTextFilter
-            };
-
+            var context = CreateSessionEditGraphContext(state);
             foreach (var provider in _sessionMediaEditGraphProviders)
             {
                 var graph = provider.GetEditGraph(playSessionId, deviceId, context);
@@ -7936,6 +7868,74 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return null;
+        }
+
+        private SessionMediaEditGraphContext CreateSessionEditGraphContext(EncodingJobInfo state)
+        {
+            GetSessionAudioLayout(state, out var inputLayout, out var inputChannels, out var stereoDownmix);
+            TryFillSubtitleBurnIn(
+                state,
+                out var burnInSubInput,
+                out var burnInSubIndex,
+                out var burnInSubFilters,
+                out var burnInTextFilter);
+
+            return new SessionMediaEditGraphContext
+            {
+                DurationSeconds = state.RunTimeTicks.HasValue
+                    ? TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds
+                    : 0,
+                StartTimeSeconds = state.BaseRequest?.StartTimeTicks is long ticks && ticks > 0
+                    ? TimeSpan.FromTicks(ticks).TotalSeconds
+                    : 0,
+                InputChannelLayout = inputLayout,
+                InputChannelCount = inputChannels,
+                OutputAudioChannels = state.OutputAudioChannels ?? 0,
+                StereoDownmixFilter = stereoDownmix,
+                BurnInGraphicalSubtitleInputIndex = burnInSubInput,
+                BurnInGraphicalSubtitleStreamIndex = burnInSubIndex,
+                BurnInGraphicalSubtitleFilters = burnInSubFilters,
+                BurnInTextSubtitleFilter = burnInTextFilter
+            };
+        }
+
+        private static void GetSessionAudioLayout(
+            EncodingJobInfo state,
+            out string inputLayout,
+            out int inputChannels,
+            out string stereoDownmix)
+        {
+            inputLayout = string.Empty;
+            inputChannels = 0;
+            stereoDownmix = null;
+            if (state.AudioStream is null)
+            {
+                return;
+            }
+
+            inputLayout = DownMixAlgorithmsHelper.InferChannelLayout(state.AudioStream) ?? string.Empty;
+            inputChannels = state.AudioStream.Channels ?? 0;
+            if (state.OutputAudioChannels != 2 || inputChannels <= 2)
+            {
+                return;
+            }
+
+            foreach (var algo in new[]
+                     {
+                         DownMixStereoAlgorithms.Rfc7845,
+                         DownMixStereoAlgorithms.Ac4,
+                         DownMixStereoAlgorithms.Dave750,
+                         DownMixStereoAlgorithms.NightmodeDialogue
+                     })
+            {
+                if (DownMixAlgorithmsHelper.AlgorithmFilterStrings.TryGetValue((algo, inputLayout), out stereoDownmix)
+                    && !string.IsNullOrWhiteSpace(stereoDownmix))
+                {
+                    return;
+                }
+            }
+
+            stereoDownmix = "aformat=channel_layouts=stereo";
         }
 
         private void TryFillSubtitleBurnIn(

@@ -430,27 +430,11 @@ public class VideosController : BaseJellyfinApiController
         };
 
         var itemIdStr = streamingRequest.Id.IsEmpty() ? null : streamingRequest.Id.ToString("N");
-        foreach (var loader in _playbackPlanLoaders)
-        {
-            await loader.EnsurePlanLoadedAsync(
-                streamingRequest.PlaySessionId,
-                streamingRequest.DeviceId,
-                itemIdStr,
-                streamingRequest.MediaSourceId,
-                cancellationTokenSource.Token).ConfigureAwait(false);
-        }
-
-        var hasEditGraph = _encodingHelper.HasSessionEditGraphForRequest(streamingRequest.PlaySessionId ?? string.Empty, streamingRequest.DeviceId ?? string.Empty);
-        var hasAudioFilter = _encodingHelper.HasSessionAudioFilterForRequest(streamingRequest.PlaySessionId ?? string.Empty, streamingRequest.DeviceId ?? string.Empty);
-        if (hasEditGraph || hasAudioFilter)
-        {
-            streamingRequest.AllowAudioStreamCopy = false;
-        }
-
-        if (hasEditGraph)
-        {
-            streamingRequest.AllowVideoStreamCopy = false;
-        }
+        var (hasEditGraph, hasAudioFilter) = await ApplyPlaybackPlanTranscodeFlagsAsync(
+            streamingRequest,
+            itemIdStr,
+            cancellationTokenSource.Token)
+            .ConfigureAwait(false);
 
         var state = await StreamingHelpers.GetStreamingState(
                 streamingRequest,
@@ -687,5 +671,37 @@ public class VideosController : BaseJellyfinApiController
             context,
             streamOptions,
             enableAudioVbrEncoding);
+    }
+
+    private async Task<(bool HasEditGraph, bool HasAudioFilter)> ApplyPlaybackPlanTranscodeFlagsAsync(
+        StreamingRequestDto streamingRequest,
+        string? itemId,
+        CancellationToken cancellationToken)
+    {
+        foreach (var loader in _playbackPlanLoaders)
+        {
+            await loader.EnsurePlanLoadedAsync(
+                streamingRequest.PlaySessionId,
+                streamingRequest.DeviceId,
+                itemId,
+                streamingRequest.MediaSourceId,
+                cancellationToken).ConfigureAwait(false);
+        }
+
+        var playSessionId = streamingRequest.PlaySessionId ?? string.Empty;
+        var deviceId = streamingRequest.DeviceId ?? string.Empty;
+        var hasEditGraph = _encodingHelper.HasSessionEditGraphForRequest(playSessionId, deviceId);
+        var hasAudioFilter = _encodingHelper.HasSessionAudioFilterForRequest(playSessionId, deviceId);
+        if (hasAudioFilter || hasEditGraph)
+        {
+            streamingRequest.AllowAudioStreamCopy = false;
+        }
+
+        if (hasEditGraph)
+        {
+            streamingRequest.AllowVideoStreamCopy = false;
+        }
+
+        return (hasEditGraph, hasAudioFilter);
     }
 }
