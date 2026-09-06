@@ -284,7 +284,11 @@ public class DynamicHlsController : BaseJellyfinApiController
         // Due to CTS.Token calling ThrowIfDisposed (https://github.com/dotnet/runtime/issues/29970) we have to "cache" the token
         // since it gets disposed when ffmpeg exits
         var cancellationToken = cancellationTokenSource.Token;
-        await ApplyPlaybackPlanTranscodeFlagsAsync(streamingRequest, itemId.ToString("N", CultureInfo.InvariantCulture), cancellationToken).ConfigureAwait(false);
+        await _encodingHelper.ApplyPlaybackPlanTranscodeFlagsAsync(
+            _playbackPlanLoaders,
+            streamingRequest,
+            itemId.ToString("N", CultureInfo.InvariantCulture),
+            cancellationToken).ConfigureAwait(false);
         var state = await StreamingHelpers.GetStreamingState(
                 streamingRequest,
                 HttpContext,
@@ -521,7 +525,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
-        await ApplyPlaybackPlanTranscodeFlagsAsync(
+        await _encodingHelper.ApplyPlaybackPlanTranscodeFlagsAsync(
+            _playbackPlanLoaders,
             streamingRequest,
             itemId.ToString("N", CultureInfo.InvariantCulture),
             HttpContext.RequestAborted).ConfigureAwait(false);
@@ -1396,7 +1401,8 @@ public class DynamicHlsController : BaseJellyfinApiController
 
     private async Task<ActionResult> GetVariantPlaylistInternal(StreamingRequestDto streamingRequest, CancellationTokenSource cancellationTokenSource)
     {
-        await ApplyPlaybackPlanTranscodeFlagsAsync(
+        await _encodingHelper.ApplyPlaybackPlanTranscodeFlagsAsync(
+            _playbackPlanLoaders,
             streamingRequest,
             streamingRequest.Id.ToString("N", CultureInfo.InvariantCulture),
             cancellationTokenSource.Token).ConfigureAwait(false);
@@ -1449,7 +1455,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
 
-        await ApplyPlaybackPlanTranscodeFlagsAsync(
+        await _encodingHelper.ApplyPlaybackPlanTranscodeFlagsAsync(
+            _playbackPlanLoaders,
             streamingRequest,
             streamingRequest.Id.ToString("N", CultureInfo.InvariantCulture),
             cancellationToken).ConfigureAwait(false);
@@ -1766,36 +1773,6 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
 
         return args;
-    }
-
-    /// <summary>
-    /// Loads any plugin playback plan, then forces stream copy off when a session filter or edit graph applies.
-    /// </summary>
-    private async Task ApplyPlaybackPlanTranscodeFlagsAsync(StreamingRequestDto streamingRequest, string? itemId, CancellationToken cancellationToken)
-    {
-        foreach (var loader in _playbackPlanLoaders)
-        {
-            await loader.EnsurePlanLoadedAsync(
-                streamingRequest.PlaySessionId,
-                streamingRequest.DeviceId,
-                itemId,
-                streamingRequest.MediaSourceId,
-                cancellationToken).ConfigureAwait(false);
-        }
-
-        var playSessionId = streamingRequest.PlaySessionId ?? string.Empty;
-        var deviceId = streamingRequest.DeviceId ?? string.Empty;
-        var hasEditGraph = _encodingHelper.HasSessionEditGraphForRequest(playSessionId, deviceId);
-        var hasAudioFilter = _encodingHelper.HasSessionAudioFilterForRequest(playSessionId, deviceId);
-        if (hasAudioFilter || hasEditGraph)
-        {
-            streamingRequest.AllowAudioStreamCopy = false;
-        }
-
-        if (hasEditGraph)
-        {
-            streamingRequest.AllowVideoStreamCopy = false;
-        }
     }
 
     /// <summary>

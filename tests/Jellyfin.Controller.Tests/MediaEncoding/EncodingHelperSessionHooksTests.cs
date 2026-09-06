@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -117,6 +119,73 @@ public class EncodingHelperSessionHooksTests
         Assert.True(CreateHelper(graph: provider.Object).HasSessionEditGraphForRequest("play", "dev"));
         Assert.False(CreateHelper().HasSessionEditGraphForRequest("play", "dev"));
     }
+
+    [Fact]
+    public async Task ApplyPlaybackPlanTranscodeFlagsAsync_InvokesLoader()
+    {
+        var loader = new Mock<ISessionPlaybackPlanLoader>();
+        loader
+            .Setup(l => l.EnsurePlanLoadedAsync("play", "dev", "item", "source", It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        await CreateHelper().ApplyPlaybackPlanTranscodeFlagsAsync(
+            [loader.Object],
+            BuildStreamingRequest(),
+            "item",
+            CancellationToken.None);
+
+        loader.Verify(
+            l => l.EnsurePlanLoadedAsync("play", "dev", "item", "source", It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ApplyPlaybackPlanTranscodeFlagsAsync_AudioFilter_DisablesAudioCopyOnly()
+    {
+        var audio = new Mock<ISessionAudioFilterProvider>();
+        audio.Setup(p => p.GetAdditionalAudioFilter("play", "dev", 0)).Returns("volume=0");
+
+        var request = BuildStreamingRequest();
+        var result = await CreateHelper(audio: audio.Object).ApplyPlaybackPlanTranscodeFlagsAsync(
+            Array.Empty<ISessionPlaybackPlanLoader>(),
+            request,
+            "item",
+            CancellationToken.None);
+
+        Assert.False(result.HasEditGraph);
+        Assert.True(result.HasAudioFilter);
+        Assert.False(request.AllowAudioStreamCopy);
+        Assert.True(request.AllowVideoStreamCopy);
+    }
+
+    [Fact]
+    public async Task ApplyPlaybackPlanTranscodeFlagsAsync_EditGraph_DisablesStreamCopy()
+    {
+        var graph = new Mock<ISessionMediaEditGraphProvider>();
+        graph.Setup(p => p.HasEditGraph("play", "dev")).Returns(true);
+
+        var request = BuildStreamingRequest();
+        var result = await CreateHelper(graph: graph.Object).ApplyPlaybackPlanTranscodeFlagsAsync(
+            null,
+            request,
+            "item",
+            CancellationToken.None);
+
+        Assert.True(result.HasEditGraph);
+        Assert.False(result.HasAudioFilter);
+        Assert.False(request.AllowAudioStreamCopy);
+        Assert.False(request.AllowVideoStreamCopy);
+    }
+
+    private static StreamingRequestDto BuildStreamingRequest()
+        => new()
+        {
+            PlaySessionId = "play",
+            DeviceId = "dev",
+            MediaSourceId = "source",
+            AllowAudioStreamCopy = true,
+            AllowVideoStreamCopy = true
+        };
 
     private static Mock<ISessionMediaEditGraphProvider> CreateGraphProvider(SessionMediaEditGraph graph)
     {

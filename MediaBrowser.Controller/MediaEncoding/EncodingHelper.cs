@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Enums;
@@ -2965,6 +2966,9 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Returns true if any session audio filter provider has a filter for the given play session/device.
         /// Used by the API layer to force audio transcoding so the filter is applied.
         /// </summary>
+        /// <param name="playSessionId">The play session ID.</param>
+        /// <param name="deviceId">The device ID.</param>
+        /// <returns>Whether a session audio filter applies.</returns>
         public bool HasSessionAudioFilterForRequest(string playSessionId, string deviceId)
         {
             foreach (var provider in _sessionAudioFilterProviders)
@@ -2982,6 +2986,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Returns true if any session audio filter provider has a filter for this encoding job.
         /// </summary>
+        /// <param name="state">The encoding job.</param>
+        /// <returns>Whether a session audio filter applies.</returns>
         public bool HasSessionAudioFilter(EncodingJobInfo state)
         {
             GetPlaySessionAndDeviceId(state, out var playSessionId, out var deviceId);
@@ -7843,12 +7849,58 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Returns true if any edit-graph provider needs a filter graph for this request.
         /// </summary>
+        /// <param name="playSessionId">The play session ID.</param>
+        /// <param name="deviceId">The device ID.</param>
+        /// <returns>Whether a session edit graph applies.</returns>
         public bool HasSessionEditGraphForRequest(string playSessionId, string deviceId)
             => _sessionMediaEditGraphProviders.Any(provider => provider.HasEditGraph(playSessionId, deviceId));
 
         /// <summary>
+        /// Loads any plugin playback plan, then forces stream copy off when a session filter or edit graph applies.
+        /// </summary>
+        /// <param name="loaders">Optional playback plan loaders to run first.</param>
+        /// <param name="streamingRequest">The streaming request whose copy flags may be updated.</param>
+        /// <param name="itemId">The item ID from the stream request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Whether an edit graph and/or audio filter apply for this request.</returns>
+        public async Task<(bool HasEditGraph, bool HasAudioFilter)> ApplyPlaybackPlanTranscodeFlagsAsync(
+            IEnumerable<ISessionPlaybackPlanLoader> loaders,
+            StreamingRequestDto streamingRequest,
+            string itemId,
+            CancellationToken cancellationToken)
+        {
+            foreach (var loader in loaders ?? Array.Empty<ISessionPlaybackPlanLoader>())
+            {
+                await loader.EnsurePlanLoadedAsync(
+                    streamingRequest.PlaySessionId,
+                    streamingRequest.DeviceId,
+                    itemId,
+                    streamingRequest.MediaSourceId,
+                    cancellationToken).ConfigureAwait(false);
+            }
+
+            var playSessionId = streamingRequest.PlaySessionId ?? string.Empty;
+            var deviceId = streamingRequest.DeviceId ?? string.Empty;
+            var hasEditGraph = HasSessionEditGraphForRequest(playSessionId, deviceId);
+            var hasAudioFilter = HasSessionAudioFilterForRequest(playSessionId, deviceId);
+            if (hasAudioFilter || hasEditGraph)
+            {
+                streamingRequest.AllowAudioStreamCopy = false;
+            }
+
+            if (hasEditGraph)
+            {
+                streamingRequest.AllowVideoStreamCopy = false;
+            }
+
+            return (hasEditGraph, hasAudioFilter);
+        }
+
+        /// <summary>
         /// Tries to get a session edit graph for the encoding job.
         /// </summary>
+        /// <param name="state">The encoding job.</param>
+        /// <returns>The session edit graph, or <c>null</c> if none applies.</returns>
         public SessionMediaEditGraph TryGetSessionEditGraph(EncodingJobInfo state)
         {
             if (!_sessionMediaEditGraphProviders.Any())
@@ -8033,6 +8085,10 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Map args and optional <c>-filter_complex</c> prefix for HLS when an edit graph is present.
         /// </summary>
+        /// <param name="state">The encoding job.</param>
+        /// <param name="filterComplexArg">The <c>-filter_complex</c> argument, or empty when unused.</param>
+        /// <param name="mapArgs">The <c>-map</c> arguments for graph outputs.</param>
+        /// <returns>Whether an edit graph supplied map arguments.</returns>
         public bool TryGetSessionEditGraphMapArgs(EncodingJobInfo state, out string filterComplexArg, out string mapArgs)
         {
             filterComplexArg = string.Empty;
