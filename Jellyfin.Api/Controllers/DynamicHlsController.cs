@@ -60,6 +60,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     private readonly IDynamicHlsPlaylistGenerator _dynamicHlsPlaylistGenerator;
     private readonly DynamicHlsHelper _dynamicHlsHelper;
     private readonly EncodingOptions _encodingOptions;
+    private readonly IEnumerable<ISessionPlaybackPlanLoader> _playbackPlanLoaders;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DynamicHlsController"/> class.
@@ -75,6 +76,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="dynamicHlsHelper">Instance of <see cref="DynamicHlsHelper"/>.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
     /// <param name="dynamicHlsPlaylistGenerator">Instance of <see cref="IDynamicHlsPlaylistGenerator"/>.</param>
+    /// <param name="playbackPlanLoaders">Optional plugin loaders run before the first FFmpeg request.</param>
     public DynamicHlsController(
         ILibraryManager libraryManager,
         IUserManager userManager,
@@ -86,7 +88,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         ILogger<DynamicHlsController> logger,
         DynamicHlsHelper dynamicHlsHelper,
         EncodingHelper encodingHelper,
-        IDynamicHlsPlaylistGenerator dynamicHlsPlaylistGenerator)
+        IDynamicHlsPlaylistGenerator dynamicHlsPlaylistGenerator,
+        IEnumerable<ISessionPlaybackPlanLoader>? playbackPlanLoaders = null)
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
@@ -99,6 +102,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         _dynamicHlsHelper = dynamicHlsHelper;
         _encodingHelper = encodingHelper;
         _dynamicHlsPlaylistGenerator = dynamicHlsPlaylistGenerator;
+        _playbackPlanLoaders = playbackPlanLoaders ?? Array.Empty<ISessionPlaybackPlanLoader>();
 
         _encodingOptions = serverConfigurationManager.GetEncodingOptions();
     }
@@ -280,6 +284,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         // Due to CTS.Token calling ThrowIfDisposed (https://github.com/dotnet/runtime/issues/29970) we have to "cache" the token
         // since it gets disposed when ffmpeg exits
         var cancellationToken = cancellationTokenSource.Token;
+        await ApplyPlaybackPlanTranscodeFlagsAsync(streamingRequest, itemId.ToString("N", CultureInfo.InvariantCulture), cancellationToken).ConfigureAwait(false);
         var state = await StreamingHelpers.GetStreamingState(
                 streamingRequest,
                 HttpContext,
@@ -515,6 +520,11 @@ public class DynamicHlsController : BaseJellyfinApiController
             EnableAudioVbrEncoding = enableAudioVbrEncoding,
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
+
+        await ApplyPlaybackPlanTranscodeFlagsAsync(
+            streamingRequest,
+            itemId.ToString("N", CultureInfo.InvariantCulture),
+            HttpContext.RequestAborted).ConfigureAwait(false);
 
         return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
     }
@@ -1386,6 +1396,10 @@ public class DynamicHlsController : BaseJellyfinApiController
 
     private async Task<ActionResult> GetVariantPlaylistInternal(StreamingRequestDto streamingRequest, CancellationTokenSource cancellationTokenSource)
     {
+        await ApplyPlaybackPlanTranscodeFlagsAsync(
+            streamingRequest,
+            streamingRequest.Id.ToString("N", CultureInfo.InvariantCulture),
+            cancellationTokenSource.Token).ConfigureAwait(false);
         using var state = await StreamingHelpers.GetStreamingState(
                 streamingRequest,
                 HttpContext,
@@ -1434,6 +1448,11 @@ public class DynamicHlsController : BaseJellyfinApiController
         // CTS lifecycle is managed internally.
         var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
+
+        await ApplyPlaybackPlanTranscodeFlagsAsync(
+            streamingRequest,
+            streamingRequest.Id.ToString("N", CultureInfo.InvariantCulture),
+            cancellationToken).ConfigureAwait(false);
 
         var state = await StreamingHelpers.GetStreamingState(
                 streamingRequest,
@@ -1581,6 +1600,18 @@ public class DynamicHlsController : BaseJellyfinApiController
         var threads = EncodingHelper.GetNumberOfThreads(state, _encodingOptions, videoCodec);
 
         var mapArgs = state.IsOutputVideo ? _encodingHelper.GetMapArgs(state) : string.Empty;
+        var editGraphPrefix = string.Empty;
+        long? savedEditSeek = null;
+        if (state.IsOutputVideo
+            && _encodingHelper.TryGetSessionEditGraphMapArgs(state, out var filterComplexArg, out var editMapArgs))
+        {
+            editGraphPrefix = filterComplexArg + " ";
+            mapArgs = editMapArgs;
+            savedEditSeek = state.BaseRequest.StartTimeTicks;
+            state.BaseRequest.StartTimeTicks = 0;
+            state.BaseRequest.AllowVideoStreamCopy = false;
+            state.BaseRequest.AllowAudioStreamCopy = false;
+        }
 
         var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
         var outputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(outputPath);
@@ -1591,6 +1622,12 @@ public class DynamicHlsController : BaseJellyfinApiController
         var segmentFormat = string.Empty;
         var segmentContainer = outputExtension.TrimStart('.');
         var inputModifier = _encodingHelper.GetInputModifier(state, _encodingOptions, segmentContainer);
+        var inputArgument = _encodingHelper.GetInputArgument(state, _encodingOptions, segmentContainer);
+        if (savedEditSeek.HasValue)
+        {
+            state.BaseRequest.StartTimeTicks = savedEditSeek;
+        }
+
         var hlsArguments = $"-hls_playlist_type {(isEventPlaylist ? "event" : "vod")} -hls_list_size 0";
 
         if (string.Equals(segmentContainer, "ts", StringComparison.OrdinalIgnoreCase))
@@ -1637,15 +1674,27 @@ public class DynamicHlsController : BaseJellyfinApiController
                 Path.GetFileNameWithoutExtension(outputPath));
         }
 
+        var videoArgs = GetVideoArguments(state, startNumber, isEventPlaylist, segmentContainer);
+        var audioArgs = GetAudioArguments(state);
+        var timestampArgs = "-copyts -avoid_negative_ts disabled";
+        if (!string.IsNullOrEmpty(editGraphPrefix))
+        {
+            videoArgs = GetVideoArgumentsForEditGraph(state, startNumber, isEventPlaylist);
+            audioArgs = GetAudioArgumentsForEditGraph(state);
+            timestampArgs = "-avoid_negative_ts make_zero";
+        }
+
         return string.Format(
             CultureInfo.InvariantCulture,
-            "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -hls_segment_type {8} -start_number {9}{10} -hls_segment_filename \"{11}\" {12} -y \"{13}\"",
+            "{0} {1} {2}-map_metadata -1 -map_chapters -1 -threads {3} {4} {5} {6} {7} -max_muxing_queue_size {8} -f hls -max_delay 5000000 -hls_time {9} -hls_segment_type {10} -start_number {11}{12} -hls_segment_filename \"{13}\" {14} -y \"{15}\"",
             inputModifier,
-            _encodingHelper.GetInputArgument(state, _encodingOptions, segmentContainer),
+            inputArgument,
+            editGraphPrefix,
             threads,
             mapArgs,
-            GetVideoArguments(state, startNumber, isEventPlaylist, segmentContainer),
-            GetAudioArguments(state),
+            videoArgs,
+            audioArgs,
+            timestampArgs,
             maxMuxingQueueSize,
             state.SegmentLength.ToString(CultureInfo.InvariantCulture),
             segmentFormat,
@@ -1654,6 +1703,70 @@ public class DynamicHlsController : BaseJellyfinApiController
             outputTsArg.EscapeProcessArgument(),
             hlsArguments,
             outputPath.EscapeProcessArgument()).Trim();
+    }
+
+    private string GetVideoArgumentsForEditGraph(StreamState state, int startNumber, bool isEventPlaylist)
+    {
+        var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
+        if (EncodingHelper.IsCopyCodec(videoCodec))
+        {
+            videoCodec = "libx264";
+        }
+
+        return "-codec:v:0 " + videoCodec
+            + _encodingHelper.GetHlsVideoKeyFrameArguments(state, videoCodec, state.SegmentLength, isEventPlaylist, startNumber);
+    }
+
+    private string GetAudioArgumentsForEditGraph(StreamState state)
+    {
+        if (state.AudioStream is null)
+        {
+            return string.Empty;
+        }
+
+        var audioCodec = _encodingHelper.GetAudioEncoder(state);
+        if (EncodingHelper.IsCopyCodec(audioCodec))
+        {
+            audioCodec = "aac";
+        }
+
+        var args = "-codec:a:0 " + audioCodec;
+        if (state.OutputAudioBitrate.HasValue)
+        {
+            args += " -ab " + state.OutputAudioBitrate.Value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        return args;
+    }
+
+    /// <summary>
+    /// Loads any plugin playback plan, then forces stream copy off when a session filter or edit graph applies.
+    /// </summary>
+    private async Task ApplyPlaybackPlanTranscodeFlagsAsync(StreamingRequestDto streamingRequest, string? itemId, CancellationToken cancellationToken)
+    {
+        foreach (var loader in _playbackPlanLoaders)
+        {
+            await loader.EnsurePlanLoadedAsync(
+                streamingRequest.PlaySessionId,
+                streamingRequest.DeviceId,
+                itemId,
+                streamingRequest.MediaSourceId,
+                cancellationToken).ConfigureAwait(false);
+        }
+
+        var playSessionId = streamingRequest.PlaySessionId ?? string.Empty;
+        var deviceId = streamingRequest.DeviceId ?? string.Empty;
+        var hasEditGraph = _encodingHelper.HasSessionEditGraphForRequest(playSessionId, deviceId);
+        var hasAudioFilter = _encodingHelper.HasSessionAudioFilterForRequest(playSessionId, deviceId);
+        if (hasAudioFilter || hasEditGraph)
+        {
+            streamingRequest.AllowAudioStreamCopy = false;
+        }
+
+        if (hasEditGraph)
+        {
+            streamingRequest.AllowVideoStreamCopy = false;
+        }
     }
 
     /// <summary>

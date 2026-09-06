@@ -47,6 +47,7 @@ public class VideosController : BaseJellyfinApiController
     private readonly ITranscodeManager _transcodeManager;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly EncodingHelper _encodingHelper;
+    private readonly IEnumerable<ISessionPlaybackPlanLoader> _playbackPlanLoaders;
 
     private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
 
@@ -62,6 +63,7 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
+    /// <param name="playbackPlanLoaders">Optional plugin loaders run before the first FFmpeg request.</param>
     public VideosController(
         ILibraryManager libraryManager,
         IUserManager userManager,
@@ -71,7 +73,8 @@ public class VideosController : BaseJellyfinApiController
         IMediaEncoder mediaEncoder,
         ITranscodeManager transcodeManager,
         IHttpClientFactory httpClientFactory,
-        EncodingHelper encodingHelper)
+        EncodingHelper encodingHelper,
+        IEnumerable<ISessionPlaybackPlanLoader>? playbackPlanLoaders = null)
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
@@ -82,6 +85,7 @@ public class VideosController : BaseJellyfinApiController
         _transcodeManager = transcodeManager;
         _httpClientFactory = httpClientFactory;
         _encodingHelper = encodingHelper;
+        _playbackPlanLoaders = playbackPlanLoaders ?? Array.Empty<ISessionPlaybackPlanLoader>();
     }
 
     /// <summary>
@@ -425,6 +429,29 @@ public class VideosController : BaseJellyfinApiController
             EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
+        var itemIdStr = streamingRequest.Id.IsEmpty() ? null : streamingRequest.Id.ToString("N");
+        foreach (var loader in _playbackPlanLoaders)
+        {
+            await loader.EnsurePlanLoadedAsync(
+                streamingRequest.PlaySessionId,
+                streamingRequest.DeviceId,
+                itemIdStr,
+                streamingRequest.MediaSourceId,
+                cancellationTokenSource.Token).ConfigureAwait(false);
+        }
+
+        var hasEditGraph = _encodingHelper.HasSessionEditGraphForRequest(streamingRequest.PlaySessionId ?? string.Empty, streamingRequest.DeviceId ?? string.Empty);
+        var hasAudioFilter = _encodingHelper.HasSessionAudioFilterForRequest(streamingRequest.PlaySessionId ?? string.Empty, streamingRequest.DeviceId ?? string.Empty);
+        if (hasEditGraph || hasAudioFilter)
+        {
+            streamingRequest.AllowAudioStreamCopy = false;
+        }
+
+        if (hasEditGraph)
+        {
+            streamingRequest.AllowVideoStreamCopy = false;
+        }
+
         var state = await StreamingHelpers.GetStreamingState(
                 streamingRequest,
                 HttpContext,
@@ -465,7 +492,9 @@ public class VideosController : BaseJellyfinApiController
         }
 
         // Static stream
-        if (@static.HasValue && @static.Value && !(state.MediaSource.VideoType == VideoType.BluRay || state.MediaSource.VideoType == VideoType.Dvd))
+        if (@static.HasValue && @static.Value && !(state.MediaSource.VideoType == VideoType.BluRay || state.MediaSource.VideoType == VideoType.Dvd)
+            && !hasEditGraph
+            && !hasAudioFilter)
         {
             var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
 
