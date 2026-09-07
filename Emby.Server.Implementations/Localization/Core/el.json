@@ -119,5 +119,7 @@
     "NameExtraShort": "Βίντεο μικρού μήκους",
     "NameExtraThemeSong": "Θεματικό Τραγούδι",
     "NameExtraThemeVideo": "Θεματικό Βίντεο",
-    "NameExtraTrailer": "τρέιλερ ταινίας"
+    "NameExtraTrailer": "τρέιλερ ταινίας",
+    "NameExtraUnknown": "Πρόσθετα",
+    "NameExtraClip": "Απόσπασμα"
 }
