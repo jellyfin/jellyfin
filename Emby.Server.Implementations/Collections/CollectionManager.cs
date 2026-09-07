@@ -336,31 +336,72 @@ namespace Emby.Server.Implementations.Collections
 
             var allBoxSets = GetCollections(user).ToList();
 
-            // Build the BoxSet nesting graph.
-            var boxSetsById = new Dictionary<Guid, BoxSet>();
+            // Build the BoxSet nesting graph. Reading the linked child ids once per BoxSet keeps
+            // the whole graph in memory, so no BoxSet has to be rescanned while classifying items.
+            var boxSetsById = new Dictionary<Guid, BoxSet>(allBoxSets.Count);
             foreach (var boxSet in allBoxSets)
             {
                 boxSetsById[boxSet.Id] = boxSet;
             }
 
-            var childBoxSetIds = new Dictionary<Guid, List<Guid>>();
+            var childIdsByBoxSet = new Dictionary<Guid, IReadOnlyList<Guid>>(allBoxSets.Count);
             var nestedBoxSetIds = new HashSet<Guid>();
             foreach (var boxSet in allBoxSets)
             {
-                var children = new List<Guid>();
-                foreach (var child in boxSet.GetLinkedChildren(user))
+                var childIds = boxSet.GetLinkedChildIds();
+                childIdsByBoxSet[boxSet.Id] = childIds;
+                nestedBoxSetIds.UnionWith(childIds.Where(boxSetsById.ContainsKey));
+            }
+
+            // Flatten every outermost BoxSet down to the ids of all items below it, nested BoxSets
+            // included, and index that by item id so classifying an item is a single lookup.
+            var rootBoxSetsByItemId = new Dictionary<Guid, List<BoxSet>>();
+            var containedIds = new HashSet<Guid>();
+            var visitedBoxSetIds = new HashSet<Guid>();
+            var pendingBoxSetIds = new Stack<Guid>();
+            foreach (var boxSet in allBoxSets)
+            {
+                if (nestedBoxSetIds.Contains(boxSet.Id))
                 {
-                    if (child is BoxSet && boxSetsById.ContainsKey(child.Id))
+                    continue;
+                }
+
+                containedIds.Clear();
+                visitedBoxSetIds.Clear();
+                pendingBoxSetIds.Push(boxSet.Id);
+
+                // visitedBoxSetIds guards against cycles in the nesting graph.
+                while (pendingBoxSetIds.Count > 0)
+                {
+                    var currentId = pendingBoxSetIds.Pop();
+                    if (!visitedBoxSetIds.Add(currentId)
+                        || !childIdsByBoxSet.TryGetValue(currentId, out var childIds))
                     {
-                        children.Add(child.Id);
-                        nestedBoxSetIds.Add(child.Id);
+                        continue;
+                    }
+
+                    foreach (var childId in childIds)
+                    {
+                        containedIds.Add(childId);
+
+                        if (boxSetsById.ContainsKey(childId))
+                        {
+                            pendingBoxSetIds.Push(childId);
+                        }
                     }
                 }
 
-                childBoxSetIds[boxSet.Id] = children;
-            }
+                foreach (var containedId in containedIds)
+                {
+                    if (!rootBoxSetsByItemId.TryGetValue(containedId, out var containingBoxSets))
+                    {
+                        containingBoxSets = new List<BoxSet>();
+                        rootBoxSetsByItemId[containedId] = containingBoxSets;
+                    }
 
-            var rootBoxSets = allBoxSets.Where(b => !nestedBoxSetIds.Contains(b.Id)).ToList();
+                    containingBoxSets.Add(boxSet);
+                }
+            }
 
             foreach (var item in items)
             {
@@ -368,22 +409,14 @@ namespace Emby.Server.Implementations.Collections
                 {
                     var itemId = item.Id;
 
-                    var itemIsInBoxSet = false;
-                    foreach (var boxSet in rootBoxSets)
+                    if (rootBoxSetsByItemId.TryGetValue(itemId, out var containingBoxSets))
                     {
-                        if (!BoxSetContainsItem(boxSet, itemId, childBoxSetIds, boxSetsById, new HashSet<Guid>()))
+                        foreach (var boxSet in containingBoxSets)
                         {
-                            continue;
+                            results.TryAdd(boxSet.Id, boxSet);
                         }
 
-                        itemIsInBoxSet = true;
-
-                        results.TryAdd(boxSet.Id, boxSet);
-                    }
-
-                    // skip any item that is in a box set
-                    if (itemIsInBoxSet)
-                    {
+                        // skip any item that is in a box set
                         continue;
                     }
 
@@ -414,44 +447,6 @@ namespace Emby.Server.Implementations.Collections
             }
 
             return results.Values;
-        }
-
-        /// <summary>
-        /// Determines whether <paramref name="itemId"/> is a direct member of <paramref name="boxSet"/>
-        /// or of any BoxSet nested within it. <paramref name="visited"/> guards against cycles.
-        /// </summary>
-        private static bool BoxSetContainsItem(
-            BoxSet boxSet,
-            Guid itemId,
-            Dictionary<Guid, List<Guid>> childBoxSetIds,
-            Dictionary<Guid, BoxSet> boxSetsById,
-            HashSet<Guid> visited)
-        {
-            if (!visited.Add(boxSet.Id))
-            {
-                return false;
-            }
-
-            if (boxSet.ContainsLinkedChildByItemId(itemId))
-            {
-                return true;
-            }
-
-            if (!childBoxSetIds.TryGetValue(boxSet.Id, out var nestedIds))
-            {
-                return false;
-            }
-
-            foreach (var nestedId in nestedIds)
-            {
-                if (boxSetsById.TryGetValue(nestedId, out var nested)
-                    && BoxSetContainsItem(nested, itemId, childBoxSetIds, boxSetsById, visited))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
     }
 }

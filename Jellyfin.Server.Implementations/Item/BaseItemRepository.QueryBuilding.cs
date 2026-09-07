@@ -290,7 +290,6 @@ public sealed partial class BaseItemRepository
         foreach (var id in boxSetIds)
         {
             visited.Clear();
-            stack.Clear();
             stack.Push(id);
 
             while (stack.Count > 0)
