@@ -319,14 +319,7 @@ public sealed partial class BaseItemRepository
             .WhereOneOrMany(cleanNames, ivm => ivm.ItemValue.CleanValue);
 
         var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
-        var movieTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie];
         var episodeTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
-        var musicAlbumTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicAlbum];
-        var musicArtistTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist];
-        var musicVideoTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicVideo];
-        var programTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.LiveTvProgram];
-        var audioTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio];
-        var trailerTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Trailer];
 
         // Rewrite query to avoid SelectMany on navigation properties (which requires SQL APPLY, not supported on SQLite)
         // Instead, start from ItemValueMaps and join with BaseItems.
@@ -335,9 +328,9 @@ public sealed partial class BaseItemRepository
                 scopedItems,
                 ivm => ivm.ItemId,
                 e => e.Id,
-                (ivm, e) => new { CleanName = ivm.ItemValue.CleanValue, e.Type, e.SeriesId })
+                (ivm, e) => new { CleanName = ivm.ItemValue.CleanValue, e.Type, e.SeriesId, e.Id })
             .GroupBy(x => new { x.CleanName, x.Type, x.SeriesId })
-            .Select(g => new { g.Key.CleanName, g.Key.Type, g.Key.SeriesId, Count = g.Count() })
+            .Select(g => new { g.Key.CleanName, g.Key.Type, g.Key.SeriesId, Count = g.Select(x => x.Id).Distinct().Count() })
             .ToList();
 
         // Only studios and genres pass down from a series to its episodes; an artist credit does not.
@@ -359,46 +352,10 @@ public sealed partial class BaseItemRepository
 
         foreach (var group in rawCounts.GroupBy(x => x.CleanName))
         {
-            var counts = new ItemCounts();
-            foreach (var row in group)
-            {
-                if (row.Type == seriesTypeName)
-                {
-                    counts.SeriesCount += row.Count;
-                }
-                else if (row.Type == movieTypeName)
-                {
-                    counts.MovieCount += row.Count;
-                }
-                else if (row.Type == musicAlbumTypeName)
-                {
-                    counts.AlbumCount += row.Count;
-                }
-                else if (row.Type == musicArtistTypeName)
-                {
-                    counts.ArtistCount += row.Count;
-                }
-                else if (row.Type == musicVideoTypeName)
-                {
-                    counts.MusicVideoCount += row.Count;
-                }
-                else if (row.Type == programTypeName)
-                {
-                    counts.ProgramCount += row.Count;
-                }
-                else if (row.Type == audioTypeName)
-                {
-                    counts.SongCount += row.Count;
-                }
-                else if (row.Type == trailerTypeName)
-                {
-                    counts.TrailerCount += row.Count;
-                }
-            }
+            var counts = ItemCountBuilder.Build(_itemTypeLookup, group.Select(row => (row.Type, row.Count)));
 
             // Episodes are counted separately: the value is usually only written on the series.
-            counts.EpisodeCount = episodeCounts.GetValueOrDefault(group.Key);
-            counts.ItemCount = counts.TotalItemCount();
+            ItemCountBuilder.SetEpisodeCount(counts, episodeCounts.GetValueOrDefault(group.Key));
             countsByCleanName[group.Key] = counts;
         }
 
@@ -407,7 +364,9 @@ public sealed partial class BaseItemRepository
         {
             if (!countsByCleanName.ContainsKey(cleanName))
             {
-                countsByCleanName[cleanName] = new ItemCounts { EpisodeCount = episodeCount, ItemCount = episodeCount };
+                var counts = new ItemCounts();
+                ItemCountBuilder.SetEpisodeCount(counts, episodeCount);
+                countsByCleanName[cleanName] = counts;
             }
         }
 

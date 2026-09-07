@@ -7,6 +7,7 @@ using System.Linq;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
@@ -125,177 +126,285 @@ public class ItemCountService : IItemCountService
     /// <inheritdoc />
     public ItemCounts GetItemCountsForNameItem(BaseItemKind kind, Guid id, BaseItemKind[] relatedItemKinds, InternalItemsQuery accessFilter)
     {
-        using var context = _dbProvider.CreateDbContext();
+        return GetItemCountsForNameItems(kind, [id], relatedItemKinds, accessFilter)[id];
+    }
 
-        var item = context.BaseItems.AsNoTracking()
-            .Where(e => e.Id == id)
-            .Select(e => new { e.Name, e.CleanName })
-            .FirstOrDefault();
-
-        if (item is null)
+    private static ItemValueType[] GetItemValueTypes(BaseItemKind kind)
+        => kind switch
         {
-            return new ItemCounts();
+            BaseItemKind.MusicArtist => [ItemValueType.Artist, ItemValueType.AlbumArtist],
+            BaseItemKind.Genre or BaseItemKind.MusicGenre => [ItemValueType.Genre],
+            BaseItemKind.Studio => [ItemValueType.Studios],
+            _ => []
+        };
+
+    /// <inheritdoc />
+    public Dictionary<Guid, ItemCounts> GetItemCountsForNameItems(BaseItemKind kind, IReadOnlyList<Guid> ids, BaseItemKind[] relatedItemKinds, InternalItemsQuery accessFilter)
+    {
+        ArgumentNullException.ThrowIfNull(ids);
+        ArgumentNullException.ThrowIfNull(relatedItemKinds);
+        ArgumentNullException.ThrowIfNull(accessFilter);
+
+        var result = new Dictionary<Guid, ItemCounts>();
+        if (ids.Count == 0)
+        {
+            return result;
         }
 
-        IQueryable<BaseItemEntity> baseQuery;
-        switch (kind)
-        {
-            case BaseItemKind.Person:
-                baseQuery = ItemsById(context, context.PeopleBaseItemMap
-                    .AsNoTracking()
-                    .Where(m => m.People.Name == item.Name)
-                    .Select(m => m.ItemId));
-                break;
-            case BaseItemKind.MusicArtist:
-                baseQuery = ItemsById(context, context.ItemValuesMap
-                    .AsNoTracking()
-                    .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
-                        && (ivm.ItemValue.Type == ItemValueType.Artist || ivm.ItemValue.Type == ItemValueType.AlbumArtist))
-                    .Select(ivm => ivm.ItemId));
-                break;
-            case BaseItemKind.Genre:
-            case BaseItemKind.MusicGenre:
-                baseQuery = ItemsById(context, context.ItemValuesMap
-                    .AsNoTracking()
-                    .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
-                        && ivm.ItemValue.Type == ItemValueType.Genre)
-                    .Select(ivm => ivm.ItemId));
-                break;
-            case BaseItemKind.Studio:
-                baseQuery = ItemsById(context, context.ItemValuesMap
-                    .AsNoTracking()
-                    .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
-                        && ivm.ItemValue.Type == ItemValueType.Studios)
-                    .Select(ivm => ivm.ItemId));
-                break;
-            case BaseItemKind.Year:
-                if (int.TryParse(item.Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
-                {
-                    baseQuery = context.BaseItems
-                        .AsNoTracking()
-                        .Where(e => e.ProductionYear == year);
-                }
-                else
-                {
-                    return new ItemCounts();
-                }
+        using var context = _dbProvider.CreateDbContext();
 
-                break;
-            default:
-                return new ItemCounts();
+        var idsArray = ids as Guid[] ?? ids.ToArray();
+        var nameItems = context.BaseItems.AsNoTracking()
+            .WhereOneOrMany(idsArray, e => e.Id)
+            .Select(e => new NameItem(e.Id, e.Name, e.CleanName))
+            .ToArray();
+
+        foreach (var id in ids)
+        {
+            result[id] = new ItemCounts();
+        }
+
+        if (nameItems.Length == 0)
+        {
+            return result;
         }
 
         var typeNames = relatedItemKinds.Select(k => _itemTypeLookup.BaseItemKindNames[k]).ToArray();
-        baseQuery = baseQuery.Where(e => typeNames.Contains(e.Type));
+        var related = _queryHelpers.ApplyAccessFiltering(
+            context,
+            context.BaseItems.AsNoTracking().Where(e => typeNames.Contains(e.Type)),
+            accessFilter);
 
-        baseQuery = _queryHelpers.ApplyAccessFiltering(context, baseQuery, accessFilter);
-
-        var counts = baseQuery
-            .GroupBy(x => x.Type)
-            .Select(x => new { x.Key, Count = x.Count() })
-            .ToArray();
-
-        var lookup = _itemTypeLookup.BaseItemKindNames;
-        var result = new ItemCounts();
-        var totalCount = 0;
-
-        foreach (var count in counts)
+        var valueTypes = GetItemValueTypes(kind);
+        if (valueTypes.Length > 0)
         {
-            totalCount += count.Count;
-
-            if (string.Equals(count.Key, lookup[BaseItemKind.MusicAlbum], StringComparison.Ordinal))
-            {
-                result.AlbumCount = count.Count;
-            }
-            else if (string.Equals(count.Key, lookup[BaseItemKind.MusicArtist], StringComparison.Ordinal))
-            {
-                result.ArtistCount = count.Count;
-            }
-            else if (string.Equals(count.Key, lookup[BaseItemKind.Episode], StringComparison.Ordinal))
-            {
-                result.EpisodeCount = count.Count;
-            }
-            else if (string.Equals(count.Key, lookup[BaseItemKind.Movie], StringComparison.Ordinal))
-            {
-                result.MovieCount = count.Count;
-            }
-            else if (string.Equals(count.Key, lookup[BaseItemKind.MusicVideo], StringComparison.Ordinal))
-            {
-                result.MusicVideoCount = count.Count;
-            }
-            else if (string.Equals(count.Key, lookup[BaseItemKind.LiveTvProgram], StringComparison.Ordinal))
-            {
-                result.ProgramCount = count.Count;
-            }
-            else if (string.Equals(count.Key, lookup[BaseItemKind.Series], StringComparison.Ordinal))
-            {
-                result.SeriesCount = count.Count;
-            }
-            else if (string.Equals(count.Key, lookup[BaseItemKind.Audio], StringComparison.Ordinal))
-            {
-                result.SongCount = count.Count;
-            }
-            else if (string.Equals(count.Key, lookup[BaseItemKind.Trailer], StringComparison.Ordinal))
-            {
-                result.TrailerCount = count.Count;
-            }
-            else if (string.Equals(count.Key, lookup[BaseItemKind.BoxSet], StringComparison.Ordinal))
-            {
-                result.BoxSetCount = count.Count;
-            }
-            else if (string.Equals(count.Key, lookup[BaseItemKind.Book], StringComparison.Ordinal))
-            {
-                result.BookCount = count.Count;
-            }
+            CountByItemValue(context, related, kind, relatedItemKinds, valueTypes, nameItems, result);
         }
-
-        if (kind is BaseItemKind.Studio or BaseItemKind.Genre or BaseItemKind.MusicGenre
-            && relatedItemKinds.Contains(BaseItemKind.Episode)
-            && relatedItemKinds.Contains(BaseItemKind.Series))
+        else if (kind == BaseItemKind.Person)
         {
-            var rolledUpEpisodeCount = CountEpisodesOfTaggedSeries(context, baseQuery, accessFilter, out var directEpisodeCount);
-            totalCount += rolledUpEpisodeCount - result.EpisodeCount + directEpisodeCount;
-            result.EpisodeCount = rolledUpEpisodeCount + directEpisodeCount;
+            CountByPersonName(context, related, nameItems, result);
         }
-
-        result.ItemCount = totalCount;
+        else if (kind == BaseItemKind.Year)
+        {
+            CountByProductionYear(related, nameItems, result);
+        }
 
         return result;
     }
 
-    private int CountEpisodesOfTaggedSeries(
+    private void CountByItemValue(
         JellyfinDbContext context,
-        IQueryable<BaseItemEntity> taggedItems,
-        InternalItemsQuery accessFilter,
-        out int unrelatedEpisodeCount)
+        IQueryable<BaseItemEntity> related,
+        BaseItemKind kind,
+        BaseItemKind[] relatedItemKinds,
+        ItemValueType[] valueTypes,
+        NameItem[] nameItems,
+        Dictionary<Guid, ItemCounts> result)
+    {
+        var cleanNames = nameItems
+            .Select(n => n.CleanName)
+            .OfType<string>()
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        if (cleanNames.Length == 0)
+        {
+            return;
+        }
+
+        var grouped = context.ItemValuesMap.AsNoTracking()
+            .Where(ivm => valueTypes.Contains(ivm.ItemValue.Type))
+            .WhereOneOrMany(cleanNames, ivm => ivm.ItemValue.CleanValue)
+            .Join(related, ivm => ivm.ItemId, e => e.Id, (ivm, e) => new { ivm.ItemValue.CleanValue, e.Type, e.Id })
+            .GroupBy(x => new { x.CleanValue, x.Type })
+            .Select(g => new { g.Key.CleanValue, g.Key.Type, Count = g.Select(x => x.Id).Distinct().Count() })
+            .ToArray();
+
+        var byCleanName = grouped
+            .GroupBy(g => g.CleanValue, StringComparer.Ordinal)
+            .ToDictionary(g => g.Key, g => g.Select(x => (x.Type, x.Count)).ToArray(), StringComparer.Ordinal);
+
+        var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
+        var episodeRollUp = RollsUpEpisodes(kind, relatedItemKinds)
+                && Array.Exists(grouped, g => string.Equals(g.Type, seriesTypeName, StringComparison.Ordinal))
+            ? CountEpisodesOfTaggedSeriesByCleanName(context, related, valueTypes, cleanNames)
+            : null;
+
+        foreach (var nameItem in nameItems)
+        {
+            if (nameItem.CleanName is null || !byCleanName.TryGetValue(nameItem.CleanName, out var counts))
+            {
+                continue;
+            }
+
+            var itemCounts = ItemCountBuilder.Build(_itemTypeLookup, counts);
+
+            if (episodeRollUp is not null)
+            {
+                var rollUp = episodeRollUp.GetValueOrDefault(nameItem.CleanName);
+
+                // Episodes of a tagged series count towards it even when untagged themselves, and
+                // a tagged episode of a tagged series must not be counted a second time.
+                var directEpisodeCount = itemCounts.EpisodeCount - rollUp.TaggedEpisodesOfTaggedSeries;
+                ItemCountBuilder.SetEpisodeCount(itemCounts, rollUp.EpisodesOfTaggedSeries + directEpisodeCount);
+            }
+
+            result[nameItem.Id] = itemCounts;
+        }
+    }
+
+    private void CountByPersonName(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> related,
+        NameItem[] nameItems,
+        Dictionary<Guid, ItemCounts> result)
+    {
+        var names = nameItems
+            .Select(n => n.Name)
+            .OfType<string>()
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        if (names.Length == 0)
+        {
+            return;
+        }
+
+        var grouped = context.PeopleBaseItemMap.AsNoTracking()
+            .WhereOneOrMany(names, m => m.People.Name)
+            .Join(related, m => m.ItemId, e => e.Id, (m, e) => new { m.People.Name, e.Type, e.Id })
+            .GroupBy(x => new { x.Name, x.Type })
+            // A person can be credited on one item more than once, in different roles.
+            .Select(g => new { g.Key.Name, g.Key.Type, Count = g.Select(x => x.Id).Distinct().Count() })
+            .ToArray();
+
+        ApplyGroupedCounts(nameItems, n => n.Name, grouped.Select(g => (g.Name, g.Type, g.Count)), result);
+    }
+
+    private void CountByProductionYear(
+        IQueryable<BaseItemEntity> related,
+        NameItem[] nameItems,
+        Dictionary<Guid, ItemCounts> result)
+    {
+        var years = new List<int>();
+        foreach (var nameItem in nameItems)
+        {
+            if (int.TryParse(nameItem.Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year)
+                && !years.Contains(year))
+            {
+                years.Add(year);
+            }
+        }
+
+        if (years.Count == 0)
+        {
+            return;
+        }
+
+        // No join, so no row can be reached twice and a plain count is the distinct count.
+        var grouped = related
+            .Where(e => e.ProductionYear != null)
+            .WhereOneOrMany(years, e => e.ProductionYear!.Value)
+            .GroupBy(e => new { Year = e.ProductionYear!.Value, e.Type })
+            .Select(g => new { g.Key.Year, g.Key.Type, Count = g.Count() })
+            .ToArray();
+
+        var byYear = grouped
+            .GroupBy(g => g.Year)
+            .ToDictionary(g => g.Key, g => g.Select(x => (x.Type, x.Count)).ToArray());
+
+        foreach (var nameItem in nameItems)
+        {
+            if (int.TryParse(nameItem.Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year)
+                && byYear.TryGetValue(year, out var counts))
+            {
+                result[nameItem.Id] = ItemCountBuilder.Build(_itemTypeLookup, counts);
+            }
+        }
+    }
+
+    private void ApplyGroupedCounts(
+        NameItem[] nameItems,
+        Func<NameItem, string?> keySelector,
+        IEnumerable<(string Key, string Type, int Count)> grouped,
+        Dictionary<Guid, ItemCounts> result)
+    {
+        var byKey = grouped
+            .GroupBy(g => g.Key, StringComparer.Ordinal)
+            .ToDictionary(g => g.Key, g => g.Select(x => (x.Type, x.Count)).ToArray(), StringComparer.Ordinal);
+
+        foreach (var nameItem in nameItems)
+        {
+            var key = keySelector(nameItem);
+            if (key is not null && byKey.TryGetValue(key, out var counts))
+            {
+                result[nameItem.Id] = ItemCountBuilder.Build(_itemTypeLookup, counts);
+            }
+        }
+    }
+
+    private static bool RollsUpEpisodes(BaseItemKind kind, BaseItemKind[] relatedItemKinds)
+        => kind is BaseItemKind.Studio or BaseItemKind.Genre or BaseItemKind.MusicGenre
+            && relatedItemKinds.Contains(BaseItemKind.Episode)
+            && relatedItemKinds.Contains(BaseItemKind.Series);
+
+    private Dictionary<string, (int EpisodesOfTaggedSeries, int TaggedEpisodesOfTaggedSeries)> CountEpisodesOfTaggedSeriesByCleanName(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> related,
+        ItemValueType[] valueTypes,
+        string[] cleanNames)
     {
         var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
         var episodeTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
 
-        var taggedSeriesIds = taggedItems.Where(e => e.Type == seriesTypeName).Select(e => e.Id);
-        unrelatedEpisodeCount = taggedItems.Count(e => e.Type == episodeTypeName
-            && (e.SeriesId == null || !taggedSeriesIds.Contains(e.SeriesId.Value)));
+        var taggedValues = context.ItemValuesMap.AsNoTracking()
+            .Where(ivm => valueTypes.Contains(ivm.ItemValue.Type))
+            .WhereOneOrMany(cleanNames, ivm => ivm.ItemValue.CleanValue);
 
-        // Materialised so the episode count drives off IX_BaseItems_SeriesId.
-        var seriesIds = taggedItems
-            .Where(e => e.Type == seriesTypeName)
-            .Select(e => e.Id)
+        // The series carrying each clean name. Distinct, because one item can be mapped to the
+        // same clean name once per value type.
+        var taggedSeries = taggedValues
+            .Join(
+                related.Where(e => e.Type == seriesTypeName),
+                ivm => ivm.ItemId,
+                e => e.Id,
+                (ivm, e) => new { ivm.ItemValue.CleanValue, SeriesId = e.Id })
+            .Distinct();
+
+        var episodes = related.Where(e => e.Type == episodeTypeName && e.SeriesId != null);
+
+        var episodesOfTaggedSeries = taggedSeries
+            .Join(episodes, s => s.SeriesId, e => e.SeriesId!.Value, (s, e) => new { s.CleanValue, e.Id })
+            .GroupBy(x => x.CleanValue)
+            .Select(g => new { CleanValue = g.Key, Count = g.Select(x => x.Id).Distinct().Count() })
             .ToArray();
 
-        if (seriesIds.Length == 0)
+        // Episodes that carry the clean name themselves *and* belong to a series carrying it. The
+        // roll-up already counts those, so they have to come off the directly tagged ones.
+        var taggedEpisodesOfTaggedSeries = taggedValues
+            .Join(episodes, ivm => ivm.ItemId, e => e.Id, (ivm, e) => new { ivm.ItemValue.CleanValue, e.Id, e.SeriesId })
+            .Join(
+                taggedSeries,
+                e => new { e.CleanValue, SeriesId = e.SeriesId!.Value },
+                s => new { s.CleanValue, s.SeriesId },
+                (e, s) => new { e.CleanValue, e.Id })
+            .GroupBy(x => x.CleanValue)
+            .Select(g => new { CleanValue = g.Key, Count = g.Select(x => x.Id).Distinct().Count() })
+            .ToArray();
+
+        var taggedLookup = taggedEpisodesOfTaggedSeries
+            .ToDictionary(x => x.CleanValue, x => x.Count, StringComparer.Ordinal);
+
+        // Every clean name in taggedLookup came from an episode of a tagged series, so it always
+        // has a row in episodesOfTaggedSeries too - no second merge pass is needed.
+        var result = new Dictionary<string, (int EpisodesOfTaggedSeries, int TaggedEpisodesOfTaggedSeries)>(StringComparer.Ordinal);
+        foreach (var entry in episodesOfTaggedSeries)
         {
-            return 0;
+            result[entry.CleanValue] = (entry.Count, taggedLookup.GetValueOrDefault(entry.CleanValue));
         }
 
-        var episodes = context.BaseItems.AsNoTracking()
-            .Where(e => e.Type == episodeTypeName && e.SeriesId != null)
-            .WhereOneOrMany(seriesIds, e => e.SeriesId!.Value);
-
-        return _queryHelpers.ApplyAccessFiltering(context, episodes, accessFilter).Count();
+        return result;
     }
-
-    private static IQueryable<BaseItemEntity> ItemsById(JellyfinDbContext context, IQueryable<Guid> itemIds)
-        => context.BaseItems.AsNoTracking().Where(e => itemIds.Contains(e.Id));
 
     /// <inheritdoc/>
     public int GetPlayedCount(InternalItemsQuery filter, Guid ancestorId)
@@ -622,4 +731,12 @@ public class ItemCountService : IItemCountService
 
         return result is null ? (0, 0) : (result.Played, result.Total);
     }
+
+    /// <summary>
+    /// A by-name item, reduced to the three columns the counting keys off.
+    /// </summary>
+    /// <param name="Id">The id of the by-name item.</param>
+    /// <param name="Name">The name of the by-name item.</param>
+    /// <param name="CleanName">The cleaned name of the by-name item.</param>
+    private sealed record NameItem(Guid Id, string? Name, string? CleanName);
 }

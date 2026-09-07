@@ -1801,6 +1801,18 @@ namespace Emby.Server.Implementations.Library
             return _countService.GetItemCountsForNameItem(kind, id, relatedItemKinds, query);
         }
 
+        /// <inheritdoc/>
+        public Dictionary<Guid, ItemCounts> GetItemCountsForNameItems(BaseItemKind kind, IReadOnlyList<Guid> ids, BaseItemKind[] relatedItemKinds, User? user)
+        {
+            var query = new InternalItemsQuery(user);
+            if (user is not null)
+            {
+                AddUserToQuery(query, user);
+            }
+
+            return _countService.GetItemCountsForNameItems(kind, ids, relatedItemKinds, query);
+        }
+
         public Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, User? user)
         {
             return _countService.GetChildCountBatch(parentIds, user);
