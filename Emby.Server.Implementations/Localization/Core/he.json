@@ -108,5 +108,12 @@
     "CleanupUserDataTaskDescription": "ניקוי כל המידע של המשתמש (מצב צפייה, מועדפים וכו) ממדיה שאינה קיימת מעל 90 יום.",
     "CleanupUserDataTask": "משימת ניקוי מידע משתמש",
     "LyricDownloadFailureFromForItem": "הורדת המילים מ-{0} עבור {1} נכשלה",
-    "Original": "מקור"
+    "Original": "מקור",
+    "NameExtraBehindTheScenes": "מאחורי הקלעים",
+    "NameExtraClip": "קליפ",
+    "NameExtraDeletedScene": "סצנה שנמחקה",
+    "NameExtraFeaturette": "סרט קצר",
+    "NameExtraInterview": "ריאיון",
+    "NameExtraSample": "דגימה",
+    "NameExtraScene": "סצנה"
 }

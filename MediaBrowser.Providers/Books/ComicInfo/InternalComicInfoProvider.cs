@@ -50,7 +50,7 @@ public class InternalComicInfoProvider : IComicProvider
         var metadataResult = new MetadataResult<Book> { Item = book, HasMetadata = true };
 
         ComicInfoReader.ReadPeopleMetadata(comicInfoXml, metadataResult);
-        ComicInfoReader.ReadCultureInfoInto(comicInfoXml, "ComicInfo/LanguageISO", cultureInfo => metadataResult.ResultLanguage = cultureInfo.ThreeLetterISOLanguageName);
+        ComicInfoReader.ReadCultureInfoInto(comicInfoXml, "ComicInfo/LanguageISO", cultureInfo => metadataResult.ResultLanguage = cultureInfo.TwoLetterISOLanguageName);
 
         return metadataResult;
     }

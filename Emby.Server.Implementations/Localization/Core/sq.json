@@ -108,5 +108,18 @@
     "CleanupUserDataTaskDescription": "Pastron të gjitha të dhënat e përdorueseve (gjendja e shikimit, statusi i të preferuarave etj.) nga mediat që nuk janë më të pranishme për të paktën 90 ditë.",
     "CleanupUserDataTask": "Veprim për pastrimin të dhënave të përdorueseve",
     "LyricDownloadFailureFromForItem": "Teksti i këngës nuk arriti të shkarkohej nga {0} për {1}",
-    "Original": "Origjinal"
+    "Original": "Origjinal",
+    "NameExtraBehindTheScenes": "Pamje nga prapaskenat",
+    "NameExtraClip": "Pjesë",
+    "NameExtraDeletedScene": "Skenë e fshirë",
+    "NameExtraFeaturette": "Film i shkurtër",
+    "NameExtraInterview": "Intervistë",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Shembull",
+    "NameExtraScene": "Skenë",
+    "NameExtraShort": "Film i shkurtër",
+    "NameExtraThemeSong": "Kënga e temës",
+    "NameExtraThemeVideo": "Videoja e temës",
+    "NameExtraTrailer": "Parapamje",
+    "NameExtraUnknown": "Shtesë"
 }

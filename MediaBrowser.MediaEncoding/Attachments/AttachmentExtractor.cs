@@ -14,7 +14,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -160,7 +159,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                         CultureInfo.InvariantCulture,
                         "-dump_attachment:{0} \"{1}\" ",
                         attachment.Index,
-                        EncodingUtils.NormalizePath(attachmentPath));
+                        attachmentPath.EscapeProcessArgument());
                     missingPaths.Add(attachmentPath);
                 }
 
@@ -425,7 +424,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 "-dump_attachment:{1} \"{2}\" -i {0} {3}",
                 inputPath,
                 attachmentStreamIndex,
-                EncodingUtils.NormalizePath(outputPath),
+                outputPath.EscapeProcessArgument(),
                 hasVideoOrAudioStream ? "-t 0 -f null null" : string.Empty);
 
             int exitCode;

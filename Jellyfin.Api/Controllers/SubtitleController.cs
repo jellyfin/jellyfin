@@ -557,7 +557,7 @@ public class SubtitleController : BaseJellyfinApiController
         if (!string.IsNullOrEmpty(fallbackFontPath))
         {
             var fontFile = _fileSystem.GetFiles(fallbackFontPath)
-                .First(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
             var fileSize = fontFile?.Length;
 
             if (fontFile is not null && fileSize is not null && fileSize > 0)

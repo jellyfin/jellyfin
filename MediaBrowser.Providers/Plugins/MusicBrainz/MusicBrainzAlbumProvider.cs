@@ -14,6 +14,7 @@ using MediaBrowser.Providers.Music;
 using MetaBrainz.MusicBrainz;
 using MetaBrainz.MusicBrainz.Interfaces.Entities;
 using MetaBrainz.MusicBrainz.Interfaces.Searches;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Plugins.MusicBrainz;
 
@@ -22,6 +23,17 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz;
 /// </summary>
 public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder
 {
+    private readonly ILogger<MusicBrainzAlbumProvider> _logger;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MusicBrainzAlbumProvider"/> class.
+    /// </summary>
+    /// <param name="logger">The logger.</param>
+    public MusicBrainzAlbumProvider(ILogger<MusicBrainzAlbumProvider> logger)
+    {
+        _logger = logger;
+    }
+
     /// <inheritdoc />
     public string Name => "MusicBrainz";
 
@@ -32,21 +44,26 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
     public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(AlbumInfo searchInfo, CancellationToken cancellationToken)
     {
         var query = MusicBrainz.Plugin.Instance!.MusicBrainzQuery;
-        var releaseId = searchInfo.GetReleaseId();
-        var releaseGroupId = searchInfo.GetReleaseGroupId();
+        var releaseId = MusicBrainzQueryExtensions.ParseMusicBrainzId(searchInfo.GetReleaseId(), "release", _logger);
+        var releaseGroupId = MusicBrainzQueryExtensions.ParseMusicBrainzId(searchInfo.GetReleaseGroupId(), "release group", _logger);
 
-        if (!string.IsNullOrEmpty(releaseId))
+        if (releaseId is not null)
         {
-            var releaseResult = await query.LookupReleaseAsync(new Guid(releaseId), Include.Artists | Include.ReleaseGroups, cancellationToken).ConfigureAwait(false);
-            return GetReleaseResult(releaseResult).SingleItemAsEnumerable();
+            var releaseResult = await query.LookupReleaseOrNullAsync(releaseId.Value, Include.Artists | Include.ReleaseGroups, _logger, cancellationToken).ConfigureAwait(false);
+            if (releaseResult is not null)
+            {
+                return GetReleaseResult(releaseResult).SingleItemAsEnumerable();
+            }
         }
 
-        if (!string.IsNullOrEmpty(releaseGroupId))
+        if (releaseGroupId is not null)
         {
-            var releaseGroupResult = await query.LookupReleaseGroupAsync(new Guid(releaseGroupId), Include.Releases, null, cancellationToken).ConfigureAwait(false);
-
-            // No need to pass the cancellation token to GetReleaseGroupResultAsync as we're already passing it to ToBlockingEnumerable
-            return GetReleaseGroupResultAsync(releaseGroupResult.Releases, CancellationToken.None).ToBlockingEnumerable(cancellationToken);
+            var releaseGroupResult = await query.LookupReleaseGroupOrNullAsync(releaseGroupId.Value, Include.Releases, _logger, cancellationToken).ConfigureAwait(false);
+            if (releaseGroupResult is not null)
+            {
+                // No need to pass the cancellation token to GetReleaseGroupResultAsync as we're already passing it to ToBlockingEnumerable
+                return GetReleaseGroupResultAsync(releaseGroupResult.Releases, CancellationToken.None).ToBlockingEnumerable(cancellationToken);
+            }
         }
 
         var artistMusicBrainzId = searchInfo.GetMusicBrainzArtistId();
@@ -102,8 +119,11 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         foreach (var result in releaseSearchResults)
         {
             // Fetch full release info, otherwise artists are missing
-            var fullResult = await query.LookupReleaseAsync(result.Id, Include.Artists | Include.ReleaseGroups, cancellationToken).ConfigureAwait(false);
-            yield return GetReleaseResult(fullResult);
+            var fullResult = await query.LookupReleaseOrNullAsync(result.Id, Include.Artists | Include.ReleaseGroups, _logger, cancellationToken).ConfigureAwait(false);
+            if (fullResult is not null)
+            {
+                yield return GetReleaseResult(fullResult);
+            }
         }
     }
 
@@ -156,8 +176,8 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
     public async Task<MetadataResult<MusicAlbum>> GetMetadata(AlbumInfo info, CancellationToken cancellationToken)
     {
         var query = MusicBrainz.Plugin.Instance!.MusicBrainzQuery;
-        var releaseId = info.GetReleaseId();
-        var releaseGroupId = info.GetReleaseGroupId();
+        var releaseId = MusicBrainzQueryExtensions.ParseMusicBrainzId(info.GetReleaseId(), "release", _logger);
+        var releaseGroupId = MusicBrainzQueryExtensions.ParseMusicBrainzId(info.GetReleaseGroupId(), "release group", _logger);
 
         var result = new MetadataResult<MusicAlbum>
         {
@@ -165,15 +185,15 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         };
 
         // If there is a release group, but no release ID, try to match the release
-        if (string.IsNullOrWhiteSpace(releaseId) && !string.IsNullOrWhiteSpace(releaseGroupId))
+        if (releaseId is null && releaseGroupId is not null)
         {
             // TODO: Actually try to match the release. Simply taking the first result is stupid.
-            var releaseGroupLookup = await query.LookupReleaseGroupAsync(new Guid(releaseGroupId), Include.None, null, cancellationToken).ConfigureAwait(false);
-            releaseId = releaseGroupLookup.Releases?.Count > 0 ? releaseGroupLookup.Releases[0].Id.ToString() : null;
+            var releaseGroupLookup = await query.LookupReleaseGroupOrNullAsync(releaseGroupId.Value, Include.None, _logger, cancellationToken).ConfigureAwait(false);
+            releaseId = releaseGroupLookup?.Releases?.Count > 0 ? releaseGroupLookup.Releases[0].Id : null;
         }
 
         // If there is no release ID, lookup a release with the info we have
-        if (string.IsNullOrWhiteSpace(releaseId))
+        if (releaseId is null)
         {
             var artistMusicBrainzId = info.GetMusicBrainzArtistId();
             IRelease? releaseResult = null;
@@ -193,55 +213,61 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
 
             if (releaseResult is not null)
             {
-                releaseId = releaseResult.Id.ToString();
+                releaseId = releaseResult.Id;
 
                 if (releaseResult.ReleaseGroup?.Id is not null)
                 {
-                    releaseGroupId = releaseResult.ReleaseGroup.Id.ToString();
+                    releaseGroupId = releaseResult.ReleaseGroup.Id;
                 }
             }
         }
 
-        if (string.IsNullOrWhiteSpace(releaseId) && string.IsNullOrWhiteSpace(releaseGroupId))
+        if (releaseId is null && releaseGroupId is null)
         {
             return result;
         }
 
         // Fetch the full release (and its release group) so we can populate everything MusicBrainz returns.
         IRelease? release = null;
-        if (!string.IsNullOrWhiteSpace(releaseId))
+        if (releaseId is not null)
         {
-            release = await query.LookupReleaseAsync(
-                new Guid(releaseId),
+            release = await query.LookupReleaseOrNullAsync(
+                releaseId.Value,
                 Include.Artists | Include.ReleaseGroups | Include.Labels | Include.Genres | Include.Tags,
+                _logger,
                 cancellationToken).ConfigureAwait(false);
 
-            if (string.IsNullOrWhiteSpace(releaseGroupId) && release?.ReleaseGroup?.Id is not null)
+            if (releaseGroupId is null && release?.ReleaseGroup?.Id is not null)
             {
-                releaseGroupId = release.ReleaseGroup.Id.ToString();
+                releaseGroupId = release.ReleaseGroup.Id;
             }
         }
 
         IReleaseGroup? releaseGroup = null;
-        if (!string.IsNullOrWhiteSpace(releaseGroupId))
+        if (releaseGroupId is not null)
         {
-            releaseGroup = await query.LookupReleaseGroupAsync(
-                new Guid(releaseGroupId),
+            releaseGroup = await query.LookupReleaseGroupOrNullAsync(
+                releaseGroupId.Value,
                 Include.Artists | Include.Genres | Include.Tags,
-                null,
+                _logger,
                 cancellationToken).ConfigureAwait(false);
+        }
+
+        if (release is null && releaseGroup is null)
+        {
+            return result;
         }
 
         result.HasMetadata = true;
 
-        if (!string.IsNullOrEmpty(releaseId))
+        if (releaseId is not null)
         {
-            result.Item.SetProviderId(MetadataProvider.MusicBrainzAlbum, releaseId);
+            result.Item.SetProviderId(MetadataProvider.MusicBrainzAlbum, releaseId.Value.ToString());
         }
 
-        if (!string.IsNullOrEmpty(releaseGroupId))
+        if (releaseGroupId is not null)
         {
-            result.Item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, releaseGroupId);
+            result.Item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, releaseGroupId.Value.ToString());
         }
 
         Populate(result.Item, release, releaseGroup);

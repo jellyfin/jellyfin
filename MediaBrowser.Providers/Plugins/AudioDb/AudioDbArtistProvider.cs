@@ -22,6 +22,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Music;
 
 namespace MediaBrowser.Providers.Plugins.AudioDb
@@ -148,7 +149,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             {
                 result.Item = new MusicArtist();
                 result.HasMetadata = true;
-                ProcessResult(result.Item, artist, info.MetadataLanguage);
+                ProcessResult(result, artist, info.MetadataLanguage);
             }
 
             return result;
@@ -193,8 +194,10 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             return null;
         }
 
-        private void ProcessResult(MusicArtist item, Artist result, string preferredLanguage)
+        private void ProcessResult(MetadataResult<MusicArtist> metadataResult, Artist result, string preferredLanguage)
         {
+            var item = metadataResult.Item;
+
             if (!string.IsNullOrWhiteSpace(result.strWebsite))
             {
                 item.HomePageUrl = result.strWebsite;
@@ -229,42 +232,47 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             item.SetProviderId(MetadataProvider.AudioDbArtist, result.idArtist);
             item.SetProviderId(MetadataProvider.MusicBrainzArtist, result.strMusicBrainzID);
 
-            string overview = null;
-
-            if (string.Equals(preferredLanguage, "de", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strBiographyDE;
-            }
-            else if (string.Equals(preferredLanguage, "fr", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strBiographyFR;
-            }
-            else if (string.Equals(preferredLanguage, "nl", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strBiographyNL;
-            }
-            else if (string.Equals(preferredLanguage, "ru", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strBiographyRU;
-            }
-            else if (string.Equals(preferredLanguage, "it", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strBiographyIT;
-            }
-            else if ((preferredLanguage ?? string.Empty).StartsWith("pt", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strBiographyPT;
-            }
+            var language = MetadataLanguageUtils.GetLanguageSubtag(preferredLanguage);
+            var overview = GetBiography(result, language);
 
             if (string.IsNullOrWhiteSpace(overview))
             {
                 overview = string.IsNullOrWhiteSpace(result.strBiographyEN)
                     ? result.strBiography
                     : result.strBiographyEN;
+
+                // The biography is not in the requested language, mark it as English so it does not
+                // block a provider further down the list that can serve the requested language
+                metadataResult.ResultLanguage = "en";
+            }
+            else
+            {
+                metadataResult.ResultLanguage = language;
             }
 
             item.Overview = (overview ?? string.Empty).StripHtml();
         }
+
+        private static string GetBiography(Artist result, string language)
+            => language switch
+            {
+                "de" => result.strBiographyDE,
+                "en" => result.strBiographyEN,
+                "es" => result.strBiographyES,
+                "fr" => result.strBiographyFR,
+                "he" => result.strBiographyIL,
+                "hu" => result.strBiographyHU,
+                "it" => result.strBiographyIT,
+                "ja" => result.strBiographyJP,
+                "nl" => result.strBiographyNL,
+                "no" or "nb" or "nn" => result.strBiographyNO,
+                "pl" => result.strBiographyPL,
+                "pt" => result.strBiographyPT,
+                "ru" => result.strBiographyRU,
+                "sv" => result.strBiographySE,
+                "zh" => result.strBiographyCN,
+                _ => null
+            };
 
         internal async Task EnsureArtistInfo(string musicBrainzId, CancellationToken cancellationToken)
         {

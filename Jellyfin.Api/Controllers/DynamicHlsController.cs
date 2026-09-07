@@ -20,7 +20,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
-using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
@@ -1652,9 +1651,9 @@ public class DynamicHlsController : BaseJellyfinApiController
             segmentFormat,
             startNumber.ToString(CultureInfo.InvariantCulture),
             baseUrlParam,
-            EncodingUtils.NormalizePath(outputTsArg),
+            outputTsArg.EscapeProcessArgument(),
             hlsArguments,
-            EncodingUtils.NormalizePath(outputPath)).Trim();
+            outputPath.EscapeProcessArgument()).Trim();
     }
 
     /// <summary>

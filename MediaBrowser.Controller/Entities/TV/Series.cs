@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -89,15 +90,14 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 if (!string.IsNullOrEmpty(groupingKey))
                 {
-                    return AppendPreferredLanguage(groupingKey);
+                    return AddLibrariesToPresentationUniqueKey(groupingKey);
                 }
             }
 
             return base.CreatePresentationUniqueKey();
         }
 
-        // The owning libraries are deliberately NOT part of the key.
-        private string AppendPreferredLanguage(string key)
+        private string AddLibrariesToPresentationUniqueKey(string key)
         {
             var lang = GetPreferredMetadataLanguage();
             if (!string.IsNullOrEmpty(lang))
@@ -105,7 +105,17 @@ namespace MediaBrowser.Controller.Entities.TV
                 key += "-" + lang;
             }
 
-            return key;
+            var folders = LibraryManager.GetCollectionFolders(this)
+                .Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture))
+                .Order(StringComparer.Ordinal)
+                .ToArray();
+
+            if (folders.Length == 0)
+            {
+                return key;
+            }
+
+            return key + "-" + string.Join('-', folders);
         }
 
         private string GetNameBasedGroupingKey()
@@ -125,20 +135,19 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             var seriesKey = GetUniqueSeriesKey(this);
 
-            var result = LibraryManager.GetCount(new InternalItemsQuery(user)
+            var result = LibraryManager.GetItemIds(new InternalItemsQuery(user)
             {
                 AncestorWithPresentationUniqueKey = null,
                 SeriesPresentationUniqueKey = seriesKey,
                 IncludeItemTypes = new[] { BaseItemKind.Season },
                 IsVirtualItem = false,
-                Limit = 0,
                 DtoOptions = new DtoOptions(false)
                 {
                     EnableImages = false
                 }
             });
 
-            return result;
+            return result.Count;
         }
 
         public override int GetRecursiveChildCount(User user)

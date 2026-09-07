@@ -179,6 +179,146 @@ public class MediaInfoResolverTests
         Assert.Empty(streams);
     }
 
+    [Fact]
+    public void GetExternalFiles_VobSubIdxAndSubPair_OnlyReturnsIdxFile()
+    {
+        // VobSub (.sub) payloads only carry per-track language metadata when read
+        // alongside their paired .idx index file. When both are present, only the
+        // .idx file should be returned so it (not the raw .sub) gets probed.
+        BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
+
+        var video = new Movie
+        {
+            Path = VideoDirectoryPath + "/My.Video.mkv"
+        };
+
+        var directoryService = new Mock<IDirectoryService>(MockBehavior.Strict);
+        directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(VideoDirectoryRegex), It.IsAny<bool>()))
+            .Returns(new[] { VideoDirectoryPath + "/My.Video.idx", VideoDirectoryPath + "/My.Video.sub" });
+        directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(MetadataDirectoryRegex), It.IsAny<bool>()))
+            .Returns(Array.Empty<string>());
+
+        var streams = _subtitleResolver.GetExternalFiles(video, directoryService.Object, false).ToList();
+
+        var stream = Assert.Single(streams);
+        Assert.EndsWith(".idx", stream.Path, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void GetExternalFiles_VobSubIdxWithoutMatchingSub_DoesNotReturnIdxFile()
+    {
+        // An .idx file with no paired .sub cannot be probed for anything, so it must be
+        // left out entirely rather than surfaced as a doomed-to-fail probe candidate.
+        // Surfacing it anyway would also make it "exist" from Jellyfin's perspective
+        // even after the real .sub is deleted, preventing stale subtitle stream data
+        // from ever being cleared on a rescan.
+        BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
+
+        var video = new Movie
+        {
+            Path = VideoDirectoryPath + "/My.Video.mkv"
+        };
+
+        var directoryService = GetDirectoryServiceForExternalFile("My.Video.idx");
+        var streams = _subtitleResolver.GetExternalFiles(video, directoryService, false).ToList();
+
+        Assert.Empty(streams);
+    }
+
+    [Fact]
+    public void GetExternalFiles_StandaloneSubWithoutIdx_StillReturnsSubFile()
+    {
+        // Guards against the .idx/.sub pairing suppression firing when there is no
+        // .idx sidecar at all - a lone .sub file must still be returned.
+        BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
+
+        var video = new Movie
+        {
+            Path = VideoDirectoryPath + "/My.Video.mkv"
+        };
+
+        var directoryService = GetDirectoryServiceForExternalFile("My.Video.sub");
+        var streams = _subtitleResolver.GetExternalFiles(video, directoryService, false).ToList();
+
+        var stream = Assert.Single(streams);
+        Assert.EndsWith(".sub", stream.Path, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void GetExternalFiles_VobSubIdxAndSubInDifferentDirectories_DoesNotPair()
+    {
+        // A same-named .idx and .sub split across the video folder and the internal
+        // metadata folder cannot be paired by ffprobe (it only looks next to the .idx),
+        // so the .sub must still be returned, but the orphaned .idx (no sibling .sub in
+        // its own directory) must be left out since it cannot be probed.
+        BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
+
+        var video = new Movie
+        {
+            Path = VideoDirectoryPath + "/My.Video.mkv"
+        };
+
+        var directoryService = new Mock<IDirectoryService>(MockBehavior.Strict);
+        directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(VideoDirectoryRegex), It.IsAny<bool>()))
+            .Returns(new[] { VideoDirectoryPath + "/My.Video.sub" });
+        directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(MetadataDirectoryRegex), It.IsAny<bool>()))
+            .Returns(new[] { MetadataDirectoryPath + "/My.Video.idx" });
+
+        var streams = _subtitleResolver.GetExternalFiles(video, directoryService.Object, false).ToList();
+
+        var stream = Assert.Single(streams);
+        Assert.EndsWith(".sub", stream.Path, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void GetExternalFiles_VobSubIdxAndSubWithMatchingLanguageFlag_SuppressesSub()
+    {
+        // A .idx/.sub pair sharing the same filename flags (e.g. a language token) should
+        // still pair and suppress the .sub, just like an unflagged pair.
+        BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
+
+        var video = new Movie
+        {
+            Path = VideoDirectoryPath + "/My.Video.mkv"
+        };
+
+        var directoryService = new Mock<IDirectoryService>(MockBehavior.Strict);
+        directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(VideoDirectoryRegex), It.IsAny<bool>()))
+            .Returns(new[] { VideoDirectoryPath + "/My.Video.en.idx", VideoDirectoryPath + "/My.Video.en.sub" });
+        directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(MetadataDirectoryRegex), It.IsAny<bool>()))
+            .Returns(Array.Empty<string>());
+
+        var streams = _subtitleResolver.GetExternalFiles(video, directoryService.Object, false).ToList();
+
+        var stream = Assert.Single(streams);
+        Assert.EndsWith(".idx", stream.Path, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void GetExternalFiles_VobSubIdxAndSubWithMismatchedNames_DoesNotPair()
+    {
+        // An .idx and .sub with different basenames (e.g. differing filename flags) are not
+        // a pair ffprobe would resolve. The .sub must still be returned, but the orphaned
+        // .idx (no same-named sibling .sub) must be left out since it cannot be probed.
+        BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
+
+        var video = new Movie
+        {
+            Path = VideoDirectoryPath + "/My.Video.mkv"
+        };
+
+        var directoryService = new Mock<IDirectoryService>(MockBehavior.Strict);
+        directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(VideoDirectoryRegex), It.IsAny<bool>()))
+            .Returns(new[] { VideoDirectoryPath + "/My.Video.idx", VideoDirectoryPath + "/My.Video.en.sub" });
+        directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(MetadataDirectoryRegex), It.IsAny<bool>()))
+            .Returns(Array.Empty<string>());
+
+        var streams = _subtitleResolver.GetExternalFiles(video, directoryService.Object, false).ToList();
+
+        var stream = Assert.Single(streams);
+        Assert.EndsWith(".sub", stream.Path, StringComparison.OrdinalIgnoreCase);
+    }
+
     [Theory]
     [InlineData("https://url.com/My.Video.mkv")]
     [InlineData(VideoDirectoryPath)] // valid but no files found for this test

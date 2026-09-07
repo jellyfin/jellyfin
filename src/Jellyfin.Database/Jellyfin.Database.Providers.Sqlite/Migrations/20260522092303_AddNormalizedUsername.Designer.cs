@@ -961,6 +961,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<bool?>("IsInterlaced")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsOriginal")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("KeyFrames")
                         .HasColumnType("TEXT");
 

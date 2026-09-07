@@ -27,6 +27,9 @@ namespace MediaBrowser.Providers.Plugins.Omdb
     /// <summary>Provider for OMDB service.</summary>
     public class OmdbProvider
     {
+        /// <summary>Generational suffixes that OMDb separates from the name with a comma.</summary>
+        private static readonly string[] NameSuffixes = ["Jr", "Jnr", "Sr", "Snr", "II", "III", "IV", "V"];
+
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -420,42 +423,96 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 return;
             }
 
-            if (!string.IsNullOrWhiteSpace(result.Director))
-            {
-                var person = new PersonInfo
-                {
-                    Name = result.Director.Trim(),
-                    Type = PersonKind.Director
-                };
+            AddPeople(itemResult, result.Director, PersonKind.Director);
+            AddPeople(itemResult, result.Writer, PersonKind.Writer);
+            AddPeople(itemResult, result.Actors, PersonKind.Actor);
+        }
 
-                itemResult.AddPerson(person);
+        /// <summary>Adds the people from a comma separated OMDb credit list.</summary>
+        /// <typeparam name="T">The item type.</typeparam>
+        /// <param name="itemResult">The metadata result to add the people to.</param>
+        /// <param name="credits">The comma separated OMDb credit list.</param>
+        /// <param name="type">The kind of person each credit describes.</param>
+        internal static void AddPeople<T>(MetadataResult<T> itemResult, string credits, PersonKind type)
+            where T : BaseItem
+        {
+            if (string.IsNullOrWhiteSpace(credits))
+            {
+                return;
             }
 
-            if (!string.IsNullOrWhiteSpace(result.Writer))
-            {
-                var person = new PersonInfo
-                {
-                    Name = result.Writer.Trim(),
-                    Type = PersonKind.Writer
-                };
+            var names = new List<string>();
 
-                itemResult.AddPerson(person);
+            foreach (var credit in SplitCredits(credits))
+            {
+                // OMDb annotates the credited role in parentheses, e.g. "Mari Okada (screenplay)". The same
+                // person can be credited more than once this way, so strip it and let AddPerson deduplicate.
+                var name = credit;
+                var annotation = name.IndexOf('(', StringComparison.Ordinal);
+                if (annotation >= 0)
+                {
+                    name = name[..annotation];
+                }
+
+                name = name.Trim();
+                if (name.Length == 0)
+                {
+                    continue;
+                }
+
+                // A generational suffix is separated from the name it belongs to by the same comma the list
+                // uses, e.g. "Jack Salvatore, Jr.", so it has to be joined back instead of becoming a credit.
+                if (names.Count > 0 && IsNameSuffix(name))
+                {
+                    names[^1] = names[^1] + ", " + name;
+                    continue;
+                }
+
+                names.Add(name);
             }
 
-            if (!string.IsNullOrWhiteSpace(result.Actors))
+            foreach (var name in names)
             {
-                var actorList = result.Actors.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                foreach (var actor in actorList)
+                itemResult.AddPerson(new PersonInfo
                 {
-                    var person = new PersonInfo
-                    {
-                        Name = actor,
-                        Type = PersonKind.Actor
-                    };
+                    Name = name,
+                    Type = type
+                });
+            }
+        }
 
-                    itemResult.AddPerson(person);
+        // Only the commas between credits, never one inside an annotation: "Jerry Siegel (created by:
+        // Superman, Superboy)" is one credit, and splitting it blindly invents a person called "Superboy)".
+        private static IEnumerable<string> SplitCredits(string credits)
+        {
+            var depth = 0;
+            var start = 0;
+
+            for (var i = 0; i < credits.Length; i++)
+            {
+                switch (credits[i])
+                {
+                    case '(':
+                        depth++;
+                        break;
+                    case ')':
+                        depth = Math.Max(0, depth - 1);
+                        break;
+                    case ',' when depth == 0:
+                        yield return credits[start..i];
+                        start = i + 1;
+                        break;
                 }
             }
+
+            yield return credits[start..];
+        }
+
+        private static bool IsNameSuffix(string value)
+        {
+            var suffix = value.EndsWith('.') ? value[..^1] : value;
+
+            return NameSuffixes.Contains(suffix, StringComparer.OrdinalIgnoreCase);
         }
 
         private static bool IsConfiguredForEnglish(BaseItem item, string language)

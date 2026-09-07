@@ -954,6 +954,9 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
                     b.Property<bool?>("IsInterlaced")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsOriginal")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("KeyFrames")
                         .HasColumnType("TEXT");
 

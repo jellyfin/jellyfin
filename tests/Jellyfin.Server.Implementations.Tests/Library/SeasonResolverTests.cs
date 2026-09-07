@@ -21,7 +21,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         {
             var localizationMock = new Mock<ILocalizationManager>();
             localizationMock
-                .Setup(l => l.GetLocalizedString(It.IsAny<string>()))
+                .Setup(l => l.GetServerLocalizedString(It.IsAny<string>()))
                 .Returns("Season {0}");
 
             _resolver = new SeasonResolver(
@@ -59,6 +59,36 @@ namespace Jellyfin.Server.Implementations.Tests.Library
 
             Assert.NotNull(season);
             Assert.True(season.TryGetProviderId(provider, out var actualId));
+            Assert.Equal(expectedId, actualId);
+        }
+
+        [Theory]
+        [InlineData("/media/Show/Season 01 [anidbid=11111]", "AniDB", "11111")]
+        [InlineData("/media/Show/Season 01 [anidbid-11111]", "AniDB", "11111")]
+        [InlineData("/media/Show/Season 02 [anilistid=22222]", "AniList", "22222")]
+        [InlineData("/media/Show/Season 02 (anilistid=22222)", "AniList", "22222")]
+        [InlineData("/media/Show/Season 03 [anisearchid=33333]", "AniSearch", "33333")]
+        public void Resolve_SeasonFolderWithAniProviderId_SetsProviderId(string path, string providerKey, string expectedId)
+        {
+            var series = new Series { Path = "/media/Show" };
+
+            var args = new MediaBrowser.Controller.Library.ItemResolveArgs(
+                Mock.Of<IServerApplicationPaths>(),
+                null)
+            {
+                Parent = series,
+                LibraryOptions = new LibraryOptions(),
+                FileInfo = new FileSystemMetadata
+                {
+                    FullName = path,
+                    IsDirectory = true
+                }
+            };
+
+            var season = _resolver.Resolve(args);
+
+            Assert.NotNull(season);
+            Assert.True(season.TryGetProviderId(providerKey, out var actualId));
             Assert.Equal(expectedId, actualId);
         }
 
@@ -140,6 +170,9 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             Assert.False(season.TryGetProviderId(MetadataProvider.Tvdb, out _));
             Assert.False(season.TryGetProviderId(MetadataProvider.TvMaze, out _));
             Assert.False(season.TryGetProviderId(MetadataProvider.Tmdb, out _));
+            Assert.False(season.TryGetProviderId("AniDB", out _));
+            Assert.False(season.TryGetProviderId("AniList", out _));
+            Assert.False(season.TryGetProviderId("AniSearch", out _));
         }
     }
 }

@@ -249,9 +249,49 @@ public class ItemCountService : IItemCountService
             }
         }
 
+        if (kind is BaseItemKind.Studio or BaseItemKind.Genre or BaseItemKind.MusicGenre
+            && relatedItemKinds.Contains(BaseItemKind.Episode)
+            && relatedItemKinds.Contains(BaseItemKind.Series))
+        {
+            var rolledUpEpisodeCount = CountEpisodesOfTaggedSeries(context, baseQuery, accessFilter, out var directEpisodeCount);
+            totalCount += rolledUpEpisodeCount - result.EpisodeCount + directEpisodeCount;
+            result.EpisodeCount = rolledUpEpisodeCount + directEpisodeCount;
+        }
+
         result.ItemCount = totalCount;
 
         return result;
+    }
+
+    private int CountEpisodesOfTaggedSeries(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> taggedItems,
+        InternalItemsQuery accessFilter,
+        out int unrelatedEpisodeCount)
+    {
+        var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
+        var episodeTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
+
+        var taggedSeriesIds = taggedItems.Where(e => e.Type == seriesTypeName).Select(e => e.Id);
+        unrelatedEpisodeCount = taggedItems.Count(e => e.Type == episodeTypeName
+            && (e.SeriesId == null || !taggedSeriesIds.Contains(e.SeriesId.Value)));
+
+        // Materialised so the episode count drives off IX_BaseItems_SeriesId.
+        var seriesIds = taggedItems
+            .Where(e => e.Type == seriesTypeName)
+            .Select(e => e.Id)
+            .ToArray();
+
+        if (seriesIds.Length == 0)
+        {
+            return 0;
+        }
+
+        var episodes = context.BaseItems.AsNoTracking()
+            .Where(e => e.Type == episodeTypeName && e.SeriesId != null)
+            .WhereOneOrMany(seriesIds, e => e.SeriesId!.Value);
+
+        return _queryHelpers.ApplyAccessFiltering(context, episodes, accessFilter).Count();
     }
 
     private static IQueryable<BaseItemEntity> ItemsById(JellyfinDbContext context, IQueryable<Guid> itemIds)
@@ -260,19 +300,21 @@ public class ItemCountService : IItemCountService
     /// <inheritdoc/>
     public int GetPlayedCount(InternalItemsQuery filter, Guid ancestorId)
     {
+        ArgumentNullException.ThrowIfNull(filter);
         ArgumentNullException.ThrowIfNull(filter.User);
         using var dbContext = _dbProvider.CreateDbContext();
 
-        var baseQuery = _queryHelpers.BuildAccessFilteredDescendantsQuery(dbContext, filter, ancestorId);
+        var baseQuery = BuildGroupedDescendantsQuery(dbContext, filter, ancestorId);
         return baseQuery.Count(b => b.UserData!.Any(u => u.UserId == filter.User.Id && u.Played));
     }
 
     /// <inheritdoc/>
     public int GetTotalCount(InternalItemsQuery filter, Guid ancestorId)
     {
+        ArgumentNullException.ThrowIfNull(filter);
         using var dbContext = _dbProvider.CreateDbContext();
 
-        var baseQuery = _queryHelpers.BuildAccessFilteredDescendantsQuery(dbContext, filter, ancestorId);
+        var baseQuery = BuildGroupedDescendantsQuery(dbContext, filter, ancestorId);
         return baseQuery.Count();
     }
 
@@ -283,8 +325,21 @@ public class ItemCountService : IItemCountService
         ArgumentNullException.ThrowIfNull(filter.User);
         using var dbContext = _dbProvider.CreateDbContext();
 
-        var baseQuery = _queryHelpers.BuildAccessFilteredDescendantsQuery(dbContext, filter, ancestorId);
+        var baseQuery = BuildGroupedDescendantsQuery(dbContext, filter, ancestorId);
         return GetPlayedAndTotalCountFromQuery(baseQuery, filter.User.Id);
+    }
+
+    private IQueryable<BaseItemEntity> BuildGroupedDescendantsQuery(JellyfinDbContext dbContext, InternalItemsQuery filter, Guid ancestorId)
+    {
+        var ancestorIds = GetPresentationKeyGroups(dbContext, [ancestorId])[ancestorId];
+        var descendantIds = DescendantQueryHelper.GetAllDescendantIdsBatch(dbContext, ancestorIds).ToArray();
+
+        var baseQuery = dbContext.BaseItems
+            .AsNoTracking()
+            .WhereOneOrMany(descendantIds, b => b.Id)
+            .Where(DescendantQueryHelper.IsCountableLeaf);
+
+        return _queryHelpers.ApplyAccessFiltering(dbContext, baseQuery, filter);
     }
 
     /// <inheritdoc/>
@@ -294,9 +349,9 @@ public class ItemCountService : IItemCountService
         ArgumentNullException.ThrowIfNull(filter.User);
         using var dbContext = _dbProvider.CreateDbContext();
 
-        var allDescendantIds = DescendantQueryHelper.GetAllDescendantIds(dbContext, parentId);
+        var allDescendantIds = DescendantQueryHelper.GetAllDescendantIdsBatch(dbContext, [parentId]).ToArray();
         var baseQuery = dbContext.BaseItems
-            .Where(b => allDescendantIds.Contains(b.Id))
+            .WhereOneOrMany(allDescendantIds, b => b.Id)
             .Where(DescendantQueryHelper.IsCountableLeaf);
         baseQuery = _queryHelpers.ApplyAccessFiltering(dbContext, baseQuery, filter);
 
@@ -304,7 +359,7 @@ public class ItemCountService : IItemCountService
     }
 
     /// <inheritdoc/>
-    public Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, Guid? userId)
+    public Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, User? user)
     {
         ArgumentNullException.ThrowIfNull(parentIds);
 
@@ -317,25 +372,97 @@ public class ItemCountService : IItemCountService
 
         var parentIdsArray = parentIds.ToArray();
 
+        var includeVirtual = user is null || user.DisplayMissingEpisodes;
+
         var hierarchicalCounts = dbContext.BaseItems
-            .Where(b => b.ParentId.HasValue && parentIdsArray.Contains(b.ParentId.Value))
+            .Where(b => b.ParentId.HasValue && !b.SeasonId.HasValue && (includeVirtual || !b.IsVirtualItem))
+            .WhereOneOrMany(parentIdsArray, b => b.ParentId!.Value)
             .GroupBy(b => b.ParentId!.Value)
             .Select(g => new { ParentId = g.Key, Count = g.Count() })
             .ToDictionary(x => x.ParentId, x => x.Count);
 
+        // An episode is a child of its season even when it is not stored under one: with a flat
+        // structure ParentId points at the series, so counting by ParentId alone leaves the season
+        // empty and counts its episodes towards the series instead.
+        var seasonCounts = dbContext.BaseItems
+            .Where(b => b.SeasonId.HasValue && (includeVirtual || !b.IsVirtualItem))
+            .WhereOneOrMany(parentIdsArray, b => b.SeasonId!.Value)
+            .GroupBy(b => b.SeasonId!.Value)
+            .Select(g => new { SeasonId = g.Key, Count = g.Count() })
+            .ToDictionary(x => x.SeasonId, x => x.Count);
+
         var linkedCounts = dbContext.LinkedChildren
-            .Where(lc => parentIdsArray.Contains(lc.ParentId))
+            .WhereOneOrMany(parentIdsArray, lc => lc.ParentId)
             .GroupBy(lc => lc.ParentId)
             .Select(g => new { ParentId = g.Key, Count = g.Count() })
             .ToDictionary(x => x.ParentId, x => x.Count);
 
+        var mergedChildCounts = GetMergedChildCounts(dbContext, parentIdsArray, includeVirtual);
+
         var result = new Dictionary<Guid, int>();
         foreach (var parentId in parentIds)
         {
-            var hierarchicalCount = hierarchicalCounts.GetValueOrDefault(parentId, 0);
+            if (mergedChildCounts.TryGetValue(parentId, out var mergedCount))
+            {
+                result[parentId] = mergedCount;
+                continue;
+            }
+
+            var hierarchicalCount = hierarchicalCounts.GetValueOrDefault(parentId, 0)
+                + seasonCounts.GetValueOrDefault(parentId, 0);
             var linkedCount = linkedCounts.GetValueOrDefault(parentId, 0);
 
             result[parentId] = linkedCount > 0 ? linkedCount : hierarchicalCount;
+        }
+
+        return result;
+    }
+
+    private static Dictionary<Guid, int> GetMergedChildCounts(JellyfinDbContext dbContext, IReadOnlyList<Guid> parentIds, bool includeVirtual)
+    {
+        var mergedGroups = GetPresentationKeyGroups(dbContext, parentIds)
+            .Where(group => group.Value.Count > 1)
+            .ToArray();
+
+        if (mergedGroups.Length == 0)
+        {
+            return [];
+        }
+
+        // Only merged folders.
+        var memberIds = mergedGroups.SelectMany(group => group.Value).Distinct().ToArray();
+        var children = dbContext.BaseItems
+            .AsNoTracking()
+            .Where(b => b.ParentId.HasValue && !b.SeasonId.HasValue && (includeVirtual || !b.IsVirtualItem))
+            .WhereOneOrMany(memberIds, b => b.ParentId!.Value)
+            .Select(b => new { ParentId = b.ParentId!.Value, b.Id, b.PresentationUniqueKey })
+            .ToArray()
+            .Concat(dbContext.BaseItems
+                .AsNoTracking()
+                .Where(b => b.SeasonId.HasValue && (includeVirtual || !b.IsVirtualItem))
+                .WhereOneOrMany(memberIds, b => b.SeasonId!.Value)
+                .Select(b => new { ParentId = b.SeasonId!.Value, b.Id, b.PresentationUniqueKey })
+                .ToArray())
+            .GroupBy(b => b.ParentId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(b => string.IsNullOrEmpty(b.PresentationUniqueKey)
+                    ? b.Id.ToString("N", CultureInfo.InvariantCulture)
+                    : b.PresentationUniqueKey).ToArray());
+
+        var result = new Dictionary<Guid, int>();
+        foreach (var (parentId, members) in mergedGroups)
+        {
+            var childKeys = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var member in members)
+            {
+                if (children.TryGetValue(member, out var keys))
+                {
+                    childKeys.UnionWith(keys);
+                }
+            }
+
+            result[parentId] = childKeys.Count;
         }
 
         return result;
@@ -353,9 +480,12 @@ public class ItemCountService : IItemCountService
         }
 
         using var dbContext = _dbProvider.CreateDbContext();
-        var folderIdsArray = folderIds.ToArray();
         var filter = new InternalItemsQuery(user);
         var userId = user.Id;
+
+        // Merged series and seasons are stored as one row per folder-item sharing a presentation key.
+        var groups = GetPresentationKeyGroups(dbContext, folderIds);
+        var folderIdsArray = groups.Values.SelectMany(members => members).Distinct().ToArray();
 
         var leafItems = dbContext.BaseItems
             .Where(DescendantQueryHelper.IsCountableLeaf);
@@ -398,7 +528,7 @@ public class ItemCountService : IItemCountService
                 b => b.Id,
                 (x, b) => new { FolderId = x.ParentId, b.Id, b.Played });
 
-        var results = ancestorLeaves
+        var countsByFolder = ancestorLeaves
             .Union(linkedLeaves)
             .Union(linkedFolderLeaves)
             .GroupBy(x => x.FolderId)
@@ -410,7 +540,71 @@ public class ItemCountService : IItemCountService
             })
             .ToDictionary(x => x.FolderId, x => (x.Played, x.Total));
 
+        var results = new Dictionary<Guid, (int Played, int Total)>();
+        foreach (var (folderId, members) in groups)
+        {
+            var played = 0;
+            var total = 0;
+
+            // Members of a group are distinct folders, so their leaves cannot overlap.
+            foreach (var member in members)
+            {
+                if (countsByFolder.TryGetValue(member, out var counts))
+                {
+                    played += counts.Played;
+                    total += counts.Total;
+                }
+            }
+
+            if (total > 0 || played > 0)
+            {
+                results[folderId] = (played, total);
+            }
+        }
+
         return results;
+    }
+
+    private static Dictionary<Guid, List<Guid>> GetPresentationKeyGroups(JellyfinDbContext dbContext, IReadOnlyList<Guid> folderIds)
+    {
+        var requested = dbContext.BaseItems
+            .AsNoTracking()
+            .WhereOneOrMany(folderIds, e => e.Id)
+            .Select(e => new { e.Id, e.PresentationUniqueKey })
+            .ToArray();
+
+        var keys = requested
+            .Select(e => e.PresentationUniqueKey)
+            .Where(key => !string.IsNullOrEmpty(key))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        // Every item that is not merged carries a key derived from its own id, so in the common case
+        // each group resolves back to the single folder that was asked for.
+        var membersByKey = keys.Length == 0
+            ? []
+            : dbContext.BaseItems
+                .AsNoTracking()
+                .Where(e => e.IsFolder)
+                .WhereOneOrMany(keys, e => e.PresentationUniqueKey!)
+                .Select(e => new { e.Id, Key = e.PresentationUniqueKey! })
+                .ToArray()
+                .GroupBy(e => e.Key, StringComparer.Ordinal)
+                .ToDictionary(g => g.Key, g => g.Select(e => e.Id).ToList(), StringComparer.Ordinal);
+
+        var keyById = requested.ToDictionary(e => e.Id, e => e.PresentationUniqueKey);
+        var groups = new Dictionary<Guid, List<Guid>>();
+        foreach (var folderId in folderIds)
+        {
+            groups[folderId] = keyById.TryGetValue(folderId, out var key)
+                && !string.IsNullOrEmpty(key)
+                && membersByKey.TryGetValue(key, out var members)
+                && members.Count > 0
+                    ? members
+                    : [folderId];
+        }
+
+        return groups;
     }
 
     private static (int Played, int Total) GetPlayedAndTotalCountFromQuery(IQueryable<BaseItemEntity> query, Guid userId)

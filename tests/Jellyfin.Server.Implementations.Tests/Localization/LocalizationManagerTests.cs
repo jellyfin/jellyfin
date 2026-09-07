@@ -349,7 +349,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             });
 
             var translated = localizationManager.GetLocalizedString("Artists", "de");
-            Assert.Equal("Interpreten", translated);
+            Assert.Equal("Künstler", translated);
         }
 
         [Fact]
@@ -406,7 +406,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             {
                 CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("fr");
                 var translated = localizationManager.GetServerLocalizedString("Artists");
-                Assert.Equal("Interpreten", translated);
+                Assert.Equal("Künstler", translated);
             }
             finally
             {
@@ -427,7 +427,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             {
                 CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de");
                 var translated = localizationManager.GetLocalizedString("Artists");
-                Assert.Equal("Interpreten", translated);
+                Assert.Equal("Künstler", translated);
             }
             finally
             {

@@ -3,17 +3,8 @@ using System.Linq;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using Jellyfin.Database.Implementations.Locking;
-using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Server.Implementations.Item;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Configuration;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 using Xunit;
 using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
 
@@ -24,46 +15,16 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// <c>GetItemValues</c>. A query without a <c>Limit</c> used to have its total record count
 /// silently disabled, so callers got a populated <c>Items</c> array next to a zero total.
 /// </summary>
-public sealed class BaseItemRepositoryByNameTotalCountTests : IDisposable
+public sealed class BaseItemRepositoryByNameTotalCountTests : SqliteDbTestFixture
 {
-    private readonly SqliteConnection _connection;
-    private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly BaseItemRepository _repository;
     private readonly ItemTypeLookup _itemTypeLookup;
 
     public BaseItemRepositoryByNameTotalCountTests()
     {
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
-        _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-
-        using (var ctx = CreateDbContext())
-        {
-            ctx.Database.EnsureCreated();
-        }
-
-        var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
-        factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
-
         _itemTypeLookup = new ItemTypeLookup();
 
-        var serverConfigurationManager = new Mock<IServerConfigurationManager>();
-        serverConfigurationManager.Setup(c => c.Configuration).Returns(new ServerConfiguration());
-
-        _repository = new BaseItemRepository(
-            factory.Object,
-            new Mock<IServerApplicationHost>().Object,
-            _itemTypeLookup,
-            serverConfigurationManager.Object,
-            NullLogger<BaseItemRepository>.Instance);
-    }
-
-    public void Dispose()
-    {
-        _connection.Dispose();
+        _repository = CreateBaseItemRepository(_itemTypeLookup);
     }
 
     [Fact]
@@ -186,14 +147,5 @@ public sealed class BaseItemRepositoryByNameTotalCountTests : IDisposable
         }
 
         ctx.SaveChanges();
-    }
-
-    private JellyfinDbContext CreateDbContext()
-    {
-        return new JellyfinDbContext(
-            _dbOptions,
-            NullLogger<JellyfinDbContext>.Instance,
-            new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
-            new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
     }
 }

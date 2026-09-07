@@ -13,6 +13,7 @@ using MediaBrowser.Providers.Music;
 using MetaBrainz.MusicBrainz;
 using MetaBrainz.MusicBrainz.Interfaces.Entities;
 using MetaBrainz.MusicBrainz.Interfaces.Searches;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Plugins.MusicBrainz;
 
@@ -21,6 +22,17 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz;
 /// </summary>
 public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>, IHasOrder
 {
+    private readonly ILogger<MusicBrainzArtistProvider> _logger;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MusicBrainzArtistProvider"/> class.
+    /// </summary>
+    /// <param name="logger">The logger.</param>
+    public MusicBrainzArtistProvider(ILogger<MusicBrainzArtistProvider> logger)
+    {
+        _logger = logger;
+    }
+
     /// <inheritdoc />
     public string Name => "MusicBrainz";
 
@@ -32,12 +44,15 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
     public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
     {
         var query = MusicBrainz.Plugin.Instance!.MusicBrainzQuery;
-        var artistId = searchInfo.GetMusicBrainzArtistId();
+        var artistId = MusicBrainzQueryExtensions.ParseMusicBrainzId(searchInfo.GetMusicBrainzArtistId(), "artist", _logger);
 
-        if (!string.IsNullOrWhiteSpace(artistId))
+        if (artistId is not null)
         {
-            var artistResult = await query.LookupArtistAsync(new Guid(artistId), Include.Aliases, null, null, cancellationToken).ConfigureAwait(false);
-            return GetResultFromResponse(artistResult).SingleItemAsEnumerable();
+            var artistResult = await query.LookupArtistOrNullAsync(artistId.Value, Include.Aliases, _logger, cancellationToken).ConfigureAwait(false);
+            if (artistResult is not null)
+            {
+                return GetResultFromResponse(artistResult).SingleItemAsEnumerable();
+            }
         }
 
         if (string.IsNullOrWhiteSpace(searchInfo.Name))
@@ -99,22 +114,22 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
     {
         var result = new MetadataResult<MusicArtist> { Item = new MusicArtist() };
 
-        var musicBrainzId = info.GetMusicBrainzArtistId();
+        var musicBrainzId = MusicBrainzQueryExtensions.ParseMusicBrainzId(info.GetMusicBrainzArtistId(), "artist", _logger);
 
         // If we don't have an id yet, resolve one by name so we can look the artist up.
-        if (string.IsNullOrWhiteSpace(musicBrainzId))
+        if (musicBrainzId is null)
         {
             var searchResults = await GetSearchResults(info, cancellationToken).ConfigureAwait(false);
-            musicBrainzId = searchResults.FirstOrDefault()?.GetProviderId(MetadataProvider.MusicBrainzArtist);
+            musicBrainzId = MusicBrainzQueryExtensions.ParseMusicBrainzId(searchResults.FirstOrDefault()?.GetProviderId(MetadataProvider.MusicBrainzArtist), "artist", _logger);
         }
 
-        if (string.IsNullOrWhiteSpace(musicBrainzId))
+        if (musicBrainzId is null)
         {
             return result;
         }
 
         var query = Plugin.Instance!.MusicBrainzQuery;
-        var artist = await query.LookupArtistAsync(new Guid(musicBrainzId), Include.Genres | Include.Tags, null, null, cancellationToken).ConfigureAwait(false);
+        var artist = await query.LookupArtistOrNullAsync(musicBrainzId.Value, Include.Genres | Include.Tags, _logger, cancellationToken).ConfigureAwait(false);
 
         if (artist is null)
         {

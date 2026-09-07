@@ -106,5 +106,15 @@
     "TaskMoveTrickplayImagesDescription": "Flytter eksisterende Trickplay-filer i henhold til biblioteksinstillingene.",
     "TaskExtractMediaSegmentsDescription": "Trekker ut eller henter mediasegmenter fra plugins som støtter MediaSegment.",
     "CleanupUserDataTaskDescription": "Sletter all brukerdata (avspillings-status, favoritter osv.) fra innhold som har vært utilgjengelig i minst 90 dager.",
-    "CleanupUserDataTask": "Oppgave for opprydding av brukerdata"
+    "CleanupUserDataTask": "Oppgave for opprydding av brukerdata",
+    "NameExtraBehindTheScenes": "Bak kulissene",
+    "NameExtraDeletedScene": "Slettet scene",
+    "NameExtraFeaturette": "Presentasjonsfilm",
+    "NameExtraInterview": "Intervju",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Prøve",
+    "NameExtraScene": "Scene",
+    "NameExtraThemeSong": "Tema-låt",
+    "NameExtraThemeVideo": "Tema-video",
+    "NameExtraTrailer": "Trailer"
 }

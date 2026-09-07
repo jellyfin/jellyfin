@@ -106,5 +106,11 @@
     "TaskAudioNormalization": "Normalisasi Audio",
     "TaskAudioNormalizationDescription": "Mengimbas fail-fail untuk data normalisasi audio.",
     "CleanupUserDataTaskDescription": "Membersihkan semua data pengguna (keadaan tontonan, status kegemaran, dan sebagainya) daripada media yang tidak lagi wujud sekurang-kurangnya selama 90 hari.",
-    "CleanupUserDataTask": "Tugas pembersihan data pengguna"
+    "CleanupUserDataTask": "Tugas pembersihan data pengguna",
+    "LyricDownloadFailureFromForItem": "Lirik gagal dimuat turun dari {0} untuk {1}",
+    "NameExtraBehindTheScenes": "Di Sebalik Takbir",
+    "NameExtraClip": "Klip",
+    "NameExtraInterview": "Temu bual",
+    "NameExtraThemeSong": "Lagu Tema",
+    "NameExtraThemeVideo": "Video Tema"
 }

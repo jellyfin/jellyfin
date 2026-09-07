@@ -14,7 +14,9 @@ using MediaBrowser.Common.Api;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -33,6 +35,7 @@ public class LibraryStructureController : BaseJellyfinApiController
     private readonly IServerApplicationPaths _appPaths;
     private readonly ILibraryManager _libraryManager;
     private readonly ILibraryMonitor _libraryMonitor;
+    private readonly IDirectoryService _directoryService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LibraryStructureController"/> class.
@@ -40,14 +43,17 @@ public class LibraryStructureController : BaseJellyfinApiController
     /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/> interface.</param>
     /// <param name="libraryMonitor">Instance of <see cref="ILibraryMonitor"/> interface.</param>
+    /// <param name="directoryService">Instance of <see cref="IDirectoryService"/> interface.</param>
     public LibraryStructureController(
         IServerConfigurationManager serverConfigurationManager,
         ILibraryManager libraryManager,
-        ILibraryMonitor libraryMonitor)
+        ILibraryMonitor libraryMonitor,
+        IDirectoryService directoryService)
     {
         _appPaths = serverConfigurationManager.ApplicationPaths;
         _libraryManager = libraryManager;
         _libraryMonitor = libraryMonitor;
+        _directoryService = directoryService;
     }
 
     /// <summary>
@@ -122,12 +128,14 @@ public class LibraryStructureController : BaseJellyfinApiController
     /// <param name="newName">The new name.</param>
     /// <param name="refreshLibrary">Whether to refresh the library.</param>
     /// <response code="204">Folder renamed.</response>
+    /// <response code="400">The new name is not a valid library name.</response>
     /// <response code="404">Library doesn't exist.</response>
     /// <response code="409">Library already exists.</response>
-    /// <returns>A <see cref="NoContentResult"/> on success, a <see cref="NotFoundResult"/> if the library doesn't exist, a <see cref="ConflictResult"/> if the new name is already taken.</returns>
+    /// <returns>A <see cref="NoContentResult"/> on success, a <see cref="BadRequestResult"/> if the new name is invalid, a <see cref="NotFoundResult"/> if the library doesn't exist, a <see cref="ConflictResult"/> if the new name is already taken.</returns>
     /// <exception cref="ArgumentNullException">The new name may not be null.</exception>
     [HttpPost("Name")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public ActionResult RenameVirtualFolder(
@@ -147,10 +155,15 @@ public class LibraryStructureController : BaseJellyfinApiController
 
         var rootFolderPath = _appPaths.DefaultUserViewsPath;
 
-        var currentPath = Path.Combine(rootFolderPath, name);
-        var newPath = Path.Combine(rootFolderPath, newName);
+        // Both names are caller supplied, so they have to be confined to the libraries root.
+        var newPath = FileSystemHelper.GetChildPath(rootFolderPath, newName);
+        if (newPath is null)
+        {
+            return BadRequest("The new name is not a valid library name.");
+        }
 
-        if (!Directory.Exists(currentPath))
+        var currentPath = FileSystemHelper.GetChildPath(rootFolderPath, name);
+        if (currentPath is null || !Directory.Exists(currentPath))
         {
             return NotFound("The media collection does not exist.");
         }
@@ -170,11 +183,11 @@ public class LibraryStructureController : BaseJellyfinApiController
                 var tempPath = Path.Combine(
                     rootFolderPath,
                     Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture));
-                Directory.Move(currentPath, tempPath);
+                _directoryService.Move(currentPath, tempPath);
                 currentPath = tempPath;
             }
 
-            Directory.Move(currentPath, newPath);
+            _directoryService.Move(currentPath, newPath);
         }
         finally
         {

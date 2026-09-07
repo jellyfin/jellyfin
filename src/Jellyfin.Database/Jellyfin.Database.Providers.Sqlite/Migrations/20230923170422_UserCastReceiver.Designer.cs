@@ -445,6 +445,37 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.ToTable("DeviceOptions");
                 });
 
+            modelBuilder.Entity("Jellyfin.Data.Entities.TrickplayInfo", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Bandwidth")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Interval")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ThumbnailCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TileHeight")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TileWidth")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ItemId", "Width");
+
+                    b.ToTable("TrickplayInfos");
+                });
+
             modelBuilder.Entity("Jellyfin.Data.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")

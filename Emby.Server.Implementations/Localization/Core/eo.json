@@ -97,5 +97,9 @@
     "TaskAudioNormalizationDescription": "Skanas dosierojn por sonnivelaj normaligaj datumoj.",
     "TaskRefreshTrickplayImages": "Generi la bildojn por TrickPlay (Antaŭrigardo rapida antaŭen)",
     "TaskAudioNormalization": "Normaligo Sonnivela",
-    "HearingImpaired": "Surda"
+    "HearingImpaired": "Surda",
+    "NameExtraDeletedScene": "Forigita sceno",
+    "NameExtraScene": "Sceno",
+    "NameExtraThemeSong": "Tema Kanto",
+    "Original": "Originala"
 }

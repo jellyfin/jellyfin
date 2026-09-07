@@ -26,6 +26,8 @@ namespace MediaBrowser.Model.Dlna
         internal const TranscodeReason VideoReasons = TranscodeReason.VideoCodecNotSupported | VideoCodecReasons;
         internal const TranscodeReason DirectStreamReasons = AudioReasons | TranscodeReason.ContainerNotSupported | TranscodeReason.VideoCodecTagNotSupported;
 
+        private const string ManifestContainers = "hls,applehttp,dash";
+
         private readonly ILogger _logger;
         private readonly ITranscoderSupport _transcoderSupport;
         private static readonly string[] _supportedHlsVideoCodecs = ["h264", "hevc", "vp9", "av1"];
@@ -714,6 +716,14 @@ namespace MediaBrowser.Model.Dlna
 
             // Force transcode or remux for BD/DVD folders
             if (item.VideoType == VideoType.Dvd || item.VideoType == VideoType.BluRay)
+            {
+                isEligibleForDirectPlay = false;
+            }
+
+            // A manifest is not a byte stream, so it cannot be handed to the client as one. The variant
+            // and segment URIs inside it are relative to the origin and do not resolve against the
+            // Jellyfin url the client would fetch it from.
+            if (ContainerHelper.ContainsContainer(ManifestContainers, item.Container))
             {
                 isEligibleForDirectPlay = false;
             }

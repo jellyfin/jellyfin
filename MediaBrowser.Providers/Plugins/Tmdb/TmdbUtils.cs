@@ -2,10 +2,14 @@ using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
 using TMDbLib.Objects.General;
+using TMDbLib.Objects.TvShows;
+using PersonInfo = MediaBrowser.Controller.Entities.PersonInfo;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb
 {
@@ -63,6 +67,33 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         private static partial Regex NonWordRegex();
 
         /// <summary>
+        /// Gets the TMDb id of an item, if it has one TMDb can be queried with.
+        /// </summary>
+        /// <param name="instance">The item.</param>
+        /// <param name="tmdbId">The TMDb id.</param>
+        /// <returns><c>true</c> if the item has a usable TMDb id; otherwise, <c>false</c>.</returns>
+        public static bool TryGetTmdbId(this IHasProviderIds instance, out int tmdbId)
+        {
+            instance.TryGetProviderId(MetadataProvider.Tmdb, out var value);
+
+            return TryParseTmdbId(value, out tmdbId);
+        }
+
+        /// <summary>
+        /// Parses a TMDb id.
+        /// </summary>
+        /// <param name="value">The stored id.</param>
+        /// <param name="tmdbId">The TMDb id.</param>
+        /// <returns><c>true</c> if the value is a usable TMDb id; otherwise, <c>false</c>.</returns>
+        public static bool TryParseTmdbId(string? value, out int tmdbId)
+        {
+            // Another provider can have filed one of its own ids under the TMDb key, e.g. an IMDb person
+            // id. Reporting that as "no id" lets the caller fall back to a search and repair the id,
+            // instead of throwing on every refresh of the item.
+            return int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out tmdbId) && tmdbId > 0;
+        }
+
+        /// <summary>
         /// Cleans the name according to TMDb requirements.
         /// </summary>
         /// <param name="name">The name of the entity.</param>
@@ -99,6 +130,100 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             }
 
             return PersonKind.Unknown;
+        }
+
+        /// <summary>
+        /// Maps an aggregated TMDb cast list, whose entries hold every role their member played.
+        /// </summary>
+        /// <param name="cast">The aggregated cast list, or <c>null</c>.</param>
+        /// <param name="config">The configuration deciding how much of the cast to keep.</param>
+        /// <param name="getProfileUrl">Resolves a profile path into an absolute image url.</param>
+        /// <returns>One credit per role played.</returns>
+        internal static IEnumerable<PersonInfo> MapAggregateCast(
+            IReadOnlyList<CastAggregate>? cast,
+            PluginConfiguration config,
+            Func<string?, string?> getProfileUrl)
+        {
+            if (cast is null)
+            {
+                yield break;
+            }
+
+            var billed = cast
+                .Where(member => !string.IsNullOrWhiteSpace(member.Name))
+                .Where(member => !config.HideMissingCastMembers || !string.IsNullOrEmpty(member.ProfilePath))
+                .OrderBy(member => member.Order)
+                .Take(config.MaxCastMembers);
+
+            foreach (var member in billed)
+            {
+                // An actor playing several characters over the run gets one aggregated entry holding
+                // every role, so each of them becomes a credit of its own here. Their own billing puts
+                // the character they played the longest first.
+                var characters = member.Roles?
+                    .Where(role => !string.IsNullOrWhiteSpace(role.Character))
+                    .OrderByDescending(role => role.EpisodeCount)
+                    .Select(role => role.Character!.Trim())
+                    .ToArray();
+
+                if (characters is null || characters.Length == 0)
+                {
+                    characters = [string.Empty];
+                }
+
+                foreach (var character in characters)
+                {
+                    yield return CreateCredit(member.Name!, member.Id, member.ProfilePath, member.Order, character, getProfileUrl);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Maps a TMDb cast list whose entries hold the one character their member is credited for.
+        /// </summary>
+        /// <param name="cast">The cast list, or <c>null</c>.</param>
+        /// <param name="config">The configuration deciding how much of the cast to keep.</param>
+        /// <param name="getProfileUrl">Resolves a profile path into an absolute image url.</param>
+        /// <returns>One credit per cast entry.</returns>
+        internal static IEnumerable<PersonInfo> MapCast(
+            IReadOnlyList<Cast>? cast,
+            PluginConfiguration config,
+            Func<string?, string?> getProfileUrl)
+        {
+            if (cast is null)
+            {
+                yield break;
+            }
+
+            var billed = cast
+                .Where(member => !string.IsNullOrWhiteSpace(member.Name))
+                .Where(member => !config.HideMissingCastMembers || !string.IsNullOrEmpty(member.ProfilePath))
+                .OrderBy(member => member.Order)
+                .Take(config.MaxCastMembers);
+
+            foreach (var member in billed)
+            {
+                yield return CreateCredit(member.Name!, member.Id, member.ProfilePath, member.Order, member.Character?.Trim() ?? string.Empty, getProfileUrl);
+            }
+        }
+
+        private static PersonInfo CreateCredit(string name, int id, string? profilePath, int? order, string role, Func<string?, string?> getProfileUrl)
+        {
+            var personInfo = new PersonInfo
+            {
+                Name = name.Trim(),
+                Role = role,
+                Type = PersonKind.Actor,
+                SortOrder = order,
+                ImageUrl = getProfileUrl(profilePath)
+            };
+
+            if (id > 0)
+            {
+                personInfo.SetProviderId(MetadataProvider.Tmdb, id.ToString(CultureInfo.InvariantCulture));
+            }
+
+            return personInfo;
         }
 
         /// <summary>

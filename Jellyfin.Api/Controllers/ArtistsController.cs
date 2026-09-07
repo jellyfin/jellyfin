@@ -126,6 +126,12 @@ public class ArtistsController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
+        // Asking for a type filter has always implied wanting that type's counts back.
+        if (includeItemTypes.Length != 0 && !dtoOptions.ContainsField(ItemFields.ItemCounts))
+        {
+            dtoOptions.Fields = [.. dtoOptions.Fields, ItemFields.ItemCounts];
+        }
+
         User? user = null;
         BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
@@ -193,31 +199,7 @@ public class ArtistsController : BaseJellyfinApiController
 
         var result = _libraryManager.GetArtists(query);
 
-        var dtos = result.Items.Select(i =>
-        {
-            var (baseItem, itemCounts) = i;
-            var dto = _dtoService.GetItemByNameDto(baseItem, dtoOptions, null, user);
-
-            if (includeItemTypes.Length != 0)
-            {
-                dto.ChildCount = itemCounts.ItemCount;
-                dto.ProgramCount = itemCounts.ProgramCount;
-                dto.SeriesCount = itemCounts.SeriesCount;
-                dto.EpisodeCount = itemCounts.EpisodeCount;
-                dto.MovieCount = itemCounts.MovieCount;
-                dto.TrailerCount = itemCounts.TrailerCount;
-                dto.AlbumCount = itemCounts.AlbumCount;
-                dto.SongCount = itemCounts.SongCount;
-                dto.ArtistCount = itemCounts.ArtistCount;
-            }
-
-            return dto;
-        });
-
-        return new QueryResult<BaseItemDto>(
-            query.StartIndex,
-            result.TotalRecordCount,
-            dtos.ToArray());
+        return RequestHelpers.CreateQueryResult(result, dtoOptions, _dtoService, user);
     }
 
     /// <summary>
@@ -298,6 +280,12 @@ public class ArtistsController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
+        // Asking for a type filter has always implied wanting that type's counts back.
+        if (includeItemTypes.Length != 0 && !dtoOptions.ContainsField(ItemFields.ItemCounts))
+        {
+            dtoOptions.Fields = [.. dtoOptions.Fields, ItemFields.ItemCounts];
+        }
+
         User? user = null;
         BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
@@ -365,31 +353,7 @@ public class ArtistsController : BaseJellyfinApiController
 
         var result = _libraryManager.GetAlbumArtists(query);
 
-        var dtos = result.Items.Select(i =>
-        {
-            var (baseItem, itemCounts) = i;
-            var dto = _dtoService.GetItemByNameDto(baseItem, dtoOptions, null, user);
-
-            if (includeItemTypes.Length != 0)
-            {
-                dto.ChildCount = itemCounts.ItemCount;
-                dto.ProgramCount = itemCounts.ProgramCount;
-                dto.SeriesCount = itemCounts.SeriesCount;
-                dto.EpisodeCount = itemCounts.EpisodeCount;
-                dto.MovieCount = itemCounts.MovieCount;
-                dto.TrailerCount = itemCounts.TrailerCount;
-                dto.AlbumCount = itemCounts.AlbumCount;
-                dto.SongCount = itemCounts.SongCount;
-                dto.ArtistCount = itemCounts.ArtistCount;
-            }
-
-            return dto;
-        });
-
-        return new QueryResult<BaseItemDto>(
-            query.StartIndex,
-            result.TotalRecordCount,
-            dtos.ToArray());
+        return RequestHelpers.CreateQueryResult(result, dtoOptions, _dtoService, user);
     }
 
     /// <summary>

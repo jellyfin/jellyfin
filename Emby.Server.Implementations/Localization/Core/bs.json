@@ -106,5 +106,17 @@
     "TaskMoveTrickplayImages": "Migracija lokacije slike Trickplay",
     "TaskMoveTrickplayImagesDescription": "Premješta postojeće datoteke trik-igara prema postavkama biblioteke.",
     "CleanupUserDataTask": "Zadatak čišćenja korisničkih podataka",
-    "CleanupUserDataTaskDescription": "Čisti sve korisničke podatke (stanje praćenja, status omiljenog itd.) sa medija koji više nije prisutan najmanje 90 dana."
+    "CleanupUserDataTaskDescription": "Čisti sve korisničke podatke (stanje praćenja, status omiljenog itd.) sa medija koji više nije prisutan najmanje 90 dana.",
+    "NameExtraBehindTheScenes": "Iza kulisa",
+    "NameExtraClip": "Isječak",
+    "NameExtraDeletedScene": "Izbrišana scena",
+    "NameExtraFeaturette": "Kratki prilog",
+    "NameExtraInterview": "Intervju",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Uzorak",
+    "NameExtraScene": "Scena",
+    "NameExtraShort": "Kratko",
+    "NameExtraThemeSong": "Tema",
+    "NameExtraThemeVideo": "Tematski video",
+    "NameExtraTrailer": "Najava"
 }

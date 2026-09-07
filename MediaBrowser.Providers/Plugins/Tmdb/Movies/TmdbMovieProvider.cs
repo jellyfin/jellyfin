@@ -54,11 +54,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(MovieInfo searchInfo, CancellationToken cancellationToken)
         {
-            if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var id))
+            if (searchInfo.TryGetTmdbId(out var tmdbId))
             {
                 var movie = await _tmdbClientManager
                     .GetMovieAsync(
-                        int.Parse(id, CultureInfo.InvariantCulture),
+                        tmdbId,
                         searchInfo.MetadataLanguage,
                         TmdbUtils.GetImageLanguagesParam(searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode),
                         searchInfo.MetadataCountryCode,
@@ -90,7 +90,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             }
 
             IReadOnlyList<SearchMovie>? movieResults = null;
-            if (searchInfo.TryGetProviderId(MetadataProvider.Imdb, out id))
+            if (searchInfo.TryGetProviderId(MetadataProvider.Imdb, out var id))
             {
                 var result = await _tmdbClientManager.FindByExternalIdAsync(
                     id,
@@ -151,11 +151,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         /// <inheritdoc />
         public async Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
         {
-            var tmdbId = info.GetProviderId(MetadataProvider.Tmdb);
+            // A stored id that is not a TMDb id is treated as no id, so the search below can repair it
+            // rather than the lookup failing for as long as the bad id stays on the item.
+            info.TryGetTmdbId(out var tmdbId);
             var imdbId = info.GetProviderId(MetadataProvider.Imdb);
             var config = Plugin.Instance.Configuration;
 
-            if (string.IsNullOrEmpty(tmdbId) && string.IsNullOrEmpty(imdbId))
+            if (tmdbId <= 0 && string.IsNullOrEmpty(imdbId))
             {
                 // ParseName is required here.
                 // Caller provides the filename with extension stripped and NOT the parsed filename
@@ -166,26 +168,26 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
                 if (searchResults?.Count > 0)
                 {
-                    tmdbId = searchResults[0].Id.ToString(CultureInfo.InvariantCulture);
+                    tmdbId = searchResults[0].Id;
                 }
             }
 
-            if (string.IsNullOrEmpty(tmdbId) && !string.IsNullOrEmpty(imdbId))
+            if (tmdbId <= 0 && !string.IsNullOrEmpty(imdbId))
             {
                 var movieResultFromImdbId = await _tmdbClientManager.FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
                 if (movieResultFromImdbId?.MovieResults?.Count > 0)
                 {
-                    tmdbId = movieResultFromImdbId.MovieResults[0].Id.ToString(CultureInfo.InvariantCulture);
+                    tmdbId = movieResultFromImdbId.MovieResults[0].Id;
                 }
             }
 
-            if (string.IsNullOrEmpty(tmdbId))
+            if (tmdbId <= 0)
             {
                 return new MetadataResult<Movie>();
             }
 
             var movieResult = await _tmdbClientManager
-                .GetMovieAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken)
+                .GetMovieAsync(tmdbId, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken)
                 .ConfigureAwait(false);
 
             if (movieResult is null)
@@ -208,7 +210,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 Item = movie
             };
 
-            movie.SetProviderId(MetadataProvider.Tmdb, tmdbId);
+            movie.SetProviderId(MetadataProvider.Tmdb, tmdbId.ToString(CultureInfo.InvariantCulture));
             movie.TrySetProviderId(MetadataProvider.Imdb, movieResult.ImdbId);
             if (movieResult.BelongsToCollection is not null)
             {

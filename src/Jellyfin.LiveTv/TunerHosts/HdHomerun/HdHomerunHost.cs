@@ -326,7 +326,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
                 BufferMs = 0,
                 Container = "ts",
                 Id = id,
-                SupportsDirectPlay = false,
+                SupportsDirectPlay = true,
                 SupportsDirectStream = true,
                 SupportsTranscoding = true,
                 IsInfiniteStream = true,

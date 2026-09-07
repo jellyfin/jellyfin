@@ -107,6 +107,13 @@ namespace MediaBrowser.Controller.Library
         Person? GetPerson(string name);
 
         /// <summary>
+        /// Gets a Person, creating and persisting it if no item exists for the name yet.
+        /// </summary>
+        /// <param name="name">The name of the person.</param>
+        /// <returns>The person.</returns>
+        Person GetOrCreatePerson(string name);
+
+        /// <summary>
         /// Finds the by path.
         /// </summary>
         /// <param name="path">The path.</param>
@@ -151,15 +158,6 @@ namespace MediaBrowser.Controller.Library
         /// <returns>Task{Year}.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Throws if year is invalid.</exception>
         Year GetYear(int value);
-
-        /// <summary>
-        /// Validate and refresh the People sub-set of the IBN.
-        /// The items are stored in the db but not loaded into memory until actually requested by an operation.
-        /// </summary>
-        /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task ValidatePeopleAsync(IProgress<double> progress, CancellationToken cancellationToken);
 
         /// <summary>
         /// Reloads the root media folder.
@@ -254,6 +252,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="video">The video item.</param>
         /// <returns>Enumerable of linked Video items.</returns>
         IEnumerable<Video> GetLinkedAlternateVersions(Video video);
+
+        /// <summary>
+        /// Gets, in a single query, the subset of the supplied items that own at least one alternate
+        /// version (local or linked). Items absent from the result have no alternate versions.
+        /// </summary>
+        /// <param name="itemIds">The item IDs to check.</param>
+        /// <returns>The set of item IDs that have alternate versions.</returns>
+        IReadOnlySet<Guid> GetItemIdsWithAlternateVersions(IReadOnlyList<Guid> itemIds);
 
         /// <summary>
         /// Creates or updates a LinkedChild entry linking a parent to a child item.
@@ -598,6 +604,12 @@ namespace MediaBrowser.Controller.Library
         IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery query);
 
         /// <summary>
+        /// Deletes every credit that no item maps to any more.
+        /// </summary>
+        /// <returns>The number of credits that were deleted.</returns>
+        int DeleteOrphanedCredits();
+
+        /// <summary>
         /// Gets the distinct people names per item for multiple items.
         /// </summary>
         /// <param name="itemIds">The item IDs.</param>
@@ -695,6 +707,14 @@ namespace MediaBrowser.Controller.Library
         /// <returns><c>true</c> if ignored, <c>false</c> otherwise.</returns>
         bool IgnoreFile(FileSystemMetadata file, BaseItem parent);
 
+        /// <summary>
+        /// Gets the id a <see cref="Person"/> item for the name would have, without looking it up
+        /// or creating it.
+        /// </summary>
+        /// <param name="name">The name of the person.</param>
+        /// <returns>The item id for the name.</returns>
+        Guid GetPersonId(string name);
+
         Guid GetStudioId(string name);
 
         Guid GetGenreId(string name);
@@ -744,9 +764,9 @@ namespace MediaBrowser.Controller.Library
         /// Returns the count of immediate children (non-recursive) for each parent.
         /// </summary>
         /// <param name="parentIds">The list of parent folder IDs.</param>
-        /// <param name="userId">The user ID for access filtering.</param>
+        /// <param name="user">The user the counts are for, or null to count without a user's preferences.</param>
         /// <returns>Dictionary mapping parent ID to child count.</returns>
-        Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, Guid? userId);
+        Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, User? user);
 
         /// <summary>
         /// Batch-fetches played and total counts for multiple folder items.

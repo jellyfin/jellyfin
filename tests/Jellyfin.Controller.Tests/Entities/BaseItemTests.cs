@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations.Entities;
@@ -27,6 +28,57 @@ namespace Jellyfin.Controller.Tests.Entities;
 
 public class BaseItemTests
 {
+    [Fact]
+    public void GetItemByNameFolderName_ShortName_IsKeptAsIs()
+    {
+        SetupPassThroughFileSystem();
+
+        Assert.Equal("Mairghread Scott", BaseItem.GetItemByNameFolderName("Mairghread Scott."));
+    }
+
+    [Fact]
+    public void GetItemByNameFolderName_OverlongName_FitsInAPathComponent()
+    {
+        SetupPassThroughFileSystem();
+
+        // What a provider result that concatenated a whole credit list into one name looks like.
+        var name = string.Join(", ", Enumerable.Repeat("Jerry Siegel (created by: Superman)", 20));
+
+        var folderName = BaseItem.GetItemByNameFolderName(name);
+
+        Assert.True(Encoding.UTF8.GetByteCount(folderName) <= 128);
+        Assert.StartsWith("Jerry Siegel (created by: Superman)", folderName, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void GetItemByNameFolderName_OverlongNamesSharingAPrefix_StayApart()
+    {
+        SetupPassThroughFileSystem();
+
+        var prefix = new string('a', 200);
+
+        Assert.NotEqual(
+            BaseItem.GetItemByNameFolderName(prefix + "Joe Shuster"),
+            BaseItem.GetItemByNameFolderName(prefix + "Bob Kane"));
+    }
+
+    [Fact]
+    public void GetItemByNameFolderName_OverlongName_IsStable()
+    {
+        SetupPassThroughFileSystem();
+
+        var name = new string('a', 300);
+
+        Assert.Equal(BaseItem.GetItemByNameFolderName(name), BaseItem.GetItemByNameFolderName(name));
+    }
+
+    private static void SetupPassThroughFileSystem()
+    {
+        var fileSystem = new Mock<IFileSystem>();
+        fileSystem.Setup(x => x.GetValidFilename(It.IsAny<string>())).Returns((string name) => name);
+        BaseItem.FileSystem = fileSystem.Object;
+    }
+
     [Theory]
     [InlineData("", "")]
     [InlineData("1", "0000000001")]

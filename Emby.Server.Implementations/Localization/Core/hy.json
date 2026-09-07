@@ -24,5 +24,10 @@
     "TaskDownloadMissingSubtitles": "Ներբեռնել պակասող ենթագրերը",
     "AppDeviceValues": "Հավելված` {0}, Սարք `{1}",
     "ChapterNameValue": "Գլուխ {0}",
-    "Collections": "Հավաքածուներ"
+    "Collections": "Հավաքածուներ",
+    "Artists": "Երաժիշտներ",
+    "Default": "Լռելյայն",
+    "Favorites": "Ընտրյալ",
+    "Forced": "Ստիպուած",
+    "Genres": "Ոճ"
 }

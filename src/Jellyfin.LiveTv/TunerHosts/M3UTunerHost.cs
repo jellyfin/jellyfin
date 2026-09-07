@@ -32,6 +32,7 @@ namespace Jellyfin.LiveTv.TunerHosts
     {
         private static readonly string[] _mimeTypesCanShareHttpStream = ["video/MP2T"];
         private static readonly string[] _extensionsCanShareHttpStream = [".ts", ".tsv", ".m2t"];
+        private static readonly string[] _manifestExtensions = [".m3u8", ".m3u", ".mpd"];
 
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerApplicationHost _appHost;
@@ -151,9 +152,18 @@ namespace Jellyfin.LiveTv.TunerHosts
             var protocol = _mediaSourceManager.GetPathProtocol(path);
 
             var isRemote = true;
-            if (Uri.TryCreate(path, UriKind.Absolute, out var uri))
+            Uri.TryCreate(path, UriKind.Absolute, out var uri);
+            if (uri is not null)
             {
                 isRemote = !_networkManager.IsInLocalNetwork(uri.Host);
+            }
+
+            // A manifest is not a byte stream. Serving one directly hands the client a playlist whose
+            // variant and segment URIs are relative to the origin, and those do not resolve against the
+            // Jellyfin url the client fetched it from. Remux or transcode these instead.
+            if (IsManifest(path, uri))
+            {
+                supportsDirectPlay = false;
             }
 
             var httpHeaders = new Dictionary<string, string>();
@@ -208,6 +218,20 @@ namespace Jellyfin.LiveTv.TunerHosts
             mediaSource.InferTotalBitrate();
 
             return mediaSource;
+        }
+
+        /// <summary>
+        /// Determines whether a channel path points at an HLS or DASH manifest rather than at a byte stream.
+        /// </summary>
+        /// <param name="path">The channel path.</param>
+        /// <param name="uri">The channel path parsed as an absolute uri, or <c>null</c> if it is not one.</param>
+        /// <returns><c>true</c> if the path names a streaming manifest.</returns>
+        private static bool IsManifest(string path, Uri uri)
+        {
+            // Use the uri path when there is one so that a query string does not hide the extension.
+            var extension = Path.GetExtension(uri is null ? path : uri.AbsolutePath);
+
+            return _manifestExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase);
         }
 
         public Task<List<TunerHostInfo>> DiscoverDevices(int discoveryDurationMs, CancellationToken cancellationToken)
