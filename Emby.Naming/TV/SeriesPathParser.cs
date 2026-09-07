@@ -20,6 +20,14 @@ namespace Emby.Naming.TV
 
             foreach (var expression in options.EpisodeExpressions)
             {
+                // Optimistic expressions (bare numbers, "01.blah", etc.) are only meant for
+                // episode parsing and produce false series names on release folder names like
+                // "Silo.S03.1080p.WEB-DL..." (e.g. reading "264" as S02E64). Skip them here.
+                if (expression.IsOptimistic)
+                {
+                    continue;
+                }
+
                 var currentResult = Parse(path, expression);
                 if (currentResult.Success)
                 {
