@@ -37,7 +37,9 @@ public interface IItemCountService
     ItemCounts GetItemCountsForNameItem(BaseItemKind kind, Guid id, BaseItemKind[] relatedItemKinds, InternalItemsQuery accessFilter);
 
     /// <summary>
-    /// Gets item counts for several "by-name" items of the same kind in one query.
+    /// Gets item counts for several "by-name" items of the same kind. Kinds keyed by a cleaned
+    /// item value - artists, genres and studios - are answered in one set of queries for the whole
+    /// batch; the rest fall back to one query per id.
     /// </summary>
     /// <param name="kind">The kind of the name items.</param>
     /// <param name="ids">The IDs of the name items.</param>
