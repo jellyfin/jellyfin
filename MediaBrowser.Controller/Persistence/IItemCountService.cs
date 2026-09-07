@@ -37,6 +37,16 @@ public interface IItemCountService
     ItemCounts GetItemCountsForNameItem(BaseItemKind kind, Guid id, BaseItemKind[] relatedItemKinds, InternalItemsQuery accessFilter);
 
     /// <summary>
+    /// Gets item counts for several "by-name" items of the same kind in one query.
+    /// </summary>
+    /// <param name="kind">The kind of the name items.</param>
+    /// <param name="ids">The IDs of the name items.</param>
+    /// <param name="relatedItemKinds">The item kinds to count.</param>
+    /// <param name="accessFilter">A pre-configured query with user access filtering settings.</param>
+    /// <returns>The item counts of each requested id.</returns>
+    Dictionary<Guid, ItemCounts> GetItemCountsForNameItems(BaseItemKind kind, IReadOnlyList<Guid> ids, BaseItemKind[] relatedItemKinds, InternalItemsQuery accessFilter);
+
+    /// <summary>
     /// Gets the count of played items that are descendants of the specified ancestor.
     /// </summary>
     /// <param name="filter">The query filter containing user access settings.</param>

@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Server.Implementations.Item;
@@ -53,9 +56,25 @@ public sealed class ItemCountServiceTests : IDisposable
                 It.IsAny<InternalItemsQuery>()))
             .Returns((JellyfinDbContext _, IQueryable<BaseItemEntity> query, InternalItemsQuery _) => query);
 
+        var typeLookup = new Mock<IItemTypeLookup>();
+        typeLookup.Setup(l => l.BaseItemKindNames).Returns(new Dictionary<BaseItemKind, string>
+        {
+            [BaseItemKind.Movie] = "Movie",
+            [BaseItemKind.Series] = "Series",
+            [BaseItemKind.Episode] = "Episode",
+            [BaseItemKind.MusicAlbum] = "MusicAlbum",
+            [BaseItemKind.MusicArtist] = "MusicArtist",
+            [BaseItemKind.MusicVideo] = "MusicVideo",
+            [BaseItemKind.Audio] = "Audio",
+            [BaseItemKind.Trailer] = "Trailer",
+            [BaseItemKind.BoxSet] = "BoxSet",
+            [BaseItemKind.Book] = "Book",
+            [BaseItemKind.LiveTvProgram] = "LiveTvProgram"
+        });
+
         _service = new ItemCountService(
             factory.Object,
-            new Mock<IItemTypeLookup>().Object,
+            typeLookup.Object,
             queryHelpers.Object);
     }
 
@@ -333,6 +352,104 @@ public sealed class ItemCountServiceTests : IDisposable
             IsVirtualItem = false,
             PresentationUniqueKey = id.ToString("N")
         };
+    }
+
+    [Fact]
+    public void GetItemCountsForNameItems_MatchesCountingEachNameItemOnItsOwn()
+    {
+        // Three genres tagging a different number of movies each, plus one tagging nothing.
+        var genres = SeedGenres();
+
+        var filter = new InternalItemsQuery();
+        BaseItemKind[] related = [BaseItemKind.Movie, BaseItemKind.Series];
+
+        var batch = _service.GetItemCountsForNameItems(BaseItemKind.Genre, genres, related, filter);
+
+        // Every requested id is answered, so a caller can index the result without checking.
+        Assert.Equal(genres.Count, batch.Count);
+
+        foreach (var genreId in genres)
+        {
+            var single = _service.GetItemCountsForNameItem(BaseItemKind.Genre, genreId, related, filter);
+
+            Assert.Equal(single.MovieCount, batch[genreId].MovieCount);
+            Assert.Equal(single.SeriesCount, batch[genreId].SeriesCount);
+            Assert.Equal(single.ItemCount, batch[genreId].ItemCount);
+        }
+
+        // And the counts are the seeded ones rather than all zero, which would match trivially.
+        Assert.Equal([3, 2, 1, 0], genres.Select(g => batch[g].MovieCount).ToArray());
+    }
+
+    [Fact]
+    public void GetItemCountsForNameItems_UnknownId_CountsZero()
+    {
+        var unknown = Guid.NewGuid();
+
+        var batch = _service.GetItemCountsForNameItems(
+            BaseItemKind.Genre,
+            [unknown],
+            [BaseItemKind.Movie],
+            new InternalItemsQuery());
+
+        Assert.Equal(0, batch[unknown].ItemCount);
+    }
+
+    /// <summary>
+    /// Seeds four genres tagging three, two, one and no movies, in that order.
+    /// </summary>
+    /// <returns>The ids of the seeded genres.</returns>
+    private List<Guid> SeedGenres()
+    {
+        var genreIds = new List<Guid>();
+
+        using var context = CreateDbContext();
+
+        for (var i = 0; i < 4; i++)
+        {
+            var name = "genre-" + i.ToString(CultureInfo.InvariantCulture);
+            var genreId = Guid.NewGuid();
+            genreIds.Add(genreId);
+
+            var genre = CreateItem(genreId);
+            genre.Type = "Genre";
+            genre.Name = name;
+            genre.CleanName = name;
+            context.BaseItems.Add(genre);
+
+            var itemValue = new ItemValue
+            {
+                ItemValueId = Guid.NewGuid(),
+                Type = ItemValueType.Genre,
+                Value = name,
+                CleanValue = name
+            };
+            context.ItemValues.Add(itemValue);
+            context.SaveChanges();
+
+            // 3 movies for the first genre, 2 for the second, 1 for the third, none for the last.
+            for (var m = 0; m < 3 - i; m++)
+            {
+                var movieId = Guid.NewGuid();
+                var movie = CreateItem(movieId);
+                movie.Type = "Movie";
+                movie.IsFolder = false;
+                context.BaseItems.Add(movie);
+                context.SaveChanges();
+
+                context.ItemValuesMap.Add(new ItemValueMap
+                {
+                    ItemId = movieId,
+                    ItemValueId = itemValue.ItemValueId,
+                    Item = null!,
+                    ItemValue = null!
+                });
+            }
+
+            context.SaveChanges();
+        }
+
+        return genreIds;
     }
 
     private static BaseItemEntity CreateItem(Guid id, Guid? parentId = null)
