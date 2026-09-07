@@ -395,29 +395,11 @@ namespace Emby.Server.Implementations.Plugins
                 var url = new Uri(packageInfo.ImageUrl);
                 imagePath = Path.Join(path, url.Segments[^1]);
 
-                var fileStream = AsyncFile.OpenWrite(imagePath);
-                Stream? downloadStream = null;
-                try
+                // The catalog is refreshed on every dashboard visit and rewrites the manifest of
+                // every installed plugin, so only fetch an image that is actually missing.
+                if (!ImageExists(imagePath))
                 {
-                    downloadStream = await HttpClientFactory
-                        .CreateClient(NamedClient.Default)
-                        .GetStreamAsync(url)
-                        .ConfigureAwait(false);
-
-                    await downloadStream.CopyToAsync(fileStream).ConfigureAwait(false);
-                }
-                catch (HttpRequestException ex)
-                {
-                    _logger.LogError(ex, "Failed to download image to path {Path} on disk.", imagePath);
-                    imagePath = string.Empty;
-                }
-                finally
-                {
-                    await fileStream.DisposeAsync().ConfigureAwait(false);
-                    if (downloadStream is not null)
-                    {
-                        await downloadStream.DisposeAsync().ConfigureAwait(false);
-                    }
+                    imagePath = await DownloadImage(url, imagePath).ConfigureAwait(false);
                 }
             }
 
@@ -453,6 +435,67 @@ namespace Emby.Server.Implementations.Plugins
             foreach (var assemblyLoadContext in _assemblyLoadContexts)
             {
                 assemblyLoadContext.Unload();
+            }
+        }
+
+        private static bool ImageExists(string imagePath)
+        {
+            var image = new FileInfo(imagePath);
+
+            // A previous download may have been interrupted, leaving an empty file behind.
+            return image.Exists && image.Length > 0;
+        }
+
+        private async Task<string> DownloadImage(Uri url, string imagePath)
+        {
+            // Download to a temporary file and move it into place, so that neither a failed download
+            // nor a concurrent one can be observed as a partially written image.
+            var tempPath = imagePath + "." + Path.GetRandomFileName();
+
+            try
+            {
+                var fileStream = AsyncFile.Create(tempPath);
+                Stream? downloadStream = null;
+                try
+                {
+                    downloadStream = await HttpClientFactory
+                        .CreateClient(NamedClient.Default)
+                        .GetStreamAsync(url)
+                        .ConfigureAwait(false);
+
+                    await downloadStream.CopyToAsync(fileStream).ConfigureAwait(false);
+                }
+                finally
+                {
+                    await fileStream.DisposeAsync().ConfigureAwait(false);
+                    if (downloadStream is not null)
+                    {
+                        await downloadStream.DisposeAsync().ConfigureAwait(false);
+                    }
+                }
+
+                File.Move(tempPath, imagePath, true);
+
+                return imagePath;
+            }
+            catch (Exception ex) when (ex is HttpRequestException or IOException or UnauthorizedAccessException)
+            {
+                _logger.LogError(ex, "Failed to download image to path {Path} on disk.", imagePath);
+                TryDeleteFile(tempPath);
+
+                return string.Empty;
+            }
+        }
+
+        private void TryDeleteFile(string path)
+        {
+            try
+            {
+                File.Delete(path);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _logger.LogWarning(ex, "Unable to delete {Path}.", path);
             }
         }
 
