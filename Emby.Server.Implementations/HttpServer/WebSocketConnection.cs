@@ -117,80 +117,18 @@ namespace Emby.Server.Implementations.HttpServer
         /// <inheritdoc />
         public async Task ReceiveAsync(CancellationToken cancellationToken = default)
         {
-            // This loop is both producer and consumer, so pipe backpressure would deadlock it.
-            // The unconsumed byte count is bounded by MaxMessageSize instead.
+            // The receive loop is both producer and consumer, so pipe backpressure would
+            // deadlock it. The unconsumed byte count is bounded by MaxMessageSize instead.
             var pipe = new Pipe(new PipeOptions(pauseWriterThreshold: 0, resumeWriterThreshold: 0));
-            var writer = pipe.Writer;
-            var closeStatus = WebSocketCloseStatus.NormalClosure;
-            long buffered = 0;
+            WebSocketCloseStatus closeStatus;
 
             try
             {
-                ValueWebSocketReceiveResult receiveResult;
-                do
-                {
-                    // Allocate at least 512 bytes from the PipeWriter
-                    Memory<byte> memory = writer.GetMemory(512);
-                    try
-                    {
-                        receiveResult = await _socket.ReceiveAsync(memory, cancellationToken).ConfigureAwait(false);
-                    }
-                    catch (Exception ex) when (IsConnectionGone(ex))
-                    {
-                        // ObjectDisposedException/OperationCanceledException: the socket was torn
-                        // down underneath us (e.g. by the keep-alive watchdog after the connection
-                        // was declared lost). Fall through so Closed is still raised and the
-                        // session can release this connection.
-                        _logger.LogWarning("WS {IP} error receiving data: {Message}", RemoteEndPoint, ex.Message);
-                        break;
-                    }
-
-                    int bytesRead = receiveResult.Count;
-                    if (bytesRead == 0)
-                    {
-                        break;
-                    }
-
-                    buffered += bytesRead;
-                    if (buffered > MaxMessageSize)
-                    {
-                        _logger.LogWarning("WS {IP} message exceeds the {Limit} byte limit", RemoteEndPoint, MaxMessageSize);
-                        closeStatus = WebSocketCloseStatus.MessageTooBig;
-                        break;
-                    }
-
-                    // Tell the PipeWriter how much was read from the Socket
-                    writer.Advance(bytesRead);
-
-                    // Make the data available to the PipeReader
-                    FlushResult flushResult = await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
-                    if (flushResult.IsCompleted)
-                    {
-                        // The PipeReader stopped reading
-                        break;
-                    }
-
-                    LastActivityDate = DateTime.UtcNow;
-
-                    if (receiveResult.EndOfMessage)
-                    {
-                        try
-                        {
-                            buffered -= await ProcessInternal(pipe.Reader).ConfigureAwait(false);
-                        }
-                        catch (Exception ex) when (IsConnectionGone(ex))
-                        {
-                            _logger.LogWarning("WS {IP} error sending data: {Message}", RemoteEndPoint, ex.Message);
-                            break;
-                        }
-                    }
-                }
-                while ((_socket.State == WebSocketState.Open || _socket.State == WebSocketState.Connecting)
-                    && receiveResult.MessageType != WebSocketMessageType.Close);
+                closeStatus = await ReceiveLoopAsync(pipe, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                await writer.CompleteAsync().ConfigureAwait(false);
+                await pipe.Writer.CompleteAsync().ConfigureAwait(false);
                 await pipe.Reader.CompleteAsync().ConfigureAwait(false);
                 Closed?.Invoke(this, EventArgs.Empty);
             }
@@ -212,6 +150,75 @@ namespace Emby.Server.Implementations.HttpServer
                     _logger.LogDebug("WS {IP} error closing connection: {Message}", RemoteEndPoint, ex.Message);
                 }
             }
+        }
+
+        private async Task<WebSocketCloseStatus> ReceiveLoopAsync(Pipe pipe, CancellationToken cancellationToken)
+        {
+            var writer = pipe.Writer;
+            long buffered = 0;
+
+            ValueWebSocketReceiveResult receiveResult;
+            do
+            {
+                // Allocate at least 512 bytes from the PipeWriter
+                Memory<byte> memory = writer.GetMemory(512);
+                try
+                {
+                    receiveResult = await _socket.ReceiveAsync(memory, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (IsConnectionGone(ex))
+                {
+                    // ObjectDisposedException/OperationCanceledException: the socket was torn
+                    // down underneath us (e.g. by the keep-alive watchdog after the connection
+                    // was declared lost). Fall through so Closed is still raised and the
+                    // session can release this connection.
+                    _logger.LogWarning("WS {IP} error receiving data: {Message}", RemoteEndPoint, ex.Message);
+                    break;
+                }
+
+                int bytesRead = receiveResult.Count;
+                if (bytesRead == 0)
+                {
+                    break;
+                }
+
+                buffered += bytesRead;
+                if (buffered > MaxMessageSize)
+                {
+                    _logger.LogWarning("WS {IP} message exceeds the {Limit} byte limit", RemoteEndPoint, MaxMessageSize);
+                    return WebSocketCloseStatus.MessageTooBig;
+                }
+
+                // Tell the PipeWriter how much was read from the Socket
+                writer.Advance(bytesRead);
+
+                // Make the data available to the PipeReader
+                FlushResult flushResult = await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+                if (flushResult.IsCompleted)
+                {
+                    // The PipeReader stopped reading
+                    break;
+                }
+
+                LastActivityDate = DateTime.UtcNow;
+
+                if (receiveResult.EndOfMessage)
+                {
+                    try
+                    {
+                        buffered -= await ProcessInternal(pipe.Reader).ConfigureAwait(false);
+                    }
+                    catch (Exception ex) when (IsConnectionGone(ex))
+                    {
+                        _logger.LogWarning("WS {IP} error sending data: {Message}", RemoteEndPoint, ex.Message);
+                        break;
+                    }
+                }
+            }
+            while ((_socket.State == WebSocketState.Open || _socket.State == WebSocketState.Connecting)
+                && receiveResult.MessageType != WebSocketMessageType.Close);
+
+            return WebSocketCloseStatus.NormalClosure;
         }
 
         private static bool IsConnectionGone(Exception ex)
@@ -345,7 +352,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             catch (Exception ex) when (ex is WebSocketException or ObjectDisposedException or OperationCanceledException)
             {
-                _logger.LogWarning("WS {IP} error sending the close frame: {Message}", RemoteEndPoint, ex.Message);
+                _logger.LogWarning(ex, "WS {IP} error sending the close frame", RemoteEndPoint);
             }
             finally
             {
