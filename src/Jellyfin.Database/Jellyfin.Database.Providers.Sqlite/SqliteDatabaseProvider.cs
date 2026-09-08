@@ -182,16 +182,31 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     }
 
     /// <inheritdoc />
-    public Task<string> MigrationBackupFast(CancellationToken cancellationToken)
+    public async Task<string> MigrationBackupFast(CancellationToken cancellationToken)
     {
-        var key = DateTime.UtcNow.ToString("yyyyMMddhhmmss", CultureInfo.InvariantCulture);
         var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
-        var backupFile = Path.Combine(_applicationPaths.DataPath, BackupFolderName);
-        Directory.CreateDirectory(backupFile);
+        var backupFolder = Path.Combine(_applicationPaths.DataPath, BackupFolderName);
+        Directory.CreateDirectory(backupFolder);
 
-        backupFile = Path.Combine(backupFile, $"{key}_jellyfin.db");
+        if (DbContextFactory is not null && File.Exists(path))
+        {
+            var context = await DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+            await using (context.ConfigureAwait(false))
+            {
+                await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        var key = DateTime.UtcNow.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture);
+        var backupFile = Path.Combine(backupFolder, $"{key}_jellyfin.db");
+        for (var attempt = 1; File.Exists(backupFile); attempt++)
+        {
+            key = string.Create(CultureInfo.InvariantCulture, $"{DateTime.UtcNow:yyyyMMddHHmmss}_{attempt}");
+            backupFile = Path.Combine(backupFolder, $"{key}_jellyfin.db");
+        }
+
         File.Copy(path, backupFile);
-        return Task.FromResult(key);
+        return key;
     }
 
     /// <inheritdoc />
