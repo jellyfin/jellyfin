@@ -224,6 +224,10 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         }
 
         File.Copy(backupFile, path, true);
+
+        File.Delete(path + "-wal");
+        File.Delete(path + "-shm");
+
         return Task.CompletedTask;
     }
 
