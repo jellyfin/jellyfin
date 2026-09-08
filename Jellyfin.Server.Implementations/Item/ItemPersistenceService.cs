@@ -312,6 +312,21 @@ public class ItemPersistenceService : IItemPersistenceService
             .AsEnumerable()
             .Where(e => allListedItemValuesSet.Contains((e.Type, e.Value)))
             .ToArray();
+
+        // Repair any existing ItemValue whose CleanValue no longer matches what GetCleanValue()
+        // would produce today (e.g. it was written before a change to the cleaning algorithm).
+        // By-name views (Artists, Genres, Studios, ...) join on CleanValue == BaseItem.CleanName,
+        // so a stale CleanValue leaves an item permanently unmatchable there. A rescan alone never
+        // corrects it, because the lookup above only keys on Type/Value, not CleanValue.
+        foreach (var existingValue in existingValues)
+        {
+            var correctCleanValue = existingValue.Value.GetCleanValue();
+            if (!string.Equals(existingValue.CleanValue, correctCleanValue, StringComparison.Ordinal))
+            {
+                existingValue.CleanValue = correctCleanValue;
+            }
+        }
+
         var missingItemValues = allListedItemValues.Except(existingValues.Select(f => (MagicNumber: f.Type, f.Value))).Select(f => new ItemValue()
         {
             CleanValue = f.Value.GetCleanValue(),
