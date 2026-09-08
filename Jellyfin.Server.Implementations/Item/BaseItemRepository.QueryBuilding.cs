@@ -393,8 +393,8 @@ public sealed partial class BaseItemRepository
         // This generates a single: SELECT SeriesPresentationUniqueKey, MAX(LastPlayedDate) ... GROUP BY
         // instead of a correlated subquery per outer row.
         IQueryable<UserData> userDataQuery = filter.User is not null
-            ? context.UserData.Where(ud => ud.UserId == filter.User.Id && ud.Played)
-            : context.UserData.Where(ud => ud.Played);
+            ? context.UserData.Where(ud => ud.UserId == filter.User.Id)
+            : context.UserData;
 
         var seriesMaxDates = userDataQuery
             .Join(
