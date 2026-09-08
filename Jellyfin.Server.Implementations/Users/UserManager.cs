@@ -853,9 +853,10 @@ namespace Jellyfin.Server.Implementations.Users
                 var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
                 await using (dbContext.ConfigureAwait(false))
                 {
-                    user = UserQuery(dbContext)
+                    user = await UserQuery(dbContext)
                         .AsTracking()
-                        .FirstOrDefault(u => u.Id.Equals(userId))
+                        .FirstOrDefaultAsync(u => u.Id.Equals(userId))
+                        .ConfigureAwait(false)
                         ?? throw new ArgumentException("No user exists with given Id!");
 
                     // The default number of login attempts is 3, but for some god forsaken reason it's sent to the server as "0"
