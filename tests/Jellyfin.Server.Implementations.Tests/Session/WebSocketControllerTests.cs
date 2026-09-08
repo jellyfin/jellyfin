@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Session;
 using MediaBrowser.Controller.Net;
@@ -45,6 +48,37 @@ public class WebSocketControllerTests
         socket.Verify(s => s.DisposeAsync(), Times.Once());
     }
 
+    [Fact]
+    public async Task OnConnectionClosed_AfterDispose_DoesNotThrow()
+    {
+        var socket = new Mock<IWebSocketConnection>();
+        socket.Setup(s => s.DisposeAsync()).Returns(ValueTask.CompletedTask);
+
+        var controller = CreateController();
+        controller.AddWebSocket(socket.Object);
+        await controller.DisposeAsync();
+
+        var handler = typeof(WebSocketController)
+            .GetMethod("OnConnectionClosed", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.NotNull(handler);
+
+        // The handler is async void, so a throw goes to the synchronization context rather than
+        // to the caller. On the thread pool it would terminate the process.
+        var context = new CapturingSynchronizationContext();
+        var previous = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(context);
+        try
+        {
+            handler!.Invoke(controller, new object?[] { socket.Object, EventArgs.Empty });
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+        }
+
+        Assert.Empty(context.Exceptions);
+    }
+
     private static WebSocketController CreateController()
     {
         var sessionManager = Mock.Of<ISessionManager>();
@@ -52,5 +86,26 @@ public class WebSocketControllerTests
             NullLogger<WebSocketController>.Instance,
             new SessionInfo(sessionManager, NullLogger<SessionInfo>.Instance),
             sessionManager);
+    }
+
+    private sealed class CapturingSynchronizationContext : SynchronizationContext
+    {
+        public List<Exception> Exceptions { get; } = new List<Exception>();
+
+        public override void Post(SendOrPostCallback d, object? state) => Run(d, state);
+
+        public override void Send(SendOrPostCallback d, object? state) => Run(d, state);
+
+        private void Run(SendOrPostCallback d, object? state)
+        {
+            try
+            {
+                d(state);
+            }
+            catch (Exception ex)
+            {
+                Exceptions.Add(ex);
+            }
+        }
     }
 }
