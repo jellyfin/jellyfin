@@ -111,6 +111,20 @@ namespace Jellyfin.Server.Implementations.Tests.HttpServer
             Assert.Equal(1, closed);
         }
 
+        [Fact]
+        public async Task DisposeAsync_CloseOutputFails_StillDisposesSocket()
+        {
+            var socket = new ScriptedWebSocket
+            {
+                CloseOutputException = new WebSocketException(WebSocketError.ConnectionClosedPrematurely)
+            };
+            var con = new WebSocketConnection(new NullLogger<WebSocketConnection>(), socket, null!, null!);
+
+            await con.DisposeAsync().ConfigureAwait(true);
+
+            Assert.True(socket.IsDisposed);
+        }
+
         private static byte[] Message(string data)
             => Raw($"{{\"MessageType\":\"SessionsStart\",\"Data\":\"{data}\"}}");
 

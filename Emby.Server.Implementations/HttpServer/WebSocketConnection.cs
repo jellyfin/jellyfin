@@ -317,12 +317,21 @@ namespace Emby.Server.Implementations.HttpServer
         /// <returns>A ValueTask.</returns>
         protected virtual async ValueTask DisposeAsyncCore()
         {
-            if (_socket.State == WebSocketState.Open)
+            try
             {
-                await _socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "System Shutdown", CancellationToken.None).ConfigureAwait(false);
+                if (_socket.State == WebSocketState.Open)
+                {
+                    await _socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "System Shutdown", CancellationToken.None).ConfigureAwait(false);
+                }
             }
-
-            _socket.Dispose();
+            catch (Exception ex) when (ex is WebSocketException or ObjectDisposedException or OperationCanceledException)
+            {
+                _logger.LogWarning("WS {IP} error sending the close frame: {Message}", RemoteEndPoint, ex.Message);
+            }
+            finally
+            {
+                _socket.Dispose();
+            }
         }
     }
 }
