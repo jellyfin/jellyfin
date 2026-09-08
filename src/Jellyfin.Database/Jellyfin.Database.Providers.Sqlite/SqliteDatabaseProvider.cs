@@ -84,7 +84,14 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         _tempStoreMode = GetOption(customOptions, "tempstoremode", int.Parse, () => 2);
 
         var dataSourceDirectory = Path.GetDirectoryName(dataSource);
-        if (!OperatingSystem.IsWindows() && Directory.Exists(dataSourceDirectory))
+        var configuredTempDirectory = Environment.GetEnvironmentVariable("SQLITE_TMPDIR");
+        if (!string.IsNullOrEmpty(configuredTempDirectory))
+        {
+            // Somebody pointed this somewhere on purpose, so leave it alone. Logged because it decides where the
+            // VACUUM copy lands, which is the first thing to check when that runs out of space.
+            _logger.LogInformation("SQLITE_TMPDIR is already set to {TempDirectory}, leaving it unchanged", configuredTempDirectory);
+        }
+        else if (!OperatingSystem.IsWindows() && Directory.Exists(dataSourceDirectory))
         {
             Environment.SetEnvironmentVariable("SQLITE_TMPDIR", dataSourceDirectory);
             _logger.LogInformation("SQLITE_TMPDIR set to: {TempDirectory}", dataSourceDirectory);
@@ -231,12 +238,53 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             return Task.CompletedTask;
         }
 
+        if (!TryRetireWriteAheadLog(path))
+        {
+            _logger.LogCritical(
+                "Refusing to restore jellyfin.db: the write-ahead log at {WriteAheadLog} could not be retired, which "
+                + "means the database is still open and replacing it now would silently bring back the data this "
+                + "rollback is undoing. Stop the server and copy {Backup} over {Path} by hand.",
+                path + "-wal",
+                backupFile,
+                path);
+            return Task.CompletedTask;
+        }
+
         File.Copy(backupFile, path, true);
 
-        File.Delete(path + "-wal");
-        File.Delete(path + "-shm");
-
         return Task.CompletedTask;
+    }
+
+    private bool TryRetireWriteAheadLog(string path)
+    {
+        var writeAheadLogPath = path + "-wal";
+        if (!File.Exists(path) || !File.Exists(writeAheadLogPath))
+        {
+            return true;
+        }
+
+        try
+        {
+            var connectionString = new SqliteConnectionStringBuilder
+            {
+                DataSource = path,
+                Mode = SqliteOpenMode.ReadWrite,
+                Pooling = false
+            }.ToString();
+
+            using var connection = new SqliteConnection(connectionString);
+            connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = "PRAGMA wal_checkpoint(TRUNCATE)";
+            command.ExecuteNonQuery();
+        }
+        catch (SqliteException ex)
+        {
+            // Either something else holds the database or it is too damaged to open. The check below covers both.
+            _logger.LogError(ex, "Could not open jellyfin.db to retire its write-ahead log");
+        }
+
+        return !File.Exists(writeAheadLogPath);
     }
 
     /// <inheritdoc />
