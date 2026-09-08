@@ -112,6 +112,32 @@ namespace Jellyfin.Server.Implementations.Tests.HttpServer
         }
 
         [Fact]
+        public async Task ReceiveAsync_MessageAtSizeLimit_IsProcessed()
+        {
+            var payload = Message(new string('a', (64 * 1024) - Message(string.Empty).Length));
+            Assert.Equal(64 * 1024, payload.Length);
+
+            var socket = new ScriptedWebSocket(payload);
+            var received = 0;
+            var con = new WebSocketConnection(new NullLogger<WebSocketConnection>(), socket, null!, null!)
+            {
+                OnReceive = _ =>
+                {
+                    received++;
+                    return Task.CompletedTask;
+                }
+            };
+
+            var receive = con.ReceiveAsync(TestContext.Current.CancellationToken);
+            var finished = await Task.WhenAny(receive, Task.Delay(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+            Assert.Same(receive, finished);
+            await receive.ConfigureAwait(true);
+            Assert.Equal(1, received);
+            Assert.Equal(WebSocketCloseStatus.NormalClosure, socket.CloseStatusSent);
+        }
+
+        [Fact]
         public async Task DisposeAsync_CloseOutputFails_StillDisposesSocket()
         {
             var socket = new ScriptedWebSocket
