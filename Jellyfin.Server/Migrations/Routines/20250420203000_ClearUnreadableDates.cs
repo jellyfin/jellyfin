@@ -15,8 +15,8 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// Migration to clear date values the database cannot read back, which would otherwise abort every
 /// later migration that materialises the row.
 /// </summary>
-[JellyfinMigration("2025-04-20T20:30:00", nameof(RepairInvalidDates))]
-public class RepairInvalidDates : IAsyncMigrationRoutine
+[JellyfinMigration("2025-04-20T20:30:00", nameof(ClearUnreadableDates))]
+public class ClearUnreadableDates : IAsyncMigrationRoutine
 {
     // Columns that cannot hold NULL take the value a default(DateTime) round trips as.
     private const string UnknownDate = "0001-01-01 00:00:00";
@@ -25,14 +25,14 @@ public class RepairInvalidDates : IAsyncMigrationRoutine
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RepairInvalidDates"/> class.
+    /// Initializes a new instance of the <see cref="ClearUnreadableDates"/> class.
     /// </summary>
     /// <param name="logger">The logger.</param>
     /// <param name="startupLogger">The startup logger for Startup UI integration.</param>
     /// <param name="dbProvider">Instance of the <see cref="IDbContextFactory{JellyfinDbContext}"/> interface.</param>
-    public RepairInvalidDates(
-        ILogger<RepairInvalidDates> logger,
-        IStartupLogger<RepairInvalidDates> startupLogger,
+    public ClearUnreadableDates(
+        ILogger<ClearUnreadableDates> logger,
+        IStartupLogger<ClearUnreadableDates> startupLogger,
         IDbContextFactory<JellyfinDbContext> dbProvider)
     {
         _logger = startupLogger.With(logger);

@@ -19,7 +19,7 @@ namespace Jellyfin.Server.Tests.Migrations;
 /// A date the database holds but cannot read back aborts every later migration that materialises
 /// the row, which is what blocks the upgrade in jellyfin/jellyfin#17849.
 /// </summary>
-public sealed class RepairInvalidDatesTests : IAsyncDisposable
+public sealed class ClearUnreadableDatesTests : IAsyncDisposable
 {
     // Seconds are out of range, so neither SQLite nor DateTime.Parse can read this value.
     private const string UnreadableDate = "2023-01-17 03:02:94.3383473";
@@ -28,7 +28,7 @@ public sealed class RepairInvalidDatesTests : IAsyncDisposable
     private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly Guid _itemId = Guid.NewGuid();
 
-    public RepairInvalidDatesTests()
+    public ClearUnreadableDatesTests()
     {
         _connection = new SqliteConnection("Data Source=:memory:");
         _connection.Open();
@@ -140,14 +140,14 @@ public sealed class RepairInvalidDatesTests : IAsyncDisposable
             TestContext.Current.CancellationToken).ConfigureAwait(true);
     }
 
-    private RepairInvalidDates CreateMigration()
+    private ClearUnreadableDates CreateMigration()
     {
         var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
         factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>())).ReturnsAsync(CreateDbContext);
 
-        return new RepairInvalidDates(
-            NullLogger<RepairInvalidDates>.Instance,
-            new StartupLogger<RepairInvalidDates>(NullLogger<RepairInvalidDates>.Instance),
+        return new ClearUnreadableDates(
+            NullLogger<ClearUnreadableDates>.Instance,
+            new StartupLogger<ClearUnreadableDates>(NullLogger<ClearUnreadableDates>.Instance),
             factory.Object);
     }
 
