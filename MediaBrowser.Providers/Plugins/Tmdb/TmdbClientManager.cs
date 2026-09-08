@@ -568,8 +568,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return null;
             }
 
-            // Use "original" as default size if size is null or empty to prevent malformed URLs
-            var imageSize = string.IsNullOrEmpty(size) ? "original" : size;
+            // Use the original size as default if size is null or empty to prevent malformed URLs
+            var imageSize = string.IsNullOrEmpty(size) ? TmdbUtils.OriginalImageSize : size;
 
             return _tmDbClient.GetImageUrl(imageSize, path, true).ToString();
         }
@@ -660,7 +660,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         private IEnumerable<RemoteImageInfo> ConvertToRemoteImageInfo(IReadOnlyList<ImageData> images, string? size, ImageType type, string requestLanguage)
         {
             // sizes provided are for original resolution, don't store them when downloading scaled images
-            var scaleImage = !string.Equals(size, "original", StringComparison.OrdinalIgnoreCase);
+            var scaleImage = !TmdbUtils.IsOriginalImageSize(size);
 
             for (var i = 0; i < images.Count; i++)
             {
