@@ -25,6 +25,8 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     private readonly IApplicationPaths _applicationPaths;
     private readonly ILogger<SqliteDatabaseProvider> _logger;
 
+    private int _tempStoreMode = 2;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteDatabaseProvider"/> class.
     /// </summary>
@@ -60,9 +62,11 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 
         var customOptions = databaseConfiguration.CustomProviderOptions?.Options;
 
+        var dataSource = GetOption(customOptions, "path", e => e, () => Path.Combine(_applicationPaths.DataPath, "jellyfin.db"))!;
+
         var sqliteConnectionBuilder = new SqliteConnectionStringBuilder
         {
-            DataSource = GetOption(customOptions, "path", e => e, () => Path.Combine(_applicationPaths.DataPath, "jellyfin.db")),
+            DataSource = dataSource,
             // Private, not Default: sqlite3_enable_shared_cache is process-global, so a plugin
             // enabling it makes these connections share a cache too. Contention then surfaces as
             // SQLITE_LOCKED ("database table is locked"), which the busy handler does not cover,
@@ -77,6 +81,15 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         // Log SQLite connection parameters
         _logger.LogInformation("SQLite connection string: {ConnectionString}", connectionString);
 
+        _tempStoreMode = GetOption(customOptions, "tempstoremode", int.Parse, () => 2);
+
+        var dataSourceDirectory = Path.GetDirectoryName(dataSource);
+        if (!OperatingSystem.IsWindows() && Directory.Exists(dataSourceDirectory))
+        {
+            Environment.SetEnvironmentVariable("SQLITE_TMPDIR", dataSourceDirectory);
+            _logger.LogInformation("SQLITE_TMPDIR set to: {TempDirectory}", dataSourceDirectory);
+        }
+
         options
             .UseSqlite(
                 connectionString,
@@ -90,7 +103,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
                 GetOption<int?>(customOptions, "cacheSize", e => int.Parse(e, CultureInfo.InvariantCulture)),
                 GetOption(customOptions, "lockingmode", e => e, () => "NORMAL")!,
                 GetOption(customOptions, "journalsizelimit", int.Parse, () => 134_217_728),
-                GetOption(customOptions, "tempstoremode", int.Parse, () => 2),
+                _tempStoreMode,
                 GetOption(customOptions, "syncmode", int.Parse, () => 1),
                 customOptions?.Where(e => e.Key.StartsWith("#PRAGMA:", StringComparison.OrdinalIgnoreCase)).ToDictionary(e => e.Key["#PRAGMA:".Length..], e => e.Value) ?? []));
 
@@ -142,7 +155,19 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         await using (context.ConfigureAwait(false))
         {
             await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
-            await context.Database.ExecuteSqlRawAsync("VACUUM", cancellationToken).ConfigureAwait(false);
+            await context.Database.ExecuteSqlRawAsync("PRAGMA temp_store=1", cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await context.Database.ExecuteSqlRawAsync("VACUUM", cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                // The connection goes back to the pool, so hand it over with the configured mode again.
+                await context.Database.ExecuteSqlRawAsync(
+                    FormattableString.Invariant($"PRAGMA temp_store={_tempStoreMode}"),
+                    CancellationToken.None).ConfigureAwait(false);
+            }
+
             await context.Database.ExecuteSqlRawAsync("PRAGMA analysis_limit=0", cancellationToken).ConfigureAwait(false);
             await context.Database.ExecuteSqlRawAsync("ANALYZE", cancellationToken).ConfigureAwait(false);
             await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
