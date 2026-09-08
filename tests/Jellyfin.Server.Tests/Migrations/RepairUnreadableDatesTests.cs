@@ -19,20 +19,23 @@ namespace Jellyfin.Server.Tests.Migrations;
 /// A date the database holds but cannot read back aborts every later migration that materialises
 /// the row, which is what blocks the upgrade in jellyfin/jellyfin#17849.
 /// </summary>
-public sealed class ClearUnreadableDatesTests : IAsyncDisposable
+public sealed class RepairUnreadableDatesTests : IAsyncDisposable
 {
     // Seconds are out of range, so neither SQLite nor DateTime.Parse can read this value. Everything
     // up to the minute is intact, which is what a single flipped bit in one byte looks like.
     private const string UnreadableDate = "2023-01-17 03:02:94.3383473";
 
-    // The hour is out of range, so nothing before it can be trusted either.
-    private const string UnsalvageableDate = "2023-01-17 94:02:04.3383473";
+    // The hour is out of range, so only the date in front of it survives.
+    private const string UnreadableHour = "2023-01-17 94:02:04.3383473";
+
+    // The month is out of range, so keeping anything would mean inventing it.
+    private const string UnsalvageableDate = "2023-94-17 03:02:04.3383473";
 
     private readonly SqliteConnection _connection;
     private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly Guid _itemId = Guid.NewGuid();
 
-    public ClearUnreadableDatesTests()
+    public RepairUnreadableDatesTests()
     {
         _connection = new SqliteConnection("Data Source=:memory:");
         _connection.Open();
@@ -65,7 +68,20 @@ public sealed class ClearUnreadableDatesTests : IAsyncDisposable
     }
 
     [Fact]
-    public async Task PerformAsync_UnreadableHour_ClearsTheValue()
+    public async Task PerformAsync_UnreadableHour_KeepsTheValueToTheDay()
+    {
+        await SeedAsync(UnreadableHour).ConfigureAwait(true);
+
+        await CreateMigration().PerformAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        await using var context = CreateDbContext();
+        var item = await context.BaseItems.AsNoTracking().SingleAsync(e => e.Id.Equals(_itemId), TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        Assert.Equal(new DateTime(2023, 1, 17, 0, 0, 0, DateTimeKind.Utc), item.DateCreated);
+    }
+
+    [Fact]
+    public async Task PerformAsync_UnreadableMonth_ClearsTheValue()
     {
         await SeedAsync(UnsalvageableDate).ConfigureAwait(true);
 
@@ -157,14 +173,14 @@ public sealed class ClearUnreadableDatesTests : IAsyncDisposable
             TestContext.Current.CancellationToken).ConfigureAwait(true);
     }
 
-    private ClearUnreadableDates CreateMigration()
+    private RepairUnreadableDates CreateMigration()
     {
         var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
         factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>())).ReturnsAsync(CreateDbContext);
 
-        return new ClearUnreadableDates(
-            NullLogger<ClearUnreadableDates>.Instance,
-            new StartupLogger<ClearUnreadableDates>(NullLogger<ClearUnreadableDates>.Instance),
+        return new RepairUnreadableDates(
+            NullLogger<RepairUnreadableDates>.Instance,
+            new StartupLogger<RepairUnreadableDates>(NullLogger<RepairUnreadableDates>.Instance),
             factory.Object);
     }
 

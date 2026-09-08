@@ -13,11 +13,11 @@ namespace Jellyfin.Server.Migrations.Routines;
 
 /// <summary>
 /// Migration to repair date values the database cannot read back, which would otherwise abort every
-/// later migration that materialises the row. What can be salvaged is kept to the minute, and the rest
-/// is cleared.
+/// later migration that materialises the row. As much of the value as still parses is kept, to the
+/// minute or failing that to the day, and what is left is cleared.
 /// </summary>
-[JellyfinMigration("2025-04-20T20:30:00", nameof(ClearUnreadableDates))]
-public class ClearUnreadableDates : IAsyncMigrationRoutine
+[JellyfinMigration("2025-04-20T20:30:00", nameof(RepairUnreadableDates))]
+public class RepairUnreadableDates : IAsyncMigrationRoutine
 {
     // Columns that cannot hold NULL take the value a default(DateTime) round trips as.
     private const string UnknownDate = "0001-01-01 00:00:00";
@@ -26,14 +26,14 @@ public class ClearUnreadableDates : IAsyncMigrationRoutine
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ClearUnreadableDates"/> class.
+    /// Initializes a new instance of the <see cref="RepairUnreadableDates"/> class.
     /// </summary>
     /// <param name="logger">The logger.</param>
     /// <param name="startupLogger">The startup logger for Startup UI integration.</param>
     /// <param name="dbProvider">Instance of the <see cref="IDbContextFactory{JellyfinDbContext}"/> interface.</param>
-    public ClearUnreadableDates(
-        ILogger<ClearUnreadableDates> logger,
-        IStartupLogger<ClearUnreadableDates> startupLogger,
+    public RepairUnreadableDates(
+        ILogger<RepairUnreadableDates> logger,
+        IStartupLogger<RepairUnreadableDates> startupLogger,
         IDbContextFactory<JellyfinDbContext> dbProvider)
     {
         _logger = startupLogger.With(logger);
@@ -90,16 +90,19 @@ public class ClearUnreadableDates : IAsyncMigrationRoutine
         static string Unreadable(string column)
             => $"(typeof(\"{column}\") = 'text' AND datetime(\"{column}\") IS NULL)";
 
-        // Corruption usually lands in one field, so the rest of the string is still good. Keeping the
-        // part up to the minute costs at most 59 seconds and holds the ordering these columns are read
-        // for. SQLite decides whether that part is readable too, and when it is not the value goes.
-        static string SalvageToTheMinute(string column)
-            => $"datetime(substr(\"{column}\", 1, 16))";
+        // Corruption usually lands in one field, so everything before it is still good. Falling back
+        // through minute and then day precision keeps as much as still parses, which holds the ordering
+        // these columns are read for. There is no level between the two: SQLite reads a bare date but
+        // not a date with only an hour. Damage to the day or month leaves nothing to keep without
+        // inventing a component, so those clear. A corrupt year parses fine and never reaches here.
+        static string SalvageTo(string column, int length)
+            => $"datetime(substr(\"{column}\", 1, {length}))";
 
         var assignments = columns.Select(column =>
         {
             var replacement = column.IsNullable ? "NULL" : $"'{UnknownDate}'";
-            return $"\"{column.Name}\" = CASE WHEN {Unreadable(column.Name)} THEN coalesce({SalvageToTheMinute(column.Name)}, {replacement}) ELSE \"{column.Name}\" END";
+            var salvage = $"coalesce({SalvageTo(column.Name, 16)}, {SalvageTo(column.Name, 10)}, {replacement})";
+            return $"\"{column.Name}\" = CASE WHEN {Unreadable(column.Name)} THEN {salvage} ELSE \"{column.Name}\" END";
         });
 
         return $"UPDATE \"{table}\" SET {string.Join(", ", assignments)} WHERE {string.Join(" OR ", columns.Select(column => Unreadable(column.Name)))}";
