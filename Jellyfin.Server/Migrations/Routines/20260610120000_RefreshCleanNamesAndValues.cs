@@ -60,11 +60,11 @@ public class RefreshCleanNamesAndValues : IAsyncMigrationRoutine
                           .WithPartitionProgress((partition) => _logger.LogInformation("Processed: {Offset}/{Total} - Updated: {UpdatedCount} - Time: {Elapsed}", partition * Limit, records, itemCount, sw.Elapsed))
                           .SkippingUnreadableItems(
                               e => e.Id,
-                              (ex, id, row) => _logger.LogError(
+                              (ex, key, index) => _logger.LogError(
                                   ex,
-                                  "Skipping BaseItems row {Row} with key {Key}, which the database cannot read. Repair that row and run the upgrade again to include it",
-                                  row,
-                                  id))
+                                  "Skipping BaseItems row {Key} at index {Index}, it could not be read. Repair the row to include it",
+                                  key,
+                                  index))
                           .PartitionEagerAsync(Limit, cancellationToken)
                           .WithCancellation(cancellationToken)
                           .ConfigureAwait(false))
@@ -132,11 +132,11 @@ public class RefreshCleanNamesAndValues : IAsyncMigrationRoutine
                           .WithPartitionProgress((partition) => _logger.LogInformation("Processed: {Offset}/{Total} - Updated: {UpdatedCount} - Time: {Elapsed}", partition * Limit, records, itemCount, sw.Elapsed))
                           .SkippingUnreadableItems(
                               e => e.ItemValueId,
-                              (ex, id, row) => _logger.LogError(
+                              (ex, key, index) => _logger.LogError(
                                   ex,
-                                  "Skipping ItemValues row {Row} with key {Key}, which the database cannot read. Repair that row and run the upgrade again to include it",
-                                  row,
-                                  id))
+                                  "Skipping ItemValues row {Key} at index {Index}, it could not be read. Repair the row to include it",
+                                  key,
+                                  index))
                           .PartitionEagerAsync(Limit, cancellationToken)
                           .WithCancellation(cancellationToken)
                           .ConfigureAwait(false))

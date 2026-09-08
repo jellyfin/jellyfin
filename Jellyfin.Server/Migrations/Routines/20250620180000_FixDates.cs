@@ -75,11 +75,11 @@ public class FixDates : IAsyncMigrationRoutine
                                     sw.Elapsed))
                         .SkippingUnreadableItems(
                             e => e.Id,
-                            (ex, id, row) => _logger.LogError(
+                            (ex, key, index) => _logger.LogError(
                                 ex,
-                                "Skipping BaseItems row {Row} with key {Key}, which the database cannot read. Repair that row and run the upgrade again to include it",
-                                row,
-                                id))
+                                "Skipping BaseItems row {Key} at index {Index}, it could not be read. Repair the row to include it",
+                                key,
+                                index))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
@@ -116,11 +116,11 @@ public class FixDates : IAsyncMigrationRoutine
                                     sw.Elapsed))
                         .SkippingUnreadableItems(
                             e => e.ItemId,
-                            (ex, id, row) => _logger.LogError(
+                            (ex, key, index) => _logger.LogError(
                                 ex,
-                                "Skipping Chapters row {Row} with key {Key}, which the database cannot read. Repair that row and run the upgrade again to include it",
-                                row,
-                                id))
+                                "Skipping Chapters row {Key} at index {Index}, it could not be read. Repair the row to include it",
+                                key,
+                                index))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
@@ -153,11 +153,11 @@ public class FixDates : IAsyncMigrationRoutine
                                     sw.Elapsed))
                         .SkippingUnreadableItems(
                             e => e.Id,
-                            (ex, id, row) => _logger.LogError(
+                            (ex, key, index) => _logger.LogError(
                                 ex,
-                                "Skipping BaseItemImageInfos row {Row} with key {Key}, which the database cannot read. Repair that row and run the upgrade again to include it",
-                                row,
-                                id))
+                                "Skipping BaseItemImageInfos row {Key} at index {Index}, it could not be read. Repair the row to include it",
+                                key,
+                                index))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
