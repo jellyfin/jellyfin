@@ -311,7 +311,9 @@ internal class ConsolidateLocalizedUserViews : IAsyncMigrationRoutine
             return;
         }
 
-        // written while foreign key enforcement was off.
+        // AncestorIds can carry rows whose item no longer exists in BaseItems
+        // (written while foreign key enforcement was off). Re-inserting those
+        // pairs would fail the FK check, so only resurrect children that exist.
         var existingItemIds = (await dbContext.BaseItems
             .Where(e => items.Contains(e.Id))
             .Select(e => e.Id)
