@@ -847,12 +847,13 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task UpdatePolicyAsync(Guid userId, UserPolicy policy)
         {
+            User user;
             using (await _userLock.LockAsync(userId).ConfigureAwait(false))
             {
                 var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
                 await using (dbContext.ConfigureAwait(false))
                 {
-                    var user = UserQuery(dbContext)
+                    user = UserQuery(dbContext)
                         .AsTracking()
                         .FirstOrDefault(u => u.Id.Equals(userId))
                         ?? throw new ArgumentException("No user exists with given Id!");
@@ -919,6 +920,10 @@ namespace Jellyfin.Server.Implementations.Users
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
                 }
             }
+
+            var eventArgs = new UserUpdatedEventArgs(user);
+            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            OnUserUpdated?.Invoke(this, eventArgs);
         }
 
         /// <inheritdoc/>
