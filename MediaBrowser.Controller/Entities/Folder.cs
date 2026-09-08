@@ -551,7 +551,7 @@ namespace MediaBrowser.Controller.Entities
                             && primaryVideo.OwnerId.IsEmpty()
                             && (primaryVideo.LocalAlternateVersions ?? []).Any(p => alternateVersionPaths.Contains(p)))
                         {
-                            var newPrimary = newItems
+                            var newPrimary = validChildren
                                 .OfType<Video>()
                                 .FirstOrDefault(v => (v.LocalAlternateVersions ?? [])
                                     .Any(p => (primaryVideo.LocalAlternateVersions ?? [])
@@ -593,6 +593,8 @@ namespace MediaBrowser.Controller.Entities
                         newPrimary.Name,
                         newPrimary.Id);
 
+                    await PromoteToPrimaryVersionAsync(newPrimary, cancellationToken).ConfigureAwait(false);
+
                     // Reroute collection/playlist references from old primary to new primary
                     await LibraryManager.RerouteLinkedChildReferencesAsync(oldPrimary.Id, newPrimary.Id).ConfigureAwait(false);
 
@@ -621,9 +623,12 @@ namespace MediaBrowser.Controller.Entities
                     LibraryManager.DeleteItem(oldPrimary, new DeleteOptions { DeleteFileLocation = false }, this, false);
                 }
 
-                // Demote old primaries that are now alternate versions of newly created primaries.
+                // Demote old primaries that are now alternate versions of another primary.
                 // This handles the case where a new file is added that becomes the new primary
-                // (e.g. movie-2 added, movie-3 was primary → movie-3 needs demotion).
+                // (e.g. movie-2 added, movie-3 was primary → movie-3 needs demotion), and the case
+                // where the file that takes over was already in the library and merely traded
+                // places with this one — so the new primary is looked up among all valid children
+                // rather than only the newly created ones.
                 // Items in replacedPrimaries are excluded (already in actuallyRemoved).
                 var oldPrimariesToDemote = new List<(Video OldPrimary, Video NewPrimary)>();
                 foreach (var item in itemsRemoved.Except(actuallyRemoved))
@@ -633,7 +638,7 @@ namespace MediaBrowser.Controller.Entities
                         && !string.IsNullOrEmpty(item.Path)
                         && alternateVersionPaths.Contains(item.Path))
                     {
-                        var newPrimary = newItems
+                        var newPrimary = validChildren
                             .OfType<Video>()
                             .FirstOrDefault(v => (v.LocalAlternateVersions ?? [])
                                 .Any(p => string.Equals(p, item.Path, StringComparison.OrdinalIgnoreCase)));
@@ -652,6 +657,8 @@ namespace MediaBrowser.Controller.Entities
                         oldPrimary.Id,
                         newPrimary.Name,
                         newPrimary.Id);
+
+                    await PromoteToPrimaryVersionAsync(newPrimary, cancellationToken).ConfigureAwait(false);
 
                     // First: update old primary's alternate items to point to new primary.
                     // Order matters — update alternates FIRST so they don't get orphan-deleted
@@ -770,6 +777,23 @@ namespace MediaBrowser.Controller.Entities
                     await RefreshMetadataRecursive(accessibleChildren, refreshOptions, recursive, innerProgress, cancellationToken).ConfigureAwait(false);
                 }
             }
+        }
+
+        private async Task PromoteToPrimaryVersionAsync(Video newPrimary, CancellationToken cancellationToken)
+        {
+            if (!newPrimary.PrimaryVersionId.HasValue && newPrimary.OwnerId.IsEmpty())
+            {
+                return;
+            }
+
+            Logger.LogInformation(
+                "Promoting {Name} ({Id}) to the primary version of its group",
+                newPrimary.Name,
+                newPrimary.Id);
+
+            newPrimary.SetPrimaryVersionId(null);
+            newPrimary.OwnerId = Guid.Empty;
+            await newPrimary.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task RefreshMetadataRecursive(IList<BaseItem> children, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
