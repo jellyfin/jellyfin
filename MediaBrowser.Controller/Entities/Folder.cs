@@ -286,6 +286,27 @@ namespace MediaBrowser.Controller.Entities
             return GetCachedChildren();
         }
 
+        /// <summary>
+        /// Drops the children this folder has materialised, and the ones held by every folder below
+        /// it, without loading anything that is not already in memory.
+        /// </summary>
+        public void ReleaseCachedChildren()
+        {
+            // Cleared before descending, so a folder already on the way down is not walked twice.
+            var children = _children;
+            _children = null;
+
+            if (children is null)
+            {
+                return;
+            }
+
+            foreach (var child in children)
+            {
+                (child as Folder)?.ReleaseCachedChildren();
+            }
+        }
+
         public override double? GetRefreshProgress()
         {
             return ProviderManager.GetRefreshProgress(Id);
@@ -370,6 +391,9 @@ namespace MediaBrowser.Controller.Entities
                 {
                     ProviderManager.OnRefreshComplete(this);
                 }
+
+                // The subtree is done with, so stop holding it.
+                ReleaseCachedChildren();
             }
         }
 
@@ -807,7 +831,14 @@ namespace MediaBrowser.Controller.Entities
                 if (recursive && child is Folder folder)
                 {
                     folder.Children = null; // invalidate cached children.
-                    await folder.RefreshMetadataRecursive(folder.Children.Except([this, child]).ToList(), refreshOptions, true, progress, cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        await folder.RefreshMetadataRecursive(folder.Children.Except([this, child]).ToList(), refreshOptions, true, progress, cancellationToken).ConfigureAwait(false);
+                    }
+                    finally
+                    {
+                        folder.ReleaseCachedChildren();
+                    }
                 }
             }
         }
