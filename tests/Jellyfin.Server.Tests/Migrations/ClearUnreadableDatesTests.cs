@@ -21,8 +21,12 @@ namespace Jellyfin.Server.Tests.Migrations;
 /// </summary>
 public sealed class ClearUnreadableDatesTests : IAsyncDisposable
 {
-    // Seconds are out of range, so neither SQLite nor DateTime.Parse can read this value.
+    // Seconds are out of range, so neither SQLite nor DateTime.Parse can read this value. Everything
+    // up to the minute is intact, which is what a single flipped bit in one byte looks like.
     private const string UnreadableDate = "2023-01-17 03:02:94.3383473";
+
+    // The hour is out of range, so nothing before it can be trusted either.
+    private const string UnsalvageableDate = "2023-01-17 94:02:04.3383473";
 
     private readonly SqliteConnection _connection;
     private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
@@ -41,9 +45,9 @@ public sealed class ClearUnreadableDatesTests : IAsyncDisposable
     }
 
     [Fact]
-    public async Task PerformAsync_UnreadableDate_ClearsItAndLetsTheRowLoad()
+    public async Task PerformAsync_UnreadableSeconds_KeepsTheValueToTheMinute()
     {
-        await SeedAsync().ConfigureAwait(true);
+        await SeedAsync(UnreadableDate).ConfigureAwait(true);
 
         await using (var broken = CreateDbContext())
         {
@@ -57,6 +61,19 @@ public sealed class ClearUnreadableDatesTests : IAsyncDisposable
         var item = await context.BaseItems.AsNoTracking().SingleAsync(e => e.Id.Equals(_itemId), TestContext.Current.CancellationToken).ConfigureAwait(true);
 
         Assert.Equal(_itemId, item.Id);
+        Assert.Equal(new DateTime(2023, 1, 17, 3, 2, 0, DateTimeKind.Utc), item.DateCreated);
+    }
+
+    [Fact]
+    public async Task PerformAsync_UnreadableHour_ClearsTheValue()
+    {
+        await SeedAsync(UnsalvageableDate).ConfigureAwait(true);
+
+        await CreateMigration().PerformAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        await using var context = CreateDbContext();
+        var item = await context.BaseItems.AsNoTracking().SingleAsync(e => e.Id.Equals(_itemId), TestContext.Current.CancellationToken).ConfigureAwait(true);
+
         Assert.Null(item.DateCreated);
     }
 
@@ -100,7 +117,7 @@ public sealed class ClearUnreadableDatesTests : IAsyncDisposable
 
             await seed.Database.ExecuteSqlRawAsync(
                 "UPDATE ActivityLogs SET DateCreated = {0}",
-                [UnreadableDate],
+                [UnsalvageableDate],
                 TestContext.Current.CancellationToken).ConfigureAwait(true);
         }
 
@@ -118,7 +135,7 @@ public sealed class ClearUnreadableDatesTests : IAsyncDisposable
         Assert.Equal(default(DateTime), entry.DateCreated);
     }
 
-    private async Task SeedAsync()
+    private async Task SeedAsync(string storedValue)
     {
         await using var context = CreateDbContext();
         await context.Database.EnsureCreatedAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
@@ -136,7 +153,7 @@ public sealed class ClearUnreadableDatesTests : IAsyncDisposable
         // Written directly, because EF cannot produce a value it is unable to read back.
         await context.Database.ExecuteSqlRawAsync(
             "UPDATE BaseItems SET DateCreated = {0} WHERE Id = {1}",
-            [UnreadableDate, _itemId],
+            [storedValue, _itemId],
             TestContext.Current.CancellationToken).ConfigureAwait(true);
     }
 

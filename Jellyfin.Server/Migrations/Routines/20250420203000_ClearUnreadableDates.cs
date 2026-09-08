@@ -12,8 +12,9 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.Routines;
 
 /// <summary>
-/// Migration to clear date values the database cannot read back, which would otherwise abort every
-/// later migration that materialises the row.
+/// Migration to repair date values the database cannot read back, which would otherwise abort every
+/// later migration that materialises the row. What can be salvaged is kept to the minute, and the rest
+/// is cleared.
 /// </summary>
 [JellyfinMigration("2025-04-20T20:30:00", nameof(ClearUnreadableDates))]
 public class ClearUnreadableDates : IAsyncMigrationRoutine
@@ -89,10 +90,16 @@ public class ClearUnreadableDates : IAsyncMigrationRoutine
         static string Unreadable(string column)
             => $"(typeof(\"{column}\") = 'text' AND datetime(\"{column}\") IS NULL)";
 
+        // Corruption usually lands in one field, so the rest of the string is still good. Keeping the
+        // part up to the minute costs at most 59 seconds and holds the ordering these columns are read
+        // for. SQLite decides whether that part is readable too, and when it is not the value goes.
+        static string SalvageToTheMinute(string column)
+            => $"datetime(substr(\"{column}\", 1, 16))";
+
         var assignments = columns.Select(column =>
         {
             var replacement = column.IsNullable ? "NULL" : $"'{UnknownDate}'";
-            return $"\"{column.Name}\" = CASE WHEN {Unreadable(column.Name)} THEN {replacement} ELSE \"{column.Name}\" END";
+            return $"\"{column.Name}\" = CASE WHEN {Unreadable(column.Name)} THEN coalesce({SalvageToTheMinute(column.Name)}, {replacement}) ELSE \"{column.Name}\" END";
         });
 
         return $"UPDATE \"{table}\" SET {string.Join(", ", assignments)} WHERE {string.Join(" OR ", columns.Select(column => Unreadable(column.Name)))}";
