@@ -58,6 +58,13 @@ public class RefreshCleanNamesAndValues : IAsyncMigrationRoutine
                           .Where(b => !string.IsNullOrEmpty(b.Name))
                           .OrderBy(e => e.Id)
                           .WithPartitionProgress((partition) => _logger.LogInformation("Processed: {Offset}/{Total} - Updated: {UpdatedCount} - Time: {Elapsed}", partition * Limit, records, itemCount, sw.Elapsed))
+                          .SkippingUnreadableItems(
+                              e => e.Id,
+                              (ex, id, row) => _logger.LogError(
+                                  ex,
+                                  "Skipping BaseItems row {Row} with key {Key}, which the database cannot read. Repair that row and run the upgrade again to include it",
+                                  row,
+                                  id))
                           .PartitionEagerAsync(Limit, cancellationToken)
                           .WithCancellation(cancellationToken)
                           .ConfigureAwait(false))
@@ -123,6 +130,13 @@ public class RefreshCleanNamesAndValues : IAsyncMigrationRoutine
                           .Where(b => !string.IsNullOrEmpty(b.Value))
                           .OrderBy(e => e.ItemValueId)
                           .WithPartitionProgress((partition) => _logger.LogInformation("Processed: {Offset}/{Total} - Updated: {UpdatedCount} - Time: {Elapsed}", partition * Limit, records, itemCount, sw.Elapsed))
+                          .SkippingUnreadableItems(
+                              e => e.ItemValueId,
+                              (ex, id, row) => _logger.LogError(
+                                  ex,
+                                  "Skipping ItemValues row {Row} with key {Key}, which the database cannot read. Repair that row and run the upgrade again to include it",
+                                  row,
+                                  id))
                           .PartitionEagerAsync(Limit, cancellationToken)
                           .WithCancellation(cancellationToken)
                           .ConfigureAwait(false))

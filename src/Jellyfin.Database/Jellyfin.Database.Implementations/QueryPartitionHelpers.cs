@@ -2,6 +2,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,32 @@ namespace Jellyfin.Database.Implementations;
 /// </summary>
 public static class QueryPartitionHelpers
 {
+    // A row that cannot be read leaves the enumerator's position undefined. Skipping is only safe while it
+    // keeps moving, so a run of failures with no row in between is treated as a dead reader rather than as
+    // more bad rows.
+    private const int MaxConsecutiveItemFailures = 10;
+
+    /// <summary>
+    /// Reads the key of a row that could not be loaded, so the log can name it. Reading the key alone
+    /// avoids the columns that made the row unreadable, but it is still best effort.
+    /// </summary>
+    private static async Task<object?> ReadKeyAsync<TEntity>(ProgressablePartitionReporting<TEntity> progressablePartition, int rowIndex, CancellationToken cancellationToken)
+    {
+        if (progressablePartition.KeyLookup is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return await progressablePartition.KeyLookup(rowIndex, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
     /// <summary>
     /// Adds a callback to any directly following calls of Partition for every partition thats been invoked.
     /// </summary>
@@ -77,6 +104,46 @@ public static class QueryPartitionHelpers
     }
 
     /// <summary>
+    /// Allows the following calls of Partition to skip rows the database cannot turn into an entity, instead
+    /// of aborting. Without this the enumeration keeps its existing behaviour and the failure propagates.
+    /// </summary>
+    /// <typeparam name="TEntity">The entity to load.</typeparam>
+    /// <typeparam name="TKey">The key to report the offending row by.</typeparam>
+    /// <param name="query">The source query.</param>
+    /// <param name="keySelector">Selects the key to report, read on its own so the unreadable columns are not touched.</param>
+    /// <param name="onItemFailed">Invoked with the failure, the row's key when it could be read, and its index in the query.</param>
+    /// <returns>A queryable that can be used to partition.</returns>
+    public static ProgressablePartitionReporting<TEntity> SkippingUnreadableItems<TEntity, TKey>(
+        this IOrderedQueryable<TEntity> query,
+        Expression<Func<TEntity, TKey>> keySelector,
+        Action<Exception, object?, int> onItemFailed)
+        => new ProgressablePartitionReporting<TEntity>(query).SkippingUnreadableItems(keySelector, onItemFailed);
+
+    /// <summary>
+    /// Allows the following calls of Partition to skip rows the database cannot turn into an entity, instead
+    /// of aborting. Without this the enumeration keeps its existing behaviour and the failure propagates.
+    /// </summary>
+    /// <typeparam name="TEntity">The entity to load.</typeparam>
+    /// <typeparam name="TKey">The key to report the offending row by.</typeparam>
+    /// <param name="progressable">The source query.</param>
+    /// <param name="keySelector">Selects the key to report, read on its own so the unreadable columns are not touched.</param>
+    /// <param name="onItemFailed">Invoked with the failure, the row's key when it could be read, and its index in the query.</param>
+    /// <returns>A queryable that can be used to partition.</returns>
+    public static ProgressablePartitionReporting<TEntity> SkippingUnreadableItems<TEntity, TKey>(
+        this ProgressablePartitionReporting<TEntity> progressable,
+        Expression<Func<TEntity, TKey>> keySelector,
+        Action<Exception, object?, int> onItemFailed)
+    {
+        ArgumentNullException.ThrowIfNull(progressable);
+
+        var source = progressable.Source;
+        progressable.OnItemFailed = onItemFailed;
+        progressable.KeyLookup = async (index, cancellationToken) =>
+            await source.Skip(index).Take(1).Select(keySelector).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        return progressable;
+    }
+
+    /// <summary>
     /// Enumerates the source query by loading the entities in partitions in a lazy manner reading each item from the database as its requested.
     /// </summary>
     /// <typeparam name="TEntity">The entity to load.</typeparam>
@@ -124,27 +191,60 @@ public static class QueryPartitionHelpers
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var iterator = 0;
-        int itemCounter;
+        int rowsRead;
         do
         {
             progressablePartition?.BeginPartition(iterator);
-            itemCounter = 0;
-            await foreach (var item in query
+            var itemCounter = 0;
+            rowsRead = 0;
+            var consecutiveFailures = 0;
+
+            var enumerator = query
                 .Skip(partitionSize * iterator)
                 .Take(partitionSize)
                 .AsAsyncEnumerable()
-                .WithCancellation(cancellationToken)
-                .ConfigureAwait(false))
+                .GetAsyncEnumerator(cancellationToken);
+            await using (enumerator.ConfigureAwait(false))
             {
-                progressablePartition?.BeginItem(item, iterator, itemCounter);
-                yield return item;
-                progressablePartition?.EndItem(item, iterator, itemCounter);
-                itemCounter++;
+                while (true)
+                {
+                    TEntity item;
+                    try
+                    {
+                        if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+                        {
+                            break;
+                        }
+
+                        item = enumerator.Current;
+                        consecutiveFailures = 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        consecutiveFailures++;
+                        if (progressablePartition?.OnItemFailed is null || consecutiveFailures > MaxConsecutiveItemFailures)
+                        {
+                            throw;
+                        }
+
+                        var rowIndex = (partitionSize * iterator) + rowsRead;
+                        progressablePartition.ItemFailed(ex, await ReadKeyAsync(progressablePartition, rowIndex, cancellationToken).ConfigureAwait(false), rowIndex);
+                        rowsRead++;
+                        continue;
+                    }
+
+                    rowsRead++;
+                    progressablePartition?.BeginItem(item, iterator, itemCounter);
+                    yield return item;
+                    progressablePartition?.EndItem(item, iterator, itemCounter);
+                    itemCounter++;
+                }
             }
 
             progressablePartition?.EndPartition(iterator);
             iterator++;
-        } while (itemCounter == partitionSize && !cancellationToken.IsCancellationRequested);
+            // Counting rows rather than yielded items, so a skipped row cannot end the walk early.
+        } while (rowsRead == partitionSize && !cancellationToken.IsCancellationRequested);
     }
 
     /// <summary>
@@ -163,22 +263,52 @@ public static class QueryPartitionHelpers
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var iterator = 0;
-        int itemCounter;
+        int rowsRead;
         var items = ArrayPool<TEntity>.Shared.Rent(partitionSize);
         try
         {
             do
             {
                 progressablePartition?.BeginPartition(iterator);
-                itemCounter = 0;
-                await foreach (var item in query
+                var itemCounter = 0;
+                rowsRead = 0;
+                var consecutiveFailures = 0;
+
+                var enumerator = query
                     .Skip(partitionSize * iterator)
                     .Take(partitionSize)
                     .AsAsyncEnumerable()
-                    .WithCancellation(cancellationToken)
-                    .ConfigureAwait(false))
+                    .GetAsyncEnumerator(cancellationToken);
+                await using (enumerator.ConfigureAwait(false))
                 {
-                    items[itemCounter++] = item;
+                    while (true)
+                    {
+                        try
+                        {
+                            if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+                            {
+                                break;
+                            }
+
+                            items[itemCounter++] = enumerator.Current;
+                            consecutiveFailures = 0;
+                        }
+                        catch (Exception ex)
+                        {
+                            consecutiveFailures++;
+                            if (progressablePartition?.OnItemFailed is null || consecutiveFailures > MaxConsecutiveItemFailures)
+                            {
+                                throw;
+                            }
+
+                            var rowIndex = (partitionSize * iterator) + rowsRead;
+                            progressablePartition.ItemFailed(ex, await ReadKeyAsync(progressablePartition, rowIndex, cancellationToken).ConfigureAwait(false), rowIndex);
+                            rowsRead++;
+                            continue;
+                        }
+
+                        rowsRead++;
+                    }
                 }
 
                 for (int i = 0; i < itemCounter; i++)
@@ -190,7 +320,8 @@ public static class QueryPartitionHelpers
 
                 progressablePartition?.EndPartition(iterator);
                 iterator++;
-            } while (itemCounter == partitionSize && !cancellationToken.IsCancellationRequested);
+                // Counting rows rather than yielded items, so a skipped row cannot end the walk early.
+            } while (rowsRead == partitionSize && !cancellationToken.IsCancellationRequested);
         }
         finally
         {

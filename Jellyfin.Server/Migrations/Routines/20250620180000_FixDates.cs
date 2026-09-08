@@ -73,6 +73,13 @@ public class FixDates : IAsyncMigrationRoutine
                                     Math.Min((partition + 1) * PageSize, records),
                                     records,
                                     sw.Elapsed))
+                        .SkippingUnreadableItems(
+                            e => e.Id,
+                            (ex, id, row) => _logger.LogError(
+                                ex,
+                                "Skipping BaseItems row {Row} with key {Key}, which the database cannot read. Repair that row and run the upgrade again to include it",
+                                row,
+                                id))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
@@ -107,6 +114,13 @@ public class FixDates : IAsyncMigrationRoutine
                                     Math.Min((partition + 1) * PageSize, records),
                                     records,
                                     sw.Elapsed))
+                        .SkippingUnreadableItems(
+                            e => e.ItemId,
+                            (ex, id, row) => _logger.LogError(
+                                ex,
+                                "Skipping Chapters row {Row} with key {Key}, which the database cannot read. Repair that row and run the upgrade again to include it",
+                                row,
+                                id))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
@@ -137,6 +151,13 @@ public class FixDates : IAsyncMigrationRoutine
                                     Math.Min((partition + 1) * PageSize, records),
                                     records,
                                     sw.Elapsed))
+                        .SkippingUnreadableItems(
+                            e => e.Id,
+                            (ex, id, row) => _logger.LogError(
+                                ex,
+                                "Skipping BaseItemImageInfos row {Row} with key {Key}, which the database cannot read. Repair that row and run the upgrade again to include it",
+                                row,
+                                id))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
