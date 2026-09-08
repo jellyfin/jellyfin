@@ -60,7 +60,16 @@ namespace Emby.Server.Implementations.Library
                 var folderViewType = collectionFolder?.CollectionType;
 
                 // Playlist and BoxSet libraries require special handling because the folder only references linked items
-                if (folderViewType == CollectionType.playlists || folderViewType == CollectionType.boxsets)
+                if (folderViewType == CollectionType.boxsets)
+                {
+                    // Only the existence of one visible box set matters here, so probe the children
+                    // lazily and stop at the first hit.
+                    if (!folder.Children.Any(item => item.IsVisible(user)))
+                    {
+                        continue;
+                    }
+                }
+                else if (folderViewType == CollectionType.playlists)
                 {
                     var items = folder.GetItemList(new InternalItemsQuery(user)
                     {
