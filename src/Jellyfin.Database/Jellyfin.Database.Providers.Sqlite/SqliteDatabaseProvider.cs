@@ -137,6 +137,12 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     public async Task RunShutdownTask(CancellationToken cancellationToken)
     {
         // Run before disposing the application. Only a checkpoint: stopping is on a deadline.
+
+        // Empty the pool first. Anything still parked in it can start reading again between here and the
+        // checkpoint, and a reader that holds the write-ahead log open is exactly what makes the truncation
+        // fail. Connections handed out already cannot be taken away, but they get disposed on return.
+        SqliteConnection.ClearAllPools();
+
         try
         {
             if (DbContextFactory is not null)
@@ -155,6 +161,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             _logger.LogError(ex, "Error while checkpointing jellyfin.db");
         }
 
+        // The checkpointing connection went back into the pool, so retire that one as well.
         SqliteConnection.ClearAllPools();
     }
 
