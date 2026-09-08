@@ -367,7 +367,7 @@ public sealed partial class BaseItemRepository
         }
 
         // Add SortName as final tiebreaker
-        if (!hasSearch && (orderBy.Length == 0 || orderBy.All(o => o.OrderBy is not ItemSortBy.SortName and not ItemSortBy.Name)))
+        if (!hasSearch && orderBy.All(o => o.OrderBy is not ItemSortBy.SortName and not ItemSortBy.Name))
         {
             orderedQuery = orderedQuery.ThenBy(ProjectOrderKey(e => e.SortName, itemSelector));
         }
