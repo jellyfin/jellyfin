@@ -61,6 +61,6 @@ public class ProgressablePartitionReporting<TEntity>
 
     internal void ItemFailed(Exception exception, object? key, int rowIndex)
     {
-        OnItemFailed!.Invoke(exception, key, rowIndex);
+        OnItemFailed?.Invoke(exception, key, rowIndex);
     }
 }

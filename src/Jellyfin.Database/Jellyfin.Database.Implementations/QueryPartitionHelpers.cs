@@ -176,6 +176,63 @@ public static class QueryPartitionHelpers
     }
 
     /// <summary>
+    /// Reads one partition into the buffer, skipping rows that cannot be read when the caller asked for
+    /// that. Returns how many entities were buffered and how many rows were consumed, which differ when a
+    /// row was skipped and only the second may decide whether another partition follows.
+    /// </summary>
+    private static async Task<(int ItemCount, int RowsRead)> FillPartitionAsync<TEntity>(
+        IOrderedQueryable<TEntity> query,
+        int partitionSize,
+        int iterator,
+        TEntity[] items,
+        ProgressablePartitionReporting<TEntity>? progressablePartition,
+        CancellationToken cancellationToken)
+    {
+        var itemCounter = 0;
+        var rowsRead = 0;
+        var consecutiveFailures = 0;
+
+        var enumerator = query
+            .Skip(partitionSize * iterator)
+            .Take(partitionSize)
+            .AsAsyncEnumerable()
+            .GetAsyncEnumerator(cancellationToken);
+        await using (enumerator.ConfigureAwait(false))
+        {
+            while (true)
+            {
+                try
+                {
+                    if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+                    {
+                        break;
+                    }
+
+                    items[itemCounter++] = enumerator.Current;
+                    consecutiveFailures = 0;
+                }
+                catch (Exception ex)
+                {
+                    consecutiveFailures++;
+                    if (progressablePartition?.OnItemFailed is null || consecutiveFailures > MaxConsecutiveItemFailures)
+                    {
+                        throw;
+                    }
+
+                    var rowIndex = (partitionSize * iterator) + rowsRead;
+                    progressablePartition.ItemFailed(ex, await ReadKeyAsync(progressablePartition, rowIndex, cancellationToken).ConfigureAwait(false), rowIndex);
+                    rowsRead++;
+                    continue;
+                }
+
+                rowsRead++;
+            }
+        }
+
+        return (itemCounter, rowsRead);
+    }
+
+    /// <summary>
     /// Enumerates the source query by loading the entities in partitions in a lazy manner reading each item from the database as its requested.
     /// </summary>
     /// <typeparam name="TEntity">The entity to load.</typeparam>
@@ -270,46 +327,8 @@ public static class QueryPartitionHelpers
             do
             {
                 progressablePartition?.BeginPartition(iterator);
-                var itemCounter = 0;
-                rowsRead = 0;
-                var consecutiveFailures = 0;
-
-                var enumerator = query
-                    .Skip(partitionSize * iterator)
-                    .Take(partitionSize)
-                    .AsAsyncEnumerable()
-                    .GetAsyncEnumerator(cancellationToken);
-                await using (enumerator.ConfigureAwait(false))
-                {
-                    while (true)
-                    {
-                        try
-                        {
-                            if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
-                            {
-                                break;
-                            }
-
-                            items[itemCounter++] = enumerator.Current;
-                            consecutiveFailures = 0;
-                        }
-                        catch (Exception ex)
-                        {
-                            consecutiveFailures++;
-                            if (progressablePartition?.OnItemFailed is null || consecutiveFailures > MaxConsecutiveItemFailures)
-                            {
-                                throw;
-                            }
-
-                            var rowIndex = (partitionSize * iterator) + rowsRead;
-                            progressablePartition.ItemFailed(ex, await ReadKeyAsync(progressablePartition, rowIndex, cancellationToken).ConfigureAwait(false), rowIndex);
-                            rowsRead++;
-                            continue;
-                        }
-
-                        rowsRead++;
-                    }
-                }
+                int itemCounter;
+                (itemCounter, rowsRead) = await FillPartitionAsync(query, partitionSize, iterator, items, progressablePartition, cancellationToken).ConfigureAwait(false);
 
                 for (int i = 0; i < itemCounter; i++)
                 {
