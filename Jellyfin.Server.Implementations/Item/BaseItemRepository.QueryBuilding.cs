@@ -313,35 +313,11 @@ public sealed partial class BaseItemRepository
         // SeriesDatePlayed requires special handling to avoid correlated subqueries.
         // Instead of running a MAX() subquery per-row in ORDER BY, we pre-aggregate
         // max played dates per series in one query and left-join it.
-        if (!hasSearch && orderBy.Any(o => o.OrderBy == ItemSortBy.SeriesDatePlayed))
+        if ((!hasSearch && orderBy.Any(o => o.OrderBy == ItemSortBy.SeriesDatePlayed))
+            || (orderBy.Any(o => o.OrderBy == ItemSortBy.DatePlayed)
+                && (filter.IncludeItemTypes.Length == 0 || filter.IncludeItemTypes.Contains(BaseItemKind.Series))))
         {
-            return ApplySeriesDatePlayedOrder(query, filter, context, orderBy);
-        }
-
-        if (orderBy.Any(o => o.OrderBy == ItemSortBy.DatePlayed)
-            && (filter.IncludeItemTypes.Length == 0 || filter.IncludeItemTypes.Contains(BaseItemKind.Series)))
-        {
-            // Mixed libraries use DatePlayed. Aggregate episode dates once, as for SeriesDatePlayed.
-            var userData = filter.User is null
-                ? context.UserData
-                : context.UserData.Where(ud => ud.UserId == filter.User.Id);
-            var seriesMaxDates = userData
-                .Join(
-                    context.BaseItems,
-                    ud => ud.ItemId,
-                    bi => bi.Id,
-                    (ud, bi) => new { bi.SeriesPresentationUniqueKey, ud.LastPlayedDate })
-                .Where(x => x.SeriesPresentationUniqueKey != null)
-                .GroupBy(x => x.SeriesPresentationUniqueKey)
-                .Select(g => new { SeriesKey = g.Key!, MaxDate = g.Max(x => x.LastPlayedDate) });
-            var joined = query.LeftJoin(
-                seriesMaxDates,
-                e => e.PresentationUniqueKey,
-                s => s.SeriesKey,
-                (e, s) => new { Item = e, MaxDate = s != null ? s.MaxDate : (DateTime?)null });
-
-            return ApplyOrderCore(joined, filter, context, orderBy, e => e.Item, e => e.MaxDate)
-                .Select(e => e.Item);
+            return ApplyPlaybackDateOrder(query, filter, context, orderBy);
         }
 
         return ApplyOrderCore(query, filter, context, orderBy, e => e);
@@ -355,97 +331,90 @@ public sealed partial class BaseItemRepository
         Expression<Func<T, BaseItemEntity>> itemSelector,
         Expression<Func<T, DateTime?>>? seriesDate = null)
     {
-        Expression<Func<T, TValue>> Project<TValue>(Expression<Func<BaseItemEntity, TValue>> expression)
-            => Expression.Lambda<Func<T, TValue>>(
-                ReplacingExpressionVisitor.Replace(expression.Parameters[0], itemSelector.Body, expression.Body),
-                itemSelector.Parameters);
-
         var hasSearch = !string.IsNullOrEmpty(filter.SearchTerm);
         IOrderedQueryable<T>? orderedQuery = null;
 
-        if (hasSearch)
+        if (!string.IsNullOrEmpty(filter.SearchTerm))
         {
-            var relevanceExpression = Project(OrderMapper.MapSearchRelevanceOrder(filter.SearchTerm!));
+            var relevanceExpression = ProjectOrderKey(OrderMapper.MapSearchRelevanceOrder(filter.SearchTerm), itemSelector);
             orderedQuery = query.OrderBy(relevanceExpression);
         }
 
-        // Folders carry no played flag of their own, so these two keys go through the same predicate
-        // the isPlayed filter uses rather than through the stored-column lookup in OrderMapper.
-        Expression<Func<T, object?>> MapOrderByField(ItemSortBy sortBy)
+        for (var index = 0; index < orderBy.Length; index++)
         {
-            var field = sortBy switch
+            var ordering = orderBy[index];
+            var expression = MapProjectedOrderKey(ordering.OrderBy, filter, context, itemSelector, seriesDate);
+            orderedQuery = (orderedQuery, ordering.SortOrder) switch
             {
-                ItemSortBy.IsPlayed when filter.User is not null
-                    => AsOrderKey(BuildIsPlayedFilter(context, filter.User)),
-                ItemSortBy.IsUnplayed when filter.User is not null
-                    => AsOrderKey(BuildIsPlayedFilter(context, filter.User).Not()),
-                _ => OrderMapper.MapOrderByField(sortBy, filter, context)
+                (null, SortOrder.Ascending) => query.OrderBy(expression),
+                (null, _) => query.OrderByDescending(expression),
+                ({ } ordered, SortOrder.Ascending) => ordered.ThenBy(expression),
+                ({ } ordered, _) => ordered.ThenByDescending(expression)
             };
-            var projected = Project(field);
-            if (sortBy != ItemSortBy.DatePlayed || seriesDate is null)
-            {
-                return projected;
-            }
 
-            var isSeries = Project(e => e.Type == typeof(Series).FullName);
-            var date = ReplacingExpressionVisitor.Replace(seriesDate.Parameters[0], itemSelector.Parameters[0], seriesDate.Body);
-            var itemDate = projected.Body is UnaryExpression { NodeType: ExpressionType.Convert } conversion
-                ? conversion.Operand
-                : projected.Body;
-            return Expression.Lambda<Func<T, object?>>(
-                Expression.Convert(Expression.Condition(isSeries.Body, date, itemDate), typeof(object)),
-                itemSelector.Parameters);
-        }
-
-        if (orderBy.Length > 0)
-        {
-            var firstOrdering = orderBy[0];
-            var expression = MapOrderByField(firstOrdering.OrderBy);
-
-            if (orderedQuery is null)
+            if (index == 0 && ordering.OrderBy is ItemSortBy.Default or ItemSortBy.SortName)
             {
-                orderedQuery = firstOrdering.SortOrder == SortOrder.Ascending
-                    ? query.OrderBy(expression)
-                    : query.OrderByDescending(expression);
-            }
-            else
-            {
-                orderedQuery = firstOrdering.SortOrder == SortOrder.Ascending
-                    ? orderedQuery.ThenBy(expression)
-                    : orderedQuery.ThenByDescending(expression);
-            }
-
-            if (firstOrdering.OrderBy is ItemSortBy.Default or ItemSortBy.SortName)
-            {
-                orderedQuery = firstOrdering.SortOrder == SortOrder.Ascending
-                    ? orderedQuery.ThenBy(Project(e => e.Name))
-                    : orderedQuery.ThenByDescending(Project(e => e.Name));
-            }
-
-            foreach (var item in orderBy.Skip(1))
-            {
-                expression = MapOrderByField(item.OrderBy);
-                orderedQuery = item.SortOrder == SortOrder.Ascending
-                    ? orderedQuery.ThenBy(expression)
-                    : orderedQuery.ThenByDescending(expression);
+                var nameExpression = ProjectOrderKey(e => e.Name, itemSelector);
+                orderedQuery = ordering.SortOrder == SortOrder.Ascending
+                    ? orderedQuery.ThenBy(nameExpression)
+                    : orderedQuery.ThenByDescending(nameExpression);
             }
         }
 
         if (orderedQuery is null)
         {
-            return query.OrderBy(Project(e => e.SortName));
+            return query.OrderBy(ProjectOrderKey(e => e.SortName, itemSelector));
         }
 
         // Add SortName as final tiebreaker
         if (!hasSearch && (orderBy.Length == 0 || orderBy.All(o => o.OrderBy is not ItemSortBy.SortName and not ItemSortBy.Name)))
         {
-            orderedQuery = orderedQuery.ThenBy(Project(e => e.SortName));
+            orderedQuery = orderedQuery.ThenBy(ProjectOrderKey(e => e.SortName, itemSelector));
         }
 
         return orderedQuery;
     }
 
-    private IQueryable<BaseItemEntity> ApplySeriesDatePlayedOrder(
+    private static Expression<Func<T, TValue>> ProjectOrderKey<T, TValue>(
+        Expression<Func<BaseItemEntity, TValue>> expression,
+        Expression<Func<T, BaseItemEntity>> itemSelector)
+        => Expression.Lambda<Func<T, TValue>>(
+            ReplacingExpressionVisitor.Replace(expression.Parameters[0], itemSelector.Body, expression.Body),
+            itemSelector.Parameters);
+
+    private Expression<Func<T, object?>> MapProjectedOrderKey<T>(
+        ItemSortBy sortBy,
+        InternalItemsQuery filter,
+        JellyfinDbContext context,
+        Expression<Func<T, BaseItemEntity>> itemSelector,
+        Expression<Func<T, DateTime?>>? seriesDate)
+    {
+        // Folders use the same played predicate for ordering and filtering.
+        var field = sortBy switch
+        {
+            ItemSortBy.IsPlayed when filter.User is not null
+                => AsOrderKey(BuildIsPlayedFilter(context, filter.User)),
+            ItemSortBy.IsUnplayed when filter.User is not null
+                => AsOrderKey(BuildIsPlayedFilter(context, filter.User).Not()),
+            _ => OrderMapper.MapOrderByField(sortBy, filter, context)
+        };
+        var projected = ProjectOrderKey(field, itemSelector);
+        if (sortBy != ItemSortBy.DatePlayed || seriesDate is null)
+        {
+            return projected;
+        }
+
+        var isSeries = ProjectOrderKey(e => e.Type == typeof(Series).FullName, itemSelector);
+        var date = ReplacingExpressionVisitor.Replace(seriesDate.Parameters[0], itemSelector.Parameters[0], seriesDate.Body);
+        var itemDate = projected.Body is UnaryExpression { NodeType: ExpressionType.Convert } conversion
+            ? conversion.Operand
+            : projected.Body;
+        return Expression.Lambda<Func<T, object?>>(
+            Expression.Convert(Expression.Condition(isSeries.Body, date, itemDate), typeof(object)),
+            itemSelector.Parameters);
+    }
+
+    private IQueryable<BaseItemEntity> ApplyPlaybackDateOrder(
         IQueryable<BaseItemEntity> query,
         InternalItemsQuery filter,
         JellyfinDbContext context,
@@ -466,7 +435,7 @@ public sealed partial class BaseItemRepository
                 (ud, bi) => new { bi.SeriesPresentationUniqueKey, ud.LastPlayedDate })
             .Where(x => x.SeriesPresentationUniqueKey != null)
             .GroupBy(x => x.SeriesPresentationUniqueKey)
-            .Select(g => new { SeriesKey = g.Key!, MaxDate = g.Max(x => x.LastPlayedDate) });
+            .Select(g => new { SeriesKey = g.Key, MaxDate = g.Max(x => x.LastPlayedDate) });
 
         var joined = query.LeftJoin(
             seriesMaxDates,
@@ -474,11 +443,16 @@ public sealed partial class BaseItemRepository
             s => s.SeriesKey,
             (e, s) => new { Item = e, MaxDate = s != null ? s.MaxDate : (DateTime?)null });
 
-        var seriesSort = orderBy.First(o => o.OrderBy == ItemSortBy.SeriesDatePlayed);
+        if (string.IsNullOrEmpty(filter.SearchTerm) && orderBy.Any(o => o.OrderBy == ItemSortBy.SeriesDatePlayed))
+        {
+            var seriesSort = orderBy.First(o => o.OrderBy == ItemSortBy.SeriesDatePlayed);
+            return seriesSort.SortOrder == SortOrder.Ascending
+                ? joined.OrderBy(x => x.MaxDate).ThenBy(x => x.Item.SortName).Select(x => x.Item)
+                : joined.OrderByDescending(x => x.MaxDate).ThenBy(x => x.Item.SortName).Select(x => x.Item);
+        }
 
-        return seriesSort.SortOrder == SortOrder.Ascending
-            ? joined.OrderBy(x => x.MaxDate).ThenBy(x => x.Item.SortName).Select(x => x.Item)
-            : joined.OrderByDescending(x => x.MaxDate).ThenBy(x => x.Item.SortName).Select(x => x.Item);
+        return ApplyOrderCore(joined, filter, context, orderBy, e => e.Item, e => e.MaxDate)
+            .Select(e => e.Item);
     }
 
     /// <summary>
