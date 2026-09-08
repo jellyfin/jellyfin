@@ -130,15 +130,23 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public async Task RunShutdownTask(CancellationToken cancellationToken)
     {
-        // Run before disposing the application
+        // Run before disposing the application. Only a checkpoint: stopping is on a deadline.
         try
         {
-            await OptimizeAsync(cancellationToken).ConfigureAwait(false);
+            if (DbContextFactory is not null)
+            {
+                var context = await DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+                await using (context.ConfigureAwait(false))
+                {
+                    await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
+                }
+            }
         }
         catch (Exception ex)
         {
-            // A missed optimization only costs performance, so never fail the shutdown over this.
-            _logger.LogError(ex, "Error while optimizing jellyfin.db");
+            // A missed checkpoint only leaves a write-ahead log for the next start to replay, so never fail the
+            // shutdown over this.
+            _logger.LogError(ex, "Error while checkpointing jellyfin.db");
         }
 
         SqliteConnection.ClearAllPools();
