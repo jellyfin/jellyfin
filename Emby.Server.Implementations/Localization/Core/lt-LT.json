@@ -96,7 +96,7 @@
     "External": "Išorinis",
     "HearingImpaired": "Su klausos sutrikimais",
     "TaskRefreshTrickplayImages": "Generuoti Trickplay atvaizdus",
-    "TaskRefreshTrickplayImagesDescription": "Sukuria vaizdo įrašų, esančių įgalintose bibliotekose, Trickplay peržiūras.",
+    "TaskRefreshTrickplayImagesDescription": "Sukuria vaizdo įrašų, esančių įjungtose bibliotekose, Trickplay peržiūras.",
     "TaskAudioNormalization": "Garso normalizavimas",
     "TaskAudioNormalizationDescription": "Skenuoja failus, ieškant garso normalizavimo duomenų.",
     "TaskExtractMediaSegments": "Medijos segmentų nuskaitymas",
