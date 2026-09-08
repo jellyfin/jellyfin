@@ -483,7 +483,13 @@ public class ItemCountService : IItemCountService
 
         var includeVirtual = user is null || user.DisplayMissingEpisodes;
 
-        var hierarchicalCounts = dbContext.BaseItems
+        var accessibleItems = dbContext.BaseItems.AsNoTracking();
+        if (user is not null)
+        {
+            accessibleItems = _queryHelpers.ApplyAccessFiltering(dbContext, accessibleItems, new InternalItemsQuery(user));
+        }
+
+        var hierarchicalCounts = accessibleItems
             .Where(b => b.ParentId.HasValue && !b.SeasonId.HasValue && (includeVirtual || !b.IsVirtualItem))
             .WhereOneOrMany(parentIdsArray, b => b.ParentId!.Value)
             .GroupBy(b => b.ParentId!.Value)
@@ -493,20 +499,22 @@ public class ItemCountService : IItemCountService
         // An episode is a child of its season even when it is not stored under one: with a flat
         // structure ParentId points at the series, so counting by ParentId alone leaves the season
         // empty and counts its episodes towards the series instead.
-        var seasonCounts = dbContext.BaseItems
+        var seasonCounts = accessibleItems
             .Where(b => b.SeasonId.HasValue && (includeVirtual || !b.IsVirtualItem))
             .WhereOneOrMany(parentIdsArray, b => b.SeasonId!.Value)
             .GroupBy(b => b.SeasonId!.Value)
             .Select(g => new { SeasonId = g.Key, Count = g.Count() })
             .ToDictionary(x => x.SeasonId, x => x.Count);
 
+        // A linked child counts only when the item it points at is one the user may open.
         var linkedCounts = dbContext.LinkedChildren
             .WhereOneOrMany(parentIdsArray, lc => lc.ParentId)
-            .GroupBy(lc => lc.ParentId)
+            .Join(accessibleItems, lc => lc.ChildId, b => b.Id, (lc, b) => lc.ParentId)
+            .GroupBy(parentId => parentId)
             .Select(g => new { ParentId = g.Key, Count = g.Count() })
             .ToDictionary(x => x.ParentId, x => x.Count);
 
-        var mergedChildCounts = GetMergedChildCounts(dbContext, parentIdsArray, includeVirtual);
+        var mergedChildCounts = GetMergedChildCounts(dbContext, accessibleItems, parentIdsArray, includeVirtual);
 
         var result = new Dictionary<Guid, int>();
         foreach (var parentId in parentIds)
@@ -527,7 +535,11 @@ public class ItemCountService : IItemCountService
         return result;
     }
 
-    private static Dictionary<Guid, int> GetMergedChildCounts(JellyfinDbContext dbContext, IReadOnlyList<Guid> parentIds, bool includeVirtual)
+    private static Dictionary<Guid, int> GetMergedChildCounts(
+        JellyfinDbContext dbContext,
+        IQueryable<BaseItemEntity> accessibleItems,
+        IReadOnlyList<Guid> parentIds,
+        bool includeVirtual)
     {
         var mergedGroups = GetPresentationKeyGroups(dbContext, parentIds)
             .Where(group => group.Value.Count > 1)
@@ -540,14 +552,12 @@ public class ItemCountService : IItemCountService
 
         // Only merged folders.
         var memberIds = mergedGroups.SelectMany(group => group.Value).Distinct().ToArray();
-        var children = dbContext.BaseItems
-            .AsNoTracking()
+        var children = accessibleItems
             .Where(b => b.ParentId.HasValue && !b.SeasonId.HasValue && (includeVirtual || !b.IsVirtualItem))
             .WhereOneOrMany(memberIds, b => b.ParentId!.Value)
             .Select(b => new { ParentId = b.ParentId!.Value, b.Id, b.PresentationUniqueKey })
             .ToArray()
-            .Concat(dbContext.BaseItems
-                .AsNoTracking()
+            .Concat(accessibleItems
                 .Where(b => b.SeasonId.HasValue && (includeVirtual || !b.IsVirtualItem))
                 .WhereOneOrMany(memberIds, b => b.SeasonId!.Value)
                 .Select(b => new { ParentId = b.SeasonId!.Value, b.Id, b.PresentationUniqueKey })
