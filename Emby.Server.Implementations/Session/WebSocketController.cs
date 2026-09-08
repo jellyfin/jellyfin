@@ -79,7 +79,14 @@ namespace Emby.Server.Implementations.Session
         {
             var connection = sender as IWebSocketConnection ?? throw new ArgumentException($"{nameof(sender)} is not of type {nameof(IWebSocketConnection)}", nameof(sender));
             _logger.LogDebug("Removing websocket from session {Session}", _session.Id);
-            ObjectDisposedException.ThrowIf(_disposed != 0, this);
+
+            // A close can arrive after disposal, and this handler is async void, so throwing here
+            // would terminate the process instead of reaching the raiser.
+            if (_disposed != 0)
+            {
+                return;
+            }
+
             try
             {
                 _socketsLock.EnterWriteLock();
