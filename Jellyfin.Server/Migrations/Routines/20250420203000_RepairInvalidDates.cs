@@ -102,6 +102,26 @@ public class RepairInvalidDates : IAsyncMigrationRoutine
     {
         var tables = new Dictionary<string, List<(string Name, bool IsNullable)>>(StringComparer.Ordinal);
 
+        foreach (var (table, column, isNullable) in EnumerateDateColumns(model))
+        {
+            if (!tables.TryGetValue(table, out var columns))
+            {
+                columns = [];
+                tables[table] = columns;
+            }
+
+            // Inheritance and owned types can map several entity types onto one table.
+            if (!columns.Any(known => string.Equals(known.Name, column, StringComparison.Ordinal)))
+            {
+                columns.Add((column, isNullable));
+            }
+        }
+
+        return tables;
+    }
+
+    private static IEnumerable<(string Table, string Column, bool IsNullable)> EnumerateDateColumns(IModel model)
+    {
         foreach (var entityType in model.GetEntityTypes())
         {
             var table = entityType.GetTableName();
@@ -119,21 +139,12 @@ public class RepairInvalidDates : IAsyncMigrationRoutine
                 }
 
                 var column = property.GetColumnName(storeObject);
-                if (column is null || !IsPlainIdentifier(column))
+                if (column is not null && IsPlainIdentifier(column))
                 {
-                    continue;
-                }
-
-                // Inheritance and owned types can map several entity types onto one table.
-                var columns = tables.GetValueOrDefault(table) ?? (tables[table] = []);
-                if (!columns.Any(existing => string.Equals(existing.Name, column, StringComparison.Ordinal)))
-                {
-                    columns.Add((column, property.IsNullable));
+                    yield return (table, column, property.IsNullable);
                 }
             }
         }
-
-        return tables;
     }
 
     private static bool IsPlainIdentifier(string value)
