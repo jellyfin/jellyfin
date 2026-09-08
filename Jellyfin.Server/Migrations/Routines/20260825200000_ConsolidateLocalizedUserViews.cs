@@ -311,6 +311,13 @@ internal class ConsolidateLocalizedUserViews : IAsyncMigrationRoutine
             return;
         }
 
+        // written while foreign key enforcement was off.
+        var existingItemIds = (await dbContext.BaseItems
+            .Where(e => items.Contains(e.Id))
+            .Select(e => e.Id)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false)).ToHashSet();
+            
         // The pair is the primary key, so anything already recorded against the canonical view stays put.
         var existing = await dbContext.AncestorIds
             .Where(e => e.ParentItemId.Equals(canonicalId))
@@ -318,7 +325,7 @@ internal class ConsolidateLocalizedUserViews : IAsyncMigrationRoutine
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        foreach (var itemId in items.Except(existing))
+        foreach (var itemId in items.Except(existing).Where(itemId => existingItemIds.Contains(itemId)))
         {
             dbContext.AncestorIds.Add(new AncestorId
             {
