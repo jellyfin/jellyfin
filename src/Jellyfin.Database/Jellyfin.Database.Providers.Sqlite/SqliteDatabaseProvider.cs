@@ -91,10 +91,9 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             // VACUUM copy lands, which is the first thing to check when that runs out of space.
             _logger.LogInformation("SQLITE_TMPDIR is already set to {TempDirectory}, leaving it unchanged", configuredTempDirectory);
         }
-        else if (!OperatingSystem.IsWindows() && Directory.Exists(dataSourceDirectory))
+        else if (Directory.Exists(dataSourceDirectory))
         {
-            Environment.SetEnvironmentVariable("SQLITE_TMPDIR", dataSourceDirectory);
-            _logger.LogInformation("SQLITE_TMPDIR set to: {TempDirectory}", dataSourceDirectory);
+            SetTemporaryDirectory(dataSourceDirectory);
         }
 
         options
@@ -187,6 +186,25 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             await context.Database.ExecuteSqlRawAsync("ANALYZE", cancellationToken).ConfigureAwait(false);
             await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
             _logger.LogInformation("jellyfin.db optimized successfully!");
+        }
+    }
+
+    private void SetTemporaryDirectory(string directory)
+    {
+        try
+        {
+            using var connection = new SqliteConnection("Data Source=:memory:");
+            connection.Open();
+            using var command = connection.CreateCommand();
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+            command.CommandText = $"PRAGMA temp_store_directory='{directory.Replace("'", "''", StringComparison.Ordinal)}'";
+#pragma warning restore CA2100
+            command.ExecuteNonQuery();
+            _logger.LogInformation("SQLite temporary directory set to: {TempDirectory}", directory);
+        }
+        catch (SqliteException ex)
+        {
+            _logger.LogWarning(ex, "Could not set the SQLite temporary directory to {TempDirectory}", directory);
         }
     }
 
