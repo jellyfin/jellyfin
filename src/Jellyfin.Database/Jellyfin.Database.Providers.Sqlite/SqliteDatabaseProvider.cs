@@ -215,13 +215,17 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 
         // Defer checks until the entire import commits; disabling foreign_keys inside
         // a transaction has no effect.
-        await using var transaction = dbContext.Database.CurrentTransaction is null
-            ? await dbContext.Database.BeginTransactionAsync().ConfigureAwait(false)
-            : null;
         var deleteAllQuery = $"PRAGMA defer_foreign_keys = ON;\n{string.Join('\n', deleteQueries)}";
-        await dbContext.Database.ExecuteSqlRawAsync(deleteAllQuery).ConfigureAwait(false);
-        if (transaction is not null)
+        if (dbContext.Database.CurrentTransaction is not null)
         {
+            await dbContext.Database.ExecuteSqlRawAsync(deleteAllQuery).ConfigureAwait(false);
+            return;
+        }
+
+        var transaction = await dbContext.Database.BeginTransactionAsync().ConfigureAwait(false);
+        await using (transaction.ConfigureAwait(false))
+        {
+            await dbContext.Database.ExecuteSqlRawAsync(deleteAllQuery).ConfigureAwait(false);
             await transaction.CommitAsync().ConfigureAwait(false);
         }
     }

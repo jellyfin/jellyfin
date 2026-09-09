@@ -109,7 +109,7 @@ public sealed class BackupServiceTests : IDisposable
 
         Assert.True(File.Exists(manifest.Path));
 
-        using var archive = await ZipFile.OpenReadAsync(manifest.Path, cancellationToken).ConfigureAwait(true);
+        await using var archive = await ZipFile.OpenReadAsync(manifest.Path, cancellationToken).ConfigureAwait(true);
         await using (var manifestStream = await archive.GetEntry("manifest.json")!.OpenAsync(cancellationToken))
         {
             using var manifestDocument = await JsonDocument.ParseAsync(manifestStream, cancellationToken: cancellationToken);
@@ -139,7 +139,7 @@ public sealed class BackupServiceTests : IDisposable
     public async Task RestoreBackupAsync_InvalidDatabase_PreservesExistingDataAndHistory(string failure)
     {
         var archivePath = await CreateRestoreArchiveAsync();
-        using (var archive = await ZipFile.OpenAsync(archivePath, ZipArchiveMode.Update, TestContext.Current.CancellationToken))
+        await using (var archive = await ZipFile.OpenAsync(archivePath, ZipArchiveMode.Update, TestContext.Current.CancellationToken))
         {
             var entry = archive.GetEntry("Database/BaseItems.json")!;
             JsonArray? items = null;
@@ -221,7 +221,7 @@ public sealed class BackupServiceTests : IDisposable
     {
         var archivePath = await CreateRestoreArchiveAsync();
         await UseLegacyManifestAsync(archivePath, false);
-        using (var archive = await ZipFile.OpenAsync(archivePath, ZipArchiveMode.Update, TestContext.Current.CancellationToken))
+        await using (var archive = await ZipFile.OpenAsync(archivePath, ZipArchiveMode.Update, TestContext.Current.CancellationToken))
         {
             archive.GetEntry("Database/BaseItems.json")!.Delete();
         }
@@ -234,7 +234,7 @@ public sealed class BackupServiceTests : IDisposable
 
     private static async Task UseLegacyManifestAsync(string archivePath, bool olderTables)
     {
-        using var archive = await ZipFile.OpenAsync(archivePath, ZipArchiveMode.Update, TestContext.Current.CancellationToken);
+        await using var archive = await ZipFile.OpenAsync(archivePath, ZipArchiveMode.Update, TestContext.Current.CancellationToken);
         var entry = archive.GetEntry("manifest.json")!;
         JsonObject manifest;
         await using (var stream = await entry.OpenAsync(TestContext.Current.CancellationToken))
