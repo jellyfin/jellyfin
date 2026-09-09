@@ -138,6 +138,22 @@ public class DtoServiceTests
         Assert.Equal(9, dto.ChildCount);
     }
 
+    [Fact]
+    public void GetBaseItemDtos_NoUser_SkipsTheChildCountBatch()
+    {
+        // A child count is attached only to a user's dto, so with no user the batch is work whose
+        // result nothing reads - and it is a grouped count over every item, not a cheap one.
+        var (season, _) = BuildSeason(playedCount: 0, totalCount: 0, childCount: 10);
+        var options = new DtoOptions(false) { EnableImages = false, Fields = [ItemFields.ChildCount] };
+
+        var dto = _dtoService.GetBaseItemDtos([season], options, user: null, skipVisibilityCheck: true)[0];
+
+        Assert.Null(dto.ChildCount);
+        _libraryManagerMock.Verify(
+            x => x.GetChildCountBatch(It.IsAny<IReadOnlyList<Guid>>(), It.IsAny<User?>()),
+            Times.Never);
+    }
+
     private (Season Season, User User) BuildSeason(int playedCount, int totalCount, int childCount)
     {
         var user = new User("user", "auth-provider", "reset-provider");

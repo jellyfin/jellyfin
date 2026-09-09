@@ -465,11 +465,9 @@ public sealed partial class BaseItemRepository
 
         baseQuery = ApplyParentalRestrictions(context, baseQuery, filter);
 
-        // Exclude alternate versions (have PrimaryVersionId set) and owned non-extra items.
-        // Extras (trailers, etc.) have OwnerId set but also have ExtraType set — keep those.
         if (!filter.IncludeOwnedItems)
         {
-            baseQuery = baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
+            baseQuery = baseQuery.Where(DescendantQueryHelper.IsDistinctLibraryItem);
         }
 
         return baseQuery;
