@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
@@ -183,6 +184,7 @@ public class BackupService : IBackupService
                             ?? throw new InvalidOperationException("Cannot restore backup that has no History data.");
                     }
 
+                    var restoreSerializerSettings = CreateRestoreSerializerSettings(dbContext);
                     foreach (var entityType in entityTypes)
                     {
                         _logger.LogInformation("Read backup of {Table}", entityType.SourceName);
@@ -201,7 +203,7 @@ public class BackupService : IBackupService
                             var records = 0;
                             await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<JsonObject>(zipEntryStream, _serializerSettings).ConfigureAwait(false))
                             {
-                                var entity = item?.Deserialize(entityType.Type);
+                                var entity = item?.Deserialize(entityType.Type, restoreSerializerSettings);
                                 if (entity is null)
                                 {
                                     throw new InvalidOperationException($"Cannot deserialize entity '{item}'");
@@ -235,6 +237,7 @@ public class BackupService : IBackupService
                         await _jellyfinDatabaseProvider.PurgeDatabase(dbContext, entityTypes.Select(e => e.SourceName)).ConfigureAwait(false);
                         _logger.LogInformation("Database Purged");
                         await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                        await _jellyfinDatabaseProvider.CompleteDatabaseRestoreAsync(dbContext, CancellationToken.None).ConfigureAwait(false);
                         await transaction.CommitAsync().ConfigureAwait(false);
                         _logger.LogInformation("Restored database");
                     }
@@ -247,6 +250,30 @@ public class BackupService : IBackupService
 
             _logger.LogInformation("Restored Jellyfin system from {Date}", manifest.DateCreated);
         }
+    }
+
+    private static JsonSerializerOptions CreateRestoreSerializerSettings(JellyfinDbContext dbContext)
+    {
+        var resolver = new DefaultJsonTypeInfoResolver();
+        resolver.Modifiers.Add(typeInfo =>
+        {
+            var entityType = dbContext.Model.FindEntityType(typeInfo.Type);
+            if (entityType is null)
+            {
+                return;
+            }
+
+            foreach (var property in typeInfo.Properties)
+            {
+                var mappedProperty = entityType.FindProperty(property.Name)?.PropertyInfo;
+                if (property.Set is null && mappedProperty?.SetMethod is not null)
+                {
+                    property.Set = mappedProperty.SetValue;
+                }
+            }
+        });
+
+        return new JsonSerializerOptions(_serializerSettings) { TypeInfoResolver = resolver };
     }
 
     private static void ValidateDatabaseEntries(ZipArchive archive, BackupManifest manifest, IEnumerable<string> tableNames)

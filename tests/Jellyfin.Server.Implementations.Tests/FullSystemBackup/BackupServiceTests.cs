@@ -256,6 +256,61 @@ public sealed class BackupServiceTests : IDisposable
         await JsonSerializer.SerializeAsync(output, manifest, cancellationToken: TestContext.Current.CancellationToken);
     }
 
+    [Fact]
+    public async Task RestoreBackupAsync_PreservesGeneratedIdsAndPrivateForeignKeys()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var user = new User("restore-user", "test", "test");
+        await using (var context = CreateDbContext())
+        {
+            var activity = new ActivityLog("archived", "restore-test", user.Id);
+            var image = new ImageInfo("archived-image");
+            context.AddRange(user, activity, image);
+            context.Entry(activity).Property(row => row.Id).CurrentValue = 91;
+            context.Entry(image).Property(row => row.Id).CurrentValue = 92;
+            context.Entry(image).Property(row => row.UserId).CurrentValue = user.Id;
+            await context.SaveChangesAsync(token);
+            await context.GetService<IHistoryRepository>().CreateIfNotExistsAsync(token);
+        }
+
+        var service = CreateBackupService();
+        var archive = await service.CreateBackupAsync(new BackupOptionsDto());
+        await service.RestoreBackupAsync(archive.Path);
+
+        await using var restored = CreateDbContext();
+        Assert.Equal(91, (await restored.ActivityLogs.SingleAsync(token)).Id);
+        var restoredImage = await restored.ImageInfos.SingleAsync(token);
+        Assert.Equal(92, restoredImage.Id);
+        Assert.Equal(user.Id, restoredImage.UserId);
+        var next = new ActivityLog("generated", "restore-test", user.Id);
+        restored.ActivityLogs.Add(next);
+        await restored.SaveChangesAsync(token);
+        Assert.True(next.Id > 91);
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_CompletionFails_RollsBackSavedRowsAndHistory()
+    {
+        var archivePath = await CreateRestoreArchiveAsync();
+        var failure = new InvalidOperationException("completion failed");
+        var sqlite = new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance);
+        var provider = new Mock<IJellyfinDatabaseProvider>();
+        provider.Setup(value => value.PurgeDatabase(It.IsAny<JellyfinDbContext>(), It.IsAny<System.Collections.Generic.IEnumerable<string>>()))
+            .Returns<JellyfinDbContext, System.Collections.Generic.IEnumerable<string>>(sqlite.PurgeDatabase);
+        provider.Setup(value => value.CompleteDatabaseRestoreAsync(It.IsAny<JellyfinDbContext>(), It.IsAny<CancellationToken>()))
+            .Returns<JellyfinDbContext, CancellationToken>(async (context, token) =>
+            {
+                Assert.NotNull(context.Database.CurrentTransaction);
+                Assert.Equal(new[] { "Archived Child", "Archived Movie" }, await context.BaseItems.Where(row => row.Type != "PLACEHOLDER").OrderBy(row => row.Name).Select(row => row.Name).ToArrayAsync(token));
+                Assert.Equal("backup", Assert.Single(await context.GetService<IHistoryRepository>().GetAppliedMigrationsAsync(token)).MigrationId);
+                throw failure;
+            });
+
+        var error = await Record.ExceptionAsync(() => CreateBackupService(provider.Object).RestoreBackupAsync(archivePath));
+        Assert.Same(failure, error);
+        await AssertExistingDatabaseAsync();
+    }
+
     private async Task<string> CreateRestoreArchiveAsync()
     {
         using var context = CreateDbContext();
@@ -303,7 +358,7 @@ public sealed class BackupServiceTests : IDisposable
         await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync(TestContext.Current.CancellationToken));
     }
 
-    private BackupService CreateBackupService()
+    private BackupService CreateBackupService(IJellyfinDatabaseProvider? databaseProvider = null)
     {
         var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
         factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
@@ -332,7 +387,7 @@ public sealed class BackupServiceTests : IDisposable
             factory.Object,
             applicationHost.Object,
             applicationPaths.Object,
-            new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
+            databaseProvider ?? new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
             applicationLifetime.Object,
             libraryManager.Object);
     }
