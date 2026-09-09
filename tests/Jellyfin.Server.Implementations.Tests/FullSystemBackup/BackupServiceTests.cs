@@ -232,6 +232,25 @@ public sealed class BackupServiceTests : IDisposable
         Assert.Equal("existing config", await File.ReadAllTextAsync(Path.Combine(_configurationDirectoryPath, "system.xml"), TestContext.Current.CancellationToken));
     }
 
+    [Fact]
+    public async Task PurgeDatabase_QuotedTableName_RemovesRows()
+    {
+        await using var context = CreateDbContext();
+        await context.Database.ExecuteSqlRawAsync(
+            """"
+            CREATE TABLE "Restore ""items""" (Id INTEGER);
+            INSERT INTO "Restore ""items""" VALUES (1);
+            """",
+            TestContext.Current.CancellationToken);
+
+        var provider = new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance);
+        await provider.PurgeDatabase(context, ["Restore \"items\""]);
+
+        await using var command = _connection.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM \"Restore \"\"items\"\"\";";
+        Assert.Equal(0L, await command.ExecuteScalarAsync(TestContext.Current.CancellationToken));
+    }
+
     private static async Task UseLegacyManifestAsync(string archivePath, bool olderTables)
     {
         await using var archive = await ZipFile.OpenAsync(archivePath, ZipArchiveMode.Update, TestContext.Current.CancellationToken);
