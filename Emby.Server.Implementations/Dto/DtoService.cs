@@ -192,9 +192,9 @@ namespace Emby.Server.Implementations.Dto
                 itemCountsBatch = GetItemCountsBatch(accessibleItems, user);
             }
 
-            // Batch-fetch child counts for all folders to avoid N+1 queries
+            // Batch-fetch child counts for all folders to avoid N+1 queries.
             Dictionary<Guid, int>? childCountBatch = null;
-            if (options.ContainsField(ItemFields.ChildCount))
+            if (user is not null && options.ContainsField(ItemFields.ChildCount))
             {
                 childCountBatch = GetChildCountBatch(accessibleItems, user);
             }

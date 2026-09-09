@@ -201,6 +201,146 @@ public sealed class ItemCountServiceTests : IDisposable
     }
 
     [Fact]
+    public void GetCounts_MultiVersionMovie_CountPlaybackOfAnyVersion()
+    {
+        // Two movies held as two files each: the primary the collection links, and an alternate version
+        // linked to it. One movie was watched on its alternate, which is where playback of a second cut
+        // lands; the other was not watched at all.
+        var user = new User("alt-version-test", "provider", "reset");
+        var boxSetId = Guid.NewGuid();
+        var libraryId = Guid.NewGuid();
+        var watchedPrimaryId = Guid.NewGuid();
+        var watchedAlternateId = Guid.NewGuid();
+        var unwatchedPrimaryId = Guid.NewGuid();
+        var unwatchedAlternateId = Guid.NewGuid();
+
+        using (var context = CreateDbContext())
+        {
+            context.Users.Add(user);
+
+            var boxSet = CreateItem(boxSetId);
+            boxSet.PresentationUniqueKey = "alt-version-box-set";
+            context.BaseItems.Add(boxSet);
+
+            var library = CreateItem(libraryId);
+            library.PresentationUniqueKey = "alt-version-library";
+            context.BaseItems.Add(library);
+
+            foreach (var (primaryId, alternateId) in
+                new[] { (watchedPrimaryId, watchedAlternateId), (unwatchedPrimaryId, unwatchedAlternateId) })
+            {
+                context.BaseItems.Add(CreateLeaf(primaryId));
+
+                var alternate = CreateLeaf(alternateId);
+                alternate.PrimaryVersionId = primaryId;
+                context.BaseItems.Add(alternate);
+            }
+
+            context.SaveChanges();
+
+            context.LinkedChildren.AddRange(
+                new LinkedChildEntity
+                {
+                    ParentId = boxSetId,
+                    ChildId = watchedPrimaryId,
+                    ChildType = LinkedChildType.Manual,
+                    SortOrder = 0
+                },
+                new LinkedChildEntity
+                {
+                    ParentId = boxSetId,
+                    ChildId = unwatchedPrimaryId,
+                    ChildType = LinkedChildType.Manual,
+                    SortOrder = 1
+                },
+                new LinkedChildEntity
+                {
+                    ParentId = watchedPrimaryId,
+                    ChildId = watchedAlternateId,
+                    ChildType = LinkedChildType.LocalAlternateVersion,
+                    SortOrder = 0
+                },
+                new LinkedChildEntity
+                {
+                    ParentId = unwatchedPrimaryId,
+                    ChildId = unwatchedAlternateId,
+                    ChildType = LinkedChildType.LocalAlternateVersion,
+                    SortOrder = 0
+                });
+
+            AddAncestor(context, watchedPrimaryId, libraryId);
+            AddAncestor(context, unwatchedPrimaryId, libraryId);
+
+            context.UserData.Add(new UserData
+            {
+                ItemId = watchedAlternateId,
+                UserId = user.Id,
+                CustomDataKey = string.Empty,
+                Played = true,
+                Item = null,
+                User = null
+            });
+
+            context.SaveChanges();
+        }
+
+        var filter = new InternalItemsQuery(user);
+
+        // A version group is one item to count, and the alternate's playback makes that item played -
+        // as it already does for the played flag the primary itself reports.
+        Assert.Equal((1, 2), _service.GetPlayedAndTotalCountFromLinkedChildren(filter, boxSetId));
+        Assert.Equal((1, 2), _service.GetPlayedAndTotalCountBatch([boxSetId], user)[boxSetId]);
+
+        // The ancestor-based paths answer the same for the library the primaries sit in.
+        Assert.Equal(1, _service.GetPlayedCount(filter, libraryId));
+        Assert.Equal((1, 2), _service.GetPlayedAndTotalCount(filter, libraryId));
+    }
+
+    [Fact]
+    public void GetChildCountBatch_NoUser_StillCollapsesAlternateVersions()
+    {
+        // Both files of a merged movie sit in the folder. With a user it is access filtering that
+        // drops the alternate; with no user nothing else would, and the folder would report two
+        // children for the one title a viewer sees.
+        var folderId = Guid.NewGuid();
+        var primaryId = Guid.NewGuid();
+        var alternateId = Guid.NewGuid();
+        var extraId = Guid.NewGuid();
+        var ownedId = Guid.NewGuid();
+
+        using (var context = CreateDbContext())
+        {
+            context.BaseItems.Add(CreateItem(folderId));
+
+            var primary = CreateLeaf(primaryId);
+            primary.ParentId = folderId;
+            context.BaseItems.Add(primary);
+
+            var alternate = CreateLeaf(alternateId);
+            alternate.ParentId = folderId;
+            alternate.PrimaryVersionId = primaryId;
+            context.BaseItems.Add(alternate);
+
+            // An extra carries an owner and an extra type, and stays a child of its own.
+            var extra = CreateLeaf(extraId);
+            extra.ParentId = folderId;
+            extra.OwnerId = primaryId;
+            extra.ExtraType = BaseItemExtraType.Trailer;
+            context.BaseItems.Add(extra);
+
+            // An owned item that is not an extra belongs to its owner, not to the folder.
+            var owned = CreateLeaf(ownedId);
+            owned.ParentId = folderId;
+            owned.OwnerId = primaryId;
+            context.BaseItems.Add(owned);
+
+            context.SaveChanges();
+        }
+
+        Assert.Equal(2, _service.GetChildCountBatch([folderId], null)[folderId]);
+    }
+
+    [Fact]
     public void GetChildCountBatch_MergedFolders_CountsDistinctChildKeys()
     {
         var seriesA = Guid.NewGuid();
