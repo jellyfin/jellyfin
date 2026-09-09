@@ -1715,7 +1715,7 @@ public class ImageController : BaseJellyfinApiController
     /// </summary>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     /// <response code="204">Successfully uploaded new splashscreen.</response>
-    /// <response code="400">Error reading MimeType from uploaded image.</response>
+    /// <response code="400">Error reading MimeType from uploaded image, or the image could not be decoded.</response>
     /// <response code="403">User does not have permission to upload splashscreen..</response>
     /// <exception cref="ArgumentException">Error reading the image format.</exception>
     [HttpPost("Branding/Splashscreen")]
@@ -1731,21 +1731,59 @@ public class ImageController : BaseJellyfinApiController
             return BadRequest("Incorrect ContentType.");
         }
 
-        var stream = GetFromBase64Stream(Request.Body);
-        await using (stream.ConfigureAwait(false))
+        // Decode into a temporary file first so a bad upload never replaces the current splashscreen or config.
+        Directory.CreateDirectory(_appPaths.TempDirectory);
+        var tempPath = Path.Combine(_appPaths.TempDirectory, "splashscreen-upload-" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture) + extension);
+        try
         {
+            var stream = GetFromBase64Stream(Request.Body);
+            await using (stream.ConfigureAwait(false))
+            {
+                var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+                await using (fs.ConfigureAwait(false))
+                {
+                    await stream.CopyToAsync(fs, CancellationToken.None).ConfigureAwait(false);
+                }
+            }
+
+            ImageDimensions dimensions;
+            try
+            {
+                dimensions = _imageProcessor.GetImageDimensions(tempPath);
+            }
+            catch (NotImplementedException)
+            {
+                // No image encoder on this server (SkiaSharp unavailable); nothing to validate against.
+                dimensions = new ImageDimensions(1, 1);
+            }
+
+            if (dimensions.Width <= 0 || dimensions.Height <= 0)
+            {
+                return BadRequest("Unable to decode image.");
+            }
+
             var filePath = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + extension);
+            System.IO.File.Move(tempPath, filePath, true);
+
             var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
             brandingOptions.SplashscreenLocation = filePath;
             _serverConfigurationManager.SaveConfiguration("branding", brandingOptions);
 
-            var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
-            await using (fs.ConfigureAwait(false))
-            {
-                await stream.CopyToAsync(fs, CancellationToken.None).ConfigureAwait(false);
-            }
-
             return NoContent();
+        }
+        finally
+        {
+            if (System.IO.File.Exists(tempPath))
+            {
+                try
+                {
+                    System.IO.File.Delete(tempPath);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "Unable to remove temporary file '{TempPath}'", tempPath);
+                }
+            }
         }
     }
 
