@@ -24,6 +24,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     private const string BackupFolderName = "SQLiteBackups";
     private readonly IApplicationPaths _applicationPaths;
     private readonly ILogger<SqliteDatabaseProvider> _logger;
+    private static int _temporaryDirectorySet;
 
     private int _tempStoreMode = 2;
 
@@ -82,7 +83,6 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         _logger.LogInformation("SQLite connection string: {ConnectionString}", connectionString);
 
         _tempStoreMode = GetOption(customOptions, "tempstoremode", int.Parse, () => 2);
-
         var dataSourceDirectory = Path.GetDirectoryName(dataSource);
         var configuredTempDirectory = Environment.GetEnvironmentVariable("SQLITE_TMPDIR");
         if (!string.IsNullOrEmpty(configuredTempDirectory))
@@ -91,7 +91,8 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             // VACUUM copy lands, which is the first thing to check when that runs out of space.
             _logger.LogInformation("SQLITE_TMPDIR is already set to {TempDirectory}, leaving it unchanged", configuredTempDirectory);
         }
-        else if (Directory.Exists(dataSourceDirectory))
+        else if (Directory.Exists(dataSourceDirectory)
+         && Interlocked.Exchange(ref _temporaryDirectorySet, 1) == 0)
         {
             SetTemporaryDirectory(dataSourceDirectory);
         }
