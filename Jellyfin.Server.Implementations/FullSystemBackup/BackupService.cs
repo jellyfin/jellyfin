@@ -111,7 +111,7 @@ public class BackupService : IBackupService
             var manifestStream = await zipArchiveEntry.OpenAsync().ConfigureAwait(false);
             await using (manifestStream.ConfigureAwait(false))
             {
-                manifest = await JsonSerializer.DeserializeAsync<BackupManifest>(manifestStream, _serializerSettings).ConfigureAwait(false)
+                manifest = await JsonSerializer.DeserializeAsync<BackupManifest>(manifestStream, _serializerSettings, CancellationToken.None).ConfigureAwait(false)
                     ?? throw new InvalidOperationException("Cannot restore backup with an empty manifest.");
             }
 
@@ -180,7 +180,7 @@ public class BackupService : IBackupService
                     var historyArchive = await historyEntry.OpenAsync().ConfigureAwait(false);
                     await using (historyArchive.ConfigureAwait(false))
                     {
-                        historyEntries = await JsonSerializer.DeserializeAsync<HistoryRow[]>(historyArchive).ConfigureAwait(false)
+                        historyEntries = await JsonSerializer.DeserializeAsync<HistoryRow[]>(historyArchive, cancellationToken: CancellationToken.None).ConfigureAwait(false)
                             ?? throw new InvalidOperationException("Cannot restore backup that has no History data.");
                     }
 
@@ -218,19 +218,19 @@ public class BackupService : IBackupService
                     }
 
                     RestoreFiles();
-                    var transaction = await dbContext.Database.BeginTransactionAsync().ConfigureAwait(false);
+                    var transaction = await dbContext.Database.BeginTransactionAsync(CancellationToken.None).ConfigureAwait(false);
                     await using (transaction.ConfigureAwait(false))
                     {
                         var historyRepository = dbContext.GetService<IHistoryRepository>();
                         await historyRepository.CreateIfNotExistsAsync().ConfigureAwait(false);
-                        foreach (var item in await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false))
+                        foreach (var item in await historyRepository.GetAppliedMigrationsAsync(CancellationToken.None).ConfigureAwait(false))
                         {
-                            await dbContext.Database.ExecuteSqlRawAsync(historyRepository.GetDeleteScript(item.MigrationId)).ConfigureAwait(false);
+                            await dbContext.Database.ExecuteSqlRawAsync(historyRepository.GetDeleteScript(item.MigrationId), CancellationToken.None).ConfigureAwait(false);
                         }
 
                         foreach (var item in historyEntries)
                         {
-                            await dbContext.Database.ExecuteSqlRawAsync(historyRepository.GetInsertScript(item)).ConfigureAwait(false);
+                            await dbContext.Database.ExecuteSqlRawAsync(historyRepository.GetInsertScript(item), CancellationToken.None).ConfigureAwait(false);
                         }
 
                         _logger.LogInformation("Begin purging database");
@@ -238,7 +238,7 @@ public class BackupService : IBackupService
                         _logger.LogInformation("Database Purged");
                         await dbContext.SaveChangesAsync().ConfigureAwait(false);
                         await _jellyfinDatabaseProvider.CompleteDatabaseRestoreAsync(dbContext, CancellationToken.None).ConfigureAwait(false);
-                        await transaction.CommitAsync().ConfigureAwait(false);
+                        await transaction.CommitAsync(CancellationToken.None).ConfigureAwait(false);
                         _logger.LogInformation("Restored database");
                     }
                 }
