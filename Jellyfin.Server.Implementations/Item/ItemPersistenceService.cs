@@ -132,11 +132,11 @@ public class ItemPersistenceService : IItemPersistenceService
         context.Chapters.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.CustomItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.ItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDelete();
         context.ItemValuesMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ParentId).ExecuteDelete();
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ChildId).ExecuteDelete();
         context.BaseItems.WhereOneOrMany(relatedItems, e => e.Id).ExecuteDelete();
+        context.ItemValues.Where(e => !e.BaseItemsMap!.Any()).ExecuteDelete();
         context.KeyframeData.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.MediaSegments.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.MediaStreamInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
