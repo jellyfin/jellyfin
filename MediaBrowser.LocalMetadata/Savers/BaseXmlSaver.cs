@@ -353,6 +353,18 @@ namespace MediaBrowser.LocalMetadata.Savers
                 await writer.WriteEndElementAsync().ConfigureAwait(false);
             }
 
+            if (item.Networks.Length > 0)
+            {
+                await writer.WriteStartElementAsync(null, "Networks", null).ConfigureAwait(false);
+
+                foreach (var network in item.Networks)
+                {
+                    await writer.WriteElementStringAsync(null, "Network", null, network).ConfigureAwait(false);
+                }
+
+                await writer.WriteEndElementAsync().ConfigureAwait(false);
+            }
+
             if (item.Tags.Length > 0)
             {
                 await writer.WriteStartElementAsync(null, "Tags", null).ConfigureAwait(false);

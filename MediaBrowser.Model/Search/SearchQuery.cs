@@ -14,6 +14,7 @@ namespace MediaBrowser.Model.Search
             IncludeMedia = true;
             IncludePeople = true;
             IncludeStudios = true;
+            IncludeNetworks = true;
 
             MediaTypes = Array.Empty<MediaType>();
             IncludeItemTypes = Array.Empty<BaseItemKind>();
@@ -51,6 +52,8 @@ namespace MediaBrowser.Model.Search
         public bool IncludeGenres { get; set; }
 
         public bool IncludeStudios { get; set; }
+
+        public bool IncludeNetworks { get; set; }
 
         public bool IncludeArtists { get; set; }
 

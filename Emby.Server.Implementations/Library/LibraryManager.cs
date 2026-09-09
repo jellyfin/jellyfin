@@ -694,6 +694,7 @@ namespace Emby.Server.Implementations.Library
                 MusicArtist => _configurationManager.ApplicationPaths.ArtistsPath,
                 MusicGenre => _configurationManager.ApplicationPaths.MusicGenrePath,
                 Person => _configurationManager.ApplicationPaths.PeoplePath,
+                Network => _configurationManager.ApplicationPaths.NetworkPath,
                 Studio => _configurationManager.ApplicationPaths.StudioPath,
                 Year => _configurationManager.ApplicationPaths.YearPath,
                 _ => null
@@ -1262,9 +1263,24 @@ namespace Emby.Server.Implementations.Library
             return CreateItemByName<Studio>(Studio.GetPath, name, new DtoOptions(true));
         }
 
+        /// <summary>
+        /// Gets the network.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns>Task{Network}.</returns>
+        public Network GetNetwork(string name)
+        {
+            return CreateItemByName<Network>(Network.GetPath, name, new DtoOptions(true));
+        }
+
         public Guid GetStudioId(string name)
         {
             return GetItemByNameId<Studio>(Studio.GetPath(name));
+        }
+
+        public Guid GetNetworkId(string name)
+        {
+            return GetItemByNameId<Network>(Network.GetPath(name));
         }
 
         public Guid GetGenreId(string name)
@@ -1916,6 +1932,17 @@ namespace Emby.Server.Implementations.Library
 
             SetTopParentOrAncestorIds(query);
             return _itemRepository.GetStudios(query);
+        }
+
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetNetworks(InternalItemsQuery query)
+        {
+            if (query.User is not null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return _itemRepository.GetNetworks(query);
         }
 
         public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery query)

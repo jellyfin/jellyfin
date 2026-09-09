@@ -97,6 +97,19 @@ namespace Emby.Server.Implementations.Dto
                 ]
             },
             {
+                BaseItemKind.Network, [
+                    BaseItemKind.Audio,
+                    BaseItemKind.Episode,
+                    BaseItemKind.Movie,
+                    BaseItemKind.LiveTvProgram,
+                    BaseItemKind.MusicAlbum,
+                    BaseItemKind.MusicArtist,
+                    BaseItemKind.MusicVideo,
+                    BaseItemKind.Series,
+                    BaseItemKind.Trailer
+                ]
+            },
+            {
                 BaseItemKind.Year, [
                     BaseItemKind.Audio,
                     BaseItemKind.Episode,
@@ -418,6 +431,11 @@ namespace Emby.Server.Implementations.Dto
             if (options.ContainsField(ItemFields.Studios))
             {
                 AttachStudios(dto, item);
+            }
+
+            if (options.ContainsField(ItemFields.Networks))
+            {
+                AttachNetworks(dto, item);
             }
 
             AttachBasicFields(dto, item, owner, options, artistsBatch, user, alternateVersionItemIds);
@@ -933,6 +951,23 @@ namespace Emby.Server.Implementations.Dto
                 {
                     Name = i,
                     Id = _libraryManager.GetStudioId(i)
+                })
+                .ToArray();
+        }
+
+        /// <summary>
+        /// Attaches the networks.
+        /// </summary>
+        /// <param name="dto">The dto.</param>
+        /// <param name="item">The item.</param>
+        private void AttachNetworks(BaseItemDto dto, BaseItem item)
+        {
+            dto.Networks = item.Networks
+                .Where(i => !string.IsNullOrEmpty(i))
+                .Select(i => new NameGuidPair
+                {
+                    Name = i,
+                    Id = _libraryManager.GetNetworkId(i)
                 })
                 .ToArray();
         }

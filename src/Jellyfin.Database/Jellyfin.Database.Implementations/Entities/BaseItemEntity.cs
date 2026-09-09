@@ -76,6 +76,8 @@ public class BaseItemEntity
 
     public string? Studios { get; set; }
 
+    public string? Networks { get; set; }
+
     public string? ExternalServiceId { get; set; }
 
     public string? Tags { get; set; }

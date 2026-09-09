@@ -414,6 +414,21 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         break;
                     }
 
+                case "Networks":
+                    {
+                        if (!reader.IsEmptyElement)
+                        {
+                            using var subtree = reader.ReadSubtree();
+                            FetchFromNetworksNode(subtree, item);
+                        }
+                        else
+                        {
+                            reader.Read();
+                        }
+
+                        break;
+                    }
+
                 case "Studios":
                     {
                         if (!reader.IsEmptyElement)
@@ -727,6 +742,43 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             if (!string.IsNullOrEmpty(trailer))
                             {
                                 item.AddTrailerUrl(trailer);
+                            }
+
+                            break;
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+                else
+                {
+                    reader.Read();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Fetches from networks node.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <param name="item">The item.</param>
+        private void FetchFromNetworksNode(XmlReader reader, T item)
+        {
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "Network":
+                            var network = reader.ReadNormalizedString();
+                            if (!string.IsNullOrEmpty(network))
+                            {
+                                item.AddNetwork(network);
                             }
 
                             break;

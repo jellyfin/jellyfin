@@ -400,6 +400,11 @@ public class SearchManager : ISearchManager
             AddIfMissing(excludeItemTypes, BaseItemKind.Studio);
         }
 
+        if (!query.IncludeNetworks)
+        {
+            AddIfMissing(excludeItemTypes, BaseItemKind.Network);
+        }
+
         if (!query.IncludeArtists)
         {
             AddIfMissing(excludeItemTypes, BaseItemKind.MusicArtist);
@@ -430,6 +435,11 @@ public class SearchManager : ISearchManager
         if (query.IncludeStudios && IsEmptyOrContains(includeItemTypes, BaseItemKind.Studio))
         {
             AddIfMissing(includeItemTypes, BaseItemKind.Studio);
+        }
+
+        if (query.IncludeNetworks && IsEmptyOrContains(includeItemTypes, BaseItemKind.Network))
+        {
+            AddIfMissing(includeItemTypes, BaseItemKind.Network);
         }
 
         if (query.IncludeArtists && IsEmptyOrContains(includeItemTypes, BaseItemKind.MusicArtist))

@@ -109,6 +109,7 @@ namespace MediaBrowser.Controller.Entities
             Tags = Array.Empty<string>();
             Genres = Array.Empty<string>();
             Studios = Array.Empty<string>();
+            Networks = Array.Empty<string>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             LockedFields = Array.Empty<MetadataField>();
             ImageInfos = Array.Empty<ItemImageInfo>();
@@ -632,6 +633,17 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The studios.</value>
         [JsonIgnore]
         public string[] Studios { get; set; }
+
+        /// <summary>
+        /// Gets or sets the networks that carry the item.
+        /// </summary>
+        /// <remarks>
+        /// Kept apart from <see cref="Studios"/>: a network airs a show, a studio produces it,
+        /// and the same name can appear in both roles.
+        /// </remarks>
+        /// <value>The networks.</value>
+        [JsonIgnore]
+        public string[] Networks { get; set; }
 
         /// <summary>
         /// Gets or sets the genres.
@@ -2153,6 +2165,35 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Adds a network to the item.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <exception cref="ArgumentNullException">Throws if name is null.</exception>
+        public void AddNetwork(string name)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(name);
+            var current = Networks;
+
+            if (!current.Contains(name, StringComparison.OrdinalIgnoreCase))
+            {
+                int curLen = current.Length;
+                if (curLen == 0)
+                {
+                    Networks = [name];
+                }
+                else
+                {
+                    Networks = [.. current, name];
+                }
+            }
+        }
+
+        public void SetNetworks(IEnumerable<string> names)
+        {
+            Networks = names.Trimmed().Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        }
+
+        /// <summary>
         /// Adds a genre to the item.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -2785,6 +2826,12 @@ namespace MediaBrowser.Controller.Entities
                 {
                     newOptions.ForceSave = true;
                     ownedItem.Studios = item.Studios;
+                }
+
+                if (!item.Networks.SequenceEqual(ownedItem.Networks, StringComparer.Ordinal))
+                {
+                    newOptions.ForceSave = true;
+                    ownedItem.Networks = item.Networks;
                 }
 
                 if (!item.ProductionLocations.SequenceEqual(ownedItem.ProductionLocations, StringComparer.Ordinal))

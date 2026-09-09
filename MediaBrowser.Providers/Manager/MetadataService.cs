@@ -69,6 +69,8 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual bool EnableUpdatingStudiosFromChildren => false;
 
+        protected virtual bool EnableUpdatingNetworksFromChildren => false;
+
         protected virtual bool EnableUpdatingOfficialRatingFromChildren => false;
 
         public virtual int Order => 0;
@@ -408,7 +410,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
                 {
-                    if (EnableUpdatingPremiereDateFromChildren || EnableUpdatingGenresFromChildren || EnableUpdatingStudiosFromChildren || EnableUpdatingOfficialRatingFromChildren)
+                    if (EnableUpdatingPremiereDateFromChildren || EnableUpdatingGenresFromChildren || EnableUpdatingStudiosFromChildren || EnableUpdatingNetworksFromChildren || EnableUpdatingOfficialRatingFromChildren)
                     {
                         return true;
                     }
@@ -468,6 +470,11 @@ namespace MediaBrowser.Providers.Manager
             if (EnableUpdatingStudiosFromChildren)
             {
                 updateType |= UpdateStudios(item, children);
+            }
+
+            if (EnableUpdatingNetworksFromChildren)
+            {
+                updateType |= UpdateNetworks(item, children);
             }
 
             if (EnableUpdatingOfficialRatingFromChildren)
@@ -608,6 +615,27 @@ namespace MediaBrowser.Providers.Manager
                     .ToArray();
 
                 if (currentList.Length != item.Studios.Length || !currentList.Order().SequenceEqual(item.Studios.Order(), StringComparer.OrdinalIgnoreCase))
+                {
+                    updateType |= ItemUpdateType.MetadataEdit;
+                }
+            }
+
+            return updateType;
+        }
+
+        private ItemUpdateType UpdateNetworks(TItemType item, IReadOnlyList<BaseItem> children)
+        {
+            var updateType = ItemUpdateType.None;
+
+            if (!item.LockedFields.Contains(MetadataField.Networks))
+            {
+                var currentList = item.Networks;
+
+                item.Networks = children.SelectMany(i => i.Networks)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+                if (currentList.Length != item.Networks.Length || !currentList.Order().SequenceEqual(item.Networks.Order(), StringComparer.OrdinalIgnoreCase))
                 {
                     updateType |= ItemUpdateType.MetadataEdit;
                 }
@@ -1260,6 +1288,18 @@ namespace MediaBrowser.Providers.Manager
                     {
                         target.RunTimeTicks = source.RunTimeTicks;
                     }
+                }
+            }
+
+            if (!lockedFields.Contains(MetadataField.Networks))
+            {
+                if (replaceData || target.Networks.Length == 0)
+                {
+                    target.Networks = source.Networks;
+                }
+                else
+                {
+                    target.Networks = target.Networks.Concat(source.Networks).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                 }
             }
 

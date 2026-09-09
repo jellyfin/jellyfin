@@ -725,6 +725,16 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            // Apply network filter
+            if (query.NetworkIds.Length > 0 && !query.NetworkIds.Any(id =>
+            {
+                var networkItem = libraryManager.GetItemById(id);
+                return networkItem is not null && item.Networks.Contains(networkItem.Name, StringComparison.OrdinalIgnoreCase);
+            }))
+            {
+                return false;
+            }
+
             // Apply genre filter
             if (query.GenreIds.Count > 0 && !query.GenreIds.Any(id =>
             {

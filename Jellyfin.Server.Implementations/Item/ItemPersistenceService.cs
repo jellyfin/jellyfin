@@ -707,6 +707,7 @@ public class ItemPersistenceService : IItemPersistenceService
 
         list.AddRange(item.Genres.Select(i => (ItemValueType.Genre, i)));
         list.AddRange(item.Studios.Select(i => (ItemValueType.Studios, i)));
+        list.AddRange(item.Networks.Select(i => (ItemValueType.Networks, i)));
         list.AddRange(item.Tags.Select(i => (ItemValueType.Tags, i)));
 
         list.AddRange(inheritedTags.Select(i => (ItemValueType.InheritedTags, i)));
