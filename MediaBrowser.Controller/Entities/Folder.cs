@@ -1108,17 +1108,22 @@ namespace MediaBrowser.Controller.Entities
         {
             if (!string.IsNullOrWhiteSpace(query.NameStartsWith))
             {
-                items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.OrdinalIgnoreCase));
+                var paddedPrefix = BaseItem.NormalizeSortNameFilter(query.NameStartsWith);
+                items = items.Where(i =>
+                    i.SortName.StartsWith(paddedPrefix, StringComparison.OrdinalIgnoreCase)
+                    || i.SortName.TrimStart('0').StartsWith(query.NameStartsWith, StringComparison.OrdinalIgnoreCase));
             }
 
             if (!string.IsNullOrWhiteSpace(query.NameStartsWithOrGreater))
             {
-                items = items.Where(i => string.Compare(i.SortName, query.NameStartsWithOrGreater, StringComparison.OrdinalIgnoreCase) >= 0);
+                var paddedValue = BaseItem.NormalizeSortNameFilter(query.NameStartsWithOrGreater);
+                items = items.Where(i => string.Compare(i.SortName, paddedValue, StringComparison.OrdinalIgnoreCase) >= 0);
             }
 
             if (!string.IsNullOrWhiteSpace(query.NameLessThan))
             {
-                items = items.Where(i => string.Compare(i.SortName, query.NameLessThan, StringComparison.OrdinalIgnoreCase) < 0);
+                var paddedValue = BaseItem.NormalizeSortNameFilter(query.NameLessThan);
+                items = items.Where(i => string.Compare(i.SortName, paddedValue, StringComparison.OrdinalIgnoreCase) < 0);
             }
 
             return items;
