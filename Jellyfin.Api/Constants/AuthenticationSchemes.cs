@@ -9,4 +9,39 @@ public static class AuthenticationSchemes
     /// Scheme name for the custom legacy authentication.
     /// </summary>
     public const string CustomAuthentication = "CustomAuthentication";
+
+    /// <summary>
+    /// Scheme name for the transient OpenID Connect external sign-in cookie.
+    /// </summary>
+    public const string OidcExternalCookie = "OidcExternalCookie";
+
+    /// <summary>
+    /// Gets the OpenID Connect scheme name for a provider.
+    /// </summary>
+    /// <param name="providerId">The provider id.</param>
+    /// <returns>The OpenID Connect scheme name.</returns>
+    public static string GetOidcScheme(string providerId)
+    {
+        return "Oidc:" + providerId;
+    }
+
+    /// <summary>
+    /// Gets the OpenID Connect external cookie scheme name for a provider.
+    /// </summary>
+    /// <param name="providerId">The provider id.</param>
+    /// <returns>The OpenID Connect external cookie scheme name.</returns>
+    public static string GetOidcExternalCookieScheme(string providerId)
+    {
+        return OidcExternalCookie + ":" + providerId;
+    }
+
+    /// <summary>
+    /// Gets the OpenID Connect callback path for a provider.
+    /// </summary>
+    /// <param name="providerId">The provider id.</param>
+    /// <returns>The OpenID Connect callback path.</returns>
+    public static string GetOidcCallbackPath(string providerId)
+    {
+        return "/auth/oidc/" + providerId + "/callback";
+    }
 }

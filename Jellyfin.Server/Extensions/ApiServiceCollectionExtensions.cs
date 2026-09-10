@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text.Json.Nodes;
+using System.Threading.Tasks;
 using Emby.Server.Implementations;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.AnonymousLanAccessPolicy;
@@ -23,16 +25,26 @@ using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
+using Jellyfin.Server.Implementations.Authentication;
 using MediaBrowser.Common.Api;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OAuth.Claims;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -97,8 +109,119 @@ namespace Jellyfin.Server.Extensions
         /// <returns>The updated service collection.</returns>
         public static AuthenticationBuilder AddCustomAuthentication(this IServiceCollection serviceCollection)
         {
-            return serviceCollection.AddAuthentication(AuthenticationSchemes.CustomAuthentication)
+            return serviceCollection.AddCustomAuthentication((IOidcConfigurationManager?)null);
+        }
+
+        /// <summary>
+        /// Adds custom legacy authentication and optional OpenID Connect providers to the service collection.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection.</param>
+        /// <param name="applicationPaths">The application paths.</param>
+        /// <returns>The updated service collection.</returns>
+        public static AuthenticationBuilder AddCustomAuthentication(this IServiceCollection serviceCollection, IApplicationPaths? applicationPaths)
+        {
+            return serviceCollection.AddCustomAuthentication(applicationPaths is null ? null : new OidcConfigurationManager(applicationPaths));
+        }
+
+        /// <summary>
+        /// Adds custom legacy authentication and optional OpenID Connect providers to the service collection.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection.</param>
+        /// <param name="oidcConfigurationManager">The OpenID Connect configuration manager.</param>
+        /// <returns>The updated service collection.</returns>
+        public static AuthenticationBuilder AddCustomAuthentication(this IServiceCollection serviceCollection, IOidcConfigurationManager? oidcConfigurationManager)
+        {
+            var builder = serviceCollection.AddAuthentication(AuthenticationSchemes.CustomAuthentication)
                 .AddScheme<AuthenticationSchemeOptions, CustomAuthenticationHandler>(AuthenticationSchemes.CustomAuthentication, null);
+
+            if (oidcConfigurationManager is null)
+            {
+                return builder;
+            }
+
+            var providers = oidcConfigurationManager.GetOptions().Providers.Where(provider => provider.Enabled).ToList();
+            if (providers.Count == 0)
+            {
+                return builder;
+            }
+
+            foreach (var provider in providers)
+            {
+                builder.AddCookie(AuthenticationSchemes.GetOidcExternalCookieScheme(provider.ProviderId), options =>
+                {
+                    options.Cookie.Name = "jellyfin_oidc_external_" + provider.ProviderId;
+                    options.Cookie.HttpOnly = true;
+                    options.Cookie.SameSite = SameSiteMode.Lax;
+                    options.Cookie.SecurePolicy = provider.AllowInsecureAuthority ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                    options.SlidingExpiration = false;
+                });
+
+                builder.AddOpenIdConnect(AuthenticationSchemes.GetOidcScheme(provider.ProviderId), options =>
+                {
+                    options.SignInScheme = AuthenticationSchemes.GetOidcExternalCookieScheme(provider.ProviderId);
+                    options.Authority = provider.Authority;
+                    options.ClientId = provider.ClientId;
+                    options.ClientSecret = provider.ClientSecret;
+                    options.CallbackPath = AuthenticationSchemes.GetOidcCallbackPath(provider.ProviderId);
+                    options.ResponseType = OpenIdConnectResponseType.Code;
+                    options.UsePkce = true;
+                    options.RequireHttpsMetadata = !provider.AllowInsecureAuthority;
+                    options.SaveTokens = false;
+                    options.MapInboundClaims = false;
+                    options.GetClaimsFromUserInfoEndpoint = provider.GetClaimsFromUserInfoEndpoint;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        NameClaimType = provider.UsernameClaim,
+                        RoleClaimType = provider.RoleClaim
+                    };
+
+                    options.Scope.Clear();
+                    foreach (var scope in provider.Scopes)
+                    {
+                        options.Scope.Add(scope);
+                    }
+
+                    // OpenIdConnectOptions deletes the "iss" claim by default, and the
+                    // handler runs the claim actions whether or not the UserInfo endpoint
+                    // is used. External identities are keyed on issuer and subject, so
+                    // dropping "iss" makes every sign-in fail validation. Keep the claim
+                    // that the handler already validated against the authority metadata.
+                    options.ClaimActions.Remove("iss");
+
+                    options.ClaimActions.MapUniqueJsonKey(provider.UsernameClaim, provider.UsernameClaim);
+                    options.ClaimActions.MapUniqueJsonKey(provider.EmailClaim, provider.EmailClaim);
+                    options.ClaimActions.MapJsonKey(provider.RoleClaim, provider.RoleClaim);
+
+                    options.Events = new OpenIdConnectEvents
+                    {
+                        OnRemoteFailure = HandleOidcRemoteFailure
+                    };
+                });
+            }
+
+            return builder;
+        }
+
+        private static Task HandleOidcRemoteFailure(RemoteFailureContext context)
+        {
+            var returnUrl = GetAuthenticationProperty(context.Properties, OidcConstants.ReturnUrlProperty);
+            if (!string.IsNullOrWhiteSpace(returnUrl) && OidcConstants.IsSafeRelativeUrl(returnUrl))
+            {
+                context.Response.Redirect(QueryHelpers.AddQueryString(returnUrl, OidcConstants.ErrorQueryParameter, OidcConstants.RemoteFailureError));
+            }
+            else
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            }
+
+            context.HandleResponse();
+            return Task.CompletedTask;
+        }
+
+        private static string? GetAuthenticationProperty(AuthenticationProperties? properties, string key)
+        {
+            return properties is not null && properties.Items.TryGetValue(key, out var value) ? value : null;
         }
 
         /// <summary>
