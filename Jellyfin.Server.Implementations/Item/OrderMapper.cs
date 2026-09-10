@@ -79,11 +79,11 @@ public static class OrderMapper
             // This correlated subquery fallback is only reached when combined with search.
             (ItemSortBy.SeriesDatePlayed, not null) => e =>
                 jellyfinDbContext.UserData
-                    .Where(w => w.UserId == query.User.Id && w.Played && w.Item!.SeriesPresentationUniqueKey == e.PresentationUniqueKey)
+                    .Where(w => w.UserId == query.User.Id && w.Item!.SeriesPresentationUniqueKey == e.PresentationUniqueKey)
                     .Max(f => f.LastPlayedDate),
             (ItemSortBy.SeriesDatePlayed, null) => e =>
                 jellyfinDbContext.UserData
-                    .Where(w => w.Played && w.Item!.SeriesPresentationUniqueKey == e.PresentationUniqueKey)
+                    .Where(w => w.Item!.SeriesPresentationUniqueKey == e.PresentationUniqueKey)
                     .Max(f => f.LastPlayedDate),
             _ => e => e.SortName
         };
