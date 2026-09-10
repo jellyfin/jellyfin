@@ -597,7 +597,7 @@ namespace MediaBrowser.Providers.Manager
             // An extra is a local file belonging to another item and has no identity of its own in an
             // online database. Looking it up matches whatever the surrounding folder happens to be
             // called and overwrites the extra's name with a different item's title.
-            if (item.ExtraType.HasValue)
+            if (item.ExtraType.HasValue && provider is IRemoteMetadataProvider)
             {
                 return false;
             }
