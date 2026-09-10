@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Providers.Plugins.Tmdb;
 using TMDbLib.Objects.Search;
+using TMDbLib.Objects.TvShows;
 using Xunit;
 
 namespace Jellyfin.Providers.Tests.Tmdb
@@ -238,5 +239,28 @@ namespace Jellyfin.Providers.Tests.Tmdb
                 OriginalName = originalName,
                 FirstAirDate = new DateTime(year, 6, 1, 0, 0, 0, DateTimeKind.Utc)
             };
+
+        [Theory]
+        // The values the web client writes.
+        [InlineData("originalAirDate", TvGroupType.OriginalAirDate)]
+        [InlineData("absolute", TvGroupType.Absolute)]
+        [InlineData("dvd", TvGroupType.DVD)]
+        [InlineData("digital", TvGroupType.Digital)]
+        [InlineData("storyArc", TvGroupType.StoryArc)]
+        [InlineData("production", TvGroupType.Production)]
+        [InlineData("tv", TvGroupType.TV)]
+        // An NFO written by a third party tool can use any casing.
+        [InlineData("OriginalAirDate", TvGroupType.OriginalAirDate)]
+        [InlineData("DVD", TvGroupType.DVD)]
+        // Tvdb-only orders and the default have no TMDb episode group.
+        [InlineData("alternate", null)]
+        [InlineData("regional", null)]
+        [InlineData("altdvd", null)]
+        [InlineData("", null)]
+        [InlineData(null, null)]
+        public static void GetEpisodeGroupType_ReturnsMatchingGroupType(string? displayOrder, TvGroupType? expected)
+        {
+            Assert.Equal(expected, TmdbUtils.GetEpisodeGroupType(displayOrder));
+        }
     }
 }
