@@ -199,6 +199,16 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [InlineData("Rated: R", "US", 17, 0)]
         [InlineData("Rated R", "US", 17, 0)]
         [InlineData(" PG-13 ", "US", 13, 0)]
+        [InlineData("T", "IT", 0, null)]
+        [InlineData("VM6", "IT", 6, null)]
+        [InlineData("VM12", "IT", 12, null)]
+        [InlineData("VM14", "IT", 14, null)]
+        [InlineData("VM18", "IT", 18, null)]
+        [InlineData("IT-VM14", "IT", 14, null)] // TMDB style country prefix
+        [InlineData("IT-VM18", "IT", 18, null)]
+        [InlineData("it-vm18", "IT", 18, null)] // Rating strings are case insensitive
+        [InlineData("VM 18", "IT", 18, null)]
+        [InlineData("Vietato ai minori di 18 anni", "IT", 18, null)]
         public async Task GetRatingLevel_GivenValidString_Success(string value, string countryCode, int? expectedScore, int? expectedSubScore)
         {
             var localizationManager = Setup(new ServerConfiguration()
