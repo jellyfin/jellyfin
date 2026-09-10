@@ -923,7 +923,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             // Force the video stream, otherwise ffmpeg may pick a cover image.
-            inputArg += " -map 0:" + imageStream.Index.ToString(CultureInfo.InvariantCulture);
+            inputArg += " -map 0:" + EncodingHelper.FindIndex(mediaSource.MediaStreams, imageStream);
 
             var filterParam = encodingHelper.GetVideoProcessingFilterParam(jobState, options, vidEncoder).Trim();
             if (string.IsNullOrWhiteSpace(filterParam))
