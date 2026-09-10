@@ -89,7 +89,7 @@ The following instructions will help you get the project up and running via the 
 
 #### Running With Visual Studio
 
-To run the project with Visual Studio you can open the Solution (`.sln`) file and then press `F5` to run the server.
+To run the project with Visual Studio you can open the solution (`.slnx`) file and then press `F5` to run the server.
 
 #### Running With Visual Studio Code
 
