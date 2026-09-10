@@ -322,6 +322,14 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
         }
     }
 
+    /// <summary>
+    /// Applies Unicode-aware lowercasing to handle alternate scripts (Cyrillic, Chinese, etc.) that SQLite's built-in LOWER() cannot fold.
+    /// </summary>
+    /// <param name="value">The string to lowercase.</param>
+    /// <returns>The lowercased string.</returns>
+    /// <exception cref="NotSupportedException">Always thrown when called directly; this method is mapped to a database function and must only be used in LINQ-to-Entities queries.</exception>
+    public static string? UnicodeLower(string? value) => throw new NotSupportedException("UnicodeLower can only be used in LINQ-to-Entities queries.");
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -330,6 +338,8 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
 
         // Configuration for each entity is in its own class inside 'ModelConfiguration'.
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(JellyfinDbContext).Assembly);
+
+        modelBuilder.HasDbFunction(typeof(JellyfinDbContext).GetMethod(nameof(UnicodeLower), new[] { typeof(string) })!);
     }
 
     /// <inheritdoc />
