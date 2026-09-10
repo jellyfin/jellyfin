@@ -26,6 +26,13 @@ namespace Jellyfin.Server.Implementations.Item;
 /// </summary>
 public class ItemPersistenceService : IItemPersistenceService
 {
+    /// <summary>
+    /// How many times a save is re-attempted after losing a race to create a shared ItemValue.
+    /// Each retry resolves at least one contested value, so a small bound is enough; it exists
+    /// to stop an unforeseen persistent conflict from spinning forever.
+    /// </summary>
+    private const int ItemValueConflictMaxAttempts = 3;
+
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IServerApplicationHost _appHost;
     private readonly ILogger<ItemPersistenceService> _logger;
@@ -247,6 +254,73 @@ public class ItemPersistenceService : IItemPersistenceService
     private void UpdateOrInsertItems(IReadOnlyList<BaseItemDto> items, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(items);
+
+        // ItemValues is a de-duplication table with a unique (Type, Value) index, and the
+        // library scanner saves items in parallel. Two items that introduce the same new
+        // value (a shared genre, studio, tag, ...) race to create it, and the loser's insert
+        // violates the index and aborts its whole transaction. Backends that serialise
+        // writes never reach it, which is why it only shows up on PostgreSQL and friends.
+        //
+        // Resolve it the way SaveImagesAsync does: let the write be the check, and on
+        // failure re-read to find out whether the assumption it was made under still holds.
+        // The alternative, an ON CONFLICT upsert, is not portable - MariaDB has no such
+        // clause - so the race is settled here rather than in dialect-specific SQL.
+        var attemptedNewItemValues = new List<(ItemValueType Type, string Value)>();
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                UpdateOrInsertItemsCore(items, attemptedNewItemValues, cancellationToken);
+                return;
+            }
+            catch (DbUpdateException) when (attempt < ItemValueConflictMaxAttempts)
+            {
+                // Deliberately checked here and not in the filter above: an exception filter runs
+                // before the failed attempt unwinds, so the transaction would still be open and
+                // still holding its write lock while this reads.
+                if (!LostItemValueRace(attemptedNewItemValues))
+                {
+                    throw;
+                }
+
+                // Whatever we were going to create exists now, so the next attempt reads it
+                // back instead of inserting it. Every write went through the transaction that
+                // has just rolled back, leaving nothing to undo before retrying.
+                _logger.LogDebug(
+                    "Retrying item save after losing a race to create a shared ItemValue (attempt {Attempt} of {MaxAttempts})",
+                    attempt,
+                    ItemValueConflictMaxAttempts);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Reports whether any ItemValue the failed attempt meant to create exists now, which is
+    /// what losing the race looks like from here. A failure for any other reason leaves them
+    /// absent and is rethrown rather than retried.
+    /// </summary>
+    /// <param name="attemptedNewItemValues">The values the failed attempt tried to create.</param>
+    /// <returns><c>true</c> if a concurrent writer created one of them.</returns>
+    private bool LostItemValueRace(List<(ItemValueType Type, string Value)> attemptedNewItemValues)
+    {
+        if (attemptedNewItemValues.Count == 0)
+        {
+            return false;
+        }
+
+        var types = attemptedNewItemValues.Select(e => e.Type).Distinct().ToArray();
+        var values = attemptedNewItemValues.Select(e => e.Value).Distinct().ToArray();
+        var attempted = attemptedNewItemValues.ToHashSet();
+
+        using var context = _dbProvider.CreateDbContext();
+        return context.ItemValues
+            .Where(e => types.Contains(e.Type) && values.Contains(e.Value))
+            .AsEnumerable()
+            .Any(e => attempted.Contains((e.Type, e.Value)));
+    }
+
+    private void UpdateOrInsertItemsCore(IReadOnlyList<BaseItemDto> items, List<(ItemValueType Type, string Value)> attemptedNewItemValues, CancellationToken cancellationToken)
+    {
         cancellationToken.ThrowIfCancellationRequested();
 
         var tuples = new List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey, List<string> InheritedTags)>();
@@ -320,6 +394,11 @@ public class ItemPersistenceService : IItemPersistenceService
             Value = f.Value
         }).ToArray();
         context.ItemValues.AddRange(missingItemValues);
+
+        // Recorded for the caller's retry check: these are the rows a concurrent writer can
+        // create between the read above and the save below.
+        attemptedNewItemValues.Clear();
+        attemptedNewItemValues.AddRange(missingItemValues.Select(e => (e.Type, e.Value)));
 
         var itemValuesStore = existingValues
             .Concat(missingItemValues)
