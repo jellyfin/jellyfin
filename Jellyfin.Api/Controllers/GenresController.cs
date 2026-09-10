@@ -158,9 +158,12 @@ public class GenresController : BaseJellyfinApiController
     /// <param name="genreName">The genre name.</param>
     /// <param name="userId">The user id.</param>
     /// <response code="200">Genres returned.</response>
-    /// <returns>An <see cref="OkResult"/> containing the genre.</returns>
+    /// <response code="404">Genre not found.</response>
+    /// <returns>An <see cref="OkResult"/> containing the genre on success,
+    /// or a <see cref="NotFoundResult"/> if the genre was not found.</returns>
     [HttpGet("{genreName}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<BaseItemDto> GetGenre([FromRoute, Required] string genreName, [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
@@ -176,7 +179,10 @@ public class GenresController : BaseJellyfinApiController
             item = _libraryManager.GetGenre(genreName);
         }
 
-        item ??= new Genre();
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         var user = userId.IsNullOrEmpty()
             ? null

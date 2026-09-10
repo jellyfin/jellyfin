@@ -74,7 +74,7 @@ namespace Emby.Server.Implementations.Library
             {
                 try
                 {
-                    return _libraryManager.GetMusicGenre(i).Id;
+                    return _libraryManager.GetMusicGenre(i)?.Id ?? Guid.Empty;
                 }
                 catch
                 {
