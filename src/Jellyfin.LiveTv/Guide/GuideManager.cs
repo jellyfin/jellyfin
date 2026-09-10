@@ -130,7 +130,7 @@ public class GuideManager : IGuideManager
                 newChannelIdList.AddRange(idList.Item1);
                 newProgramIdList.AddRange(idList.Item2);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 throw;
             }
@@ -195,7 +195,7 @@ public class GuideManager : IGuideManager
 
                 list.Add(item);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 throw;
             }
@@ -314,7 +314,7 @@ public class GuideManager : IGuideManager
                     },
                     cancellationToken).ConfigureAwait(false);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 throw;
             }
