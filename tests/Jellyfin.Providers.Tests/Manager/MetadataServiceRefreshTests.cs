@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -24,6 +25,45 @@ namespace Jellyfin.Providers.Tests.Manager
 {
     public class MetadataServiceRefreshTests
     {
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task RefreshWithProviders_ProbeFailure_IsCountedAsFailedRefresh(bool probeFails)
+        {
+            var item = new Movie { Name = "Probe regression test" };
+            var options = new MetadataRefreshOptions(Mock.Of<IDirectoryService>())
+            {
+                MetadataRefreshMode = MetadataRefreshMode.FullRefresh
+            };
+            var provider = new Mock<ICustomMetadataProvider<Movie>>(MockBehavior.Strict);
+            provider.SetupGet(p => p.Name).Returns("Probe Provider");
+            provider.Setup(p => p.FetchAsync(item, options, CancellationToken.None))
+                .Returns(probeFails
+                    ? Task.FromException<ItemUpdateType>(new FfmpegException("ffprobe failed - streams and format are both null."))
+                    : Task.FromResult(ItemUpdateType.MetadataImport));
+
+            var service = new TestMetadataService();
+            var result = await service.RefreshWithProvidersInternal(
+                new MetadataResult<Movie> { Item = item },
+                new MovieInfo { Name = item.Name },
+                options,
+                [provider.Object]).ConfigureAwait(true);
+
+            provider.Verify(p => p.FetchAsync(item, options, CancellationToken.None), Times.Once);
+
+            // Issue #17917: a swallowed probe exception must not look like a successful refresh
+            // to the caller deciding whether to advance DateLastRefreshed.
+            Assert.Equal(probeFails ? 1 : 0, result.Failures);
+            if (probeFails)
+            {
+                Assert.Equal("ffprobe failed - streams and format are both null.", result.ErrorMessage);
+            }
+            else
+            {
+                Assert.True(result.UpdateType.HasFlag(ItemUpdateType.MetadataImport));
+            }
+        }
+
         [Theory]
         // RemoveOldMetadata is only ever set by an explicit user action - a refresh with "replace all
         // metadata", or Identify. A provider failing must not silently downgrade that to a merge: the
@@ -285,6 +325,57 @@ namespace Jellyfin.Providers.Tests.Manager
             {
                 Assert.True(item.DateLastRefreshed > stampBefore);
             }
+        }
+
+        [Fact]
+        public async Task RefreshMetadata_ProbeFails_RetriesOverdueRefreshAndStopsAfterSuccess()
+        {
+            var item = new TestItem
+            {
+                Id = Guid.NewGuid(),
+                Name = "Probe test",
+                DateLastRefreshed = DateTime.UtcNow.AddDays(-60),
+                PreferredMetadataLanguage = "en",
+                PreferredMetadataCountryCode = "US"
+            };
+            item.PresentationUniqueKey = item.CreatePresentationUniqueKey();
+            var previousRefresh = item.DateLastRefreshed;
+            var options = new MetadataRefreshOptions(Mock.Of<IDirectoryService>())
+            {
+                MetadataRefreshMode = MetadataRefreshMode.Default,
+                ImageRefreshMode = MetadataRefreshMode.None
+            };
+            var provider = new Mock<ICustomMetadataProvider<TestItem>>();
+            provider.SetupGet(p => p.Name).Returns("Probe Provider");
+            provider.As<IHasItemChangeMonitor>()
+                .Setup(p => p.HasChanged(item, options.DirectoryService)).Returns(false);
+            provider.SetupSequence(p => p.FetchAsync(item, options, CancellationToken.None))
+                .ThrowsAsync(new FfmpegException("Probe failed"))
+                .ReturnsAsync(ItemUpdateType.MetadataImport);
+
+            var libraryManager = new Mock<ILibraryManager>();
+            libraryManager.Setup(l => l.GetLibraryOptions(item)).Returns(new LibraryOptions { AutomaticRefreshIntervalDays = 30 });
+            var providerManager = new Mock<IProviderManager>();
+            providerManager.Setup(p => p.GetImageProviders(item, It.IsAny<ImageRefreshOptions>()))
+                .Returns(Array.Empty<IImageProvider>());
+            providerManager.Setup(p => p.GetMetadataProviders<TestItem>(item, It.IsAny<LibraryOptions>()))
+                .Returns(new[] { (IMetadataProvider<TestItem>)provider.Object });
+            providerManager.Setup(p => p.GetMetadataSavers(item, It.IsAny<LibraryOptions>()))
+                .Returns(Array.Empty<IMetadataSaver>());
+            var repository = new Mock<IItemRepository>();
+            repository.Setup(r => r.ItemExistsAsync(item.Id)).ReturnsAsync(true);
+            var service = new TestItemMetadataService(libraryManager.Object, providerManager.Object, repository.Object);
+
+            await service.RefreshMetadata(item, options, CancellationToken.None).ConfigureAwait(true);
+            Assert.Equal(previousRefresh, item.DateLastRefreshed);
+
+            // No file change is reported: the failed refresh must remain overdue for retry.
+            await service.RefreshMetadata(item, options, CancellationToken.None).ConfigureAwait(true);
+            Assert.True(item.DateLastRefreshed > previousRefresh);
+            provider.Verify(p => p.FetchAsync(item, options, CancellationToken.None), Times.Exactly(2));
+
+            await service.RefreshMetadata(item, options, CancellationToken.None).ConfigureAwait(true);
+            provider.Verify(p => p.FetchAsync(item, options, CancellationToken.None), Times.Exactly(2));
         }
 
         /// <summary>
