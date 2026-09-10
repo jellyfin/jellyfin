@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
@@ -15,8 +16,8 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-04-20T15:00:00", nameof(FixPlaylistOwner), "615DFA9E-2497-4DBB-A472-61938B752C5B")]
-internal class FixPlaylistOwner : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
+internal class FixPlaylistOwner : IAsyncMigrationRoutine
 {
     private readonly ILogger<FixPlaylistOwner> _logger;
     private readonly ILibraryManager _libraryManager;
@@ -32,8 +33,15 @@ internal class FixPlaylistOwner : IMigrationRoutine
         _playlistManager = playlistManager;
     }
 
-    /// <inheritdoc/>
-    public void Perform()
+    /// <inheritdoc />
+    public Task PerformAsync(CancellationToken cancellationToken)
+    {
+        // This routine predates the async interface and has not been ported to async database access yet.
+        PerformCore();
+        return Task.CompletedTask;
+    }
+
+    private void PerformCore()
     {
         var playlists = _libraryManager.GetItemList(new InternalItemsQuery
         {

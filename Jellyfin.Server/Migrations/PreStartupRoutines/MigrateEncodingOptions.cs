@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using Emby.Server.Implementations;
@@ -12,8 +14,8 @@ namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 /// <inheritdoc />
 #pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-04-20T03:00:00", nameof(MigrateEncodingOptions), "A8E61960-7726-4450-8F3D-82C12DAABBCB", Stage = Stages.JellyfinMigrationStageTypes.PreInitialisation)]
-public class MigrateEncodingOptions : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
+public class MigrateEncodingOptions : IAsyncMigrationRoutine
 {
     private readonly ServerApplicationPaths _applicationPaths;
     private readonly ILogger<MigrateEncodingOptions> _logger;
@@ -30,7 +32,7 @@ public class MigrateEncodingOptions : IMigrationRoutine
     }
 
     /// <inheritdoc />
-    public void Perform()
+    public Task PerformAsync(CancellationToken cancellationToken)
     {
         string path = Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "encoding.xml");
         var oldSerializer = new XmlSerializer(typeof(OldEncodingOptions), new XmlRootAttribute("EncodingOptions"));
@@ -52,7 +54,7 @@ public class MigrateEncodingOptions : IMigrationRoutine
 
         if (oldConfig is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         var hardwareAccelerationType = HardwareAccelerationType.none;
@@ -143,6 +145,8 @@ public class MigrateEncodingOptions : IMigrationRoutine
         var xmlWriterSettings = new XmlWriterSettings { Indent = true };
         using var xmlWriter = XmlWriter.Create(path, xmlWriterSettings);
         newSerializer.Serialize(xmlWriter, encodingOptions);
+
+        return Task.CompletedTask;
     }
 
 #pragma warning disable

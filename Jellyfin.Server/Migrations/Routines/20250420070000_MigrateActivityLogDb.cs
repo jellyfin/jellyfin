@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
@@ -16,8 +18,8 @@ namespace Jellyfin.Server.Migrations.Routines
     /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
     [JellyfinMigration("2025-04-20T07:00:00", nameof(MigrateActivityLogDb), "3793eb59-bc8c-456c-8b9f-bd5a62a42978")]
-    public class MigrateActivityLogDb : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
+    public class MigrateActivityLogDb : IAsyncMigrationRoutine
     {
         private const string DbFilename = "activitylog.db";
 
@@ -38,8 +40,15 @@ namespace Jellyfin.Server.Migrations.Routines
             _paths = paths;
         }
 
-        /// <inheritdoc/>
-        public void Perform()
+        /// <inheritdoc />
+        public Task PerformAsync(CancellationToken cancellationToken)
+        {
+            // This routine predates the async interface and has not been ported to async database access yet.
+            PerformCore();
+            return Task.CompletedTask;
+        }
+
+        private void PerformCore()
         {
             var logLevelDictionary = new Dictionary<string, LogLevel>(StringComparer.OrdinalIgnoreCase)
             {

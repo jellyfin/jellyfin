@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using Emby.Server.Implementations;
@@ -10,8 +12,8 @@ namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 /// <inheritdoc />
 #pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-04-20T00:00:00", nameof(CreateNetworkConfiguration), "9B354818-94D5-4B68-AC49-E35CB85F9D84", Stage = Stages.JellyfinMigrationStageTypes.PreInitialisation)]
-public class CreateNetworkConfiguration : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
+public class CreateNetworkConfiguration : IAsyncMigrationRoutine
 {
     private readonly ServerApplicationPaths _applicationPaths;
     private readonly ILogger<CreateNetworkConfiguration> _logger;
@@ -28,13 +30,13 @@ public class CreateNetworkConfiguration : IMigrationRoutine
     }
 
     /// <inheritdoc />
-    public void Perform()
+    public Task PerformAsync(CancellationToken cancellationToken)
     {
         string path = Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "network.xml");
         if (File.Exists(path))
         {
             _logger.LogDebug("Network configuration file already exists, skipping");
-            return;
+            return Task.CompletedTask;
         }
 
         var serverConfigSerializer = new XmlSerializer(typeof(OldNetworkConfiguration), new XmlRootAttribute("ServerConfiguration"));
@@ -45,6 +47,8 @@ public class CreateNetworkConfiguration : IMigrationRoutine
         var xmlWriterSettings = new XmlWriterSettings { Indent = true };
         using var xmlWriter = XmlWriter.Create(path, xmlWriterSettings);
         networkConfigSerializer.Serialize(xmlWriter, networkSettings);
+
+        return Task.CompletedTask;
     }
 
 #pragma warning disable
