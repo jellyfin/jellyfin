@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.Extensions;
 using MediaBrowser.Providers.Music;
 using MetaBrainz.MusicBrainz;
 using MetaBrainz.MusicBrainz.Interfaces.Entities;
@@ -100,7 +101,7 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
         {
             Name = artist.Name,
             ProductionYear = artist.LifeSpan?.Begin?.Year,
-            PremiereDate = artist.LifeSpan?.Begin?.NearestDate,
+            PremiereDate = artist.LifeSpan?.Begin?.NearestDate.AsCalendarDate(),
             SearchProviderName = Name,
         };
 
@@ -146,13 +147,13 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
 
         if (artist.LifeSpan?.Begin is not null)
         {
-            result.Item.PremiereDate = artist.LifeSpan.Begin.NearestDate;
+            result.Item.PremiereDate = artist.LifeSpan.Begin.NearestDate.AsCalendarDate();
             result.Item.ProductionYear = artist.LifeSpan.Begin.Year;
         }
 
         if (artist.LifeSpan?.End is not null)
         {
-            result.Item.EndDate = artist.LifeSpan.End.NearestDate;
+            result.Item.EndDate = artist.LifeSpan.End.NearestDate.AsCalendarDate();
         }
 
         var location = string.IsNullOrWhiteSpace(artist.Area?.Name) ? artist.Country : artist.Area!.Name;

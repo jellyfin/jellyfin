@@ -14,6 +14,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.Extensions;
 using TMDbLib.Objects.TvShows;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
@@ -180,9 +181,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 ParentIndexNumber = seasonNumber,
                 IndexNumberEnd = info.IndexNumberEnd,
                 Name = episodeResult.Name,
-                PremiereDate = episodeResult.AirDate.HasValue
-                    ? DateTime.SpecifyKind(episodeResult.AirDate.Value, DateTimeKind.Local).ToUniversalTime()
-                    : null,
+                PremiereDate = episodeResult.AirDate.AsCalendarDate(),
                 ProductionYear = episodeResult.AirDate?.Year,
                 Overview = episodeResult.Overview,
                 CommunityRating = Convert.ToSingle(episodeResult.VoteAverage)
