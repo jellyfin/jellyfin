@@ -128,5 +128,21 @@ namespace MediaBrowser.Controller.Entities
             ArgumentNullException.ThrowIfNull(source);
             return source.DateModified.Subtract(asOf).Duration().TotalSeconds > 1;
         }
+
+        /// <summary>
+        /// Determines if the item's source file has changed.
+        /// </summary>
+        /// <param name="source">The source item.</param>
+        /// <param name="file">The current file metadata.</param>
+        /// <typeparam name="T">Source type.</typeparam>
+        /// <returns>Whether the source file has changed.</returns>
+        public static bool HasChanged<T>(this T source, FileSystemMetadata file)
+            where T : BaseItem
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(file);
+            return source.HasChanged(file.LastWriteTimeUtc)
+                || (!file.IsDirectory && source.Size.HasValue && source.Size.Value != file.Length);
+        }
     }
 }
