@@ -1473,7 +1473,7 @@ namespace MediaBrowser.Controller.Entities
 
         private static bool IsDecimalPoint(string prefix, int index, IReadOnlyList<string> fileNames)
         {
-            if (prefix[index] != '.' || index == 0 || !char.IsDigit(prefix[index - 1]))
+            if (index == 0 || prefix[index] != '.' || !char.IsDigit(prefix[index - 1]))
             {
                 return false;
             }
