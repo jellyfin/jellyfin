@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
@@ -281,5 +280,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="source">The <see cref="MediaSourceInfo"/>.</param>
         /// <param name="concatFilePath">The path the config should be written to.</param>
         void GenerateConcatConfig(MediaSourceInfo source, string concatFilePath);
+
+        /// <summary>
+        /// Runs a simple FFmpeg concatenation job on a list of files and writes them to the output file.
+        /// </summary>
+        /// <param name="filePaths">The file paths to concatenate.</param>
+        /// <param name="outputFile">The output file.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task ConcatenateMedia(IReadOnlyCollection<string> filePaths, string outputFile, CancellationToken cancellationToken);
     }
 }
