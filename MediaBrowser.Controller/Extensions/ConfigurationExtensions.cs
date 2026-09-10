@@ -30,6 +30,16 @@ namespace MediaBrowser.Controller.Extensions
         public const string FfmpegProbeSizeKey = "FFmpeg:probesize";
 
         /// <summary>
+        /// The key for the FFmpeg probe size option used during playback.
+        /// </summary>
+        /// <remarks>
+        /// Deliberately absent from <c>ConfigurationOptions.DefaultConfiguration</c>. The accessor falls
+        /// back to <see cref="FfmpegProbeSizeKey"/> when this is unset, and a default value here would
+        /// mask that fallback and silently change behaviour for anyone who has set the existing key.
+        /// </remarks>
+        public const string FfmpegPlaybackProbeSizeKey = "FFmpeg:playbackprobesize";
+
+        /// <summary>
         /// The key for the skipping FFmpeg validation.
         /// </summary>
         public const string FfmpegSkipValidationKey = "FFmpeg:novalidation";
@@ -90,6 +100,18 @@ namespace MediaBrowser.Controller.Extensions
         /// <returns>The FFmpeg probe size option.</returns>
         public static string? GetFFmpegProbeSize(this IConfiguration configuration)
             => configuration[FfmpegProbeSizeKey];
+
+        /// <summary>
+        /// Gets the FFmpeg probe size to use during playback from the <see cref="IConfiguration" />.
+        /// </summary>
+        /// <param name="configuration">The configuration to read the setting from.</param>
+        /// <returns>The playback FFmpeg probe size option, falling back to <see cref="GetFFmpegProbeSize"/> when unset or empty.</returns>
+        public static string? GetFFmpegPlaybackProbeSize(this IConfiguration configuration)
+        {
+            var playbackProbeSize = configuration[FfmpegPlaybackProbeSizeKey];
+
+            return string.IsNullOrEmpty(playbackProbeSize) ? configuration.GetFFmpegProbeSize() : playbackProbeSize;
+        }
 
         /// <summary>
         /// Gets the FFmpeg analyze duration from the <see cref="IConfiguration" />.
