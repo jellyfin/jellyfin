@@ -316,7 +316,7 @@ namespace MediaBrowser.Controller.Entities
             var dictionary = new Dictionary<Guid, BaseItem>();
 
             Children = null; // invalidate cached children.
-            var childrenList = Children.ToList();
+            var childrenList = GetChildrenForValidation();
 
             foreach (var child in childrenList)
             {
@@ -663,7 +663,8 @@ namespace MediaBrowser.Controller.Entities
                     // First: update old primary's alternate items to point to new primary.
                     // Order matters — update alternates FIRST so they don't get orphan-deleted
                     // when old primary's arrays are cleared.
-                    var oldAlternateIds = LibraryManager.GetLocalAlternateVersionIds(oldPrimary)
+                    var oldLocalAlternateIds = LibraryManager.GetLocalAlternateVersionIds(oldPrimary).ToHashSet();
+                    var oldAlternateIds = oldLocalAlternateIds
                         .Concat(LibraryManager.GetLinkedAlternateVersions(oldPrimary).Select(v => v.Id))
                         .Distinct()
                         .ToList();
@@ -673,7 +674,10 @@ namespace MediaBrowser.Controller.Entities
                         if (LibraryManager.GetItemById(altId) is Video altVideo && !altVideo.Id.Equals(newPrimary.Id))
                         {
                             altVideo.SetPrimaryVersionId(newPrimary.Id);
-                            altVideo.OwnerId = newPrimary.Id;
+
+                            // Only a version stored next to the new primary is owned by it; one that
+                            // was merged in by hand keeps its own row and must stay unowned.
+                            altVideo.OwnerId = oldLocalAlternateIds.Contains(altVideo.Id) ? newPrimary.Id : Guid.Empty;
                             await altVideo.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                         }
                     }
@@ -896,6 +900,17 @@ namespace MediaBrowser.Controller.Entities
             {
                 Parent = this,
                 GroupByPresentationUniqueKey = false,
+                DtoOptions = new DtoOptions(true)
+            });
+        }
+
+        private IReadOnlyList<BaseItem> GetChildrenForValidation()
+        {
+            return ItemRepository.GetItemList(new InternalItemsQuery
+            {
+                Parent = this,
+                GroupByPresentationUniqueKey = false,
+                IncludeAlternateVersions = true,
                 DtoOptions = new DtoOptions(true)
             });
         }
