@@ -77,44 +77,49 @@ public static class WebHostBuilderExtensions
         WebHostBuilderContext builderContext,
         KestrelServerOptions options)
     {
-        bool flagged = false;
+        var flagged = false;
+
+        void ConfigureHttps(ListenOptions listenOptions)
+        {
+            if (!httpsPort.HasValue)
+            {
+                return;
+            }
+
+            if (builderContext.HostingEnvironment.IsDevelopment())
+            {
+                try
+                {
+                    listenOptions.UseHttps();
+                }
+                catch (InvalidOperationException)
+                {
+                    if (!flagged)
+                    {
+                        logger.LogWarning("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted");
+                        flagged = true;
+                    }
+                }
+            }
+            else
+            {
+                if (certificate is null)
+                {
+                    throw new InvalidOperationException("Cannot run jellyfin with https without setting a valid certificate.");
+                }
+
+                listenOptions.UseHttps(certificate);
+            }
+        }
+
         foreach (var netAdd in addresses)
         {
             var address = netAdd.Address;
             logger.LogInformation("Kestrel is listening on {Address}", address.Equals(IPAddress.IPv6Any) ? "all interfaces" : address);
-            options.Listen(netAdd.Address, httpPort);
+            options.Listen(address, httpPort);
             if (httpsPort.HasValue)
             {
-                if (builderContext.HostingEnvironment.IsDevelopment())
-                {
-                    try
-                    {
-                        options.Listen(
-                            address,
-                            httpsPort.Value,
-                            listenOptions => listenOptions.UseHttps());
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        if (!flagged)
-                        {
-                            logger.LogWarning("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted");
-                            flagged = true;
-                        }
-                    }
-                }
-                else
-                {
-                    if (certificate is null)
-                    {
-                        throw new InvalidOperationException("Cannot run jellyfin with https without setting a valid certificate.");
-                    }
-
-                    options.Listen(
-                        address,
-                        httpsPort.Value,
-                        listenOptions => listenOptions.UseHttps(certificate));
-                }
+                options.Listen(address, httpsPort.Value, ConfigureHttps);
             }
         }
 
@@ -129,8 +134,9 @@ public static class WebHostBuilderExtensions
                 File.Delete(socketPath);
             }
 
-            options.ListenUnixSocket(socketPath);
-            logger.LogInformation("Kestrel listening to unix socket {SocketPath}", socketPath);
+            options.ListenUnixSocket(socketPath, ConfigureHttps);
+
+            logger.LogInformation("Kestrel listening on unix socket {SocketPath}", socketPath);
         }
     }
 }
