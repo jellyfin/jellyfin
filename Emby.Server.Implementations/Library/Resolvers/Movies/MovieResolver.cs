@@ -429,6 +429,13 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                         continue;
                     }
 
+                    // Sample folders contain sample clips, not disc content. Ignore them so
+                    // they don't block single-movie resolution (common in scene releases).
+                    if (string.Equals(filename, "sample", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
                     if (IsDvdDirectory(child.FullName, filename, directoryService))
                     {
                         var movie = new T
