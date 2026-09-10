@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
@@ -22,6 +24,7 @@ using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
 using static Jellyfin.Extensions.StringExtensions;
+using ChapterInfo = MediaBrowser.Model.Entities.ChapterInfo;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -40,6 +43,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILyricManager _lyricManager;
         private readonly IMediaStreamRepository _mediaStreamRepository;
         private readonly IChapterManager _chapterManager;
+        private readonly IPathManager _pathManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioFileProber"/> class.
@@ -52,6 +56,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
         /// <param name="mediaStreamRepository">Instance of the <see cref="IMediaStreamRepository"/>.</param>
         /// <param name="chapterManager">Instance of the <see cref="IChapterManager"/> interface.</param>
+        /// <param name="pathManager">Instance of the <see cref="IPathManager"/> interface.</param>
         public AudioFileProber(
             ILogger<AudioFileProber> logger,
             IMediaSourceManager mediaSourceManager,
@@ -60,7 +65,8 @@ namespace MediaBrowser.Providers.MediaInfo
             LyricResolver lyricResolver,
             ILyricManager lyricManager,
             IMediaStreamRepository mediaStreamRepository,
-            IChapterManager chapterManager)
+            IChapterManager chapterManager,
+            IPathManager pathManager)
         {
             _mediaEncoder = mediaEncoder;
             _libraryManager = libraryManager;
@@ -70,6 +76,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _lyricManager = lyricManager;
             _mediaStreamRepository = mediaStreamRepository;
             _chapterManager = chapterManager;
+            _pathManager = pathManager;
             ATL.Settings.DisplayValueSeparator = InternalValueSeparator;
             ATL.Settings.UseFileNameWhenNoTitle = false;
             ATL.Settings.ID3v2_separatev2v3Values = false;
@@ -158,9 +165,132 @@ namespace MediaBrowser.Providers.MediaInfo
 
             _mediaStreamRepository.SaveMediaStreams(audio.Id, mediaStreams, cancellationToken);
 
-            if (audio is AudioBook && mediaInfo.Chapters is { Length: > 0 })
+            if (audio is AudioBook audioBook)
             {
-                _chapterManager.SaveChapters(audio, mediaInfo.Chapters);
+                await SaveAudioBookChaptersAsync(audioBook, mediaInfo, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        internal async Task SaveAudioBookChaptersAsync(AudioBook audioBook, Model.MediaInfo.MediaInfo mediaInfo, CancellationToken cancellationToken)
+        {
+            IReadOnlyList<ChapterInfo>? multiPartChapters = null;
+            if (audioBook.AdditionalParts.Length > 0)
+            {
+                var (chapters, totalTicks, partTicks) = await BuildMultiPartChaptersAsync(
+                    audioBook, mediaInfo.RunTimeTicks ?? 0, cancellationToken).ConfigureAwait(false);
+                audioBook.RunTimeTicks = totalTicks;
+                audioBook.PartRunTimeTicks = partTicks;
+                multiPartChapters = chapters;
+            }
+
+            if (mediaInfo.Chapters is { Length: > 0 })
+            {
+                _chapterManager.SaveChapters(audioBook, mediaInfo.Chapters);
+            }
+            else if (multiPartChapters is not null)
+            {
+                _chapterManager.SaveChapters(audioBook, multiPartChapters);
+            }
+        }
+
+        internal async Task<(IReadOnlyList<ChapterInfo> Chapters, long TotalRunTimeTicks, long[] PartRunTimeTicks)> BuildMultiPartChaptersAsync(
+            AudioBook audioBook,
+            long firstPartTicks,
+            CancellationToken cancellationToken)
+        {
+            var chapters = new List<ChapterInfo>();
+            var partTicks = new List<long> { firstPartTicks };
+
+            var firstChapter = new ChapterInfo
+            {
+                Name = StripLeadingTrackNumber(Path.GetFileNameWithoutExtension(audioBook.Path)),
+                StartPositionTicks = 0
+            };
+            TrySetChapterImage(audioBook, firstChapter, audioBook.Path);
+            chapters.Add(firstChapter);
+
+            var cumulativeTicks = firstPartTicks;
+
+            foreach (var partPath in audioBook.AdditionalParts)
+            {
+                var partInfo = await _mediaEncoder.GetMediaInfo(
+                    new MediaInfoRequest
+                    {
+                        MediaType = DlnaProfileType.Audio,
+                        MediaSource = new MediaSourceInfo
+                        {
+                            Path = partPath,
+                            Protocol = MediaProtocol.File
+                        }
+                    },
+                    cancellationToken).ConfigureAwait(false);
+
+                var partDuration = partInfo.RunTimeTicks ?? 0;
+                partTicks.Add(partDuration);
+
+                var chapter = new ChapterInfo
+                {
+                    Name = StripLeadingTrackNumber(Path.GetFileNameWithoutExtension(partPath)),
+                    StartPositionTicks = cumulativeTicks
+                };
+                TrySetChapterImage(audioBook, chapter, partPath);
+                chapters.Add(chapter);
+
+                cumulativeTicks += partDuration;
+            }
+
+            return (chapters, cumulativeTicks, partTicks.ToArray());
+        }
+
+        internal static string StripLeadingTrackNumber(string name)
+        {
+            var digitsEnd = 0;
+            while (digitsEnd < name.Length && char.IsDigit(name[digitsEnd]))
+            {
+                digitsEnd++;
+            }
+
+            if (digitsEnd == 0)
+            {
+                return name;
+            }
+
+            var index = digitsEnd;
+            while (index < name.Length && (name[index] == ' ' || name[index] == '_' || name[index] == '-' || name[index] == '.' || name[index] == '#'))
+            {
+                index++;
+            }
+
+            if (index == digitsEnd)
+            {
+                return name;
+            }
+
+            var stripped = name[index..];
+            return stripped.Length > 0 ? stripped : name;
+        }
+
+        private void TrySetChapterImage(AudioBook audioBook, ChapterInfo chapter, string filePath)
+        {
+            try
+            {
+                var atlTrack = new Track(filePath);
+                var picture = atlTrack.EmbeddedPictures
+                    .FirstOrDefault(p => p.PicType == PictureInfo.PIC_TYPE.Front)
+                    ?? atlTrack.EmbeddedPictures.FirstOrDefault();
+
+                if (picture?.PictureData is { Length: > 0 })
+                {
+                    var imagePath = _pathManager.GetChapterImagePath(audioBook, chapter.StartPositionTicks);
+                    Directory.CreateDirectory(Path.GetDirectoryName(imagePath)!);
+                    File.WriteAllBytes(imagePath, picture.PictureData);
+                    chapter.ImagePath = imagePath;
+                    chapter.ImageDateModified = DateTime.UtcNow;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to extract embedded artwork from {Path}", filePath);
             }
         }
 
