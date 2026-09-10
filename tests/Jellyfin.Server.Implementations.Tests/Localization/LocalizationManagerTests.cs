@@ -199,6 +199,10 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [InlineData("Rated: R", "US", 17, 0)]
         [InlineData("Rated R", "US", 17, 0)]
         [InlineData(" PG-13 ", "US", 13, 0)]
+        [InlineData("IT-VM14", "IT", 14, null)]
+        [InlineData("IT-VM18", "IT", 18, null)]
+        [InlineData("VM12", "IT", 12, null)]
+        [InlineData("IT-6+", "IT", 6, null)]
         public async Task GetRatingLevel_GivenValidString_Success(string value, string countryCode, int? expectedScore, int? expectedSubScore)
         {
             var localizationManager = Setup(new ServerConfiguration()
