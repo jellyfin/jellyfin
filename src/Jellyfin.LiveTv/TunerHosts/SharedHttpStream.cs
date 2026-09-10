@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Buffers;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
@@ -46,10 +47,12 @@ namespace Jellyfin.LiveTv.TunerHosts
             LiveStreamCancellationTokenSource.Token.ThrowIfCancellationRequested();
 
             var mediaSource = OriginalMediaSource;
-
             var url = mediaSource.Path;
 
-            Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath) ?? throw new InvalidOperationException("Path can't be a root directory."));
+            if (IsRollingChunkEnabled)
+            {
+                Directory.CreateDirectory(ChunkDirectory);
+            }
 
             var typeName = GetType().Name;
             Logger.LogInformation("Opening {StreamType} Live stream from {Url}", typeName, url);
@@ -69,7 +72,7 @@ namespace Jellyfin.LiveTv.TunerHosts
             var res = await taskCompletionSource.Task.ConfigureAwait(false);
             if (!res)
             {
-                Logger.LogWarning("Zero bytes copied from stream {StreamType} to {FilePath} but no exception raised", GetType().Name, TempFilePath);
+                Logger.LogWarning("Zero bytes copied from stream {StreamType} to {Directory} but no exception raised", GetType().Name, ChunkDirectory);
                 throw new EndOfStreamException(string.Format(CultureInfo.InvariantCulture, "Zero bytes copied from stream {0}", GetType().Name));
             }
         }
@@ -81,55 +84,72 @@ namespace Jellyfin.LiveTv.TunerHosts
                 {
                     try
                     {
-                        Logger.LogInformation("Beginning {StreamType} stream to {FilePath}", GetType().Name, TempFilePath);
+                        Logger.LogInformation("Beginning {StreamType} stream to {Directory}", GetType().Name, ChunkDirectory);
                         using (response)
                         {
                             var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                             await using (stream.ConfigureAwait(false))
                             {
-                                var fileStream = new FileStream(
-                                    TempFilePath,
-                                    FileMode.Create,
-                                    FileAccess.Write,
-                                    FileShare.Read,
-                                    IODefaults.FileStreamBufferSize,
-                                    FileOptions.Asynchronous);
-
-                                await using (fileStream.ConfigureAwait(false))
+                                byte[] buffer = ArrayPool<byte>.Shared.Rent(IODefaults.CopyToBufferSize);
+                                try
                                 {
-                                    await StreamHelper.CopyToAsync(
-                                        stream,
-                                        fileStream,
-                                        IODefaults.CopyToBufferSize,
-                                        () => Resolve(openTaskCompletionSource),
-                                        cancellationToken).ConfigureAwait(false);
+                                    FileStream fileStream = OpenInitialChunk();
+                                    try
+                                    {
+                                        var chunkOpenedAt = DateTime.UtcNow;
+                                        bool resolved = false;
+                                        int read;
+
+                                        while ((read = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) != 0)
+                                        {
+                                            cancellationToken.ThrowIfCancellationRequested();
+
+                                            await fileStream.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
+
+                                            if (!resolved)
+                                            {
+                                                resolved = true;
+                                                DateOpened = DateTime.UtcNow;
+                                                openTaskCompletionSource.TrySetResult(true);
+                                            }
+
+                                            if (ShouldRotateChunk(chunkOpenedAt))
+                                            {
+                                                var oldStream = fileStream;
+                                                (fileStream, chunkOpenedAt) = RotateChunk();
+                                                await oldStream.DisposeAsync().ConfigureAwait(false);
+                                            }
+                                        }
+                                    }
+                                    finally
+                                    {
+                                        await fileStream.DisposeAsync().ConfigureAwait(false);
+                                    }
+                                }
+                                finally
+                                {
+                                    ArrayPool<byte>.Shared.Return(buffer);
                                 }
                             }
                         }
                     }
                     catch (OperationCanceledException ex)
                     {
-                        Logger.LogInformation("Copying of {StreamType} to {FilePath} was canceled", GetType().Name, TempFilePath);
+                        Logger.LogInformation("Copying of {StreamType} to {Directory} was canceled", GetType().Name, ChunkDirectory);
                         openTaskCompletionSource.TrySetException(ex);
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, "Error copying live stream {StreamType} to {FilePath}", GetType().Name, TempFilePath);
+                        Logger.LogError(ex, "Error copying live stream {StreamType} to {Directory}", GetType().Name, ChunkDirectory);
                         openTaskCompletionSource.TrySetException(ex);
                     }
 
                     openTaskCompletionSource.TrySetResult(false);
 
                     EnableStreamSharing = false;
-                    await DeleteTempFiles(TempFilePath).ConfigureAwait(false);
+                    await DeleteChunks().ConfigureAwait(false);
                 },
                 CancellationToken.None);
-        }
-
-        private void Resolve(TaskCompletionSource<bool> openTaskCompletionSource)
-        {
-            DateOpened = DateTime.UtcNow;
-            openTaskCompletionSource.TrySetResult(true);
         }
     }
 }
