@@ -52,6 +52,14 @@ public class ListingsManager : IListingsManager
     }
 
     /// <inheritdoc />
+    public IEnumerable<NameIdPair> GetListingProviderTypes()
+        => _listingsProviders.OrderBy(i => i.Name).Select(i => new NameIdPair
+        {
+            Name = i.Name,
+            Id = i.Type
+        });
+
+    /// <inheritdoc />
     public async Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info, bool validateLogin, bool validateListings)
     {
         ArgumentNullException.ThrowIfNull(info);
