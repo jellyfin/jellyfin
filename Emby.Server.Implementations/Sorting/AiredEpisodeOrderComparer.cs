@@ -1,7 +1,10 @@
 #pragma warning disable CS1591
 
 using System;
+using System.IO;
+using System.Text.RegularExpressions;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Sorting;
@@ -11,6 +14,11 @@ namespace Emby.Server.Implementations.Sorting
 {
     public class AiredEpisodeOrderComparer : IBaseItemComparer
     {
+        private static readonly Regex EpisodePartRegex = new(
+            @"(?:^|[ _.-])(?:cd|dvd|part|pt|dis[ck])[ _.-]*(?<number>[0-9]+|[a-d])(?:$|[ _.-])",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled,
+            TimeSpan.FromMilliseconds(200));
+
         /// <summary>
         /// Gets the name.
         /// </summary>
@@ -148,6 +156,16 @@ namespace Emby.Server.Implementations.Sorting
             var xValue = ((x.ParentIndexNumber ?? -1) * 1000) + (x.IndexNumber ?? -1);
             var yValue = ((y.ParentIndexNumber ?? -1) * 1000) + (y.IndexNumber ?? -1);
             var comparisonResult = xValue.CompareTo(yValue);
+            if (comparisonResult == 0)
+            {
+                comparisonResult = GetAdditionalPartIndex(x, y).CompareTo(GetAdditionalPartIndex(y, x));
+            }
+
+            if (comparisonResult == 0)
+            {
+                comparisonResult = GetFilenamePartIndex(x).CompareTo(GetFilenamePartIndex(y));
+            }
+
             // If equal, compare premiere dates
             if (comparisonResult == 0 && x.PremiereDate.HasValue && y.PremiereDate.HasValue)
             {
@@ -155,6 +173,51 @@ namespace Emby.Server.Implementations.Sorting
             }
 
             return comparisonResult;
+        }
+
+        private static int GetAdditionalPartIndex(Episode item, Episode other)
+        {
+            if (item.OwnerId.IsEmpty())
+            {
+                return 0;
+            }
+
+            var owner = item.OwnerId.Equals(other.Id)
+                ? other as Video
+                : item.GetOwner() as Video;
+
+            if (owner is null)
+            {
+                return int.MaxValue;
+            }
+
+            var index = Array.FindIndex(
+                owner.AdditionalParts,
+                path => string.Equals(path, item.Path, StringComparison.Ordinal));
+
+            return index < 0 ? int.MaxValue : index + 1;
+        }
+
+        private static int GetFilenamePartIndex(Episode item)
+        {
+            if (string.IsNullOrEmpty(item.Path))
+            {
+                return int.MaxValue;
+            }
+
+            var match = EpisodePartRegex.Match(Path.GetFileNameWithoutExtension(item.Path));
+            if (!match.Success)
+            {
+                return int.MaxValue;
+            }
+
+            var number = match.Groups["number"].Value;
+            if (int.TryParse(number, out var partNumber))
+            {
+                return partNumber;
+            }
+
+            return char.ToUpperInvariant(number[0]) - 'A' + 1;
         }
     }
 }
