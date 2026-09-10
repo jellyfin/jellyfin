@@ -45,4 +45,10 @@
     </AssemblyAttribute>
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Jellyfin.LibAssUtils">
+      <HintPath>..\..\..\..\Downloads\libass\Jellyfin.LibAssUtils\bin\Debug\net8.0\Jellyfin.LibAssUtils.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
