@@ -11,6 +11,8 @@ using MediaBrowser.Common.Configuration;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Database.Providers.Sqlite;
@@ -207,19 +209,27 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     {
         ArgumentNullException.ThrowIfNull(tableNames);
 
-        var deleteQueries = new List<string>();
+        // Defer checks until the entire import commits; disabling foreign_keys inside
+        // a transaction has no effect.
+        var sqlGenerationHelper = dbContext.GetService<ISqlGenerationHelper>();
+        var deleteQueries = new List<string> { "PRAGMA defer_foreign_keys = ON;" };
         foreach (var tableName in tableNames)
         {
-            deleteQueries.Add($"DELETE FROM \"{tableName}\";");
+            deleteQueries.Add($"DELETE FROM {sqlGenerationHelper.DelimitIdentifier(tableName)};");
         }
 
-        var deleteAllQuery =
-        $"""
-        PRAGMA foreign_keys = OFF;
-        {string.Join('\n', deleteQueries)}
-        PRAGMA foreign_keys = ON;
-        """;
+        var deleteAllQuery = string.Join('\n', deleteQueries);
+        if (dbContext.Database.CurrentTransaction is not null)
+        {
+            await dbContext.Database.ExecuteSqlRawAsync(deleteAllQuery).ConfigureAwait(false);
+            return;
+        }
 
-        await dbContext.Database.ExecuteSqlRawAsync(deleteAllQuery).ConfigureAwait(false);
+        var transaction = await dbContext.Database.BeginTransactionAsync().ConfigureAwait(false);
+        await using (transaction.ConfigureAwait(false))
+        {
+            await dbContext.Database.ExecuteSqlRawAsync(deleteAllQuery).ConfigureAwait(false);
+            await transaction.CommitAsync().ConfigureAwait(false);
+        }
     }
 }
