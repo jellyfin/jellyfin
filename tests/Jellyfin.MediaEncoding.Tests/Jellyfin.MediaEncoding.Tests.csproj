@@ -27,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../MediaBrowser.Controller/MediaBrowser.Controller.csproj" />
     <ProjectReference Include="../../MediaBrowser.MediaEncoding/MediaBrowser.MediaEncoding.csproj" />
   </ItemGroup>
 
