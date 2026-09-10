@@ -23,4 +23,19 @@ public class InternalItemsQueryTests
         var query = new InternalItemsQuery();
         Assert.Throws<ArgumentException>(() => query.ApplyFilters(filters));
     }
+
+    [Fact]
+    public void SetUser_NullUser_LeavesQueryUserAgnostic()
+    {
+        var query = new InternalItemsQuery();
+
+        query.SetUser(null);
+
+        Assert.Null(query.User);
+        Assert.Null(query.MaxParentalRating);
+        Assert.Empty(query.BlockUnratedItems);
+        Assert.Empty(query.ExcludeInheritedTags);
+        Assert.Empty(query.IncludeInheritedTags);
+        Assert.False(query.UserHasContentRestrictions);
+    }
 }

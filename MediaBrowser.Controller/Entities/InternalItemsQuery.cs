@@ -516,8 +516,19 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public bool UserHasContentRestrictions { get; private set; }
 
-        public void SetUser(User user)
+        /// <summary>
+        /// Applies the parental rating, unrated item, and tag restrictions of <paramref name="user"/> to the query.
+        /// A <c>null</c> user leaves the query user-agnostic, the same way <see cref="InternalItemsQuery(User)"/> does,
+        /// so that a shadow view or any other item without a user of its own can be queried without restrictions.
+        /// </summary>
+        /// <param name="user">The user whose restrictions apply, or <c>null</c> for no user context.</param>
+        public void SetUser(User? user)
         {
+            if (user is null)
+            {
+                return;
+            }
+
             var maxRating = user.MaxParentalRatingScore;
             if (maxRating.HasValue)
             {
