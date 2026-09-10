@@ -336,28 +336,87 @@ namespace Emby.Server.Implementations.Collections
 
             var allBoxSets = GetCollections(user).ToList();
 
+            // Build the BoxSet nesting graph. Reading the linked child ids once per BoxSet keeps
+            // the whole graph in memory, so no BoxSet has to be rescanned while classifying items.
+            var boxSetsById = new Dictionary<Guid, BoxSet>(allBoxSets.Count);
+            foreach (var boxSet in allBoxSets)
+            {
+                boxSetsById[boxSet.Id] = boxSet;
+            }
+
+            var childIdsByBoxSet = new Dictionary<Guid, IReadOnlyList<Guid>>(allBoxSets.Count);
+            var nestedBoxSetIds = new HashSet<Guid>();
+            foreach (var boxSet in allBoxSets)
+            {
+                var childIds = boxSet.GetLinkedChildIds();
+                childIdsByBoxSet[boxSet.Id] = childIds;
+                nestedBoxSetIds.UnionWith(childIds.Where(boxSetsById.ContainsKey));
+            }
+
+            // Flatten every outermost BoxSet down to the ids of all items below it, nested BoxSets
+            // included, and index that by item id so classifying an item is a single lookup.
+            var rootBoxSetsByItemId = new Dictionary<Guid, List<BoxSet>>();
+            var containedIds = new HashSet<Guid>();
+            var visitedBoxSetIds = new HashSet<Guid>();
+            var pendingBoxSetIds = new Stack<Guid>();
+            foreach (var boxSet in allBoxSets)
+            {
+                if (nestedBoxSetIds.Contains(boxSet.Id))
+                {
+                    continue;
+                }
+
+                containedIds.Clear();
+                visitedBoxSetIds.Clear();
+                pendingBoxSetIds.Push(boxSet.Id);
+
+                // visitedBoxSetIds guards against cycles in the nesting graph.
+                while (pendingBoxSetIds.Count > 0)
+                {
+                    var currentId = pendingBoxSetIds.Pop();
+                    if (!visitedBoxSetIds.Add(currentId)
+                        || !childIdsByBoxSet.TryGetValue(currentId, out var childIds))
+                    {
+                        continue;
+                    }
+
+                    foreach (var childId in childIds)
+                    {
+                        containedIds.Add(childId);
+
+                        if (boxSetsById.ContainsKey(childId))
+                        {
+                            pendingBoxSetIds.Push(childId);
+                        }
+                    }
+                }
+
+                foreach (var containedId in containedIds)
+                {
+                    if (!rootBoxSetsByItemId.TryGetValue(containedId, out var containingBoxSets))
+                    {
+                        containingBoxSets = new List<BoxSet>();
+                        rootBoxSetsByItemId[containedId] = containingBoxSets;
+                    }
+
+                    containingBoxSets.Add(boxSet);
+                }
+            }
+
             foreach (var item in items)
             {
                 if (item is ISupportsBoxSetGrouping)
                 {
                     var itemId = item.Id;
 
-                    var itemIsInBoxSet = false;
-                    foreach (var boxSet in allBoxSets)
+                    if (rootBoxSetsByItemId.TryGetValue(itemId, out var containingBoxSets))
                     {
-                        if (!boxSet.ContainsLinkedChildByItemId(itemId))
+                        foreach (var boxSet in containingBoxSets)
                         {
-                            continue;
+                            results.TryAdd(boxSet.Id, boxSet);
                         }
 
-                        itemIsInBoxSet = true;
-
-                        results.TryAdd(boxSet.Id, boxSet);
-                    }
-
-                    // skip any item that is in a box set
-                    if (itemIsInBoxSet)
-                    {
+                        // skip any item that is in a box set
                         continue;
                     }
 
