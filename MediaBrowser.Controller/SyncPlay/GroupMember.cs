@@ -19,6 +19,7 @@ namespace MediaBrowser.Controller.SyncPlay
             SessionId = session.Id;
             UserId = session.UserId;
             UserName = session.UserName;
+            JoinedAt = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -38,6 +39,13 @@ namespace MediaBrowser.Controller.SyncPlay
         /// </summary>
         /// <value>The username.</value>
         public string UserName { get; }
+
+        /// <summary>
+        /// Gets the time this member was added to the group. Used to pick a
+        /// deterministic replacement when the host leaves.
+        /// </summary>
+        /// <value>The date the member joined the group.</value>
+        public DateTime JoinedAt { get; }
 
         /// <summary>
         /// Gets or sets the ping, in milliseconds.
