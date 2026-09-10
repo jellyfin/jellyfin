@@ -42,6 +42,11 @@ namespace Emby.Naming.AudioBook
                 return null;
             }
 
+            if (extension.Equals(".cue", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
             var container = extension.TrimStart('.');
 
             var parsingResult = new AudioBookFilePathParser(_options).Parse(path);
