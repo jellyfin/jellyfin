@@ -98,9 +98,36 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
             updateType |= SetArtistsFromSongs(item, songs);
             updateType |= SetAlbumArtistFromSongs(item, songs);
             updateType |= SetAlbumFromSongs(item, songs);
+            updateType |= SetSortNameFromSongs(item, songs);
         }
 
         return updateType;
+    }
+
+    private ItemUpdateType SetSortNameFromSongs(MusicAlbum item, IReadOnlyList<Audio> songs)
+    {
+        if (item.LockedFields.Contains(MetadataField.Name))
+        {
+            return ItemUpdateType.None;
+        }
+
+        // Use the most common non-empty album sort tag (e.g. ID3 TSOA / albumsort) from the album's songs.
+        var sortName = songs
+            .Select(i => i.SortAlbum)
+            .Where(i => !string.IsNullOrEmpty(i))
+            .GroupBy(i => i, StringComparer.OrdinalIgnoreCase)
+            .OrderByDescending(g => g.Count())
+            .Select(g => g.Key)
+            .FirstOrDefault();
+
+        if (!string.IsNullOrEmpty(sortName)
+            && !string.Equals(item.ForcedSortName, sortName, StringComparison.Ordinal))
+        {
+            item.ForcedSortName = sortName;
+            return ItemUpdateType.MetadataEdit;
+        }
+
+        return ItemUpdateType.None;
     }
 
     private ItemUpdateType SetAlbumArtistFromSongs(MusicAlbum item, IReadOnlyList<Audio> songs)
