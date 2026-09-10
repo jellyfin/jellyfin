@@ -937,6 +937,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
+                refreshResult.Failures++;
                 refreshResult.ErrorMessage = ex.Message;
                 Logger.LogError(ex, "Error in {Provider} for {Item}", provider.Name, logName);
             }
