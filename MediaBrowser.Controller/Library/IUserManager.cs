@@ -40,7 +40,8 @@ namespace MediaBrowser.Controller.Library
         Task InitializeAsync();
 
         /// <summary>
-        /// Gets a user by Id.
+        /// Gets a user by Id. The instance is cached and shared between callers, so treat it as
+        /// read-only and go through the update methods to change a user, its policy or its config.
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>The user with the specified Id, or <c>null</c> if the user doesn't exist.</returns>
@@ -79,6 +80,15 @@ namespace MediaBrowser.Controller.Library
         /// <exception cref="ArgumentException">If the provided user doesn't exist.</exception>
         /// <returns>A task representing the update of the user.</returns>
         Task UpdateUserAsync(User user);
+
+        /// <summary>
+        /// Records that a user was active. Writes at most once per minute per user, so this can be
+        /// called on every request rather than going through <see cref="UpdateUserAsync"/>.
+        /// </summary>
+        /// <param name="userId">The id of the user.</param>
+        /// <param name="activityDate">When the activity happened.</param>
+        /// <returns>A task representing the update of the activity date.</returns>
+        Task RecordUserActivityAsync(Guid userId, DateTime activityDate);
 
         /// <summary>
         /// Creates a user with the specified name.

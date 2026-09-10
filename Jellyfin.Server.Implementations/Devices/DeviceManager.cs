@@ -226,7 +226,18 @@ namespace Jellyfin.Server.Implementations.Devices
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                dbContext.Devices.Update(device);
+                // Copying onto the tracked row writes only the columns that actually differ. Update()
+                // would mark every property modified, so a refreshed timestamp rewrote the whole row
+                // and all three of its indexes.
+                var tracked = await dbContext.Devices.FirstOrDefaultAsync(d => d.Id == device.Id).ConfigureAwait(false);
+                if (tracked is null)
+                {
+                    // Deleted while it was in use - don't resurrect the row.
+                    _devices.TryRemove(device.Id, out _);
+                    return;
+                }
+
+                dbContext.Entry(tracked).CurrentValues.SetValues(device);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
 

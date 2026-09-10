@@ -36,7 +36,6 @@ using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
@@ -262,20 +261,7 @@ namespace Emby.Server.Implementations.Session
 
             if (user is not null)
             {
-                var userLastActivityDate = user.LastActivityDate ?? DateTime.MinValue;
-
-                if ((activityDate - userLastActivityDate).TotalSeconds > 60)
-                {
-                    try
-                    {
-                        user.LastActivityDate = activityDate;
-                        await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
-                    }
-                    catch (DbUpdateConcurrencyException)
-                    {
-                        _logger.LogDebug("Error updating user's last activity date due to concurrency conflict. This is an expected event.");
-                    }
-                }
+                await _userManager.RecordUserActivityAsync(user.Id, activityDate).ConfigureAwait(false);
             }
 
             if ((activityDate - lastActivityDate).TotalSeconds > 10)
