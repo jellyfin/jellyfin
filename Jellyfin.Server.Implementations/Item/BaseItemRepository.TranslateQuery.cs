@@ -689,6 +689,11 @@ public sealed partial class BaseItemRepository
             baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Studios, filter.StudioIds);
         }
 
+        if (filter.NetworkIds.Length > 0)
+        {
+            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Networks, filter.NetworkIds);
+        }
+
         if (filter.OfficialRatings.Length > 0)
         {
             var ratings = filter.OfficialRatings;
@@ -986,6 +991,12 @@ public sealed partial class BaseItemRepository
         {
             baseQuery = baseQuery
                     .Where(e => !context.ItemValues.Where(f => _getStudiosValueTypes.Contains(f.Type)).Any(f => f.Value == e.Name));
+        }
+
+        if (filter.IsDeadNetwork.HasValue && filter.IsDeadNetwork.Value)
+        {
+            baseQuery = baseQuery
+                    .Where(e => !context.ItemValues.Where(f => _getNetworksValueTypes.Contains(f.Type)).Any(f => f.Value == e.Name));
         }
 
         if (filter.IsDeadGenre.HasValue && filter.IsDeadGenre.Value)

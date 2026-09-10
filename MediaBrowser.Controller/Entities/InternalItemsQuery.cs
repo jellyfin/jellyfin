@@ -53,6 +53,7 @@ namespace MediaBrowser.Controller.Entities
             SeriesStatuses = [];
             SourceTypes = [];
             StudioIds = [];
+            NetworkIds = [];
             Tags = [];
             TopParentIds = [];
             TrailerTypes = [];
@@ -86,6 +87,7 @@ namespace MediaBrowser.Controller.Entities
             || ExcludeTags.Length > 0
             || OfficialRatings.Length > 0
             || StudioIds.Length > 0
+            || NetworkIds.Length > 0
             || ArtistIds.Length > 0
             || AlbumArtistIds.Length > 0
             || ContributingArtistIds.Length > 0
@@ -285,6 +287,8 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid[] StudioIds { get; set; }
 
+        public Guid[] NetworkIds { get; set; }
+
         public IReadOnlyList<Guid> GenreIds { get; set; }
 
         public ImageType[] ImageTypes { get; set; }
@@ -438,6 +442,8 @@ namespace MediaBrowser.Controller.Entities
         public bool? IsDeadArtist { get; set; }
 
         public bool? IsDeadStudio { get; set; }
+
+        public bool? IsDeadNetwork { get; set; }
 
         public bool? IsDeadGenre { get; set; }
 

@@ -49,6 +49,12 @@ namespace MediaBrowser.Controller
         string StudioPath { get; }
 
         /// <summary>
+        /// Gets the path to the Network directory.
+        /// </summary>
+        /// <value>The network path.</value>
+        string NetworkPath { get; }
+
+        /// <summary>
         /// Gets the path to the Year directory.
         /// </summary>
         /// <value>The year path.</value>

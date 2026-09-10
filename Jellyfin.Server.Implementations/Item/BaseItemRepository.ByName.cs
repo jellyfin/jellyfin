@@ -42,6 +42,12 @@ public sealed partial class BaseItemRepository
     }
 
     /// <inheritdoc />
+    public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetNetworks(InternalItemsQuery filter)
+    {
+        return GetItemValues(filter, _getNetworksValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.Network]);
+    }
+
+    /// <inheritdoc />
     public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetGenres(InternalItemsQuery filter)
     {
         return GetItemValues(filter, _getGenreValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.Genre]);
@@ -57,6 +63,12 @@ public sealed partial class BaseItemRepository
     public IReadOnlyList<string> GetStudioNames()
     {
         return GetItemValueNames(_getStudiosValueTypes, [], []);
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetNetworkNames()
+    {
+        return GetItemValueNames(_getNetworksValueTypes, [], []);
     }
 
     /// <inheritdoc />
@@ -189,6 +201,7 @@ public sealed partial class BaseItemRepository
             Tags = filter.Tags,
             OfficialRatings = filter.OfficialRatings,
             StudioIds = filter.StudioIds,
+            NetworkIds = filter.NetworkIds,
             GenreIds = filter.GenreIds,
             Genres = filter.Genres,
             Years = filter.Years,
@@ -334,7 +347,9 @@ public sealed partial class BaseItemRepository
             .ToList();
 
         // Only studios and genres pass down from a series to its episodes; an artist credit does not.
-        var inheritsToEpisodes = itemValueTypes.Contains(ItemValueType.Studios) || itemValueTypes.Contains(ItemValueType.Genre);
+        var inheritsToEpisodes = itemValueTypes.Contains(ItemValueType.Studios)
+            || itemValueTypes.Contains(ItemValueType.Networks)
+            || itemValueTypes.Contains(ItemValueType.Genre);
         var episodeCounts = inheritsToEpisodes
             ? BuildEpisodeCountsByCleanName(
                 scopedItems,

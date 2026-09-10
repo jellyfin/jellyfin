@@ -45,6 +45,7 @@ public class ItemTypeLookup : IItemTypeLookup
         { BaseItemKind.MusicArtist, typeof(MusicArtist).FullName! },
         { BaseItemKind.MusicGenre, typeof(MusicGenre).FullName! },
         { BaseItemKind.MusicVideo, typeof(MusicVideo).FullName! },
+        { BaseItemKind.Network, typeof(Network).FullName! },
         { BaseItemKind.Person, typeof(Person).FullName! },
         { BaseItemKind.Photo, typeof(Photo).FullName! },
         { BaseItemKind.PhotoAlbum, typeof(PhotoAlbum).FullName! },
