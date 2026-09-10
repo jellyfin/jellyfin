@@ -75,12 +75,12 @@ public class StreamState : EncodingJobInfo, IDisposable
     {
         get
         {
+            int baseLength;
             if (Request.SegmentLength.HasValue)
             {
-                return Request.SegmentLength.Value;
+                baseLength = Request.SegmentLength.Value;
             }
-
-            if (EncodingHelper.IsCopyCodec(OutputVideoCodec))
+            else if (EncodingHelper.IsCopyCodec(OutputVideoCodec))
             {
                 var userAgent = UserAgent ?? string.Empty;
 
@@ -90,18 +90,30 @@ public class StreamState : EncodingJobInfo, IDisposable
                     || userAgent.Contains("iphone", StringComparison.OrdinalIgnoreCase)
                     || userAgent.Contains("ipod", StringComparison.OrdinalIgnoreCase))
                 {
-                    return 6;
+                    baseLength = 6;
                 }
-
-                if (IsSegmentedLiveStream)
+                else if (IsSegmentedLiveStream)
                 {
-                    return 3;
+                    baseLength = 3;
                 }
-
-                return 6;
+                else
+                {
+                    baseLength = 6;
+                }
+            }
+            else
+            {
+                baseLength = 3;
             }
 
-            return 3;
+            // Scale segment length with playback speed so the player has enough buffer.
+            // At 2x speed, segments are consumed twice as fast, so we double the length.
+            if (Request.PlaybackSpeed.HasValue && Request.PlaybackSpeed.Value > 1.0)
+            {
+                baseLength = (int)Math.Ceiling(baseLength * Request.PlaybackSpeed.Value);
+            }
+
+            return baseLength;
         }
     }
 
