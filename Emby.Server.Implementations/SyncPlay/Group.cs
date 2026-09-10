@@ -181,16 +181,15 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <param name="session">The session.</param>
         private void AddSession(SessionInfo session)
         {
-            if (_participants.TryAdd(
+            _participants.TryAdd(
                 session.Id,
                 new GroupMember(session)
                 {
                     Ping = DefaultPing,
                     IsBuffering = false
-                }))
-            {
-                _participantSessions[session.Id] = session;
-            }
+                });
+
+            _participantSessions[session.Id] = session;
         }
 
         /// <summary>
@@ -740,7 +739,8 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <param name="cancellationToken">The cancellation token.</param>
         internal void HandleGroupWaitTimeout(CancellationToken cancellationToken)
         {
-            if (GroupWaitDeadline is null || GroupWaitDeadline > Environment.TickCount64)
+            var deadline = GroupWaitDeadline;
+            if (deadline is null || deadline > Environment.TickCount64)
             {
                 return;
             }
@@ -752,23 +752,27 @@ namespace Emby.Server.Implementations.SyncPlay
                 return;
             }
 
-            var blockingSessions = _participants
+            var blockingSessions = _participantSessions
                 .Values
-                .Where(member => member.IsBuffering && !member.IgnoreGroupWait)
-                .Select(member => member.SessionId)
+                .Where(participant => _participants.TryGetValue(participant.Id, out var member)
+                    && member.IsBuffering
+                    && !member.IgnoreGroupWait)
                 .ToList();
 
-            if (blockingSessions.Count == 0
-                || !_participantSessions.TryGetValue(blockingSessions[0], out var session))
+            if (blockingSessions.Count == 0)
             {
                 return;
             }
 
+            // The recovery below is broadcast to the whole group, so it does not matter which of
+            // the sessions that kept the group waiting is the one acting on the group's behalf.
+            var session = blockingSessions[0];
+
             _logger.LogWarning(
-                "Group {GroupId} waited {Timeout} ms for session(s) {SessionIds} to report ready, giving up.",
+                "Group {GroupId} waited {Waited} ms for session(s) {SessionIds} to report ready, giving up.",
                 GroupId.ToString(),
-                GroupWaitTimeout,
-                string.Join(", ", blockingSessions));
+                GroupWaitTimeout + Environment.TickCount64 - deadline.Value,
+                string.Join(", ", blockingSessions.Select(participant => participant.Id)));
 
             if (waitingState.ResumePlaying)
             {
