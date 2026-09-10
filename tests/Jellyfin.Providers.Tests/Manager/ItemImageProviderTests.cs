@@ -431,6 +431,55 @@ namespace Jellyfin.Providers.Tests.Manager
             Assert.Equal(targetImageCount, item.GetImages(imageType).Count());
         }
 
+        [Fact]
+        public async Task RefreshImages_RemoteProviderSuppliesValidators_StoresSourceAndValidators()
+        {
+            const ImageType Type = ImageType.Primary;
+            const string Url = "http://example.com/poster.jpg";
+            const string ETag = "\"abc123\"";
+            var lastModified = new DateTimeOffset(2024, 1, 2, 3, 4, 5, TimeSpan.Zero);
+
+            var item = GetItemWithImages(Type, 0, false);
+            item.Path = "non-empty path";
+            BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
+
+            var libraryOptions = GetLibraryOptions(item, Type, 1);
+
+            var remoteProvider = new Mock<IRemoteImageProvider>(MockBehavior.Strict);
+            remoteProvider.Setup(rp => rp.Name).Returns("MockRemoteProvider");
+            remoteProvider.Setup(rp => rp.GetSupportedImages(item)).Returns(new[] { Type });
+            remoteProvider.Setup(rp => rp.GetImageResponse(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((string _, CancellationToken _) =>
+                {
+                    var response = new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent("Content", Encoding.UTF8, MediaTypeNames.Image.Jpeg)
+                    };
+                    response.Headers.ETag = new System.Net.Http.Headers.EntityTagHeaderValue(ETag);
+                    response.Content.Headers.LastModified = lastModified;
+                    return response;
+                });
+
+            var remoteInfo = new[] { new RemoteImageInfo { Type = Type, Url = Url } };
+
+            var providerManager = new Mock<IProviderManager>(MockBehavior.Strict);
+            providerManager.Setup(pm => pm.GetAvailableRemoteImages(It.IsAny<BaseItem>(), It.IsAny<RemoteImageQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(remoteInfo);
+            providerManager.Setup(pm => pm.SaveImage(item, It.IsAny<Stream>(), It.IsAny<string>(), Type, null, It.IsAny<CancellationToken>()))
+                .Callback<BaseItem, Stream, string, ImageType, int?, CancellationToken>((callbackItem, _, _, callbackType, _, _) =>
+                    callbackItem.SetImagePath(callbackType, 0, new FileSystemMetadata()))
+                .Returns(Task.CompletedTask);
+
+            var itemImageProvider = GetItemImageProvider(providerManager.Object, new Mock<IFileSystem>());
+            await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { remoteProvider.Object }, new ImageRefreshOptions(Mock.Of<IDirectoryService>()), CancellationToken.None);
+
+            var image = item.GetImageInfo(Type, 0);
+            Assert.NotNull(image);
+            Assert.Equal(Url, image.Source);
+            Assert.Equal(ETag, image.ETag);
+            Assert.Equal(lastModified.UtcDateTime, image.SourceLastModified);
+        }
+
         [Theory]
         [MemberData(nameof(GetImageTypesWithCount))]
         public async Task RefreshImages_EmptyItemPopulatedProviderRemoteExtras_LimitsImages(ImageType imageType, int imageCount)

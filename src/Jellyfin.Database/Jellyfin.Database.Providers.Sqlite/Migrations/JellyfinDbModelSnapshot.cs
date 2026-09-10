@@ -449,6 +449,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<DateTime?>("DateModified")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ETag")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("Height")
                         .HasColumnType("INTEGER");
 
@@ -460,6 +463,12 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.Property<string>("Path")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Source")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("SourceLastModified")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Width")
