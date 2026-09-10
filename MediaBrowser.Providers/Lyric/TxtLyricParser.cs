@@ -40,6 +40,16 @@ public class TxtLyricParser : ILyricParser
             lyricList[lyricLineIndex] = new LyricLine(lyricTextLines[lyricLineIndex].Trim());
         }
 
-        return new LyricDto { Lyrics = lyricList };
+        return new LyricDto
+        {
+            Tracks =
+            [
+                new LyricTrack
+                {
+                    Type = LyricTrackType.Main,
+                    Lines = lyricList
+                }
+            ]
+        };
     }
 }
