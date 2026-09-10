@@ -352,7 +352,10 @@ public class ListingsManager : IListingsManager
             var xmltvCacheFile = Path.Combine(cachePath, "xmltv", safeId + ".xml");
             try
             {
-                File.Delete(xmltvCacheFile);
+                if (File.Exists(xmltvCacheFile))
+                {
+                    File.Delete(xmltvCacheFile);
+                }
             }
             catch (IOException ex)
             {
