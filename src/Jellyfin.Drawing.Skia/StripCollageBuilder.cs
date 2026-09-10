@@ -112,7 +112,7 @@ public partial class StripCollageBuilder
         using var resizedBackdrop = SkiaEncoder.ResizeImage(backdrop, new SKImageInfo(width, backdropHeight, backdrop.ColorType, backdrop.AlphaType, backdrop.ColorSpace));
         using var paint = new SKPaint();
         // draw the backdrop
-        canvas.DrawImage(resizedBackdrop, 0, 0, SkiaEncoder.DefaultSamplingOptions, paint);
+        canvas.DrawBitmap(resizedBackdrop, 0, 0, SkiaEncoder.DefaultSamplingOptions, paint);
 
         // draw shadow rectangle
         using var paintColor = new SKPaint();
@@ -192,7 +192,7 @@ public partial class StripCollageBuilder
                 // draw this image into the strip at the next position
                 var xPos = x * cellWidth;
                 var yPos = y * cellHeight;
-                canvas.DrawImage(resizeImage, xPos, yPos, SkiaEncoder.DefaultSamplingOptions, paint);
+                canvas.DrawBitmap(resizeImage, xPos, yPos, SkiaEncoder.DefaultSamplingOptions, paint);
             }
         }
 
