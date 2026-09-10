@@ -36,6 +36,15 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="destination">The path to move the directory to.</param>
         void Move(string source, string destination);
 
+        /// <summary>
+        /// Drops every cached entry that has outlived its lifetime.
+        /// </summary>
+        /// <remarks>
+        /// The caches only discard on their own while they are being read from or written to, so
+        /// something has to call this for an idle server to give the memory back.
+        /// </remarks>
+        void TrimExpired();
+
         bool IsAccessible(string path);
     }
 }
