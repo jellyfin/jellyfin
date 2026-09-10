@@ -686,7 +686,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 yield return new RemoteImageInfo
                 {
                     Url = GetUrl(size, image.FilePath),
-                    ThumbnailUrl = GetUrl(ThumbnailSizes.GetValueOrDefault(type.ToString(), ""), image.FilePath),
+                    ThumbnailUrl = GetUrl(ThumbnailSizes.GetValueOrDefault(type.ToString(), string.Empty), image.FilePath),
                     CommunityRating = image.VoteAverage,
                     VoteCount = image.VoteCount,
                     Width = scaleImage ? null : image.Width,
