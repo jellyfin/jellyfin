@@ -125,7 +125,8 @@ namespace MediaBrowser.Controller.SyncPlay
         void SetAllBuffering(bool isBuffering);
 
         /// <summary>
-        /// Gets the group buffering state.
+        /// Gets the group buffering state. Sessions that have been buffering for longer than
+        /// the applicable timeout are no longer considered to be blocking the group.
         /// </summary>
         /// <returns><c>true</c> if there is a session buffering in the group; <c>false</c> otherwise.</returns>
         bool IsBuffering();
