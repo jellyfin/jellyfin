@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -24,9 +25,6 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     private const string BackupFolderName = "SQLiteBackups";
     private readonly IApplicationPaths _applicationPaths;
     private readonly ILogger<SqliteDatabaseProvider> _logger;
-    private static int _temporaryDirectorySet;
-
-    private int _tempStoreMode = 2;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteDatabaseProvider"/> class.
@@ -63,11 +61,9 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 
         var customOptions = databaseConfiguration.CustomProviderOptions?.Options;
 
-        var dataSource = GetOption(customOptions, "path", e => e, () => Path.Combine(_applicationPaths.DataPath, "jellyfin.db"))!;
-
         var sqliteConnectionBuilder = new SqliteConnectionStringBuilder
         {
-            DataSource = dataSource,
+            DataSource = GetOption(customOptions, "path", e => e, () => Path.Combine(_applicationPaths.DataPath, "jellyfin.db")),
             // Private, not Default: sqlite3_enable_shared_cache is process-global, so a plugin
             // enabling it makes these connections share a cache too. Contention then surfaces as
             // SQLITE_LOCKED ("database table is locked"), which the busy handler does not cover,
@@ -82,21 +78,6 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         // Log SQLite connection parameters
         _logger.LogInformation("SQLite connection string: {ConnectionString}", connectionString);
 
-        _tempStoreMode = GetOption(customOptions, "tempstoremode", int.Parse, () => 2);
-        var dataSourceDirectory = Path.GetDirectoryName(dataSource);
-        var configuredTempDirectory = Environment.GetEnvironmentVariable("SQLITE_TMPDIR");
-        if (!string.IsNullOrEmpty(configuredTempDirectory))
-        {
-            // Somebody pointed this somewhere on purpose, so leave it alone. Logged because it decides where the
-            // VACUUM copy lands, which is the first thing to check when that runs out of space.
-            _logger.LogInformation("SQLITE_TMPDIR is already set to {TempDirectory}, leaving it unchanged", configuredTempDirectory);
-        }
-        else if (Directory.Exists(dataSourceDirectory)
-         && Interlocked.Exchange(ref _temporaryDirectorySet, 1) == 0)
-        {
-            SetTemporaryDirectory(dataSourceDirectory);
-        }
-
         options
             .UseSqlite(
                 connectionString,
@@ -110,7 +91,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
                 GetOption<int?>(customOptions, "cacheSize", e => int.Parse(e, CultureInfo.InvariantCulture)),
                 GetOption(customOptions, "lockingmode", e => e, () => "NORMAL")!,
                 GetOption(customOptions, "journalsizelimit", int.Parse, () => 134_217_728),
-                _tempStoreMode,
+                GetOption(customOptions, "tempstoremode", int.Parse, () => 2),
                 GetOption(customOptions, "syncmode", int.Parse, () => 1),
                 customOptions?.Where(e => e.Key.StartsWith("#PRAGMA:", StringComparison.OrdinalIgnoreCase)).ToDictionary(e => e.Key["#PRAGMA:".Length..], e => e.Value) ?? []));
 
@@ -176,44 +157,70 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         var context = await DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
-            await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
-            await context.Database.ExecuteSqlRawAsync("PRAGMA temp_store=1", cancellationToken).ConfigureAwait(false);
+            await context.Database.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                await context.Database.ExecuteSqlRawAsync("VACUUM", cancellationToken).ConfigureAwait(false);
+                long? tempStore;
+                long? analysisLimit;
+                var pragmaCommand = context.Database.GetDbConnection().CreateCommand();
+                await using (pragmaCommand.ConfigureAwait(false))
+                {
+                    pragmaCommand.CommandText = "PRAGMA temp_store";
+                    tempStore = await ReadPragmaValueAsync(pragmaCommand, cancellationToken).ConfigureAwait(false);
+                    pragmaCommand.CommandText = "PRAGMA analysis_limit";
+                    analysisLimit = await ReadPragmaValueAsync(pragmaCommand, cancellationToken).ConfigureAwait(false);
+                }
+
+                await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
+
+                _logger.LogDebug(
+                    "Rebuilding jellyfin.db on disk, scratch space goes to {TempDirectory}",
+                    Environment.GetEnvironmentVariable("SQLITE_TMPDIR") ?? "SQLite's default temporary directory");
+                await context.Database.ExecuteSqlRawAsync("PRAGMA temp_store=1", cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await context.Database.ExecuteSqlRawAsync("VACUUM", cancellationToken).ConfigureAwait(false);
+                }
+                finally
+                {
+                    // The connection goes back to the pool, so hand it over the way it was handed to us.
+                    if (tempStore is not null)
+                    {
+                        await context.Database.ExecuteSqlRawAsync(
+                            FormattableString.Invariant($"PRAGMA temp_store={tempStore.Value}"),
+                            CancellationToken.None).ConfigureAwait(false);
+                    }
+                }
+
+                await context.Database.ExecuteSqlRawAsync("PRAGMA analysis_limit=0", cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await context.Database.ExecuteSqlRawAsync("ANALYZE", cancellationToken).ConfigureAwait(false);
+                }
+                finally
+                {
+                    if (analysisLimit is not null)
+                    {
+                        await context.Database.ExecuteSqlRawAsync(
+                            FormattableString.Invariant($"PRAGMA analysis_limit={analysisLimit.Value}"),
+                            CancellationToken.None).ConfigureAwait(false);
+                    }
+                }
+
+                await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
+                _logger.LogInformation("jellyfin.db optimized successfully!");
             }
             finally
             {
-                // The connection goes back to the pool, so hand it over with the configured mode again.
-                await context.Database.ExecuteSqlRawAsync(
-                    FormattableString.Invariant($"PRAGMA temp_store={_tempStoreMode}"),
-                    CancellationToken.None).ConfigureAwait(false);
+                await context.Database.CloseConnectionAsync().ConfigureAwait(false);
             }
-
-            await context.Database.ExecuteSqlRawAsync("PRAGMA analysis_limit=0", cancellationToken).ConfigureAwait(false);
-            await context.Database.ExecuteSqlRawAsync("ANALYZE", cancellationToken).ConfigureAwait(false);
-            await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
-            _logger.LogInformation("jellyfin.db optimized successfully!");
         }
     }
 
-    private void SetTemporaryDirectory(string directory)
+    private static async Task<long?> ReadPragmaValueAsync(DbCommand command, CancellationToken cancellationToken)
     {
-        try
-        {
-            using var connection = new SqliteConnection("Data Source=:memory:");
-            connection.Open();
-            using var command = connection.CreateCommand();
-#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
-            command.CommandText = $"PRAGMA temp_store_directory='{directory.Replace("'", "''", StringComparison.Ordinal)}'";
-#pragma warning restore CA2100
-            command.ExecuteNonQuery();
-            _logger.LogInformation("SQLite temporary directory set to: {TempDirectory}", directory);
-        }
-        catch (SqliteException ex)
-        {
-            _logger.LogWarning(ex, "Could not set the SQLite temporary directory to {TempDirectory}", directory);
-        }
+        var value = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+        return value is null or DBNull ? null : Convert.ToInt64(value, CultureInfo.InvariantCulture);
     }
 
     /// <inheritdoc/>
