@@ -6,10 +6,10 @@ using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers;
 
-public sealed class LibraryControllerTests : IClassFixture<JellyfinApplicationFactory>
+[Collection("Controller collection")]
+public sealed class LibraryControllerTests
 {
     private readonly JellyfinApplicationFactory _factory;
-    private static string? _accessToken;
 
     public LibraryControllerTests(JellyfinApplicationFactory factory)
     {
@@ -33,7 +33,7 @@ public sealed class LibraryControllerTests : IClassFixture<JellyfinApplicationFa
     public async Task Get_NonexistentItemId_NotFound(string format)
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, Guid.NewGuid()), TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -56,7 +56,7 @@ public sealed class LibraryControllerTests : IClassFixture<JellyfinApplicationFa
     public async Task Delete_NonexistentItemId_NotFound(string format)
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var response = await client.DeleteAsync(string.Format(CultureInfo.InvariantCulture, format, Guid.NewGuid()), TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

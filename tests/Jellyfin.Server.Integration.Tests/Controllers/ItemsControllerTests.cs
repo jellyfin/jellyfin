@@ -11,11 +11,11 @@ using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers;
 
-public sealed class ItemsControllerTests : IClassFixture<JellyfinApplicationFactory>
+[Collection("Controller collection")]
+public sealed class ItemsControllerTests
 {
     private readonly JellyfinApplicationFactory _factory;
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
-    private static string? _accessToken;
 
     public ItemsControllerTests(JellyfinApplicationFactory factory)
     {
@@ -26,7 +26,7 @@ public sealed class ItemsControllerTests : IClassFixture<JellyfinApplicationFact
     public async Task GetItems_NoApiKeyOrUserId_Success()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var response = await client.GetAsync("Items", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -38,7 +38,7 @@ public sealed class ItemsControllerTests : IClassFixture<JellyfinApplicationFact
     public async Task GetUserItems_NonexistentUserId_NotFound(string format)
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, Guid.NewGuid()), TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -51,7 +51,7 @@ public sealed class ItemsControllerTests : IClassFixture<JellyfinApplicationFact
     public async Task GetItems_UserId_Ok(string format)
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var userDto = await AuthHelper.GetUserDtoAsync(client);
 

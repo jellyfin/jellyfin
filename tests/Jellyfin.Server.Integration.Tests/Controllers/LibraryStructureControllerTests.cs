@@ -16,12 +16,12 @@ using Xunit.v3.Priority;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers;
 
+[Collection("Controller collection")]
 [TestCaseOrderer(typeof(PriorityOrderer))]
-public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinApplicationFactory>
+public sealed class LibraryStructureControllerTests
 {
     private readonly JellyfinApplicationFactory _factory;
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
-    private static string? _accessToken;
 
     public LibraryStructureControllerTests(JellyfinApplicationFactory factory)
     {
@@ -72,7 +72,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     public async Task Post_NewVirtualFolder_NotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var body = new AddVirtualFolderDto()
         {
@@ -91,7 +91,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     public async Task UpdateLibraryOptions_Invalid_NotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var body = new UpdateLibraryOptionsDto()
         {
@@ -108,7 +108,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     public async Task UpdateLibraryOptions_Valid_Success()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var createBody = new AddVirtualFolderDto()
         {
@@ -150,7 +150,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     public async Task DeleteLibrary_Invalid_NotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         using var response = await client.DeleteAsync("Library/VirtualFolders?name=doesntExist", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -213,7 +213,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     public async Task DeleteLibrary_Valid_Success()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         using var response = await client.DeleteAsync("Library/VirtualFolders?name=test&refreshLibrary=true", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);

@@ -11,11 +11,11 @@ using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers
 {
-    public sealed class DashboardControllerTests : IClassFixture<JellyfinApplicationFactory>
+    [Collection("Controller collection")]
+    public sealed class DashboardControllerTests
     {
         private readonly JellyfinApplicationFactory _factory;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
-        private static string? _accessToken;
 
         public DashboardControllerTests(JellyfinApplicationFactory factory)
         {
@@ -59,7 +59,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task GetConfigurationPages_NoParams_AllConfigurationPages()
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+            client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
             var response = await client.GetAsync("/web/ConfigurationPages", TestContext.Current.CancellationToken);
 
@@ -73,7 +73,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task GetConfigurationPages_True_MainMenuConfigurationPages()
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+            client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
             var response = await client.GetAsync("/web/ConfigurationPages?enableInMainMenu=true", TestContext.Current.CancellationToken);
 

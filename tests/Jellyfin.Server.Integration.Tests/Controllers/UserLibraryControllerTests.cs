@@ -11,11 +11,11 @@ using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers;
 
-public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicationFactory>
+[Collection("Controller collection")]
+public sealed class UserLibraryControllerTests
 {
     private readonly JellyfinApplicationFactory _factory;
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
-    private static string? _accessToken;
 
     public UserLibraryControllerTests(JellyfinApplicationFactory factory)
     {
@@ -26,7 +26,7 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
     public async Task GetRootFolder_NonexistentUserId_NotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var response = await client.GetAsync($"Users/{Guid.NewGuid()}/Items/Root", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -36,7 +36,7 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
     public async Task GetRootFolder_UserId_Valid()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         _ = await AuthHelper.GetRootFolderDtoAsync(client);
     }
@@ -50,7 +50,7 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
     public async Task GetItem_NonexistentUserId_NotFound(string format)
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var rootFolderDto = await AuthHelper.GetRootFolderDtoAsync(client);
 
@@ -67,7 +67,7 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
     public async Task GetItem_NonexistentItemId_NotFound(string format)
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var userDto = await AuthHelper.GetUserDtoAsync(client);
 
@@ -79,7 +79,7 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
     public async Task GetItem_UserIdAndItemId_Valid()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var userDto = await AuthHelper.GetUserDtoAsync(client);
         var rootFolderDto = await AuthHelper.GetRootFolderDtoAsync(client, userDto.Id);
@@ -94,7 +94,7 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
     public async Task GetIntros_UserIdAndItemId_Valid()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var userDto = await AuthHelper.GetUserDtoAsync(client);
         var rootFolderDto = await AuthHelper.GetRootFolderDtoAsync(client, userDto.Id);
@@ -111,7 +111,7 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
     public async Task LocalTrailersAndSpecialFeatures_UserIdAndItemId_Valid(string format)
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var userDto = await AuthHelper.GetUserDtoAsync(client);
         var rootFolderDto = await AuthHelper.GetRootFolderDtoAsync(client, userDto.Id);
