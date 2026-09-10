@@ -155,56 +155,13 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemSortBy[]? sortBy = null,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] SortOrder[]? sortOrder = null)
     {
-        userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.IsNullOrEmpty()
-            ? null
-            : _userManager.GetUserById(userId.Value);
-
-        var item = itemId.IsEmpty()
-            ? (userId.IsNullOrEmpty()
-                ? _libraryManager.RootFolder
-                : _libraryManager.GetUserRootFolder())
-            : _libraryManager.GetItemById<BaseItem>(itemId, user);
+        var (item, user) = ResolveThemeMediaOwner(itemId, userId);
         if (item is null)
         {
             return NotFound();
         }
 
-        sortOrder ??= [];
-        sortBy ??= [];
-        var orderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder);
-
-        IReadOnlyList<BaseItem> themeItems;
-
-        while (true)
-        {
-            themeItems = item.GetThemeSongs(user, orderBy);
-
-            if (themeItems.Count > 0 || !inheritFromParent)
-            {
-                break;
-            }
-
-            var parent = item.GetParent();
-            if (parent is null)
-            {
-                break;
-            }
-
-            item = parent;
-        }
-
-        var dtoOptions = new DtoOptions();
-        var items = themeItems
-            .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
-            .ToArray();
-
-        return new ThemeMediaResult
-        {
-            Items = items,
-            TotalRecordCount = items.Length,
-            OwnerId = item.Id
-        };
+        return GetThemeMediaResult(item, user, ExtraType.ThemeSong, inheritFromParent, sortBy, sortOrder);
     }
 
     /// <summary>
@@ -229,31 +186,50 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemSortBy[]? sortBy = null,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] SortOrder[]? sortOrder = null)
     {
-        userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.IsNullOrEmpty()
-            ? null
-            : _userManager.GetUserById(userId.Value);
-        var item = itemId.IsEmpty()
-            ? (userId.IsNullOrEmpty()
-                ? _libraryManager.RootFolder
-                : _libraryManager.GetUserRootFolder())
-            : _libraryManager.GetItemById<BaseItem>(itemId, user);
+        var (item, user) = ResolveThemeMediaOwner(itemId, userId);
         if (item is null)
         {
             return NotFound();
         }
 
-        sortOrder ??= [];
-        sortBy ??= [];
-        var orderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder);
+        return GetThemeMediaResult(item, user, ExtraType.ThemeVideo, inheritFromParent, sortBy, sortOrder);
+    }
 
-        IEnumerable<BaseItem> themeItems;
+    private (BaseItem? Item, User? User) ResolveThemeMediaOwner(Guid itemId, Guid? userId)
+    {
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.IsNullOrEmpty()
+            ? null
+            : _userManager.GetUserById(userId.Value);
+
+        var item = itemId.IsEmpty()
+            ? (userId.IsNullOrEmpty()
+                ? _libraryManager.RootFolder
+                : _libraryManager.GetUserRootFolder())
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
+
+        return (item, user);
+    }
+
+    private ThemeMediaResult GetThemeMediaResult(
+        BaseItem item,
+        User? user,
+        ExtraType extraType,
+        bool inheritFromParent,
+        ItemSortBy[]? sortBy,
+        SortOrder[]? sortOrder)
+    {
+        var orderBy = RequestHelpers.GetOrderBy(sortBy ?? [], sortOrder ?? []);
+
+        IReadOnlyList<BaseItem> themeItems;
 
         while (true)
         {
-            themeItems = item.GetThemeVideos(user, orderBy);
+            themeItems = extraType == ExtraType.ThemeSong
+                ? item.GetThemeSongs(user, orderBy)
+                : item.GetThemeVideos(user, orderBy);
 
-            if (themeItems.Any() || !inheritFromParent)
+            if (themeItems.Count > 0 || !inheritFromParent)
             {
                 break;
             }
@@ -301,30 +277,16 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemSortBy[]? sortBy = null,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] SortOrder[]? sortOrder = null)
     {
-        var themeSongs = GetThemeSongs(
-            itemId,
-            userId,
-            inheritFromParent,
-            sortBy,
-            sortOrder);
-
-        var themeVideos = GetThemeVideos(
-            itemId,
-            userId,
-            inheritFromParent,
-            sortBy,
-            sortOrder);
-
-        if (themeSongs.Result is StatusCodeResult { StatusCode: StatusCodes.Status404NotFound }
-            || themeVideos.Result is StatusCodeResult { StatusCode: StatusCodes.Status404NotFound })
+        var (item, user) = ResolveThemeMediaOwner(itemId, userId);
+        if (item is null)
         {
             return NotFound();
         }
 
         return new AllThemeMediaResult
         {
-            ThemeSongsResult = themeSongs.Value,
-            ThemeVideosResult = themeVideos.Value,
+            ThemeSongsResult = GetThemeMediaResult(item, user, ExtraType.ThemeSong, inheritFromParent, sortBy, sortOrder),
+            ThemeVideosResult = GetThemeMediaResult(item, user, ExtraType.ThemeVideo, inheritFromParent, sortBy, sortOrder),
             SoundtrackSongsResult = new ThemeMediaResult()
         };
     }

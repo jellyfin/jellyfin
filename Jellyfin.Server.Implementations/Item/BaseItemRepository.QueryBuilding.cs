@@ -32,14 +32,15 @@ public sealed partial class BaseItemRepository
         return dbQuery;
     }
 
-    private IQueryable<BaseItemEntity> ApplyQueryFilter(IQueryable<BaseItemEntity> dbQuery, JellyfinDbContext context, InternalItemsQuery filter)
+    private IQueryable<Guid> ApplyQueryFilter(IQueryable<BaseItemEntity> dbQuery, JellyfinDbContext context, InternalItemsQuery filter)
     {
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyAdjacencyFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
-        dbQuery = ApplyNavigations(dbQuery, filter);
-        return dbQuery;
+
+        // No navigations: nothing is deserialized, and an Include is dropped by a scalar projection anyway.
+        return dbQuery.Select(e => e.Id);
     }
 
     /// <summary>
@@ -114,10 +115,8 @@ public sealed partial class BaseItemRepository
             var groupedIds = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.Min(x => x.Id));
             dbQuery = context.BaseItems.AsNoTracking().Where(e => groupedIds.Contains(e.Id));
         }
-        else
-        {
-            dbQuery = dbQuery.Distinct();
-        }
+
+        // No else branch: without grouping there is nothing to de-duplicate.
 
         if (filter.CollapseBoxSetItems == true)
         {
@@ -695,5 +694,35 @@ public sealed partial class BaseItemRepository
             || context.LinkedChildren.Any(lc => lc.ParentId == e.Id
                 && (descendants.Any(d => d.Id == lc.ChildId)
                     || context.AncestorIds.Any(a => a.ParentItemId == lc.ChildId && descendants.Any(d => d.Id == a.ItemId))));
+    }
+
+    /// <summary>
+    /// Builds the same filter as <see cref="BuildHasDescendantFilter"/> for descendants a small set of
+    /// ids already picks out, by collecting the folders those ids sit under.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    /// <param name="seedIds">The ids the descendants are drawn from, e.g. a user's own played rows.</param>
+    /// <param name="descendants">The descendants that count, narrowed to <paramref name="seedIds"/>.</param>
+    /// <returns>A filter keeping items that hold at least one matching descendant.</returns>
+    private static Expression<Func<BaseItemEntity, bool>> BuildHasSeededDescendantFilter(
+        JellyfinDbContext context,
+        IQueryable<Guid> seedIds,
+        IQueryable<BaseItemEntity> descendants)
+    {
+        var matchingSeedIds = descendants.Where(d => seedIds.Contains(d.Id)).Select(d => d.Id);
+
+        var hierarchicalParentIds = context.AncestorIds
+            .Where(a => matchingSeedIds.Contains(a.ItemId))
+            .Select(a => a.ParentItemId);
+
+        var parentIds = hierarchicalParentIds
+            .Concat(context.LinkedChildren
+                .Where(lc => matchingSeedIds.Contains(lc.ChildId))
+                .Select(lc => lc.ParentId))
+            .Concat(context.LinkedChildren
+                .Where(lc => hierarchicalParentIds.Contains(lc.ChildId))
+                .Select(lc => lc.ParentId));
+
+        return e => parentIds.Contains(e.Id);
     }
 }
