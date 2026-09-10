@@ -14,6 +14,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Telemetry;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -167,6 +168,8 @@ public class LyricManager : ILyricManager
             }
 
             await TrySaveLyric(audio, libraryOptions, response.Format, response.Stream).ConfigureAwait(false);
+
+            ProviderMetrics.OnLyricDownload(provider.Name, true);
             return parsedLyrics;
         }
         catch (RateLimitExceededException)
@@ -175,6 +178,8 @@ public class LyricManager : ILyricManager
         }
         catch (Exception ex)
         {
+            ProviderMetrics.OnLyricDownload(provider.Name, false);
+
             LyricDownloadFailure?.Invoke(this, new LyricDownloadFailureEventArgs
             {
                 Item = audio,

@@ -17,6 +17,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
+using MediaBrowser.Controller.Telemetry;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -159,6 +160,8 @@ namespace MediaBrowser.Providers.Subtitles
                 var response = await GetRemoteSubtitles(subtitleId, cancellationToken).ConfigureAwait(false);
 
                 await TrySaveSubtitle(video, libraryOptions, response).ConfigureAwait(false);
+
+                ProviderMetrics.OnSubtitleDownload(provider.Name, true);
             }
             catch (RateLimitExceededException)
             {
@@ -166,6 +169,8 @@ namespace MediaBrowser.Providers.Subtitles
             }
             catch (Exception ex)
             {
+                ProviderMetrics.OnSubtitleDownload(provider.Name, false);
+
                 SubtitleDownloadFailure?.Invoke(this, new SubtitleDownloadFailureEventArgs
                 {
                     Item = video,

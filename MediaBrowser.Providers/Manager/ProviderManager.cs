@@ -28,6 +28,7 @@ using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
+using MediaBrowser.Controller.Telemetry;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
@@ -168,7 +169,7 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <inheritdoc/>
-        public Task<ItemUpdateType> RefreshSingleItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        public async Task<ItemUpdateType> RefreshSingleItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var type = item.GetType();
 
@@ -178,10 +179,18 @@ namespace MediaBrowser.Providers.Manager
             if (service is null)
             {
                 _logger.LogError("Unable to find a metadata service for item of type {TypeName}", type.Name);
-                return Task.FromResult(ItemUpdateType.None);
+                return ItemUpdateType.None;
             }
 
-            return service.RefreshMetadata(item, options, cancellationToken);
+            var startedTimestamp = ProviderMetrics.OnRefreshStarted();
+            try
+            {
+                return await service.RefreshMetadata(item, options, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                ProviderMetrics.OnRefreshCompleted(startedTimestamp, item.GetBaseItemKind());
+            }
         }
 
         /// <inheritdoc/>
