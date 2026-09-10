@@ -185,6 +185,17 @@ public class BaseItemTests
         "Blade Runner (1982) [EE by ADM] [480p HEVC AAC]",
         "[Final Cut] [1080p HEVC AAC]",
         "[EE by ADM] [480p HEVC AAC]")]
+    // Numeric version labels: the dot between the digits is a decimal point, not a delimiter, so the
+    // prefix retreats past it to the '-' instead of leaving "0" / "11".
+    [InlineData(
+        "Evangelion 1.0 You Are (Not) Alone (2007) - 1.0",
+        "Evangelion 1.0 You Are (Not) Alone (2007) - 1.11",
+        "1.0",
+        "1.11")]
+    // Numeric labels with no structural delimiter at all fall back to the space boundary.
+    [InlineData("Movie (2007) 1.0", "Movie (2007) 1.11", "1.0", "1.11")]
+    // A dot followed by a non-digit is still a delimiter, even after a digit.
+    [InlineData("Movie - Part 1.HDR", "Movie - Part 1.SDR", "HDR", "SDR")]
     public void GetMediaSourceName_CommonPrefix_Valid(string primaryName, string altName, string expectedPrimary, string expectedAlt)
     {
         var primaryPath = "/Shows/Demo/Season 01/" + primaryName + ".mkv";
@@ -213,6 +224,24 @@ public class BaseItemTests
 
         Assert.Equal(expectedPrimary, video.GetMediaSourceName(video, commonPrefix));
         Assert.Equal(expectedAlt, videoAlt.GetMediaSourceName(videoAlt, commonPrefix));
+    }
+
+    [Fact]
+    public void GetCommonVersionPrefix_NumericLabels_KeepsWholeNumber()
+    {
+        // Three versions labelled "1.0", "1.01" and "1.11": the common prefix stops inside the version
+        // number, so it must retreat past the decimal point to the '-' delimiter.
+        string[] fileNames =
+        [
+            "Evangelion 1.0 You Are (Not) Alone (2007) - 1.0",
+            "Evangelion 1.0 You Are (Not) Alone (2007) - 1.01",
+            "Evangelion 1.0 You Are (Not) Alone (2007) - 1.11"
+        ];
+
+        var prefix = BaseItem.GetCommonVersionPrefix(fileNames);
+
+        Assert.Equal("Evangelion 1.0 You Are (Not) Alone (2007) -", prefix);
+        Assert.Equal(["1.0", "1.01", "1.11"], fileNames.Select(n => n[prefix.Length..].TrimStart(' ')));
     }
 
     [Fact]
