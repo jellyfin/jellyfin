@@ -30,6 +30,10 @@ public class SkiaEncoder : IImageEncoder
     private const float SharpenNeighborWeight = -0.1f;
 
     private static readonly HashSet<string> _transparentImageTypes = new(StringComparer.OrdinalIgnoreCase) { ".png", ".gif", ".webp" };
+
+    // The JPEG decoder also supports the other n/8 scales, but those lost detail compared to a full decode.
+    private static readonly float[] _jpegDecodeScales = [0.125f, 0.25f, 0.5f];
+
     private readonly ILogger<SkiaEncoder> _logger;
     private readonly IApplicationPaths _appPaths;
     private static readonly SKTypeface?[] _typefaces = InitializeTypefaces();
@@ -447,6 +451,92 @@ public class SkiaEncoder : IImageEncoder
         return Decode(path, false, orientation, out _);
     }
 
+    /// <summary>
+    /// Decode a JPEG at a reduced size when the requested output is much smaller than the image.
+    /// The JPEG decoder can produce 1/2, 1/4 or 1/8 of the full size for a fraction of the cost and memory of a full
+    /// decode, so the smallest of those that still covers the output is decoded and <see cref="ResizeImage"/> does the rest.
+    /// </summary>
+    /// <param name="path">The filepath of the image to decode.</param>
+    /// <param name="autoOrient">Whether to apply the EXIF orientation of the image.</param>
+    /// <param name="options">The processing options, used to determine the output size.</param>
+    /// <param name="originalSize">The full size of the oriented image, or <c>null</c> if no bitmap is returned.</param>
+    /// <returns>The decoded bitmap, or <c>null</c> if the image is not a JPEG or only a full decode covers the output.</returns>
+    internal SKBitmap? DecodeDownscaled(string path, bool autoOrient, ImageProcessingOptions options, out ImageDimensions? originalSize)
+    {
+        originalSize = null;
+
+        // Let Skia read the file: an exception thrown by a managed Stream while Skia is decoding cannot be caught
+        // and terminates the process, a failed native read just ends the decode.
+        var safePath = NormalizePath(path);
+        try
+        {
+            using var codec = SKCodec.Create(safePath, out var result);
+            return result == SKCodecResult.Success && codec.EncodedFormat == SKEncodedImageFormat.Jpeg
+                ? DecodeDownscaled(codec, autoOrient, options, out originalSize)
+                : null;
+        }
+        finally
+        {
+            if (!string.Equals(safePath, path, StringComparison.Ordinal))
+            {
+                try
+                {
+                    File.Delete(safePath);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "Unable to remove temporary file '{TempPath}'", safePath);
+                }
+            }
+        }
+    }
+
+    private SKBitmap? DecodeDownscaled(SKCodec codec, bool autoOrient, ImageProcessingOptions options, out ImageDimensions? originalSize)
+    {
+        originalSize = null;
+
+        var info = codec.Info;
+        var origin = autoOrient ? codec.EncodedOrigin : SKEncodedOrigin.TopLeft;
+        var swapAxes = origin is SKEncodedOrigin.LeftBottom or SKEncodedOrigin.LeftTop or SKEncodedOrigin.RightBottom or SKEncodedOrigin.RightTop;
+        var fullSize = swapAxes ? new ImageDimensions(info.Height, info.Width) : new ImageDimensions(info.Width, info.Height);
+        var outputSize = ImageHelper.GetNewImageSize(options, fullSize);
+
+        // Leave ResizeImage at least 1.5x to shrink, so it still goes through its mipmaps like it does from the full
+        // image. Decoding closer to the output size and resizing nearly 1:1 gave visibly softer results.
+        const double Headroom = 1.5;
+        var minWidth = Headroom * (swapAxes ? outputSize.Height : outputSize.Width);
+        var minHeight = Headroom * (swapAxes ? outputSize.Width : outputSize.Height);
+        var decodeSize = _jpegDecodeScales
+            .Select(codec.GetScaledDimensions)
+            .FirstOrDefault(size => size.Width >= minWidth && size.Height >= minHeight);
+        if (decodeSize.IsEmpty)
+        {
+            return null;
+        }
+
+        // Use the pixel format Decode would use: its SKCodec path (auto-orientation and Gray8) creates an
+        // opaque 32-bit bitmap, SKBitmap.Decode keeps the format of the codec.
+        var decodeInfo = autoOrient || info.ColorType == SKColorType.Gray8
+            ? new SKImageInfo(decodeSize.Width, decodeSize.Height, SKImageInfo.PlatformColorType, SKAlphaType.Opaque)
+            : info.WithSize(decodeSize.Width, decodeSize.Height);
+        var bitmap = SKBitmap.Decode(codec, decodeInfo);
+        if (bitmap is null)
+        {
+            return null;
+        }
+
+        originalSize = fullSize;
+        if (origin == SKEncodedOrigin.TopLeft)
+        {
+            return bitmap;
+        }
+
+        using (bitmap)
+        {
+            return OrientImage(bitmap, origin);
+        }
+    }
+
     private SKBitmap? GetBitmapFromSvg(string path)
     {
         if (!File.Exists(path))
@@ -553,32 +643,40 @@ public class SkiaEncoder : IImageEncoder
     /// <param name="targetInfo">This specifies the target size and other information required to create the surface.</param>
     /// <param name="isAntialias">This enables anti-aliasing on the SKPaint instance.</param>
     /// <param name="isDither">This enables dithering on the SKPaint instance.</param>
-    /// <returns>The resized image.</returns>
-    internal static SKImage ResizeImage(SKBitmap source, SKImageInfo targetInfo, bool isAntialias = false, bool isDither = false)
+    /// <returns>The resized bitmap.</returns>
+    internal static SKBitmap ResizeImage(SKBitmap source, SKImageInfo targetInfo, bool isAntialias = false, bool isDither = false)
     {
-        using var target = new SKBitmap(targetInfo);
-        using var canvas = new SKCanvas(target);
-        using var paint = new SKPaint();
-        paint.IsAntialias = isAntialias;
-        paint.IsDither = isDither;
+        var target = new SKBitmap(targetInfo);
+        try
+        {
+            using var canvas = new SKCanvas(target);
+            using var paint = new SKPaint();
+            paint.IsAntialias = isAntialias;
+            paint.IsDither = isDither;
 
-        // Historically, kHigh implied cubic filtering, but only when upsampling.
-        // If specified kHigh, and were down-sampling, Skia used to switch back to kMedium (bilinear filtering plus mipmaps).
-        // With current skia API, passing Mitchell cubic when down-sampling will cause serious quality degradation.
-        var samplingOptions = source.Width > targetInfo.Width || source.Height > targetInfo.Height
-            ? DefaultSamplingOptions
-            : UpscaleSamplingOptions;
+            // Historically, kHigh implied cubic filtering, but only when upsampling.
+            // If specified kHigh, and were down-sampling, Skia used to switch back to kMedium (bilinear filtering plus mipmaps).
+            // With current skia API, passing Mitchell cubic when down-sampling will cause serious quality degradation.
+            var samplingOptions = source.Width > targetInfo.Width || source.Height > targetInfo.Height
+                ? DefaultSamplingOptions
+                : UpscaleSamplingOptions;
 
-        canvas.DrawBitmap(
-            source,
-            SKRect.Create(0, 0, source.Width, source.Height),
-            SKRect.Create(0, 0, targetInfo.Width, targetInfo.Height),
-            samplingOptions,
-            paint);
+            canvas.DrawBitmap(
+                source,
+                SKRect.Create(0, 0, source.Width, source.Height),
+                SKRect.Create(0, 0, targetInfo.Width, targetInfo.Height),
+                samplingOptions,
+                paint);
 
-        SharpenInPlace(target);
+            SharpenInPlace(target);
 
-        return SKImage.FromBitmap(target);
+            return target;
+        }
+        catch
+        {
+            target.Dispose();
+            throw;
+        }
     }
 
     /// <summary>
@@ -673,16 +771,18 @@ public class SkiaEncoder : IImageEncoder
         var blur = options.Blur ?? 0;
         var hasIndicator = options.UnplayedCount.HasValue || !options.PercentPlayed.Equals(0);
 
+        // Only set when the image is decoded at a reduced size, otherwise the bitmap has the original size.
+        ImageDimensions? fullImageSize = null;
         using var bitmap = inputFormat.Equals(SvgFormat, StringComparison.OrdinalIgnoreCase)
             ? GetBitmapFromSvg(inputPath)
-            : GetBitmap(inputPath, autoOrient, orientation);
+            : (DecodeDownscaled(inputPath, autoOrient, options, out fullImageSize) ?? GetBitmap(inputPath, autoOrient, orientation));
 
         if (bitmap is null)
         {
             throw new InvalidDataException($"Skia unable to read image {inputPath}");
         }
 
-        var originalImageSize = new ImageDimensions(bitmap.Width, bitmap.Height);
+        var originalImageSize = fullImageSize ?? new ImageDimensions(bitmap.Width, bitmap.Height);
 
         if (options.HasDefaultOptions(inputPath, originalImageSize) && !autoOrient)
         {
@@ -695,10 +795,9 @@ public class SkiaEncoder : IImageEncoder
         var width = newImageSize.Width;
         var height = newImageSize.Height;
 
-        // scale image (the FromImage creates a copy)
+        // scale image
         var imageInfo = new SKImageInfo(width, height, bitmap.ColorType, bitmap.AlphaType, bitmap.ColorSpace);
-        using var resizedImage = ResizeImage(bitmap, imageInfo);
-        using var resizedBitmap = SKBitmap.FromImage(resizedImage);
+        using var resizedBitmap = ResizeImage(bitmap, imageInfo);
 
         // If all we're doing is resizing then we can stop now
         if (!hasBackgroundColor && !hasForegroundColor && blur == 0 && !hasIndicator)
@@ -706,7 +805,6 @@ public class SkiaEncoder : IImageEncoder
             var outputDirectory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
             Directory.CreateDirectory(outputDirectory);
             using var outputStream = new SKFileWStream(outputPath);
-            using var pixmap = new SKPixmap(new SKImageInfo(width, height), resizedBitmap.GetPixels());
             resizedBitmap.Encode(outputStream, skiaOutputFormat, quality);
             return outputPath;
         }
