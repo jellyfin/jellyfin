@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -72,43 +73,144 @@ internal class RepairAlternateVersionLinks : IAsyncMigrationRoutine
                 primaryByChild.Remove(selfLink.Key);
             }
 
+            ResolvePrimaries(primaryByChild);
+
             var repaired = 0;
-            var childIds = primaryByChild.Keys.ToList();
-            for (var offset = 0; offset < childIds.Count; offset += BatchSize)
+            var promoted = 0;
+
+            // The primaries are loaded along with their versions: a primary that carries a
+            // PrimaryVersionId of its own hides the whole group it heads.
+            var itemIds = primaryByChild.Keys.Concat(primaryByChild.Values).Distinct().ToList();
+            for (var offset = 0; offset < itemIds.Count; offset += BatchSize)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var batch = childIds.GetRange(offset, Math.Min(BatchSize, childIds.Count - offset));
-                var children = await dbContext.BaseItems
+                var batch = itemIds.GetRange(offset, Math.Min(BatchSize, itemIds.Count - offset));
+                var items = await dbContext.BaseItems
                     .Where(e => batch.Contains(e.Id))
                     .ToListAsync(cancellationToken)
                     .ConfigureAwait(false);
 
-                foreach (var child in children)
+                foreach (var item in items)
                 {
-                    var primaryId = primaryByChild[child.Id];
-
-                    // Mirrors Video.CreatePresentationUniqueKey for a video that has a primary.
-                    var expectedKey = primaryId.ToString("N", CultureInfo.InvariantCulture);
-                    if (child.PrimaryVersionId.HasValue
-                        && primaryId.Equals(child.PrimaryVersionId.Value)
-                        && string.Equals(child.PresentationUniqueKey, expectedKey, StringComparison.Ordinal))
+                    if (primaryByChild.TryGetValue(item.Id, out var primaryId))
                     {
-                        continue;
-                    }
+                        // Mirrors Video.CreatePresentationUniqueKey for a video that has a primary.
+                        var expectedKey = primaryId.ToString("N", CultureInfo.InvariantCulture);
+                        if (item.PrimaryVersionId.HasValue
+                            && primaryId.Equals(item.PrimaryVersionId.Value)
+                            && string.Equals(item.PresentationUniqueKey, expectedKey, StringComparison.Ordinal))
+                        {
+                            continue;
+                        }
 
-                    child.PrimaryVersionId = primaryId;
-                    child.PresentationUniqueKey = expectedKey;
-                    repaired++;
+                        item.PrimaryVersionId = primaryId;
+                        item.PresentationUniqueKey = expectedKey;
+                        repaired++;
+                    }
+                    else if (item.PrimaryVersionId.HasValue)
+                    {
+                        if (item.OwnerId.HasValue)
+                        {
+                            // An owned item is hidden by its owner rather than by its primary, so
+                            // clearing the primary here would not bring the group back.
+                            _logger.LogWarning(
+                                "Alternate versions are linked to {ItemId}, which is owned by {OwnerId}; the group stays hidden until the owner is repaired.",
+                                item.Id,
+                                item.OwnerId.Value);
+                            continue;
+                        }
+
+                        // Nothing links this one as a version, so the leftover primary is stale and
+                        // would hide it, and with it every version linked to it.
+                        _logger.LogWarning(
+                            "Clearing the stale primary {PrimaryVersionId} of {ItemId}, which other versions are linked to.",
+                            item.PrimaryVersionId.Value,
+                            item.Id);
+
+                        item.PrimaryVersionId = null;
+                        item.PresentationUniqueKey = item.Id.ToString("N", CultureInfo.InvariantCulture);
+                        promoted++;
+                    }
                 }
 
                 await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             }
 
             _logger.LogInformation(
-                "Repaired {Repaired} of {Total} alternate version links.",
+                "Repaired {Repaired} of {Total} alternate version links, and promoted {Promoted} primaries that were versions themselves.",
                 repaired,
-                primaryByChild.Count);
+                primaryByChild.Count,
+                promoted);
+        }
+    }
+
+    private void ResolvePrimaries(Dictionary<Guid, Guid> primaryByChild)
+    {
+        var resolvedPrimaries = new Dictionary<Guid, Guid>(primaryByChild.Count);
+
+        foreach (var start in primaryByChild.Keys.ToList())
+        {
+            if (resolvedPrimaries.ContainsKey(start))
+            {
+                continue;
+            }
+
+            var chain = new List<Guid>();
+            var walked = new HashSet<Guid>();
+            var current = start;
+            Guid primary;
+
+            while (true)
+            {
+                if (resolvedPrimaries.TryGetValue(current, out var resolved))
+                {
+                    primary = resolved;
+                    break;
+                }
+
+                if (!primaryByChild.TryGetValue(current, out var next))
+                {
+                    // Nothing is linking this one as a version of something else, so it heads the group.
+                    primary = current;
+                    break;
+                }
+
+                if (!walked.Add(current))
+                {
+                    var loop = chain.Skip(chain.IndexOf(current)).ToList();
+
+                    // Which member heads the group is arbitrary; the lowest id keeps the repair
+                    // stable if the migration is ever re-run over the same data.
+                    primary = loop.Min();
+                    _logger.LogWarning(
+                        "Alternate version links form a loop ({Loop}); keeping {PrimaryId} as the primary of the group.",
+                        string.Join(" -> ", loop),
+                        primary);
+
+                    primaryByChild.Remove(primary);
+                    break;
+                }
+
+                chain.Add(current);
+                current = next;
+            }
+
+            foreach (var version in chain)
+            {
+                resolvedPrimaries[version] = primary;
+            }
+        }
+
+        foreach (var (version, primary) in resolvedPrimaries)
+        {
+            if (primary.Equals(version))
+            {
+                // The member of a loop that was kept as the primary of its group.
+                continue;
+            }
+
+            primaryByChild[version] = primary;
         }
     }
 }
