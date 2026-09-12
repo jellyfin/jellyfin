@@ -833,6 +833,13 @@ namespace MediaBrowser.Controller.Library
         QueryFiltersLegacy GetQueryFiltersLegacy(InternalItemsQuery query);
 
         /// <summary>
+        /// Gets a list of all distinct tags of the matching items.
+        /// </summary>
+        /// <param name="query">The query filter.</param>
+        /// <returns>List of tags.</returns>
+        IReadOnlyList<string> GetTagNames(InternalItemsQuery query);
+
+        /// <summary>
         /// Gets a list of all language codes of the provided stream type.
         /// </summary>
         /// <param name="mediaStreamType">The stream type.</param>
