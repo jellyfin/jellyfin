@@ -36,8 +36,7 @@ public sealed class ComicBookInfoProviderTests : IDisposable
     [InlineData(null)] // archive written without ever touching Comment
     [InlineData("")]
     [InlineData("   ")]
-    [InlineData("Created by some packer")] // a comment that was never ComicBookInfo
-    public async Task ReadMetadata_NoComicBookInfoComment_NoMetadataAndNoErrorLogged(string? comment)
+    public async Task ReadMetadata_EmptyArchiveComment_SkipsWithoutDeserializing(string? comment)
     {
         var logger = new Mock<ILogger<ComicBookInfoProvider>>();
         var path = CreateArchive(comment);
@@ -46,7 +45,22 @@ public sealed class ComicBookInfoProviderTests : IDisposable
         var result = await provider.ReadMetadata(new ItemInfo(new Book { Path = path }), Mock.Of<IDirectoryService>(), CancellationToken.None);
 
         Assert.False(result.HasMetadata);
-        VerifyNoErrorLogged(logger);
+        VerifyLogged(logger, LogLevel.Debug, "missing ComicBookInfo in archive comment");
+        VerifyNothingLoggedAbove(logger, LogLevel.Debug);
+    }
+
+    [Fact]
+    public async Task ReadMetadata_ArchiveCommentIsNotComicBookInfo_SkipsWithoutError()
+    {
+        var logger = new Mock<ILogger<ComicBookInfoProvider>>();
+        var path = CreateArchive("Created by some packer");
+        var provider = new ComicBookInfoProvider(CreateFileSystem(path), logger.Object);
+
+        var result = await provider.ReadMetadata(new ItemInfo(new Book { Path = path }), Mock.Of<IDirectoryService>(), CancellationToken.None);
+
+        Assert.False(result.HasMetadata);
+        VerifyLogged(logger, LogLevel.Debug, "archive comment is not valid ComicBookInfo metadata");
+        VerifyNothingLoggedAbove(logger, LogLevel.Debug);
     }
 
     [Fact]
@@ -63,14 +77,27 @@ public sealed class ComicBookInfoProviderTests : IDisposable
         Assert.Equal("Episode 36", result.Item.Name);
         Assert.Equal("Jungle Juice", result.Item.SeriesName);
         Assert.Equal(175, result.Item.IndexNumber);
-        VerifyNoErrorLogged(logger);
+        VerifyNothingLoggedAbove(logger, LogLevel.Debug);
     }
 
-    private static void VerifyNoErrorLogged(Mock<ILogger<ComicBookInfoProvider>> logger)
+    private static void VerifyLogged(Mock<ILogger<ComicBookInfoProvider>> logger, LogLevel level, string message)
     {
         logger.Verify(
             x => x.Log(
-                LogLevel.Error,
+                level,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains(message, StringComparison.Ordinal)),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    private static void VerifyNothingLoggedAbove(Mock<ILogger<ComicBookInfoProvider>> logger, LogLevel level)
+    {
+        // a comment that holds no ComicBookInfo is normal, so it must not reach the log of a default install
+        logger.Verify(
+            x => x.Log(
+                It.Is<LogLevel>(actual => actual > level),
                 It.IsAny<EventId>(),
                 It.IsAny<It.IsAnyType>(),
                 It.IsAny<Exception>(),
