@@ -465,11 +465,9 @@ public sealed partial class BaseItemRepository
 
         baseQuery = ApplyParentalRestrictions(context, baseQuery, filter);
 
-        // Exclude alternate versions (have PrimaryVersionId set) and owned non-extra items.
-        // Extras (trailers, etc.) have OwnerId set but also have ExtraType set — keep those.
         if (!filter.IncludeOwnedItems)
         {
-            baseQuery = baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
+            baseQuery = baseQuery.Where(DescendantQueryHelper.IsDistinctLibraryItem);
         }
 
         return baseQuery;
@@ -645,24 +643,26 @@ public sealed partial class BaseItemRepository
     {
         var maxScore = maxRating.Score;
         var maxSubScore = maxRating.SubScore ?? 0;
-        var linkedChildren = context.LinkedChildren;
+
+        // Only a manual link makes an item a container of other items.
+        var members = context.LinkedChildren
+            .Where(lc => lc.ChildType == Database.Implementations.Entities.LinkedChildType.Manual);
 
         return e =>
-            // Item has a rating: check against limit
-            (e.InheritedParentalRatingValue != null
-                && (e.InheritedParentalRatingValue < maxScore
-                    || (e.InheritedParentalRatingValue == maxScore && (e.InheritedParentalRatingSubValue ?? 0) <= maxSubScore)))
-            // Item has no rating
-            || (e.InheritedParentalRatingValue == null
-                && (
-                    // No linked children (not a BoxSet/Playlist): pass as unrated
-                    !linkedChildren.Any(lc => lc.ParentId == e.Id)
-                    // Has linked children: at least one child must be within limits
-                    || linkedChildren.Any(lc => lc.ParentId == e.Id
-                        && (lc.Child!.InheritedParentalRatingValue == null
-                            || lc.Child.InheritedParentalRatingValue < maxScore
-                            || (lc.Child.InheritedParentalRatingValue == maxScore
-                                && (lc.Child.InheritedParentalRatingSubValue ?? 0) <= maxSubScore)))));
+            // The item's own rating, where it has one, has to be within the limit. An unrated item
+            // passes here; blocking those is what BlockUnratedItems does.
+            (e.InheritedParentalRatingValue == null
+                || e.InheritedParentalRatingValue < maxScore
+                || (e.InheritedParentalRatingValue == maxScore && (e.InheritedParentalRatingSubValue ?? 0) <= maxSubScore))
+            // A container is only as visible as its members: a BoxSet or Playlist with nothing left
+            // in it for this user is hidden whatever rating it carries itself. BoxSet.IsVisible
+            // applies the same rule in memory, and a count has to agree with the listing it counts.
+            && (!members.Any(lc => lc.ParentId == e.Id)
+                || members.Any(lc => lc.ParentId == e.Id
+                    && (lc.Child!.InheritedParentalRatingValue == null
+                        || lc.Child.InheritedParentalRatingValue < maxScore
+                        || (lc.Child.InheritedParentalRatingValue == maxScore
+                            && (lc.Child.InheritedParentalRatingSubValue ?? 0) <= maxSubScore))));
     }
 
     /// <inheritdoc />

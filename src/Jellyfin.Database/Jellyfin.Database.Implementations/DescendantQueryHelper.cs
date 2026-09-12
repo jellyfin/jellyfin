@@ -22,6 +22,42 @@ public static class DescendantQueryHelper
         b => !b.IsFolder && !b.IsVirtualItem;
 
     /// <summary>
+    /// Gets the predicate identifying the items that stand on their own in a library. An alternate
+    /// version is a second file for the item that links it rather than an item beside it, and an owned
+    /// item belongs to its owner unless it is an extra (a trailer and the like, which carries both an
+    /// owner and an extra type). Nothing here turns on who is asking, so a count that applies it
+    /// answers the same with a user and without one.
+    /// </summary>
+    public static Expression<Func<BaseItemEntity, bool>> IsDistinctLibraryItem { get; } =
+        b => !b.PrimaryVersionId.HasValue && (!b.OwnerId.HasValue || b.ExtraType != null);
+
+    /// <summary>
+    /// Builds the predicate identifying the items a user has played, counting a multi-version item as
+    /// played when any of its alternate versions is. Mirrors the aggregation
+    /// <c>VersionResumeData.ApplyTo</c> performs on the played flag a single item reports, so that a
+    /// folder's unplayed count cannot disagree with the watched state its members render with.
+    /// </summary>
+    /// <param name="userId">The id of the user whose played state to test.</param>
+    /// <returns>The predicate matching the items that user has played.</returns>
+    public static Expression<Func<BaseItemEntity, bool>> IsPlayedBy(Guid userId) =>
+        b => b.UserData!.Any(u => u.UserId.Equals(userId) && u.Played)
+            || b.LinkedChildEntities!.Any(lc =>
+                (lc.ChildType == LinkedChildType.LocalAlternateVersion || lc.ChildType == LinkedChildType.LinkedAlternateVersion)
+                && lc.Child!.UserData!.Any(u => u.UserId.Equals(userId) && u.Played));
+
+    /// <summary>
+    /// Builds the negation of <see cref="IsPlayedBy"/>, so a caller filtering for unplayed items reads
+    /// the same definition of played as one filtering for played items.
+    /// </summary>
+    /// <param name="userId">The id of the user whose played state to test.</param>
+    /// <returns>The predicate matching the items that user has not played.</returns>
+    public static Expression<Func<BaseItemEntity, bool>> IsUnplayedBy(Guid userId)
+    {
+        var played = IsPlayedBy(userId);
+        return Expression.Lambda<Func<BaseItemEntity, bool>>(Expression.Not(played.Body), played.Parameters);
+    }
+
+    /// <summary>
     /// Gets a queryable of all descendant IDs for a parent item.
     /// Traverses AncestorIds and LinkedChildren to find all descendants.
     /// </summary>
