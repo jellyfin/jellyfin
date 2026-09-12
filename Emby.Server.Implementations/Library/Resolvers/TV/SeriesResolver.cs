@@ -145,7 +145,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                         var episodeResolver = new Naming.TV.EpisodeResolver(namingOptions);
 
                         var episodeInfo = episodeResolver.Resolve(fullName, false, true, false, fillExtendedInfo: false);
-                        if (episodeInfo is not null && episodeInfo.EpisodeNumber.HasValue)
+                        if (episodeInfo is not null
+                            && episodeInfo.EpisodeNumber.HasValue
+                            && IsConclusiveEpisodeMatch(episodeInfo, fullName))
                         {
                             return true;
                         }
@@ -155,6 +157,16 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
             _logger.LogDebug("{Path} is not a series folder.", path);
             return false;
+        }
+
+        private bool IsConclusiveEpisodeMatch(EpisodeInfo episodeInfo, string path)
+        {
+            if (episodeInfo.SeasonNumber.HasValue)
+            {
+                return true;
+            }
+
+            return VideoResolver.ResolveFile(path, _namingOptions)?.Year is null;
         }
 
         /// <summary>
