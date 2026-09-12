@@ -583,11 +583,16 @@ namespace Jellyfin.LiveTv.Listings
             return lineups;
         }
 
-        private void ResetErrorState()
+        private void ResetErrorState(ListingsProviderInfo info)
         {
             _accountError = false;
             Interlocked.Exchange(ref _lastErrorResponseTicks, 0);
-            _tokens.Clear();
+
+            // Only the account being saved is retried, the tokens of the other accounts stay valid.
+            if (!string.IsNullOrWhiteSpace(info.Username))
+            {
+                _tokens.TryRemove(info.Username, out _);
+            }
         }
 
         private async Task<string> GetToken(ListingsProviderInfo info, CancellationToken cancellationToken)
@@ -997,7 +1002,7 @@ namespace Jellyfin.LiveTv.Listings
 
         public async Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
         {
-            ResetErrorState();
+            ResetErrorState(info);
 
             if (validateLogin)
             {

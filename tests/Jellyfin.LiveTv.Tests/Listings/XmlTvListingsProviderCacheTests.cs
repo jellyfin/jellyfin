@@ -71,6 +71,22 @@ public sealed class XmlTvListingsProviderCacheTests : IDisposable
         await Assert.ThrowsAsync<TimeoutException>(() => GetPrograms(provider));
     }
 
+    [Fact]
+    public async Task GetProgramsAsync_ProviderSavedAfterAFailure_DownloadsAgain()
+    {
+        var provider = CreateProvider();
+
+        _downloadsFail = true;
+        await Assert.ThrowsAnyAsync<Exception>(() => GetPrograms(provider));
+
+        // Without clearing the backoff the guide stays empty for an hour, even though saving the
+        // provider deletes the cached file and is the user asking for another attempt.
+        _downloadsFail = false;
+        await provider.Validate(_info, true, true);
+
+        Assert.NotEmpty(await GetPrograms(provider));
+    }
+
     private async Task<ProgramInfo[]> GetPrograms(XmlTvListingsProvider provider)
     {
         var startDate = new DateTime(2022, 11, 4, 0, 0, 0, DateTimeKind.Utc);

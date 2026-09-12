@@ -166,7 +166,7 @@ namespace Jellyfin.LiveTv.Listings
             {
                 File.Delete(tempFile);
             }
-            catch (IOException ex)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
                 _logger.LogWarning(ex, "Error deleting temporary XMLTV file {File}", tempFile);
             }
@@ -332,6 +332,13 @@ namespace Jellyfin.LiveTv.Listings
 
         public Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
         {
+            // Saving the provider is an explicit retry, so the download backoff has to be dropped
+            // together with the cached file the listings manager deletes.
+            if (!string.IsNullOrEmpty(info.Path))
+            {
+                _lastDownloadFailures.TryRemove(info.Path, out _);
+            }
+
             // Assume all urls are valid. check files for existence
             if (!info.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase) && !File.Exists(info.Path))
             {

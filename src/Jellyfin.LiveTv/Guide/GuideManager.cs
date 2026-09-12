@@ -125,10 +125,14 @@ public class GuideManager : IGuideManager
             {
                 var innerProgress = new Progress<double>(p => progress.Report(p * progressPerService));
 
-                var idList = await RefreshChannelsInternal(service, innerProgress, cancellationToken).ConfigureAwait(false);
+                var (channelIds, programIds, hasErrors) = await RefreshChannelsInternal(service, innerProgress, cancellationToken).ConfigureAwait(false);
 
-                newChannelIdList.AddRange(idList.Item1);
-                newProgramIdList.AddRange(idList.Item2);
+                newChannelIdList.AddRange(channelIds);
+                newProgramIdList.AddRange(programIds);
+
+                // The channels that failed did not report any programs, so cleaning the database
+                // would delete every program they provide instead of keeping the previous ones.
+                cleanDatabase &= !hasErrors;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -172,9 +176,11 @@ public class GuideManager : IGuideManager
             : 7;
     }
 
-    private async Task<Tuple<List<Guid>, List<Guid>>> RefreshChannelsInternal(ILiveTvService service, IProgress<double> progress, CancellationToken cancellationToken)
+    private async Task<(List<Guid> ChannelIds, List<Guid> ProgramIds, bool HasErrors)> RefreshChannelsInternal(ILiveTvService service, IProgress<double> progress, CancellationToken cancellationToken)
     {
         progress.Report(10);
+
+        var hasErrors = false;
 
         var allChannelsList = (await service.GetChannelsAsync(cancellationToken).ConfigureAwait(false))
             .Select(i => new Tuple<string, ChannelInfo>(service.Name, i))
@@ -201,6 +207,7 @@ public class GuideManager : IGuideManager
             }
             catch (Exception ex)
             {
+                hasErrors = true;
                 _logger.LogError(ex, "Error getting channel information for {Name}", channelInfo.Item2.Name);
             }
 
@@ -320,6 +327,7 @@ public class GuideManager : IGuideManager
             }
             catch (Exception ex)
             {
+                hasErrors = true;
                 _logger.LogError(ex, "Error getting programs for channel {Name}", currentChannel.Name);
             }
 
@@ -330,7 +338,7 @@ public class GuideManager : IGuideManager
         }
 
         progress.Report(100);
-        return new Tuple<List<Guid>, List<Guid>>(channels, programIds);
+        return (channels, programIds, hasErrors);
     }
 
     private void CleanDatabase(Guid[] currentIdList, BaseItemKind[] validTypes, IProgress<double> progress, CancellationToken cancellationToken)

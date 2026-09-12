@@ -357,7 +357,7 @@ public class ListingsManager : IListingsManager
                     File.Delete(xmltvCacheFile);
                 }
             }
-            catch (IOException ex)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
                 _logger.LogWarning(ex, "Error deleting XMLTV cache file for provider {ProviderId}", safeId);
             }
