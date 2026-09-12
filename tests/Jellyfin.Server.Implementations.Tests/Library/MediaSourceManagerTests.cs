@@ -195,6 +195,14 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         }
 
         [Fact]
+        public void GetStaticMediaSources_ItemWithoutMediaSources_ThrowsArgumentException()
+        {
+            // A container queued by mistake is a bad request, not a server fault.
+            Assert.Throws<ArgumentException>(
+                () => _mediaSourceManager.GetStaticMediaSources(new MusicArtist { Id = Guid.NewGuid() }, false, _user));
+        }
+
+        [Fact]
         public void GetStaticMediaSources_NoUser_DoesNotTouchUserData()
         {
             var (primary, _, _) = SetupVersionGroup();

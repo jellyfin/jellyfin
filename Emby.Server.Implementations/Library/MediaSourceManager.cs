@@ -384,7 +384,13 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentNullException.ThrowIfNull(item);
 
-            var hasMediaSources = (IHasMediaSources)item;
+            // Clients can ask for the sources of an item that has none (a container queued by mistake).
+            if (item is not IHasMediaSources hasMediaSources)
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.InvariantCulture, "{0} {1} has no media sources and cannot be played.", item.GetType().Name, item.Id),
+                    nameof(item));
+            }
 
             var sources = hasMediaSources.GetMediaSources(enablePathSubstitution);
 
