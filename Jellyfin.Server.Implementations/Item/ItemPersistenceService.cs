@@ -68,16 +68,24 @@ public class ItemPersistenceService : IItemPersistenceService
         // Use WhereOneOrMany instead of a raw HashSet.Contains so large id sets are bound as a
         // single parameter (json_each) rather than one SQL variable per id, which would otherwise
         // overflow SQLite's variable limit when deleting many items at once (e.g. migrations).
-        var ownerIds = descendantIds.ToArray();
-        var extraIds = context.BaseItems
-            .Where(e => e.OwnerId.HasValue)
-            .WhereOneOrMany(ownerIds, e => e.OwnerId!.Value)
-            .Select(e => e.Id)
-            .ToArray();
-
-        foreach (var extraId in extraIds)
+        var frontier = descendantIds.ToArray();
+        while (frontier.Length > 0)
         {
-            descendantIds.Add(extraId);
+            var ownedIds = context.BaseItems
+                .Where(e => e.OwnerId.HasValue)
+                .WhereOneOrMany(frontier, e => e.OwnerId!.Value)
+                .Select(e => e.Id)
+                .ToArray();
+
+            var childIds = context.BaseItems
+                .Where(e => e.ParentId.HasValue)
+                .WhereOneOrMany(frontier, e => e.ParentId!.Value)
+                .Select(e => e.Id)
+                .ToArray();
+
+            // Only ids that were not already known become the next frontier, so ownership cycles
+            // terminate instead of looping forever.
+            frontier = [.. ownedIds.Concat(childIds).Where(e => descendantIds.Add(e))];
         }
 
         var relatedItems = descendantIds.ToArray();
