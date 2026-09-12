@@ -4128,6 +4128,18 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
+        public IReadOnlyList<string> GetTagNames(InternalItemsQuery query)
+        {
+            if (query.User is not null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return _itemRepository.GetTagNames(query);
+        }
+
+        /// <inheritdoc />
         public IReadOnlyList<string> GetMediaStreamLanguages(MediaStreamType mediaStreamType)
         {
             return _mediaStreamRepository.GetMediaStreamLanguages(mediaStreamType);
