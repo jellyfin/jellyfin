@@ -73,6 +73,13 @@ public class FixDates : IAsyncMigrationRoutine
                                     Math.Min((partition + 1) * PageSize, records),
                                     records,
                                     sw.Elapsed))
+                        .SkippingUnreadableItems(
+                            e => e.Id,
+                            (ex, key, index) => _logger.LogError(
+                                ex,
+                                "Skipping BaseItems row {Key} at index {Index}, it could not be read. Repair the row to include it",
+                                key,
+                                index))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
@@ -107,6 +114,13 @@ public class FixDates : IAsyncMigrationRoutine
                                     Math.Min((partition + 1) * PageSize, records),
                                     records,
                                     sw.Elapsed))
+                        .SkippingUnreadableItems(
+                            e => e.ItemId,
+                            (ex, key, index) => _logger.LogError(
+                                ex,
+                                "Skipping Chapters row {Key} at index {Index}, it could not be read. Repair the row to include it",
+                                key,
+                                index))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
@@ -137,6 +151,13 @@ public class FixDates : IAsyncMigrationRoutine
                                     Math.Min((partition + 1) * PageSize, records),
                                     records,
                                     sw.Elapsed))
+                        .SkippingUnreadableItems(
+                            e => e.Id,
+                            (ex, key, index) => _logger.LogError(
+                                ex,
+                                "Skipping BaseItemImageInfos row {Key} at index {Index}, it could not be read. Repair the row to include it",
+                                key,
+                                index))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))

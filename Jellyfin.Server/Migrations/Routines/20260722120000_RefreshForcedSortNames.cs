@@ -62,6 +62,13 @@ public class RefreshForcedSortNames : IAsyncMigrationRoutine
                           .Where(b => !string.IsNullOrEmpty(b.ForcedSortName))
                           .OrderBy(e => e.Id)
                           .WithPartitionProgress((partition) => _logger.LogInformation("Processed: {Offset}/{Total} - Updated: {UpdatedCount} - Time: {Elapsed}", partition * Limit, records, itemCount, sw.Elapsed))
+                          .SkippingUnreadableItems(
+                              e => e.Id,
+                              (ex, key, index) => _logger.LogError(
+                                  ex,
+                                  "Skipping BaseItems row {Key} at index {Index}, it could not be read. Repair the row to include it",
+                                  key,
+                                  index))
                           .PartitionEagerAsync(Limit, cancellationToken)
                           .WithCancellation(cancellationToken)
                           .ConfigureAwait(false))
