@@ -488,6 +488,14 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public bool IncludeOwnedItems { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to include alternate versions, which carry a
+        /// <see cref="Video.PrimaryVersionId"/> and are normally hidden behind the version they
+        /// belong to. Unlike <see cref="IncludeOwnedItems"/> this keeps the versions a user merged
+        /// by hand without also returning the parts and extras owned by another item.
+        /// </summary>
+        public bool IncludeAlternateVersions { get; set; }
+
         public bool? Is4K { get; set; }
 
         public int? MaxHeight { get; set; }
