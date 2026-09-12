@@ -382,9 +382,21 @@ namespace Emby.Server.Implementations.Localization
                 return null;
             }
 
+            // Several rating systems contain a '/' inside a single rating (e.g. "M/12" in PT,
+            // "U/A 13+" in IN, "7/i/fig" in ES), so the value as a whole always wins over the split below.
+            var wholeValueScore = GetSingleRatingScore(rating, countryCode);
+            if (wholeValueScore is not null)
+            {
+                return wholeValueScore;
+            }
+
             // Some providers may list multiple ratings separated by '/' (e.g. "SE:15 / SE:15+ / SE:Från 15 år").
             // Try each one in order and use the first that resolves.
             var ratingValues = rating.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (ratingValues.Length == 1)
+            {
+                return null;
+            }
 
             foreach (var ratingValue in ratingValues)
             {
