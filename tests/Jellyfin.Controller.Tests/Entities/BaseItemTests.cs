@@ -28,6 +28,43 @@ namespace Jellyfin.Controller.Tests.Entities;
 
 public class BaseItemTests
 {
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task ValidateChildren_FailedEnumeration_DoesNotReconcileOrDeleteChildren(bool failAfterFirstChild, bool accessDenied)
+    {
+        var previousLibrary = BaseItem.LibraryManager;
+        var previousRepository = BaseItem.ItemRepository;
+        var previousLogger = BaseItem.Logger;
+        var library = new Mock<ILibraryManager>(MockBehavior.Strict);
+        var repository = new Mock<MediaBrowser.Controller.Persistence.IItemRepository>(MockBehavior.Strict);
+        var directory = new Mock<IDirectoryService>();
+        directory.Setup(d => d.IsAccessible(It.IsAny<string>())).Returns(true);
+        try
+        {
+            BaseItem.LibraryManager = library.Object;
+            BaseItem.ItemRepository = repository.Object;
+            BaseItem.Logger = Microsoft.Extensions.Logging.Abstractions.NullLogger<BaseItem>.Instance;
+            var folder = new FailingEnumerationFolder(failAfterFirstChild, accessDenied)
+            {
+                Id = Guid.NewGuid(),
+                Path = "/media/review-folder"
+            };
+            await folder.ValidateChildren(new Progress<double>(), new MetadataRefreshOptions(directory.Object), recursive: false, cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true);
+            Assert.True(folder.EnumerationAttempted);
+            repository.VerifyNoOtherCalls();
+            library.VerifyNoOtherCalls();
+        }
+        finally
+        {
+            BaseItem.LibraryManager = previousLibrary;
+            BaseItem.ItemRepository = previousRepository;
+            BaseItem.Logger = previousLogger;
+        }
+    }
+
     [Fact]
     public void GetItemByNameFolderName_ShortName_IsKeptAsIs()
     {
@@ -185,6 +222,17 @@ public class BaseItemTests
         "Blade Runner (1982) [EE by ADM] [480p HEVC AAC]",
         "[Final Cut] [1080p HEVC AAC]",
         "[EE by ADM] [480p HEVC AAC]")]
+    // Numeric version labels: the dot between the digits is a decimal point, not a delimiter, so the
+    // prefix retreats past it to the '-' instead of leaving "0" / "11".
+    [InlineData(
+        "Evangelion 1.0 You Are (Not) Alone (2007) - 1.0",
+        "Evangelion 1.0 You Are (Not) Alone (2007) - 1.11",
+        "1.0",
+        "1.11")]
+    // Numeric labels with no structural delimiter at all fall back to the space boundary.
+    [InlineData("Movie (2007) 1.0", "Movie (2007) 1.11", "1.0", "1.11")]
+    // A dot followed by a non-digit is still a delimiter, even after a digit.
+    [InlineData("Movie - Part 1.HDR", "Movie - Part 1.SDR", "HDR", "SDR")]
     public void GetMediaSourceName_CommonPrefix_Valid(string primaryName, string altName, string expectedPrimary, string expectedAlt)
     {
         var primaryPath = "/Shows/Demo/Season 01/" + primaryName + ".mkv";
@@ -213,6 +261,24 @@ public class BaseItemTests
 
         Assert.Equal(expectedPrimary, video.GetMediaSourceName(video, commonPrefix));
         Assert.Equal(expectedAlt, videoAlt.GetMediaSourceName(videoAlt, commonPrefix));
+    }
+
+    [Fact]
+    public void GetCommonVersionPrefix_NumericLabels_KeepsWholeNumber()
+    {
+        // Three versions labelled "1.0", "1.01" and "1.11": the common prefix stops inside the version
+        // number, so it must retreat past the decimal point to the '-' delimiter.
+        string[] fileNames =
+        [
+            "Evangelion 1.0 You Are (Not) Alone (2007) - 1.0",
+            "Evangelion 1.0 You Are (Not) Alone (2007) - 1.01",
+            "Evangelion 1.0 You Are (Not) Alone (2007) - 1.11"
+        ];
+
+        var prefix = BaseItem.GetCommonVersionPrefix(fileNames);
+
+        Assert.Equal("Evangelion 1.0 You Are (Not) Alone (2007) -", prefix);
+        Assert.Equal(["1.0", "1.01", "1.11"], fileNames.Select(n => n[prefix.Length..].TrimStart(' ')));
     }
 
     [Fact]
@@ -643,5 +709,26 @@ public class BaseItemTests
         var ids = (Guid[])method!.Invoke(primary, null)!;
 
         Assert.Equal([primary.Id, alt1.Id, alt2.Id], ids);
+    }
+
+    private sealed class FailingEnumerationFolder(bool failAfterFirstChild, bool accessDenied) : Folder
+    {
+        public bool EnumerationAttempted { get; private set; }
+
+        protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
+        {
+            EnumerationAttempted = true;
+            if (failAfterFirstChild)
+            {
+                yield return new Movie { Id = Guid.NewGuid(), Path = "/media/review-folder/movie.mkv" };
+            }
+
+            if (accessDenied)
+            {
+                throw new System.Security.SecurityException("Simulated access failure");
+            }
+
+            throw new IOException("Simulated directory read failure");
+        }
     }
 }

@@ -287,6 +287,161 @@ namespace Jellyfin.Providers.Tests.Manager
             }
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RefreshMetadata_CustomProviderThrew_LeavesRefreshDateAlone(bool providerThrows)
+        {
+            var item = new TestItem
+            {
+                Id = Guid.NewGuid(),
+                Name = "Test Item",
+                PreferredMetadataLanguage = "en",
+                PreferredMetadataCountryCode = "US",
+                DateLastRefreshed = DateTime.UtcNow.AddDays(-60),
+                DateLastSaved = DateTime.UtcNow.AddDays(-60)
+            };
+            item.PresentationUniqueKey = item.CreatePresentationUniqueKey();
+
+            var stampBefore = item.DateLastRefreshed;
+
+            // Stands in for the probe provider, whose only other change monitor is the file's
+            // modification time: if a throw is stamped as a completed refresh the item is never revisited.
+            var provider = new Mock<ICustomMetadataProvider<TestItem>>(MockBehavior.Loose);
+            provider.Setup(p => p.Name).Returns("Throwing Provider");
+            provider.Setup(p => p.FetchAsync(It.IsAny<TestItem>(), It.IsAny<MetadataRefreshOptions>(), It.IsAny<CancellationToken>()))
+                .Returns(providerThrows
+                    ? Task.FromException<ItemUpdateType>(new InvalidOperationException("probe failed"))
+                    : Task.FromResult(ItemUpdateType.None));
+
+            var libraryManager = new Mock<ILibraryManager>(MockBehavior.Loose);
+            libraryManager.Setup(l => l.GetLibraryOptions(It.IsAny<BaseItem>())).Returns(new LibraryOptions());
+
+            var providerManager = new Mock<IProviderManager>(MockBehavior.Loose);
+            providerManager.Setup(p => p.GetImageProviders(It.IsAny<BaseItem>(), It.IsAny<ImageRefreshOptions>()))
+                .Returns(Array.Empty<IImageProvider>());
+            providerManager.Setup(p => p.GetMetadataProviders<TestItem>(It.IsAny<BaseItem>(), It.IsAny<LibraryOptions>()))
+                .Returns(new[] { (IMetadataProvider<TestItem>)provider.Object });
+            providerManager.Setup(p => p.GetMetadataSavers(It.IsAny<BaseItem>(), It.IsAny<LibraryOptions>()))
+                .Returns(Array.Empty<IMetadataSaver>());
+
+            var itemRepository = new Mock<IItemRepository>(MockBehavior.Loose);
+            itemRepository.Setup(r => r.ItemExistsAsync(It.IsAny<Guid>())).ReturnsAsync(true);
+
+            var service = new TestItemMetadataService(libraryManager.Object, providerManager.Object, itemRepository.Object);
+
+            await service.RefreshMetadata(
+                item,
+                new MetadataRefreshOptions(Mock.Of<IDirectoryService>())
+                {
+                    MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                    ImageRefreshMode = MetadataRefreshMode.FullRefresh
+                },
+                CancellationToken.None).ConfigureAwait(true);
+
+            Assert.Equal(providerThrows, item.DateLastRefreshed == stampBefore);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RefreshMetadata_ImageProviderThrew_LeavesRefreshDateAlone(bool providerThrows)
+        {
+            var item = NewStampedTestItem();
+            var stampBefore = item.DateLastRefreshed;
+
+            var imageProvider = new Mock<IDynamicImageProvider>(MockBehavior.Loose);
+            imageProvider.Setup(p => p.Name).Returns("Throwing Image Provider");
+            imageProvider.Setup(p => p.GetSupportedImages(It.IsAny<BaseItem>())).Returns(new[] { ImageType.Primary });
+            imageProvider.Setup(p => p.GetImage(It.IsAny<BaseItem>(), ImageType.Primary, It.IsAny<CancellationToken>()))
+                .Returns(providerThrows
+                    ? Task.FromException<DynamicImageResponse>(new InvalidOperationException("image fetch failed"))
+                    : Task.FromResult(new DynamicImageResponse { HasImage = false }));
+
+            var providerManager = NewProviderManager(imageProviders: [imageProvider.Object]);
+
+            var service = NewService(providerManager);
+
+            await service.RefreshMetadata(
+                item,
+                new MetadataRefreshOptions(Mock.Of<IDirectoryService>())
+                {
+                    MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                    ImageRefreshMode = MetadataRefreshMode.FullRefresh
+                },
+                CancellationToken.None).ConfigureAwait(true);
+
+            Assert.Equal(providerThrows, item.DateLastRefreshed == stampBefore);
+        }
+
+        [Fact]
+        public async Task RefreshMetadata_LocalImageValidationThrew_LeavesRefreshDateAlone()
+        {
+            var item = NewStampedTestItem();
+            var stampBefore = item.DateLastRefreshed;
+
+            // A throw here skips the remote image stage altogether, so no image work happened at all.
+            var localImageProvider = new Mock<ILocalImageProvider>(MockBehavior.Loose);
+            localImageProvider.Setup(p => p.Name).Returns("Throwing Local Image Provider");
+            localImageProvider.Setup(p => p.GetImages(It.IsAny<BaseItem>(), It.IsAny<IDirectoryService>()))
+                .Throws(new UnauthorizedAccessException("metadata folder is not readable"));
+
+            var providerManager = NewProviderManager(imageProviders: [localImageProvider.Object]);
+
+            var service = NewService(providerManager);
+
+            await service.RefreshMetadata(
+                item,
+                new MetadataRefreshOptions(Mock.Of<IDirectoryService>())
+                {
+                    MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                    ImageRefreshMode = MetadataRefreshMode.FullRefresh
+                },
+                CancellationToken.None).ConfigureAwait(true);
+
+            Assert.Equal(stampBefore, item.DateLastRefreshed);
+        }
+
+        private static TestItem NewStampedTestItem()
+        {
+            var item = new TestItem
+            {
+                Id = Guid.NewGuid(),
+                Name = "Test Item",
+                PreferredMetadataLanguage = "en",
+                PreferredMetadataCountryCode = "US",
+                DateLastRefreshed = DateTime.UtcNow.AddDays(-60),
+                DateLastSaved = DateTime.UtcNow.AddDays(-60)
+            };
+            item.PresentationUniqueKey = item.CreatePresentationUniqueKey();
+            return item;
+        }
+
+        private static Mock<IProviderManager> NewProviderManager(
+            IMetadataProvider<TestItem>[]? metadataProviders = null,
+            IImageProvider[]? imageProviders = null)
+        {
+            var providerManager = new Mock<IProviderManager>(MockBehavior.Loose);
+            providerManager.Setup(p => p.GetImageProviders(It.IsAny<BaseItem>(), It.IsAny<ImageRefreshOptions>()))
+                .Returns(imageProviders ?? Array.Empty<IImageProvider>());
+            providerManager.Setup(p => p.GetMetadataProviders<TestItem>(It.IsAny<BaseItem>(), It.IsAny<LibraryOptions>()))
+                .Returns(metadataProviders ?? Array.Empty<IMetadataProvider<TestItem>>());
+            providerManager.Setup(p => p.GetMetadataSavers(It.IsAny<BaseItem>(), It.IsAny<LibraryOptions>()))
+                .Returns(Array.Empty<IMetadataSaver>());
+            return providerManager;
+        }
+
+        private static TestItemMetadataService NewService(Mock<IProviderManager> providerManager)
+        {
+            var libraryManager = new Mock<ILibraryManager>(MockBehavior.Loose);
+            libraryManager.Setup(l => l.GetLibraryOptions(It.IsAny<BaseItem>())).Returns(new LibraryOptions());
+
+            var itemRepository = new Mock<IItemRepository>(MockBehavior.Loose);
+            itemRepository.Setup(r => r.ItemExistsAsync(It.IsAny<Guid>())).ReturnsAsync(true);
+
+            return new TestItemMetadataService(libraryManager.Object, providerManager.Object, itemRepository.Object);
+        }
+
         /// <summary>
         /// Stands in for a real item so the refresh stays off the shared BaseItem statics, which other
         /// test classes in this assembly overwrite while xUnit runs them in parallel.
