@@ -1410,12 +1410,17 @@ public class DynamicHlsController : BaseJellyfinApiController
             segmentLength = (int)Math.Ceiling(segmentLength * (nearestIntFramerate / fps));
         }
 
+        // Resolve the effective segment container the same way the segment/variant-playlist
+        // endpoints do, so the main playlist reports fMP4 (#EXT-X-VERSION/init segment) exactly
+        // when the segments actually being served will be fMP4.
+        var resolvedSegmentContainer = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer, state.ActualOutputAudioCodec).TrimStart('.');
+
         var request = new CreateMainPlaylistRequest(
             mediaSourceId is null ? null : Guid.Parse(mediaSourceId),
             state.MediaPath,
             segmentLength,
             state.RunTimeTicks ?? 0,
-            state.Request.SegmentContainer ?? string.Empty,
+            resolvedSegmentContainer,
             "hls1/main/",
             Request.QueryString.ToString(),
             EncodingHelper.IsCopyCodec(state.OutputVideoCodec));
@@ -1453,7 +1458,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         var segmentPath = GetSegmentPath(state, playlistPath, segmentId);
 
-        var segmentExtension = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer);
+        var segmentExtension = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer, state.ActualOutputAudioCodec);
 
         // Keep segment selection and transcoding replacement under the same playlist lock.
         // An out-of-order request must not replace a job while another request is using its output.
@@ -1585,7 +1590,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
         var outputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(outputPath);
         var outputPrefix = Path.Combine(directory, outputFileNameWithoutExtension);
-        var outputExtension = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer);
+        var outputExtension = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer, state.ActualOutputAudioCodec);
         var outputTsArg = outputPrefix + "%d" + outputExtension;
 
         var segmentFormat = string.Empty;
@@ -1909,7 +1914,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         var folder = Path.GetDirectoryName(playlist) ?? throw new ArgumentException($"Provided path ({playlist}) is not valid.", nameof(playlist));
         var filename = Path.GetFileNameWithoutExtension(playlist);
 
-        return Path.Combine(folder, filename + index.ToString(CultureInfo.InvariantCulture) + EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer));
+        return Path.Combine(folder, filename + index.ToString(CultureInfo.InvariantCulture) + EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer, state.ActualOutputAudioCodec));
     }
 
     private async Task<ActionResult> GetSegmentResult(

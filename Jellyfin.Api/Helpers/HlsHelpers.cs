@@ -83,7 +83,7 @@ public static class HlsHelpers
         var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
         var outputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(outputPath);
         var outputPrefix = Path.Combine(directory, outputFileNameWithoutExtension);
-        var outputExtension = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer);
+        var outputExtension = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer, state.ActualOutputAudioCodec);
 
         // on Linux/Unix
         // #EXT-X-MAP:URI="prefix-1.mp4"
@@ -113,7 +113,7 @@ public static class HlsHelpers
     {
         var text = File.ReadAllText(path);
 
-        var segmentFormat = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer).TrimStart('.');
+        var segmentFormat = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer, state.ActualOutputAudioCodec).TrimStart('.');
         if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase))
         {
             var fmp4InitFileName = GetFmp4InitFileName(path, state, true);

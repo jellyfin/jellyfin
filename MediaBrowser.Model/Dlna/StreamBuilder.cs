@@ -46,6 +46,16 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
+        /// Gets the audio codecs that can be carried in MPEG-TS HLS segments.
+        /// </summary>
+        public static IReadOnlyList<string> SupportedHlsAudioCodecsTs => _supportedHlsAudioCodecsTs;
+
+        /// <summary>
+        /// Gets the audio codecs that can be carried in fMP4 HLS segments.
+        /// </summary>
+        public static IReadOnlyList<string> SupportedHlsAudioCodecsMp4 => _supportedHlsAudioCodecsMp4;
+
+        /// <summary>
         /// Gets the optimal audio stream.
         /// </summary>
         /// <param name="options">The <see cref="MediaOptions"/> object to get the audio stream from.</param>
