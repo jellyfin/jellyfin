@@ -22,6 +22,55 @@ public static class DescendantQueryHelper
         b => !b.IsFolder && !b.IsVirtualItem;
 
     /// <summary>
+    /// Builds the predicate identifying the items a user has played, counting a multi-version item as
+    /// played when any of its alternate versions is. Mirrors the aggregation
+    /// <c>VersionResumeData.ApplyTo</c> performs on the played flag a single item reports, so that a
+    /// folder's unplayed count cannot disagree with the watched state its members render with.
+    /// </summary>
+    /// <param name="userId">The id of the user whose played state to test.</param>
+    /// <returns>The predicate matching the items that user has played.</returns>
+    public static Expression<Func<BaseItemEntity, bool>> IsPlayedBy(Guid userId) =>
+        b => b.UserData!.Any(u => u.UserId.Equals(userId) && u.Played)
+            || b.LinkedChildEntities!.Any(lc =>
+                (lc.ChildType == LinkedChildType.LocalAlternateVersion || lc.ChildType == LinkedChildType.LinkedAlternateVersion)
+                && lc.Child!.UserData!.Any(u => u.UserId.Equals(userId) && u.Played));
+
+    /// <summary>
+    /// Builds the projection pairing an item's id with <see cref="IsPlayedBy"/> evaluated on that same
+    /// row. A caller that needs the flag alongside the id composes it rather than testing membership of
+    /// the played set: as a sub-select the set is unbounded by whatever the caller joins it to, so the
+    /// database builds it from the whole table once per place it appears.
+    /// </summary>
+    /// <param name="userId">The id of the user whose played state to test.</param>
+    /// <returns>The projection of each item onto its id and that user's played state.</returns>
+    public static Expression<Func<BaseItemEntity, LeafPlayedState>> PlayedStateBy(Guid userId)
+    {
+        var played = IsPlayedBy(userId);
+        var item = played.Parameters[0];
+
+        // Named members, as the compiler emits for an anonymous type: without them the query provider
+        // cannot read a later `x.Id` back to the column it was built from and gives up translating.
+        return Expression.Lambda<Func<BaseItemEntity, LeafPlayedState>>(
+            Expression.New(
+                typeof(LeafPlayedState).GetConstructor([typeof(Guid), typeof(bool)])!,
+                [Expression.Property(item, nameof(BaseItemEntity.Id)), played.Body],
+                [typeof(LeafPlayedState).GetProperty(nameof(LeafPlayedState.Id))!, typeof(LeafPlayedState).GetProperty(nameof(LeafPlayedState.Played))!]),
+            item);
+    }
+
+    /// <summary>
+    /// Builds the negation of <see cref="IsPlayedBy"/>, so a caller filtering for unplayed items reads
+    /// the same definition of played as one filtering for played items.
+    /// </summary>
+    /// <param name="userId">The id of the user whose played state to test.</param>
+    /// <returns>The predicate matching the items that user has not played.</returns>
+    public static Expression<Func<BaseItemEntity, bool>> IsUnplayedBy(Guid userId)
+    {
+        var played = IsPlayedBy(userId);
+        return Expression.Lambda<Func<BaseItemEntity, bool>>(Expression.Not(played.Body), played.Parameters);
+    }
+
+    /// <summary>
     /// Gets a queryable of all descendant IDs for a parent item.
     /// Traverses AncestorIds and LinkedChildren to find all descendants.
     /// </summary>

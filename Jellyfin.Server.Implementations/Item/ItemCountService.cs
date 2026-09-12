@@ -601,7 +601,7 @@ public class ItemCountService : IItemCountService
         leafItems = _queryHelpers.ApplyAccessFiltering(dbContext, leafItems, filter);
 
         var playedLeafItems = leafItems
-            .Select(b => new { b.Id, Played = b.UserData!.Any(ud => ud.UserId == userId && ud.Played) });
+            .Select(DescendantQueryHelper.PlayedStateBy(userId));
 
         var ancestorLeaves = dbContext.AncestorIds
             .WhereOneOrMany(folderIdsArray, a => a.ParentItemId)
