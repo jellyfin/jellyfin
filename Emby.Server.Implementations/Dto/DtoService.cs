@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
@@ -710,12 +711,12 @@ namespace Emby.Server.Implementations.Dto
             };
         }
 
-        private Dictionary<Guid, int>? GetChildCountBatch(IReadOnlyList<BaseItem> items, User? user)
+        private Dictionary<Guid, int>? GetChildCountBatch(IReadOnlyList<BaseItem> items, User user)
         {
             Dictionary<Guid, IReadOnlyList<Guid>>? sources = null;
             foreach (var folder in items.OfType<Folder>())
             {
-                var sourceIds = GetChildCountSourceIds(folder);
+                var sourceIds = GetChildCountSourceIds(folder, user);
                 if (sourceIds.Count > 0)
                 {
                     (sources ??= new Dictionary<Guid, IReadOnlyList<Guid>>())[folder.Id] = sourceIds;
@@ -746,28 +747,51 @@ namespace Emby.Server.Implementations.Dto
             return result;
         }
 
-        private IReadOnlyList<Guid> GetChildCountSourceIds(Folder folder)
+        private IReadOnlyList<Guid> GetChildCountSourceIds(Folder folder, User user)
         {
             if (folder is CollectionFolder collectionFolder)
             {
                 return collectionFolder.PhysicalFolderIds;
             }
 
-            // A view whose type keeps the original folder just proxies the library underneath it.
-            if (folder is UserView view && UserView.EnableOriginalFolder(view.ViewType))
+            if (folder is not UserView view)
             {
-                var parentId = view.DisplayParentId.IsEmpty() ? view.ParentId : view.DisplayParentId;
-                if (!parentId.IsEmpty()
-                    && !parentId.Equals(folder.Id)
-                    && _libraryManager.GetItemById(parentId) is Folder parent)
-                {
-                    return GetChildCountSourceIds(parent);
-                }
+                return [folder.Id];
+            }
 
+            // Only a view that stands for a library proxies it. The sub-views a movie or show view
+            // is built from hang off the same library but hold a query, not the library's children.
+            if (!UserView.EnableOriginalFolder(view.ViewType)
+                && view.ViewType is not (CollectionType.movies or CollectionType.tvshows))
+            {
                 return [];
             }
 
-            return folder is UserView ? [] : [folder.Id];
+            // A view over a single library proxies that library, whatever the view type.
+            var parentId = view.DisplayParentId.IsEmpty() ? view.ParentId : view.DisplayParentId;
+            if (!parentId.IsEmpty()
+                && !parentId.Equals(view.Id)
+                && _libraryManager.GetItemById(parentId) is Folder parent
+                && parent is not UserView)
+            {
+                return GetChildCountSourceIds(parent, user);
+            }
+
+            // A grouped view has no single parent: it stands for every library the user grouped
+            // into it, the same set UserViewManager builds the view from.
+            if (view.ViewType is CollectionType.movies or CollectionType.tvshows)
+            {
+                return _libraryManager.GetUserRootFolder()
+                    .GetChildren(user, true)
+                    .OfType<CollectionFolder>()
+                    .Where(f => user.IsFolderGrouped(f.Id)
+                        && (f.CollectionType == view.ViewType || f.CollectionType is null))
+                    .SelectMany(f => f.PhysicalFolderIds)
+                    .Distinct()
+                    .ToList();
+            }
+
+            return [];
         }
 
         private int GetChildCount(Folder folder, User user, Dictionary<Guid, int>? childCountBatch)
