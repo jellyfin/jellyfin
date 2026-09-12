@@ -8,6 +8,7 @@ using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaSegments;
@@ -192,6 +193,14 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             var sources = _mediaSourceManager.GetStaticMediaSources(primary, false, _user);
 
             Assert.Equal(primary.Id.ToString("N"), sources[0].Id);
+        }
+
+        [Fact]
+        public void GetStaticMediaSources_ItemWithoutMediaSources_ThrowsArgumentException()
+        {
+            // A container queued by mistake is a bad request, not a server fault.
+            Assert.Throws<ArgumentException>(
+                () => _mediaSourceManager.GetStaticMediaSources(new MusicArtist { Id = Guid.NewGuid() }, false, _user));
         }
 
         [Fact]
