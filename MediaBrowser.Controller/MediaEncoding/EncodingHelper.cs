@@ -1572,7 +1572,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 filters.Add(noiseFilter);
             }
 
-            var segmentFormat = GetSegmentFileExtension(segmentContainer).TrimStart('.');
+            var segmentFormat = GetSegmentFileExtension(segmentContainer, state.ActualOutputAudioCodec).TrimStart('.');
 
             // Apply aac_adtstoasc bitstream filter when media source is in mpegts.
             if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase)
@@ -1621,11 +1621,22 @@ namespace MediaBrowser.Controller.MediaEncoding
                 seekSeconds);
         }
 
-        public static string GetSegmentFileExtension(string segmentContainer)
+        public static string GetSegmentFileExtension(string segmentContainer, string actualOutputAudioCodec = null)
         {
             if (!string.IsNullOrWhiteSpace(segmentContainer))
             {
                 return "." + segmentContainer;
+            }
+
+            // The client did not request a specific segment container. Defaulting to mpegts
+            // segments is only safe when the audio actually ending up on the wire (stream-copied
+            // or transcoded) is one mpegts can carry. Codecs such as TrueHD, DTS, FLAC, ALAC and
+            // Opus can only be muxed into fMP4 segments, so fall back to mp4 instead of silently
+            // forcing an unnecessary audio transcode down to a TS-compatible codec.
+            if (!string.IsNullOrWhiteSpace(actualOutputAudioCodec)
+                && !StreamBuilder.SupportedHlsAudioCodecsTs.Contains(actualOutputAudioCodec, StringComparer.OrdinalIgnoreCase))
+            {
+                return ".mp4";
             }
 
             return ".ts";
