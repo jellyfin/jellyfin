@@ -103,17 +103,9 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     }
 
     /// <inheritdoc/>
-    public async Task RunScheduledOptimisation(CancellationToken cancellationToken)
+    public Task RunScheduledOptimisation(CancellationToken cancellationToken)
     {
-        var context = await DbContextFactory!.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await using (context.ConfigureAwait(false))
-        {
-            await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
-            await context.Database.ExecuteSqlRawAsync("PRAGMA optimize", cancellationToken).ConfigureAwait(false);
-            await context.Database.ExecuteSqlRawAsync("VACUUM", cancellationToken).ConfigureAwait(false);
-            await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
-            _logger.LogInformation("jellyfin.db optimized successfully!");
-        }
+        return OptimizeAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -125,19 +117,37 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public async Task RunShutdownTask(CancellationToken cancellationToken)
     {
+        // Run before disposing the application
+        try
+        {
+            await OptimizeAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            // A missed optimization only costs performance, so never fail the shutdown over this.
+            _logger.LogError(ex, "Error while optimizing jellyfin.db");
+        }
+
+        SqliteConnection.ClearAllPools();
+    }
+
+    private async Task OptimizeAsync(CancellationToken cancellationToken)
+    {
         if (DbContextFactory is null)
         {
             return;
         }
 
-        // Run before disposing the application
         var context = await DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
-            await context.Database.ExecuteSqlRawAsync("PRAGMA optimize", cancellationToken).ConfigureAwait(false);
+            await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
+            await context.Database.ExecuteSqlRawAsync("VACUUM", cancellationToken).ConfigureAwait(false);
+            await context.Database.ExecuteSqlRawAsync("PRAGMA analysis_limit=0", cancellationToken).ConfigureAwait(false);
+            await context.Database.ExecuteSqlRawAsync("ANALYZE", cancellationToken).ConfigureAwait(false);
+            await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation("jellyfin.db optimized successfully!");
         }
-
-        SqliteConnection.ClearAllPools();
     }
 
     /// <inheritdoc/>

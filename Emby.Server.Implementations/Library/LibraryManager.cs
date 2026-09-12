@@ -86,6 +86,7 @@ namespace Emby.Server.Implementations.Library
         private readonly ExtraResolver _extraResolver;
         private readonly IPathManager _pathManager;
         private readonly ILocalizationManager _localization;
+        private readonly IDirectoryService _directoryService;
         private readonly FastConcurrentLru<Guid, BaseItem> _cache;
         private readonly DotIgnoreIgnoreRule _dotIgnoreIgnoreRule;
         private readonly IMediaStreamRepository _mediaStreamRepository;
@@ -184,6 +185,7 @@ namespace Emby.Server.Implementations.Library
             _pathManager = pathManager;
             _dotIgnoreIgnoreRule = dotIgnoreIgnoreRule;
             _localization = localization;
+            _directoryService = directoryService;
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
@@ -1797,6 +1799,18 @@ namespace Emby.Server.Implementations.Library
             }
 
             return _countService.GetItemCountsForNameItem(kind, id, relatedItemKinds, query);
+        }
+
+        /// <inheritdoc/>
+        public Dictionary<Guid, ItemCounts> GetItemCountsForNameItems(BaseItemKind kind, IReadOnlyList<Guid> ids, BaseItemKind[] relatedItemKinds, User? user)
+        {
+            var query = new InternalItemsQuery(user);
+            if (user is not null)
+            {
+                AddUserToQuery(query, user);
+            }
+
+            return _countService.GetItemCountsForNameItems(kind, ids, relatedItemKinds, query);
         }
 
         public Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, User? user)
@@ -3774,6 +3788,10 @@ namespace Emby.Server.Implementations.Library
                         AddMediaPathInternal(name, path, false);
                     }
                 }
+
+                // The libraries root was listed before this folder existed, so drop that listing:
+                // anything still reading it resolves the library set without the new folder.
+                _directoryService.Invalidate(virtualFolderPath);
             }
             finally
             {
@@ -3956,6 +3974,7 @@ namespace Emby.Server.Implementations.Library
             try
             {
                 Directory.Delete(path, true);
+                _directoryService.Invalidate(path);
             }
             finally
             {
@@ -4025,6 +4044,7 @@ namespace Emby.Server.Implementations.Library
             if (!string.IsNullOrEmpty(shortcut))
             {
                 _fileSystem.DeleteFile(shortcut);
+                _directoryService.Invalidate(shortcut);
             }
 
             var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
@@ -4068,6 +4088,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             _fileSystem.CreateShortcut(lnk, _appHost.ReverseVirtualPath(path));
+            _directoryService.Invalidate(lnk);
             RemoveContentTypeOverrides(path);
         }
 
@@ -4104,6 +4125,18 @@ namespace Emby.Server.Implementations.Library
 
             SetTopParentOrAncestorIds(query);
             return _itemRepository.GetQueryFiltersLegacy(query);
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> GetTagNames(InternalItemsQuery query)
+        {
+            if (query.User is not null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return _itemRepository.GetTagNames(query);
         }
 
         /// <inheritdoc />

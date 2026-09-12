@@ -29,6 +29,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         // differ in weight by orders of magnitude.
         private const int CacheSizeLimit = 100_000;
 
+        private static readonly Dictionary<string, string> ThumbnailSizes = new Dictionary<string, string>
+        {
+            { "Primary", "w500" },
+            { "Backdrop", "w780" },
+            { "Thumb", "w780" },
+            { "Logo", "w500" },
+        };
+
         private readonly MemoryCache _memoryCache;
         private readonly TMDbClient _tmDbClient;
 
@@ -326,7 +334,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             person = await _tmDbClient.GetPersonAsync(
                 personTmdbId,
                 TmdbUtils.NormalizeLanguage(language, countryCode),
-                PersonMethods.TvCredits | PersonMethods.MovieCredits | PersonMethods.Images | PersonMethods.ExternalIds,
+                PersonMethods.Images | PersonMethods.ExternalIds,
                 cancellationToken).ConfigureAwait(false);
 
             if (person is not null)
@@ -508,19 +516,19 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
-        /// Gets a single page of similar movies for a movie from the TMDb API.
+        /// Gets a single page of recommended movies for a movie from the TMDb API.
         /// </summary>
         /// <param name="tmdbId">The TMDb id of the movie.</param>
         /// <param name="page">The page number to fetch (1-based).</param>
         /// <param name="language">The language for results.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A tuple containing the list of similar movies and the total number of pages available.</returns>
-        public async Task<(IReadOnlyList<SearchMovie> Results, int TotalPages)> GetMovieSimilarPageAsync(int tmdbId, int page, string? language, CancellationToken cancellationToken)
+        /// <returns>A tuple containing the list of recommended movies and the total number of pages available.</returns>
+        public async Task<(IReadOnlyList<SearchMovie> Results, int TotalPages)> GetMovieRecommendationsPageAsync(int tmdbId, int page, string? language, CancellationToken cancellationToken)
         {
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
             var searchResults = await _tmDbClient
-                .GetMovieSimilarAsync(tmdbId, language, page, cancellationToken)
+                .GetMovieRecommendationsAsync(tmdbId, language, page, cancellationToken)
                 .ConfigureAwait(false);
 
             if (searchResults?.Results is null || searchResults.Results.Count == 0)
@@ -532,19 +540,19 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
-        /// Gets a single page of similar TV shows for a series from the TMDb API.
+        /// Gets a single page of recommended TV shows for a series from the TMDb API.
         /// </summary>
         /// <param name="tmdbId">The TMDb id of the TV show.</param>
         /// <param name="page">The page number to fetch (1-based).</param>
         /// <param name="language">The language for results.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A tuple containing the list of similar TV shows and the total number of pages available.</returns>
-        public async Task<(IReadOnlyList<SearchTv> Results, int TotalPages)> GetSeriesSimilarPageAsync(int tmdbId, int page, string? language, CancellationToken cancellationToken)
+        /// <returns>A tuple containing the list of recommended TV shows and the total number of pages available.</returns>
+        public async Task<(IReadOnlyList<SearchTv> Results, int TotalPages)> GetSeriesRecommendationsPageAsync(int tmdbId, int page, string? language, CancellationToken cancellationToken)
         {
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
             var searchResults = await _tmDbClient
-                .GetTvShowSimilarAsync(tmdbId, language, page, cancellationToken)
+                .GetTvShowRecommendationsAsync(tmdbId, language, page, cancellationToken)
                 .ConfigureAwait(false);
 
             if (searchResults?.Results is null || searchResults.Results.Count == 0)
@@ -568,8 +576,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return null;
             }
 
-            // Use "original" as default size if size is null or empty to prevent malformed URLs
-            var imageSize = string.IsNullOrEmpty(size) ? "original" : size;
+            // Use the original size as default if size is null or empty to prevent malformed URLs
+            var imageSize = string.IsNullOrEmpty(size) ? TmdbUtils.OriginalImageSize : size;
 
             return _tmDbClient.GetImageUrl(imageSize, path, true).ToString();
         }
@@ -660,7 +668,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         private IEnumerable<RemoteImageInfo> ConvertToRemoteImageInfo(IReadOnlyList<ImageData> images, string? size, ImageType type, string requestLanguage)
         {
             // sizes provided are for original resolution, don't store them when downloading scaled images
-            var scaleImage = !string.Equals(size, "original", StringComparison.OrdinalIgnoreCase);
+            var scaleImage = !TmdbUtils.IsOriginalImageSize(size);
 
             for (var i = 0; i < images.Count; i++)
             {
@@ -678,6 +686,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 yield return new RemoteImageInfo
                 {
                     Url = GetUrl(size, image.FilePath),
+                    ThumbnailUrl = GetUrl(ThumbnailSizes.GetValueOrDefault(type.ToString(), string.Empty), image.FilePath),
                     CommunityRating = image.VoteAverage,
                     VoteCount = image.VoteCount,
                     Width = scaleImage ? null : image.Width,

@@ -67,12 +67,12 @@ public class TmdbSeriesSimilarProvider : IRemoteSimilarItemsProvider<Series>
             try
             {
                 (pageResults, totalPages) = await _tmdbClientManager
-                    .GetSeriesSimilarPageAsync(tmdbId, page, TmdbUtils.GetImageLanguagesParam(string.Empty), cancellationToken)
+                    .GetSeriesRecommendationsPageAsync(tmdbId, page, TmdbUtils.GetImageLanguagesParam(string.Empty), cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to get similar TV shows from TMDb for {TmdbId} page {Page}", tmdbId, page);
+                _logger.LogWarning(ex, "Failed to get recommended TV shows from TMDb for {TmdbId} page {Page}", tmdbId, page);
                 yield break;
             }
 
@@ -81,12 +81,12 @@ public class TmdbSeriesSimilarProvider : IRemoteSimilarItemsProvider<Series>
                 yield break;
             }
 
-            foreach (var similar in pageResults)
+            foreach (var recommendation in pageResults)
             {
                 yield return new SimilarItemReference
                 {
                     ProviderName = providerName,
-                    ProviderId = similar.Id.ToString(CultureInfo.InvariantCulture)
+                    ProviderId = recommendation.Id.ToString(CultureInfo.InvariantCulture)
                 };
             }
 

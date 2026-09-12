@@ -442,7 +442,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                    && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
                        || IsHdr10Plus(state.VideoStream)
                        || IsDoviWithHdr10Bl(state.VideoStream)
-                       || state.VideoStream.VideoRangeType == VideoRangeType.HLG);
+                       || state.VideoStream.VideoRangeType == VideoRangeType.HLG
+                       || state.VideoStream.VideoRangeType == VideoRangeType.DOVIInvalid);
         }
 
         private static bool IsDeinterlaceAvailable(EncodingJobInfo state)
@@ -1390,7 +1391,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 or VideoRangeType.DOVIWithEL
                 or VideoRangeType.DOVIWithHDR10Plus
                 or VideoRangeType.DOVIWithELHDR10Plus
-                or VideoRangeType.DOVIInvalid;
+                || (rangeType == VideoRangeType.DOVIInvalid
+                    && string.Equals(stream.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)); // invalid may be hlg now
         }
 
         public static bool IsDovi(MediaStream stream)
@@ -1400,7 +1402,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             return IsDoviWithHdr10Bl(stream)
                    || (rangeType is VideoRangeType.DOVI
                        or VideoRangeType.DOVIWithHLG
-                       or VideoRangeType.DOVIWithSDR);
+                       or VideoRangeType.DOVIWithSDR
+                       or VideoRangeType.DOVIInvalid);
         }
 
         public static bool IsHdr10Plus(MediaStream stream)
@@ -1420,7 +1423,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         private static DynamicHdrMetadataRemovalPlan ShouldRemoveDynamicHdrMetadata(EncodingJobInfo state)
         {
             var videoStream = state.VideoStream;
-            if (videoStream.VideoRange is not VideoRange.HDR)
+            if (videoStream.VideoRange is not VideoRange.HDR
+                && videoStream.VideoRangeType != VideoRangeType.DOVIInvalid)
             {
                 return DynamicHdrMetadataRemovalPlan.None;
             }

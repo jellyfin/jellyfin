@@ -176,14 +176,6 @@ public class ItemPersistenceService : IItemPersistenceService
         var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
-            if (!await context.BaseItems
-                .AnyAsync(bi => bi.Id == item.Id, cancellationToken)
-                .ConfigureAwait(false))
-            {
-                _logger.LogWarning("Unable to save ImageInfo for non existing BaseItem");
-                return;
-            }
-
             await context.BaseItemImageInfos
                 .Where(e => e.ItemId == item.Id)
                 .ExecuteDeleteAsync(cancellationToken)
@@ -193,7 +185,26 @@ public class ItemPersistenceService : IItemPersistenceService
                 .AddRangeAsync(images, cancellationToken)
                 .ConfigureAwait(false);
 
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (DbUpdateException)
+            {
+                // Checking that the item exists before writing leaves a gap a scan can delete it
+                // through, turning the insert into a foreign key violation that fails the whole
+                // refresh instead of the no-op intended here. Let the insert be the check: it is the
+                // only point at which the answer cannot go stale. Nothing is orphaned by the delete
+                // above, because deleting the item cascades to its images anyway.
+                if (await context.BaseItems
+                    .AnyAsync(bi => bi.Id == item.Id, cancellationToken)
+                    .ConfigureAwait(false))
+                {
+                    throw;
+                }
+
+                _logger.LogWarning("Unable to save ImageInfo for non existing BaseItem {ItemId}", item.Id);
+            }
         }
     }
 
@@ -257,7 +268,7 @@ public class ItemPersistenceService : IItemPersistenceService
         using var transaction = context.Database.BeginTransaction();
 
         var ids = tuples.Select(f => f.Item.Id).ToArray();
-        var existingItems = context.BaseItems.Where(e => ids.Contains(e.Id)).Select(f => f.Id).ToHashSet();
+        var existingItems = context.BaseItems.WhereOneOrMany(ids, e => e.Id).Select(f => f.Id).ToHashSet();
 
         foreach (var item in tuples)
         {
@@ -317,7 +328,7 @@ public class ItemPersistenceService : IItemPersistenceService
             .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore[(e.MagicNumber, e.Value)]).DistinctBy(e => e.ItemValueId).ToArray()))
             .ToArray();
 
-        var mappedValues = context.ItemValuesMap.Where(e => ids.Contains(e.ItemId)).ToList();
+        var mappedValues = context.ItemValuesMap.WhereOneOrMany(ids, e => e.ItemId).ToList();
 
         foreach (var item in valueMap)
         {

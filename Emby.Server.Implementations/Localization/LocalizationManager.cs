@@ -139,7 +139,8 @@ namespace Emby.Server.Implementations.Localization
                     var ratingSystem = await JsonSerializer.DeserializeAsync<ParentalRatingSystem>(stream, _jsonOptions).ConfigureAwait(false)
                                 ?? throw new InvalidOperationException($"Invalid resource path: '{CountriesPath}'");
 
-                    var dict = new Dictionary<string, ParentalRatingScore?>();
+                    // Rating strings are compared case insensitively, providers are not consistent about casing (e.g. "VM18" vs "vm18")
+                    var dict = new Dictionary<string, ParentalRatingScore?>(StringComparer.OrdinalIgnoreCase);
                     if (ratingSystem.Ratings is not null)
                     {
                         foreach (var ratingEntry in ratingSystem.Ratings)
@@ -374,12 +375,25 @@ namespace Emby.Server.Implementations.Localization
         {
             ArgumentException.ThrowIfNullOrEmpty(rating);
 
+            // Handle unrated content. This has to happen before the split below,
+            // because some of the unrated values contain a '/' themselves (e.g. "n/a").
+            if (IsUnrated(rating))
+            {
+                return null;
+            }
+
             // Some providers may list multiple ratings separated by '/' (e.g. "SE:15 / SE:15+ / SE:Från 15 år").
             // Try each one in order and use the first that resolves.
             var ratingValues = rating.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
             foreach (var ratingValue in ratingValues)
             {
+                // A single entry of such a list may be unrated while a later one still resolves
+                if (IsUnrated(ratingValue))
+                {
+                    continue;
+                }
+
                 var score = GetSingleRatingScore(ratingValue, countryCode);
                 if (score is not null)
                 {
@@ -391,16 +405,18 @@ namespace Emby.Server.Implementations.Localization
         }
 
         /// <summary>
+        /// Checks whether a rating value marks the content as unrated.
+        /// </summary>
+        /// <param name="rating">Rating value to check.</param>
+        /// <returns>Returns true if the value is an unrated marker.</returns>
+        private static bool IsUnrated(ReadOnlySpan<char> rating)
+            => _unratedValues.Contains(rating.Trim(), StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
         /// Resolves a single rating value to a score.
         /// </summary>
         private ParentalRatingScore? GetSingleRatingScore(string rating, string? countryCode)
         {
-            // Handle unrated content
-            if (_unratedValues.Contains(rating.AsSpan(), StringComparison.OrdinalIgnoreCase))
-            {
-                return null;
-            }
-
             // Convert ints directly
             // This may override some of the locale specific age ratings (but those always map to the same age)
             if (TryParseRatingAsScore(rating, out var ratingAge))
@@ -509,6 +525,12 @@ namespace Emby.Server.Implementations.Localization
                 if (TryParseRatingAsScore(ratingPart, out var numericScore))
                 {
                     result = new ParentalRatingScore(numericScore, null);
+                    return true;
+                }
+
+                // Explicitly unrated content (e.g. "IT-NR") is unrated by definition, not a lookup failure
+                if (IsUnrated(ratingPart))
+                {
                     return true;
                 }
 

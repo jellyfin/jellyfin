@@ -199,6 +199,16 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [InlineData("Rated: R", "US", 17, 0)]
         [InlineData("Rated R", "US", 17, 0)]
         [InlineData(" PG-13 ", "US", 13, 0)]
+        [InlineData("T", "IT", 0, null)]
+        [InlineData("VM6", "IT", 6, null)]
+        [InlineData("VM12", "IT", 12, null)]
+        [InlineData("VM14", "IT", 14, null)]
+        [InlineData("VM18", "IT", 18, null)]
+        [InlineData("IT-VM14", "IT", 14, null)] // TMDB style country prefix
+        [InlineData("IT-VM18", "IT", 18, null)]
+        [InlineData("it-vm18", "IT", 18, null)] // Rating strings are case insensitive
+        [InlineData("VM 18", "IT", 18, null)]
+        [InlineData("Vietato ai minori di 18 anni", "IT", 18, null)]
         public async Task GetRatingLevel_GivenValidString_Success(string value, string countryCode, int? expectedScore, int? expectedSubScore)
         {
             var localizationManager = Setup(new ServerConfiguration()
@@ -207,6 +217,30 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             });
             await localizationManager.LoadAll();
             var score = localizationManager.GetRatingScore(value);
+            Assert.NotNull(score);
+            Assert.Equal(expectedScore, score.Score);
+            Assert.Equal(expectedSubScore, score.SubScore);
+        }
+
+        [Theory]
+        // Rating strings are stored mixed-case in the *.json rating systems and must match regardless of casing
+        [InlineData("btl", "se", 0, null)] // Direct lookup, lowercase of "Btl"
+        [InlineData("BARNTILLÅTEN", "se", 0, null)] // Direct lookup, uppercase incl. diacritics
+        [InlineData("SE-BTL", "se", 0, null)] // Country prefix stripped against the configured country
+        [InlineData("SE-BTL", "us", 0, null)] // Country prefix resolved via the separator fallback
+        [InlineData("Från 7 År", "se", 7, null)] // Diacritic casing (json has "Från 7 år")
+        [InlineData("SE-Från 7 År", "us", 7, null)] // Same, via the separator fallback
+        [InlineData("fsk-16", "de", 16, null)] // Not Sweden specific: lowercase of "FSK-16"
+        public async Task GetRatingScore_IsCaseInsensitive_Success(string value, string countryCode, int? expectedScore, int? expectedSubScore)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                MetadataCountryCode = countryCode
+            });
+            await localizationManager.LoadAll();
+
+            var score = localizationManager.GetRatingScore(value);
+
             Assert.NotNull(score);
             Assert.Equal(expectedScore, score.Score);
             Assert.Equal(expectedSubScore, score.SubScore);
@@ -241,6 +275,25 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             Assert.Null(localizationManager.GetRatingScore("unrated"));
             Assert.Null(localizationManager.GetRatingScore("Not Rated"));
             Assert.Null(localizationManager.GetRatingScore("n/a"));
+            Assert.Null(localizationManager.GetRatingScore("N/A"));
+            Assert.Null(localizationManager.GetRatingScore(" n/a "));
+        }
+
+        [Theory]
+        // "NR" and "UR" are rating strings of some systems, so they must stay unrated when listed alongside others
+        [InlineData("NR / R", 17, 0)]
+        [InlineData("unrated / R", 17, 0)]
+        [InlineData("R / NR", 17, 0)]
+        public async Task GetRatingLevel_SkipsUnratedListEntries_Success(string value, int? expectedScore, int? expectedSubScore)
+        {
+            var localizationManager = Setup(new ServerConfiguration { MetadataCountryCode = "us" });
+            await localizationManager.LoadAll();
+
+            var score = localizationManager.GetRatingScore(value);
+
+            Assert.NotNull(score);
+            Assert.Equal(expectedScore, score.Score);
+            Assert.Equal(expectedSubScore, score.SubScore);
         }
 
         [Theory]

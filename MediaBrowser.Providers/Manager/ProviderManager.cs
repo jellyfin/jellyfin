@@ -76,7 +76,8 @@ namespace MediaBrowser.Providers.Manager
 
         /// <summary>
         /// Cache for ordered metadata providers per library/item type combination.
-        /// Key: (LibraryPath, ItemTypeName, IncludeDisabled, ForceEnableInternetMetadata).
+        /// Key: (LibraryPath, ItemTypeName, IncludeDisabled, ForceEnableInternetMetadata), where
+        /// LibraryPath is the collection folder path the library options are stored against.
         /// Value: Array of ordered metadata providers (before per-item filtering).
         /// </summary>
         private readonly ConcurrentDictionary<MetadataProviderCacheKey, IMetadataProvider[]> _metadataProviderCache = new();
@@ -136,6 +137,7 @@ namespace MediaBrowser.Providers.Manager
             _similarItemsManager = similarItemsManager;
 
             CollectionFolder.LibraryOptionsUpdated += OnLibraryOptionsUpdated;
+            _configurationManager.ConfigurationUpdated += OnConfigurationUpdated;
         }
 
         /// <inheritdoc/>
@@ -476,15 +478,15 @@ namespace MediaBrowser.Providers.Manager
             return GetMetadataProvidersInternal<T>(item, libraryOptions, globalMetadataOptions, includeDisabled, false, libraryPath);
         }
 
-        private static string GetLibraryPathForItem(BaseItem item)
+        private string GetLibraryPathForItem(BaseItem item)
         {
             if (item is CollectionFolder collectionFolder)
             {
                 return collectionFolder.Path ?? string.Empty;
             }
 
-            var topParent = item.GetTopParent();
-            return topParent?.Path ?? string.Empty;
+            return _libraryManager.GetCollectionFolders(item)
+                .Find(folder => folder is CollectionFolder)?.Path ?? string.Empty;
         }
 
         /// <inheritdoc />
@@ -1143,16 +1145,21 @@ namespace MediaBrowser.Providers.Manager
                 return;
             }
 
-            _refreshQueue.Enqueue((itemId, options), priority);
-
+            // PriorityQueue is not thread safe and the processor dequeues concurrently, so every
+            // touch of the queue takes the lock.
             lock (_refreshQueueLock)
             {
-                if (!_isProcessingRefreshQueue)
+                _refreshQueue.Enqueue((itemId, options), priority);
+
+                if (_isProcessingRefreshQueue)
                 {
-                    _isProcessingRefreshQueue = true;
-                    Task.Run(StartProcessingRefreshQueue);
+                    return;
                 }
+
+                _isProcessingRefreshQueue = true;
             }
+
+            Task.Run(StartProcessingRefreshQueue);
         }
 
         private async Task StartProcessingRefreshQueue()
@@ -1161,17 +1168,33 @@ namespace MediaBrowser.Providers.Manager
 
             if (_disposed)
             {
+                lock (_refreshQueueLock)
+                {
+                    _isProcessingRefreshQueue = false;
+                }
+
                 return;
             }
 
             var cancellationToken = _disposeCancellationTokenSource.Token;
 
             libraryManager.ClearIgnoreRuleCache();
-            while (_refreshQueue.TryDequeue(out var refreshItem, out _))
+
+            while (true)
             {
-                if (_disposed)
+                (Guid ItemId, MetadataRefreshOptions RefreshOptions) refreshItem;
+
+                // Dequeueing and standing down happen under one lock, otherwise a refresh queued
+                // just after the queue ran dry would see a processor that has already stopped.
+                lock (_refreshQueueLock)
                 {
-                    return;
+                    if (_disposed
+                        || cancellationToken.IsCancellationRequested
+                        || !_refreshQueue.TryDequeue(out refreshItem, out _))
+                    {
+                        _isProcessingRefreshQueue = false;
+                        break;
+                    }
                 }
 
                 try
@@ -1188,19 +1211,21 @@ namespace MediaBrowser.Providers.Manager
 
                     await task.ConfigureAwait(false);
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
-                    break;
+                    // Shutting down: the next pass sees the token and stands the processor down.
+                    continue;
                 }
                 catch (Exception ex)
                 {
+                    // Includes a provider that cancelled for its own reasons, such as an HTTP
+                    // timeout, which must not stop the queue draining.
                     _logger.LogError(ex, "Error refreshing item");
                 }
             }
 
-            lock (_refreshQueueLock)
+            if (!_disposed)
             {
-                _isProcessingRefreshQueue = false;
                 libraryManager.ClearIgnoreRuleCache();
             }
         }
@@ -1291,6 +1316,7 @@ namespace MediaBrowser.Providers.Manager
             if (disposing)
             {
                 CollectionFolder.LibraryOptionsUpdated -= OnLibraryOptionsUpdated;
+                _configurationManager.ConfigurationUpdated -= OnConfigurationUpdated;
 
                 if (!_disposeCancellationTokenSource.IsCancellationRequested)
                 {
@@ -1318,6 +1344,11 @@ namespace MediaBrowser.Providers.Manager
             _logger.LogDebug("Invalidated metadata provider cache for library: {LibraryPath}", e.LibraryPath);
         }
 
+        private void OnConfigurationUpdated(object? sender, EventArgs e)
+        {
+            ClearMetadataProviderCache();
+        }
+
         internal void ClearMetadataProviderCache()
         {
             _metadataProviderCache.Clear();
@@ -1327,7 +1358,7 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Cache key for metadata provider lookups.
         /// </summary>
-        /// <param name="LibraryPath">The library path for the collection folder.</param>
+        /// <param name="LibraryPath">The path of the collection folder providing the library options.</param>
         /// <param name="ItemTypeName">The item type name.</param>
         /// <param name="IncludeDisabled">Whether to include disabled providers.</param>
         /// <param name="ForceEnableInternetMetadata">Whether internet metadata is force-enabled.</param>

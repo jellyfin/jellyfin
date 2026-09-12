@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Locking;
@@ -58,6 +59,8 @@ public abstract class SqliteDbTestFixture : IDisposable
     {
         var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
         factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
+        factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CreateDbContext);
 
         return factory.Object;
     }
