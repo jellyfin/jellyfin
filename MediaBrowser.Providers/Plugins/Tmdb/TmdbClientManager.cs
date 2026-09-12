@@ -29,6 +29,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         // differ in weight by orders of magnitude.
         private const int CacheSizeLimit = 100_000;
 
+        private static readonly Dictionary<string, string> ThumbnailSizes = new Dictionary<string, string>
+        {
+            { "Primary", "w500" },
+            { "Backdrop", "w780" },
+            { "Thumb", "w780" },
+            { "Logo", "w500" },
+        };
+
         private readonly MemoryCache _memoryCache;
         private readonly TMDbClient _tmDbClient;
 
@@ -326,7 +334,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             person = await _tmDbClient.GetPersonAsync(
                 personTmdbId,
                 TmdbUtils.NormalizeLanguage(language, countryCode),
-                PersonMethods.TvCredits | PersonMethods.MovieCredits | PersonMethods.Images | PersonMethods.ExternalIds,
+                PersonMethods.Images | PersonMethods.ExternalIds,
                 cancellationToken).ConfigureAwait(false);
 
             if (person is not null)
@@ -678,6 +686,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 yield return new RemoteImageInfo
                 {
                     Url = GetUrl(size, image.FilePath),
+                    ThumbnailUrl = GetUrl(ThumbnailSizes.GetValueOrDefault(type.ToString(), string.Empty), image.FilePath),
                     CommunityRating = image.VoteAverage,
                     VoteCount = image.VoteCount,
                     Width = scaleImage ? null : image.Width,

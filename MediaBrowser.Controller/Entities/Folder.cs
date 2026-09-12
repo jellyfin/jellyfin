@@ -405,19 +405,23 @@ namespace MediaBrowser.Controller.Entities
 
             if (IsFileProtocol)
             {
-                IEnumerable<BaseItem> nonCachedChildren = [];
+                IEnumerable<BaseItem> nonCachedChildren;
 
                 try
                 {
-                    nonCachedChildren = GetNonCachedChildren(directoryService);
+                    // Finish enumeration before mutating the library. An I/O failure, including
+                    // one partway through a lazy enumeration, must not look like removed files.
+                    nonCachedChildren = GetNonCachedChildren(directoryService).ToArray();
                 }
                 catch (IOException ex)
                 {
                     Logger.LogError(ex, "Error retrieving children from file system");
+                    return;
                 }
                 catch (SecurityException ex)
                 {
                     Logger.LogError(ex, "Error retrieving children from file system");
+                    return;
                 }
                 catch (Exception ex)
                 {
