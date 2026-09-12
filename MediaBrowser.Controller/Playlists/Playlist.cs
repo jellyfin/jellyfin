@@ -235,18 +235,18 @@ namespace MediaBrowser.Controller.Playlists
         {
             if (!IsSharedItem)
             {
-                return base.IsVisible(user, skipAllowedTagsCheck);
+                return base.IsVisible(user, skipAllowedTagsCheck) && HasParentalAllowedChild(user);
             }
 
             if (OpenAccess)
             {
-                return true;
+                return HasParentalAllowedChild(user);
             }
 
             var userId = user.Id;
             if (userId.Equals(OwnerUserId))
             {
-                return true;
+                return HasParentalAllowedChild(user);
             }
 
             var shares = Shares;
@@ -255,7 +255,19 @@ namespace MediaBrowser.Controller.Playlists
                 return false;
             }
 
-            return shares.Any(s => s.UserId.Equals(userId));
+            return shares.Any(s => s.UserId.Equals(userId)) && HasParentalAllowedChild(user);
+        }
+
+        private bool HasParentalAllowedChild(User user)
+        {
+            if (!user.MaxParentalRatingScore.HasValue)
+            {
+                return true;
+            }
+
+            var linkedItems = GetLinkedChildren();
+
+            return linkedItems.Count == 0 || linkedItems.Any(child => child.IsParentalAllowed(user, true));
         }
 
         public override bool CanDelete(User user)
