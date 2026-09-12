@@ -75,6 +75,11 @@ namespace Emby.Server.Implementations.Library
             }
 
             dbContext.SaveChanges();
+
+            dbContext.UserData
+                .Where(e => e.ItemId == item.Id && e.UserId == user.Id && !keys.Contains(e.CustomDataKey))
+                .ExecuteDelete();
+
             transaction.Commit();
 
             var userId = user.InternalId;
