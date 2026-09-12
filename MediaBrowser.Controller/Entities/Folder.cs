@@ -405,7 +405,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (IsFileProtocol)
             {
-                IEnumerable<BaseItem> nonCachedChildren = [];
+                IEnumerable<BaseItem> nonCachedChildren;
 
                 try
                 {
