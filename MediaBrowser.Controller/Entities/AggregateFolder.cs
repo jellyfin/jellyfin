@@ -54,6 +54,23 @@ namespace MediaBrowser.Controller.Entities
 
         public string[] PhysicalLocationsList { get; set; }
 
+        // Children caches the resolved items, _childrenIds the ids they were loaded from. Clearing
+        // only the former sends the next read back through LoadChildren, which replays the stale
+        // id list, so a caller invalidating this folder has to drop both.
+        public override IEnumerable<BaseItem> Children
+        {
+            get => base.Children;
+            set
+            {
+                if (value is null)
+                {
+                    ClearCache();
+                }
+
+                base.Children = value;
+            }
+        }
+
         public override bool CanDelete()
         {
             return false;
