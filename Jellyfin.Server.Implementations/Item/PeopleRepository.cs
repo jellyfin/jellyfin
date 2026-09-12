@@ -238,7 +238,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         using var context = _dbProvider.CreateDbContext();
         var query = context.PeopleBaseItemMap
             .AsNoTracking()
-            .Where(m => itemIds.Contains(m.ItemId));
+            .WhereOneOrMany(itemIds, m => m.ItemId);
 
         if (personTypes.Count > 0)
         {
@@ -274,7 +274,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         using var context = _dbProvider.CreateDbContext();
         var rows = context.PeopleBaseItemMap
             .AsNoTracking()
-            .Where(m => itemIds.Contains(m.ItemId))
+            .WhereOneOrMany(itemIds, m => m.ItemId)
             .OrderBy(m => m.ListOrder)
             .Select(m => new
             {
