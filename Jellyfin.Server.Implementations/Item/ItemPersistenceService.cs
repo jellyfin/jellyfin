@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -68,16 +69,24 @@ public class ItemPersistenceService : IItemPersistenceService
         // Use WhereOneOrMany instead of a raw HashSet.Contains so large id sets are bound as a
         // single parameter (json_each) rather than one SQL variable per id, which would otherwise
         // overflow SQLite's variable limit when deleting many items at once (e.g. migrations).
-        var ownerIds = descendantIds.ToArray();
-        var extraIds = context.BaseItems
-            .Where(e => e.OwnerId.HasValue)
-            .WhereOneOrMany(ownerIds, e => e.OwnerId!.Value)
-            .Select(e => e.Id)
-            .ToArray();
-
-        foreach (var extraId in extraIds)
+        var frontier = descendantIds.ToArray();
+        while (frontier.Length > 0)
         {
-            descendantIds.Add(extraId);
+            var ownedIds = context.BaseItems
+                .Where(e => e.OwnerId.HasValue)
+                .WhereOneOrMany(frontier, e => e.OwnerId!.Value)
+                .Select(e => e.Id)
+                .ToArray();
+
+            var childIds = context.BaseItems
+                .Where(e => e.ParentId.HasValue)
+                .WhereOneOrMany(frontier, e => e.ParentId!.Value)
+                .Select(e => e.Id)
+                .ToArray();
+
+            // Only ids that were not already known become the next frontier, so ownership cycles
+            // terminate instead of looping forever.
+            frontier = [.. ownedIds.Concat(childIds).Where(e => descendantIds.Add(e))];
         }
 
         var relatedItems = descendantIds.ToArray();
@@ -268,7 +277,7 @@ public class ItemPersistenceService : IItemPersistenceService
         using var transaction = context.Database.BeginTransaction();
 
         var ids = tuples.Select(f => f.Item.Id).ToArray();
-        var existingItems = context.BaseItems.Where(e => ids.Contains(e.Id)).Select(f => f.Id).ToHashSet();
+        var existingItems = context.BaseItems.WhereOneOrMany(ids, e => e.Id).Select(f => f.Id).ToHashSet();
 
         foreach (var item in tuples)
         {
@@ -328,7 +337,7 @@ public class ItemPersistenceService : IItemPersistenceService
             .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore[(e.MagicNumber, e.Value)]).DistinctBy(e => e.ItemValueId).ToArray()))
             .ToArray();
 
-        var mappedValues = context.ItemValuesMap.Where(e => ids.Contains(e.ItemId)).ToList();
+        var mappedValues = context.ItemValuesMap.WhereOneOrMany(ids, e => e.ItemId).ToList();
 
         foreach (var item in valueMap)
         {
@@ -655,6 +664,38 @@ public class ItemPersistenceService : IItemPersistenceService
                     });
 
                     sortOrder++;
+                }
+
+                var linkedChildIds = newLinkedChildren
+                    .Select(c => c.ChildId)
+                    // A video listed among its own versions would be pointed at itself.
+                    .Where(childId => existingChildIds.Contains(childId) && !childId.Equals(video.Id))
+                    .Where(childId => !childId.Equals(video.PrimaryVersionId))
+                    .ToList();
+                if (linkedChildIds.Count > 0)
+                {
+                    var demotedChildren = context.BaseItems
+                        .Where(e => linkedChildIds.Contains(e.Id)
+                            && (e.PrimaryVersionId == null || e.PrimaryVersionId != video.Id))
+                        .ToList();
+
+                    foreach (var child in demotedChildren)
+                    {
+                        child.PrimaryVersionId = video.Id;
+
+                        // Mirrors Video.CreatePresentationUniqueKey, so presentation-key grouping
+                        // collapses the version onto its primary as well.
+                        child.PresentationUniqueKey = video.Id.ToString("N", CultureInfo.InvariantCulture);
+                    }
+
+                    if (demotedChildren.Count > 0)
+                    {
+                        _logger.LogInformation(
+                            "Set PrimaryVersionId on {Count} alternate versions of video {VideoName} ({VideoId})",
+                            demotedChildren.Count,
+                            video.Name,
+                            video.Id);
+                    }
                 }
 
                 // A previously-linked LocalAlternateVersion that is no longer present becomes orphaned;

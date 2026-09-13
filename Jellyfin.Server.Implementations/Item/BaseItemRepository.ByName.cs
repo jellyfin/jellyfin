@@ -117,6 +117,35 @@ public sealed partial class BaseItemRepository
             .ToArray();
     }
 
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetTagNames(InternalItemsQuery filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        PrepareFilterQuery(filter);
+
+        using var context = _dbProvider.CreateDbContext();
+        var baseQuery = PrepareItemQuery(context, filter);
+        baseQuery = TranslateQuery(baseQuery, context, filter);
+
+        var matchingItemIds = baseQuery.Select(e => e.Id);
+
+        // Project the join before grouping. Grouping over the ItemValue navigation instead makes EF
+        // re-resolve the aggregate as a correlated subquery per group, which is orders of magnitude slower.
+        return context.ItemValuesMap
+            .AsNoTracking()
+            .Join(
+                context.ItemValues,
+                ivm => ivm.ItemValueId,
+                iv => iv.ItemValueId,
+                (ivm, iv) => new { ivm.ItemId, iv.Type, iv.CleanValue, iv.Value })
+            .Where(iv => iv.Type == ItemValueType.Tags)
+            .Where(iv => matchingItemIds.Contains(iv.ItemId))
+            .GroupBy(iv => iv.CleanValue)
+            .Select(g => g.Min(iv => iv.Value)!)
+            .OrderBy(t => t)
+            .ToArray();
+    }
+
     private string[] GetItemValueNames(IReadOnlyList<ItemValueType> itemValueTypes, IReadOnlyList<string> withItemTypes, IReadOnlyList<string> excludeItemTypes)
     {
         using var context = _dbProvider.CreateDbContext();

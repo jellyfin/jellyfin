@@ -114,7 +114,7 @@ namespace Emby.Server.Implementations.Collections
 
             _libraryManager.RootFolder.Children = null;
 
-            return FindFolders(path).First();
+            return FindFolders(path).FirstOrDefault();
         }
 
         internal string GetCollectionsFolderPath()
@@ -167,7 +167,7 @@ namespace Emby.Server.Implementations.Collections
 
             if (parentFolder is null)
             {
-                throw new ArgumentException(nameof(parentFolder));
+                throw new InvalidOperationException("Unable to resolve the collections library folder, so the collection cannot be created.");
             }
 
             var path = Path.Combine(parentFolder.Path, folderName);
