@@ -181,8 +181,8 @@ namespace Emby.Server.Implementations.SyncPlay
                     {
                         if (existingGroup.GroupId.Equals(request.GroupId))
                         {
-                            // Restore session.
-                            UpdateSessionsCounter(session.UserId, 1);
+                            // Restore session. The session is already in the group and has already
+                            // been counted, so the counter must not be incremented a second time.
                             group.SessionJoin(session, request, cancellationToken);
                             return;
                         }
@@ -332,8 +332,11 @@ namespace Emby.Server.Implementations.SyncPlay
                 // Group lock required as Group is not thread-safe.
                 lock (group)
                 {
-                    // Make sure that session still belongs to this group.
-                    if (_sessionToGroupMap.TryGetValue(session.Id, out var checkGroup) && !checkGroup.GroupId.Equals(group.GroupId))
+                    // Make sure that session still belongs to this group. The lookup can fail
+                    // outright when the session left while this request was waiting on the group
+                    // lock, which is exactly the case this re-check exists to catch.
+                    if (!_sessionToGroupMap.TryGetValue(session.Id, out var checkGroup)
+                        || !checkGroup.GroupId.Equals(group.GroupId))
                     {
                         // Drop request.
                         return;
@@ -400,7 +403,7 @@ namespace Emby.Server.Implementations.SyncPlay
             // Update sessions counter.
             var newSessionsCounter = _activeUsers.AddOrUpdate(
                 userId,
-                1,
+                toAdd,
                 (_, sessionsCounter) => sessionsCounter + toAdd);
 
             // Should never happen.

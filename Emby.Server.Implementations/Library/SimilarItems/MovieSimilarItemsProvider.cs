@@ -260,7 +260,7 @@ public sealed class MovieSimilarItemsProvider : ILocalSimilarItemsProvider<Movie
             }
 
             var candidateRows = await context.ItemValuesMap.AsNoTracking()
-                .Where(m => m.ItemValue.Type == valueType && allKeys.Contains(m.ItemValue.CleanValue))
+                .Where(m => !m.Item.PrimaryVersionId.HasValue && m.ItemValue.Type == valueType && allKeys.Contains(m.ItemValue.CleanValue))
                 .Select(m => new { m.ItemId, Key = m.ItemValue.CleanValue })
                 .ToListAsync(cancellationToken).ConfigureAwait(false);
 
@@ -276,6 +276,7 @@ public sealed class MovieSimilarItemsProvider : ILocalSimilarItemsProvider<Movie
         if (personSourceRows.Count > 0)
         {
             var personCandidateRows = await context.PeopleBaseItemMap.AsNoTracking()
+                .Where(m => !m.Item.PrimaryVersionId.HasValue)
                 .Where(m => context.PeopleBaseItemMap
                     .Where(s => sourceIds.Contains(s.ItemId) && _scoredPersonTypes.Contains(s.People.PersonType))
                     .Select(s => s.PeopleId)

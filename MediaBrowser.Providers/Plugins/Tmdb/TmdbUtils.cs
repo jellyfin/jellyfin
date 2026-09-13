@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
 using TMDbLib.Objects.General;
+using TMDbLib.Objects.Search;
 using TMDbLib.Objects.TvShows;
 using PersonInfo = MediaBrowser.Controller.Entities.PersonInfo;
 
@@ -32,6 +33,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// API key to use when performing an API call.
         /// </summary>
         public const string ApiKey = "4219e299c89411838049ab0dab19ebd5";
+
+        private const int TitleExactScore = 8;
+        private const int TitlePrefixScore = 4;
+        private const int YearExactScore = 2;
+        private const int YearAdjacentScore = 1;
 
         /// <summary>
         /// The crew types to keep.
@@ -63,8 +69,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             "novel"
         }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
-        [GeneratedRegex(@"[\W_-[·]]+")]
-        private static partial Regex NonWordRegex();
+        /// <summary>
+        /// Everything that is not a letter, a number or a combining mark separates two search terms. The
+        /// interpunct is kept because TMDb uses it inside titles such as "WALL·E", where it matches better
+        /// than a space does.
+        /// </summary>
+        [GeneratedRegex(@"[^\p{L}\p{N}\p{M}·]+")]
+        private static partial Regex NonSearchTermRegex();
+
+        /// <summary>
+        /// As <see cref="NonSearchTermRegex"/>, but the interpunct is a separator too, so a "WALL-E" folder
+        /// and the "WALL·E" title TMDb returns compare equal.
+        /// </summary>
+        [GeneratedRegex(@"[^\p{L}\p{N}\p{M}]+")]
+        private static partial Regex NonComparableRegex();
 
         /// <summary>
         /// Gets the TMDb id of an item, if it has one TMDb can be queried with.
@@ -101,7 +119,140 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public static string CleanName(string name)
         {
             // TMDb expects a space separated list of words make sure that is the case
-            return NonWordRegex().Replace(name, " ");
+            return NonSearchTermRegex().Replace(name, " ").Trim();
+        }
+
+        /// <summary>
+        /// Reduces a title to the form used to compare a local name against a TMDb search result.
+        /// </summary>
+        /// <param name="title">The title to normalize.</param>
+        /// <returns>The normalized title, or an empty string if there was nothing to normalize.</returns>
+        public static string NormalizeTitle(string? title)
+        {
+            return string.IsNullOrEmpty(title)
+                ? string.Empty
+                : NonComparableRegex().Replace(title, " ").Trim().ToLowerInvariant();
+        }
+
+        /// <summary>
+        /// Picks the movie search result that best matches the name and year an item was looked up by.
+        /// </summary>
+        /// <param name="results">The search results, in the order TMDb returned them.</param>
+        /// <param name="name">The parsed name of the local item.</param>
+        /// <param name="year">The year of the local item, or 0 if it is unknown.</param>
+        /// <returns>The best match, or <c>null</c> if there were no results.</returns>
+        public static SearchMovie? FindBestMatch(IReadOnlyList<SearchMovie>? results, string? name, int year)
+        {
+            return FindBestMatch(
+                results,
+                name,
+                year,
+                static movie => movie.Title,
+                static movie => movie.OriginalTitle,
+                static movie => movie.ReleaseDate);
+        }
+
+        /// <summary>
+        /// Picks the series search result that best matches the name and year an item was looked up by.
+        /// </summary>
+        /// <param name="results">The search results, in the order TMDb returned them.</param>
+        /// <param name="name">The parsed name of the local item.</param>
+        /// <param name="year">The year of the local item, or 0 if it is unknown.</param>
+        /// <returns>The best match, or <c>null</c> if there were no results.</returns>
+        public static SearchTv? FindBestMatch(IReadOnlyList<SearchTv>? results, string? name, int year)
+        {
+            return FindBestMatch(
+                results,
+                name,
+                year,
+                static series => series.Name,
+                static series => series.OriginalName,
+                static series => series.FirstAirDate);
+        }
+
+        /// <summary>
+        /// Picks the search result that best matches the name and year an item was looked up by.
+        /// </summary>
+        /// <remarks>
+        /// TMDb's year parameter only nudges relevance, it does not filter, so the first hit is regularly a
+        /// different film or show that happens to share the title - searching for "Mulan" with year 2020
+        /// returns the 1998 film first. A title that matches outranks one that does not, and the year only
+        /// separates candidates that are otherwise equally good. When nothing matches at all TMDb's own
+        /// ordering is kept, so a name that needs fuzzy matching, such as "A Christmas No. 1" for
+        /// "A Christmas Number One", still resolves.
+        /// </remarks>
+        private static T? FindBestMatch<T>(
+            IReadOnlyList<T>? results,
+            string? name,
+            int year,
+            Func<T, string?> titleSelector,
+            Func<T, string?> originalTitleSelector,
+            Func<T, DateTime?> releaseDateSelector)
+            where T : class
+        {
+            if (results is null || results.Count == 0)
+            {
+                return null;
+            }
+
+            var normalizedName = NormalizeTitle(name);
+            if (normalizedName.Length == 0)
+            {
+                return results[0];
+            }
+
+            var best = results[0];
+            var bestScore = 0;
+
+            foreach (var result in results)
+            {
+                var score = Math.Max(
+                        ScoreTitle(normalizedName, titleSelector(result)),
+                        ScoreTitle(normalizedName, originalTitleSelector(result)))
+                    + ScoreYear(year, releaseDateSelector(result)?.Year);
+
+                // Strictly greater, so ties keep the earlier, more relevant result.
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    best = result;
+                }
+            }
+
+            return best;
+        }
+
+        private static int ScoreTitle(string normalizedName, string? title)
+        {
+            var normalizedTitle = NormalizeTitle(title);
+
+            if (string.Equals(normalizedName, normalizedTitle, StringComparison.Ordinal))
+            {
+                return TitleExactScore;
+            }
+
+            // Whole words only, otherwise "Wall" half matches "Wall Street".
+            return normalizedTitle.Length > normalizedName.Length
+                && normalizedTitle[normalizedName.Length] == ' '
+                && normalizedTitle.StartsWith(normalizedName, StringComparison.Ordinal)
+                    ? TitlePrefixScore
+                    : 0;
+        }
+
+        private static int ScoreYear(int year, int? resultYear)
+        {
+            if (year <= 0 || resultYear is not int candidateYear)
+            {
+                return 0;
+            }
+
+            return Math.Abs(candidateYear - year) switch
+            {
+                0 => YearExactScore,
+                // Regional release dates routinely straddle a new year.
+                1 => YearAdjacentScore,
+                _ => 0
+            };
         }
 
         /// <summary>

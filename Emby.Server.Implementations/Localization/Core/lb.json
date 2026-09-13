@@ -108,5 +108,17 @@
     "LyricDownloadFailureFromForItem": "Feeler beim Download vun de Songtexter vun {0} fir {1}",
     "Original": "Original",
     "CleanupUserDataTask": "Aufgab fir Berengege vu Benotzerdaten",
-    "CleanupUserDataTaskDescription": "Läscht all Benotzerdaten (Ofspillstatus, Favoritestatus, asw.) vu Medien, déi zënter mindestens 90 Deeg net méi besteeënd sinn."
+    "CleanupUserDataTaskDescription": "Läscht all Benotzerdaten (Ofspillstatus, Favoritestatus, asw.) vu Medien, déi zënter mindestens 90 Deeg net méi besteeënd sinn.",
+    "NameExtraBehindTheScenes": "Hannert de Kulissen",
+    "NameExtraClip": "Clip",
+    "NameExtraDeletedScene": "Geläschte Scène",
+    "NameExtraFeaturette": "Featurette",
+    "NameExtraInterview": "Interview",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Beispill",
+    "NameExtraScene": "Scène",
+    "NameExtraShort": "Kuerzfilm",
+    "NameExtraThemeSong": "Theme-Lidd",
+    "NameExtraThemeVideo": "Theme-Video",
+    "NameExtraTrailer": "Bande-Annonce"
 }

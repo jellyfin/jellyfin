@@ -1,8 +1,10 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using BlurHashSharp.SkiaSharp;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
@@ -11,6 +13,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
+using Svg;
 using Svg.Skia;
 
 namespace Jellyfin.Drawing.Skia;
@@ -21,22 +24,15 @@ namespace Jellyfin.Drawing.Skia;
 public class SkiaEncoder : IImageEncoder
 {
     private const string SvgFormat = "svg";
+
+    // The light sharpening kernel applied after resizing, see ResizeImage.
+    private const float SharpenCenterWeight = 1.4f;
+    private const float SharpenNeighborWeight = -0.1f;
+
     private static readonly HashSet<string> _transparentImageTypes = new(StringComparer.OrdinalIgnoreCase) { ".png", ".gif", ".webp" };
     private readonly ILogger<SkiaEncoder> _logger;
     private readonly IApplicationPaths _appPaths;
     private static readonly SKTypeface?[] _typefaces = InitializeTypefaces();
-    private static readonly SKImageFilter _imageFilter = SKImageFilter.CreateMatrixConvolution(
-        new SKSizeI(3, 3),
-        [
-            0,    -.1f,    0,
-            -.1f, 1.4f, -.1f,
-            0,    -.1f,    0
-        ],
-        1f,
-        0f,
-        new SKPointI(1, 1),
-        SKShaderTileMode.Clamp,
-        true);
 
     /// <summary>
     /// The default sampling options, equivalent to old high quality filter settings when upscaling.
@@ -47,6 +43,13 @@ public class SkiaEncoder : IImageEncoder
     /// The sampling options, used for downscaling images, equivalent to old high quality filter settings when not upscaling.
     /// </summary>
     public static readonly SKSamplingOptions DefaultSamplingOptions = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear);
+
+    static SkiaEncoder()
+    {
+        SvgDocument.ResolveExternalElements = ExternalType.None;
+        SvgDocument.ResolveExternalImages = ExternalType.None;
+        SvgDocument.ResolveExternalXmlEntites = ExternalType.None;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SkiaEncoder"/> class.
@@ -183,6 +186,12 @@ public class SkiaEncoder : IImageEncoder
         var extension = Path.GetExtension(path.AsSpan());
         if (extension.Equals(".svg", StringComparison.OrdinalIgnoreCase))
         {
+            if (!SvgSecurityValidator.IsSafe(path, out var reason))
+            {
+                _logger.LogError("Refusing to determine dimensions for SVG {FilePath}: {Reason}", path, reason);
+                return default;
+            }
+
             using var svg = new SKSvg();
             try
             {
@@ -445,6 +454,12 @@ public class SkiaEncoder : IImageEncoder
             throw new FileNotFoundException("File not found", path);
         }
 
+        if (!SvgSecurityValidator.IsSafe(path, out var reason))
+        {
+            _logger.LogError("Refusing to render SVG {FilePath}: {Reason}", path, reason);
+            return null;
+        }
+
         using var svg = SKSvg.CreateFromFile(path);
         if (svg.Drawable is null)
         {
@@ -541,8 +556,8 @@ public class SkiaEncoder : IImageEncoder
     /// <returns>The resized image.</returns>
     internal static SKImage ResizeImage(SKBitmap source, SKImageInfo targetInfo, bool isAntialias = false, bool isDither = false)
     {
-        using var surface = SKSurface.Create(targetInfo);
-        using var canvas = surface.Canvas;
+        using var target = new SKBitmap(targetInfo);
+        using var canvas = new SKCanvas(target);
         using var paint = new SKPaint();
         paint.IsAntialias = isAntialias;
         paint.IsDither = isDither;
@@ -554,7 +569,6 @@ public class SkiaEncoder : IImageEncoder
             ? DefaultSamplingOptions
             : UpscaleSamplingOptions;
 
-        paint.ImageFilter = _imageFilter;
         canvas.DrawBitmap(
             source,
             SKRect.Create(0, 0, source.Width, source.Height),
@@ -562,7 +576,75 @@ public class SkiaEncoder : IImageEncoder
             samplingOptions,
             paint);
 
-        return surface.Snapshot();
+        SharpenInPlace(target);
+
+        return SKImage.FromBitmap(target);
+    }
+
+    /// <summary>
+    /// Applies the light 3x3 sharpening kernel to the bitmap in place.
+    ///
+    /// This is equivalent to the SKImageFilter.CreateMatrixConvolution paint filter that
+    /// was previously part of the resize draw call. Since the SkiaSharp 3 update that
+    /// filter no longer has a fast CPU path and takes multiple seconds per image on the
+    /// software rasterizer, so the same kernel is applied directly instead.
+    /// </summary>
+    /// <param name="bitmap">The bitmap to sharpen. Must use a color type with four bytes per pixel; other color types are returned unchanged.</param>
+    internal static void SharpenInPlace(SKBitmap bitmap)
+    {
+        if (bitmap.BytesPerPixel != 4)
+        {
+            return;
+        }
+
+        var width = bitmap.Width;
+        var height = bitmap.Height;
+        var stride = bitmap.RowBytes;
+        var pixels = bitmap.GetPixels();
+        if (width == 0 || height == 0 || pixels == IntPtr.Zero)
+        {
+            return;
+        }
+
+        var length = stride * height;
+        var source = ArrayPool<byte>.Shared.Rent(length);
+        var result = ArrayPool<byte>.Shared.Rent(length);
+        try
+        {
+            Marshal.Copy(pixels, source, 0, length);
+
+            for (var y = 0; y < height; y++)
+            {
+                // The kernel clamps at the edges: out-of-bounds taps reuse the edge pixel.
+                var row = y * stride;
+                var up = y == 0 ? row : row - stride;
+                var down = y == height - 1 ? row : row + stride;
+
+                for (var x = 0; x < width; x++)
+                {
+                    var col = x * 4;
+                    var left = x == 0 ? col : col - 4;
+                    var right = x == width - 1 ? col : col + 4;
+
+                    for (var channel = 0; channel < 4; channel++)
+                    {
+                        var value = (SharpenCenterWeight * source[row + col + channel])
+                            + (SharpenNeighborWeight * (source[up + col + channel]
+                                + source[down + col + channel]
+                                + source[row + left + channel]
+                                + source[row + right + channel]));
+                        result[row + col + channel] = (byte)Math.Clamp((int)(value + 0.5f), 0, 255);
+                    }
+                }
+            }
+
+            Marshal.Copy(result, 0, pixels, length);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(source);
+            ArrayPool<byte>.Shared.Return(result);
+        }
     }
 
     /// <inheritdoc/>

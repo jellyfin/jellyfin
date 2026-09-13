@@ -240,6 +240,28 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
         }
 
         [Fact]
+        public async Task PopulateManifest_ExistingImage_IsNotDownloaded()
+        {
+            const string ImageContent = "not really a png";
+
+            var packageInfo = GenerateTestPackage();
+            packageInfo.ImageUrl = "https://example.org/some-plugin.png";
+
+            var imagePath = Path.Combine(_pluginPath, "some-plugin.png");
+            await File.WriteAllTextAsync(imagePath, ImageContent, TestContext.Current.CancellationToken);
+
+            // The application host is null, so attempting to download the image would throw.
+            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, null!, new Version(1, 0));
+
+            Assert.True(await pluginManager.PopulateManifest(packageInfo, new Version(1, 0), _pluginPath, PluginStatus.Active));
+
+            var result = pluginManager.LoadManifest(_pluginPath).Manifest;
+
+            Assert.Equal(imagePath, result.ImagePath);
+            Assert.Equal(ImageContent, await File.ReadAllTextAsync(imagePath, TestContext.Current.CancellationToken));
+        }
+
+        [Fact]
         public async Task PopulateManifest_ExistingMetafileMismatchedIds_Status_Malfunctioned()
         {
             var packageInfo = GenerateTestPackage();

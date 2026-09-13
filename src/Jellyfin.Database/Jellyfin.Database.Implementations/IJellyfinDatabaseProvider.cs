@@ -37,14 +37,16 @@ public interface IJellyfinDatabaseProvider
     void ConfigureConventions(ModelConfigurationBuilder configurationBuilder);
 
     /// <summary>
-    /// If supported this should run any periodic maintaince tasks.
+    /// If supported this should run any periodic maintaince tasks, reclaiming unused space and refreshing the query
+    /// planner statistics. Also used after migrations have modified the database.
     /// </summary>
     /// <param name="cancellationToken">The token to abort the operation.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task RunScheduledOptimisation(CancellationToken cancellationToken);
 
     /// <summary>
-    /// If supported this should perform any actions that are required on stopping the jellyfin server.
+    /// If supported this should perform any actions that are required on stopping the jellyfin server, including the
+    /// same maintenance as <see cref="RunScheduledOptimisation(CancellationToken)"/>.
     /// </summary>
     /// <param name="cancellationToken">The token that will be used to abort the operation.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>

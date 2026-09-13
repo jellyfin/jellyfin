@@ -121,20 +121,22 @@ public sealed partial class BaseItemRepository
     {
         using var context = _dbProvider.CreateDbContext();
 
-        var query = context.ItemValuesMap
-            .AsNoTracking()
-            .Where(e => itemValueTypes.Any(w => w == e.ItemValue.Type));
+        var maps = context.ItemValuesMap.AsNoTracking();
         if (withItemTypes.Count > 0)
         {
-            query = query.Where(e => withItemTypes.Contains(e.Item.Type));
+            maps = maps.Where(e => withItemTypes.Contains(e.Item.Type));
         }
 
         if (excludeItemTypes.Count > 0)
         {
-            query = query.Where(e => !excludeItemTypes.Contains(e.Item.Type));
+            maps = maps.Where(e => !excludeItemTypes.Contains(e.Item.Type));
         }
 
-        return query.Select(e => e.ItemValue)
+        return context.ItemValues
+            .AsNoTracking()
+            .WhereOneOrMany(itemValueTypes, e => e.Type)
+            .Where(e => maps.Any(m => m.ItemValueId == e.ItemValueId))
+            .Select(e => new { e.CleanValue, e.Value })
             .GroupBy(e => e.CleanValue)
             .Select(g => g.Min(v => v.Value)!)
             .ToArray();
@@ -246,14 +248,20 @@ public sealed partial class BaseItemRepository
         }
 
         result.StartIndex = filter.StartIndex ?? 0;
-        if (filter.IncludeItemTypes.Length > 0)
+        var page = query.AsEnumerable().Where(e => e is not null).ToList();
+
+        if (filter.DtoOptions.ContainsField(ItemFields.ItemCounts))
         {
-            var countsByCleanName = BuildItemCountsByCleanName(context, filter, itemValueTypes);
+            var pageCleanNames = page
+                .Where(e => !string.IsNullOrEmpty(e.CleanName))
+                .Select(e => e.CleanName!)
+                .Distinct()
+                .ToList();
+
+            var countsByCleanName = BuildItemCountsByCleanName(context, filter, itemValueTypes, pageCleanNames);
             result.Items =
             [
-                .. query
-                    .AsEnumerable()
-                    .Where(e => e is not null)
+                .. page
                     .Select(e =>
                     {
                         var item = DeserializeBaseItem(e, filter.SkipDeserialization);
@@ -268,9 +276,7 @@ public sealed partial class BaseItemRepository
         {
             result.Items =
             [
-                .. query
-                    .AsEnumerable()
-                    .Where(e => e != null)
+                .. page
                     .Select(e => DeserializeBaseItem(e, filter.SkipDeserialization))
                     .Where(item => item != null)
                     .Select(item => (item!, (ItemCounts?)null))
@@ -281,14 +287,22 @@ public sealed partial class BaseItemRepository
     }
 
     private Dictionary<string, ItemCounts> BuildItemCountsByCleanName(
-        Database.Implementations.JellyfinDbContext context,
+        JellyfinDbContext context,
         InternalItemsQuery filter,
-        IReadOnlyList<ItemValueType> itemValueTypes)
+        IReadOnlyList<ItemValueType> itemValueTypes,
+        IReadOnlyList<string> cleanNames)
     {
-        var typeSubQuery = new InternalItemsQuery(filter.User)
+        var countsByCleanName = new Dictionary<string, ItemCounts>();
+        if (cleanNames.Count == 0)
+        {
+            return countsByCleanName;
+        }
+
+        // The counts describe everything the value is attached to, not only the types the list was
+        // filtered down to.
+        var scopeQuery = new InternalItemsQuery(filter.User)
         {
             ExcludeItemTypes = filter.ExcludeItemTypes,
-            IncludeItemTypes = filter.IncludeItemTypes,
             MediaTypes = filter.MediaTypes,
             AncestorIds = filter.AncestorIds,
             ExcludeItemIds = filter.ExcludeItemIds,
@@ -298,71 +312,115 @@ public sealed partial class BaseItemRepository
             IsPlayed = filter.IsPlayed
         };
 
-        var itemCountQuery = TranslateQuery(context.BaseItems.AsNoTracking().Where(e => e.Id != EF.Constant(PlaceholderId)), context, typeSubQuery)
-            .Where(e => e.ItemValues!.Any(f => itemValueTypes!.Contains(f.ItemValue.Type)));
+        var scopedItems = TranslateQuery(context.BaseItems.AsNoTracking().Where(e => e.Id != EF.Constant(PlaceholderId)), context, scopeQuery);
+        var valueLinks = context.ItemValuesMap
+            .AsNoTracking()
+            .Where(ivm => itemValueTypes.Contains(ivm.ItemValue.Type))
+            .WhereOneOrMany(cleanNames, ivm => ivm.ItemValue.CleanValue);
 
         var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
-        var movieTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie];
         var episodeTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
-        var musicAlbumTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicAlbum];
-        var musicArtistTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist];
-        var audioTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio];
-        var trailerTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Trailer];
-        var itemIds = itemCountQuery.Select(e => e.Id);
 
         // Rewrite query to avoid SelectMany on navigation properties (which requires SQL APPLY, not supported on SQLite)
         // Instead, start from ItemValueMaps and join with BaseItems.
-        var rawCounts = context.ItemValuesMap
-            .Where(ivm => itemValueTypes.Contains(ivm.ItemValue.Type))
-            .Where(ivm => itemIds.Contains(ivm.ItemId))
+        var rawCounts = valueLinks
             .Join(
-                context.BaseItems,
+                scopedItems,
                 ivm => ivm.ItemId,
                 e => e.Id,
-                (ivm, e) => new { CleanName = ivm.ItemValue.CleanValue, e.Type })
-            .GroupBy(x => new { x.CleanName, x.Type })
-            .Select(g => new { g.Key.CleanName, g.Key.Type, Count = g.Count() })
-            .AsEnumerable();
+                (ivm, e) => new { CleanName = ivm.ItemValue.CleanValue, e.Type, e.SeriesId, e.Id })
+            .GroupBy(x => new { x.CleanName, x.Type, x.SeriesId })
+            .Select(g => new { g.Key.CleanName, g.Key.Type, g.Key.SeriesId, Count = g.Select(x => x.Id).Distinct().Count() })
+            .ToList();
 
-        var countsByCleanName = new Dictionary<string, ItemCounts>();
+        // Only studios and genres pass down from a series to its episodes; an artist credit does not.
+        var inheritsToEpisodes = itemValueTypes.Contains(ItemValueType.Studios) || itemValueTypes.Contains(ItemValueType.Genre);
+        var episodeCounts = inheritsToEpisodes
+            ? BuildEpisodeCountsByCleanName(
+                scopedItems,
+                valueLinks,
+                rawCounts
+                    .Where(x => x.Type == episodeTypeName)
+                    .Select(x => (x.CleanName, x.SeriesId, x.Count))
+                    .ToList(),
+                seriesTypeName,
+                episodeTypeName)
+            : rawCounts
+                .Where(x => x.Type == episodeTypeName)
+                .GroupBy(x => x.CleanName)
+                .ToDictionary(g => g.Key, g => g.Sum(x => x.Count));
+
         foreach (var group in rawCounts.GroupBy(x => x.CleanName))
         {
-            var counts = new ItemCounts();
-            foreach (var row in group)
-            {
-                if (row.Type == seriesTypeName)
-                {
-                    counts.SeriesCount += row.Count;
-                }
-                else if (row.Type == episodeTypeName)
-                {
-                    counts.EpisodeCount += row.Count;
-                }
-                else if (row.Type == movieTypeName)
-                {
-                    counts.MovieCount += row.Count;
-                }
-                else if (row.Type == musicAlbumTypeName)
-                {
-                    counts.AlbumCount += row.Count;
-                }
-                else if (row.Type == musicArtistTypeName)
-                {
-                    counts.ArtistCount += row.Count;
-                }
-                else if (row.Type == audioTypeName)
-                {
-                    counts.SongCount += row.Count;
-                }
-                else if (row.Type == trailerTypeName)
-                {
-                    counts.TrailerCount += row.Count;
-                }
-            }
+            var counts = ItemCountBuilder.Build(_itemTypeLookup, group.Select(row => (row.Type, row.Count)));
 
+            // Episodes are counted separately: the value is usually only written on the series.
+            ItemCountBuilder.SetEpisodeCount(counts, episodeCounts.GetValueOrDefault(group.Key));
             countsByCleanName[group.Key] = counts;
         }
 
+        // A value carried by nothing but the episodes below a tagged series has no row of its own.
+        foreach (var (cleanName, episodeCount) in episodeCounts)
+        {
+            if (!countsByCleanName.ContainsKey(cleanName))
+            {
+                var counts = new ItemCounts();
+                ItemCountBuilder.SetEpisodeCount(counts, episodeCount);
+                countsByCleanName[cleanName] = counts;
+            }
+        }
+
         return countsByCleanName;
+    }
+
+    private static Dictionary<string, int> BuildEpisodeCountsByCleanName(
+        IQueryable<BaseItemEntity> scopedItems,
+        IQueryable<ItemValueMap> valueLinks,
+        IReadOnlyList<(string CleanName, Guid? SeriesId, int Count)> taggedEpisodes,
+        string seriesTypeName,
+        string episodeTypeName)
+    {
+        // Resolved in steps rather than as one union: each of these drives off an index, while the
+        // single-statement form leaves SQLite free to scan every episode in the library instead.
+        var taggedSeries = valueLinks
+            .Join(
+                scopedItems.Where(e => e.Type == seriesTypeName),
+                ivm => ivm.ItemId,
+                e => e.Id,
+                (ivm, e) => new { CleanName = ivm.ItemValue.CleanValue, SeriesId = e.Id })
+            .ToList();
+
+        var seriesIds = taggedSeries.Select(x => x.SeriesId).Distinct().ToArray();
+        var episodesPerSeries = seriesIds.Length == 0
+            ? []
+            : scopedItems
+                .Where(e => e.Type == episodeTypeName && e.SeriesId != null)
+                .WhereOneOrMany(seriesIds, e => e.SeriesId!.Value)
+                .GroupBy(e => e.SeriesId!.Value)
+                .Select(g => new { SeriesId = g.Key, Count = g.Count() })
+                .ToDictionary(x => x.SeriesId, x => x.Count);
+
+        var episodeCounts = new Dictionary<string, int>();
+        var seriesByCleanName = new Dictionary<string, HashSet<Guid>>();
+        foreach (var group in taggedSeries.GroupBy(x => x.CleanName))
+        {
+            var series = group.Select(x => x.SeriesId).ToHashSet();
+            seriesByCleanName[group.Key] = series;
+            episodeCounts[group.Key] = series.Sum(id => episodesPerSeries.GetValueOrDefault(id));
+        }
+
+        foreach (var (cleanName, seriesId, count) in taggedEpisodes)
+        {
+            if (seriesId is not null
+                && seriesByCleanName.TryGetValue(cleanName, out var series)
+                && series.Contains(seriesId.Value))
+            {
+                continue;
+            }
+
+            episodeCounts[cleanName] = episodeCounts.GetValueOrDefault(cleanName) + count;
+        }
+
+        return episodeCounts;
     }
 }

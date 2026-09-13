@@ -154,7 +154,7 @@ public class DtoServiceTests
             .Setup(x => x.GetPlayedAndTotalCountBatch(It.IsAny<IReadOnlyList<Guid>>(), user))
             .Returns(new Dictionary<Guid, (int Played, int Total)> { [season.Id] = (playedCount, totalCount) });
         _libraryManagerMock
-            .Setup(x => x.GetChildCountBatch(It.IsAny<IReadOnlyList<Guid>>(), It.IsAny<Guid?>()))
+            .Setup(x => x.GetChildCountBatch(It.IsAny<IReadOnlyList<Guid>>(), It.IsAny<User?>()))
             .Returns(new Dictionary<Guid, int> { [season.Id] = childCount });
 
         return (season, user);

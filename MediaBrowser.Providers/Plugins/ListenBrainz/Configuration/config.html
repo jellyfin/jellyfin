@@ -7,7 +7,6 @@
     <div id="configPage" data-role="page" class="page type-interior pluginConfigurationPage configPage" data-require="emby-input,emby-button,emby-select">
         <div data-role="content">
             <div class="content-primary">
-                <img id="listenBrainzLogo" alt="ListenBrainz" style="max-width:240px;display:block;margin:0 auto 1em;" />
                 <h1>ListenBrainz</h1>
                 <p>Get similar artist recommendations from ListenBrainz Labs.</p>
                 <form class="configForm">
@@ -18,12 +17,12 @@
                     <div class="selectContainer">
                         <label class="selectLabel" for="algorithm">Similarity Algorithm</label>
                         <select is="emby-select" id="algorithm" class="emby-select-withcolor">
-                            <option value="0" selected>~5 years / 1825 days (Recommended)</option>
-                            <option value="1">~5 years / 1800 days</option>
-                            <option value="2">~20 years / 7500 days</option>
-                            <option value="3">~20 years / 7500 days (high contribution)</option>
-                            <option value="4">~25 years / 9000 days</option>
-                            <option value="5">~75 days (recent)</option>
+                            <option value="SessionBased1825Days" selected>~5 years / 1825 days (Recommended)</option>
+                            <option value="SessionBased1800Days">~5 years / 1800 days</option>
+                            <option value="SessionBased7500Days">~20 years / 7500 days</option>
+                            <option value="SessionBased7500DaysHighContribution">~20 years / 7500 days (high contribution)</option>
+                            <option value="SessionBased9000Days">~25 years / 9000 days</option>
+                            <option value="SessionBased75Days">~75 days (recent)</option>
                         </select>
                         <div class="fieldDescription">The algorithm used for artist similarity calculation.</div>
                     </div>
@@ -52,13 +51,14 @@
         </div>
         <script type="text/javascript">
             var ListenBrainzPluginConfig = {
-                uniquePluginId: "a5b2e8c1-9d4f-4a3b-8c7e-6f1a2b3c4d5e"
+                uniquePluginId: "a5b2e8c1-9d4f-4a3b-8c7e-6f1a2b3c4d5e",
+                defaultAlgorithm: "SessionBased1825Days"
             };
 
             document.querySelector('.configPage')
                 .addEventListener('pageshow', function () {
                     Dashboard.showLoadingMsg();
-                    document.querySelector('#listenBrainzLogo').src = ApiClient.getUrl('web/ConfigurationPage', { name: 'ListenBrainzLogo' });
+
                     ApiClient.getPluginConfiguration(ListenBrainzPluginConfig.uniquePluginId).then(function (config) {
                         var labsServer = document.querySelector('#labsServer');
                         labsServer.value = config.LabsServer;
@@ -67,7 +67,13 @@
                             cancelable: false
                         }));
 
-                        document.querySelector('#algorithm').value = config.Algorithm;
+                        // The API serialises the algorithm as its enum name, so an unknown value here
+                        // means a config written by an older build; fall back to the default.
+                        var algorithm = document.querySelector('#algorithm');
+                        algorithm.value = config.Algorithm;
+                        if (!algorithm.value) {
+                            algorithm.value = ListenBrainzPluginConfig.defaultAlgorithm;
+                        }
 
                         var rateLimit = document.querySelector('#rateLimit');
                         rateLimit.value = config.RateLimit;
@@ -93,7 +99,7 @@
 
                     ApiClient.getPluginConfiguration(ListenBrainzPluginConfig.uniquePluginId).then(function (config) {
                         config.LabsServer = document.querySelector('#labsServer').value;
-                        config.Algorithm = parseInt(document.querySelector('#algorithm').value, 10);
+                        config.Algorithm = document.querySelector('#algorithm').value;
                         config.RateLimit = document.querySelector('#rateLimit').value;
                         config.SimilarItemsCacheDays = parseInt(document.querySelector('#similarItemsCacheDays').value, 10);
 

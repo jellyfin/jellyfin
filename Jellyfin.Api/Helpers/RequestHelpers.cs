@@ -156,7 +156,6 @@ public static class RequestHelpers
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> result,
         DtoOptions dtoOptions,
         IDtoService dtoService,
-        bool includeItemTypes,
         User? user)
     {
         var dtos = result.Items.Select(i =>
@@ -164,7 +163,7 @@ public static class RequestHelpers
             var (baseItem, counts) = i;
             var dto = dtoService.GetItemByNameDto(baseItem, dtoOptions, null, user);
 
-            if (includeItemTypes)
+            if (counts is not null)
             {
                 dto.ChildCount = counts.ItemCount;
                 dto.ProgramCount = counts.ProgramCount;
@@ -175,6 +174,7 @@ public static class RequestHelpers
                 dto.AlbumCount = counts.AlbumCount;
                 dto.SongCount = counts.SongCount;
                 dto.ArtistCount = counts.ArtistCount;
+                dto.MusicVideoCount = counts.MusicVideoCount;
             }
 
             return dto;

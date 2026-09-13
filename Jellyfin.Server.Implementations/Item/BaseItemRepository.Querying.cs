@@ -626,18 +626,26 @@ public sealed partial class BaseItemRepository
             .ToArray();
 
         var tags = context.ItemValuesMap
-            .Where(ivm => ivm.ItemValue.Type == ItemValueType.Tags)
-            .Where(ivm => matchingItemIds.Contains(ivm.ItemId))
-            .Select(ivm => ivm.ItemValue)
+            .Join(
+                context.ItemValues,
+                ivm => ivm.ItemValueId,
+                iv => iv.ItemValueId,
+                (ivm, iv) => new { ivm.ItemId, iv.Type, iv.CleanValue, iv.Value })
+            .Where(iv => iv.Type == ItemValueType.Tags)
+            .Where(iv => matchingItemIds.Contains(iv.ItemId))
             .GroupBy(iv => iv.CleanValue)
             .Select(g => g.Min(iv => iv.Value))
             .OrderBy(t => t)
             .ToArray();
 
         var genres = context.ItemValuesMap
-            .Where(ivm => ivm.ItemValue.Type == ItemValueType.Genre)
-            .Where(ivm => matchingItemIds.Contains(ivm.ItemId))
-            .Select(ivm => ivm.ItemValue)
+            .Join(
+                context.ItemValues,
+                ivm => ivm.ItemValueId,
+                iv => iv.ItemValueId,
+                (ivm, iv) => new { ivm.ItemId, iv.Type, iv.CleanValue, iv.Value })
+            .Where(iv => iv.Type == ItemValueType.Genre)
+            .Where(iv => matchingItemIds.Contains(iv.ItemId))
             .GroupBy(iv => iv.CleanValue)
             .Select(g => g.Min(iv => iv.Value))
             .OrderBy(g => g)

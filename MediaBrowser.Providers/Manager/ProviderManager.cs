@@ -1143,16 +1143,21 @@ namespace MediaBrowser.Providers.Manager
                 return;
             }
 
-            _refreshQueue.Enqueue((itemId, options), priority);
-
+            // PriorityQueue is not thread safe and the processor dequeues concurrently, so every
+            // touch of the queue takes the lock.
             lock (_refreshQueueLock)
             {
-                if (!_isProcessingRefreshQueue)
+                _refreshQueue.Enqueue((itemId, options), priority);
+
+                if (_isProcessingRefreshQueue)
                 {
-                    _isProcessingRefreshQueue = true;
-                    Task.Run(StartProcessingRefreshQueue);
+                    return;
                 }
+
+                _isProcessingRefreshQueue = true;
             }
+
+            Task.Run(StartProcessingRefreshQueue);
         }
 
         private async Task StartProcessingRefreshQueue()
@@ -1161,17 +1166,33 @@ namespace MediaBrowser.Providers.Manager
 
             if (_disposed)
             {
+                lock (_refreshQueueLock)
+                {
+                    _isProcessingRefreshQueue = false;
+                }
+
                 return;
             }
 
             var cancellationToken = _disposeCancellationTokenSource.Token;
 
             libraryManager.ClearIgnoreRuleCache();
-            while (_refreshQueue.TryDequeue(out var refreshItem, out _))
+
+            while (true)
             {
-                if (_disposed)
+                (Guid ItemId, MetadataRefreshOptions RefreshOptions) refreshItem;
+
+                // Dequeueing and standing down happen under one lock, otherwise a refresh queued
+                // just after the queue ran dry would see a processor that has already stopped.
+                lock (_refreshQueueLock)
                 {
-                    return;
+                    if (_disposed
+                        || cancellationToken.IsCancellationRequested
+                        || !_refreshQueue.TryDequeue(out refreshItem, out _))
+                    {
+                        _isProcessingRefreshQueue = false;
+                        break;
+                    }
                 }
 
                 try
@@ -1188,19 +1209,21 @@ namespace MediaBrowser.Providers.Manager
 
                     await task.ConfigureAwait(false);
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
-                    break;
+                    // Shutting down: the next pass sees the token and stands the processor down.
+                    continue;
                 }
                 catch (Exception ex)
                 {
+                    // Includes a provider that cancelled for its own reasons, such as an HTTP
+                    // timeout, which must not stop the queue draining.
                     _logger.LogError(ex, "Error refreshing item");
                 }
             }
 
-            lock (_refreshQueueLock)
+            if (!_disposed)
             {
-                _isProcessingRefreshQueue = false;
                 libraryManager.ClearIgnoreRuleCache();
             }
         }
