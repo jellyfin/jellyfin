@@ -1157,6 +1157,21 @@ namespace MediaBrowser.Model.Dlna
             if (!string.IsNullOrEmpty(audioCodec))
             {
                 // Default to a higher bitrate for stream copy
+
+                // E-AC-3 shared the ceiling below with AC-3, which is AC-3's own maximum and not
+                // E-AC-3's: the format is specified well past it and every decoder that takes a
+                // DD+ bitstream takes it at this rate. On a chain that cannot carry a lossless
+                // track this is the only quality headroom left, so give multichannel E-AC-3 a
+                // rate of its own at 256 kbps per channel, which lands on 1536000 for 5.1 and is
+                // capped there because that is where the encoder caps the channel count anyway.
+                // Stereo keeps the shared tier below, where the encoder ordering already prefers
+                // something else.
+                if (string.Equals(audioCodec, "eac3", StringComparison.OrdinalIgnoreCase)
+                    && audioChannels > 2)
+                {
+                    return Math.Min(1536000, audioChannels.Value * 256000);
+                }
+
                 if (string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(audioCodec, "mp3", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase)

@@ -2823,6 +2823,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             var outputChannels = outputAudioChannels ?? 0;
             var bitrate = audioBitRate ?? int.MaxValue;
 
+            var multichannelEac3Bitrate = GetMultichannelEac3BitrateParam(audioCodec, inputChannels, outputChannels, bitrate);
+            if (multichannelEac3Bitrate is not null)
+            {
+                return multichannelEac3Bitrate;
+            }
+
             if (string.IsNullOrEmpty(audioCodec)
                 || string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(audioCodec, "mp3", StringComparison.OrdinalIgnoreCase)
@@ -2860,6 +2866,36 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Default audio bitrate to 128K per channel if we don't have codec specific defaults
             // https://ffmpeg.org/ffmpeg-codecs.html#toc-Codec-Options
             return 128000 * (outputAudioChannels ?? audioStream.Channels ?? 2);
+        }
+
+        /// <summary>
+        /// Returns the bitrate for multichannel E-AC-3, or null where this is not that case.
+        /// </summary>
+        /// <remarks>
+        /// E-AC-3 shares the AC-3 branch in <see cref="GetAudioBitrateParam(int?, string, MediaStream, int?)"/>,
+        /// which pins multichannel output at 640 kbps. That is AC-3's own maximum and not E-AC-3's,
+        /// the same assumption corrected in StreamBuilder.GetDefaultAudioBitrate. Multichannel
+        /// E-AC-3 gets the same 256 kbps per channel here, so both paths agree on what the format
+        /// is worth. Stereo stays on the shared branch, where the encoder ordering already prefers
+        /// something else.
+        /// </remarks>
+        private static int? GetMultichannelEac3BitrateParam(string audioCodec, int inputChannels, int outputChannels, int bitrate)
+        {
+            var isEac3 = string.Equals(audioCodec, "eac3", StringComparison.OrdinalIgnoreCase);
+            var isMultichannel = outputChannels > 2 || (outputChannels == 0 && inputChannels > 2);
+            if (!isEac3 || !isMultichannel)
+            {
+                return null;
+            }
+
+#pragma warning disable SA1008
+            return (inputChannels, outputChannels) switch
+            {
+                (>= 6, >= 6 or 0) => Math.Min(1536000, bitrate),
+                (_, > 0) => Math.Min(outputChannels * 256000, bitrate),
+                (_, _) => Math.Min(inputChannels * 256000, bitrate)
+            };
+#pragma warning restore SA1008
         }
 
         public string GetAudioVbrModeParam(string encoder, int bitrate, int channels)

@@ -70,6 +70,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "aac_at",
             "libfdk_aac",
             "ac3",
+            // ffmpeg ships an eac3 encoder and the rest of the stack already treats E-AC-3 as a
+            // valid transcode target: _audioTranscodeChannelLookup caps it at 6 channels and there
+            // is a guard that moves it to the back of the list for 2 channel output. It was never
+            // listed here, so SupportsEncoder("eac3") always answered false and a client asking for
+            // E-AC-3 silently fell through to AC-3 and its 640 kbps ceiling.
+            "eac3",
             "alac",
             "dca",
             "libmp3lame",
