@@ -127,7 +127,7 @@ namespace Emby.Server.Implementations.Library
 
                 list.AddRange(channels);
 
-                if (_liveTvManager.GetEnabledUsers().Select(i => i.Id).Contains(user.Id))
+                if (_liveTvManager.IsEnabledForUser(user))
                 {
                     list.Add(_liveTvManager.GetInternalLiveTvFolder(CancellationToken.None));
                 }

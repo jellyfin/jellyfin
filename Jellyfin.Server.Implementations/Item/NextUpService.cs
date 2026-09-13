@@ -95,7 +95,7 @@ public class NextUpService : INextUpService
             .Where(e => e.Type == episodeTypeName)
             .Where(e => e.SeriesPresentationUniqueKey != null && seriesKeys.Contains(e.SeriesPresentationUniqueKey))
             .Where(e => e.ParentIndexNumber != 0)
-            .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
+            .Where(DescendantQueryHelper.IsPlayedBy(userId));
         lastWatchedBase = _queryHelpers.ApplyAccessFiltering(context, lastWatchedBase, filter);
 
         // Use lightweight projection + client-side dedup to avoid the correlated scalar subquery
@@ -198,7 +198,7 @@ public class NextUpService : INextUpService
             .Where(e => e.SeriesPresentationUniqueKey != null && seriesKeys.Contains(e.SeriesPresentationUniqueKey))
             .Where(e => e.ParentIndexNumber != 0)
             .Where(e => !e.IsVirtualItem)
-            .Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
+            .Where(DescendantQueryHelper.IsUnplayedBy(userId));
         allUnplayedBase = _queryHelpers.ApplyAccessFiltering(context, allUnplayedBase, filter);
         var allUnplayedCandidates = allUnplayedBase
             .Select(e => new
@@ -246,7 +246,7 @@ public class NextUpService : INextUpService
                 .Where(e => e.SeriesPresentationUniqueKey != null && seriesKeys.Contains(e.SeriesPresentationUniqueKey))
                 .Where(e => e.ParentIndexNumber != 0)
                 .Where(e => !e.IsVirtualItem)
-                .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
+                .Where(DescendantQueryHelper.IsPlayedBy(userId));
             allPlayedBase = _queryHelpers.ApplyAccessFiltering(context, allPlayedBase, filter);
             var allPlayedCandidates = allPlayedBase
                 .Select(e => new

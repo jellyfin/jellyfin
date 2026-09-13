@@ -201,6 +201,61 @@ public sealed class ItemCountServiceTests : IDisposable
     }
 
     [Fact]
+    public void GetCounts_PlayedAlternateVersion_CountThePrimaryAsPlayed()
+    {
+        var user = new User("alt-version-test", "provider", "reset");
+        var seriesId = Guid.NewGuid();
+        var primaryId = Guid.NewGuid();
+        var alternateId = Guid.NewGuid();
+
+        using (var context = CreateDbContext())
+        {
+            context.Users.Add(user);
+
+            var series = CreateItem(seriesId);
+            series.PresentationUniqueKey = "alt-version-series";
+            context.BaseItems.Add(series);
+
+            context.BaseItems.Add(CreateLeaf(primaryId));
+            var alternate = CreateLeaf(alternateId);
+            alternate.PrimaryVersionId = primaryId;
+            context.BaseItems.Add(alternate);
+            context.SaveChanges();
+
+            // Only the primary is counted as a leaf, as ApplyAccessFiltering leaves it in production.
+            AddAncestor(context, primaryId, seriesId);
+
+            context.LinkedChildren.Add(new LinkedChildEntity
+            {
+                ParentId = primaryId,
+                ChildId = alternateId,
+                ChildType = LinkedChildType.LocalAlternateVersion,
+                SortOrder = 0
+            });
+
+            // The file that was watched is the alternate, so the primary carries no played row.
+            context.UserData.Add(new UserData
+            {
+                ItemId = alternateId,
+                UserId = user.Id,
+                CustomDataKey = string.Empty,
+                Played = true,
+                Item = null,
+                User = null
+            });
+
+            context.SaveChanges();
+        }
+
+        var filter = new InternalItemsQuery(user);
+
+        // The per-item paths have to agree with the batch one, which the DTO uses interchangeably.
+        Assert.Equal(1, _service.GetPlayedCount(filter, seriesId));
+        Assert.Equal((1, 1), _service.GetPlayedAndTotalCount(filter, seriesId));
+        Assert.Equal((1, 1), _service.GetPlayedAndTotalCountBatch([seriesId], user)[seriesId]);
+    }
+
+    [Fact]
     public void GetChildCountBatch_MergedFolders_CountsDistinctChildKeys()
     {
         var seriesA = Guid.NewGuid();
