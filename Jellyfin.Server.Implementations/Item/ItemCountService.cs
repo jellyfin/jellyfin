@@ -414,7 +414,7 @@ public class ItemCountService : IItemCountService
         using var dbContext = _dbProvider.CreateDbContext();
 
         var baseQuery = BuildGroupedDescendantsQuery(dbContext, filter, ancestorId);
-        return baseQuery.Count(b => b.UserData!.Any(u => u.UserId == filter.User.Id && u.Played));
+        return baseQuery.Count(DescendantQueryHelper.IsPlayedBy(filter.User.Id));
     }
 
     /// <inheritdoc/>
@@ -719,7 +719,7 @@ public class ItemCountService : IItemCountService
     private static (int Played, int Total) GetPlayedAndTotalCountFromQuery(IQueryable<BaseItemEntity> query, Guid userId)
     {
         var result = query
-            .Select(b => b.UserData!.Any(u => u.UserId == userId && u.Played))
+            .Select(DescendantQueryHelper.IsPlayedBy(userId))
             .GroupBy(_ => 1)
             .OrderBy(g => g.Key)
             .Select(g => new
