@@ -811,5 +811,62 @@ namespace Jellyfin.Model.Tests
 
             Assert.Equal(expectedMethod, result.Method);
         }
-    }
+
+        private static DeviceProfile GetSingleTranscodeProfile(string videoCodec, string audioCodec, MediaStreamProtocol protocol)
+            => new DeviceProfile
+            {
+                Name = "TranscodeProbe",
+                TranscodingProfiles =
+                [
+                    new TranscodingProfile
+                    {
+                        Type = DlnaProfileType.Video,
+                        Context = EncodingContext.Streaming,
+                        Container = "mp4",
+                        Protocol = protocol,
+                        VideoCodec = videoCodec,
+                        AudioCodec = audioCodec
+                    }
+                ]
+            };
+
+        private static async ValueTask<MediaOptions> GetTranscodeMediaOptions(string source, DeviceProfile profile)
+        {
+            var mediaSource = await TestData<MediaSourceInfo>(source);
+
+            return new MediaOptions
+            {
+                ItemId = new Guid("11D229B7-2D48-4B95-9F9B-49F6AB75E613"),
+                MediaSourceId = mediaSource.Id,
+                MediaSources = [mediaSource],
+                DeviceId = "test-deviceId",
+                Profile = profile,
+                AllowAudioStreamCopy = true,
+                AllowVideoStreamCopy = true,
+                EnableDirectPlay = false,
+                EnableDirectStream = false
+            };
+        }
+
+        [Fact]
+        // A source track that carries no bitrate falls back to the default for the target codec, and
+        // that default needs a channel count. Without the source's count to fall back on it reads as
+        // fewer than two channels and answers 128000, so a 7.1 TrueHD track gets encoded as if it
+        // were mono.
+        public async Task BuildVideoItemWithBitrateLessSurroundSourceKeepsMultichannelBitrate()
+        {
+            var support = new Mock<ITranscoderSupport>();
+            support.Setup(s => s.CanEncodeToAudioCodec(It.IsAny<string>())).Returns(true);
+
+            var options = await GetTranscodeMediaOptions(
+                "mp4-hevc-truehd-nobitrate-15200k",
+                GetSingleTranscodeProfile("hevc", "eac3", MediaStreamProtocol.hls));
+
+            var streamInfo = new StreamBuilder(support.Object, new NullLogger<StreamBuilderTests>()).GetOptimalVideoStream(options);
+
+            Assert.NotNull(streamInfo);
+            Assert.NotEqual(128000, streamInfo.AudioBitrate);
+            Assert.Equal(1536000, streamInfo.AudioBitrate);
+        }
+}
 }

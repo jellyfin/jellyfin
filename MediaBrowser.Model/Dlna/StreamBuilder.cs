@@ -1235,7 +1235,14 @@ namespace MediaBrowser.Model.Dlna
                 }
                 else
                 {
-                    defaultBitrate = audioStream.BitRate ?? GetDefaultAudioBitrate(targetAudioCodec, targetAudioChannels);
+                    // A source without a bitrate falls back to the default for the target codec,
+                    // and that default needs a channel count to work with. Where the target channel
+                    // count is unknown, use the source's, because passing null makes
+                    // GetDefaultAudioBitrate read it as fewer than two channels and answer 128000:
+                    // a 7.1 TrueHD track whose container records no bitrate then gets encoded as if
+                    // it were mono. Measured on such a track: 128 kbps before, 1536 kbps after.
+                    defaultBitrate = audioStream.BitRate
+                        ?? GetDefaultAudioBitrate(targetAudioCodec, targetAudioChannels ?? audioStream.Channels);
                 }
 
                 // Seeing webm encoding failures when source has 1 audio channel and 22k bitrate.
