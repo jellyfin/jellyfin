@@ -964,15 +964,9 @@ namespace MediaBrowser.Model.Dlna
             }
             else if (videoStream is not null)
             {
-                // A copy can only ever serve the one codec the source file already has, so
-                // narrow down to it here - the audio codec gets the same treatment a few lines
-                // down (search "directAudioStream"), video just never did. Skip this and
-                // VideoCodecs keeps the full, comma-joined DirectPlayProfile.VideoCodec list,
-                // which still has to squeeze through the videoCodec query parameter's own
-                // 40-character regex a few calls later (see StreamInfo.ToUrl). List more than a
-                // handful of codecs in a device profile and that limit blows, so the very stream
-                // URL the server just generated gets rejected by that same server - ffmpeg never
-                // gets a chance to start, and the client just sees an instant, silent failure.
+                // Narrow to the actual codec being copied, same as directAudioStream below.
+                // Without this, VideoCodecs can exceed the 40-char videoCodec regex
+                // (StreamInfo.ToUrl) and the generated URL 400s before ffmpeg starts.
                 videoCodecs = [videoStream.Codec];
                 playlistItem.VideoCodecs = videoCodecs;
             }
