@@ -30,7 +30,7 @@ public class WebSocketControllerTests
         // thread affine, so a lock held across the await cannot be released by that thread.
         await Task.Run(() => gate.SetResult(), TestContext.Current.CancellationToken);
 
-        await disposing;
+        Assert.Null(await Record.ExceptionAsync(async () => await disposing));
     }
 
     [Fact]
