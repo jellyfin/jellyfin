@@ -424,6 +424,11 @@ namespace Jellyfin.LiveTv.Channels
         {
             info.RunTimeTicks ??= item.RunTimeTicks;
 
+            if (string.IsNullOrEmpty(info.Id))
+            {
+                info.Id = item.Id.ToString("N", CultureInfo.InvariantCulture);
+            }
+
             return info;
         }
 
