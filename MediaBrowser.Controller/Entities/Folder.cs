@@ -316,7 +316,7 @@ namespace MediaBrowser.Controller.Entities
             var dictionary = new Dictionary<Guid, BaseItem>();
 
             Children = null; // invalidate cached children.
-            var childrenList = Children.ToList();
+            var childrenList = GetChildrenForValidation();
 
             foreach (var child in childrenList)
             {
@@ -555,7 +555,7 @@ namespace MediaBrowser.Controller.Entities
                             && primaryVideo.OwnerId.IsEmpty()
                             && (primaryVideo.LocalAlternateVersions ?? []).Any(p => alternateVersionPaths.Contains(p)))
                         {
-                            var newPrimary = newItems
+                            var newPrimary = validChildren
                                 .OfType<Video>()
                                 .FirstOrDefault(v => (v.LocalAlternateVersions ?? [])
                                     .Any(p => (primaryVideo.LocalAlternateVersions ?? [])
@@ -597,6 +597,8 @@ namespace MediaBrowser.Controller.Entities
                         newPrimary.Name,
                         newPrimary.Id);
 
+                    await PromoteToPrimaryVersionAsync(newPrimary, cancellationToken).ConfigureAwait(false);
+
                     // Reroute collection/playlist references from old primary to new primary
                     await LibraryManager.RerouteLinkedChildReferencesAsync(oldPrimary.Id, newPrimary.Id).ConfigureAwait(false);
 
@@ -625,9 +627,12 @@ namespace MediaBrowser.Controller.Entities
                     LibraryManager.DeleteItem(oldPrimary, new DeleteOptions { DeleteFileLocation = false }, this, false);
                 }
 
-                // Demote old primaries that are now alternate versions of newly created primaries.
+                // Demote old primaries that are now alternate versions of another primary.
                 // This handles the case where a new file is added that becomes the new primary
-                // (e.g. movie-2 added, movie-3 was primary → movie-3 needs demotion).
+                // (e.g. movie-2 added, movie-3 was primary → movie-3 needs demotion), and the case
+                // where the file that takes over was already in the library and merely traded
+                // places with this one — so the new primary is looked up among all valid children
+                // rather than only the newly created ones.
                 // Items in replacedPrimaries are excluded (already in actuallyRemoved).
                 var oldPrimariesToDemote = new List<(Video OldPrimary, Video NewPrimary)>();
                 foreach (var item in itemsRemoved.Except(actuallyRemoved))
@@ -637,7 +642,7 @@ namespace MediaBrowser.Controller.Entities
                         && !string.IsNullOrEmpty(item.Path)
                         && alternateVersionPaths.Contains(item.Path))
                     {
-                        var newPrimary = newItems
+                        var newPrimary = validChildren
                             .OfType<Video>()
                             .FirstOrDefault(v => (v.LocalAlternateVersions ?? [])
                                 .Any(p => string.Equals(p, item.Path, StringComparison.OrdinalIgnoreCase)));
@@ -657,10 +662,13 @@ namespace MediaBrowser.Controller.Entities
                         newPrimary.Name,
                         newPrimary.Id);
 
+                    await PromoteToPrimaryVersionAsync(newPrimary, cancellationToken).ConfigureAwait(false);
+
                     // First: update old primary's alternate items to point to new primary.
                     // Order matters — update alternates FIRST so they don't get orphan-deleted
                     // when old primary's arrays are cleared.
-                    var oldAlternateIds = LibraryManager.GetLocalAlternateVersionIds(oldPrimary)
+                    var oldLocalAlternateIds = LibraryManager.GetLocalAlternateVersionIds(oldPrimary).ToHashSet();
+                    var oldAlternateIds = oldLocalAlternateIds
                         .Concat(LibraryManager.GetLinkedAlternateVersions(oldPrimary).Select(v => v.Id))
                         .Distinct()
                         .ToList();
@@ -670,7 +678,10 @@ namespace MediaBrowser.Controller.Entities
                         if (LibraryManager.GetItemById(altId) is Video altVideo && !altVideo.Id.Equals(newPrimary.Id))
                         {
                             altVideo.SetPrimaryVersionId(newPrimary.Id);
-                            altVideo.OwnerId = newPrimary.Id;
+
+                            // Only a version stored next to the new primary is owned by it; one that
+                            // was merged in by hand keeps its own row and must stay unowned.
+                            altVideo.OwnerId = oldLocalAlternateIds.Contains(altVideo.Id) ? newPrimary.Id : Guid.Empty;
                             await altVideo.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                         }
                     }
@@ -776,6 +787,23 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        private async Task PromoteToPrimaryVersionAsync(Video newPrimary, CancellationToken cancellationToken)
+        {
+            if (!newPrimary.PrimaryVersionId.HasValue && newPrimary.OwnerId.IsEmpty())
+            {
+                return;
+            }
+
+            Logger.LogInformation(
+                "Promoting {Name} ({Id}) to the primary version of its group",
+                newPrimary.Name,
+                newPrimary.Id);
+
+            newPrimary.SetPrimaryVersionId(null);
+            newPrimary.OwnerId = Guid.Empty;
+            await newPrimary.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+        }
+
         private async Task RefreshMetadataRecursive(IList<BaseItem> children, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
         {
             await RunTasks(
@@ -876,6 +904,17 @@ namespace MediaBrowser.Controller.Entities
             {
                 Parent = this,
                 GroupByPresentationUniqueKey = false,
+                DtoOptions = new DtoOptions(true)
+            });
+        }
+
+        private IReadOnlyList<BaseItem> GetChildrenForValidation()
+        {
+            return ItemRepository.GetItemList(new InternalItemsQuery
+            {
+                Parent = this,
+                GroupByPresentationUniqueKey = false,
+                IncludeAlternateVersions = true,
                 DtoOptions = new DtoOptions(true)
             });
         }
