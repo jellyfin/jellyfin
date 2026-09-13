@@ -60,20 +60,15 @@ namespace Emby.Server.Implementations.Library
                 var folderViewType = collectionFolder?.CollectionType;
 
                 // Playlist and BoxSet libraries require special handling because the folder only references linked items
-                if (folderViewType == CollectionType.boxsets)
+                if (folderViewType == CollectionType.playlists || folderViewType == CollectionType.boxsets)
                 {
-                    // Only the existence of one visible box set matters here, so probe the children
-                    // lazily and stop at the first hit.
-                    if (!folder.Children.Any(item => item.IsVisible(user)))
-                    {
-                        continue;
-                    }
-                }
-                else if (folderViewType == CollectionType.playlists)
-                {
+                    // Only visibility is asked of these, which reads stored columns. Folder.Children
+                    // would answer it from cache once warm, but it populates that cache with a query
+                    // for every field, which is the one this has to avoid on a cold start.
                     var items = folder.GetItemList(new InternalItemsQuery(user)
                     {
-                        ParentId = folder.ParentId
+                        ParentId = folder.ParentId,
+                        DtoOptions = DtoOptions.StoredColumnsOnly
                     });
 
                     if (!items.Any(item => item.IsVisible(user)))
