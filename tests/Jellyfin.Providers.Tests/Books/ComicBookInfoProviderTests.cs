@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Books.ComicBookInfo;
 using MediaBrowser.Providers.Books.ComicBookInfo.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -23,6 +25,8 @@ public sealed class ComicBookInfoProviderTests : IDisposable
 
     private readonly string _directory;
     private readonly ComicBookInfoFormat _comicBookInfoFormat;
+    private readonly Mock<ILocalizationManager> _localizationManager;
+    private readonly ComicBookInfoProvider _comicBookInfoProvider;
 
     public ComicBookInfoProviderTests()
     {
@@ -30,6 +34,19 @@ public sealed class ComicBookInfoProviderTests : IDisposable
         Directory.CreateDirectory(_directory);
 
         _comicBookInfoFormat = GenerateTestData();
+
+        // stands in for the ISO 639-2 table LocalizationManager reads, which is covered by its own tests
+        _localizationManager = new Mock<ILocalizationManager>(MockBehavior.Strict);
+        _localizationManager
+            .Setup(lm => lm.FindLanguageInfo(It.IsAny<string>()))
+            .Returns((string language) => language.StartsWith("en", StringComparison.OrdinalIgnoreCase)
+                ? new CultureDto("English", "English", "en", ["eng"])
+                : null);
+
+        _comicBookInfoProvider = new ComicBookInfoProvider(
+            Mock.Of<IFileSystem>(),
+            NullLogger<ComicBookInfoProvider>.Instance,
+            _localizationManager.Object);
     }
 
     public void Dispose()
@@ -45,7 +62,7 @@ public sealed class ComicBookInfoProviderTests : IDisposable
     {
         var logger = new Mock<ILogger<ComicBookInfoProvider>>();
         var path = CreateArchive(comment);
-        var provider = new ComicBookInfoProvider(CreateFileSystem(path), logger.Object);
+        var provider = new ComicBookInfoProvider(CreateFileSystem(path), logger.Object, _localizationManager.Object);
 
         var result = await provider.ReadMetadata(new ItemInfo(new Book { Path = path }), Mock.Of<IDirectoryService>(), CancellationToken.None);
 
@@ -59,7 +76,7 @@ public sealed class ComicBookInfoProviderTests : IDisposable
     {
         var logger = new Mock<ILogger<ComicBookInfoProvider>>();
         var path = CreateArchive("Created by some packer");
-        var provider = new ComicBookInfoProvider(CreateFileSystem(path), logger.Object);
+        var provider = new ComicBookInfoProvider(CreateFileSystem(path), logger.Object, _localizationManager.Object);
 
         var result = await provider.ReadMetadata(new ItemInfo(new Book { Path = path }), Mock.Of<IDirectoryService>(), CancellationToken.None);
 
@@ -73,7 +90,7 @@ public sealed class ComicBookInfoProviderTests : IDisposable
     {
         var logger = new Mock<ILogger<ComicBookInfoProvider>>();
         var path = CreateArchive(ValidComment);
-        var provider = new ComicBookInfoProvider(CreateFileSystem(path), logger.Object);
+        var provider = new ComicBookInfoProvider(CreateFileSystem(path), logger.Object, _localizationManager.Object);
 
         var result = await provider.ReadMetadata(new ItemInfo(new Book { Path = path }), Mock.Of<IDirectoryService>(), CancellationToken.None);
 
@@ -238,23 +255,21 @@ public sealed class ComicBookInfoProviderTests : IDisposable
         Assert.Equal(["Rorschach", "Ozymandias", "Nite Owl"], actual.Tags);
     }
 
-    [Fact]
-    public void ReadCultureInfoInto_Success()
+    [Fact(DisplayName = "Check that a language display name is mapped to its ISO code.")]
+    public void ReadLanguageCode_Success()
     {
         Assert.NotNull(_comicBookInfoFormat.Metadata);
         Assert.NotNull(_comicBookInfoFormat.Metadata.Language);
 
-        // ComicBookInfo stores the language as a display name rather than an ISO code. ICU accepts
-        // it as a custom culture, so the name is passed through instead of being mapped to "en".
-        var actual = ComicBookInfoProvider.ReadCultureInfoInto(_comicBookInfoFormat.Metadata.Language);
+        var actual = _comicBookInfoProvider.ReadLanguageCode(_comicBookInfoFormat.Metadata.Language);
 
-        Assert.Equal("english", actual);
+        Assert.Equal("en", actual);
     }
 
     [Fact]
-    public void ReadCultureInfoInto_UnknownLanguage_ReturnsNull()
+    public void ReadLanguageCode_UnknownLanguage_ReturnsNull()
     {
-        Assert.Null(ComicBookInfoProvider.ReadCultureInfoInto("notalanguage"));
+        Assert.Null(_comicBookInfoProvider.ReadLanguageCode("notalanguage"));
     }
 
     private static void VerifyLogged(Mock<ILogger<ComicBookInfoProvider>> logger, LogLevel level, string message)
