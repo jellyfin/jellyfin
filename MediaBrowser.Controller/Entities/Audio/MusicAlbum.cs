@@ -165,6 +165,18 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
+            try
+            {
+                await RefreshAllMetadataInternal(refreshOptions, progress, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                ReleaseCachedChildren();
+            }
+        }
+
+        private async Task RefreshAllMetadataInternal(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
+        {
             var items = GetRecursiveChildren();
 
             var totalItems = items.Count;
