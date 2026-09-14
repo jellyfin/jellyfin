@@ -616,14 +616,8 @@ public class ItemCountService : IItemCountService
             .Where(DescendantQueryHelper.IsCountableLeaf);
         leafItems = _queryHelpers.ApplyAccessFiltering(dbContext, leafItems, filter);
 
-        // The same predicate the per-item paths use, applied as a filter so the definition of "played"
-        // lives in one place: the flag below is membership of this set rather than a second copy of it.
-        var playedLeafIds = leafItems
-            .Where(DescendantQueryHelper.IsPlayedBy(userId))
-            .Select(b => b.Id);
-
         var playedLeafItems = leafItems
-            .Select(b => new { b.Id, Played = playedLeafIds.Contains(b.Id) });
+            .Select(DescendantQueryHelper.PlayedStateBy(userId));
 
         var ancestorLeaves = dbContext.AncestorIds
             .WhereOneOrMany(folderIdsArray, a => a.ParentItemId)

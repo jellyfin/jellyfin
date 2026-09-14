@@ -11,6 +11,61 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql(
+                """
+                DROP TABLE IF EXISTS "OrphanedBaseItemIds";
+                CREATE TEMPORARY TABLE "OrphanedBaseItemIds" ("Id" TEXT NOT NULL PRIMARY KEY);
+
+                INSERT INTO "OrphanedBaseItemIds" ("Id")
+                WITH RECURSIVE Orphan ("Id") AS (
+                    SELECT Child."Id"
+                    FROM "BaseItems" AS Child
+                    WHERE Child."ParentId" IS NOT NULL
+                      AND NOT EXISTS (SELECT 1 FROM "BaseItems" AS Parent WHERE Parent."Id" = Child."ParentId")
+                    UNION
+                    SELECT Descendant."Id"
+                    FROM "BaseItems" AS Descendant
+                    INNER JOIN Orphan ON Descendant."ParentId" = Orphan."Id"
+                )
+                SELECT "Id" FROM Orphan;
+
+                -- Keep the play state of the doomed items the way ItemPersistenceService does when it
+                -- deletes an item: reattach it to the placeholder item instead of letting the
+                -- FK_UserData_BaseItems_ItemId cascade wipe it. The placeholder can only hold one row
+                -- per (UserId, CustomDataKey), so resolve collisions before repointing anything.
+                DELETE FROM "UserData"
+                WHERE "ItemId" = '00000000-0000-0000-0000-000000000001'
+                  AND EXISTS (
+                      SELECT 1
+                      FROM "UserData" AS Doomed
+                      INNER JOIN "OrphanedBaseItemIds" AS Orphan ON Orphan."Id" = Doomed."ItemId"
+                      WHERE Doomed."UserId" = "UserData"."UserId"
+                        AND Doomed."CustomDataKey" = "UserData"."CustomDataKey");
+
+                DELETE FROM "UserData"
+                WHERE "ItemId" IN (SELECT "Id" FROM "OrphanedBaseItemIds")
+                  AND "rowid" NOT IN (
+                      SELECT MIN("rowid")
+                      FROM "UserData"
+                      WHERE "ItemId" IN (SELECT "Id" FROM "OrphanedBaseItemIds")
+                      GROUP BY "UserId", "CustomDataKey");
+
+                UPDATE "UserData"
+                SET "ItemId" = '00000000-0000-0000-0000-000000000001',
+                    "RetentionDate" = datetime('now')
+                WHERE "ItemId" IN (SELECT "Id" FROM "OrphanedBaseItemIds");
+
+                -- FK_LinkedChildren_BaseItems_{ParentId,ChildId} are NO ACTION, so these rows have to
+                -- go by hand or the delete below fails on them.
+                DELETE FROM "LinkedChildren"
+                WHERE "ParentId" IN (SELECT "Id" FROM "OrphanedBaseItemIds")
+                   OR "ChildId" IN (SELECT "Id" FROM "OrphanedBaseItemIds");
+
+                DELETE FROM "BaseItems" WHERE "Id" IN (SELECT "Id" FROM "OrphanedBaseItemIds");
+
+                DROP TABLE "OrphanedBaseItemIds";
+                """);
+
             // Normalize OwnerId to uppercase GUID format
             migrationBuilder.Sql(
                 @"UPDATE BaseItems
