@@ -73,7 +73,7 @@ public class SearchController : BaseJellyfinApiController
     /// <param name="includePeople">Optional filter whether to include people.</param>
     /// <param name="includeMedia">Optional filter whether to include media.</param>
     /// <param name="includeGenres">Optional filter whether to include genres.</param>
-    /// <param name="includeStudios">Optional filter whether to include studios.</param>
+    /// <param name="includeCompanies">Optional filter whether to include companies.</param>
     /// <param name="includeArtists">Optional filter whether to include artists.</param>
     /// <response code="200">Search hint returned.</response>
     /// <returns>An <see cref="SearchHintResult"/> with the results of the search.</returns>
@@ -97,7 +97,7 @@ public class SearchController : BaseJellyfinApiController
         [FromQuery] bool includePeople = true,
         [FromQuery] bool includeMedia = true,
         [FromQuery] bool includeGenres = true,
-        [FromQuery] bool includeStudios = true,
+        [FromQuery] bool includeCompanies = true,
         [FromQuery] bool includeArtists = true)
     {
         userId = RequestHelpers.GetUserId(User, userId);
@@ -109,7 +109,7 @@ public class SearchController : BaseJellyfinApiController
             IncludeGenres = includeGenres,
             IncludeMedia = includeMedia,
             IncludePeople = includePeople,
-            IncludeStudios = includeStudios,
+            IncludeCompanies = includeCompanies,
             StartIndex = startIndex,
             UserId = userId.Value,
             IncludeItemTypes = includeItemTypes,

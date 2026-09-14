@@ -8,27 +8,27 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Library.Validators;
 
 /// <summary>
-/// Class MusicGenresPostScanTask.
+/// Class CompaniesPostScanTask.
 /// </summary>
-public class StudiosPostScanTask : ILibraryPostScanTask
+public class CompaniesPostScanTask : ILibraryPostScanTask
 {
     /// <summary>
     /// The _library manager.
     /// </summary>
     private readonly ILibraryManager _libraryManager;
 
-    private readonly ILogger<StudiosValidator> _logger;
+    private readonly ILogger<CompaniesValidator> _logger;
     private readonly IItemRepository _itemRepo;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StudiosPostScanTask" /> class.
+    /// Initializes a new instance of the <see cref="CompaniesPostScanTask" /> class.
     /// </summary>
     /// <param name="libraryManager">The library manager.</param>
     /// <param name="logger">The logger.</param>
     /// <param name="itemRepo">The item repository.</param>
-    public StudiosPostScanTask(
+    public CompaniesPostScanTask(
         ILibraryManager libraryManager,
-        ILogger<StudiosValidator> logger,
+        ILogger<CompaniesValidator> logger,
         IItemRepository itemRepo)
     {
         _libraryManager = libraryManager;
@@ -44,6 +44,6 @@ public class StudiosPostScanTask : ILibraryPostScanTask
     /// <returns>Task.</returns>
     public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        return new StudiosValidator(_libraryManager, _logger, _itemRepo).Run(progress, cancellationToken);
+        return new CompaniesValidator(_libraryManager, _logger, _itemRepo).Run(progress, cancellationToken);
     }
 }

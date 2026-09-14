@@ -47,7 +47,7 @@ public static class ComicInfoReader
                 book.AddGenre(genre);
             }
         });
-        hasFoundMetadata |= ReadStringInto(xml, "ComicInfo/Publisher", publisher => book.SetStudios([publisher]));
+        hasFoundMetadata |= ReadStringInto(xml, "ComicInfo/Publisher", publisher => book.SetCompanies([publisher], CompanyKind.Publisher));
 
         hasFoundMetadata |= ReadStringInto(xml, "ComicInfo/AlternateSeries", title =>
         {

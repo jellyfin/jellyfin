@@ -49,7 +49,7 @@ public class BoxSetMetadataService : MetadataService<BoxSet, BoxSetInfo>
     protected override bool EnableUpdatingOfficialRatingFromChildren => true;
 
     /// <inheritdoc />
-    protected override bool EnableUpdatingStudiosFromChildren => true;
+    protected override bool EnableUpdatingCompaniesFromChildren => true;
 
     /// <inheritdoc />
     protected override bool EnableUpdatingPremiereDateFromChildren => true;

@@ -1007,7 +1007,7 @@ namespace Jellyfin.LiveTv.Channels
             {
                 item.Name = info.Name;
                 item.Genres = info.Genres.ToArray();
-                item.Studios = info.Studios.ToArray();
+                item.SetCompanies(info.Studios, CompanyKind.Studio);
                 item.CommunityRating = info.CommunityRating;
                 item.Overview = info.Overview;
                 item.IndexNumber = info.IndexNumber;

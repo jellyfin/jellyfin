@@ -26,7 +26,7 @@ public sealed class MovieSimilarItemsProvider : ILocalSimilarItemsProvider<Movie
 {
     private const int GenreWeight = 10;
     private const int TagWeight = 5;
-    private const int StudioWeight = 5;
+    private const int CompanyWeight = 5;
     private const int DirectorWeight = 50;
     private const int ActorWeight = 15;
 
@@ -37,8 +37,7 @@ public sealed class MovieSimilarItemsProvider : ILocalSimilarItemsProvider<Movie
     private static readonly (ItemValueType Type, int Weight)[] _itemValueDimensions =
     [
         (ItemValueType.Genre, GenreWeight),
-        (ItemValueType.Tags, TagWeight),
-        (ItemValueType.Studios, StudioWeight)
+        (ItemValueType.Tags, TagWeight)
     ];
 
     private static readonly Dictionary<string, int> _personTypeWeights = new(StringComparer.Ordinal)
@@ -266,6 +265,26 @@ public sealed class MovieSimilarItemsProvider : ILocalSimilarItemsProvider<Movie
 
             var keyToCandidates = candidateRows.GroupBy(r => r.Key).ToDictionary(g => g.Key, g => g.Select(x => x.ItemId).ToList());
             ApplyDimensionScores(sourceIds, sourceMap, keyToCandidates, weight, result);
+        }
+
+        // Companies have a table of their own, so they are scored off their mapping table rather
+        // than as one more item value dimension.
+        var companySourceRows = await context.CompanyBaseItemMap.AsNoTracking()
+            .Where(m => sourceIds.Contains(m.ItemId))
+            .Select(m => new { m.ItemId, Key = m.CompanyId })
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        var companySourceMap = companySourceRows.GroupBy(r => r.ItemId).ToDictionary(g => g.Key, g => g.Select(x => x.Key).ToHashSet());
+        var allCompanyIds = companySourceMap.Values.SelectMany(v => v).Distinct().ToList();
+        if (allCompanyIds.Count > 0)
+        {
+            var companyCandidateRows = await context.CompanyBaseItemMap.AsNoTracking()
+                .Where(m => !m.Item.PrimaryVersionId.HasValue && allCompanyIds.Contains(m.CompanyId))
+                .Select(m => new { m.ItemId, Key = m.CompanyId })
+                .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+            var companyToCandidates = companyCandidateRows.GroupBy(r => r.Key).ToDictionary(g => g.Key, g => g.Select(x => x.ItemId).ToList());
+            ApplyDimensionScores(sourceIds, companySourceMap, companyToCandidates, CompanyWeight, result);
         }
 
         var personSourceRows = await context.PeopleBaseItemMap.AsNoTracking()

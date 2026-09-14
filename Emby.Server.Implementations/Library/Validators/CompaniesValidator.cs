@@ -12,9 +12,9 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Library.Validators;
 
 /// <summary>
-/// Class StudiosValidator.
+/// Class CompaniesValidator.
 /// </summary>
-public class StudiosValidator
+public class CompaniesValidator
 {
     /// <summary>
     /// The library manager.
@@ -26,15 +26,15 @@ public class StudiosValidator
     /// <summary>
     /// The logger.
     /// </summary>
-    private readonly ILogger<StudiosValidator> _logger;
+    private readonly ILogger<CompaniesValidator> _logger;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StudiosValidator" /> class.
+    /// Initializes a new instance of the <see cref="CompaniesValidator" /> class.
     /// </summary>
     /// <param name="libraryManager">The library manager.</param>
     /// <param name="logger">The logger.</param>
     /// <param name="itemRepo">The item repository.</param>
-    public StudiosValidator(ILibraryManager libraryManager, ILogger<StudiosValidator> logger, IItemRepository itemRepo)
+    public CompaniesValidator(ILibraryManager libraryManager, ILogger<CompaniesValidator> logger, IItemRepository itemRepo)
     {
         _libraryManager = libraryManager;
         _logger = logger;
@@ -49,38 +49,33 @@ public class StudiosValidator
     /// <returns>Task.</returns>
     public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        var names = _itemRepo.GetStudioNames();
-        var existingStudioIds = _libraryManager.GetItemIds(new InternalItemsQuery
+        // A company left without a single credit would otherwise keep its by-name item off the
+        // sweep at the end of this task, which only sees companies that are gone.
+        var orphaned = _itemRepo.DeleteOrphanedCompanies();
+        if (orphaned > 0)
         {
-            IncludeItemTypes = [BaseItemKind.Studio]
+            _logger.LogDebug("Deleted {Count} companies nothing is credited to any more", orphaned);
+        }
+
+        var companies = _itemRepo.GetAllCompanies();
+        var existingCompanyIds = _libraryManager.GetItemIds(new InternalItemsQuery
+        {
+            IncludeItemTypes = [BaseItemKind.Company]
         }).ToHashSet();
 
-        var existingStudios = _libraryManager.GetItemList(new InternalItemsQuery
-        {
-            IncludeItemTypes = [BaseItemKind.Studio]
-        }).Cast<Studio>()
-        .GroupBy(s => s.Name, StringComparer.OrdinalIgnoreCase)
-        .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
-
         var numComplete = 0;
-        var count = names.Count;
+        var count = companies.Count;
         var refreshed = 0;
 
-        foreach (var name in names)
+        foreach (var (id, name) in companies)
         {
             try
             {
-                Studio? item = null;
-                if (existingStudios.TryGetValue(name, out var existingStudio))
+                // A company and its by-name item share an id, so one missing from the item ids is
+                // exactly one this run has to create.
+                if (!existingCompanyIds.Contains(id))
                 {
-                    item = existingStudio;
-                }
-
-                // Fall back to GetStudio if not found (creates new item if needed)
-                item ??= _libraryManager.GetStudio(name);
-
-                if (!existingStudioIds.Contains(item.Id))
-                {
+                    var item = _libraryManager.GetCompany(name);
                     await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                     refreshed++;
                 }
@@ -92,7 +87,7 @@ public class StudiosValidator
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error refreshing {StudioName}", name);
+                _logger.LogError(ex, "Error refreshing {CompanyName}", name);
             }
 
             numComplete++;
@@ -103,12 +98,12 @@ public class StudiosValidator
             progress.Report(percent);
         }
 
-        _logger.LogInformation("Refreshed metadata for {RefreshedCount} new studios out of {TotalCount} total", refreshed, count);
+        _logger.LogInformation("Refreshed metadata for {RefreshedCount} new companies out of {TotalCount} total", refreshed, count);
 
         var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
         {
-            IncludeItemTypes = [BaseItemKind.Studio],
-            IsDeadStudio = true,
+            IncludeItemTypes = [BaseItemKind.Company],
+            IsDeadCompany = true,
             IsLocked = false
         });
 

@@ -393,7 +393,7 @@ public class RecordingsMetadataManager
                     await writer.WriteElementStringAsync(null, "tagline", null, item.Tagline).ConfigureAwait(false);
                 }
 
-                foreach (var studio in item.Studios)
+                foreach (var studio in item.GetCompanyNames(CompanyKind.Studio))
                 {
                     await writer.WriteElementStringAsync(null, "studio", null, studio).ConfigureAwait(false);
                 }

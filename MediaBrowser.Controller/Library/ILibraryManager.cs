@@ -131,11 +131,11 @@ namespace MediaBrowser.Controller.Library
         MusicArtist GetArtist(string name, DtoOptions options);
 
         /// <summary>
-        /// Gets a Studio.
+        /// Gets a Company.
         /// </summary>
-        /// <param name="name">The name of the studio.</param>
-        /// <returns>Task{Studio}.</returns>
-        Studio GetStudio(string name);
+        /// <param name="name">The name of the company.</param>
+        /// <returns>The company.</returns>
+        Company GetCompany(string name);
 
         /// <summary>
         /// Gets a Genre.
@@ -715,7 +715,7 @@ namespace MediaBrowser.Controller.Library
         /// <returns>The item id for the name.</returns>
         Guid GetPersonId(string name);
 
-        Guid GetStudioId(string name);
+        Guid GetCompanyId(string name);
 
         Guid GetGenreId(string name);
 
@@ -735,7 +735,7 @@ namespace MediaBrowser.Controller.Library
 
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery query);
 
-        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery query);
+        QueryResult<BaseItem> GetCompanies(InternalItemsQuery query);
 
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery query);
 

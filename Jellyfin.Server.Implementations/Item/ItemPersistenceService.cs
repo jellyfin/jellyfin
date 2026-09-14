@@ -355,6 +355,8 @@ public class ItemPersistenceService : IItemPersistenceService
             context.ItemValuesMap.RemoveRange(itemMappedValues);
         }
 
+        SaveCompanies(context, tuples, ids);
+
         var itemsWithAncestors = tuples
             .Where(t => t.Item.SupportsAncestors && t.AncestorIds != null)
             .Select(t => t.Item.Id)
@@ -691,6 +693,67 @@ public class ItemPersistenceService : IItemPersistenceService
         transaction.Commit();
     }
 
+    private static void SaveCompanies(
+        JellyfinDbContext context,
+        IReadOnlyList<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey, List<string> InheritedTags)> tuples,
+        IReadOnlyList<Guid> ids)
+    {
+        // Two names that clean to the same value are the same company, so the id dedupes them.
+        // One company can be credited twice on an item, once per kind, so the kind dedupes with it.
+        var companiesByItem = tuples
+            .Select(e => (e.Item, Companies: e.Item.Companies
+                .Where(c => !string.IsNullOrWhiteSpace(c.Name))
+                .Select(c => (Id: Company.GetCompanyId(c.Name), c.Name, c.Type))
+                .DistinctBy(c => (c.Id, c.Type))
+                .ToArray()))
+            .ToArray();
+
+        var allCompanies = companiesByItem.SelectMany(e => e.Companies).DistinctBy(e => e.Id).ToArray();
+        var allCompanyIds = allCompanies.Select(e => e.Id).ToArray();
+
+        var existingCompanyIds = context.Companies
+            .Where(e => allCompanyIds.Contains(e.Id))
+            .Select(e => e.Id)
+            .ToHashSet();
+
+        context.Companies.AddRange(allCompanies
+            .Where(e => !existingCompanyIds.Contains(e.Id))
+            .Select(e => new CompanyEntity()
+            {
+                Id = e.Id,
+                Name = e.Name,
+                CleanName = e.Name.GetCleanValue()
+            }));
+
+        var mappedCompanies = context.CompanyBaseItemMap.Where(e => ids.Contains(e.ItemId)).ToList();
+
+        foreach (var (item, companies) in companiesByItem)
+        {
+            var itemMappedCompanies = mappedCompanies.Where(e => e.ItemId == item.Id).ToList();
+            foreach (var company in companies)
+            {
+                var existingMap = itemMappedCompanies.FirstOrDefault(f => f.CompanyId == company.Id && f.Type == (CompanyKindEntity)company.Type);
+                if (existingMap is null)
+                {
+                    context.CompanyBaseItemMap.Add(new CompanyBaseItemMap()
+                    {
+                        Item = null!,
+                        ItemId = item.Id,
+                        Company = null!,
+                        CompanyId = company.Id,
+                        Type = (CompanyKindEntity)company.Type
+                    });
+                }
+                else
+                {
+                    itemMappedCompanies.Remove(existingMap);
+                }
+            }
+
+            context.CompanyBaseItemMap.RemoveRange(itemMappedCompanies);
+        }
+    }
+
     private static List<(ItemValueType MagicNumber, string Value)> GetItemValuesToSave(BaseItemDto item, List<string> inheritedTags)
     {
         var list = new List<(ItemValueType, string)>();
@@ -706,7 +769,6 @@ public class ItemPersistenceService : IItemPersistenceService
         }
 
         list.AddRange(item.Genres.Select(i => (ItemValueType.Genre, i)));
-        list.AddRange(item.Studios.Select(i => (ItemValueType.Studios, i)));
         list.AddRange(item.Tags.Select(i => (ItemValueType.Tags, i)));
 
         list.AddRange(inheritedTags.Select(i => (ItemValueType.InheritedTags, i)));

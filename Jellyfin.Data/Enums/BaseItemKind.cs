@@ -54,6 +54,11 @@ namespace Jellyfin.Data.Enums
         CollectionFolder,
 
         /// <summary>
+        /// Item is company.
+        /// </summary>
+        Company,
+
+        /// <summary>
         /// Item is episode.
         /// </summary>
         Episode,
@@ -155,11 +160,6 @@ namespace Jellyfin.Data.Enums
         /// Item is series.
         /// </summary>
         Series,
-
-        /// <summary>
-        /// Item is studio.
-        /// </summary>
-        Studio,
 
         /// <summary>
         /// Item is trailer.

@@ -411,11 +411,11 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Studios))
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Companies))
             {
-                if (video.Studios.Length == 0 || replaceData)
+                if (video.Companies.Length == 0 || replaceData)
                 {
-                    video.SetStudios(data.Studios);
+                    video.SetCompanies(data.Studios, CompanyKind.Studio);
                 }
             }
 

@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Emby.Server.Implementations.Data;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
@@ -595,6 +596,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         return new ItemValue
         {
             ItemValueId = Guid.NewGuid(),
+            // 3 was Studios, which MigrateStudiosToCompanies moves into the Companies table.
             Type = (ItemValueType)reader.GetInt32(1),
             Value = reader.GetString(2),
             CleanValue = reader.GetString(3),
@@ -1081,7 +1083,9 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         if (reader.TryGetString(index++, out var studios))
         {
-            entity.Studios = studios;
+            entity.Companies = CompanyInfo.Pack(studios
+                .Split('|', StringSplitOptions.RemoveEmptyEntries)
+                .Select(e => new CompanyInfo { Name = e, Type = CompanyKind.Studio }));
         }
 
         if (reader.TryGetString(index++, out var tags))

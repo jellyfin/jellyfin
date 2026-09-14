@@ -248,7 +248,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             if (movieResult.ProductionCompanies is not null)
             {
-                movie.SetStudios(movieResult.ProductionCompanies.Select(c => c.Name));
+                movie.SetCompanies(movieResult.ProductionCompanies.Select(c => c.Name), CompanyKind.Studio);
             }
 
             var genres = movieResult.Genres;

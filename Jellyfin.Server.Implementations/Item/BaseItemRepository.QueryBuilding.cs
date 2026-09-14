@@ -554,6 +554,13 @@ public sealed partial class BaseItemRepository
                     && context.PeopleBaseItemMap.Any(m => m.PeopleId == p.Id && accessibleItems.Any(i => i.Id == m.ItemId))));
         }
 
+        var companyType = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Company];
+        if (itemByNameTypes.Contains(companyType))
+        {
+            baseQuery = baseQuery.Where(e => e.Type != companyType
+                || context.CompanyBaseItemMap.Any(m => m.CompanyId == e.Id && accessibleItems.Any(i => i.Id == m.ItemId)));
+        }
+
         foreach (var (kind, valueTypes) in _itemByNameValueTypes)
         {
             var typeName = _itemTypeLookup.BaseItemKindNames[kind];

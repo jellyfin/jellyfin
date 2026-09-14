@@ -75,11 +75,11 @@ public interface IItemRepository
     QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery filter);
 
     /// <summary>
-    /// Gets studios with item counts.
+    /// Gets the by-name items of the companies matching a query.
     /// </summary>
     /// <param name="filter">The query filter.</param>
-    /// <returns>The studios and their item counts.</returns>
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery filter);
+    /// <returns>The companies.</returns>
+    QueryResult<BaseItem> GetCompanies(InternalItemsQuery filter);
 
     /// <summary>
     /// Gets artists with item counts.
@@ -109,10 +109,16 @@ public interface IItemRepository
     IReadOnlyList<string> GetMusicGenreNames();
 
     /// <summary>
-    /// Gets all studio names.
+    /// Gets all companies.
     /// </summary>
-    /// <returns>The list of studio names.</returns>
-    IReadOnlyList<string> GetStudioNames();
+    /// <returns>The companies.</returns>
+    IReadOnlyList<(Guid Id, string Name)> GetAllCompanies();
+
+    /// <summary>
+    /// Deletes all companies that are not credited on any item.
+    /// </summary>
+    /// <returns>The number of companies deleted.</returns>
+    int DeleteOrphanedCompanies();
 
     /// <summary>
     /// Gets all genre names.

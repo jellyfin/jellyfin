@@ -166,9 +166,9 @@ namespace MediaBrowser.Model.Querying
         SpecialEpisodeNumbers,
 
         /// <summary>
-        /// The studios of the item.
+        /// The companies credited on the item.
         /// </summary>
-        Studios,
+        Companies,
 
         /// <summary>
         /// The taglines of the item.

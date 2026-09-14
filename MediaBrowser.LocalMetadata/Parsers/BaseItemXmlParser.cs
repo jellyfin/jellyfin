@@ -256,9 +256,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     item.IsLocked = string.Equals(reader.ReadNormalizedString(), "true", StringComparison.OrdinalIgnoreCase);
                     break;
                 case "Network":
+                    // Written by older versions, which had nowhere but the studios to put a network.
                     foreach (var name in reader.GetStringArray())
                     {
-                        item.AddStudio(name);
+                        item.AddCompany(name, CompanyKind.Network);
                     }
 
                     break;
@@ -414,8 +415,24 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         break;
                     }
 
+                case "Companies":
+                    {
+                        if (!reader.IsEmptyElement)
+                        {
+                            using var subtree = reader.ReadSubtree();
+                            FetchFromCompaniesNode(subtree, item);
+                        }
+                        else
+                        {
+                            reader.Read();
+                        }
+
+                        break;
+                    }
+
                 case "Studios":
                     {
+                        // Written by older versions, before companies had a kind.
                         if (!reader.IsEmptyElement)
                         {
                             using var subtree = reader.ReadSubtree();
@@ -743,11 +760,53 @@ namespace MediaBrowser.LocalMetadata.Parsers
         }
 
         /// <summary>
+        /// Fetches from companies node.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <param name="item">The item.</param>
+        private static void FetchFromCompaniesNode(XmlReader reader, T item)
+        {
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "Company":
+                            if (!Enum.TryParse<CompanyKind>(reader.GetAttribute("Type"), out var companyKind))
+                            {
+                                companyKind = CompanyKind.Studio;
+                            }
+
+                            var company = reader.ReadNormalizedString();
+                            if (!string.IsNullOrEmpty(company))
+                            {
+                                item.AddCompany(company, companyKind);
+                            }
+
+                            break;
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+                else
+                {
+                    reader.Read();
+                }
+            }
+        }
+
+        /// <summary>
         /// Fetches from studios node.
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <param name="item">The item.</param>
-        private void FetchFromStudiosNode(XmlReader reader, T item)
+        private static void FetchFromStudiosNode(XmlReader reader, T item)
         {
             reader.MoveToContent();
             reader.Read();
@@ -763,7 +822,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             var studio = reader.ReadNormalizedString();
                             if (!string.IsNullOrEmpty(studio))
                             {
-                                item.AddStudio(studio);
+                                item.AddCompany(studio, CompanyKind.Studio);
                             }
 
                             break;

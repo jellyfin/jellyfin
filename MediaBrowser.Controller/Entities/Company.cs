@@ -5,16 +5,18 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using MediaBrowser.Common.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
-    /// Class Studio.
+    /// Class Company.
     /// </summary>
     [Common.RequiresSourceSerialisation]
-    public class Studio : BaseItem, IItemByName
+    public class Company : BaseItem, IItemByName
     {
         /// <summary>
         /// Gets the folder containing the item.
@@ -66,9 +68,25 @@ namespace MediaBrowser.Controller.Entities
 
         public IReadOnlyList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
-            query.StudioIds = new[] { Id };
+            query.CompanyIds = new[] { Id };
 
             return LibraryManager.GetItemList(query);
+        }
+
+        /// <summary>
+        /// Gets the id of the company with this name, without looking it up.
+        /// </summary>
+        /// <remarks>
+        /// What the company did is not part of its identity: a company that is reclassified keeps
+        /// its id, and with it the artwork and user data hanging off its by-name item.
+        /// </remarks>
+        /// <param name="name">The company name.</param>
+        /// <returns>The company id.</returns>
+        public static Guid GetCompanyId(string name)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(name);
+
+            return ("Company-" + name.GetCleanValue()).GetMD5();
         }
 
         public static string GetPath(string name)
@@ -80,7 +98,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var validName = normalizeName ? GetItemByNameFolderName(name) : name;
 
-            return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.StudioPath, validName);
+            return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.CompanyPath, validName);
         }
 
         private string GetRebasedPath()

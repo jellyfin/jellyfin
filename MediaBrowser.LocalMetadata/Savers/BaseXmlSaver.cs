@@ -341,13 +341,16 @@ namespace MediaBrowser.LocalMetadata.Savers
                 await writer.WriteEndElementAsync().ConfigureAwait(false);
             }
 
-            if (item.Studios.Length > 0)
+            if (item.Companies.Length > 0)
             {
-                await writer.WriteStartElementAsync(null, "Studios", null).ConfigureAwait(false);
+                await writer.WriteStartElementAsync(null, "Companies", null).ConfigureAwait(false);
 
-                foreach (var studio in item.Studios)
+                foreach (var company in item.Companies)
                 {
-                    await writer.WriteElementStringAsync(null, "Studio", null, studio).ConfigureAwait(false);
+                    await writer.WriteStartElementAsync(null, "Company", null).ConfigureAwait(false);
+                    await writer.WriteAttributeStringAsync(null, "Type", null, company.Type.ToString()).ConfigureAwait(false);
+                    await writer.WriteStringAsync(company.Name).ConfigureAwait(false);
+                    await writer.WriteEndElementAsync().ConfigureAwait(false);
                 }
 
                 await writer.WriteEndElementAsync().ConfigureAwait(false);

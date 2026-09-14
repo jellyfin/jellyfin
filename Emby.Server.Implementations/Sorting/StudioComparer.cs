@@ -28,7 +28,10 @@ namespace Emby.Server.Implementations.Sorting
             ArgumentNullException.ThrowIfNull(x);
             ArgumentNullException.ThrowIfNull(y);
 
-            return CultureInfo.InvariantCulture.CompareInfo.Compare(x.Studios.FirstOrDefault(), y.Studios.FirstOrDefault(), CompareOptions.NumericOrdering);
+            return CultureInfo.InvariantCulture.CompareInfo.Compare(
+                x.GetCompanyNames(CompanyKind.Studio).FirstOrDefault(),
+                y.GetCompanyNames(CompanyKind.Studio).FirstOrDefault(),
+                CompareOptions.NumericOrdering);
         }
     }
 }

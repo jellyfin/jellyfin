@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -73,8 +74,8 @@ public class ArtistsController : BaseJellyfinApiController
     /// <param name="person">Optional. If specified, results will be filtered to include only those containing the specified person.</param>
     /// <param name="personIds">Optional. If specified, results will be filtered to include only those containing the specified person ids.</param>
     /// <param name="personTypes">Optional. If specified, along with Person, results will be filtered to include only those containing the specified person and PersonType. Allows multiple, comma-delimited.</param>
-    /// <param name="studios">Optional. If specified, results will be filtered based on studio. This allows multiple, pipe delimited.</param>
-    /// <param name="studioIds">Optional. If specified, results will be filtered based on studio id. This allows multiple, pipe delimited.</param>
+    /// <param name="companies">Optional. If specified, results will be filtered based on company name, whatever the company did. This allows multiple, pipe delimited.</param>
+    /// <param name="companyIds">Optional. If specified, results will be filtered based on company id. This allows multiple, pipe delimited.</param>
     /// <param name="userId">User id.</param>
     /// <param name="nameStartsWithOrGreater">Optional filter by items whose name is sorted equally or greater than a given input string.</param>
     /// <param name="nameStartsWith">Optional filter by items whose name is sorted equally than a given input string.</param>
@@ -111,8 +112,8 @@ public class ArtistsController : BaseJellyfinApiController
         [FromQuery] string? person,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] personIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] personTypes,
-        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] studios,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] studioIds,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] companies,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] companyIds,
         [FromQuery] Guid? userId,
         [FromQuery] string? nameStartsWithOrGreater,
         [FromQuery] string? nameStartsWith,
@@ -155,7 +156,7 @@ public class ArtistsController : BaseJellyfinApiController
             OfficialRatings = officialRatings,
             Genres = genres,
             GenreIds = genreIds,
-            StudioIds = studioIds,
+            CompanyIds = companyIds,
             Person = person,
             PersonIds = personIds,
             PersonTypes = personTypes,
@@ -179,20 +180,9 @@ public class ArtistsController : BaseJellyfinApiController
             }
         }
 
-        // Studios
-        if (studios.Length != 0)
+        if (companies.Length != 0)
         {
-            query.StudioIds = studios.Select(i =>
-            {
-                try
-                {
-                    return _libraryManager.GetStudio(i);
-                }
-                catch
-                {
-                    return null;
-                }
-            }).Where(i => i is not null).Select(i => i!.Id).ToArray();
+            query.CompanyIds = RequestHelpers.GetCompanyIds(companies);
         }
 
         query.ApplyFilters(filters);
@@ -227,8 +217,8 @@ public class ArtistsController : BaseJellyfinApiController
     /// <param name="person">Optional. If specified, results will be filtered to include only those containing the specified person.</param>
     /// <param name="personIds">Optional. If specified, results will be filtered to include only those containing the specified person ids.</param>
     /// <param name="personTypes">Optional. If specified, along with Person, results will be filtered to include only those containing the specified person and PersonType. Allows multiple, comma-delimited.</param>
-    /// <param name="studios">Optional. If specified, results will be filtered based on studio. This allows multiple, pipe delimited.</param>
-    /// <param name="studioIds">Optional. If specified, results will be filtered based on studio id. This allows multiple, pipe delimited.</param>
+    /// <param name="companies">Optional. If specified, results will be filtered based on company name, whatever the company did. This allows multiple, pipe delimited.</param>
+    /// <param name="companyIds">Optional. If specified, results will be filtered based on company id. This allows multiple, pipe delimited.</param>
     /// <param name="userId">User id.</param>
     /// <param name="nameStartsWithOrGreater">Optional filter by items whose name is sorted equally or greater than a given input string.</param>
     /// <param name="nameStartsWith">Optional filter by items whose name is sorted equally than a given input string.</param>
@@ -265,8 +255,8 @@ public class ArtistsController : BaseJellyfinApiController
         [FromQuery] string? person,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] personIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] personTypes,
-        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] studios,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] studioIds,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] companies,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] companyIds,
         [FromQuery] Guid? userId,
         [FromQuery] string? nameStartsWithOrGreater,
         [FromQuery] string? nameStartsWith,
@@ -309,7 +299,7 @@ public class ArtistsController : BaseJellyfinApiController
             OfficialRatings = officialRatings,
             Genres = genres,
             GenreIds = genreIds,
-            StudioIds = studioIds,
+            CompanyIds = companyIds,
             Person = person,
             PersonIds = personIds,
             PersonTypes = personTypes,
@@ -333,20 +323,9 @@ public class ArtistsController : BaseJellyfinApiController
             }
         }
 
-        // Studios
-        if (studios.Length != 0)
+        if (companies.Length != 0)
         {
-            query.StudioIds = studios.Select(i =>
-            {
-                try
-                {
-                    return _libraryManager.GetStudio(i);
-                }
-                catch
-                {
-                    return null;
-                }
-            }).Where(i => i is not null).Select(i => i!.Id).ToArray();
+            query.CompanyIds = RequestHelpers.GetCompanyIds(companies);
         }
 
         query.ApplyFilters(filters);
@@ -359,7 +338,7 @@ public class ArtistsController : BaseJellyfinApiController
     /// <summary>
     /// Gets an artist by name.
     /// </summary>
-    /// <param name="name">Studio name.</param>
+    /// <param name="name">Artist name.</param>
     /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
     /// <response code="200">Artist returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the artist.</returns>

@@ -71,10 +71,10 @@ namespace Emby.Server.Implementations
         public string MusicGenrePath => Path.Combine(InternalMetadataPath, "MusicGenre");
 
         /// <summary>
-        /// Gets the path to the Studio directory.
+        /// Gets the path to the Company directory.
         /// </summary>
-        /// <value>The studio path.</value>
-        public string StudioPath => Path.Combine(InternalMetadataPath, "Studio");
+        /// <value>The company path.</value>
+        public string CompanyPath => Path.Combine(InternalMetadataPath, "Company");
 
         /// <summary>
         /// Gets the path to the Year directory.

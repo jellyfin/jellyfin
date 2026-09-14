@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -110,7 +111,6 @@ namespace Jellyfin.Providers.Tests.Manager
 
         [Theory]
         [InlineData("Genres", MetadataField.Genres)]
-        [InlineData("Studios", MetadataField.Studios)]
         [InlineData("Tags", MetadataField.Tags)]
         [InlineData("ProductionLocations", MetadataField.ProductionLocations)]
         [InlineData("AlbumArtists")]
@@ -132,6 +132,37 @@ namespace Jellyfin.Providers.Tests.Manager
             Assert.True(TestMergeBaseItemData<Audio, SongInfo>(propName, Array.Empty<string>(), newValue, null, false, out _));
 
             Assert.True(TestMergeBaseItemData<Audio, SongInfo>(propName, oldValue, Array.Empty<string>(), null, true, out _));
+        }
+
+        [Fact]
+        public void MergeBaseItemData_Companies_ReplacesAppropriately()
+        {
+            // Note that arrays are replaced, not merged
+            var oldValue = new[] { new CompanyInfo { Name = "Old", Type = CompanyKind.Studio } };
+            var newValue = new[] { new CompanyInfo { Name = "New", Type = CompanyKind.Network } };
+
+            Assert.False(TestMergeBaseItemData<Audio, SongInfo>("Companies", oldValue, newValue, null, false, out _));
+            Assert.False(TestMergeBaseItemData<Audio, SongInfo>("Companies", oldValue, newValue, MetadataField.Companies, true, out _));
+            Assert.False(TestMergeBaseItemData<Audio, SongInfo>("Companies", Array.Empty<CompanyInfo>(), newValue, MetadataField.Companies, false, out _));
+
+            Assert.True(TestMergeBaseItemData<Audio, SongInfo>("Companies", oldValue, newValue, null, true, out _));
+            Assert.True(TestMergeBaseItemData<Audio, SongInfo>("Companies", Array.Empty<CompanyInfo>(), newValue, null, false, out _));
+
+            Assert.True(TestMergeBaseItemData<Audio, SongInfo>("Companies", oldValue, Array.Empty<CompanyInfo>(), null, true, out _));
+        }
+
+        [Fact]
+        public void MergeBaseItemData_SameNameDifferentKinds_KeepsBoth()
+        {
+            var oldValue = new[] { new CompanyInfo { Name = "HBO", Type = CompanyKind.Studio } };
+            var newValue = new[] { new CompanyInfo { Name = "HBO", Type = CompanyKind.Network } };
+
+            TestMergeBaseItemData<Audio, SongInfo>("Companies", oldValue, newValue, null, false, out var actualValue);
+
+            var companies = Assert.IsType<CompanyInfo[]>(actualValue);
+            Assert.Equal(2, companies.Length);
+            Assert.Contains(companies, e => e.Type == CompanyKind.Studio);
+            Assert.Contains(companies, e => e.Type == CompanyKind.Network);
         }
 
         public static TheoryData<string, object, object> MergeBaseItemData_SimpleField_ReplacesAppropriately_TestData()

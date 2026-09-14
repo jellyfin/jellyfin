@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -67,7 +68,7 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual bool EnableUpdatingGenresFromChildren => false;
 
-        protected virtual bool EnableUpdatingStudiosFromChildren => false;
+        protected virtual bool EnableUpdatingCompaniesFromChildren => false;
 
         protected virtual bool EnableUpdatingOfficialRatingFromChildren => false;
 
@@ -408,7 +409,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
                 {
-                    if (EnableUpdatingPremiereDateFromChildren || EnableUpdatingGenresFromChildren || EnableUpdatingStudiosFromChildren || EnableUpdatingOfficialRatingFromChildren)
+                    if (EnableUpdatingPremiereDateFromChildren || EnableUpdatingGenresFromChildren || EnableUpdatingCompaniesFromChildren || EnableUpdatingOfficialRatingFromChildren)
                     {
                         return true;
                     }
@@ -465,9 +466,9 @@ namespace MediaBrowser.Providers.Manager
                 updateType |= UpdateGenres(item, children);
             }
 
-            if (EnableUpdatingStudiosFromChildren)
+            if (EnableUpdatingCompaniesFromChildren)
             {
-                updateType |= UpdateStudios(item, children);
+                updateType |= UpdateCompanies(item, children);
             }
 
             if (EnableUpdatingOfficialRatingFromChildren)
@@ -595,25 +596,31 @@ namespace MediaBrowser.Providers.Manager
             return updateType;
         }
 
-        private ItemUpdateType UpdateStudios(TItemType item, IReadOnlyList<BaseItem> children)
+        private ItemUpdateType UpdateCompanies(TItemType item, IReadOnlyList<BaseItem> children)
         {
             var updateType = ItemUpdateType.None;
 
-            if (!item.LockedFields.Contains(MetadataField.Studios))
+            if (!item.LockedFields.Contains(MetadataField.Companies))
             {
-                var currentList = item.Studios;
+                var currentList = item.Companies;
 
-                item.Studios = children.SelectMany(i => i.Studios)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                item.Companies = children.SelectMany(i => i.Companies)
+                    .DistinctBy(i => (i.Type, i.Name.ToUpperInvariant()))
                     .ToArray();
 
-                if (currentList.Length != item.Studios.Length || !currentList.Order().SequenceEqual(item.Studios.Order(), StringComparer.OrdinalIgnoreCase))
+                if (currentList.Length != item.Companies.Length
+                    || !CompanyKeys(currentList).SequenceEqual(CompanyKeys(item.Companies)))
                 {
                     updateType |= ItemUpdateType.MetadataEdit;
                 }
             }
 
             return updateType;
+        }
+
+        private static IEnumerable<(CompanyKind Type, string Name)> CompanyKeys(IReadOnlyList<CompanyInfo> companies)
+        {
+            return companies.Select(i => (i.Type, i.Name.ToUpperInvariant())).Order();
         }
 
         private ItemUpdateType UpdateOfficialRating(TItemType item, IReadOnlyList<BaseItem> children)
@@ -1263,15 +1270,18 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (!lockedFields.Contains(MetadataField.Studios))
+            if (!lockedFields.Contains(MetadataField.Companies))
             {
-                if (replaceData || target.Studios.Length == 0)
+                if (replaceData || target.Companies.Length == 0)
                 {
-                    target.Studios = source.Studios;
+                    target.Companies = source.Companies;
                 }
                 else
                 {
-                    target.Studios = target.Studios.Concat(source.Studios).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                    target.Companies = target.Companies
+                        .Concat(source.Companies)
+                        .DistinctBy(i => (i.Type, i.Name.ToUpperInvariant()))
+                        .ToArray();
                 }
             }
 

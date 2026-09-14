@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
@@ -1304,9 +1305,9 @@ public class ImageController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Get studio image by name.
+    /// Get company image by name.
     /// </summary>
-    /// <param name="name">Studio name.</param>
+    /// <param name="name">Company name.</param>
     /// <param name="imageType">Image type.</param>
     /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
     /// <param name="format">Determines the output format of the image - original,gif,jpg,png.</param>
@@ -1329,12 +1330,12 @@ public class ImageController : BaseJellyfinApiController
     /// A <see cref="FileStreamResult"/> containing the file stream on success,
     /// or a <see cref="NotFoundResult"/> if item not found.
     /// </returns>
-    [HttpGet("Studios/{name}/Images/{imageType}")]
-    [HttpHead("Studios/{name}/Images/{imageType}", Name = "HeadStudioImage")]
+    [HttpGet("Companies/{name}/Images/{imageType}")]
+    [HttpHead("Companies/{name}/Images/{imageType}", Name = "HeadCompanyImage")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesImageFile]
-    public async Task<ActionResult> GetStudioImage(
+    public async Task<ActionResult> GetCompanyImage(
         [FromRoute, Required] string name,
         [FromRoute, Required] ImageType imageType,
         [FromQuery] string? tag,
@@ -1353,7 +1354,7 @@ public class ImageController : BaseJellyfinApiController
         [FromQuery] string? foregroundLayer,
         [FromQuery] int? imageIndex)
     {
-        var item = _libraryManager.GetStudio(name);
+        var item = _libraryManager.GetCompany(name);
         if (item is null)
         {
             return NotFound();
@@ -1382,9 +1383,9 @@ public class ImageController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Get studio image by name.
+    /// Get company image by name.
     /// </summary>
-    /// <param name="name">Studio name.</param>
+    /// <param name="name">Company name.</param>
     /// <param name="imageType">Image type.</param>
     /// <param name="imageIndex">Image index.</param>
     /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
@@ -1407,12 +1408,12 @@ public class ImageController : BaseJellyfinApiController
     /// A <see cref="FileStreamResult"/> containing the file stream on success,
     /// or a <see cref="NotFoundResult"/> if item not found.
     /// </returns>
-    [HttpGet("Studios/{name}/Images/{imageType}/{imageIndex}")]
-    [HttpHead("Studios/{name}/Images/{imageType}/{imageIndex}", Name = "HeadStudioImageByIndex")]
+    [HttpGet("Companies/{name}/Images/{imageType}/{imageIndex}")]
+    [HttpHead("Companies/{name}/Images/{imageType}/{imageIndex}", Name = "HeadCompanyImageByIndex")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesImageFile]
-    public async Task<ActionResult> GetStudioImageByIndex(
+    public async Task<ActionResult> GetCompanyImageByIndex(
         [FromRoute, Required] string name,
         [FromRoute, Required] ImageType imageType,
         [FromRoute, Required] int imageIndex,
@@ -1431,7 +1432,7 @@ public class ImageController : BaseJellyfinApiController
         [FromQuery] string? backgroundColor,
         [FromQuery] string? foregroundLayer)
     {
-        var item = _libraryManager.GetStudio(name);
+        var item = _libraryManager.GetCompany(name);
         if (item is null)
         {
             return NotFound();

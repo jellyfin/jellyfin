@@ -343,7 +343,7 @@ namespace Emby.Server.Implementations.Library
                 ?
                 [
                     BaseItemKind.Person,
-                    BaseItemKind.Studio,
+                    BaseItemKind.Company,
                     BaseItemKind.Year,
                     BaseItemKind.MusicGenre,
                     BaseItemKind.Genre

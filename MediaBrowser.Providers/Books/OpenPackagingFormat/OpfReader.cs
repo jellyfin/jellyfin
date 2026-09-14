@@ -122,7 +122,7 @@ namespace MediaBrowser.Providers.Books.OpenPackagingFormat
             };
 
             ReadStringInto("//dc:description", summary => book.Overview = summary);
-            ReadStringInto("//dc:publisher", publisher => book.AddStudio(publisher));
+            ReadStringInto("//dc:publisher", publisher => book.AddCompany(publisher, CompanyKind.Publisher));
             ReadStringInto("//dc:identifier[@opf:scheme='AMAZON']", amazon => book.SetProviderId("Amazon", amazon));
             ReadStringInto("//dc:identifier[@opf:scheme='GOOGLE']", google => book.SetProviderId("GoogleBooks", google));
             ReadStringInto("//dc:identifier[@opf:scheme='ISBN']", isbn => book.SetProviderId("ISBN", isbn));

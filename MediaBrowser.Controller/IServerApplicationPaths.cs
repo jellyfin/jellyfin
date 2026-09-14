@@ -43,10 +43,10 @@ namespace MediaBrowser.Controller
         string MusicGenrePath { get; }
 
         /// <summary>
-        /// Gets the path to the Studio directory.
+        /// Gets the path to the Company directory.
         /// </summary>
-        /// <value>The studio path.</value>
-        string StudioPath { get; }
+        /// <value>The company path.</value>
+        string CompanyPath { get; }
 
         /// <summary>
         /// Gets the path to the Year directory.

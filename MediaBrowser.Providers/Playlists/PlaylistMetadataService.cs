@@ -49,7 +49,7 @@ public class PlaylistMetadataService : MetadataService<Playlist, ItemLookupInfo>
     protected override bool EnableUpdatingOfficialRatingFromChildren => true;
 
     /// <inheritdoc />
-    protected override bool EnableUpdatingStudiosFromChildren => true;
+    protected override bool EnableUpdatingCompaniesFromChildren => true;
 
     /// <inheritdoc />
     protected override IReadOnlyList<BaseItem> GetChildrenForMetadataUpdates(Playlist item)

@@ -52,7 +52,8 @@ namespace MediaBrowser.Controller.Entities
             PresetViews = [];
             SeriesStatuses = [];
             SourceTypes = [];
-            StudioIds = [];
+            CompanyIds = [];
+            CompanyTypes = [];
             Tags = [];
             TopParentIds = [];
             TrailerTypes = [];
@@ -85,7 +86,7 @@ namespace MediaBrowser.Controller.Entities
             || Tags.Length > 0
             || ExcludeTags.Length > 0
             || OfficialRatings.Length > 0
-            || StudioIds.Length > 0
+            || CompanyIds.Length > 0
             || ArtistIds.Length > 0
             || AlbumArtistIds.Length > 0
             || ContributingArtistIds.Length > 0
@@ -283,7 +284,15 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? HasParentalRating { get; set; }
 
-        public Guid[] StudioIds { get; set; }
+        /// <summary>
+        /// Gets or sets the ids of the companies an item has to be credited to.
+        /// </summary>
+        public Guid[] CompanyIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the kinds of company to return.
+        /// </summary>
+        public CompanyKind[] CompanyTypes { get; set; }
 
         public IReadOnlyList<Guid> GenreIds { get; set; }
 
@@ -437,7 +446,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public bool? IsDeadArtist { get; set; }
 
-        public bool? IsDeadStudio { get; set; }
+        public bool? IsDeadCompany { get; set; }
 
         public bool? IsDeadGenre { get; set; }
 

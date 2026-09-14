@@ -52,6 +52,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             "tvcomid",
             "tagline",
             "studio",
+            "company",
             "genre",
             "tag",
             "runtime",
@@ -687,9 +688,21 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("genre", genre);
             }
 
-            foreach (var studio in item.Studios.Trimmed().OrderBy(studio => studio))
+            // A studio keeps the tag Kodi knows; the other kinds of company carry their own.
+            foreach (var studio in item.GetCompanyNames(CompanyKind.Studio).Trimmed().OrderBy(studio => studio))
             {
                 writer.WriteElementString("studio", studio);
+            }
+
+            foreach (var company in item.Companies
+                .Where(company => company.Type != CompanyKind.Studio && !string.IsNullOrWhiteSpace(company.Name))
+                .OrderBy(company => company.Type)
+                .ThenBy(company => company.Name, StringComparer.Ordinal))
+            {
+                writer.WriteStartElement("company");
+                writer.WriteAttributeString("type", company.Type.ToString());
+                writer.WriteString(company.Name.Trim());
+                writer.WriteEndElement();
             }
 
             foreach (var tag in item.Tags.Trimmed().OrderBy(tag => tag))

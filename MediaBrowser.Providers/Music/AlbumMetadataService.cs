@@ -52,7 +52,7 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
     protected override bool EnableUpdatingGenresFromChildren => true;
 
     /// <inheritdoc />
-    protected override bool EnableUpdatingStudiosFromChildren => true;
+    protected override bool EnableUpdatingCompaniesFromChildren => true;
 
     /// <inheritdoc />
     protected override IReadOnlyList<BaseItem> GetChildrenForMetadataUpdates(MusicAlbum item)

@@ -21,9 +21,9 @@ namespace MediaBrowser.Model.Entities
         ProductionLocations,
 
         /// <summary>
-        /// The studios.
+        /// The companies.
         /// </summary>
-        Studios,
+        Companies,
 
         /// <summary>
         /// The tags.

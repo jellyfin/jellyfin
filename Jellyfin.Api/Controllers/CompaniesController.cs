@@ -19,23 +19,23 @@ using Microsoft.AspNetCore.Mvc;
 namespace Jellyfin.Api.Controllers;
 
 /// <summary>
-/// Studios controller.
+/// Companies controller.
 /// </summary>
 [Authorize]
-[Tags("Studio")]
-public class StudiosController : BaseJellyfinApiController
+[Tags("Company")]
+public class CompaniesController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
     private readonly IDtoService _dtoService;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StudiosController"/> class.
+    /// Initializes a new instance of the <see cref="CompaniesController"/> class.
     /// </summary>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
-    public StudiosController(
+    public CompaniesController(
         ILibraryManager libraryManager,
         IUserManager userManager,
         IDtoService dtoService)
@@ -46,13 +46,14 @@ public class StudiosController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Gets all studios from a given item, folder, or the entire library.
+    /// Gets all companies from a given item, folder, or the entire library.
     /// </summary>
     /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
     /// <param name="limit">Optional. The maximum number of records to return.</param>
     /// <param name="searchTerm">Optional. Search term.</param>
     /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
     /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
+    /// <param name="companyTypes">Optional. If specified, only companies of these kinds are returned. This allows multiple, comma delimited.</param>
     /// <param name="excludeItemTypes">Optional. If specified, results will be filtered out based on item type. This allows multiple, comma delimited.</param>
     /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
     /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not.</param>
@@ -65,16 +66,17 @@ public class StudiosController : BaseJellyfinApiController
     /// <param name="nameLessThan">Optional filter by items whose name is equally or lesser than a given input string.</param>
     /// <param name="enableImages">Optional, include image information in output.</param>
     /// <param name="enableTotalRecordCount">Total record count.</param>
-    /// <response code="200">Studios returned.</response>
-    /// <returns>An <see cref="OkResult"/> containing the studios.</returns>
+    /// <response code="200">Companies returned.</response>
+    /// <returns>An <see cref="OkResult"/> containing the companies.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<QueryResult<BaseItemDto>> GetStudios(
+    public ActionResult<QueryResult<BaseItemDto>> GetCompanies(
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery] string? searchTerm,
         [FromQuery] Guid? parentId,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] CompanyKind[] companyTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] excludeItemTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] includeItemTypes,
         [FromQuery] bool? isFavorite,
@@ -92,8 +94,8 @@ public class StudiosController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-        // Asking for a type filter has always implied wanting that type's counts back.
-        if (includeItemTypes.Length != 0 && !dtoOptions.ContainsField(ItemFields.ItemCounts))
+        // By-name results have always come back with their item counts, filter or no filter.
+        if (!dtoOptions.ContainsField(ItemFields.ItemCounts))
         {
             dtoOptions.Fields = [.. dtoOptions.Fields, ItemFields.ItemCounts];
         }
@@ -106,6 +108,7 @@ public class StudiosController : BaseJellyfinApiController
 
         var query = new InternalItemsQuery(user)
         {
+            CompanyTypes = companyTypes,
             ExcludeItemTypes = excludeItemTypes,
             IncludeItemTypes = includeItemTypes,
             StartIndex = startIndex,
@@ -131,25 +134,31 @@ public class StudiosController : BaseJellyfinApiController
             }
         }
 
-        var result = _libraryManager.GetStudios(query);
-        return RequestHelpers.CreateQueryResult(result, dtoOptions, _dtoService, user);
+        var result = _libraryManager.GetCompanies(query);
+
+        return new QueryResult<BaseItemDto>(
+            result.StartIndex,
+            result.TotalRecordCount,
+            _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user));
     }
 
     /// <summary>
-    /// Gets a studio by name.
+    /// Gets a company by name.
     /// </summary>
-    /// <param name="name">Studio name.</param>
+    /// <param name="name">Company name.</param>
     /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
-    /// <response code="200">Studio returned.</response>
-    /// <returns>An <see cref="OkResult"/> containing the studio.</returns>
+    /// <response code="200">Company returned.</response>
+    /// <returns>An <see cref="OkResult"/> containing the company.</returns>
     [HttpGet("{name}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<BaseItemDto> GetStudio([FromRoute, Required] string name, [FromQuery] Guid? userId)
+    public ActionResult<BaseItemDto> GetCompany(
+        [FromRoute, Required] string name,
+        [FromQuery] Guid? userId = null)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions();
 
-        var item = _libraryManager.GetStudio(name);
+        var item = _libraryManager.GetCompany(name);
         if (!userId.IsNullOrEmpty())
         {
             var user = _userManager.GetUserById(userId.Value);

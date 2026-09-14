@@ -11,7 +11,7 @@ using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
 /// <summary>
-/// The by-name endpoints (artists, album artists, genres, studios) all funnel through
+/// The by-name endpoints (artists, album artists, genres) all funnel through
 /// <c>GetItemValues</c>. A query without a <c>Limit</c> used to have its total record count
 /// silently disabled, so callers got a populated <c>Items</c> array next to a zero total.
 /// </summary>

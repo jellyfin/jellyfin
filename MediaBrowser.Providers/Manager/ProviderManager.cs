@@ -651,7 +651,7 @@ namespace MediaBrowser.Providers.Manager
                 GetPluginSummary<MusicArtist>(),
                 GetPluginSummary<Audio>(),
                 GetPluginSummary<AudioBook>(),
-                GetPluginSummary<Studio>(),
+                GetPluginSummary<Company>(),
                 GetPluginSummary<MusicVideo>(),
                 GetPluginSummary<Video>()
             };

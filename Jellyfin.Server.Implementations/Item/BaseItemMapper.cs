@@ -110,7 +110,7 @@ public static class BaseItemMapper
         }
 
         dto.ProductionLocations = entity.ProductionLocations?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? [];
-        dto.Studios = entity.Studios?.Split('|') ?? [];
+        dto.Companies = CompanyInfo.Unpack(entity.Companies);
         dto.Tags = string.IsNullOrWhiteSpace(entity.Tags) ? [] : entity.Tags.Split('|');
 
         if (dto is IHasProgramAttributes hasProgramAttributes)
@@ -296,7 +296,7 @@ public static class BaseItemMapper
         }
 
         entity.ProductionLocations = dto.ProductionLocations is not null ? string.Join('|', dto.ProductionLocations.Where(p => !string.IsNullOrWhiteSpace(p)).Distinct(StringComparer.OrdinalIgnoreCase)) : null;
-        entity.Studios = dto.Studios is not null ? string.Join('|', dto.Studios.Distinct(StringComparer.OrdinalIgnoreCase)) : null;
+        entity.Companies = CompanyInfo.Pack(dto.Companies);
         entity.Tags = dto.Tags is not null ? string.Join('|', dto.Tags.Distinct(StringComparer.OrdinalIgnoreCase)) : null;
         entity.LockedFields = dto.LockedFields is not null ? dto.LockedFields
             .Select(e => new BaseItemMetadataField()

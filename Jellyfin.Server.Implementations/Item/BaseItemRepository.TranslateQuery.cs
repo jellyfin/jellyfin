@@ -684,9 +684,11 @@ public sealed partial class BaseItemRepository
                     .Where(e => !e.ItemValues!.AsQueryable().Where(f => f.ItemValue.Type == ItemValueType.Tags).Any(cleanValues));
         }
 
-        if (filter.StudioIds.Length > 0)
+        if (filter.CompanyIds.Length > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Studios, filter.StudioIds);
+            var companyIds = filter.CompanyIds;
+            baseQuery = baseQuery.Where(e => context.CompanyBaseItemMap
+                .Any(m => m.ItemId == e.Id && companyIds.Contains(m.CompanyId)));
         }
 
         if (filter.OfficialRatings.Length > 0)
@@ -982,10 +984,9 @@ public sealed partial class BaseItemRepository
                     .Where(e => !context.ItemValues.Where(f => _getAllArtistsValueTypes.Contains(f.Type)).Any(f => f.Value == e.Name));
         }
 
-        if (filter.IsDeadStudio.HasValue && filter.IsDeadStudio.Value)
+        if (filter.IsDeadCompany.HasValue && filter.IsDeadCompany.Value)
         {
-            baseQuery = baseQuery
-                    .Where(e => !context.ItemValues.Where(f => _getStudiosValueTypes.Contains(f.Type)).Any(f => f.Value == e.Name));
+            baseQuery = baseQuery.Where(e => !context.Companies.Any(f => f.Id == e.Id));
         }
 
         if (filter.IsDeadGenre.HasValue && filter.IsDeadGenre.Value)
