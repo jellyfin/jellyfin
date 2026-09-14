@@ -318,7 +318,7 @@ namespace Emby.Server.Implementations.Library
 
             if (wizardChanged)
             {
-                _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
+                QueueLibraryScan();
             }
         }
 
@@ -3799,7 +3799,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (refreshLibrary)
                 {
-                    StartScanInBackground();
+                    _ = StartScanInBackground();
                 }
                 else
                 {
@@ -3867,13 +3867,16 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private void StartScanInBackground()
+        internal Task StartScanInBackground()
         {
-            Task.Run(() =>
+            // An active scan already handles library structure changes, so this request can be dropped.
+            if (IsScanRunning)
             {
-                // No need to start if scanning the library because it will handle it
-                ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
-            });
+                return Task.CompletedTask;
+            }
+
+            // Queue instead of restarting so a scan that starts after the check is allowed to finish.
+            return Task.Run(QueueLibraryScan);
         }
 
         public void AddMediaPath(string virtualFolderName, MediaPathInfo mediaPath)
@@ -3984,7 +3987,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     await ValidateTopLibraryFolders(CancellationToken.None, true).ConfigureAwait(false);
 
-                    StartScanInBackground();
+                    _ = StartScanInBackground();
                 }
                 else
                 {
