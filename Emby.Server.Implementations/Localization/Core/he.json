@@ -112,8 +112,14 @@
     "NameExtraBehindTheScenes": "מאחורי הקלעים",
     "NameExtraClip": "קליפ",
     "NameExtraDeletedScene": "סצנה שנמחקה",
-    "NameExtraFeaturette": "סרט קצר",
+    "NameExtraFeaturette": "סרט עלילה קצר",
     "NameExtraInterview": "ריאיון",
     "NameExtraSample": "דגימה",
-    "NameExtraScene": "סצנה"
+    "NameExtraScene": "סצנה",
+    "NameExtraThemeSong": "שיר נושא",
+    "NameExtraThemeVideo": "סרטון נושא",
+    "NameExtraTrailer": "קדימון",
+    "NameExtraUnknown": "נוסף",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraShort": "סרט קצר"
 }
