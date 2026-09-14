@@ -271,9 +271,8 @@ namespace Jellyfin.Server
                 // Don't throw additional exception if startup failed.
                 if (appHost.ServiceProvider is not null)
                 {
-                    _logger.LogInformation("Optimizing the database... This might take a while");
+                    _logger.LogInformation("Preparing the database for shutdown...");
 
-                    // Deliberately untimed: a truncated optimization leaves the statistics incomplete.
                     var databaseProvider = appHost.ServiceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
                     await databaseProvider.RunShutdownTask(CancellationToken.None).ConfigureAwait(false);
                 }
