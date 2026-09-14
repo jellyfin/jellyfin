@@ -3692,6 +3692,7 @@ namespace Emby.Server.Implementations.Library
 
         public async Task<ItemImageInfo> ConvertImageToLocal(BaseItem item, ItemImageInfo image, int imageIndex, bool removeOnFailure)
         {
+            HttpRequestException? lastHttpException = null;
             foreach (var url in image.Path.Split('|'))
             {
                 try
@@ -3723,6 +3724,7 @@ namespace Emby.Server.Implementations.Library
                         && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))
                     {
                         _logger.LogDebug(ex, "Error downloading image {Url}", url);
+                        lastHttpException = ex;
                         continue;
                     }
 
@@ -3737,13 +3739,17 @@ namespace Emby.Server.Implementations.Library
                 await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
             }
 
-            throw new InvalidOperationException(string.Format(
-                CultureInfo.InvariantCulture,
-                "Unable to convert any {0} image url in \"{1}\" to a local file for {2} ({3})",
-                image.Type,
-                image.Path,
-                item.Name,
-                item.Id));
+            // Keep the rejection as the inner exception: callers such as the Live TV guide need the
+            // status code to tell a missing image from a provider that is refusing us.
+            throw new InvalidOperationException(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "Unable to convert any {0} image url in \"{1}\" to a local file for {2} ({3})",
+                    image.Type,
+                    image.Path,
+                    item.Name,
+                    item.Id),
+                lastHttpException);
         }
 
         public async Task AddVirtualFolder(string name, CollectionTypeOptions? collectionType, LibraryOptions options, bool refreshLibrary)
