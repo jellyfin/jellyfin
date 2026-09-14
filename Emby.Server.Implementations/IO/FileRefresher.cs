@@ -191,7 +191,9 @@ namespace Emby.Server.Implementations.IO
                                 var childItem = _libraryManager.FindByPath(file, false);
                                 if (childItem is not null)
                                 {
-                                    item = childItem;
+                                    item = childItem.OwnerId.Equals(Guid.Empty)
+                                        ? childItem
+                                        : _libraryManager.GetItemById(childItem.OwnerId) ?? childItem;
                                     break;
                                 }
                             }
