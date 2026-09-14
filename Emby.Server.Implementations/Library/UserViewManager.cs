@@ -60,21 +60,10 @@ namespace Emby.Server.Implementations.Library
                 var folderViewType = collectionFolder?.CollectionType;
 
                 // Playlist and BoxSet libraries require special handling because the folder only references linked items
-                if (folderViewType == CollectionType.playlists || folderViewType == CollectionType.boxsets)
+                if ((folderViewType == CollectionType.playlists || folderViewType == CollectionType.boxsets)
+                    && !HasVisibleChild(folder, user))
                 {
-                    // Only visibility is asked of these, which reads stored columns. Folder.Children
-                    // would answer it from cache once warm, but it populates that cache with a query
-                    // for every field, which is the one this has to avoid on a cold start.
-                    var items = folder.GetItemList(new InternalItemsQuery(user)
-                    {
-                        ParentId = folder.ParentId,
-                        DtoOptions = DtoOptions.StoredColumnsOnly
-                    });
-
-                    if (!items.Any(item => item.IsVisible(user)))
-                    {
-                        continue;
-                    }
+                    continue;
                 }
 
                 if (UserView.IsUserSpecific(folder))
@@ -161,6 +150,32 @@ namespace Emby.Server.Implementations.Library
                 .ThenBy(sorted.IndexOf)
                 .ThenBy(i => i.SortName)
                 .ToArray();
+        }
+
+        private bool HasVisibleChild(Folder folder, User user)
+        {
+            // Folder.Children answers this too, but a collection folder delegates it to its physical
+            // folders, which resolve and then hold on to every child with every field.
+            var parentIds = folder is CollectionFolder collectionFolder && collectionFolder.PhysicalFolderIds.Length > 0
+                ? collectionFolder.PhysicalFolderIds
+                : [folder.Id];
+
+            foreach (var parentId in parentIds)
+            {
+                var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
+                {
+                    ParentId = parentId,
+                    GroupByPresentationUniqueKey = false,
+                    DtoOptions = DtoOptions.StoredColumnsOnly
+                });
+
+                if (items.Any(item => item.IsVisible(user)))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public UserView GetUserSubViewWithName(string name, Guid parentId, CollectionType? type, string sortName)
