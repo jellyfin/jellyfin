@@ -174,7 +174,7 @@ namespace Emby.Server.Implementations.IO
                     var parentDir = System.IO.Path.GetDirectoryName(path) ?? string.Empty;
 
                     // If this path is an untracked directory, look for a known media
-                    // item inside it (eg. a movie file in a movie folder). This prevents
+                    // file inside it (eg. a movie file in a movie folder). This prevents
                     // walking all the way up to the library root when intermediate
                     // directories like movie folders are not tracked in the DB.
                     if (!string.IsNullOrEmpty(parentDir) && Directory.Exists(path))
