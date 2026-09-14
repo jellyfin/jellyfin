@@ -297,6 +297,32 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         }
 
         [Theory]
+        // Ratings that contain a '/' themselves must not be split into a list of ratings
+        [InlineData("M/3", "pt", 3, null)]
+        [InlineData("M/12", "pt", 12, null)]
+        [InlineData("M/18", "pt", 18, null)]
+        [InlineData("PT-M/12", "pt", 12, null)] // TMDB style country prefix
+        [InlineData("M/12", "us", 12, null)] // Resolved through the all-systems fallback
+        [InlineData("U/A 13+", "in", 13, null)]
+        [InlineData("7/i", "es", 11, null)]
+        [InlineData("7/i/fig", "es", 11, null)]
+        [InlineData("18/fig", "es", 18, null)]
+        public async Task GetRatingScore_RatingContainingSlash_IsNotSplit(string value, string countryCode, int expectedScore, int? expectedSubScore)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                MetadataCountryCode = countryCode
+            });
+            await localizationManager.LoadAll();
+
+            var score = localizationManager.GetRatingScore(value);
+
+            Assert.NotNull(score);
+            Assert.Equal(expectedScore, score.Score);
+            Assert.Equal(expectedSubScore, score.SubScore);
+        }
+
+        [Theory]
         [InlineData("-NO RATING SHOWN-")]
         [InlineData(":NO RATING SHOWN:")]
         public async Task GetRatingLevel_Split_Success(string value)
