@@ -581,8 +581,8 @@ public sealed partial class BaseItemRepository
                 .ToArray();
             var folderIsResumableFilter = IsFolderFilter.And(e => resumableFolderTypes.Contains(e.Type))
                 .And(BuildHasDescendantFilter(context, inProgressLeafItems)
-                    .Or(BuildHasDescendantFilter(context, leafItems.Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played)))
-                        .And(BuildHasDescendantFilter(context, leafItems.Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played))))));
+                    .Or(BuildHasDescendantFilter(context, leafItems.Where(BuildLeafIsPlayedFilter(context, userId)))
+                        .And(BuildHasDescendantFilter(context, leafItems.Where(BuildLeafIsPlayedFilter(context, userId).Not())))));
 
             if (isResumable)
             {
