@@ -290,6 +290,13 @@ namespace MediaBrowser.Model.Dto
         /// <value>The companies.</value>
         public CompanyDto[] Companies { get; set; }
 
+        /// <summary>
+        /// Gets or sets the studios.
+        /// </summary>
+        /// <value>The studios.</value>
+        [Obsolete("Use Companies")]
+        public NameGuidPair[] Studios { get; set; }
+
         public NameGuidPair[] GenreItems { get; set; }
 
         /// <summary>

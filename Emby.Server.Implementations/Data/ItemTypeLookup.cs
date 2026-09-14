@@ -53,6 +53,7 @@ public class ItemTypeLookup : IItemTypeLookup
         { BaseItemKind.PlaylistsFolder, typeof(PlaylistsFolder).FullName! },
         { BaseItemKind.Season, typeof(Season).FullName! },
         { BaseItemKind.Series, typeof(Series).FullName! },
+        { BaseItemKind.Studio, typeof(Company).FullName! },
         { BaseItemKind.Trailer, typeof(Trailer).FullName! },
         { BaseItemKind.TvChannel, typeof(LiveTvChannel).FullName! },
         { BaseItemKind.TvProgram, typeof(LiveTvProgram).FullName! },

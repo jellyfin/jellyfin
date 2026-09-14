@@ -258,6 +258,7 @@ namespace Jellyfin.Server.Extensions
                 c.OperationFilter<FileResponseFilter>();
                 c.OperationFilter<FileRequestFilter>();
                 c.OperationFilter<ParameterObsoleteFilter>();
+                c.OperationFilter<RouteObsoleteFilter>();
                 c.DocumentFilter<AdditionalModelFilter>();
                 c.DocumentFilter<SecuritySchemeReferenceFixupFilter>();
             })

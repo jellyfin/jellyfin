@@ -200,6 +200,16 @@ namespace Jellyfin.Data.Enums
         /// <summary>
         /// Item is year.
         /// </summary>
-        Year
+        Year,
+
+        /// <summary>
+        /// Item is studio.
+        /// </summary>
+        /// <remarks>
+        /// Kept for compatibility with older clients; use <see cref="Company"/>, which this
+        /// resolves to. Declared last because the members above it take their values from their
+        /// position.
+        /// </remarks>
+        Studio
     }
 }

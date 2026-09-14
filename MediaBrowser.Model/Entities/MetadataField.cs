@@ -48,6 +48,15 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The official rating.
         /// </summary>
-        OfficialRating
+        OfficialRating,
+
+        /// <summary>
+        /// The studios.
+        /// </summary>
+        /// <remarks>
+        /// Kept for compatibility with older clients; use <see cref="Companies"/>. Declared last
+        /// because the members above it take their values from their position.
+        /// </remarks>
+        Studios = Companies
     }
 }

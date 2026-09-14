@@ -48,6 +48,14 @@ namespace Jellyfin.Server.Implementations.Tests.TypedBaseItem
             Assert.Null(exception);
         }
 
+        [Fact]
+        public void BaseItemKindNames_LegacyStudioKind_ResolvesToCompany()
+        {
+            var lookup = new Emby.Server.Implementations.Data.ItemTypeLookup().BaseItemKindNames;
+
+            Assert.Equal(lookup[BaseItemKind.Company], lookup[BaseItemKind.Studio]);
+        }
+
         private static bool IsProjectAssemblyName(string? name)
         {
             if (name is null)

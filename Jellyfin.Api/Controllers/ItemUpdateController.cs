@@ -281,6 +281,14 @@ public class ItemUpdateController : BaseJellyfinApiController
                 .Select(x => new CompanyInfo { Name = x.Name!, Type = x.Type })
                 .ToArray();
         }
+#pragma warning disable CS0618
+        // Kept for compatibility with older clients, which only know the studios
+        else if (request.Studios is not null)
+        {
+            item.SetCompanies(Array.ConvertAll(request.Studios, x => x.Name), CompanyKind.Studio);
+        }
+#pragma warning restore CS0618
+
         if (request.DateCreated.HasValue)
         {
             item.DateCreated = NormalizeDateTime(request.DateCreated.Value);

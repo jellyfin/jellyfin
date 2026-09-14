@@ -1307,6 +1307,10 @@ public class ImageController : BaseJellyfinApiController
     /// <summary>
     /// Get company image by name.
     /// </summary>
+    /// <remarks>
+    /// Also answers on the studio route it replaced, which is the same thing for a company
+    /// of kind <see cref="CompanyKind.Studio"/>, so clients written against it keep working.
+    /// </remarks>
     /// <param name="name">Company name.</param>
     /// <param name="imageType">Image type.</param>
     /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
@@ -1332,6 +1336,9 @@ public class ImageController : BaseJellyfinApiController
     /// </returns>
     [HttpGet("Companies/{name}/Images/{imageType}")]
     [HttpHead("Companies/{name}/Images/{imageType}", Name = "HeadCompanyImage")]
+    [HttpGet("Studios/{name}/Images/{imageType}", Name = "GetStudioImage")]
+    [HttpHead("Studios/{name}/Images/{imageType}", Name = "HeadStudioImage")]
+    [RouteObsolete("GetStudioImage", "HeadStudioImage")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesImageFile]
@@ -1385,6 +1392,10 @@ public class ImageController : BaseJellyfinApiController
     /// <summary>
     /// Get company image by name.
     /// </summary>
+    /// <remarks>
+    /// Also answers on the studio route it replaced, which is the same thing for a company
+    /// of kind <see cref="CompanyKind.Studio"/>, so clients written against it keep working.
+    /// </remarks>
     /// <param name="name">Company name.</param>
     /// <param name="imageType">Image type.</param>
     /// <param name="imageIndex">Image index.</param>
@@ -1410,6 +1421,9 @@ public class ImageController : BaseJellyfinApiController
     /// </returns>
     [HttpGet("Companies/{name}/Images/{imageType}/{imageIndex}")]
     [HttpHead("Companies/{name}/Images/{imageType}/{imageIndex}", Name = "HeadCompanyImageByIndex")]
+    [HttpGet("Studios/{name}/Images/{imageType}/{imageIndex}", Name = "GetStudioImageByIndex")]
+    [HttpHead("Studios/{name}/Images/{imageType}/{imageIndex}", Name = "HeadStudioImageByIndex")]
+    [RouteObsolete("GetStudioImageByIndex", "HeadStudioImageByIndex")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesImageFile]

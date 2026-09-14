@@ -936,6 +936,14 @@ namespace Emby.Server.Implementations.Dto
                     Id = _libraryManager.GetCompanyId(i.Name)
                 })
                 .ToArray();
+
+#pragma warning disable CS0618
+            // Kept for compatibility with older clients
+            dto.Studios = dto.Companies
+                .Where(i => i.Type == CompanyKind.Studio)
+                .Select(i => new NameGuidPair { Name = i.Name, Id = i.Id })
+                .ToArray();
+#pragma warning restore CS0618
         }
 
         private void AttachGenreItems(BaseItemDto dto, BaseItem item)

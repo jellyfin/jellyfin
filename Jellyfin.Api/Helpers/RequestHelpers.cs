@@ -70,6 +70,27 @@ public static class RequestHelpers
     }
 
     /// <summary>
+    /// Adds the companies a legacy studio filter asks for to the company ids a query already has.
+    /// </summary>
+    /// <remarks>
+    /// Studios are companies now, so a studio filter is a company filter. A studio name matches
+    /// companies of any kind, as it matched networks back when studios and networks were one list.
+    /// </remarks>
+    /// <param name="companyIds">The company ids the query filters on.</param>
+    /// <param name="studios">The studio names asked for.</param>
+    /// <param name="studioIds">The studio ids asked for.</param>
+    /// <returns>The company ids to filter on.</returns>
+    internal static Guid[] WithLegacyStudios(Guid[] companyIds, IReadOnlyList<string> studios, IReadOnlyList<Guid> studioIds)
+    {
+        if (studios.Count == 0 && studioIds.Count == 0)
+        {
+            return companyIds;
+        }
+
+        return [.. companyIds, .. GetCompanyIds(studios), .. studioIds];
+    }
+
+    /// <summary>
     /// Checks if the user can access a user.
     /// </summary>
     /// <param name="claimsPrincipal">The <see cref="ClaimsPrincipal"/> for the current request.</param>

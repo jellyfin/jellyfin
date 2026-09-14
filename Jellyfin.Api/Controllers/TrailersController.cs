@@ -91,6 +91,7 @@ public class TrailersController : BaseJellyfinApiController
     /// <param name="personIds">Optional. If specified, results will be filtered to include only those containing the specified person id.</param>
     /// <param name="personTypes">Optional. If specified, along with Person, results will be filtered to include only those containing the specified person and PersonType. Allows multiple, comma-delimited.</param>
     /// <param name="companies">Optional. If specified, results will be filtered based on company name, whatever the company did. This allows multiple, pipe delimited.</param>
+    /// <param name="studios">Optional. If specified, results will be filtered based on studio name. This allows multiple, pipe delimited. Kept for backwards compatibility; use companies.</param>
     /// <param name="artists">Optional. If specified, results will be filtered based on artists. This allows multiple, pipe delimited.</param>
     /// <param name="excludeArtistIds">Optional. If specified, results will be filtered based on artist id. This allows multiple, pipe delimited.</param>
     /// <param name="artistIds">Optional. If specified, results will be filtered to include only those containing the specified artist id.</param>
@@ -115,6 +116,7 @@ public class TrailersController : BaseJellyfinApiController
     /// <param name="nameStartsWith">Optional filter by items whose name is sorted equally than a given input string.</param>
     /// <param name="nameLessThan">Optional filter by items whose name is equally or lesser than a given input string.</param>
     /// <param name="companyIds">Optional. If specified, results will be filtered based on company id. This allows multiple, pipe delimited.</param>
+    /// <param name="studioIds">Optional. If specified, results will be filtered based on studio id. This allows multiple, pipe delimited. Kept for backwards compatibility; use companyIds.</param>
     /// <param name="genreIds">Optional. If specified, results will be filtered based on genre id. This allows multiple, pipe delimited.</param>
     /// <param name="audioLanguages">Optional. If specified, results will be filtered based on audio language. This allows multiple, comma delimited values.</param>
     /// <param name="subtitleLanguages">Optional. If specified, results will be filtered based on subtitale language. This allows multiple, comma delimited values.</param>
@@ -182,6 +184,7 @@ public class TrailersController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] personIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] personTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] companies,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder)), ParameterObsolete] string[] studios,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] artists,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] excludeArtistIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] artistIds,
@@ -206,6 +209,7 @@ public class TrailersController : BaseJellyfinApiController
         [FromQuery] string? nameStartsWith,
         [FromQuery] string? nameLessThan,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] companyIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder)), ParameterObsolete] Guid[] studioIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] genreIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] audioLanguages,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] subtitleLanguages,
@@ -275,6 +279,7 @@ public class TrailersController : BaseJellyfinApiController
                 personIds,
                 personTypes,
                 companies,
+                studios,
                 artists,
                 excludeArtistIds,
                 artistIds,
@@ -299,6 +304,7 @@ public class TrailersController : BaseJellyfinApiController
                 nameStartsWith,
                 nameLessThan,
                 companyIds,
+                studioIds,
                 genreIds,
                 audioLanguages,
                 subtitleLanguages,
