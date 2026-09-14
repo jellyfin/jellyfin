@@ -1,0 +1,10 @@
+<tv date="20221104">
+  <channel id="3297">
+    <display-name>Channel Without Icon</display-name>
+  </channel>
+  <programme channel="3297" start="20221104130000 +0000" stop="20221105235959 +0000">
+    <title lang="en">Programme Without Icon Or Rating</title>
+    <desc lang="en">A programme that only uses the required XMLTV elements.</desc>
+    <category lang="en">sports</category>
+  </programme>
+</tv>
