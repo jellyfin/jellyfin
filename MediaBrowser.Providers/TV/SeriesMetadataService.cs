@@ -360,10 +360,19 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
             }
         }
 
+        var seasonsById = seasons.ToDictionary(i => i.Id);
+
         // Loop through episodes
         foreach (var episode in episodes)
         {
-            var season = seasons.FirstOrDefault(i => i.IndexNumber == episode.ParentIndexNumber);
+            // An episode inside a season folder belongs to that season even when no season number
+            // could be parsed from the folder. A series can hold several such unnumbered seasons and
+            // they all match a lookup by index number, which would herd every episode into the first.
+            if (!seasonsById.TryGetValue(episode.FindSeasonId(), out var season))
+            {
+                season = seasons.FirstOrDefault(i => i.IndexNumber == episode.ParentIndexNumber);
+            }
+
             if (season is null || episode.SeasonId.Equals(season.Id))
             {
                 continue;
