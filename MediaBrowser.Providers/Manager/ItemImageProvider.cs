@@ -605,6 +605,10 @@ namespace MediaBrowser.Providers.Manager
                             cancellationToken).ConfigureAwait(false);
                     }
 
+                    // Record the source and its HTTP cache validators so later refreshes can detect
+                    // content changes without re-downloading.
+                    RemoteImageMetadata.Record(RemoteImageMetadata.GetSavedImage(item, type, null), url, response);
+
                     result.UpdateType |= ItemUpdateType.ImageUpdate;
                     return true;
                 }
@@ -736,6 +740,10 @@ namespace MediaBrowser.Providers.Manager
                             null,
                             cancellationToken).ConfigureAwait(false);
                     }
+
+                    // Record the source and its HTTP cache validators so later refreshes can detect
+                    // content changes without re-downloading.
+                    RemoteImageMetadata.Record(RemoteImageMetadata.GetSavedImage(item, imageType, null), url, response);
 
                     result.UpdateType |= ItemUpdateType.ImageUpdate;
                 }

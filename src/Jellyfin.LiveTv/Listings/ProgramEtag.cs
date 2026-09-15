@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -10,19 +8,22 @@ using MediaBrowser.Controller.LiveTv;
 
 namespace Jellyfin.LiveTv.Listings
 {
-    internal static class XmlTvProgramEtag
+    internal static class ProgramEtag
     {
+        // The wire format is unchanged from when this only served XMLTV, so etags stored by earlier
+        // versions still match and do not force a one-time full guide rewrite.
         internal const string Prefix = "xmltv-sha256-v1:";
 
-        internal static bool IsXmlTvEtag(string? etag)
+        internal static bool IsProgramEtag(string? etag)
             => !string.IsNullOrWhiteSpace(etag)
                 && etag.StartsWith(Prefix, StringComparison.Ordinal);
 
-        // Returns true only when the incoming etag is XMLTV-style AND equals the stored value.
-        // The IsXmlTvEtag gate keeps other providers (e.g. Schedules Direct) on the
-        // field-by-field update path even if their etag strings happen to match.
+        // Returns true only when the incoming etag is one of ours AND equals the stored value.
+        // The IsProgramEtag gate keeps provider-supplied etag schemes (e.g. Schedules Direct's own)
+        // on the field-by-field update path even if their strings happen to match: only an etag
+        // produced by TryCreate is known to cover every field GuideManager maps onto the item.
         internal static bool MatchesStored(string? incomingEtag, string? storedEtag)
-            => IsXmlTvEtag(incomingEtag)
+            => IsProgramEtag(incomingEtag)
                 && string.Equals(incomingEtag, storedEtag, StringComparison.OrdinalIgnoreCase);
 
         internal static bool TryCreate(ProgramInfo programInfo, out string? etag, out string? reason)
@@ -61,7 +62,10 @@ namespace Jellyfin.LiveTv.Listings
 
             var builder = new StringBuilder(1024);
 
-            // Keep this list aligned with the ProgramInfo fields consumed by GuideManager.
+            // Keep this list aligned with the ProgramInfo fields consumed by GuideManager: a match
+            // means the item does not have to be written at all, so a missing field here would make
+            // real changes invisible.
+            // The schema string is historical, see Prefix.
             AppendValue(builder, "schema", "xmltv-programinfo-v1");
             AppendValue(builder, nameof(programInfo.Id), programInfo.Id);
             AppendValue(builder, nameof(programInfo.ChannelId), programInfo.ChannelId);
