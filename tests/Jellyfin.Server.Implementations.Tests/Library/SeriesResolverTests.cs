@@ -174,5 +174,86 @@ namespace Jellyfin.Server.Implementations.Tests.Library
 
             Assert.Null(_resolver.ResolvePath(args));
         }
+
+        [Fact]
+        public void ResolvePath_BareNumberWithoutYear_ResolvesToSeries()
+        {
+            // Same bare-number match but without a year is conclusive, so it stays a Series.
+            var args = new MediaBrowser.Controller.Library.ItemResolveArgs(
+                Mock.Of<IServerApplicationPaths>(),
+                _libraryManagerMock.Object)
+            {
+                CollectionType = null,
+                FileInfo = new FileSystemMetadata
+                {
+                    FullName = "/media/Test 2",
+                    IsDirectory = true
+                },
+                FileSystemChildren = new[]
+                {
+                    new FileSystemMetadata
+                    {
+                        FullName = "/media/Test 2/Test 2.mkv",
+                        Name = "Test 2.mkv"
+                    }
+                }
+            };
+
+            Assert.IsType<Series>(_resolver.ResolvePath(args));
+        }
+
+        [Fact]
+        public void ResolvePath_SeasonedEpisodeWithYear_ResolvesToSeries()
+        {
+            // SeasonNumber present is always conclusive, even with a year.
+            var args = new MediaBrowser.Controller.Library.ItemResolveArgs(
+                Mock.Of<IServerApplicationPaths>(),
+                _libraryManagerMock.Object)
+            {
+                CollectionType = null,
+                FileInfo = new FileSystemMetadata
+                {
+                    FullName = "/media/Outer Colony",
+                    IsDirectory = true
+                },
+                FileSystemChildren = new[]
+                {
+                    new FileSystemMetadata
+                    {
+                        FullName = "/media/Outer Colony/Outer Colony S01E01 (2026).mkv",
+                        Name = "Outer Colony S01E01 (2026).mkv"
+                    }
+                }
+            };
+
+            Assert.IsType<Series>(_resolver.ResolvePath(args));
+        }
+
+        [Fact]
+        public void ResolvePath_NonVideoChild_DoesNotResolveToSeries()
+        {
+            // IsVideoFile must be checked on the child file, not the folder path.
+            var args = new MediaBrowser.Controller.Library.ItemResolveArgs(
+                Mock.Of<IServerApplicationPaths>(),
+                _libraryManagerMock.Object)
+            {
+                CollectionType = null,
+                FileInfo = new FileSystemMetadata
+                {
+                    FullName = "/media/Show",
+                    IsDirectory = true
+                },
+                FileSystemChildren = new[]
+                {
+                    new FileSystemMetadata
+                    {
+                        FullName = "/media/Show/readme.txt",
+                        Name = "readme.txt"
+                    }
+                }
+            };
+
+            Assert.Null(_resolver.ResolvePath(args));
+        }
     }
 }
