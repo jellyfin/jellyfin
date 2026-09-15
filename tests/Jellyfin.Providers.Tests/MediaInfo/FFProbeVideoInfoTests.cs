@@ -94,6 +94,52 @@ public class FFProbeVideoInfoTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void FetchEmbeddedInfo_MismatchedYear_IgnoresContainerDates(bool replaceAllMetadata)
+    {
+        var video = new Video
+        {
+            ProductionYear = 2007
+        };
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, CreateMediaInfoWithDates(), CreateRefreshOptions(replaceAllMetadata), new LibraryOptions());
+
+        Assert.Equal(2007, video.ProductionYear);
+        Assert.Null(video.PremiereDate);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FetchEmbeddedInfo_MatchingYear_AppliesContainerDates(bool replaceAllMetadata)
+    {
+        var video = new Video
+        {
+            ProductionYear = 2016
+        };
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, CreateMediaInfoWithDates(), CreateRefreshOptions(replaceAllMetadata), new LibraryOptions());
+
+        Assert.Equal(2016, video.ProductionYear);
+        Assert.Equal(new DateTime(2016, 5, 4, 0, 0, 0, DateTimeKind.Utc), video.PremiereDate);
+    }
+
+    [Fact]
+    public void FetchEmbeddedInfo_NoContainerDates_DerivesYearFromPremiereDate()
+    {
+        var video = new Video
+        {
+            PremiereDate = new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, new MediaBrowser.Model.MediaInfo.MediaInfo(), CreateRefreshOptions(false), new LibraryOptions());
+
+        Assert.Equal(1982, video.ProductionYear);
+        Assert.Equal(new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc), video.PremiereDate);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public void FetchEmbeddedInfo_Extra_IgnoresContainerDates(bool replaceAllMetadata)
     {
         var video = new Video
