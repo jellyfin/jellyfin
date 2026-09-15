@@ -577,10 +577,15 @@ public class UserLibraryController : BaseJellyfinApiController
             var item = tuple.Item2[0];
             var childCount = 0;
 
-            if (tuple.Item1 is not null && (tuple.Item2.Count > 1 || tuple.Item1 is MusicAlbum))
+            if (tuple.Item1 is not null && (tuple.Item2.Count > 1 || tuple.Item1 is MusicAlbum || tuple.Item1 is Series))
             {
                 item = tuple.Item1;
                 childCount = tuple.Item2.Count;
+            }
+
+            if (item is Season season && season.Series is not null)
+            {
+                item = season.Series;
             }
 
             resolvedItems[i] = item;
