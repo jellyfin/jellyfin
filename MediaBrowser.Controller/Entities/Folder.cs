@@ -1623,6 +1623,35 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
+        /// <summary>
+        /// Gets the ids of the direct linked children of this folder.
+        /// Entries without a usable ItemId fall back to the legacy path-based resolution and are
+        /// dropped when they cannot be resolved, matching <see cref="ContainsLinkedChildByItemId"/>.
+        /// </summary>
+        /// <returns>The id of every linked child that could be identified.</returns>
+        public IReadOnlyList<Guid> GetLinkedChildIds()
+        {
+            var linkedChildren = LinkedChildren;
+            var ids = new List<Guid>(linkedChildren.Length);
+            foreach (var i in linkedChildren)
+            {
+                if (i.ItemId.HasValue)
+                {
+                    ids.Add(i.ItemId.Value);
+                    continue;
+                }
+
+                var child = GetLinkedChild(i);
+
+                if (child is not null)
+                {
+                    ids.Add(child.Id);
+                }
+            }
+
+            return ids;
+        }
+
         public bool ContainsLinkedChildByItemId(Guid itemId)
         {
             var linkedChildren = LinkedChildren;
