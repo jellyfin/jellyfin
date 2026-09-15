@@ -11,6 +11,7 @@ using Jellyfin.Data;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Querying;
 
@@ -89,7 +90,7 @@ namespace MediaBrowser.Controller.Entities.Movies
                 return base.GetNonCachedChildren(directoryService);
             }
 
-            return Enumerable.Empty<BaseItem>();
+            return [];
         }
 
         protected override IReadOnlyList<BaseItem> LoadChildren()
@@ -172,7 +173,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             var libraryFolderIds = LibraryFolderIds;
             if (libraryFolderIds is null)
             {
-                linkedItems = GetLinkedChildren();
+                linkedItems = GetLinkedChildren(DtoOptions.StoredColumnsOnly);
                 libraryFolderIds = GetLibraryFolderIds(linkedItems);
             }
 
@@ -191,7 +192,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             // If user has parental controls, hide the BoxSet when all children are restricted
             if (user.MaxParentalRatingScore.HasValue)
             {
-                linkedItems ??= GetLinkedChildren();
+                linkedItems ??= GetLinkedChildren(DtoOptions.StoredColumnsOnly);
                 if (linkedItems.Count > 0 && linkedItems.All(child => !child.IsParentalAllowed(user, true)))
                 {
                     return false;
@@ -248,7 +249,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public Guid[] GetLibraryFolderIds()
         {
-            return GetLibraryFolderIds(GetLinkedChildren());
+            return GetLibraryFolderIds(GetLinkedChildren(DtoOptions.StoredColumnsOnly));
         }
 
         private Guid[] GetLibraryFolderIds(IEnumerable<BaseItem> linkedChildren)
@@ -280,13 +281,13 @@ namespace MediaBrowser.Controller.Entities.Movies
                 {
                     expandedFolders.Add(item.Id);
 
-                    return FlattenItems(boxset.GetLinkedChildren(), expandedFolders);
+                    return FlattenItems(boxset.GetLinkedChildren(DtoOptions.StoredColumnsOnly), expandedFolders);
                 }
 
-                return Array.Empty<BaseItem>();
+                return [];
             }
 
-            return new[] { item };
+            return [item];
         }
     }
 }
