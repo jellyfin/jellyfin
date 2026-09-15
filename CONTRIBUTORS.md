@@ -242,6 +242,7 @@
  - [m0g3r](https://github.com/m0g3r)
  - [martin-77](https://github.com/martin-77)
  - [Oggeb1](https://github.com/Oggeb1)
+ - [scr4bble](https://github.com/scr4bble)
 
 # Emby Contributors
 
@@ -305,4 +306,3 @@
  - [tikuf](https://github.com/tikuf/)
  - [Tim Hobbs](https://github.com/timhobbs)
  - [SvenVandenbrande](https://github.com/SvenVandenbrande)
- - [scr4bble](https://github.com/scr4bble)
