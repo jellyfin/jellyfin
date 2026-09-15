@@ -434,7 +434,12 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // Extras have no release date of their own, they inherit it from the item they belong to.
             var useContainerDates = video.ExtraType is null;
-            if (useContainerDates && data.ProductionYear is not null)
+
+            // creation_time is the mux time, so ignore container dates that contradict a known year.
+            var containerYear = data.PremiereDate?.Year ?? data.ProductionYear;
+            var containerDatesAgree = video.ProductionYear is null || containerYear == video.ProductionYear;
+
+            if (useContainerDates && containerDatesAgree && data.ProductionYear is not null)
             {
                 if (video.ProductionYear is null || replaceData)
                 {
@@ -442,7 +447,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (useContainerDates && data.PremiereDate is not null)
+            if (useContainerDates && containerDatesAgree && data.PremiereDate is not null)
             {
                 if (video.PremiereDate is null || replaceData)
                 {
