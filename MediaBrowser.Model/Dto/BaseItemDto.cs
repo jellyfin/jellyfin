@@ -78,6 +78,8 @@ namespace MediaBrowser.Model.Dto
 
         public bool? CanDownload { get; set; }
 
+        public bool? CanExport { get; set; }
+
         public bool? HasLyrics { get; set; }
 
         public bool? HasSubtitles { get; set; }
