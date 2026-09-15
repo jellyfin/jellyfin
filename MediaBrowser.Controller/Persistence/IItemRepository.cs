@@ -129,6 +129,13 @@ public interface IItemRepository
     public IReadOnlyList<string> GetMediaStreamLanguages(InternalItemsQuery filter, MediaStreamType mediaStreamType);
 
     /// <summary>
+    /// Gets all distinct tags of the matching base items.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The list of tags.</returns>
+    IReadOnlyList<string> GetTagNames(InternalItemsQuery filter);
+
+    /// <summary>
     /// Gets all artist names.
     /// </summary>
     /// <returns>The list of artist names.</returns>
