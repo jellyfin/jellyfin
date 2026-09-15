@@ -139,6 +139,7 @@ namespace Emby.Server.Implementations.Localization
                     var ratingSystem = await JsonSerializer.DeserializeAsync<ParentalRatingSystem>(stream, _jsonOptions).ConfigureAwait(false)
                                 ?? throw new InvalidOperationException($"Invalid resource path: '{CountriesPath}'");
 
+                    // Rating strings are compared case insensitively, providers are not consistent about casing (e.g. "VM18" vs "vm18")
                     var dict = new Dictionary<string, ParentalRatingScore?>(StringComparer.OrdinalIgnoreCase);
                     if (ratingSystem.Ratings is not null)
                     {
@@ -524,6 +525,12 @@ namespace Emby.Server.Implementations.Localization
                 if (TryParseRatingAsScore(ratingPart, out var numericScore))
                 {
                     result = new ParentalRatingScore(numericScore, null);
+                    return true;
+                }
+
+                // Explicitly unrated content (e.g. "IT-NR") is unrated by definition, not a lookup failure
+                if (IsUnrated(ratingPart))
+                {
                     return true;
                 }
 
