@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Enums;
@@ -20,6 +21,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -64,6 +66,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly IConfiguration _config;
         private readonly IConfigurationManager _configurationManager;
         private readonly IPathManager _pathManager;
+        private readonly IEnumerable<ISessionAudioFilterProvider> _sessionAudioFilterProviders;
+        private readonly IEnumerable<ISessionMediaEditGraphProvider> _sessionMediaEditGraphProviders;
 
         // i915 hang was fixed by linux 6.2 (3f882f2)
         private readonly Version _minKerneli915Hang = new Version(5, 18);
@@ -164,7 +168,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             ISubtitleEncoder subtitleEncoder,
             IConfiguration config,
             IConfigurationManager configurationManager,
-            IPathManager pathManager)
+            IPathManager pathManager,
+            IEnumerable<ISessionAudioFilterProvider> sessionAudioFilterProviders = null,
+            IEnumerable<ISessionMediaEditGraphProvider> sessionMediaEditGraphProviders = null)
         {
             _appPaths = appPaths;
             _mediaEncoder = mediaEncoder;
@@ -172,6 +178,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             _config = config;
             _configurationManager = configurationManager;
             _pathManager = pathManager;
+            _sessionAudioFilterProviders = sessionAudioFilterProviders ?? Array.Empty<ISessionAudioFilterProvider>();
+            _sessionMediaEditGraphProviders = sessionMediaEditGraphProviders ?? Array.Empty<ISessionMediaEditGraphProvider>();
         }
 
         private enum DynamicHdrMetadataRemovalPlan
@@ -2948,12 +2956,82 @@ namespace MediaBrowser.Controller.MediaEncoding
                         Math.Round(seconds)));
             }
 
+            AppendSessionAudioFilters(state, filters);
+
             if (filters.Count > 0)
             {
                 return " -af \"" + string.Join(',', filters) + "\"";
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Returns true if any session audio filter provider has a filter for the given play session/device.
+        /// Used by the API layer to force audio transcoding so the filter is applied.
+        /// </summary>
+        /// <param name="playSessionId">The play session ID.</param>
+        /// <param name="deviceId">The device ID.</param>
+        /// <returns>Whether a session audio filter applies.</returns>
+        public bool HasSessionAudioFilterForRequest(string playSessionId, string deviceId)
+        {
+            foreach (var provider in _sessionAudioFilterProviders)
+            {
+                var extra = provider.GetAdditionalAudioFilter(playSessionId, deviceId, 0);
+                if (!string.IsNullOrWhiteSpace(extra))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns true if any session audio filter provider has a filter for this encoding job.
+        /// </summary>
+        /// <param name="state">The encoding job.</param>
+        /// <returns>Whether a session audio filter applies.</returns>
+        public bool HasSessionAudioFilter(EncodingJobInfo state)
+        {
+            GetPlaySessionAndDeviceId(state, out var playSessionId, out var deviceId);
+            var startSeconds = TimeSpan.FromTicks(state.StartTimeTicks ?? 0).TotalSeconds;
+            foreach (var provider in _sessionAudioFilterProviders)
+            {
+                var extra = provider.GetAdditionalAudioFilter(playSessionId, deviceId, startSeconds);
+                if (!string.IsNullOrWhiteSpace(extra))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void AppendSessionAudioFilters(EncodingJobInfo state, List<string> filters)
+        {
+            GetPlaySessionAndDeviceId(state, out var playSessionId, out var deviceId);
+            var startSeconds = TimeSpan.FromTicks(state.StartTimeTicks ?? 0).TotalSeconds;
+            foreach (var provider in _sessionAudioFilterProviders)
+            {
+                var extra = provider.GetAdditionalAudioFilter(playSessionId, deviceId, startSeconds);
+                if (!string.IsNullOrWhiteSpace(extra))
+                {
+                    filters.Add(extra.Trim());
+                    break;
+                }
+            }
+        }
+
+        private static void GetPlaySessionAndDeviceId(EncodingJobInfo state, out string playSessionId, out string deviceId)
+        {
+            playSessionId = null;
+            deviceId = null;
+            if (state is StreamState streamState)
+            {
+                playSessionId = streamState.Request?.PlaySessionId;
+                deviceId = streamState.Request?.DeviceId;
+            }
         }
 
         /// <summary>
@@ -7669,7 +7747,34 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var threads = GetNumberOfThreads(state, encodingOptions, videoCodec);
 
-            var inputModifier = GetInputModifier(state, encodingOptions, null);
+            var editGraph = TryGetSessionEditGraph(state);
+            string inputModifier;
+            if (editGraph is not null)
+            {
+                var savedStart = state.BaseRequest?.StartTimeTicks;
+                if (state.BaseRequest is not null)
+                {
+                    state.BaseRequest.StartTimeTicks = 0;
+                }
+
+                inputModifier = GetInputModifier(state, encodingOptions, null);
+                var inputArgument = GetInputArgument(state, encodingOptions, null);
+                if (state.BaseRequest is not null)
+                {
+                    state.BaseRequest.StartTimeTicks = savedStart;
+                }
+
+                return GetProgressiveVideoFullCommandLineWithEditGraph(
+                    state,
+                    encodingOptions,
+                    inputModifier,
+                    inputArgument,
+                    editGraph,
+                    format,
+                    outputPath);
+            }
+
+            inputModifier = GetInputModifier(state, encodingOptions, null);
 
             return string.Format(
                 CultureInfo.InvariantCulture,
@@ -7684,6 +7789,328 @@ namespace MediaBrowser.Controller.MediaEncoding
                 GetSubtitleEmbedArguments(state),
                 format,
                 outputPath).Trim();
+        }
+
+        private string GetProgressiveVideoFullCommandLineWithEditGraph(
+            EncodingJobInfo state,
+            EncodingOptions encodingOptions,
+            string inputModifier,
+            string inputArgument,
+            SessionMediaEditGraph editGraph,
+            string format,
+            string outputPath)
+        {
+            var videoCodec = GetVideoEncoder(state, encodingOptions);
+            if (IsCopyCodec(videoCodec))
+            {
+                videoCodec = "libx264";
+            }
+
+            var audioCodec = GetAudioEncoder(state);
+            if (IsCopyCodec(audioCodec))
+            {
+                audioCodec = "aac";
+            }
+
+            var threads = GetNumberOfThreads(state, encodingOptions, videoCodec);
+            var mapArgs = string.Format(
+                CultureInfo.InvariantCulture,
+                "-map \"[{0}]\"",
+                editGraph.VideoMapLabel);
+            if (!string.IsNullOrEmpty(editGraph.AudioMapLabel))
+            {
+                mapArgs += string.Format(
+                    CultureInfo.InvariantCulture,
+                    " -map \"[{0}]\"",
+                    editGraph.AudioMapLabel);
+            }
+
+            var videoArgs = "-codec:v:0 " + videoCodec
+                + string.Format(CultureInfo.InvariantCulture, " -force_key_frames \"expr:gte(t,n_forced*{0})\"", 5)
+                + GetOutputFFlags(state);
+            var audioArgs = "-codec:a:0 " + audioCodec;
+            var bitrate = state.OutputAudioBitrate;
+            if (bitrate.HasValue)
+            {
+                audioArgs += " -ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture);
+            }
+
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "{0} {1} -filter_complex \"{2}\" {3} -map_metadata -1 -map_chapters -1 -threads {4} {5} {6}{7}{8} -y \"{9}\"",
+                inputModifier,
+                inputArgument,
+                editGraph.FilterComplex,
+                mapArgs,
+                threads,
+                videoArgs,
+                audioArgs,
+                GetSubtitleEmbedArguments(state),
+                format,
+                outputPath).Trim();
+        }
+
+        /// <summary>
+        /// Returns true if any edit-graph provider needs a filter graph for this request.
+        /// </summary>
+        /// <param name="playSessionId">The play session ID.</param>
+        /// <param name="deviceId">The device ID.</param>
+        /// <returns>Whether a session edit graph applies.</returns>
+        public bool HasSessionEditGraphForRequest(string playSessionId, string deviceId)
+            => _sessionMediaEditGraphProviders.Any(provider => provider.HasEditGraph(playSessionId, deviceId));
+
+        /// <summary>
+        /// Loads any plugin playback plan, then forces stream copy off when a session filter or edit graph applies.
+        /// </summary>
+        /// <param name="loaders">Optional playback plan loaders to run first.</param>
+        /// <param name="streamingRequest">The streaming request whose copy flags may be updated.</param>
+        /// <param name="itemId">The item ID from the stream request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Whether an edit graph and/or audio filter apply for this request.</returns>
+        public async Task<(bool HasEditGraph, bool HasAudioFilter)> ApplyPlaybackPlanTranscodeFlagsAsync(
+            IEnumerable<ISessionPlaybackPlanLoader> loaders,
+            StreamingRequestDto streamingRequest,
+            string itemId,
+            CancellationToken cancellationToken)
+        {
+            foreach (var loader in loaders ?? Array.Empty<ISessionPlaybackPlanLoader>())
+            {
+                await loader.EnsurePlanLoadedAsync(
+                    streamingRequest.PlaySessionId,
+                    streamingRequest.DeviceId,
+                    itemId,
+                    streamingRequest.MediaSourceId,
+                    cancellationToken).ConfigureAwait(false);
+            }
+
+            var playSessionId = streamingRequest.PlaySessionId ?? string.Empty;
+            var deviceId = streamingRequest.DeviceId ?? string.Empty;
+            var hasEditGraph = HasSessionEditGraphForRequest(playSessionId, deviceId);
+            var hasAudioFilter = HasSessionAudioFilterForRequest(playSessionId, deviceId);
+            if (hasAudioFilter || hasEditGraph)
+            {
+                streamingRequest.AllowAudioStreamCopy = false;
+            }
+
+            if (hasEditGraph)
+            {
+                streamingRequest.AllowVideoStreamCopy = false;
+            }
+
+            return (hasEditGraph, hasAudioFilter);
+        }
+
+        /// <summary>
+        /// Tries to get a session edit graph for the encoding job.
+        /// </summary>
+        /// <param name="state">The encoding job.</param>
+        /// <returns>The session edit graph, or <c>null</c> if none applies.</returns>
+        public SessionMediaEditGraph TryGetSessionEditGraph(EncodingJobInfo state)
+        {
+            if (!_sessionMediaEditGraphProviders.Any())
+            {
+                return null;
+            }
+
+            GetPlaySessionAndDeviceId(state, out var playSessionId, out var deviceId);
+            var context = CreateSessionEditGraphContext(state);
+            foreach (var provider in _sessionMediaEditGraphProviders)
+            {
+                var graph = provider.GetEditGraph(playSessionId, deviceId, context);
+                if (graph is not null && !string.IsNullOrWhiteSpace(graph.FilterComplex))
+                {
+                    return graph;
+                }
+            }
+
+            return null;
+        }
+
+        private SessionMediaEditGraphContext CreateSessionEditGraphContext(EncodingJobInfo state)
+        {
+            GetSessionAudioLayout(state, out var inputLayout, out var inputChannels, out var stereoDownmix);
+            TryFillSubtitleBurnIn(
+                state,
+                out var burnInSubInput,
+                out var burnInSubIndex,
+                out var burnInSubFilters,
+                out var burnInTextFilter);
+
+            return new SessionMediaEditGraphContext
+            {
+                DurationSeconds = state.RunTimeTicks.HasValue
+                    ? TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds
+                    : 0,
+                StartTimeSeconds = state.BaseRequest?.StartTimeTicks is long ticks && ticks > 0
+                    ? TimeSpan.FromTicks(ticks).TotalSeconds
+                    : 0,
+                InputChannelLayout = inputLayout,
+                InputChannelCount = inputChannels,
+                OutputAudioChannels = state.OutputAudioChannels ?? 0,
+                StereoDownmixFilter = stereoDownmix,
+                BurnInGraphicalSubtitleInputIndex = burnInSubInput,
+                BurnInGraphicalSubtitleStreamIndex = burnInSubIndex,
+                BurnInGraphicalSubtitleFilters = burnInSubFilters,
+                BurnInTextSubtitleFilter = burnInTextFilter
+            };
+        }
+
+        private static void GetSessionAudioLayout(
+            EncodingJobInfo state,
+            out string inputLayout,
+            out int inputChannels,
+            out string stereoDownmix)
+        {
+            inputLayout = string.Empty;
+            inputChannels = 0;
+            stereoDownmix = null;
+            if (state.AudioStream is null)
+            {
+                return;
+            }
+
+            inputLayout = DownMixAlgorithmsHelper.InferChannelLayout(state.AudioStream) ?? string.Empty;
+            inputChannels = state.AudioStream.Channels ?? 0;
+            if (state.OutputAudioChannels != 2 || inputChannels <= 2)
+            {
+                return;
+            }
+
+            foreach (var algo in new[]
+                     {
+                         DownMixStereoAlgorithms.Rfc7845,
+                         DownMixStereoAlgorithms.Ac4,
+                         DownMixStereoAlgorithms.Dave750,
+                         DownMixStereoAlgorithms.NightmodeDialogue
+                     })
+            {
+                if (DownMixAlgorithmsHelper.AlgorithmFilterStrings.TryGetValue((algo, inputLayout), out stereoDownmix)
+                    && !string.IsNullOrWhiteSpace(stereoDownmix))
+                {
+                    return;
+                }
+            }
+
+            stereoDownmix = "aformat=channel_layouts=stereo";
+        }
+
+        private void TryFillSubtitleBurnIn(
+            EncodingJobInfo state,
+            out int? graphicalInputIndex,
+            out int? graphicalStreamIndex,
+            out string graphicalFilters,
+            out string textFilter)
+        {
+            graphicalInputIndex = null;
+            graphicalStreamIndex = null;
+            graphicalFilters = null;
+            textFilter = null;
+
+            if (state.SubtitleStream is null || !ShouldEncodeSubtitle(state))
+            {
+                return;
+            }
+
+            if (state.SubtitleStream.IsTextSubtitleStream)
+            {
+                textFilter = TryGetOriginalTimelineTextSubtitlesFilter(state);
+                return;
+            }
+
+            if (state.MediaSource?.MediaStreams is null)
+            {
+                return;
+            }
+
+            var idx = FindIndex(state.MediaSource.MediaStreams, state.SubtitleStream);
+            if (idx < 0)
+            {
+                return;
+            }
+
+            graphicalInputIndex = state.SubtitleStream.IsExternal ? 1 : 0;
+            graphicalStreamIndex = idx;
+            var videoW = state.VideoStream?.Width;
+            var videoH = state.VideoStream?.Height;
+            var pre = GetGraphicalSubPreProcessFilters(
+                videoW,
+                videoH,
+                state.SubtitleStream.Width,
+                state.SubtitleStream.Height,
+                state.BaseRequest?.Width,
+                state.BaseRequest?.Height,
+                state.BaseRequest?.MaxWidth,
+                state.BaseRequest?.MaxHeight);
+            graphicalFilters = string.IsNullOrEmpty(pre)
+                ? "format=yuva420p"
+                : pre + ",format=yuva420p";
+        }
+
+        private string TryGetOriginalTimelineTextSubtitlesFilter(EncodingJobInfo state)
+        {
+            if (state.BaseRequest is null)
+            {
+                return null;
+            }
+
+            var savedStart = state.BaseRequest.StartTimeTicks;
+            var savedCopy = state.BaseRequest.CopyTimestamps;
+            try
+            {
+                state.BaseRequest.StartTimeTicks = 0;
+                state.BaseRequest.CopyTimestamps = true;
+                var filter = GetTextSubtitlesFilter(state, false, false);
+                if (string.IsNullOrWhiteSpace(filter)
+                    || !filter.StartsWith("subtitles=", StringComparison.Ordinal)
+                    || filter.Contains('[', StringComparison.Ordinal)
+                    || filter.Contains(']', StringComparison.Ordinal)
+                    || filter.Contains(';', StringComparison.Ordinal)
+                    || filter.Contains('\n', StringComparison.Ordinal)
+                    || filter.Contains('\r', StringComparison.Ordinal))
+                {
+                    return null;
+                }
+
+                return filter;
+            }
+#pragma warning disable CA1031 // Subtitle extract can fail; skip burn-in rather than abort the encode.
+            catch (Exception)
+            {
+                return null;
+            }
+#pragma warning restore CA1031
+            finally
+            {
+                state.BaseRequest.StartTimeTicks = savedStart;
+                state.BaseRequest.CopyTimestamps = savedCopy;
+            }
+        }
+
+        /// <summary>
+        /// Map args and optional <c>-filter_complex</c> prefix for HLS when an edit graph is present.
+        /// </summary>
+        /// <param name="state">The encoding job.</param>
+        /// <param name="filterComplexArg">The <c>-filter_complex</c> argument, or empty when unused.</param>
+        /// <param name="mapArgs">The <c>-map</c> arguments for graph outputs.</param>
+        /// <returns>Whether an edit graph supplied map arguments.</returns>
+        public bool TryGetSessionEditGraphMapArgs(EncodingJobInfo state, out string filterComplexArg, out string mapArgs)
+        {
+            filterComplexArg = string.Empty;
+            mapArgs = string.Empty;
+            var graph = TryGetSessionEditGraph(state);
+            if (graph is null)
+            {
+                return false;
+            }
+
+            filterComplexArg = "-filter_complex \"" + graph.FilterComplex + "\"";
+            mapArgs = string.Format(CultureInfo.InvariantCulture, "-map \"[{0}]\"", graph.VideoMapLabel);
+            if (!string.IsNullOrEmpty(graph.AudioMapLabel))
+            {
+                mapArgs += string.Format(CultureInfo.InvariantCulture, " -map \"[{0}]\"", graph.AudioMapLabel);
+            }
+
+            return true;
         }
 
         public string GetOutputFFlags(EncodingJobInfo state)
@@ -7804,7 +8231,13 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (IsCopyCodec(codec))
             {
-                return args;
+                if (!HasSessionAudioFilter(state))
+                {
+                    return args;
+                }
+
+                codec = "aac";
+                args = "-codec:a:0 " + codec;
             }
 
             var channels = state.OutputAudioChannels;
