@@ -92,6 +92,23 @@ public class BaseItemTests
     }
 
     [Fact]
+    public void SetPrimaryVersionId_Null_RestoresTheItemsOwnPresentationKey()
+    {
+        var primaryId = Guid.NewGuid();
+        var video = new Video { Id = Guid.NewGuid(), Path = "/Movies/Movie/Movie - 4K.mkv" };
+
+        // While it is a version, it presents as the primary so lists collapse the two together.
+        video.SetPrimaryVersionId(primaryId);
+        Assert.Equal(primaryId.ToString("N", CultureInfo.InvariantCulture), video.PresentationUniqueKey);
+
+        // Promoting it back has to restore its own key, or it keeps collapsing onto - and staying
+        // hidden behind - a primary it no longer belongs to.
+        video.SetPrimaryVersionId(null);
+        Assert.Null(video.PrimaryVersionId);
+        Assert.Equal(video.Id.ToString("N", CultureInfo.InvariantCulture), video.PresentationUniqueKey);
+    }
+
+    [Fact]
     public void GetItemByNameFolderName_ShortName_IsKeptAsIs()
     {
         SetupPassThroughFileSystem();
