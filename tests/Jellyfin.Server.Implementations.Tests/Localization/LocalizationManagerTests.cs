@@ -101,6 +101,56 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         }
 
         [Theory]
+        // Region qualified variants must stay distinguishable by ThreeLetterISOLanguageName,
+        // which is what clients use as the value of their language pickers.
+        [InlineData("pt", "por", "Portuguese")]
+        [InlineData("pt-br", "pt-br", "Portuguese (Brazil)")]
+        [InlineData("pob", "pt-br", "Portuguese (Brazil)")]
+        [InlineData("pt-pt", "pt-pt", "Portuguese (Portugal)")]
+        [InlineData("pop", "pt-pt", "Portuguese (Portugal)")]
+        [InlineData("es", "spa", "Spanish; Castilian")]
+        [InlineData("spa", "spa", "Spanish; Castilian")]
+        [InlineData("es-419", "es-419", "Spanish; Latin")]
+        [InlineData("es-mx", "es-419", "Spanish; Latin")]
+        [InlineData("zh", "zho", "Chinese")]
+        [InlineData("ze", "ze", "Chinese (Bilingual)")]
+        [InlineData("zh-cn", "zh-cn", "Chinese (Simplified)")]
+        [InlineData("zh-tw", "zh-tw", "Chinese (Traditional)")]
+        public async Task FindLanguageInfo_RegionalVariant_KeepsDistinctCode(string identifier, string expectedCode, string expectedDisplayName)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+            await localizationManager.LoadAll();
+
+            var culture = localizationManager.FindLanguageInfo(identifier);
+            Assert.NotNull(culture);
+            Assert.Equal(expectedCode, culture.ThreeLetterISOLanguageName);
+            Assert.Equal(expectedDisplayName, culture.DisplayName);
+        }
+
+        [Fact]
+        public async Task GetCultures_RegionalVariants_HaveUniqueThreeLetterCodes()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+            await localizationManager.LoadAll();
+
+            // Mirrors what LocalizationController serves and what clients use as picker values.
+            var duplicates = localizationManager.GetCultures()
+                .DistinctBy(c => c.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .GroupBy(c => c.ThreeLetterISOLanguageName, StringComparer.OrdinalIgnoreCase)
+                .Where(g => g.Count() > 1)
+                .Select(g => $"{g.Key}: {string.Join(", ", g.Select(c => c.DisplayName))}")
+                .ToList();
+
+            Assert.Empty(duplicates);
+        }
+
+        [Theory]
         [InlineData("mul", "Multiple languages")]
         [InlineData("und", "Undetermined")]
         [InlineData("mis", "Uncoded languages")]
