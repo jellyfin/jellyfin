@@ -2,6 +2,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Emby.Server.Implementations;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
@@ -29,6 +31,8 @@ namespace Jellyfin.Server.Integration.Tests
     {
         private static readonly string _testPathRoot = Path.Combine(Path.GetTempPath(), "jellyfin-test-data");
         private readonly ConcurrentBag<IDisposable> _disposableComponents = new ConcurrentBag<IDisposable>();
+        private readonly SemaphoreSlim _accessTokenLock = new SemaphoreSlim(1, 1);
+        private string? _accessToken;
 
         /// <summary>
         /// Initializes static members of the <see cref="JellyfinApplicationFactory"/> class.
@@ -40,6 +44,31 @@ namespace Jellyfin.Server.Integration.Tests
                 .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
                 .CreateLogger();
             StartupHelpers.PerformStaticInitialization();
+        }
+
+        /// <summary>
+        /// Completes the startup wizard and returns an access token for the default user.
+        /// </summary>
+        /// <returns>The access token.</returns>
+        public async Task<string> GetAccessTokenAsync()
+        {
+            // The startup wizard can only be completed once per server instance, so the token has to be
+            // shared by every test class using this factory.
+            if (_accessToken is not null)
+            {
+                return _accessToken;
+            }
+
+            await _accessTokenLock.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                using var client = CreateClient();
+                return _accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false);
+            }
+            finally
+            {
+                _accessTokenLock.Release();
+            }
         }
 
         /// <inheritdoc/>
@@ -131,6 +160,7 @@ namespace Jellyfin.Server.Integration.Tests
             }
 
             _disposableComponents.Clear();
+            _accessTokenLock.Dispose();
 
             base.Dispose(disposing);
         }
