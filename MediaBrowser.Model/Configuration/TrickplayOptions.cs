@@ -24,6 +24,14 @@ public class TrickplayOptions
     /// </summary>
     public bool EnableKeyFrameOnlyExtraction { get; set; } = false;
 
+    // AI-GENERATED CODE: Restrict trickplay generation to primary media only.
+    // Future human editors: This is a global server setting, not a library setting.
+    public bool GenerateTrickplayForPrimaryMediaOnly { get; set; } = false;
+
+    // AI-GENERATED CODE: Remove existing trickplay for excluded media during the next pass.
+    // Future human editors: This only has an effect when GenerateTrickplayForPrimaryMediaOnly is enabled.
+    public bool RemoveUnwantedTrickplayOnNextPass { get; set; } = false;
+
     /// <summary>
     /// Gets or sets the behavior used by trickplay provider on library scan/update.
     /// </summary>
