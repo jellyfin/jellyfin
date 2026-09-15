@@ -30,6 +30,7 @@ namespace Emby.Server.Implementations.Configuration
             : base(applicationPaths, loggerFactory, xmlSerializer)
         {
             UpdateMetadataPath();
+            UpdateCollectionsPath();
         }
 
         /// <summary>
@@ -61,6 +62,7 @@ namespace Emby.Server.Implementations.Configuration
         protected override void OnConfigurationUpdated()
         {
             UpdateMetadataPath();
+            UpdateCollectionsPath();
 
             base.OnConfigurationUpdated();
         }
@@ -80,6 +82,17 @@ namespace Emby.Server.Implementations.Configuration
         }
 
         /// <summary>
+        /// Ensures the configured collections path exists.
+        /// </summary>
+        private void UpdateCollectionsPath()
+        {
+            if (!string.IsNullOrWhiteSpace(Configuration.CollectionsPath))
+            {
+                Directory.CreateDirectory(Configuration.CollectionsPath);
+            }
+        }
+
+        /// <summary>
         /// Replaces the configuration.
         /// </summary>
         /// <param name="newConfiguration">The new configuration.</param>
@@ -89,6 +102,7 @@ namespace Emby.Server.Implementations.Configuration
             var newConfig = (ServerConfiguration)newConfiguration;
 
             ValidateMetadataPath(newConfig);
+            ValidateCollectionsPath(newConfig);
 
             ConfigurationUpdating?.Invoke(this, new GenericEventArgs<ServerConfiguration>(newConfig));
 
@@ -106,6 +120,31 @@ namespace Emby.Server.Implementations.Configuration
 
             if (!string.IsNullOrWhiteSpace(newPath)
                 && !string.Equals(Configuration.MetadataPath, newPath, StringComparison.Ordinal))
+            {
+                if (!Directory.Exists(newPath))
+                {
+                    throw new DirectoryNotFoundException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{0} does not exist.",
+                            newPath));
+                }
+
+                EnsureWriteAccess(newPath);
+            }
+        }
+
+        /// <summary>
+        /// Validates the collections path.
+        /// </summary>
+        /// <param name="newConfig">The new configuration.</param>
+        /// <exception cref="DirectoryNotFoundException">The new config path doesn't exist.</exception>
+        private void ValidateCollectionsPath(ServerConfiguration newConfig)
+        {
+            var newPath = newConfig.CollectionsPath;
+
+            if (!string.IsNullOrWhiteSpace(newPath)
+                && !string.Equals(Configuration.CollectionsPath, newPath, StringComparison.Ordinal))
             {
                 if (!Directory.Exists(newPath))
                 {

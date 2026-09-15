@@ -9,6 +9,7 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Collections;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
@@ -35,6 +36,7 @@ namespace Emby.Server.Implementations.Collections
         private readonly ILinkedChildrenService _linkedChildrenService;
         private readonly ILocalizationManager _localizationManager;
         private readonly IApplicationPaths _appPaths;
+        private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CollectionManager"/> class.
@@ -47,6 +49,7 @@ namespace Emby.Server.Implementations.Collections
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="providerManager">The provider manager.</param>
         /// <param name="linkedChildrenService">The linked children service.</param>
+        /// <param name="serverConfigurationManager">The server configuration manager.</param>
         public CollectionManager(
             ILibraryManager libraryManager,
             IApplicationPaths appPaths,
@@ -55,7 +58,8 @@ namespace Emby.Server.Implementations.Collections
             ILibraryMonitor iLibraryMonitor,
             ILoggerFactory loggerFactory,
             IProviderManager providerManager,
-            ILinkedChildrenService linkedChildrenService)
+            ILinkedChildrenService linkedChildrenService,
+            IServerConfigurationManager serverConfigurationManager)
         {
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
@@ -65,6 +69,7 @@ namespace Emby.Server.Implementations.Collections
             _linkedChildrenService = linkedChildrenService;
             _localizationManager = localizationManager;
             _appPaths = appPaths;
+            _serverConfigurationManager = serverConfigurationManager;
         }
 
         /// <inheritdoc />
@@ -119,6 +124,12 @@ namespace Emby.Server.Implementations.Collections
 
         internal string GetCollectionsFolderPath()
         {
+            var configuredCollectionsPath = _serverConfigurationManager.Configuration.CollectionsPath;
+            if (!string.IsNullOrWhiteSpace(configuredCollectionsPath))
+            {
+                return configuredCollectionsPath;
+            }
+
             return Path.Combine(_appPaths.DataPath, "collections");
         }
 
