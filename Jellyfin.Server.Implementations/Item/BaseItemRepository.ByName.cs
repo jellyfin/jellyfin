@@ -314,7 +314,7 @@ public sealed partial class BaseItemRepository
 
         // A by-name item owns no links, but it still has to come back read rather than unread: an
         // artist is a Folder, and the save path tells "no links" from "not loaded" by that flag alone.
-        LoadLinkedChildren(context, [.. result.Items.Select(e => e.Item1)]);
+        LoadCollections(context, filter, [.. result.Items.Select(e => e.Item1)]);
 
         return result;
     }

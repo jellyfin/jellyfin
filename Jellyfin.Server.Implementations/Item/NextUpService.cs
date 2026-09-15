@@ -360,8 +360,9 @@ public class NextUpService : INextUpService
 
         // Item queries no longer join the links, so the merged-version state every result carries has
         // to be read for the whole batch at once.
-        _queryHelpers.LoadLinkedChildren(
+        _queryHelpers.LoadCollections(
             context,
+            filter,
             result.Values
                 .SelectMany<NextUpEpisodeBatchResult, BaseItemDto?>(e =>
                     [e.LastWatched, e.NextUp, e.LastWatchedForRewatching, e.NextPlayedForRewatching, .. e.Specials ?? []])

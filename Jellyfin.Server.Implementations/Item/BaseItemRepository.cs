@@ -8,8 +8,11 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
@@ -256,24 +259,131 @@ public sealed partial class BaseItemRepository
         };
 
     /// <inheritdoc />
-    public IReadOnlyList<BaseItemDto> LoadLinkedChildren(JellyfinDbContext context, IReadOnlyList<BaseItemDto> items)
+    public IReadOnlyList<BaseItemDto> LoadCollections(JellyfinDbContext context, InternalItemsQuery filter, IReadOnlyList<BaseItemDto> items)
     {
         ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(filter);
         ArgumentNullException.ThrowIfNull(items);
 
+        if (items.Count == 0)
+        {
+            return items;
+        }
+
+        var byId = new Dictionary<Guid, BaseItemDto>(items.Count);
+        foreach (var item in items)
+        {
+            byId[item.Id] = item;
+        }
+
+        var ids = byId.Keys.ToArray();
+
+        LoadLinkedChildren(context, byId);
+
+        // Each of these is gated on the same option its join used to be, so a caller that asked for
+        // less still gets less - it just no longer pays the product of everything it did ask for.
+        if (filter.DtoOptions.ContainsField(ItemFields.ProviderIds))
+        {
+            var providers = context.BaseItemProviders
+                .AsNoTracking()
+                .WhereOneOrMany(ids, e => e.ItemId)
+                .Select(e => new { e.ItemId, e.ProviderId, e.ProviderValue })
+                .ToLookup(e => e.ItemId);
+
+            foreach (var (id, item) in byId)
+            {
+                var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var provider in providers[id])
+                {
+                    dictionary[provider.ProviderId] = provider.ProviderValue;
+                }
+
+                item.ProviderIds = dictionary;
+            }
+        }
+
+        if (filter.DtoOptions.ContainsField(ItemFields.Settings))
+        {
+            var lockedFields = context.BaseItemMetadataFields
+                .AsNoTracking()
+                .WhereOneOrMany(ids, e => e.ItemId)
+                .Select(e => new { e.ItemId, e.Id })
+                .ToLookup(e => e.ItemId);
+
+            foreach (var (id, item) in byId)
+            {
+                item.LockedFields = [.. lockedFields[id].Select(e => (MetadataField)e.Id)];
+            }
+        }
+
+        if (filter.DtoOptions.EnableUserData)
+        {
+            // Detached copies: the rows outlive the context the query ran on.
+            var userData = context.UserData
+                .AsNoTracking()
+                .WhereOneOrMany(ids, e => e.ItemId)
+                .ToList()
+                .ToLookup(e => e.ItemId);
+
+            foreach (var (id, item) in byId)
+            {
+                item.UserData = [.. userData[id].Select(DetachUserData)];
+            }
+        }
+
+        if (filter.DtoOptions.EnableImages)
+        {
+            var images = context.BaseItemImageInfos
+                .AsNoTracking()
+                .WhereOneOrMany(ids, e => e.ItemId)
+                .OrderBy(e => e.Id)
+                .ToList()
+                .ToLookup(e => e.ItemId);
+
+            foreach (var (id, item) in byId)
+            {
+                item.ImageInfos = [.. images[id].Select(e => BaseItemMapper.MapImageFromEntity(e, _appHost))];
+            }
+        }
+
+        return items;
+    }
+
+    private static UserData DetachUserData(UserData row)
+        => new()
+        {
+            ItemId = row.ItemId,
+            Item = null,
+            UserId = row.UserId,
+            User = null,
+            CustomDataKey = row.CustomDataKey,
+            Rating = row.Rating,
+            PlaybackPositionTicks = row.PlaybackPositionTicks,
+            PlayCount = row.PlayCount,
+            IsFavorite = row.IsFavorite,
+            LastPlayedDate = row.LastPlayedDate,
+            Played = row.Played,
+            AudioStreamIndex = row.AudioStreamIndex,
+            SubtitleStreamIndex = row.SubtitleStreamIndex,
+            Likes = row.Likes,
+            RetentionDate = row.RetentionDate
+        };
+
+    private static void LoadLinkedChildren(JellyfinDbContext context, Dictionary<Guid, BaseItemDto> byId)
+    {
         // Only containers and videos can own links, so a result set of plain items costs no query.
         var owners = new Dictionary<Guid, BaseItemDto>();
-        foreach (var item in items)
+        foreach (var (id, item) in byId)
         {
             if (item is Folder or Video)
             {
-                owners[item.Id] = item;
+                owners[id] = item;
             }
         }
 
         if (owners.Count == 0)
         {
-            return items;
+            return;
         }
 
         var linksByParent = context.LinkedChildren
@@ -306,8 +416,6 @@ public sealed partial class BaseItemRepository
                 ];
             }
         }
-
-        return items;
     }
 
     /// <inheritdoc />

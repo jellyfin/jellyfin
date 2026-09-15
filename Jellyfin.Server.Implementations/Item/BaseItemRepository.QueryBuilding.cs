@@ -254,29 +254,12 @@ public sealed partial class BaseItemRepository
             dbQuery = dbQuery.Include(e => e.TrailerTypes);
         }
 
-        if (filter.DtoOptions.ContainsField(ItemFields.ProviderIds))
-        {
-            dbQuery = dbQuery.Include(e => e.Provider);
-        }
-
-        if (filter.DtoOptions.ContainsField(ItemFields.Settings))
-        {
-            dbQuery = dbQuery.Include(e => e.LockedFields);
-        }
-
-        if (filter.DtoOptions.EnableUserData)
-        {
-            dbQuery = dbQuery.Include(e => e.UserData);
-        }
-
-        if (filter.DtoOptions.EnableImages)
-        {
-            dbQuery = dbQuery.Include(e => e.Images!.OrderBy(i => i.Id));
-        }
-
-        // LinkedChildEntities is deliberately not included: a container's membership is unbounded, so
-        // joining it multiplies against every collection joined above and repeats the wide item row
-        // once per combination. LoadLinkedChildren reads them for a whole result set in one statement.
+        // Provider, LockedFields, UserData, Images and LinkedChildEntities are deliberately not
+        // included. Joined together their row count is the product of an item's child counts, with
+        // the wide item row - Data blob and all - repeated on every combination: 4,433 movies came
+        // to 411,104 rows carrying 382 MB to return 2.9 MB of items, and a box set with 500 members
+        // was worse again. LoadCollections reads each of them for a whole result set in a statement
+        // of its own, so the parent query runs once and nothing multiplies.
         if (filter.IncludeExtras)
         {
             dbQuery = dbQuery.Include(e => e.Extras);

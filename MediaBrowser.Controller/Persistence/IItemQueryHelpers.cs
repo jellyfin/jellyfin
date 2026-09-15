@@ -103,17 +103,21 @@ public interface IItemQueryHelpers
         IQueryable<BaseItemEntity> descendants);
 
     /// <summary>
-    /// Reads the linked children of a whole result set in one statement and attaches them.
+    /// Reads the collections a result set's items own - their links, provider ids, locked fields,
+    /// user data and images - one statement per collection, and attaches them.
     /// </summary>
     /// <remarks>
-    /// Item queries do not join the links, because a container's membership is unbounded and would
-    /// multiply against every other joined collection. Any path that materializes items has to call
-    /// this, or the items come back with their links unread.
+    /// Item queries do not join these, because together their row count is the product of each
+    /// item's child counts and every row in it repeats the whole item row. Any path that
+    /// materializes items has to call this, or they come back with those collections unread - which
+    /// renders wrong rather than failing, so it is covered by a test that enumerates the query
+    /// entry points.
     /// </remarks>
     /// <param name="context">The database context to read from.</param>
-    /// <param name="items">The materialized items to attach links to.</param>
+    /// <param name="filter">The query whose DtoOptions decide which collections to read.</param>
+    /// <param name="items">The materialized items to attach the collections to.</param>
     /// <returns>The same items, for chaining.</returns>
-    IReadOnlyList<BaseItem> LoadLinkedChildren(JellyfinDbContext context, IReadOnlyList<BaseItem> items);
+    IReadOnlyList<BaseItem> LoadCollections(JellyfinDbContext context, InternalItemsQuery filter, IReadOnlyList<BaseItem> items);
 
     /// <summary>
     /// Deserializes a <see cref="BaseItemEntity"/> into a <see cref="BaseItem"/>.

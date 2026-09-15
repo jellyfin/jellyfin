@@ -219,8 +219,9 @@ public sealed class MovieSimilarItemsProvider : ILocalSimilarItemsProvider<Movie
                 .AsSplitQuery()
                 .ToListAsync(cancellationToken).ConfigureAwait(false);
 
-            var entitiesById = _queryHelpers.LoadLinkedChildren(
+            var entitiesById = _queryHelpers.LoadCollections(
                     context,
+                    filter,
                     entities
                         .Select(e => _queryHelpers.DeserializeBaseItem(e, filter.SkipDeserialization))
                         .Where(dto => dto is not null)

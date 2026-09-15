@@ -312,18 +312,89 @@ public sealed class BaseItemRepositoryLinkedChildrenTests : SqliteDbTestFixture
     }
 
     /// <summary>
-    /// The whole point of reading them separately: the item query must not join the links.
+    /// The whole point of reading them separately: the item query joins none of them, so its row
+    /// count is the number of items rather than the product of their child counts.
     /// </summary>
-    [Fact]
-    public void GetItemList_DoesNotJoinLinkedChildrenOntoTheItemQuery()
+    [Theory]
+    [InlineData("LinkedChildren")]
+    [InlineData("BaseItemProviders")]
+    [InlineData("BaseItemMetadataFields")]
+    [InlineData("UserData")]
+    [InlineData("BaseItemImageInfos")]
+    public void GetItemList_JoinsNoOwnedCollectionOntoTheItemQuery(string table)
     {
         _recorder.Commands.Clear();
         GetCollections();
 
         var itemQuery = _recorder.Commands[0].Sql;
         Assert.Contains("FROM \"BaseItems\"", itemQuery, StringComparison.Ordinal);
-        Assert.DoesNotContain("LEFT JOIN \"LinkedChildren\"", itemQuery, StringComparison.Ordinal);
-        Assert.Contains(_recorder.Commands, e => e.Sql.Contains("FROM \"LinkedChildren\"", StringComparison.Ordinal));
+        Assert.DoesNotContain("JOIN \"" + table + "\"", itemQuery, StringComparison.Ordinal);
+        Assert.Contains(
+            _recorder.Commands,
+            e => e.Sql.Contains("FROM \"" + table + "\"", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Every owned collection comes back attached, or the item renders wrong and saving it rewrites
+    /// the stored rows from what it is missing.
+    /// </summary>
+    [Fact]
+    public void GetItemList_AttachesEveryOwnedCollection()
+    {
+        var movie = _repository.GetItemList(new InternalItemsQuery
+        {
+            ItemIds = [_primaryVideoId],
+            DtoOptions = new DtoOptions()
+        }).Single();
+
+        Assert.Equal("603", movie.ProviderIds["Tmdb"]);
+        Assert.Equal([MetadataField.Name], movie.LockedFields);
+        Assert.Single(movie.ImageInfos);
+        Assert.Equal(ImageType.Primary, movie.ImageInfos[0].Type);
+        Assert.Single(movie.UserData);
+        Assert.True(movie.UserData.Single().Played);
+    }
+
+    /// <summary>
+    /// A caller that asks for less still gets less: the options that used to gate each join now gate
+    /// its statement, so a cheap read stays cheap and does not silently become a full one.
+    /// </summary>
+    [Fact]
+    public void GetItemList_StoredColumnsOnly_ReadsNoOwnedCollections()
+    {
+        _recorder.Commands.Clear();
+        var movie = _repository.GetItemList(new InternalItemsQuery
+        {
+            ItemIds = [_primaryVideoId],
+            DtoOptions = DtoOptions.StoredColumnsOnly
+        }).Single();
+
+        Assert.Empty(movie.ProviderIds);
+        Assert.Empty(movie.ImageInfos);
+        Assert.Empty(movie.UserData);
+        foreach (var table in new[] { "BaseItemProviders", "BaseItemMetadataFields", "UserData", "BaseItemImageInfos" })
+        {
+            Assert.DoesNotContain(
+                _recorder.Commands,
+                e => e.Sql.Contains("FROM \"" + table + "\"", StringComparison.Ordinal));
+        }
+    }
+
+    /// <summary>
+    /// The user data rows have to outlive the context the query ran on.
+    /// </summary>
+    [Fact]
+    public void GetItemList_UserData_IsDetachedFromTheContext()
+    {
+        var movie = _repository.GetItemList(new InternalItemsQuery
+        {
+            ItemIds = [_primaryVideoId],
+            DtoOptions = new DtoOptions()
+        }).Single();
+
+        var row = movie.UserData.Single();
+        Assert.Null(row.Item);
+        Assert.Null(row.User);
     }
 
     /// <summary>
@@ -367,7 +438,7 @@ public sealed class BaseItemRepositoryLinkedChildrenTests : SqliteDbTestFixture
             .SelectMany(e => e.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
             .Where(e => ReturnsItems(e.ReturnType))
             // The per-entity primitive and the loader itself are the building blocks, not entry points.
-            .Where(e => e.Name is not (nameof(BaseItemRepository.DeserializeBaseItem) or nameof(BaseItemRepository.LoadLinkedChildren)))
+            .Where(e => e.Name is not (nameof(BaseItemRepository.DeserializeBaseItem) or nameof(BaseItemRepository.LoadCollections)))
             .Select(e => e.Name)
             .Distinct()
             .OrderBy(e => e, StringComparer.Ordinal)
@@ -519,6 +590,45 @@ public sealed class BaseItemRepositoryLinkedChildrenTests : SqliteDbTestFixture
             ChildId = _mergedVersionId,
             ChildType = DbLinkedChildType.LinkedAlternateVersion,
             SortOrder = 0
+        });
+
+        // One row in each of the other owned collections, so a test can tell an attached collection
+        // from an empty one.
+        var user = new Jellyfin.Database.Implementations.Entities.User("viewer", "Default", "Default");
+        context.Users.Add(user);
+        context.BaseItemProviders.Add(new BaseItemProvider
+        {
+            ItemId = _primaryVideoId,
+            ProviderId = "Tmdb",
+            ProviderValue = "603",
+            Item = null!
+        });
+        context.BaseItemMetadataFields.Add(new BaseItemMetadataField
+        {
+            Id = (int)MetadataField.Name,
+            ItemId = _primaryVideoId,
+            Item = null!
+        });
+        context.BaseItemImageInfos.Add(new BaseItemImageInfo
+        {
+            Id = Guid.NewGuid(),
+            ItemId = _primaryVideoId,
+            ImageType = ImageInfoImageType.Primary,
+            Path = "/movies/feature-poster.jpg",
+            Width = 100,
+            Height = 150,
+            Item = null!
+        });
+        context.SaveChanges();
+
+        context.UserData.Add(new UserData
+        {
+            ItemId = _primaryVideoId,
+            UserId = user.Id,
+            CustomDataKey = _primaryVideoId.ToString("N", CultureInfo.InvariantCulture),
+            Played = true,
+            Item = null!,
+            User = null!
         });
         context.SaveChanges();
     }
