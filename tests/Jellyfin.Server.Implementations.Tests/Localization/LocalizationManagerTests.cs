@@ -209,6 +209,20 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [InlineData("it-vm18", "IT", 18, null)] // Rating strings are case insensitive
         [InlineData("VM 18", "IT", 18, null)]
         [InlineData("Vietato ai minori di 18 anni", "IT", 18, null)]
+        [InlineData("ATP", "AR", 0, null)]
+        [InlineData("SAM 13", "AR", 13, null)]
+        [InlineData("SAM 16", "AR", 16, null)]
+        [InlineData("SAM 18", "AR", 18, null)]
+        [InlineData("SAM13", "AR", 13, null)] // Written without a space
+        [InlineData("AR-SAM 16", "AR", 16, null)] // Country prefix stripped against the configured country
+        [InlineData("AR-SAM 13", "US", 13, null)] // Country prefix resolved via the separator fallback
+        [InlineData("AR-SAM 18", "US", 18, null)]
+        [InlineData("AR-SAM13", "US", 13, null)]
+        [InlineData("SAM 18 C", "AR", 1001, null)] // Condicionada, same as "C"
+        [InlineData("Interdit aux moins de 12 ans", "FR", 12, null)]
+        [InlineData("Interdit aux moins de 18 ans", "FR", 18, null)]
+        [InlineData("X 18+", "AU", 1000, 0)] // Official spelling of the Australian X rating
+        [InlineData("X18+", "AU", 1000, 0)]
         public async Task GetRatingLevel_GivenValidString_Success(string value, string countryCode, int? expectedScore, int? expectedSubScore)
         {
             var localizationManager = Setup(new ServerConfiguration()
@@ -253,6 +267,12 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [InlineData("12", 12, null)]
         [InlineData("42", 42, null)]
         [InlineData("9999", 9999, null)]
+        // The French CNC writes minimum ages as "-12" ("not for under 12s"). Parsing that as -12 would
+        // put the item below every MaxParentalRatingScore and bypass parental control entirely.
+        [InlineData("-10", 10, null)]
+        [InlineData("-12", 12, null)]
+        [InlineData("-16", 16, null)]
+        [InlineData("-18", 18, null)]
         public async Task GetRatingLevel_GivenValidAge_Success(string value, int? expectedScore, int? expectedSubScore)
         {
             var localizationManager = Setup(new ServerConfiguration { MetadataCountryCode = "nl" });

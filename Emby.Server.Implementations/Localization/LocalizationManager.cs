@@ -561,14 +561,16 @@ namespace Emby.Server.Implementations.Localization
         }
 
         /// <summary>
-        /// Tries to parse a rating as a number, allowing an optional trailing '+' (e.g. "16" or "18+").
+        /// Tries to parse a rating as a number, allowing an optional trailing '+' (e.g. "16" or "18+")
+        /// or a leading '-' (e.g. the French "-12").
         /// </summary>
         /// <param name="ratingValue">Rating value to parse.</param>
         /// <param name="score">Parsed score.</param>
         /// <returns>Returns true if parsing was successful.</returns>
         private static bool TryParseRatingAsScore(ReadOnlySpan<char> ratingValue, out int score)
         {
-            var trimmed = ratingValue.TrimEnd('+');
+            // A leading '-' marks a minimum age ("-12" is French for "not for under 12s"), never a negative score
+            var trimmed = ratingValue.TrimStart('-').TrimEnd('+');
             return int.TryParse(trimmed, out score);
         }
 
