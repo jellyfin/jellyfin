@@ -217,24 +217,7 @@ namespace Emby.Naming.Video
             for (var i = 0; i < videos.Count; i++)
             {
                 var video = videos[i];
-                var episodeResult = _episodePathParser.Parse(video.Files[0].Path, false);
-                string? key = null;
-                if (episodeResult.Success)
-                {
-                    if (episodeResult.IsByDate
-                        && episodeResult.Year.HasValue
-                        && episodeResult.Month.HasValue
-                        && episodeResult.Day.HasValue)
-                    {
-                        key = FormattableString.Invariant(
-                            $"D{episodeResult.Year.Value}{episodeResult.Month.Value:D2}{episodeResult.Day.Value:D2}");
-                    }
-                    else if (episodeResult.EpisodeNumber.HasValue)
-                    {
-                        key = FormattableString.Invariant(
-                            $"S{episodeResult.SeasonNumber ?? 0}E{episodeResult.EpisodeNumber.Value}");
-                    }
-                }
+                var key = GetEpisodeVersionKey(video.Files[0].Path);
 
                 if (key is null)
                 {
@@ -263,6 +246,29 @@ namespace Emby.Naming.Video
             }
 
             return result;
+        }
+
+        private string? GetEpisodeVersionKey(string path)
+        {
+            // Optimistic expressions are guesses, so they are not consulted here: merging is destructive,
+            // a file collapsed into the alternate versions of another one is no longer an episode of its own.
+            var episodeResult = _episodePathParser.Parse(path, false, isOptimistic: false, fillExtendedInfo: false);
+            if (!episodeResult.Success)
+            {
+                return null;
+            }
+
+            if (episodeResult.IsByDate)
+            {
+                return episodeResult.Year.HasValue && episodeResult.Month.HasValue && episodeResult.Day.HasValue
+                    ? FormattableString.Invariant(
+                        $"D{episodeResult.Year.Value}{episodeResult.Month.Value:D2}{episodeResult.Day.Value:D2}")
+                    : null;
+            }
+
+            return episodeResult.SeasonNumber.HasValue && episodeResult.EpisodeNumber.HasValue
+                ? FormattableString.Invariant($"S{episodeResult.SeasonNumber.Value}E{episodeResult.EpisodeNumber.Value}")
+                : null;
         }
 
         private static VideoInfo OrganizeAlternateVersions(
