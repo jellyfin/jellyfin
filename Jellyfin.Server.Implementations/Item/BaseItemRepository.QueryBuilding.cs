@@ -465,15 +465,22 @@ public sealed partial class BaseItemRepository
 
         baseQuery = ApplyParentalRestrictions(context, baseQuery, filter);
 
-        // Exclude alternate versions (have PrimaryVersionId set) and owned non-extra items.
-        // Extras (trailers, etc.) have OwnerId set but also have ExtraType set — keep those.
+        // Hide alternate versions behind the primary of their library, and exclude owned non-extra
+        // items. Extras (trailers, etc.) have OwnerId set but also have ExtraType set — keep those.
         if (!filter.IncludeOwnedItems)
         {
-            baseQuery = baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
+            baseQuery = ApplyAlternateVersionFiltering(context, baseQuery)
+                .Where(e => e.OwnerId == null || e.ExtraType != null);
         }
 
         return baseQuery;
     }
+
+    private static IQueryable<BaseItemEntity> ApplyAlternateVersionFiltering(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> baseQuery)
+        => baseQuery.Where(e => e.PrimaryVersionId == null
+            || !context.BaseItems.Any(p => p.Id == e.PrimaryVersionId && p.TopParentId == e.TopParentId));
 
     /// <summary>
     /// Restricts a query to the libraries the user may open, exempting requested by-name items.

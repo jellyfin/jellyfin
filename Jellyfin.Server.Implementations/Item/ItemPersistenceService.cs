@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -655,6 +656,38 @@ public class ItemPersistenceService : IItemPersistenceService
                     });
 
                     sortOrder++;
+                }
+
+                var linkedChildIds = newLinkedChildren
+                    .Select(c => c.ChildId)
+                    // A video listed among its own versions would be pointed at itself.
+                    .Where(childId => existingChildIds.Contains(childId) && !childId.Equals(video.Id))
+                    .Where(childId => !childId.Equals(video.PrimaryVersionId))
+                    .ToList();
+                if (linkedChildIds.Count > 0)
+                {
+                    var demotedChildren = context.BaseItems
+                        .Where(e => linkedChildIds.Contains(e.Id)
+                            && (e.PrimaryVersionId == null || e.PrimaryVersionId != video.Id))
+                        .ToList();
+
+                    foreach (var child in demotedChildren)
+                    {
+                        child.PrimaryVersionId = video.Id;
+
+                        // Mirrors Video.CreatePresentationUniqueKey, so presentation-key grouping
+                        // collapses the version onto its primary as well.
+                        child.PresentationUniqueKey = video.Id.ToString("N", CultureInfo.InvariantCulture);
+                    }
+
+                    if (demotedChildren.Count > 0)
+                    {
+                        _logger.LogInformation(
+                            "Set PrimaryVersionId on {Count} alternate versions of video {VideoName} ({VideoId})",
+                            demotedChildren.Count,
+                            video.Name,
+                            video.Id);
+                    }
                 }
 
                 // A previously-linked LocalAlternateVersion that is no longer present becomes orphaned;
