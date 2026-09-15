@@ -878,7 +878,18 @@ namespace Emby.Server.Implementations.Library
                         wrongTypeItem.GetType().Name,
                         expectedVideoType.Name,
                         path);
-                    DeleteItem(wrongTypeItem, new DeleteOptions { DeleteFileLocation = false });
+
+                    // A full DeleteItem would save the primary version, which resolves its
+                    // alternates again and re-enters here before this row is gone.
+                    DeleteItemsUnsafeFast([wrongTypeItem]);
+
+                    // The fast path skips the parent bookkeeping, and the stale item is listed
+                    // under its ParentId, so that folder's cached listing has to be dropped.
+                    if (wrongTypeItem.GetParent() is Folder staleParent)
+                    {
+                        staleParent.Children = null;
+                        staleParent.UserData = null;
+                    }
                 }
             }
 
