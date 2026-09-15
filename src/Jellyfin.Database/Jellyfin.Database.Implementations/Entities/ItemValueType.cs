@@ -21,10 +21,7 @@ public enum ItemValueType
     /// </summary>
     Genre = 2,
 
-    /// <summary>
-    /// Studios.
-    /// </summary>
-    Studios = 3,
+    // 3 was Studios, which moved to its own Companies table.
 
     /// <summary>
     /// Tags.

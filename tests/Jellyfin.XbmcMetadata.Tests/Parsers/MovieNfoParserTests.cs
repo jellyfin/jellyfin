@@ -103,8 +103,8 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
 
             Assert.Equal(new DateTime(2017, 11, 15), item.PremiereDate);
             Assert.Equal(new DateTime(2017, 11, 16), item.EndDate);
-            Assert.Single(item.Studios);
-            Assert.Contains("DC Comics", item.Studios);
+            Assert.Single(item.Companies);
+            Assert.Contains("DC Comics", item.GetCompanyNames(CompanyKind.Studio));
 
             Assert.Equal("1.777778", item.AspectRatio);
             Assert.Equal(Video3DFormat.HalfSideBySide, item.Video3DFormat);

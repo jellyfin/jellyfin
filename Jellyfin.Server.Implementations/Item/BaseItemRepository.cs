@@ -43,7 +43,6 @@ public sealed partial class BaseItemRepository
     private static readonly IReadOnlyList<ItemValueType> _getAllArtistsValueTypes = [ItemValueType.Artist, ItemValueType.AlbumArtist];
     private static readonly IReadOnlyList<ItemValueType> _getArtistValueTypes = [ItemValueType.Artist];
     private static readonly IReadOnlyList<ItemValueType> _getAlbumArtistValueTypes = [ItemValueType.AlbumArtist];
-    private static readonly IReadOnlyList<ItemValueType> _getStudiosValueTypes = [ItemValueType.Studios];
     private static readonly IReadOnlyList<ItemValueType> _getGenreValueTypes = [ItemValueType.Genre];
 
     private static readonly BaseItemKind[] _itemByNameKinds =
@@ -52,15 +51,14 @@ public sealed partial class BaseItemRepository
         BaseItemKind.Genre,
         BaseItemKind.MusicGenre,
         BaseItemKind.MusicArtist,
-        BaseItemKind.Studio
+        BaseItemKind.Company
     ];
 
     private static readonly (BaseItemKind Kind, IReadOnlyList<ItemValueType> ValueTypes)[] _itemByNameValueTypes =
     [
         (BaseItemKind.Genre, _getGenreValueTypes),
         (BaseItemKind.MusicGenre, _getGenreValueTypes),
-        (BaseItemKind.MusicArtist, _getAllArtistsValueTypes),
-        (BaseItemKind.Studio, _getStudiosValueTypes)
+        (BaseItemKind.MusicArtist, _getAllArtistsValueTypes)
     ];
 
     // The only folder kinds whose children form a single viewing sequence, so playback progress on a
@@ -167,9 +165,9 @@ public sealed partial class BaseItemRepository
             list.Add(_itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]!);
         }
 
-        if (IsTypeInQuery(BaseItemKind.Studio, query))
+        if (IsTypeInQuery(BaseItemKind.Company, query))
         {
-            list.Add(_itemTypeLookup.BaseItemKindNames[BaseItemKind.Studio]!);
+            list.Add(_itemTypeLookup.BaseItemKindNames[BaseItemKind.Company]!);
         }
 
         return list;

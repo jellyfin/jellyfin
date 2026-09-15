@@ -438,7 +438,21 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     var studio = reader.ReadNormalizedString();
                     if (!string.IsNullOrEmpty(studio))
                     {
-                        item.AddStudio(studio);
+                        item.AddCompany(studio, CompanyKind.Studio);
+                    }
+
+                    break;
+                case "company":
+                    // Anything but a studio, which keeps the tag Kodi knows.
+                    if (!Enum.TryParse<CompanyKind>(reader.GetAttribute("type"), out var companyKind))
+                    {
+                        companyKind = CompanyKind.Studio;
+                    }
+
+                    var company = reader.ReadNormalizedString();
+                    if (!string.IsNullOrEmpty(company))
+                    {
+                        item.AddCompany(company, companyKind);
                     }
 
                     break;

@@ -108,7 +108,7 @@ namespace MediaBrowser.Controller.Entities
         {
             Tags = Array.Empty<string>();
             Genres = Array.Empty<string>();
-            Studios = Array.Empty<string>();
+            Companies = Array.Empty<CompanyInfo>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             LockedFields = Array.Empty<MetadataField>();
             ImageInfos = Array.Empty<ItemImageInfo>();
@@ -627,11 +627,11 @@ namespace MediaBrowser.Controller.Entities
         public string Overview { get; set; }
 
         /// <summary>
-        /// Gets or sets the studios.
+        /// Gets or sets the companies credited on the item.
         /// </summary>
-        /// <value>The studios.</value>
+        /// <value>The companies.</value>
         [JsonIgnore]
-        public string[] Studios { get; set; }
+        public CompanyInfo[] Companies { get; set; }
 
         /// <summary>
         /// Gets or sets the genres.
@@ -2124,32 +2124,46 @@ namespace MediaBrowser.Controller.Entities
 #pragma warning restore CS0618
 
         /// <summary>
-        /// Adds a studio to the item.
+        /// Adds a company to the item.
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="companyKind">What the company did for the item.</param>
         /// <exception cref="ArgumentNullException">Throws if name is null.</exception>
-        public void AddStudio(string name)
+        public void AddCompany(string name, CompanyKind companyKind)
         {
             ArgumentException.ThrowIfNullOrEmpty(name);
-            var current = Studios;
+            var current = Companies;
 
-            if (!current.Contains(name, StringComparison.OrdinalIgnoreCase))
+            if (!current.Any(i => i.Type == companyKind && string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase)))
             {
-                int curLen = current.Length;
-                if (curLen == 0)
-                {
-                    Studios = [name];
-                }
-                else
-                {
-                    Studios = [.. current, name];
-                }
+                Companies = [.. current, new CompanyInfo { Name = name, Type = companyKind }];
             }
         }
 
-        public void SetStudios(IEnumerable<string> names)
+        /// <summary>
+        /// Replaces every company of one kind on the item, leaving the other kinds alone.
+        /// </summary>
+        /// <param name="names">The company names.</param>
+        /// <param name="companyKind">What the companies did for the item.</param>
+        public void SetCompanies(IEnumerable<string> names, CompanyKind companyKind)
         {
-            Studios = names.Trimmed().Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+            Companies =
+            [
+                .. Companies.Where(i => i.Type != companyKind),
+                .. names.Trimmed()
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Select(i => new CompanyInfo { Name = i, Type = companyKind })
+            ];
+        }
+
+        /// <summary>
+        /// Gets the names of every company of one kind on the item.
+        /// </summary>
+        /// <param name="companyKind">What the companies did for the item.</param>
+        /// <returns>The company names.</returns>
+        public IReadOnlyList<string> GetCompanyNames(CompanyKind companyKind)
+        {
+            return Companies.Where(i => i.Type == companyKind).Select(i => i.Name).ToArray();
         }
 
         /// <summary>
@@ -2781,10 +2795,10 @@ namespace MediaBrowser.Controller.Entities
                     ownedItem.Genres = item.Genres;
                 }
 
-                if (!item.Studios.SequenceEqual(ownedItem.Studios, StringComparer.Ordinal))
+                if (!item.Companies.Select(i => (i.Name, i.Type)).SequenceEqual(ownedItem.Companies.Select(i => (i.Name, i.Type))))
                 {
                     newOptions.ForceSave = true;
-                    ownedItem.Studios = item.Studios;
+                    ownedItem.Companies = item.Companies;
                 }
 
                 if (!item.ProductionLocations.SequenceEqual(ownedItem.ProductionLocations, StringComparer.Ordinal))

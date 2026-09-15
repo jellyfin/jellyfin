@@ -694,7 +694,7 @@ namespace Emby.Server.Implementations.Library
                 MusicArtist => _configurationManager.ApplicationPaths.ArtistsPath,
                 MusicGenre => _configurationManager.ApplicationPaths.MusicGenrePath,
                 Person => _configurationManager.ApplicationPaths.PeoplePath,
-                Studio => _configurationManager.ApplicationPaths.StudioPath,
+                Company => _configurationManager.ApplicationPaths.CompanyPath,
                 Year => _configurationManager.ApplicationPaths.YearPath,
                 _ => null
             };
@@ -1253,18 +1253,18 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Gets the studio.
+        /// Gets the company.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <returns>Task{Studio}.</returns>
-        public Studio GetStudio(string name)
+        /// <returns>Task{Company}.</returns>
+        public Company GetCompany(string name)
         {
-            return CreateItemByName<Studio>(Studio.GetPath, name, new DtoOptions(true));
+            return CreateItemByName<Company>(Company.GetPath, name, new DtoOptions(true), Company.GetCompanyId(name));
         }
 
-        public Guid GetStudioId(string name)
+        public Guid GetCompanyId(string name)
         {
-            return GetItemByNameId<Studio>(Studio.GetPath(name));
+            return Company.GetCompanyId(name);
         }
 
         public Guid GetGenreId(string name)
@@ -1334,7 +1334,7 @@ namespace Emby.Server.Implementations.Library
             return CreateItemByName<MusicArtist>(MusicArtist.GetPath, name, options);
         }
 
-        private T CreateItemByName<T>(Func<string, string> getPathFn, string name, DtoOptions options)
+        private T CreateItemByName<T>(Func<string, string> getPathFn, string name, DtoOptions options, Guid? itemId = null)
             where T : BaseItem, new()
         {
             if (typeof(T) == typeof(MusicArtist))
@@ -1357,7 +1357,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             var path = getPathFn(name);
-            var id = GetItemByNameId<T>(path);
+            var id = itemId ?? GetItemByNameId<T>(path);
             var item = GetItemById(id) as T;
             if (item is null)
             {
@@ -1907,7 +1907,7 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetItemIdsList(query);
         }
 
-        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery query)
+        public QueryResult<BaseItem> GetCompanies(InternalItemsQuery query)
         {
             if (query.User is not null)
             {
@@ -1915,7 +1915,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             SetTopParentOrAncestorIds(query);
-            return _itemRepository.GetStudios(query);
+            return _itemRepository.GetCompanies(query);
         }
 
         public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery query)

@@ -793,7 +793,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <param name="excludeArtistIds">Exclude artist ids.</param>
     /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
     /// <param name="limit">Optional. The maximum number of records to return.</param>
-    /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+    /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Companies, Taglines, TrailerUrls.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="200">Similar items returned.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> containing the similar items.</returns>

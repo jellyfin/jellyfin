@@ -20,7 +20,7 @@ using MediaBrowser.Model.Providers;
 namespace MediaBrowser.Providers.Plugins.StudioImages
 {
     /// <summary>
-    /// Studio image provider.
+    /// Artwork repository image provider for companies.
     /// </summary>
     public class StudiosImageProvider : IRemoteImageProvider
     {
@@ -47,7 +47,7 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
         /// <inheritdoc />
         public bool Supports(BaseItem item)
         {
-            return item is Studio;
+            return item is Company;
         }
 
         /// <inheritdoc />

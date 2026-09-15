@@ -6,6 +6,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Enums;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Net;
 using Xunit;
 
@@ -135,6 +136,35 @@ namespace Jellyfin.Api.Tests.Helpers
                 });
 
             return data;
+        }
+
+        [Fact]
+        public static void WithLegacyStudios_NoStudios_LeavesTheCompanyIdsAlone()
+        {
+            var companyIds = new[] { Guid.NewGuid() };
+
+            Assert.Same(companyIds, RequestHelpers.WithLegacyStudios(companyIds, [], []));
+        }
+
+        [Fact]
+        public static void WithLegacyStudios_StudioIds_KeepsBoth()
+        {
+            var companyId = Guid.NewGuid();
+            var studioId = Guid.NewGuid();
+
+            var ids = RequestHelpers.WithLegacyStudios([companyId], [], [studioId]);
+
+            Assert.Equal(new[] { companyId, studioId }, ids);
+        }
+
+        [Fact]
+        public static void WithLegacyStudios_StudioName_IsTheCompanyOfThatName()
+        {
+            var ids = RequestHelpers.WithLegacyStudios([], ["Bad Robot"], []);
+
+            // A studio filter matched networks back when the two were the same thing, and still
+            // does: one company answers to the name whatever it has since been credited as.
+            Assert.Equal([Company.GetCompanyId("Bad Robot")], ids);
         }
     }
 }

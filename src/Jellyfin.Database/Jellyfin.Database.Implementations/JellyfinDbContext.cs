@@ -129,6 +129,16 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<ItemValueMap> ItemValuesMap => Set<ItemValueMap>();
 
     /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the companies.
+    /// </summary>
+    public DbSet<CompanyEntity> Companies => Set<CompanyEntity>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the company to BaseItem mappings.
+    /// </summary>
+    public DbSet<CompanyBaseItemMap> CompanyBaseItemMap => Set<CompanyBaseItemMap>();
+
+    /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/>.
     /// </summary>
     public DbSet<MediaStreamInfo> MediaStreamInfos => Set<MediaStreamInfo>();

@@ -36,9 +36,62 @@ public sealed partial class BaseItemRepository
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetStudios(InternalItemsQuery filter)
+    public QueryResult<BaseItemDto> GetCompanies(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, _getStudiosValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.Studio]);
+        ArgumentNullException.ThrowIfNull(filter);
+
+        using var context = _dbProvider.CreateDbContext();
+
+        var creditedItems = TranslateQuery(context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId)), context, CloneScopeFilter(filter));
+
+        // A company's by-name item shares its id with its row in Companies, so the mapping table
+        // answers both "which companies are credited here" and "which items credit this company"
+        // without the clean-name matching the item values need.
+        var companyKind = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Company];
+        var innerQuery = PrepareItemQuery(context, filter)
+            .Where(e => e.Type == companyKind)
+            .Where(e => context.CompanyBaseItemMap
+                .Where(m => m.CompanyId == e.Id)
+                .Join(creditedItems, m => m.ItemId, g => g.Id, (m, g) => m.ItemId)
+                .Any());
+
+        if (filter.CompanyTypes.Length > 0)
+        {
+            var companyTypes = filter.CompanyTypes.Select(e => (CompanyKindEntity)e).ToArray();
+            innerQuery = innerQuery.Where(e => context.CompanyBaseItemMap.Any(m => m.CompanyId == e.Id && companyTypes.Contains(m.Type)));
+        }
+
+        var query = TranslateQuery(innerQuery, context, CloneByNameFilter(filter));
+
+        var result = new QueryResult<BaseItemDto>();
+        if (filter.EnableTotalRecordCount)
+        {
+            result.TotalRecordCount = query.Count();
+        }
+
+        query = ApplyOrder(ApplyNavigations(query, filter), filter, context);
+
+        if (filter.StartIndex.HasValue && filter.StartIndex.Value > 0)
+        {
+            query = query.Skip(filter.StartIndex.Value);
+        }
+
+        if (filter.Limit.HasValue)
+        {
+            query = query.Take(filter.Limit.Value);
+        }
+
+        result.StartIndex = filter.StartIndex ?? 0;
+        result.Items =
+        [
+            .. query
+                .AsEnumerable()
+                .Select(e => DeserializeBaseItem(e, filter.SkipDeserialization))
+                .Where(item => item is not null)
+                .Select(item => item!)
+        ];
+
+        return result;
     }
 
     /// <inheritdoc />
@@ -54,9 +107,24 @@ public sealed partial class BaseItemRepository
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<string> GetStudioNames()
+    public int DeleteOrphanedCompanies()
     {
-        return GetItemValueNames(_getStudiosValueTypes, [], []);
+        using var context = _dbProvider.CreateDbContext();
+
+        return context.Companies.Where(e => !context.CompanyBaseItemMap.Any(f => f.CompanyId == e.Id)).ExecuteDelete();
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<(Guid Id, string Name)> GetAllCompanies()
+    {
+        using var context = _dbProvider.CreateDbContext();
+
+        return context.Companies
+            .AsNoTracking()
+            .Select(e => new { e.Id, e.Name })
+            .AsEnumerable()
+            .Select(e => (e.Id, e.Name))
+            .ToArray();
     }
 
     /// <inheritdoc />
@@ -117,6 +185,60 @@ public sealed partial class BaseItemRepository
             .ToArray();
     }
 
+    /// <summary>
+    /// Copies the parts of a by-name query that pick out the items behind each name.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The copied filter.</returns>
+    private static InternalItemsQuery CloneScopeFilter(InternalItemsQuery filter)
+    {
+        return new InternalItemsQuery(filter.User)
+        {
+            ExcludeItemTypes = filter.ExcludeItemTypes,
+            IncludeItemTypes = filter.IncludeItemTypes,
+            MediaTypes = filter.MediaTypes,
+            AncestorIds = filter.AncestorIds,
+            ItemIds = filter.ItemIds,
+            TopParentIds = filter.TopParentIds,
+            ParentId = filter.ParentId,
+            IsAiring = filter.IsAiring,
+            IsMovie = filter.IsMovie,
+            IsSports = filter.IsSports,
+            IsKids = filter.IsKids,
+            IsNews = filter.IsNews,
+            IsSeries = filter.IsSeries
+        };
+    }
+
+    /// <summary>
+    /// Copies the parts of a by-name query that apply to the by-name items themselves.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The copied filter.</returns>
+    private static InternalItemsQuery CloneByNameFilter(InternalItemsQuery filter)
+    {
+        return new InternalItemsQuery(filter.User)
+        {
+            IsPlayed = filter.IsPlayed,
+            IsFavorite = filter.IsFavorite,
+            IsFavoriteOrLiked = filter.IsFavoriteOrLiked,
+            IsLiked = filter.IsLiked,
+            IsLocked = filter.IsLocked,
+            NameLessThan = filter.NameLessThan,
+            NameStartsWith = filter.NameStartsWith,
+            NameStartsWithOrGreater = filter.NameStartsWithOrGreater,
+            Tags = filter.Tags,
+            OfficialRatings = filter.OfficialRatings,
+            CompanyIds = filter.CompanyIds,
+            GenreIds = filter.GenreIds,
+            Genres = filter.Genres,
+            Years = filter.Years,
+            NameContains = filter.NameContains,
+            SearchTerm = filter.SearchTerm,
+            ExcludeItemIds = filter.ExcludeItemIds
+        };
+    }
+
     private string[] GetItemValueNames(IReadOnlyList<ItemValueType> itemValueTypes, IReadOnlyList<string> withItemTypes, IReadOnlyList<string> excludeItemTypes)
     {
         using var context = _dbProvider.CreateDbContext();
@@ -148,22 +270,7 @@ public sealed partial class BaseItemRepository
 
         using var context = _dbProvider.CreateDbContext();
 
-        var innerQueryFilter = TranslateQuery(context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId)), context, new InternalItemsQuery(filter.User)
-        {
-            ExcludeItemTypes = filter.ExcludeItemTypes,
-            IncludeItemTypes = filter.IncludeItemTypes,
-            MediaTypes = filter.MediaTypes,
-            AncestorIds = filter.AncestorIds,
-            ItemIds = filter.ItemIds,
-            TopParentIds = filter.TopParentIds,
-            ParentId = filter.ParentId,
-            IsAiring = filter.IsAiring,
-            IsMovie = filter.IsMovie,
-            IsSports = filter.IsSports,
-            IsKids = filter.IsKids,
-            IsNews = filter.IsNews,
-            IsSeries = filter.IsSeries
-        });
+        var innerQueryFilter = TranslateQuery(context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId)), context, CloneScopeFilter(filter));
 
         var innerQuery = PrepareItemQuery(context, filter)
             .Where(e => e.Type == returnType)
@@ -176,26 +283,7 @@ public sealed partial class BaseItemRepository
                     (ivm, g) => ivm.ItemId)
                 .Any());
 
-        var outerQueryFilter = new InternalItemsQuery(filter.User)
-        {
-            IsPlayed = filter.IsPlayed,
-            IsFavorite = filter.IsFavorite,
-            IsFavoriteOrLiked = filter.IsFavoriteOrLiked,
-            IsLiked = filter.IsLiked,
-            IsLocked = filter.IsLocked,
-            NameLessThan = filter.NameLessThan,
-            NameStartsWith = filter.NameStartsWith,
-            NameStartsWithOrGreater = filter.NameStartsWithOrGreater,
-            Tags = filter.Tags,
-            OfficialRatings = filter.OfficialRatings,
-            StudioIds = filter.StudioIds,
-            GenreIds = filter.GenreIds,
-            Genres = filter.Genres,
-            Years = filter.Years,
-            NameContains = filter.NameContains,
-            SearchTerm = filter.SearchTerm,
-            ExcludeItemIds = filter.ExcludeItemIds
-        };
+        var outerQueryFilter = CloneByNameFilter(filter);
 
         // Collapse rows that share a PresentationUniqueKey (e.g. alternate versions) into one
         // representative id per group, then materialize the representative ids once.
@@ -333,8 +421,8 @@ public sealed partial class BaseItemRepository
             .Select(g => new { g.Key.CleanName, g.Key.Type, g.Key.SeriesId, Count = g.Select(x => x.Id).Distinct().Count() })
             .ToList();
 
-        // Only studios and genres pass down from a series to its episodes; an artist credit does not.
-        var inheritsToEpisodes = itemValueTypes.Contains(ItemValueType.Studios) || itemValueTypes.Contains(ItemValueType.Genre);
+        // Only genres pass down from a series to its episodes; an artist credit does not.
+        var inheritsToEpisodes = itemValueTypes.Contains(ItemValueType.Genre);
         var episodeCounts = inheritsToEpisodes
             ? BuildEpisodeCountsByCleanName(
                 scopedItems,

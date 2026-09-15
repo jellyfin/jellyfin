@@ -166,9 +166,9 @@ namespace MediaBrowser.Model.Querying
         SpecialEpisodeNumbers,
 
         /// <summary>
-        /// The studios of the item.
+        /// The companies credited on the item.
         /// </summary>
-        Studios,
+        Companies,
 
         /// <summary>
         /// The taglines of the item.
@@ -248,6 +248,15 @@ namespace MediaBrowser.Model.Querying
         /// <summary>
         /// The special feature count.
         /// </summary>
-        SpecialFeatureCount
+        SpecialFeatureCount,
+
+        /// <summary>
+        /// The studios of the item.
+        /// </summary>
+        /// <remarks>
+        /// Kept for compatibility with older clients; use <see cref="Companies"/>. Declared last
+        /// because the members above it take their values from their position.
+        /// </remarks>
+        Studios = Companies
     }
 }

@@ -185,7 +185,7 @@ public class TvShowsController : BaseJellyfinApiController
     /// </summary>
     /// <param name="seriesId">The series id.</param>
     /// <param name="userId">The user id.</param>
-    /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+    /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Companies, Taglines, TrailerUrls.</param>
     /// <param name="season">Optional filter by season number.</param>
     /// <param name="seasonId">Optional. Filter by season id.</param>
     /// <param name="isMissing">Optional. Filter by items that are missing episodes or not.</param>
@@ -320,7 +320,7 @@ public class TvShowsController : BaseJellyfinApiController
     /// </summary>
     /// <param name="seriesId">The series id.</param>
     /// <param name="userId">The user id.</param>
-    /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+    /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Companies, Taglines, TrailerUrls.</param>
     /// <param name="isSpecialSeason">Optional. Filter by special season.</param>
     /// <param name="isMissing">Optional. Filter by items that are missing episodes or not.</param>
     /// <param name="adjacentTo">Optional. Return items that are siblings of a supplied item.</param>

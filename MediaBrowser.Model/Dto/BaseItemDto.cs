@@ -285,9 +285,16 @@ namespace MediaBrowser.Model.Dto
         public BaseItemPerson[] People { get; set; }
 
         /// <summary>
+        /// Gets or sets the companies credited on the item.
+        /// </summary>
+        /// <value>The companies.</value>
+        public CompanyDto[] Companies { get; set; }
+
+        /// <summary>
         /// Gets or sets the studios.
         /// </summary>
         /// <value>The studios.</value>
+        [Obsolete("Use Companies")]
         public NameGuidPair[] Studios { get; set; }
 
         public NameGuidPair[] GenreItems { get; set; }

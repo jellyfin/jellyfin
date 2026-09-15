@@ -61,7 +61,7 @@ public static class OrderMapper
             (ItemSortBy.DateLastContentAdded, _) => e => e.DateLastMediaAdded,
             (ItemSortBy.Artist, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.Artist).OrderBy(f => f.ItemValue.CleanValue).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
             (ItemSortBy.AlbumArtist, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.AlbumArtist).OrderBy(f => f.ItemValue.CleanValue).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
-            (ItemSortBy.Studio, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.Studios).OrderBy(f => f.ItemValue.CleanValue).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
+            (ItemSortBy.Studio, _) => e => e.CompanyMappings!.Where(f => f.Type == CompanyKindEntity.Studio).OrderBy(f => f.Company.CleanName).Select(f => f.Company.CleanName).FirstOrDefault(),
             (ItemSortBy.OfficialRating, _) => e => e.InheritedParentalRatingValue,
             (ItemSortBy.SeriesSortName, _) => e => e.SeriesName,
             (ItemSortBy.Album, _) => e => e.Album,

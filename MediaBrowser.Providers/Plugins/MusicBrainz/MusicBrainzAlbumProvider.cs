@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
@@ -317,11 +318,11 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
 
         if (release?.LabelInfo is not null && release.LabelInfo.Count > 0)
         {
-            item.Studios = release.LabelInfo
-                .Where(labelInfo => !string.IsNullOrWhiteSpace(labelInfo.Label?.Name))
-                .Select(labelInfo => labelInfo.Label!.Name!)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
+            item.SetCompanies(
+                release.LabelInfo
+                    .Where(labelInfo => !string.IsNullOrWhiteSpace(labelInfo.Label?.Name))
+                    .Select(labelInfo => labelInfo.Label!.Name!),
+                CompanyKind.Label);
         }
     }
 

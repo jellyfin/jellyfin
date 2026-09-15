@@ -21,6 +21,11 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// Studios controller.
 /// </summary>
+/// <remarks>
+/// Studios are companies of kind <see cref="CompanyKind.Studio"/>. These endpoints are the companies
+/// endpoints with that kind fixed, kept so clients written against them keep working, and to be
+/// removed once those clients have moved to <see cref="CompaniesController"/>.
+/// </remarks>
 [Authorize]
 [Tags("Studio")]
 public class StudiosController : BaseJellyfinApiController
@@ -69,6 +74,7 @@ public class StudiosController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the studios.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Obsolete("Use GetCompanies")]
     public ActionResult<QueryResult<BaseItemDto>> GetStudios(
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
@@ -92,8 +98,8 @@ public class StudiosController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-        // Asking for a type filter has always implied wanting that type's counts back.
-        if (includeItemTypes.Length != 0 && !dtoOptions.ContainsField(ItemFields.ItemCounts))
+        // By-name results have always come back with their item counts, filter or no filter.
+        if (!dtoOptions.ContainsField(ItemFields.ItemCounts))
         {
             dtoOptions.Fields = [.. dtoOptions.Fields, ItemFields.ItemCounts];
         }
@@ -106,6 +112,7 @@ public class StudiosController : BaseJellyfinApiController
 
         var query = new InternalItemsQuery(user)
         {
+            CompanyTypes = [CompanyKind.Studio],
             ExcludeItemTypes = excludeItemTypes,
             IncludeItemTypes = includeItemTypes,
             StartIndex = startIndex,
@@ -131,8 +138,12 @@ public class StudiosController : BaseJellyfinApiController
             }
         }
 
-        var result = _libraryManager.GetStudios(query);
-        return RequestHelpers.CreateQueryResult(result, dtoOptions, _dtoService, user);
+        var result = _libraryManager.GetCompanies(query);
+
+        return new QueryResult<BaseItemDto>(
+            result.StartIndex,
+            result.TotalRecordCount,
+            _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user));
     }
 
     /// <summary>
@@ -144,12 +155,13 @@ public class StudiosController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the studio.</returns>
     [HttpGet("{name}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Obsolete("Use GetCompany")]
     public ActionResult<BaseItemDto> GetStudio([FromRoute, Required] string name, [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions();
 
-        var item = _libraryManager.GetStudio(name);
+        var item = _libraryManager.GetCompany(name);
         if (!userId.IsNullOrEmpty())
         {
             var user = _userManager.GetUserById(userId.Value);

@@ -134,7 +134,6 @@ public class ItemCountService : IItemCountService
         {
             BaseItemKind.MusicArtist => [ItemValueType.Artist, ItemValueType.AlbumArtist],
             BaseItemKind.Genre or BaseItemKind.MusicGenre => [ItemValueType.Genre],
-            BaseItemKind.Studio => [ItemValueType.Studios],
             _ => []
         };
 
@@ -179,6 +178,10 @@ public class ItemCountService : IItemCountService
         if (valueTypes.Length > 0)
         {
             CountByItemValue(context, related, kind, relatedItemKinds, valueTypes, nameItems, result);
+        }
+        else if (kind == BaseItemKind.Company)
+        {
+            CountByCompany(context, related, relatedItemKinds, nameItems, result);
         }
         else if (kind == BaseItemKind.Person)
         {
@@ -251,6 +254,105 @@ public class ItemCountService : IItemCountService
 
             result[nameItem.Id] = itemCounts;
         }
+    }
+
+    private void CountByCompany(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> related,
+        BaseItemKind[] relatedItemKinds,
+        NameItem[] nameItems,
+        Dictionary<Guid, ItemCounts> result)
+    {
+        // A by-name company item and its row in Companies share an id, so unlike the name-matched
+        // item values these count against the mapping table directly.
+        var companyIds = nameItems.Select(n => n.Id).Distinct().ToArray();
+
+        var grouped = context.CompanyBaseItemMap.AsNoTracking()
+            .WhereOneOrMany(companyIds, m => m.CompanyId)
+            .Join(related, m => m.ItemId, e => e.Id, (m, e) => new { m.CompanyId, e.Type, e.Id })
+            .GroupBy(x => new { x.CompanyId, x.Type })
+            .Select(g => new { g.Key.CompanyId, g.Key.Type, Count = g.Select(x => x.Id).Distinct().Count() })
+            .ToArray();
+
+        var byCompanyId = grouped
+            .GroupBy(g => g.CompanyId)
+            .ToDictionary(g => g.Key, g => g.Select(x => (x.Type, x.Count)).ToArray());
+
+        var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
+        var episodeRollUp = RollsUpEpisodes(BaseItemKind.Company, relatedItemKinds)
+                && Array.Exists(grouped, g => string.Equals(g.Type, seriesTypeName, StringComparison.Ordinal))
+            ? CountEpisodesOfCreditedSeriesByCompany(context, related, companyIds)
+            : null;
+
+        foreach (var nameItem in nameItems)
+        {
+            if (!byCompanyId.TryGetValue(nameItem.Id, out var counts))
+            {
+                continue;
+            }
+
+            var itemCounts = ItemCountBuilder.Build(_itemTypeLookup, counts);
+
+            if (episodeRollUp is not null)
+            {
+                var rollUp = episodeRollUp.GetValueOrDefault(nameItem.Id);
+
+                // Episodes of a credited series count towards it even when uncredited themselves,
+                // and a credited episode of a credited series must not be counted a second time.
+                var directEpisodeCount = itemCounts.EpisodeCount - rollUp.CreditedEpisodesOfCreditedSeries;
+                ItemCountBuilder.SetEpisodeCount(itemCounts, rollUp.EpisodesOfCreditedSeries + directEpisodeCount);
+            }
+
+            result[nameItem.Id] = itemCounts;
+        }
+    }
+
+    private Dictionary<Guid, (int EpisodesOfCreditedSeries, int CreditedEpisodesOfCreditedSeries)> CountEpisodesOfCreditedSeriesByCompany(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> related,
+        Guid[] companyIds)
+    {
+        var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
+        var episodeTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
+
+        var credits = context.CompanyBaseItemMap.AsNoTracking()
+            .WhereOneOrMany(companyIds, m => m.CompanyId);
+
+        var creditedSeries = credits
+            .Join(
+                related.Where(e => e.Type == seriesTypeName),
+                m => m.ItemId,
+                e => e.Id,
+                (m, e) => new { m.CompanyId, SeriesId = e.Id });
+
+        var episodes = related.Where(e => e.Type == episodeTypeName && e.SeriesId != null);
+
+        var episodesOfCreditedSeries = creditedSeries
+            .Join(episodes, s => s.SeriesId, e => e.SeriesId!.Value, (s, e) => new { s.CompanyId, e.Id })
+            .GroupBy(x => x.CompanyId)
+            .Select(g => new { CompanyId = g.Key, Count = g.Select(x => x.Id).Distinct().Count() })
+            .ToArray();
+
+        var creditedEpisodesOfCreditedSeries = credits
+            .Join(episodes, m => m.ItemId, e => e.Id, (m, e) => new { m.CompanyId, e.Id, e.SeriesId })
+            .Join(
+                creditedSeries,
+                e => new { e.CompanyId, SeriesId = e.SeriesId!.Value },
+                s => new { s.CompanyId, s.SeriesId },
+                (e, s) => new { e.CompanyId, e.Id })
+            .GroupBy(x => x.CompanyId)
+            .Select(g => new { CompanyId = g.Key, Count = g.Select(x => x.Id).Distinct().Count() })
+            .ToArray();
+
+        var creditedLookup = creditedEpisodesOfCreditedSeries.ToDictionary(x => x.CompanyId, x => x.Count);
+
+        var result = new Dictionary<Guid, (int EpisodesOfCreditedSeries, int CreditedEpisodesOfCreditedSeries)>();
+        foreach (var entry in episodesOfCreditedSeries)
+        {
+            result[entry.CompanyId] = (entry.Count, creditedLookup.GetValueOrDefault(entry.CompanyId));
+        }
+
+        return result;
     }
 
     private void CountByPersonName(
@@ -344,7 +446,7 @@ public class ItemCountService : IItemCountService
     }
 
     private static bool RollsUpEpisodes(BaseItemKind kind, BaseItemKind[] relatedItemKinds)
-        => kind is BaseItemKind.Studio or BaseItemKind.Genre or BaseItemKind.MusicGenre
+        => kind is BaseItemKind.Company or BaseItemKind.Genre or BaseItemKind.MusicGenre
             && relatedItemKinds.Contains(BaseItemKind.Episode)
             && relatedItemKinds.Contains(BaseItemKind.Series);
 

@@ -142,7 +142,7 @@ public class ComicBookInfoProvider : IComicProvider
         hasFoundMetadata |= ReadStringInto(comic.Series, series => book.SeriesName = series);
         hasFoundMetadata |= ReadStringInto(comic.Genre, genre => book.AddGenre(genre));
         hasFoundMetadata |= ReadStringInto(comic.Comments, overview => book.Overview = overview);
-        hasFoundMetadata |= ReadStringInto(comic.Publisher, publisher => book.SetStudios([publisher]));
+        hasFoundMetadata |= ReadStringInto(comic.Publisher, publisher => book.SetCompanies([publisher], CompanyKind.Publisher));
 
         if (comic.PublicationYear is not null)
         {

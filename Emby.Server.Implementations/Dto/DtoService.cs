@@ -84,7 +84,7 @@ namespace Emby.Server.Implementations.Dto
                 ]
             },
             {
-                BaseItemKind.Studio, [
+                BaseItemKind.Company, [
                     BaseItemKind.Audio,
                     BaseItemKind.Episode,
                     BaseItemKind.Movie,
@@ -415,9 +415,9 @@ namespace Emby.Server.Implementations.Dto
                 NormalizeMediaSourceContainers(dto);
             }
 
-            if (options.ContainsField(ItemFields.Studios))
+            if (options.ContainsField(ItemFields.Companies))
             {
-                AttachStudios(dto, item);
+                AttachCompanies(dto, item);
             }
 
             AttachBasicFields(dto, item, owner, options, artistsBatch, user, alternateVersionItemIds);
@@ -585,7 +585,7 @@ namespace Emby.Server.Implementations.Dto
             }
             else
             {
-                // This populates them all and covers Genre, Person, Studio, Year
+                // This populates them all and covers Genre, Person, Company, Year
 
                 dto.ArtistCount = taggedItems.Count(i => i is MusicArtist);
                 dto.AlbumCount = taggedItems.Count(i => i is MusicAlbum);
@@ -921,20 +921,29 @@ namespace Emby.Server.Implementations.Dto
         }
 
         /// <summary>
-        /// Attaches the studios.
+        /// Attaches the companies.
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
-        private void AttachStudios(BaseItemDto dto, BaseItem item)
+        private void AttachCompanies(BaseItemDto dto, BaseItem item)
         {
-            dto.Studios = item.Studios
-                .Where(i => !string.IsNullOrEmpty(i))
-                .Select(i => new NameGuidPair
+            dto.Companies = item.Companies
+                .Where(i => !string.IsNullOrEmpty(i.Name))
+                .Select(i => new CompanyDto
                 {
-                    Name = i,
-                    Id = _libraryManager.GetStudioId(i)
+                    Name = i.Name,
+                    Type = i.Type,
+                    Id = _libraryManager.GetCompanyId(i.Name)
                 })
                 .ToArray();
+
+#pragma warning disable CS0618
+            // Kept for compatibility with older clients
+            dto.Studios = dto.Companies
+                .Where(i => i.Type == CompanyKind.Studio)
+                .Select(i => new NameGuidPair { Name = i.Name, Id = i.Id })
+                .ToArray();
+#pragma warning restore CS0618
         }
 
         private void AttachGenreItems(BaseItemDto dto, BaseItem item)
@@ -1497,7 +1506,7 @@ namespace Emby.Server.Implementations.Dto
                     episodeSeries ??= episode.Series;
                     if (episodeSeries is not null)
                     {
-                        dto.SeriesStudio = episodeSeries.Studios.FirstOrDefault();
+                        dto.SeriesStudio = episodeSeries.GetCompanyNames(CompanyKind.Studio).FirstOrDefault();
                     }
                 }
             }
@@ -1525,7 +1534,7 @@ namespace Emby.Server.Implementations.Dto
                     series ??= season.Series;
                     if (series is not null)
                     {
-                        dto.SeriesStudio = series.Studios.FirstOrDefault();
+                        dto.SeriesStudio = series.GetCompanyNames(CompanyKind.Studio).FirstOrDefault();
                     }
                 }
 

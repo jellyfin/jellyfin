@@ -33,7 +33,7 @@ public class RefreshInternalDateModified : IDatabaseMigrationRoutine
          typeof(MusicGenre).FullName!,
          typeof(MusicArtist).FullName!,
          typeof(People).FullName!,
-         typeof(Studio).FullName!
+         typeof(Company).FullName!
     ];
 
     private IReadOnlyList<string> _internalPaths;
@@ -63,7 +63,7 @@ public class RefreshInternalDateModified : IDatabaseMigrationRoutine
             applicationPaths.ArtistsPath,
             applicationPaths.GenrePath,
             applicationPaths.MusicGenrePath,
-            applicationPaths.StudioPath,
+            applicationPaths.CompanyPath,
             applicationPaths.PeoplePath
         ];
         _useFileCreationTimeForDateAdded = configurationManager.GetMetadataConfiguration().UseFileCreationTimeForDateAdded;

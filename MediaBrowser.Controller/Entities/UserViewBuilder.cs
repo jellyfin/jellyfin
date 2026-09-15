@@ -715,12 +715,9 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            // Apply studio filter
-            if (query.StudioIds.Length > 0 && !query.StudioIds.Any(id =>
-            {
-                var studioItem = libraryManager.GetItemById(id);
-                return studioItem is not null && item.Studios.Contains(studioItem.Name, StringComparison.OrdinalIgnoreCase);
-            }))
+            // Apply company filter
+            if (query.CompanyIds.Length > 0 && !query.CompanyIds.Any(id =>
+                item.Companies.Any(e => Company.GetCompanyId(e.Name).Equals(id))))
             {
                 return false;
             }

@@ -273,10 +273,21 @@ public class ItemUpdateController : BaseJellyfinApiController
             item.Tagline = request.Taglines.FirstOrDefault();
         }
 
-        if (request.Studios is not null)
+        if (request.Companies is not null)
         {
-            item.Studios = Array.ConvertAll(request.Studios, x => x.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+            // Duplicates are dropped where the companies are packed for storage.
+            item.Companies = request.Companies
+                .Where(x => !string.IsNullOrWhiteSpace(x.Name))
+                .Select(x => new CompanyInfo { Name = x.Name!, Type = x.Type })
+                .ToArray();
         }
+#pragma warning disable CS0618
+        // Kept for compatibility with older clients, which only know the studios
+        else if (request.Studios is not null)
+        {
+            item.SetCompanies(Array.ConvertAll(request.Studios, x => x.Name), CompanyKind.Studio);
+        }
+#pragma warning restore CS0618
 
         if (request.DateCreated.HasValue)
         {

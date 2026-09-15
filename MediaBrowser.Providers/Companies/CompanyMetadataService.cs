@@ -8,15 +8,15 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Providers.Studios;
+namespace MediaBrowser.Providers.Companies;
 
 /// <summary>
-/// Service to manage studio metadata.
+/// Service to manage company metadata.
 /// </summary>
-public class StudioMetadataService : MetadataService<Studio, ItemLookupInfo>
+public class CompanyMetadataService : MetadataService<Company, ItemLookupInfo>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="StudioMetadataService"/> class.
+    /// Initializes a new instance of the <see cref="CompanyMetadataService"/> class.
     /// </summary>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/>.</param>
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
@@ -25,9 +25,9 @@ public class StudioMetadataService : MetadataService<Studio, ItemLookupInfo>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="externalDataManager">Instance of the <see cref="IExternalDataManager"/> interface.</param>
     /// <param name="itemRepository">Instance of the <see cref="IItemRepository"/> interface.</param>
-    public StudioMetadataService(
+    public CompanyMetadataService(
         IServerConfigurationManager serverConfigurationManager,
-        ILogger<StudioMetadataService> logger,
+        ILogger<CompanyMetadataService> logger,
         IProviderManager providerManager,
         IFileSystem fileSystem,
         ILibraryManager libraryManager,

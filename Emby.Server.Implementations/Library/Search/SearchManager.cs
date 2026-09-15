@@ -395,9 +395,9 @@ public class SearchManager : ISearchManager
             AddIfMissing(excludeItemTypes, BaseItemKind.Person);
         }
 
-        if (!query.IncludeStudios)
+        if (!query.IncludeCompanies)
         {
-            AddIfMissing(excludeItemTypes, BaseItemKind.Studio);
+            AddIfMissing(excludeItemTypes, BaseItemKind.Company);
         }
 
         if (!query.IncludeArtists)
@@ -427,9 +427,9 @@ public class SearchManager : ISearchManager
             AddIfMissing(includeItemTypes, BaseItemKind.Person);
         }
 
-        if (query.IncludeStudios && IsEmptyOrContains(includeItemTypes, BaseItemKind.Studio))
+        if (query.IncludeCompanies && IsEmptyOrContains(includeItemTypes, BaseItemKind.Company))
         {
-            AddIfMissing(includeItemTypes, BaseItemKind.Studio);
+            AddIfMissing(includeItemTypes, BaseItemKind.Company);
         }
 
         if (query.IncludeArtists && IsEmptyOrContains(includeItemTypes, BaseItemKind.MusicArtist))

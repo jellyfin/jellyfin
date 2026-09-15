@@ -1393,7 +1393,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.StudioIds.Length > 0)
+            if (request.CompanyIds.Length > 0)
             {
                 return false;
             }

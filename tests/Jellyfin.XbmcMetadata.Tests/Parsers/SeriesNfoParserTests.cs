@@ -59,8 +59,8 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Contains("Sci-Fi & Fantasy", item.Genres);
 
             Assert.Equal(new DateTime(2017, 4, 30), item.PremiereDate);
-            Assert.Single(item.Studios);
-            Assert.Contains("Starz", item.Studios);
+            Assert.Single(item.Companies);
+            Assert.Contains("Starz", item.GetCompanyNames(CompanyKind.Studio));
             Assert.Equal("9 PM", item.AirTime);
             Assert.Single(item.AirDays);
             Assert.Contains(DayOfWeek.Friday, item.AirDays);

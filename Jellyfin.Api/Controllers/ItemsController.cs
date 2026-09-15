@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -118,7 +119,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="searchTerm">Optional. Filter based on a search term.</param>
     /// <param name="sortOrder">Sort Order - Ascending, Descending.</param>
     /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
-    /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+    /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Companies, Taglines.</param>
     /// <param name="excludeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
     /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on the item type. This allows multiple, comma delimited.</param>
     /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
@@ -137,7 +138,8 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="person">Optional. If specified, results will be filtered to include only those containing the specified person.</param>
     /// <param name="personIds">Optional. If specified, results will be filtered to include only those containing the specified person id.</param>
     /// <param name="personTypes">Optional. If specified, along with Person, results will be filtered to include only those containing the specified person and PersonType. Allows multiple, comma-delimited.</param>
-    /// <param name="studios">Optional. If specified, results will be filtered based on studio. This allows multiple, pipe delimited.</param>
+    /// <param name="companies">Optional. If specified, results will be filtered based on company name, whatever the company did. This allows multiple, pipe delimited.</param>
+    /// <param name="studios">Optional. If specified, results will be filtered based on studio name. This allows multiple, pipe delimited. Kept for backwards compatibility; use companies.</param>
     /// <param name="artists">Optional. If specified, results will be filtered based on artists. This allows multiple, pipe delimited.</param>
     /// <param name="excludeArtistIds">Optional. If specified, results will be filtered based on artist id. This allows multiple, pipe delimited.</param>
     /// <param name="artistIds">Optional. If specified, results will be filtered to include only those containing the specified artist id.</param>
@@ -161,7 +163,8 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="nameStartsWithOrGreater">Optional filter by items whose name is sorted equally or greater than a given input string.</param>
     /// <param name="nameStartsWith">Optional filter by items whose name is sorted equally than a given input string.</param>
     /// <param name="nameLessThan">Optional filter by items whose name is equally or lesser than a given input string.</param>
-    /// <param name="studioIds">Optional. If specified, results will be filtered based on studio id. This allows multiple, pipe delimited.</param>
+    /// <param name="companyIds">Optional. If specified, results will be filtered based on company id. This allows multiple, pipe delimited.</param>
+    /// <param name="studioIds">Optional. If specified, results will be filtered based on studio id. This allows multiple, pipe delimited. Kept for backwards compatibility; use companyIds.</param>
     /// <param name="genreIds">Optional. If specified, results will be filtered based on genre id. This allows multiple, pipe delimited.</param>
     /// <param name="audioLanguages">Optional. If specified, results will be filtered based on audio language. This allows multiple, comma delimited values.</param>
     /// <param name="subtitleLanguages">Optional. If specified, results will be filtered based on subtitle language. This allows multiple, comma delimited values.</param>
@@ -229,7 +232,8 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] string? person,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] personIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] personTypes,
-        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] studios,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] companies,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder)), ParameterObsolete] string[] studios,
         [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] artists,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] excludeArtistIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] artistIds,
@@ -253,7 +257,8 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] string? nameStartsWithOrGreater,
         [FromQuery] string? nameStartsWith,
         [FromQuery] string? nameLessThan,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] studioIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] companyIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder)), ParameterObsolete] Guid[] studioIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] genreIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] audioLanguages,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] subtitleLanguages,
@@ -427,7 +432,7 @@ public class ItemsController : BaseJellyfinApiController
             AlbumArtistIds = albumArtistIds,
             ContributingArtistIds = contributingArtistIds,
             GenreIds = genreIds,
-            StudioIds = studioIds,
+            CompanyIds = companyIds,
             Person = person,
             PersonIds = personIds,
             PersonTypes = personTypes,
@@ -560,21 +565,12 @@ public class ItemsController : BaseJellyfinApiController
             }).ToArray();
         }
 
-        // Studios
-        if (studios.Length != 0)
+        if (companies.Length != 0)
         {
-            query.StudioIds = studios.Select(i =>
-            {
-                try
-                {
-                    return _libraryManager.GetStudio(i);
-                }
-                catch
-                {
-                    return null;
-                }
-            }).Where(i => i is not null).Select(i => i!.Id).ToArray();
+            query.CompanyIds = RequestHelpers.GetCompanyIds(companies);
         }
+
+        query.CompanyIds = RequestHelpers.WithLegacyStudios(query.CompanyIds, studios, studioIds);
 
         // Apply default sorting if none requested
         if (query.OrderBy.Count == 0)
@@ -670,7 +666,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="searchTerm">Optional. Filter based on a search term.</param>
     /// <param name="sortOrder">Sort Order - Ascending, Descending.</param>
     /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
-    /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+    /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Companies, Taglines.</param>
     /// <param name="excludeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
     /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on the item type. This allows multiple, comma delimited.</param>
     /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
@@ -689,7 +685,8 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="person">Optional. If specified, results will be filtered to include only those containing the specified person.</param>
     /// <param name="personIds">Optional. If specified, results will be filtered to include only those containing the specified person id.</param>
     /// <param name="personTypes">Optional. If specified, along with Person, results will be filtered to include only those containing the specified person and PersonType. Allows multiple, comma-delimited.</param>
-    /// <param name="studios">Optional. If specified, results will be filtered based on studio. This allows multiple, pipe delimited.</param>
+    /// <param name="companies">Optional. If specified, results will be filtered based on company name, whatever the company did. This allows multiple, pipe delimited.</param>
+    /// <param name="studios">Optional. If specified, results will be filtered based on studio name. This allows multiple, pipe delimited. Kept for backwards compatibility; use companies.</param>
     /// <param name="artists">Optional. If specified, results will be filtered based on artists. This allows multiple, pipe delimited.</param>
     /// <param name="excludeArtistIds">Optional. If specified, results will be filtered based on artist id. This allows multiple, pipe delimited.</param>
     /// <param name="artistIds">Optional. If specified, results will be filtered to include only those containing the specified artist id.</param>
@@ -713,7 +710,8 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="nameStartsWithOrGreater">Optional filter by items whose name is sorted equally or greater than a given input string.</param>
     /// <param name="nameStartsWith">Optional filter by items whose name is sorted equally than a given input string.</param>
     /// <param name="nameLessThan">Optional filter by items whose name is equally or lesser than a given input string.</param>
-    /// <param name="studioIds">Optional. If specified, results will be filtered based on studio id. This allows multiple, pipe delimited.</param>
+    /// <param name="companyIds">Optional. If specified, results will be filtered based on company id. This allows multiple, pipe delimited.</param>
+    /// <param name="studioIds">Optional. If specified, results will be filtered based on studio id. This allows multiple, pipe delimited. Kept for backwards compatibility; use companyIds.</param>
     /// <param name="genreIds">Optional. If specified, results will be filtered based on genre id. This allows multiple, pipe delimited.</param>
     /// <param name="enableTotalRecordCount">Optional. Enable the total record count.</param>
     /// <param name="enableImages">Optional, include image information in output.</param>
@@ -780,7 +778,8 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] string? person,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] personIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] personTypes,
-        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] studios,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] companies,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder)), ParameterObsolete] string[] studios,
         [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] artists,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] excludeArtistIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] artistIds,
@@ -804,7 +803,8 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] string? nameStartsWithOrGreater,
         [FromQuery] string? nameStartsWith,
         [FromQuery] string? nameLessThan,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] studioIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] companyIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder)), ParameterObsolete] Guid[] studioIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] genreIds,
         [FromQuery] bool enableTotalRecordCount = true,
         [FromQuery] bool? enableImages = true)
@@ -867,6 +867,7 @@ public class ItemsController : BaseJellyfinApiController
             person,
             personIds,
             personTypes,
+            companies,
             studios,
             artists,
             excludeArtistIds,
@@ -891,6 +892,7 @@ public class ItemsController : BaseJellyfinApiController
             nameStartsWithOrGreater,
             nameStartsWith,
             nameLessThan,
+            companyIds,
             studioIds,
             genreIds,
             [],
@@ -906,7 +908,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="limit">The item limit.</param>
     /// <param name="searchTerm">The search term.</param>
     /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
-    /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+    /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Companies, Taglines.</param>
     /// <param name="mediaTypes">Optional. Filter by MediaType. Allows multiple, comma delimited.</param>
     /// <param name="enableUserData">Optional. Include user data.</param>
     /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
@@ -1012,7 +1014,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="limit">The item limit.</param>
     /// <param name="searchTerm">The search term.</param>
     /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
-    /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+    /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Companies, Taglines.</param>
     /// <param name="mediaTypes">Optional. Filter by MediaType. Allows multiple, comma delimited.</param>
     /// <param name="enableUserData">Optional. Include user data.</param>
     /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>

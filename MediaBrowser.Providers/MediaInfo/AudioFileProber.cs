@@ -444,12 +444,12 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
-                // Publisher → Studio
+                // The publisher tag on a music file names the label that released it.
                 var trackPublisher = GetSanitizedStringTag(track.Publisher, audio.Path);
                 if (!string.IsNullOrWhiteSpace(trackPublisher)
-                    && (options.ReplaceAllMetadata || audio.Studios is null || audio.Studios.Length == 0))
+                    && (options.ReplaceAllMetadata || audio.GetCompanyNames(CompanyKind.Label).Count == 0))
                 {
-                    audio.SetStudios(new[] { trackPublisher! });
+                    audio.SetCompanies([trackPublisher!], CompanyKind.Label);
                 }
             }
 

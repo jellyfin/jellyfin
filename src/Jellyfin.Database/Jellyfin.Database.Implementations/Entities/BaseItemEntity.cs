@@ -74,7 +74,7 @@ public class BaseItemEntity
 
     public bool IsInMixedFolder { get; set; }
 
-    public string? Studios { get; set; }
+    public string? Companies { get; set; }
 
     public string? ExternalServiceId { get; set; }
 
@@ -169,6 +169,8 @@ public class BaseItemEntity
     public ICollection<UserData>? UserData { get; set; }
 
     public ICollection<ItemValueMap>? ItemValues { get; set; }
+
+    public ICollection<CompanyBaseItemMap>? CompanyMappings { get; set; }
 
     public ICollection<MediaStreamInfo>? MediaStreams { get; set; }
 

@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
@@ -56,6 +57,37 @@ public static class RequestHelpers
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Gets the ids of the companies with these names.
+    /// </summary>
+    /// <param name="companies">The company names.</param>
+    /// <returns>The company ids.</returns>
+    internal static Guid[] GetCompanyIds(IReadOnlyList<string> companies)
+    {
+        return companies.Select(Company.GetCompanyId).ToArray();
+    }
+
+    /// <summary>
+    /// Adds the companies a legacy studio filter asks for to the company ids a query already has.
+    /// </summary>
+    /// <remarks>
+    /// Studios are companies now, so a studio filter is a company filter. A studio name matches
+    /// companies of any kind, as it matched networks back when studios and networks were one list.
+    /// </remarks>
+    /// <param name="companyIds">The company ids the query filters on.</param>
+    /// <param name="studios">The studio names asked for.</param>
+    /// <param name="studioIds">The studio ids asked for.</param>
+    /// <returns>The company ids to filter on.</returns>
+    internal static Guid[] WithLegacyStudios(Guid[] companyIds, IReadOnlyList<string> studios, IReadOnlyList<Guid> studioIds)
+    {
+        if (studios.Count == 0 && studioIds.Count == 0)
+        {
+            return companyIds;
+        }
+
+        return [.. companyIds, .. GetCompanyIds(studios), .. studioIds];
     }
 
     /// <summary>

@@ -259,19 +259,15 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             series.Overview = seriesResult.Overview;
 
-            var studios = Enumerable.Empty<string>();
-
             if (seriesResult.Networks is not null)
             {
-                studios = studios.Concat(seriesResult.Networks.Select(i => i.Name).OfType<string>());
+                series.SetCompanies(seriesResult.Networks.Select(i => i.Name).OfType<string>(), CompanyKind.Network);
             }
 
             if (seriesResult.ProductionCompanies is not null)
             {
-                studios = studios.Concat(seriesResult.ProductionCompanies.Select(i => i.Name).OfType<string>());
+                series.SetCompanies(seriesResult.ProductionCompanies.Select(i => i.Name).OfType<string>(), CompanyKind.Studio);
             }
-
-            series.SetStudios(studios);
 
             if (seriesResult.Genres is not null)
             {

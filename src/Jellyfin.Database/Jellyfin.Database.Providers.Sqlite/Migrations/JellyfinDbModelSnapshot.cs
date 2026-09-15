@@ -168,6 +168,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<float?>("CommunityRating")
                         .HasColumnType("REAL");
 
+                    b.Property<string>("Companies")
+                        .HasColumnType("TEXT");
+
                     b.Property<float?>("CriticRating")
                         .HasColumnType("REAL");
 
@@ -334,9 +337,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("StartDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Studios")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Tagline")
@@ -552,6 +552,52 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasKey("ItemId", "ChapterIndex");
 
                     b.ToTable("Chapters");
+
+                    b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
+                });
+
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.CompanyBaseItemMap", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ItemId", "CompanyId", "Type");
+
+                    b.HasIndex("Type");
+
+                    b.HasIndex("CompanyId", "ItemId");
+
+                    b.ToTable("CompanyBaseItemMap");
+
+                    b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
+                });
+
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.CompanyEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CleanName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CleanName")
+                        .IsUnique();
+
+                    b.ToTable("Companies");
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -1574,6 +1620,25 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("Item");
                 });
 
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.CompanyBaseItemMap", b =>
+                {
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.CompanyEntity", "Company")
+                        .WithMany("BaseItems")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
+                        .WithMany("CompanyMappings")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+
+                    b.Navigation("Item");
+                });
+
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.DisplayPreferences", b =>
                 {
                     b.HasOne("Jellyfin.Database.Implementations.Entities.User", null)
@@ -1742,6 +1807,8 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.Navigation("Children");
 
+                    b.Navigation("CompanyMappings");
+
                     b.Navigation("DirectChildren");
 
                     b.Navigation("Extras");
@@ -1767,6 +1834,11 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("TrailerTypes");
 
                     b.Navigation("UserData");
+                });
+
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.CompanyEntity", b =>
+                {
+                    b.Navigation("BaseItems");
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.DisplayPreferences", b =>
