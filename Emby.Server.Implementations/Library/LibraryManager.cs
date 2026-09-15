@@ -40,6 +40,7 @@ using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Controller.Telemetry;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
@@ -2488,6 +2489,8 @@ namespace Emby.Server.Implementations.Library
                 folder.UserData = null;
             }
 
+            LibraryMetrics.OnItemsAdded(items);
+
             if (ItemAdded is not null)
             {
                 foreach (var item in items)
@@ -2713,6 +2716,8 @@ namespace Emby.Server.Implementations.Library
                 folder.UserData = null;
             }
 
+            LibraryMetrics.OnItemsUpdated(items);
+
             if (ItemUpdated is not null)
             {
                 foreach (var item in items)
@@ -2793,6 +2798,8 @@ namespace Emby.Server.Implementations.Library
         /// <param name="parent">The parent item.</param>
         public void ReportItemRemoved(BaseItem item, BaseItem parent)
         {
+            LibraryMetrics.OnItemRemoved(item);
+
             if (ItemRemoved is not null)
             {
                 try
