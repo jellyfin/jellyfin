@@ -371,9 +371,15 @@ namespace MediaBrowser.Providers.Manager
             if (!string.IsNullOrEmpty(itemPath))
             {
                 var info = FileSystem.GetFileSystemInfo(itemPath);
-                if (info.Exists && item.HasChanged(info.LastWriteTimeUtc))
+                if (info.Exists && item.HasChanged(info))
                 {
-                    Logger.LogDebug("File modification time changed from {Then} to {Now}: {Path}", item.DateModified, info.LastWriteTimeUtc, itemPath);
+                    Logger.LogDebug(
+                        "File changed from size {PreviousSize}, modified {PreviousDate} to size {CurrentSize}, modified {CurrentDate}: {Path}",
+                        item.Size,
+                        item.DateModified,
+                        info.Length,
+                        info.LastWriteTimeUtc,
+                        itemPath);
 
                     item.DateModified = info.LastWriteTimeUtc;
                     if (ServerConfigurationManager.GetMetadataConfiguration().UseFileCreationTimeForDateAdded)

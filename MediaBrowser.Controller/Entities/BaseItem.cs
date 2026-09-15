@@ -1698,7 +1698,7 @@ namespace MediaBrowser.Controller.Entities
 
             var info = FileSystem.GetFileSystemInfo(Path);
 
-            return info.Exists && this.HasChanged(info.LastWriteTimeUtc);
+            return info.Exists && this.HasChanged(info);
         }
 
         public virtual List<string> GetUserDataKeys()
