@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -88,5 +89,93 @@ public class MovieResolverTests
         Assert.Single(result.Items);
         Assert.All(result.Items, item => Assert.IsType<Movie>(item));
         Assert.Single(((Video)result.Items[0]).LocalAlternateVersions);
+    }
+
+    [Fact]
+    public void AllExtrasTypesFolderNames_ContainsSampleSingularAndPlural()
+    {
+        Assert.True(_namingOptions.AllExtrasTypesFolderNames.ContainsKey("sample"));
+        Assert.True(_namingOptions.AllExtrasTypesFolderNames.ContainsKey("Sample"));
+        Assert.True(_namingOptions.AllExtrasTypesFolderNames.ContainsKey("samples"));
+    }
+
+    [Theory]
+    [InlineData("Sample")]
+    [InlineData("sample")]
+    [InlineData("SAMPLE")]
+    [InlineData("samples")]
+    public void ResolvePath_MovieFolderWithSampleSubfolder_ResolvesToMovie(string sampleDirName)
+    {
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager.Setup(m => m.GetLibraryOptions(It.IsAny<BaseItem>())).Returns(new LibraryOptions());
+        libraryManager.Setup(m => m.IgnoreFile(It.IsAny<FileSystemMetadata>(), It.IsAny<BaseItem>())).Returns(false);
+
+        var resolver = new MovieResolver(Mock.Of<IImageProcessor>(), Mock.Of<ILogger<MovieResolver>>(), _namingOptions, Mock.Of<IDirectoryService>(), _videoListResolver);
+        var args = new ItemResolveArgs(
+            Mock.Of<IServerApplicationPaths>(),
+            libraryManager.Object)
+        {
+            Parent = new Folder(),
+            CollectionType = CollectionType.movies,
+            FileInfo = new FileSystemMetadata
+            {
+                FullName = "/media/Outer Colony (2026)",
+                IsDirectory = true
+            },
+            FileSystemChildren = new[]
+            {
+                new FileSystemMetadata
+                {
+                    FullName = "/media/Outer Colony (2026)/Outer Colony (2026).mkv",
+                    Name = "Outer Colony (2026).mkv"
+                },
+                new FileSystemMetadata
+                {
+                    FullName = "/media/Outer Colony (2026)/" + sampleDirName,
+                    Name = sampleDirName,
+                    IsDirectory = true
+                }
+            }
+        };
+
+        Assert.IsType<Movie>(resolver.ResolvePath(args));
+    }
+
+    [Fact]
+    public void ResolvePath_MovieFolderWithRealSubfolder_DoesNotResolveToSingleMovie()
+    {
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager.Setup(m => m.GetLibraryOptions(It.IsAny<BaseItem>())).Returns(new LibraryOptions());
+        libraryManager.Setup(m => m.IgnoreFile(It.IsAny<FileSystemMetadata>(), It.IsAny<BaseItem>())).Returns(false);
+
+        var resolver = new MovieResolver(Mock.Of<IImageProcessor>(), Mock.Of<ILogger<MovieResolver>>(), _namingOptions, Mock.Of<IDirectoryService>(), _videoListResolver);
+        var args = new ItemResolveArgs(
+            Mock.Of<IServerApplicationPaths>(),
+            libraryManager.Object)
+        {
+            Parent = new Folder(),
+            CollectionType = CollectionType.movies,
+            FileInfo = new FileSystemMetadata
+            {
+                FullName = "/media/Outer Colony (2026)",
+                IsDirectory = true
+            },
+            FileSystemChildren = new[]
+            {
+                new FileSystemMetadata
+                {
+                    FullName = "/media/Outer Colony (2026)/Outer Colony (2026).mkv",
+                    Name = "Outer Colony (2026).mkv"
+                },
+                new FileSystemMetadata
+                {
+                    FullName = "/media/Outer Colony (2026)/Feature",
+                    Name = "Feature",
+                    IsDirectory = true
+                }
+            }
+        };
+
+        Assert.Null(resolver.ResolvePath(args));
     }
 }
