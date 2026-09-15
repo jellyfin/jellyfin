@@ -380,10 +380,12 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            // For top parents i.e. Library folders, skip the validation if it's empty or inaccessible
+            // For top parents i.e. Library folders, skip only when the path is missing/unreadable.
+            // Empty directories are valid — realtime monitoring must still register so the first
+            // import is discovered without a manual library refresh.
             if (item.IsTopParent && !directoryService.IsAccessible(item.ContainingFolderPath))
             {
-                Logger.LogWarning("Library folder {LibraryFolderPath} is inaccessible or empty, skipping", item.ContainingFolderPath);
+                Logger.LogWarning("Library folder {LibraryFolderPath} is inaccessible, skipping", item.ContainingFolderPath);
                 return false;
             }
 
