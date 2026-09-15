@@ -213,6 +213,30 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         }
 
         [Theory]
+        // Rating strings are stored mixed-case in the *.json rating systems and must match regardless of casing
+        [InlineData("btl", "se", 0, null)] // Direct lookup, lowercase of "Btl"
+        [InlineData("BARNTILLÅTEN", "se", 0, null)] // Direct lookup, uppercase incl. diacritics
+        [InlineData("SE-BTL", "se", 0, null)] // Country prefix stripped against the configured country
+        [InlineData("SE-BTL", "us", 0, null)] // Country prefix resolved via the separator fallback
+        [InlineData("Från 7 År", "se", 7, null)] // Diacritic casing (json has "Från 7 år")
+        [InlineData("SE-Från 7 År", "us", 7, null)] // Same, via the separator fallback
+        [InlineData("fsk-16", "de", 16, null)] // Not Sweden specific: lowercase of "FSK-16"
+        public async Task GetRatingScore_IsCaseInsensitive_Success(string value, string countryCode, int? expectedScore, int? expectedSubScore)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                MetadataCountryCode = countryCode
+            });
+            await localizationManager.LoadAll();
+
+            var score = localizationManager.GetRatingScore(value);
+
+            Assert.NotNull(score);
+            Assert.Equal(expectedScore, score.Score);
+            Assert.Equal(expectedSubScore, score.SubScore);
+        }
+
+        [Theory]
         [InlineData("0", 0, null)]
         [InlineData("1", 1, null)]
         [InlineData("6", 6, null)]
@@ -241,6 +265,25 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             Assert.Null(localizationManager.GetRatingScore("unrated"));
             Assert.Null(localizationManager.GetRatingScore("Not Rated"));
             Assert.Null(localizationManager.GetRatingScore("n/a"));
+            Assert.Null(localizationManager.GetRatingScore("N/A"));
+            Assert.Null(localizationManager.GetRatingScore(" n/a "));
+        }
+
+        [Theory]
+        // "NR" and "UR" are rating strings of some systems, so they must stay unrated when listed alongside others
+        [InlineData("NR / R", 17, 0)]
+        [InlineData("unrated / R", 17, 0)]
+        [InlineData("R / NR", 17, 0)]
+        public async Task GetRatingLevel_SkipsUnratedListEntries_Success(string value, int? expectedScore, int? expectedSubScore)
+        {
+            var localizationManager = Setup(new ServerConfiguration { MetadataCountryCode = "us" });
+            await localizationManager.LoadAll();
+
+            var score = localizationManager.GetRatingScore(value);
+
+            Assert.NotNull(score);
+            Assert.Equal(expectedScore, score.Score);
+            Assert.Equal(expectedSubScore, score.SubScore);
         }
 
         [Theory]
