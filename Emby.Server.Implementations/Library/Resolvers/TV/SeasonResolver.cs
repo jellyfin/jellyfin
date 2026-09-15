@@ -53,6 +53,41 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
                 var path = args.Path;
 
+                // Reject empty folders — a season folder must contain at least one video file.
+                // This check runs regardless of naming, so folders like "Season 1" that are
+                // empty don't create phantom seasons that compete with real ones.
+                // Guard with Directory.Exists so tests using fake paths are unaffected.
+                if (Directory.Exists(path))
+                {
+                    var exts = _namingOptions.VideoFileExtensions;
+
+                    // 1) Check top-level files — most season folders have episodes directly here.
+                    var hasAnyVideo = Directory.EnumerateFiles(path, "*", SearchOption.TopDirectoryOnly)
+                        .Any(file => exts.Contains(Path.GetExtension(file)));
+
+                    // 2) Check one level of subdirectories — covers episode-in-subfolder layouts
+                    //    without recursing into .trickplay/, .actors/ or other metadata folders
+                    //    that don't contain video files.
+                    if (!hasAnyVideo)
+                    {
+                        hasAnyVideo = Directory.EnumerateDirectories(path)
+                            .Any(subdir => Directory.EnumerateFiles(subdir, "*", SearchOption.TopDirectoryOnly)
+                                .Any(file => exts.Contains(Path.GetExtension(file))));
+                    }
+
+                    // 3) Rare deep-nesting fallback — e.g. BDMV/STREAM/*.m2ts in a TV folder.
+                    if (!hasAnyVideo)
+                    {
+                        hasAnyVideo = Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
+                            .Any(file => exts.Contains(Path.GetExtension(file)));
+                    }
+
+                    if (!hasAnyVideo)
+                    {
+                        return null;
+                    }
+                }
+
                 var seasonParserResult = SeasonPathParser.Parse(path, series.ContainingFolderPath, true, true);
 
                 var season = new Season
@@ -83,13 +118,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                         return null;
                     }
 
-                    var hasAnyVideo = Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
-                        .Any(file => _namingOptions.VideoFileExtensions.Contains(Path.GetExtension(file)));
-
-                    if (!hasAnyVideo)
-                    {
-                        return null;
-                    }
+                    // hasAnyVideo already checked above — the folder has video.
+                    // We couldn't determine the season number from the name, but
+                    // create the season anyway with whatever we have; metadata
+                    // refresh can fill in the missing IndexNumber later.
                 }
 
                 if (season.IndexNumber.HasValue && string.IsNullOrEmpty(season.Name))
