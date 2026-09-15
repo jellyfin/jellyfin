@@ -902,6 +902,26 @@ namespace MediaBrowser.Providers.Manager
                         {
                             return false;
                         }
+
+                        // An explicit MetadataSavers enable-list must still respect SaveLocalMetadata.
+                        // Otherwise SaveLocalMetadata=false + MetadataSavers=["Nfo"] writes sidecars
+                        // even on read-only library mounts (IOException), which can leave locked
+                        // episode items without season/episode numbers.
+                        if (!item.IsSaveLocalMetadataEnabled())
+                        {
+                            if (updateType >= ItemUpdateType.MetadataEdit)
+                            {
+                                // Manual edit occurred — allow updating an existing sidecar only.
+                                if (saver is not IMetadataFileSaver fileSaver || !File.Exists(fileSaver.GetSavePath(item)))
+                                {
+                                    return false;
+                                }
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
                     }
                 }
 
