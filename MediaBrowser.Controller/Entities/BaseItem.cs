@@ -1806,6 +1806,16 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Gets the preferred image languages.
+        /// </summary>
+        /// <returns>Array of preferred image languages.</returns>
+        public ImageLanguageOption[] GetPreferredImageLanguages()
+        {
+            var libraryOptions = LibraryManager.GetLibraryOptions(this);
+            return libraryOptions.PreferredImageLanguages;
+        }
+
+        /// <summary>
         /// Gets the original language of the item, inheriting from parent items if necessary.
         /// </summary>
         /// <returns>System.String.</returns>
