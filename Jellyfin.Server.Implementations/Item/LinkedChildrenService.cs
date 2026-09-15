@@ -61,6 +61,18 @@ public class LinkedChildrenService : ILinkedChildrenService
     }
 
     /// <inheritdoc/>
+    public IReadOnlyList<Guid> GetParentIdsWithChildType(LinkedChildType childType)
+    {
+        using var dbContext = _dbProvider.CreateDbContext();
+
+        return dbContext.LinkedChildren
+            .Where(lc => lc.ChildType == (DbLinkedChildType)childType)
+            .Select(lc => lc.ParentId)
+            .Distinct()
+            .ToArray();
+    }
+
+    /// <inheritdoc/>
     public IReadOnlySet<Guid> GetItemIdsWithAlternateVersions(IReadOnlyList<Guid> itemIds)
     {
         if (itemIds.Count == 0)
@@ -198,5 +210,105 @@ public class LinkedChildrenService : ILinkedChildrenService
         }
 
         context.SaveChanges();
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<Guid, IReadOnlyList<Guid>> GetAutoMergeExclusions()
+    {
+        using var context = _dbProvider.CreateDbContext();
+
+        var pairs = context.LinkedChildren
+            .Where(lc => lc.ChildType == DbLinkedChildType.ExcludedAlternateVersion)
+            .Select(lc => new { lc.ParentId, lc.ChildId })
+            .ToList();
+
+        var exclusions = new Dictionary<Guid, List<Guid>>();
+        foreach (var pair in pairs)
+        {
+            // Only one direction is stored; expose both so callers can look up either side.
+            Add(pair.ParentId, pair.ChildId);
+            Add(pair.ChildId, pair.ParentId);
+        }
+
+        return exclusions.ToDictionary(e => e.Key, e => (IReadOnlyList<Guid>)e.Value);
+
+        void Add(Guid itemId, Guid excludedId)
+        {
+            if (!exclusions.TryGetValue(itemId, out var excluded))
+            {
+                excluded = [];
+                exclusions[itemId] = excluded;
+            }
+
+            if (!excluded.Contains(excludedId))
+            {
+                excluded.Add(excludedId);
+            }
+        }
+    }
+
+    /// <inheritdoc/>
+    public void AddAutoMergeExclusions(Guid itemId, IReadOnlyList<Guid> excludedItemIds)
+    {
+        ArgumentNullException.ThrowIfNull(excludedItemIds);
+
+        if (excludedItemIds.Count == 0)
+        {
+            return;
+        }
+
+        using var context = _dbProvider.CreateDbContext();
+
+        var recorded = context.LinkedChildren
+            .Where(lc => lc.ChildType == DbLinkedChildType.ExcludedAlternateVersion
+                && ((lc.ParentId == itemId && excludedItemIds.Contains(lc.ChildId))
+                    || (lc.ChildId == itemId && excludedItemIds.Contains(lc.ParentId))))
+            .Select(lc => lc.ParentId == itemId ? lc.ChildId : lc.ParentId)
+            .ToHashSet();
+
+        // Exclusions are not owned by the item's version links, which are rewritten from scratch on
+        // every save starting at sort order 0, so they live in the negative sort order space.
+        var nextSortOrder = Math.Min(
+            context.LinkedChildren.Where(lc => lc.ParentId == itemId).Min(lc => (int?)lc.SortOrder) ?? 0,
+            0) - 1;
+
+        foreach (var excludedItemId in excludedItemIds)
+        {
+            if (excludedItemId.Equals(itemId) || !recorded.Add(excludedItemId))
+            {
+                continue;
+            }
+
+            context.LinkedChildren.Add(new Jellyfin.Database.Implementations.Entities.LinkedChildEntity
+            {
+                ParentId = itemId,
+                ChildId = excludedItemId,
+                ChildType = DbLinkedChildType.ExcludedAlternateVersion,
+                SortOrder = nextSortOrder
+            });
+
+            nextSortOrder--;
+        }
+
+        context.SaveChanges();
+    }
+
+    /// <inheritdoc/>
+    public void RemoveAutoMergeExclusions(IReadOnlyList<Guid> itemIds)
+    {
+        ArgumentNullException.ThrowIfNull(itemIds);
+
+        if (itemIds.Count < 2)
+        {
+            return;
+        }
+
+        using var context = _dbProvider.CreateDbContext();
+
+        context.LinkedChildren
+            .Where(lc => lc.ChildType == DbLinkedChildType.ExcludedAlternateVersion
+                && itemIds.Contains(lc.ParentId)
+                && itemIds.Contains(lc.ChildId))
+            .ExecuteDelete();
     }
 }

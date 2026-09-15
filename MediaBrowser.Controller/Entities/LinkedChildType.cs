@@ -23,6 +23,20 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Linked alternate version (different item ID).
         /// </summary>
-        LinkedAlternateVersion = 3
+        LinkedAlternateVersion = 3,
+
+        /// <summary>
+        /// Linked alternate version (different item ID) created automatically by the library scan,
+        /// e.g. same-numbered episodes of a series or copies of a movie spread across multiple
+        /// folders. Managed by the scan rather than the user, so it is re-evaluated on every scan
+        /// instead of being treated as a manual merge.
+        /// </summary>
+        AutoLinkedAlternateVersion = 4,
+
+        /// <summary>
+        /// Not a version link: records that the user split these two items apart, so the library
+        /// scan must never merge them into a version group again.
+        /// </summary>
+        ExcludedAlternateVersion = 5
     }
 }
