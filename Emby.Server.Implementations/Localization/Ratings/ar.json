@@ -3,14 +3,21 @@
     "supportsSubScores": false,
     "ratings": [
         {
-            "ratingStrings": ["ATP", "Apta para todo público"],
+            "ratingStrings": ["ATP", "Apta para todo público", "G"],
             "ratingScore": {
                 "score": 0,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["+13", "SAM 13", "SAM13"],
+            "ratingStrings": ["SP"],
+            "ratingScore": {
+                "score": 10,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["+13", "SAM 13", "SAM13", "R-13"],
             "ratingScore": {
                 "score": 13,
                 "subScore": null
@@ -20,6 +27,13 @@
             "ratingStrings": ["+16", "SAM 16", "SAM16"],
             "ratingScore": {
                 "score": 16,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["R-17"],
+            "ratingScore": {
+                "score": 17,
                 "subScore": null
             }
         },
