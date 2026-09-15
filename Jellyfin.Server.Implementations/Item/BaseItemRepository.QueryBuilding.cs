@@ -274,26 +274,9 @@ public sealed partial class BaseItemRepository
             dbQuery = dbQuery.Include(e => e.Images!.OrderBy(i => i.Id));
         }
 
-        // Include LinkedChildEntities for container types and videos that use them (BoxSet, Playlist,
-        // CollectionFolder for manual linking; every video type for alternate versions).
-        // When IncludeItemTypes is empty (any type may be returned), always include them to ensure
-        // LinkedChildren are loaded before items are saved back, preventing accidental deletion.
-        var linkedChildTypes = new[]
-        {
-            BaseItemKind.BoxSet,
-            BaseItemKind.Playlist,
-            BaseItemKind.CollectionFolder,
-            BaseItemKind.Video,
-            BaseItemKind.Movie,
-            BaseItemKind.Episode,
-            BaseItemKind.MusicVideo,
-            BaseItemKind.Trailer
-        };
-        if (filter.IncludeItemTypes.Length == 0 || filter.IncludeItemTypes.Any(linkedChildTypes.Contains))
-        {
-            dbQuery = dbQuery.Include(e => e.LinkedChildEntities!.OrderBy(l => l.SortOrder));
-        }
-
+        // LinkedChildEntities is deliberately not included: a container's membership is unbounded, so
+        // joining it multiplies against every collection joined above and repeats the wide item row
+        // once per combination. LoadLinkedChildren reads them for a whole result set in one statement.
         if (filter.IncludeExtras)
         {
             dbQuery = dbQuery.Include(e => e.Extras);

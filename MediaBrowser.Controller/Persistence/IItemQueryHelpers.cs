@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Jellyfin.Database.Implementations;
@@ -100,6 +101,19 @@ public interface IItemQueryHelpers
     Expression<Func<BaseItemEntity, bool>> BuildHasDescendantFilter(
         JellyfinDbContext context,
         IQueryable<BaseItemEntity> descendants);
+
+    /// <summary>
+    /// Reads the linked children of a whole result set in one statement and attaches them.
+    /// </summary>
+    /// <remarks>
+    /// Item queries do not join the links, because a container's membership is unbounded and would
+    /// multiply against every other joined collection. Any path that materializes items has to call
+    /// this, or the items come back with their links unread.
+    /// </remarks>
+    /// <param name="context">The database context to read from.</param>
+    /// <param name="items">The materialized items to attach links to.</param>
+    /// <returns>The same items, for chaining.</returns>
+    IReadOnlyList<BaseItem> LoadLinkedChildren(JellyfinDbContext context, IReadOnlyList<BaseItem> items);
 
     /// <summary>
     /// Deserializes a <see cref="BaseItemEntity"/> into a <see cref="BaseItem"/>.

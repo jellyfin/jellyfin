@@ -248,6 +248,68 @@ public sealed partial class BaseItemRepository
         return _appHost.ReverseVirtualPath(path);
     }
 
+    private static LinkedChild ToLinkedChild(Guid childId, Database.Implementations.Entities.LinkedChildType childType)
+        => new()
+        {
+            ItemId = childId,
+            Type = (MediaBrowser.Controller.Entities.LinkedChildType)childType
+        };
+
+    /// <inheritdoc />
+    public IReadOnlyList<BaseItemDto> LoadLinkedChildren(JellyfinDbContext context, IReadOnlyList<BaseItemDto> items)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(items);
+
+        // Only containers and videos can own links, so a result set of plain items costs no query.
+        var owners = new Dictionary<Guid, BaseItemDto>();
+        foreach (var item in items)
+        {
+            if (item is Folder or Video)
+            {
+                owners[item.Id] = item;
+            }
+        }
+
+        if (owners.Count == 0)
+        {
+            return items;
+        }
+
+        var linksByParent = context.LinkedChildren
+            .AsNoTracking()
+            .WhereOneOrMany(owners.Keys.ToArray(), e => e.ParentId)
+            .OrderBy(e => e.SortOrder)
+            .Select(e => new { e.ParentId, e.ChildId, e.ChildType })
+            .ToLookup(e => e.ParentId);
+
+        foreach (var (id, item) in owners)
+        {
+            // Assigned even when there are no rows: an unread container carries the same empty array,
+            // and the save path tells "no links" from "not read yet" by nothing but that assignment.
+            var links = linksByParent[id];
+
+            if (item is Folder folder)
+            {
+                folder.LinkedChildren = [.. links.Select(e => ToLinkedChild(e.ChildId, e.ChildType))];
+            }
+
+            if (item is Video video)
+            {
+                // A video owns only the versions merged onto it by hand; any other link on it was
+                // written by the container that holds it and must not be rewritten as the video's.
+                video.LinkedAlternateVersions =
+                [
+                    .. links
+                        .Where(e => e.ChildType == Database.Implementations.Entities.LinkedChildType.LinkedAlternateVersion)
+                        .Select(e => ToLinkedChild(e.ChildId, e.ChildType))
+                ];
+            }
+        }
+
+        return items;
+    }
+
     /// <inheritdoc />
     public BaseItemDto? DeserializeBaseItem(BaseItemEntity entity, bool skipDeserialization = false)
     {
