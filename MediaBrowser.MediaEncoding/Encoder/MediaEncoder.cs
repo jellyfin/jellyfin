@@ -702,22 +702,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 filters.Add("bwdif=0:-1:0");
             }
 
-            // apply some filters to thumbnail extracted below (below) crop any black lines that we made and get the correct ar.
-            // This filter chain may have adverse effects on recorded tv thumbnails if ar changes during presentation ex. commercials @ diff ar
-            var scaler = threedFormat switch
+            // Flatten a frame packed 3D frame down to a single eye, otherwise the thumbnail shows both of them.
+            var flatten3DFilter = EncodingHelper.GetVideo3DFilter(threedFormat);
+            if (!string.IsNullOrEmpty(flatten3DFilter))
             {
-                // hsbs crop width in half,scale to correct size, set the display aspect,crop out any black bars we may have made. Work out the correct height based on the display aspect it will maintain the aspect where -1 in this case (3d) may not.
-                Video3DFormat.HalfSideBySide => @"crop=iw/2:ih:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1",
-                // fsbs crop width in half,set the display aspect,crop out any black bars we may have made
-                Video3DFormat.FullSideBySide => @"crop=iw/2:ih:0:0,setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1",
-                // htab crop height in half,scale to correct size, set the display aspect,crop out any black bars we may have made
-                Video3DFormat.HalfTopAndBottom => @"crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1",
-                // ftab crop height in half, set the display aspect,crop out any black bars we may have made
-                Video3DFormat.FullTopAndBottom => @"crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1",
-                _ => "scale=round(iw*sar/2)*2:round(ih/2)*2"
-            };
+                filters.Add(flatten3DFilter);
+            }
 
-            filters.Add(scaler);
+            // Square the pixels and round the dimensions to an even number for the encoder.
+            filters.Add("scale=round(iw*sar/2)*2:round(ih/2)*2");
 
             // Use ffmpeg to sample N frames and pick the best thumbnail. Have a fall back just in case.
             var enableThumbnail = !useTradeoff && useIFrame && !string.Equals("wtv", container, StringComparison.OrdinalIgnoreCase);
