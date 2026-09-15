@@ -1,6 +1,9 @@
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using Moq;
@@ -328,28 +331,18 @@ namespace Jellyfin.Controller.Tests
         }
 
         [Fact]
-        public void GetFileSystemEntries_MoreRecordsThanTheCeiling_DropsCache()
+        public void GetFileSystemEntries_MoreFoldersThanTheCapacity_EvictsTheColdest()
         {
-            // Charged by the files in a listing, not the number of listings, so a few big folders
-            // reach the limit where a lot of small ones would not.
-            const int FolderCount = 60;
-            var bigListing = new FileSystemMetadata[5000];
-            for (var i = 0; i < bigListing.Length; i++)
-            {
-                bigListing[i] = new FileSystemMetadata
-                {
-                    FullName = "/music/track" + i.ToString(CultureInfo.InvariantCulture),
-                    IsDirectory = false
-                };
-            }
+            // Charged by the number of listings now, not the files in them, and only the coldest are
+            // given up rather than the whole cache.
+            const int FolderCount = 4096;
+            const string FirstPath = "/music/artist0";
 
             var fileSystemMock = new Mock<IFileSystem>();
             fileSystemMock.Setup(f => f.GetFileSystemEntries(It.IsAny<string>()))
-                .Returns(bigListing);
+                .Returns(_lowerCaseFileSystemMetadata);
 
             var directoryService = new DirectoryService(fileSystemMock.Object);
-
-            const string FirstPath = "/music/artist0";
             directoryService.GetFileSystemEntries(FirstPath);
 
             for (var i = 1; i < FolderCount; i++)
@@ -357,9 +350,152 @@ namespace Jellyfin.Controller.Tests
                 directoryService.GetFileSystemEntries("/music/artist" + i.ToString(CultureInfo.InvariantCulture));
             }
 
+            var lastPath = "/music/artist" + (FolderCount - 1).ToString(CultureInfo.InvariantCulture);
+            directoryService.GetFileSystemEntries(lastPath);
             directoryService.GetFileSystemEntries(FirstPath);
 
             fileSystemMock.Verify(f => f.GetFileSystemEntries(FirstPath), Times.Exactly(2));
+            fileSystemMock.Verify(f => f.GetFileSystemEntries(lastPath), Times.Once);
+        }
+
+        [Fact]
+        public void GetFileSystemEntries_SecondServiceOverTheSameFileSystem_ReusesTheListing()
+        {
+            var fileSystemMock = new Mock<IFileSystem>();
+            fileSystemMock.Setup(f => f.GetFileSystemEntries(_lowerCasePath))
+                .Returns(_lowerCaseFileSystemMetadata);
+
+            new DirectoryService(fileSystemMock.Object).GetFileSystemEntries(_lowerCasePath);
+            new DirectoryService(fileSystemMock.Object).GetFileSystemEntries(_lowerCasePath);
+
+            fileSystemMock.Verify(f => f.GetFileSystemEntries(_lowerCasePath), Times.Once);
+        }
+
+        [Fact]
+        public void GetFileSystemEntries_SeparateFileSystems_DoNotShareAListing()
+        {
+            var firstMock = new Mock<IFileSystem>();
+            firstMock.Setup(f => f.GetFileSystemEntries(_lowerCasePath))
+                .Returns(_lowerCaseFileSystemMetadata);
+            var secondMock = new Mock<IFileSystem>();
+            secondMock.Setup(f => f.GetFileSystemEntries(_lowerCasePath))
+                .Returns(_upperCaseFileSystemMetadata);
+
+            var first = new DirectoryService(firstMock.Object).GetFileSystemEntries(_lowerCasePath);
+            var second = new DirectoryService(secondMock.Object).GetFileSystemEntries(_lowerCasePath);
+
+            Assert.Equal(_lowerCaseFileSystemMetadata, first);
+            Assert.Equal(_upperCaseFileSystemMetadata, second);
+        }
+
+        [Fact]
+        public async Task GetFileSystemEntries_ConcurrentCallsForOnePath_ReadsTheFileSystemOnce()
+        {
+            const int Callers = 8;
+            using var allCallersStarted = new CountdownEvent(Callers);
+
+            var fileSystemMock = new Mock<IFileSystem>();
+            fileSystemMock.Setup(f => f.GetFileSystemEntries(_lowerCasePath))
+                .Returns(() =>
+                {
+                    // Hold the listing open until everyone has asked for it, so a cache that lets the
+                    // factory run more than once has every opportunity to do so.
+                    allCallersStarted.Wait(TimeSpan.FromSeconds(10));
+                    return _lowerCaseFileSystemMetadata;
+                });
+
+            var directoryService = new DirectoryService(fileSystemMock.Object);
+
+            var callers = new Task[Callers];
+            for (var i = 0; i < Callers; i++)
+            {
+                callers[i] = Task.Run(() =>
+                {
+                    allCallersStarted.Signal();
+                    return directoryService.GetFileSystemEntries(_lowerCasePath);
+                });
+            }
+
+            await Task.WhenAll(callers);
+
+            fileSystemMock.Verify(f => f.GetFileSystemEntries(_lowerCasePath), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetFileSystemEntries_AfterTheEntryLifetime_RereadsTheListing()
+        {
+            var lifetime = TimeSpan.FromMilliseconds(100);
+
+            var fileSystemMock = new Mock<IFileSystem>();
+            fileSystemMock.Setup(f => f.GetFileSystemEntries(_lowerCasePath))
+                .Returns(_lowerCaseFileSystemMetadata);
+
+            var directoryService = new DirectoryService(fileSystemMock.Object, lifetime);
+            directoryService.GetFileSystemEntries(_lowerCasePath);
+
+            // A read discards the key it touches if it has expired, so this holds with or without a
+            // trim. What the trim adds is giving the memory back when nothing reads at all, and that
+            // is not observable from out here.
+            await Task.Delay(lifetime * 5, TestContext.Current.CancellationToken);
+
+            directoryService.GetFileSystemEntries(_lowerCasePath);
+
+            fileSystemMock.Verify(f => f.GetFileSystemEntries(_lowerCasePath), Times.Exactly(2));
+        }
+
+        [Fact]
+        public void TrimExpired_WithinTheEntryLifetime_KeepsTheListing()
+        {
+            var fileSystemMock = new Mock<IFileSystem>();
+            fileSystemMock.Setup(f => f.GetFileSystemEntries(_lowerCasePath))
+                .Returns(_lowerCaseFileSystemMetadata);
+
+            var directoryService = new DirectoryService(fileSystemMock.Object, TimeSpan.FromMinutes(10));
+            directoryService.GetFileSystemEntries(_lowerCasePath);
+
+            directoryService.TrimExpired();
+
+            directoryService.GetFileSystemEntries(_lowerCasePath);
+
+            fileSystemMock.Verify(f => f.GetFileSystemEntries(_lowerCasePath), Times.Once);
+        }
+
+        [Fact]
+        public void Move_GivenACachedDirectory_ForgetsBothPaths()
+        {
+            var root = Directory.CreateTempSubdirectory("jellyfin-directoryservice-tests");
+            try
+            {
+                var source = Path.Combine(root.FullName, "before");
+                var destination = Path.Combine(root.FullName, "after");
+                Directory.CreateDirectory(source);
+
+                var fileSystemMock = new Mock<IFileSystem>();
+                fileSystemMock.Setup(f => f.GetFileSystemEntries(It.IsAny<string>()))
+                    .Returns(_lowerCaseFileSystemMetadata);
+
+                var directoryService = new DirectoryService(fileSystemMock.Object);
+                directoryService.GetFileSystemEntries(source);
+                directoryService.GetFileSystemEntries(destination);
+                directoryService.GetFileSystemEntries(root.FullName);
+
+                directoryService.Move(source, destination);
+
+                Assert.True(Directory.Exists(destination));
+                Assert.False(Directory.Exists(source));
+
+                directoryService.GetFileSystemEntries(source);
+                directoryService.GetFileSystemEntries(destination);
+                directoryService.GetFileSystemEntries(root.FullName);
+
+                fileSystemMock.Verify(f => f.GetFileSystemEntries(source), Times.Exactly(2));
+                fileSystemMock.Verify(f => f.GetFileSystemEntries(destination), Times.Exactly(2));
+                fileSystemMock.Verify(f => f.GetFileSystemEntries(root.FullName), Times.Exactly(2));
+            }
+            finally
+            {
+                root.Delete(true);
+            }
         }
 
         [Fact]
