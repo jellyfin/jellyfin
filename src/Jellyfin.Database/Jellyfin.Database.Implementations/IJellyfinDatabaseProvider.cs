@@ -82,4 +82,17 @@ public interface IJellyfinDatabaseProvider
     /// <param name="tableNames">The names of the tables to purge or null for all tables to be purged.</param>
     /// <returns>A Task.</returns>
     Task PurgeDatabase(JellyfinDbContext dbContext, IEnumerable<string>? tableNames);
+
+    /// <summary>
+    /// Completes an explicit-ID database import, for example by advancing generated-ID sequences.
+    /// </summary>
+    /// <remarks>
+    /// Called after imported rows have been saved and before the import transaction commits.
+    /// Implementations must use the supplied context and transaction so a failure rolls back the import.
+    /// </remarks>
+    /// <param name="dbContext">The context owning the active import transaction.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    /// <returns>A task representing completion of provider-specific import work.</returns>
+    Task CompleteDatabaseRestoreAsync(JellyfinDbContext dbContext, CancellationToken cancellationToken)
+        => Task.CompletedTask;
 }
