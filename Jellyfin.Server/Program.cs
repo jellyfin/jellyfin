@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
@@ -20,6 +21,7 @@ using Jellyfin.Server.Implementations.StorageHelpers;
 using Jellyfin.Server.Implementations.SystemBackupService;
 using Jellyfin.Server.Migrations;
 using Jellyfin.Server.Migrations.Stages;
+using Jellyfin.Server.Provisioning;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -63,6 +65,7 @@ namespace Jellyfin.Server
         private static IStartupLogger<JellyfinMigrationService>? _migrationLogger;
         private static bool _optimizeDatabaseAfterMigration;
         private static string? _restoreFromBackup;
+        private static ProvisionManifest? _provisionManifest;
 
         /// <summary>
         /// The entry point of the application.
@@ -115,6 +118,12 @@ namespace Jellyfin.Server
                 Assembly.GetEntryAssembly()!.GetName().Version!.ToString(3));
 
             StartupHelpers.LogEnvironmentInfo(_logger, appPaths);
+
+            if (!await TryLoadProvisionManifestAsync(options).ConfigureAwait(false))
+            {
+                Environment.ExitCode = 1;
+                return;
+            }
 
             // If hosting the web client, validate the client content path
             if (startupConfig.HostWebClient())
@@ -217,6 +226,14 @@ namespace Jellyfin.Server
                 _optimizeDatabaseAfterMigration |= await jellyfinMigrationService.MigrateStepAsync(JellyfinMigrationStageTypes.AppInitialisation, appHost.ServiceProvider).ConfigureAwait(false);
                 await jellyfinMigrationService.CleanupSystemAfterMigration(_logger).ConfigureAwait(false);
                 await OptimizeDatabaseAfterMigrationAsync(appHost.ServiceProvider).ConfigureAwait(false);
+
+                if (_provisionManifest is not null)
+                {
+                    SetupServer.ReportActivity(StartupActivity.Provisioning);
+                    var provisioner = ActivatorUtilities.CreateInstance<ServerProvisioner>(appHost.ServiceProvider);
+                    await provisioner.ProvisionAsync(_provisionManifest).ConfigureAwait(false);
+                }
+
                 try
                 {
                     configurationCompleted = true;
@@ -254,6 +271,13 @@ namespace Jellyfin.Server
             catch (Exception ex)
             {
                 _restartOnShutdown = false;
+                if (_provisionManifest is not null)
+                {
+                    // Provisioning is a one-shot batch operation, so a failure has to be visible to
+                    // whatever invoked it rather than only in the log.
+                    Environment.ExitCode = 1;
+                }
+
                 _logger.LogCritical(ex, "Error while starting server");
                 if (_setupServer!.IsAlive && !configurationCompleted)
                 {
@@ -388,6 +412,47 @@ namespace Jellyfin.Server
                 .AddJsonFile(LoggingConfigFileSystem, optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables("JELLYFIN_")
                 .AddInMemoryCollection(commandLineOpts.ConvertToConfig());
+        }
+
+        /// <summary>
+        /// Validates the provisioning options and, in <see cref="Configuration.StartupMode.Provision"/>
+        /// mode, loads the manifest into <c>_provisionManifest</c>.
+        /// </summary>
+        /// <remarks>
+        /// Reading the file here rather than once the server is up means a malformed manifest fails
+        /// immediately instead of after the migration and service startup work has been done.
+        /// </remarks>
+        /// <param name="options">The startup options.</param>
+        /// <returns><c>true</c> if startup may continue.</returns>
+        private static async Task<bool> TryLoadProvisionManifestAsync(StartupOptions options)
+        {
+            if (options.StartupMode is not Configuration.StartupMode.Provision)
+            {
+                if (options.ProvisionFile is not null)
+                {
+                    _logger.LogCritical("--provision-file has no effect without '--mode {Mode}'.", Configuration.StartupMode.Provision);
+                    return false;
+                }
+
+                return true;
+            }
+
+            if (string.IsNullOrEmpty(options.ProvisionFile))
+            {
+                _logger.LogCritical("'--mode {Mode}' requires --provision-file.", Configuration.StartupMode.Provision);
+                return false;
+            }
+
+            try
+            {
+                _provisionManifest = await ProvisionManifestReader.ReadAsync(options.ProvisionFile).ConfigureAwait(false);
+                return true;
+            }
+            catch (Exception ex) when (ex is IOException or JsonException or InvalidOperationException or NotSupportedException or UnauthorizedAccessException)
+            {
+                _logger.LogCritical("Could not read the provision file {Path}: {Message}", options.ProvisionFile, ex.Message);
+                return false;
+            }
         }
 
         private static void PrepareDatabaseProvider(IServiceProvider services)
