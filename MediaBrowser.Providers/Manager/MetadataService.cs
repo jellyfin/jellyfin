@@ -1180,7 +1180,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (replaceData || !target.EndDate.HasValue)
             {
-                target.EndDate = source.EndDate;
+                target.EndDate = ToStoredDate(source.EndDate);
             }
 
             if (!lockedFields.Contains(MetadataField.Genres))
@@ -1244,7 +1244,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (replaceData || !target.PremiereDate.HasValue)
             {
-                target.PremiereDate = source.PremiereDate;
+                target.PremiereDate = ToStoredDate(source.PremiereDate);
             }
 
             if (replaceData || target.ProductionYear is null)
@@ -1394,6 +1394,17 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
         }
+
+        /// <summary>
+        /// Stores a provider's date as midnight UTC on the calendar date it gave. A date that is already UTC, as
+        /// read from an NFO or loaded from the database, is left as it is.
+        /// </summary>
+        /// <remarks>
+        /// A date with no kind, or a local one, would otherwise be converted to UTC as local midnight when saved,
+        /// which moves it to the previous day whenever the server is ahead of UTC.
+        /// </remarks>
+        private static DateTime? ToStoredDate(DateTime? date)
+            => date is { Kind: not DateTimeKind.Utc } value ? value.ToUtcDate() : date;
 
         private static void RemoveInvalidProviderIds(IReadOnlyList<PersonInfo> people)
         {
