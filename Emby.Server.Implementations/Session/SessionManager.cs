@@ -2139,27 +2139,32 @@ namespace Emby.Server.Implementations.Session
                 result = result.Where(i => i.UserId.IsEmpty() || i.ContainsUser(userId));
             }
 
-            if (!userIsAdmin)
-            {
-                // Don't report acceleration type for non-admin users.
-                result = result.Select(r =>
-                {
-                    if (r.TranscodingInfo is not null)
-                    {
-                        r.TranscodingInfo.HardwareAccelerationType = HardwareAccelerationType.none;
-                    }
-
-                    return r;
-                });
-            }
-
             if (activeWithinSeconds.HasValue && activeWithinSeconds.Value > 0)
             {
                 var minActiveDate = DateTime.UtcNow.AddSeconds(0 - activeWithinSeconds.Value);
                 result = result.Where(i => i.LastActivityDate >= minActiveDate);
             }
 
-            return result.Select(ToSessionInfoDto).ToList();
+            var sessions = result.Select(ToSessionInfoDto).ToList();
+
+            if (!userIsAdmin)
+            {
+                // Don't report the server's hardware setup to non-admin users.
+                foreach (var session in sessions)
+                {
+                    if (session.TranscodingInfo is null)
+                    {
+                        continue;
+                    }
+
+                    var scrubbed = session.TranscodingInfo.Clone();
+                    scrubbed.HardwareAccelerationType = HardwareAccelerationType.none;
+                    scrubbed.Pipeline = null;
+                    session.TranscodingInfo = scrubbed;
+                }
+            }
+
+            return sessions;
         }
 
         /// <inheritdoc />
