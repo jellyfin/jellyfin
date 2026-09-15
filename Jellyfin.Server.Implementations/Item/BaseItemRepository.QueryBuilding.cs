@@ -271,7 +271,7 @@ public sealed partial class BaseItemRepository
 
         if (filter.DtoOptions.EnableImages)
         {
-            dbQuery = dbQuery.Include(e => e.Images);
+            dbQuery = dbQuery.Include(e => e.Images!.OrderBy(i => i.Id));
         }
 
         // Include LinkedChildEntities for container types and videos that use them (BoxSet, Playlist,
@@ -291,7 +291,7 @@ public sealed partial class BaseItemRepository
         };
         if (filter.IncludeItemTypes.Length == 0 || filter.IncludeItemTypes.Any(linkedChildTypes.Contains))
         {
-            dbQuery = dbQuery.Include(e => e.LinkedChildEntities);
+            dbQuery = dbQuery.Include(e => e.LinkedChildEntities!.OrderBy(l => l.SortOrder));
         }
 
         if (filter.IncludeExtras)
