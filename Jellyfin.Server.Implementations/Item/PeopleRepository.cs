@@ -127,18 +127,61 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         var distinctCredits = credits.DistinctBy(e => (e.LoweredName, e.PersonType, e.LoweredRole)).ToArray();
 
         var distinctPersons = distinctCredits.DistinctBy(e => (e.LoweredName, e.PersonType)).ToArray();
-        var personKeys = distinctPersons.Select(e => e.LoweredName + "-" + e.PersonType).ToArray();
 
         using var context = _dbProvider.CreateDbContext();
-        using var transaction = context.Database.BeginTransaction();
-        var existingPersons = context.Peoples.Select(e => new
+        var existingMaps = context.PeopleBaseItemMap
+            .AsNoTracking()
+            .Include(e => e.People)
+            .Where(e => e.ItemId == itemId)
+            .ToList();
+
+        // Most library scans refresh unchanged local metadata. Avoid opening a write
+        // transaction when the item's people mappings, order and roles are unchanged.
+        var incomingCredits = distinctCredits
+            .Select((credit, index) => new
+            {
+                Key = (credit.LoweredName, credit.PersonType, credit.LoweredRole),
+                Role = credit.Person.Role,
+                ListOrder = index,
+                SortOrder = credit.Person.SortOrder
+            })
+            .ToDictionary(e => e.Key);
+        var mappingsAreUnchanged = existingMaps.Count == incomingCredits.Count
+            && existingMaps.All(map =>
+                incomingCredits.TryGetValue(
+                    (map.People.Name.ToLowerInvariant(), map.People.PersonType ?? string.Empty, map.Role?.ToLowerInvariant() ?? string.Empty),
+                    out var incoming)
+                && map.ListOrder == incoming.ListOrder
+                && map.SortOrder == incoming.SortOrder
+                && string.Equals(map.Role ?? string.Empty, incoming.Role, StringComparison.OrdinalIgnoreCase));
+
+        if (mappingsAreUnchanged)
         {
-            item = e,
-            SelectionKey = e.Name.ToLower() + "-" + e.PersonType
-        })
-            .Where(p => personKeys.Contains(p.SelectionKey))
-            .Select(f => f.item)
-            .ToArray();
+            return;
+        }
+
+        using var transaction = context.Database.BeginTransaction();
+        // The fast-path snapshot was read before acquiring the write transaction. Reload
+        // tracked mappings inside it so a concurrent refresh cannot leave stale credits.
+        existingMaps = context.PeopleBaseItemMap
+            .Include(e => e.People)
+            .Where(e => e.ItemId == itemId)
+            .ToList();
+
+        // Query each person type separately so SQLite can use IX_Peoples_NameLower.
+        // Combining the two fields into `lower(Name) || '-' || PersonType` forces a full
+        // scan of Peoples for every media item, which is prohibitive during a large import.
+        var existingPersons = new List<People>();
+        foreach (var personTypeGroup in distinctPersons.GroupBy(e => e.PersonType, StringComparer.Ordinal))
+        {
+            var names = personTypeGroup
+                .Select(e => e.LoweredName)
+                .ToArray();
+
+            existingPersons.AddRange(context.Peoples
+                .Where(e => e.PersonType == personTypeGroup.Key && names.Contains(e.Name.ToLower()))
+                .ToArray());
+        }
 
         var existingPersonKeys = existingPersons.Select(e => (e.Name.ToLowerInvariant(), e.PersonType ?? string.Empty)).ToHashSet();
 
@@ -157,7 +200,6 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             personsEntities.TryAdd((entity.Name.ToLowerInvariant(), entity.PersonType ?? string.Empty), entity);
         }
 
-        var existingMaps = context.PeopleBaseItemMap.Include(e => e.People).Where(e => e.ItemId == itemId).ToList();
         var existingMapsByCredit = new Dictionary<(string LoweredName, string PersonType, string LoweredRole), PeopleBaseItemMap>();
         foreach (var map in existingMaps)
         {
