@@ -1,12 +1,15 @@
 using System;
-using System.IO.Compression;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Emby.Naming.Common;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
+using SharpCompress.Archives;
 
 namespace MediaBrowser.Providers.Books.ComicInfo;
 
@@ -16,17 +19,20 @@ namespace MediaBrowser.Providers.Books.ComicInfo;
 public class InternalComicInfoProvider : IComicProvider
 {
     private readonly IFileSystem _fileSystem;
+    private readonly NamingOptions _namingOptions;
     private readonly ILogger<InternalComicInfoProvider> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InternalComicInfoProvider"/> class.
     /// </summary>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+    /// <param name="namingOptions">Instance of the <see cref="NamingOptions"/>.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{InternalComicInfoProvider}"/> interface.</param>
-    public InternalComicInfoProvider(IFileSystem fileSystem, ILogger<InternalComicInfoProvider> logger)
+    public InternalComicInfoProvider(IFileSystem fileSystem, NamingOptions namingOptions, ILogger<InternalComicInfoProvider> logger)
     {
         _logger = logger;
         _fileSystem = fileSystem;
+        _namingOptions = namingOptions;
     }
 
     /// <inheritdoc />
@@ -80,18 +86,23 @@ public class InternalComicInfoProvider : IComicProvider
         try
         {
             // open the comic archive and try to get the ComicInfo.xml entry
-            using var comicBookFile = await ZipFile.OpenReadAsync(path, cancellationToken).ConfigureAwait(false);
-            var container = comicBookFile.GetEntry(ComicInfoReader.ComicRackMetaFile);
+            using var stream = AsyncFile.OpenRead(path);
+            var archive = await ArchiveFactory.OpenAsyncArchive(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            var container = await archive.EntriesAsync
+                .FirstOrDefaultAsync(e => string.Equals(e.Key, ComicInfoReader.ComicRackMetaFile, StringComparison.OrdinalIgnoreCase), cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
 
             if (container is null)
             {
                 return null;
             }
 
-            using var containerStream = await container.OpenAsync(cancellationToken).ConfigureAwait(false);
-            var comicInfoXml = XDocument.LoadAsync(containerStream, LoadOptions.None, cancellationToken);
-
-            return await comicInfoXml.ConfigureAwait(false);
+            var containerStream = await container.OpenEntryStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using (containerStream.ConfigureAwait(false))
+            {
+                return await XDocument.LoadAsync(containerStream, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+            }
         }
         catch (Exception e)
         {
@@ -110,7 +121,8 @@ public class InternalComicInfoProvider : IComicProvider
         }
 
         // only parse files that are known to have internal metadata
-        if (!string.Equals(fileInfo.Extension, ".cbz", StringComparison.OrdinalIgnoreCase))
+        // SharpCompress is required to support non-ZIP archives
+        if (!_namingOptions.ComicFileExtensions.Contains(fileInfo.Extension, StringComparison.OrdinalIgnoreCase))
         {
             return null;
         }
