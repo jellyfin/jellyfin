@@ -51,6 +51,19 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     item.Name = name;
                 }
             }
+            else if (reader.Name == "thumb")
+            {
+                var parsed = int.TryParse(reader.GetAttribute("season"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var seasonNumber);
+
+                if (parsed && item.IndexNumber.HasValue && seasonNumber == item.IndexNumber.Value)
+                {
+                    FetchThumbNode(reader, itemResult, "thumb");
+                }
+                else
+                {
+                    reader.Skip();
+                }
+            }
             else
             {
                 reader.Skip();
