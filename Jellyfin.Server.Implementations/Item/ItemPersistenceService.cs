@@ -253,6 +253,20 @@ public class ItemPersistenceService : IItemPersistenceService
         }
     }
 
+    /// <summary>
+    /// Picks the stored items whose owned rows this save is entitled to rewrite: the ones that read
+    /// the collection, plus the ones that put something in it without reading it first.
+    /// </summary>
+    private static Guid[] OwnersOf(
+        List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey, List<string> InheritedTags)> tuples,
+        HashSet<Guid> existingItems,
+        OwnedItemRows rows,
+        Func<BaseItemDto, bool> hasContent)
+        => [.. tuples
+            .Select(e => e.Item)
+            .Where(e => existingItems.Contains(e.Id) && (e.OwnedRowsRead.HasFlag(rows) || hasContent(e)))
+            .Select(e => e.Id)];
+
     private void UpdateOrInsertItems(IReadOnlyList<BaseItemDto> items, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(items);
@@ -420,12 +434,27 @@ public class ItemPersistenceService : IItemPersistenceService
         }
 
         // Owned rows of updated items are rewritten wholesale; cleared in one statement per table.
+        // Only for the items that actually carry the collection, though: one read without it holds
+        // an empty collection that means "not read", and clearing on that would delete the lot.
         if (existingItems.Count > 0)
         {
-            var updatedIds = existingItems.ToArray();
-            context.BaseItemProviders.WhereOneOrMany(updatedIds, e => e.ItemId).ExecuteDelete();
-            context.BaseItemImageInfos.WhereOneOrMany(updatedIds, e => e.ItemId).ExecuteDelete();
-            context.BaseItemMetadataFields.WhereOneOrMany(updatedIds, e => e.ItemId).ExecuteDelete();
+            var providerIds = OwnersOf(tuples, existingItems, OwnedItemRows.Providers, e => e.ProviderIds.Count > 0);
+            if (providerIds.Length > 0)
+            {
+                context.BaseItemProviders.WhereOneOrMany(providerIds, e => e.ItemId).ExecuteDelete();
+            }
+
+            var imageIds = OwnersOf(tuples, existingItems, OwnedItemRows.Images, e => e.ImageInfos.Length > 0);
+            if (imageIds.Length > 0)
+            {
+                context.BaseItemImageInfos.WhereOneOrMany(imageIds, e => e.ItemId).ExecuteDelete();
+            }
+
+            var lockedFieldIds = OwnersOf(tuples, existingItems, OwnedItemRows.LockedFields, e => e.LockedFields.Length > 0);
+            if (lockedFieldIds.Length > 0)
+            {
+                context.BaseItemMetadataFields.WhereOneOrMany(lockedFieldIds, e => e.ItemId).ExecuteDelete();
+            }
         }
 
         context.SaveChanges();
