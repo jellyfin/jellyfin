@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data;
@@ -13,6 +15,7 @@ using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -217,6 +220,40 @@ public class SessionManagerTests
         Assert.Throws<SecurityException>(() => sessionManager.ReportCapabilities(attackerSession.Id, victimSession.Id, new ClientCapabilities()));
     }
 
+    [Fact]
+    public async Task CheckForInactiveSteams_PausedSessionWithoutPausedDate_DoesNotThrow()
+    {
+        var user = new User("test", "default", "default");
+        await using var sessionManager = CreateSessionManager(user);
+        var session = await LogSessionActivity(sessionManager, user);
+
+        // A resume clears LastPausedDate before it clears IsPaused, so the two can be observed
+        // out of step by the timer.
+        session.NowPlayingItem = new BaseItemDto();
+        session.PlayState.IsPaused = true;
+        session.LastPausedDate = null;
+
+        var check = typeof(Emby.Server.Implementations.Session.SessionManager)
+            .GetMethod("CheckForInactiveSteams", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.NotNull(check);
+
+        // The callback is async void, so a throw is handed to the synchronization context
+        // rather than to the caller. On the thread pool it would terminate the process.
+        var context = new CapturingSynchronizationContext();
+        var previous = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(context);
+        try
+        {
+            check!.Invoke(sessionManager, new object?[] { null });
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+        }
+
+        Assert.Empty(context.Exceptions);
+    }
+
     private static Emby.Server.Implementations.Session.SessionManager CreateSessionManager(params User[] users)
     {
         var userManager = new Mock<IUserManager>();
@@ -245,4 +282,25 @@ public class SessionManagerTests
     // from the request headers and are not bound to the access token of the calling user.
     private static Task<SessionInfo> LogSessionActivity(ISessionManager sessionManager, User user)
         => sessionManager.LogSessionActivity("Jellyfin Web", "1.0.0", "victim-tv-01", "device_name", "127.0.0.1", user);
+
+    private sealed class CapturingSynchronizationContext : SynchronizationContext
+    {
+        public List<Exception> Exceptions { get; } = new List<Exception>();
+
+        public override void Post(SendOrPostCallback d, object? state) => Run(d, state);
+
+        public override void Send(SendOrPostCallback d, object? state) => Run(d, state);
+
+        private void Run(SendOrPostCallback d, object? state)
+        {
+            try
+            {
+                d(state);
+            }
+            catch (Exception ex)
+            {
+                Exceptions.Add(ex);
+            }
+        }
+    }
 }
