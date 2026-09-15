@@ -71,27 +71,22 @@ internal class FixLibrarySubtitleDownloadLanguages : IAsyncMigrationRoutine
 
             foreach (var language in options.SubtitleDownloadLanguages)
             {
-                var foundLanguage = _localizationManager.FindLanguageInfo(language)?.ThreeLetterISOLanguageName;
-                if (foundLanguage is not null)
-                {
-                    // Converted ISO 639-2/B to T (ger to deu)
-                    if (!string.Equals(foundLanguage, language, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _logger.LogInformation("Converted '{Language}' to '{ResolvedLanguage}' in library '{LibraryName}'.", language, foundLanguage, virtualFolder.Name);
-                    }
+                // Keep unresolvable values as they are, dropping them would silently discard a user setting.
+                var foundLanguage = _localizationManager.FindLanguageInfo(language)?.ThreeLetterISOLanguageName ?? language;
 
-                    if (fixedLanguages.Contains(foundLanguage, StringComparer.OrdinalIgnoreCase))
-                    {
-                        _logger.LogInformation("Language '{Language}' already exists for library '{LibraryName}'. Skipping duplicate.", foundLanguage, virtualFolder.Name);
-                        continue;
-                    }
-
-                    fixedLanguages.Add(foundLanguage);
-                }
-                else
+                // Converted ISO 639-2/B to T (ger to deu) or a legacy code to its BCP-47 tag (pob to pt-br)
+                if (!string.Equals(foundLanguage, language, StringComparison.OrdinalIgnoreCase))
                 {
-                    _logger.LogInformation("Could not resolve language '{Language}' in library '{LibraryName}'. Skipping.", language, virtualFolder.Name);
+                    _logger.LogInformation("Converted '{Language}' to '{ResolvedLanguage}' in library '{LibraryName}'.", language, foundLanguage, virtualFolder.Name);
                 }
+
+                if (fixedLanguages.Contains(foundLanguage, StringComparer.OrdinalIgnoreCase))
+                {
+                    _logger.LogInformation("Language '{Language}' already exists for library '{LibraryName}'. Skipping duplicate.", foundLanguage, virtualFolder.Name);
+                    continue;
+                }
+
+                fixedLanguages.Add(foundLanguage);
             }
 
             options.SubtitleDownloadLanguages = [.. fixedLanguages];
