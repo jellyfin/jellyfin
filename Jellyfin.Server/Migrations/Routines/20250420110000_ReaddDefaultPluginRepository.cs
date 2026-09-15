@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Updates;
 
@@ -9,8 +11,8 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-04-20T11:00:00", nameof(ReaddDefaultPluginRepository), "5F86E7F6-D966-4C77-849D-7A7B40B68C4E", RunMigrationOnSetup = true)]
-public class ReaddDefaultPluginRepository : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
+public class ReaddDefaultPluginRepository : IAsyncMigrationRoutine
 {
     private readonly IServerConfigurationManager _serverConfigurationManager;
 
@@ -30,7 +32,7 @@ public class ReaddDefaultPluginRepository : IMigrationRoutine
     }
 
     /// <inheritdoc/>
-    public void Perform()
+    public Task PerformAsync(CancellationToken cancellationToken)
     {
         // Only add if repository list is empty
         if (_serverConfigurationManager.Configuration.PluginRepositories.Length == 0)
@@ -38,5 +40,7 @@ public class ReaddDefaultPluginRepository : IMigrationRoutine
             _serverConfigurationManager.Configuration.PluginRepositories = new[] { _defaultRepositoryInfo };
             _serverConfigurationManager.SaveConfiguration();
         }
+
+        return Task.CompletedTask;
     }
 }

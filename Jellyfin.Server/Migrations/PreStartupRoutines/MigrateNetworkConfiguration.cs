@@ -2,6 +2,8 @@
 
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using Emby.Server.Implementations;
@@ -12,7 +14,7 @@ namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 
 /// <inheritdoc />
 [JellyfinMigration("2025-04-20T01:00:00", nameof(MigrateNetworkConfiguration), "4FB5C950-1991-11EE-9B4B-0800200C9A66", Stage = Stages.JellyfinMigrationStageTypes.PreInitialisation)]
-public class MigrateNetworkConfiguration : IMigrationRoutine
+public class MigrateNetworkConfiguration : IAsyncMigrationRoutine
 {
     private readonly ServerApplicationPaths _applicationPaths;
     private readonly ILogger<MigrateNetworkConfiguration> _logger;
@@ -29,7 +31,7 @@ public class MigrateNetworkConfiguration : IMigrationRoutine
     }
 
     /// <inheritdoc />
-    public void Perform()
+    public Task PerformAsync(CancellationToken cancellationToken)
     {
         string path = Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "network.xml");
         var oldNetworkConfigSerializer = new XmlSerializer(typeof(OldNetworkConfiguration), new XmlRootAttribute("NetworkConfiguration"));
@@ -51,7 +53,7 @@ public class MigrateNetworkConfiguration : IMigrationRoutine
 
         if (oldNetworkConfiguration is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         // Migrate network config values to new config schema
@@ -96,6 +98,8 @@ public class MigrateNetworkConfiguration : IMigrationRoutine
         var xmlWriterSettings = new XmlWriterSettings { Indent = true };
         using var xmlWriter = XmlWriter.Create(path, xmlWriterSettings);
         networkConfigSerializer.Serialize(xmlWriter, networkConfiguration);
+
+        return Task.CompletedTask;
     }
 
 #pragma warning disable

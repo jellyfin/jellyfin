@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using Newtonsoft.Json.Linq;
 
@@ -14,8 +16,8 @@ namespace Jellyfin.Server.Migrations.Routines
     /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
     [JellyfinMigration("2025-04-20T06:00:00", nameof(CreateUserLoggingConfigFile), "EF103419-8451-40D8-9F34-D1A8E93A1679")]
-    internal class CreateUserLoggingConfigFile : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
+    internal class CreateUserLoggingConfigFile : IAsyncMigrationRoutine
     {
         /// <summary>
         /// File history for logging.json as existed during this migration creation. The contents for each has been minified.
@@ -46,7 +48,7 @@ namespace Jellyfin.Server.Migrations.Routines
         }
 
         /// <inheritdoc/>
-        public void Perform()
+        public Task PerformAsync(CancellationToken cancellationToken)
         {
             var logDirectory = _appPaths.ConfigurationDirectoryPath;
             var existingConfigPath = Path.Combine(logDirectory, "logging.json");
@@ -57,6 +59,8 @@ namespace Jellyfin.Server.Migrations.Routines
             {
                 File.Move(existingConfigPath, Path.Combine(logDirectory, "logging.old.json"));
             }
+
+            return Task.CompletedTask;
         }
 
         /// <summary>

@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.System;
 
@@ -9,8 +11,8 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-04-20T16:00:00", nameof(AddDefaultCastReceivers), "34A1A1C4-5572-418E-A2F8-32CDFE2668E8", RunMigrationOnSetup = true)]
-public class AddDefaultCastReceivers : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
+public class AddDefaultCastReceivers : IAsyncMigrationRoutine
 {
     private readonly IServerConfigurationManager _serverConfigurationManager;
 
@@ -24,7 +26,7 @@ public class AddDefaultCastReceivers : IMigrationRoutine
     }
 
     /// <inheritdoc />
-    public void Perform()
+    public Task PerformAsync(CancellationToken cancellationToken)
     {
         _serverConfigurationManager.Configuration.CastReceiverApplications =
         [
@@ -41,5 +43,7 @@ public class AddDefaultCastReceivers : IMigrationRoutine
         ];
 
         _serverConfigurationManager.SaveConfiguration();
+
+        return Task.CompletedTask;
     }
 }

@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using Microsoft.Extensions.Logging;
@@ -10,8 +12,8 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-04-20T13:00:00", nameof(RemoveDownloadImagesInAdvance), "A81F75E0-8F43-416F-A5E8-516CCAB4D8CC")]
-internal class RemoveDownloadImagesInAdvance : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
+internal class RemoveDownloadImagesInAdvance : IAsyncMigrationRoutine
 {
     private readonly ILogger<RemoveDownloadImagesInAdvance> _logger;
     private readonly ILibraryManager _libraryManager;
@@ -23,7 +25,7 @@ internal class RemoveDownloadImagesInAdvance : IMigrationRoutine
     }
 
     /// <inheritdoc/>
-    public void Perform()
+    public Task PerformAsync(CancellationToken cancellationToken)
     {
         var virtualFolders = _libraryManager.GetVirtualFolders(false);
         _logger.LogInformation("Removing 'RemoveDownloadImagesInAdvance' settings in all the libraries");
@@ -41,5 +43,7 @@ internal class RemoveDownloadImagesInAdvance : IMigrationRoutine
             collectionFolder.UpdateLibraryOptions(libraryOptions);
             _logger.LogInformation("Removed from '{VirtualFolder}'", virtualFolder.Name);
         }
+
+        return Task.CompletedTask;
     }
 }

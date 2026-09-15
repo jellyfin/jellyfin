@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -14,9 +15,9 @@ namespace Jellyfin.Server.Migrations.Routines
     /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
     [JellyfinMigration("2025-04-20T18:00:00", nameof(FixAudioData), "CF6FABC2-9FBE-4933-84A5-FFE52EF22A58")]
-    [JellyfinMigrationBackup(LegacyLibraryDb = true)]
-    internal class FixAudioData : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
+    [JellyfinMigrationBackup(LegacyLibraryDb = true)]
+    internal class FixAudioData : IAsyncMigrationRoutine
     {
         private readonly ILogger<FixAudioData> _logger;
         private readonly IItemRepository _itemRepository;
@@ -36,7 +37,7 @@ namespace Jellyfin.Server.Migrations.Routines
         }
 
         /// <inheritdoc/>
-        public void Perform()
+        public Task PerformAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Backfilling audio lyrics data to database.");
             var startIndex = 0;
@@ -71,6 +72,8 @@ namespace Jellyfin.Server.Migrations.Routines
                 startIndex += results.Count;
                 _logger.LogInformation("Backfilled data for {UpdatedRecords} of {TotalRecords} audio records", startIndex, records);
             }
+
+            return Task.CompletedTask;
         }
     }
 }

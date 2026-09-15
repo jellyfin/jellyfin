@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Data;
 using Jellyfin.Database.Implementations;
@@ -24,8 +26,8 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-04-20T10:00:00", nameof(MigrateUserDb), "5C4B82A2-F053-4009-BD05-B6FCAD82F14C")]
-public class MigrateUserDb : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
+public class MigrateUserDb : IAsyncMigrationRoutine
 {
     private const string DbFilename = "users.db";
 
@@ -53,8 +55,15 @@ public class MigrateUserDb : IMigrationRoutine
         _xmlSerializer = xmlSerializer;
     }
 
-    /// <inheritdoc/>
-    public void Perform()
+    /// <inheritdoc />
+    public Task PerformAsync(CancellationToken cancellationToken)
+    {
+        // This routine predates the async interface and has not been ported to async database access yet.
+        PerformCore();
+        return Task.CompletedTask;
+    }
+
+    private void PerformCore()
     {
         var dataPath = _paths.DataPath;
         var userDbPath = Path.Combine(dataPath, DbFilename);

@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
@@ -22,8 +24,8 @@ namespace Jellyfin.Server.Migrations.Routines
     /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
     [JellyfinMigration("2025-04-20T12:00:00", nameof(MigrateDisplayPreferencesDb), "06387815-C3CC-421F-A888-FB5F9992BEA8")]
-    public class MigrateDisplayPreferencesDb : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
+    public class MigrateDisplayPreferencesDb : IAsyncMigrationRoutine
     {
         private const string DbFilename = "displaypreferences.db";
 
@@ -55,7 +57,14 @@ namespace Jellyfin.Server.Migrations.Routines
         }
 
         /// <inheritdoc />
-        public void Perform()
+        public Task PerformAsync(CancellationToken cancellationToken)
+        {
+            // This routine predates the async interface and has not been ported to async database access yet.
+            PerformCore();
+            return Task.CompletedTask;
+        }
+
+        private void PerformCore()
         {
             HomeSectionType[] defaults =
             {
