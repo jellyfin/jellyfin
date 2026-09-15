@@ -1426,6 +1426,7 @@ namespace MediaBrowser.Controller.Entities
             if (request.OrderBy.Any(o =>
                 o.OrderBy == ItemSortBy.CommunityRating ||
                 o.OrderBy == ItemSortBy.CriticRating ||
+                o.OrderBy == ItemSortBy.UserRating ||
                 o.OrderBy == ItemSortBy.Runtime))
             {
                 return false;
