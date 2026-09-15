@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -10,6 +9,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Books.ComicBookInfo.Models;
 using Microsoft.Extensions.Logging;
@@ -23,16 +23,19 @@ public class ComicBookInfoProvider : IComicProvider
 {
     private readonly ILogger<ComicBookInfoProvider> _logger;
     private readonly IFileSystem _fileSystem;
+    private readonly ILocalizationManager _localizationManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ComicBookInfoProvider"/> class.
     /// </summary>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{ComicBookInfoProvider}"/> interface.</param>
-    public ComicBookInfoProvider(IFileSystem fileSystem, ILogger<ComicBookInfoProvider> logger)
+    /// <param name="localizationManager">Instance of the <see cref="ILocalizationManager"/> interface.</param>
+    public ComicBookInfoProvider(IFileSystem fileSystem, ILogger<ComicBookInfoProvider> logger, ILocalizationManager localizationManager)
     {
         _fileSystem = fileSystem;
         _logger = logger;
+        _localizationManager = localizationManager;
     }
 
     /// <inheritdoc />
@@ -116,7 +119,7 @@ public class ComicBookInfoProvider : IComicProvider
 
         if (comic.Metadata.Language is not null)
         {
-            metadataResult.ResultLanguage = ReadCultureInfoInto(comic.Metadata.Language);
+            metadataResult.ResultLanguage = ReadLanguageCode(comic.Metadata.Language);
         }
 
         if (comic.Metadata.Credits.Count > 0)
@@ -140,7 +143,7 @@ public class ComicBookInfoProvider : IComicProvider
         return fileInfo.Extension.Equals(".cbz", StringComparison.OrdinalIgnoreCase) ? fileInfo : null;
     }
 
-    private static Book? ReadComicBookMetadata(ComicBookInfoMetadata comic)
+    internal static Book? ReadComicBookMetadata(ComicBookInfoMetadata comic)
     {
         var book = new Book();
         var hasFoundMetadata = false;
@@ -178,7 +181,7 @@ public class ComicBookInfoProvider : IComicProvider
         return hasFoundMetadata ? book : null;
     }
 
-    private static void ReadPeopleMetadata(ComicBookInfoMetadata comic, MetadataResult<Book> metadataResult)
+    internal static void ReadPeopleMetadata(ComicBookInfoMetadata comic, MetadataResult<Book> metadataResult)
     {
         foreach (var person in comic.Credits)
         {
@@ -207,16 +210,28 @@ public class ComicBookInfoProvider : IComicProvider
         }
     }
 
-    private static string? ReadCultureInfoInto(string language)
+    /// <summary>
+    /// Resolves the free-form ComicBookInfo language field to an ISO language code.
+    /// </summary>
+    /// <remarks>
+    /// The field holds whatever the tagger wrote, commonly a display name such as "English", so it cannot be
+    /// handed to <see cref="System.Globalization.CultureInfo"/>: Linux "English" yields "english" while
+    /// Windows rejects such values outright.
+    /// </remarks>
+    /// <param name="language">The language as written in the metadata.</param>
+    /// <returns>The ISO language code, or <c>null</c> if the language is unknown.</returns>
+    internal string? ReadLanguageCode(string language)
     {
-        try
-        {
-            return CultureInfo.GetCultureInfo(language).TwoLetterISOLanguageName;
-        }
-        catch (CultureNotFoundException)
+        var culture = _localizationManager.FindLanguageInfo(language);
+
+        if (culture is null)
         {
             return null;
         }
+
+        return string.IsNullOrEmpty(culture.TwoLetterISOLanguageName)
+            ? culture.ThreeLetterISOLanguageName
+            : culture.TwoLetterISOLanguageName;
     }
 
     private static bool ReadStringInto(string? data, Action<string> commitResult)

@@ -3,11 +3,15 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Books.ComicBookInfo;
+using MediaBrowser.Providers.Books.ComicBookInfo.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -20,11 +24,29 @@ public sealed class ComicBookInfoProviderTests : IDisposable
         """;
 
     private readonly string _directory;
+    private readonly ComicBookInfoFormat _comicBookInfoFormat;
+    private readonly Mock<ILocalizationManager> _localizationManager;
+    private readonly ComicBookInfoProvider _comicBookInfoProvider;
 
     public ComicBookInfoProviderTests()
     {
         _directory = Path.Combine(Path.GetTempPath(), "jf-cbz-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_directory);
+
+        _comicBookInfoFormat = GenerateTestData();
+
+        // stands in for the ISO 639-2 table LocalizationManager reads, which is covered by its own tests
+        _localizationManager = new Mock<ILocalizationManager>(MockBehavior.Strict);
+        _localizationManager
+            .Setup(lm => lm.FindLanguageInfo(It.IsAny<string>()))
+            .Returns((string language) => language.StartsWith("en", StringComparison.OrdinalIgnoreCase)
+                ? new CultureDto("English", "English", "en", ["eng"])
+                : null);
+
+        _comicBookInfoProvider = new ComicBookInfoProvider(
+            Mock.Of<IFileSystem>(),
+            NullLogger<ComicBookInfoProvider>.Instance,
+            _localizationManager.Object);
     }
 
     public void Dispose()
@@ -40,7 +62,7 @@ public sealed class ComicBookInfoProviderTests : IDisposable
     {
         var logger = new Mock<ILogger<ComicBookInfoProvider>>();
         var path = CreateArchive(comment);
-        var provider = new ComicBookInfoProvider(CreateFileSystem(path), logger.Object);
+        var provider = new ComicBookInfoProvider(CreateFileSystem(path), logger.Object, _localizationManager.Object);
 
         var result = await provider.ReadMetadata(new ItemInfo(new Book { Path = path }), Mock.Of<IDirectoryService>(), CancellationToken.None);
 
@@ -54,7 +76,7 @@ public sealed class ComicBookInfoProviderTests : IDisposable
     {
         var logger = new Mock<ILogger<ComicBookInfoProvider>>();
         var path = CreateArchive("Created by some packer");
-        var provider = new ComicBookInfoProvider(CreateFileSystem(path), logger.Object);
+        var provider = new ComicBookInfoProvider(CreateFileSystem(path), logger.Object, _localizationManager.Object);
 
         var result = await provider.ReadMetadata(new ItemInfo(new Book { Path = path }), Mock.Of<IDirectoryService>(), CancellationToken.None);
 
@@ -68,7 +90,7 @@ public sealed class ComicBookInfoProviderTests : IDisposable
     {
         var logger = new Mock<ILogger<ComicBookInfoProvider>>();
         var path = CreateArchive(ValidComment);
-        var provider = new ComicBookInfoProvider(CreateFileSystem(path), logger.Object);
+        var provider = new ComicBookInfoProvider(CreateFileSystem(path), logger.Object, _localizationManager.Object);
 
         var result = await provider.ReadMetadata(new ItemInfo(new Book { Path = path }), Mock.Of<IDirectoryService>(), CancellationToken.None);
 
@@ -78,6 +100,176 @@ public sealed class ComicBookInfoProviderTests : IDisposable
         Assert.Equal("Jungle Juice", result.Item.SeriesName);
         Assert.Equal(175, result.Item.IndexNumber);
         VerifyNothingLoggedAbove(logger, LogLevel.Debug);
+    }
+
+    [Fact]
+    public void ReadTitle_Success()
+    {
+        Assert.NotNull(_comicBookInfoFormat.Metadata);
+
+        var actual = ComicBookInfoProvider.ReadComicBookMetadata(_comicBookInfoFormat.Metadata);
+        Assert.NotNull(actual);
+        Assert.Equal("At Midnight, All the Agents", actual.Name);
+    }
+
+    [Fact(DisplayName = "Check that the series has no alternative title.")]
+    public void ReadAlternativeSeries_Success()
+    {
+        Assert.NotNull(_comicBookInfoFormat.Metadata);
+
+        var actual = ComicBookInfoProvider.ReadComicBookMetadata(_comicBookInfoFormat.Metadata);
+        Assert.NotNull(actual);
+        Assert.Null(actual.OriginalTitle);
+    }
+
+    [Fact]
+    public void ReadSeries_Success()
+    {
+        Assert.NotNull(_comicBookInfoFormat.Metadata);
+
+        var actual = ComicBookInfoProvider.ReadComicBookMetadata(_comicBookInfoFormat.Metadata);
+        Assert.NotNull(actual);
+        Assert.Equal("Watchmen", actual.SeriesName);
+    }
+
+    [Fact(DisplayName = "Check that the issue equals the index number.")]
+    public void ReadNumber_Success()
+    {
+        Assert.NotNull(_comicBookInfoFormat.Metadata);
+
+        var actual = ComicBookInfoProvider.ReadComicBookMetadata(_comicBookInfoFormat.Metadata);
+        Assert.NotNull(actual);
+        Assert.Equal(1, actual.IndexNumber);
+    }
+
+    [Fact]
+    public void ReadSummary_Success()
+    {
+        Assert.NotNull(_comicBookInfoFormat.Metadata);
+
+        var actual = ComicBookInfoProvider.ReadComicBookMetadata(_comicBookInfoFormat.Metadata);
+
+        Assert.NotNull(actual);
+        Assert.Equal("Tales of the Black Freighter...", actual.Overview);
+    }
+
+    [Fact]
+    public void ReadProductionYear_Success()
+    {
+        Assert.NotNull(_comicBookInfoFormat.Metadata);
+
+        var actual = ComicBookInfoProvider.ReadComicBookMetadata(_comicBookInfoFormat.Metadata);
+        Assert.NotNull(actual);
+        Assert.Equal(1986, actual.ProductionYear);
+    }
+
+    [Fact]
+    public void ReadDate_Success()
+    {
+        Assert.NotNull(_comicBookInfoFormat.Metadata);
+
+        var actual = ComicBookInfoProvider.ReadComicBookMetadata(_comicBookInfoFormat.Metadata);
+        var expected = new DateTime(1986, 9, 1, 0, 0, 0, DateTimeKind.Unspecified);
+
+        Assert.NotNull(actual);
+        Assert.Equal(expected, actual.PremiereDate);
+    }
+
+    [Fact]
+    public void ReadGenres_Success()
+    {
+        Assert.NotNull(_comicBookInfoFormat.Metadata);
+
+        var actual = ComicBookInfoProvider.ReadComicBookMetadata(_comicBookInfoFormat.Metadata);
+        Assert.NotNull(actual);
+        Assert.Single(actual.Genres);
+        Assert.Equal("Superhero", actual.Genres[0]);
+    }
+
+    [Fact]
+    public void ReadPublisher_Success()
+    {
+        Assert.NotNull(_comicBookInfoFormat.Metadata);
+
+        var actual = ComicBookInfoProvider.ReadComicBookMetadata(_comicBookInfoFormat.Metadata);
+        Assert.NotNull(actual);
+        Assert.Single(actual.Studios);
+        Assert.Equal("DC Comics", actual.Studios[0]);
+    }
+
+    [Fact]
+    public void ReadPeopleMetadata_Success()
+    {
+        var metadataResult = new MetadataResult<Book> { Item = new Book(), HasMetadata = true };
+
+        Assert.NotNull(_comicBookInfoFormat.Metadata);
+        ComicBookInfoProvider.ReadPeopleMetadata(_comicBookInfoFormat.Metadata, metadataResult);
+
+        Assert.Collection(
+            metadataResult.People,
+            person =>
+            {
+                Assert.Equal("Alan Moore", person.Name);
+                Assert.Equal(PersonKind.Writer, person.Type);
+            },
+            person =>
+            {
+                Assert.Equal("Dave Gibbons", person.Name);
+                Assert.Equal(PersonKind.Artist, person.Type);
+            },
+            person =>
+            {
+                Assert.Equal("Dave Gibbons", person.Name);
+                Assert.Equal(PersonKind.Letterer, person.Type);
+            },
+            person =>
+            {
+                Assert.Equal("John Gibbons", person.Name);
+                Assert.Equal(PersonKind.Colorist, person.Type);
+            },
+            person =>
+            {
+                Assert.Equal("Len Wein", person.Name);
+                Assert.Equal(PersonKind.Editor, person.Type);
+            },
+            person =>
+            {
+                Assert.Equal("Barbara Kesel", person.Name);
+                Assert.Equal(PersonKind.Editor, person.Type);
+            },
+            person =>
+            {
+                Assert.Equal("Takashi Shimoyama", person.Name);
+                Assert.Equal(PersonKind.Unknown, person.Type);
+            });
+    }
+
+    [Fact]
+    public void ReadTags_Success()
+    {
+        Assert.NotNull(_comicBookInfoFormat.Metadata);
+
+        var actual = ComicBookInfoProvider.ReadComicBookMetadata(_comicBookInfoFormat.Metadata);
+
+        Assert.NotNull(actual);
+        Assert.Equal(["Rorschach", "Ozymandias", "Nite Owl"], actual.Tags);
+    }
+
+    [Fact(DisplayName = "Check that a language display name is mapped to its ISO code.")]
+    public void ReadLanguageCode_Success()
+    {
+        Assert.NotNull(_comicBookInfoFormat.Metadata);
+        Assert.NotNull(_comicBookInfoFormat.Metadata.Language);
+
+        var actual = _comicBookInfoProvider.ReadLanguageCode(_comicBookInfoFormat.Metadata.Language);
+
+        Assert.Equal("en", actual);
+    }
+
+    [Fact]
+    public void ReadLanguageCode_UnknownLanguage_ReturnsNull()
+    {
+        Assert.Null(_comicBookInfoProvider.ReadLanguageCode("notalanguage"));
     }
 
     private static void VerifyLogged(Mock<ILogger<ComicBookInfoProvider>> logger, LogLevel level, string message)
@@ -139,5 +331,48 @@ public sealed class ComicBookInfoProviderTests : IDisposable
         }
 
         return path;
+    }
+
+    private static ComicBookInfoFormat GenerateTestData()
+    {
+        // example data taken from https://code.google.com/archive/p/comicbookinfo/wikis/Example.wiki
+        var credits = new[]
+        {
+            new ComicBookInfoCredit { Person = "Moore, Alan", Role = "Writer" },
+            new ComicBookInfoCredit { Person = "Gibbons, Dave", Role = "Artist" },
+            new ComicBookInfoCredit { Person = "Gibbons, Dave", Role = "Letterer" },
+            new ComicBookInfoCredit { Person = "Gibbons, John", Role = "Colorer" },
+            new ComicBookInfoCredit { Person = "Wein, Len", Role = "Editor" },
+            new ComicBookInfoCredit { Person = "Kesel, Barbara", Role = "Editor" },
+            // example of a non-comma-separated name
+            new ComicBookInfoCredit { Person = "Takashi Shimoyama", Role = "Example" }
+        };
+
+        var metadata = new ComicBookInfoMetadata
+        {
+            Series = "Watchmen",
+            Title = "At Midnight, All the Agents",
+            Publisher = "DC Comics",
+            PublicationMonth = 9,
+            PublicationYear = 1986,
+            Issue = 1,
+            NumberOfIssues = 12,
+            Volume = 1,
+            NumberOfVolumes = 1,
+            Rating = 5,
+            Genre = "Superhero",
+            Language = "English",
+            Country = "United States",
+            Credits = credits,
+            Tags = ["Rorschach", "Ozymandias", "Nite Owl"],
+            Comments = "Tales of the Black Freighter...",
+        };
+
+        return new ComicBookInfoFormat
+        {
+            AppId = "ComicBookLover/888",
+            LastModified = "2009-10-25 14:51:31 +0000",
+            Metadata = metadata
+        };
     }
 }
