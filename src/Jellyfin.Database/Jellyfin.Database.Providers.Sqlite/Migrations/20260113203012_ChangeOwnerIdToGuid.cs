@@ -119,41 +119,9 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
                 columns: new[] { "BaseItemEntityId", "Name", "OwnerId" },
                 values: new object[] { null, "This is a placeholder item for UserData that has been detached from its original item", null });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_BaseItems_BaseItemEntityId",
-                table: "BaseItems",
-                column: "BaseItemEntityId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BaseItems_ExtraType",
-                table: "BaseItems",
-                column: "ExtraType");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BaseItems_ExtraType_OwnerId",
-                table: "BaseItems",
-                columns: new[] { "ExtraType", "OwnerId" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BaseItems_OwnerId",
-                table: "BaseItems",
-                column: "OwnerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BaseItems_TopParentId_IsFolder_IsVirtualItem_DateCreated",
-                table: "BaseItems",
-                columns: new[] { "TopParentId", "IsFolder", "IsVirtualItem", "DateCreated" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BaseItems_TopParentId_MediaType_IsVirtualItem_DateCreated",
-                table: "BaseItems",
-                columns: new[] { "TopParentId", "MediaType", "IsVirtualItem", "DateCreated" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BaseItems_TopParentId_Type_IsVirtualItem_DateCreated",
-                table: "BaseItems",
-                columns: new[] { "TopParentId", "Type", "IsVirtualItem", "DateCreated" });
-
+            // No CreateIndex calls here on purpose: AddForeignKey rebuilds BaseItems on SQLite and
+            // recreates every index of the target model afterwards, so building them first only
+            // pays for a full index pass that the rebuild immediately throws away.
             migrationBuilder.AddForeignKey(
                 name: "FK_BaseItems_BaseItems_BaseItemEntityId",
                 table: "BaseItems",
