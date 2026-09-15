@@ -167,6 +167,7 @@
  - [Ullmie02](https://github.com/Ullmie02)
  - [Unhelpful](https://github.com/Unhelpful)
  - [Utku Özdemir](https://github.com/utkuozdemir)
+ - [vavallee](https://github.com/vavallee)
  - [viaregio](https://github.com/viaregio)
  - [vitorsemeano](https://github.com/vitorsemeano)
  - [voodoos](https://github.com/voodoos)
