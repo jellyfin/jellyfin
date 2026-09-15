@@ -19,7 +19,7 @@ namespace Jellyfin.Api.Controllers;
 /// Configuration Controller.
 /// </summary>
 [Route("System")]
-[Authorize]
+[Authorize(Policy = Policies.RequiresElevation)]
 [Tags("System")]
 public class ConfigurationController : BaseJellyfinApiController
 {
@@ -60,7 +60,6 @@ public class ConfigurationController : BaseJellyfinApiController
     /// <response code="204">Configuration updated.</response>
     /// <returns>Update status.</returns>
     [HttpPost("Configuration")]
-    [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult UpdateConfiguration([FromBody, Required] ServerConfiguration configuration)
     {
@@ -90,7 +89,6 @@ public class ConfigurationController : BaseJellyfinApiController
     /// <response code="204">Named configuration updated.</response>
     /// <returns>Update status.</returns>
     [HttpPost("Configuration/{key}")]
-    [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult UpdateNamedConfiguration([FromRoute, Required] string key, [FromBody, Required] JsonDocument configuration)
     {
@@ -112,7 +110,6 @@ public class ConfigurationController : BaseJellyfinApiController
     /// <response code="200">Metadata options returned.</response>
     /// <returns>Default MetadataOptions.</returns>
     [HttpGet("Configuration/MetadataOptions/Default")]
-    [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<MetadataOptions> GetDefaultMetadataOptions()
     {
@@ -126,7 +123,6 @@ public class ConfigurationController : BaseJellyfinApiController
     /// <response code="204">Branding configuration updated.</response>
     /// <returns>Update status.</returns>
     [HttpPost("Configuration/Branding")]
-    [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult UpdateBrandingConfiguration([FromBody, Required] BrandingOptionsDto configuration)
     {
