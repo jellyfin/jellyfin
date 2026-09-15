@@ -124,6 +124,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     // Forces a deep copy of the first TvEpisode, so we don't modify the original because it's cached
                     episodeResult = new TvEpisode()
                     {
+                        // The id of the first episode, so a multi-episode file still links to a real TMDb episode.
+                        Id = result[0].Id,
                         Name = result[0].Name,
                         Overview = result[0].Overview,
                         AirDate = result[0].AirDate,
@@ -189,6 +191,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             };
 
             var externalIds = episodeResult.ExternalIds;
+            item.TrySetProviderId(MetadataProvider.Tmdb, episodeResult.Id?.ToString(CultureInfo.InvariantCulture));
             item.TrySetProviderId(MetadataProvider.Tvdb, externalIds?.TvdbId);
             item.TrySetProviderId(MetadataProvider.Imdb, externalIds?.ImdbId);
             item.TrySetProviderId(MetadataProvider.TvRage, externalIds?.TvrageId);

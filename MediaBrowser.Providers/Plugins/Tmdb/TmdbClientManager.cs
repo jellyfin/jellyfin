@@ -170,18 +170,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="imageLanguages">A comma-separated list of image languages.</param>
         /// <param name="countryCode">The country code, ISO 3166-1.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The TMDb tv show episode group information or null if not found.</returns>
-        private async Task<TvGroupCollection?> GetSeriesGroupAsync(int tvShowId, string displayOrder, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
+        /// <returns>The TMDb tv show episode group information or null if the display order has no matching group.</returns>
+        public async Task<TvGroupCollection?> GetSeriesGroupAsync(int tvShowId, string? displayOrder, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
         {
-            TvGroupType? groupType =
-                string.Equals(displayOrder, "originalAirDate", StringComparison.Ordinal) ? TvGroupType.OriginalAirDate :
-                string.Equals(displayOrder, "absolute", StringComparison.Ordinal) ? TvGroupType.Absolute :
-                string.Equals(displayOrder, "dvd", StringComparison.Ordinal) ? TvGroupType.DVD :
-                string.Equals(displayOrder, "digital", StringComparison.Ordinal) ? TvGroupType.Digital :
-                string.Equals(displayOrder, "storyArc", StringComparison.Ordinal) ? TvGroupType.StoryArc :
-                string.Equals(displayOrder, "production", StringComparison.Ordinal) ? TvGroupType.Production :
-                string.Equals(displayOrder, "tv", StringComparison.Ordinal) ? TvGroupType.TV :
-                null;
+            var groupType = TmdbUtils.GetEpisodeGroupType(displayOrder);
 
             if (groupType is null)
             {
