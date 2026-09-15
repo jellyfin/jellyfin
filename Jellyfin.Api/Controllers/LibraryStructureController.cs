@@ -213,7 +213,7 @@ public class LibraryStructureController : BaseJellyfinApiController
                     {
                         _libraryManager.ClearIgnoreRuleCache();
                         // We don't know if this one can be validated individually, trigger a new validation
-                        await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+                        _libraryManager.QueueLibraryScan();
                     }
 
                     _libraryManager.ClearIgnoreRuleCache();
@@ -260,7 +260,7 @@ public class LibraryStructureController : BaseJellyfinApiController
                 // No need to start if scanning the library because it will handle it
                 if (refreshLibrary)
                 {
-                    await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+                    _libraryManager.QueueLibraryScan();
                 }
                 else
                 {
@@ -327,7 +327,7 @@ public class LibraryStructureController : BaseJellyfinApiController
                 // No need to start if scanning the library because it will handle it
                 if (refreshLibrary)
                 {
-                    await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+                    _libraryManager.QueueLibraryScan();
                 }
                 else
                 {
