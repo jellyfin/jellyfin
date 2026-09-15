@@ -33,12 +33,24 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
                 -- deletes an item: reattach it to the placeholder item instead of letting the
                 -- FK_UserData_BaseItems_ItemId cascade wipe it. The placeholder can only hold one row
                 -- per (UserId, CustomDataKey), so resolve collisions before repointing anything.
+                DROP TABLE IF EXISTS "DoomedUserDataKeys";
+                CREATE TEMPORARY TABLE "DoomedUserDataKeys" (
+                    "UserId" TEXT NOT NULL,
+                    "CustomDataKey" TEXT NOT NULL,
+                    PRIMARY KEY ("UserId", "CustomDataKey"));
+
+                -- Collect the colliding keys up front: correlating against "UserData" directly makes
+                -- the delete below re-scan every row of that user once per placeholder row.
+                INSERT OR IGNORE INTO "DoomedUserDataKeys" ("UserId", "CustomDataKey")
+                SELECT Doomed."UserId", Doomed."CustomDataKey"
+                FROM "UserData" AS Doomed
+                INNER JOIN "OrphanedBaseItemIds" AS Orphan ON Orphan."Id" = Doomed."ItemId";
+
                 DELETE FROM "UserData"
                 WHERE "ItemId" = '00000000-0000-0000-0000-000000000001'
                   AND EXISTS (
                       SELECT 1
-                      FROM "UserData" AS Doomed
-                      INNER JOIN "OrphanedBaseItemIds" AS Orphan ON Orphan."Id" = Doomed."ItemId"
+                      FROM "DoomedUserDataKeys" AS Doomed
                       WHERE Doomed."UserId" = "UserData"."UserId"
                         AND Doomed."CustomDataKey" = "UserData"."CustomDataKey");
 
@@ -63,6 +75,7 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
 
                 DELETE FROM "BaseItems" WHERE "Id" IN (SELECT "Id" FROM "OrphanedBaseItemIds");
 
+                DROP TABLE "DoomedUserDataKeys";
                 DROP TABLE "OrphanedBaseItemIds";
                 """);
 
