@@ -16,13 +16,15 @@ namespace MediaBrowser.Model.SyncPlay
         /// <param name="state">The group state.</param>
         /// <param name="participants">The participants.</param>
         /// <param name="lastUpdatedAt">The date when this DTO has been created.</param>
-        public GroupInfoDto(Guid groupId, string groupName, GroupStateType state, IReadOnlyList<string> participants, DateTime lastUpdatedAt)
+        /// <param name="bufferingParticipants">The usernames of participants currently buffering and blocking the group.</param>
+        public GroupInfoDto(Guid groupId, string groupName, GroupStateType state, IReadOnlyList<string> participants, DateTime lastUpdatedAt, IReadOnlyList<string>? bufferingParticipants = null)
         {
             GroupId = groupId;
             GroupName = groupName;
             State = state;
             Participants = participants;
             LastUpdatedAt = lastUpdatedAt;
+            BufferingParticipants = bufferingParticipants ?? Array.Empty<string>();
         }
 
         /// <summary>
@@ -54,5 +56,11 @@ namespace MediaBrowser.Model.SyncPlay
         /// </summary>
         /// <value>The date when this DTO has been created.</value>
         public DateTime LastUpdatedAt { get; }
+
+        /// <summary>
+        /// Gets the usernames of the participants that are currently buffering and blocking the group.
+        /// </summary>
+        /// <value>The usernames of the participants currently buffering.</value>
+        public IReadOnlyList<string> BufferingParticipants { get; }
     }
 }
