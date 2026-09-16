@@ -88,6 +88,11 @@ namespace MediaBrowser.Model.SyncPlay
         /// <summary>
         /// A user is requesting to be ignored on group wait.
         /// </summary>
-        IgnoreWait = 16
+        IgnoreWait = 16,
+
+        /// <summary>
+        /// A user is requesting to change the playback speed.
+        /// </summary>
+        SetPlaybackSpeed = 17
     }
 }
