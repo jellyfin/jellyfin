@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -543,9 +544,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         internal static DateTime? GetPremiereDate(TvSeasonEpisode tmdbEpisode)
         {
-            return tmdbEpisode.AirDate.HasValue
-                ? DateTime.SpecifyKind(tmdbEpisode.AirDate.Value, DateTimeKind.Local).ToUniversalTime()
-                : null;
+            return tmdbEpisode.AirDate?.ToUtcDate();
         }
 
         internal static bool UpdateVirtualEpisode(Episode episode, TvSeasonEpisode tmdbEpisode, DateTime? premiereDate)
