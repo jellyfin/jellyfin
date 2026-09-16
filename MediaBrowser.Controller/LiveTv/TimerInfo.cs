@@ -19,6 +19,7 @@ namespace MediaBrowser.Controller.LiveTv
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             Tags = Array.Empty<string>();
+            RecordingPartPaths = Array.Empty<string>();
         }
 
         public Dictionary<string, string> ProviderIds { get; set; }
@@ -112,6 +113,8 @@ namespace MediaBrowser.Controller.LiveTv
 
         public int RetryCount { get; set; }
 
+        public int FailedRetryCount { get; set; }
+
         // Program properties
         public int? SeasonNumber { get; set; }
 
@@ -160,6 +163,10 @@ namespace MediaBrowser.Controller.LiveTv
         public string[] Genres { get; set; }
 
         public string RecordingPath { get; set; }
+
+        public string CurrentRecordingPath { get; set; }
+
+        public string[] RecordingPartPaths { get; set; }
 
         public KeepUntil KeepUntil { get; set; }
     }
