@@ -207,14 +207,57 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
         }
     }
 
+    internal static HashSet<string> GetPresentEpisodeIds(IEnumerable<Episode> episodes)
+    {
+        var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var episode in episodes)
+        {
+            if (episode.IsVirtualItem || episode.IsMissingEpisode)
+            {
+                continue;
+            }
+
+            foreach (var (provider, id) in episode.ProviderIds)
+            {
+                if (string.IsNullOrWhiteSpace(id))
+                {
+                    continue;
+                }
+
+                var key = IdentityKey(provider, id);
+                counts[key] = counts.GetValueOrDefault(key) + 1;
+            }
+        }
+
+        return [.. counts.Where(e => e.Value == 1).Select(e => e.Key)];
+    }
+
+    internal static bool IsAlreadyPresent(Episode episode, HashSet<string> presentEpisodeIds)
+    {
+        foreach (var (provider, id) in episode.ProviderIds)
+        {
+            if (!string.IsNullOrWhiteSpace(id) && presentEpisodeIds.Contains(IdentityKey(provider, id)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static string IdentityKey(string provider, string id) => provider + "=" + id;
+
     private void RemoveObsoleteEpisodes(Series series)
     {
-        var episodesBySeason = series.GetEpisodes(null, new DtoOptions(), true)
+        var episodes = series.GetEpisodes(null, new DtoOptions(), true)
                         .OfType<Episode>()
-                        .GroupBy(e => e.ParentIndexNumber)
                         .ToList();
 
-        foreach (var seasonEpisodes in episodesBySeason)
+        // Matched across the whole series, not per season: the orders disagree about which season an episode
+        // belongs to as readily as they disagree about its number.
+        var presentEpisodeIds = GetPresentEpisodeIds(episodes);
+
+        foreach (var seasonEpisodes in episodes.GroupBy(e => e.ParentIndexNumber))
         {
             List<Episode> nonPhysicalEpisodes = [];
             List<Episode> physicalEpisodes = [];
@@ -233,26 +276,35 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
             foreach (var episode in nonPhysicalEpisodes)
             {
                 // Episodes without an episode number are practically orphaned and should be deleted
-                // Episodes with a physical equivalent should be deleted (they are no longer missing)
-                var shouldKeep = episode.IndexNumber.HasValue && !physicalEpisodes.Any(e => e.ContainsEpisodeNumber(episode.IndexNumber.Value));
-
-                if (shouldKeep)
+                if (!episode.IndexNumber.HasValue)
                 {
+                    DeleteEpisode(episode, "it has no episode number");
                     continue;
                 }
 
-                DeleteEpisode(episode);
+                // Episodes with a physical equivalent should be deleted (they are no longer missing)
+                if (physicalEpisodes.Any(e => e.ContainsEpisodeNumber(episode.IndexNumber.Value)))
+                {
+                    DeleteEpisode(episode, "a physical episode has that number");
+                    continue;
+                }
+
+                if (IsAlreadyPresent(episode, presentEpisodeIds))
+                {
+                    DeleteEpisode(episode, "the same episode is already present under another number");
+                }
             }
         }
     }
 
-    private void DeleteEpisode(Episode episode)
+    private void DeleteEpisode(Episode episode, string reason)
     {
         Logger.LogInformation(
-            "Removing virtual episode S{SeasonNumber}E{EpisodeNumber} in series {SeriesName}",
+            "Removing virtual episode S{SeasonNumber}E{EpisodeNumber} in series {SeriesName}: {Reason}",
             episode.ParentIndexNumber,
             episode.IndexNumber,
-            episode.SeriesName);
+            episode.SeriesName,
+            reason);
 
         LibraryManager.DeleteItem(
             episode,
