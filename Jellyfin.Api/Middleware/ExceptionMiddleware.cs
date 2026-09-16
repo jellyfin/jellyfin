@@ -89,6 +89,12 @@ public class ExceptionMiddleware
                     context.Request.Path);
             }
 
+            // A result executor may have already set Content-Length (e.g. PhysicalFileResult
+            // pins it to the file size before SendFile runs). If we then write the error
+            // body without clearing it, Kestrel raises a confusing "too many bytes written
+            // (N of M)" that masks the real exception. Drop any pre-set length so WriteAsync
+            // can determine it from the actual payload.
+            context.Response.ContentLength = null;
             context.Response.StatusCode = GetStatusCode(ex);
             context.Response.ContentType = MediaTypeNames.Text.Plain;
 
