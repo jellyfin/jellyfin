@@ -62,6 +62,24 @@ namespace MediaBrowser.Model.Dto
         public bool Played { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this has been partially played.
+        /// </summary>
+        /// <value><c>true</c> if played; otherwise, <c>false</c>.</value>
+        public bool PartiallyPlayed { get; set; }
+
+        /// <summary>
+        /// Gets or sets the skip count.
+        /// </summary>
+        /// <value>The skip count.</value>
+        public int SkipCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last skipped date.
+        /// </summary>
+        /// <value>The last skipped date.</value>
+        public DateTime? LastSkippedDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the key.
         /// </summary>
         /// <value>The key.</value>

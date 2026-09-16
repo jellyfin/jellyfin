@@ -157,6 +157,18 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public int MaxAudiobookResume { get; set; } = 5;
 
     /// <summary>
+    /// Gets or sets the minimum percentage of a song that must be played in order for it to be considered partially played. Below this threshold the song is treated as skipped.
+    /// </summary>
+    /// <value>The min audio resume PCT.</value>
+    public int MinAudioResumePct { get; set; } = 10;
+
+    /// <summary>
+    /// Gets or sets the maximum percentage of a song that can be played while still saving playstate. If this percentage is crossed playstate will be reset to the beginning and the item will be marked played.
+    /// </summary>
+    /// <value>The max audio resume PCT.</value>
+    public int MaxAudioResumePct { get; set; } = 90;
+
+    /// <summary>
     /// Gets or sets the threshold in minutes after a inactive session gets closed automatically.
     /// If set to 0 the check for inactive sessions gets disabled.
     /// </summary>
