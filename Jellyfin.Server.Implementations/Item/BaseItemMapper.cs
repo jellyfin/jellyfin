@@ -432,6 +432,7 @@ public static class BaseItemMapper
     {
         return new ItemImageInfo()
         {
+            Id = e.Id,
             Path = appHost?.ExpandVirtualPath(e.Path) ?? e.Path,
             BlurHash = e.Blurhash is null ? null : Encoding.UTF8.GetString(e.Blurhash),
             DateModified = e.DateModified ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc),
@@ -452,7 +453,10 @@ public static class BaseItemMapper
         return new BaseItemImageInfo()
         {
             ItemId = baseItemId,
-            Id = Guid.NewGuid(),
+
+            // An image that came from the database keeps its row identity; only a new one gets a
+            // fresh id, so a save no longer renames every image it rewrites.
+            Id = e.Id.IsEmpty() ? Guid.NewGuid() : e.Id,
             Path = e.Path,
             Blurhash = e.BlurHash is null ? null : Encoding.UTF8.GetBytes(e.BlurHash),
             DateModified = e.DateModified,

@@ -176,6 +176,132 @@ public class ItemPersistenceService : IItemPersistenceService
     }
 
     /// <inheritdoc />
+    public async Task UpsertProviderIdAsync(Guid itemId, string name, string value, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentException.ThrowIfNullOrEmpty(value);
+
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            // (ItemId, ProviderId) is the primary key, so the row either exists or it does not.
+            var existing = await context.BaseItemProviders
+                .FirstOrDefaultAsync(e => e.ItemId == itemId && e.ProviderId == name, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (existing is null)
+            {
+                await context.BaseItemProviders.AddAsync(
+                    new BaseItemProvider
+                    {
+                        ItemId = itemId,
+                        ProviderId = name,
+                        ProviderValue = value,
+                        Item = null!
+                    },
+                    cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                existing.ProviderValue = value;
+            }
+
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveProviderIdAsync(Guid itemId, string name, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            await context.BaseItemProviders
+                .Where(e => e.ItemId == itemId && e.ProviderId == name)
+                .ExecuteDeleteAsync(cancellationToken)
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task UpsertImageAsync(Guid itemId, ItemImageInfo image, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            var existing = await FindImageAsync(context, itemId, image, cancellationToken).ConfigureAwait(false);
+            var entity = BaseItemMapper.MapImageToEntity(itemId, image);
+
+            if (existing is null)
+            {
+                await context.BaseItemImageInfos.AddAsync(entity, cancellationToken).ConfigureAwait(false);
+                image.Id = entity.Id;
+            }
+            else
+            {
+                existing.Path = entity.Path;
+                existing.ImageType = entity.ImageType;
+                existing.Blurhash = entity.Blurhash;
+                existing.DateModified = entity.DateModified;
+                existing.Width = entity.Width;
+                existing.Height = entity.Height;
+                image.Id = existing.Id;
+            }
+
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveImageAsync(Guid itemId, ItemImageInfo image, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            var existing = await FindImageAsync(context, itemId, image, cancellationToken).ConfigureAwait(false);
+            if (existing is null)
+            {
+                return;
+            }
+
+            context.BaseItemImageInfos.Remove(existing);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Finds the row an image stands for: by its own id where it has one, otherwise by the type and
+    /// path that identify it before it has been stored.
+    /// </summary>
+    private async Task<BaseItemImageInfo?> FindImageAsync(
+        JellyfinDbContext context,
+        Guid itemId,
+        ItemImageInfo image,
+        CancellationToken cancellationToken)
+    {
+        if (!image.Id.IsEmpty())
+        {
+            return await context.BaseItemImageInfos
+                .FirstOrDefaultAsync(e => e.ItemId == itemId && e.Id == image.Id, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        var path = _appHost.ReverseVirtualPath(image.Path);
+        var imageType = (ImageInfoImageType)image.Type;
+        return await context.BaseItemImageInfos
+            .FirstOrDefaultAsync(
+                e => e.ItemId == itemId && e.ImageType == imageType && e.Path == path,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public async Task SaveImagesAsync(BaseItem item, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -276,7 +402,7 @@ public class ItemPersistenceService : IItemPersistenceService
     /// <remarks>
     /// An item that has something in a collection it never read is a caller changing one entry of a
     /// set it does not have. Rewriting from that would keep the change and drop everything else, so
-    /// the write is refused and reported: the targeted writers - UpsertProviderId, UpsertImageAsync,
+    /// the write is refused and reported: the targeted writers - UpsertProviderIdAsync, UpsertImageAsync,
     /// UpsertLinkedChild - are how a partial change is meant to be persisted.
     /// </remarks>
     private Guid[] ItemsOwning(

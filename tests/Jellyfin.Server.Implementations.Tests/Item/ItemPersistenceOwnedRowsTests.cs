@@ -205,6 +205,133 @@ public sealed class ItemPersistenceOwnedRowsTests : SqliteDbTestFixture
         AssertStoredCounts(images: 0, providers: 1, lockedFields: 1);
     }
 
+    /// <summary>
+    /// The way to change one provider id without holding the rest: the others survive.
+    /// </summary>
+    [Fact]
+    public async Task UpsertProviderIdAsync_NewProvider_LeavesTheOthersAlone()
+    {
+        await _service.UpsertProviderIdAsync(_movieId, "Imdb", "tt0111161", CancellationToken.None).ConfigureAwait(true);
+
+        using var context = CreateDbContext();
+        var providers = context.BaseItemProviders
+            .Where(e => e.ItemId.Equals(_movieId))
+            .ToDictionary(e => e.ProviderId, e => e.ProviderValue);
+
+        Assert.Equal(2, providers.Count);
+        Assert.Equal("603", providers["Tmdb"]);
+        Assert.Equal("tt0111161", providers["Imdb"]);
+    }
+
+    /// <summary>
+    /// Writing one that already exists updates it rather than failing on the primary key.
+    /// </summary>
+    [Fact]
+    public async Task UpsertProviderIdAsync_ExistingProvider_UpdatesTheValue()
+    {
+        await _service.UpsertProviderIdAsync(_movieId, "Tmdb", "604", CancellationToken.None).ConfigureAwait(true);
+
+        using var context = CreateDbContext();
+        var stored = Assert.Single(context.BaseItemProviders.Where(e => e.ItemId.Equals(_movieId)));
+        Assert.Equal("604", stored.ProviderValue);
+    }
+
+    /// <summary>
+    /// Removing one leaves the rest.
+    /// </summary>
+    [Fact]
+    public async Task RemoveProviderIdAsync_LeavesTheOthersAlone()
+    {
+        await _service.UpsertProviderIdAsync(_movieId, "Imdb", "tt0111161", CancellationToken.None).ConfigureAwait(true);
+        await _service.RemoveProviderIdAsync(_movieId, "Tmdb", CancellationToken.None).ConfigureAwait(true);
+
+        using var context = CreateDbContext();
+        var stored = Assert.Single(context.BaseItemProviders.Where(e => e.ItemId.Equals(_movieId)));
+        Assert.Equal("Imdb", stored.ProviderId);
+    }
+
+    /// <summary>
+    /// An image read from the database keeps its row across a save, so a save no longer renames
+    /// every image it rewrites — and there is something stable to target a write at.
+    /// </summary>
+    [Fact]
+    public void SaveItems_RoundTrip_KeepsTheImageRowIdentity()
+    {
+        var before = Read(new DtoOptions()).ImageInfos.Single().Id;
+        Assert.NotEqual(Guid.Empty, before);
+
+        _service.SaveItems([Read(new DtoOptions())], CancellationToken.None);
+
+        Assert.Equal(before, Read(new DtoOptions()).ImageInfos.Single().Id);
+    }
+
+    /// <summary>
+    /// Adding one image leaves the item's other images alone.
+    /// </summary>
+    [Fact]
+    public async Task UpsertImageAsync_NewImage_LeavesTheOthersAlone()
+    {
+        var added = new ItemImageInfo { Path = "/movies/backdrop.jpg", Type = ImageType.Backdrop };
+
+        await _service.UpsertImageAsync(_movieId, added, CancellationToken.None).ConfigureAwait(true);
+
+        Assert.NotEqual(Guid.Empty, added.Id);
+        using var context = CreateDbContext();
+        var stored = context.BaseItemImageInfos.Where(e => e.ItemId.Equals(_movieId)).ToList();
+        Assert.Equal(2, stored.Count);
+        Assert.Contains(stored, e => e.Path == "/movies/poster.jpg");
+        Assert.Contains(stored, e => e.Path == "/movies/backdrop.jpg");
+    }
+
+    /// <summary>
+    /// Writing an image that is already stored updates its row rather than adding a duplicate.
+    /// </summary>
+    [Fact]
+    public async Task UpsertImageAsync_ExistingImage_UpdatesItInPlace()
+    {
+        var image = Read(new DtoOptions()).ImageInfos.Single();
+        var originalId = image.Id;
+        image.Width = 640;
+
+        await _service.UpsertImageAsync(_movieId, image, CancellationToken.None).ConfigureAwait(true);
+
+        using var context = CreateDbContext();
+        var stored = Assert.Single(context.BaseItemImageInfos.Where(e => e.ItemId.Equals(_movieId)));
+        Assert.Equal(originalId, stored.Id);
+        Assert.Equal(640, stored.Width);
+    }
+
+    /// <summary>
+    /// An image with no id yet is matched on the type and path that identify it.
+    /// </summary>
+    [Fact]
+    public async Task UpsertImageAsync_UnstoredImageMatchingByPath_DoesNotDuplicate()
+    {
+        var image = new ItemImageInfo { Path = "/movies/poster.jpg", Type = ImageType.Primary, Height = 999 };
+
+        await _service.UpsertImageAsync(_movieId, image, CancellationToken.None).ConfigureAwait(true);
+
+        using var context = CreateDbContext();
+        var stored = Assert.Single(context.BaseItemImageInfos.Where(e => e.ItemId.Equals(_movieId)));
+        Assert.Equal(999, stored.Height);
+    }
+
+    /// <summary>
+    /// Removing one image leaves the rest.
+    /// </summary>
+    [Fact]
+    public async Task RemoveImageAsync_LeavesTheOthersAlone()
+    {
+        var added = new ItemImageInfo { Path = "/movies/backdrop.jpg", Type = ImageType.Backdrop };
+        await _service.UpsertImageAsync(_movieId, added, CancellationToken.None).ConfigureAwait(true);
+
+        await _service.RemoveImageAsync(_movieId, added, CancellationToken.None).ConfigureAwait(true);
+
+        using var context = CreateDbContext();
+        var stored = Assert.Single(context.BaseItemImageInfos.Where(e => e.ItemId.Equals(_movieId)));
+        Assert.Equal("/movies/poster.jpg", stored.Path);
+    }
+
     /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
