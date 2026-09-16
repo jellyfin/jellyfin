@@ -20,6 +20,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Providers.Books;
 using Microsoft.Extensions.Logging;
 using static Jellyfin.Extensions.StringExtensions;
 
@@ -158,9 +159,42 @@ namespace MediaBrowser.Providers.MediaInfo
 
             _mediaStreamRepository.SaveMediaStreams(audio.Id, mediaStreams, cancellationToken);
 
-            if (audio is AudioBook && mediaInfo.Chapters is { Length: > 0 })
+            if (audio is AudioBook audioBook)
             {
-                _chapterManager.SaveChapters(audio, mediaInfo.Chapters);
+                SaveAudioBookChapters(audioBook, mediaInfo);
+            }
+        }
+
+        internal void SaveAudioBookChapters(AudioBook audioBook, Model.MediaInfo.MediaInfo mediaInfo)
+        {
+            var libraryOptions = _libraryManager.GetLibraryOptions(audioBook);
+
+            if (libraryOptions.PreferCueSidecarForAudiobookChapters)
+            {
+                var cueChapters = AudioBookCueChapterParser.ParseCueSidecar(audioBook.Path);
+                if (cueChapters.Count > 0)
+                {
+                    _chapterManager.SaveChapters(audioBook, cueChapters);
+                }
+                else if (mediaInfo.Chapters is { Length: > 0 })
+                {
+                    _chapterManager.SaveChapters(audioBook, mediaInfo.Chapters);
+                }
+            }
+            else
+            {
+                if (mediaInfo.Chapters is { Length: > 0 })
+                {
+                    _chapterManager.SaveChapters(audioBook, mediaInfo.Chapters);
+                }
+                else
+                {
+                    var cueChapters = AudioBookCueChapterParser.ParseCueSidecar(audioBook.Path);
+                    if (cueChapters.Count > 0)
+                    {
+                        _chapterManager.SaveChapters(audioBook, cueChapters);
+                    }
+                }
             }
         }
 
