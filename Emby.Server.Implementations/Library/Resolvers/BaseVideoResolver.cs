@@ -200,41 +200,29 @@ namespace Emby.Server.Implementations.Library.Resolvers
 
         protected void Set3DFormat(Video video, bool is3D, string format3D)
         {
-            if (is3D)
+            if (!is3D)
             {
-                if (string.Equals(format3D, "fsbs", StringComparison.OrdinalIgnoreCase))
-                {
-                    video.Video3DFormat = Video3DFormat.FullSideBySide;
-                }
-                else if (string.Equals(format3D, "ftab", StringComparison.OrdinalIgnoreCase))
-                {
-                    video.Video3DFormat = Video3DFormat.FullTopAndBottom;
-                }
-                else if (string.Equals(format3D, "hsbs", StringComparison.OrdinalIgnoreCase))
-                {
-                    video.Video3DFormat = Video3DFormat.HalfSideBySide;
-                }
-                else if (string.Equals(format3D, "htab", StringComparison.OrdinalIgnoreCase))
-                {
-                    video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
-                }
-                else if (string.Equals(format3D, "sbs", StringComparison.OrdinalIgnoreCase))
-                {
-                    video.Video3DFormat = Video3DFormat.HalfSideBySide;
-                }
-                else if (string.Equals(format3D, "sbs3d", StringComparison.OrdinalIgnoreCase))
-                {
-                    video.Video3DFormat = Video3DFormat.HalfSideBySide;
-                }
-                else if (string.Equals(format3D, "tab", StringComparison.OrdinalIgnoreCase))
-                {
-                    video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
-                }
-                else if (string.Equals(format3D, "mvc", StringComparison.OrdinalIgnoreCase))
-                {
-                    video.Video3DFormat = Video3DFormat.MVC;
-                }
+                return;
             }
+
+            video.Video3DFormat = format3D?.ToLowerInvariant() switch
+            {
+                "fsbs" => Video3DFormat.FullSideBySide,
+                "ftab" => Video3DFormat.FullTopAndBottom,
+                "hsbs" or "sbs" or "sbs3d" => Video3DFormat.HalfSideBySide,
+                "htab" or "tab" => Video3DFormat.HalfTopAndBottom,
+                "mvc" => Video3DFormat.MVC,
+                "mvhevc" => Video3DFormat.MVHEVC,
+                "180sbs" => Video3DFormat.Equirectangular180SideBySide,
+                "180tab" => Video3DFormat.Equirectangular180TopAndBottom,
+                "180mono" => Video3DFormat.Equirectangular180Mono,
+                "360sbs" => Video3DFormat.Equirectangular360SideBySide,
+                "360tab" => Video3DFormat.Equirectangular360TopAndBottom,
+                "360mono" => Video3DFormat.Equirectangular360Mono,
+                "fisheye180sbs" => Video3DFormat.Fisheye180SideBySide,
+                "fisheye180mono" => Video3DFormat.Fisheye180Mono,
+                _ => video.Video3DFormat
+            };
         }
 
         protected void Set3DFormat(Video video, VideoFileInfo videoInfo)

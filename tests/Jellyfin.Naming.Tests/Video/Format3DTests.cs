@@ -76,6 +76,37 @@ namespace Jellyfin.Naming.Tests.Video
             Test("Super movie [sbs3d].mp4", true, "sbs3d");
         }
 
+        [Fact]
+        public void TestVrFormat3D()
+        {
+            Test("Super movie.180.sbs.mp4", true, "180sbs");
+            Test("Super movie.180.lr.mp4", true, "180sbs");
+            Test("Super movie.vr180.mp4", true, "180sbs");
+            Test("Super movie.180sbs.mp4", true, "180sbs");
+            Test("Super movie.180.tab.mp4", true, "180tab");
+            Test("Super movie.180.tb.mp4", true, "180tab");
+            Test("Super movie.180.ou.mp4", true, "180tab");
+            Test("Super movie.180.mono.mp4", true, "180mono");
+
+            Test("Super movie.360.sbs.mp4", true, "360sbs");
+            Test("Super movie 360 tb.mp4", true, "360tab");
+            Test("Super movie.360mono.mp4", true, "360mono");
+
+            Test("Super movie.fisheye180.mp4", true, "fisheye180sbs");
+            Test("Super movie.fisheye180.mono.mp4", true, "fisheye180mono");
+
+            Test("Super movie.mvhevc.mp4", true, "mvhevc");
+            Test("Super movie [180sbs].mp4", true, "180sbs");
+
+            // The projection tags take precedence over the plain ones
+            Test("Super movie.3d.180.sbs.mp4", true, "180sbs");
+            Test("Super movie.3d.360.tab.mp4", true, "360tab");
+
+            // A projection on its own says nothing about the 3D format
+            Test("Super movie.180.mp4", false, null);
+            Test("Super movie.360.mp4", false, null);
+        }
+
         private void Test(string input, bool is3D, string? format3D)
         {
             var result = Format3DParser.Parse(input, _namingOptions);
