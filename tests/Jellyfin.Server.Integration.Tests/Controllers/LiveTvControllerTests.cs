@@ -10,11 +10,11 @@ using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers;
 
-public sealed class LiveTvControllerTests : IClassFixture<JellyfinApplicationFactory>
+[Collection("Controller collection")]
+public sealed class LiveTvControllerTests
 {
     private readonly JellyfinApplicationFactory _factory;
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
-    private static string? _accessToken;
 
     public LiveTvControllerTests(JellyfinApplicationFactory factory)
     {
@@ -41,7 +41,7 @@ public sealed class LiveTvControllerTests : IClassFixture<JellyfinApplicationFac
     public async Task AddTunerHost_Valid_ReturnsCorrectResponse()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var body = new TunerHostInfo()
         {
@@ -64,7 +64,7 @@ public sealed class LiveTvControllerTests : IClassFixture<JellyfinApplicationFac
     public async Task AddTunerHost_InvalidType_ReturnsNotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var body = new TunerHostInfo()
         {
@@ -81,7 +81,7 @@ public sealed class LiveTvControllerTests : IClassFixture<JellyfinApplicationFac
     public async Task AddTunerHost_InvalidUrl_ReturnsNotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var body = new TunerHostInfo()
         {
