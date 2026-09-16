@@ -38,6 +38,7 @@ public sealed class MigrateLinkedChildrenStaleItemsTests : IDisposable
         _applicationPaths = new Mock<IApplicationPaths>().Object;
         _root = Path.Combine(Path.GetTempPath(), "jf-stale-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(Path.Combine(_root, "media"));
+        Directory.CreateDirectory(Path.Combine(_root, "root", "default"));
 
         _connection = new SqliteConnection("Data Source=:memory:");
         _connection.Open();
@@ -49,6 +50,8 @@ public sealed class MigrateLinkedChildrenStaleItemsTests : IDisposable
         using var context = CreateDbContext();
         context.Database.EnsureCreated();
     }
+
+    private string LibraryDefinitionRoot => Path.Combine(_root, "root", "default");
 
     [Fact]
     public void Perform_NoLibraryLocationsResolved_KeepsEverything()
@@ -99,6 +102,40 @@ public sealed class MigrateLinkedChildrenStaleItemsTests : IDisposable
         Assert.Empty(deleted);
     }
 
+    [Fact]
+    public void Perform_LibraryDefinitionMissing_KeepsItsItems()
+    {
+        var libraryId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var itemId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+
+        // The definition folder of "Movies" is gone, so it contributes no locations and everything it
+        // held reads as unrooted, while "Media" still resolves and makes the run look actionable.
+        SeedLibrary(libraryId, "Movies", createDefinitionFolder: false);
+        SeedMediaFile("anchor.flac");
+        SeedItem(itemId, Path.Combine(_root, "movies", "kept.mkv"), libraryId);
+
+        var deleted = Perform(libraryLocations: [Path.Combine(_root, "media")]);
+
+        Assert.Empty(deleted);
+    }
+
+    [Fact]
+    public void Perform_PathRemovedFromSurvivingLibrary_IsRemoved()
+    {
+        var libraryId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        var itemId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+
+        // The library is still there; only one of its media paths went away, which is what this
+        // branch exists to clean up.
+        SeedLibrary(libraryId, "Media", createDefinitionFolder: true);
+        SeedMediaFile("anchor.flac");
+        SeedItem(itemId, Path.Combine(_root, "removed-media", "gone.flac"), libraryId);
+
+        var deleted = Perform(libraryLocations: [Path.Combine(_root, "media")]);
+
+        Assert.Equal([itemId], deleted);
+    }
+
     public void Dispose()
     {
         _connection.Dispose();
@@ -114,6 +151,26 @@ public sealed class MigrateLinkedChildrenStaleItemsTests : IDisposable
         new SqliteDatabaseProvider(_applicationPaths, NullLogger<SqliteDatabaseProvider>.Instance),
         new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
 
+    private void SeedLibrary(Guid id, string name, bool createDefinitionFolder)
+    {
+        var path = Path.Combine(LibraryDefinitionRoot, name);
+        if (createDefinitionFolder)
+        {
+            Directory.CreateDirectory(path);
+        }
+
+        using var context = CreateDbContext();
+        context.BaseItems.Add(new BaseItemEntity
+        {
+            Id = id,
+            Type = "MediaBrowser.Controller.Entities.CollectionFolder",
+            Name = name,
+            Path = path,
+            IsFolder = true
+        });
+        context.SaveChanges();
+    }
+
     private string SeedMediaFile(string name)
     {
         var path = Path.Combine(_root, "media", name);
@@ -121,7 +178,7 @@ public sealed class MigrateLinkedChildrenStaleItemsTests : IDisposable
         return path;
     }
 
-    private void SeedItem(Guid id, string path)
+    private void SeedItem(Guid id, string path, Guid? libraryId = null)
     {
         using var context = CreateDbContext();
         context.BaseItems.Add(new BaseItemEntity
@@ -133,10 +190,17 @@ public sealed class MigrateLinkedChildrenStaleItemsTests : IDisposable
             IsFolder = false,
             IsVirtualItem = false
         });
+
         context.SaveChanges();
+
+        if (libraryId.HasValue)
+        {
+            context.Database.ExecuteSql(
+                $"INSERT INTO AncestorIds (ItemId, ParentItemId) VALUES ({id}, {libraryId.Value})");
+        }
     }
 
-    private IReadOnlyList<Guid> Perform(string[] libraryLocations)
+    private IReadOnlyList<Guid> Perform(string[] libraryLocations, string libraryName = "Media")
     {
         var deleted = new List<Guid>();
 
@@ -145,7 +209,7 @@ public sealed class MigrateLinkedChildrenStaleItemsTests : IDisposable
             .Setup(l => l.GetVirtualFolders())
             .Returns(libraryLocations.Length == 0
                 ? []
-                : [new VirtualFolderInfo { Locations = libraryLocations }]);
+                : [new VirtualFolderInfo { Name = libraryName, Locations = libraryLocations }]);
         libraryManager
             .Setup(l => l.GetItemById(It.IsAny<Guid>()))
             .Returns<Guid>(id => new Audio { Id = id });
@@ -159,6 +223,7 @@ public sealed class MigrateLinkedChildrenStaleItemsTests : IDisposable
         var appPaths = new Mock<IServerApplicationPaths>();
         appPaths.SetupGet(p => p.DataPath).Returns(Path.Combine(_root, "data"));
         appPaths.SetupGet(p => p.InternalMetadataPath).Returns(Path.Combine(_root, "metadata"));
+        appPaths.SetupGet(p => p.DefaultUserViewsPath).Returns(LibraryDefinitionRoot);
 
         var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
         factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
