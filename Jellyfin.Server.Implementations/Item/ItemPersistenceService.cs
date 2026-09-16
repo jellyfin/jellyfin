@@ -180,6 +180,22 @@ public class ItemPersistenceService : IItemPersistenceService
     {
         ArgumentNullException.ThrowIfNull(item);
 
+        // This replaces the stored images with what the item holds, which is only the whole set if
+        // the item was read with its images. A scan reaches here through ValidateChildren, where a
+        // child may have been read without them.
+        if (!item.OwnedRowsRead.HasFlag(OwnedItemRows.Images))
+        {
+            if (item.ImageInfos.Length > 0)
+            {
+                _logger.LogWarning(
+                    "Not writing images for {ItemName} ({ItemId}): the item was read without them, so what it holds is a partial set",
+                    item.Name,
+                    item.Id);
+            }
+
+            return;
+        }
+
         var images = item.ImageInfos.Select(e => BaseItemMapper.MapImageToEntity(item.Id, e)).ToArray();
 
         var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
@@ -254,18 +270,45 @@ public class ItemPersistenceService : IItemPersistenceService
     }
 
     /// <summary>
-    /// Picks the stored items whose owned rows this save is entitled to rewrite: the ones that read
-    /// the collection, plus the ones that put something in it without reading it first.
+    /// Picks the stored items whose owned rows this save may rewrite: only the ones that read the
+    /// collection, because only they hold the complete set.
     /// </summary>
-    private static Guid[] OwnersOf(
+    /// <remarks>
+    /// An item that has something in a collection it never read is a caller changing one entry of a
+    /// set it does not have. Rewriting from that would keep the change and drop everything else, so
+    /// the write is refused and reported: the targeted writers - UpsertProviderId, UpsertImageAsync,
+    /// UpsertLinkedChild - are how a partial change is meant to be persisted.
+    /// </remarks>
+    private Guid[] ItemsOwning(
         List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey, List<string> InheritedTags)> tuples,
         HashSet<Guid> existingItems,
         OwnedItemRows rows,
         Func<BaseItemDto, bool> hasContent)
-        => [.. tuples
-            .Select(e => e.Item)
-            .Where(e => existingItems.Contains(e.Id) && (e.OwnedRowsRead.HasFlag(rows) || hasContent(e)))
-            .Select(e => e.Id)];
+    {
+        var owners = new List<Guid>(tuples.Count);
+        foreach (var (item, _, _, _, _) in tuples)
+        {
+            if (!existingItems.Contains(item.Id))
+            {
+                continue;
+            }
+
+            if (item.OwnedRowsRead.HasFlag(rows))
+            {
+                owners.Add(item.Id);
+            }
+            else if (hasContent(item))
+            {
+                _logger.LogWarning(
+                    "Not writing {Rows} for {ItemName} ({ItemId}): the item was read without them, so what it holds is a partial set. Use the targeted writer instead.",
+                    rows,
+                    item.Name,
+                    item.Id);
+            }
+        }
+
+        return [.. owners];
+    }
 
     private void UpdateOrInsertItems(IReadOnlyList<BaseItemDto> items, CancellationToken cancellationToken)
     {
@@ -304,14 +347,21 @@ public class ItemPersistenceService : IItemPersistenceService
             }
             else
             {
-                if (entity.Images is { Count: > 0 })
+                // Only the collections this save is allowed to rewrite are re-added; inserting rows
+                // for a collection whose delete was refused would collide with what is still stored.
+                if (entity.Images is { Count: > 0 } && item.Item.OwnedRowsRead.HasFlag(OwnedItemRows.Images))
                 {
                     context.BaseItemImageInfos.AddRange(entity.Images);
                 }
 
-                if (entity.LockedFields is { Count: > 0 })
+                if (entity.LockedFields is { Count: > 0 } && item.Item.OwnedRowsRead.HasFlag(OwnedItemRows.LockedFields))
                 {
                     context.BaseItemMetadataFields.AddRange(entity.LockedFields);
+                }
+
+                if (entity.Provider is { Count: > 0 } && !item.Item.OwnedRowsRead.HasFlag(OwnedItemRows.Providers))
+                {
+                    entity.Provider = [];
                 }
 
                 context.BaseItems.Attach(entity).State = EntityState.Modified;
@@ -438,19 +488,19 @@ public class ItemPersistenceService : IItemPersistenceService
         // an empty collection that means "not read", and clearing on that would delete the lot.
         if (existingItems.Count > 0)
         {
-            var providerIds = OwnersOf(tuples, existingItems, OwnedItemRows.Providers, e => e.ProviderIds.Count > 0);
+            var providerIds = ItemsOwning(tuples, existingItems, OwnedItemRows.Providers, e => e.ProviderIds.Count > 0);
             if (providerIds.Length > 0)
             {
                 context.BaseItemProviders.WhereOneOrMany(providerIds, e => e.ItemId).ExecuteDelete();
             }
 
-            var imageIds = OwnersOf(tuples, existingItems, OwnedItemRows.Images, e => e.ImageInfos.Length > 0);
+            var imageIds = ItemsOwning(tuples, existingItems, OwnedItemRows.Images, e => e.ImageInfos.Length > 0);
             if (imageIds.Length > 0)
             {
                 context.BaseItemImageInfos.WhereOneOrMany(imageIds, e => e.ItemId).ExecuteDelete();
             }
 
-            var lockedFieldIds = OwnersOf(tuples, existingItems, OwnedItemRows.LockedFields, e => e.LockedFields.Length > 0);
+            var lockedFieldIds = ItemsOwning(tuples, existingItems, OwnedItemRows.LockedFields, e => e.LockedFields.Length > 0);
             if (lockedFieldIds.Length > 0)
             {
                 context.BaseItemMetadataFields.WhereOneOrMany(lockedFieldIds, e => e.ItemId).ExecuteDelete();

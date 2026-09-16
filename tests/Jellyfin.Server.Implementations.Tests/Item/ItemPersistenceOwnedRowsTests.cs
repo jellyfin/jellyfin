@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Server.Implementations.Item;
@@ -142,11 +143,12 @@ public sealed class ItemPersistenceOwnedRowsTests : SqliteDbTestFixture
     }
 
     /// <summary>
-    /// A collection someone actually filled in is written even if the read skipped it — the guard
-    /// distinguishes "not read" from "read and cleared", and a write is never "not read".
+    /// Changing one entry of a set the item never read is refused, not half-applied. Writing it
+    /// would keep the new entry and drop every stored one, which is worse than not writing at all;
+    /// the targeted writers exist for this.
     /// </summary>
     [Fact]
-    public void SaveItems_CollectionFilledInOnAnUnreadItem_IsWritten()
+    public void SaveItems_CollectionFilledInOnAnUnreadItem_IsRefused()
     {
         var item = Read(DtoOptions.StoredColumnsOnly);
         item.ProviderIds["Imdb"] = "tt0111161";
@@ -155,7 +157,38 @@ public sealed class ItemPersistenceOwnedRowsTests : SqliteDbTestFixture
 
         using var context = CreateDbContext();
         var providers = context.BaseItemProviders.Where(e => e.ItemId.Equals(_movieId)).ToList();
-        Assert.Contains(providers, e => string.Equals(e.ProviderId, "Imdb", StringComparison.Ordinal));
+        var stored = Assert.Single(providers);
+        Assert.Equal("Tmdb", stored.ProviderId);
+    }
+
+    /// <summary>
+    /// SaveImagesAsync replaces the stored images outright, so it needs the same guard as SaveItems:
+    /// a scan reaches it through ValidateChildren with children that may not carry their images.
+    /// </summary>
+    [Fact]
+    public async Task SaveImagesAsync_ItemReadWithoutImages_DoesNotDeleteThem()
+    {
+        var item = Read(DtoOptions.StoredColumnsOnly);
+
+        await _service.SaveImagesAsync(item, CancellationToken.None).ConfigureAwait(true);
+
+        AssertStoredCounts(images: 1, providers: 1, lockedFields: 1);
+    }
+
+    /// <summary>
+    /// An item that did read its images still writes them.
+    /// </summary>
+    [Fact]
+    public async Task SaveImagesAsync_ItemReadWithImages_ReplacesThem()
+    {
+        var item = Read(new DtoOptions());
+        item.ImageInfos = [new ItemImageInfo { Path = "/movies/new.jpg", Type = ImageType.Backdrop }];
+
+        await _service.SaveImagesAsync(item, CancellationToken.None).ConfigureAwait(true);
+
+        using var context = CreateDbContext();
+        var stored = Assert.Single(context.BaseItemImageInfos.Where(e => e.ItemId.Equals(_movieId)));
+        Assert.Equal("/movies/new.jpg", stored.Path);
     }
 
     /// <summary>
