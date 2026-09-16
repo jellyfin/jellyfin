@@ -398,6 +398,7 @@ namespace Emby.Server.Implementations.Localization
                 return null;
             }
 
+            var hasUnknownRating = false;
             foreach (var ratingValue in ratingValues)
             {
                 // A single entry of such a list may be unrated while a later one still resolves
@@ -406,11 +407,21 @@ namespace Emby.Server.Implementations.Localization
                     continue;
                 }
 
-                var score = GetSingleRatingScore(ratingValue, countryCode);
+                // An unknown entry is not worth a warning of its own as long as another entry still resolves
+                var score = GetSingleRatingScore(ratingValue, countryCode, logUnknownRating: false);
                 if (score is not null)
                 {
                     return score;
                 }
+
+                hasUnknownRating = true;
+            }
+
+            if (hasUnknownRating)
+            {
+                _logger.LogWarning(
+                    "None of the ratings in '{Rating}' were found in a known rating system, treating as unrated",
+                    rating);
             }
 
             return null;
@@ -427,7 +438,7 @@ namespace Emby.Server.Implementations.Localization
         /// <summary>
         /// Resolves a single rating value to a score.
         /// </summary>
-        private ParentalRatingScore? GetSingleRatingScore(string rating, string? countryCode)
+        private ParentalRatingScore? GetSingleRatingScore(string rating, string? countryCode, bool logUnknownRating = true)
         {
             // Convert ints directly
             // This may override some of the locale specific age ratings (but those always map to the same age)
@@ -483,9 +494,11 @@ namespace Emby.Server.Implementations.Localization
                 }
             }
 
-            // Try splitting by country prefix separator to handle "US:PG-13", "Germany: FSK-18", "DE-FSK-18"
-            if (TryGetRatingScoreBySeparator(rating, ':', out var result)
-                || TryGetRatingScoreBySeparator(rating, '-', out result))
+            // Try splitting by country prefix separator to handle "US:PG-13", "Germany: FSK-18", "DE-FSK-18".
+            // A '/' marks a list of ratings, which this would split into the first entry's country and the last entry's rating
+            if (!rating.Contains('/', StringComparison.Ordinal)
+                && (TryGetRatingScoreBySeparator(rating, ':', logUnknownRating, out var result)
+                    || TryGetRatingScoreBySeparator(rating, '-', logUnknownRating, out result)))
             {
                 return result;
             }
@@ -493,7 +506,7 @@ namespace Emby.Server.Implementations.Localization
             return null;
         }
 
-        private bool TryGetRatingScoreBySeparator(string rating, char separator, out ParentalRatingScore? result)
+        private bool TryGetRatingScoreBySeparator(string rating, char separator, bool logUnknownRating, out ParentalRatingScore? result)
         {
             result = null;
 
@@ -546,10 +559,13 @@ namespace Emby.Server.Implementations.Localization
                     return true;
                 }
 
-                _logger.LogWarning(
-                    "Rating '{Rating}' not found in the '{CountryCode}' rating system, treating as unrated",
-                    rating,
-                    resolvedCountryCode);
+                if (logUnknownRating)
+                {
+                    _logger.LogWarning(
+                        "Rating '{Rating}' not found in the '{CountryCode}' rating system, treating as unrated",
+                        rating,
+                        resolvedCountryCode);
+                }
 
                 return true;
             }
