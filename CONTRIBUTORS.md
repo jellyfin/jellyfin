@@ -18,6 +18,7 @@
  - [Bond_009](https://github.com/Bond-009)
  - [brianjmurrell](https://github.com/brianjmurrell)
  - [bugfixin](https://github.com/bugfixin)
+ - [CatNoir2006](https://github.com/CatNoir2006)
  - [chaosinnovator](https://github.com/chaosinnovator)
  - [ckcr4lyf](https://github.com/ckcr4lyf)
  - [cocool97](https://github.com/cocool97)
