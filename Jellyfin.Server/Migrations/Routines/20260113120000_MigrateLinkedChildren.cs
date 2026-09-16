@@ -415,8 +415,12 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
         // An item outside every library location is normally left over from a removed media path, but
         // it looks exactly the same as one whose storage failed to mount (a wrong bind mount on the
         // first container start, for example). Only act on it while every location is readable.
-        var canRemoveUnrootedItems = inaccessiblePaths.Count == 0;
+        // Resolving no locations at all is the same hazard with none of the evidence: it cannot be
+        // told apart from an install that has libraries the server has not read yet, and acting on it
+        // means every file-backed item in the database is outside every location.
+        var canRemoveUnrootedItems = inaccessiblePaths.Count == 0 && allLibraryPaths.Count > 0;
         var skippedUnrootedItems = 0;
+        var removedUnrootedItems = 0;
 
         var staleIds = new List<Guid>();
         var checkedCount = 0;
@@ -463,6 +467,7 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
                 {
                     _logger.LogDebug("Removing item {ItemId}: path {Path} is outside every library location.", item.Id, path);
                     staleIds.Add(item.Id);
+                    removedUnrootedItems++;
                 }
                 else
                 {
@@ -475,10 +480,19 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
         if (skippedUnrootedItems > 0)
         {
-            _logger.LogWarning(
-                "Keeping {Count} items that are outside every library location because {LocationCount} library location(s) are currently unavailable.",
-                skippedUnrootedItems,
-                inaccessiblePaths.Count);
+            if (allLibraryPaths.Count == 0)
+            {
+                _logger.LogWarning(
+                    "Keeping {Count} items that are outside every library location because this server resolved no library locations at all.",
+                    skippedUnrootedItems);
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "Keeping {Count} items that are outside every library location because {LocationCount} library location(s) are currently unavailable.",
+                    skippedUnrootedItems,
+                    inaccessiblePaths.Count);
+            }
         }
 
         if (staleIds.Count == 0)
@@ -487,7 +501,12 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
             return;
         }
 
-        _logger.LogInformation("Found {Count} stale items to remove.", staleIds.Count);
+        // Whether an item went because its own file is gone or because nothing claims its path is the
+        // difference between a handful of deletions and a whole library, so report the split.
+        _logger.LogInformation(
+            "Found {Count} stale items to remove, {UnrootedCount} of them because their path is outside every library location.",
+            staleIds.Count,
+            removedUnrootedItems);
 
         var deleted = ResolveAndDeleteItems(staleIds, "items with missing files");
 
