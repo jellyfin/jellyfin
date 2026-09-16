@@ -282,13 +282,13 @@ public partial class TrickplayManager : ITrickplayManager
     {
     var options = _config.Configuration.TrickplayOptions;
 
-        // AI-GENERATED CODE: Restrict trickplay generation to primary media.
+        // Restrict trickplay generation to primary media.
         // ExtraType identifies Jellyfin media explicitly classified as an extra.
         // Cleanup is performed before normal generation eligibility checks so existing unwanted
         // trickplay can still be removed even if the item is no longer otherwise processable.
         if (options.GenerateTrickplayForPrimaryMediaOnly && video.ExtraType.HasValue)
         {
-            // AI-GENERATED CODE: Remove unwanted existing trickplay when requested.
+            // Remove unwanted existing trickplay when requested.
             // Guid.Empty is rejected before the destructive database operation.
             if (options.RemoveUnwantedTrickplayOnNextPass && video.Id != Guid.Empty)
             {
@@ -397,15 +397,15 @@ public partial class TrickplayManager : ITrickplayManager
             }
         }
     }
-    // AI-GENERATED CODE: Remove all trickplay files and database records for excluded media.
-    // Future human editors: Both possible storage locations are checked so cleanup also handles
+    // Remove all trickplay files and database records for excluded media.
+    // Both possible storage locations are checked so cleanup also handles
     // trickplay created under a previous SaveTrickplayWithMedia setting.
     private async Task RemoveExcludedTrickplayDataAsync(
         Video video,
         CancellationToken cancellationToken)
     {
-        // AI-GENERATED CODE: Check both Jellyfin trickplay storage layouts.
-        // Future human editors: Do not reduce this to the current SaveTrickplayWithMedia value;
+        // Check both Jellyfin trickplay storage layouts.
+        // Do not reduce this to the current SaveTrickplayWithMedia value;
         // doing so could leave old trickplay files behind after that setting changes.
         foreach (var saveWithMedia in new[] { false, true })
         {
@@ -429,8 +429,8 @@ public partial class TrickplayManager : ITrickplayManager
             }
         }
 
-        // AI-GENERATED CODE: Remove database records for the excluded media.
-        // Future human editors: Guid.Empty is already rejected by the caller.
+        // Remove database records for the excluded media.
+        // Guid.Empty is already rejected by the caller.
         var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
