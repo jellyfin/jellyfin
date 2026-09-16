@@ -9,6 +9,7 @@ using System.Text.Json.Nodes;
 using Emby.Server.Implementations;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.AnonymousLanAccessPolicy;
+using Jellyfin.Api.Auth.ConditionalAuthorizationHandler;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Auth.FirstTimeSetupPolicy;
 using Jellyfin.Api.Auth.LocalAccessOrRequiresElevationPolicy;
@@ -59,6 +60,7 @@ namespace Jellyfin.Server.Extensions
             serviceCollection.AddSingleton<IAuthorizationHandler, AnonymousLanAccessHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, SyncPlayAccessHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessOrRequiresElevationHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, ConditionalAuthorizationHandler>();
 
             return serviceCollection.AddAuthorizationCore(options =>
             {
@@ -77,6 +79,10 @@ namespace Jellyfin.Server.Extensions
                 options.AddPolicy(Policies.LiveTvAccess, new UserPermissionRequirement(PermissionKind.EnableLiveTvAccess));
                 options.AddPolicy(Policies.LiveTvManagement, new UserPermissionRequirement(PermissionKind.EnableLiveTvManagement));
                 options.AddPolicy(Policies.LocalAccessOrRequiresElevation, new LocalAccessOrRequiresElevationRequirement());
+                options.AddPolicy(Policies.ElevateConfiguration, new ConditionalAuthorizationRequirement(Policies.ElevateConfiguration));
+                options.AddPolicy(Policies.ElevatePlugin, new ConditionalAuthorizationRequirement(Policies.ElevatePlugin));
+                options.AddPolicy(Policies.AuthenticateAudio, new ConditionalAuthorizationRequirement(Policies.AuthenticateAudio));
+                options.AddPolicy(Policies.AuthenticateVideo, new ConditionalAuthorizationRequirement(Policies.AuthenticateVideo));
                 options.AddPolicy(Policies.SyncPlayHasAccess, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.HasAccess));
                 options.AddPolicy(Policies.SyncPlayCreateGroup, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.CreateGroup));
                 options.AddPolicy(Policies.SyncPlayJoinGroup, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.JoinGroup));
