@@ -4,10 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Nodes;
-using Jellyfin.Extensions;
-using Jellyfin.Server.Migrations;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Net.WebSocketMessages;
 using MediaBrowser.Model.ApiClient;
@@ -23,19 +20,6 @@ namespace Jellyfin.Server.Filters
     /// </summary>
     public class AdditionalModelFilter : IDocumentFilter
     {
-        // Array of options that should not be visible in the api spec.
-        private static readonly Type[] _ignoredConfigurations = [typeof(MigrationOptions), typeof(MediaBrowser.Model.Branding.BrandingOptions)];
-        private readonly IServerConfigurationManager _serverConfigurationManager;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AdditionalModelFilter"/> class.
-        /// </summary>
-        /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-        public AdditionalModelFilter(IServerConfigurationManager serverConfigurationManager)
-        {
-            _serverConfigurationManager = serverConfigurationManager;
-        }
-
         /// <inheritdoc />
         public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
         {
@@ -202,16 +186,6 @@ namespace Jellyfin.Server.Filters
             context.SchemaRepository.Schemas[nameof(GroupUpdate<object>)] = groupUpdateSchema;
 
             context.SchemaGenerator.GenerateSchema(typeof(ServerDiscoveryInfo), context.SchemaRepository);
-
-            foreach (var configuration in _serverConfigurationManager.GetConfigurationStores())
-            {
-                if (_ignoredConfigurations.IndexOf(configuration.ConfigurationType) != -1)
-                {
-                    continue;
-                }
-
-                context.SchemaGenerator.GenerateSchema(configuration.ConfigurationType, context.SchemaRepository);
-            }
         }
     }
 }
