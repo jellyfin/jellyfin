@@ -129,6 +129,40 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
+        public Task SendMessageToAllClients<T>(
+            SessionMessageType name,
+            Guid messageId,
+            T data,
+            CancellationToken cancellationToken)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            IWebSocketConnection[] sockets;
+            try
+            {
+                _socketsLock.EnterReadLock();
+                sockets = _sockets.Where(i => i.State == WebSocketState.Open).ToArray();
+            }
+            finally
+            {
+                _socketsLock.ExitReadLock();
+            }
+
+            if (sockets.Length == 0)
+            {
+                return Task.CompletedTask;
+            }
+
+            var message = new OutboundWebSocketMessage<T>
+            {
+                Data = data,
+                MessageType = name,
+                MessageId = messageId
+            };
+
+            return Task.WhenAll(Array.ConvertAll(sockets, socket => socket.SendAsync(message, cancellationToken)));
+        }
+
+        /// <inheritdoc />
         public void Dispose()
         {
             if (_disposed)

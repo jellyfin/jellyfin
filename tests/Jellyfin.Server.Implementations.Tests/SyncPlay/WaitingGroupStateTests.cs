@@ -323,8 +323,80 @@ public class WaitingGroupStateTests
         Assert.NotNull(group.GroupWaitDeadline);
     }
 
+    [Fact]
+    public void Play_AMemberCannotSeeTheQueue_TheSessionThatAskedIsTold()
+    {
+        var harness = new GroupHarness();
+        var group = harness.Group;
+
+        // A member whose libraries do not cover the item. Nothing stops them joining: the group
+        // was idle, so there was no queue to check them against when they did.
+        var restricted = harness.NewSessionForAnotherUser("restricted");
+        group.SessionJoin(restricted, new JoinGroupRequest(group.GroupId), CancellationToken.None);
+        harness.UsersWithoutAccess.Add(restricted.UserId);
+
+        group.SetState(new IdleGroupState(NullLoggerFactory.Instance));
+        harness.GroupUpdates.Clear();
+
+        group.HandleRequest(
+            harness.First,
+            new PlayGroupRequest(new[] { Guid.NewGuid() }, 0, 0),
+            CancellationToken.None);
+
+        // The queue is refused for the whole group, so the member that pressed play has to be
+        // told why instead of waiting for a playback that is never going to start.
+        Assert.Contains(
+            harness.GroupUpdates,
+            update => update.SessionId == harness.First.Id && update.Type == GroupUpdateType.LibraryAccessDenied);
+
+        // Only that member: the refusal is about their request, not about the group.
+        Assert.DoesNotContain(harness.GroupUpdates, update => update.SessionId == restricted.Id);
+        Assert.Equal(GroupStateType.Idle, group.GetInfo().State);
+    }
+
+    [Fact]
+    public void Play_MalformedQueue_IsNotReportedAsALibraryAccessProblem()
+    {
+        var harness = new GroupHarness();
+        var group = harness.Group;
+
+        group.SetState(new IdleGroupState(NullLoggerFactory.Instance));
+        harness.GroupUpdates.Clear();
+
+        // Everybody can see the item, the request itself is nonsense.
+        group.HandleRequest(
+            harness.First,
+            new PlayGroupRequest(new[] { Guid.NewGuid() }, 5, 0),
+            CancellationToken.None);
+
+        Assert.DoesNotContain(harness.GroupUpdates, update => update.Type == GroupUpdateType.LibraryAccessDenied);
+    }
+
+    [Fact]
+    public void Queue_AMemberCannotSeeTheItems_TheSessionThatAskedIsTold()
+    {
+        var harness = new GroupHarness();
+        var group = harness.Group;
+
+        var restricted = harness.NewSessionForAnotherUser("restricted");
+        group.SessionJoin(restricted, new JoinGroupRequest(group.GroupId), CancellationToken.None);
+        harness.UsersWithoutAccess.Add(restricted.UserId);
+
+        harness.GroupUpdates.Clear();
+
+        group.HandleRequest(
+            harness.First,
+            new QueueGroupRequest(new[] { Guid.NewGuid() }, GroupQueueMode.Queue),
+            CancellationToken.None);
+
+        Assert.Contains(
+            harness.GroupUpdates,
+            update => update.SessionId == harness.First.Id && update.Type == GroupUpdateType.LibraryAccessDenied);
+    }
+
     private sealed class GroupHarness
     {
+        private readonly Dictionary<Guid, User> _users = new();
         private readonly ISessionManager _sessionManager;
         private readonly Guid _userId;
 
@@ -335,10 +407,12 @@ public class WaitingGroupStateTests
             var libraryManager = new Mock<ILibraryManager>();
 
             var user = new User("tester", "auth-provider", "pwdreset-provider");
-            userManager.Setup(m => m.GetUserById(It.IsAny<Guid>())).Returns(user);
+            _users[user.Id] = user;
+            userManager.Setup(m => m.GetUserById(It.IsAny<Guid>())).Returns<Guid>(id => _users[id]);
 
             var item = new Mock<BaseItem>();
-            item.Setup(i => i.IsVisibleStandalone(It.IsAny<User>())).Returns(true);
+            item.Setup(i => i.IsVisibleStandalone(It.IsAny<User>()))
+                .Returns<User>(u => !UsersWithoutAccess.Contains(u.Id));
             item.Object.RunTimeTicks = TimeSpan.FromHours(2).Ticks;
             libraryManager.Setup(m => m.GetItemById(It.IsAny<Guid>())).Returns(item.Object);
 
@@ -350,6 +424,11 @@ public class WaitingGroupStateTests
             sessionManager
                 .Setup(m => m.SendSyncPlayGroupUpdate(It.IsAny<string>(), It.IsAny<GroupUpdate<GroupStateUpdate>>(), It.IsAny<CancellationToken>()))
                 .Callback((string sessionId, GroupUpdate<GroupStateUpdate> update, CancellationToken _) => StateUpdates.Add((sessionId, update.Data)))
+                .Returns(Task.CompletedTask);
+
+            sessionManager
+                .Setup(m => m.SendSyncPlayGroupUpdate(It.IsAny<string>(), It.IsAny<GroupUpdate<string>>(), It.IsAny<CancellationToken>()))
+                .Callback((string sessionId, GroupUpdate<string> update, CancellationToken _) => GroupUpdates.Add((sessionId, update.Type)))
                 .Returns(Task.CompletedTask);
 
             Group = new SyncPlayGroup(
@@ -376,6 +455,11 @@ public class WaitingGroupStateTests
         public SyncPlayGroup Group { get; }
 
         public List<(string SessionId, GroupStateUpdate Update)> StateUpdates { get; } = new();
+
+        public List<(string SessionId, GroupUpdateType Type)> GroupUpdates { get; } = new();
+
+        // Users listed here cannot see any item, as far as the mocked library is concerned.
+        public HashSet<Guid> UsersWithoutAccess { get; } = new();
 
         public SessionInfo First { get; }
 
@@ -415,6 +499,20 @@ public class WaitingGroupStateTests
             {
                 Id = id,
                 UserId = _userId,
+                UserName = id
+            };
+        }
+
+        // A session belonging to somebody other than the user every other session shares.
+        public SessionInfo NewSessionForAnotherUser(string id)
+        {
+            var user = new User(id, "auth-provider", "pwdreset-provider");
+            _users[user.Id] = user;
+
+            return new SessionInfo(_sessionManager, NullLogger.Instance)
+            {
+                Id = id,
+                UserId = user.Id,
                 UserName = id
             };
         }
