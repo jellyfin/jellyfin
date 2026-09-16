@@ -58,7 +58,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "mpeg4_rkmpp",
             "vp8_rkmpp",
             "vp9_rkmpp",
-            "av1_rkmpp"
+            "av1_rkmpp",
+            "h264_nvmpi",
+            "hevc_nvmpi",
+            "mpeg2_nvmpi",
+            "mpeg4_nvmpi",
+            "vp8_nvmpi",
+            "vp9_nvmpi"
         ];
 
         private static readonly string[] _requiredEncoders =
@@ -98,7 +104,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "mjpeg_videotoolbox",
             "h264_rkmpp",
             "hevc_rkmpp",
-            "mjpeg_rkmpp"
+            "mjpeg_rkmpp",
+            "h264_nvmpi",
+            "hevc_nvmpi"
         ];
 
         private static readonly string[] _requiredFilters =
