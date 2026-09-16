@@ -43,6 +43,7 @@ namespace MediaBrowser.Model.Updates
 
         /// <summary>
         /// Gets or sets a checksum for the binary.
+        /// Supports legacy MD5 as plain hex or digest format algorithm:hex (for example sha256:...).
         /// </summary>
         /// <value>The checksum.</value>
         public string Checksum { get; set; }
