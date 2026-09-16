@@ -30,6 +30,9 @@ public static class StartupActivity
     /// <summary>Refreshing the database statistics after migrations have run.</summary>
     public const string OptimizingDatabase = "Optimizing database";
 
+    /// <summary>Provisioning an unconfigured server from a file.</summary>
+    public const string Provisioning = "Provisioning server";
+
     /// <summary>Running the final startup tasks.</summary>
     public const string FinishingStartup = "Finishing startup";
 
