@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Naming.Common;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
@@ -16,22 +17,23 @@ using SharpCompress.Archives;
 namespace MediaBrowser.Providers.Books;
 
 /// <summary>
-/// The ComicImageProvider tries to find either an image named "cover" or, in case that
-/// fails, just takes the first image inside the archive, hoping that it is the cover.
+/// This image provider looks for a primary image named cover in a comic archive file. When an image
+/// with that name is missing it will simply use the first image it finds. SharpCompress is required
+/// to support non-ZIP archives.
 /// </summary>
 public class ComicImageProvider : IDynamicImageProvider
 {
-    private readonly string[] _comicBookExtensions = [".cb7", ".cbr", ".cbt", ".cbz"];
-    private readonly string[] _coverExtensions = [".png", ".jpeg", ".jpg", ".webp", ".bmp", ".gif"];
-
+    private readonly NamingOptions _namingOptions;
     private readonly ILogger<ComicImageProvider> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ComicImageProvider"/> class.
     /// </summary>
+    /// <param name="namingOptions">Instance of the <see cref="NamingOptions"/>.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{ComicImageProvider}"/> interface.</param>
-    public ComicImageProvider(ILogger<ComicImageProvider> logger)
+    public ComicImageProvider(NamingOptions namingOptions, ILogger<ComicImageProvider> logger)
     {
+        _namingOptions = namingOptions;
         _logger = logger;
     }
 
@@ -43,7 +45,7 @@ public class ComicImageProvider : IDynamicImageProvider
     {
         var extension = Path.GetExtension(item.Path);
 
-        if (_comicBookExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+        if (_namingOptions.ComicFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
         {
             return await LoadCoverAsync(item, cancellationToken).ConfigureAwait(false);
         }
@@ -118,7 +120,7 @@ public class ComicImageProvider : IDynamicImageProvider
 
         // only some comics will explicitly name their cover file
         // in many cases the cover will simply be the first image in the archive
-        foreach (var extension in _coverExtensions)
+        foreach (var extension in BaseItem.SupportedImageExtensions)
         {
             cover = await archive.EntriesAsync.FirstOrDefaultAsync(e => e.Key == "cover" + extension).ConfigureAwait(false);
 
@@ -131,7 +133,7 @@ public class ComicImageProvider : IDynamicImageProvider
         }
 
         cover = await archive.EntriesAsync.OrderBy(x => x.Key)
-            .FirstOrDefaultAsync(x => _coverExtensions.Contains(Path.GetExtension(x.Key), StringComparison.OrdinalIgnoreCase))
+            .FirstOrDefaultAsync(x => BaseItem.SupportedImageExtensions.Contains(Path.GetExtension(x.Key), StringComparison.OrdinalIgnoreCase))
             .ConfigureAwait(false);
 
         if (cover is not null)
@@ -148,9 +150,9 @@ public class ComicImageProvider : IDynamicImageProvider
     {
         ".jpg" => ImageFormat.Jpg,
         ".jpeg" => ImageFormat.Jpg,
+        ".tbn" => ImageFormat.Jpg,
         ".png" => ImageFormat.Png,
         ".webp" => ImageFormat.Webp,
-        ".bmp" => ImageFormat.Bmp,
         ".gif" => ImageFormat.Gif,
         ".svg" => ImageFormat.Svg,
         _ => throw new ArgumentException($"unsupported extension: {extension}"),
