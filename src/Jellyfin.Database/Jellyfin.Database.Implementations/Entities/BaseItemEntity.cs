@@ -128,6 +128,21 @@ public class BaseItemEntity
 
     public string? AlbumArtists { get; set; }
 
+    /// <summary>
+    /// Gets or sets the album sort name read from the embedded sort tag (e.g. ID3 TSOA / albumsort).
+    /// </summary>
+    public string? SortAlbum { get; set; }
+
+    /// <summary>
+    /// Gets or sets the primary artist sort name read from the embedded sort tag (e.g. ID3 TSOP / artistsort).
+    /// </summary>
+    public string? SortArtist { get; set; }
+
+    /// <summary>
+    /// Gets or sets the primary album artist sort name read from the embedded sort tag (e.g. ID3 TSO2 / albumartistsort).
+    /// </summary>
+    public string? SortAlbumArtist { get; set; }
+
     public string? ExternalId { get; set; }
 
     public string? SeriesPresentationUniqueKey { get; set; }
