@@ -109,6 +109,11 @@ namespace Emby.Server.Implementations.IO
 
             lock (_timerLock)
             {
+                if (_disposed)
+                {
+                    return;
+                }
+
                 paths = _affectedPaths.ToList();
             }
 
@@ -129,11 +134,12 @@ namespace Emby.Server.Implementations.IO
 
         private void ProcessPathChanges(List<string> paths)
         {
-            IEnumerable<BaseItem> itemsToRefresh = paths
+            var itemsToRefresh = paths
                 .Distinct()
-                .Select(GetAffectedBaseItem)
-                .Where(item => item is not null)
-                .DistinctBy(x => x!.Id)!;  // Removed null values in the previous .Where()
+                .Select(TryGetAffectedBaseItem)
+                .OfType<BaseItem>()
+                .DistinctBy(x => x.Id)
+                .ToList();
 
             foreach (var item in itemsToRefresh)
             {
@@ -152,6 +158,19 @@ namespace Emby.Server.Implementations.IO
                 {
                     _logger.LogError(ex, "Error refreshing {Name}", item.Name);
                 }
+            }
+        }
+
+        private BaseItem? TryGetAffectedBaseItem(string path)
+        {
+            try
+            {
+                return GetAffectedBaseItem(path);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error finding the item affected by changes to {Path}", path);
+                return null;
             }
         }
 

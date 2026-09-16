@@ -1411,7 +1411,8 @@ namespace MediaBrowser.Controller.Entities
         /// token shared by the descriptors but separated only by spaces (e.g. a common "2160p ") is
         /// kept in the label, falling back to a space only when no structural delimiter is shared. The
         /// separators mirror the version delimiters recognised by the naming layer (Emby.Naming
-        /// VideoFlagDelimiters).
+        /// VideoFlagDelimiters), except that a dot between digits is a decimal point rather than a
+        /// delimiter, so numeric version labels stay whole.
         /// </summary>
         /// <param name="fileNames">The version file names without extension; must contain at least one entry.</param>
         /// <returns>The shared prefix retreated to a separator boundary, or an empty string when none is shared.</returns>
@@ -1445,9 +1446,12 @@ namespace MediaBrowser.Controller.Entities
 
             if (!prefixIsWholeName)
             {
-                // Retreat to the last structural delimiter ('-', '_', '.').
+                // Retreat to the last structural delimiter ('-', '_', '.'), skipping dots that are
+                // decimal points within a number rather than delimiters (see IsDecimalPoint).
                 var cut = prefix.Length;
-                while (cut > 0 && Array.IndexOf(VersionDelimiters, prefix[cut - 1]) < 0)
+                while (cut > 0
+                    && (Array.IndexOf(VersionDelimiters, prefix[cut - 1]) < 0
+                        || IsDecimalPoint(prefix, cut - 1, fileNames)))
                 {
                     cut--;
                 }
@@ -1465,6 +1469,31 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return prefix;
+        }
+
+        private static bool IsDecimalPoint(string prefix, int index, IReadOnlyList<string> fileNames)
+        {
+            if (index == 0 || prefix[index] != '.' || !char.IsDigit(prefix[index - 1]))
+            {
+                return false;
+            }
+
+            if (index + 1 < prefix.Length)
+            {
+                return char.IsDigit(prefix[index + 1]);
+            }
+
+            // The dot ends the prefix, so the character after it is the first one that differs between
+            // the versions: only a decimal point when every version continues the number.
+            for (var i = 0; i < fileNames.Count; i++)
+            {
+                if (fileNames[i].Length <= index + 1 || !char.IsDigit(fileNames[i][index + 1]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public Task RefreshMetadata(CancellationToken cancellationToken)

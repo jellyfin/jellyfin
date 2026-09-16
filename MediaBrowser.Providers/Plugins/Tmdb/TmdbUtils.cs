@@ -34,6 +34,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// </summary>
         public const string ApiKey = "4219e299c89411838049ab0dab19ebd5";
 
+        /// <summary>
+        /// The image size representing the unscaled image as served by TMDb.
+        /// </summary>
+        public const string OriginalImageSize = "original";
+
         private const int TitleExactScore = 8;
         private const int TitlePrefixScore = 4;
         private const int YearExactScore = 2;
@@ -484,6 +489,15 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 ? string.Empty
                 : imageLanguage;
         }
+
+        /// <summary>
+        /// Determines whether the configured image size fetches the image at its original resolution.
+        /// An unset size falls back to <see cref="OriginalImageSize"/>, see TmdbClientManager.GetUrl.
+        /// </summary>
+        /// <param name="size">The configured image size.</param>
+        /// <returns><c>true</c> if the original image is fetched; otherwise, <c>false</c>.</returns>
+        public static bool IsOriginalImageSize(string? size)
+            => string.IsNullOrEmpty(size) || string.Equals(size, OriginalImageSize, StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
         /// Combines the metadata country code and the parental rating from the API into the value we store in our database.

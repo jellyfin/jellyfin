@@ -115,6 +115,7 @@ public class SqlSearchProvider : IInternalSearchProvider
             dbQuery = ApplyMediaTypeFilter(dbQuery, query.MediaTypes);
             dbQuery = ApplyParentFilter(dbQuery, query.ParentId);
             dbQuery = ApplyUserAccessFilter(dbContext, dbQuery, query);
+            dbQuery = ExcludeVersionsOfMatchedPrimaries(dbQuery);
 
             // Compute the score in SQL: the ternary translates to a CASE WHEN. CleanName is
             // the pre-normalized (lowercase, diacritic-stripped) form, so we score against it
@@ -191,6 +192,12 @@ public class SqlSearchProvider : IInternalSearchProvider
 
         var pid = parentId.Value;
         return query.Where(e => e.ParentId == pid || e.Parents!.Any(p => p.ParentItemId == pid));
+    }
+
+    private static IQueryable<BaseItemEntity> ExcludeVersionsOfMatchedPrimaries(IQueryable<BaseItemEntity> query)
+    {
+        var matched = query;
+        return query.Where(e => e.PrimaryVersionId == null || !matched.Any(p => p.Id == e.PrimaryVersionId));
     }
 
     private IQueryable<BaseItemEntity> ApplyUserAccessFilter(

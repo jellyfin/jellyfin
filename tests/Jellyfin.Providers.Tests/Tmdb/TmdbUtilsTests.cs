@@ -105,6 +105,19 @@ namespace Jellyfin.Providers.Tests.Tmdb
         }
 
         [Theory]
+        // An unconfigured size fetches the original image, so it keeps the original resolution.
+        [InlineData(null, true)]
+        [InlineData("", true)]
+        [InlineData("original", true)]
+        [InlineData("Original", true)]
+        [InlineData("w500", false)]
+        [InlineData("original2", false)]
+        public static void IsOriginalImageSize_Valid_Success(string? size, bool expected)
+        {
+            Assert.Equal(expected, TmdbUtils.IsOriginalImageSize(size));
+        }
+
+        [Theory]
         [MemberData(nameof(FindBestMatch_Movies_TestData))]
         public static void FindBestMatch_Movies_PicksExpected(string description, string name, int year, IReadOnlyList<SearchMovie> results, int expectedId)
         {

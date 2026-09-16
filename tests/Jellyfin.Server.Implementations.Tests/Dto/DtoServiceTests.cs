@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Emby.Server.Implementations.Dto;
+using Jellyfin.Data;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Drawing;
@@ -136,6 +140,96 @@ public class DtoServiceTests
         Assert.Equal(9, dto.RecursiveItemCount);
         // The shortcut still wins over the batched child count, which also counts virtual episodes.
         Assert.Equal(9, dto.ChildCount);
+    }
+
+    [Fact]
+    public void GetBaseItemDtos_NoUser_SkipsTheChildCountBatch()
+    {
+        // A child count is attached only to a user's dto, so with no user the batch is work whose
+        // result nothing reads - and it is a grouped count over every item, not a cheap one.
+        var (season, _) = BuildSeason(playedCount: 0, totalCount: 0, childCount: 10);
+        var options = new DtoOptions(false) { EnableImages = false, Fields = [ItemFields.ChildCount] };
+
+        var dto = _dtoService.GetBaseItemDtos([season], options, user: null, skipVisibilityCheck: true)[0];
+
+        Assert.Null(dto.ChildCount);
+        _libraryManagerMock.Verify(
+            x => x.GetChildCountBatch(It.IsAny<IReadOnlyList<Guid>>(), It.IsAny<User?>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public void GetBaseItemDtos_GroupedMoviesView_CountsEveryLibraryGroupedIntoIt()
+    {
+        // The view has no library of its own, so its count is the sum over the libraries the user
+        // grouped into it - including an untyped one, which the view also shows.
+        var user = new User("user", "auth-provider", "reset-provider");
+        var grouped = BuildLibrary(CollectionType.movies);
+        var untyped = BuildLibrary(null);
+        var shows = BuildLibrary(CollectionType.tvshows);
+        var ungrouped = BuildLibrary(CollectionType.movies);
+        user.SetPreference(PreferenceKind.GroupedFolders, [grouped.Id, untyped.Id, shows.Id]);
+
+        // A real root folder would resolve its children through the library it does not have here.
+        var rootFolder = new Mock<Folder>();
+        rootFolder
+            .Setup(x => x.GetChildren(user, true, It.IsAny<InternalItemsQuery>()))
+            .Returns<User, bool, InternalItemsQuery>((_, _, _) => [grouped, untyped, shows, ungrouped]);
+        _libraryManagerMock.Setup(x => x.GetUserRootFolder()).Returns(rootFolder.Object);
+
+        IReadOnlyList<Guid>? counted = null;
+        _libraryManagerMock
+            .Setup(x => x.GetChildCountBatch(It.IsAny<IReadOnlyList<Guid>>(), It.IsAny<User?>()))
+            .Callback<IReadOnlyList<Guid>, User?>((ids, _) => counted = ids)
+            .Returns<IReadOnlyList<Guid>, User?>((ids, _) => ids.ToDictionary(id => id, _ => 4));
+
+        var view = new UserView { Id = Guid.NewGuid(), Name = "Movies", ViewType = CollectionType.movies };
+        var options = new DtoOptions(false) { EnableImages = false, Fields = [ItemFields.ChildCount] };
+
+        var dto = _dtoService.GetBaseItemDtos([view], options, user, skipVisibilityCheck: true)[0];
+
+        Assert.Equal(grouped.PhysicalFolderIds.Concat(untyped.PhysicalFolderIds), counted);
+        Assert.Equal(16, dto.ChildCount);
+    }
+
+    [Fact]
+    public void GetBaseItemDtos_SubViewOfALibrary_DoesNotCountTheLibrary()
+    {
+        // A sub-view hangs off the library the view was built over, but it holds a query over it,
+        // not its children: counting the library would report every movie as "Continue Watching".
+        var user = new User("user", "auth-provider", "reset-provider");
+        var library = BuildLibrary(CollectionType.movies);
+        _libraryManagerMock.Setup(x => x.GetItemById(library.Id)).Returns(library);
+
+        // The fallback count a sub-view falls through to runs a query of its own.
+        _libraryManagerMock
+            .Setup(x => x.GetItemList(It.IsAny<InternalItemsQuery>()))
+            .Returns([]);
+
+        var subView = new UserView
+        {
+            Id = Guid.NewGuid(),
+            Name = "Continue Watching",
+            ViewType = CollectionType.movieresume,
+            DisplayParentId = library.Id
+        };
+        var options = new DtoOptions(false) { EnableImages = false, Fields = [ItemFields.ChildCount] };
+
+        _dtoService.GetBaseItemDtos([subView], options, user, skipVisibilityCheck: true);
+
+        _libraryManagerMock.Verify(
+            x => x.GetChildCountBatch(It.IsAny<IReadOnlyList<Guid>>(), It.IsAny<User?>()),
+            Times.Never);
+    }
+
+    private static CollectionFolder BuildLibrary(CollectionType? collectionType)
+    {
+        return new CollectionFolder
+        {
+            Id = Guid.NewGuid(),
+            CollectionType = collectionType,
+            PhysicalFolderIds = [Guid.NewGuid(), Guid.NewGuid()]
+        };
     }
 
     private (Season Season, User User) BuildSeason(int playedCount, int totalCount, int childCount)
