@@ -24,6 +24,8 @@ public class MediaStreamInfo
 
     public string? AspectRatio { get; set; }
 
+    public string? SampleAspectRatio { get; set; }
+
     public string? Path { get; set; }
 
     public bool? IsInterlaced { get; set; }
