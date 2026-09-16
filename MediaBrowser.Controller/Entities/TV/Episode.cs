@@ -46,6 +46,12 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <value>The index number.</value>
         public int? IndexNumberEnd { get; set; }
 
+        /// <summary>
+        /// Gets the separator for multi episode files.
+        /// </summary>
+        /// <value>The separator.</value>
+        public static string MultiPartSeparator { get; } = " / ";
+
         [JsonIgnore]
         protected override bool SupportsOwnedItems => IsStacked || LocalAlternateVersions.Length > 0 || MediaSourceCount > 1;
 
