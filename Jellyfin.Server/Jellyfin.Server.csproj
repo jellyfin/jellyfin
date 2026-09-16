@@ -44,6 +44,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
     <PackageReference Include="Morestachio" />
     <PackageReference Include="prometheus-net" />
