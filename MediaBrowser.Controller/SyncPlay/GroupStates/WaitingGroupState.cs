@@ -146,6 +146,10 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             {
                 _logger.LogError("Unable to set playing queue in group {GroupId}.", context.GroupId.ToString());
 
+                // The request is dropped here, so without this the session that asked for playback
+                // is left waiting for a playback that is never going to start.
+                NotifyQueueRejected(context, request.PlayingQueue, session, cancellationToken);
+
                 // Ignore request and return to previous state.
                 IGroupState newState = prevState switch
                 {
