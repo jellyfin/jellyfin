@@ -1,15 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using Jellyfin.Server.Helpers;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -20,6 +26,16 @@ namespace Jellyfin.Server.Extensions;
 /// </summary>
 public static class WebHostBuilderExtensions
 {
+    /// <summary>
+    /// How long to wait for a bind address to become available before giving up.
+    /// </summary>
+    private static readonly TimeSpan _bindTimeout = TimeSpan.FromSeconds(15);
+
+    /// <summary>
+    /// How long to wait between two attempts to bind the same address.
+    /// </summary>
+    private static readonly TimeSpan _bindRetryInterval = TimeSpan.FromSeconds(1);
+
     /// <summary>
     /// Configure the web host builder.
     /// </summary>
@@ -37,6 +53,8 @@ public static class WebHostBuilderExtensions
         ILogger logger)
     {
         return builder
+            .ConfigureServices((_, services) =>
+                services.ConfigureListenSockets(appHost.ConfigurationManager.GetNetworkConfiguration(), logger))
             .UseKestrel((builderContext, options) =>
             {
                 SetupJellyfinWebServer(
@@ -51,6 +69,87 @@ public static class WebHostBuilderExtensions
                     options);
             })
             .UseStartup(context => new Startup(appHost, context.Configuration));
+    }
+
+    /// <summary>
+    /// Configures how Kestrel's socket transport creates its listen sockets.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="networkConfiguration">The network configuration.</param>
+    /// <param name="logger">A logger.</param>
+    public static void ConfigureListenSockets(this IServiceCollection services, NetworkConfiguration networkConfiguration, ILogger logger)
+    {
+        var enableIPv4 = networkConfiguration.EnableIPv4;
+        services.Configure<SocketTransportOptions>(options => options.CreateBoundListenSocket =
+            endpoint => CreateBoundListenSocket(endpoint, enableIPv4, logger, _bindTimeout, _bindRetryInterval));
+    }
+
+    /// <summary>
+    /// Creates a listen socket bound to <paramref name="endpoint"/>, retrying while the address is unavailable.
+    /// </summary>
+    /// <remarks>
+    /// An address can be enumerated and configured but not yet bindable, most notably while IPv6 duplicate
+    /// address detection is still running after an interface came up. The state of that detection cannot be
+    /// queried outside of Windows, so the only portable option is to retry the bind until it succeeds.
+    /// </remarks>
+    /// <param name="endpoint">The endpoint to bind to.</param>
+    /// <param name="enableIPv4">Whether IPv4 is enabled, which decides if a wildcard socket is dual-mode.</param>
+    /// <param name="logger">A logger.</param>
+    /// <param name="timeout">How long to wait for the address to become available.</param>
+    /// <param name="retryInterval">How long to wait between two bind attempts.</param>
+    /// <returns>The bound socket.</returns>
+    public static Socket CreateBoundListenSocket(EndPoint endpoint, bool enableIPv4, ILogger logger, TimeSpan timeout, TimeSpan retryInterval)
+    {
+        var startTimestamp = Stopwatch.GetTimestamp();
+        var warned = false;
+        while (true)
+        {
+            try
+            {
+                return CreateListenSocket(endpoint, enableIPv4);
+            }
+            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.AddressNotAvailable
+                                             && Stopwatch.GetElapsedTime(startTimestamp) + retryInterval < timeout)
+            {
+                if (!warned)
+                {
+                    logger.LogWarning(
+                        "Address {Endpoint} is not available yet, retrying for up to {Timeout}. This is expected while IPv6 duplicate address detection is running",
+                        endpoint,
+                        timeout);
+                    warned = true;
+                }
+
+                Thread.Sleep(retryInterval);
+            }
+        }
+    }
+
+    private static Socket CreateListenSocket(EndPoint endpoint, bool enableIPv4)
+    {
+        // Kestrel's default socket factory always upgrades an IPv6Any bind to dual-mode, which would also
+        // listen on every IPv4 address.
+        if (enableIPv4 || endpoint is not IPEndPoint ipEndPoint || !ipEndPoint.Address.Equals(IPAddress.IPv6Any))
+        {
+            return SocketTransportOptions.CreateDefaultBoundListenSocket(endpoint);
+        }
+
+        var socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp)
+        {
+            DualMode = false
+        };
+
+        try
+        {
+            socket.Bind(ipEndPoint);
+        }
+        catch
+        {
+            socket.Dispose();
+            throw;
+        }
+
+        return socket;
     }
 
     /// <summary>
