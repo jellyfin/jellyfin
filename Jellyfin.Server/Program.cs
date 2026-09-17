@@ -149,8 +149,16 @@ namespace Jellyfin.Server
                 if (_restartOnShutdown)
                 {
                     _startTimestamp = Stopwatch.GetTimestamp();
-                    await _setupServer.StopAsync().ConfigureAwait(false);
-                    await _setupServer.RunAsync().ConfigureAwait(false);
+                    try
+                    {
+                        await _setupServer.StopAsync().ConfigureAwait(false);
+                        await _setupServer.RunAsync().ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        // The startup page is optional, losing it must not take the restart down with it.
+                        _logger.LogError(ex, "Failed to bring the startup server back up");
+                    }
                 }
             } while (_restartOnShutdown);
 
@@ -245,7 +253,15 @@ namespace Jellyfin.Server
                     await appHost.RunStartupTasksAsync().ConfigureAwait(false);
                     _logger.LogInformation("Startup complete {Time:g}", Stopwatch.GetElapsedTime(_startTimestamp));
 
-                    await _jellyfinHost.WaitForShutdownAsync().ConfigureAwait(false);
+                    try
+                    {
+                        await _jellyfinHost.WaitForShutdownAsync().ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        // A hosted service that throws or times out while stopping must not cancel a pending restart.
+                        _logger.LogError(ex, "Failure while stopping the server");
+                    }
                 }
 
                 _restartOnShutdown = appHost.ShouldRestart;
