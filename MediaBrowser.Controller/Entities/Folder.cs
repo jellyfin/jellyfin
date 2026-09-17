@@ -286,6 +286,27 @@ namespace MediaBrowser.Controller.Entities
             return GetCachedChildren();
         }
 
+        /// <summary>
+        /// Drops the children this folder has materialised, and the ones held by every folder below
+        /// it, without loading anything that is not already in memory.
+        /// </summary>
+        public void ReleaseCachedChildren()
+        {
+            // Cleared before descending, so a folder already on the way down is not walked twice.
+            var children = _children;
+            _children = null;
+
+            if (children is null)
+            {
+                return;
+            }
+
+            foreach (var child in children)
+            {
+                (child as Folder)?.ReleaseCachedChildren();
+            }
+        }
+
         public override double? GetRefreshProgress()
         {
             return ProviderManager.GetRefreshProgress(Id);
@@ -370,6 +391,9 @@ namespace MediaBrowser.Controller.Entities
                 {
                     ProviderManager.OnRefreshComplete(this);
                 }
+
+                // The subtree is done with, so stop holding it.
+                ReleaseCachedChildren();
             }
         }
 
@@ -839,7 +863,14 @@ namespace MediaBrowser.Controller.Entities
                 if (recursive && child is Folder folder)
                 {
                     folder.Children = null; // invalidate cached children.
-                    await folder.RefreshMetadataRecursive(folder.Children.Except([this, child]).ToList(), refreshOptions, true, progress, cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        await folder.RefreshMetadataRecursive(folder.Children.Except([this, child]).ToList(), refreshOptions, true, progress, cancellationToken).ConfigureAwait(false);
+                    }
+                    finally
+                    {
+                        folder.ReleaseCachedChildren();
+                    }
                 }
             }
         }
@@ -1656,7 +1687,17 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         public List<BaseItem> GetLinkedChildren()
         {
-            var resolved = ResolveLinkedChildren(LinkedChildren);
+            return GetLinkedChildren(new DtoOptions());
+        }
+
+        /// <summary>
+        /// Gets the linked children, populating only what <paramref name="options"/> asks for.
+        /// </summary>
+        /// <param name="options">Fields to populate on the resolved children.</param>
+        /// <returns>The resolved children.</returns>
+        public List<BaseItem> GetLinkedChildren(DtoOptions options)
+        {
+            var resolved = ResolveLinkedChildren(LinkedChildren, options);
             var list = new List<BaseItem>(resolved.Count);
             foreach (var (_, item) in resolved)
             {
@@ -1773,8 +1814,9 @@ namespace MediaBrowser.Controller.Entities
         /// path (legacy path-based resolution).
         /// </summary>
         /// <param name="linkedChildren">Linked children to resolve.</param>
+        /// <param name="options">Fields to populate on the resolved items; all fields when null.</param>
         /// <returns>Each input entry paired with its resolved item; entries that fail to resolve are dropped.</returns>
-        private List<(LinkedChild Info, BaseItem Item)> ResolveLinkedChildren(IReadOnlyList<LinkedChild> linkedChildren)
+        private List<(LinkedChild Info, BaseItem Item)> ResolveLinkedChildren(IReadOnlyList<LinkedChild> linkedChildren, DtoOptions options = null)
         {
             var resolved = new List<(LinkedChild Info, BaseItem Item)>(linkedChildren.Count);
             if (linkedChildren.Count == 0)
@@ -1796,7 +1838,8 @@ namespace MediaBrowser.Controller.Entities
             {
                 var batched = LibraryManager.GetItemList(new InternalItemsQuery
                 {
-                    ItemIds = [.. idsToBatch]
+                    ItemIds = [.. idsToBatch],
+                    DtoOptions = options ?? new DtoOptions()
                 });
                 byId = new Dictionary<Guid, BaseItem>(batched.Count);
                 foreach (var item in batched)

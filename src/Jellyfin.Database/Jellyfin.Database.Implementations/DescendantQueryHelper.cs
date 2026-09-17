@@ -22,6 +22,16 @@ public static class DescendantQueryHelper
         b => !b.IsFolder && !b.IsVirtualItem;
 
     /// <summary>
+    /// Gets the predicate identifying the items that stand on their own in a library. An alternate
+    /// version is a second file for the item that links it rather than an item beside it, and an owned
+    /// item belongs to its owner unless it is an extra (a trailer and the like, which carries both an
+    /// owner and an extra type). Nothing here turns on who is asking, so a count that applies it
+    /// answers the same with a user and without one.
+    /// </summary>
+    public static Expression<Func<BaseItemEntity, bool>> IsDistinctLibraryItem { get; } =
+        b => !b.PrimaryVersionId.HasValue && (!b.OwnerId.HasValue || b.ExtraType != null);
+
+    /// <summary>
     /// Builds the predicate identifying the items a user has played, counting a multi-version item as
     /// played when any of its alternate versions is. Mirrors the aggregation
     /// <c>VersionResumeData.ApplyTo</c> performs on the played flag a single item reports, so that a

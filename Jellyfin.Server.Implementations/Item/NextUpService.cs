@@ -129,12 +129,21 @@ public class NextUpService : INextUpService
             // Use an explicit Join (INNER JOIN) instead of SelectMany on a collection navigation.
             // SelectMany on UserData with a correlated Where would translate to APPLY,
             // which SQLite does not support.
+            // Access filtering leaves only primaries in the base query, but a play can be recorded
+            // against any version, so each row is attributed to its group's primary before the join.
+            var playedByGroupPrimary = context.UserData
+                .AsNoTracking()
+                .Where(ud => ud.ItemId != EF.Constant(BaseItemRepository.PlaceholderId))
+                .Where(ud => ud.Played)
+                .Join(
+                    context.BaseItems.AsNoTracking(),
+                    ud => ud.ItemId,
+                    bi => bi.Id,
+                    (ud, bi) => new { ud.UserId, ItemId = bi.PrimaryVersionId ?? bi.Id, ud.LastPlayedDate });
+
             var playedWithDates = lastWatchedByDateBase
                 .Join(
-                    context.UserData
-                        .AsNoTracking()
-                        .Where(ud => ud.ItemId != EF.Constant(BaseItemRepository.PlaceholderId))
-                        .Where(ud => ud.Played),
+                    playedByGroupPrimary,
                     e => new { UserId = userId, ItemId = e.Id },
                     ud => new { ud.UserId, ud.ItemId },
                     (e, ud) => new { EpisodeId = e.Id, e.SeriesPresentationUniqueKey, ud.LastPlayedDate })
