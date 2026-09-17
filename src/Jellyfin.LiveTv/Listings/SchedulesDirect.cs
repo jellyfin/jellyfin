@@ -38,20 +38,52 @@ namespace Jellyfin.LiveTv.Listings
         private const string ApiUrl = "https://json.schedulesdirect.org/20141201";
         private const int CountryCacheDays = 7;
 
+        // Schedules Direct disables an account that keeps requesting images after the daily
+        // download limit, so stop after a short streak of rejections instead of retrying forever.
+        private const int MaxConsecutiveImageFailures = 10;
+
+        // Hard server-side cap on elements in a single programs request.
+        private const int MaxProgramsPerRequest = 5000;
+
+        // Memory ceiling on the rejected image uris (~2MB of 64-char keys). The daily invalid-uri
+        // limit stops the account long before this many can accumulate.
+        private const int MaxRejectedImageUris = 10000;
+
+        // Stations that stopped being queried keep their cached schedules for this long.
+        private const int ScheduleCacheMaxAgeDays = 30;
+
+        // The spec requires a client to stay away for an hour once the service reports Offline.
+        private const int OfflineBackoffMinutes = 60;
+
+        private const int StatusCacheMinutes = 10;
+
         private readonly ILogger<SchedulesDirect> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IApplicationPaths _appPaths;
         private readonly AsyncNonKeyedLocker _tokenLock = new(1);
+        private readonly AsyncNonKeyedLocker _statusLock = new(1);
+        private readonly SchedulesDirectScheduleCache _scheduleCache;
+        private readonly SchedulesDirectLineupCache _lineupCache;
+
+        // Image uris Schedules Direct answered with IMAGE_NOT_FOUND. Requesting one of these
+        // again is what trips MAX_IMAGE_INVALID_URI_ERRORS and gets the account blocked.
+        private readonly ConcurrentDictionary<string, byte> _rejectedImageUris = new(StringComparer.Ordinal);
+
+        // Station/date pairs the server has queued for generation, with the retryTime it gave.
+        private readonly ConcurrentDictionary<string, DateTime> _scheduleRetryTimes = new(StringComparer.Ordinal);
 
         private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new();
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private long _lastErrorResponseTicks;
         private volatile bool _accountError;
-        private bool _disposed = false;
+        private bool _disposed;
 
         private byte[] _countriesCache;
         private DateOnly? _imageLimitHitDate;
         private DateOnly? _metadataLimitHitDate;
+        private int _consecutiveImageFailures;
+        private long _offlineUntilTicks;
+        private StatusCacheEntry _status;
 
         public SchedulesDirect(
             ILogger<SchedulesDirect> logger,
@@ -61,6 +93,8 @@ namespace Jellyfin.LiveTv.Listings
             _logger = logger;
             _httpClientFactory = httpClientFactory;
             _appPaths = appPaths;
+            _scheduleCache = new SchedulesDirectScheduleCache(logger, appPaths);
+            _lineupCache = new SchedulesDirectLineupCache(logger, appPaths);
             _imageLimitHitDate = LoadDailyLimitDate(ImageLimitFilePath);
             _metadataLimitHitDate = LoadDailyLimitDate(MetadataLimitFilePath);
         }
@@ -93,9 +127,11 @@ namespace Jellyfin.LiveTv.Listings
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
+            // A failure must not come back as "this channel has no programs": GuideManager only
+            // skips CleanDatabase when a channel throws, so an empty list deletes the guide.
             if (IsMetadataLimitActive())
             {
-                return [];
+                throw new InvalidOperationException("The Schedules Direct daily request limit has been reached.");
             }
 
             ArgumentException.ThrowIfNullOrEmpty(channelId);
@@ -107,108 +143,406 @@ namespace Jellyfin.LiveTv.Listings
 
             if (string.IsNullOrEmpty(token))
             {
-                _logger.LogWarning("SchedulesDirect token is empty, returning empty program list");
+                throw new AuthenticationException("Could not authenticate with Schedules Direct");
+            }
 
-                return [];
+            if (!await IsSystemOnline(info, cancellationToken).ConfigureAwait(false))
+            {
+                throw new InvalidOperationException("Schedules Direct reports that the service is offline.");
             }
 
             var dates = GetScheduleRequestDates(startDateUtc, endDateUtc);
-
             _logger.LogInformation("Channel Station ID is: {ChannelID}", channelId);
-            var requestList = new List<RequestScheduleForChannelDto>()
+
+            // Ask what changed before downloading anything; a day whose md5 still matches is
+            // served from the cache and costs no schedule or program request.
+            var (md5s, unavailableDates) = await GetScheduleMd5s(info, channelId, dates, cancellationToken).ConfigureAwait(false);
+
+            var cachedDays = new List<SchedulesDirectCachedDay>();
+            var datesToFetch = new List<string>();
+            foreach (var date in dates)
+            {
+                if (unavailableDates.Contains(date))
                 {
-                    new()
+                    // The hash check already said the server has no schedule for this day, so
+                    // requesting it would only earn the same error again.
+                    continue;
+                }
+
+                md5s.TryGetValue(date, out var md5);
+                var cached = await _scheduleCache.GetAsync(channelId, date, md5, cancellationToken).ConfigureAwait(false);
+                if (cached?.Schedule is not null)
+                {
+                    cachedDays.Add(cached);
+                }
+                else if (!IsScheduleRetryPending(channelId, date))
+                {
+                    datesToFetch.Add(date);
+                }
+            }
+
+            _logger.LogDebug(
+                "Channel {ChannelID}: {CachedCount} of {TotalCount} days served from cache",
+                channelId,
+                cachedDays.Count,
+                dates.Count);
+
+            var freshDays = await DownloadSchedules(info, channelId, datesToFetch, token, cancellationToken).ConfigureAwait(false);
+            _scheduleCache.Prune(channelId, dates);
+
+            var allDays = cachedDays.Select(c => c.Schedule!).Concat(freshDays.Select(f => f.Schedule!)).ToList();
+            if (allDays.Count == 0)
+            {
+                // Nothing came back. That is only genuinely "no programs" when the server said so
+                // for every day; anything else is a failure, and reporting it as an empty list
+                // would have the guide refresh delete the programs this channel already has.
+                if (unavailableDates.Count == dates.Count)
+                {
+                    return [];
+                }
+
+                throw new InvalidOperationException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Could not get any schedule for station {0}",
+                        channelId));
+            }
+
+            var programDict = cachedDays.Concat(freshDays)
+                .SelectMany(d => d.Programs)
+                .Where(p => !string.IsNullOrEmpty(p.ProgramId))
+                .DistinctBy(p => p.ProgramId)
+                .ToDictionary(p => p.ProgramId, y => y);
+
+            // Artwork uris are ephemeral and must not be cached, and artwork changes are not
+            // reflected in the schedule md5 either, so the index is requested fresh - but only for
+            // the programs whose images are actually going to be pre-cached.
+            var imageProgramIds = allDays.SelectMany(d => d.Programs)
+                .Where(s => WillBeImageCached(s)
+                    && !string.IsNullOrEmpty(s.ProgramId)
+                    && programDict.TryGetValue(s.ProgramId, out var detail)
+                    && detail.HasImageArtwork)
+                .Select(s => s.ProgramId)
+                .Distinct()
+                .ToList();
+
+            var images = await GetImageForPrograms(info, imageProgramIds, cancellationToken).ConfigureAwait(false);
+
+            var programsInfo = new List<ProgramInfo>();
+            foreach (ProgramDto schedule in allDays.SelectMany(d => d.Programs))
+            {
+                if (string.IsNullOrEmpty(schedule.ProgramId)
+                    || !programDict.TryGetValue(schedule.ProgramId, out var programDetail))
+                {
+                    continue;
+                }
+
+                // Only add images which will be pre-cached until we can implement dynamic token fetching
+                if (WillBeImageCached(schedule))
+                {
+                    SetProgramImages(schedule.ProgramId, programDetail, images, token);
+                }
+
+                programsInfo.Add(GetProgram(channelId, schedule, programDetail));
+            }
+
+            return programsInfo;
+        }
+
+        private async Task<(Dictionary<string, string> Md5s, HashSet<string> UnavailableDates)> GetScheduleMd5s(
+            ListingsProviderInfo info,
+            string stationId,
+            IReadOnlyList<string> dates,
+            CancellationToken cancellationToken)
+        {
+            var result = new Dictionary<string, string>(StringComparer.Ordinal);
+            var unavailable = new HashSet<string>(StringComparer.Ordinal);
+
+            var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
+            if (string.IsNullOrEmpty(token))
+            {
+                return (result, unavailable);
+            }
+
+            var requestList = new List<RequestScheduleForChannelDto>
+            {
+                new() { StationId = stationId, Date = dates }
+            };
+
+            using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/schedules/md5");
+            message.Content = JsonContent.Create(requestList, options: _jsonOptions);
+            message.Headers.TryAddWithoutValidation("token", token);
+
+            try
+            {
+                var response = await Request<Dictionary<string, Dictionary<string, ScheduleMd5Dto>>>(message, true, info, cancellationToken)
+                    .ConfigureAwait(false);
+                if (response is null || !response.TryGetValue(stationId, out var days))
+                {
+                    return (result, unavailable);
+                }
+
+                foreach (var (date, entry) in days)
+                {
+                    if (entry.Code != 0)
                     {
-                        StationId = channelId,
-                        Date = dates
+                        // Only a definitive "there is no such day" is worth skipping; a transient
+                        // error still gets the normal request, which may well succeed.
+                        if (IsDefinitiveScheduleError(entry.Code))
+                        {
+                            unavailable.Add(date);
+                        }
+
+                        LogEntryErrors([(entry.Code, date, entry.Message)], "schedule");
                     }
-                };
+                    else if (!string.IsNullOrEmpty(entry.Md5))
+                    {
+                        result[date] = entry.Md5;
+                    }
+                }
+            }
+            catch (Exception ex) when (ex is HttpRequestException or JsonException)
+            {
+                // Without md5s every requested day is treated as changed, which is the old
+                // behaviour. Nothing is marked unavailable, so no day is skipped on a failure.
+                _logger.LogWarning(ex, "Unable to get schedule hashes for station {StationId}", stationId);
+            }
+
+            return (result, unavailable);
+        }
+
+        // Whether the code means the day will never be available, as opposed to a transient
+        // failure that is worth another request.
+        private static bool IsDefinitiveScheduleError(int code)
+            => code is (int)SdErrorCode.ScheduleRangeExceeded
+                or (int)SdErrorCode.ScheduleNotInLineup
+                or (int)SdErrorCode.StationIdNotFound
+                or (int)SdErrorCode.StationIdDeleted;
+
+        private bool IsScheduleRetryPending(string stationId, string date)
+        {
+            var key = stationId + "|" + date;
+            if (!_scheduleRetryTimes.TryGetValue(key, out var retryTime))
+            {
+                return false;
+            }
+
+            if (DateTime.UtcNow < retryTime)
+            {
+                _logger.LogDebug(
+                    "Schedules Direct has queued {StationId} {Date}; not requesting it before {RetryTime}",
+                    stationId,
+                    date,
+                    retryTime);
+                return true;
+            }
+
+            _scheduleRetryTimes.TryRemove(key, out _);
+            return false;
+        }
+
+        private static bool WillBeImageCached(ProgramDto schedule)
+        {
+            var endDate = schedule.AirDateTime?.AddSeconds(schedule.Duration);
+            return endDate.HasValue && endDate.Value < DateTime.UtcNow.AddDays(GuideManager.MaxCacheDays);
+        }
+
+        private async Task<IReadOnlyList<SchedulesDirectCachedDay>> DownloadSchedules(
+            ListingsProviderInfo info,
+            string stationId,
+            IReadOnlyList<string> dates,
+            string token,
+            CancellationToken cancellationToken)
+        {
+            if (dates.Count == 0)
+            {
+                return [];
+            }
+
+            var requestList = new List<RequestScheduleForChannelDto>
+            {
+                new() { StationId = stationId, Date = dates }
+            };
 
             _logger.LogDebug("Request string for schedules is: {@RequestString}", requestList);
 
             using var options = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/schedules");
             options.Content = JsonContent.Create(requestList, options: _jsonOptions);
             options.Headers.TryAddWithoutValidation("token", token);
-            var dailySchedules = await Request<IReadOnlyList<DayDto>>(options, true, info, cancellationToken).ConfigureAwait(false);
+
+            // A station-wide failure such as SCHEDULE_QUEUED arrives as a bare object rather than
+            // the usual array, so the shape has to be inspected before it is deserialized.
+            var payload = await Request<JsonElement>(options, true, info, cancellationToken).ConfigureAwait(false);
+            var dailySchedules = payload.ValueKind switch
+            {
+                JsonValueKind.Array => payload.Deserialize<IReadOnlyList<DayDto>>(_jsonOptions),
+                JsonValueKind.Object => [payload.Deserialize<DayDto>(_jsonOptions)],
+                _ => null
+            };
+
             if (dailySchedules is null)
             {
                 return [];
             }
 
-            _logger.LogDebug("Found {ScheduleCount} programs on {ChannelID} ScheduleDirect", dailySchedules.Count, channelId);
+            var errorDays = dailySchedules.Where(d => d.Code.HasValue).ToList();
+            RecordQueuedSchedules(stationId, dates, errorDays);
+            LogEntryErrors(errorDays.Select(d => (d.Code!.Value, d.StationId ?? stationId, d.Message ?? d.Response)), "schedule");
+            var days = dailySchedules.Where(d => !d.Code.HasValue).ToList();
 
-            using var programRequestOptions = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/programs");
-            programRequestOptions.Headers.TryAddWithoutValidation("token", token);
+            _logger.LogDebug("Found {ScheduleCount} days on {ChannelID} ScheduleDirect", days.Count, stationId);
 
-            var programIds = dailySchedules.SelectMany(d => d.Programs.Select(s => s.ProgramId)).Distinct();
-            programRequestOptions.Content = JsonContent.Create(programIds, options: _jsonOptions);
-
-            var programDetails = await Request<IReadOnlyList<ProgramDetailsDto>>(programRequestOptions, true, info, cancellationToken).ConfigureAwait(false);
-            if (programDetails is null)
-            {
-                return [];
-            }
-
-            var programDict = programDetails.ToDictionary(p => p.ProgramId, y => y);
-
-            var programIdsWithImages = programDetails
-                .Where(p => p.HasImageArtwork)
-                .Select(p => p.ProgramId)
+            var programIds = days.SelectMany(d => d.Programs.Select(s => s.ProgramId))
+                .Where(id => !string.IsNullOrEmpty(id))
+                .Distinct()
                 .ToList();
 
-            var images = await GetImageForPrograms(info, programIdsWithImages, cancellationToken).ConfigureAwait(false);
+            var programDetails = await GetProgramDetails(info, programIds, token, cancellationToken).ConfigureAwait(false);
+            var detailsById = programDetails.ToDictionary(p => p.ProgramId, StringComparer.Ordinal);
 
-            var programsInfo = new List<ProgramInfo>();
-            foreach (ProgramDto schedule in dailySchedules.SelectMany(d => d.Programs))
+            var result = new List<SchedulesDirectCachedDay>(days.Count);
+            foreach (var day in days)
             {
-                if (string.IsNullOrEmpty(schedule.ProgramId))
+                var dayPrograms = day.Programs
+                    .Select(p => p.ProgramId)
+                    .Where(id => !string.IsNullOrEmpty(id) && detailsById.ContainsKey(id))
+                    .Distinct()
+                    .Select(id => detailsById[id])
+                    .ToList();
+
+                var cachedDay = new SchedulesDirectCachedDay
+                {
+                    Md5 = day.Metadata?.Md5,
+                    Schedule = day,
+                    Programs = dayPrograms
+                };
+
+                result.Add(cachedDay);
+
+                var date = day.Metadata?.StartDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                if (date is not null)
+                {
+                    // Must stay ahead of SetProgramImages: it stamps ephemeral uris and a token
+                    // that expires daily onto these programs, and neither may reach the cache.
+                    await _scheduleCache.SetAsync(stationId, date, cachedDay, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            return result;
+        }
+
+        private void RecordQueuedSchedules(string stationId, IReadOnlyList<string> dates, IReadOnlyList<DayDto> errorDays)
+        {
+            // Dates roll out of the guide window without being asked for again, so entries that
+            // are no longer holding anything back have to be swept here.
+            var now = DateTime.UtcNow;
+            foreach (var (key, value) in _scheduleRetryTimes)
+            {
+                if (value <= now)
+                {
+                    _scheduleRetryTimes.TryRemove(key, out _);
+                }
+            }
+
+            foreach (var day in errorDays)
+            {
+                if (day.Code != (int)SdErrorCode.ScheduleQueued || day.RetryTime is not { } retryTime)
                 {
                     continue;
                 }
 
-                // Only add images which will be pre-cached until we can implement dynamic token fetching
-                var endDate = schedule.AirDateTime?.AddSeconds(schedule.Duration);
-                var willBeCached = endDate.HasValue && endDate.Value < DateTime.UtcNow.AddDays(GuideManager.MaxCacheDays);
-                if (willBeCached && images is not null)
+                // The response is station-wide and names no date, so it covers everything asked for.
+                _logger.LogInformation(
+                    "Schedules Direct has queued the schedule for station {StationId}; retrying after {RetryTime}",
+                    day.StationId ?? stationId,
+                    retryTime);
+
+                foreach (var date in dates)
                 {
-                    var imageIndex = images.FindIndex(i =>
-                        i.ProgramId is not null && schedule.ProgramId.StartsWith(i.ProgramId, StringComparison.Ordinal));
-                    if (imageIndex > -1)
-                    {
-                        var programEntry = programDict[schedule.ProgramId];
+                    _scheduleRetryTimes[(day.StationId ?? stationId) + "|" + date] = retryTime.ToUniversalTime();
+                }
+            }
+        }
 
-                        var allImages = images[imageIndex].Data;
-                        var imagesWithText = allImages.Where(i => string.Equals(i.Text, "yes", StringComparison.OrdinalIgnoreCase)).ToList();
-                        var imagesWithoutText = allImages.Where(i => string.Equals(i.Text, "no", StringComparison.OrdinalIgnoreCase)).ToList();
+        private async Task<List<ProgramDetailsDto>> GetProgramDetails(
+            ListingsProviderInfo info,
+            IReadOnlyList<string> programIds,
+            string token,
+            CancellationToken cancellationToken)
+        {
+            var results = new List<ProgramDetailsDto>(programIds.Count);
 
-                        const double DesiredAspect = 2.0 / 3;
+            for (var i = 0; i < programIds.Count; i += MaxProgramsPerRequest)
+            {
+                var batch = programIds.Skip(i).Take(MaxProgramsPerRequest);
 
-                        programEntry.PrimaryImage = GetProgramImage(ApiUrl, imagesWithText, DesiredAspect, token) ??
-                                                    GetProgramImage(ApiUrl, allImages, DesiredAspect, token);
+                using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/programs");
+                message.Headers.TryAddWithoutValidation("token", token);
+                message.Content = JsonContent.Create(batch, options: _jsonOptions);
 
-                        const double WideAspect = 16.0 / 9;
-
-                        programEntry.ThumbImage = GetProgramImage(ApiUrl, imagesWithText, WideAspect, token);
-
-                        // Don't supply the same image twice
-                        if (string.Equals(programEntry.PrimaryImage, programEntry.ThumbImage, StringComparison.Ordinal))
-                        {
-                            programEntry.ThumbImage = null;
-                        }
-
-                        programEntry.BackdropImage = GetProgramImage(ApiUrl, imagesWithoutText, WideAspect, token);
-
-                        // programEntry.bannerImage = GetProgramImage(ApiUrl, data, "Banner", false) ??
-                        //    GetProgramImage(ApiUrl, data, "Banner-L1", false) ??
-                        //    GetProgramImage(ApiUrl, data, "Banner-LO", false) ??
-                        //    GetProgramImage(ApiUrl, data, "Banner-LOT", false);
-                    }
+                var batchResult = await Request<IReadOnlyList<ProgramDetailsDto>>(message, true, info, cancellationToken).ConfigureAwait(false);
+                if (batchResult is null)
+                {
+                    continue;
                 }
 
-                programsInfo.Add(GetProgram(channelId, schedule, programDict[schedule.ProgramId]));
+                LogEntryErrors(batchResult.Where(p => p.Code.HasValue).Select(p => (p.Code!.Value, p.ProgramId, p.Message)), "program");
+
+                // Error entries carry no program data. A queued program (6001) is a soft failure,
+                // so it is simply left out and picked up once the day's md5 changes again.
+                results.AddRange(batchResult.Where(p => !p.Code.HasValue && !string.IsNullOrEmpty(p.ProgramId)));
             }
 
-            return programsInfo;
+            return results.DistinctBy(p => p.ProgramId, StringComparer.Ordinal).ToList();
+        }
+
+        private void SetProgramImages(string programId, ProgramDetailsDto programEntry, IReadOnlyList<ShowImagesDto> images, string token)
+        {
+            var match = images.FirstOrDefault(i =>
+                i.ProgramId is not null && programId.StartsWith(i.ProgramId, StringComparison.Ordinal));
+            if (match is null)
+            {
+                return;
+            }
+
+            var allImages = match.Data;
+            var imagesWithText = allImages.Where(i => string.Equals(i.Text, "yes", StringComparison.OrdinalIgnoreCase)).ToList();
+            var imagesWithoutText = allImages.Where(i => string.Equals(i.Text, "no", StringComparison.OrdinalIgnoreCase)).ToList();
+
+            const double DesiredAspect = 2.0 / 3;
+            const double WideAspect = 16.0 / 9;
+
+            programEntry.PrimaryImage = GetProgramImage(ApiUrl, imagesWithText, DesiredAspect, token) ??
+                                        GetProgramImage(ApiUrl, allImages, DesiredAspect, token);
+
+            programEntry.ThumbImage = GetProgramImage(ApiUrl, imagesWithText, WideAspect, token);
+
+            // Don't supply the same image twice
+            if (string.Equals(programEntry.PrimaryImage, programEntry.ThumbImage, StringComparison.Ordinal))
+            {
+                programEntry.ThumbImage = null;
+            }
+
+            programEntry.BackdropImage = GetProgramImage(ApiUrl, imagesWithoutText, WideAspect, token);
+        }
+
+        private void LogEntryErrors(IEnumerable<(int Code, string Id, string Message)> errors, string kind)
+        {
+            foreach (var (code, id, message) in errors)
+            {
+                _logger.LogWarning(
+                    "Schedules Direct returned an error for {Kind} {Id}: code={Code}, message={Message}",
+                    kind,
+                    id,
+                    code,
+                    message);
+
+                var sdCode = ToKnownErrorCode(code);
+                if (sdCode.HasValue)
+                {
+                    ApplyErrorCode(sdCode.Value);
+                }
+            }
         }
 
         private static int GetSizeOrder(ImageDataDto image)
@@ -299,7 +633,6 @@ namespace Jellyfin.LiveTv.Listings
                 CommunityRating = null,
                 EpisodeTitle = episodeTitle,
                 Audio = audioType,
-                // IsNew = programInfo.@new ?? false,
                 IsRepeat = programInfo.New is null,
                 IsSeries = string.Equals(details.EntityType, "episode", StringComparison.OrdinalIgnoreCase),
                 ImageUrl = details.PrimaryImage,
@@ -417,9 +750,12 @@ namespace Jellyfin.LiveTv.Listings
             return info;
         }
 
-        private static string GetProgramImage(string apiUrl, IEnumerable<ImageDataDto> images, double desiredAspect, string token)
+        private string GetProgramImage(string apiUrl, IEnumerable<ImageDataDto> images, double desiredAspect, string token)
         {
+            // A uri Schedules Direct has already rejected must never be offered again; repeating
+            // the request is what trips MAX_IMAGE_INVALID_URI_ERRORS and blocks the account.
             var match = images
+                .Where(i => !string.IsNullOrWhiteSpace(i.Uri) && !_rejectedImageUris.ContainsKey(GetImageKey(i.Uri)))
                 .OrderBy(i => Math.Abs(desiredAspect - GetAspectRatio(i)))
                 .ThenByDescending(i => GetSizeOrder(i))
                 .FirstOrDefault();
@@ -431,17 +767,26 @@ namespace Jellyfin.LiveTv.Listings
 
             var uri = match.Uri;
 
-            if (string.IsNullOrWhiteSpace(uri))
-            {
-                return null;
-            }
-
             if (uri.Contains("http", StringComparison.OrdinalIgnoreCase))
             {
                 return uri;
             }
 
             return apiUrl + "/image/" + uri + "?token=" + token;
+        }
+
+        private static string GetImageKey(string uriOrUrl)
+        {
+            var value = uriOrUrl;
+
+            var imageSegment = value.IndexOf("/image/", StringComparison.OrdinalIgnoreCase);
+            if (imageSegment >= 0)
+            {
+                value = value[(imageSegment + 7)..];
+            }
+
+            var query = value.IndexOf('?', StringComparison.Ordinal);
+            return query < 0 ? value : value[..query];
         }
 
         private static double GetAspectRatio(ImageDataDto i)
@@ -554,6 +899,13 @@ namespace Jellyfin.LiveTv.Listings
                 throw new AuthenticationException("Could not authenticate with Schedules Direct");
             }
 
+            // The spec puts the status check ahead of all processing, and an empty lineup list is
+            // indistinguishable from "nothing for this postal code", so this has to surface.
+            if (!await IsSystemOnline(info, cancellationToken).ConfigureAwait(false))
+            {
+                throw new InvalidOperationException("Schedules Direct reports that the service is offline. Try again later.");
+            }
+
             var lineups = new List<NameIdPair>();
 
             using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/headends?country=" + country + "&postalcode=" + location);
@@ -587,6 +939,8 @@ namespace Jellyfin.LiveTv.Listings
         {
             _accountError = false;
             Interlocked.Exchange(ref _lastErrorResponseTicks, 0);
+            Interlocked.Exchange(ref _offlineUntilTicks, 0);
+            _status = null;
 
             // Only the account being saved is retried, the tokens of the other accounts stay valid.
             if (!string.IsNullOrWhiteSpace(info.Username))
@@ -671,6 +1025,150 @@ namespace Jellyfin.LiveTv.Listings
             }
         }
 
+        private async Task<bool> IsSystemOnline(ListingsProviderInfo info, CancellationToken cancellationToken)
+        {
+            if (DateTime.UtcNow.Ticks < Interlocked.Read(ref _offlineUntilTicks))
+            {
+                _logger.LogWarning("Skipping Schedules Direct request, the service reported itself offline");
+                return false;
+            }
+
+            var status = await GetStatus(info, cancellationToken).ConfigureAwait(false);
+            if (status is null)
+            {
+                // A failed status check is not a reason to skip the refresh on its own.
+                return true;
+            }
+
+            // The spec does not define the order of the entries, so any of them can be the one
+            // that takes the service down.
+            var offline = status.SystemStatus.FirstOrDefault(
+                i => string.Equals(i.Status, "Offline", StringComparison.OrdinalIgnoreCase));
+            if (offline is not null)
+            {
+                _logger.LogWarning(
+                    "Schedules Direct reports the service is offline ({Message}). Not retrying for {Minutes} minutes.",
+                    offline.Message,
+                    OfflineBackoffMinutes);
+                Interlocked.Exchange(ref _offlineUntilTicks, DateTime.UtcNow.AddMinutes(OfflineBackoffMinutes).Ticks);
+                return false;
+            }
+
+            if (status.Account?.Expires is { } expires && expires < DateTime.UtcNow.AddDays(7))
+            {
+                _logger.LogWarning("The Schedules Direct subscription expires on {Expires}", expires);
+            }
+
+            return true;
+        }
+
+        private async Task<StatusDto> GetStatus(ListingsProviderInfo info, CancellationToken cancellationToken)
+        {
+            if (TryGetCachedStatus(out var cached))
+            {
+                return cached;
+            }
+
+            using (await _statusLock.LockAsync(cancellationToken).ConfigureAwait(false))
+            {
+                // Whoever held the lock may have just refreshed it, and a guide refresh asking
+                // once per channel must not turn into one request per channel.
+                if (TryGetCachedStatus(out cached))
+                {
+                    return cached;
+                }
+
+                StatusDto status = null;
+                try
+                {
+                    var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
+
+                    using var message = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/status");
+                    message.Headers.TryAddWithoutValidation("token", token);
+
+                    status = await Request<StatusDto>(message, true, info, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex is HttpRequestException or JsonException or AuthenticationException)
+                {
+                    _logger.LogWarning(ex, "Unable to get the Schedules Direct service status");
+                }
+
+                // A failed check still counts as checked, or every channel retries it.
+                _status = new StatusCacheEntry(DateTime.UtcNow, status);
+                return status;
+            }
+        }
+
+        private bool TryGetCachedStatus(out StatusDto status)
+        {
+            // One reference, so the time of the check and what it found can never disagree.
+            var entry = _status;
+            status = entry?.Status;
+            return entry is not null && (DateTime.UtcNow - entry.CheckedAt).TotalMinutes < StatusCacheMinutes;
+        }
+
+        private bool ApplyErrorCode(SdErrorCode sdCode)
+        {
+            switch (sdCode)
+            {
+                case SdErrorCode.AccountExpired:
+                case SdErrorCode.InvalidHash:
+                case SdErrorCode.InvalidUser:
+                case SdErrorCode.AccountLocked:
+                case SdErrorCode.AppLocked:
+                case SdErrorCode.AccountInactive:
+                    // Permanent account errors — disable SD for this server lifetime.
+                    _logger.LogError("Schedules Direct account error (code {SdCode}). Disabling SD until server restart.", sdCode);
+                    _tokens.Clear();
+                    _accountError = true;
+                    return true;
+
+                case SdErrorCode.ServiceOffline:
+                    // The spec requires staying away for an hour once the service reports offline.
+                    _logger.LogError("Schedules Direct is offline (code {SdCode}). Not retrying for {Minutes} minutes.", sdCode, OfflineBackoffMinutes);
+                    _tokens.Clear();
+                    Interlocked.Exchange(ref _offlineUntilTicks, DateTime.UtcNow.AddMinutes(OfflineBackoffMinutes).Ticks);
+                    return true;
+
+                case SdErrorCode.ServiceBusy:
+                case SdErrorCode.AccountTempLock:
+                    // Transient login errors — back off for 30 minutes, then allow retry.
+                    _logger.LogError("Schedules Direct transient error (code {SdCode}). Backing off for 30 minutes.", sdCode);
+                    _tokens.Clear();
+                    Interlocked.Exchange(ref _lastErrorResponseTicks, DateTime.UtcNow.Ticks);
+                    return true;
+
+                case SdErrorCode.MaxLoginAttempts:
+                case SdErrorCode.MaxIPAttempts:
+                    // These count logins, so continuing to ask for a token is what earned them.
+                    // The user has to contact SD support, so nothing is retried automatically.
+                    _logger.LogError(
+                        "Schedules Direct account limit error (code {SdCode}). Disabling SD until server restart; the user has to contact Schedules Direct support.",
+                        sdCode);
+                    _tokens.Clear();
+                    _accountError = true;
+                    SetImageLimitHit();
+                    SetMetadataLimitHit();
+                    return true;
+
+                case SdErrorCode.MaxImageDownloads:
+                case SdErrorCode.MaxImageDownloadsTrial:
+                case SdErrorCode.MaxInvalidImages:
+                    // Stop image requests until SD resets at 00:00 UTC.
+                    _logger.LogError("Schedules Direct image download limit hit (code {SdCode}). Disabling image acquisition until SD reset.", sdCode);
+                    SetImageLimitHit();
+                    return true;
+
+                case SdErrorCode.MaxLineupChanges:
+                    // Only blocks further lineup edits; guide data is unaffected.
+                    _logger.LogError("Schedules Direct lineup change limit reached (code {SdCode}). Lineup edits are rejected until SD reset.", sdCode);
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
         private async Task<T> Request<T>(
             HttpRequestMessage message,
             bool enableRetry,
@@ -688,69 +1186,26 @@ namespace Jellyfin.LiveTv.Listings
 
             var responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-            // Try to extract the Schedules Direct error code from the response body.
-            SdErrorCode? sdCode = null;
-            try
-            {
-                using var doc = JsonDocument.Parse(responseBody);
-                if (doc.RootElement.TryGetProperty("code", out var codeProp)
-                    && codeProp.TryGetInt32(out var parsedCode)
-                    && Enum.IsDefined((SdErrorCode)parsedCode))
-                {
-                    sdCode = (SdErrorCode)parsedCode;
-                }
-            }
-            catch (JsonException)
-            {
-                // Response body is not valid JSON; sdCode stays null.
-            }
+            var errorCode = TryGetErrorCode(responseBody);
+            var sdCode = ToKnownErrorCode(errorCode);
 
             _logger.LogError(
                 "Request to {Url} failed with HTTP {StatusCode}, SD code {SdCode}: {Response}",
                 message.RequestUri,
                 (int)response.StatusCode,
-                sdCode?.ToString() ?? "N/A",
+                sdCode?.ToString() ?? errorCode?.ToString(CultureInfo.InvariantCulture) ?? "N/A",
                 responseBody);
 
-            if (sdCode is SdErrorCode.AccountExpired or SdErrorCode.InvalidHash or SdErrorCode.InvalidUser or SdErrorCode.AccountLocked or SdErrorCode.AppLocked or SdErrorCode.AccountInactive)
+            if (sdCode.HasValue && ApplyErrorCode(sdCode.Value))
             {
-                // Permanent account errors — disable SD for this server lifetime.
-                _logger.LogError("Schedules Direct account error (code {SdCode}). Disabling SD until server restart.", sdCode);
-                _tokens.Clear();
-                _accountError = true;
-            }
-            else if (sdCode is SdErrorCode.ServiceOffline or SdErrorCode.ServiceBusy or SdErrorCode.AccountTempLock)
-            {
-                // Transient login errors — back off for 30 minutes, then allow retry.
-                _logger.LogError("Schedules Direct transient error (code {SdCode}). Backing off for 30 minutes.", sdCode);
-                _tokens.Clear();
-                Interlocked.Exchange(ref _lastErrorResponseTicks, DateTime.UtcNow.Ticks);
-            }
-            else if (sdCode is SdErrorCode.MaxLoginAttempts or SdErrorCode.MaxIPAttempts)
-            {
-                // 24 hour bans - stop image and metadata requests until SD reset at 00:00 UTC.
-                _logger.LogError("Schedules Direct service limit error (code {SdCode}). Disabling until SD reset.", sdCode);
-                SetImageLimitHit();
-                SetMetadataLimitHit();
-            }
-            else if (sdCode is SdErrorCode.MaxImageDownloads or SdErrorCode.MaxImageDownloadsTrial)
-            {
-                // Max image downloads — stop image requests until SD resets at 00:00 UTC.
-                _logger.LogError("Schedules Direct image download limit hit (code {SdCode}). Disabling image acquisition until SD reset.", sdCode);
-                SetImageLimitHit();
-            }
-            else if (sdCode is SdErrorCode.MaxScheduleRequests)
-            {
-                // Max schedule/metadata requests — stop metadata requests until SD resets at 00:00 UTC.
-                _logger.LogError("Schedules Direct metadata download limit hit (code {SdCode}). Disabling metadata acquisition until SD reset.", sdCode);
-                SetMetadataLimitHit();
+                // Handled by the error code.
             }
             else if (enableRetry
                 && (int)response.StatusCode < 500
-                && (sdCode == SdErrorCode.TokenExpired || (response.StatusCode == HttpStatusCode.Forbidden && sdCode is null)))
+                && (sdCode == SdErrorCode.TokenExpired || (response.StatusCode == HttpStatusCode.Forbidden && errorCode is null)))
             {
-                // Token expired — clear tokens and retry with a fresh token.
-                // Also retry on 403 with no parseable SD code (legacy/unexpected auth failure).
+                // Token expired — clear tokens and retry with a fresh token. Also retry on 403
+                // carrying no code at all; a code we simply do not know is not an auth failure.
                 _tokens.Clear();
                 using var retryMessage = new HttpRequestMessage(message.Method, message.RequestUri);
                 retryMessage.Content = message.Content;
@@ -786,6 +1241,14 @@ namespace Jellyfin.LiveTv.Listings
                 return root.Token;
             }
 
+            // A rejected login can still arrive as HTTP 200 with an error code in the body, so the
+            // code has to be acted on here as well or we keep retrying a disabled account.
+            var tokenCode = ToKnownErrorCode(root?.Code);
+            if (tokenCode.HasValue)
+            {
+                ApplyErrorCode(tokenCode.Value);
+            }
+
             throw new AuthenticationException("Could not authenticate with Schedules Direct Error: " + (root?.Message ?? "empty response"));
         }
 
@@ -807,9 +1270,26 @@ namespace Jellyfin.LiveTv.Listings
 
             if (!response.IsSuccessStatusCode)
             {
+                var responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                var errorCode = TryGetErrorCode(responseBody);
+                var sdCode = ToKnownErrorCode(errorCode);
+                if (sdCode.HasValue)
+                {
+                    ApplyErrorCode(sdCode.Value);
+                }
+
                 _logger.LogError(
-                    "Error adding lineup to account: {Response}",
-                    await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
+                    "Error adding lineup {Id} to account, SD code {SdCode}: {Response}",
+                    info.ListingsId,
+                    sdCode?.ToString() ?? errorCode?.ToString(CultureInfo.InvariantCulture) ?? "N/A",
+                    responseBody);
+
+                // Reporting success here leaves the user with a listings provider that silently
+                // has no lineup, so the failure has to surface.
+                throw new HttpRequestException(
+                    string.Format(CultureInfo.InvariantCulture, "Could not add lineup {0} to the Schedules Direct account", info.ListingsId),
+                    null,
+                    response.StatusCode);
             }
         }
 
@@ -913,23 +1393,127 @@ namespace Jellyfin.LiveTv.Listings
         }
 
         /// <inheritdoc />
-        public bool IsServiceAvailable()
+        public bool CanDownloadImage(string imageUrl)
+            => !IsSchedulesDirectUrl(imageUrl)
+                || (!IsImageDailyLimitActive() && !_rejectedImageUris.ContainsKey(GetImageKey(imageUrl)));
+
+        /// <inheritdoc />
+        public void ReportImageDownloadSuccess(string imageUrl)
         {
-            if (_accountError)
+            if (IsSchedulesDirectUrl(imageUrl))
             {
-                return false;
+                Interlocked.Exchange(ref _consecutiveImageFailures, 0);
             }
-
-            if ((DateTime.UtcNow - new DateTime(Interlocked.Read(ref _lastErrorResponseTicks), DateTimeKind.Utc)).TotalMinutes < 30)
-            {
-                return false;
-            }
-
-            return true;
         }
 
         /// <inheritdoc />
-        public bool IsImageDailyLimitActive()
+        public ImageDownloadFailureAction ReportImageDownloadFailure(string imageUrl, HttpStatusCode? statusCode, string responseBody)
+        {
+            if (!IsSchedulesDirectUrl(imageUrl))
+            {
+                return ImageDownloadFailureAction.None;
+            }
+
+            var errorCode = TryGetErrorCode(responseBody);
+            if (errorCode is null)
+            {
+                // No readable code, so stop after a short streak of unexplained rejections rather
+                // than keep retrying an account that may already be refusing us.
+                if (Interlocked.Increment(ref _consecutiveImageFailures) == MaxConsecutiveImageFailures)
+                {
+                    _logger.LogError(
+                        "Schedules Direct image downloads keep failing without a readable error code (last status {StatusCode}). Disabling image acquisition until SD reset.",
+                        statusCode);
+                    SetImageLimitHit();
+                }
+
+                return ImageDownloadFailureAction.None;
+            }
+
+            Interlocked.Exchange(ref _consecutiveImageFailures, 0);
+
+            var sdCode = ToKnownErrorCode(errorCode);
+            if (sdCode is null)
+            {
+                return ImageDownloadFailureAction.None;
+            }
+
+            // SD reports an exhausted image quota with an HTTP 200 body, so the code decides.
+            ApplyErrorCode(sdCode.Value);
+
+            switch (sdCode.Value)
+            {
+                // The uri is gone. Remembering it is what keeps the next refresh from asking for
+                // it again and walking the account into MAX_IMAGE_INVALID_URI_ERRORS.
+                case SdErrorCode.ImageNotFound:
+                    RejectImageUri(imageUrl);
+                    return ImageDownloadFailureAction.RemoveImage;
+
+                // The account is already being warned about invalid uris; this url is not
+                // necessarily one of them, so drop it for now but do not blacklist it.
+                case SdErrorCode.MaxInvalidImages:
+                    return ImageDownloadFailureAction.RemoveImage;
+
+                // The token baked into the url is stale; the next refresh mints a fresh one.
+                case SdErrorCode.TokenMissing:
+                case SdErrorCode.TokenInvalid:
+                case SdErrorCode.TokenExpired:
+                    _tokens.Clear();
+                    return ImageDownloadFailureAction.RemoveImage;
+
+                default:
+                    return ImageDownloadFailureAction.None;
+            }
+        }
+
+        private void RejectImageUri(string imageUrl)
+        {
+            var key = GetImageKey(imageUrl);
+            if (string.IsNullOrEmpty(key))
+            {
+                return;
+            }
+
+            // Stop learning rather than forgetting: clearing here would re-offer every known-bad
+            // uri at once, which is the burst that trips MAX_IMAGE_INVALID_URI_ERRORS.
+            if (_rejectedImageUris.Count < MaxRejectedImageUris)
+            {
+                _rejectedImageUris.TryAdd(key, 0);
+            }
+        }
+
+        private static bool IsSchedulesDirectUrl(string url)
+            => url is not null && url.Contains("schedulesdirect", StringComparison.OrdinalIgnoreCase);
+
+        private static int? TryGetErrorCode(string responseBody)
+        {
+            if (string.IsNullOrWhiteSpace(responseBody))
+            {
+                return null;
+            }
+
+            try
+            {
+                using var doc = JsonDocument.Parse(responseBody);
+                if (doc.RootElement.ValueKind == JsonValueKind.Object
+                    && doc.RootElement.TryGetProperty("code", out var codeProp)
+                    && codeProp.TryGetInt32(out var parsedCode))
+                {
+                    return parsedCode;
+                }
+            }
+            catch (JsonException)
+            {
+                // Not an SD error payload.
+            }
+
+            return null;
+        }
+
+        private static SdErrorCode? ToKnownErrorCode(int? code)
+            => code.HasValue && Enum.IsDefined((SdErrorCode)code.Value) ? (SdErrorCode)code.Value : null;
+
+        private bool IsImageDailyLimitActive()
         {
             if (!_imageLimitHitDate.HasValue)
             {
@@ -939,6 +1523,7 @@ namespace Jellyfin.LiveTv.Listings
             if (_imageLimitHitDate.Value < DateOnly.FromDateTime(DateTime.UtcNow))
             {
                 _imageLimitHitDate = null;
+                Interlocked.Exchange(ref _consecutiveImageFailures, 0);
                 TryDeleteFile(ImageLimitFilePath);
                 return false;
             }
@@ -1016,6 +1601,11 @@ namespace Jellyfin.LiveTv.Listings
                 }
             }
 
+            if (!await IsSystemOnline(info, CancellationToken.None).ConfigureAwait(false))
+            {
+                throw new InvalidOperationException("Schedules Direct reports that the service is offline. Try again later.");
+            }
+
             if (validateListings)
             {
                 ArgumentException.ThrowIfNullOrEmpty(info.ListingsId);
@@ -1049,13 +1639,18 @@ namespace Jellyfin.LiveTv.Listings
                 return [];
             }
 
-            using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/lineups/" + listingsId);
-            options.Headers.TryAddWithoutValidation("token", token);
+            if (!await IsSystemOnline(info, cancellationToken).ConfigureAwait(false))
+            {
+                return [];
+            }
 
-            var root = await Request<ChannelDto>(options, true, info, cancellationToken).ConfigureAwait(false);
+            // Stations that have left every lineup would otherwise keep their schedules forever.
+            _scheduleCache.PruneStale(TimeSpan.FromDays(ScheduleCacheMaxAgeDays));
+
+            var root = await GetLineup(info, listingsId, cancellationToken).ConfigureAwait(false);
             if (root is null)
             {
-                return new List<ChannelInfo>();
+                return [];
             }
 
             _logger.LogInformation("Found {ChannelCount} channels on the lineup on ScheduleDirect", root.Map.Count);
@@ -1093,6 +1688,44 @@ namespace Jellyfin.LiveTv.Listings
             return list;
         }
 
+        private async Task<ChannelDto> GetLineup(ListingsProviderInfo info, string listingsId, CancellationToken cancellationToken)
+        {
+            var status = await GetStatus(info, cancellationToken).ConfigureAwait(false);
+            var lineup = status?.Lineups.FirstOrDefault(
+                i => string.Equals(i.Lineup ?? i.Id, listingsId, StringComparison.OrdinalIgnoreCase));
+
+            if (lineup?.IsDeleted == true)
+            {
+                _logger.LogWarning(
+                    "The Schedules Direct lineup {ListingsId} has been deleted at the headend. Pick a new lineup for this listings provider.",
+                    listingsId);
+            }
+
+            var modified = lineup?.Modified;
+            if (modified.HasValue)
+            {
+                var cached = await _lineupCache.GetAsync(listingsId, modified.Value, cancellationToken).ConfigureAwait(false);
+                if (cached is not null)
+                {
+                    _logger.LogDebug("Serving the Schedules Direct lineup {ListingsId} from cache", listingsId);
+                    return cached;
+                }
+            }
+
+            var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
+
+            using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/lineups/" + listingsId);
+            options.Headers.TryAddWithoutValidation("token", token);
+
+            var root = await Request<ChannelDto>(options, true, info, cancellationToken).ConfigureAwait(false);
+            if (root is not null && modified.HasValue)
+            {
+                await _lineupCache.SetAsync(listingsId, modified.Value, root, cancellationToken).ConfigureAwait(false);
+            }
+
+            return root;
+        }
+
         /// <inheritdoc />
         public void Dispose()
         {
@@ -1114,9 +1747,12 @@ namespace Jellyfin.LiveTv.Listings
             if (disposing)
             {
                 _tokenLock?.Dispose();
+                _statusLock?.Dispose();
             }
 
             _disposed = true;
         }
+
+        private sealed record StatusCacheEntry(DateTime CheckedAt, StatusDto Status);
     }
 }
