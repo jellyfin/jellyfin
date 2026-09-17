@@ -34,7 +34,7 @@ public class PlayCommandQueueTests : IDisposable
     /// folder, so the queue query cannot exclude it. Such an item has no media sources, and a
     /// client that reaches it in the queue gets an error instead of the next track.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     public async Task SendPlayCommand_GenreTaggingAnArtist_QueuesOnlyPlayableItems()
     {
