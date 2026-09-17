@@ -1,5 +1,7 @@
 using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -9,6 +11,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Http;
@@ -129,6 +132,17 @@ public class AudioHelper
         // Static stream
         if (streamingRequest.Static)
         {
+            var externalAudioStream = state.MediaSource.MediaStreams.FirstOrDefault(s =>
+                s.Type == MediaStreamType.Audio
+                && s.IsExternal
+                && s.Index == streamingRequest.AudioStreamIndex);
+            if (externalAudioStream is not null)
+            {
+                return FileStreamResponseHelpers.GetStaticFileResult(
+                    externalAudioStream.Path,
+                    MimeTypes.GetMimeType(externalAudioStream.Path, MediaTypeNames.Application.Octet));
+            }
+
             var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
 
             if (state.MediaSource.IsInfiniteStream)
