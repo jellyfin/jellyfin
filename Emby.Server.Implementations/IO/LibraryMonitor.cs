@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
 using MediaBrowser.Controller.Configuration;
@@ -40,6 +41,12 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         private readonly ConcurrentDictionary<string, string> _tempIgnoredPaths = new(StringComparer.OrdinalIgnoreCase);
 
+        /// <summary>
+        /// Incremented by every <see cref="Stop"/> so watchers still being created on a background
+        /// task can tell that the sweep they should have been caught by has already run.
+        /// </summary>
+        private int _watcherGeneration;
+
         private bool _disposed;
 
         /// <summary>
@@ -69,7 +76,7 @@ namespace Emby.Server.Implementations.IO
             _dotIgnoreIgnoreRule = dotIgnoreIgnoreRule;
 
             appLifetime.ApplicationStarted.Register(Start);
-            appLifetime.ApplicationStopping.Register(Stop);
+            appLifetime.ApplicationStopping.Register(Dispose);
         }
 
         /// <inheritdoc />
@@ -120,6 +127,11 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public void Start()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             _libraryManager.ItemAdded += OnLibraryManagerItemAdded;
             _libraryManager.ItemRemoved += OnLibraryManagerItemRemoved;
 
@@ -233,6 +245,8 @@ namespace Emby.Server.Implementations.IO
                 return;
             }
 
+            var generation = Volatile.Read(ref _watcherGeneration);
+
             // Creating a FileSystemWatcher over the LAN can take hundreds of milliseconds, so wrap it in a Task to do them all in parallel
             Task.Run(() =>
             {
@@ -256,7 +270,11 @@ namespace Emby.Server.Implementations.IO
                     newWatcher.Changed += OnWatcherChanged;
                     newWatcher.Error += OnWatcherError;
 
-                    if (_fileSystemWatchers.TryAdd(path, newWatcher))
+                    if (_disposed || Volatile.Read(ref _watcherGeneration) != generation)
+                    {
+                        DisposeWatcher(newWatcher, false);
+                    }
+                    else if (_fileSystemWatchers.TryAdd(path, newWatcher))
                     {
                         newWatcher.EnableRaisingEvents = true;
                         _logger.LogInformation("Watching directory {Path}", path);
@@ -357,6 +375,11 @@ namespace Emby.Server.Implementations.IO
         {
             ArgumentException.ThrowIfNullOrEmpty(path);
 
+            if (_disposed)
+            {
+                return;
+            }
+
             if (IgnorePatterns.ShouldIgnore(path))
             {
                 return;
@@ -452,6 +475,8 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         public void Stop()
         {
+            Interlocked.Increment(ref _watcherGeneration);
+
             _libraryManager.ItemAdded -= OnLibraryManagerItemAdded;
             _libraryManager.ItemRemoved -= OnLibraryManagerItemRemoved;
 
@@ -496,8 +521,9 @@ namespace Emby.Server.Implementations.IO
                 return;
             }
 
-            Stop();
+            // Set before stopping so anything racing us stops handing out new work.
             _disposed = true;
+            Stop();
         }
     }
 }

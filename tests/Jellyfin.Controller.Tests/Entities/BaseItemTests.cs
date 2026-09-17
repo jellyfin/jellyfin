@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -26,8 +27,63 @@ using Xunit;
 
 namespace Jellyfin.Controller.Tests.Entities;
 
+[Collection("LibraryManagerTests")]
 public class BaseItemTests
 {
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task ValidateChildren_FailedEnumeration_DoesNotReconcileOrDeleteChildren(bool failAfterFirstChild, bool accessDenied)
+    {
+        var previousLibrary = BaseItem.LibraryManager;
+        var previousRepository = BaseItem.ItemRepository;
+        var previousLogger = BaseItem.Logger;
+        var library = new Mock<ILibraryManager>(MockBehavior.Strict);
+        var repository = new Mock<MediaBrowser.Controller.Persistence.IItemRepository>(MockBehavior.Strict);
+        var directory = new Mock<IDirectoryService>();
+        directory.Setup(d => d.IsAccessible(It.IsAny<string>())).Returns(true);
+        try
+        {
+            BaseItem.LibraryManager = library.Object;
+            BaseItem.ItemRepository = repository.Object;
+            BaseItem.Logger = Microsoft.Extensions.Logging.Abstractions.NullLogger<BaseItem>.Instance;
+            var folder = new FailingEnumerationFolder(failAfterFirstChild, accessDenied)
+            {
+                Id = Guid.NewGuid(),
+                Path = "/media/review-folder"
+            };
+            await folder.ValidateChildren(new Progress<double>(), new MetadataRefreshOptions(directory.Object), recursive: false, cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true);
+            Assert.True(folder.EnumerationAttempted);
+            repository.VerifyNoOtherCalls();
+            library.VerifyNoOtherCalls();
+        }
+        finally
+        {
+            BaseItem.LibraryManager = previousLibrary;
+            BaseItem.ItemRepository = previousRepository;
+            BaseItem.Logger = previousLogger;
+        }
+    }
+
+    [Fact]
+    public void SetPrimaryVersionId_Null_RestoresTheItemsOwnPresentationKey()
+    {
+        var primaryId = Guid.NewGuid();
+        var video = new Video { Id = Guid.NewGuid(), Path = "/Movies/Movie/Movie - 4K.mkv" };
+
+        // While it is a version, it presents as the primary so lists collapse the two together.
+        video.SetPrimaryVersionId(primaryId);
+        Assert.Equal(primaryId.ToString("N", CultureInfo.InvariantCulture), video.PresentationUniqueKey);
+
+        // Promoting it back has to restore its own key, or it keeps collapsing onto - and staying
+        // hidden behind - a primary it no longer belongs to.
+        video.SetPrimaryVersionId(null);
+        Assert.Null(video.PrimaryVersionId);
+        Assert.Equal(video.Id.ToString("N", CultureInfo.InvariantCulture), video.PresentationUniqueKey);
+    }
+
     [Fact]
     public void GetItemByNameFolderName_ShortName_IsKeptAsIs()
     {
@@ -672,5 +728,26 @@ public class BaseItemTests
         var ids = (Guid[])method!.Invoke(primary, null)!;
 
         Assert.Equal([primary.Id, alt1.Id, alt2.Id], ids);
+    }
+
+    private sealed class FailingEnumerationFolder(bool failAfterFirstChild, bool accessDenied) : Folder
+    {
+        public bool EnumerationAttempted { get; private set; }
+
+        protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
+        {
+            EnumerationAttempted = true;
+            if (failAfterFirstChild)
+            {
+                yield return new Movie { Id = Guid.NewGuid(), Path = "/media/review-folder/movie.mkv" };
+            }
+
+            if (accessDenied)
+            {
+                throw new System.Security.SecurityException("Simulated access failure");
+            }
+
+            throw new IOException("Simulated directory read failure");
+        }
     }
 }

@@ -10,49 +10,49 @@
             }
         },
         {
-            "ratingStrings": ["6"],
+            "ratingStrings": ["6", "6 år"],
             "ratingScore": {
                 "score": 6,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["7"],
+            "ratingStrings": ["7", "7 år"],
             "ratingScore": {
                 "score": 7,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["9"],
+            "ratingStrings": ["9", "9 år"],
             "ratingScore": {
                 "score": 9,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["11"],
+            "ratingStrings": ["11", "11 år"],
             "ratingScore": {
                 "score": 11,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["12"],
+            "ratingStrings": ["12", "12 år"],
             "ratingScore": {
                 "score": 12,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["15"],
+            "ratingStrings": ["15", "15 år"],
             "ratingScore": {
                 "score": 15,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["18"],
+            "ratingStrings": ["18", "18 år"],
             "ratingScore": {
                 "score": 18,
                 "subScore": null

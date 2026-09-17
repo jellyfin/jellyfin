@@ -581,8 +581,8 @@ public sealed partial class BaseItemRepository
                 .ToArray();
             var folderIsResumableFilter = IsFolderFilter.And(e => resumableFolderTypes.Contains(e.Type))
                 .And(BuildHasDescendantFilter(context, inProgressLeafItems)
-                    .Or(BuildHasDescendantFilter(context, leafItems.Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played)))
-                        .And(BuildHasDescendantFilter(context, leafItems.Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played))))));
+                    .Or(BuildHasDescendantFilter(context, leafItems.Where(BuildLeafIsPlayedFilter(context, userId)))
+                        .And(BuildHasDescendantFilter(context, leafItems.Where(BuildLeafIsPlayedFilter(context, userId).Not())))));
 
             if (isResumable)
             {
@@ -807,11 +807,16 @@ public sealed partial class BaseItemRepository
         {
             // Exclude owned non-extra items from general queries.
             // Extras (trailers, etc.) have OwnerId set but also have ExtraType set - keep those.
-            // Alternate versions (PrimaryVersionId set) are normally excluded too, but resume queries
-            // keep them so the actually-played version can surface instead of collapsing onto the primary.
-            baseQuery = filter.IsResumable == true
-                ? baseQuery.Where(e => e.OwnerId == null || e.ExtraType != null)
-                : baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
+            baseQuery = baseQuery.Where(e => e.OwnerId == null || e.ExtraType != null);
+
+            // Alternate versions (PrimaryVersionId set) are normally hidden behind their primary, but
+            // resume queries keep them so the actually-played version can surface instead of collapsing
+            // onto the primary, and the library scan keeps them so a merged version is not mistaken for
+            // a new item.
+            if (filter.IsResumable != true && !filter.IncludeAlternateVersions)
+            {
+                baseQuery = ApplyAlternateVersionFiltering(context, baseQuery);
+            }
         }
 
         if (filter.OwnerIds.Length > 0)

@@ -104,6 +104,50 @@ public sealed class BaseItemRepositoryItemValueTests : SqliteDbTestFixture
     }
 
     [Fact]
+    public void GetTagNames_GroupsAndFiltersItemValues()
+    {
+        var movie = CreateMovieEntity(Guid.NewGuid(), "Movie");
+        var otherMovie = CreateMovieEntity(Guid.NewGuid(), "Other Movie");
+        var audio = new BaseItemEntity
+        {
+            Id = Guid.NewGuid(),
+            Type = _audioTypeName,
+            Name = "Excluded Audio",
+            MediaType = "Audio",
+            IsMovie = false,
+            IsFolder = false,
+            IsVirtualItem = false
+        };
+        var tag = CreateItemValue(ItemValueType.Tags, "Alpha", "alpha");
+        var duplicateTag = CreateItemValue(ItemValueType.Tags, "alpha", "alpha");
+        var otherTag = CreateItemValue(ItemValueType.Tags, "Beta", "beta");
+        var inheritedTag = CreateItemValue(ItemValueType.InheritedTags, "Inherited", "inherited");
+        var genre = CreateItemValue(ItemValueType.Genre, "Genre Leak", "genre leak");
+        var excludedTag = CreateItemValue(ItemValueType.Tags, "Excluded Tag", "excluded tag");
+
+        using (var context = CreateDbContext())
+        {
+            context.BaseItems.AddRange(movie, otherMovie, audio);
+            context.ItemValues.AddRange(tag, duplicateTag, otherTag, inheritedTag, genre, excludedTag);
+            context.ItemValuesMap.AddRange(
+                CreateMap(movie, tag),
+                CreateMap(movie, duplicateTag),
+                CreateMap(otherMovie, otherTag),
+                CreateMap(movie, inheritedTag),
+                CreateMap(movie, genre),
+                CreateMap(audio, excludedTag));
+            context.SaveChanges();
+        }
+
+        var result = _repository.GetTagNames(new InternalItemsQuery(new Database.Implementations.Entities.User("test", "auth", "reset"))
+        {
+            IncludeItemTypes = [BaseItemKind.Movie]
+        });
+
+        Assert.Equal(["Alpha", "Beta"], result);
+    }
+
+    [Fact]
     public void GetGenreNames_GroupsAndFiltersMappedItemValues()
     {
         var movie = CreateMovieEntity(Guid.NewGuid(), "Movie");
