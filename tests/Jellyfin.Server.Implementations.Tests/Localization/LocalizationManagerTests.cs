@@ -6,6 +6,7 @@ using BitFaster.Caching;
 using Emby.Server.Implementations.Localization;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -180,7 +181,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             await localizationManager.LoadAll();
             var ratings = localizationManager.GetParentalRatings().ToList();
 
-            Assert.Equal(24, ratings.Count);
+            Assert.Equal(34, ratings.Count);
 
             var fsk = ratings.FirstOrDefault(x => x.Name.Equals("FSK-12", StringComparison.Ordinal));
             Assert.NotNull(fsk);
@@ -209,6 +210,26 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [InlineData("it-vm18", "IT", 18, null)] // Rating strings are case insensitive
         [InlineData("VM 18", "IT", 18, null)]
         [InlineData("Vietato ai minori di 18 anni", "IT", 18, null)]
+        [InlineData("ATP", "AR", 0, null)]
+        [InlineData("SAM 13", "AR", 13, null)]
+        [InlineData("SAM 16", "AR", 16, null)]
+        [InlineData("SAM 18", "AR", 18, null)]
+        [InlineData("SAM13", "AR", 13, null)] // Written without a space
+        [InlineData("AR-SAM 16", "AR", 16, null)] // Country prefix stripped against the configured country
+        [InlineData("AR-SAM 13", "US", 13, null)] // Country prefix resolved via the separator fallback
+        [InlineData("AR-SAM 18", "US", 18, null)]
+        [InlineData("AR-SAM13", "US", 13, null)]
+        [InlineData("SAM 18 C", "AR", 1001, null)] // Condicionada, same as "C"
+        [InlineData("Interdit aux moins de 12 ans", "FR", 12, null)]
+        [InlineData("Interdit aux moins de 18 ans", "FR", 18, null)]
+        [InlineData("X 18+", "AU", 1000, 0)] // Official spelling of the Australian X rating
+        [InlineData("X18+", "AU", 1000, 0)]
+        [InlineData("FSK18", "DE", 18, null)] // Written without a space
+        [InlineData("ab 18", "DE", 18, null)] // Written as the minimum age
+        [InlineData("DE:ab 6", "DE", 6, null)]
+        [InlineData("–12", "FR", 12, null)] // The CNC writes its minimum ages with an en dash
+        [InlineData("–16", "FR", 16, null)]
+        [InlineData("–18", "FR", 18, null)]
         public async Task GetRatingLevel_GivenValidString_Success(string value, string countryCode, int? expectedScore, int? expectedSubScore)
         {
             var localizationManager = Setup(new ServerConfiguration()
@@ -253,6 +274,12 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [InlineData("12", 12, null)]
         [InlineData("42", 42, null)]
         [InlineData("9999", 9999, null)]
+        // The French CNC writes minimum ages as "-12" ("not for under 12s"). Parsing that as -12 would
+        // put the item below every MaxParentalRatingScore and bypass parental control entirely.
+        [InlineData("-10", 10, null)]
+        [InlineData("-12", 12, null)]
+        [InlineData("-16", 16, null)]
+        [InlineData("-18", 18, null)]
         public async Task GetRatingLevel_GivenValidAge_Success(string value, int? expectedScore, int? expectedSubScore)
         {
             var localizationManager = Setup(new ServerConfiguration { MetadataCountryCode = "nl" });
@@ -320,6 +347,62 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             Assert.NotNull(score);
             Assert.Equal(expectedScore, score.Score);
             Assert.Equal(expectedSubScore, score.SubScore);
+        }
+
+        [Theory]
+        // Providers list every spelling of a rating in a single field. Splitting such a list by its country
+        // prefix pairs the first entry's country with the last entry's rating, so it has to be split by '/' first.
+        [InlineData("DE:FSK 18 / DE:FSK-18 / DE:FSK18 / DE:18 / DE:ab 18", "de", 18, null)]
+        [InlineData("SE:15 / SE:15+ / SE:Från 15 år", "de", 15, null)]
+        [InlineData("FR:16 / US:12", "de", 16, null)] // The first entry that resolves wins
+        public async Task GetRatingScore_CountryPrefixedList_UsesFirstResolvingEntry(string value, string countryCode, int expectedScore, int? expectedSubScore)
+        {
+            var localizationManager = Setup(new ServerConfiguration { MetadataCountryCode = countryCode });
+            await localizationManager.LoadAll();
+
+            var score = localizationManager.GetRatingScore(value);
+
+            Assert.NotNull(score);
+            Assert.Equal(expectedScore, score.Score);
+            Assert.Equal(expectedSubScore, score.SubScore);
+        }
+
+        [Fact]
+        public async Task GetRatingScore_ResolvedCountryPrefixedList_DoesNotWarn()
+        {
+            var logger = new Mock<ILogger<LocalizationManager>>();
+            var localizationManager = Setup(new ServerConfiguration { MetadataCountryCode = "de" }, logger.Object);
+            await localizationManager.LoadAll();
+
+            Assert.NotNull(localizationManager.GetRatingScore("DE:FSK 18 / DE:FSK-18 / DE:FSK18 / DE:18 / DE:ab 18"));
+
+            logger.Verify(
+                x => x.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.IsAny<It.IsAnyType>(),
+                    It.IsAny<Exception?>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task GetRatingScore_ListWithoutKnownRating_WarnsOnce()
+        {
+            var logger = new Mock<ILogger<LocalizationManager>>();
+            var localizationManager = Setup(new ServerConfiguration { MetadataCountryCode = "de" }, logger.Object);
+            await localizationManager.LoadAll();
+
+            Assert.Null(localizationManager.GetRatingScore("DE:Unbekannt / DE:Unsinn"));
+
+            logger.Verify(
+                x => x.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.IsAny<It.IsAnyType>(),
+                    It.IsAny<Exception?>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
         }
 
         [Theory]
@@ -525,12 +608,12 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             Assert.Contains(supported, c => c.Name.Equals("es-419", StringComparison.OrdinalIgnoreCase));
         }
 
-        private LocalizationManager Setup(ServerConfiguration config)
+        private LocalizationManager Setup(ServerConfiguration config, ILogger<LocalizationManager>? logger = null)
         {
             var mockConfiguration = new Mock<IServerConfigurationManager>();
             mockConfiguration.SetupGet(x => x.Configuration).Returns(config);
 
-            return new LocalizationManager(mockConfiguration.Object, new NullLogger<LocalizationManager>());
+            return new LocalizationManager(mockConfiguration.Object, logger ?? new NullLogger<LocalizationManager>());
         }
     }
 }
