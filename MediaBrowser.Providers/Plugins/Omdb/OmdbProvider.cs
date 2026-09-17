@@ -45,10 +45,19 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
 
-            _jsonOptions = new JsonSerializerOptions(JsonDefaults.Options);
-            // These converters need to take priority
-            _jsonOptions.Converters.Insert(0, new JsonOmdbNotAvailableStringConverter());
-            _jsonOptions.Converters.Insert(0, new JsonOmdbNotAvailableInt32Converter());
+            _jsonOptions = CreateJsonOptions();
+        }
+
+        /// <summary>Creates the <see cref="JsonSerializerOptions"/> to read OMDB responses with.</summary>
+        /// <returns>The options.</returns>
+        internal static JsonSerializerOptions CreateJsonOptions()
+        {
+            var options = new JsonSerializerOptions(JsonDefaults.Options);
+            // These have to be inserted, appending leaves the default string converter ahead of them
+            options.Converters.Insert(0, new JsonOmdbNotAvailableStringConverter());
+            options.Converters.Insert(0, new JsonOmdbNotAvailableInt32Converter());
+
+            return options;
         }
 
         /// <summary>Fetches data from OMDB service.</summary>
