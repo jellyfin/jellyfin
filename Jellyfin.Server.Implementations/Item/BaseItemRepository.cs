@@ -8,8 +8,11 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
@@ -246,6 +249,173 @@ public sealed partial class BaseItemRepository
         }
 
         return _appHost.ReverseVirtualPath(path);
+    }
+
+    private static LinkedChild ToLinkedChild(Guid childId, Database.Implementations.Entities.LinkedChildType childType)
+        => new()
+        {
+            ItemId = childId,
+            Type = (MediaBrowser.Controller.Entities.LinkedChildType)childType
+        };
+
+    /// <inheritdoc />
+    public IReadOnlyList<BaseItemDto> LoadCollections(JellyfinDbContext context, InternalItemsQuery filter, IReadOnlyList<BaseItemDto> items)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(items);
+
+        if (items.Count == 0)
+        {
+            return items;
+        }
+
+        var byId = new Dictionary<Guid, BaseItemDto>(items.Count);
+        foreach (var item in items)
+        {
+            byId[item.Id] = item;
+        }
+
+        var ids = byId.Keys.ToArray();
+
+        LoadLinkedChildren(context, byId);
+
+        // Each of these is gated on the same option its join used to be, so a caller that asked for
+        // less still gets less - it just no longer pays the product of everything it did ask for.
+        if (filter.DtoOptions.ContainsField(ItemFields.ProviderIds))
+        {
+            var providers = context.BaseItemProviders
+                .AsNoTracking()
+                .WhereOneOrMany(ids, e => e.ItemId)
+                .Select(e => new { e.ItemId, e.ProviderId, e.ProviderValue })
+                .ToLookup(e => e.ItemId);
+
+            foreach (var (id, item) in byId)
+            {
+                var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var provider in providers[id])
+                {
+                    dictionary[provider.ProviderId] = provider.ProviderValue;
+                }
+
+                item.ProviderIds = dictionary;
+            }
+        }
+
+        if (filter.DtoOptions.ContainsField(ItemFields.Settings))
+        {
+            var lockedFields = context.BaseItemMetadataFields
+                .AsNoTracking()
+                .WhereOneOrMany(ids, e => e.ItemId)
+                .Select(e => new { e.ItemId, e.Id })
+                .ToLookup(e => e.ItemId);
+
+            foreach (var (id, item) in byId)
+            {
+                item.LockedFields = [.. lockedFields[id].Select(e => (MetadataField)e.Id)];
+            }
+        }
+
+        if (filter.DtoOptions.EnableUserData)
+        {
+            // Detached copies: the rows outlive the context the query ran on.
+            var userData = context.UserData
+                .AsNoTracking()
+                .WhereOneOrMany(ids, e => e.ItemId)
+                .ToList()
+                .ToLookup(e => e.ItemId);
+
+            foreach (var (id, item) in byId)
+            {
+                item.UserData = [.. userData[id].Select(DetachUserData)];
+            }
+        }
+
+        if (filter.DtoOptions.EnableImages)
+        {
+            var images = context.BaseItemImageInfos
+                .AsNoTracking()
+                .WhereOneOrMany(ids, e => e.ItemId)
+                .OrderBy(e => e.Id)
+                .ToList()
+                .ToLookup(e => e.ItemId);
+
+            foreach (var (id, item) in byId)
+            {
+                item.ImageInfos = [.. images[id].Select(e => BaseItemMapper.MapImageFromEntity(e, _appHost))];
+            }
+        }
+
+        return items;
+    }
+
+    private static UserData DetachUserData(UserData row)
+        => new()
+        {
+            ItemId = row.ItemId,
+            Item = null,
+            UserId = row.UserId,
+            User = null,
+            CustomDataKey = row.CustomDataKey,
+            Rating = row.Rating,
+            PlaybackPositionTicks = row.PlaybackPositionTicks,
+            PlayCount = row.PlayCount,
+            IsFavorite = row.IsFavorite,
+            LastPlayedDate = row.LastPlayedDate,
+            Played = row.Played,
+            AudioStreamIndex = row.AudioStreamIndex,
+            SubtitleStreamIndex = row.SubtitleStreamIndex,
+            Likes = row.Likes,
+            RetentionDate = row.RetentionDate
+        };
+
+    private static void LoadLinkedChildren(JellyfinDbContext context, Dictionary<Guid, BaseItemDto> byId)
+    {
+        // Only containers and videos can own links, so a result set of plain items costs no query.
+        var owners = new Dictionary<Guid, BaseItemDto>();
+        foreach (var (id, item) in byId)
+        {
+            if (item is Folder or Video)
+            {
+                owners[id] = item;
+            }
+        }
+
+        if (owners.Count == 0)
+        {
+            return;
+        }
+
+        var linksByParent = context.LinkedChildren
+            .AsNoTracking()
+            .WhereOneOrMany(owners.Keys.ToArray(), e => e.ParentId)
+            .OrderBy(e => e.SortOrder)
+            .Select(e => new { e.ParentId, e.ChildId, e.ChildType })
+            .ToLookup(e => e.ParentId);
+
+        foreach (var (id, item) in owners)
+        {
+            // Assigned even when there are no rows: an unread container carries the same empty array,
+            // and the save path tells "no links" from "not read yet" by nothing but that assignment.
+            var links = linksByParent[id];
+
+            if (item is Folder folder)
+            {
+                folder.LinkedChildren = [.. links.Select(e => ToLinkedChild(e.ChildId, e.ChildType))];
+            }
+
+            if (item is Video video)
+            {
+                // A video owns only the versions merged onto it by hand; any other link on it was
+                // written by the container that holds it and must not be rewritten as the video's.
+                video.LinkedAlternateVersions =
+                [
+                    .. links
+                        .Where(e => e.ChildType == Database.Implementations.Entities.LinkedChildType.LinkedAlternateVersion)
+                        .Select(e => ToLinkedChild(e.ChildId, e.ChildType))
+                ];
+            }
+        }
     }
 
     /// <inheritdoc />

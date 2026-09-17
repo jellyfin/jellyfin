@@ -176,9 +176,151 @@ public class ItemPersistenceService : IItemPersistenceService
     }
 
     /// <inheritdoc />
+    public async Task UpsertProviderIdAsync(Guid itemId, string name, string value, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentException.ThrowIfNullOrEmpty(value);
+
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            // (ItemId, ProviderId) is the primary key, so the row either exists or it does not.
+            var existing = await context.BaseItemProviders
+                .FirstOrDefaultAsync(e => e.ItemId == itemId && e.ProviderId == name, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (existing is null)
+            {
+                await context.BaseItemProviders.AddAsync(
+                    new BaseItemProvider
+                    {
+                        ItemId = itemId,
+                        ProviderId = name,
+                        ProviderValue = value,
+                        Item = null!
+                    },
+                    cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                existing.ProviderValue = value;
+            }
+
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveProviderIdAsync(Guid itemId, string name, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            await context.BaseItemProviders
+                .Where(e => e.ItemId == itemId && e.ProviderId == name)
+                .ExecuteDeleteAsync(cancellationToken)
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task UpsertImageAsync(Guid itemId, ItemImageInfo image, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            var existing = await FindImageAsync(context, itemId, image, cancellationToken).ConfigureAwait(false);
+            var entity = BaseItemMapper.MapImageToEntity(itemId, image);
+
+            if (existing is null)
+            {
+                await context.BaseItemImageInfos.AddAsync(entity, cancellationToken).ConfigureAwait(false);
+                image.Id = entity.Id;
+            }
+            else
+            {
+                existing.Path = entity.Path;
+                existing.ImageType = entity.ImageType;
+                existing.Blurhash = entity.Blurhash;
+                existing.DateModified = entity.DateModified;
+                existing.Width = entity.Width;
+                existing.Height = entity.Height;
+                image.Id = existing.Id;
+            }
+
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveImageAsync(Guid itemId, ItemImageInfo image, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            var existing = await FindImageAsync(context, itemId, image, cancellationToken).ConfigureAwait(false);
+            if (existing is null)
+            {
+                return;
+            }
+
+            context.BaseItemImageInfos.Remove(existing);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Finds the row an image stands for: by its own id where it has one, otherwise by the type and
+    /// path that identify it before it has been stored.
+    /// </summary>
+    private async Task<BaseItemImageInfo?> FindImageAsync(
+        JellyfinDbContext context,
+        Guid itemId,
+        ItemImageInfo image,
+        CancellationToken cancellationToken)
+    {
+        if (!image.Id.IsEmpty())
+        {
+            return await context.BaseItemImageInfos
+                .FirstOrDefaultAsync(e => e.ItemId == itemId && e.Id == image.Id, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        var path = _appHost.ReverseVirtualPath(image.Path);
+        var imageType = (ImageInfoImageType)image.Type;
+        return await context.BaseItemImageInfos
+            .FirstOrDefaultAsync(
+                e => e.ItemId == itemId && e.ImageType == imageType && e.Path == path,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public async Task SaveImagesAsync(BaseItem item, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(item);
+
+        // This replaces the stored images with what the item holds, which is only the whole set if
+        // the item was read with its images. A scan reaches here through ValidateChildren, where a
+        // child may have been read without them.
+        if (!item.OwnedRowsRead.HasFlag(OwnedItemRows.Images))
+        {
+            if (item.ImageInfos.Length > 0)
+            {
+                _logger.LogWarning(
+                    "Not writing images for {ItemName} ({ItemId}): the item was read without them, so what it holds is a partial set",
+                    item.Name,
+                    item.Id);
+            }
+
+            return;
+        }
 
         var images = item.ImageInfos.Select(e => BaseItemMapper.MapImageToEntity(item.Id, e)).ToArray();
 
@@ -253,6 +395,47 @@ public class ItemPersistenceService : IItemPersistenceService
         }
     }
 
+    /// <summary>
+    /// Picks the stored items whose owned rows this save may rewrite: only the ones that read the
+    /// collection, because only they hold the complete set.
+    /// </summary>
+    /// <remarks>
+    /// An item that has something in a collection it never read is a caller changing one entry of a
+    /// set it does not have. Rewriting from that would keep the change and drop everything else, so
+    /// the write is refused and reported: the targeted writers - UpsertProviderIdAsync, UpsertImageAsync,
+    /// UpsertLinkedChild - are how a partial change is meant to be persisted.
+    /// </remarks>
+    private Guid[] ItemsOwning(
+        List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey, List<string> InheritedTags)> tuples,
+        HashSet<Guid> existingItems,
+        OwnedItemRows rows,
+        Func<BaseItemDto, bool> hasContent)
+    {
+        var owners = new List<Guid>(tuples.Count);
+        foreach (var (item, _, _, _, _) in tuples)
+        {
+            if (!existingItems.Contains(item.Id))
+            {
+                continue;
+            }
+
+            if (item.OwnedRowsRead.HasFlag(rows))
+            {
+                owners.Add(item.Id);
+            }
+            else if (hasContent(item))
+            {
+                _logger.LogWarning(
+                    "Not writing {Rows} for {ItemName} ({ItemId}): the item was read without them, so what it holds is a partial set. Use the targeted writer instead.",
+                    rows,
+                    item.Name,
+                    item.Id);
+            }
+        }
+
+        return [.. owners];
+    }
+
     private void UpdateOrInsertItems(IReadOnlyList<BaseItemDto> items, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(items);
@@ -290,14 +473,21 @@ public class ItemPersistenceService : IItemPersistenceService
             }
             else
             {
-                if (entity.Images is { Count: > 0 })
+                // Only the collections this save is allowed to rewrite are re-added; inserting rows
+                // for a collection whose delete was refused would collide with what is still stored.
+                if (entity.Images is { Count: > 0 } && item.Item.OwnedRowsRead.HasFlag(OwnedItemRows.Images))
                 {
                     context.BaseItemImageInfos.AddRange(entity.Images);
                 }
 
-                if (entity.LockedFields is { Count: > 0 })
+                if (entity.LockedFields is { Count: > 0 } && item.Item.OwnedRowsRead.HasFlag(OwnedItemRows.LockedFields))
                 {
                     context.BaseItemMetadataFields.AddRange(entity.LockedFields);
+                }
+
+                if (entity.Provider is { Count: > 0 } && !item.Item.OwnedRowsRead.HasFlag(OwnedItemRows.Providers))
+                {
+                    entity.Provider = [];
                 }
 
                 context.BaseItems.Attach(entity).State = EntityState.Modified;
@@ -420,12 +610,27 @@ public class ItemPersistenceService : IItemPersistenceService
         }
 
         // Owned rows of updated items are rewritten wholesale; cleared in one statement per table.
+        // Only for the items that actually carry the collection, though: one read without it holds
+        // an empty collection that means "not read", and clearing on that would delete the lot.
         if (existingItems.Count > 0)
         {
-            var updatedIds = existingItems.ToArray();
-            context.BaseItemProviders.WhereOneOrMany(updatedIds, e => e.ItemId).ExecuteDelete();
-            context.BaseItemImageInfos.WhereOneOrMany(updatedIds, e => e.ItemId).ExecuteDelete();
-            context.BaseItemMetadataFields.WhereOneOrMany(updatedIds, e => e.ItemId).ExecuteDelete();
+            var providerIds = ItemsOwning(tuples, existingItems, OwnedItemRows.Providers, e => e.ProviderIds.Count > 0);
+            if (providerIds.Length > 0)
+            {
+                context.BaseItemProviders.WhereOneOrMany(providerIds, e => e.ItemId).ExecuteDelete();
+            }
+
+            var imageIds = ItemsOwning(tuples, existingItems, OwnedItemRows.Images, e => e.ImageInfos.Length > 0);
+            if (imageIds.Length > 0)
+            {
+                context.BaseItemImageInfos.WhereOneOrMany(imageIds, e => e.ItemId).ExecuteDelete();
+            }
+
+            var lockedFieldIds = ItemsOwning(tuples, existingItems, OwnedItemRows.LockedFields, e => e.LockedFields.Length > 0);
+            if (lockedFieldIds.Length > 0)
+            {
+                context.BaseItemMetadataFields.WhereOneOrMany(lockedFieldIds, e => e.ItemId).ExecuteDelete();
+            }
         }
 
         context.SaveChanges();
