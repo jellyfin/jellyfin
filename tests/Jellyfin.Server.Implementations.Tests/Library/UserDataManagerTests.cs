@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using Emby.Server.Implementations.Library;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
@@ -8,6 +10,7 @@ using Jellyfin.Database.Providers.Sqlite;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -205,6 +208,43 @@ public sealed class UserDataManagerTests : IDisposable
 
         Assert.Equal(222, result[fossilItem.Id].PlaybackPositionTicks);
         Assert.Equal(333, result[retiredItem.Id].PlaybackPositionTicks);
+    }
+
+    [Fact]
+    public void SaveUserData_RowUnderRetiredKey_IsDropped()
+    {
+        var item = CreateAudioBook();
+
+        using (var ctx = CreateDbContext())
+        {
+            ctx.Users.Add(_user);
+            ctx.BaseItems.Add(new BaseItemEntity { Id = item.Id, Type = typeof(AudioBook).FullName! });
+            ctx.UserData.Add(CreateUserDataRow(item, "Author-Old Album-0001Old File Name", 111));
+            ctx.SaveChanges();
+        }
+
+        _userDataManager.SaveUserData(
+            _user,
+            item,
+            new UserItemData { Key = item.GetUserDataKeys()[0], Played = true },
+            UserDataSaveReason.UpdateUserRating,
+            CancellationToken.None);
+
+        using (var ctx = CreateDbContext())
+        {
+            var rows = ctx.UserData.Where(e => e.ItemId.Equals(item.Id)).ToList();
+
+            // The retired-key row would otherwise keep a playback position the query layer still
+            // honours, holding the item in Continue Watching after it was marked played.
+            Assert.Equal(
+                item.GetUserDataKeys().OrderBy(e => e, StringComparer.Ordinal),
+                rows.Select(e => e.CustomDataKey).OrderBy(e => e, StringComparer.Ordinal));
+            Assert.All(rows, row =>
+            {
+                Assert.True(row.Played);
+                Assert.Equal(0, row.PlaybackPositionTicks);
+            });
+        }
     }
 
     [Fact]
