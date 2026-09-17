@@ -347,6 +347,22 @@ public class MediaInfoHelper
             mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
         }
 
+        var accessToken = claimsPrincipal.GetToken();
+        foreach (var audioStream in mediaSource.MediaStreams.Where(s => s.Type == MediaStreamType.Audio && s.IsExternal))
+        {
+            audioStream.DeliveryUrl = string.Format(
+                CultureInfo.InvariantCulture,
+                "/Videos/{0}/{1}/Audio/{2}/Stream",
+                item.Id,
+                mediaSource.Id,
+                audioStream.Index);
+
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                audioStream.DeliveryUrl += "?ApiKey=" + accessToken;
+            }
+        }
+
         foreach (var attachment in mediaSource.MediaAttachments)
         {
             attachment.DeliveryUrl = string.Format(
