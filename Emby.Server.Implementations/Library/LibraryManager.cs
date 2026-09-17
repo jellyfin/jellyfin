@@ -1354,7 +1354,6 @@ namespace Emby.Server.Implementations.Library
                 {
                     IncludeItemTypes = [BaseItemKind.MusicArtist],
                     Name = name,
-                    UseRawName = true,
                     DtoOptions = options
                 }).Cast<MusicArtist>()
                 .OrderBy(i => i.IsAccessedByName ? 1 : 0)
