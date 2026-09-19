@@ -112,13 +112,12 @@ public class SearchManager : ISearchManager
             return externalResults;
         }
 
-        var internalResults = await internalTask.ConfigureAwait(false);
         if (_internalProviders.Length > 0)
         {
             _logger.LogDebug("No results from external providers, using internal provider results");
         }
 
-        return internalResults;
+        return await internalTask.ConfigureAwait(false);
     }
 
     private async Task<IReadOnlyList<SearchResult>> FilterByUserAccessAsync(
@@ -144,16 +143,23 @@ public class SearchManager : ISearchManager
 
             baseQuery = _queryHelpers.ApplyAccessFiltering(dbContext, baseQuery, accessFilter);
 
-            var allowedCount = await baseQuery.CountAsync(cancellationToken).ConfigureAwait(false);
-            if (allowedCount == candidates.Count)
+            var allowed = await baseQuery
+                .Select(e => new { e.Id, e.PrimaryVersionId })
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            var allowedIds = allowed.Select(e => e.Id).ToHashSet();
+
+            // A provider can return both an alternate version and the primary it belongs to, and the
+            // two are one item to the user.
+            allowedIds.ExceptWith(allowed
+                .Where(e => e.PrimaryVersionId.HasValue && allowedIds.Contains(e.PrimaryVersionId.Value))
+                .Select(e => e.Id));
+
+            if (allowedIds.Count == candidates.Count)
             {
                 return candidates;
             }
-
-            var allowedIds = await baseQuery
-                .Select(e => e.Id)
-                .ToHashSetAsync(cancellationToken)
-                .ConfigureAwait(false);
 
             var filtered = candidates.Where(c => allowedIds.Contains(c.ItemId)).ToList();
             if (filtered.Count < candidates.Count)

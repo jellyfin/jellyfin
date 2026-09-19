@@ -442,7 +442,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                    && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
                        || IsHdr10Plus(state.VideoStream)
                        || IsDoviWithHdr10Bl(state.VideoStream)
-                       || state.VideoStream.VideoRangeType == VideoRangeType.HLG);
+                       || state.VideoStream.VideoRangeType == VideoRangeType.HLG
+                       || state.VideoStream.VideoRangeType == VideoRangeType.DOVIInvalid);
         }
 
         private static bool IsDeinterlaceAvailable(EncodingJobInfo state)
@@ -695,7 +696,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 "ogg" or "oga" or "ogv" or "webm" or "webma" => "opus",
                 "m4a" or "m4b" or "mp4" or "mov" or "mkv" or "mka" => "aac",
                 "ts" or "avi" or "flv" or "f4v" or "swf" => "mp3",
-                _ => inferredCodec
+                // Containers that share their name with the codec they carry.
+                "aac" or "ac3" or "alac" or "dts" or "eac3" or "flac" or "mp2" or "mp3" or "opus" or "truehd" or "vorbis" => inferredCodec,
+                // Anything else - manifests such as m3u8/mpd in particular - names a container that
+                // is not an audio codec. Never hand that name to ffmpeg as an encoder.
+                _ => "aac"
             };
         }
 
@@ -1386,7 +1391,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 or VideoRangeType.DOVIWithEL
                 or VideoRangeType.DOVIWithHDR10Plus
                 or VideoRangeType.DOVIWithELHDR10Plus
-                or VideoRangeType.DOVIInvalid;
+                || (rangeType == VideoRangeType.DOVIInvalid
+                    && string.Equals(stream.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)); // invalid may be hlg now
         }
 
         public static bool IsDovi(MediaStream stream)
@@ -1396,7 +1402,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             return IsDoviWithHdr10Bl(stream)
                    || (rangeType is VideoRangeType.DOVI
                        or VideoRangeType.DOVIWithHLG
-                       or VideoRangeType.DOVIWithSDR);
+                       or VideoRangeType.DOVIWithSDR
+                       or VideoRangeType.DOVIInvalid);
         }
 
         public static bool IsHdr10Plus(MediaStream stream)
@@ -1416,7 +1423,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         private static DynamicHdrMetadataRemovalPlan ShouldRemoveDynamicHdrMetadata(EncodingJobInfo state)
         {
             var videoStream = state.VideoStream;
-            if (videoStream.VideoRange is not VideoRange.HDR)
+            if (videoStream.VideoRange is not VideoRange.HDR
+                && videoStream.VideoRangeType != VideoRangeType.DOVIInvalid)
             {
                 return DynamicHdrMetadataRemovalPlan.None;
             }
@@ -3799,6 +3807,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             var formatArg = isFormatFixed ? (":format=" + videoFormat) : string.Empty;
             var tonemapArg = string.Empty;
 
+            // libplacebo only support full range RGB
+            forceFullRange = forceFullRange
+                || (videoFormat ?? string.Empty).Contains("rgb", StringComparison.OrdinalIgnoreCase)
+                || (videoFormat ?? string.Empty).Contains("bgr", StringComparison.OrdinalIgnoreCase);
+
             if (doTonemap)
             {
                 var algorithm = options.TonemappingAlgorithm;
@@ -3821,6 +3834,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     tonemapArg += ":range=" + range.ToString().ToLowerInvariant();
                 }
+            }
+            else if (forceFullRange)
+            {
+                formatArg += ":range=pc";
             }
 
             return string.Format(
@@ -5462,7 +5479,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 mainFilters.Add("format=vaapi");
 
                 // clear the surf->meta_offset and output nv12
-                mainFilters.Add("scale_vaapi=format=nv12");
+                var hwCscFilter = "scale_vaapi=format=nv12";
+
+                if (!isMjpegEncoder && options.TonemappingRange != TonemappingRange.pc)
+                {
+                    hwCscFilter += ":out_range=tv";
+                }
+
+                mainFilters.Add(hwCscFilter);
 
                 // hw deint
                 if (doDeintH2645)
@@ -5532,7 +5556,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                     overlayFilters.Add("format=vaapi");
 
                     // clear the surf->meta_offset and output nv12
-                    overlayFilters.Add("scale_vaapi=format=nv12");
+                    var hwCscFilter = "scale_vaapi=format=nv12";
+
+                    if (!doVkTonemap || (doVkTonemap && options.TonemappingRange != TonemappingRange.pc))
+                    {
+                        hwCscFilter += ":out_range=tv";
+                    }
+
+                    overlayFilters.Add(hwCscFilter);
 
                     // hw deint
                     if (doDeintH2645)
@@ -6311,7 +6342,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         string.Join(',', overlayFilters));
 
                 var mapPrefix = Convert.ToInt32(state.SubtitleStream.IsExternal);
-                var subtitleStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.SubtitleStream);
+                var subtitleStreamIndex = GetSubtitleStreamIndexForFfmpeg(state.MediaSource, state.SubtitleStream);
                 var videoStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.VideoStream);
 
                 if (hasSubs)
@@ -7941,6 +7972,24 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return -1;
+        }
+
+        public static int GetSubtitleStreamIndexForFfmpeg(MediaSourceInfo mediaSource, MediaStream subtitleStream)
+        {
+            var index = FindIndex(mediaSource.MediaStreams, subtitleStream);
+            if (index == -1 || subtitleStream.IsExternal || mediaSource.VideoType != VideoType.BluRay)
+            {
+                return index;
+            }
+
+            var hiddenStreamsBefore = mediaSource.MediaStreams.Count(s =>
+                s.Type == MediaStreamType.Audio
+                && !s.IsExternal
+                && (string.Equals(s.Codec, "truehd", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(s.Codec, "atmos", StringComparison.OrdinalIgnoreCase))
+                && s.Index < subtitleStream.Index);
+
+            return index + hiddenStreamsBefore;
         }
 
         public static bool IsCopyCodec(string codec)

@@ -107,6 +107,13 @@ namespace MediaBrowser.Controller.Library
         Person? GetPerson(string name);
 
         /// <summary>
+        /// Gets a Person, creating and persisting it if no item exists for the name yet.
+        /// </summary>
+        /// <param name="name">The name of the person.</param>
+        /// <returns>The person.</returns>
+        Person GetOrCreatePerson(string name);
+
+        /// <summary>
         /// Finds the by path.
         /// </summary>
         /// <param name="path">The path.</param>
@@ -151,15 +158,6 @@ namespace MediaBrowser.Controller.Library
         /// <returns>Task{Year}.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Throws if year is invalid.</exception>
         Year GetYear(int value);
-
-        /// <summary>
-        /// Validate and refresh the People sub-set of the IBN.
-        /// The items are stored in the db but not loaded into memory until actually requested by an operation.
-        /// </summary>
-        /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task ValidatePeopleAsync(IProgress<double> progress, CancellationToken cancellationToken);
 
         /// <summary>
         /// Reloads the root media folder.
@@ -721,6 +719,14 @@ namespace MediaBrowser.Controller.Library
         /// <returns><c>true</c> if ignored, <c>false</c> otherwise.</returns>
         bool IgnoreFile(FileSystemMetadata file, BaseItem parent);
 
+        /// <summary>
+        /// Gets the id a <see cref="Person"/> item for the name would have, without looking it up
+        /// or creating it.
+        /// </summary>
+        /// <param name="name">The name of the person.</param>
+        /// <returns>The item id for the name.</returns>
+        Guid GetPersonId(string name);
+
         Guid GetStudioId(string name);
 
         Guid GetGenreId(string name);
@@ -766,13 +772,25 @@ namespace MediaBrowser.Controller.Library
         ItemCounts GetItemCountsForNameItem(BaseItemKind kind, Guid id, BaseItemKind[] relatedItemKinds, User? user);
 
         /// <summary>
+        /// Gets item counts for several "by-name" items of the same kind. Kinds keyed by a cleaned
+        /// item value - artists, genres and studios - are answered in one set of queries for the
+        /// whole batch; the rest fall back to one query per item.
+        /// </summary>
+        /// <param name="kind">The kind of the name items.</param>
+        /// <param name="ids">The IDs of the name items.</param>
+        /// <param name="relatedItemKinds">The item kinds to count.</param>
+        /// <param name="user">The user for access filtering.</param>
+        /// <returns>The item counts of each requested id.</returns>
+        Dictionary<Guid, ItemCounts> GetItemCountsForNameItems(BaseItemKind kind, IReadOnlyList<Guid> ids, BaseItemKind[] relatedItemKinds, User? user);
+
+        /// <summary>
         /// Batch-fetches child counts for multiple parent folders.
         /// Returns the count of immediate children (non-recursive) for each parent.
         /// </summary>
         /// <param name="parentIds">The list of parent folder IDs.</param>
-        /// <param name="userId">The user ID for access filtering.</param>
+        /// <param name="user">The user the counts are for, or null to count without a user's preferences.</param>
         /// <returns>Dictionary mapping parent ID to child count.</returns>
-        Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, Guid? userId);
+        Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, User? user);
 
         /// <summary>
         /// Batch-fetches played and total counts for multiple folder items.
@@ -825,6 +843,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="query">The query filter.</param>
         /// <returns>Aggregated filter values.</returns>
         QueryFiltersLegacy GetQueryFiltersLegacy(InternalItemsQuery query);
+
+        /// <summary>
+        /// Gets a list of all distinct tags of the matching items.
+        /// </summary>
+        /// <param name="query">The query filter.</param>
+        /// <returns>List of tags.</returns>
+        IReadOnlyList<string> GetTagNames(InternalItemsQuery query);
 
         /// <summary>
         /// Gets a list of all language codes of the provided stream type.

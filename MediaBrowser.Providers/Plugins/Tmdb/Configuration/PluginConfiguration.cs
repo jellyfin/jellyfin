@@ -128,6 +128,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <summary>
         /// Gets or sets the cache duration in days for similar item results. A value of 0 disables caching.
         /// </summary>
-        public int SimilarItemsCacheDays { get; set; } = 7;
+        public int SimilarItemsCacheDays { get; set; } = 90;
     }
 }

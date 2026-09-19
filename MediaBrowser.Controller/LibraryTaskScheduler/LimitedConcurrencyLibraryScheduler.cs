@@ -17,7 +17,8 @@ namespace MediaBrowser.Controller.LibraryTaskScheduler;
 /// </summary>
 public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibraryScheduler, IAsyncDisposable
 {
-    private const int CleanupGracePeriod = 60;
+    private static readonly TimeSpan _cleanupGracePeriod = TimeSpan.FromSeconds(60);
+
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly ILogger<LimitedConcurrencyLibraryScheduler> _logger;
     private readonly IServerConfigurationManager _serverConfigurationManager;
@@ -31,6 +32,8 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
     private readonly Lock _taskLock = new();
 
     private readonly Channel<TaskQueueItem> _tasks = Channel.CreateUnbounded<TaskQueueItem>();
+    private readonly CancellationTokenSource _disposeTokenSource = new();
+    private readonly TimeSpan _gracePeriod;
 
     private volatile int _workCounter;
     private Task? _cleanupTask;
@@ -46,10 +49,34 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         IHostApplicationLifetime hostApplicationLifetime,
         ILogger<LimitedConcurrencyLibraryScheduler> logger,
         IServerConfigurationManager serverConfigurationManager)
+        : this(hostApplicationLifetime, logger, serverConfigurationManager, _cleanupGracePeriod)
+    {
+    }
+
+    internal LimitedConcurrencyLibraryScheduler(
+        IHostApplicationLifetime hostApplicationLifetime,
+        ILogger<LimitedConcurrencyLibraryScheduler> logger,
+        IServerConfigurationManager serverConfigurationManager,
+        TimeSpan gracePeriod)
     {
         _hostApplicationLifetime = hostApplicationLifetime;
         _logger = logger;
         _serverConfigurationManager = serverConfigurationManager;
+        _gracePeriod = gracePeriod;
+    }
+
+    /// <summary>
+    /// Gets the number of runners the scheduler currently keeps alive.
+    /// </summary>
+    internal int ActiveRunnerCount
+    {
+        get
+        {
+            lock (_taskLock)
+            {
+                return _taskRunners.Count;
+            }
+        }
     }
 
     private void ScheduleTaskCleanup()
@@ -68,31 +95,65 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
 
         async Task RunCleanupTask()
         {
-            _logger.LogDebug("Schedule cleanup task in {CleanupGracePerioid} sec.", CleanupGracePeriod);
-            await Task.Delay(TimeSpan.FromSeconds(CleanupGracePeriod)).ConfigureAwait(false);
-            if (_disposed)
+            while (true)
             {
-                _logger.LogDebug("Abort cleaning up, already disposed.");
-                return;
-            }
-
-            lock (_taskLock)
-            {
-                if (_tasks.Reader.Count > 0 || _workCounter > 0)
+                _logger.LogDebug("Schedule cleanup task in {CleanupGracePeriod}.", _gracePeriod);
+                try
                 {
-                    _logger.LogDebug("Delay cleanup task, operations still running.");
-                    // tasks are still there so its still in use. Reschedule cleanup task.
-                    // we cannot just exit here and rely on the other invoker because there is a considerable timeframe where it could have already ended.
-                    _cleanupTask = RunCleanupTask();
+                    await Task.Delay(_gracePeriod, _disposeTokenSource.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogDebug("Abort cleaning up, already disposed.");
                     return;
                 }
-            }
 
-            _logger.LogDebug("Cleanup runners.");
-            foreach (var item in _taskRunners.ToArray())
+                if (_disposed)
+                {
+                    _logger.LogDebug("Abort cleaning up, already disposed.");
+                    return;
+                }
+
+                CancellationTokenSource[] runners;
+                lock (_taskLock)
+                {
+                    if (_tasks.Reader.Count > 0 || _workCounter > 0)
+                    {
+                        _logger.LogDebug("Delay cleanup task, operations still running.");
+                        // tasks are still there so its still in use. Wait another grace period.
+                        // we cannot just exit here and rely on the other invoker because there is a considerable timeframe where it could have already ended.
+                        continue;
+                    }
+
+                    runners = [.. _taskRunners.Keys];
+
+                    // Retire the runners before they are told to stop: an operation starting while
+                    // they wind down must spawn its own instead of counting these towards the fanout.
+                    _taskRunners.Clear();
+
+                    // Hand the next operation the ability to schedule a cleanup again. Without this
+                    // the very first cleanup would be the only one that ever runs.
+                    _cleanupTask = null;
+                }
+
+                _logger.LogDebug("Cleanup runners.");
+                await StopRunners(runners).ConfigureAwait(false);
+                return;
+            }
+        }
+    }
+
+    private static async Task StopRunners(CancellationTokenSource[] runners)
+    {
+        foreach (var runner in runners)
+        {
+            try
             {
-                await item.Key.CancelAsync().ConfigureAwait(false);
-                _taskRunners.Remove(item.Key);
+                await runner.CancelAsync().ConfigureAwait(false);
+            }
+            catch (ObjectDisposedException)
+            {
+                // The runner already stopped on its own and disposed its stop source.
             }
         }
     }
@@ -127,12 +188,17 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
             {
                 var stopToken = new CancellationTokenSource();
                 var combinedSource = CancellationTokenSource.CreateLinkedTokenSource(stopToken.Token, _hostApplicationLifetime.ApplicationStopping);
+
+                // Keyed on its own stop source, because cancelling that is what reaches the linked
+                // source the runner waits on. Cancellation does not travel the other way.
+                // Started without the runner's own token: a task cancelled before it is scheduled
+                // never runs its body, so it would never take itself out of _taskRunners again.
                 _taskRunners.Add(
-                    combinedSource,
+                    stopToken,
                     Task.Factory.StartNew(
                         ItemWorker,
-                        (combinedSource, stopToken),
-                        combinedSource.Token,
+                        (stopToken, combinedSource),
+                        CancellationToken.None,
                         TaskCreationOptions.PreferFairness,
                         TaskScheduler.Default));
             }
@@ -145,7 +211,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         _deadlockDetector.Value = stopToken.TaskStop;
         try
         {
-            while (!stopToken.GlobalStop.Token.IsCancellationRequested)
+            while (!stopToken.GlobalStop.IsCancellationRequested)
             {
                 var item = await _tasks.Reader.ReadAsync(stopToken.GlobalStop.Token).ConfigureAwait(false);
                 try
@@ -162,15 +228,24 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
                 }
             }
         }
-        catch (OperationCanceledException) when (stopToken.TaskStop.IsCancellationRequested)
+        catch (OperationCanceledException) when (stopToken.GlobalStop.IsCancellationRequested)
         {
             // thats how you do it, interupt the waiter thread. There is nothing to do here when it was on purpose.
+        }
+        catch (ChannelClosedException)
+        {
+            // the scheduler was disposed and will not hand out any more work.
         }
         finally
         {
             _logger.LogDebug("Cleanup Runner'.");
             _deadlockDetector.Value = default!;
-            _taskRunners.Remove(stopToken.TaskStop);
+
+            lock (_taskLock)
+            {
+                _taskRunners.Remove(stopToken.TaskStop);
+            }
+
             stopToken.GlobalStop.Dispose();
             stopToken.TaskStop.Dispose();
         }
@@ -195,7 +270,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         finally
         {
             item.Progress.Report(100);
-            item.Done.SetResult();
+            item.Done.TrySetResult();
         }
     }
 
@@ -285,16 +360,33 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
 
         _disposed = true;
         _tasks.Writer.Complete();
-        foreach (var item in _taskRunners)
+
+        // Nobody is left to run these, so release whoever is waiting on them.
+        while (_tasks.Reader.TryRead(out var item))
         {
-            await item.Key.CancelAsync().ConfigureAwait(false);
+            item.Done.TrySetResult();
         }
 
-        if (_cleanupTask is not null)
+        CancellationTokenSource[] runners;
+        Task? cleanupTask;
+        lock (_taskLock)
         {
-            await _cleanupTask.ConfigureAwait(false);
-            _cleanupTask?.Dispose();
+            runners = [.. _taskRunners.Keys];
+            _taskRunners.Clear();
+            cleanupTask = _cleanupTask;
         }
+
+        await StopRunners(runners).ConfigureAwait(false);
+
+        // Cuts the grace period short instead of holding up shutdown for the rest of it.
+        await _disposeTokenSource.CancelAsync().ConfigureAwait(false);
+
+        if (cleanupTask is not null)
+        {
+            await cleanupTask.ConfigureAwait(false);
+        }
+
+        _disposeTokenSource.Dispose();
     }
 
     private class TaskQueueItem

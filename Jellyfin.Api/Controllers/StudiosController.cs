@@ -92,6 +92,12 @@ public class StudiosController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
+        // Asking for a type filter has always implied wanting that type's counts back.
+        if (includeItemTypes.Length != 0 && !dtoOptions.ContainsField(ItemFields.ItemCounts))
+        {
+            dtoOptions.Fields = [.. dtoOptions.Fields, ItemFields.ItemCounts];
+        }
+
         User? user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
@@ -126,8 +132,7 @@ public class StudiosController : BaseJellyfinApiController
         }
 
         var result = _libraryManager.GetStudios(query);
-        var shouldIncludeItemTypes = includeItemTypes.Length != 0;
-        return RequestHelpers.CreateQueryResult(result, dtoOptions, _dtoService, shouldIncludeItemTypes, user);
+        return RequestHelpers.CreateQueryResult(result, dtoOptions, _dtoService, user);
     }
 
     /// <summary>

@@ -306,11 +306,14 @@ public class SessionController : BaseJellyfinApiController
     [HttpPost("Sessions/{sessionId}/User/{userId}")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public ActionResult AddUserToSession(
+    public async Task<ActionResult> AddUserToSession(
         [FromRoute, Required] string sessionId,
         [FromRoute, Required] Guid userId)
     {
-        _sessionManager.AddAdditionalUser(sessionId, userId);
+        _sessionManager.AddAdditionalUser(
+            await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false),
+            sessionId,
+            userId);
         return NoContent();
     }
 
@@ -324,11 +327,14 @@ public class SessionController : BaseJellyfinApiController
     [HttpDelete("Sessions/{sessionId}/User/{userId}")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public ActionResult RemoveUserFromSession(
+    public async Task<ActionResult> RemoveUserFromSession(
         [FromRoute, Required] string sessionId,
         [FromRoute, Required] Guid userId)
     {
-        _sessionManager.RemoveAdditionalUser(sessionId, userId);
+        _sessionManager.RemoveAdditionalUser(
+            await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false),
+            sessionId,
+            userId);
         return NoContent();
     }
 
@@ -352,12 +358,13 @@ public class SessionController : BaseJellyfinApiController
         [FromQuery] bool supportsMediaControl = false,
         [FromQuery] bool supportsPersistentIdentifier = true)
     {
+        var currentSessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(id))
         {
-            id = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+            id = currentSessionId;
         }
 
-        _sessionManager.ReportCapabilities(id, new ClientCapabilities
+        _sessionManager.ReportCapabilities(currentSessionId, id, new ClientCapabilities
         {
             PlayableMediaTypes = playableMediaTypes,
             SupportedCommands = supportedCommands,
@@ -381,12 +388,13 @@ public class SessionController : BaseJellyfinApiController
         [FromQuery] string? id,
         [FromBody, Required] ClientCapabilitiesDto capabilities)
     {
+        var currentSessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(id))
         {
-            id = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+            id = currentSessionId;
         }
 
-        _sessionManager.ReportCapabilities(id, capabilities.ToClientCapabilities());
+        _sessionManager.ReportCapabilities(currentSessionId, id, capabilities.ToClientCapabilities());
 
         return NoContent();
     }
@@ -405,9 +413,9 @@ public class SessionController : BaseJellyfinApiController
         [FromQuery] string? sessionId,
         [FromQuery, Required] string? itemId)
     {
-        string session = sessionId ?? await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
 
-        _sessionManager.ReportNowViewingItem(session, itemId);
+        _sessionManager.ReportNowViewingItem(currentSessionId, sessionId ?? currentSessionId, itemId);
         return NoContent();
     }
 

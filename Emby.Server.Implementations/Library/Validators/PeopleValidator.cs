@@ -1,12 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Validators;
@@ -17,112 +17,143 @@ namespace Emby.Server.Implementations.Library.Validators;
 public class PeopleValidator
 {
     /// <summary>
-    /// The _library manager.
+    /// The library manager.
     /// </summary>
     private readonly ILibraryManager _libraryManager;
 
     /// <summary>
-    /// The _logger.
+    /// The logger.
     /// </summary>
-    private readonly ILogger _logger;
-
-    private readonly IFileSystem _fileSystem;
+    private readonly ILogger<PeopleValidator> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PeopleValidator" /> class.
     /// </summary>
     /// <param name="libraryManager">The library manager.</param>
     /// <param name="logger">The logger.</param>
-    /// <param name="fileSystem">The file system.</param>
-    public PeopleValidator(ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem)
+    public PeopleValidator(ILibraryManager libraryManager, ILogger<PeopleValidator> logger)
     {
         _libraryManager = libraryManager;
         _logger = logger;
-        _fileSystem = fileSystem;
     }
 
     /// <summary>
     /// Validates the people.
     /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="progress">The progress.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>Task.</returns>
-    public async Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
+    public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
     {
         // Before the refresh below walks them: a credit no item maps to any more stands for nothing,
         // and while it is there the person it names cannot reach the dead-person sweep either.
         var numOrphaned = _libraryManager.DeleteOrphanedCredits();
         if (numOrphaned > 0)
         {
-            _logger.LogDebug("Deleted {Amount} credits no item maps to", numOrphaned);
+            _logger.LogInformation("Deleted {Amount} credits no item maps to", numOrphaned);
         }
 
-        var people = _libraryManager.GetPeopleNames(new InternalPeopleQuery());
+        var names = _libraryManager.GetPeopleNames(new InternalPeopleQuery());
+        var existingPersonIds = _libraryManager.GetItemIds(new InternalItemsQuery
+        {
+            IncludeItemTypes = [BaseItemKind.Person]
+        }).ToHashSet();
+
+        var (newNames, deadIds) = PartitionCreditsByPersonId(names, _libraryManager.GetPersonId, existingPersonIds);
 
         var numComplete = 0;
+        var count = names.Count;
+        var refreshed = 0;
 
-        var numPeople = people.Count;
-
-        IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 2));
-
-        _logger.LogDebug("Will refresh {Amount} people", numPeople);
-
-        foreach (var person in people)
+        foreach (var name in names)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                var item = _libraryManager.GetPerson(person);
-                if (item is null)
+                var item = _libraryManager.GetOrCreatePerson(name);
+                var isNew = !existingPersonIds.Contains(item.Id);
+                var neverRefreshed = item.DateLastRefreshed == default;
+
+                if (isNew || neverRefreshed)
                 {
-                    _logger.LogWarning("Failed to get person: {Name}", person);
-                    continue;
+                    await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                    refreshed++;
                 }
-
-                var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
-                {
-                    ImageRefreshMode = MetadataRefreshMode.ValidationOnly,
-                    MetadataRefreshMode = MetadataRefreshMode.ValidationOnly
-                };
-
-                await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
+                // Don't clutter the log
                 throw;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error validating IBN entry {Person}", person);
+                _logger.LogError(ex, "Error refreshing {PersonName}", name);
             }
 
-            // Update progress
             numComplete++;
             double percent = numComplete;
-            percent /= numPeople;
+            percent /= count;
+            percent *= 100;
 
-            subProgress.Report(100 * percent);
+            progress.Report(percent);
         }
 
-        var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
-        {
-            IncludeItemTypes = [BaseItemKind.Person],
-            IsDeadPerson = true,
-            IsLocked = false
-        });
+        _logger.LogInformation(
+            "Refreshed metadata for {RefreshedCount} people out of {TotalCount} total, {NewCount} of which had no item yet",
+            refreshed,
+            count,
+            newNames.Count);
 
-        subProgress = new Progress<double>((val) => progress.Report((val / 2) + 50));
+        // A person somebody locked is theirs, not ours, however little the library still credits them.
+        var deadEntities = deadIds
+            .Select(_libraryManager.GetItemById)
+            .OfType<Person>()
+            .Where(item => !item.IsLocked)
+            .ToList();
 
-        var i = 0;
-        foreach (var item in deadEntities.Chunk(500))
+        foreach (var item in deadEntities)
         {
-            _libraryManager.DeleteItemsUnsafeFast(item, true);
-            subProgress.Report(100f / deadEntities.Count * (i++ * 100));
+            _logger.LogInformation("Deleting dead {ItemType} {ItemId} {ItemName}", item.GetType().Name, item.Id.ToString("N", CultureInfo.InvariantCulture), item.Name);
         }
+
+        _libraryManager.DeleteItemsUnsafeFast(deadEntities, deleteSourceFiles: true);
 
         progress.Report(100);
+    }
 
-        _logger.LogInformation("People validation complete, deleted {Orphaned} orphaned credits", numOrphaned);
+    /// <summary>
+    /// Splits the person items into the ones a credit still calls for and the ones nothing does.
+    /// </summary>
+    /// <param name="creditNames">Every name credited on an item, from the people table.</param>
+    /// <param name="getPersonId">Maps a credit name to the id its person item has.</param>
+    /// <param name="existingPersonIds">The ids of the person items that exist.</param>
+    /// <returns>The credits needing an item, and the ids of the items nothing credits.</returns>
+    internal static (List<string> NewNames, List<Guid> DeadIds) PartitionCreditsByPersonId(
+        IReadOnlyList<string> creditNames,
+        Func<string, Guid> getPersonId,
+        IReadOnlySet<Guid> existingPersonIds)
+    {
+        ArgumentNullException.ThrowIfNull(creditNames);
+        ArgumentNullException.ThrowIfNull(getPersonId);
+        ArgumentNullException.ThrowIfNull(existingPersonIds);
+
+        var newNames = new List<string>();
+        var liveIds = new HashSet<Guid>();
+
+        foreach (var name in creditNames)
+        {
+            var personId = getPersonId(name);
+
+            // Distinct credit names can normalize onto one id; only the first of them needs an item.
+            if (liveIds.Add(personId) && !existingPersonIds.Contains(personId))
+            {
+                newNames.Add(name);
+            }
+        }
+
+        var deadIds = existingPersonIds.Where(id => !liveIds.Contains(id)).ToList();
+
+        return (newNames, deadIds);
     }
 }

@@ -74,6 +74,9 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData("Season 5/S05E23 11-59 [HDTV-1080p][x265 AC3].mkv", null)]
         [InlineData("Season 5/S05E23 11-59 [HDTV-1080p][HEVC AC3].mkv", null)]
         [InlineData("Season 1/S01E01 1-23-45 [Bluray-1080p][AV1 Opus].mkv", null)]
+        // Episode markers in the episode title must not be read as an episode range
+        [InlineData("Season 03/Star Trek Enterprise (2001) - S03E21 - E2 (1080p BluRay x265).mkv", null)]
+        [InlineData("Season 02/Series Name (2001) - S02E10 - E5 [WEBRip-1080p].mkv", null)]
         public void TestGetEndingEpisodeNumberFromFile(string filename, int? endingEpisodeNumber)
         {
             var result = _episodePathParser.Parse(filename, false);

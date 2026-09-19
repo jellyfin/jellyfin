@@ -3,28 +3,42 @@
     "supportsSubScores": false,
     "ratings": [
         {
-            "ratingStrings": ["T"],
+            "ratingStrings": ["T", "PT", "Per tutti"],
             "ratingScore": {
                 "score": 0,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["6+"],
+            "ratingStrings": ["6+", "VM6", "VM 6", "VM-6", "Vietato ai minori di 6 anni"],
             "ratingScore": {
                 "score": 6,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["14+"],
+            "ratingStrings": ["10+", "VM10", "VM 10", "VM-10", "Vietato ai minori di 10 anni"],
+            "ratingScore": {
+                "score": 10,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["12+", "VM12", "VM 12", "VM-12", "Vietato ai minori di 12 anni"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["14+", "VM14", "VM 14", "VM-14", "Vietato ai minori di 14 anni"],
             "ratingScore": {
                 "score": 14,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["18+"],
+            "ratingStrings": ["18+", "VM18", "VM 18", "VM-18", "Vietato ai minori di 18 anni"],
             "ratingScore": {
                 "score": 18,
                 "subScore": null
