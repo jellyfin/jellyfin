@@ -263,7 +263,8 @@ public class MediaSegmentManager : IMediaSegmentManager
             EndTicks = segment.EndTicks,
             ItemId = segment.ItemId,
             StartTicks = segment.StartTicks,
-            Type = segment.Type
+            Type = segment.Type,
+            SegmentProviderId = segment.SegmentProviderId
         };
     }
 

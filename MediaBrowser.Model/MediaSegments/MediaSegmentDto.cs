@@ -34,4 +34,10 @@ public class MediaSegmentDto
     /// Gets or sets the end of the segment.
     /// </summary>
     public long EndTicks { get; set; }
+
+    /// <summary>
+    /// Gets or sets the id of the media segment provider this segment originates from.
+    /// This is set by the server when segments are returned and is ignored when a provider supplies a segment.
+    /// </summary>
+    public string? SegmentProviderId { get; set; }
 }
