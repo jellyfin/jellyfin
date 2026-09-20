@@ -19,6 +19,10 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData(2, "The Simpsons/The Simpsons - 02 Ep Name.avi")]
         [InlineData(7, "GJ Club (2013)/GJ Club - 07.mkv")]
         [InlineData(317, "Case Closed (1996-2007)/Case Closed - 317.mkv")]
+        // A span of years belongs to the title, so the number in front of it is still the episode
+        [InlineData(5, "Dark Decade 1964-1974/05 - Dark Decade 1964-1974 The Dark Room.mp4")]
+        [InlineData(1, "Dark Decade 1964-1974/01 - The Holy Trinity.mp4")]
+        [InlineData(3, "The Great War/The Great War 1914-1918 Part 3.mkv")]
         // TODO: [InlineData(2, @"The Simpsons/The Simpsons 5 - 02 - Ep Name.avi")]
         // TODO: [InlineData(2, @"The Simpsons/The Simpsons 5 - 02 Ep Name.avi")]
         // TODO: [InlineData(7, @"Seinfeld/Seinfeld 0807 The Checks.avi")]

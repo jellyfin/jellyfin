@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Emby.Naming.Common;
 
 namespace Emby.Naming.TV
@@ -9,9 +10,12 @@ namespace Emby.Naming.TV
     /// <summary>
     /// Used to parse information about episode from path.
     /// </summary>
-    public class EpisodePathParser
+    public partial class EpisodePathParser
     {
         private readonly NamingOptions _options;
+
+        [GeneratedRegex(@"(?<![0-9])(?:19|20)[0-9]{2}[ ._]*-[ ._]*(?:19|20)[0-9]{2}(?![0-9])")]
+        private static partial Regex YearSpanRegex();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EpisodePathParser"/> class.
@@ -194,10 +198,47 @@ namespace Emby.Naming.TV
                     result.Success = false;
                 }
 
+                // Numbers taken out of a year span belong to the title, not to the episode. Failing the
+                // match rather than trimming it lets a later expression find the real episode number,
+                // and keeps a span like "1964-1974" from becoming a 1911 episode wide range.
+                if (result.Success && IsReadFromYearSpan(name, match, expression))
+                {
+                    result.Success = false;
+                }
+
                 result.IsByDate = expression.IsByDate;
             }
 
             return result;
+        }
+
+        private static bool IsReadFromYearSpan(string name, Match match, EpisodeExpression expression)
+        {
+            foreach (var span in YearSpanRegex().EnumerateMatches(name))
+            {
+                if (expression.IsNamed)
+                {
+                    if (Overlaps(match.Groups["seasonnumber"], span)
+                        || Overlaps(match.Groups["epnumber"], span)
+                        || Overlaps(match.Groups["endingepnumber"], span))
+                    {
+                        return true;
+                    }
+                }
+                else if (match.Groups.Count >= 3
+                         && (Overlaps(match.Groups[1], span) || Overlaps(match.Groups[2], span)))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+
+            static bool Overlaps(Group group, ValueMatch span)
+                => group.Success
+                   && group.Length > 0
+                   && group.Index < span.Index + span.Length
+                   && span.Index < group.Index + group.Length;
         }
 
         private void FillAdditional(string path, EpisodePathParserResult info)
