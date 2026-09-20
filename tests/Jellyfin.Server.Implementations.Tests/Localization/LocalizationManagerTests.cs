@@ -230,6 +230,17 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [InlineData("–12", "FR", 12, null)] // The CNC writes its minimum ages with an en dash
         [InlineData("–16", "FR", 16, null)]
         [InlineData("–18", "FR", 18, null)]
+        [InlineData("SU", "ID", 0, null)] // Indonesian broadcast classifications (KPI)
+        [InlineData("P", "ID", 2, null)]
+        [InlineData("A", "ID", 7, null)]
+        [InlineData("R", "ID", 13, null)]
+        [InlineData("D", "ID", 18, null)]
+        [InlineData("D18+", "ID", 18, null)] // Written with the minimum age, as broadcast since 2016
+        [InlineData("R-BO", "ID", 13, null)] // Parental guidance does not change the age group
+        [InlineData("Dewasa", "ID", 18, null)]
+        [InlineData("ID-D", "ID", 18, null)] // TMDB style country prefix
+        [InlineData("ID-D", "US", 18, null)] // Country prefix resolved via the separator fallback
+        [InlineData("P", "US", 1000, null)] // Ambiguous outside Indonesia, preferred as the Portuguese "Pornográfico"
         public async Task GetRatingLevel_GivenValidString_Success(string value, string countryCode, int? expectedScore, int? expectedSubScore)
         {
             var localizationManager = Setup(new ServerConfiguration()
