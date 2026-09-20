@@ -38,15 +38,21 @@ public class BaseItemTests
         var previousLibrary = BaseItem.LibraryManager;
         var previousRepository = BaseItem.ItemRepository;
         var previousLogger = BaseItem.Logger;
+        var previousMediaSourceManager = BaseItem.MediaSourceManager;
         var library = new Mock<ILibraryManager>(MockBehavior.Strict);
         var repository = new Mock<MediaBrowser.Controller.Persistence.IItemRepository>(MockBehavior.Strict);
         var directory = new Mock<IDirectoryService>();
         directory.Setup(d => d.IsAccessible(It.IsAny<string>())).Returns(true);
+
+        // The accessibility check reads BaseItem.IsFileProtocol, which goes through this static.
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        mediaSourceManager.Setup(m => m.GetPathProtocol(It.IsAny<string>())).Returns(MediaProtocol.File);
         try
         {
             BaseItem.LibraryManager = library.Object;
             BaseItem.ItemRepository = repository.Object;
             BaseItem.Logger = Microsoft.Extensions.Logging.Abstractions.NullLogger<BaseItem>.Instance;
+            BaseItem.MediaSourceManager = mediaSourceManager.Object;
             var folder = new FailingEnumerationFolder(failAfterFirstChild, accessDenied)
             {
                 Id = Guid.NewGuid(),
@@ -62,6 +68,7 @@ public class BaseItemTests
             BaseItem.LibraryManager = previousLibrary;
             BaseItem.ItemRepository = previousRepository;
             BaseItem.Logger = previousLogger;
+            BaseItem.MediaSourceManager = previousMediaSourceManager;
         }
     }
 
