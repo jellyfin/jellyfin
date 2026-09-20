@@ -120,5 +120,31 @@ namespace Jellyfin.Server.Implementations.Tests.Library
 
             Assert.Null(_resolver.ResolvePath(args));
         }
+
+        [Fact]
+        public void ResolvePath_SeriesFolderWithEpisodeFile_Resolves()
+        {
+            var args = new ItemResolveArgs(
+                Mock.Of<IServerApplicationPaths>(),
+                _libraryManagerMock.Object)
+            {
+                CollectionType = null,
+                FileSystemChildren =
+                [
+                    new FileSystemMetadata
+                    {
+                        FullName = "/media/Show/Show.S01E01.mkv",
+                        IsDirectory = false
+                    }
+                ],
+                FileInfo = new FileSystemMetadata
+                {
+                    FullName = "/media/Show",
+                    IsDirectory = true
+                }
+            };
+
+            Assert.IsType<Series>(_resolver.ResolvePath(args));
+        }
     }
 }
