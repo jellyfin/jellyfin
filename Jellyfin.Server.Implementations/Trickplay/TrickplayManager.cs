@@ -478,6 +478,13 @@ public partial class TrickplayManager : ITrickplayManager
                 var mediaStream = mediaSource.VideoStream;
                 var container = mediaSource.Container;
 
+                // Checks for write permission before generating images
+                if (saveWithMedia)
+                {
+                    _logger.LogDebug("Verifying write permission in media directory {OutputDir}", outputDir);
+                    Directory.CreateDirectory(outputDir.FullName);
+                }
+
                 _logger.LogInformation("Creating trickplay files at {Width} width, for {Path} [ID: {ItemId}]", actualWidth, mediaPath, video.Id);
                 imgTempDir = await _mediaEncoder.ExtractVideoImagesOnIntervalAccelerated(
                     mediaPath,
