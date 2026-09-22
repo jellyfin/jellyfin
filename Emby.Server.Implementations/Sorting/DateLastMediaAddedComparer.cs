@@ -37,58 +37,9 @@ namespace Emby.Server.Implementations.Sorting
         {
             if (x is Folder folder)
             {
-                // Prefer persisted value
                 if (folder.DateLastMediaAdded.HasValue)
                 {
                     return folder.DateLastMediaAdded.Value;
-                }
-
-                // Otherwise compute from children, ignoring sentinel DateTime.MinValue values
-                DateTime? computed = null;
-                try
-                {
-                    var children = folder.Children;
-                    if (children is not null)
-                    {
-                        foreach (var child in children)
-                        {
-                            if (child is null)
-                            {
-                                continue;
-                            }
-
-                            if (child.IsFolder || child.IsVirtualItem)
-                            {
-                                continue;
-                            }
-
-                            var childDate = child.DateCreated;
-                            if (childDate == DateTime.MinValue)
-                            {
-                                continue;
-                            }
-
-                            if (computed is null || childDate > computed.Value)
-                            {
-                                computed = childDate;
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    computed = null;
-                }
-
-                if (computed.HasValue)
-                {
-                    return computed.Value;
-                }
-
-                // Fallback to folder's own DateCreated if present
-                if (folder.DateCreated != DateTime.MinValue)
-                {
-                    return folder.DateCreated;
                 }
             }
 
