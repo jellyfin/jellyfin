@@ -483,6 +483,7 @@ public partial class TrickplayManager : ITrickplayManager
                 {
                     _logger.LogDebug("Verifying write permission in media directory {OutputDir}", outputDir);
                     Directory.CreateDirectory(outputDir.FullName);
+                    File.Create(Path.Combine(outputDir.FullName, ".jellyfin-trickplay"), 1, FileOptions.DeleteOnClose);
                 }
 
                 _logger.LogInformation("Creating trickplay files at {Width} width, for {Path} [ID: {ItemId}]", actualWidth, mediaPath, video.Id);
