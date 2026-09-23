@@ -60,6 +60,7 @@
  - [GodTamIt](https://github.com/GodTamIt)
  - [grafixeyehero](https://github.com/grafixeyehero)
  - [h1nk](https://github.com/h1nk)
+ - [HasanGenis](https://github.com/HasanGenis)
  - [hawken93](https://github.com/hawken93)
  - [HelloWorld017](https://github.com/HelloWorld017)
  - [ikomhoog](https://github.com/ikomhoog)
