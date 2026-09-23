@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -217,6 +218,27 @@ public class SessionManagerTests
         Assert.Throws<SecurityException>(() => sessionManager.ReportCapabilities(attackerSession.Id, victimSession.Id, new ClientCapabilities()));
     }
 
+    [Theory]
+    [InlineData(1.0, 1.0)]
+    [InlineData(1.5, 1.5)]
+    [InlineData(0.05, 0.1)]
+    [InlineData(15.0, 10.0)]
+    public async Task OnPlaybackProgress_Should_ClampSpeed(double inputSpeed, double expectedSpeed)
+    {
+        var user = new User("test", "default", "default");
+        await using var sessionManager = CreateSessionManager(user);
+
+        var session = await LogSessionActivity(sessionManager, user);
+
+        await sessionManager.OnPlaybackProgress(new PlaybackProgressInfo
+        {
+            SessionId = session.Id,
+            Speed = inputSpeed
+        });
+
+        Assert.Equal(expectedSpeed, session.PlayState.Speed);
+    }
+
     private static Emby.Server.Implementations.Session.SessionManager CreateSessionManager(params User[] users)
     {
         var userManager = new Mock<IUserManager>();
@@ -225,11 +247,14 @@ public class SessionManagerTests
             userManager.Setup(i => i.GetUserById(user.Id)).Returns(user);
         }
 
+        var configurationManager = new Mock<IServerConfigurationManager>();
+        configurationManager.Setup(c => c.Configuration).Returns(new ServerConfiguration());
+
         return new Emby.Server.Implementations.Session.SessionManager(
             NullLogger<Emby.Server.Implementations.Session.SessionManager>.Instance,
             Mock.Of<IEventManager>(),
             Mock.Of<IUserDataManager>(),
-            Mock.Of<IServerConfigurationManager>(),
+            configurationManager.Object,
             Mock.Of<ILibraryManager>(),
             userManager.Object,
             Mock.Of<IMusicManager>(),
