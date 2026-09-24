@@ -1739,7 +1739,7 @@ public class ImageController : BaseJellyfinApiController
             var stream = GetFromBase64Stream(Request.Body);
             await using (stream.ConfigureAwait(false))
             {
-                var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+                var fs = AsyncFile.Create(tempPath);
                 await using (fs.ConfigureAwait(false))
                 {
                     await stream.CopyToAsync(fs, CancellationToken.None).ConfigureAwait(false);
