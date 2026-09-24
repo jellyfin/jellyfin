@@ -22,7 +22,6 @@ public class TranscodingSegmentCleaner : IDisposable
     private readonly IFileSystem _fileSystem;
     private readonly IMediaEncoder _mediaEncoder;
     private Timer? _timer;
-    private int _segmentLength;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TranscodingSegmentCleaner"/> class.
@@ -32,7 +31,7 @@ public class TranscodingSegmentCleaner : IDisposable
     /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-    /// <param name="segmentLength">The segment length of this transcoding job.</param>
+    /// <param name="segmentLength">The segment length of this transcoding job. Unused.</param>
     public TranscodingSegmentCleaner(TranscodingJob job, ILogger<TranscodingSegmentCleaner> logger, IConfigurationManager config, IFileSystem fileSystem, IMediaEncoder mediaEncoder, int segmentLength)
     {
         _job = job;
@@ -40,7 +39,6 @@ public class TranscodingSegmentCleaner : IDisposable
         _config = config;
         _fileSystem = fileSystem;
         _mediaEncoder = mediaEncoder;
-        _segmentLength = segmentLength;
     }
 
     /// <summary>
