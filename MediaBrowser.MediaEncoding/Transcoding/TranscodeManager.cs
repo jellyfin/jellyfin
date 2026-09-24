@@ -91,7 +91,6 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         _attachmentExtractor = attachmentExtractor;
 
         _logger = loggerFactory.CreateLogger<TranscodeManager>();
-        DeleteEncodedMediaCache();
         _sessionManager.PlaybackProgress += OnPlaybackProgress;
         _sessionManager.PlaybackStart += OnPlaybackProgress;
     }
@@ -715,7 +714,8 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         }
     }
 
-    private void DeleteEncodedMediaCache()
+    /// <inheritdoc />
+    public void DeleteEncodedMediaCache()
     {
         var path = _serverConfigurationManager.GetTranscodePath();
         if (!Directory.Exists(path))
