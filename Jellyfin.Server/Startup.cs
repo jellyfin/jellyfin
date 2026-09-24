@@ -157,6 +157,7 @@ namespace Jellyfin.Server
             services.AddHostedService<UserDataChangeNotifier>();
             services.AddHostedService<RecordingNotifier>();
             services.AddHostedService<DeviceAccessHost>();
+            services.AddHostedService<TranscodeCacheCleaner>();
         }
 
         /// <summary>
