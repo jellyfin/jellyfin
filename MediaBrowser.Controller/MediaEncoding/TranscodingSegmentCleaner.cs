@@ -104,11 +104,11 @@ public class TranscodingSegmentCleaner : IDisposable
 
             if (downloadPositionSeconds > 0 && segmentKeepSeconds > 0 && downloadPositionSeconds > segmentKeepSeconds)
             {
-                var idxMaxToDelete = (downloadPositionSeconds - segmentKeepSeconds) / _segmentLength;
+                var idxMaxToDelete = _job.GetLastSegmentIndexEndingBefore(downloadPositionTicks - TimeSpan.FromSeconds(segmentKeepSeconds).Ticks);
 
                 if (idxMaxToDelete > 0)
                 {
-                    await DeleteSegmentFiles(_job, 0, idxMaxToDelete, 1500).ConfigureAwait(false);
+                    await DeleteSegmentFiles(_job, 0, idxMaxToDelete.Value, 1500).ConfigureAwait(false);
                 }
             }
         }
