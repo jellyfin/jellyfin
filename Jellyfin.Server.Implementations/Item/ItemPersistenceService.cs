@@ -176,23 +176,165 @@ public class ItemPersistenceService : IItemPersistenceService
     }
 
     /// <inheritdoc />
-    public async Task SaveImagesAsync(BaseItem item, CancellationToken cancellationToken = default)
+    public async Task UpsertProviderIdAsync(Guid itemId, string name, string value, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(item);
-
-        var images = item.ImageInfos.Select(e => BaseItemMapper.MapImageToEntity(item.Id, e)).ToArray();
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentException.ThrowIfNullOrEmpty(value);
 
         var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
-            await context.BaseItemImageInfos
-                .Where(e => e.ItemId == item.Id)
-                .ExecuteDeleteAsync(cancellationToken)
+            // (ItemId, ProviderId) is the primary key, so the row either exists or it does not.
+            var existing = await context.BaseItemProviders
+                .FirstOrDefaultAsync(e => e.ItemId == itemId && e.ProviderId == name, cancellationToken)
                 .ConfigureAwait(false);
 
-            await context.BaseItemImageInfos
-                .AddRangeAsync(images, cancellationToken)
+            if (existing is null)
+            {
+                await context.BaseItemProviders.AddAsync(
+                    new BaseItemProvider
+                    {
+                        ItemId = itemId,
+                        ProviderId = name,
+                        ProviderValue = value,
+                        Item = null!
+                    },
+                    cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                existing.ProviderValue = value;
+            }
+
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveProviderIdAsync(Guid itemId, string name, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            await context.BaseItemProviders
+                .Where(e => e.ItemId == itemId && e.ProviderId == name)
+                .ExecuteDeleteAsync(cancellationToken)
                 .ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task UpsertImageAsync(Guid itemId, ItemImageInfo image, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            var existing = await FindImageAsync(context, itemId, image, cancellationToken).ConfigureAwait(false);
+            var entity = BaseItemMapper.MapImageToEntity(itemId, image);
+
+            if (existing is null)
+            {
+                await context.BaseItemImageInfos.AddAsync(entity, cancellationToken).ConfigureAwait(false);
+                image.Id = entity.Id;
+            }
+            else
+            {
+                existing.Path = entity.Path;
+                existing.ImageType = entity.ImageType;
+                existing.Blurhash = entity.Blurhash;
+                existing.DateModified = entity.DateModified;
+                existing.Width = entity.Width;
+                existing.Height = entity.Height;
+                image.Id = existing.Id;
+            }
+
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveImageAsync(Guid itemId, ItemImageInfo image, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            var existing = await FindImageAsync(context, itemId, image, cancellationToken).ConfigureAwait(false);
+            if (existing is null)
+            {
+                return;
+            }
+
+            context.BaseItemImageInfos.Remove(existing);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Finds the row an image stands for: by its own id where it has one, otherwise by the type and
+    /// path that identify it before it has been stored.
+    /// </summary>
+    private async Task<BaseItemImageInfo?> FindImageAsync(
+        JellyfinDbContext context,
+        Guid itemId,
+        ItemImageInfo image,
+        CancellationToken cancellationToken)
+    {
+        if (!image.Id.IsEmpty())
+        {
+            return await context.BaseItemImageInfos
+                .FirstOrDefaultAsync(e => e.ItemId == itemId && e.Id == image.Id, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        var path = _appHost.ReverseVirtualPath(image.Path);
+        var imageType = (ImageInfoImageType)image.Type;
+        return await context.BaseItemImageInfos
+            .FirstOrDefaultAsync(
+                e => e.ItemId == itemId && e.ImageType == imageType && e.Path == path,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task SaveImagesAsync(BaseItem item, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        // Replacing the stored images is only right if the item holds the whole set. A scan reaches
+        // here through ValidateChildren, where a child may have been read without them and hold
+        // only what a refresh added.
+        var readImages = item.OwnedRowsRead.HasFlag(OwnedItemRows.Images);
+        if (!readImages && item.ImageInfos.Length == 0)
+        {
+            return;
+        }
+
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            if (readImages)
+            {
+                await context.BaseItemImageInfos
+                    .Where(e => e.ItemId == item.Id)
+                    .ExecuteDeleteAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                var images = item.ImageInfos.Select(e => BaseItemMapper.MapImageToEntity(item.Id, e)).ToList();
+                GiveForeignImagesTheirOwnRows(context, images);
+                await context.BaseItemImageInfos
+                    .AddRangeAsync(images, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                MergeUnreadRows(context, [item]);
+            }
 
             try
             {
@@ -253,6 +395,148 @@ public class ItemPersistenceService : IItemPersistenceService
         }
     }
 
+    /// <summary>
+    /// Picks the stored items whose owned rows this save may rewrite: only the ones that read the
+    /// collection, because only they hold the complete set. The rest are merged by <see cref="MergeUnreadRows"/>.
+    /// </summary>
+    private static Guid[] ItemsThatRead(IEnumerable<BaseItemDto> items, OwnedItemRows rows)
+        => [.. items.Where(e => e.OwnedRowsRead.HasFlag(rows)).Select(e => e.Id)];
+
+    /// <summary>
+    /// Gives a fresh row id to each image about to be written whose id belongs to another item's row,
+    /// or to an earlier image in the same write.
+    /// </summary>
+    /// <remarks>
+    /// Images keep their row id across a save, but the objects are shared: a video hands its own to
+    /// its alternate versions. Writing those under their original id would collide with the owner's row.
+    /// </remarks>
+    private static void GiveForeignImagesTheirOwnRows(JellyfinDbContext context, IEnumerable<BaseItemImageInfo> images)
+    {
+        var toWrite = images.ToList();
+        if (toWrite.Count == 0)
+        {
+            return;
+        }
+
+        var owners = context.BaseItemImageInfos
+            .WhereOneOrMany([.. toWrite.Select(e => e.Id).Distinct()], e => e.Id)
+            .Select(e => new { e.Id, e.ItemId })
+            .ToDictionary(e => e.Id, e => e.ItemId);
+
+        var seen = new HashSet<Guid>();
+        foreach (var image in toWrite)
+        {
+            if ((owners.TryGetValue(image.Id, out var owner) && owner != image.ItemId) || !seen.Add(image.Id))
+            {
+                image.Id = Guid.NewGuid();
+                seen.Add(image.Id);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Folds the owned collections these items never read into the stored rows: what they hold is
+    /// only what was added since, so each entry is inserted or updated and nothing is deleted.
+    /// </summary>
+    /// <remarks>
+    /// An entry removed from an unread collection therefore stays stored. That is the price of not
+    /// knowing the set, and a stale row is recoverable where a wrongly deleted one is not.
+    /// </remarks>
+    private static void MergeUnreadRows(JellyfinDbContext context, IReadOnlyList<BaseItemDto> items)
+    {
+        var providerItems = items.Where(e => !e.OwnedRowsRead.HasFlag(OwnedItemRows.Providers) && e.ProviderIds.Count > 0).ToList();
+        if (providerItems.Count > 0)
+        {
+            var stored = context.BaseItemProviders
+                .AsTracking()
+                .WhereOneOrMany([.. providerItems.Select(e => e.Id)], e => e.ItemId)
+                .ToList()
+                .ToLookup(e => e.ItemId);
+
+            foreach (var item in providerItems)
+            {
+                // The key is case-sensitive in the database but not on the item.
+                var rows = new Dictionary<string, BaseItemProvider>(StringComparer.OrdinalIgnoreCase);
+                foreach (var row in stored[item.Id])
+                {
+                    rows.TryAdd(row.ProviderId, row);
+                }
+
+                foreach (var (name, value) in item.ProviderIds)
+                {
+                    if (rows.TryGetValue(name, out var row))
+                    {
+                        row.ProviderValue = value;
+                    }
+                    else
+                    {
+                        context.BaseItemProviders.Add(new BaseItemProvider { ItemId = item.Id, ProviderId = name, ProviderValue = value, Item = null! });
+                    }
+                }
+            }
+        }
+
+        var imageItems = items.Where(e => !e.OwnedRowsRead.HasFlag(OwnedItemRows.Images) && e.ImageInfos.Length > 0).ToList();
+        if (imageItems.Count > 0)
+        {
+            var stored = context.BaseItemImageInfos
+                .AsTracking()
+                .WhereOneOrMany([.. imageItems.Select(e => e.Id)], e => e.ItemId)
+                .ToList()
+                .ToLookup(e => e.ItemId);
+
+            foreach (var item in imageItems)
+            {
+                var rows = stored[item.Id].ToList();
+                foreach (var image in item.ImageInfos)
+                {
+                    // Matched like UpsertImageAsync: by row id, else by what identifies an unstored image.
+                    // Only this item's rows count, since a video shares its image objects with its alternates.
+                    var entity = BaseItemMapper.MapImageToEntity(item.Id, image);
+                    var row = rows.FirstOrDefault(e => !image.Id.IsEmpty() && e.Id == image.Id)
+                        ?? rows.FirstOrDefault(e => e.ImageType == entity.ImageType && e.Path == entity.Path);
+
+                    if (row is null)
+                    {
+                        entity.Id = Guid.NewGuid();
+                        context.BaseItemImageInfos.Add(entity);
+                        rows.Add(entity);
+                    }
+                    else
+                    {
+                        row.Path = entity.Path;
+                        row.Blurhash = entity.Blurhash;
+                        row.DateModified = entity.DateModified;
+                        row.Width = entity.Width;
+                        row.Height = entity.Height;
+                    }
+                }
+            }
+        }
+
+        var lockedFieldItems = items.Where(e => !e.OwnedRowsRead.HasFlag(OwnedItemRows.LockedFields) && e.LockedFields.Length > 0).ToList();
+        if (lockedFieldItems.Count > 0)
+        {
+            var stored = context.BaseItemMetadataFields
+                .WhereOneOrMany([.. lockedFieldItems.Select(e => e.Id)], e => e.ItemId)
+                .Select(e => new { e.ItemId, e.Id })
+                .ToList()
+                .ToLookup(e => e.ItemId, e => e.Id);
+
+            foreach (var item in lockedFieldItems)
+            {
+                var locked = stored[item.Id].ToHashSet();
+                foreach (var field in item.LockedFields.Distinct())
+                {
+                    if (locked.Add((int)field))
+                    {
+                        context.BaseItemMetadataFields.Add(new BaseItemMetadataField { Id = (int)field, ItemId = item.Id, Item = null! });
+                    }
+                }
+            }
+        }
+    }
+
     private void UpdateOrInsertItems(IReadOnlyList<BaseItemDto> items, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(items);
@@ -279,9 +563,15 @@ public class ItemPersistenceService : IItemPersistenceService
         var ids = tuples.Select(f => f.Item.Id).ToArray();
         var existingItems = context.BaseItems.WhereOneOrMany(ids, e => e.Id).Select(f => f.Id).ToHashSet();
 
-        foreach (var item in tuples)
+        var entities = tuples.Select(e => BaseItemMapper.Map(e.Item, _appHost)).ToList();
+        GiveForeignImagesTheirOwnRows(
+            context,
+            entities
+                .Where((e, i) => !existingItems.Contains(e.Id) || tuples[i].Item.OwnedRowsRead.HasFlag(OwnedItemRows.Images))
+                .SelectMany(e => e.Images ?? []));
+
+        foreach (var (item, entity) in tuples.Zip(entities))
         {
-            var entity = BaseItemMapper.Map(item.Item, _appHost);
             entity.TopParentId = item.TopParent?.Id;
 
             if (!existingItems.Contains(entity.Id))
@@ -290,14 +580,29 @@ public class ItemPersistenceService : IItemPersistenceService
             }
             else
             {
-                if (entity.Images is { Count: > 0 })
+                // A collection the item read is rewritten from what it holds. One it never read is
+                // taken out of the graph and merged into the stored rows by MergeUnreadRows instead.
+                if (!item.Item.OwnedRowsRead.HasFlag(OwnedItemRows.Images))
+                {
+                    entity.Images = [];
+                }
+                else if (entity.Images is { Count: > 0 })
                 {
                     context.BaseItemImageInfos.AddRange(entity.Images);
                 }
 
-                if (entity.LockedFields is { Count: > 0 })
+                if (!item.Item.OwnedRowsRead.HasFlag(OwnedItemRows.LockedFields))
+                {
+                    entity.LockedFields = [];
+                }
+                else if (entity.LockedFields is { Count: > 0 })
                 {
                     context.BaseItemMetadataFields.AddRange(entity.LockedFields);
+                }
+
+                if (!item.Item.OwnedRowsRead.HasFlag(OwnedItemRows.Providers))
+                {
+                    entity.Provider = [];
                 }
 
                 context.BaseItems.Attach(entity).State = EntityState.Modified;
@@ -420,12 +725,31 @@ public class ItemPersistenceService : IItemPersistenceService
         }
 
         // Owned rows of updated items are rewritten wholesale; cleared in one statement per table.
+        // Only for the items that read the collection, though: one read without it holds just what
+        // was added since, and clearing on that would delete the lot. Those are merged instead.
         if (existingItems.Count > 0)
         {
-            var updatedIds = existingItems.ToArray();
-            context.BaseItemProviders.WhereOneOrMany(updatedIds, e => e.ItemId).ExecuteDelete();
-            context.BaseItemImageInfos.WhereOneOrMany(updatedIds, e => e.ItemId).ExecuteDelete();
-            context.BaseItemMetadataFields.WhereOneOrMany(updatedIds, e => e.ItemId).ExecuteDelete();
+            var updated = tuples.Select(e => e.Item).Where(e => existingItems.Contains(e.Id)).ToList();
+
+            var providerIds = ItemsThatRead(updated, OwnedItemRows.Providers);
+            if (providerIds.Length > 0)
+            {
+                context.BaseItemProviders.WhereOneOrMany(providerIds, e => e.ItemId).ExecuteDelete();
+            }
+
+            var imageIds = ItemsThatRead(updated, OwnedItemRows.Images);
+            if (imageIds.Length > 0)
+            {
+                context.BaseItemImageInfos.WhereOneOrMany(imageIds, e => e.ItemId).ExecuteDelete();
+            }
+
+            var lockedFieldIds = ItemsThatRead(updated, OwnedItemRows.LockedFields);
+            if (lockedFieldIds.Length > 0)
+            {
+                context.BaseItemMetadataFields.WhereOneOrMany(lockedFieldIds, e => e.ItemId).ExecuteDelete();
+            }
+
+            MergeUnreadRows(context, updated);
         }
 
         context.SaveChanges();
@@ -730,6 +1054,16 @@ public class ItemPersistenceService : IItemPersistenceService
 
         context.SaveChanges();
         transaction.Commit();
+
+        // An inserted item wrote every collection it holds, so from here on it holds the stored set
+        // and may change it in place. A new instance whose id was already stored stays unread.
+        foreach (var (item, _, _, _, _) in tuples)
+        {
+            if (!existingItems.Contains(item.Id))
+            {
+                item.MarkOwnedRowsRead(OwnedItemRows.All);
+            }
+        }
     }
 
     private static List<(ItemValueType MagicNumber, string Value)> GetItemValuesToSave(BaseItemDto item, List<string> inheritedTags)

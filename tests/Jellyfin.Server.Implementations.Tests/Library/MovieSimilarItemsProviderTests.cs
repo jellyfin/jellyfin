@@ -130,6 +130,25 @@ public sealed class MovieSimilarItemsProviderTests : SqliteDbTestFixture
         Assert.DoesNotContain(_sameLibraryVersion, items);
     }
 
+    /// <summary>
+    /// Item queries read the links separately rather than joining them, so this provider has to ask
+    /// for them too: an empty <see cref="MediaBrowser.Controller.Entities.Video.LinkedAlternateVersions"/>
+    /// reads as "one media source", which would under-report versions on every suggestion.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+    [Fact]
+    public async Task GetSimilarItems_Results_CarryTheirMergedVersions()
+    {
+        var results = await _provider.GetSimilarItemsAsync(
+            new Movie { Id = _source, Name = "Source" },
+            new SimilarItemsQuery { User = _user, Limit = 10, DtoOptions = new DtoOptions() },
+            CancellationToken.None).ConfigureAwait(true);
+
+        var match = Assert.Single(results, e => e.Id.Equals(_similar));
+        var link = Assert.Single(Assert.IsAssignableFrom<MediaBrowser.Controller.Entities.Video>(match).LinkedAlternateVersions);
+        Assert.Equal(_similarAlternate, link.ItemId);
+    }
+
     private void RestrictUserTo(params Guid[] libraryIds)
     {
         _libraryManager
@@ -177,6 +196,16 @@ public sealed class MovieSimilarItemsProviderTests : SqliteDbTestFixture
 
         context.Users.Add(_user);
         context.ItemValues.AddRange(shared, other, crossLibrary);
+        context.SaveChanges();
+
+        // The link that makes "Similar 4K" a version of "Similar" rather than a separate movie.
+        context.LinkedChildren.Add(new Jellyfin.Database.Implementations.Entities.LinkedChildEntity
+        {
+            ParentId = _similar,
+            ChildId = _similarAlternate,
+            ChildType = Jellyfin.Database.Implementations.Entities.LinkedChildType.LinkedAlternateVersion,
+            SortOrder = 0
+        });
         context.ItemValuesMap.AddRange(
             CreateMap(source, shared),
             CreateMap(sourceAlternate, shared),

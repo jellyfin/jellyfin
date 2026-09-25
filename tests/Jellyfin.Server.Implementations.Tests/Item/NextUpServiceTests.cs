@@ -24,6 +24,7 @@ public sealed class NextUpServiceTests : SqliteDbTestFixture
 
     private readonly Guid _playedViaAlternate = Guid.NewGuid();
     private readonly Guid _unplayed = Guid.NewGuid();
+    private readonly Guid _unplayedMergedVersion = Guid.NewGuid();
 
     public NextUpServiceTests()
     {
@@ -51,6 +52,25 @@ public sealed class NextUpServiceTests : SqliteDbTestFixture
 
         Assert.Equal(_playedViaAlternate, batch.LastWatched?.Id);
         Assert.Equal(_unplayed, batch.NextUp?.Id);
+    }
+
+    /// <summary>
+    /// Item queries read the links in a statement of their own rather than joining them, so Next Up
+    /// has to ask for them too: several callers read an empty <see cref="Video.LinkedAlternateVersions"/>
+    /// as "one media source", which would quietly drop a merged version from the episode it offers.
+    /// </summary>
+    [Fact]
+    public void GetNextUpEpisodesBatch_OfferedEpisode_CarriesItsMergedVersions()
+    {
+        var batch = _service.GetNextUpEpisodesBatch(
+            new InternalItemsQuery(_user),
+            [SeriesKey],
+            includeSpecials: false,
+            includeWatchedForRewatching: false)[SeriesKey];
+
+        var nextUp = Assert.IsAssignableFrom<Video>(batch.NextUp);
+        var link = Assert.Single(nextUp.LinkedAlternateVersions);
+        Assert.Equal(_unplayedMergedVersion, link.ItemId);
     }
 
     private void Seed(JellyfinDbContext context)
@@ -84,6 +104,28 @@ public sealed class NextUpServiceTests : SqliteDbTestFixture
             ParentId = _playedViaAlternate,
             ChildId = alternateId,
             ChildType = LinkedChildType.LocalAlternateVersion,
+            SortOrder = 0
+        });
+
+        // A version merged onto the episode Next Up offers, so the result has to carry it.
+        context.BaseItems.Add(new BaseItemEntity
+        {
+            Id = _unplayedMergedVersion,
+            Type = EpisodeType,
+            Name = "Episode 2 4K",
+            SeriesPresentationUniqueKey = SeriesKey,
+            ParentIndexNumber = 1,
+            IndexNumber = 2,
+            PresentationUniqueKey = _unplayed.ToString("N"),
+            PrimaryVersionId = _unplayed
+        });
+        context.SaveChanges();
+
+        context.LinkedChildren.Add(new LinkedChildEntity
+        {
+            ParentId = _unplayed,
+            ChildId = _unplayedMergedVersion,
+            ChildType = LinkedChildType.LinkedAlternateVersion,
             SortOrder = 0
         });
 

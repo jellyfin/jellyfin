@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Jellyfin.Database.Implementations;
@@ -100,6 +101,23 @@ public interface IItemQueryHelpers
     Expression<Func<BaseItemEntity, bool>> BuildHasDescendantFilter(
         JellyfinDbContext context,
         IQueryable<BaseItemEntity> descendants);
+
+    /// <summary>
+    /// Reads the collections a result set's items own - their links, provider ids, locked fields,
+    /// user data and images - one statement per collection, and attaches them.
+    /// </summary>
+    /// <remarks>
+    /// Item queries do not join these, because together their row count is the product of each
+    /// item's child counts and every row in it repeats the whole item row. Any path that
+    /// materializes items has to call this, or they come back with those collections unread - which
+    /// renders wrong rather than failing, so it is covered by a test that enumerates the query
+    /// entry points.
+    /// </remarks>
+    /// <param name="context">The database context to read from.</param>
+    /// <param name="filter">The query whose DtoOptions decide which collections to read.</param>
+    /// <param name="items">The materialized items to attach the collections to.</param>
+    /// <returns>The same items, for chaining.</returns>
+    IReadOnlyList<BaseItem> LoadCollections(JellyfinDbContext context, InternalItemsQuery filter, IReadOnlyList<BaseItem> items);
 
     /// <summary>
     /// Deserializes a <see cref="BaseItemEntity"/> into a <see cref="BaseItem"/>.
