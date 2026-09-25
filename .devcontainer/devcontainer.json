@@ -33,7 +33,7 @@
                 "libfontconfig1"
             ]
         },
-        "ghcr.io/devcontainers/features/docker-in-docker:3": {
+        "ghcr.io/devcontainers/features/docker-in-docker:4": {
             "dockerDashComposeVersion": "v2"
         },
         "ghcr.io/devcontainers/features/github-cli:1": {},
