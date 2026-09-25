@@ -25,5 +25,15 @@ namespace Jellyfin.Naming.Tests.TV
             Assert.Equal(name, res.SeriesName);
             Assert.True(res.Success);
         }
+
+        [Theory]
+        [InlineData("/media/Jujutsu Kaisen (BD_1280x720)")]
+        [InlineData("/media/Show.1920x1080.BluRay")]
+        public void SeriesPathParser_ResolutionPatternIsNotASeries(string path)
+        {
+            var res = SeriesPathParser.Parse(_namingOptions, path);
+
+            Assert.False(res.Success);
+        }
     }
 }
