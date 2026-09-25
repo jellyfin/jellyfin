@@ -46,9 +46,9 @@ public class BaseItemTests
         var directory = new Mock<IDirectoryService>();
         directory.Setup(d => d.IsAccessible(It.IsAny<string>())).Returns(true);
 
-        // The accessibility check reads BaseItem.IsFileProtocol, which goes through this static.
+        // IsLibraryFolderAccessible reads FileNameWithoutExtension, which resolves the path protocol
         var mediaSourceManager = new Mock<IMediaSourceManager>();
-        mediaSourceManager.Setup(m => m.GetPathProtocol(It.IsAny<string>())).Returns(MediaProtocol.File);
+        mediaSourceManager.Setup(x => x.GetPathProtocol(It.IsAny<string>())).Returns(MediaProtocol.File);
         try
         {
             BaseItem.LibraryManager = library.Object;
