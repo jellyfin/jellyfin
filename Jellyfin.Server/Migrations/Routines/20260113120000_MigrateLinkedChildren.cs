@@ -328,8 +328,11 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
         // but no LinkedChild entry references them — meaning they're orphaned alternate versions.
         // This happens when a version file is renamed: the old BaseItem remains in the DB
         // with a stale OwnerId but nothing links to it anymore.
+        // An alternate version is always a media file, so folders are out of scope here. Playlists and
+        // box sets are folders that hold nothing but their LinkedChildren, and a stray OwnerId on one
+        // of them would otherwise delete user data that no library scan can bring back.
         var orphanedVersionIds = context.BaseItems
-            .Where(b => b.OwnerId.HasValue && b.ExtraType == null)
+            .Where(b => b.OwnerId.HasValue && b.ExtraType == null && !b.IsFolder)
             .Where(b => !context.LinkedChildren.Any(lc => lc.ChildId.Equals(b.Id)))
             .Select(b => b.Id)
             .ToList();
@@ -356,6 +359,9 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
         var orphanedIds = context.BaseItems
             .Where(b => b.TopParentId.HasValue)
             .Where(b => !context.BaseItems.Any(lib => lib.Id.Equals(b.TopParentId!.Value)))
+            .Select(b => new { b.Id, b.Path })
+            .ToList()
+            .Where(b => !IsInternalData(b.Path))
             .Select(b => b.Id)
             .ToList();
 
@@ -439,8 +445,12 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
             // Expand virtual path placeholders (%AppDataPath%, %MetadataPath%) to real paths
             var path = _appHost.ExpandVirtualPath(item.Path!);
 
-            // Skip items stored under internal metadata (images, subtitles, trickplay, etc.)
-            if (path.StartsWith(internalMetadataPath, StringComparison.OrdinalIgnoreCase))
+            // Skip items stored under internal metadata (images, subtitles, trickplay, etc.) and
+            // everything the server keeps in its own data directory (playlists, collections). None of
+            // those belong to a library, so the "outside every library location" rule below would
+            // delete them all.
+            if (path.StartsWith(internalMetadataPath, StringComparison.OrdinalIgnoreCase)
+                || path.StartsWith(_appPaths.DataPath, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
@@ -492,6 +502,17 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
         var deleted = ResolveAndDeleteItems(staleIds, "items with missing files");
 
         _logger.LogInformation("Removed {Count} stale items.", deleted);
+    }
+
+    /// <summary>
+    /// Playlists and collections live in the server's own data directory rather than in a library.
+    /// Every rule in this routine is about library media, and none of them can be applied to an item
+    /// no library owns without deleting user data that no rescan can bring back.
+    /// </summary>
+    private bool IsInternalData(string? path)
+    {
+        return !string.IsNullOrEmpty(path)
+            && _appHost.ExpandVirtualPath(path).StartsWith(_appPaths.DataPath, StringComparison.OrdinalIgnoreCase);
     }
 
     private int ResolveAndDeleteItems(IReadOnlyCollection<Guid> ids, string description)
