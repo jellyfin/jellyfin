@@ -299,6 +299,7 @@ public sealed partial class BaseItemRepository
                 }
 
                 item.ProviderIds = dictionary;
+                item.MarkOwnedRowsRead(OwnedItemRows.Providers);
             }
         }
 
@@ -313,6 +314,7 @@ public sealed partial class BaseItemRepository
             foreach (var (id, item) in byId)
             {
                 item.LockedFields = [.. lockedFields[id].Select(e => (MetadataField)e.Id)];
+                item.MarkOwnedRowsRead(OwnedItemRows.LockedFields);
             }
         }
 
@@ -343,6 +345,7 @@ public sealed partial class BaseItemRepository
             foreach (var (id, item) in byId)
             {
                 item.ImageInfos = [.. images[id].Select(e => BaseItemMapper.MapImageFromEntity(e, _appHost))];
+                item.MarkOwnedRowsRead(OwnedItemRows.Images);
             }
         }
 

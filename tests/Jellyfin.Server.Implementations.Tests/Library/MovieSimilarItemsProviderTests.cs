@@ -135,6 +135,7 @@ public sealed class MovieSimilarItemsProviderTests : SqliteDbTestFixture
     /// for them too: an empty <see cref="MediaBrowser.Controller.Entities.Video.LinkedAlternateVersions"/>
     /// reads as "one media source", which would under-report versions on every suggestion.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     public async Task GetSimilarItems_Results_CarryTheirMergedVersions()
     {

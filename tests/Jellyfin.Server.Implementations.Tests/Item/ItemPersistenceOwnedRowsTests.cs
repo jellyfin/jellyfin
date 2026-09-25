@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -143,28 +144,145 @@ public sealed class ItemPersistenceOwnedRowsTests : SqliteDbTestFixture
     }
 
     /// <summary>
-    /// Changing one entry of a set the item never read is refused, not half-applied. Writing it
-    /// would keep the new entry and drop every stored one, which is worse than not writing at all;
-    /// the targeted writers exist for this.
+    /// An entry added to a set the item never read is merged in. Rewriting from it would keep the
+    /// new entry and drop every stored one; refusing it would lose the entry instead.
     /// </summary>
     [Fact]
-    public void SaveItems_CollectionFilledInOnAnUnreadItem_IsRefused()
+    public void SaveItems_CollectionFilledInOnAnUnreadItem_IsMergedIn()
     {
         var item = Read(DtoOptions.StoredColumnsOnly);
         item.ProviderIds["Imdb"] = "tt0111161";
 
         _service.SaveItems([item], CancellationToken.None);
 
+        Assert.Equal(
+            new Dictionary<string, string> { ["Imdb"] = "tt0111161", ["Tmdb"] = "603" },
+            StoredProviders(_movieId));
+    }
+
+    /// <summary>
+    /// Assigning a whole collection does not make it read, because the value is usually derived from
+    /// the unread one. It is merged, matching the stored key regardless of case.
+    /// </summary>
+    [Fact]
+    public void SaveItems_CollectionAssignedOnAnUnreadItem_IsMergedIn()
+    {
+        var item = Read(DtoOptions.StoredColumnsOnly);
+        item.ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["tmdb"] = "604" };
+
+        _service.SaveItems([item], CancellationToken.None);
+
+        Assert.Equal(new Dictionary<string, string> { ["Tmdb"] = "604" }, StoredProviders(_movieId));
+    }
+
+    /// <summary>
+    /// AddImage builds a new array from the unread empty one. Saving it must add the image, not
+    /// replace the stored ones with it - and saving again must not add it twice.
+    /// </summary>
+    [Fact]
+    public void SaveItems_ImageAddedToAnUnreadItem_KeepsTheStoredOnes()
+    {
+        var item = Read(DtoOptions.StoredColumnsOnly);
+        item.AddImage(new ItemImageInfo { Path = "/movies/backdrop.jpg", Type = ImageType.Backdrop });
+
+        _service.SaveItems([item], CancellationToken.None);
+        _service.SaveItems([item], CancellationToken.None);
+
+        AssertStoredCounts(images: 2, providers: 1, lockedFields: 1);
+    }
+
+    /// <summary>
+    /// Locking a field on an item that never read its locks adds to the stored ones.
+    /// </summary>
+    [Fact]
+    public void SaveItems_FieldLockedOnAnUnreadItem_KeepsTheStoredLocks()
+    {
+        var item = Read(DtoOptions.StoredColumnsOnly);
+        item.LockedFields = [MetadataField.Overview];
+
+        _service.SaveItems([item], CancellationToken.None);
+
+        AssertStoredCounts(images: 1, providers: 1, lockedFields: 2);
+    }
+
+    /// <summary>
+    /// A video hands its image objects, row ids included, to its alternate versions. Each item must
+    /// still get rows of its own rather than colliding with the other's.
+    /// </summary>
+    [Fact]
+    public void SaveItems_ImagesSharedWithAnotherItem_GiveEachItsOwnRows()
+    {
+        var other = new Movie { Id = Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-000000000003"), Name = "Other", Path = "/movies/other.mkv" };
+        _service.SaveItems([other], CancellationToken.None);
+
+        other.ImageInfos = Read(new DtoOptions()).ImageInfos;
+        _service.SaveItems([other], CancellationToken.None);
+
         using var context = CreateDbContext();
-        var providers = context.BaseItemProviders.Where(e => e.ItemId.Equals(_movieId)).ToList();
-        var stored = Assert.Single(providers);
-        Assert.Equal("Tmdb", stored.ProviderId);
+        var original = Assert.Single(context.BaseItemImageInfos.Where(e => e.ItemId.Equals(_movieId)));
+        var copy = Assert.Single(context.BaseItemImageInfos.Where(e => e.ItemId.Equals(other.Id)));
+        Assert.NotEqual(original.Id, copy.Id);
+    }
+
+    /// <summary>
+    /// Once a new item is inserted it holds exactly what is stored. Providers fill its ids in place
+    /// after that first save, and the next one must still write them.
+    /// </summary>
+    [Fact]
+    public void SaveItems_NewItemGivenProviderIdsInPlace_WritesThem()
+    {
+        var item = new Movie
+        {
+            Id = Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-000000000002"),
+            Name = "New Movie",
+            Path = "/movies/new.mkv"
+        };
+        _service.SaveItems([item], CancellationToken.None);
+
+        item.TrySetProviderId(MetadataProvider.Tmdb, "550");
+        _service.SaveItems([item], CancellationToken.None);
+
+        using var context = CreateDbContext();
+        var stored = Assert.Single(context.BaseItemProviders.Where(e => e.ItemId.Equals(item.Id)));
+        Assert.Equal("550", stored.ProviderValue);
+    }
+
+    /// <summary>
+    /// A new instance built for an id that is already stored knows nothing of that id's rows, so
+    /// saving it must not take its empty collections as the item's state - a user's locked fields
+    /// included.
+    /// </summary>
+    [Fact]
+    public void SaveItems_NewInstanceForAStoredId_DoesNotDeleteItsRows()
+    {
+        var item = new Movie { Id = _movieId, Name = "Movie", Path = "/movies/movie.mkv" };
+
+        _service.SaveItems([item], CancellationToken.None);
+
+        AssertStoredCounts(images: 1, providers: 1, lockedFields: 1);
+    }
+
+    /// <summary>
+    /// Nor may it swap in the one id it was given for the stored set; the id is merged in.
+    /// </summary>
+    [Fact]
+    public void SaveItems_NewInstanceForAStoredIdGivenProviderIds_MergesThem()
+    {
+        var item = new Movie { Id = _movieId, Name = "Movie", Path = "/movies/movie.mkv" };
+        item.TrySetProviderId(MetadataProvider.Imdb, "tt0111161");
+
+        _service.SaveItems([item], CancellationToken.None);
+
+        Assert.Equal(
+            new Dictionary<string, string> { ["Imdb"] = "tt0111161", ["Tmdb"] = "603" },
+            StoredProviders(_movieId));
     }
 
     /// <summary>
     /// SaveImagesAsync replaces the stored images outright, so it needs the same guard as SaveItems:
     /// a scan reaches it through ValidateChildren with children that may not carry their images.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     public async Task SaveImagesAsync_ItemReadWithoutImages_DoesNotDeleteThem()
     {
@@ -176,8 +294,24 @@ public sealed class ItemPersistenceOwnedRowsTests : SqliteDbTestFixture
     }
 
     /// <summary>
+    /// An image a refresh added to an item read without its images is merged in by SaveImagesAsync too.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+    [Fact]
+    public async Task SaveImagesAsync_ImageAddedToAnUnreadItem_IsMergedIn()
+    {
+        var item = Read(DtoOptions.StoredColumnsOnly);
+        item.AddImage(new ItemImageInfo { Path = "/movies/backdrop.jpg", Type = ImageType.Backdrop });
+
+        await _service.SaveImagesAsync(item, CancellationToken.None).ConfigureAwait(true);
+
+        AssertStoredCounts(images: 2, providers: 1, lockedFields: 1);
+    }
+
+    /// <summary>
     /// An item that did read its images still writes them.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     public async Task SaveImagesAsync_ItemReadWithImages_ReplacesThem()
     {
@@ -208,6 +342,7 @@ public sealed class ItemPersistenceOwnedRowsTests : SqliteDbTestFixture
     /// <summary>
     /// The way to change one provider id without holding the rest: the others survive.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     public async Task UpsertProviderIdAsync_NewProvider_LeavesTheOthersAlone()
     {
@@ -226,6 +361,7 @@ public sealed class ItemPersistenceOwnedRowsTests : SqliteDbTestFixture
     /// <summary>
     /// Writing one that already exists updates it rather than failing on the primary key.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     public async Task UpsertProviderIdAsync_ExistingProvider_UpdatesTheValue()
     {
@@ -239,6 +375,7 @@ public sealed class ItemPersistenceOwnedRowsTests : SqliteDbTestFixture
     /// <summary>
     /// Removing one leaves the rest.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     public async Task RemoveProviderIdAsync_LeavesTheOthersAlone()
     {
@@ -268,6 +405,7 @@ public sealed class ItemPersistenceOwnedRowsTests : SqliteDbTestFixture
     /// <summary>
     /// Adding one image leaves the item's other images alone.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     public async Task UpsertImageAsync_NewImage_LeavesTheOthersAlone()
     {
@@ -286,6 +424,7 @@ public sealed class ItemPersistenceOwnedRowsTests : SqliteDbTestFixture
     /// <summary>
     /// Writing an image that is already stored updates its row rather than adding a duplicate.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     public async Task UpsertImageAsync_ExistingImage_UpdatesItInPlace()
     {
@@ -304,6 +443,7 @@ public sealed class ItemPersistenceOwnedRowsTests : SqliteDbTestFixture
     /// <summary>
     /// An image with no id yet is matched on the type and path that identify it.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     public async Task UpsertImageAsync_UnstoredImageMatchingByPath_DoesNotDuplicate()
     {
@@ -319,6 +459,7 @@ public sealed class ItemPersistenceOwnedRowsTests : SqliteDbTestFixture
     /// <summary>
     /// Removing one image leaves the rest.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     public async Task RemoveImageAsync_LeavesTheOthersAlone()
     {
@@ -347,6 +488,15 @@ public sealed class ItemPersistenceOwnedRowsTests : SqliteDbTestFixture
             ItemIds = [_movieId],
             DtoOptions = options
         }).OfType<Movie>().Single();
+
+    private Dictionary<string, string> StoredProviders(Guid itemId)
+    {
+        using var context = CreateDbContext();
+        return context.BaseItemProviders
+            .Where(e => e.ItemId.Equals(itemId))
+            .OrderBy(e => e.ProviderId)
+            .ToDictionary(e => e.ProviderId, e => e.ProviderValue);
+    }
 
     private void AssertStoredCounts(int images, int providers, int lockedFields)
     {

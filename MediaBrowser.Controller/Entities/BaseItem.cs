@@ -102,12 +102,6 @@ namespace MediaBrowser.Controller.Entities
 
         private string _originalLanguage;
 
-        private ItemImageInfo[] _imageInfos;
-
-        private MetadataField[] _lockedFields;
-
-        private Dictionary<string, string> _providerIds;
-
         public const char SlugChar = '-';
 
         protected BaseItem()
@@ -115,11 +109,9 @@ namespace MediaBrowser.Controller.Entities
             Tags = Array.Empty<string>();
             Genres = Array.Empty<string>();
             Studios = Array.Empty<string>();
-            // Straight to the fields: a new item has read nothing, and going through the setters
-            // would mark every one of these as read before anything has looked at storage.
-            _providerIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            _lockedFields = Array.Empty<MetadataField>();
-            _imageInfos = Array.Empty<ItemImageInfo>();
+            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            LockedFields = Array.Empty<MetadataField>();
+            ImageInfos = Array.Empty<ItemImageInfo>();
             ProductionLocations = Array.Empty<string>();
             RemoteTrailers = Array.Empty<MediaUrl>();
             UserData = [];
@@ -148,19 +140,11 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the images this item owns.
         /// </summary>
         /// <remarks>
-        /// Saving the item rewrites the stored rows from this array, so an item read without its
-        /// images holds an empty one that means "not read", not "none" — see <see cref="OwnedRowsRead"/>.
+        /// An item read without its images holds only the ones added since, not the stored set — see
+        /// <see cref="OwnedRowsRead"/>.
         /// </remarks>
         [JsonIgnore]
-        public virtual ItemImageInfo[] ImageInfos
-        {
-            get => _imageInfos;
-            set
-            {
-                _imageInfos = value;
-                OwnedRowsRead |= OwnedItemRows.Images;
-            }
-        }
+        public virtual ItemImageInfo[] ImageInfos { get; set; }
 
         [JsonIgnore]
         public bool IsVirtualItem { get; set; }
@@ -471,15 +455,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The locked fields.</value>
         [JsonIgnore]
-        public MetadataField[] LockedFields
-        {
-            get => _lockedFields;
-            set
-            {
-                _lockedFields = value;
-                OwnedRowsRead |= OwnedItemRows.LockedFields;
-            }
-        }
+        public MetadataField[] LockedFields { get; set; }
 
         /// <summary>
         /// Gets the type of the media.
@@ -762,23 +738,17 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The provider ids.</value>
         [JsonIgnore]
-        public Dictionary<string, string> ProviderIds
-        {
-            get => _providerIds;
-            set
-            {
-                _providerIds = value;
-                OwnedRowsRead |= OwnedItemRows.Providers;
-            }
-        }
+        public Dictionary<string, string> ProviderIds { get; set; }
 
         /// <summary>
         /// Gets the owned collections that have been read from storage on this instance.
         /// </summary>
         /// <remarks>
-        /// An unread collection is empty and a genuinely empty one is too, so only this tells the
-        /// save path which stored rows it is entitled to rewrite. Assigning a collection counts as
-        /// reading it: whatever put a value there knows the complete set.
+        /// Only storage sets these: a query that loaded the collection, or the insert that wrote it (see
+        /// <see cref="MarkOwnedRowsRead"/>). Saving rewrites a read collection wholesale, so removals
+        /// persist; an unread one holds only what was added to it, so saving merges it into the stored
+        /// rows instead. Assigning a collection does not make it read, because the new value is usually
+        /// derived from the old, and a new instance may share its id with rows it knows nothing about.
         /// </remarks>
         [JsonIgnore]
         public OwnedItemRows OwnedRowsRead { get; private set; }
@@ -1549,6 +1519,16 @@ namespace MediaBrowser.Controller.Entities
         public Task RefreshMetadata(CancellationToken cancellationToken)
         {
             return RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(FileSystem)), cancellationToken);
+        }
+
+        /// <summary>
+        /// Records that these owned collections hold exactly what is stored, as after reading or
+        /// inserting them.
+        /// </summary>
+        /// <param name="rows">The collections storage has just filled or written.</param>
+        public void MarkOwnedRowsRead(OwnedItemRows rows)
+        {
+            OwnedRowsRead |= rows;
         }
 
         /// <summary>

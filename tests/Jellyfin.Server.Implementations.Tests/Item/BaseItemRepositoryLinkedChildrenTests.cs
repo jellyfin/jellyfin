@@ -315,6 +315,7 @@ public sealed class BaseItemRepositoryLinkedChildrenTests : SqliteDbTestFixture
     /// The whole point of reading them separately: the item query joins none of them, so its row
     /// count is the number of items rather than the product of their child counts.
     /// </summary>
+    /// <param name="table">The owned table that must not appear in the item query.</param>
     [Theory]
     [InlineData("LinkedChildren")]
     [InlineData("BaseItemProviders")]

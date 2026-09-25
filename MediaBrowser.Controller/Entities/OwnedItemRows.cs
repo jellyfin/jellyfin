@@ -9,8 +9,8 @@ namespace MediaBrowser.Controller.Entities
     /// <remarks>
     /// A query only reads these when the caller's <c>DtoOptions</c> asks for them, and an unread
     /// collection is indistinguishable from an empty one by its contents alone. Items track which
-    /// of these they have actually read so the save path can leave the rest of the stored rows
-    /// alone instead of taking "nothing here" as "delete everything".
+    /// of these they have actually read so the save path merges into the rest of the stored rows
+    /// instead of taking "nothing here" as "delete everything".
     /// </remarks>
     [Flags]
     public enum OwnedItemRows
@@ -33,6 +33,11 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The metadata fields locked against refresh.
         /// </summary>
-        LockedFields = 4
+        LockedFields = 4,
+
+        /// <summary>
+        /// Every owned collection.
+        /// </summary>
+        All = Images | Providers | LockedFields
     }
 }

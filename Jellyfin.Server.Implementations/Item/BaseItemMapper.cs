@@ -126,6 +126,7 @@ public static class BaseItemMapper
         if (entity.Provider is not null)
         {
             dto.ProviderIds = entity.Provider.ToDictionary(e => e.ProviderId, e => e.ProviderValue);
+            dto.MarkOwnedRowsRead(OwnedItemRows.Providers);
         }
 
         if (entity.ExtraType is not null)
@@ -136,6 +137,7 @@ public static class BaseItemMapper
         if (entity.LockedFields is not null)
         {
             dto.LockedFields = entity.LockedFields?.Select(e => (MetadataField)e.Id).ToArray() ?? [];
+            dto.MarkOwnedRowsRead(OwnedItemRows.LockedFields);
         }
 
         if (entity.Audio is not null)
@@ -216,6 +218,7 @@ public static class BaseItemMapper
         if (entity.Images is not null)
         {
             dto.ImageInfos = entity.Images.Select(e => MapImageFromEntity(e, appHost)).ToArray();
+            dto.MarkOwnedRowsRead(OwnedItemRows.Images);
         }
 
         if (dto is IHasStartDate hasStartDate)
