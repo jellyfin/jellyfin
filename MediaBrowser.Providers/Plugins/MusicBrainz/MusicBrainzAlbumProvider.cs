@@ -70,7 +70,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
 
         if (!string.IsNullOrWhiteSpace(artistMusicBrainzId))
         {
-            var releaseSearchResults = await query.FindReleasesAsync($"\"{searchInfo.Name}\" AND arid:{artistMusicBrainzId}", null, null, false, cancellationToken)
+            var releaseSearchResults = await query.FindReleasesWithRetryAsync($"\"{searchInfo.Name}\" AND arid:{artistMusicBrainzId}", _logger, cancellationToken)
                 .ConfigureAwait(false);
 
             if (releaseSearchResults.Results.Count > 0)
@@ -83,7 +83,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
             // I'm sure there is a better way but for now it resolves search for 12" Mixes
             var queryName = searchInfo.Name.Replace("\"", string.Empty, StringComparison.Ordinal);
 
-            var releaseSearchResults = await query.FindReleasesAsync($"\"{queryName}\" AND artist:\"{searchInfo.GetAlbumArtist()}\"c", null, null, false, cancellationToken)
+            var releaseSearchResults = await query.FindReleasesWithRetryAsync($"\"{queryName}\" AND artist:\"{searchInfo.GetAlbumArtist()}\"c", _logger, cancellationToken)
                 .ConfigureAwait(false);
 
             if (releaseSearchResults.Results.Count > 0)
@@ -200,13 +200,13 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
 
             if (!string.IsNullOrEmpty(artistMusicBrainzId))
             {
-                var releaseSearchResults = await query.FindReleasesAsync($"\"{info.Name}\" AND arid:{artistMusicBrainzId}", null, null, false, cancellationToken)
+                var releaseSearchResults = await query.FindReleasesWithRetryAsync($"\"{info.Name}\" AND arid:{artistMusicBrainzId}", _logger, cancellationToken)
                     .ConfigureAwait(false);
                 releaseResult = releaseSearchResults.Results.Count > 0 ? releaseSearchResults.Results[0].Item : null;
             }
             else if (!string.IsNullOrEmpty(info.GetAlbumArtist()))
             {
-                var releaseSearchResults = await query.FindReleasesAsync($"\"{info.Name}\" AND artist:{info.GetAlbumArtist()}", null, null, false, cancellationToken)
+                var releaseSearchResults = await query.FindReleasesWithRetryAsync($"\"{info.Name}\" AND artist:{info.GetAlbumArtist()}", _logger, cancellationToken)
                     .ConfigureAwait(false);
                 releaseResult = releaseSearchResults.Results.Count > 0 ? releaseSearchResults.Results[0].Item : null;
             }
