@@ -457,6 +457,11 @@ namespace Emby.Server.Implementations.Session
             session.PlayState.RepeatMode = info.RepeatMode;
             session.PlayState.PlaybackOrder = info.PlaybackOrder;
             session.PlaylistItemId = info.PlaylistItemId;
+
+            if (info.NowPlayingQueue?.Length > 0)
+            {
+                session.NowPlayingQueue = info.NowPlayingQueue;
+            }
         }
 
         /// <summary>
