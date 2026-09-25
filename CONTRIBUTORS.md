@@ -248,6 +248,7 @@
  - [Mateus Bandeira](https://github.com/mateusbandeiraa)
  - [TheDreadPirate](https://github.com/thedreaddpirate)
  - [Mateus Bandeira](https://github.com/mateusbandeiraa)
+ - [TheDreadPirate](https://github.com/thedreaddpirate)
 
 # Emby Contributors
 
