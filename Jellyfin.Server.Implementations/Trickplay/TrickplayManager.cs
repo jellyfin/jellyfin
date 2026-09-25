@@ -11,6 +11,7 @@ using AsyncKeyedLock;
 using J2N.Collections.Generic.Extensions;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -483,7 +484,7 @@ public partial class TrickplayManager : ITrickplayManager
                 {
                     _logger.LogDebug("Verifying write permission in media directory {OutputDir}", outputDir);
                     Directory.CreateDirectory(outputDir.FullName);
-                    File.Create(Path.Combine(outputDir.FullName, ".jellyfin-trickplay"), 1, FileOptions.DeleteOnClose);
+                    FileHelper.CreateEmpty(Path.Combine(outputDir.FullName, ".jellyfin-trickplay"));
                 }
 
                 _logger.LogInformation("Creating trickplay files at {Width} width, for {Path} [ID: {ItemId}]", actualWidth, mediaPath, video.Id);
