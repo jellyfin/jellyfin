@@ -22,7 +22,7 @@ namespace Emby.Server.Implementations.Session
 
         private readonly List<IWebSocketConnection> _sockets;
         private readonly ReaderWriterLockSlim _socketsLock;
-        private bool _disposed = false;
+        private int _disposed;
 
         public WebSocketController(
             ILogger<WebSocketController> logger,
@@ -40,7 +40,7 @@ namespace Emby.Server.Implementations.Session
         {
             get
             {
-                ObjectDisposedException.ThrowIf(_disposed, this);
+                ObjectDisposedException.ThrowIf(_disposed != 0, this);
                 try
                 {
                     _socketsLock.EnterReadLock();
@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.Session
         public void AddWebSocket(IWebSocketConnection connection)
         {
             _logger.LogDebug("Adding websocket to session {Session}", _session.Id);
-            ObjectDisposedException.ThrowIf(_disposed, this);
+            ObjectDisposedException.ThrowIf(_disposed != 0, this);
             try
             {
                 _socketsLock.EnterWriteLock();
@@ -79,7 +79,14 @@ namespace Emby.Server.Implementations.Session
         {
             var connection = sender as IWebSocketConnection ?? throw new ArgumentException($"{nameof(sender)} is not of type {nameof(IWebSocketConnection)}", nameof(sender));
             _logger.LogDebug("Removing websocket from session {Session}", _session.Id);
-            ObjectDisposedException.ThrowIf(_disposed, this);
+
+            // A close can arrive after disposal, and this handler is async void, so throwing here
+            // would terminate the process instead of reaching the raiser.
+            if (_disposed != 0)
+            {
+                return;
+            }
+
             try
             {
                 _socketsLock.EnterWriteLock();
@@ -101,7 +108,7 @@ namespace Emby.Server.Implementations.Session
             T data,
             CancellationToken cancellationToken)
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
+            ObjectDisposedException.ThrowIf(_disposed != 0, this);
             IWebSocketConnection? socket;
             try
             {
@@ -131,36 +138,26 @@ namespace Emby.Server.Implementations.Session
         /// <inheritdoc />
         public void Dispose()
         {
-            if (_disposed)
+            foreach (var socket in DetachSockets())
             {
-                return;
+                socket.Dispose();
             }
-
-            try
-            {
-                _socketsLock.EnterWriteLock();
-                foreach (var socket in _sockets)
-                {
-                    socket.Closed -= OnConnectionClosed;
-                    socket.Dispose();
-                }
-
-                _sockets.Clear();
-            }
-            finally
-            {
-                _socketsLock.ExitWriteLock();
-            }
-
-            _socketsLock.Dispose();
-            _disposed = true;
         }
 
         public async ValueTask DisposeAsync()
         {
-            if (_disposed)
+            foreach (var socket in DetachSockets())
             {
-                return;
+                await socket.DisposeAsync().ConfigureAwait(false);
+            }
+        }
+
+        // The lock is thread affine, so it cannot be held across the await in DisposeAsync.
+        private IWebSocketConnection[] DetachSockets()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) != 0)
+            {
+                return [];
             }
 
             try
@@ -169,18 +166,16 @@ namespace Emby.Server.Implementations.Session
                 foreach (var socket in _sockets)
                 {
                     socket.Closed -= OnConnectionClosed;
-                    await socket.DisposeAsync().ConfigureAwait(false);
                 }
 
+                var sockets = _sockets.ToArray();
                 _sockets.Clear();
+                return sockets;
             }
             finally
             {
                 _socketsLock.ExitWriteLock();
             }
-
-            _socketsLock.Dispose();
-            _disposed = true;
         }
     }
 }
