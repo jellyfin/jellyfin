@@ -30,14 +30,25 @@ namespace Jellyfin.Providers.Tests.Tmdb
         }
 
         [Theory]
-        [InlineData("en", "en-US", "en-US")]
-        [InlineData("fr-CA", "fr-BE", "fr-CA")]
-        [InlineData("fr-CA", "fr", "fr-CA")]
-        [InlineData("de", "en-US", "de")]
-        [InlineData("", "en-US", "")]
-        public static void AdjustImageLanguage_Valid_Success(string imageLanguage, string requestLanguage, string? expected)
+        // A regional request is only answered with a region when the image contradicts it.
+        [InlineData("pt", "BR", "pt-BR", "pt-BR")]
+        [InlineData("pt", "PT", "pt-BR", "pt-PT")]
+        [InlineData("en", "GB", "en-US", "en-GB")]
+        [InlineData("en", "US", "en-US", "en-US")]
+        [InlineData("en", null, "en-US", "en-US")]
+        // TMDb files nearly every image under a region, which must not stop a plain request matching.
+        [InlineData("en", "US", "en", "en")]
+        [InlineData("pt", "PT", "pt", "pt")]
+        // An image in another language keeps its bare code, so the English fallback still resolves.
+        [InlineData("en", "US", "pt-BR", "en")]
+        [InlineData("de", "DE", "en-US", "de")]
+        // TMDb returns xx rather than an empty string for an image with no text.
+        [InlineData("xx", "US", "en-US", "")]
+        [InlineData("", "US", "en-US", "")]
+        [InlineData(null, null, "en-US", "")]
+        public static void GetImageLanguage_Valid_Success(string? imageLanguage, string? imageRegion, string? requestLanguage, string expected)
         {
-            Assert.Equal(expected, TmdbUtils.AdjustImageLanguage(imageLanguage, requestLanguage));
+            Assert.Equal(expected, TmdbUtils.GetImageLanguage(imageLanguage, imageRegion, requestLanguage));
         }
 
         [Theory]
