@@ -3658,6 +3658,11 @@ namespace Emby.Server.Implementations.Library
 
         public QueryResult<BaseItem> GetPeopleItems(InternalPeopleQuery query)
         {
+            ArgumentNullException.ThrowIfNull(query);
+
+            // This hands back by-name items, so the people without one are not ours to report.
+            query.MustHaveItem = true;
+
             var queryResult = _peopleRepository.GetPeople(query);
             var baseItems = queryResult.Items.Select(i =>
                 {
