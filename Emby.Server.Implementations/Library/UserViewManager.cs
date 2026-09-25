@@ -60,10 +60,16 @@ namespace Emby.Server.Implementations.Library
                 var folderViewType = collectionFolder?.CollectionType;
 
                 // Playlist and BoxSet libraries require special handling because the folder only references linked items
-                if ((folderViewType == CollectionType.playlists || folderViewType == CollectionType.boxsets)
-                    && !HasVisibleChild(folder, user))
+                if (folderViewType == CollectionType.playlists || folderViewType == CollectionType.boxsets)
                 {
-                    continue;
+                    var itemKind = folderViewType == CollectionType.playlists
+                        ? BaseItemKind.Playlist
+                        : BaseItemKind.BoxSet;
+
+                    if (!HasVisibleItem(itemKind, folders, user))
+                    {
+                        continue;
+                    }
                 }
 
                 if (UserView.IsUserSpecific(folder))
@@ -152,30 +158,30 @@ namespace Emby.Server.Implementations.Library
                 .ToArray();
         }
 
-        private bool HasVisibleChild(Folder folder, User user)
+        private bool HasVisibleItem(BaseItemKind itemKind, IReadOnlyList<Folder> folders, User user)
         {
-            // Folder.Children answers this too, but a collection folder delegates it to its physical
-            // folders, which resolve and then hold on to every child with every field.
-            var parentIds = folder is CollectionFolder collectionFolder && collectionFolder.PhysicalFolderIds.Length > 0
-                ? collectionFolder.PhysicalFolderIds
-                : [folder.Id];
-
-            foreach (var parentId in parentIds)
+            var topParentIds = folders.SelectMany(GetTopParentIds).ToArray();
+            if (topParentIds.Length == 0)
             {
-                var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
-                {
-                    ParentId = parentId,
-                    GroupByPresentationUniqueKey = false,
-                    DtoOptions = DtoOptions.StoredColumnsOnly
-                });
-
-                if (items.Any(item => item.IsVisible(user)))
-                {
-                    return true;
-                }
+                return false;
             }
 
-            return false;
+            var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
+            {
+                IncludeItemTypes = [itemKind],
+                TopParentIds = topParentIds,
+                GroupByPresentationUniqueKey = false,
+                DtoOptions = DtoOptions.StoredColumnsOnly
+            });
+
+            return items.Any(item => item.IsVisible(user));
+        }
+
+        private static IEnumerable<Guid> GetTopParentIds(Folder folder)
+        {
+            return folder is CollectionFolder collectionFolder && collectionFolder.PhysicalFolderIds.Length > 0
+                ? collectionFolder.PhysicalFolderIds
+                : [folder.Id];
         }
 
         public UserView GetUserSubViewWithName(string name, Guid parentId, CollectionType? type, string sortName)
