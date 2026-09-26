@@ -72,6 +72,12 @@ namespace MediaBrowser.Model.Session
         public PlaybackOrder PlaybackOrder { get; set; }
 
         /// <summary>
+        /// Gets or sets the playback speed.
+        /// </summary>
+        /// <value>The playback speed.</value>
+        public double Speed { get; set; } = 1.0;
+
+        /// <summary>
         /// Gets or sets the now playing live stream identifier.
         /// </summary>
         /// <value>The live stream identifier.</value>

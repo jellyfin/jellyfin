@@ -113,6 +113,12 @@ namespace MediaBrowser.Model.Session
         /// <value>The playback order.</value>
         public PlaybackOrder PlaybackOrder { get; set; }
 
+        /// <summary>
+        /// Gets or sets the playback speed.
+        /// </summary>
+        /// <value>The playback speed.</value>
+        public double Speed { get; set; } = 1.0;
+
         public QueueItem[] NowPlayingQueue { get; set; }
 
         public string PlaylistItemId { get; set; }

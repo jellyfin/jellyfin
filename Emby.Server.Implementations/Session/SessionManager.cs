@@ -456,6 +456,8 @@ namespace Emby.Server.Implementations.Session
             session.PlayState.PlayMethod = info.PlayMethod;
             session.PlayState.RepeatMode = info.RepeatMode;
             session.PlayState.PlaybackOrder = info.PlaybackOrder;
+            // Clamp to a sane range so a bad client value cannot break progress interpolation.
+            session.PlayState.Speed = Math.Clamp(info.Speed, 0.1, 10.0);
             session.PlaylistItemId = info.PlaylistItemId;
         }
 
