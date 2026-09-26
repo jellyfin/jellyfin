@@ -150,6 +150,7 @@ namespace MediaBrowser.Providers.Manager
             var currentImagePath = currentImage?.Path;
 
             var savedPaths = new List<string>();
+            var preExistingPaths = paths.Concat(retryPaths).Where(_fileSystem.FileExists).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             await using (source.ConfigureAwait(false))
             {
@@ -170,9 +171,6 @@ namespace MediaBrowser.Providers.Manager
                     savedPaths.Add(savedPath);
                 }
             }
-
-            // Set the path into the item
-            SetImagePath(item, type, imageIndex, savedPaths[0]);
 
             // Delete the current path
             if (currentImageIsLocalFile
@@ -215,9 +213,45 @@ namespace MediaBrowser.Providers.Manager
                 catch (FileNotFoundException)
                 {
                 }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // The previous image stays in place (e.g. on a read-only media folder) and would be picked up
+                    // again on the next refresh, so undo the save instead of leaving the item half-updated.
+                    DeleteNewImages(savedPaths, preExistingPaths);
+                    throw;
+                }
                 finally
                 {
                     _libraryMonitor.ReportFileSystemChangeComplete(currentPath, false);
+                }
+            }
+
+            // Set the path into the item
+            SetImagePath(item, type, imageIndex, savedPaths[0]);
+        }
+
+        private void DeleteNewImages(List<string> savedPaths, HashSet<string> preExistingPaths)
+        {
+            foreach (var path in savedPaths)
+            {
+                if (preExistingPaths.Contains(path))
+                {
+                    continue;
+                }
+
+                _libraryMonitor.ReportFileSystemChangeBeginning(path);
+
+                try
+                {
+                    _fileSystem.DeleteFile(path);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    _logger.LogError(ex, "Error deleting new image {Path}", path);
+                }
+                finally
+                {
+                    _libraryMonitor.ReportFileSystemChangeComplete(path, false);
                 }
             }
         }
