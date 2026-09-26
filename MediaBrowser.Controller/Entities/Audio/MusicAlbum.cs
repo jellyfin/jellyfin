@@ -235,5 +235,10 @@ namespace MediaBrowser.Controller.Entities.Audio
                 await artist.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
             }
         }
+
+        public override bool CanExport()
+        {
+            return true;
+        }
     }
 }
