@@ -92,11 +92,7 @@ public class PeopleValidator
             }
 
             numComplete++;
-            double percent = numComplete;
-            percent /= count;
-            percent *= 100;
-
-            progress.Report(percent);
+            progress.Report(numComplete * 100.0 / count);
         }
 
         _logger.LogInformation(
