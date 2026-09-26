@@ -154,4 +154,9 @@ public enum ItemSortBy
     /// The index number.
     /// </summary>
     IndexNumber = 29,
+
+    /// <summary>
+    /// The combined runtime of a series' unplayed episodes.
+    /// </summary>
+    SeriesUnplayedRuntime = 30,
 }

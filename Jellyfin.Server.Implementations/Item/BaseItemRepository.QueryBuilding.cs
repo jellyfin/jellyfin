@@ -316,6 +316,12 @@ public sealed partial class BaseItemRepository
             return ApplySeriesDatePlayedOrder(query, filter, context, orderBy);
         }
 
+        // SeriesUnplayedRuntime sums episode runtimes per series and gets the same treatment.
+        if (!hasSearch && orderBy.Any(o => o.OrderBy == ItemSortBy.SeriesUnplayedRuntime))
+        {
+            return ApplySeriesUnplayedRuntimeOrder(query, filter, context, orderBy);
+        }
+
         IOrderedQueryable<BaseItemEntity>? orderedQuery = null;
 
         if (hasSearch)
@@ -417,6 +423,46 @@ public sealed partial class BaseItemRepository
         return seriesSort.SortOrder == SortOrder.Ascending
             ? joined.OrderBy(x => x.MaxDate).ThenBy(x => x.Item.SortName).Select(x => x.Item)
             : joined.OrderByDescending(x => x.MaxDate).ThenBy(x => x.Item.SortName).Select(x => x.Item);
+    }
+
+    private IQueryable<BaseItemEntity> ApplySeriesUnplayedRuntimeOrder(
+        IQueryable<BaseItemEntity> query,
+        InternalItemsQuery filter,
+        JellyfinDbContext context,
+        (ItemSortBy OrderBy, SortOrder SortOrder)[] orderBy)
+    {
+        // Pre-aggregate the runtime still left to watch per series key in ONE query, the same way
+        // ApplySeriesDatePlayedOrder pre-aggregates dates, rather than a subquery per outer row.
+        var episodeTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
+
+        // An episode is left to watch while no played row exists for it, so the played ids come out
+        // as their own set and the episodes are matched against its absence. Going through the
+        // UserData navigation instead leaves EF unable to translate the grouping below.
+        var playedItemIds = filter.User is not null
+            ? context.UserData.Where(ud => ud.UserId == filter.User.Id && ud.Played).Select(ud => ud.ItemId)
+            : context.UserData.Where(ud => ud.Played).Select(ud => ud.ItemId);
+
+        // Virtual episodes are the ones missing from disk or not aired yet, so there is no time to
+        // watch on them. Played counts leave them out too.
+        var seriesUnplayedTicks = context.BaseItems
+            .Where(e => e.Type == episodeTypeName && !e.IsVirtualItem && e.SeriesPresentationUniqueKey != null)
+            .Where(e => !playedItemIds.Contains(e.Id))
+            .GroupBy(e => e.SeriesPresentationUniqueKey)
+            .Select(g => new { SeriesKey = g.Key!, UnplayedTicks = (long?)g.Sum(e => e.RunTimeTicks ?? 0L) });
+
+        var joined = query.LeftJoin(
+            seriesUnplayedTicks,
+            e => e.PresentationUniqueKey,
+            s => s.SeriesKey,
+            (e, s) => new { Item = e, UnplayedTicks = s != null ? s.UnplayedTicks : null });
+
+        var seriesSort = orderBy.First(o => o.OrderBy == ItemSortBy.SeriesUnplayedRuntime);
+
+        // A fully watched series drops out of the grouping entirely, so the missing row has to be
+        // read as zero time left rather than left to whatever the provider does with nulls.
+        return seriesSort.SortOrder == SortOrder.Ascending
+            ? joined.OrderBy(x => x.UnplayedTicks ?? 0L).ThenBy(x => x.Item.SortName).Select(x => x.Item)
+            : joined.OrderByDescending(x => x.UnplayedTicks ?? 0L).ThenBy(x => x.Item.SortName).Select(x => x.Item);
     }
 
     /// <summary>
