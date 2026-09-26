@@ -13,6 +13,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authorization" />
     <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Mime-Detective" />
+    <PackageReference Include="Mime-Detective.Definitions.Exhaustive" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" />
   </ItemGroup>
