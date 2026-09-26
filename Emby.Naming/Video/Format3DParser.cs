@@ -75,7 +75,7 @@ namespace Emby.Naming.Video
 
                 if (is3D)
                 {
-                    format3D = rule.Token;
+                    format3D = rule.Format3D;
                     break;
                 }
             }

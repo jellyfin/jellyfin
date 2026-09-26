@@ -16,6 +16,15 @@ namespace Emby.Naming.Common
     /// </summary>
     public class NamingOptions
     {
+        private const string Format180Sbs = "180sbs";
+        private const string Format180Tab = "180tab";
+        private const string Format180Mono = "180mono";
+        private const string Format360Sbs = "360sbs";
+        private const string Format360Tab = "360tab";
+        private const string Format360Mono = "360mono";
+        private const string FormatFisheye180Sbs = "fisheye180sbs";
+        private const string FormatFisheye180Mono = "fisheye180mono";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="NamingOptions"/> class.
         /// </summary>
@@ -711,6 +720,45 @@ namespace Emby.Naming.Common
 
             Format3DRules =
             [
+                // VR rules:
+                new Format3DRule(precedingToken: "180", token: "sbs") { Format3D = Format180Sbs },
+                new Format3DRule(precedingToken: "180", token: "lr") { Format3D = Format180Sbs },
+                new Format3DRule(precedingToken: "180", token: "tab") { Format3D = Format180Tab },
+                new Format3DRule(precedingToken: "180", token: "tb") { Format3D = Format180Tab },
+                new Format3DRule(precedingToken: "180", token: "ou") { Format3D = Format180Tab },
+                new Format3DRule(precedingToken: "180", token: "mono") { Format3D = Format180Mono },
+
+                new Format3DRule(precedingToken: "360", token: "sbs") { Format3D = Format360Sbs },
+                new Format3DRule(precedingToken: "360", token: "lr") { Format3D = Format360Sbs },
+                new Format3DRule(precedingToken: "360", token: "tab") { Format3D = Format360Tab },
+                new Format3DRule(precedingToken: "360", token: "tb") { Format3D = Format360Tab },
+                new Format3DRule(precedingToken: "360", token: "ou") { Format3D = Format360Tab },
+                new Format3DRule(precedingToken: "360", token: "mono") { Format3D = Format360Mono },
+
+                new Format3DRule(precedingToken: "fisheye180", token: "sbs") { Format3D = FormatFisheye180Sbs },
+                new Format3DRule(precedingToken: "fisheye180", token: "mono") { Format3D = FormatFisheye180Mono },
+
+                new Format3DRule("vr180") { Format3D = Format180Sbs },
+                new Format3DRule(Format180Sbs),
+                new Format3DRule("180lr") { Format3D = Format180Sbs },
+                new Format3DRule(Format180Tab),
+                new Format3DRule("180tb") { Format3D = Format180Tab },
+                new Format3DRule("180ou") { Format3D = Format180Tab },
+                new Format3DRule(Format180Mono),
+
+                new Format3DRule(Format360Sbs),
+                new Format3DRule("360lr") { Format3D = Format360Sbs },
+                new Format3DRule(Format360Tab),
+                new Format3DRule("360tb") { Format3D = Format360Tab },
+                new Format3DRule("360ou") { Format3D = Format360Tab },
+                new Format3DRule(Format360Mono),
+
+                new Format3DRule("fisheye180") { Format3D = FormatFisheye180Sbs },
+                new Format3DRule(FormatFisheye180Sbs),
+                new Format3DRule(FormatFisheye180Mono),
+
+                new Format3DRule("mvhevc"),
+
                 // Kodi rules:
                 new Format3DRule(
                     precedingToken: "3d",
