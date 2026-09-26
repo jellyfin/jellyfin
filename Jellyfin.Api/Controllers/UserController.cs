@@ -230,6 +230,11 @@ public class UserController : BaseJellyfinApiController
         }
         catch (SecurityException e)
         {
+            if (e is ParentalControlException)
+            {
+                Response.Headers["X-Application-Error-Code"] = "ParentalControl";
+            }
+
             // rethrow adding IP address to message
             throw new SecurityException($"[{HttpContext.GetNormalizedRemoteIP()}] {e.Message}", e);
         }
