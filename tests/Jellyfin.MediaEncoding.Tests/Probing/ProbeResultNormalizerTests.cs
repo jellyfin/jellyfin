@@ -270,6 +270,19 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
         }
 
         [Fact]
+        public void GetMediaInfo_ContainerCreationTime_KeptOutOfPremiereDate()
+        {
+            var bytes = File.ReadAllBytes("Test Data/Probing/video_progressive_no_field_order.json");
+
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_progressive_no_field_order.mp4", MediaProtocol.File);
+
+            Assert.Equal(new DateTime(2020, 1, 20, 13, 56, 34, DateTimeKind.Utc), res.ContainerCreationDate);
+            Assert.Null(res.PremiereDate);
+            Assert.Null(res.ProductionYear);
+        }
+
+        [Fact]
         public void GetMediaInfo_ProgressiveVideoNoFieldOrder_Success()
         {
             var bytes = File.ReadAllBytes("Test Data/Probing/video_progressive_no_field_order.json");
