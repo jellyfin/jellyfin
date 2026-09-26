@@ -280,7 +280,25 @@ public partial class TrickplayManager : ITrickplayManager
     /// <inheritdoc />
     public async Task RefreshTrickplayDataAsync(Video video, bool replace, LibraryOptions libraryOptions, CancellationToken cancellationToken)
     {
-        var options = _config.Configuration.TrickplayOptions;
+    var options = _config.Configuration.TrickplayOptions;
+
+        // Restrict trickplay generation to primary media.
+        // ExtraType identifies Jellyfin media explicitly classified as an extra.
+        // Cleanup is performed before normal generation eligibility checks so existing unwanted
+        // trickplay can still be removed even if the item is no longer otherwise processable.
+        if (options.GenerateTrickplayForPrimaryMediaOnly && video.ExtraType.HasValue)
+        {
+            // Remove unwanted existing trickplay when requested.
+            // Guid.Empty is rejected before the destructive database operation.
+            if (options.RemoveUnwantedTrickplayOnNextPass && video.Id != Guid.Empty)
+            {
+                await RemoveExcludedTrickplayDataAsync(
+                    video,
+                    cancellationToken).ConfigureAwait(false);
+            }
+
+            return;
+        }
         if (!CanGenerateTrickplay(video, options.Interval) || libraryOptions is null)
         {
             return;
@@ -379,7 +397,49 @@ public partial class TrickplayManager : ITrickplayManager
             }
         }
     }
+    // Remove all trickplay files and database records for excluded media.
+    // Both possible storage locations are checked so cleanup also handles
+    // trickplay created under a previous SaveTrickplayWithMedia setting.
+    private async Task RemoveExcludedTrickplayDataAsync(
+        Video video,
+        CancellationToken cancellationToken)
+    {
+        // Check both Jellyfin trickplay storage layouts.
+        // Do not reduce this to the current SaveTrickplayWithMedia value;
+        // doing so could leave old trickplay files behind after that setting changes.
+        foreach (var saveWithMedia in new[] { false, true })
+        {
+            var trickplayDirectory = _pathManager.GetTrickplayDirectory(video, saveWithMedia);
 
+            if (!Directory.Exists(trickplayDirectory))
+            {
+                continue;
+            }
+
+            try
+            {
+                Directory.Delete(trickplayDirectory, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(
+                    "Unable to remove trickplay directory: {Directory}: {Exception}",
+                    trickplayDirectory,
+                    ex);
+            }
+        }
+
+        // Remove database records for the excluded media.
+        // Guid.Empty is already rejected by the caller.
+        var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
+        {
+            await dbContext.TrickplayInfos
+                .Where(i => i.ItemId.Equals(video.Id))
+                .ExecuteDeleteAsync(cancellationToken)
+                .ConfigureAwait(false);
+        }
+    }
     private async Task RefreshTrickplayDataInternal(
         Video video,
         bool replace,
