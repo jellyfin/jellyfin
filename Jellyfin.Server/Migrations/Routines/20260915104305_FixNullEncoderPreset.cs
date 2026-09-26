@@ -63,12 +63,12 @@ internal class FixNullEncoderPreset : IAsyncMigrationRoutine
         }
 
         var nilAttribute = encoderPreset.Attribute(_xsiNamespace + "nil");
-        if (nilAttribute is null || !string.Equals(nilAttribute.Value, "true", StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(nilAttribute?.Value, "true", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(encoderPreset.Value))
         {
             return Task.CompletedTask;
         }
 
-        nilAttribute.Remove();
+        nilAttribute?.Remove();
         encoderPreset.Value = nameof(EncoderPreset.auto);
         document.Save(path, SaveOptions.DisableFormatting);
         _logger.LogInformation("Replaced null encoder preset with auto in encoding configuration");
