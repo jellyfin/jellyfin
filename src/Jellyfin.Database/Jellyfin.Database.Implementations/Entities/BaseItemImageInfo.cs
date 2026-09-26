@@ -30,6 +30,11 @@ public class BaseItemImageInfo
     public ImageInfoImageType ImageType { get; set; }
 
     /// <summary>
+    /// Gets or Sets the sort order of the image.
+    /// </summary>
+    public int SortOrder { get; set; }
+
+    /// <summary>
     /// Gets or Sets the width of the original image.
     /// </summary>
     public int Width { get; set; }
