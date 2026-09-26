@@ -138,6 +138,13 @@ namespace MediaBrowser.Controller.Library
         Studio GetStudio(string name);
 
         /// <summary>
+        /// Gets a Network.
+        /// </summary>
+        /// <param name="name">The name of the network.</param>
+        /// <returns>Task{Network}.</returns>
+        Network GetNetwork(string name);
+
+        /// <summary>
         /// Gets a Genre.
         /// </summary>
         /// <param name="name">The name of the genre.</param>
@@ -717,6 +724,8 @@ namespace MediaBrowser.Controller.Library
 
         Guid GetStudioId(string name);
 
+        Guid GetNetworkId(string name);
+
         Guid GetGenreId(string name);
 
         Guid GetMusicGenreId(string name);
@@ -736,6 +745,8 @@ namespace MediaBrowser.Controller.Library
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery query);
 
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery query);
+
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetNetworks(InternalItemsQuery query);
 
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery query);
 

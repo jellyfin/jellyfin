@@ -258,6 +258,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Networks")
+                        .HasColumnType("TEXT");
+
                     b.Property<float?>("NormalizationGain")
                         .HasColumnType("REAL");
 

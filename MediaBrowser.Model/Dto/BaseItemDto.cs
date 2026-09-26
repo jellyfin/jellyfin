@@ -290,6 +290,12 @@ namespace MediaBrowser.Model.Dto
         /// <value>The studios.</value>
         public NameGuidPair[] Studios { get; set; }
 
+        /// <summary>
+        /// Gets or sets the networks.
+        /// </summary>
+        /// <value>The networks.</value>
+        public NameGuidPair[] Networks { get; set; }
+
         public NameGuidPair[] GenreItems { get; set; }
 
         /// <summary>

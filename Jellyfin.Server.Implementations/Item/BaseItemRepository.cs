@@ -44,6 +44,7 @@ public sealed partial class BaseItemRepository
     private static readonly IReadOnlyList<ItemValueType> _getArtistValueTypes = [ItemValueType.Artist];
     private static readonly IReadOnlyList<ItemValueType> _getAlbumArtistValueTypes = [ItemValueType.AlbumArtist];
     private static readonly IReadOnlyList<ItemValueType> _getStudiosValueTypes = [ItemValueType.Studios];
+    private static readonly IReadOnlyList<ItemValueType> _getNetworksValueTypes = [ItemValueType.Networks];
     private static readonly IReadOnlyList<ItemValueType> _getGenreValueTypes = [ItemValueType.Genre];
 
     private static readonly BaseItemKind[] _itemByNameKinds =
@@ -60,7 +61,8 @@ public sealed partial class BaseItemRepository
         (BaseItemKind.Genre, _getGenreValueTypes),
         (BaseItemKind.MusicGenre, _getGenreValueTypes),
         (BaseItemKind.MusicArtist, _getAllArtistsValueTypes),
-        (BaseItemKind.Studio, _getStudiosValueTypes)
+        (BaseItemKind.Studio, _getStudiosValueTypes),
+        (BaseItemKind.Network, _getNetworksValueTypes)
     ];
 
     // The only folder kinds whose children form a single viewing sequence, so playback progress on a

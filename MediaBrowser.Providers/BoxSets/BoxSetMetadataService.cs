@@ -52,6 +52,9 @@ public class BoxSetMetadataService : MetadataService<BoxSet, BoxSetInfo>
     protected override bool EnableUpdatingStudiosFromChildren => true;
 
     /// <inheritdoc />
+    protected override bool EnableUpdatingNetworksFromChildren => true;
+
+    /// <inheritdoc />
     protected override bool EnableUpdatingPremiereDateFromChildren => true;
 
     /// <inheritdoc />

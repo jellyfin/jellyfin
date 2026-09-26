@@ -52,6 +52,9 @@ public class PlaylistMetadataService : MetadataService<Playlist, ItemLookupInfo>
     protected override bool EnableUpdatingStudiosFromChildren => true;
 
     /// <inheritdoc />
+    protected override bool EnableUpdatingNetworksFromChildren => true;
+
+    /// <inheritdoc />
     protected override IReadOnlyList<BaseItem> GetChildrenForMetadataUpdates(Playlist item)
         => item.GetLinkedChildren();
 
