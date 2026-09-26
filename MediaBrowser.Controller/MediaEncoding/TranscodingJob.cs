@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using MediaBrowser.Model.Dto;
@@ -14,6 +15,7 @@ public sealed class TranscodingJob : IDisposable
     private readonly ILogger<TranscodingJob> _logger;
     private readonly Lock _processLock = new();
     private readonly Lock _timerLock = new();
+    private readonly ConcurrentDictionary<int, long> _segmentEndPositionTicks = new();
 
     private int _activeRequestCount;
     private Timer? _killTimer;
@@ -155,6 +157,40 @@ public sealed class TranscodingJob : IDisposable
     /// Gets or sets ping timeout.
     /// </summary>
     public int PingTimeout { get; set; }
+
+    /// <summary>
+    /// Records the end position of a served segment.
+    /// </summary>
+    /// <param name="segmentIndex">The segment index.</param>
+    /// <param name="segmentEndPositionTicks">The segment end position ticks.</param>
+    public void ReportSegmentDownloaded(int segmentIndex, long segmentEndPositionTicks)
+    {
+        if (segmentIndex < 0)
+        {
+            return;
+        }
+
+        _segmentEndPositionTicks[segmentIndex] = segmentEndPositionTicks;
+    }
+
+    /// <summary>
+    /// Gets the index of the last served segment that ends at or before the given position.
+    /// </summary>
+    /// <param name="positionTicks">The position ticks.</param>
+    /// <returns>The segment index, or <c>null</c> if there is none.</returns>
+    public int? GetLastSegmentIndexEndingBefore(long positionTicks)
+    {
+        int? result = null;
+        foreach (var (index, endPositionTicks) in _segmentEndPositionTicks)
+        {
+            if (endPositionTicks <= positionTicks && (result is null || index > result))
+            {
+                result = index;
+            }
+        }
+
+        return result;
+    }
 
     /// <summary>
     /// Increments the active request count.
