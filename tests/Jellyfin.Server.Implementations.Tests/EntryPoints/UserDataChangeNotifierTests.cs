@@ -1,11 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.EntryPoints;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
 using Moq;
@@ -58,6 +63,73 @@ public class UserDataChangeNotifierTests
 
         await notifier.StopAsync(TestContext.Current.CancellationToken);
         notifier.Dispose();
+    }
+
+    [Fact]
+    public async Task OnUserDataSaved_Episode_AlsoSendsItsSeries()
+    {
+        // Series cards show an unplayed count too, but an episode's parent is its season,
+        // so going up one level never reaches the series.
+        var series = new Series { Id = Guid.NewGuid() };
+        var season = new Season { Id = Guid.NewGuid(), ParentId = series.Id, SeriesId = series.Id };
+        var episode = new Episode { Id = Guid.NewGuid(), ParentId = season.Id, SeasonId = season.Id, SeriesId = series.Id };
+
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager.Setup(e => e.GetItemById(season.Id)).Returns(season);
+        libraryManager.Setup(e => e.GetItemById(series.Id)).Returns(series);
+
+        var user = new User("user", "provider", "resetProvider");
+        _userManager.Setup(e => e.GetUserById(It.IsAny<Guid>())).Returns(user);
+        _userDataManager
+            .Setup(e => e.GetUserDataDto(It.IsAny<BaseItem>(), user))
+            .Returns(() => new UserItemDataDto { Key = string.Empty });
+
+        UserDataChangeInfo? sent = null;
+        var flushed = new TaskCompletionSource();
+        _sessionManager
+            .Setup(e => e.SendMessageToUserSessions(
+                It.IsAny<List<Guid>>(),
+                SessionMessageType.UserDataChanged,
+                It.IsAny<Func<UserDataChangeInfo>>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<List<Guid>, SessionMessageType, Func<UserDataChangeInfo>, CancellationToken>((_, _, getData, _) =>
+            {
+                sent = getData();
+                flushed.TrySetResult();
+            })
+            .Returns(Task.CompletedTask);
+
+        var previousLibraryManager = BaseItem.LibraryManager;
+        BaseItem.LibraryManager = libraryManager.Object;
+        try
+        {
+            var notifier = CreateNotifier();
+            await notifier.StartAsync(TestContext.Current.CancellationToken);
+
+            _userDataManager.Raise(
+                e => e.UserDataSaved += null,
+                _userDataManager.Object,
+                new UserDataSaveEventArgs
+                {
+                    UserId = Guid.NewGuid(),
+                    SaveReason = UserDataSaveReason.TogglePlayed,
+                    Item = episode
+                });
+
+            await flushed.Task.WaitAsync(_flushTimeout, TestContext.Current.CancellationToken);
+
+            await notifier.StopAsync(TestContext.Current.CancellationToken);
+            notifier.Dispose();
+        }
+        finally
+        {
+            BaseItem.LibraryManager = previousLibraryManager;
+        }
+
+        Assert.NotNull(sent);
+        Assert.Equal(
+            new HashSet<Guid> { episode.Id, season.Id, series.Id },
+            sent.UserDataList.Select(e => e.ItemId).ToHashSet());
     }
 
     private UserDataChangeNotifier CreateNotifier()
