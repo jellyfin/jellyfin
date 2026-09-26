@@ -68,4 +68,9 @@ public class TrickplayOptions
     /// Gets or sets the number of threads to be used by ffmpeg.
     /// </summary>
     public int ProcessThreads { get; set; } = 1;
+
+    /// <summary>
+    /// Gets or sets the max number of trickplay images that can be processed concurrently.
+    /// </summary>
+    public int MaxParallelism { get; set; } = 1;
 }
