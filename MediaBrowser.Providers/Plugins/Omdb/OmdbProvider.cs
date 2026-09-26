@@ -18,6 +18,7 @@ using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -124,64 +125,105 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         /// <summary>Gets data about an episode.</summary>
         /// <param name="itemResult">Metadata about episode.</param>
         /// <param name="episodeNumber">Episode number.</param>
+        /// <param name="episodeNumberEnd">Episode number end for multi episode files.</param>
+        /// <param name="isDefaultDisplayOrder">Default display order flag.</param>
         /// <param name="seasonNumber">Season number.</param>
         /// <param name="episodeImdbId">Episode ID.</param>
         /// <param name="seriesImdbId">Season ID.</param>
         /// <param name="language">Episode language.</param>
         /// <param name="country">Country of origin.</param>
         /// <param name="cancellationToken">CancellationToken to use for operation.</param>
-        /// <typeparam name="T">The first generic type parameter.</typeparam>
         /// <returns>Whether operation was successful.</returns>
-        public async Task<bool> FetchEpisodeData<T>(MetadataResult<T> itemResult, int episodeNumber, int seasonNumber, string episodeImdbId, string seriesImdbId, string language, string country, CancellationToken cancellationToken)
-            where T : BaseItem
+        public async Task<bool> FetchEpisodeData(MetadataResult<Episode> itemResult, int episodeNumber, int? episodeNumberEnd, bool isDefaultDisplayOrder, int seasonNumber, string episodeImdbId, string seriesImdbId, string language, string country, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(seriesImdbId))
+            RootObject result = null;
+
+            if (!isDefaultDisplayOrder)
             {
-                throw new ArgumentNullException(nameof(seriesImdbId));
+                if (string.IsNullOrWhiteSpace(episodeImdbId))
+                {
+                    return false;
+                }
+
+                result = await GetRootObject(episodeImdbId, cancellationToken).ConfigureAwait(false);
+
+                if (result is null)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(seriesImdbId))
+                {
+                    return false;
+                }
+
+                var seasonResult = await GetSeasonRootObject(seriesImdbId, seasonNumber, cancellationToken).ConfigureAwait(false);
+
+                if (seasonResult?.Episodes is null)
+                {
+                    return false;
+                }
+
+                if (!string.IsNullOrWhiteSpace(episodeImdbId))
+                {
+                    result = seasonResult.Episodes.FirstOrDefault(episode => string.Equals(episodeImdbId, episode.imdbID, StringComparison.OrdinalIgnoreCase));
+                }
+
+                // finally, search by numbers
+                if (result is null)
+                {
+                    result = seasonResult.Episodes.FirstOrDefault(episode => episode.Episode == episodeNumber);
+                }
+
+                if (result is null)
+                {
+                    return false;
+                }
+
+                // If multi-episode file -> find other parts and merge data
+                if (episodeNumberEnd.HasValue)
+                {
+                    var len = episodeNumberEnd.Value - episodeNumber + 1;
+                    var titlesList = new List<string>(len);
+                    var plotsList = new List<string>(len);
+
+                    titlesList.Add(result.Title);
+                    plotsList.Add(result.Plot);
+
+                    var episodeDictionary = seasonResult.Episodes.Where(e => e.Episode > episodeNumber && e.Episode <= episodeNumberEnd).ToDictionary(x => x.Episode.Value);
+
+                    for (int index = episodeNumber + 1; index <= episodeNumberEnd.Value; index++)
+                    {
+                        if (episodeDictionary.TryGetValue(index, out var episode))
+                        {
+                            titlesList.Add(episode.Title);
+                            plotsList.Add(episode.Plot);
+                        }
+                        else
+                        {
+                            titlesList.Add(string.Empty);
+                            plotsList.Add(string.Empty);
+                        }
+                    }
+
+                    if (titlesList.Any(title => !string.IsNullOrEmpty(title)))
+                    {
+                        result.Title = string.Join(Episode.MultiPartSeparator, titlesList);
+                    }
+
+                    if (plotsList.Any(plot => !string.IsNullOrEmpty(plot)))
+                    {
+                        result.Plot = string.Join(Episode.MultiPartSeparator, plotsList);
+                    }
+                }
             }
 
             var item = itemResult.Item;
             item.IndexNumber = episodeNumber;
+            item.IndexNumberEnd = episodeNumberEnd;
             item.ParentIndexNumber = seasonNumber;
-
-            var seasonResult = await GetSeasonRootObject(seriesImdbId, seasonNumber, cancellationToken).ConfigureAwait(false);
-
-            if (seasonResult?.Episodes is null)
-            {
-                return false;
-            }
-
-            RootObject result = null;
-
-            if (!string.IsNullOrWhiteSpace(episodeImdbId))
-            {
-                foreach (var episode in seasonResult.Episodes)
-                {
-                    if (string.Equals(episodeImdbId, episode.imdbID, StringComparison.OrdinalIgnoreCase))
-                    {
-                        result = episode;
-                        break;
-                    }
-                }
-            }
-
-            // finally, search by numbers
-            if (result is null)
-            {
-                foreach (var episode in seasonResult.Episodes)
-                {
-                    if (episode.Episode == episodeNumber)
-                    {
-                        result = episode;
-                        break;
-                    }
-                }
-            }
-
-            if (result is null)
-            {
-                return false;
-            }
 
             var isEnglishRequested = IsConfiguredForEnglish(item, language);
             // Only take the name and rating if the user's language is set to English, since Omdb has no localization
