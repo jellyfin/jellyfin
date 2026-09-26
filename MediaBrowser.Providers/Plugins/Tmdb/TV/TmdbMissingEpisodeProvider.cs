@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Providers.Extensions;
 using Microsoft.Extensions.Logging;
 using TMDbLib.Objects.Search;
 
@@ -543,9 +544,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         internal static DateTime? GetPremiereDate(TvSeasonEpisode tmdbEpisode)
         {
-            return tmdbEpisode.AirDate.HasValue
-                ? DateTime.SpecifyKind(tmdbEpisode.AirDate.Value, DateTimeKind.Local).ToUniversalTime()
-                : null;
+            return tmdbEpisode.AirDate.AsCalendarDate();
         }
 
         internal static bool UpdateVirtualEpisode(Episode episode, TvSeasonEpisode tmdbEpisode, DateTime? premiereDate)
