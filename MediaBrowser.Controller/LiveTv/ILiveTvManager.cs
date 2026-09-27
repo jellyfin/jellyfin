@@ -201,6 +201,13 @@ namespace MediaBrowser.Controller.LiveTv
         IEnumerable<User> GetEnabledUsers();
 
         /// <summary>
+        /// Gets whether Live TV is enabled for a single user.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>Whether Live TV is enabled for the user.</returns>
+        bool IsEnabledForUser(User user);
+
+        /// <summary>
         /// Gets the internal channels.
         /// </summary>
         /// <param name="query">The query.</param>

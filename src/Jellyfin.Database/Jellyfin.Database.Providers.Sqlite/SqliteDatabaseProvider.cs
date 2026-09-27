@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -117,17 +118,32 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public async Task RunShutdownTask(CancellationToken cancellationToken)
     {
-        // Run before disposing the application
+        // Run before disposing the application. Only a checkpoint: stopping is on a deadline.
+
+        // Empty the pool first. Anything still parked in it can start reading again between here and the
+        // checkpoint, and a reader that holds the write-ahead log open is exactly what makes the truncation
+        // fail. Connections handed out already cannot be taken away, but they get disposed on return.
+        SqliteConnection.ClearAllPools();
+
         try
         {
-            await OptimizeAsync(cancellationToken).ConfigureAwait(false);
+            if (DbContextFactory is not null)
+            {
+                var context = await DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+                await using (context.ConfigureAwait(false))
+                {
+                    await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
+                }
+            }
         }
         catch (Exception ex)
         {
-            // A missed optimization only costs performance, so never fail the shutdown over this.
-            _logger.LogError(ex, "Error while optimizing jellyfin.db");
+            // A missed checkpoint only leaves a write-ahead log for the next start to replay, so never fail the
+            // shutdown over this.
+            _logger.LogError(ex, "Error while checkpointing jellyfin.db");
         }
 
+        // The checkpointing connection went back into the pool, so retire that one as well.
         SqliteConnection.ClearAllPools();
     }
 
@@ -141,13 +157,70 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         var context = await DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
-            await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
-            await context.Database.ExecuteSqlRawAsync("VACUUM", cancellationToken).ConfigureAwait(false);
-            await context.Database.ExecuteSqlRawAsync("PRAGMA analysis_limit=0", cancellationToken).ConfigureAwait(false);
-            await context.Database.ExecuteSqlRawAsync("ANALYZE", cancellationToken).ConfigureAwait(false);
-            await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
-            _logger.LogInformation("jellyfin.db optimized successfully!");
+            await context.Database.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                long? tempStore;
+                long? analysisLimit;
+                var pragmaCommand = context.Database.GetDbConnection().CreateCommand();
+                await using (pragmaCommand.ConfigureAwait(false))
+                {
+                    pragmaCommand.CommandText = "PRAGMA temp_store";
+                    tempStore = await ReadPragmaValueAsync(pragmaCommand, cancellationToken).ConfigureAwait(false);
+                    pragmaCommand.CommandText = "PRAGMA analysis_limit";
+                    analysisLimit = await ReadPragmaValueAsync(pragmaCommand, cancellationToken).ConfigureAwait(false);
+                }
+
+                await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
+
+                _logger.LogDebug(
+                    "Rebuilding jellyfin.db on disk, scratch space goes to {TempDirectory}",
+                    Environment.GetEnvironmentVariable("SQLITE_TMPDIR") ?? "SQLite's default temporary directory");
+                await context.Database.ExecuteSqlRawAsync("PRAGMA temp_store=1", cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await context.Database.ExecuteSqlRawAsync("VACUUM", cancellationToken).ConfigureAwait(false);
+                }
+                finally
+                {
+                    // The connection goes back to the pool, so hand it over the way it was handed to us.
+                    if (tempStore is not null)
+                    {
+                        await context.Database.ExecuteSqlRawAsync(
+                            FormattableString.Invariant($"PRAGMA temp_store={tempStore.Value}"),
+                            CancellationToken.None).ConfigureAwait(false);
+                    }
+                }
+
+                await context.Database.ExecuteSqlRawAsync("PRAGMA analysis_limit=0", cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await context.Database.ExecuteSqlRawAsync("ANALYZE", cancellationToken).ConfigureAwait(false);
+                }
+                finally
+                {
+                    if (analysisLimit is not null)
+                    {
+                        await context.Database.ExecuteSqlRawAsync(
+                            FormattableString.Invariant($"PRAGMA analysis_limit={analysisLimit.Value}"),
+                            CancellationToken.None).ConfigureAwait(false);
+                    }
+                }
+
+                await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
+                _logger.LogInformation("jellyfin.db optimized successfully!");
+            }
+            finally
+            {
+                await context.Database.CloseConnectionAsync().ConfigureAwait(false);
+            }
         }
+    }
+
+    private static async Task<long?> ReadPragmaValueAsync(DbCommand command, CancellationToken cancellationToken)
+    {
+        var value = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+        return value is null or DBNull ? null : Convert.ToInt64(value, CultureInfo.InvariantCulture);
     }
 
     /// <inheritdoc/>
@@ -157,16 +230,31 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     }
 
     /// <inheritdoc />
-    public Task<string> MigrationBackupFast(CancellationToken cancellationToken)
+    public async Task<string> MigrationBackupFast(CancellationToken cancellationToken)
     {
-        var key = DateTime.UtcNow.ToString("yyyyMMddhhmmss", CultureInfo.InvariantCulture);
         var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
-        var backupFile = Path.Combine(_applicationPaths.DataPath, BackupFolderName);
-        Directory.CreateDirectory(backupFile);
+        var backupFolder = Path.Combine(_applicationPaths.DataPath, BackupFolderName);
+        Directory.CreateDirectory(backupFolder);
 
-        backupFile = Path.Combine(backupFile, $"{key}_jellyfin.db");
+        if (DbContextFactory is not null && File.Exists(path))
+        {
+            var context = await DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+            await using (context.ConfigureAwait(false))
+            {
+                await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        var key = DateTime.UtcNow.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture);
+        var backupFile = Path.Combine(backupFolder, $"{key}_jellyfin.db");
+        for (var attempt = 1; File.Exists(backupFile); attempt++)
+        {
+            key = string.Create(CultureInfo.InvariantCulture, $"{DateTime.UtcNow:yyyyMMddHHmmss}_{attempt}");
+            backupFile = Path.Combine(backupFolder, $"{key}_jellyfin.db");
+        }
+
         File.Copy(path, backupFile);
-        return Task.FromResult(key);
+        return key;
     }
 
     /// <inheritdoc />
@@ -183,8 +271,53 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             return Task.CompletedTask;
         }
 
+        if (!TryRetireWriteAheadLog(path))
+        {
+            _logger.LogCritical(
+                "Refusing to restore jellyfin.db: the write-ahead log at {WriteAheadLog} could not be retired, which "
+                + "means the database is still open and replacing it now would silently bring back the data this "
+                + "rollback is undoing. Stop the server and copy {Backup} over {Path} by hand.",
+                path + "-wal",
+                backupFile,
+                path);
+            return Task.CompletedTask;
+        }
+
         File.Copy(backupFile, path, true);
+
         return Task.CompletedTask;
+    }
+
+    private bool TryRetireWriteAheadLog(string path)
+    {
+        var writeAheadLogPath = path + "-wal";
+        if (!File.Exists(path) || !File.Exists(writeAheadLogPath))
+        {
+            return true;
+        }
+
+        try
+        {
+            var connectionString = new SqliteConnectionStringBuilder
+            {
+                DataSource = path,
+                Mode = SqliteOpenMode.ReadWrite,
+                Pooling = false
+            }.ToString();
+
+            using var connection = new SqliteConnection(connectionString);
+            connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = "PRAGMA wal_checkpoint(TRUNCATE)";
+            command.ExecuteNonQuery();
+        }
+        catch (SqliteException ex)
+        {
+            // Either something else holds the database or it is too damaged to open. The check below covers both.
+            _logger.LogError(ex, "Could not open jellyfin.db to retire its write-ahead log");
+        }
+
+        return !File.Exists(writeAheadLogPath);
     }
 
     /// <inheritdoc />

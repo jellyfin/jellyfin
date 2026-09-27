@@ -45,8 +45,10 @@ public interface IJellyfinDatabaseProvider
     Task RunScheduledOptimisation(CancellationToken cancellationToken);
 
     /// <summary>
-    /// If supported this should perform any actions that are required on stopping the jellyfin server, including the
-    /// same maintenance as <see cref="RunScheduledOptimisation(CancellationToken)"/>.
+    /// If supported this should perform any actions that are required on stopping the jellyfin server. This runs
+    /// against a deadline imposed by the service manager, so unlike
+    /// <see cref="RunScheduledOptimisation(CancellationToken)"/> it should only do work whose cost does not grow with
+    /// the size of the database.
     /// </summary>
     /// <param name="cancellationToken">The token that will be used to abort the operation.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
