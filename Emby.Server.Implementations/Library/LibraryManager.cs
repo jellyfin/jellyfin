@@ -3467,6 +3467,7 @@ namespace Emby.Server.Implementations.Library
 
             var extras = new List<BaseItem>();
             var typeCounters = new Dictionary<ExtraType, int>();
+            var generatedNames = new Dictionary<ExtraType, HashSet<string>>();
 
             // Order by path so that the numbering handed out below does not depend on the
             // order the file system happened to list the folder in
@@ -3503,10 +3504,12 @@ namespace Emby.Server.Implementations.Library
                     extra = itemById;
                 }
 
-                // An extra is named after its file, so the file is the source of truth. Items created
-                // by older versions, or renamed by a metadata provider, are corrected here;
-                // RefreshExtras persists the change.
-                if (!string.IsNullOrEmpty(name) && extra.LockedFields?.Contains(MetadataField.Name) != true)
+                // The name derived from the file is only a default. A name that came from anywhere else,
+                // such as a local metadata file, is the user's and has to survive the scan, so only a
+                // name this method handed out itself is renewed; RefreshExtras persists the change.
+                if (!string.IsNullOrEmpty(name)
+                    && extra.LockedFields?.Contains(MetadataField.Name) != true
+                    && (itemById is null || IsGeneratedExtraName(extra.Name, candidate)))
                 {
                     extra.Name = name;
                 }
@@ -3527,6 +3530,31 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 return null;
+            }
+
+            bool IsGeneratedExtraName(string currentName, ExtraCandidate candidate)
+            {
+                // The file name is what an extra was called before it was given a name of its type
+                if (string.Equals(currentName, candidate.Extra.Name, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+
+                if (!generatedNames.TryGetValue(candidate.ExtraType, out var names))
+                {
+                    // Any of the numbers of this type may have been handed out, as the order the extras
+                    // of a type are numbered in shifts as files appear beside them or are taken away
+                    names = new HashSet<string>(StringComparer.Ordinal);
+                    var count = candidates.Count(c => c.ExtraType == candidate.ExtraType);
+                    for (var seen = 0; seen < count; seen++)
+                    {
+                        names.Add(GetNumberedExtraName(candidate.ExtraType, seen));
+                    }
+
+                    generatedNames[candidate.ExtraType] = names;
+                }
+
+                return names.Contains(currentName);
             }
         }
 
@@ -3554,7 +3582,18 @@ namespace Emby.Server.Implementations.Library
             typeCounters.TryGetValue(candidate.ExtraType, out var seen);
             typeCounters[candidate.ExtraType] = seen + 1;
 
-            var typeName = _localization.GetServerLocalizedString(GetExtraTypeNameKey(candidate.ExtraType));
+            return GetNumberedExtraName(candidate.ExtraType, seen);
+        }
+
+        /// <summary>
+        /// Gets the name given to the n-th extra of a type that is named after its type.
+        /// </summary>
+        /// <param name="extraType">The extra type.</param>
+        /// <param name="seen">Number of extras of the type named before this one.</param>
+        /// <returns>The name.</returns>
+        private string GetNumberedExtraName(ExtraType extraType, int seen)
+        {
+            var typeName = _localization.GetServerLocalizedString(GetExtraTypeNameKey(extraType));
 
             return seen == 0
                 ? typeName
