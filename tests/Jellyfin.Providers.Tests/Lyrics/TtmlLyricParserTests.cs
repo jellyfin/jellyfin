@@ -91,6 +91,17 @@ public static class TtmlLyricParserTests
     }
 
     [Fact]
+    public static void ParseTtml_PreservesXmlSpacePreserve()
+    {
+        const string Ttml = "<tt xmlns=\"http://www.w3.org/ns/ttml\"><body><div><p xml:space=\"preserve\">  Keep  spacing  </p></div></body></tt>";
+
+        var parsed = new TtmlLyricParser().ParseLyrics(new LyricFile("sample.ttml", Ttml));
+
+        Assert.NotNull(parsed);
+        Assert.Equal("  Keep  spacing  ", Assert.Single(parsed.Tracks[0].Lines).Text);
+    }
+
+    [Fact]
     public static void ParseTtml_KaraokeSyllableSpacingUsesTextNodes()
     {
         const string Ttml = """
@@ -110,6 +121,32 @@ public static class TtmlLyricParserTests
         Assert.Equal(2, syllables.Count);
         Assert.Equal("Hello ", syllables[0].Text);
         Assert.Equal("world", syllables[1].Text);
+    }
+
+    [Fact]
+    public static void ParseTtml_PreservesTextBeforeFirstKaraokeSpan()
+    {
+        const string Ttml = "<tt xmlns=\"http://www.w3.org/ns/ttml\"><body><div><p begin=\"00:00.000\" end=\"00:02.000\">Intro <span begin=\"00:00.000\" end=\"00:01.000\">hello</span> <span begin=\"00:01.000\" end=\"00:02.000\">world</span></p></div></body></tt>";
+
+        var parsed = new TtmlLyricParser().ParseLyrics(new LyricFile("sample.ttml", Ttml));
+
+        Assert.NotNull(parsed);
+        var line = Assert.Single(parsed.Tracks[0].Lines);
+        Assert.Equal("Intro hello world", line.Text);
+        Assert.Equal("Intro hello ", line.Syllables[0].Text);
+    }
+
+    [Fact]
+    public static void ParseTtml_KeepsBackgroundOnlyParagraph()
+    {
+        const string Ttml = "<tt xmlns=\"http://www.w3.org/ns/ttml\" xmlns:ttm=\"http://www.w3.org/ns/ttml#metadata\"><body><div><p begin=\"00:00.000\" end=\"00:01.000\"><span ttm:role=\"x-bg\">Echo</span></p></div></body></tt>";
+
+        var parsed = new TtmlLyricParser().ParseLyrics(new LyricFile("sample.ttml", Ttml));
+
+        Assert.NotNull(parsed);
+        var track = Assert.Single(parsed.Tracks);
+        Assert.Equal(LyricTrackType.Background, track.Type);
+        Assert.Equal("Echo", Assert.Single(track.Lines).Text);
     }
 
     [Fact]
@@ -252,6 +289,25 @@ public static class TtmlLyricParserTests
         var parser = new TtmlLyricParser { StrictValidation = true };
 
         Assert.Null(parser.ParseLyrics(new LyricFile("sample.ttml", Ttml)));
+    }
+
+    [Fact]
+    public static void ParseTtml_StrictValidationIgnoresForeignNamespaceParagraph()
+    {
+        const string Ttml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xmlns:evil="urn:evil" xml:lang="en-US">
+              <head><metadata><ttm:title>Song</ttm:title></metadata></head>
+              <body><div><p begin="00:00.000" end="00:01.000">Valid</p><evil:p begin="00:00.000" end="00:01.000">Fake</evil:p></div></body>
+            </tt>
+            """;
+
+        var parser = new TtmlLyricParser { StrictValidation = true };
+
+        var parsed = parser.ParseLyrics(new LyricFile("sample.ttml", Ttml));
+
+        Assert.NotNull(parsed);
+        Assert.Equal("Valid", Assert.Single(parsed.Tracks[0].Lines).Text);
     }
 
     [Fact]

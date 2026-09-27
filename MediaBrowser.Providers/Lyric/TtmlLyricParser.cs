@@ -79,7 +79,7 @@ public partial class TtmlLyricParser : ILyricParser
         var body = root.Element(_ttmlNamespace + "body");
         var duration = body is null ? null : ParseTime(GetAttributeValue(body, "dur"));
 
-        var artists = ParseArtists(document);
+        var artists = ParseArtists(document, StrictValidation);
         var translations = ParseITunesTextMap(document, "translation");
         var transliterations = ParseITunesTransliterations(document);
 
@@ -88,7 +88,11 @@ public partial class TtmlLyricParser : ILyricParser
         var phoneticLines = new Dictionary<string, List<LyricLine>>(StringComparer.OrdinalIgnoreCase);
         var backgroundLines = new List<LyricLine>();
 
-        foreach (var p in document.Descendants().Where(i => i.Name.LocalName == "p"))
+        var paragraphs = StrictValidation
+            ? document.Descendants(_ttmlNamespace + "p")
+            : document.Descendants().Where(i => i.Name.LocalName == "p");
+
+        foreach (var p in paragraphs)
         {
             var start = ParseTime(GetAttributeValue(p, "begin"));
             var end = ParseTime(GetAttributeValue(p, "end"));
@@ -98,50 +102,49 @@ public partial class TtmlLyricParser : ILyricParser
                 .Distinct(StringComparer.Ordinal)
                 .ToArray();
             var key = GetAttributeValue(p, "key");
-            var syllables = ParseSyllablesFromChildren(p.Nodes());
+            var syllables = ParseSyllablesFromChildren(p.Nodes(), StrictValidation);
             var text = syllables.Count > 0
                 ? string.Concat(syllables.Select(i => i.Text)).Trim()
-                : NormalizeXmlTextContent(ExtractLineText(p));
-            if (text.Length == 0)
-            {
-                continue;
-            }
+                : NormalizeXmlTextContent(p, ExtractLineText(p, StrictValidation));
 
-            if (key is not null && transliterations.TryGetValue(key, out var phonetics) && phonetics.Count == syllables.Count)
+            if (text.Length > 0)
             {
-                for (var i = 0; i < syllables.Count; i++)
+                if (key is not null && transliterations.TryGetValue(key, out var phonetics) && phonetics.Count == syllables.Count)
                 {
-                    syllables[i].Phonetic = phonetics[i];
+                    for (var i = 0; i < syllables.Count; i++)
+                    {
+                        syllables[i].Phonetic = phonetics[i];
+                    }
                 }
-            }
 
-            mainLines.Add(new LyricLine(text, start)
-            {
-                End = end,
-                ArtistIds = artistIds,
-                Syllables = syllables
-            });
-
-            AddInlineTrackLine(p, "x-translation", translationLines, start, end, artistIds);
-            if (key is not null && translations.TryGetValue(key, out var externalTranslation))
-            {
-                AddTrackLine(translationLines, string.Empty, new LyricLine(externalTranslation, start)
+                mainLines.Add(new LyricLine(text, start)
                 {
                     End = end,
-                    ArtistIds = artistIds
+                    ArtistIds = artistIds,
+                    Syllables = syllables
                 });
-            }
 
-            AddInlineTrackLine(p, "x-roman", phoneticLines, start, end, artistIds);
+                AddInlineTrackLine(p, "x-translation", translationLines, start, end, artistIds);
+                if (key is not null && translations.TryGetValue(key, out var externalTranslation))
+                {
+                    AddTrackLine(translationLines, string.Empty, new LyricLine(externalTranslation, start)
+                    {
+                        End = end,
+                        ArtistIds = artistIds
+                    });
+                }
+
+                AddInlineTrackLine(p, "x-roman", phoneticLines, start, end, artistIds);
+            }
 
             foreach (var backgroundSpan in p.Elements().Where(i => HasRole(i, "x-bg")))
             {
                 var backgroundStart = ParseTime(GetAttributeValue(backgroundSpan, "begin")) ?? start;
                 var backgroundEnd = ParseTime(GetAttributeValue(backgroundSpan, "end")) ?? end;
-                var backgroundSyllables = ParseSyllablesFromChildren(backgroundSpan.Nodes());
+                var backgroundSyllables = ParseSyllablesFromChildren(backgroundSpan.Nodes(), StrictValidation);
                 var backgroundText = backgroundSyllables.Count > 0
                     ? string.Concat(backgroundSyllables.Select(i => i.Text)).Trim()
-                    : NormalizeXmlTextContent(ExtractLineText(backgroundSpan));
+                    : NormalizeXmlTextContent(backgroundSpan, ExtractLineText(backgroundSpan, StrictValidation));
                 if (backgroundText.Length == 0)
                 {
                     continue;
@@ -150,7 +153,11 @@ public partial class TtmlLyricParser : ILyricParser
                 backgroundLines.Add(new LyricLine(backgroundText, backgroundStart)
                 {
                     End = backgroundEnd,
-                    ArtistIds = artistIds,
+                    ArtistIds = backgroundSpan.AncestorsAndSelf()
+                        .SelectMany(GetArtistIds)
+                        .Concat(backgroundSpan.Descendants(_ttmlNamespace + "span").SelectMany(GetArtistIds))
+                        .Distinct(StringComparer.Ordinal)
+                        .ToArray(),
                     Syllables = backgroundSyllables
                 });
 
@@ -158,19 +165,20 @@ public partial class TtmlLyricParser : ILyricParser
             }
         }
 
-        if (mainLines.Count == 0)
+        if (mainLines.Count == 0 && backgroundLines.Count == 0)
         {
             return null;
         }
 
-        var tracks = new List<LyricTrack>
+        var tracks = new List<LyricTrack>();
+        if (mainLines.Count > 0)
         {
-            new()
+            tracks.Add(new LyricTrack
             {
                 Type = LyricTrackType.Main,
                 Lines = mainLines.OrderBy(i => i.Start).ToArray()
-            }
-        };
+            });
+        }
 
         AddTracks(tracks, LyricTrackType.Translation, translationLines);
         AddTracks(tracks, LyricTrackType.Phonetic, phoneticLines);
@@ -425,10 +433,12 @@ public partial class TtmlLyricParser : ILyricParser
         lines.Add(line);
     }
 
-    private static IReadOnlyList<Artist> ParseArtists(XDocument document)
+    private static IReadOnlyList<Artist> ParseArtists(XDocument document, bool strictValidation)
     {
         return document.Descendants()
-            .Where(i => i.Name.LocalName == "agent")
+            .Where(i => strictValidation
+                ? i.Name == _ttmNamespace + "agent"
+                : i.Name.LocalName == "agent")
             .Select((agent, index) =>
             {
                 var id = GetXmlId(agent) ?? $"artist-{index + 1}";
@@ -509,16 +519,22 @@ public partial class TtmlLyricParser : ILyricParser
         }
     }
 
-    private static List<LyricSyllable> ParseSyllablesFromChildren(IEnumerable<XNode> nodes)
+    private static List<LyricSyllable> ParseSyllablesFromChildren(IEnumerable<XNode> nodes, bool strictValidation)
     {
         var nodeList = nodes.ToList();
         var syllables = new List<LyricSyllable>();
+        var leadingText = string.Empty;
         for (var i = 0; i < nodeList.Count; i++)
         {
             if (nodeList[i] is not XElement span
-                || span.Name.LocalName != "span"
+                || (strictValidation ? span.Name != _ttmlNamespace + "span" : span.Name.LocalName != "span")
                 || HasAnyRole(span, "x-translation", "x-bg", "x-roman"))
             {
+                if (syllables.Count == 0 && nodeList[i] is XText textNode)
+                {
+                    leadingText += textNode.Value;
+                }
+
                 continue;
             }
 
@@ -530,6 +546,13 @@ public partial class TtmlLyricParser : ILyricParser
             }
 
             var syllableText = span.Value;
+            if (syllables.Count == 0 && !string.IsNullOrWhiteSpace(leadingText))
+            {
+                var prefix = WhitespaceCollapseRegex().Replace(leadingText, " ").Trim();
+                var separator = char.IsWhiteSpace(leadingText[^1]) ? " " : string.Empty;
+                syllableText = prefix + separator + syllableText;
+            }
+
             if (i + 1 < nodeList.Count && nodeList[i + 1] is XText nextText)
             {
                 syllableText += NormalizeInterSyllableSpace(nextText.Value);
@@ -551,7 +574,7 @@ public partial class TtmlLyricParser : ILyricParser
         return syllables;
     }
 
-    private static string ExtractLineText(XElement element)
+    private static string ExtractLineText(XElement element, bool strictValidation)
     {
         var text = new List<string>();
         foreach (var node in element.Nodes())
@@ -561,7 +584,8 @@ public partial class TtmlLyricParser : ILyricParser
                 case XText xText:
                     text.Add(xText.Value);
                     break;
-                case XElement child when !HasAnyRole(child, "x-translation", "x-bg", "x-roman"):
+                case XElement child when (!strictValidation || child.Name == _ttmlNamespace + "span")
+                    && !HasAnyRole(child, "x-translation", "x-bg", "x-roman"):
                     text.Add(child.Value);
                     break;
             }
@@ -570,8 +594,16 @@ public partial class TtmlLyricParser : ILyricParser
         return string.Concat(text);
     }
 
-    private static string NormalizeXmlTextContent(string text)
-        => WhitespaceCollapseRegex().Replace(text, " ").Trim();
+    private static string NormalizeXmlTextContent(XElement element, string text)
+    {
+        var xmlSpace = element.AncestorsAndSelf()
+            .Select(i => i.Attribute(XNamespace.Xml + "space")?.Value)
+            .FirstOrDefault(i => i is not null);
+
+        return string.Equals(xmlSpace, "preserve", StringComparison.Ordinal)
+            ? text
+            : WhitespaceCollapseRegex().Replace(text, " ").Trim();
+    }
 
     // Keep one word separator between karaoke spans. Drop pure XML indentation
     // (newlines with no space/tab before them); keep a single space when an
@@ -603,7 +635,7 @@ public partial class TtmlLyricParser : ILyricParser
 
     private static IReadOnlyList<string> GetArtistIds(XElement element)
     {
-        var agentId = GetAttributeValue(element, "agent");
+        var agentId = element.Attribute(_ttmNamespace + "agent")?.Value;
         return string.IsNullOrWhiteSpace(agentId) ? [] : [agentId];
     }
 
@@ -620,10 +652,10 @@ public partial class TtmlLyricParser : ILyricParser
         => element.Attribute(XNamespace.Xml + "id")?.Value;
 
     private static bool HasRole(XElement element, string role)
-        => element.Attributes().Any(i => i.Name.LocalName == "role" && i.Value == role);
+        => element.Attribute(_ttmNamespace + "role")?.Value == role;
 
     private static bool HasAnyRole(XElement element, params string[] roles)
-        => element.Attributes().Any(i => i.Name.LocalName == "role" && roles.Contains(i.Value, StringComparer.Ordinal));
+        => roles.Contains(element.Attribute(_ttmNamespace + "role")?.Value, StringComparer.Ordinal);
 
     private static long? ParseTime(string? value)
     {
