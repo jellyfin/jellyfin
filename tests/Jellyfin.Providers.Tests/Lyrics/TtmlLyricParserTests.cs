@@ -228,19 +228,22 @@ public static class TtmlLyricParserTests
     }
 
     [Fact]
-    public static void ParseTtml_StrictValidationRejectsNonDefaultXmlSpace()
+    public static void ParseTtml_StrictValidationPreservesXmlSpace()
     {
         const string Ttml = """
             <?xml version="1.0" encoding="UTF-8"?>
-            <tt xmlns="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling" xmlns:itunes="http://itunes.apple.com/lyric-ttml-extensions" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xml:lang="en-US" xml:space="preserve">
+            <tt xmlns="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling" xmlns:itunes="http://itunes.apple.com/lyric-ttml-extensions" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xml:lang="en-US">
               <head><metadata><ttm:title>Song</ttm:title></metadata></head>
-              <body><div><p>Line</p></div></body>
+              <body><div><p xml:space="preserve">  Keep  spacing  </p></div></body>
             </tt>
             """;
 
         var parser = new TtmlLyricParser { StrictValidation = true };
 
-        Assert.Null(parser.ParseLyrics(new LyricFile("sample.ttml", Ttml)));
+        var parsed = parser.ParseLyrics(new LyricFile("sample.ttml", Ttml));
+
+        Assert.NotNull(parsed);
+        Assert.Equal("  Keep  spacing  ", Assert.Single(parsed.Tracks[0].Lines).Text);
     }
 
     [Fact]

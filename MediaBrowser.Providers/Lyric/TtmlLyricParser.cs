@@ -224,13 +224,6 @@ public partial class TtmlLyricParser : ILyricParser
             return false;
         }
 
-        if (root.DescendantsAndSelf()
-            .Select(i => i.Attribute(XNamespace.Xml + "space")?.Value)
-            .Any(i => i is not null && !string.Equals(i, "default", StringComparison.Ordinal)))
-        {
-            return false;
-        }
-
         if (string.IsNullOrWhiteSpace(root.Attribute(XNamespace.Xml + "lang")?.Value))
         {
             return false;
