@@ -39,6 +39,7 @@ public partial class QrcLyricParser : ILyricParser
         try
         {
             var content = ExtractQrcContent(lyrics.Content);
+            var offset = ParseOffset(content);
             var result = new List<LyricLine>();
             foreach (var rawLine in content.Split(["\r\n", "\r", "\n"], StringSplitOptions.RemoveEmptyEntries))
             {
@@ -50,9 +51,21 @@ public partial class QrcLyricParser : ILyricParser
                     continue;
                 }
 
-                var syllables = ParseSyllables(match.Groups[3].Value);
-                if (syllables.Count == 0 || !TryAdd(lineStart, lineDuration, out var lineEnd))
+                if (!TryAdd(lineStart, offset, out lineStart)
+                    || !TryAdd(lineStart, lineDuration, out var lineEnd))
                 {
+                    continue;
+                }
+
+                var syllables = ParseSyllables(match.Groups[3].Value, offset);
+                if (syllables.Count == 0)
+                {
+                    var plainText = match.Groups[3].Value.Trim();
+                    if (plainText.Length > 0)
+                    {
+                        result.Add(new LyricLine(plainText, lineStart) { End = lineEnd });
+                    }
+
                     continue;
                 }
 
@@ -83,7 +96,26 @@ public partial class QrcLyricParser : ILyricParser
         return match.Success ? WebUtility.HtmlDecode(match.Groups[1].Value) : content;
     }
 
-    private static List<LyricSyllable> ParseSyllables(string content)
+    private static long ParseOffset(string content)
+    {
+        var match = OffsetRegex().Match(content);
+        if (!match.Success
+            || !long.TryParse(match.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var milliseconds))
+        {
+            return 0;
+        }
+
+        try
+        {
+            return checked(milliseconds * TimeSpan.TicksPerMillisecond);
+        }
+        catch (OverflowException)
+        {
+            return 0;
+        }
+    }
+
+    private static List<LyricSyllable> ParseSyllables(string content, long offset)
     {
         var result = new List<LyricSyllable>();
         var textStart = 0;
@@ -92,7 +124,9 @@ public partial class QrcLyricParser : ILyricParser
             var text = content[textStart..match.Index];
             if (!TryMilliseconds(match.Groups[1].Value, out var start)
                 || !TryMilliseconds(match.Groups[2].Value, out var duration)
-                || !TryAdd(start, duration, out var end))
+                || !TryAdd(start, duration, out var end)
+                || !TryAdd(start, offset, out start)
+                || !TryAdd(end, offset, out end))
             {
                 textStart = match.Index + match.Length;
                 continue;
@@ -144,6 +178,9 @@ public partial class QrcLyricParser : ILyricParser
 
     [GeneratedRegex(@"\((\d+),\s*(\d+)\)")]
     private static partial Regex SyllableRegex();
+
+    [GeneratedRegex(@"^\[offset:\s*(-?\d+)\]$", RegexOptions.Multiline)]
+    private static partial Regex OffsetRegex();
 
     [GeneratedRegex(@"LyricContent\s*=\s*""([\s\S]*?)""")]
     private static partial Regex XmlContentRegex();

@@ -104,6 +104,20 @@ public static class AlternativeLyricParserTests
     }
 
     [Fact]
+    public static void ParseQrcOffsetAndPlainTimedLine()
+    {
+        const string Content = "[offset:100]\n[1000,1000]Timed line";
+
+        var parsed = new QrcLyricParser().ParseLyrics(new LyricFile("sample.qrc", Content));
+
+        Assert.NotNull(parsed);
+        var line = Assert.Single(parsed.Tracks[0].Lines);
+        Assert.Equal("Timed line", line.Text);
+        Assert.Equal(11000000, line.Start);
+        Assert.Equal(21000000, line.End);
+    }
+
+    [Fact]
     public static void AlternativeParsersDoNotCrossParseFormats()
     {
         const string KrcContent = "[1000,1000]<0,500,0>Hello";
