@@ -150,6 +150,7 @@ namespace Jellyfin.Server
                 options.FallBackToParentUICultures = true;
             });
 
+            services.AddHostedService<TranscodeCacheCleaner>();
             services.AddHostedService<RecordingsHost>();
             services.AddHostedService<AutoDiscoveryHost>();
             services.AddHostedService<NfoUserDataSaver>();
@@ -157,7 +158,6 @@ namespace Jellyfin.Server
             services.AddHostedService<UserDataChangeNotifier>();
             services.AddHostedService<RecordingNotifier>();
             services.AddHostedService<DeviceAccessHost>();
-            services.AddHostedService<TranscodeCacheCleaner>();
         }
 
         /// <summary>
