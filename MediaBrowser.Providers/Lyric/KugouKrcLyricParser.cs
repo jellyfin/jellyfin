@@ -18,7 +18,7 @@ namespace MediaBrowser.Providers.Lyric;
 /// </summary>
 public partial class KugouKrcLyricParser : ILyricParser
 {
-    private static readonly string[] _supportedMediaTypes = [".krc"];
+    private static readonly string[] _supportedMediaTypes = [".krc", ".qrc"];
 
     /// <inheritdoc />
     public string Name => "KugouKrcLyricProvider";

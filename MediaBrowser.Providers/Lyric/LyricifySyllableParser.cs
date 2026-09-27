@@ -16,7 +16,7 @@ namespace MediaBrowser.Providers.Lyric;
 /// </summary>
 public partial class LyricifySyllableParser : ILyricParser
 {
-    private static readonly string[] _supportedMediaTypes = [".lrc"];
+    private static readonly string[] _supportedMediaTypes = [".lys", ".lrc"];
     private static readonly HashSet<string> _metadataTags = new(StringComparer.OrdinalIgnoreCase)
     {
         "ar", "ti", "al", "offset", "length"

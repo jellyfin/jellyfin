@@ -21,6 +21,7 @@ public static class AlternativeLyricParserTests
         Assert.Equal(2, parsed.Tracks[0].Lines[0].Syllables.Count);
         Assert.Equal(LyricTrackType.Background, parsed.Tracks[1].Type);
         Assert.Equal("echo", Assert.Single(parsed.Tracks[1].Lines).Text);
+        Assert.Contains(".qrc", new KugouKrcLyricParser().SupportedExtensions);
     }
 
     [Fact]
@@ -42,13 +43,14 @@ public static class AlternativeLyricParserTests
     {
         const string Content = "[0]Hello(100,200) world(300,200)\n[6](500,200) echo(700,200)";
 
-        var parsed = new LyricifySyllableParser().ParseLyrics(new LyricFile("sample.lrc", Content));
+        var parsed = new LyricifySyllableParser().ParseLyrics(new LyricFile("sample.lys", Content));
 
         Assert.NotNull(parsed);
         Assert.Equal(2, parsed.Tracks.Count);
         Assert.Equal("Hello world", Assert.Single(parsed.Tracks[0].Lines).Text);
         Assert.Equal(LyricTrackType.Background, parsed.Tracks[1].Type);
         Assert.Equal(" echo", Assert.Single(parsed.Tracks[1].Lines).Text);
+        Assert.Contains(".lys", new LyricifySyllableParser().SupportedExtensions);
     }
 
     [Theory]
