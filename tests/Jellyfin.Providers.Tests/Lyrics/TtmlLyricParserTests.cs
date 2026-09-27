@@ -239,6 +239,25 @@ public static class TtmlLyricParserTests
     }
 
     [Fact]
+    public static void ParseTtml_StrictValidationAcceptsAgentOnDiv()
+    {
+        const string Ttml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xml:lang="en-US">
+              <head><metadata><ttm:title>Song</ttm:title><ttm:agent type="person" xml:id="v1"><ttm:name type="full">Singer</ttm:name></ttm:agent></metadata></head>
+              <body><div begin="00:00.000" end="00:02.000" ttm:agent="v1"><p begin="00:00.000" end="00:02.000">Line</p></div></body>
+            </tt>
+            """;
+
+        var parser = new TtmlLyricParser { StrictValidation = true };
+
+        var parsed = parser.ParseLyrics(new LyricFile("sample.ttml", Ttml));
+
+        Assert.NotNull(parsed);
+        Assert.Equal("v1", Assert.Single(parsed.Tracks[0].Lines).ArtistIds.Single());
+    }
+
+    [Fact]
     public static void ParseTtml_InvalidTimeDoesNotThrowInDefaultMode()
     {
         const string Ttml = "<tt xmlns=\"http://www.w3.org/ns/ttml\"><body><div><p begin=\"not-a-time\" end=\"00:01.000\">Line</p></div></body></tt>";
@@ -253,6 +272,26 @@ public static class TtmlLyricParserTests
     public static void ParseTtml_StrictValidationRejectsInvalidTimingRange()
     {
         const string Ttml = "<tt xmlns=\"http://www.w3.org/ns/ttml\"><body><div><p begin=\"00:02.000\" end=\"00:01.000\">Line</p></div></body></tt>";
+
+        var parser = new TtmlLyricParser { StrictValidation = true };
+
+        Assert.Null(parser.ParseLyrics(new LyricFile("sample.ttml", Ttml)));
+    }
+
+    [Fact]
+    public static void ParseTtml_StrictValidationRejectsNamespacedTimingAttribute()
+    {
+        const string Ttml = "<tt xmlns=\"http://www.w3.org/ns/ttml\" xmlns:ttm=\"http://www.w3.org/ns/ttml#metadata\" xmlns:foo=\"urn:invalid\" xml:lang=\"en-US\"><head><metadata><ttm:title>Song</ttm:title></metadata></head><body><div><p foo:begin=\"00:00.000\" end=\"00:01.000\">Line</p></div></body></tt>";
+
+        var parser = new TtmlLyricParser { StrictValidation = true };
+
+        Assert.Null(parser.ParseLyrics(new LyricFile("sample.ttml", Ttml)));
+    }
+
+    [Fact]
+    public static void ParseTtml_StrictValidationRejectsOverflowingTime()
+    {
+        const string Ttml = "<tt xmlns=\"http://www.w3.org/ns/ttml\" xmlns:ttm=\"http://www.w3.org/ns/ttml#metadata\" xml:lang=\"en-US\"><head><metadata><ttm:title>Song</ttm:title></metadata></head><body><div><p begin=\"999999999999:00:00\" end=\"999999999999:00:01\">Line</p></div></body></tt>";
 
         var parser = new TtmlLyricParser { StrictValidation = true };
 

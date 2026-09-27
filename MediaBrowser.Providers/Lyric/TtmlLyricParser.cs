@@ -27,6 +27,9 @@ public partial class TtmlLyricParser : ILyricParser
     /// <inheritdoc />
     public ResolverPriority Priority => ResolverPriority.Third;
 
+    /// <inheritdoc />
+    public IReadOnlyList<string> SupportedExtensions => _supportedMediaTypes;
+
     /// <summary>
     /// Gets or sets a value indicating whether Apple TTML restrictions are enforced.
     /// </summary>
@@ -88,7 +91,8 @@ public partial class TtmlLyricParser : ILyricParser
         {
             var start = ParseTime(GetAttributeValue(p, "begin"));
             var end = ParseTime(GetAttributeValue(p, "end"));
-            var artistIds = GetArtistIds(p)
+            var artistIds = p.AncestorsAndSelf()
+                .SelectMany(GetArtistIds)
                 .Concat(p.Descendants(_ttmlNamespace + "span").SelectMany(GetArtistIds))
                 .Distinct(StringComparer.Ordinal)
                 .ToArray();
@@ -204,7 +208,7 @@ public partial class TtmlLyricParser : ILyricParser
         foreach (var agent in agents)
         {
             var id = GetXmlId(agent);
-            var type = GetAttributeValue(agent, "type");
+            var type = GetUnqualifiedAttributeValue(agent, "type");
             if (string.IsNullOrWhiteSpace(id)
                 || !agentIds.Add(id)
                 || type is not ("person" or "group" or "other"))
@@ -214,7 +218,7 @@ public partial class TtmlLyricParser : ILyricParser
 
             foreach (var name in agent.Elements(_ttmNamespace + "name"))
             {
-                if (!string.Equals(GetAttributeValue(name, "type"), "full", StringComparison.Ordinal))
+                if (!string.Equals(GetUnqualifiedAttributeValue(name, "type"), "full", StringComparison.Ordinal))
                 {
                     return false;
                 }
@@ -244,7 +248,9 @@ public partial class TtmlLyricParser : ILyricParser
             var agent = GetNamespacedAttributeValue(element, _ttmNamespace, "agent");
             if (agent is not null)
             {
-                if (element.Name != _ttmlNamespace + "p" && element.Name != _ttmlNamespace + "span")
+                if (element.Name != _ttmlNamespace + "div"
+                    && element.Name != _ttmlNamespace + "p"
+                    && element.Name != _ttmlNamespace + "span")
                 {
                     return false;
                 }
@@ -262,7 +268,7 @@ public partial class TtmlLyricParser : ILyricParser
             return false;
         }
 
-        var duration = GetAttributeValue(body, "dur");
+        var duration = GetUnqualifiedAttributeValue(body, "dur");
         var songDuration = ParseAppleTime(duration);
         if (!string.IsNullOrWhiteSpace(duration) && (!songDuration.HasValue || songDuration <= 0))
         {
@@ -357,8 +363,8 @@ public partial class TtmlLyricParser : ILyricParser
 
     private static bool TryValidateTiming(XElement element, long? parentStart, out long? start, out long? end)
     {
-        var begin = GetAttributeValue(element, "begin");
-        var finish = GetAttributeValue(element, "end");
+        var begin = GetUnqualifiedAttributeValue(element, "begin");
+        var finish = GetUnqualifiedAttributeValue(element, "end");
         if (string.IsNullOrWhiteSpace(begin) != string.IsNullOrWhiteSpace(finish))
         {
             start = null;
@@ -595,6 +601,9 @@ public partial class TtmlLyricParser : ILyricParser
     private static string? GetAttributeValue(XElement element, string localName)
         => element.Attributes().FirstOrDefault(i => i.Name.LocalName == localName)?.Value;
 
+    private static string? GetUnqualifiedAttributeValue(XElement element, string localName)
+        => element.Attribute(localName)?.Value;
+
     private static string? GetNamespacedAttributeValue(XElement element, XNamespace @namespace, string localName)
         => element.Attribute(@namespace + localName)?.Value;
 
@@ -654,16 +663,16 @@ public partial class TtmlLyricParser : ILyricParser
             return null;
         }
 
-        var hours = match.Groups["h"].Success ? int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture) : 0;
-        var minutes = int.Parse(match.Groups["m"].Value, CultureInfo.InvariantCulture);
-        var seconds = int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture);
-        if (minutes > 59 || seconds > 59)
-        {
-            return null;
-        }
-
         try
         {
+            var hours = match.Groups["h"].Success ? int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture) : 0;
+            var minutes = int.Parse(match.Groups["m"].Value, CultureInfo.InvariantCulture);
+            var seconds = int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture);
+            if (minutes > 59 || seconds > 59)
+            {
+                return null;
+            }
+
             var ticks = new TimeSpan(hours, minutes, seconds).Ticks;
             var fraction = match.Groups["f"].Value;
             if (fraction.Length > 0)
@@ -673,7 +682,7 @@ public partial class TtmlLyricParser : ILyricParser
 
             return ticks;
         }
-        catch (ArgumentOutOfRangeException)
+        catch (Exception ex) when (ex is ArgumentOutOfRangeException or FormatException or OverflowException)
         {
             return null;
         }
