@@ -21,7 +21,6 @@ public static class AlternativeLyricParserTests
         Assert.Equal(2, parsed.Tracks[0].Lines[0].Syllables.Count);
         Assert.Equal(LyricTrackType.Background, parsed.Tracks[1].Type);
         Assert.Equal("echo", Assert.Single(parsed.Tracks[1].Lines).Text);
-        Assert.Contains(".qrc", new KugouKrcLyricParser().SupportedExtensions);
     }
 
     [Fact]
@@ -51,12 +50,29 @@ public static class AlternativeLyricParserTests
         Assert.Equal(LyricTrackType.Background, parsed.Tracks[1].Type);
         Assert.Equal(" echo", Assert.Single(parsed.Tracks[1].Lines).Text);
         Assert.Contains(".lys", new LyricifySyllableParser().SupportedExtensions);
+        Assert.DoesNotContain(".lrc", new LyricifySyllableParser().SupportedExtensions);
+    }
+
+    [Fact]
+    public static void ParseQrcWordTimestamps()
+    {
+        const string Content = "[1000,1000]Hello (1000,500)world(1500,500)";
+
+        var parsed = new QrcLyricParser().ParseLyrics(new LyricFile("sample.qrc", Content));
+
+        Assert.NotNull(parsed);
+        var line = Assert.Single(parsed.Tracks[0].Lines);
+        Assert.Equal("Hello world", line.Text);
+        Assert.Equal(10000000, line.Syllables[0].Start);
+        Assert.Equal(20000000, line.Syllables[1].End);
+        Assert.DoesNotContain(".qrc", new KugouKrcLyricParser().SupportedExtensions);
     }
 
     [Theory]
     [InlineData(typeof(KugouKrcLyricParser), "bad.krc", "[oops]")]
+    [InlineData(typeof(QrcLyricParser), "bad.qrc", "[oops]")]
     [InlineData(typeof(NeteaseYrcLyricParser), "bad.yrc", "[x]")]
-    [InlineData(typeof(LyricifySyllableParser), "bad.lrc", "not a syllable line")]
+    [InlineData(typeof(LyricifySyllableParser), "bad.lys", "not a syllable line")]
     public static void ParseMalformedAlternativeLyricsDoesNotThrow(Type parserType, string name, string content)
     {
         var parser = (MediaBrowser.Controller.Lyrics.ILyricParser)Activator.CreateInstance(parserType)!;
