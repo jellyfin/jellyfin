@@ -64,7 +64,7 @@ public partial class LrcLyricParser : ILyricParser
             for (var lineIndex = 0; lineIndex < sortedLyricData.Count; lineIndex++)
             {
                 var lyric = sortedLyricData[lineIndex];
-                if (lyric.Text is null || !TryConvertMilliseconds(lyric.StartTime, out var lyricStartTicks))
+                if (lyric.Text is null || !TimedLyricParserHelpers.TryMilliseconds(lyric.StartTime, out var lyricStartTicks))
                 {
                     return null;
                 }
@@ -72,7 +72,7 @@ public partial class LrcLyricParser : ILyricParser
                 long? lyricEndTicks = null;
                 if (lineIndex + 1 < sortedLyricData.Count)
                 {
-                    if (!TryConvertMilliseconds(sortedLyricData[lineIndex + 1].StartTime, out var nextLineStartTicks))
+                    if (!TimedLyricParserHelpers.TryMilliseconds(sortedLyricData[lineIndex + 1].StartTime, out var nextLineStartTicks))
                     {
                         return null;
                     }
@@ -91,8 +91,8 @@ public partial class LrcLyricParser : ILyricParser
                         var currentPos = currentKey.State == IndexState.End ? (long)currentKey.Index + 1 : currentKey.Index;
                         var nextPos = nextKey.State == IndexState.End ? (long)nextKey.Index + 1 : nextKey.Index;
                         if (currentPos < 0 || nextPos < currentPos || nextPos > lyric.Text.Length
-                            || !TryConvertMilliseconds(lyric.TimeTags[currentKey] ?? 0, out var currentTicks)
-                            || !TryConvertMilliseconds(lyric.TimeTags[nextKey] ?? 0, out var nextTicks))
+                            || !TimedLyricParserHelpers.TryMilliseconds(lyric.TimeTags[currentKey] ?? 0, out var currentTicks)
+                            || !TimedLyricParserHelpers.TryMilliseconds(lyric.TimeTags[nextKey] ?? 0, out var nextTicks))
                         {
                             return null;
                         }
@@ -112,7 +112,7 @@ public partial class LrcLyricParser : ILyricParser
                     var lastKey = keys[^1];
                     var lastPos = lastKey.State == IndexState.End ? (long)lastKey.Index + 1 : lastKey.Index;
                     if (lastPos < 0 || lastPos > lyric.Text.Length
-                        || !TryConvertMilliseconds(lyric.TimeTags[lastKey] ?? 0, out var lastTicks))
+                        || !TimedLyricParserHelpers.TryMilliseconds(lyric.TimeTags[lastKey] ?? 0, out var lastTicks))
                     {
                         return null;
                     }
@@ -152,26 +152,6 @@ public partial class LrcLyricParser : ILyricParser
         {
             // Malformed parser output must not abort lyric loading.
             return null;
-        }
-    }
-
-    private static bool TryConvertMilliseconds(double milliseconds, out long ticks)
-    {
-        if (!double.IsFinite(milliseconds) || milliseconds < 0)
-        {
-            ticks = 0;
-            return false;
-        }
-
-        try
-        {
-            ticks = TimeSpan.FromMilliseconds(milliseconds).Ticks;
-            return true;
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            ticks = 0;
-            return false;
         }
     }
 }

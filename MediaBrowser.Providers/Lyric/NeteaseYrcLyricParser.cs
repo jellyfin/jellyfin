@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -38,7 +37,7 @@ public partial class NeteaseYrcLyricParser : ILyricParser
         try
         {
             var result = new List<LyricLine>();
-            foreach (var rawLine in lyrics.Content.Split(["\r\n", "\r", "\n"], StringSplitOptions.RemoveEmptyEntries))
+            foreach (var rawLine in TimedLyricParserHelpers.SplitLines(lyrics.Content, StringSplitOptions.RemoveEmptyEntries))
             {
                 var line = rawLine.Trim();
                 if (line.StartsWith('{'))
@@ -47,14 +46,14 @@ public partial class NeteaseYrcLyricParser : ILyricParser
                 }
 
                 var match = LineRegex().Match(line);
-                if (!match.Success || !TryMilliseconds(match.Groups[1].Value, out var lineStart)
-                    || !TryMilliseconds(match.Groups[2].Value, out var lineDuration))
+                if (!match.Success || !TimedLyricParserHelpers.TryMilliseconds(match.Groups[1].Value, out var lineStart)
+                    || !TimedLyricParserHelpers.TryMilliseconds(match.Groups[2].Value, out var lineDuration))
                 {
                     continue;
                 }
 
                 var syllables = ParseSyllables(match.Groups[3].Value, lineStart);
-                if (!TryAdd(lineStart, lineDuration, out var lineEnd))
+                if (!TimedLyricParserHelpers.TryAdd(lineStart, lineDuration, out var lineEnd))
                 {
                     continue;
                 }
@@ -92,8 +91,8 @@ public partial class NeteaseYrcLyricParser : ILyricParser
         var raw = new List<LyricSyllable>();
         foreach (Match match in SyllableRegex().Matches(content))
         {
-            if (!TryMilliseconds(match.Groups[1].Value, out var start)
-                || !TryMilliseconds(match.Groups[2].Value, out var duration))
+            if (!TimedLyricParserHelpers.TryMilliseconds(match.Groups[1].Value, out var start)
+                || !TimedLyricParserHelpers.TryMilliseconds(match.Groups[2].Value, out var duration))
             {
                 continue;
             }
@@ -104,7 +103,7 @@ public partial class NeteaseYrcLyricParser : ILyricParser
                 continue;
             }
 
-            if (!TryAdd(start, duration, out var end))
+            if (!TimedLyricParserHelpers.TryAdd(start, duration, out var end))
             {
                 continue;
             }
@@ -119,9 +118,9 @@ public partial class NeteaseYrcLyricParser : ILyricParser
 
         foreach (var syllable in raw)
         {
-            if (!TryAdd(syllable.Start, lineStart, out var start)
+            if (!TimedLyricParserHelpers.TryAdd(syllable.Start, lineStart, out var start)
                 || syllable.End is not long end
-                || !TryAdd(end, lineStart, out var adjustedEnd))
+                || !TimedLyricParserHelpers.TryAdd(end, lineStart, out var adjustedEnd))
             {
                 return [];
             }
@@ -131,40 +130,6 @@ public partial class NeteaseYrcLyricParser : ILyricParser
         }
 
         return raw;
-    }
-
-    private static bool TryMilliseconds(string value, out long ticks)
-    {
-        if (!long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var milliseconds) || milliseconds < 0)
-        {
-            ticks = 0;
-            return false;
-        }
-
-        try
-        {
-            ticks = checked(milliseconds * TimeSpan.TicksPerMillisecond);
-            return true;
-        }
-        catch (OverflowException)
-        {
-            ticks = 0;
-            return false;
-        }
-    }
-
-    private static bool TryAdd(long first, long second, out long result)
-    {
-        try
-        {
-            result = checked(first + second);
-            return true;
-        }
-        catch (OverflowException)
-        {
-            result = 0;
-            return false;
-        }
     }
 
     [GeneratedRegex(@"^\[(\d+),\s*(\d+)\](.*)$")]

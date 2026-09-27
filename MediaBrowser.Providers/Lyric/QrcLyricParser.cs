@@ -41,18 +41,18 @@ public partial class QrcLyricParser : ILyricParser
             var content = ExtractQrcContent(lyrics.Content);
             var offset = ParseOffset(content);
             var result = new List<LyricLine>();
-            foreach (var rawLine in content.Split(["\r\n", "\r", "\n"], StringSplitOptions.RemoveEmptyEntries))
+            foreach (var rawLine in TimedLyricParserHelpers.SplitLines(content, StringSplitOptions.RemoveEmptyEntries))
             {
                 var line = rawLine.Trim();
                 var match = LineRegex().Match(line);
-                if (!match.Success || !TryMilliseconds(match.Groups[1].Value, out var lineStart)
-                    || !TryMilliseconds(match.Groups[2].Value, out var lineDuration))
+                if (!match.Success || !TimedLyricParserHelpers.TryMilliseconds(match.Groups[1].Value, out var lineStart)
+                    || !TimedLyricParserHelpers.TryMilliseconds(match.Groups[2].Value, out var lineDuration))
                 {
                     continue;
                 }
 
-                if (!TryAdd(lineStart, offset, out lineStart)
-                    || !TryAdd(lineStart, lineDuration, out var lineEnd))
+                if (!TimedLyricParserHelpers.TryAdd(lineStart, offset, out lineStart)
+                    || !TimedLyricParserHelpers.TryAdd(lineStart, lineDuration, out var lineEnd))
                 {
                     continue;
                 }
@@ -122,11 +122,11 @@ public partial class QrcLyricParser : ILyricParser
         foreach (Match match in SyllableRegex().Matches(content))
         {
             var text = content[textStart..match.Index];
-            if (!TryMilliseconds(match.Groups[1].Value, out var start)
-                || !TryMilliseconds(match.Groups[2].Value, out var duration)
-                || !TryAdd(start, duration, out var end)
-                || !TryAdd(start, offset, out start)
-                || !TryAdd(end, offset, out end))
+            if (!TimedLyricParserHelpers.TryMilliseconds(match.Groups[1].Value, out var start)
+                || !TimedLyricParserHelpers.TryMilliseconds(match.Groups[2].Value, out var duration)
+                || !TimedLyricParserHelpers.TryAdd(start, duration, out var end)
+                || !TimedLyricParserHelpers.TryAdd(start, offset, out start)
+                || !TimedLyricParserHelpers.TryAdd(end, offset, out end))
             {
                 textStart = match.Index + match.Length;
                 continue;
@@ -137,40 +137,6 @@ public partial class QrcLyricParser : ILyricParser
         }
 
         return result;
-    }
-
-    private static bool TryMilliseconds(string value, out long ticks)
-    {
-        if (!long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var milliseconds) || milliseconds < 0)
-        {
-            ticks = 0;
-            return false;
-        }
-
-        try
-        {
-            ticks = checked(milliseconds * TimeSpan.TicksPerMillisecond);
-            return true;
-        }
-        catch (OverflowException)
-        {
-            ticks = 0;
-            return false;
-        }
-    }
-
-    private static bool TryAdd(long first, long second, out long result)
-    {
-        try
-        {
-            result = checked(first + second);
-            return true;
-        }
-        catch (OverflowException)
-        {
-            result = 0;
-            return false;
-        }
     }
 
     [GeneratedRegex(@"^\[(\d+),\s*(\d+)\](.*)$")]

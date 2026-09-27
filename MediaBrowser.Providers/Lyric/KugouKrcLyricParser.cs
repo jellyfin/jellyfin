@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -39,7 +38,7 @@ public partial class KugouKrcLyricParser : ILyricParser
 
         try
         {
-            var lines = lyrics.Content.Split(["\r\n", "\r", "\n"], StringSplitOptions.None);
+            var lines = TimedLyricParserHelpers.SplitLines(lyrics.Content, StringSplitOptions.None);
             var metadata = ParseMetadata(lines.FirstOrDefault(i => i.TrimStart().StartsWith("[language:", StringComparison.Ordinal)));
             var mainLines = new List<LyricLine>();
             var backgroundLines = new List<LyricLine>();
@@ -65,8 +64,8 @@ public partial class KugouKrcLyricParser : ILyricParser
                 }
 
                 var match = KrcLineRegex().Match(line);
-                if (!match.Success || !TryMilliseconds(match.Groups[1].Value, out var lineStart)
-                    || !TryMilliseconds(match.Groups[2].Value, out var lineDuration))
+                if (!match.Success || !TimedLyricParserHelpers.TryMilliseconds(match.Groups[1].Value, out var lineStart)
+                    || !TimedLyricParserHelpers.TryMilliseconds(match.Groups[2].Value, out var lineDuration))
                 {
                     continue;
                 }
@@ -86,7 +85,7 @@ public partial class KugouKrcLyricParser : ILyricParser
                     }
                 }
 
-                if (!TryAdd(lineStart, lineDuration, out var end))
+                if (!TimedLyricParserHelpers.TryAdd(lineStart, lineDuration, out var end))
                 {
                     continue;
                 }
@@ -162,8 +161,8 @@ public partial class KugouKrcLyricParser : ILyricParser
         var result = new List<LyricSyllable>();
         foreach (Match match in matches)
         {
-            if (!TryMilliseconds(match.Groups[1].Value, out var offset)
-                || !TryMilliseconds(match.Groups[2].Value, out var duration))
+            if (!TimedLyricParserHelpers.TryMilliseconds(match.Groups[1].Value, out var offset)
+                || !TimedLyricParserHelpers.TryMilliseconds(match.Groups[2].Value, out var duration))
             {
                 continue;
             }
@@ -179,7 +178,8 @@ public partial class KugouKrcLyricParser : ILyricParser
                 continue;
             }
 
-            if (!TryAdd(baseStart, offset, out var start) || !TryAdd(start, duration, out var end))
+            if (!TimedLyricParserHelpers.TryAdd(baseStart, offset, out var start)
+                || !TimedLyricParserHelpers.TryAdd(start, duration, out var end))
             {
                 continue;
             }
@@ -207,20 +207,6 @@ public partial class KugouKrcLyricParser : ILyricParser
         }
 
         return result;
-    }
-
-    private static bool TryAdd(long first, long second, out long result)
-    {
-        try
-        {
-            result = checked(first + second);
-            return true;
-        }
-        catch (OverflowException)
-        {
-            result = 0;
-            return false;
-        }
     }
 
     private static KrcMetadata ParseMetadata(string? languageLine)
@@ -272,26 +258,6 @@ public partial class KugouKrcLyricParser : ILyricParser
         }
 
         return metadata;
-    }
-
-    private static bool TryMilliseconds(string value, out long ticks)
-    {
-        if (!long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var milliseconds) || milliseconds < 0)
-        {
-            ticks = 0;
-            return false;
-        }
-
-        try
-        {
-            ticks = checked(milliseconds * TimeSpan.TicksPerMillisecond);
-            return true;
-        }
-        catch (OverflowException)
-        {
-            ticks = 0;
-            return false;
-        }
     }
 
     [GeneratedRegex(@"^\[(\d+),(\d+)\](.*)$")]
