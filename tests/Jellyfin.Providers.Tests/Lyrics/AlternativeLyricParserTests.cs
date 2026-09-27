@@ -38,6 +38,19 @@ public static class AlternativeLyricParserTests
     }
 
     [Fact]
+    public static void ParseYrcAbsoluteSyllables()
+    {
+        const string Content = "[1000,1000](1000,500,0)Hello (1500,500,0)world";
+
+        var parsed = new NeteaseYrcLyricParser().ParseLyrics(new LyricFile("sample.yrc", Content));
+
+        Assert.NotNull(parsed);
+        var line = Assert.Single(parsed.Tracks[0].Lines);
+        Assert.Equal(10000000, line.Syllables[0].Start);
+        Assert.Equal(20000000, line.Syllables[1].End);
+    }
+
+    [Fact]
     public static void ParseLyricifySyllableSeparatesBackground()
     {
         const string Content = "[0]Hello(100,200) world(300,200)\n[6](500,200) echo(700,200)";
@@ -66,6 +79,27 @@ public static class AlternativeLyricParserTests
         Assert.Equal(10000000, line.Syllables[0].Start);
         Assert.Equal(20000000, line.Syllables[1].End);
         Assert.DoesNotContain(".qrc", new KugouKrcLyricParser().SupportedExtensions);
+    }
+
+    [Fact]
+    public static void ParseQrcXmlEnvelope()
+    {
+        const string Content = "<QrcInfos><Lyric_1 LyricContent=\"[1000,1000]Hello (1000,500)world(1500,500)\" /></QrcInfos>";
+
+        var parsed = new QrcLyricParser().ParseLyrics(new LyricFile("sample.qrc", Content));
+
+        Assert.NotNull(parsed);
+        Assert.Equal("Hello world", Assert.Single(parsed.Tracks[0].Lines).Text);
+    }
+
+    [Fact]
+    public static void AlternativeParsersDoNotCrossParseFormats()
+    {
+        const string KrcContent = "[1000,1000]<0,500,0>Hello";
+        const string QrcContent = "[1000,1000]Hello (1000,500)";
+
+        Assert.Null(new KugouKrcLyricParser().ParseLyrics(new LyricFile("sample.qrc", QrcContent)));
+        Assert.Null(new QrcLyricParser().ParseLyrics(new LyricFile("sample.krc", KrcContent)));
     }
 
     [Theory]
