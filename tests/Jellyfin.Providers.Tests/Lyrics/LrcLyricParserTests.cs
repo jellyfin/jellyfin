@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using MediaBrowser.Model.Lyrics;
 using MediaBrowser.Providers.Lyric;
@@ -7,6 +8,19 @@ namespace Jellyfin.Providers.Tests.Lyrics;
 
 public static class LrcLyricParserTests
 {
+    [Theory]
+    [InlineData("[00:00.00]text[999999999999:99.99]")]
+    [InlineData("[00:00.00]<999999999999999999:00.00>text")]
+    [InlineData("[00:00.00]<-1:00.00>text")]
+    public static void ParseMalformedLrc_DoesNotThrow(string content)
+    {
+        var parser = new LrcLyricParser();
+
+        var exception = Record.Exception(() => parser.ParseLyrics(new LyricFile("malformed.lrc", content)));
+
+        Assert.Null(exception);
+    }
+
     [Fact]
     public static void ParseElrcSyllables()
     {
