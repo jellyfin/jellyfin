@@ -212,6 +212,7 @@ public sealed partial class BaseItemRepository
             IsFavoriteOrLiked = filter.IsFavoriteOrLiked,
             IsLiked = filter.IsLiked,
             IsLocked = filter.IsLocked,
+            ImageTypes = filter.ImageTypes,
             NameLessThan = filter.NameLessThan,
             NameStartsWith = filter.NameStartsWith,
             NameStartsWithOrGreater = filter.NameStartsWithOrGreater,
