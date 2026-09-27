@@ -90,7 +90,7 @@ namespace MediaBrowser.Providers.Manager
         {
             ArgumentException.ThrowIfNullOrEmpty(mimeType);
 
-            var saveLocally = item.SupportsLocalMetadata && item.IsSaveLocalMetadataEnabled() && !item.ExtraType.HasValue && item is not Audio;
+            var saveLocally = item.SupportsLocalMetadata && item.IsSaveLocalMetadataEnabled() && !item.ExtraType.HasValue && (item is AudioBook || item is not Audio);
 
             if (type != ImageType.Primary && item is Episode)
             {

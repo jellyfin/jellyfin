@@ -72,6 +72,103 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the query carries any criteria that narrows the
+        /// result set, as opposed to user context, pagination, sorting or DTO options.
+        /// </summary>
+        public bool HasFilters =>
+            IncludeItemTypes.Length > 0
+            || ExcludeItemTypes.Length > 0
+            || Genres.Count > 0
+            || GenreIds.Count > 0
+            || Years.Length > 0
+            || Tags.Length > 0
+            || ExcludeTags.Length > 0
+            || OfficialRatings.Length > 0
+            || StudioIds.Length > 0
+            || ArtistIds.Length > 0
+            || AlbumArtistIds.Length > 0
+            || ContributingArtistIds.Length > 0
+            || ExcludeArtistIds.Length > 0
+            || AlbumIds.Length > 0
+            || PersonIds.Length > 0
+            || PersonTypes.Length > 0
+            || MediaTypes.Length > 0
+            || VideoTypes.Length > 0
+            || ImageTypes.Length > 0
+            || SeriesStatuses.Length > 0
+            || ItemIds.Length > 0
+            || ExcludeItemIds.Length > 0
+            || AudioLanguages.Count > 0
+            || SubtitleLanguages.Count > 0
+            || LinkedChildAncestorIds.Length > 0
+            || AncestorIds.Length > 0
+            || DescendantOfId.HasValue
+            || IsFavorite.HasValue
+            || IsFavoriteOrLiked.HasValue
+            || IsLiked.HasValue
+            || IsPlayed.HasValue
+            || IsResumable.HasValue
+            || IsFolder.HasValue
+            || IsMissing.HasValue
+            || IsUnaired.HasValue
+            || IsSpecialSeason.HasValue
+            || Is3D.HasValue
+            || IsHD.HasValue
+            || Is4K.HasValue
+            || IsLocked.HasValue
+            || IsPlaceHolder.HasValue
+            || IsMovie.HasValue
+            || IsSports.HasValue
+            || IsKids.HasValue
+            || IsNews.HasValue
+            || IsSeries.HasValue
+            || IsAiring.HasValue
+            || IsVirtualItem.HasValue
+            || HasImdbId.HasValue
+            || HasTmdbId.HasValue
+            || HasTvdbId.HasValue
+            || HasOverview.HasValue
+            || HasOfficialRating.HasValue
+            || HasParentalRating.HasValue
+            || HasThemeSong.HasValue
+            || HasThemeVideo.HasValue
+            || HasSubtitles.HasValue
+            || HasSpecialFeature.HasValue
+            || HasTrailer.HasValue
+            || HasChapterImages.HasValue
+            || MinCriticRating.HasValue
+            || MinCommunityRating.HasValue
+            || MinParentalRating is not null
+            || MinIndexNumber.HasValue
+            || MinParentAndIndexNumber.HasValue
+            || IndexNumber.HasValue
+            || ParentIndexNumber.HasValue
+            || AiredDuringSeason.HasValue
+            || MinWidth.HasValue
+            || MinHeight.HasValue
+            || MaxWidth.HasValue
+            || MaxHeight.HasValue
+            || MinPremiereDate.HasValue
+            || MaxPremiereDate.HasValue
+            || MinStartDate.HasValue
+            || MaxStartDate.HasValue
+            || MinEndDate.HasValue
+            || MaxEndDate.HasValue
+            || MinDateCreated.HasValue
+            || MinDateLastSaved.HasValue
+            || MinDateLastSavedForUser.HasValue
+            || AdjacentTo.HasValue
+            || !string.IsNullOrEmpty(NameStartsWith)
+            || !string.IsNullOrEmpty(NameStartsWithOrGreater)
+            || !string.IsNullOrEmpty(NameLessThan)
+            || !string.IsNullOrEmpty(NameContains)
+            || !string.IsNullOrEmpty(MinSortName)
+            || !string.IsNullOrEmpty(Name)
+            || !string.IsNullOrEmpty(Person)
+            || !string.IsNullOrEmpty(SearchTerm)
+            || !string.IsNullOrEmpty(Path);
+
         public bool Recursive { get; set; }
 
         public int? StartIndex { get; set; }
@@ -272,6 +369,13 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public Guid[] LinkedChildAncestorIds { get; set; }
 
+        /// <summary>
+        /// Gets or sets the id of a folder whose descendants the items must be part of.
+        /// Unlike <see cref="AncestorIds"/> this also follows the linked children of BoxSets and
+        /// Playlists, so it reaches the items below a linked folder (a Series' episodes, for example).
+        /// </summary>
+        public Guid? DescendantOfId { get; set; }
+
         public Guid[] TopParentIds { get; set; }
 
         public CollectionType?[] PresetViews { get; set; }
@@ -328,12 +432,18 @@ namespace MediaBrowser.Controller.Entities
 
         public string? HasNoSubtitleTrackWithLanguage { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to return only items nothing names any more.
+        /// </summary>
         public bool? IsDeadArtist { get; set; }
 
         public bool? IsDeadStudio { get; set; }
 
         public bool? IsDeadGenre { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to return only items nothing names any more.
+        /// </summary>
         public bool? IsDeadPerson { get; set; }
 
         /// <summary>
@@ -378,6 +488,14 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public bool IncludeOwnedItems { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to include alternate versions, which carry a
+        /// <see cref="Video.PrimaryVersionId"/> and are normally hidden behind the version they
+        /// belong to. Unlike <see cref="IncludeOwnedItems"/> this keeps the versions a user merged
+        /// by hand without also returning the parts and extras owned by another item.
+        /// </summary>
+        public bool IncludeAlternateVersions { get; set; }
+
         public bool? Is4K { get; set; }
 
         public int? MaxHeight { get; set; }
@@ -399,6 +517,12 @@ namespace MediaBrowser.Controller.Entities
         public IReadOnlyList<string> AudioLanguages { get; set; }
 
         public IReadOnlyList<string> SubtitleLanguages { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether some content in the library is hidden from <see cref="User"/>.
+        /// Filters that only exist to hide content can be skipped entirely when this is false.
+        /// </summary>
+        public bool UserHasContentRestrictions { get; private set; }
 
         public void SetUser(User user)
         {
@@ -423,6 +547,7 @@ namespace MediaBrowser.Controller.Entities
                 .Select(tag => tag.RemoveDiacritics().ToLowerInvariant())
                 .ToArray();
 
+            UserHasContentRestrictions = user.HasContentRestrictions();
             User = user;
         }
 

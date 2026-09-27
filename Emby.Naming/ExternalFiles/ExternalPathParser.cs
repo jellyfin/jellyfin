@@ -50,7 +50,14 @@ namespace Emby.Naming.ExternalFiles
 
             var extension = Path.GetExtension(path.AsSpan());
             var extensionString = extension.ToString();
-            if (!(_type == DlnaProfileType.Subtitle && _namingOptions.SubtitleFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
+
+            // .idx carries VobSub per-track language metadata. Recognize it here rather
+            // than adding it to NamingOptions.SubtitleFileExtensions, which also gates
+            // subtitle uploads/saves.
+            var isVobSubIndex = _type == DlnaProfileType.Subtitle && extension.Equals(".idx", StringComparison.OrdinalIgnoreCase);
+
+            if (!isVobSubIndex
+                && !(_type == DlnaProfileType.Subtitle && _namingOptions.SubtitleFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
                 && !(_type == DlnaProfileType.Audio && _namingOptions.AudioFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
                 && !(_type == DlnaProfileType.Lyric
                     && (_namingOptions.LyricFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase)

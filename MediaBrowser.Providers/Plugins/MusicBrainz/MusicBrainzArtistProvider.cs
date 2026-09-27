@@ -13,6 +13,7 @@ using MediaBrowser.Providers.Music;
 using MetaBrainz.MusicBrainz;
 using MetaBrainz.MusicBrainz.Interfaces.Entities;
 using MetaBrainz.MusicBrainz.Interfaces.Searches;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Plugins.MusicBrainz;
 
@@ -21,6 +22,17 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz;
 /// </summary>
 public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>, IHasOrder
 {
+    private readonly ILogger<MusicBrainzArtistProvider> _logger;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MusicBrainzArtistProvider"/> class.
+    /// </summary>
+    /// <param name="logger">The logger.</param>
+    public MusicBrainzArtistProvider(ILogger<MusicBrainzArtistProvider> logger)
+    {
+        _logger = logger;
+    }
+
     /// <inheritdoc />
     public string Name => "MusicBrainz";
 
@@ -32,12 +44,20 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
     public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
     {
         var query = MusicBrainz.Plugin.Instance!.MusicBrainzQuery;
-        var artistId = searchInfo.GetMusicBrainzArtistId();
+        var artistId = MusicBrainzQueryExtensions.ParseMusicBrainzId(searchInfo.GetMusicBrainzArtistId(), "artist", _logger);
 
-        if (!string.IsNullOrWhiteSpace(artistId))
+        if (artistId is not null)
         {
-            var artistResult = await query.LookupArtistAsync(new Guid(artistId), Include.Aliases, null, null, cancellationToken).ConfigureAwait(false);
-            return GetResultFromResponse(artistResult).SingleItemAsEnumerable();
+            var artistResult = await query.LookupArtistOrNullAsync(artistId.Value, Include.Aliases, _logger, cancellationToken).ConfigureAwait(false);
+            if (artistResult is not null)
+            {
+                return GetResultFromResponse(artistResult).SingleItemAsEnumerable();
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(searchInfo.Name))
+        {
+            return [];
         }
 
         var artistSearchResults = await query.FindArtistsAsync($"\"{searchInfo.Name}\"", null, null, false, cancellationToken)
@@ -58,7 +78,7 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
             }
         }
 
-        return Enumerable.Empty<RemoteSearchResult>();
+        return [];
     }
 
     private IEnumerable<RemoteSearchResult> GetResultsFromResponse(IEnumerable<ISearchResult<IArtist>>? releaseSearchResults)
@@ -94,30 +114,69 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
     {
         var result = new MetadataResult<MusicArtist> { Item = new MusicArtist() };
 
-        var musicBrainzId = info.GetMusicBrainzArtistId();
+        var musicBrainzId = MusicBrainzQueryExtensions.ParseMusicBrainzId(info.GetMusicBrainzArtistId(), "artist", _logger);
 
-        if (string.IsNullOrWhiteSpace(musicBrainzId))
+        // If we don't have an id yet, resolve one by name so we can look the artist up.
+        if (musicBrainzId is null)
         {
             var searchResults = await GetSearchResults(info, cancellationToken).ConfigureAwait(false);
-
-            var singleResult = searchResults.FirstOrDefault();
-
-            if (singleResult is not null)
-            {
-                musicBrainzId = singleResult.GetProviderId(MetadataProvider.MusicBrainzArtist);
-                result.Item.Overview = singleResult.Overview;
-
-                if (Plugin.Instance!.Configuration.ReplaceArtistName)
-                {
-                    result.Item.Name = singleResult.Name;
-                }
-            }
+            musicBrainzId = MusicBrainzQueryExtensions.ParseMusicBrainzId(searchResults.FirstOrDefault()?.GetProviderId(MetadataProvider.MusicBrainzArtist), "artist", _logger);
         }
 
-        if (!string.IsNullOrWhiteSpace(musicBrainzId))
+        if (musicBrainzId is null)
         {
-            result.HasMetadata = true;
-            result.Item.SetProviderId(MetadataProvider.MusicBrainzArtist, musicBrainzId);
+            return result;
+        }
+
+        var query = Plugin.Instance!.MusicBrainzQuery;
+        var artist = await query.LookupArtistOrNullAsync(musicBrainzId.Value, Include.Genres | Include.Tags, _logger, cancellationToken).ConfigureAwait(false);
+
+        if (artist is null)
+        {
+            return result;
+        }
+
+        result.HasMetadata = true;
+        result.Item.SetProviderId(MetadataProvider.MusicBrainzArtist, artist.Id.ToString());
+
+        if (Plugin.Instance!.Configuration.ReplaceArtistName && !string.IsNullOrWhiteSpace(artist.Name))
+        {
+            result.Item.Name = artist.Name;
+        }
+
+        if (artist.LifeSpan?.Begin is not null)
+        {
+            result.Item.PremiereDate = artist.LifeSpan.Begin.NearestDate;
+            result.Item.ProductionYear = artist.LifeSpan.Begin.Year;
+        }
+
+        if (artist.LifeSpan?.End is not null)
+        {
+            result.Item.EndDate = artist.LifeSpan.End.NearestDate;
+        }
+
+        var location = string.IsNullOrWhiteSpace(artist.Area?.Name) ? artist.Country : artist.Area!.Name;
+        if (!string.IsNullOrWhiteSpace(location))
+        {
+            result.Item.ProductionLocations = [location];
+        }
+
+        if (artist.Genres is not null && artist.Genres.Count > 0)
+        {
+            result.Item.Genres = artist.Genres
+                .OrderByDescending(genre => genre.VoteCount)
+                .Select(genre => genre.Name)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .ToArray();
+        }
+
+        if (artist.Tags is not null && artist.Tags.Count > 0)
+        {
+            result.Item.Tags = artist.Tags
+                .OrderByDescending(tag => tag.VoteCount)
+                .Select(tag => tag.Name)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .ToArray();
         }
 
         return result;

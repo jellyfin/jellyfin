@@ -25,5 +25,11 @@ namespace Emby.Naming.TV
         /// </summary>
         /// <value>The name of the series.</value>
         public string? Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the year of the series.
+        /// </summary>
+        /// <value>The year of the series.</value>
+        public int? Year { get; set; }
     }
 }

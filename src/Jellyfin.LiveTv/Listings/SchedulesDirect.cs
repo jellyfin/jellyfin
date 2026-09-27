@@ -491,6 +491,12 @@ namespace Jellyfin.LiveTv.Listings
             var results = new List<ShowImagesDto>();
             for (int i = 0; i < programIds.Count; i += BatchSize)
             {
+                // The daily image limit may be surfaced mid-batch.
+                if (IsImageDailyLimitActive())
+                {
+                    break;
+                }
+
                 var batch = programIds.Skip(i).Take(BatchSize);
 
                 using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/metadata/programs/");
@@ -511,6 +517,18 @@ namespace Jellyfin.LiveTv.Listings
                                     entry.ProgramId,
                                     entry.Code,
                                     entry.Message);
+
+                                // The image download limit can be reported per-entry inside an
+                                // otherwise successful (HTTP 200) response when the limit is hit
+                                // mid-batch. Back off so we stop requesting images until SD resets.
+                                if (entry.Code is (int)SdErrorCode.MaxImageDownloads or (int)SdErrorCode.MaxImageDownloadsTrial)
+                                {
+                                    _logger.LogError(
+                                        "Schedules Direct image download limit hit (code {Code}). Disabling image acquisition until SD reset.",
+                                        entry.Code);
+                                    SetImageLimitHit();
+                                }
+
                                 continue;
                             }
 
@@ -531,44 +549,50 @@ namespace Jellyfin.LiveTv.Listings
         {
             var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
-            var lineups = new List<NameIdPair>();
-
             if (string.IsNullOrWhiteSpace(token))
             {
-                return lineups;
+                throw new AuthenticationException("Could not authenticate with Schedules Direct");
             }
+
+            var lineups = new List<NameIdPair>();
 
             using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/headends?country=" + country + "&postalcode=" + location);
             options.Headers.TryAddWithoutValidation("token", token);
 
-            try
+            var root = await Request<IReadOnlyList<HeadendsDto>>(options, false, info, cancellationToken).ConfigureAwait(false);
+            foreach (HeadendsDto headend in root ?? [])
             {
-                var root = await Request<IReadOnlyList<HeadendsDto>>(options, false, info, cancellationToken).ConfigureAwait(false);
-                if (root is not null)
+                foreach (LineupDto lineup in headend.Lineups ?? [])
                 {
-                    foreach (HeadendsDto headend in root)
+                    lineups.Add(new NameIdPair
                     {
-                        foreach (LineupDto lineup in headend.Lineups)
-                        {
-                            lineups.Add(new NameIdPair
-                            {
-                                Name = string.IsNullOrWhiteSpace(lineup.Name) ? lineup.Lineup : lineup.Name,
-                                Id = lineup.Uri?[18..]
-                            });
-                        }
-                    }
-                }
-                else
-                {
-                    _logger.LogInformation("No lineups available");
+                        Name = string.IsNullOrWhiteSpace(lineup.Name) ? lineup.Lineup : lineup.Name,
+                        Id = string.IsNullOrWhiteSpace(lineup.Lineup) ? lineup.Uri?.Split('/')[^1] : lineup.Lineup
+                    });
                 }
             }
-            catch (Exception ex)
+
+            if (lineups.Count == 0)
             {
-                _logger.LogError(ex, "Error getting headends");
+                _logger.LogWarning(
+                    "Schedules Direct has no lineups for country {Country} and postal code {PostalCode}",
+                    country,
+                    location);
             }
 
             return lineups;
+        }
+
+        private void ResetErrorState(ListingsProviderInfo info)
+        {
+            _accountError = false;
+            Interlocked.Exchange(ref _lastErrorResponseTicks, 0);
+
+            // Only the account being saved is retried, the tokens of the other accounts stay valid.
+            if (!string.IsNullOrWhiteSpace(info.Username))
+            {
+                _tokens.TryRemove(info.Username, out _);
+            }
         }
 
         private async Task<string> GetToken(ListingsProviderInfo info, CancellationToken cancellationToken)
@@ -587,15 +611,19 @@ namespace Jellyfin.LiveTv.Listings
                 return null;
             }
 
-            // Permanent account error — SD is disabled for this server lifetime.
+            // Account error — SD stays disabled until the provider is saved again or the server restarts.
             if (_accountError)
             {
+                _logger.LogWarning("Skipping Schedules Direct request because of an earlier account error. Save the listings provider again to retry.");
+
                 return null;
             }
 
             // Avoid hammering SD after transient login failures (e.g. max attempts / temporary lockout)
             if ((DateTime.UtcNow - new DateTime(Interlocked.Read(ref _lastErrorResponseTicks), DateTimeKind.Utc)).TotalMinutes < 30)
             {
+                _logger.LogWarning("Skipping Schedules Direct request because of a recent login failure. Retrying no earlier than 30 minutes after it.");
+
                 return null;
             }
 
@@ -748,9 +776,7 @@ namespace Jellyfin.LiveTv.Listings
 #pragma warning disable CA5350 // SchedulesDirect is always SHA1.
             var hashedPasswordBytes = SHA1.HashData(Encoding.ASCII.GetBytes(password));
 #pragma warning restore CA5350
-            // TODO: remove ToLower when Convert.ToHexString supports lowercase
-            // Schedules Direct requires the hex to be lowercase
-            string hashedPassword = Convert.ToHexString(hashedPasswordBytes).ToLowerInvariant();
+            string hashedPassword = Convert.ToHexStringLower(hashedPasswordBytes);
             options.Content = new StringContent("{\"username\":\"" + username + "\",\"password\":\"" + hashedPassword + "\"}", Encoding.UTF8, MediaTypeNames.Application.Json);
 
             var root = await Request<TokenDto>(options, false, null, cancellationToken).ConfigureAwait(false);
@@ -760,7 +786,7 @@ namespace Jellyfin.LiveTv.Listings
                 return root.Token;
             }
 
-            throw new AuthenticationException("Could not authenticate with Schedules Direct Error: " + root.Message);
+            throw new AuthenticationException("Could not authenticate with Schedules Direct Error: " + (root?.Message ?? "empty response"));
         }
 
         private async Task AddLineupToAccount(ListingsProviderInfo info, CancellationToken cancellationToken)
@@ -976,10 +1002,18 @@ namespace Jellyfin.LiveTv.Listings
 
         public async Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
         {
+            ResetErrorState(info);
+
             if (validateLogin)
             {
                 ArgumentException.ThrowIfNullOrEmpty(info.Username);
                 ArgumentException.ThrowIfNullOrEmpty(info.Password);
+
+                var token = await GetToken(info, CancellationToken.None).ConfigureAwait(false);
+                if (string.IsNullOrWhiteSpace(token))
+                {
+                    throw new AuthenticationException("Could not authenticate with Schedules Direct");
+                }
             }
 
             if (validateListings)

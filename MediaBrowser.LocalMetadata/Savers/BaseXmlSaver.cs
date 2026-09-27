@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -277,7 +278,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 await writer.WriteElementStringAsync(null, "Rating", null, item.CommunityRating.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
             }
 
-            if (item.ProductionYear.HasValue && item is not Person)
+            if (item.ProductionYear is not null && item is not Person)
             {
                 await writer.WriteElementStringAsync(null, "ProductionYear", null, item.ProductionYear.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
             }
@@ -500,7 +501,8 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 var batched = LibraryManager.GetItemList(new InternalItemsQuery
                 {
-                    ItemIds = [.. idsToResolve]
+                    ItemIds = [.. idsToResolve],
+                    DtoOptions = DtoOptions.StoredColumnsOnly
                 });
                 pathById = new Dictionary<Guid, string?>(batched.Count);
                 foreach (var batchedItem in batched)

@@ -34,6 +34,40 @@ public static class BaseItemMapper
     /// </summary>
     private static readonly ConcurrentDictionary<string, Type?> _typeMap = new ConcurrentDictionary<string, Type?>();
 
+    private static UserData[] DetachUserData(BaseItemEntity entity)
+    {
+        if (entity.UserData is null || entity.UserData.Count == 0)
+        {
+            return [];
+        }
+
+        var detached = new UserData[entity.UserData.Count];
+        var index = 0;
+        foreach (var userData in entity.UserData)
+        {
+            detached[index++] = new UserData
+            {
+                ItemId = userData.ItemId,
+                Item = null,
+                UserId = userData.UserId,
+                User = null,
+                CustomDataKey = userData.CustomDataKey,
+                Rating = userData.Rating,
+                PlaybackPositionTicks = userData.PlaybackPositionTicks,
+                PlayCount = userData.PlayCount,
+                IsFavorite = userData.IsFavorite,
+                LastPlayedDate = userData.LastPlayedDate,
+                Played = userData.Played,
+                AudioStreamIndex = userData.AudioStreamIndex,
+                SubtitleStreamIndex = userData.SubtitleStreamIndex,
+                Likes = userData.Likes,
+                RetentionDate = userData.RetentionDate
+            };
+        }
+
+        return detached;
+    }
+
     /// <summary>
     /// Maps a Entity to the DTO.
     /// </summary>
@@ -87,7 +121,7 @@ public static class BaseItemMapper
         dto.OwnerId = entity.OwnerId ?? Guid.Empty;
         dto.Width = entity.Width.GetValueOrDefault();
         dto.Height = entity.Height.GetValueOrDefault();
-        dto.UserData = entity.UserData;
+        dto.UserData = DetachUserData(entity);
 
         if (entity.Provider is not null)
         {
@@ -134,6 +168,21 @@ public static class BaseItemMapper
         if (dto is Video video)
         {
             video.PrimaryVersionId = entity.PrimaryVersionId;
+
+            // The LinkedChildren table is the source of truth for version links
+            if (entity.LinkedChildEntities is not null)
+            {
+                video.LinkedAlternateVersions = entity.LinkedChildEntities
+                    // LocalAlternateVersion links belong to Video.LocalAlternateVersions, not here
+                    .Where(e => e.ChildType == Database.Implementations.Entities.LinkedChildType.LinkedAlternateVersion)
+                    .OrderBy(e => e.SortOrder)
+                    .Select(e => new LinkedChild
+                    {
+                        ItemId = e.ChildId,
+                        Type = (MediaBrowser.Controller.Entities.LinkedChildType)e.ChildType
+                    })
+                    .ToArray();
+            }
         }
 
         if (dto is IHasSeries hasSeriesName)
@@ -183,7 +232,7 @@ public static class BaseItemMapper
         if (dto is Folder folder)
         {
             folder.DateLastMediaAdded = entity.DateLastMediaAdded ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
-            if (entity.LinkedChildEntities is not null && entity.LinkedChildEntities.Count > 0)
+            if (entity.LinkedChildEntities is not null)
             {
                 folder.LinkedChildren = entity.LinkedChildEntities
                     .OrderBy(e => e.SortOrder)

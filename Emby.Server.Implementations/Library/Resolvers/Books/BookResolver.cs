@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -18,7 +16,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
     {
         private readonly string[] _validExtensions = { ".azw", ".azw3", ".cb7", ".cbr", ".cbt", ".cbz", ".epub", ".mobi", ".pdf" };
 
-        protected override Book Resolve(ItemResolveArgs args)
+        protected override Book? Resolve(ItemResolveArgs args)
         {
             var collectionType = args.GetCollectionType();
 
@@ -47,13 +45,14 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
                 Path = args.Path,
                 Name = result.Name ?? string.Empty,
                 IndexNumber = result.Index,
+                ParentIndexNumber = result.ParentIndex,
                 ProductionYear = result.Year,
                 SeriesName = result.SeriesName ?? Path.GetFileName(Path.GetDirectoryName(args.Path)),
                 IsInMixedFolder = true,
             };
         }
 
-        private Book GetBook(ItemResolveArgs args)
+        private Book? GetBook(ItemResolveArgs args)
         {
             var bookFiles = args.FileSystemChildren.Where(f =>
             {
@@ -78,6 +77,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
                 Path = bookFiles[0].FullName,
                 Name = result.Name ?? string.Empty,
                 IndexNumber = result.Index,
+                ParentIndexNumber = result.ParentIndex,
                 ProductionYear = result.Year,
                 SeriesName = result.SeriesName ?? string.Empty,
             };

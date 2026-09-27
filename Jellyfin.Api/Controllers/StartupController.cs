@@ -140,6 +140,11 @@ public class StartupController : BaseJellyfinApiController
             return NotFound();
         }
 
+        if (!string.IsNullOrEmpty(user.Password))
+        {
+            return Forbid();
+        }
+
         if (string.IsNullOrWhiteSpace(startupUserDto.Password))
         {
             return BadRequest("Password must not be empty");

@@ -61,6 +61,9 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.folders:
                     return GetResult(_libraryManager.GetUserRootFolder().GetChildren(user, true), query);
 
+                case CollectionType.books:
+                    return GetBooks(queryParent, user, query);
+
                 case CollectionType.tvshows:
                     return GetTvView(queryParent, user, query);
 
@@ -186,6 +189,17 @@ namespace MediaBrowser.Controller.Entities
             query.SetUser(user);
             query.IsFavorite = true;
             query.IncludeItemTypes = [BaseItemKind.Episode];
+
+            return _libraryManager.GetItemsResult(query);
+        }
+
+        private QueryResult<BaseItem> GetBooks(Folder parent, User user, InternalItemsQuery query)
+        {
+            query.Recursive = true;
+            query.Parent = parent;
+            query.SetUser(user);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.Book, BaseItemKind.AudioBook };
 
             return _libraryManager.GetItemsResult(query);
         }
@@ -441,24 +455,34 @@ namespace MediaBrowser.Controller.Entities
             {
                 var itemList = filtered.ToList();
                 var folderIds = itemList.OfType<Folder>().Select(f => f.Id).ToList();
+                var leaves = itemList.Where(i => i is not Folder).ToList();
+                var isPlayedValue = query.IsPlayed.Value;
 
-                if (folderIds.Count > 0)
+                var counts = folderIds.Count > 0
+                    ? libraryManager.GetPlayedAndTotalCountBatch(folderIds, user)
+                    : null;
+
+                // A movie held as several files is watched once any of its versions is watched.
+                var resumeData = leaves.Count > 0
+                    ? userDataManager.GetResumeUserDataBatch(leaves, user)
+                    : null;
+
+                return itemList.Where(item =>
                 {
-                    var counts = libraryManager.GetPlayedAndTotalCountBatch(folderIds, user);
-                    var isPlayedValue = query.IsPlayed.Value;
-
-                    return itemList.Where(i =>
+                    if (item is Folder)
                     {
-                        if (i.IsFolder && counts.TryGetValue(i.Id, out var c))
-                        {
-                            return (c.Total > 0 && c.Played == c.Total) == isPlayedValue;
-                        }
+                        var itemCount = counts?.GetValueOrDefault(item.Id) ?? default;
+                        return (itemCount.Played >= itemCount.Total) == isPlayedValue;
+                    }
 
-                        return true;
-                    });
-                }
+                    var played = userDataManager.GetUserData(user, item)?.Played ?? false;
+                    if (!played && resumeData is not null && resumeData.TryGetValue(item.Id, out var versionData))
+                    {
+                        played = versionData.UserData.Played;
+                    }
 
-                return itemList;
+                    return played == isPlayedValue;
+                });
             }
 
             return filtered;
@@ -476,6 +500,13 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var itemsArray = totalRecordLimit.HasValue ? items.Take(totalRecordLimit.Value).ToArray() : items.ToArray();
+
+            // Adjacency is defined by the order the query asked for, so it has to run after sorting but before paging.
+            if (!query.AdjacentTo.IsNullOrEmpty())
+            {
+                itemsArray = FilterForAdjacency(itemsArray, query.AdjacentTo.Value).ToArray();
+            }
+
             var totalCount = itemsArray.Length;
 
             if (query.Limit.HasValue && query.Limit.Value > 0)
@@ -584,19 +615,7 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            if (query.IsPlayed.HasValue)
-            {
-                // Folder.IsPlayed() hits the DB per-item (N+1 queries).
-                // Folders are batch-filtered by the collection Filter() overload.
-                if (!item.IsFolder)
-                {
-                    userData ??= userDataManager.GetUserData(user, item);
-                    if (item.IsPlayed(user, userData) != query.IsPlayed.Value)
-                    {
-                        return false;
-                    }
-                }
-            }
+            // IsPlayed is answered by the collection Filter() overload for folders and leaves alike.
 
             if (query.IsLocked.HasValue)
             {
@@ -716,7 +735,7 @@ namespace MediaBrowser.Controller.Entities
             // Apply year filter
             if (query.Years.Length > 0)
             {
-                if (!(item.ProductionYear.HasValue && query.Years.Contains(item.ProductionYear.Value)))
+                if (item.ProductionYear is null || !query.Years.Contains(item.ProductionYear.Value))
                 {
                     return false;
                 }
@@ -872,26 +891,32 @@ namespace MediaBrowser.Controller.Entities
             return _userViewManager.GetUserSubView(parent.Id, type, localizationKey, sortName);
         }
 
-        public static IEnumerable<BaseItem> FilterForAdjacency(List<BaseItem> list, Guid adjacentTo)
+        /// <summary>
+        /// Trims an ordered list down to the requested item and its immediate neighbours.
+        /// </summary>
+        /// <param name="list">The items in the order the query returned them.</param>
+        /// <param name="adjacentTo">The id of the item to return the neighbours of.</param>
+        /// <returns>The previous item, the requested item and the next item, in order.</returns>
+        public static IEnumerable<BaseItem> FilterForAdjacency(IReadOnlyList<BaseItem> list, Guid adjacentTo)
         {
-            var adjacentToItem = list.FirstOrDefault(i => i.Id.Equals(adjacentTo));
-
-            var index = list.IndexOf(adjacentToItem);
-
-            var previousId = Guid.Empty;
-            var nextId = Guid.Empty;
-
-            if (index > 0)
+            var index = -1;
+            for (var i = 0; i < list.Count; i++)
             {
-                previousId = list[index - 1].Id;
+                if (list[i].Id.Equals(adjacentTo))
+                {
+                    index = i;
+                    break;
+                }
             }
 
-            if (index < list.Count - 1)
+            // The item isn't part of this result set, so it has no neighbours in it either.
+            if (index < 0)
             {
-                nextId = list[index + 1].Id;
+                return [];
             }
 
-            return list.Where(i => i.Id.Equals(previousId) || i.Id.Equals(nextId) || i.Id.Equals(adjacentTo));
+            var start = Math.Max(index - 1, 0);
+            return list.Skip(start).Take(Math.Min(index + 2, list.Count) - start);
         }
     }
 }

@@ -91,8 +91,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string? tmdbId);
 
-            var seriesTmdbId = Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture);
-            if (seriesTmdbId <= 0)
+            if (!TmdbUtils.TryParseTmdbId(tmdbId, out var seriesTmdbId))
             {
                 return metadataResult;
             }
@@ -181,7 +180,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 ParentIndexNumber = seasonNumber,
                 IndexNumberEnd = info.IndexNumberEnd,
                 Name = episodeResult.Name,
-                PremiereDate = episodeResult.AirDate,
+                PremiereDate = episodeResult.AirDate.HasValue
+                    ? DateTime.SpecifyKind(episodeResult.AirDate.Value, DateTimeKind.Local).ToUniversalTime()
+                    : null,
                 ProductionYear = episodeResult.AirDate?.Year,
                 Overview = episodeResult.Overview,
                 CommunityRating = Convert.ToSingle(episodeResult.VoteAverage)

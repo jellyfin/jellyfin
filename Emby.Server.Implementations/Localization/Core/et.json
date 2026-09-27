@@ -108,5 +108,18 @@
     "CleanupUserDataTask": "Puhasta kasutajaandmed",
     "CleanupUserDataTaskDescription": "Puhastab kõik kasutajaandmed (vaatamise olek, lemmikute olek jne) meediast, mida pole enam vähemalt 90 päeva saadaval olnud.",
     "LyricDownloadFailureFromForItem": "Laulusõnade hankimine teenusest {0} loole {1} nurjus",
-    "Original": "Algne"
+    "Original": "Algne",
+    "NameExtraBehindTheScenes": "Kulisside taga",
+    "NameExtraDeletedScene": "Väljajäetud stseen",
+    "NameExtraFeaturette": "Lisalõik",
+    "NameExtraInterview": "Intervjuu",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Näidis",
+    "NameExtraScene": "Stseen",
+    "NameExtraShort": "Lühifilm",
+    "NameExtraThemeSong": "Tunnusmeloodia",
+    "NameExtraThemeVideo": "Tunnusvideo",
+    "NameExtraTrailer": "Treiler",
+    "NameExtraUnknown": "Lisamaterjal",
+    "NameExtraClip": "Videoklipp"
 }

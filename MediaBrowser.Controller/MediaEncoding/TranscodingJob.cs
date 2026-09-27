@@ -15,6 +15,7 @@ public sealed class TranscodingJob : IDisposable
     private readonly Lock _processLock = new();
     private readonly Lock _timerLock = new();
 
+    private int _activeRequestCount;
     private Timer? _killTimer;
 
     /// <summary>
@@ -64,7 +65,11 @@ public sealed class TranscodingJob : IDisposable
     /// <summary>
     /// Gets or sets the active request count.
     /// </summary>
-    public int ActiveRequestCount { get; set; }
+    public int ActiveRequestCount
+    {
+        get => Volatile.Read(ref _activeRequestCount);
+        set => Volatile.Write(ref _activeRequestCount, value);
+    }
 
     /// <summary>
     /// Gets or sets device id.
@@ -150,6 +155,20 @@ public sealed class TranscodingJob : IDisposable
     /// Gets or sets ping timeout.
     /// </summary>
     public int PingTimeout { get; set; }
+
+    /// <summary>
+    /// Increments the active request count.
+    /// </summary>
+    /// <returns>The incremented count.</returns>
+    public int IncrementActiveRequestCount()
+        => Interlocked.Increment(ref _activeRequestCount);
+
+    /// <summary>
+    /// Decrements the active request count.
+    /// </summary>
+    /// <returns>The decremented count.</returns>
+    public int DecrementActiveRequestCount()
+        => Interlocked.Decrement(ref _activeRequestCount);
 
     /// <summary>
     /// Stop kill timer.

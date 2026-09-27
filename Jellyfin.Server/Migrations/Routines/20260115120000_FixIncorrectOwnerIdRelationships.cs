@@ -136,19 +136,38 @@ public class FixIncorrectOwnerIdRelationships : IAsyncMigrationRoutine
 
         if (allIdsToDelete.Count > 0)
         {
-            // Batch-resolve items for metadata path cleanup, then delete all at once
-            var itemsToDelete = allIdsToDelete
-                .Select(id => _libraryManager.GetItemById(id))
-                .Where(item => item is not null)
-                .ToList();
-            _libraryManager.DeleteItemsUnsafeFast(itemsToDelete!);
+            _logger.LogInformation("Deleting {Count} duplicate database entries...", allIdsToDelete.Count);
 
-            // Fall back to direct DB deletion for any items that couldn't be resolved via LibraryManager
-            var deletedIds = itemsToDelete.Select(i => i!.Id).ToHashSet();
-            var unresolvedIds = allIdsToDelete.Where(id => !deletedIds.Contains(id)).ToList();
-            if (unresolvedIds.Count > 0)
+            // Delete in batches so progress is visible (item resolution and deletion can take a
+            // long time on large libraries) and so we never issue one massive delete transaction.
+            const int deleteBatchSize = 500;
+            var deletedSoFar = 0;
+            for (var offset = 0; offset < allIdsToDelete.Count; offset += deleteBatchSize)
             {
-                _persistenceService.DeleteItem(unresolvedIds);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var batchIds = allIdsToDelete.GetRange(offset, Math.Min(deleteBatchSize, allIdsToDelete.Count - offset));
+
+                // Resolve items for metadata path cleanup, then delete this batch
+                var itemsToDelete = batchIds
+                    .Select(id => _libraryManager.GetItemById(id))
+                    .Where(item => item is not null)
+                    .ToList();
+                if (itemsToDelete.Count > 0)
+                {
+                    _libraryManager.DeleteItemsUnsafeFast(itemsToDelete!);
+                }
+
+                // Fall back to direct DB deletion for any items that couldn't be resolved via LibraryManager
+                var deletedIds = itemsToDelete.Select(i => i!.Id).ToHashSet();
+                var unresolvedIds = batchIds.Where(id => !deletedIds.Contains(id)).ToList();
+                if (unresolvedIds.Count > 0)
+                {
+                    _persistenceService.DeleteItem(unresolvedIds);
+                }
+
+                deletedSoFar += batchIds.Count;
+                _logger.LogInformation("Deleting duplicates: {Deleted}/{Total} items", deletedSoFar, allIdsToDelete.Count);
             }
         }
 

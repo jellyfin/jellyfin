@@ -34,12 +34,15 @@ namespace Jellyfin.Api.Controllers;
 [Tags("Library")]
 public class UserLibraryController : BaseJellyfinApiController
 {
+    private static readonly TimeSpan RefreshOnDemandTimeout = TimeSpan.FromSeconds(3);
+
     private readonly IUserManager _userManager;
     private readonly IUserDataManager _userDataRepository;
     private readonly ILibraryManager _libraryManager;
     private readonly IDtoService _dtoService;
     private readonly IUserViewManager _userViewManager;
     private readonly IFileSystem _fileSystem;
+    private readonly IProviderManager _providerManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserLibraryController"/> class.
@@ -50,13 +53,15 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
     /// <param name="userViewManager">Instance of the <see cref="IUserViewManager"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+    /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
     public UserLibraryController(
         IUserManager userManager,
         IUserDataManager userDataRepository,
         ILibraryManager libraryManager,
         IDtoService dtoService,
         IUserViewManager userViewManager,
-        IFileSystem fileSystem)
+        IFileSystem fileSystem,
+        IProviderManager providerManager)
     {
         _userManager = userManager;
         _userDataRepository = userDataRepository;
@@ -64,6 +69,7 @@ public class UserLibraryController : BaseJellyfinApiController
         _dtoService = dtoService;
         _userViewManager = userViewManager;
         _fileSystem = fileSystem;
+        _providerManager = providerManager;
     }
 
     /// <summary>
@@ -94,7 +100,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        await RefreshItemOnDemandIfNeeded(item).ConfigureAwait(false);
+        await RefreshOnDemandIfNeeded(item).ConfigureAwait(false);
 
         var dtoOptions = new DtoOptions();
 
@@ -429,14 +435,8 @@ public class UserLibraryController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions();
-        if (item is IHasTrailers hasTrailers)
-        {
-            var trailers = hasTrailers.LocalTrailers;
-            return Ok(_dtoService.GetBaseItemDtos(trailers, dtoOptions, user, item).AsEnumerable());
-        }
 
-        return Ok(item.GetExtras()
-            .Where(e => e.ExtraType == ExtraType.Trailer)
+        return Ok(item.GetExtras([ExtraType.Trailer], user)
             .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item)));
     }
 
@@ -487,7 +487,7 @@ public class UserLibraryController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions();
 
         return Ok(item
-            .GetExtras()
+            .GetExtras(user)
             .Where(i => i.ExtraType.HasValue && BaseItem.DisplayExtraTypes.Contains(i.ExtraType.Value))
             .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item)));
     }
@@ -556,8 +556,6 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
-
-        dtoOptions.PreferEpisodeParentPoster = true;
 
         var list = _userViewManager.GetLatestItems(
             new LatestItemsQuery
@@ -647,24 +645,36 @@ public class UserLibraryController : BaseJellyfinApiController
             limit,
             groupItems);
 
-    private async Task RefreshItemOnDemandIfNeeded(BaseItem item)
+    private async Task RefreshOnDemandIfNeeded(BaseItem item)
     {
-        if (item is Person)
+        if (item is not Person)
         {
-            var hasMetadata = !string.IsNullOrWhiteSpace(item.Overview) && item.HasImage(ImageType.Primary);
-            var performFullRefresh = !hasMetadata && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= 3;
+            return;
+        }
 
-            if (performFullRefresh)
-            {
-                var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
-                {
-                    MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
-                    ImageRefreshMode = MetadataRefreshMode.FullRefresh,
-                    ForceSave = true
-                };
+        var hasMetadata = !string.IsNullOrWhiteSpace(item.Overview) && item.HasImage(ImageType.Primary);
+        if (hasMetadata || (DateTime.UtcNow - item.DateLastRefreshed).TotalDays < 3)
+        {
+            return;
+        }
 
-                await item.RefreshMetadata(options, CancellationToken.None).ConfigureAwait(false);
-            }
+        var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+        {
+            MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+            ImageRefreshMode = MetadataRefreshMode.FullRefresh,
+            ForceSave = true
+        };
+
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(HttpContext.RequestAborted);
+        timeout.CancelAfter(RefreshOnDemandTimeout);
+
+        try
+        {
+            await item.RefreshMetadata(options, timeout.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (!HttpContext.RequestAborted.IsCancellationRequested)
+        {
+            _providerManager.QueueRefresh(item.Id, options, RefreshPriority.High);
         }
     }
 

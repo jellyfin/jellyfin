@@ -75,5 +75,28 @@ namespace Jellyfin.Extensions.Tests
             var result = str.AsSpan().RightPart(needle).ToString();
             Assert.Equal(expectedResult, result);
         }
+
+        [Theory]
+        [InlineData("", "")]
+        [InlineData("/media/movies/Film.mkv", "/media/movies/Film.mkv")]
+        [InlineData(@"C:\media\movies\Film.mkv", @"C:\media\movies\Film.mkv")]
+        [InlineData(@"/media/a""b.mkv", @"/media/a\""b.mkv")]
+        [InlineData(@"/media/a\""b.mkv", @"/media/a\\\""b.mkv")]
+        [InlineData(@"/media/a\\""b.mkv", @"/media/a\\\\\""b.mkv")]
+        [InlineData(@"/media/a\b""c.mkv", @"/media/a\b\""c.mkv")]
+        [InlineData(@"/media/trailing\", @"/media/trailing\\")]
+        [InlineData(@"/media/evil\"" -f lavfi -i sine .mkv", @"/media/evil\\\"" -f lavfi -i sine .mkv")]
+        public void EscapeProcessArgument_ValidInput_Corrects(string input, string expectedResult)
+        {
+            Assert.Equal(expectedResult, input.EscapeProcessArgument());
+        }
+
+        [Theory]
+        [InlineData("/media/movies/Film with spaces.mkv")]
+        [InlineData(@"C:\media\movies\Film.mkv")]
+        public void EscapeProcessArgument_NothingToEscape_ReturnsSameInstance(string input)
+        {
+            Assert.Same(input, input.EscapeProcessArgument());
+        }
     }
 }

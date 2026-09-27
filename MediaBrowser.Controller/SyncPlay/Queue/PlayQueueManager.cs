@@ -157,7 +157,10 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// </summary>
         public void RestoreSortedPlaylist()
         {
-            if (PlayingItemIndex != NoPlayingItemIndex)
+            // The shuffled playlist is only populated while the shuffle mode is active, so there is
+            // nothing to map back when the playlist is already sorted. Guarding on its contents keeps
+            // a redundant request for the sorted mode from indexing an empty list.
+            if (PlayingItemIndex != NoPlayingItemIndex && _shuffledPlaylist.Count > 0)
             {
                 var playingItem = _shuffledPlaylist[PlayingItemIndex];
                 PlayingItemIndex = _sortedPlaylist.IndexOf(playingItem);
@@ -272,7 +275,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         public void SetPlayingItemByIndex(int playlistIndex)
         {
             var playlist = GetPlaylistInternal();
-            if (playlistIndex < 0 || playlistIndex > playlist.Count)
+            if (playlistIndex < 0 || playlistIndex >= playlist.Count)
             {
                 PlayingItemIndex = NoPlayingItemIndex;
             }
@@ -293,6 +296,15 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         {
             var playingItem = GetPlayingItem();
 
+            // Removed items that precede the playing item shift its index as well.
+            var removedBeforePlayingItem = 0;
+            if (playingItem is not null)
+            {
+                removedBeforePlayingItem = GetPlaylistInternal()
+                    .Take(PlayingItemIndex)
+                    .Count(item => playlistItemIds.Contains(item.PlaylistItemId));
+            }
+
             _sortedPlaylist.RemoveAll(item => playlistItemIds.Contains(item.PlaylistItemId));
             _shuffledPlaylist.RemoveAll(item => playlistItemIds.Contains(item.PlaylistItemId));
 
@@ -303,12 +315,12 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
                 if (playlistItemIds.Contains(playingItem.PlaylistItemId))
                 {
                     // Playing item has been removed, picking previous item.
-                    PlayingItemIndex--;
+                    PlayingItemIndex -= removedBeforePlayingItem + 1;
                     if (PlayingItemIndex < 0)
                     {
                         // Was first element, picking next if available.
                         // Default to no playing item otherwise.
-                        PlayingItemIndex = _sortedPlaylist.Count > 0 ? 0 : NoPlayingItemIndex;
+                        PlayingItemIndex = GetPlaylistInternal().Count > 0 ? 0 : NoPlayingItemIndex;
                     }
 
                     return true;
@@ -444,6 +456,11 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// <returns><c>true</c> if the playing item changed; <c>false</c> otherwise.</returns>
         public bool Next()
         {
+            if (GetPlaylistInternal().Count == 0)
+            {
+                return false;
+            }
+
             if (RepeatMode.Equals(GroupRepeatMode.RepeatOne))
             {
                 LastChange = DateTime.UtcNow;
@@ -474,6 +491,11 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// <returns><c>true</c> if the playing item changed; <c>false</c> otherwise.</returns>
         public bool Previous()
         {
+            if (GetPlaylistInternal().Count == 0)
+            {
+                return false;
+            }
+
             if (RepeatMode.Equals(GroupRepeatMode.RepeatOne))
             {
                 LastChange = DateTime.UtcNow;

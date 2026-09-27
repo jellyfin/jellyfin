@@ -92,7 +92,8 @@ public class ChapterImagesTask : IScheduledTask
                 EnableImages = false
             },
             SourceTypes = [SourceType.Library],
-            IsVirtualItem = false
+            IsVirtualItem = false,
+            IncludeOwnedItems = true
         })
         .OfType<Video>()
         .ToList();

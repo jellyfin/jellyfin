@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.IO;
 
-public class ManagedFileSystemTests
+public partial class ManagedFileSystemTests
 {
     private readonly IFixture _fixture;
     private readonly ManagedFileSystem _sut;
@@ -100,6 +100,41 @@ public class ManagedFileSystemTests
         Assert.Equal(expectedFileName, _sut.GetValidFilename(filename));
     }
 
+    [Theory]
+    [InlineData("/media", "/media/tv", true)]
+    [InlineData("/media", "/media/tv/show/episode.mkv", true)]
+    [InlineData("/media/", "/media/tv", true)]
+    [InlineData("/", "/media", true)]
+    [InlineData("/media", "/media", false)]
+    [InlineData("/media", "/media/", true)]
+    [InlineData("/media", "/data/media/tv", false)]
+    [InlineData("/media", "/mediastuff/tv", false)]
+    [InlineData("/data/media", "/data/media/tv", true)]
+    [InlineData("/media/tv", "/media", false)]
+    [InlineData("/MEDIA", "/media/tv", false)]
+    public void ContainsSubPath_Unix_ReturnsExpected(string parentPath, string path, bool expected)
+    {
+        Assert.SkipWhen(OperatingSystem.IsWindows(), "Unix-only test");
+
+        Assert.Equal(expected, _sut.ContainsSubPath(parentPath, path));
+    }
+
+    [Theory]
+    [InlineData(@"C:\media", @"C:\media\tv", true)]
+    [InlineData(@"C:\media\", @"C:\media\tv", true)]
+    [InlineData(@"C:\", @"C:\media", true)]
+    [InlineData(@"C:\media", @"C:\media", false)]
+    [InlineData(@"C:\media", @"C:\data\media\tv", false)]
+    [InlineData(@"C:\media", @"C:\mediastuff\tv", false)]
+    [InlineData(@"C:\MEDIA", @"C:\media\tv", true)]
+    [InlineData(@"C:\media", @"C:\media/tv", true)]
+    public void ContainsSubPath_Windows_ReturnsExpected(string parentPath, string path, bool expected)
+    {
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Windows-only test");
+
+        Assert.Equal(expected, _sut.ContainsSubPath(parentPath, path));
+    }
+
     [Fact]
     public void GetFileInfo_DanglingSymlink_ExistsFalse()
     {
@@ -117,7 +152,7 @@ public class ManagedFileSystemTests
     }
 
     [SuppressMessage("Naming Rules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "Have to")]
-    [DllImport("libc", SetLastError = true, CharSet = CharSet.Ansi)]
+    [LibraryImport("libc", SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
-    private static extern int symlink(string target, string linkpath);
+    private static partial int symlink([MarshalAs(UnmanagedType.LPStr)] string target, [MarshalAs(UnmanagedType.LPStr)] string linkpath);
 }

@@ -26,6 +26,7 @@ using Emby.Server.Implementations.Dto;
 using Emby.Server.Implementations.HttpServer.Security;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
+using Emby.Server.Implementations.Library.Search;
 using Emby.Server.Implementations.Library.SimilarItems;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.Playlists;
@@ -38,6 +39,8 @@ using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Data;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Drawing;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using Jellyfin.Networking.Manager;
@@ -92,6 +95,9 @@ using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Providers.Books;
+using MediaBrowser.Providers.Books.ComicBookInfo;
+using MediaBrowser.Providers.Books.ComicInfo;
 using MediaBrowser.Providers.Lyric;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.ListenBrainz;
@@ -413,6 +419,8 @@ namespace Emby.Server.Implementations
         {
             Logger.LogInformation("Running startup tasks");
 
+            EnsureStartupWizardIntegrity();
+
             Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
             ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
@@ -430,6 +438,24 @@ namespace Emby.Server.Implementations
             CoreStartupHasCompleted = true;
 
             return Task.CompletedTask;
+        }
+
+        private void EnsureStartupWizardIntegrity()
+        {
+            if (ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted)
+            {
+                return;
+            }
+
+            var hasConfiguredAdministrator = Resolve<IUserManager>().GetUsers()
+                .Any(user => user.HasPermission(PermissionKind.IsAdministrator) && !string.IsNullOrEmpty(user.Password));
+
+            if (hasConfiguredAdministrator)
+            {
+                Logger.LogWarning("The startup wizard is marked incomplete but a configured administrator already exists. Marking setup as completed to prevent the unauthenticated setup endpoints from being reachable.");
+                ConfigurationManager.Configuration.IsStartupWizardCompleted = true;
+                ConfigurationManager.SaveConfiguration();
+            }
         }
 
         /// <inheritdoc/>
@@ -495,6 +521,14 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ListenBrainzLabsClient>();
             serviceCollection.AddSingleton<ListenBrainzSimilarArtistProvider>();
 
+            // register the generic local metadata provider for comic files
+            serviceCollection.AddSingleton<ComicProvider>();
+
+            // register the actual implementations of the local metadata provider for comic files
+            serviceCollection.AddSingleton<IComicProvider, ComicBookInfoProvider>();
+            serviceCollection.AddSingleton<IComicProvider, ExternalComicInfoProvider>();
+            serviceCollection.AddSingleton<IComicProvider, InternalComicInfoProvider>();
+
             serviceCollection.AddSingleton(NetManager);
 
             serviceCollection.AddSingleton<ITaskManager, TaskManager>();
@@ -539,6 +573,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
             serviceCollection.AddTransient(provider => new Lazy<IProviderManager>(provider.GetRequiredService<IProviderManager>));
             serviceCollection.AddTransient(provider => new Lazy<IUserViewManager>(provider.GetRequiredService<IUserViewManager>));
+            serviceCollection.AddTransient(provider => new Lazy<IExternalDataManager>(provider.GetRequiredService<IExternalDataManager>));
             serviceCollection.AddSingleton<ILibraryManager, LibraryManager>();
             serviceCollection.AddSingleton<NamingOptions>();
             serviceCollection.AddSingleton<VideoListResolver>();
@@ -550,7 +585,8 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<ISimilarItemsManager, SimilarItemsManager>();
 
-            serviceCollection.AddSingleton<ISearchEngine, SearchEngine>();
+            serviceCollection.AddSingleton<ISearchManager, SearchManager>();
+            serviceCollection.AddSingleton<ISearchProvider, SqlSearchProvider>();
 
             serviceCollection.AddSingleton<IWebSocketManager, WebSocketManager>();
 
@@ -709,6 +745,7 @@ namespace Emby.Server.Implementations
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
 
             Resolve<ISimilarItemsManager>().AddParts(GetExports<ISimilarItemsProvider>());
+            Resolve<ISearchManager>().AddParts(GetExports<ISearchProvider>());
         }
 
         /// <summary>
@@ -950,8 +987,9 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetLocalApiUrl(string hostname, string scheme = null, int? port = null)
         {
-            // If the smartAPI doesn't start with http then treat it as a host or ip.
-            if (hostname.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            // If the smartAPI isn't already a complete URL then treat it as a host or ip.
+            if (hostname.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                || hostname.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             {
                 return hostname.TrimEnd('/');
             }

@@ -125,7 +125,13 @@ public class ImageController : BaseJellyfinApiController
         {
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
-            var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
+            var userConfigurationDirectoryPath = _serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath;
+            var userDataPath = Path.Combine(userConfigurationDirectoryPath, user.Username);
+            if (!PathHelper.IsContainedIn(userConfigurationDirectoryPath, userDataPath))
+            {
+                return BadRequest("Invalid user.");
+            }
+
             if (user.ProfileImage is not null)
             {
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
@@ -2049,7 +2055,7 @@ public class ImageController : BaseJellyfinApiController
             }
 
             // Check If-Modified-Since header for time-based validation
-            if (DateTime.TryParse(Request.Headers[HeaderNames.IfModifiedSince], out var ifModifiedSinceHeader))
+            if (DateTime.TryParse(Request.Headers[HeaderNames.IfModifiedSince], CultureInfo.InvariantCulture, out var ifModifiedSinceHeader))
             {
                 // Return 304 if the image has not been modified since the client's cached version
                 if (dateImageModified <= ifModifiedSinceHeader)

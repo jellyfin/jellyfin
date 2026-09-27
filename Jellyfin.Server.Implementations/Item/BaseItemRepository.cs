@@ -46,6 +46,31 @@ public sealed partial class BaseItemRepository
     private static readonly IReadOnlyList<ItemValueType> _getStudiosValueTypes = [ItemValueType.Studios];
     private static readonly IReadOnlyList<ItemValueType> _getGenreValueTypes = [ItemValueType.Genre];
 
+    private static readonly BaseItemKind[] _itemByNameKinds =
+    [
+        BaseItemKind.Person,
+        BaseItemKind.Genre,
+        BaseItemKind.MusicGenre,
+        BaseItemKind.MusicArtist,
+        BaseItemKind.Studio
+    ];
+
+    private static readonly (BaseItemKind Kind, IReadOnlyList<ItemValueType> ValueTypes)[] _itemByNameValueTypes =
+    [
+        (BaseItemKind.Genre, _getGenreValueTypes),
+        (BaseItemKind.MusicGenre, _getGenreValueTypes),
+        (BaseItemKind.MusicArtist, _getAllArtistsValueTypes),
+        (BaseItemKind.Studio, _getStudiosValueTypes)
+    ];
+
+    // The only folder kinds whose children form a single viewing sequence, so playback progress on a
+    // child rolls up to them. Every other folder kind is a container that cannot be resumed.
+    private static readonly BaseItemKind[] _resumableFolderKinds =
+    [
+        BaseItemKind.Series,
+        BaseItemKind.Season
+    ];
+
     /// <summary>
     /// Initializes a new instance of the <see cref="BaseItemRepository"/> class.
     /// </summary>
@@ -163,6 +188,14 @@ public sealed partial class BaseItemRepository
     private bool EnableGroupByPresentationUniqueKey(InternalItemsQuery query)
     {
         if (!query.GroupByPresentationUniqueKey)
+        {
+            return false;
+        }
+
+        // Resume queries surface the actually-played version (which may be an alternate sharing the
+        // primary's presentation key). The resumable filter already keeps one version per group, so
+        // presentation-key grouping must not collapse the surfaced version back onto the primary.
+        if (query.IsResumable == true)
         {
             return false;
         }

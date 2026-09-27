@@ -40,6 +40,19 @@ public static class ExpressionExtensions
     }
 
     /// <summary>
+    /// Negates a predicate.
+    /// </summary>
+    /// <typeparam name="T">The predicate parameter type.</typeparam>
+    /// <param name="predicate">The predicate expression to negate.</param>
+    /// <returns>A new expression representing the negation of the input predicate.</returns>
+    public static Expression<Func<T, bool>> Not<T>(this Expression<Func<T, bool>> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        return Expression.Lambda<Func<T, bool>>(Expression.Not(predicate.Body), predicate.Parameters);
+    }
+
+    /// <summary>
     /// Combines two predicates into a single predicate using a logical AND operation.
     /// </summary>
     /// <typeparam name="T">The predicate parameter type.</typeparam>

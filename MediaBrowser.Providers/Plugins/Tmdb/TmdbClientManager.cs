@@ -25,16 +25,27 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
     {
         private const int CacheDurationInHours = 1;
 
-        private readonly IMemoryCache _memoryCache;
+        // Sized in TMDb records - see EstimateSize - rather than in responses, because the responses
+        // differ in weight by orders of magnitude.
+        private const int CacheSizeLimit = 100_000;
+
+        private static readonly Dictionary<string, string> ThumbnailSizes = new Dictionary<string, string>
+        {
+            { "Primary", "w500" },
+            { "Backdrop", "w780" },
+            { "Thumb", "w780" },
+            { "Logo", "w500" },
+        };
+
+        private readonly MemoryCache _memoryCache;
         private readonly TMDbClient _tmDbClient;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TmdbClientManager"/> class.
         /// </summary>
-        /// <param name="memoryCache">An instance of <see cref="IMemoryCache"/>.</param>
-        public TmdbClientManager(IMemoryCache memoryCache)
+        public TmdbClientManager()
         {
-            _memoryCache = memoryCache;
+            _memoryCache = new MemoryCache(new MemoryCacheOptions { SizeLimit = CacheSizeLimit });
 
             var apiKey = Plugin.Instance.Configuration.TmdbApiKey;
             apiKey = string.IsNullOrEmpty(apiKey) ? TmdbUtils.ApiKey : apiKey;
@@ -78,7 +89,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (movie is not null)
             {
-                _memoryCache.Set(key, movie, TimeSpan.FromHours(CacheDurationInHours));
+                Cache(key, movie);
             }
 
             return movie;
@@ -112,7 +123,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (collection is not null)
             {
-                _memoryCache.Set(key, collection, TimeSpan.FromHours(CacheDurationInHours));
+                Cache(key, collection);
             }
 
             return collection;
@@ -137,7 +148,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            var extraMethods = TvShowMethods.Credits | TvShowMethods.Images | TvShowMethods.ExternalIds | TvShowMethods.Videos | TvShowMethods.ContentRatings | TvShowMethods.EpisodeGroups;
+            var extraMethods = TvShowMethods.Credits | TvShowMethods.CreditsAggregate | TvShowMethods.Images | TvShowMethods.ExternalIds | TvShowMethods.Videos | TvShowMethods.ContentRatings | TvShowMethods.EpisodeGroups;
             if (!(Plugin.Instance?.Configuration.ExcludeTagsSeries).GetValueOrDefault())
             {
                 extraMethods |= TvShowMethods.Keywords;
@@ -152,7 +163,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (series is not null)
             {
-                _memoryCache.Set(key, series, TimeSpan.FromHours(CacheDurationInHours));
+                Cache(key, series);
             }
 
             return series;
@@ -208,7 +219,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (group is not null)
             {
-                _memoryCache.Set(key, group, TimeSpan.FromHours(CacheDurationInHours));
+                Cache(key, group);
             }
 
             return group;
@@ -244,7 +255,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (season is not null)
             {
-                _memoryCache.Set(key, season, TimeSpan.FromHours(CacheDurationInHours));
+                Cache(key, season);
             }
 
             return season;
@@ -296,7 +307,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (episode is not null)
             {
-                _memoryCache.Set(key, episode, TimeSpan.FromHours(CacheDurationInHours));
+                Cache(key, episode);
             }
 
             return episode;
@@ -323,12 +334,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             person = await _tmDbClient.GetPersonAsync(
                 personTmdbId,
                 TmdbUtils.NormalizeLanguage(language, countryCode),
-                PersonMethods.TvCredits | PersonMethods.MovieCredits | PersonMethods.Images | PersonMethods.ExternalIds,
+                PersonMethods.Images | PersonMethods.ExternalIds,
                 cancellationToken).ConfigureAwait(false);
 
             if (person is not null)
             {
-                _memoryCache.Set(key, person, TimeSpan.FromHours(CacheDurationInHours));
+                Cache(key, person);
             }
 
             return person;
@@ -366,7 +377,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (result is not null)
             {
-                _memoryCache.Set(key, result, TimeSpan.FromHours(CacheDurationInHours));
+                Cache(key, result);
             }
 
             return result;
@@ -397,7 +408,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (searchResults?.Results?.Count > 0)
             {
-                _memoryCache.Set(key, searchResults, TimeSpan.FromHours(CacheDurationInHours));
+                CacheSearch(key, searchResults);
             }
 
             return searchResults?.Results;
@@ -425,7 +436,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (searchResults?.Results?.Count > 0)
             {
-                _memoryCache.Set(key, searchResults, TimeSpan.FromHours(CacheDurationInHours));
+                CacheSearch(key, searchResults);
             }
 
             return searchResults?.Results;
@@ -468,7 +479,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (searchResults?.Results?.Count > 0)
             {
-                _memoryCache.Set(key, searchResults, TimeSpan.FromHours(CacheDurationInHours));
+                CacheSearch(key, searchResults);
             }
 
             return searchResults?.Results;
@@ -498,26 +509,26 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (searchResults?.Results?.Count > 0)
             {
-                _memoryCache.Set(key, searchResults, TimeSpan.FromHours(CacheDurationInHours));
+                CacheSearch(key, searchResults);
             }
 
             return searchResults?.Results;
         }
 
         /// <summary>
-        /// Gets a single page of similar movies for a movie from the TMDb API.
+        /// Gets a single page of recommended movies for a movie from the TMDb API.
         /// </summary>
         /// <param name="tmdbId">The TMDb id of the movie.</param>
         /// <param name="page">The page number to fetch (1-based).</param>
         /// <param name="language">The language for results.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A tuple containing the list of similar movies and the total number of pages available.</returns>
-        public async Task<(IReadOnlyList<SearchMovie> Results, int TotalPages)> GetMovieSimilarPageAsync(int tmdbId, int page, string? language, CancellationToken cancellationToken)
+        /// <returns>A tuple containing the list of recommended movies and the total number of pages available.</returns>
+        public async Task<(IReadOnlyList<SearchMovie> Results, int TotalPages)> GetMovieRecommendationsPageAsync(int tmdbId, int page, string? language, CancellationToken cancellationToken)
         {
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
             var searchResults = await _tmDbClient
-                .GetMovieSimilarAsync(tmdbId, language, page, cancellationToken)
+                .GetMovieRecommendationsAsync(tmdbId, language, page, cancellationToken)
                 .ConfigureAwait(false);
 
             if (searchResults?.Results is null || searchResults.Results.Count == 0)
@@ -529,19 +540,19 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
-        /// Gets a single page of similar TV shows for a series from the TMDb API.
+        /// Gets a single page of recommended TV shows for a series from the TMDb API.
         /// </summary>
         /// <param name="tmdbId">The TMDb id of the TV show.</param>
         /// <param name="page">The page number to fetch (1-based).</param>
         /// <param name="language">The language for results.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A tuple containing the list of similar TV shows and the total number of pages available.</returns>
-        public async Task<(IReadOnlyList<SearchTv> Results, int TotalPages)> GetSeriesSimilarPageAsync(int tmdbId, int page, string? language, CancellationToken cancellationToken)
+        /// <returns>A tuple containing the list of recommended TV shows and the total number of pages available.</returns>
+        public async Task<(IReadOnlyList<SearchTv> Results, int TotalPages)> GetSeriesRecommendationsPageAsync(int tmdbId, int page, string? language, CancellationToken cancellationToken)
         {
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
             var searchResults = await _tmDbClient
-                .GetTvShowSimilarAsync(tmdbId, language, page, cancellationToken)
+                .GetTvShowRecommendationsAsync(tmdbId, language, page, cancellationToken)
                 .ConfigureAwait(false);
 
             if (searchResults?.Results is null || searchResults.Results.Count == 0)
@@ -565,8 +576,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return null;
             }
 
-            // Use "original" as default size if size is null or empty to prevent malformed URLs
-            var imageSize = string.IsNullOrEmpty(size) ? "original" : size;
+            // Use the original size as default if size is null or empty to prevent malformed URLs
+            var imageSize = string.IsNullOrEmpty(size) ? TmdbUtils.OriginalImageSize : size;
 
             return _tmDbClient.GetImageUrl(imageSize, path, true).ToString();
         }
@@ -589,6 +600,16 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public string? GetProfileUrl(string? actorProfilePath)
         {
             return GetUrl(Plugin.Instance.Configuration.ProfileSize, actorProfilePath);
+        }
+
+        /// <summary>
+        /// Gets the absolute URL of an episode still.
+        /// </summary>
+        /// <param name="stillPath">The relative URL of the still.</param>
+        /// <returns>The absolute URL.</returns>
+        public string? GetStillUrl(string? stillPath)
+        {
+            return GetUrl(Plugin.Instance.Configuration.StillSize, stillPath);
         }
 
         /// <summary>
@@ -647,7 +668,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         private IEnumerable<RemoteImageInfo> ConvertToRemoteImageInfo(IReadOnlyList<ImageData> images, string? size, ImageType type, string requestLanguage)
         {
             // sizes provided are for original resolution, don't store them when downloading scaled images
-            var scaleImage = !string.Equals(size, "original", StringComparison.OrdinalIgnoreCase);
+            var scaleImage = !TmdbUtils.IsOriginalImageSize(size);
 
             for (var i = 0; i < images.Count; i++)
             {
@@ -665,6 +686,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 yield return new RemoteImageInfo
                 {
                     Url = GetUrl(size, image.FilePath),
+                    ThumbnailUrl = GetUrl(ThumbnailSizes.GetValueOrDefault(type.ToString(), string.Empty), image.FilePath),
                     CommunityRating = image.VoteAverage,
                     VoteCount = image.VoteCount,
                     Width = scaleImage ? null : image.Width,
@@ -743,6 +765,84 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             return _tmDbClient.Config;
         }
 
+        /// <summary>
+        /// Stores a response under the shared expiry, weighed by what it costs to keep.
+        /// </summary>
+        private void Cache<T>(string key, T value)
+            where T : class
+            => _memoryCache.Set(
+                key,
+                value,
+                new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(CacheDurationInHours),
+                    Size = EstimateSize(value)
+                });
+
+        /// <summary>
+        /// Stores a page of search results, whose weight is simply how many there are.
+        /// </summary>
+        private void CacheSearch<T>(string key, SearchContainer<T> results)
+            => _memoryCache.Set(
+                key,
+                results,
+                new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(CacheDurationInHours),
+                    Size = 1 + Count(results.Results)
+                });
+
+        private static long Count<T>(IReadOnlyCollection<T>? items) => items?.Count ?? 0;
+
+        /// <summary>
+        /// Estimates what keeping a response costs, counting the sub-records that dominate it.
+        /// </summary>
+        private static long EstimateSize(object? value) => value switch
+        {
+            TvShow series => 1
+                + Count(series.Credits?.Cast) + Count(series.Credits?.Crew)
+                + EstimateAggregateSize(series.AggregateCredits)
+                + Count(series.Seasons),
+            TvSeason season => 1
+                + Count(season.Credits?.Cast) + Count(season.Credits?.Crew)
+                + Count(season.Episodes),
+            TvEpisode episode => 1
+                + Count(episode.Credits?.Cast) + Count(episode.Credits?.Crew)
+                + Count(episode.Credits?.GuestStars),
+            Movie movie => 1 + Count(movie.Credits?.Cast) + Count(movie.Credits?.Crew),
+            Collection collection => 1 + Count(collection.Parts),
+            TvGroupCollection groups => 1 + Count(groups.Groups),
+            FindContainer found => 1
+                + Count(found.MovieResults) + Count(found.TvResults)
+                + Count(found.PersonResults) + Count(found.TvEpisode) + Count(found.TvSeason),
+            _ => 1
+        };
+
+        /// <summary>
+        /// Weighs aggregate credits, where each person carries one record per episode they worked on.
+        /// </summary>
+        private static long EstimateAggregateSize(CreditsAggregate? credits)
+        {
+            if (credits is null)
+            {
+                return 0;
+            }
+
+            var size = Count(credits.Cast) + Count(credits.Crew);
+
+            foreach (var cast in credits.Cast ?? [])
+            {
+                size += Count(cast.Roles);
+            }
+
+            foreach (var crew in credits.Crew ?? [])
+            {
+                size += Count(crew.Jobs);
+            }
+
+            return size;
+        }
+
         /// <inheritdoc />
         public void Dispose()
         {
@@ -758,7 +858,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         {
             if (disposing)
             {
-                _memoryCache?.Dispose();
+                _memoryCache.Dispose();
                 _tmDbClient?.Dispose();
             }
         }

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,14 +66,27 @@ public class ItemPersistenceService : IItemPersistenceService
             descendantIds.Add(id);
         }
 
-        var extraIds = context.BaseItems
-            .Where(e => e.OwnerId.HasValue && descendantIds.Contains(e.OwnerId.Value))
-            .Select(e => e.Id)
-            .ToArray();
-
-        foreach (var extraId in extraIds)
+        // Use WhereOneOrMany instead of a raw HashSet.Contains so large id sets are bound as a
+        // single parameter (json_each) rather than one SQL variable per id, which would otherwise
+        // overflow SQLite's variable limit when deleting many items at once (e.g. migrations).
+        var frontier = descendantIds.ToArray();
+        while (frontier.Length > 0)
         {
-            descendantIds.Add(extraId);
+            var ownedIds = context.BaseItems
+                .Where(e => e.OwnerId.HasValue)
+                .WhereOneOrMany(frontier, e => e.OwnerId!.Value)
+                .Select(e => e.Id)
+                .ToArray();
+
+            var childIds = context.BaseItems
+                .Where(e => e.ParentId.HasValue)
+                .WhereOneOrMany(frontier, e => e.ParentId!.Value)
+                .Select(e => e.Id)
+                .ToArray();
+
+            // Only ids that were not already known become the next frontier, so ownership cycles
+            // terminate instead of looping forever.
+            frontier = [.. ownedIds.Concat(childIds).Where(e => descendantIds.Add(e))];
         }
 
         var relatedItems = descendantIds.ToArray();
@@ -131,13 +145,13 @@ public class ItemPersistenceService : IItemPersistenceService
         context.ItemValuesMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ParentId).ExecuteDelete();
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ChildId).ExecuteDelete();
+        var peopleIds = context.PeopleBaseItemMap.WhereOneOrMany(relatedItems, e => e.ItemId).Select(f => f.PeopleId).Distinct().ToArray();
         context.BaseItems.WhereOneOrMany(relatedItems, e => e.Id).ExecuteDelete();
         context.KeyframeData.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.MediaSegments.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.MediaStreamInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        var query = context.PeopleBaseItemMap.WhereOneOrMany(relatedItems, e => e.ItemId).Select(f => f.PeopleId).Distinct().ToArray();
         context.PeopleBaseItemMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.Peoples.WhereOneOrMany(query, e => e.Id).Where(e => e.BaseItems!.Count == 0).ExecuteDelete();
+        context.Peoples.WhereOneOrMany(peopleIds, e => e.Id).Where(e => !e.BaseItems!.Any()).ExecuteDelete();
         context.TrickplayInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.SaveChanges();
         transaction.Commit();
@@ -171,14 +185,6 @@ public class ItemPersistenceService : IItemPersistenceService
         var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
-            if (!await context.BaseItems
-                .AnyAsync(bi => bi.Id == item.Id, cancellationToken)
-                .ConfigureAwait(false))
-            {
-                _logger.LogWarning("Unable to save ImageInfo for non existing BaseItem");
-                return;
-            }
-
             await context.BaseItemImageInfos
                 .Where(e => e.ItemId == item.Id)
                 .ExecuteDeleteAsync(cancellationToken)
@@ -188,7 +194,26 @@ public class ItemPersistenceService : IItemPersistenceService
                 .AddRangeAsync(images, cancellationToken)
                 .ConfigureAwait(false);
 
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (DbUpdateException)
+            {
+                // Checking that the item exists before writing leaves a gap a scan can delete it
+                // through, turning the insert into a foreign key violation that fails the whole
+                // refresh instead of the no-op intended here. Let the insert be the check: it is the
+                // only point at which the answer cannot go stale. Nothing is orphaned by the delete
+                // above, because deleting the item cascades to its images anyway.
+                if (await context.BaseItems
+                    .AnyAsync(bi => bi.Id == item.Id, cancellationToken)
+                    .ConfigureAwait(false))
+                {
+                    throw;
+                }
+
+                _logger.LogWarning("Unable to save ImageInfo for non existing BaseItem {ItemId}", item.Id);
+            }
         }
     }
 
@@ -252,23 +277,19 @@ public class ItemPersistenceService : IItemPersistenceService
         using var transaction = context.Database.BeginTransaction();
 
         var ids = tuples.Select(f => f.Item.Id).ToArray();
-        var existingItems = context.BaseItems.Where(e => ids.Contains(e.Id)).Select(f => f.Id).ToArray();
+        var existingItems = context.BaseItems.WhereOneOrMany(ids, e => e.Id).Select(f => f.Id).ToHashSet();
 
         foreach (var item in tuples)
         {
             var entity = BaseItemMapper.Map(item.Item, _appHost);
             entity.TopParentId = item.TopParent?.Id;
 
-            if (!existingItems.Any(e => e == entity.Id))
+            if (!existingItems.Contains(entity.Id))
             {
                 context.BaseItems.Add(entity);
             }
             else
             {
-                context.BaseItemProviders.Where(e => e.ItemId == entity.Id).ExecuteDelete();
-                context.BaseItemImageInfos.Where(e => e.ItemId == entity.Id).ExecuteDelete();
-                context.BaseItemMetadataFields.Where(e => e.ItemId == entity.Id).ExecuteDelete();
-
                 if (entity.Images is { Count: > 0 })
                 {
                     context.BaseItemImageInfos.AddRange(entity.Images);
@@ -309,12 +330,14 @@ public class ItemPersistenceService : IItemPersistenceService
         }).ToArray();
         context.ItemValues.AddRange(missingItemValues);
 
-        var itemValuesStore = existingValues.Concat(missingItemValues).ToArray();
+        var itemValuesStore = existingValues
+            .Concat(missingItemValues)
+            .ToDictionary(e => (e.Type, e.Value));
         var valueMap = itemValueMaps
-            .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).DistinctBy(e => e.ItemValueId).ToArray()))
+            .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore[(e.MagicNumber, e.Value)]).DistinctBy(e => e.ItemValueId).ToArray()))
             .ToArray();
 
-        var mappedValues = context.ItemValuesMap.Where(e => ids.Contains(e.ItemId)).ToList();
+        var mappedValues = context.ItemValuesMap.WhereOneOrMany(ids, e => e.ItemId).ToList();
 
         foreach (var item in valueMap)
         {
@@ -396,6 +419,15 @@ public class ItemPersistenceService : IItemPersistenceService
             }
         }
 
+        // Owned rows of updated items are rewritten wholesale; cleared in one statement per table.
+        if (existingItems.Count > 0)
+        {
+            var updatedIds = existingItems.ToArray();
+            context.BaseItemProviders.WhereOneOrMany(updatedIds, e => e.ItemId).ExecuteDelete();
+            context.BaseItemImageInfos.WhereOneOrMany(updatedIds, e => e.ItemId).ExecuteDelete();
+            context.BaseItemMetadataFields.WhereOneOrMany(updatedIds, e => e.ItemId).ExecuteDelete();
+        }
+
         context.SaveChanges();
 
         var folderIds = tuples
@@ -423,106 +455,144 @@ public class ItemPersistenceService : IItemPersistenceService
 
         foreach (var item in tuples)
         {
-            if (item.Item is Folder folder)
+            // A container that was never hydrated cannot be used to rewrite its links: its empty
+            // array means "unknown", so clearing the stored rows would silently empty the item.
+            if (item.Item is Folder { LinkedChildrenLoaded: false })
             {
-                var existingLinkedChildren = allLinkedChildrenByParent.GetValueOrDefault(item.Item.Id)?.ToList() ?? new List<LinkedChildEntity>();
-                if (folder.LinkedChildren.Length > 0)
-                {
-#pragma warning disable CS0618 // Type or member is obsolete - legacy path resolution for old data
-                    var pathsToResolve = folder.LinkedChildren
-                        .Where(lc => (!lc.ItemId.HasValue || lc.ItemId.Value.IsEmpty()) && !string.IsNullOrEmpty(lc.Path))
-                        .Select(lc => lc.Path)
-                        .Distinct()
+                continue;
+            }
+
+            if (item.Item is Folder or Video
+                && allLinkedChildrenByParent.TryGetValue(item.Item.Id, out var existingLinks)
+                && existingLinks.Count > 0)
+            {
+                // A video only owns its alternate version links; any other link on that parent is
+                // written by the folder branch below and must survive.
+                var staleLinks = item.Item is Folder
+                    ? existingLinks
+                    : existingLinks
+                        .Where(e => e.ChildType is DbLinkedChildType.LocalAlternateVersion or DbLinkedChildType.LinkedAlternateVersion)
                         .ToList();
 
-                    var pathToIdMap = pathsToResolve.Count > 0
-                        ? context.BaseItems
-                            .Where(e => e.Path != null && pathsToResolve.Contains(e.Path))
-                            .Select(e => new { e.Path, e.Id })
-                            .GroupBy(e => e.Path!)
-                            .ToDictionary(g => g.Key, g => g.First().Id)
-                        : [];
+                if (staleLinks.Count > 0)
+                {
+                    context.LinkedChildren.RemoveRange(staleLinks);
+                }
+            }
+        }
 
-                    var resolvedChildren = new List<(LinkedChild Child, Guid ChildId)>();
-                    foreach (var linkedChild in folder.LinkedChildren)
+        context.SaveChanges();
+
+        // A LinkedChild's ItemId is only a cache.
+        var cachedChildIds = tuples
+            .Select(t => t.Item)
+            .OfType<Folder>()
+            .Where(f => f.LinkedChildrenLoaded)
+            .SelectMany(f => f.LinkedChildren)
+            .Where(lc => lc.ItemId.HasValue && !lc.ItemId.Value.IsEmpty())
+            .Select(lc => lc.ItemId!.Value)
+            .Distinct()
+            .ToList();
+
+        var knownChildIds = cachedChildIds.Count > 0
+            ? context.BaseItems
+                .WhereOneOrMany(cachedChildIds, e => e.Id)
+                .Select(e => e.Id)
+                .ToHashSet()
+            : [];
+
+        foreach (var item in tuples)
+        {
+            if (item.Item is Folder { LinkedChildrenLoaded: true } folder && folder.LinkedChildren.Length > 0)
+            {
+#pragma warning disable CS0618 // Type or member is obsolete - legacy path resolution for old data
+                var pathsToResolve = folder.LinkedChildren
+                    .Where(lc => !string.IsNullOrEmpty(lc.Path)
+                        && (!lc.ItemId.HasValue || lc.ItemId.Value.IsEmpty() || !knownChildIds.Contains(lc.ItemId.Value)))
+                    .Select(lc => lc.Path)
+                    .Distinct()
+                    .ToList();
+
+                var pathToIdMap = pathsToResolve.Count > 0
+                    ? context.BaseItems
+                        .Where(e => e.Path != null && pathsToResolve.Contains(e.Path))
+                        .Select(e => new { e.Path, e.Id })
+                        .GroupBy(e => e.Path!)
+                        .ToDictionary(g => g.Key, g => g.First().Id)
+                    : [];
+
+                var resolvedChildren = new List<(LinkedChild Child, Guid ChildId)>();
+                foreach (var linkedChild in folder.LinkedChildren)
+                {
+                    var childItemId = linkedChild.ItemId;
+                    if (!childItemId.HasValue || childItemId.Value.IsEmpty() || !knownChildIds.Contains(childItemId.Value))
                     {
-                        var childItemId = linkedChild.ItemId;
-                        if (!childItemId.HasValue || childItemId.Value.IsEmpty())
+                        if (!string.IsNullOrEmpty(linkedChild.Path) && pathToIdMap.TryGetValue(linkedChild.Path, out var resolvedId))
                         {
-                            if (!string.IsNullOrEmpty(linkedChild.Path) && pathToIdMap.TryGetValue(linkedChild.Path, out var resolvedId))
-                            {
-                                childItemId = resolvedId;
-                            }
+                            childItemId = resolvedId;
                         }
-#pragma warning restore CS0618
-
-                        if (childItemId.HasValue && !childItemId.Value.IsEmpty())
+                        else if (Guid.TryParse(linkedChild.LibraryItemId, out var libraryItemId) && !libraryItemId.IsEmpty())
                         {
-                            resolvedChildren.Add((linkedChild, childItemId.Value));
+                            childItemId = libraryItemId;
                         }
                     }
+#pragma warning restore CS0618
 
+                    if (childItemId.HasValue && !childItemId.Value.IsEmpty())
+                    {
+                        resolvedChildren.Add((linkedChild, childItemId.Value));
+                    }
+                }
+
+                // Playlists may legitimately contain the same item multiple times (e.g. a song repeated
+                // in an .m3u file). Every other container type keeps a single entry per child.
+                var isPlaylist = folder is Playlist;
+                if (!isPlaylist)
+                {
                     resolvedChildren = resolvedChildren
                         .GroupBy(c => c.ChildId)
                         .Select(g => g.Last())
                         .ToList();
-
-                    var childIdsToCheck = resolvedChildren.Select(c => c.ChildId).ToList();
-                    var existingChildIds = childIdsToCheck.Count > 0
-                        ? context.BaseItems
-                            .Where(e => childIdsToCheck.Contains(e.Id))
-                            .Select(e => e.Id)
-                            .ToHashSet()
-                        : [];
-
-                    var isPlaylist = folder is Playlist;
-                    var sortOrder = 0;
-                    foreach (var (linkedChild, childId) in resolvedChildren)
-                    {
-                        if (!existingChildIds.Contains(childId))
-                        {
-                            _logger.LogWarning(
-                                "Skipping LinkedChild for parent {ParentName} ({ParentId}): child item {ChildId} does not exist in database",
-                                item.Item.Name,
-                                item.Item.Id,
-                                childId);
-                            continue;
-                        }
-
-                        var existingLink = existingLinkedChildren.FirstOrDefault(e => e.ChildId == childId);
-                        if (existingLink is null)
-                        {
-                            context.LinkedChildren.Add(new LinkedChildEntity()
-                            {
-                                ParentId = item.Item.Id,
-                                ChildId = childId,
-                                ChildType = (DbLinkedChildType)linkedChild.Type,
-                                SortOrder = isPlaylist ? sortOrder : null
-                            });
-                        }
-                        else
-                        {
-                            existingLink.SortOrder = isPlaylist ? sortOrder : null;
-                            existingLink.ChildType = (DbLinkedChildType)linkedChild.Type;
-                            existingLinkedChildren.Remove(existingLink);
-                        }
-
-                        sortOrder++;
-                    }
                 }
 
-                if (existingLinkedChildren.Count > 0)
+                var childIdsToCheck = resolvedChildren.Select(c => c.ChildId).Distinct().ToList();
+                var existingChildIds = childIdsToCheck.Count > 0
+                    ? context.BaseItems
+                        .WhereOneOrMany(childIdsToCheck, e => e.Id)
+                        .Select(e => e.Id)
+                        .ToHashSet()
+                    : [];
+
+                var sortOrder = 0;
+                foreach (var (linkedChild, childId) in resolvedChildren)
                 {
-                    context.LinkedChildren.RemoveRange(existingLinkedChildren);
+                    if (!existingChildIds.Contains(childId))
+                    {
+#pragma warning disable CS0618 // Type or member is obsolete - legacy path is logged for diagnostics
+                        _logger.LogWarning(
+                            "Skipping LinkedChild for parent {ParentName} ({ParentId}): child item {ChildId} (path {ChildPath}) does not exist in database",
+                            item.Item.Name,
+                            item.Item.Id,
+                            childId,
+                            linkedChild.Path ?? "unknown");
+#pragma warning restore CS0618
+                        continue;
+                    }
+
+                    context.LinkedChildren.Add(new LinkedChildEntity()
+                    {
+                        ParentId = item.Item.Id,
+                        ChildId = childId,
+                        ChildType = (DbLinkedChildType)linkedChild.Type,
+                        SortOrder = sortOrder
+                    });
+
+                    sortOrder++;
                 }
             }
 
             if (item.Item is Video video)
             {
-                var existingLinkedChildren = (allLinkedChildrenByParent.GetValueOrDefault(video.Id) ?? new List<LinkedChildEntity>())
-                    .Where(e => (int)e.ChildType == 2 || (int)e.ChildType == 3)
-                    .ToList();
-
                 var newLinkedChildren = new List<(Guid ChildId, LinkedChildType Type)>();
 
                 if (video.LocalAlternateVersions.Length > 0)
@@ -557,9 +627,11 @@ public class ItemPersistenceService : IItemPersistenceService
                     }
                 }
 
+                // Deduplicate; local (file-based) relationships take priority over linked (user-merged)
+                // ones, matching the LinkedChildren migration.
                 newLinkedChildren = newLinkedChildren
                     .GroupBy(c => c.ChildId)
-                    .Select(g => g.Last())
+                    .Select(g => g.OrderBy(c => c.Type == LinkedChildType.LocalAlternateVersion ? 0 : 1).First())
                     .ToList();
 
                 var childIdsToCheck = newLinkedChildren.Select(c => c.ChildId).ToList();
@@ -570,7 +642,7 @@ public class ItemPersistenceService : IItemPersistenceService
                         .ToHashSet()
                     : [];
 
-                int sortOrder = 0;
+                var sortOrder = 0;
                 foreach (var (childId, childType) in newLinkedChildren)
                 {
                     if (!existingChildIds.Contains(childId))
@@ -583,35 +655,58 @@ public class ItemPersistenceService : IItemPersistenceService
                         continue;
                     }
 
-                    var existingLink = existingLinkedChildren.FirstOrDefault(e => e.ChildId == childId);
-                    if (existingLink is null)
+                    context.LinkedChildren.Add(new LinkedChildEntity
                     {
-                        context.LinkedChildren.Add(new LinkedChildEntity
-                        {
-                            ParentId = video.Id,
-                            ChildId = childId,
-                            ChildType = (DbLinkedChildType)childType,
-                            SortOrder = sortOrder
-                        });
-                    }
-                    else
-                    {
-                        existingLink.ChildType = (DbLinkedChildType)childType;
-                        existingLink.SortOrder = sortOrder;
-                        existingLinkedChildren.Remove(existingLink);
-                    }
+                        ParentId = video.Id,
+                        ChildId = childId,
+                        ChildType = (DbLinkedChildType)childType,
+                        SortOrder = sortOrder
+                    });
 
                     sortOrder++;
                 }
 
-                if (existingLinkedChildren.Count > 0)
+                var linkedChildIds = newLinkedChildren
+                    .Select(c => c.ChildId)
+                    // A video listed among its own versions would be pointed at itself.
+                    .Where(childId => existingChildIds.Contains(childId) && !childId.Equals(video.Id))
+                    .Where(childId => !childId.Equals(video.PrimaryVersionId))
+                    .ToList();
+                if (linkedChildIds.Count > 0)
                 {
-                    var orphanedLocalVersionIds = existingLinkedChildren
-                        .Where(e => e.ChildType == DbLinkedChildType.LocalAlternateVersion)
-                        .Select(e => e.ChildId)
+                    var demotedChildren = context.BaseItems
+                        .Where(e => linkedChildIds.Contains(e.Id)
+                            && (e.PrimaryVersionId == null || e.PrimaryVersionId != video.Id))
                         .ToList();
 
-                    context.LinkedChildren.RemoveRange(existingLinkedChildren);
+                    foreach (var child in demotedChildren)
+                    {
+                        child.PrimaryVersionId = video.Id;
+
+                        // Mirrors Video.CreatePresentationUniqueKey, so presentation-key grouping
+                        // collapses the version onto its primary as well.
+                        child.PresentationUniqueKey = video.Id.ToString("N", CultureInfo.InvariantCulture);
+                    }
+
+                    if (demotedChildren.Count > 0)
+                    {
+                        _logger.LogInformation(
+                            "Set PrimaryVersionId on {Count} alternate versions of video {VideoName} ({VideoId})",
+                            demotedChildren.Count,
+                            video.Name,
+                            video.Id);
+                    }
+                }
+
+                // A previously-linked LocalAlternateVersion that is no longer present becomes orphaned;
+                var previousLinkedChildren = allLinkedChildrenByParent.GetValueOrDefault(video.Id);
+                if (previousLinkedChildren is { Count: > 0 })
+                {
+                    var newChildIds = newLinkedChildren.Select(c => c.ChildId).ToHashSet();
+                    var orphanedLocalVersionIds = previousLinkedChildren
+                        .Where(e => e.ChildType == DbLinkedChildType.LocalAlternateVersion && !newChildIds.Contains(e.ChildId))
+                        .Select(e => e.ChildId)
+                        .ToList();
 
                     if (orphanedLocalVersionIds.Count > 0)
                     {

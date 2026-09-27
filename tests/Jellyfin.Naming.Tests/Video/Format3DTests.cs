@@ -20,6 +20,27 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         [Fact]
+        public void TestFormat3DAtEndOfPath()
+        {
+            // Directory based media (eg. DVD or BluRay folder rips) have no file extension,
+            // so the 3D tag can be the last token of the path.
+            Test("Super movie (2009) 3d hsbs", true, "hsbs");
+            Test("Super movie (2009).3d.sbs", true, "sbs");
+            Test("Super movie (2009) 3d htab", true, "htab");
+            Test("Super movie (2009).hsbs", true, "hsbs");
+            Test("Super movie (2009) 3d", false, null);
+        }
+
+        [Fact]
+        public void TestResolveDirectory3D()
+        {
+            var result = VideoResolver.ResolveDirectory("/movies/Oblivion (2013) 3d hsbs", _namingOptions);
+
+            Assert.True(result?.Is3D);
+            Assert.Equal("hsbs", result?.Format3D, true);
+        }
+
+        [Fact]
         public void Test3DName()
         {
             var result = VideoResolver.ResolveFile("C:/Users/media/Desktop/Video Test/Movies/Oblivion/Oblivion.3d.hsbs.mkv", _namingOptions);

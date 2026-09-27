@@ -106,5 +106,7 @@
     "TaskExtractMediaSegments": "Scan Segmen media",
     "TaskMoveTrickplayImages": "Migrasikan Lokasi Gambar Trickplay",
     "TaskDownloadMissingLyrics": "Unduh Lirik yang Hilang",
-    "CleanupUserDataTask": "Tugas Pembersihan Data Pengguna"
+    "CleanupUserDataTask": "Tugas Pembersihan Data Pengguna",
+    "LyricDownloadFailureFromForItem": "Lirik gagal di download dari {0} untuk {1}",
+    "Original": "Asli"
 }

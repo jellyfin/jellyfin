@@ -54,10 +54,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
-            if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var tmdbId))
+            if (searchInfo.TryGetTmdbId(out var tmdbId))
             {
                 var series = await _tmdbClientManager
-                    .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken)
+                    .GetSeriesAsync(tmdbId, searchInfo.MetadataLanguage, searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (series is not null)
@@ -202,11 +202,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 // Caller provides the filename with extension stripped and NOT the parsed filename
                 var parsedName = _libraryManager.ParseName(info.Name);
                 var cleanedName = TmdbUtils.CleanName(parsedName.Name);
-                var searchResults = await _tmdbClientManager.SearchSeriesAsync(cleanedName, info.MetadataLanguage, info.MetadataCountryCode, info.Year ?? parsedName.Year ?? 0, cancellationToken).ConfigureAwait(false);
+                var searchYear = info.Year ?? parsedName.Year ?? 0;
+                var searchResults = await _tmdbClientManager.SearchSeriesAsync(cleanedName, info.MetadataLanguage, info.MetadataCountryCode, searchYear, cancellationToken).ConfigureAwait(false);
 
-                if (searchResults?.Count > 0)
+                var match = TmdbUtils.FindBestMatch(searchResults, parsedName.Name, searchYear);
+
+                if (match is not null)
                 {
-                    tmdbId = searchResults[0].Id.ToString(CultureInfo.InvariantCulture);
+                    tmdbId = match.Id.ToString(CultureInfo.InvariantCulture);
                 }
             }
 
@@ -256,10 +259,19 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             series.Overview = seriesResult.Overview;
 
+            var studios = Enumerable.Empty<string>();
+
             if (seriesResult.Networks is not null)
             {
-                series.Studios = seriesResult.Networks.Select(i => i.Name).ToArray();
+                studios = studios.Concat(seriesResult.Networks.Select(i => i.Name).OfType<string>());
             }
+
+            if (seriesResult.ProductionCompanies is not null)
+            {
+                studios = studios.Concat(seriesResult.ProductionCompanies.Select(i => i.Name).OfType<string>());
+            }
+
+            series.SetStudios(studios);
 
             if (seriesResult.Genres is not null)
             {
@@ -320,13 +332,26 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (seriesResult.Videos?.Results is not null)
             {
-                foreach (var video in seriesResult.Videos.Results)
+                var trailers = new List<MediaUrl>();
+
+                var sortedVideos = seriesResult.Videos.Results
+                    .OrderByDescending(video => string.Equals(video.Type, "trailer", StringComparison.OrdinalIgnoreCase));
+
+                foreach (var video in sortedVideos)
                 {
-                    if (TmdbUtils.IsTrailerType(video))
+                    if (!TmdbUtils.IsTrailerType(video))
                     {
-                        series.AddTrailerUrl("https://www.youtube.com/watch?v=" + video.Key);
+                        continue;
                     }
+
+                    trailers.Add(new MediaUrl
+                    {
+                        Url = string.Format(CultureInfo.InvariantCulture, "https://www.youtube.com/watch?v={0}", video.Key),
+                        Name = video.Name
+                    });
                 }
+
+                series.RemoteTrailers = trailers;
             }
 
             if (!string.IsNullOrEmpty(seriesResult.OriginalLanguage))
@@ -341,39 +366,16 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         {
             var config = Plugin.Instance.Configuration;
 
-            if (seriesResult.Credits?.Cast is not null)
+            // The aggregated credits are what hold an actor's several characters apart; the flat ones
+            // put them in a single string. Only the aggregated list carries the whole run, so prefer it
+            // and fall back for the rare show TMDb has no aggregation for.
+            var cast = seriesResult.AggregateCredits?.Cast is { Count: > 0 } aggregated
+                ? TmdbUtils.MapAggregateCast(aggregated, config, _tmdbClientManager.GetProfileUrl)
+                : TmdbUtils.MapCast(seriesResult.Credits?.Cast, config, _tmdbClientManager.GetProfileUrl);
+
+            foreach (var actor in cast)
             {
-                IEnumerable<Cast> castQuery = seriesResult.Credits.Cast.OrderBy(a => a.Order);
-
-                if (config.HideMissingCastMembers)
-                {
-                    castQuery = castQuery.Where(a => !string.IsNullOrEmpty(a.ProfilePath));
-                }
-
-                foreach (var actor in castQuery.Take(config.MaxCastMembers))
-                {
-                    if (string.IsNullOrWhiteSpace(actor.Name))
-                    {
-                        continue;
-                    }
-
-                    var personInfo = new PersonInfo
-                    {
-                        Name = actor.Name.Trim(),
-                        Role = actor.Character?.Trim() ?? string.Empty,
-                        Type = PersonKind.Actor,
-                        SortOrder = actor.Order,
-                        // NOTE: Null values are filtered out above
-                        ImageUrl = _tmdbClientManager.GetProfileUrl(actor.ProfilePath!)
-                    };
-
-                    if (actor.Id > 0)
-                    {
-                        personInfo.SetProviderId(MetadataProvider.Tmdb, actor.Id.ToString(CultureInfo.InvariantCulture));
-                    }
-
-                    yield return personInfo;
-                }
+                yield return actor;
             }
 
             if (seriesResult.Credits?.Crew is not null)
@@ -412,6 +414,31 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     if (crewMember.Id > 0)
                     {
                         personInfo.SetProviderId(MetadataProvider.Tmdb, crewMember.Id.ToString(CultureInfo.InvariantCulture));
+                    }
+
+                    yield return personInfo;
+                }
+            }
+
+            if (seriesResult.CreatedBy is not null)
+            {
+                foreach (var person in seriesResult.CreatedBy)
+                {
+                    if (string.IsNullOrWhiteSpace(person.Name))
+                    {
+                        continue;
+                    }
+
+                    var personInfo = new PersonInfo
+                    {
+                        Name = person.Name.Trim(),
+                        Type = PersonKind.Creator,
+                        ImageUrl = _tmdbClientManager.GetProfileUrl(person.ProfilePath)
+                    };
+
+                    if (person.Id > 0)
+                    {
+                        personInfo.SetProviderId(MetadataProvider.Tmdb, person.Id.ToString(CultureInfo.InvariantCulture));
                     }
 
                     yield return personInfo;

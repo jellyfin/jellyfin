@@ -60,17 +60,10 @@ namespace Emby.Server.Implementations.Library
                 var folderViewType = collectionFolder?.CollectionType;
 
                 // Playlist and BoxSet libraries require special handling because the folder only references linked items
-                if (folderViewType == CollectionType.playlists || folderViewType == CollectionType.boxsets)
+                if ((folderViewType == CollectionType.playlists || folderViewType == CollectionType.boxsets)
+                    && !HasVisibleChild(folder, user))
                 {
-                    var items = folder.GetItemList(new InternalItemsQuery(user)
-                    {
-                        ParentId = folder.ParentId
-                    });
-
-                    if (!items.Any(item => item.IsVisible(user)))
-                    {
-                        continue;
-                    }
+                    continue;
                 }
 
                 if (UserView.IsUserSpecific(folder))
@@ -112,7 +105,7 @@ namespace Emby.Server.Implementations.Library
 
             if (_config.Configuration.EnableFolderView)
             {
-                var name = _localizationManager.GetLocalizedString("Folders");
+                var name = _localizationManager.GetServerLocalizedString("Folders");
                 list.Add(_libraryManager.GetNamedView(name, CollectionType.folders, string.Empty));
             }
 
@@ -127,7 +120,7 @@ namespace Emby.Server.Implementations.Library
 
                 list.AddRange(channels);
 
-                if (_liveTvManager.GetEnabledUsers().Select(i => i.Id).Contains(user.Id))
+                if (_liveTvManager.IsEnabledForUser(user))
                 {
                     list.Add(_liveTvManager.GetInternalLiveTvFolder(CancellationToken.None));
                 }
@@ -159,6 +152,32 @@ namespace Emby.Server.Implementations.Library
                 .ToArray();
         }
 
+        private bool HasVisibleChild(Folder folder, User user)
+        {
+            // Folder.Children answers this too, but a collection folder delegates it to its physical
+            // folders, which resolve and then hold on to every child with every field.
+            var parentIds = folder is CollectionFolder collectionFolder && collectionFolder.PhysicalFolderIds.Length > 0
+                ? collectionFolder.PhysicalFolderIds
+                : [folder.Id];
+
+            foreach (var parentId in parentIds)
+            {
+                var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
+                {
+                    ParentId = parentId,
+                    GroupByPresentationUniqueKey = false,
+                    DtoOptions = DtoOptions.StoredColumnsOnly
+                });
+
+                if (items.Any(item => item.IsVisible(user)))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public UserView GetUserSubViewWithName(string name, Guid parentId, CollectionType? type, string sortName)
         {
             var uniqueId = parentId + "subview" + type;
@@ -168,7 +187,7 @@ namespace Emby.Server.Implementations.Library
 
         public UserView GetUserSubView(Guid parentId, CollectionType? type, string localizationKey, string sortName)
         {
-            var name = _localizationManager.GetLocalizedString(localizationKey);
+            var name = _localizationManager.GetServerLocalizedString(localizationKey);
 
             return GetUserSubViewWithName(name, parentId, type, sortName);
         }
@@ -191,7 +210,7 @@ namespace Emby.Server.Implementations.Library
                 return GetUserView((Folder)parents[0], viewType, string.Empty);
             }
 
-            var name = _localizationManager.GetLocalizedString(localizationKey);
+            var name = _localizationManager.GetServerLocalizedString(localizationKey);
             return _libraryManager.GetNamedView(user, name, viewType, sortName);
         }
 
@@ -395,6 +414,12 @@ namespace Emby.Server.Implementations.Library
                 {
                     query.Limit = limit;
                     return _libraryManager.GetLatestItemList(query, parents, CollectionType.movies);
+                }
+
+                if (collectionType is null)
+                {
+                    query.Limit = limit;
+                    return _libraryManager.GetLatestItemList(query, parents, CollectionType.unknown);
                 }
             }
 

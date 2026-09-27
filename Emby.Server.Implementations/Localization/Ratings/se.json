@@ -10,7 +10,7 @@
             }
         },
         {
-            "ratingStrings": ["7"],
+            "ratingStrings": ["7", "7+", "7 År", "Från 7 år"],
             "ratingScore": {
                 "score": 7,
                 "subScore": null
@@ -31,7 +31,7 @@
             }
         },
         {
-            "ratingStrings": ["11"],
+            "ratingStrings": ["11", "11+", "11 År", "Från 11 år"],
             "ratingScore": {
                 "score": 11,
                 "subScore": null
@@ -45,9 +45,16 @@
             }
         },
         {
-            "ratingStrings": ["15"],
+            "ratingStrings": ["15", "15+", "15 År", "Från 15 år"],
             "ratingScore": {
                 "score": 15,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["18", "18+", "Barnförbjuden", "Bfj"],
+            "ratingScore": {
+                "score": 18,
                 "subScore": null
             }
         }

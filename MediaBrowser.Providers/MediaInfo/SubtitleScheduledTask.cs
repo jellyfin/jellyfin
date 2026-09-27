@@ -102,7 +102,8 @@ namespace MediaBrowser.Providers.MediaInfo
                         DtoOptions = new DtoOptions(true),
                         SourceTypes = new[] { SourceType.Library },
                         Parent = library,
-                        Recursive = true
+                        Recursive = true,
+                        IncludeOwnedItems = true
                     };
 
                     if (skipIfAudioTrackMatches)

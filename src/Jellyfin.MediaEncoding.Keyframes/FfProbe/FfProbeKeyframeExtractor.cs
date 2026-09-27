@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Text;
 
 namespace Jellyfin.MediaEncoding.Keyframes.FfProbe;
 
@@ -31,6 +32,7 @@ public static class FfProbeKeyframeExtractor
 
                 CreateNoWindow = true,
                 UseShellExecute = false,
+                StandardOutputEncoding = Encoding.UTF8,
                 RedirectStandardOutput = true,
 
                 WindowStyle = ProcessWindowStyle.Hidden,
