@@ -79,8 +79,8 @@ public class MigrateEncodingOptions : IMigrationRoutine
             tonemappingRange = parsedTonemappingRange;
         }
 
-        var encoderPreset = EncoderPreset.superfast;
-        if (Enum.TryParse<EncoderPreset>(oldConfig.TonemappingRange, true, out var parsedEncoderPreset))
+        var encoderPreset = EncoderPreset.auto;
+        if (Enum.TryParse<EncoderPreset>(oldConfig.EncoderPreset, true, out var parsedEncoderPreset))
         {
             encoderPreset = parsedEncoderPreset;
         }
