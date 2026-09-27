@@ -14,6 +14,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
+using MediaBrowser.Model.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using LinkedChildType = Jellyfin.Database.Implementations.Entities.LinkedChildType;
@@ -232,19 +233,23 @@ internal class RepairPlaylistsAndCollections : IAsyncMigrationRoutine
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            var metadataPath = Path.Combine(dir, PlaylistFileName);
+            var metadata = File.Exists(metadataPath) ? ReadMetadata(metadataPath) : new PlaylistMetadata();
             var playlist = new Playlist
             {
                 Path = dir,
                 Name = Path.GetFileName(dir),
-                // Ownership is not recorded on disk, so the playlist comes back shared, which is what
-                // a library scan would have recreated it as.
-                OpenAccess = true,
+                OwnerUserId = metadata.OwnerUserId,
+                Shares = metadata.Shares,
+                // The public flag is not written to playlist.xml; only a playlist without an owner is
+                // opened up, as FixPlaylistOwner did.
+                OpenAccess = metadata.OwnerUserId.IsEmpty(),
                 Id = _libraryManager.GetNewItemId(dir, typeof(Playlist)),
                 DateCreated = Directory.GetCreationTimeUtc(dir),
                 DateModified = Directory.GetLastWriteTimeUtc(dir)
             };
 
-            playlist.SetMediaType(MediaType.Audio);
+            playlist.SetMediaType(metadata.MediaType);
 
             // CreateItem does not walk the hierarchy, so ParentId and TopParentId only get written if
             // the item already knows its parent.
@@ -252,9 +257,8 @@ internal class RepairPlaylistsAndCollections : IAsyncMigrationRoutine
             playlist.PresentationUniqueKey = playlist.CreatePresentationUniqueKey();
             _libraryManager.CreateItem(playlist, playlistsFolder);
 
-            var metadataPath = Path.Combine(dir, PlaylistFileName);
             var sortOrder = 0;
-            foreach (var storedPath in File.Exists(metadataPath) ? ReadEntryPaths(metadataPath) : [])
+            foreach (var storedPath in metadata.EntryPaths)
             {
                 if (!idByPath.TryGetValue(storedPath, out var childId))
                 {
@@ -284,9 +288,9 @@ internal class RepairPlaylistsAndCollections : IAsyncMigrationRoutine
             restoredEntries);
     }
 
-    private List<string> ReadEntryPaths(string metadataPath)
+    private PlaylistMetadata ReadMetadata(string metadataPath)
     {
-        var paths = new List<string>();
+        var metadata = new PlaylistMetadata();
         var settings = new XmlReaderSettings
         {
             IgnoreComments = true,
@@ -298,26 +302,76 @@ internal class RepairPlaylistsAndCollections : IAsyncMigrationRoutine
         try
         {
             using var reader = XmlReader.Create(metadataPath, settings);
-            var inEntry = false;
-            while (reader.Read())
+            string? parent = null;
+            Guid? shareUserId = null;
+            var shareCanEdit = false;
+
+            // Reading an element's content already moves to the next node, so only advance otherwise.
+            reader.Read();
+            while (!reader.EOF)
             {
-                if (reader.NodeType != XmlNodeType.Element)
+                if (reader.NodeType == XmlNodeType.EndElement && string.Equals(reader.Name, "Share", StringComparison.Ordinal))
                 {
+                    if (shareUserId.HasValue)
+                    {
+                        metadata.Shares.Add(new PlaylistUserPermissions(shareUserId.Value, shareCanEdit));
+                    }
+
+                    parent = null;
+                    reader.Read();
                     continue;
                 }
 
-                if (string.Equals(reader.Name, "PlaylistItem", StringComparison.Ordinal))
+                if (reader.NodeType != XmlNodeType.Element || reader.IsEmptyElement)
                 {
-                    inEntry = true;
+                    reader.Read();
+                    continue;
                 }
-                else if (inEntry && string.Equals(reader.Name, "Path", StringComparison.Ordinal))
+
+                switch (reader.Name)
                 {
-                    inEntry = false;
-                    var value = reader.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(value))
-                    {
-                        paths.Add(value.Trim());
-                    }
+                    case "PlaylistItem":
+                        parent = reader.Name;
+                        reader.Read();
+                        break;
+                    case "Share":
+                        parent = reader.Name;
+                        shareUserId = null;
+                        shareCanEdit = false;
+                        reader.Read();
+                        break;
+                    case "Path" when parent == "PlaylistItem":
+                        parent = null;
+                        var value = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(value))
+                        {
+                            metadata.EntryPaths.Add(value.Trim());
+                        }
+
+                        break;
+                    case "UserId" when parent == "Share":
+                        shareUserId = Guid.TryParse(reader.ReadElementContentAsString(), out var userId) && !userId.IsEmpty() ? userId : null;
+                        break;
+                    case "CanEdit" when parent == "Share":
+                        shareCanEdit = string.Equals(reader.ReadElementContentAsString().Trim(), "true", StringComparison.OrdinalIgnoreCase);
+                        break;
+                    case "OwnerUserId":
+                        if (Guid.TryParse(reader.ReadElementContentAsString(), out var ownerId))
+                        {
+                            metadata.OwnerUserId = ownerId;
+                        }
+
+                        break;
+                    case "PlaylistMediaType":
+                        if (Enum.TryParse<MediaType>(reader.ReadElementContentAsString(), out var mediaType) && mediaType != MediaType.Unknown)
+                        {
+                            metadata.MediaType = mediaType;
+                        }
+
+                        break;
+                    default:
+                        reader.Read();
+                        break;
                 }
             }
         }
@@ -326,6 +380,17 @@ internal class RepairPlaylistsAndCollections : IAsyncMigrationRoutine
             _logger.LogWarning(ex, "Could not read playlist metadata {MetadataPath}.", metadataPath);
         }
 
-        return paths;
+        return metadata;
+    }
+
+    private sealed class PlaylistMetadata
+    {
+        public Guid OwnerUserId { get; set; }
+
+        public List<PlaylistUserPermissions> Shares { get; } = [];
+
+        public MediaType MediaType { get; set; } = MediaType.Audio;
+
+        public List<string> EntryPaths { get; } = [];
     }
 }
