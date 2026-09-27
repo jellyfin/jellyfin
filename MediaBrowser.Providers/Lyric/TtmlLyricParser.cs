@@ -690,6 +690,14 @@ public partial class TtmlLyricParser : ILyricParser
         var match = TtmlTimeRegex().Match(value.Trim());
         if (!match.Success)
         {
+            // Apple Music downloads commonly use a partial clock value such as
+            // "19.704" or "2:54.285". Keep this compatibility-only; strict
+            // validation continues to use ParseAppleTime.
+            match = TtmlPartialTimeRegex().Match(value.Trim());
+        }
+
+        if (!match.Success)
+        {
             return null;
         }
 
@@ -754,6 +762,9 @@ public partial class TtmlLyricParser : ILyricParser
 
     [GeneratedRegex(@"^(?:(?<h>\d{1,2}):)?(?<m>\d{1,2}):(?<s>\d{1,2})(?:\.(?<f>\d{1,7}))?$")]
     private static partial Regex TtmlTimeRegex();
+
+    [GeneratedRegex(@"^(?:(?<m>\d{1,2}):)?(?<s>\d{1,2})(?:\.(?<f>\d{1,7}))?$")]
+    private static partial Regex TtmlPartialTimeRegex();
 
     [GeneratedRegex(@"^(?:(?<h>\d+):)?(?<m>\d{2}):(?<s>\d{2})(?:\.(?<f>\d{1,3}))?$")]
     private static partial Regex AppleTimeRegex();

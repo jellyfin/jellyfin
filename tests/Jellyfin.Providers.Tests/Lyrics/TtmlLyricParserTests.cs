@@ -340,6 +340,19 @@ public static class TtmlLyricParserTests
         Assert.Null(Assert.Single(parsed.Tracks[0].Lines).Start);
     }
 
+    [Theory]
+    [InlineData("19.704", "20.704", 19.704)]
+    [InlineData("2:54.285", "2:55.285", 174.285)]
+    public static void ParseTtml_CompatibilityModeParsesAppleDownloadClockValues(string value, string end, double seconds)
+    {
+        var ttml = $"<tt xmlns=\"http://www.w3.org/ns/ttml\"><body><div><p begin=\"{value}\" end=\"{end}\">Line</p></div></body></tt>";
+
+        var parsed = new TtmlLyricParser().ParseLyrics(new LyricFile("sample.ttml", ttml));
+
+        Assert.NotNull(parsed);
+        Assert.Equal(TimeSpan.FromSeconds(seconds).Ticks, Assert.Single(parsed.Tracks[0].Lines).Start);
+    }
+
     [Fact]
     public static void ParseTtml_StrictValidationRejectsInvalidTimingRange()
     {
