@@ -18,7 +18,9 @@ namespace MediaBrowser.Providers.Lyric;
 public partial class TtmlLyricParser : ILyricParser
 {
     private static readonly XNamespace _ttmlNamespace = "http://www.w3.org/ns/ttml";
+    private static readonly XNamespace _ttsNamespace = "http://www.w3.org/ns/ttml#styling";
     private static readonly XNamespace _ttmNamespace = "http://www.w3.org/ns/ttml#metadata";
+    private static readonly XNamespace _itunesNamespace = "http://itunes.apple.com/lyric-ttml-extensions";
     private static readonly string[] _supportedMediaTypes = [".ttml"];
 
     /// <inheritdoc />
@@ -58,6 +60,12 @@ public partial class TtmlLyricParser : ILyricParser
         }
 
         if (StrictValidation
+            && !_supportedMediaTypes.Contains(Path.GetExtension(lyrics.Name.AsSpan()), StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        if (StrictValidation
             && (lyrics.Content.StartsWith('\uFEFF')
                 || document.Declaration is null
                 || !string.Equals(document.Declaration.Encoding, "UTF-8", StringComparison.OrdinalIgnoreCase)))
@@ -80,8 +88,8 @@ public partial class TtmlLyricParser : ILyricParser
         var duration = body is null ? null : ParseTime(GetAttributeValue(body, "dur"));
 
         var artists = ParseArtists(document, StrictValidation);
-        var translations = ParseITunesTextMap(document, "translation");
-        var transliterations = ParseITunesTransliterations(document);
+        var translations = ParseITunesTextMap(document, "translation", StrictValidation);
+        var transliterations = ParseITunesTransliterations(document, StrictValidation);
 
         var mainLines = new List<LyricLine>();
         var translationLines = new Dictionary<string, List<LyricLine>>(StringComparer.OrdinalIgnoreCase);
@@ -205,6 +213,20 @@ public partial class TtmlLyricParser : ILyricParser
     private static bool ValidateTtml(XElement root)
     {
         if (root.Name.Namespace != _ttmlNamespace)
+        {
+            return false;
+        }
+
+        if (root.GetNamespaceOfPrefix("tts") != _ttsNamespace
+            || root.GetNamespaceOfPrefix("itunes") != _itunesNamespace
+            || root.GetNamespaceOfPrefix("ttm") != _ttmNamespace)
+        {
+            return false;
+        }
+
+        if (root.DescendantsAndSelf()
+            .Select(i => i.Attribute(XNamespace.Xml + "space")?.Value)
+            .Any(i => i is not null && !string.Equals(i, "default", StringComparison.Ordinal)))
         {
             return false;
         }
@@ -452,12 +474,16 @@ public partial class TtmlLyricParser : ILyricParser
             .ToArray();
     }
 
-    private static Dictionary<string, string> ParseITunesTextMap(XDocument document, string containerName)
+    private static Dictionary<string, string> ParseITunesTextMap(XDocument document, string containerName, bool strictValidation)
     {
         var result = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var container in document.Descendants().Where(i => i.Name.LocalName.Equals(containerName, StringComparison.OrdinalIgnoreCase)))
+        foreach (var container in document.Descendants().Where(i => strictValidation
+            ? i.Name == _itunesNamespace + containerName
+            : i.Name.LocalName.Equals(containerName, StringComparison.OrdinalIgnoreCase)))
         {
-            foreach (var text in container.Descendants().Where(i => i.Name.LocalName == "text"))
+            foreach (var text in container.Descendants().Where(i => strictValidation
+                ? i.Name == _itunesNamespace + "text"
+                : i.Name.LocalName == "text"))
             {
                 var key = GetAttributeValue(text, "for");
                 if (key is not null && !string.IsNullOrWhiteSpace(text.Value))
@@ -470,16 +496,20 @@ public partial class TtmlLyricParser : ILyricParser
         return result;
     }
 
-    private static Dictionary<string, IReadOnlyList<string>> ParseITunesTransliterations(XDocument document)
+    private static Dictionary<string, IReadOnlyList<string>> ParseITunesTransliterations(XDocument document, bool strictValidation)
     {
         var result = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
-        foreach (var transliteration in document.Descendants().Where(i => i.Name.LocalName.Equals("transliteration", StringComparison.OrdinalIgnoreCase)))
+        foreach (var transliteration in document.Descendants().Where(i => strictValidation
+            ? i.Name == _itunesNamespace + "transliteration"
+            : i.Name.LocalName.Equals("transliteration", StringComparison.OrdinalIgnoreCase)))
         {
-            foreach (var text in transliteration.Elements().Where(i => i.Name.LocalName == "text"))
+            foreach (var text in transliteration.Elements().Where(i => strictValidation
+                ? i.Name == _itunesNamespace + "text"
+                : i.Name.LocalName == "text"))
             {
                 var key = GetAttributeValue(text, "for");
                 var phonetics = text.Elements()
-                    .Where(i => i.Name.LocalName == "span")
+                    .Where(i => strictValidation ? i.Name == _itunesNamespace + "span" : i.Name.LocalName == "span")
                     .Select(i => i.Value.Trim())
                     .Where(i => i.Length > 0)
                     .ToArray();

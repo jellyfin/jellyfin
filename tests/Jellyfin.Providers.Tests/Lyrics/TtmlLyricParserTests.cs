@@ -72,7 +72,7 @@ public static class TtmlLyricParserTests
     public static void ParseTtml_CollapsesLayoutWhitespaceInSyncedLines()
     {
         const string Ttml = """
-            <tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xml:lang="en-US">
+            <tt xmlns="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling" xmlns:itunes="http://itunes.apple.com/lyric-ttml-extensions" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xml:lang="en-US">
                 <body><div>
                     <p begin="00:42.723" end="00:48.909">Oh, and when your little
                         legs rest on my shoulders</p>
@@ -105,7 +105,7 @@ public static class TtmlLyricParserTests
     public static void ParseTtml_KaraokeSyllableSpacingUsesTextNodes()
     {
         const string Ttml = """
-            <tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xml:lang="en-US">
+            <tt xmlns="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling" xmlns:itunes="http://itunes.apple.com/lyric-ttml-extensions" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xml:lang="en-US">
                 <body><div>
                     <p begin="00:00.000" end="00:02.000">
                         <span begin="00:00.000" end="00:01.000">Hello</span> <span begin="00:01.000" end="00:02.000">world</span>
@@ -213,7 +213,7 @@ public static class TtmlLyricParserTests
     {
         const string Ttml = """
             <?xml version="1.0" encoding="UTF-8"?>
-            <tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xml:lang="en-US">
+            <tt xmlns="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling" xmlns:itunes="http://itunes.apple.com/lyric-ttml-extensions" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xml:lang="en-US">
               <head><metadata><ttm:title>Song</ttm:title></metadata></head>
               <body dur="00:02.000"><div begin="00:00.000" end="00:02.000"><p begin="00:00.000" end="00:01.000">Line</p></div></body>
             </tt>
@@ -225,6 +225,22 @@ public static class TtmlLyricParserTests
 
         Assert.NotNull(parsed);
         Assert.Equal(TimeSpan.FromSeconds(2).Ticks, parsed.Metadata.Duration);
+    }
+
+    [Fact]
+    public static void ParseTtml_StrictValidationRejectsNonDefaultXmlSpace()
+    {
+        const string Ttml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <tt xmlns="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling" xmlns:itunes="http://itunes.apple.com/lyric-ttml-extensions" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xml:lang="en-US" xml:space="preserve">
+              <head><metadata><ttm:title>Song</ttm:title></metadata></head>
+              <body><div><p>Line</p></div></body>
+            </tt>
+            """;
+
+        var parser = new TtmlLyricParser { StrictValidation = true };
+
+        Assert.Null(parser.ParseLyrics(new LyricFile("sample.ttml", Ttml)));
     }
 
     [Fact]
@@ -264,7 +280,7 @@ public static class TtmlLyricParserTests
     {
         const string Ttml = """
             <?xml version="1.0" encoding="UTF-8"?>
-            <tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xml:lang="en-US">
+            <tt xmlns="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling" xmlns:itunes="http://itunes.apple.com/lyric-ttml-extensions" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xml:lang="en-US">
               <head><metadata><ttm:title>Song</ttm:title><ttm:agent type="person" xml:id="v1">Singer</ttm:agent></metadata></head>
               <body><div begin="00:00.000" end="00:02.000"><p begin="00:00.000" end="00:02.000" ttm:agent="v1"><span begin="00:00.000" end="00:01.000">One</span><span begin="00:01.000" end="00:02.000">two</span></p></div></body>
             </tt>
@@ -296,7 +312,7 @@ public static class TtmlLyricParserTests
     {
         const string Ttml = """
             <?xml version="1.0" encoding="UTF-8"?>
-            <tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xmlns:evil="urn:evil" xml:lang="en-US">
+            <tt xmlns="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling" xmlns:itunes="http://itunes.apple.com/lyric-ttml-extensions" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xmlns:evil="urn:evil" xml:lang="en-US">
               <head><metadata><ttm:title>Song</ttm:title></metadata></head>
               <body><div><p begin="00:00.000" end="00:01.000">Valid</p><evil:p begin="00:00.000" end="00:01.000">Fake</evil:p></div></body>
             </tt>
