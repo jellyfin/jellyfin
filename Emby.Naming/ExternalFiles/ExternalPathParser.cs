@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Emby.Naming.Common;
@@ -35,8 +36,12 @@ namespace Emby.Naming.ExternalFiles
         /// </summary>
         /// <param name="path">Path to file.</param>
         /// <param name="extraString">Part of the filename only containing the extra information.</param>
+        /// <param name="additionalFileExtensions">Additional file extensions supplied by extensions.</param>
         /// <returns>Returns null or an <see cref="ExternalPathParserResult"/> object if parsing is successful.</returns>
-        public ExternalPathParserResult? ParseFile(string path, string? extraString)
+        public ExternalPathParserResult? ParseFile(
+            string path,
+            string? extraString,
+            IReadOnlyCollection<string>? additionalFileExtensions = null)
         {
             if (path.Length == 0)
             {
@@ -44,9 +49,12 @@ namespace Emby.Naming.ExternalFiles
             }
 
             var extension = Path.GetExtension(path.AsSpan());
+            var extensionString = extension.ToString();
             if (!(_type == DlnaProfileType.Subtitle && _namingOptions.SubtitleFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
                 && !(_type == DlnaProfileType.Audio && _namingOptions.AudioFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
-                && !(_type == DlnaProfileType.Lyric && _namingOptions.LyricFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase)))
+                && !(_type == DlnaProfileType.Lyric
+                    && (_namingOptions.LyricFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase)
+                        || additionalFileExtensions?.Contains(extensionString, StringComparer.OrdinalIgnoreCase) == true)))
             {
                 return null;
             }

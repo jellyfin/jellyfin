@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Lyrics;
@@ -23,6 +24,9 @@ public class TxtLyricParser : ILyricParser
     /// </summary>
     /// <value>The priority.</value>
     public ResolverPriority Priority => ResolverPriority.Fifth;
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> SupportedExtensions => _supportedMediaTypes;
 
     /// <inheritdoc />
     public LyricDto? ParseLyrics(LyricFile lyrics)

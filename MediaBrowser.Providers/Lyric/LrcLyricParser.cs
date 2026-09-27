@@ -40,6 +40,9 @@ public partial class LrcLyricParser : ILyricParser
     public ResolverPriority Priority => ResolverPriority.Fourth;
 
     /// <inheritdoc />
+    public IReadOnlyList<string> SupportedExtensions => _supportedMediaTypes;
+
+    /// <inheritdoc />
     public LyricDto? ParseLyrics(LyricFile lyrics)
     {
         if (!_supportedMediaTypes.Contains(Path.GetExtension(lyrics.Name.AsSpan()), StringComparison.OrdinalIgnoreCase))
