@@ -133,13 +133,16 @@ public partial class TtmlLyricParser : ILyricParser
                 });
 
                 AddInlineTrackLine(p, "x-translation", translationLines, start, end, artistIds);
-                if (key is not null && translations.TryGetValue(key, out var externalTranslation))
+                if (key is not null && translations.TryGetValue(key, out var externalTranslations))
                 {
-                    AddTrackLine(translationLines, string.Empty, new LyricLine(externalTranslation, start)
+                    foreach (var externalTranslation in externalTranslations)
                     {
-                        End = end,
-                        ArtistIds = artistIds
-                    });
+                        AddTrackLine(translationLines, externalTranslation.Key, new LyricLine(externalTranslation.Value, start)
+                        {
+                            End = end,
+                            ArtistIds = artistIds
+                        });
+                    }
                 }
 
                 AddInlineTrackLine(p, "x-roman", phoneticLines, start, end, artistIds);
@@ -467,9 +470,9 @@ public partial class TtmlLyricParser : ILyricParser
             .ToArray();
     }
 
-    private static Dictionary<string, string> ParseITunesTextMap(XDocument document, string containerName, bool strictValidation)
+    private static Dictionary<string, Dictionary<string, string>> ParseITunesTextMap(XDocument document, string containerName, bool strictValidation)
     {
-        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        var result = new Dictionary<string, Dictionary<string, string>>(StringComparer.Ordinal);
         foreach (var container in document.Descendants().Where(i => strictValidation
             ? i.Name == _itunesNamespace + containerName
             : i.Name.LocalName.Equals(containerName, StringComparison.OrdinalIgnoreCase)))
@@ -481,7 +484,16 @@ public partial class TtmlLyricParser : ILyricParser
                 var key = GetAttributeValue(text, "for");
                 if (key is not null && !string.IsNullOrWhiteSpace(text.Value))
                 {
-                    result[key] = text.Value.Trim();
+                    if (!result.TryGetValue(key, out var translationsByLanguage))
+                    {
+                        translationsByLanguage = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                        result[key] = translationsByLanguage;
+                    }
+
+                    var language = GetAttributeValue(text, "lang")
+                        ?? GetAttributeValue(container, "lang")
+                        ?? string.Empty;
+                    translationsByLanguage[language] = text.Value.Trim();
                 }
             }
         }

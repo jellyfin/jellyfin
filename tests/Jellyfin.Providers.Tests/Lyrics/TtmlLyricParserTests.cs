@@ -197,6 +197,21 @@ public static class TtmlLyricParserTests
     }
 
     [Fact]
+    public static void ParseTtml_PreservesExternalTranslationLanguage()
+    {
+        const string Ttml = "<tt xmlns=\"http://www.w3.org/ns/ttml\" xmlns:itunes=\"http://music.apple.com/lyric-ttml-internal\"><head><metadata><iTunesMetadata xmlns=\"http://music.apple.com/lyric-ttml-internal\"><translations><translation xml:lang=\"zh-Hans\"><text for=\"L1\">你好</text></translation><translation xml:lang=\"ja-JP\"><text for=\"L1\">こんにちは</text></translation></translations></iTunesMetadata></metadata></head><body><div><p begin=\"00:00.000\" end=\"00:01.000\" itunes:key=\"L1\">Hello</p></div></body></tt>";
+
+        var parsed = new TtmlLyricParser().ParseLyrics(new LyricFile("sample.ttml", Ttml));
+
+        Assert.NotNull(parsed);
+        Assert.Equal(3, parsed.Tracks.Count);
+        Assert.Equal("zh-Hans", parsed.Tracks[1].Language);
+        Assert.Equal("你好", Assert.Single(parsed.Tracks[1].Lines).Text);
+        Assert.Equal("ja-JP", parsed.Tracks[2].Language);
+        Assert.Equal("こんにちは", Assert.Single(parsed.Tracks[2].Lines).Text);
+    }
+
+    [Fact]
     public static void ParseTtml_StrictValidationIsOptIn()
     {
         const string Ttml = "<tt xmlns=\"http://www.w3.org/ns/ttml\"><body><div><p begin=\"00:00.0000\" end=\"00:01.000\">Line</p></div></body></tt>";
