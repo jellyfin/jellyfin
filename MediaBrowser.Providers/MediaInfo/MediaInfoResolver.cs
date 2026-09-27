@@ -187,6 +187,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     Type = MediaStreamType.Lyric,
                     Path = pathInfos[i].Path,
                     Language = pathInfos[i].Language,
+                    IsExternal = true,
                     Index = startIndex++
                 };
             }

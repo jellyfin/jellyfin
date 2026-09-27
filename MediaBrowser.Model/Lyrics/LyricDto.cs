@@ -24,6 +24,20 @@ public class LyricDto
     public IReadOnlyList<LyricLine> Lyrics
     {
         get => Tracks.FirstOrDefault(i => i.Type == LyricTrackType.Main)?.Lines ?? [];
-        set => Tracks = [new LyricTrack { Type = LyricTrackType.Main, Lines = value }];
+        set
+        {
+            var tracks = Tracks.ToList();
+            var mainTrackIndex = tracks.FindIndex(i => i.Type == LyricTrackType.Main);
+            if (mainTrackIndex >= 0)
+            {
+                tracks[mainTrackIndex].Lines = value;
+            }
+            else
+            {
+                tracks.Insert(0, new LyricTrack { Type = LyricTrackType.Main, Lines = value });
+            }
+
+            Tracks = tracks;
+        }
     }
 }
