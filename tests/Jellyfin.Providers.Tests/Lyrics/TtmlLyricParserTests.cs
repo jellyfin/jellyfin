@@ -9,7 +9,7 @@ namespace Jellyfin.Providers.Tests.Lyrics;
 public static class TtmlLyricParserTests
 {
     [Fact]
-    public static void ParseTtml_SplitsAuxiliaryTracksAndKeepsBackgroundInMainTrack()
+    public static void ParseTtml_SplitsAuxiliaryTracksAndBackgroundTrack()
     {
         const string Ttml = """
             <tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xmlns:itunes="http://music.apple.com/lyric-ttml-internal">
@@ -44,21 +44,20 @@ public static class TtmlLyricParserTests
         var parsed = new TtmlLyricParser().ParseLyrics(new LyricFile("sample.ttml", Ttml));
 
         Assert.NotNull(parsed);
-        Assert.Equal(3, parsed.Tracks.Count);
+        Assert.Equal(4, parsed.Tracks.Count);
         Assert.Equal(LyricTrackType.Main, parsed.Tracks[0].Type);
         Assert.Equal(LyricTrackType.Translation, parsed.Tracks[1].Type);
         Assert.Equal("zh-CN", parsed.Tracks[1].Language);
         Assert.Equal(LyricTrackType.Phonetic, parsed.Tracks[2].Type);
+        Assert.Equal(LyricTrackType.Background, parsed.Tracks[3].Type);
 
         Assert.Single(parsed.Metadata.Artists);
         Assert.Equal("v1", parsed.Metadata.Artists[0].Id);
 
         var mainLines = parsed.Tracks[0].Lines;
-        Assert.Equal(2, mainLines.Count);
+        Assert.Single(mainLines);
         Assert.Equal("Hello World", mainLines[0].Text);
-        Assert.Equal("Echo", mainLines[1].Text);
         Assert.Equal("v1", Assert.Single(mainLines[0].ArtistIds));
-        Assert.Equal("v1", Assert.Single(mainLines[1].ArtistIds));
 
         Assert.Equal(2, mainLines[0].Syllables.Count);
         Assert.Equal("Halo", mainLines[0].Syllables[0].Phonetic);
@@ -66,6 +65,7 @@ public static class TtmlLyricParserTests
 
         Assert.Equal("你好世界", Assert.Single(parsed.Tracks[1].Lines).Text);
         Assert.Equal("Halo Waludo", Assert.Single(parsed.Tracks[2].Lines).Text);
+        Assert.Equal("Echo", Assert.Single(parsed.Tracks[3].Lines).Text);
     }
 
     [Fact]
@@ -239,7 +239,7 @@ public static class TtmlLyricParserTests
     }
 
     [Fact]
-    public static void ParseTtml_StrictValidationAcceptsAgentOnDiv()
+    public static void ParseTtml_StrictValidationRejectsAgentOnDiv()
     {
         const string Ttml = """
             <?xml version="1.0" encoding="UTF-8"?>
@@ -251,10 +251,7 @@ public static class TtmlLyricParserTests
 
         var parser = new TtmlLyricParser { StrictValidation = true };
 
-        var parsed = parser.ParseLyrics(new LyricFile("sample.ttml", Ttml));
-
-        Assert.NotNull(parsed);
-        Assert.Equal("v1", Assert.Single(parsed.Tracks[0].Lines).ArtistIds.Single());
+        Assert.Null(parser.ParseLyrics(new LyricFile("sample.ttml", Ttml)));
     }
 
     [Fact]

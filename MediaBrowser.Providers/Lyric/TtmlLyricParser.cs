@@ -86,6 +86,7 @@ public partial class TtmlLyricParser : ILyricParser
         var mainLines = new List<LyricLine>();
         var translationLines = new Dictionary<string, List<LyricLine>>(StringComparer.OrdinalIgnoreCase);
         var phoneticLines = new Dictionary<string, List<LyricLine>>(StringComparer.OrdinalIgnoreCase);
+        var backgroundLines = new List<LyricLine>();
 
         foreach (var p in document.Descendants().Where(i => i.Name.LocalName == "p"))
         {
@@ -146,7 +147,7 @@ public partial class TtmlLyricParser : ILyricParser
                     continue;
                 }
 
-                mainLines.Add(new LyricLine(backgroundText, backgroundStart)
+                backgroundLines.Add(new LyricLine(backgroundText, backgroundStart)
                 {
                     End = backgroundEnd,
                     ArtistIds = artistIds,
@@ -173,6 +174,15 @@ public partial class TtmlLyricParser : ILyricParser
 
         AddTracks(tracks, LyricTrackType.Translation, translationLines);
         AddTracks(tracks, LyricTrackType.Phonetic, phoneticLines);
+        if (backgroundLines.Count > 0)
+        {
+            tracks.Add(new LyricTrack
+            {
+                Type = LyricTrackType.Background,
+                Lines = backgroundLines.OrderBy(i => i.Start).ToArray()
+            });
+        }
+
         return new LyricDto
         {
             Metadata = new LyricMetadata
@@ -248,8 +258,7 @@ public partial class TtmlLyricParser : ILyricParser
             var agent = GetNamespacedAttributeValue(element, _ttmNamespace, "agent");
             if (agent is not null)
             {
-                if (element.Name != _ttmlNamespace + "div"
-                    && element.Name != _ttmlNamespace + "p"
+                if (element.Name != _ttmlNamespace + "p"
                     && element.Name != _ttmlNamespace + "span")
                 {
                     return false;

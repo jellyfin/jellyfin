@@ -48,6 +48,7 @@ public class ProbeProviderTests
             NullLoggerFactory.Instance,
             new NamingOptions(),
             Mock.Of<ILyricManager>(),
+            [],
             Mock.Of<IMediaAttachmentRepository>(),
             Mock.Of<IMediaStreamRepository>());
     }

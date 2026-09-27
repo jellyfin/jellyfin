@@ -21,6 +21,11 @@ public enum LyricTrackType
     Phonetic,
 
     /// <summary>
+    /// Background or accompaniment lyric content.
+    /// </summary>
+    Background,
+
+    /// <summary>
     /// Other lyric content.
     /// </summary>
     Other
