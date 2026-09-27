@@ -51,6 +51,17 @@ public static class AlternativeLyricParserTests
     }
 
     [Fact]
+    public static void ParseYrcUsesFirstSyllableAsLineStart()
+    {
+        const string Content = "[1000,1000](1100,500,0)Hello";
+
+        var parsed = new NeteaseYrcLyricParser().ParseLyrics(new LyricFile("sample.yrc", Content));
+
+        Assert.NotNull(parsed);
+        Assert.Equal(11000000, Assert.Single(parsed.Tracks[0].Lines).Start);
+    }
+
+    [Fact]
     public static void ParseLyricifySyllableSeparatesBackground()
     {
         const string Content = "[0]Hello(100,200) world(300,200)\n[6](500,200) echo(700,200)";

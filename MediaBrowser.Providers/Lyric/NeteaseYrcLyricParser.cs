@@ -62,7 +62,7 @@ public partial class NeteaseYrcLyricParser : ILyricParser
                 if (syllables.Count > 0)
                 {
                     lineEnd = Math.Max(lineEnd, syllables[^1].End ?? lineEnd);
-                    result.Add(new LyricLine(string.Concat(syllables.Select(i => i.Text)), lineStart)
+                    result.Add(new LyricLine(string.Concat(syllables.Select(i => i.Text)), syllables[0].Start)
                     {
                         End = lineEnd,
                         Syllables = syllables
