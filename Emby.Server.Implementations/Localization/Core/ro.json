@@ -120,5 +120,6 @@
     "NameExtraShort": "Scurt",
     "NameExtraThemeSong": "Audio de Fundal",
     "NameExtraThemeVideo": "Video de Fundal",
-    "NameExtraTrailer": "Trailer"
+    "NameExtraTrailer": "Trailer",
+    "NameExtraUnknown": "Extra"
 }
