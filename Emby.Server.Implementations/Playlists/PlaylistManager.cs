@@ -371,7 +371,7 @@ namespace Emby.Server.Implementations.Playlists
             if (extension.Equals(".wpl", StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new WplPlaylist();
-                foreach (var child in item.GetLinkedChildren())
+                foreach (var child in item.GetLinkedChildren(DtoOptions.StoredColumnsOnly))
                 {
                     var entry = new WplPlaylistEntry()
                     {
@@ -404,7 +404,7 @@ namespace Emby.Server.Implementations.Playlists
             else if (extension.Equals(".zpl", StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new ZplPlaylist();
-                foreach (var child in item.GetLinkedChildren())
+                foreach (var child in item.GetLinkedChildren(DtoOptions.StoredColumnsOnly))
                 {
                     var entry = new ZplPlaylistEntry()
                     {
@@ -440,7 +440,7 @@ namespace Emby.Server.Implementations.Playlists
                 {
                     IsExtended = true
                 };
-                foreach (var child in item.GetLinkedChildren())
+                foreach (var child in item.GetLinkedChildren(DtoOptions.StoredColumnsOnly))
                 {
                     var entry = new M3uPlaylistEntry()
                     {
@@ -472,7 +472,7 @@ namespace Emby.Server.Implementations.Playlists
                     IsExtended = true
                 };
 
-                foreach (var child in item.GetLinkedChildren())
+                foreach (var child in item.GetLinkedChildren(DtoOptions.StoredColumnsOnly))
                 {
                     var entry = new M3uPlaylistEntry()
                     {
@@ -500,7 +500,7 @@ namespace Emby.Server.Implementations.Playlists
             else if (extension.Equals(".pls", StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new PlsPlaylist();
-                foreach (var child in item.GetLinkedChildren())
+                foreach (var child in item.GetLinkedChildren(DtoOptions.StoredColumnsOnly))
                 {
                     var entry = new PlsPlaylistEntry()
                     {
