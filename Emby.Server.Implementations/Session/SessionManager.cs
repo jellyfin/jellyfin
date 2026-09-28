@@ -1317,15 +1317,10 @@ namespace Emby.Server.Implementations.Session
             }
         }
 
-        private static async Task SendMessageToAllSessionClients<T>(SessionInfo session, SessionMessageType name, T data, CancellationToken cancellationToken)
+        private static Task SendMessageToAllSessionClients<T>(SessionInfo session, SessionMessageType name, T data, CancellationToken cancellationToken)
         {
-            var controllers = session.SessionControllers;
             var messageId = Guid.NewGuid();
-
-            foreach (var controller in controllers)
-            {
-                await controller.SendMessageToAllClients(name, messageId, data, cancellationToken).ConfigureAwait(false);
-            }
+            return Task.WhenAll(session.SessionControllers.Select(controller => controller.SendMessageToAllClients(name, messageId, data, cancellationToken)));
         }
 
         private static Task SendMessageToSessions<T>(IEnumerable<SessionInfo> sessions, SessionMessageType name, T data, CancellationToken cancellationToken)
