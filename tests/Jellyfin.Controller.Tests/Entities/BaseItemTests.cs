@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -26,6 +27,7 @@ using Xunit;
 
 namespace Jellyfin.Controller.Tests.Entities;
 
+[Collection("LibraryManagerTests")]
 public class BaseItemTests
 {
     [Theory]
@@ -38,15 +40,21 @@ public class BaseItemTests
         var previousLibrary = BaseItem.LibraryManager;
         var previousRepository = BaseItem.ItemRepository;
         var previousLogger = BaseItem.Logger;
+        var previousMediaSourceManager = BaseItem.MediaSourceManager;
         var library = new Mock<ILibraryManager>(MockBehavior.Strict);
         var repository = new Mock<MediaBrowser.Controller.Persistence.IItemRepository>(MockBehavior.Strict);
         var directory = new Mock<IDirectoryService>();
         directory.Setup(d => d.IsAccessible(It.IsAny<string>())).Returns(true);
+
+        // IsLibraryFolderAccessible reads FileNameWithoutExtension, which resolves the path protocol
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        mediaSourceManager.Setup(x => x.GetPathProtocol(It.IsAny<string>())).Returns(MediaProtocol.File);
         try
         {
             BaseItem.LibraryManager = library.Object;
             BaseItem.ItemRepository = repository.Object;
             BaseItem.Logger = Microsoft.Extensions.Logging.Abstractions.NullLogger<BaseItem>.Instance;
+            BaseItem.MediaSourceManager = mediaSourceManager.Object;
             var folder = new FailingEnumerationFolder(failAfterFirstChild, accessDenied)
             {
                 Id = Guid.NewGuid(),
@@ -62,7 +70,25 @@ public class BaseItemTests
             BaseItem.LibraryManager = previousLibrary;
             BaseItem.ItemRepository = previousRepository;
             BaseItem.Logger = previousLogger;
+            BaseItem.MediaSourceManager = previousMediaSourceManager;
         }
+    }
+
+    [Fact]
+    public void SetPrimaryVersionId_Null_RestoresTheItemsOwnPresentationKey()
+    {
+        var primaryId = Guid.NewGuid();
+        var video = new Video { Id = Guid.NewGuid(), Path = "/Movies/Movie/Movie - 4K.mkv" };
+
+        // While it is a version, it presents as the primary so lists collapse the two together.
+        video.SetPrimaryVersionId(primaryId);
+        Assert.Equal(primaryId.ToString("N", CultureInfo.InvariantCulture), video.PresentationUniqueKey);
+
+        // Promoting it back has to restore its own key, or it keeps collapsing onto - and staying
+        // hidden behind - a primary it no longer belongs to.
+        video.SetPrimaryVersionId(null);
+        Assert.Null(video.PrimaryVersionId);
+        Assert.Equal(video.Id.ToString("N", CultureInfo.InvariantCulture), video.PresentationUniqueKey);
     }
 
     [Fact]

@@ -1449,6 +1449,8 @@ namespace Emby.Server.Implementations.Session
 
             if (item is IItemByName byName)
             {
+                // A by-name item tags containers as well as leaves: a music genre tags its artists,
+                // and a by-name artist row is not a folder, so IsFolder does not exclude it here.
                 return byName.GetTaggedItems(new InternalItemsQuery(user)
                 {
                     IsFolder = false,
@@ -1463,7 +1465,7 @@ namespace Emby.Server.Implementations.Session
                     },
                     IsVirtualItem = false,
                     OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) }
-                });
+                }).Where(i => i is not IItemByName);
             }
 
             if (item.IsFolder)

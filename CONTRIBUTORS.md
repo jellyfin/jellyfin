@@ -243,6 +243,9 @@
  - [martin-77](https://github.com/martin-77)
  - [Oggeb1](https://github.com/Oggeb1)
  - [fma-rc](https://github.com/fma-rc)
+ - [scr4bble](https://github.com/scr4bble)
+ - [Mateus Bandeira](https://github.com/mateusbandeiraa)
+ - [TheDreadPirate](https://github.com/thedreaddpirate)
 
 # Emby Contributors
 

@@ -57,6 +57,7 @@ namespace MediaBrowser.Controller.Entities
         // Children caches the resolved items, _childrenIds the ids they were loaded from. Clearing
         // only the former sends the next read back through LoadChildren, which replays the stale
         // id list, so a caller invalidating this folder has to drop both.
+        [JsonIgnore]
         public override IEnumerable<BaseItem> Children
         {
             get => base.Children;

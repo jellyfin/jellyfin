@@ -9,6 +9,7 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Collections;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
@@ -235,7 +236,7 @@ namespace Emby.Server.Implementations.Collections
 
             List<BaseItem>? itemList = null;
 
-            var linkedChildrenList = collection.GetLinkedChildren();
+            var linkedChildrenList = collection.GetLinkedChildren(DtoOptions.StoredColumnsOnly);
             var currentLinkedChildrenIds = linkedChildrenList.Select(i => i.Id).ToList();
 
             foreach (var id in ids)
