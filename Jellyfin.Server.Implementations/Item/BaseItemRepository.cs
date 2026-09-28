@@ -276,13 +276,22 @@ public sealed partial class BaseItemRepository
             byId[item.Id] = item;
         }
 
-        var ids = byId.Keys.ToArray();
-
         LoadLinkedChildren(context, byId);
+
+        var dtoOptions = filter.DtoOptions;
+        if (!dtoOptions.ContainsField(ItemFields.ProviderIds)
+            && !dtoOptions.ContainsField(ItemFields.Settings)
+            && !dtoOptions.EnableUserData
+            && !dtoOptions.EnableImages)
+        {
+            return items;
+        }
+
+        var ids = byId.Keys.ToArray();
 
         // Each of these is gated on the same option its join used to be, so a caller that asked for
         // less still gets less - it just no longer pays the product of everything it did ask for.
-        if (filter.DtoOptions.ContainsField(ItemFields.ProviderIds))
+        if (dtoOptions.ContainsField(ItemFields.ProviderIds))
         {
             var providers = context.BaseItemProviders
                 .AsNoTracking()
@@ -303,7 +312,7 @@ public sealed partial class BaseItemRepository
             }
         }
 
-        if (filter.DtoOptions.ContainsField(ItemFields.Settings))
+        if (dtoOptions.ContainsField(ItemFields.Settings))
         {
             var lockedFields = context.BaseItemMetadataFields
                 .AsNoTracking()
@@ -318,7 +327,7 @@ public sealed partial class BaseItemRepository
             }
         }
 
-        if (filter.DtoOptions.EnableUserData)
+        if (dtoOptions.EnableUserData)
         {
             // Detached copies: the rows outlive the context the query ran on.
             var userData = context.UserData
@@ -333,7 +342,7 @@ public sealed partial class BaseItemRepository
             }
         }
 
-        if (filter.DtoOptions.EnableImages)
+        if (dtoOptions.EnableImages)
         {
             var images = context.BaseItemImageInfos
                 .AsNoTracking()
