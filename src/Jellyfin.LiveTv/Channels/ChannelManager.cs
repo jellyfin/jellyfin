@@ -741,49 +741,61 @@ namespace Jellyfin.LiveTv.Channels
                     // Another request may have refreshed the folder while this one waited.
                     if (!await IsCacheFreshAsync(cachePath, cancellationToken).ConfigureAwait(false))
                     {
-                        var itemsResult = await GetChannelItems(channelProvider, query.User, externalFolderId, cancellationToken).ConfigureAwait(false);
-                        var items = itemsResult.Items;
-                        var itemsLen = items.Count;
-                        var internalItems = new Guid[itemsLen];
-                        for (int i = 0; i < itemsLen; i++)
-                        {
-                            internalItems[i] = (await GetChannelItemEntityAsync(
-                                items[i],
-                                channelProvider,
-                                channel.Id,
-                                parentItem,
-                                cancellationToken).ConfigureAwait(false)).Id;
-                        }
-
-                        var existingIds = _libraryManager.GetItemIds(query);
-                        var deadIds = existingIds.Except(internalItems)
-                            .ToArray();
-
-                        foreach (var deadId in deadIds)
-                        {
-                            var deadItem = _libraryManager.GetItemById(deadId);
-                            if (deadItem is not null)
-                            {
-                                _libraryManager.DeleteItem(
-                                    deadItem,
-                                    new DeleteOptions
-                                    {
-                                        DeleteFileLocation = false,
-                                        DeleteFromExternalProvider = false
-                                    },
-                                    parentItem,
-                                    false);
-                            }
-                        }
-
-                        // Cached only once the library holds the items, since a request finding
-                        // the cache fresh reads the items from the library instead.
-                        await CacheResponse(itemsResult, cachePath).ConfigureAwait(false);
+                        await UpdateChannelFolderAsync(channelProvider, channel, parentItem, externalFolderId, query, cachePath, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
 
             return _libraryManager.GetItemsResult(query);
+        }
+
+        private async Task UpdateChannelFolderAsync(
+            IChannel channelProvider,
+            Channel channel,
+            BaseItem parentItem,
+            string externalFolderId,
+            InternalItemsQuery query,
+            string cachePath,
+            CancellationToken cancellationToken)
+        {
+            var itemsResult = await GetChannelItems(channelProvider, query.User, externalFolderId, cancellationToken).ConfigureAwait(false);
+            var items = itemsResult.Items;
+            var itemsLen = items.Count;
+            var internalItems = new Guid[itemsLen];
+            for (int i = 0; i < itemsLen; i++)
+            {
+                internalItems[i] = (await GetChannelItemEntityAsync(
+                    items[i],
+                    channelProvider,
+                    channel.Id,
+                    parentItem,
+                    cancellationToken).ConfigureAwait(false)).Id;
+            }
+
+            var existingIds = _libraryManager.GetItemIds(query);
+            var deadIds = existingIds.Except(internalItems)
+                .ToArray();
+
+            foreach (var deadId in deadIds)
+            {
+                var deadItem = _libraryManager.GetItemById(deadId);
+                if (deadItem is not null)
+                {
+                    _libraryManager.DeleteItem(
+                        deadItem,
+                        new DeleteOptions
+                        {
+                            DeleteFileLocation = false,
+                            DeleteFromExternalProvider = false
+                        },
+                        parentItem,
+                        false);
+                }
+            }
+
+            // Cached only once the library holds the items, since a request finding
+            // the cache fresh reads the items from the library instead.
+            await CacheResponse(itemsResult, cachePath).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
