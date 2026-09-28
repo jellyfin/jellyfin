@@ -107,6 +107,11 @@ public class PluginUpdateTask : IScheduledTask, IConfigurableScheduledTask
             {
                 _logger.LogError(ex, "Error updating {Name}", package.Name);
             }
+            catch (TimeoutException ex)
+            {
+                // One slow download must not abort the updates for the remaining plugins.
+                _logger.LogError(ex, "Error downloading {Name}", package.Name);
+            }
             catch (InvalidDataException ex)
             {
                 _logger.LogError(ex, "Error updating {Name}", package.Name);

@@ -120,5 +120,6 @@
     "NameExtraThemeSong": "Főcímdal",
     "NameExtraThemeVideo": "Főcímvideó",
     "NameExtraTrailer": "Előzetes",
-    "NameExtraUnknown": "Extra"
+    "NameExtraUnknown": "Extra",
+    "NameExtraNumbered": "{0} {1}"
 }

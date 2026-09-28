@@ -22,6 +22,11 @@ namespace Jellyfin.Server.Migrations.Routines;
 [JellyfinMigrationBackup(JellyfinDb = true)]
 internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 {
+    private const int ParseProgressLogStep = 25_000;
+    private const int FileCheckProgressLogStep = 10_000;
+    private const int ResolveProgressLogStep = 10_000;
+    private const int DeleteProgressLogStep = 25;
+
     private readonly ILogger<MigrateLinkedChildren> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly ILibraryManager _libraryManager;
@@ -85,7 +90,6 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
         var droppedChildren = 0;
         var linkedChildrenToAdd = new List<LinkedChildEntity>();
         var processedCount = 0;
-        const int progressLogStep = 1000;
         var totalItems = itemsWithData.Count;
 
         foreach (var item in itemsWithData)
@@ -95,7 +99,7 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
                 continue;
             }
 
-            if (processedCount > 0 && processedCount % progressLogStep == 0)
+            if (processedCount > 0 && processedCount % ParseProgressLogStep == 0)
             {
                 _logger.LogInformation("Processing LinkedChildren: {Processed}/{Total} items", processedCount, totalItems);
             }
@@ -311,11 +315,7 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
         _logger.LogInformation("Found {Count} wrong-type alternate version items to remove.", wrongTypeChildIds.Count);
 
-        var itemsToDelete = wrongTypeChildIds
-            .Select(id => _libraryManager.GetItemById(id))
-            .Where(item => item is not null)
-            .ToList();
-        var deleted = DeleteItems(itemsToDelete!);
+        var deleted = ResolveAndDeleteItems(wrongTypeChildIds, "wrong-type alternate version items");
 
         _logger.LogInformation("Removed {Count} wrong-type alternate version items. They will be recreated with the correct type on next library scan.", deleted);
     }
@@ -342,11 +342,7 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
         _logger.LogInformation("Found {Count} orphaned alternate version BaseItems to remove.", orphanedVersionIds.Count);
 
-        var itemsToDelete = orphanedVersionIds
-            .Select(id => _libraryManager.GetItemById(id))
-            .Where(item => item is not null)
-            .ToList();
-        var deleted = DeleteItems(itemsToDelete!);
+        var deleted = ResolveAndDeleteItems(orphanedVersionIds, "orphaned alternate version BaseItems");
 
         _logger.LogInformation("Removed {Count} orphaned alternate version BaseItems.", deleted);
     }
@@ -371,11 +367,7 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
         _logger.LogInformation("Found {Count} items from deleted libraries to remove.", orphanedIds.Count);
 
-        var itemsToDelete = orphanedIds
-            .Select(id => _libraryManager.GetItemById(id))
-            .Where(item => item is not null)
-            .ToList();
-        var deleted = DeleteItems(itemsToDelete!);
+        var deleted = ResolveAndDeleteItems(orphanedIds, "items from deleted libraries");
 
         _logger.LogInformation("Removed {Count} items from deleted libraries.", deleted);
     }
@@ -427,8 +419,23 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
         var skippedUnrootedItems = 0;
 
         var staleIds = new List<Guid>();
+        var checkedCount = 0;
+        _logger.LogInformation("Checking {Total} items for missing files.", itemsWithPaths.Count);
+
         foreach (var item in itemsWithPaths)
         {
+            // A miss on offline storage can block for the mount timeout, so report while scanning.
+            if (checkedCount > 0 && checkedCount % FileCheckProgressLogStep == 0)
+            {
+                _logger.LogInformation(
+                    "Checking for missing files: {Checked}/{Total} items, {Stale} stale so far.",
+                    checkedCount,
+                    itemsWithPaths.Count,
+                    staleIds.Count);
+            }
+
+            checkedCount++;
+
             // Expand virtual path placeholders (%AppDataPath%, %MetadataPath%) to real paths
             var path = _appHost.ExpandVirtualPath(item.Path!);
 
@@ -482,16 +489,47 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
         _logger.LogInformation("Found {Count} stale items to remove.", staleIds.Count);
 
-        var itemsToDelete = staleIds
-            .Select(id => _libraryManager.GetItemById(id))
-            .Where(item => item is not null)
-            .ToList();
-        var deleted = DeleteItems(itemsToDelete!);
+        var deleted = ResolveAndDeleteItems(staleIds, "items with missing files");
 
         _logger.LogInformation("Removed {Count} stale items.", deleted);
     }
 
-    private int DeleteItems(IReadOnlyCollection<BaseItem> items)
+    private int ResolveAndDeleteItems(IReadOnlyCollection<Guid> ids, string description)
+    {
+        if (ids.Count == 0)
+        {
+            return 0;
+        }
+
+        return DeleteItems(ResolveItems(ids, description), description);
+    }
+
+    private List<BaseItem> ResolveItems(IReadOnlyCollection<Guid> ids, string description)
+    {
+        // Each lookup is a separate repository read; cached ones are fast, so this only reports
+        // once a set is large enough for the reads to add up to a noticeable stretch.
+        var items = new List<BaseItem>(ids.Count);
+        var processed = 0;
+        foreach (var id in ids)
+        {
+            if (processed > 0 && processed % ResolveProgressLogStep == 0)
+            {
+                _logger.LogInformation("Loading {Description}: {Processed}/{Total} items", description, processed, ids.Count);
+            }
+
+            processed++;
+
+            var item = _libraryManager.GetItemById(id);
+            if (item is not null)
+            {
+                items.Add(item);
+            }
+        }
+
+        return items;
+    }
+
+    private int DeleteItems(IReadOnlyCollection<BaseItem> items, string description)
     {
         if (items.Count == 0)
         {
@@ -500,8 +538,16 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
         var options = new DeleteOptions { DeleteFileLocation = false, DeleteFromExternalProvider = false };
         var deleted = 0;
+        var processed = 0;
         foreach (var item in items)
         {
+            if (processed > 0 && processed % DeleteProgressLogStep == 0)
+            {
+                _logger.LogInformation("Removing {Description}: {Processed}/{Total} items", description, processed, items.Count);
+            }
+
+            processed++;
+
             try
             {
                 _libraryManager.DeleteItem(item, options);

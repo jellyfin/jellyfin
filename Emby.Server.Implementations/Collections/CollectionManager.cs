@@ -9,6 +9,7 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Collections;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
@@ -107,13 +108,14 @@ namespace Emby.Server.Implementations.Collections
                 SaveLocalMetadata = true
             };
 
-            var name = _localizationManager.GetLocalizedString("Collections");
+            // This names a library for the whole server, so ignore the requesting client's language.
+            var name = _localizationManager.GetServerLocalizedString("Collections");
 
             await _libraryManager.AddVirtualFolder(name, CollectionTypeOptions.boxsets, libraryOptions, true).ConfigureAwait(false);
 
             _libraryManager.RootFolder.Children = null;
 
-            return FindFolders(path).First();
+            return FindFolders(path).FirstOrDefault();
         }
 
         internal string GetCollectionsFolderPath()
@@ -166,7 +168,7 @@ namespace Emby.Server.Implementations.Collections
 
             if (parentFolder is null)
             {
-                throw new ArgumentException(nameof(parentFolder));
+                throw new InvalidOperationException("Unable to resolve the collections library folder, so the collection cannot be created.");
             }
 
             var path = Path.Combine(parentFolder.Path, folderName);
@@ -234,7 +236,7 @@ namespace Emby.Server.Implementations.Collections
 
             List<BaseItem>? itemList = null;
 
-            var linkedChildrenList = collection.GetLinkedChildren();
+            var linkedChildrenList = collection.GetLinkedChildren(DtoOptions.StoredColumnsOnly);
             var currentLinkedChildrenIds = linkedChildrenList.Select(i => i.Id).ToList();
 
             foreach (var id in ids)

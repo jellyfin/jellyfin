@@ -106,5 +106,20 @@
     "TaskMoveTrickplayImages": "ट्रिकप्ले छवि स्थान माइग्रेट करें",
     "TaskMoveTrickplayImagesDescription": "लाइब्रेरी सेटिंग्स के अनुसार मौजूदा ट्रिकप्ले फ़ाइलों को स्थानांतरित करता है।",
     "CleanupUserDataTask": "यूज़र डेटा सफाई कार्य",
-    "Original": "असली"
+    "Original": "असली",
+    "LyricDownloadFailureFromForItem": "{0} के लिए {1} से बोल (Lyrics) डाउनलोड करने में विफल रहा",
+    "NameExtraBehindTheScenes": "परदे के पीछे",
+    "NameExtraClip": "क्लिप",
+    "NameExtraDeletedScene": "हटाया गया दृश्य",
+    "NameExtraFeaturette": "फीचरेट",
+    "NameExtraInterview": "साक्षात्कार",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "नमूना",
+    "NameExtraScene": "दृश्य",
+    "NameExtraShort": "शॉर्ट",
+    "NameExtraThemeSong": "थीम सॉन्ग",
+    "NameExtraThemeVideo": "थीम वीडियो",
+    "NameExtraTrailer": "ट्रेलर",
+    "NameExtraUnknown": "अतिरिक्त",
+    "CleanupUserDataTaskDescription": "कम से कम 90 दिनों से अनुपस्थित मीडिया से सभी उपयोगकर्ता डेटा (देखने की स्थिति, पसंदीदा स्थिति आदि) को साफ़ करता है।"
 }

@@ -21,6 +21,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Music;
 
 namespace MediaBrowser.Providers.Plugins.AudioDb
@@ -77,7 +78,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
                     {
                         result.Item = new MusicAlbum();
                         result.HasMetadata = true;
-                        ProcessResult(result.Item, obj.album[0], info.MetadataLanguage);
+                        ProcessResult(result, obj.album[0], info.MetadataLanguage);
                     }
                 }
             }
@@ -85,8 +86,10 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             return result;
         }
 
-        private void ProcessResult(MusicAlbum item, Album result, string preferredLanguage)
+        private void ProcessResult(MetadataResult<MusicAlbum> metadataResult, Album result, string preferredLanguage)
         {
+            var item = metadataResult.Item;
+
             if (Plugin.Instance.Configuration.ReplaceAlbumName && !string.IsNullOrWhiteSpace(result.strAlbum))
             {
                 item.Album = result.strAlbum;
@@ -113,42 +116,47 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             item.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, result.strMusicBrainzArtistID);
             item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, result.strMusicBrainzID);
 
-            string overview = null;
-
-            if (string.Equals(preferredLanguage, "de", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strDescriptionDE;
-            }
-            else if (string.Equals(preferredLanguage, "fr", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strDescriptionFR;
-            }
-            else if (string.Equals(preferredLanguage, "nl", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strDescriptionNL;
-            }
-            else if (string.Equals(preferredLanguage, "ru", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strDescriptionRU;
-            }
-            else if (string.Equals(preferredLanguage, "it", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strDescriptionIT;
-            }
-            else if ((preferredLanguage ?? string.Empty).StartsWith("pt", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strDescriptionPT;
-            }
+            var language = MetadataLanguageUtils.GetLanguageSubtag(preferredLanguage);
+            var overview = GetDescription(result, language);
 
             if (string.IsNullOrWhiteSpace(overview))
             {
                 overview = string.IsNullOrWhiteSpace(result.strDescriptionEN)
                     ? result.strDescription
                     : result.strDescriptionEN;
+
+                // The description is not in the requested language, mark it as English so it does not
+                // block a provider further down the list that can serve the requested language
+                metadataResult.ResultLanguage = "en";
+            }
+            else
+            {
+                metadataResult.ResultLanguage = language;
             }
 
             item.Overview = (overview ?? string.Empty).StripHtml();
         }
+
+        private static string GetDescription(Album result, string language)
+            => language switch
+            {
+                "de" => result.strDescriptionDE,
+                "en" => result.strDescriptionEN,
+                "es" => result.strDescriptionES,
+                "fr" => result.strDescriptionFR,
+                "he" => result.strDescriptionIL,
+                "hu" => result.strDescriptionHU,
+                "it" => result.strDescriptionIT,
+                "ja" => result.strDescriptionJP,
+                "nl" => result.strDescriptionNL,
+                "no" or "nb" or "nn" => result.strDescriptionNO,
+                "pl" => result.strDescriptionPL,
+                "pt" => result.strDescriptionPT,
+                "ru" => result.strDescriptionRU,
+                "sv" => result.strDescriptionSE,
+                "zh" => result.strDescriptionCN,
+                _ => null
+            };
 
         internal async Task EnsureInfo(string musicBrainzReleaseGroupId, CancellationToken cancellationToken)
         {

@@ -12,6 +12,7 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
+using Jellyfin.Server.Implementations.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -270,7 +271,7 @@ public sealed partial class BaseItemRepository
 
         if (filter.DtoOptions.EnableImages)
         {
-            dbQuery = dbQuery.Include(e => e.Images);
+            dbQuery = dbQuery.Include(e => e.Images!.OrderBy(i => i.Id));
         }
 
         // Include LinkedChildEntities for container types and videos that use them (BoxSet, Playlist,
@@ -290,7 +291,7 @@ public sealed partial class BaseItemRepository
         };
         if (filter.IncludeItemTypes.Length == 0 || filter.IncludeItemTypes.Any(linkedChildTypes.Contains))
         {
-            dbQuery = dbQuery.Include(e => e.LinkedChildEntities);
+            dbQuery = dbQuery.Include(e => e.LinkedChildEntities!.OrderBy(l => l.SortOrder));
         }
 
         if (filter.IncludeExtras)
@@ -323,10 +324,21 @@ public sealed partial class BaseItemRepository
             orderedQuery = query.OrderBy(relevanceExpression);
         }
 
+        // Folders carry no played flag of their own, so these two keys go through the same predicate
+        // the isPlayed filter uses rather than through the stored-column lookup in OrderMapper.
+        Expression<Func<BaseItemEntity, object?>> MapOrderByField(ItemSortBy sortBy) => sortBy switch
+        {
+            ItemSortBy.IsPlayed when filter.User is not null
+                => AsOrderKey(BuildIsPlayedFilter(context, filter.User)),
+            ItemSortBy.IsUnplayed when filter.User is not null
+                => AsOrderKey(BuildIsPlayedFilter(context, filter.User).Not()),
+            _ => OrderMapper.MapOrderByField(sortBy, filter, context)
+        };
+
         if (orderBy.Length > 0)
         {
             var firstOrdering = orderBy[0];
-            var expression = OrderMapper.MapOrderByField(firstOrdering.OrderBy, filter, context);
+            var expression = MapOrderByField(firstOrdering.OrderBy);
 
             if (orderedQuery is null)
             {
@@ -350,7 +362,7 @@ public sealed partial class BaseItemRepository
 
             foreach (var item in orderBy.Skip(1))
             {
-                expression = OrderMapper.MapOrderByField(item.OrderBy, filter, context);
+                expression = MapOrderByField(item.OrderBy);
                 orderedQuery = item.SortOrder == SortOrder.Ascending
                     ? orderedQuery.ThenBy(expression)
                     : orderedQuery.ThenByDescending(expression);
@@ -453,15 +465,22 @@ public sealed partial class BaseItemRepository
 
         baseQuery = ApplyParentalRestrictions(context, baseQuery, filter);
 
-        // Exclude alternate versions (have PrimaryVersionId set) and owned non-extra items.
-        // Extras (trailers, etc.) have OwnerId set but also have ExtraType set — keep those.
+        // Hide alternate versions behind the primary of their library, and exclude owned non-extra
+        // items. Extras (trailers, etc.) have OwnerId set but also have ExtraType set — keep those.
         if (!filter.IncludeOwnedItems)
         {
-            baseQuery = baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
+            baseQuery = ApplyAlternateVersionFiltering(context, baseQuery)
+                .Where(e => e.OwnerId == null || e.ExtraType != null);
         }
 
         return baseQuery;
     }
+
+    private static IQueryable<BaseItemEntity> ApplyAlternateVersionFiltering(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> baseQuery)
+        => baseQuery.Where(e => e.PrimaryVersionId == null
+            || !context.BaseItems.Any(p => p.Id == e.PrimaryVersionId && p.TopParentId == e.TopParentId));
 
     /// <summary>
     /// Restricts a query to the libraries the user may open, exempting requested by-name items.
@@ -633,24 +652,26 @@ public sealed partial class BaseItemRepository
     {
         var maxScore = maxRating.Score;
         var maxSubScore = maxRating.SubScore ?? 0;
-        var linkedChildren = context.LinkedChildren;
+
+        // Only a manual link makes an item a container of other items.
+        var members = context.LinkedChildren
+            .Where(lc => lc.ChildType == Database.Implementations.Entities.LinkedChildType.Manual);
 
         return e =>
-            // Item has a rating: check against limit
-            (e.InheritedParentalRatingValue != null
-                && (e.InheritedParentalRatingValue < maxScore
-                    || (e.InheritedParentalRatingValue == maxScore && (e.InheritedParentalRatingSubValue ?? 0) <= maxSubScore)))
-            // Item has no rating
-            || (e.InheritedParentalRatingValue == null
-                && (
-                    // No linked children (not a BoxSet/Playlist): pass as unrated
-                    !linkedChildren.Any(lc => lc.ParentId == e.Id)
-                    // Has linked children: at least one child must be within limits
-                    || linkedChildren.Any(lc => lc.ParentId == e.Id
-                        && (lc.Child!.InheritedParentalRatingValue == null
-                            || lc.Child.InheritedParentalRatingValue < maxScore
-                            || (lc.Child.InheritedParentalRatingValue == maxScore
-                                && (lc.Child.InheritedParentalRatingSubValue ?? 0) <= maxSubScore)))));
+            // The item's own rating, where it has one, has to be within the limit. An unrated item
+            // passes here; blocking those is what BlockUnratedItems does.
+            (e.InheritedParentalRatingValue == null
+                || e.InheritedParentalRatingValue < maxScore
+                || (e.InheritedParentalRatingValue == maxScore && (e.InheritedParentalRatingSubValue ?? 0) <= maxSubScore))
+            // A container is only as visible as its members: a BoxSet or Playlist with nothing left
+            // in it for this user is hidden whatever rating it carries itself. BoxSet.IsVisible
+            // applies the same rule in memory, and a count has to agree with the listing it counts.
+            && (!members.Any(lc => lc.ParentId == e.Id)
+                || members.Any(lc => lc.ParentId == e.Id
+                    && (lc.Child!.InheritedParentalRatingValue == null
+                        || lc.Child.InheritedParentalRatingValue < maxScore
+                        || (lc.Child.InheritedParentalRatingValue == maxScore
+                            && (lc.Child.InheritedParentalRatingSubValue ?? 0) <= maxSubScore))));
     }
 
     /// <inheritdoc />
@@ -665,6 +686,9 @@ public sealed partial class BaseItemRepository
 
         return ApplyAccessFiltering(context, leafItems, new InternalItemsQuery(user) { IncludeOwnedItems = includeOwnedItems });
     }
+
+    private static Expression<Func<BaseItemEntity, object?>> AsOrderKey(Expression<Func<BaseItemEntity, bool>> predicate)
+        => Expression.Lambda<Func<BaseItemEntity, object?>>(Expression.Convert(predicate.Body, typeof(object)), predicate.Parameters);
 
     /// <inheritdoc />
     public Expression<Func<BaseItemEntity, bool>> BuildHasDescendantFilter(JellyfinDbContext context, IQueryable<BaseItemEntity> descendants)
