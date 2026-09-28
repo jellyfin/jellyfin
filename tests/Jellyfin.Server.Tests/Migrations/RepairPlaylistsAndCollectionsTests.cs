@@ -169,7 +169,87 @@ public sealed class RepairPlaylistsAndCollectionsTests : IDisposable
         Assert.True(share.CanEdit);
         Assert.Equal(MediaType.Video, playlist.MediaType);
 
-        Assert.Equal(trackId, Assert.Single(context.LinkedChildren).ChildId);
+        Assert.Equal(trackId, Assert.Single(playlist.LinkedChildren).ItemId);
+    }
+
+    [Fact]
+    public async Task PerformAsync_MissingPlaylist_EntriesAreOnTheCreatedItem()
+    {
+        var dir = Path.Combine(_dataPath, "playlists", "Mix");
+        Directory.CreateDirectory(dir);
+
+        var trackId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var trackPath = Path.Combine(_dataPath, "song.flac");
+        using (var context = CreateDbContext())
+        {
+            context.BaseItems.Add(new BaseItemEntity { Id = trackId, Type = "MediaBrowser.Controller.Entities.Audio.Audio", Path = trackPath });
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        }
+
+        await File.WriteAllTextAsync(
+            Path.Combine(dir, "playlist.xml"),
+            $"""
+            <?xml version="1.0" encoding="utf-8" standalone="yes"?>
+            <Item>
+              <PlaylistItems>
+                <PlaylistItem>
+                  <Path>{trackPath}</Path>
+                </PlaylistItem>
+                <PlaylistItem>
+                  <Path>{trackPath}</Path>
+                </PlaylistItem>
+              </PlaylistItems>
+            </Item>
+            """,
+            TestContext.Current.CancellationToken);
+
+        LinkedChild[]? entriesAtCreate = null;
+        bool? loadedAtCreate = null;
+        var restored = await RestoreAsync(item =>
+        {
+            entriesAtCreate = ((Playlist)item).LinkedChildren;
+            loadedAtCreate = ((Playlist)item).LinkedChildrenLoaded;
+        });
+
+        Assert.Single(restored);
+        Assert.True(loadedAtCreate);
+        Assert.NotNull(entriesAtCreate);
+        Assert.Equal(new Guid?[] { trackId, trackId }, entriesAtCreate.Select(e => e.ItemId));
+        Assert.All(entriesAtCreate, e => Assert.Equal(MediaBrowser.Controller.Entities.LinkedChildType.Manual, e.Type));
+
+        // Persisting the entries is left to CreateItem, the migration writes no rows of its own.
+        using var verify = CreateDbContext();
+        Assert.Empty(verify.LinkedChildren);
+    }
+
+    [Fact]
+    public async Task PerformAsync_MissingPlaylist_TakesNameFromLocalTitle()
+    {
+        var dir = Path.Combine(_dataPath, "playlists", "Rock_Metal_ 90s1");
+        Directory.CreateDirectory(dir);
+        await File.WriteAllTextAsync(
+            Path.Combine(dir, "playlist.xml"),
+            """
+            <?xml version="1.0" encoding="utf-8" standalone="yes"?>
+            <Item>
+              <LocalTitle>Rock/Metal: 90s</LocalTitle>
+            </Item>
+            """,
+            TestContext.Current.CancellationToken);
+
+        var restored = await RestoreAsync();
+
+        Assert.Equal("Rock/Metal: 90s", Assert.Single(restored).Name);
+    }
+
+    [Fact]
+    public async Task PerformAsync_MissingPlaylistWithoutLocalTitle_TakesFolderName()
+    {
+        Directory.CreateDirectory(Path.Combine(_dataPath, "playlists", "Untitled"));
+
+        var restored = await RestoreAsync();
+
+        Assert.Equal("Untitled", Assert.Single(restored).Name);
     }
 
     [Fact]
@@ -238,7 +318,7 @@ public sealed class RepairPlaylistsAndCollectionsTests : IDisposable
         context.SaveChanges();
     }
 
-    private async Task<List<Playlist>> RestoreAsync()
+    private async Task<List<Playlist>> RestoreAsync(Action<BaseItem>? onCreate = null)
     {
         var playlistsFolder = new PlaylistsFolder { Id = Guid.NewGuid() };
         var restored = new List<Playlist>();
@@ -250,6 +330,7 @@ public sealed class RepairPlaylistsAndCollectionsTests : IDisposable
             .Callback<BaseItem, BaseItem>((item, _) =>
             {
                 restored.Add((Playlist)item);
+                onCreate?.Invoke(item);
                 using var context = CreateDbContext();
                 context.BaseItems.Add(new BaseItemEntity { Id = item.Id, Type = PlaylistType, Path = item.Path, IsFolder = true });
                 context.SaveChanges();

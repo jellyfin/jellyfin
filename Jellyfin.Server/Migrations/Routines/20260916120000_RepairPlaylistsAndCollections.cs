@@ -8,7 +8,6 @@ using System.Xml;
 using Emby.Server.Implementations.Playlists;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
-using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
@@ -17,7 +16,6 @@ using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using LinkedChildType = Jellyfin.Database.Implementations.Entities.LinkedChildType;
 
 namespace Jellyfin.Server.Migrations.Routines;
 
@@ -238,7 +236,8 @@ internal class RepairPlaylistsAndCollections : IAsyncMigrationRoutine
             var playlist = new Playlist
             {
                 Path = dir,
-                Name = Path.GetFileName(dir),
+                // The folder name is sanitised and may carry a numeric suffix; LocalTitle is the real name.
+                Name = metadata.Name ?? Path.GetFileName(dir),
                 OwnerUserId = metadata.OwnerUserId,
                 Shares = metadata.Shares,
                 // The public flag is not written to playlist.xml; only a playlist without an owner is
@@ -251,36 +250,28 @@ internal class RepairPlaylistsAndCollections : IAsyncMigrationRoutine
 
             playlist.SetMediaType(metadata.MediaType);
 
+            // The entries must be on the item CreateItem caches: an unassigned LinkedChildren means
+            // "unknown", and the first edit through that cached instance would wipe rows added here.
+            var entries = new List<LinkedChild>();
+            foreach (var storedPath in metadata.EntryPaths)
+            {
+                if (idByPath.TryGetValue(storedPath, out var childId))
+                {
+                    entries.Add(new LinkedChild { ItemId = childId, Type = LinkedChildType.Manual });
+                }
+            }
+
+            playlist.LinkedChildren = [.. entries];
+
             // CreateItem does not walk the hierarchy, so ParentId and TopParentId only get written if
             // the item already knows its parent.
             playlist.SetParent(playlistsFolder);
             playlist.PresentationUniqueKey = playlist.CreatePresentationUniqueKey();
             _libraryManager.CreateItem(playlist, playlistsFolder);
 
-            var sortOrder = 0;
-            foreach (var storedPath in metadata.EntryPaths)
-            {
-                if (!idByPath.TryGetValue(storedPath, out var childId))
-                {
-                    continue;
-                }
-
-                context.LinkedChildren.Add(new LinkedChildEntity
-                {
-                    ParentId = playlist.Id,
-                    ChildId = childId,
-                    ChildType = LinkedChildType.Manual,
-                    SortOrder = sortOrder
-                });
-
-                sortOrder++;
-            }
-
-            restoredEntries += sortOrder;
-            _logger.LogInformation("Restored playlist {Name} with {Count} entries.", playlist.Name, sortOrder);
+            restoredEntries += entries.Count;
+            _logger.LogInformation("Restored playlist {Name} with {Count} entries.", playlist.Name, entries.Count);
         }
-
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation(
             "Restored {PlaylistCount} playlists holding {EntryCount} entries.",
@@ -355,6 +346,14 @@ internal class RepairPlaylistsAndCollections : IAsyncMigrationRoutine
                     case "CanEdit" when parent == "Share":
                         shareCanEdit = string.Equals(reader.ReadElementContentAsString().Trim(), "true", StringComparison.OrdinalIgnoreCase);
                         break;
+                    case "LocalTitle":
+                        var title = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(title))
+                        {
+                            metadata.Name = title.Trim();
+                        }
+
+                        break;
                     case "OwnerUserId":
                         if (Guid.TryParse(reader.ReadElementContentAsString(), out var ownerId))
                         {
@@ -385,6 +384,8 @@ internal class RepairPlaylistsAndCollections : IAsyncMigrationRoutine
 
     private sealed class PlaylistMetadata
     {
+        public string? Name { get; set; }
+
         public Guid OwnerUserId { get; set; }
 
         public List<PlaylistUserPermissions> Shares { get; } = [];
