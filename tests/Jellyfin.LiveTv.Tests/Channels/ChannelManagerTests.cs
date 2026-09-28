@@ -9,9 +9,12 @@ using Jellyfin.LiveTv.Channels;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Caching.Memory;
@@ -21,7 +24,7 @@ using Xunit;
 
 namespace Jellyfin.LiveTv.Tests.Channels;
 
-// Sets the static library manager of BaseItem.
+// Sets static services of BaseItem and Video.
 [Collection("LibraryManagerTests")]
 public sealed class ChannelManagerTests : IDisposable
 {
@@ -38,6 +41,8 @@ public sealed class ChannelManagerTests : IDisposable
     private readonly ChannelManager _channelManager;
     private readonly Channel _channelItem;
     private readonly ILibraryManager _previousLibraryManager = BaseItem.LibraryManager;
+    private readonly IServerConfigurationManager _previousConfigurationManager = BaseItem.ConfigurationManager;
+    private readonly IRecordingsManager _previousRecordingsManager = Video.RecordingsManager;
     private readonly Dictionary<string, List<ChannelItemInfo>> _folders = new()
     {
         [string.Empty] =
@@ -87,6 +92,12 @@ public sealed class ChannelManagerTests : IDisposable
 
                 return new QueryResult<BaseItem>(items);
             });
+        _libraryManager
+            .Setup(x => x.GetLibraryOptions(It.IsAny<BaseItem>()))
+            .Returns(new LibraryOptions());
+        _libraryManager
+            .Setup(x => x.GetCollectionFolders(It.IsAny<BaseItem>()))
+            .Returns([]);
 
         BaseItem.LibraryManager = _libraryManager.Object;
 
@@ -105,7 +116,11 @@ public sealed class ChannelManagerTests : IDisposable
             });
 
         var config = new Mock<IServerConfigurationManager>();
-        config.SetupGet(x => x.ApplicationPaths.CachePath).Returns(_cachePath);
+        config.SetupGet(x => x.ApplicationPaths.CachePath).Returns(Path.Combine(_cachePath, "cache"));
+        config.SetupGet(x => x.ApplicationPaths.InternalMetadataPath).Returns(Path.Combine(_cachePath, "metadata"));
+        config.SetupGet(x => x.Configuration).Returns(new ServerConfiguration());
+        BaseItem.ConfigurationManager = config.Object;
+        Video.RecordingsManager = Mock.Of<IRecordingsManager>();
 
         var fileSystem = new Mock<IFileSystem>();
         fileSystem
@@ -172,16 +187,50 @@ public sealed class ChannelManagerTests : IDisposable
         Assert.Equal(2, (await ListAsync(null)).Items.Count);
 
         // As left by a crash while the file was written.
-        var cacheFile = Assert.Single(Directory.GetFiles(_cachePath, "*", SearchOption.AllDirectories));
+        var cacheFile = Assert.Single(Directory.GetFiles(Path.Combine(_cachePath, "cache"), "*", SearchOption.AllDirectories));
         await File.WriteAllTextAsync(cacheFile, "{\"Items\":[", TestContext.Current.CancellationToken);
 
         Assert.Equal(2, (await ListAsync(null)).Items.Count);
         VerifyFetches(() => Times.Exactly(2));
     }
 
+    [Fact]
+    public async Task GetChannelItemsInternal_NewEpisode_IsRelatedToItsSeasonAndSeries()
+    {
+        _folders[string.Empty] = [new ChannelItemInfo { Id = "series", Name = "Series", Type = ChannelItemType.Folder, FolderType = ChannelFolderType.Series }];
+        _folders["series"] = [new ChannelItemInfo { Id = "season", Name = "Season 1", Type = ChannelItemType.Folder, FolderType = ChannelFolderType.Season, IndexNumber = 1 }];
+        _folders["season"] =
+        [
+            new ChannelItemInfo
+            {
+                Id = "episode",
+                Name = "Episode 1",
+                Type = ChannelItemType.Media,
+                MediaType = ChannelMediaType.Video,
+                ContentType = ChannelMediaContentType.Episode,
+                IndexNumber = 1,
+                ParentIndexNumber = 1,
+            },
+        ];
+
+        var series = Assert.IsType<Series>(Assert.Single((await ListAsync(null)).Items));
+        var season = Assert.IsType<Season>(Assert.Single((await ListAsync(series.Id)).Items));
+        var episode = Assert.IsType<Episode>(Assert.Single((await ListAsync(season.Id)).Items));
+
+        // The episodes of a season are queried by these, before the metadata refresh of the items has run.
+        Assert.False(string.IsNullOrEmpty(series.PresentationUniqueKey));
+        Assert.Equal(series.Id, season.SeriesId);
+        Assert.Equal(series.PresentationUniqueKey, season.SeriesPresentationUniqueKey);
+        Assert.Equal(series.Id, episode.SeriesId);
+        Assert.Equal(season.Id, episode.SeasonId);
+        Assert.Equal(series.PresentationUniqueKey, episode.SeriesPresentationUniqueKey);
+    }
+
     public void Dispose()
     {
         BaseItem.LibraryManager = _previousLibraryManager;
+        BaseItem.ConfigurationManager = _previousConfigurationManager;
+        Video.RecordingsManager = _previousRecordingsManager;
         _channelManager.Dispose();
         _memoryCache.Dispose();
         _creatingItem.Dispose();

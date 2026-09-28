@@ -1148,6 +1148,11 @@ namespace Jellyfin.LiveTv.Channels
                 }
             }
 
+            if (isNew)
+            {
+                SetSeriesKeys(item);
+            }
+
             item.OnMetadataChanged();
 
             if (isNew)
@@ -1182,6 +1187,28 @@ namespace Jellyfin.LiveTv.Channels
             }
 
             return item;
+        }
+
+        /// <summary>
+        /// Sets the keys which relate a new item to its series. A library scan sets them in the metadata refresh,
+        /// which only runs in the background for channel items, and until then the item does not match
+        /// the queries for the seasons and episodes of its series.
+        /// </summary>
+        /// <param name="item">The new item, with its parent set.</param>
+        private static void SetSeriesKeys(BaseItem item)
+        {
+            item.PresentationUniqueKey = item.CreatePresentationUniqueKey();
+
+            if (item is IHasSeries hasSeries)
+            {
+                hasSeries.SeriesId = hasSeries.FindSeriesId();
+                hasSeries.SeriesPresentationUniqueKey = hasSeries.FindSeriesPresentationUniqueKey();
+            }
+
+            if (item is Episode episode)
+            {
+                episode.SeasonId = episode.FindSeasonId();
+            }
         }
 
         internal IChannel GetChannelProvider(Channel channel)
