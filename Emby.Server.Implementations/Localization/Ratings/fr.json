@@ -24,14 +24,14 @@
             }
         },
         {
-            "ratingStrings": ["10"],
+            "ratingStrings": ["10", "Interdit aux moins de 10 ans"],
             "ratingScore": {
                 "score": 10,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["12"],
+            "ratingStrings": ["12", "–12", "Interdit aux moins de 12 ans"],
             "ratingScore": {
                 "score": 12,
                 "subScore": null
@@ -45,14 +45,14 @@
             }
         },
         {
-            "ratingStrings": ["16"],
+            "ratingStrings": ["16", "–16", "Interdit aux moins de 16 ans"],
             "ratingScore": {
                 "score": 16,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["18"],
+            "ratingStrings": ["18", "–18", "Interdit aux moins de 18 ans"],
             "ratingScore": {
                 "score": 18,
                 "subScore": null

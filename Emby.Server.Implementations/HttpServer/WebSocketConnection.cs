@@ -137,10 +137,18 @@ namespace Emby.Server.Implementations.HttpServer
                 || _socket.State == WebSocketState.CloseReceived
                 || _socket.State == WebSocketState.CloseSent)
             {
-                await _socket.CloseAsync(
-                    closeStatus,
-                    string.Empty,
-                    cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await _socket.CloseAsync(
+                        closeStatus,
+                        string.Empty,
+                        cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (IsConnectionGone(ex))
+                {
+                    // The peer is already gone, there is nobody left to send the close frame to.
+                    _logger.LogDebug("WS {IP} error closing connection: {Message}", RemoteEndPoint, ex.Message);
+                }
             }
         }
 
@@ -158,7 +166,7 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     receiveResult = await _socket.ReceiveAsync(memory, cancellationToken).ConfigureAwait(false);
                 }
-                catch (Exception ex) when (ex is WebSocketException or ObjectDisposedException or OperationCanceledException)
+                catch (Exception ex) when (IsConnectionGone(ex))
                 {
                     // ObjectDisposedException/OperationCanceledException: the socket was torn
                     // down underneath us (e.g. by the keep-alive watchdog after the connection
@@ -196,7 +204,15 @@ namespace Emby.Server.Implementations.HttpServer
 
                 if (receiveResult.EndOfMessage)
                 {
-                    buffered -= await ProcessInternal(pipe.Reader).ConfigureAwait(false);
+                    try
+                    {
+                        buffered -= await ProcessInternal(pipe.Reader).ConfigureAwait(false);
+                    }
+                    catch (Exception ex) when (IsConnectionGone(ex))
+                    {
+                        _logger.LogWarning("WS {IP} error sending data: {Message}", RemoteEndPoint, ex.Message);
+                        break;
+                    }
                 }
             }
             while ((_socket.State == WebSocketState.Open || _socket.State == WebSocketState.Connecting)
@@ -204,6 +220,9 @@ namespace Emby.Server.Implementations.HttpServer
 
             return WebSocketCloseStatus.NormalClosure;
         }
+
+        private static bool IsConnectionGone(Exception ex)
+            => ex is WebSocketException or ObjectDisposedException or OperationCanceledException;
 
         private async Task<long> ProcessInternal(PipeReader reader)
         {

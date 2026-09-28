@@ -34,6 +34,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// </summary>
         public const string ApiKey = "4219e299c89411838049ab0dab19ebd5";
 
+        /// <summary>
+        /// The image size representing the unscaled image as served by TMDb.
+        /// </summary>
+        public const string OriginalImageSize = "original";
+
         private const int TitleExactScore = 8;
         private const int TitlePrefixScore = 4;
         private const int YearExactScore = 2;
@@ -459,31 +464,51 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
-        /// Adjusts the image's language code preferring the 5 letter language code eg. en-US.
+        /// Determines the language code to report for an image.
         /// </summary>
-        /// <param name="imageLanguage">The image's actual language code.</param>
+        /// <remarks>
+        /// TMDb keeps an image's region in iso_3166_1, which is what separates a pt-PT poster from a pt-BR
+        /// one. The region is added to the returned code only when it differs from the requested one, as in
+        /// a pt-PT image for a pt-BR request. TMDb files nearly every image under a region, so adding it
+        /// unconditionally would return en-US for an image that has to keep matching a plain "en" request.
+        /// </remarks>
+        /// <param name="imageLanguage">The image's ISO 639-1 language code.</param>
+        /// <param name="imageRegion">The image's ISO 3166-1 country code.</param>
         /// <param name="requestLanguage">The requested language code.</param>
         /// <returns>The language code.</returns>
-        public static string AdjustImageLanguage(string? imageLanguage, string requestLanguage)
+        public static string GetImageLanguage(string? imageLanguage, string? imageRegion, string? requestLanguage)
         {
-            if (string.IsNullOrEmpty(imageLanguage))
+            // TMDb now returns xx for no language instead of an empty string.
+            if (string.IsNullOrEmpty(imageLanguage) || string.Equals(imageLanguage, "xx", StringComparison.OrdinalIgnoreCase))
             {
                 return string.Empty;
             }
 
-            if (!string.IsNullOrEmpty(requestLanguage)
-                && requestLanguage.Length > 2
-                && imageLanguage.Length == 2
-                && requestLanguage.StartsWith(imageLanguage, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(requestLanguage))
             {
-                return requestLanguage;
+                return imageLanguage;
             }
 
-            // TMDb now returns xx for no language instead of an empty string.
-            return string.Equals(imageLanguage, "xx", StringComparison.OrdinalIgnoreCase)
-                ? string.Empty
-                : imageLanguage;
+            var requestParts = requestLanguage.Split('-');
+
+            if (requestParts.Length != 2 || !string.Equals(requestParts[0], imageLanguage, StringComparison.OrdinalIgnoreCase))
+            {
+                return imageLanguage;
+            }
+
+            return string.IsNullOrEmpty(imageRegion) || string.Equals(imageRegion, requestParts[1], StringComparison.OrdinalIgnoreCase)
+                ? requestLanguage
+                : imageLanguage + "-" + imageRegion.ToUpperInvariant();
         }
+
+        /// <summary>
+        /// Determines whether the configured image size fetches the image at its original resolution.
+        /// An unset size falls back to <see cref="OriginalImageSize"/>, see TmdbClientManager.GetUrl.
+        /// </summary>
+        /// <param name="size">The configured image size.</param>
+        /// <returns><c>true</c> if the original image is fetched; otherwise, <c>false</c>.</returns>
+        public static bool IsOriginalImageSize(string? size)
+            => string.IsNullOrEmpty(size) || string.Equals(size, OriginalImageSize, StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
         /// Combines the metadata country code and the parental rating from the API into the value we store in our database.

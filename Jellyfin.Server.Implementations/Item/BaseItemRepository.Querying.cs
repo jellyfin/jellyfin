@@ -593,10 +593,10 @@ public sealed partial class BaseItemRepository
 
             return dbContext.BaseItems
                     .Where(e => descendantIds.Contains(e.Id) && !e.IsFolder && !e.IsVirtualItem)
-                    .All(f => f.UserData!.Any(e => e.UserId == user.Id && e.Played));
+                    .All(BuildLeafIsPlayedFilter(dbContext, user.Id));
         }
 
-        return dbContext.BaseItems.Where(e => e.ParentId == id).All(f => f.UserData!.Any(e => e.UserId == user.Id && e.Played));
+        return dbContext.BaseItems.Where(e => e.ParentId == id).All(BuildLeafIsPlayedFilter(dbContext, user.Id));
     }
 
     /// <inheritdoc />
