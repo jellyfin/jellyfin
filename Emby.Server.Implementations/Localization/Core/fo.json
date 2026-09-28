@@ -69,7 +69,7 @@
     "TasksApplicationCategory": "Nýtsluskipan",
     "NotificationOptionApplicationUpdateAvailable": "Skipanardagføring er tøk",
     "NotificationOptionApplicationUpdateInstalled": "Skipanardagføring var innløgd",
-    "UserStoppedPlayingItemWithValues": "{0} er liðugur at spæla {1} á {2}",
+    "UserStoppedPlayingItemWithValues": "{0} gavst at spæla {1} á {2}",
     "HomeVideos": "Heimaupptøkur",
     "StartupEmbyServerIsLoading": "Jellyfin-ambætarin er undir byrjanarinnlesing. Vinaliga royn aftur um eitt bil.",
     "UserOfflineFromDevice": "{0} breyt av frá {1}",
