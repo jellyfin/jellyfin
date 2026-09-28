@@ -7832,7 +7832,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var channels = state.OutputAudioChannels;
 
-            var useDownMixAlgorithm = state.AudioStream is not null
+            // Must match the condition under which GetAudioFilterParam emits the downmix filter.
+            var useDownMixAlgorithm = channels == 2
+                                      && state.AudioStream?.Channels > 2
                                       && DownMixAlgorithmsHelper.AlgorithmFilterStrings.ContainsKey((encodingOptions.DownMixStereoAlgorithm, DownMixAlgorithmsHelper.InferChannelLayout(state.AudioStream)));
 
             if (channels.HasValue && !useDownMixAlgorithm)
@@ -7925,6 +7927,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 audioTranscodeParams.Add("-ar " + sampleRateValue.ToString(CultureInfo.InvariantCulture));
+            }
+
+            // Without the downmix filter, -ac 2 alone drops the LFE channel.
+            var audioFilterParam = GetAudioFilterParam(state, encodingOptions);
+            if (!string.IsNullOrEmpty(audioFilterParam))
+            {
+                audioTranscodeParams.Add(audioFilterParam.TrimStart());
             }
 
             // Copy the movflags from GetProgressiveVideoFullCommandLine
