@@ -476,16 +476,8 @@ public sealed partial class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.Name))
         {
-            if (filter.UseRawName == true)
-            {
-                var nameLower = filter.Name.ToLowerInvariant();
-                baseQuery = baseQuery.Where(e => e.Name!.ToLower() == nameLower);
-            }
-            else
-            {
-                var cleanName = filter.Name.GetCleanValue();
-                baseQuery = baseQuery.Where(e => e.CleanName == cleanName);
-            }
+            var cleanName = filter.Name.GetCleanValue();
+            baseQuery = baseQuery.Where(e => e.CleanName == cleanName);
         }
 
         var nameContains = filter.NameContains;
