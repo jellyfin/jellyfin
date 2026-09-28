@@ -11,6 +11,7 @@ using AsyncKeyedLock;
 using J2N.Collections.Generic.Extensions;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -477,6 +478,14 @@ public partial class TrickplayManager : ITrickplayManager
                 // Generate trickplay tiles
                 var mediaStream = mediaSource.VideoStream;
                 var container = mediaSource.Container;
+
+                // Checks for write permission before generating images
+                if (saveWithMedia)
+                {
+                    _logger.LogDebug("Verifying write permission in media directory {OutputDir}", outputDir);
+                    Directory.CreateDirectory(outputDir.FullName);
+                    FileHelper.CreateEmpty(Path.Combine(outputDir.FullName, ".jellyfin-trickplay"));
+                }
 
                 _logger.LogInformation("Creating trickplay files at {Width} width, for {Path} [ID: {ItemId}]", actualWidth, mediaPath, video.Id);
                 imgTempDir = await _mediaEncoder.ExtractVideoImagesOnIntervalAccelerated(
