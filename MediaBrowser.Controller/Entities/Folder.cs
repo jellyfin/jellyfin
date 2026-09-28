@@ -286,6 +286,27 @@ namespace MediaBrowser.Controller.Entities
             return GetCachedChildren();
         }
 
+        /// <summary>
+        /// Drops the children this folder has materialised, and the ones held by every folder below
+        /// it, without loading anything that is not already in memory.
+        /// </summary>
+        public void ReleaseCachedChildren()
+        {
+            // Cleared before descending, so a folder already on the way down is not walked twice.
+            var children = _children;
+            _children = null;
+
+            if (children is null)
+            {
+                return;
+            }
+
+            foreach (var child in children)
+            {
+                (child as Folder)?.ReleaseCachedChildren();
+            }
+        }
+
         public override double? GetRefreshProgress()
         {
             return ProviderManager.GetRefreshProgress(Id);
@@ -316,7 +337,7 @@ namespace MediaBrowser.Controller.Entities
             var dictionary = new Dictionary<Guid, BaseItem>();
 
             Children = null; // invalidate cached children.
-            var childrenList = Children.ToList();
+            var childrenList = GetChildrenForValidation();
 
             foreach (var child in childrenList)
             {
@@ -370,6 +391,9 @@ namespace MediaBrowser.Controller.Entities
                 {
                     ProviderManager.OnRefreshComplete(this);
                 }
+
+                // The subtree is done with, so stop holding it.
+                ReleaseCachedChildren();
             }
         }
 
@@ -555,7 +579,7 @@ namespace MediaBrowser.Controller.Entities
                             && primaryVideo.OwnerId.IsEmpty()
                             && (primaryVideo.LocalAlternateVersions ?? []).Any(p => alternateVersionPaths.Contains(p)))
                         {
-                            var newPrimary = newItems
+                            var newPrimary = validChildren
                                 .OfType<Video>()
                                 .FirstOrDefault(v => (v.LocalAlternateVersions ?? [])
                                     .Any(p => (primaryVideo.LocalAlternateVersions ?? [])
@@ -597,6 +621,8 @@ namespace MediaBrowser.Controller.Entities
                         newPrimary.Name,
                         newPrimary.Id);
 
+                    await PromoteToPrimaryVersionAsync(newPrimary, cancellationToken).ConfigureAwait(false);
+
                     // Reroute collection/playlist references from old primary to new primary
                     await LibraryManager.RerouteLinkedChildReferencesAsync(oldPrimary.Id, newPrimary.Id).ConfigureAwait(false);
 
@@ -625,9 +651,12 @@ namespace MediaBrowser.Controller.Entities
                     LibraryManager.DeleteItem(oldPrimary, new DeleteOptions { DeleteFileLocation = false }, this, false);
                 }
 
-                // Demote old primaries that are now alternate versions of newly created primaries.
+                // Demote old primaries that are now alternate versions of another primary.
                 // This handles the case where a new file is added that becomes the new primary
-                // (e.g. movie-2 added, movie-3 was primary → movie-3 needs demotion).
+                // (e.g. movie-2 added, movie-3 was primary → movie-3 needs demotion), and the case
+                // where the file that takes over was already in the library and merely traded
+                // places with this one — so the new primary is looked up among all valid children
+                // rather than only the newly created ones.
                 // Items in replacedPrimaries are excluded (already in actuallyRemoved).
                 var oldPrimariesToDemote = new List<(Video OldPrimary, Video NewPrimary)>();
                 foreach (var item in itemsRemoved.Except(actuallyRemoved))
@@ -637,7 +666,7 @@ namespace MediaBrowser.Controller.Entities
                         && !string.IsNullOrEmpty(item.Path)
                         && alternateVersionPaths.Contains(item.Path))
                     {
-                        var newPrimary = newItems
+                        var newPrimary = validChildren
                             .OfType<Video>()
                             .FirstOrDefault(v => (v.LocalAlternateVersions ?? [])
                                 .Any(p => string.Equals(p, item.Path, StringComparison.OrdinalIgnoreCase)));
@@ -657,10 +686,13 @@ namespace MediaBrowser.Controller.Entities
                         newPrimary.Name,
                         newPrimary.Id);
 
+                    await PromoteToPrimaryVersionAsync(newPrimary, cancellationToken).ConfigureAwait(false);
+
                     // First: update old primary's alternate items to point to new primary.
                     // Order matters — update alternates FIRST so they don't get orphan-deleted
                     // when old primary's arrays are cleared.
-                    var oldAlternateIds = LibraryManager.GetLocalAlternateVersionIds(oldPrimary)
+                    var oldLocalAlternateIds = LibraryManager.GetLocalAlternateVersionIds(oldPrimary).ToHashSet();
+                    var oldAlternateIds = oldLocalAlternateIds
                         .Concat(LibraryManager.GetLinkedAlternateVersions(oldPrimary).Select(v => v.Id))
                         .Distinct()
                         .ToList();
@@ -670,7 +702,10 @@ namespace MediaBrowser.Controller.Entities
                         if (LibraryManager.GetItemById(altId) is Video altVideo && !altVideo.Id.Equals(newPrimary.Id))
                         {
                             altVideo.SetPrimaryVersionId(newPrimary.Id);
-                            altVideo.OwnerId = newPrimary.Id;
+
+                            // Only a version stored next to the new primary is owned by it; one that
+                            // was merged in by hand keeps its own row and must stay unowned.
+                            altVideo.OwnerId = oldLocalAlternateIds.Contains(altVideo.Id) ? newPrimary.Id : Guid.Empty;
                             await altVideo.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                         }
                     }
@@ -776,6 +811,23 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        private async Task PromoteToPrimaryVersionAsync(Video newPrimary, CancellationToken cancellationToken)
+        {
+            if (!newPrimary.PrimaryVersionId.HasValue && newPrimary.OwnerId.IsEmpty())
+            {
+                return;
+            }
+
+            Logger.LogInformation(
+                "Promoting {Name} ({Id}) to the primary version of its group",
+                newPrimary.Name,
+                newPrimary.Id);
+
+            newPrimary.SetPrimaryVersionId(null);
+            newPrimary.OwnerId = Guid.Empty;
+            await newPrimary.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+        }
+
         private async Task RefreshMetadataRecursive(IList<BaseItem> children, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
         {
             await RunTasks(
@@ -811,7 +863,14 @@ namespace MediaBrowser.Controller.Entities
                 if (recursive && child is Folder folder)
                 {
                     folder.Children = null; // invalidate cached children.
-                    await folder.RefreshMetadataRecursive(folder.Children.Except([this, child]).ToList(), refreshOptions, true, progress, cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        await folder.RefreshMetadataRecursive(folder.Children.Except([this, child]).ToList(), refreshOptions, true, progress, cancellationToken).ConfigureAwait(false);
+                    }
+                    finally
+                    {
+                        folder.ReleaseCachedChildren();
+                    }
                 }
             }
         }
@@ -876,6 +935,17 @@ namespace MediaBrowser.Controller.Entities
             {
                 Parent = this,
                 GroupByPresentationUniqueKey = false,
+                DtoOptions = new DtoOptions(true)
+            });
+        }
+
+        private IReadOnlyList<BaseItem> GetChildrenForValidation()
+        {
+            return ItemRepository.GetItemList(new InternalItemsQuery
+            {
+                Parent = this,
+                GroupByPresentationUniqueKey = false,
+                IncludeAlternateVersions = true,
                 DtoOptions = new DtoOptions(true)
             });
         }
@@ -1617,7 +1687,17 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         public List<BaseItem> GetLinkedChildren()
         {
-            var resolved = ResolveLinkedChildren(LinkedChildren);
+            return GetLinkedChildren(new DtoOptions());
+        }
+
+        /// <summary>
+        /// Gets the linked children, populating only what <paramref name="options"/> asks for.
+        /// </summary>
+        /// <param name="options">Fields to populate on the resolved children.</param>
+        /// <returns>The resolved children.</returns>
+        public List<BaseItem> GetLinkedChildren(DtoOptions options)
+        {
+            var resolved = ResolveLinkedChildren(LinkedChildren, options);
             var list = new List<BaseItem>(resolved.Count);
             foreach (var (_, item) in resolved)
             {
@@ -1734,8 +1814,9 @@ namespace MediaBrowser.Controller.Entities
         /// path (legacy path-based resolution).
         /// </summary>
         /// <param name="linkedChildren">Linked children to resolve.</param>
+        /// <param name="options">Fields to populate on the resolved items; all fields when null.</param>
         /// <returns>Each input entry paired with its resolved item; entries that fail to resolve are dropped.</returns>
-        private List<(LinkedChild Info, BaseItem Item)> ResolveLinkedChildren(IReadOnlyList<LinkedChild> linkedChildren)
+        private List<(LinkedChild Info, BaseItem Item)> ResolveLinkedChildren(IReadOnlyList<LinkedChild> linkedChildren, DtoOptions options = null)
         {
             var resolved = new List<(LinkedChild Info, BaseItem Item)>(linkedChildren.Count);
             if (linkedChildren.Count == 0)
@@ -1757,7 +1838,8 @@ namespace MediaBrowser.Controller.Entities
             {
                 var batched = LibraryManager.GetItemList(new InternalItemsQuery
                 {
-                    ItemIds = [.. idsToBatch]
+                    ItemIds = [.. idsToBatch],
+                    DtoOptions = options ?? new DtoOptions()
                 });
                 byId = new Dictionary<Guid, BaseItem>(batched.Count);
                 foreach (var item in batched)

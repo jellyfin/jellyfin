@@ -63,6 +63,41 @@ namespace Jellyfin.Providers.Tests.Omdb
             Assert.Equal(expected, result);
         }
 
+        [Theory]
+        [InlineData("\"Vincent D&apos;Onofrio\"", "Vincent D'Onofrio")]
+        [InlineData("\"Alan Moore &#39;Swamp Thing&#39;\"", "Alan Moore 'Swamp Thing'")]
+        [InlineData("\"Tom &amp; Jerry\"", "Tom & Jerry")]
+        [InlineData("\"Mail &lt;a@b.com&gt; for a translation\"", "Mail <a@b.com> for a translation")]
+        [InlineData("\"Elisa Mont\\u00e9s\"", "Elisa Montés")]
+        [InlineData("\"R&D and 100% & more\"", "R&D and 100% & more")]
+        public void Deserialize_Html_Encoded_String_Is_Decoded(string input, string expected)
+        {
+            var result = JsonSerializer.Deserialize<string?>(input, _options);
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void Deserialize_Html_Encoded_Credits_Are_Decoded()
+        {
+            const string Input = "{\"Title\":\"Full Metal Jacket\",\"Actors\":\"Matthew Modine, R. Lee Ermey, Vincent D&apos;Onofrio\",\"Response\":\"True\"}";
+            var rootObject = JsonSerializer.Deserialize<OmdbProvider.RootObject>(Input, _options);
+            Assert.NotNull(rootObject);
+            Assert.Equal("Matthew Modine, R. Lee Ermey, Vincent D'Onofrio", rootObject!.Actors);
+        }
+
+        [Fact]
+        public void ProviderJsonOptions_Take_Priority_Over_The_Defaults()
+        {
+            // The default string converter handles string as well, so appending the OMDb ones would never run them
+            var options = OmdbProvider.CreateJsonOptions();
+
+            const string Input = "{\"Title\":\"Full Metal Jacket\",\"Actors\":\"Vincent D&apos;Onofrio\",\"Awards\":\"N/A\",\"Response\":\"True\"}";
+            var rootObject = JsonSerializer.Deserialize<OmdbProvider.RootObject>(Input, options);
+            Assert.NotNull(rootObject);
+            Assert.Equal("Vincent D'Onofrio", rootObject!.Actors);
+            Assert.Null(rootObject.Awards);
+        }
+
         [Fact]
         public void Roundtrip_Valid_Success()
         {
