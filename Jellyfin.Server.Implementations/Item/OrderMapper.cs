@@ -51,13 +51,20 @@ public static class OrderMapper
                 .Max();
         }
 
-        if (sortBy == ItemSortBy.SeriesUnplayedRuntime)
+        if (sortBy is ItemSortBy.SeriesRuntime or ItemSortBy.SeriesUnplayedRuntime)
         {
-            // Normally handled by the pre-aggregated join in ApplySeriesUnplayedRuntimeOrder. This
+            // Normally handled by the pre-aggregated join in ApplySeriesRuntimeOrder. This
             // correlated subquery fallback is only reached when combined with search.
-            // Virtual episodes are missing or not aired yet, so they carry no time left to watch.
+            // Virtual episodes are missing or not aired yet, so they carry no time to watch.
             var episodes = jellyfinDbContext.BaseItems
                 .Where(w => w.Type == _episodeTypeName && !w.IsVirtualItem);
+
+            if (sortBy == ItemSortBy.SeriesRuntime)
+            {
+                return e => episodes
+                    .Where(w => w.SeriesPresentationUniqueKey == e.PresentationUniqueKey)
+                    .Sum(w => w.RunTimeTicks ?? 0L);
+            }
 
             // An episode is left to watch while no played row exists for it, hence the absence test:
             // an unwatched episode has no UserData row at all.

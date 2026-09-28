@@ -15,9 +15,10 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 
 /// <summary>
 /// Covers ordering by <see cref="ItemSortBy.SeriesUnplayedRuntime"/>, which adds up the runtime of
-/// the episodes a user has not played yet so a series can be sorted by how long it takes to finish.
+/// the episodes a user has not played yet so a series can be sorted by how long it takes to finish,
+/// and by <see cref="ItemSortBy.SeriesRuntime"/>, which adds up the runtime of all of them.
 /// </summary>
-public sealed class BaseItemRepositorySeriesUnplayedRuntimeTests : SqliteDbTestFixture
+public sealed class BaseItemRepositorySeriesRuntimeTests : SqliteDbTestFixture
 {
     private const string SeriesType = "MediaBrowser.Controller.Entities.TV.Series";
     private const string EpisodeType = "MediaBrowser.Controller.Entities.TV.Episode";
@@ -33,7 +34,7 @@ public sealed class BaseItemRepositorySeriesUnplayedRuntimeTests : SqliteDbTestF
     private readonly Guid _fifteenMinutesLeft = Guid.NewGuid();
     private readonly Guid _withoutEpisodes = Guid.NewGuid();
 
-    public BaseItemRepositorySeriesUnplayedRuntimeTests()
+    public BaseItemRepositorySeriesRuntimeTests()
     {
         using (var context = CreateDbContext())
         {
@@ -48,7 +49,7 @@ public sealed class BaseItemRepositorySeriesUnplayedRuntimeTests : SqliteDbTestF
     {
         Assert.Equal(
             [_sixtyMinutesLeft, _twentyMinutesLeft, _fifteenMinutesLeft, _fullyWatched, _withoutEpisodes],
-            SeriesIds(SortOrder.Descending));
+            SeriesIds(ItemSortBy.SeriesUnplayedRuntime, SortOrder.Descending));
     }
 
     [Fact]
@@ -56,7 +57,7 @@ public sealed class BaseItemRepositorySeriesUnplayedRuntimeTests : SqliteDbTestF
     {
         Assert.Equal(
             [_fullyWatched, _withoutEpisodes, _fifteenMinutesLeft, _twentyMinutesLeft, _sixtyMinutesLeft],
-            SeriesIds(SortOrder.Ascending));
+            SeriesIds(ItemSortBy.SeriesUnplayedRuntime, SortOrder.Ascending));
     }
 
     [Fact]
@@ -64,7 +65,7 @@ public sealed class BaseItemRepositorySeriesUnplayedRuntimeTests : SqliteDbTestF
     {
         // The partly watched series runs 30 minutes in total but only 20 are left, which puts it
         // behind the series that has 60 left rather than level with it.
-        var ids = SeriesIds(SortOrder.Descending);
+        var ids = SeriesIds(ItemSortBy.SeriesUnplayedRuntime, SortOrder.Descending);
 
         Assert.True(ids.IndexOf(_sixtyMinutesLeft) < ids.IndexOf(_twentyMinutesLeft));
     }
@@ -74,7 +75,7 @@ public sealed class BaseItemRepositorySeriesUnplayedRuntimeTests : SqliteDbTestF
     {
         // Two 60 minute virtual episodes would carry this series to the front if they counted, but
         // they are missing or unaired, so only the one real 15 minute episode is left to watch.
-        var ids = SeriesIds(SortOrder.Descending);
+        var ids = SeriesIds(ItemSortBy.SeriesUnplayedRuntime, SortOrder.Descending);
 
         Assert.True(ids.IndexOf(_twentyMinutesLeft) < ids.IndexOf(_fifteenMinutesLeft));
     }
@@ -82,7 +83,7 @@ public sealed class BaseItemRepositorySeriesUnplayedRuntimeTests : SqliteDbTestF
     [Fact]
     public void TreatsASeriesWithoutEpisodesAsNothingLeft()
     {
-        var ids = SeriesIds(SortOrder.Descending);
+        var ids = SeriesIds(ItemSortBy.SeriesUnplayedRuntime, SortOrder.Descending);
 
         Assert.Equal(ids.Count - 1, ids.IndexOf(_withoutEpisodes));
     }
@@ -125,12 +126,50 @@ public sealed class BaseItemRepositorySeriesUnplayedRuntimeTests : SqliteDbTestF
         Assert.Equal([_fullyWatched, _withoutEpisodes], ids.Skip(3).ToHashSet());
     }
 
-    private List<Guid> SeriesIds(SortOrder sortOrder)
+    [Fact]
+    public void Runtime_Descending_PutsTheLongestSeriesFirst()
+    {
+        // In total the series run C 90, B 60, A 30, D 15 and E 0 minutes. Played episodes count, which
+        // puts the fully watched series first; virtual ones still do not, or D would lead with 135.
+        Assert.Equal(
+            [_fullyWatched, _sixtyMinutesLeft, _twentyMinutesLeft, _fifteenMinutesLeft, _withoutEpisodes],
+            SeriesIds(ItemSortBy.SeriesRuntime, SortOrder.Descending));
+    }
+
+    [Fact]
+    public void Runtime_Ascending_PutsTheShortestSeriesFirst()
+    {
+        Assert.Equal(
+            [_withoutEpisodes, _fifteenMinutesLeft, _twentyMinutesLeft, _sixtyMinutesLeft, _fullyWatched],
+            SeriesIds(ItemSortBy.SeriesRuntime, SortOrder.Ascending));
+    }
+
+    [Fact]
+    public void Runtime_CombinedWithSearch_StillOrdersByTotalTime()
+    {
+        // The correlated subquery in OrderMapper again. No two series tie on their total, so the whole
+        // order is defined even without the SortName tiebreaker.
+        var ids = _repository
+            .GetItemList(new InternalItemsQuery(_user)
+            {
+                IncludeItemTypes = [BaseItemKind.Series],
+                SearchTerm = "show",
+                OrderBy = [(ItemSortBy.SeriesRuntime, SortOrder.Descending)]
+            })
+            .Select(i => i.Id)
+            .ToList();
+
+        Assert.Equal(
+            [_fullyWatched, _sixtyMinutesLeft, _twentyMinutesLeft, _fifteenMinutesLeft, _withoutEpisodes],
+            ids);
+    }
+
+    private List<Guid> SeriesIds(ItemSortBy sortBy, SortOrder sortOrder)
         => _repository
             .GetItemList(new InternalItemsQuery(_user)
             {
                 IncludeItemTypes = [BaseItemKind.Series],
-                OrderBy = [(ItemSortBy.SeriesUnplayedRuntime, sortOrder)]
+                OrderBy = [(sortBy, sortOrder)]
             })
             .Select(i => i.Id)
             .ToList();

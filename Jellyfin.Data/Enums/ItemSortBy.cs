@@ -159,4 +159,9 @@ public enum ItemSortBy
     /// The combined runtime of a series' unplayed episodes.
     /// </summary>
     SeriesUnplayedRuntime = 30,
+
+    /// <summary>
+    /// The combined runtime of a series' episodes.
+    /// </summary>
+    SeriesRuntime = 31,
 }
