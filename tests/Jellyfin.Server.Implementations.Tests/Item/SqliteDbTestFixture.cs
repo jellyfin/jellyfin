@@ -9,6 +9,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Globalization;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -67,7 +68,7 @@ public abstract class SqliteDbTestFixture : IDisposable
         return factory.Object;
     }
 
-    protected BaseItemRepository CreateBaseItemRepository(ItemTypeLookup itemTypeLookup)
+    protected BaseItemRepository CreateBaseItemRepository(ItemTypeLookup itemTypeLookup, ILocalizationManager? localizationManager = null)
     {
         var serverConfigurationManager = new Mock<IServerConfigurationManager>();
         serverConfigurationManager.Setup(c => c.Configuration).Returns(new ServerConfiguration());
@@ -77,6 +78,7 @@ public abstract class SqliteDbTestFixture : IDisposable
             new Mock<IServerApplicationHost>().Object,
             itemTypeLookup,
             serverConfigurationManager.Object,
+            localizationManager ?? Mock.Of<ILocalizationManager>(),
             NullLogger<BaseItemRepository>.Instance);
     }
 

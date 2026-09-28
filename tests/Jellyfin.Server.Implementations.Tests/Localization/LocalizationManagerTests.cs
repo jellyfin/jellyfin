@@ -131,6 +131,26 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             Assert.Equal(expectedDisplayName, culture.DisplayName);
         }
 
+        [Theory]
+        // Stream tags carry either the variant's own tag (movie.pt-br.srt) or the base code ffprobe reports.
+        [InlineData("pt-br", new[] { "pt-br", "por" })]
+        [InlineData("por", new[] { "por" })]
+        [InlineData("ger", new[] { "deu", "ger" })]
+        [InlineData("zh-tw", new[] { "zh-tw", "zho", "chi" })]
+        [InlineData("fr-ca", new[] { "fr-ca", "frc" })]
+        public async Task GetMediaStreamLanguageCodes_Variant_IncludesBaseCode(string identifier, string[] expected)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+            await localizationManager.LoadAll();
+
+            var culture = localizationManager.FindLanguageInfo(identifier);
+            Assert.NotNull(culture);
+            Assert.Equal(expected, culture.GetMediaStreamLanguageCodes());
+        }
+
         [Fact]
         public async Task GetCultures_RegionalVariants_HaveUniqueThreeLetterCodes()
         {
