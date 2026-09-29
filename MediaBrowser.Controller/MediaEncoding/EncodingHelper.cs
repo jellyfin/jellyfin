@@ -168,9 +168,28 @@ namespace MediaBrowser.Controller.MediaEncoding
             ISubtitleEncoder subtitleEncoder,
             IConfiguration config,
             IConfigurationManager configurationManager,
+            IPathManager pathManager)
+            : this(
+                appPaths,
+                mediaEncoder,
+                subtitleEncoder,
+                config,
+                configurationManager,
+                pathManager,
+                null,
+                null)
+        {
+        }
+
+        public EncodingHelper(
+            IApplicationPaths appPaths,
+            IMediaEncoder mediaEncoder,
+            ISubtitleEncoder subtitleEncoder,
+            IConfiguration config,
+            IConfigurationManager configurationManager,
             IPathManager pathManager,
-            IEnumerable<ISessionAudioFilterProvider> sessionAudioFilterProviders = null,
-            IEnumerable<ISessionMediaEditGraphProvider> sessionMediaEditGraphProviders = null)
+            IEnumerable<ISessionAudioFilterProvider> sessionAudioFilterProviders,
+            IEnumerable<ISessionMediaEditGraphProvider> sessionMediaEditGraphProviders)
         {
             _appPaths = appPaths;
             _mediaEncoder = mediaEncoder;
