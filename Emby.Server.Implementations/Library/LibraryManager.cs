@@ -86,6 +86,7 @@ namespace Emby.Server.Implementations.Library
         private readonly ExtraResolver _extraResolver;
         private readonly IPathManager _pathManager;
         private readonly ILocalizationManager _localization;
+        private readonly IDirectoryService _directoryService;
         private readonly FastConcurrentLru<Guid, BaseItem> _cache;
         private readonly DotIgnoreIgnoreRule _dotIgnoreIgnoreRule;
         private readonly IMediaStreamRepository _mediaStreamRepository;
@@ -184,6 +185,7 @@ namespace Emby.Server.Implementations.Library
             _pathManager = pathManager;
             _dotIgnoreIgnoreRule = dotIgnoreIgnoreRule;
             _localization = localization;
+            _directoryService = directoryService;
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
@@ -316,7 +318,7 @@ namespace Emby.Server.Implementations.Library
 
             if (wizardChanged)
             {
-                _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
+                QueueLibraryScan();
             }
         }
 
@@ -876,7 +878,18 @@ namespace Emby.Server.Implementations.Library
                         wrongTypeItem.GetType().Name,
                         expectedVideoType.Name,
                         path);
-                    DeleteItem(wrongTypeItem, new DeleteOptions { DeleteFileLocation = false });
+
+                    // A full DeleteItem would save the primary version, which resolves its
+                    // alternates again and re-enters here before this row is gone.
+                    DeleteItemsUnsafeFast([wrongTypeItem]);
+
+                    // The fast path skips the parent bookkeeping, and the stale item is listed
+                    // under its ParentId, so that folder's cached listing has to be dropped.
+                    if (wrongTypeItem.GetParent() is Folder staleParent)
+                    {
+                        staleParent.Children = null;
+                        staleParent.UserData = null;
+                    }
                 }
             }
 
@@ -1341,7 +1354,6 @@ namespace Emby.Server.Implementations.Library
                 {
                     IncludeItemTypes = [BaseItemKind.MusicArtist],
                     Name = name,
-                    UseRawName = true,
                     DtoOptions = options
                 }).Cast<MusicArtist>()
                 .OrderBy(i => i.IsAccessedByName ? 1 : 0)
@@ -1797,6 +1809,18 @@ namespace Emby.Server.Implementations.Library
             }
 
             return _countService.GetItemCountsForNameItem(kind, id, relatedItemKinds, query);
+        }
+
+        /// <inheritdoc/>
+        public Dictionary<Guid, ItemCounts> GetItemCountsForNameItems(BaseItemKind kind, IReadOnlyList<Guid> ids, BaseItemKind[] relatedItemKinds, User? user)
+        {
+            var query = new InternalItemsQuery(user);
+            if (user is not null)
+            {
+                AddUserToQuery(query, user);
+            }
+
+            return _countService.GetItemCountsForNameItems(kind, ids, relatedItemKinds, query);
         }
 
         public Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, User? user)
@@ -3442,6 +3466,7 @@ namespace Emby.Server.Implementations.Library
 
             var extras = new List<BaseItem>();
             var typeCounters = new Dictionary<ExtraType, int>();
+            var generatedNames = new Dictionary<ExtraType, HashSet<string>>();
 
             // Order by path so that the numbering handed out below does not depend on the
             // order the file system happened to list the folder in
@@ -3478,10 +3503,12 @@ namespace Emby.Server.Implementations.Library
                     extra = itemById;
                 }
 
-                // An extra is named after its file, so the file is the source of truth. Items created
-                // by older versions, or renamed by a metadata provider, are corrected here;
-                // RefreshExtras persists the change.
-                if (!string.IsNullOrEmpty(name) && extra.LockedFields?.Contains(MetadataField.Name) != true)
+                // The name derived from the file is only a default. A name that came from anywhere else,
+                // such as a local metadata file, is the user's and has to survive the scan, so only a
+                // name this method handed out itself is renewed; RefreshExtras persists the change.
+                if (!string.IsNullOrEmpty(name)
+                    && extra.LockedFields?.Contains(MetadataField.Name) != true
+                    && (itemById is null || IsGeneratedExtraName(extra.Name, candidate)))
                 {
                     extra.Name = name;
                 }
@@ -3502,6 +3529,31 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 return null;
+            }
+
+            bool IsGeneratedExtraName(string currentName, ExtraCandidate candidate)
+            {
+                // The file name is what an extra was called before it was given a name of its type
+                if (string.Equals(currentName, candidate.Extra.Name, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+
+                if (!generatedNames.TryGetValue(candidate.ExtraType, out var names))
+                {
+                    // Any of the numbers of this type may have been handed out, as the order the extras
+                    // of a type are numbered in shifts as files appear beside them or are taken away
+                    names = new HashSet<string>(StringComparer.Ordinal);
+                    var count = candidates.Count(c => c.ExtraType == candidate.ExtraType);
+                    for (var seen = 0; seen < count; seen++)
+                    {
+                        names.Add(GetNumberedExtraName(candidate.ExtraType, seen));
+                    }
+
+                    generatedNames[candidate.ExtraType] = names;
+                }
+
+                return names.Contains(currentName);
             }
         }
 
@@ -3529,7 +3581,18 @@ namespace Emby.Server.Implementations.Library
             typeCounters.TryGetValue(candidate.ExtraType, out var seen);
             typeCounters[candidate.ExtraType] = seen + 1;
 
-            var typeName = _localization.GetServerLocalizedString(GetExtraTypeNameKey(candidate.ExtraType));
+            return GetNumberedExtraName(candidate.ExtraType, seen);
+        }
+
+        /// <summary>
+        /// Gets the name given to the n-th extra of a type that is named after its type.
+        /// </summary>
+        /// <param name="extraType">The extra type.</param>
+        /// <param name="seen">Number of extras of the type named before this one.</param>
+        /// <returns>The name.</returns>
+        private string GetNumberedExtraName(ExtraType extraType, int seen)
+        {
+            var typeName = _localization.GetServerLocalizedString(GetExtraTypeNameKey(extraType));
 
             return seen == 0
                 ? typeName
@@ -3774,6 +3837,10 @@ namespace Emby.Server.Implementations.Library
                         AddMediaPathInternal(name, path, false);
                     }
                 }
+
+                // The libraries root was listed before this folder existed, so drop that listing:
+                // anything still reading it resolves the library set without the new folder.
+                _directoryService.Invalidate(virtualFolderPath);
             }
             finally
             {
@@ -3781,7 +3848,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (refreshLibrary)
                 {
-                    StartScanInBackground();
+                    _ = StartScanInBackground();
                 }
                 else
                 {
@@ -3849,13 +3916,16 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private void StartScanInBackground()
+        internal Task StartScanInBackground()
         {
-            Task.Run(() =>
+            // An active scan already handles library structure changes, so this request can be dropped.
+            if (IsScanRunning)
             {
-                // No need to start if scanning the library because it will handle it
-                ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
-            });
+                return Task.CompletedTask;
+            }
+
+            // Queue instead of restarting so a scan that starts after the check is allowed to finish.
+            return Task.Run(QueueLibraryScan);
         }
 
         public void AddMediaPath(string virtualFolderName, MediaPathInfo mediaPath)
@@ -3956,6 +4026,7 @@ namespace Emby.Server.Implementations.Library
             try
             {
                 Directory.Delete(path, true);
+                _directoryService.Invalidate(path);
             }
             finally
             {
@@ -3965,7 +4036,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     await ValidateTopLibraryFolders(CancellationToken.None, true).ConfigureAwait(false);
 
-                    StartScanInBackground();
+                    _ = StartScanInBackground();
                 }
                 else
                 {
@@ -4025,6 +4096,7 @@ namespace Emby.Server.Implementations.Library
             if (!string.IsNullOrEmpty(shortcut))
             {
                 _fileSystem.DeleteFile(shortcut);
+                _directoryService.Invalidate(shortcut);
             }
 
             var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
@@ -4068,6 +4140,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             _fileSystem.CreateShortcut(lnk, _appHost.ReverseVirtualPath(path));
+            _directoryService.Invalidate(lnk);
             RemoveContentTypeOverrides(path);
         }
 
@@ -4104,6 +4177,18 @@ namespace Emby.Server.Implementations.Library
 
             SetTopParentOrAncestorIds(query);
             return _itemRepository.GetQueryFiltersLegacy(query);
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> GetTagNames(InternalItemsQuery query)
+        {
+            if (query.User is not null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return _itemRepository.GetTagNames(query);
         }
 
         /// <inheritdoc />

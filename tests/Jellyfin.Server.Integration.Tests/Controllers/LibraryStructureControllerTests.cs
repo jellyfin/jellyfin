@@ -6,8 +6,11 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.LibraryStructureDto;
 using Jellyfin.Extensions.Json;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.v3.Priority;
 
@@ -23,6 +26,45 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     public LibraryStructureControllerTests(JellyfinApplicationFactory factory)
     {
         _factory = factory;
+    }
+
+    [Fact]
+    [Priority(-3)]
+    public async Task AddVirtualFolder_WithWarmDirectoryServiceCache_InvalidatesTheParentListing()
+    {
+        const string Name = "stale-cache-test";
+
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+
+        var directoryService = _factory.Services.GetRequiredService<IDirectoryService>();
+        var rootFolderPath = _factory.Services.GetRequiredService<IServerApplicationPaths>().DefaultUserViewsPath;
+
+        // Cache a listing of the libraries root taken before the new folder exists. Everything
+        // resolving through this DirectoryService keeps reading that listing until it is dropped,
+        // so the library stays invisible. Making the caches shared once turned this into a real
+        // test failure, see UpdateLibraryOptions_Valid_Success.
+        Assert.DoesNotContain(
+            directoryService.GetFileSystemEntries(rootFolderPath),
+            x => string.Equals(x.Name, Name, StringComparison.Ordinal));
+
+        var body = new AddVirtualFolderDto()
+        {
+            LibraryOptions = new LibraryOptions()
+            {
+                Enabled = false
+            }
+        };
+
+        using var response = await client.PostAsJsonAsync($"Library/VirtualFolders?name={Name}&refreshLibrary=false", body, _jsonOptions, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+        Assert.Contains(
+            directoryService.GetFileSystemEntries(rootFolderPath),
+            x => string.Equals(x.Name, Name, StringComparison.Ordinal));
+
+        using var cleanup = await client.DeleteAsync($"Library/VirtualFolders?name={Name}&refreshLibrary=false", TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.NoContent, cleanup.StatusCode);
     }
 
     [Fact]

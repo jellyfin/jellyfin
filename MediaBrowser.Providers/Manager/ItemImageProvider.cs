@@ -254,6 +254,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
+                result.Failures++;
                 result.ErrorMessage = ex.Message;
                 _logger.LogError(ex, "Error in {Provider} for {Item}", provider.Name, item.Path ?? item.Name);
             }
@@ -338,6 +339,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
+                result.Failures++;
                 result.ErrorMessage = ex.Message;
                 _logger.LogError(ex, "Error in {Provider} for {Item}", provider.Name, item.Path ?? item.Name);
             }

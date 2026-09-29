@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Locking;
@@ -10,6 +11,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
@@ -25,7 +27,7 @@ public abstract class SqliteDbTestFixture : IDisposable
     private readonly SqliteConnection _connection;
     private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
 
-    protected SqliteDbTestFixture()
+    protected SqliteDbTestFixture(params IInterceptor[] interceptors)
     {
         ApplicationPaths = new Mock<IApplicationPaths>().Object;
 
@@ -34,6 +36,7 @@ public abstract class SqliteDbTestFixture : IDisposable
 
         _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
             .UseSqlite(_connection)
+            .AddInterceptors(interceptors)
             .Options;
 
         using var context = CreateDbContext();
@@ -58,6 +61,8 @@ public abstract class SqliteDbTestFixture : IDisposable
     {
         var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
         factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
+        factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CreateDbContext);
 
         return factory.Object;
     }

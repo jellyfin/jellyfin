@@ -27,6 +27,11 @@ namespace Emby.Server.Implementations.EntryPoints;
 /// </summary>
 public sealed class LibraryChangedNotifier : IHostedService, IDisposable
 {
+    // A batch holds a live reference to every item it names, so it has to stay small enough that a
+    // library scan - which changes items faster than any batch window closes - cannot grow it without
+    // bound. Reached only by a scan; interactive use closes a batch on the window long before this.
+    internal const int MaxBatchSize = 2000;
+
     private readonly ILibraryManager _libraryManager;
     private readonly IServerConfigurationManager _configurationManager;
     private readonly IProviderManager _providerManager;
@@ -35,11 +40,11 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
     private readonly ILogger<LibraryChangedNotifier> _logger;
 
     private readonly Lock _libraryChangedSyncLock = new();
-    private readonly List<Folder> _foldersAddedTo = new();
-    private readonly List<Folder> _foldersRemovedFrom = new();
-    private readonly List<BaseItem> _itemsAdded = new();
-    private readonly List<BaseItem> _itemsRemoved = new();
-    private readonly List<BaseItem> _itemsUpdated = new();
+    private readonly Dictionary<Guid, Folder> _foldersAddedTo = [];
+    private readonly Dictionary<Guid, Folder> _foldersRemovedFrom = [];
+    private readonly Dictionary<Guid, BaseItem> _itemsAdded = [];
+    private readonly Dictionary<Guid, BaseItem> _itemsRemoved = [];
+    private readonly Dictionary<Guid, BaseItem> _itemsUpdated = [];
     private readonly ConcurrentDictionary<Guid, DateTime> _lastProgressMessageTimes = new();
 
     private Timer? _libraryUpdateTimer;
@@ -173,7 +178,7 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
     private void OnLibraryItemRemoved(object? sender, ItemChangeEventArgs e)
         => OnLibraryChange(e.Item, e.Parent, _itemsRemoved, _foldersRemovedFrom);
 
-    private void OnLibraryChange(BaseItem item, BaseItem parent, List<BaseItem> itemsList, List<Folder>? foldersList)
+    private void OnLibraryChange(BaseItem item, BaseItem parent, Dictionary<Guid, BaseItem> itemsList, Dictionary<Guid, Folder>? foldersList)
     {
         if (!FilterItem(item))
         {
@@ -182,23 +187,28 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
 
         lock (_libraryChangedSyncLock)
         {
-            var updateDuration = TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryUpdateDuration);
-
+            // The window runs from the first change of a batch and is never extended. Extending it on
+            // every change would keep a library scan's batch open for the whole scan, and the batch
+            // holds the items it names alive, so it would grow to the size of the library.
             if (_libraryUpdateTimer is null)
             {
+                var updateDuration = TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryUpdateDuration);
                 _libraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, updateDuration, Timeout.InfiniteTimeSpan);
-            }
-            else
-            {
-                _libraryUpdateTimer.Change(updateDuration, Timeout.InfiniteTimeSpan);
             }
 
             if (foldersList is not null && parent is Folder folder)
             {
-                foldersList.Add(folder);
+                foldersList[folder.Id] = folder;
             }
 
-            itemsList.Add(item);
+            itemsList[item.Id] = item;
+
+            // A window long enough to cover a burst still has to give way once the batch is large
+            // enough to be worth sending on its own.
+            if (_itemsAdded.Count + _itemsRemoved.Count + _itemsUpdated.Count >= MaxBatchSize)
+            {
+                _libraryUpdateTimer.Change(TimeSpan.Zero, Timeout.InfiniteTimeSpan);
+            }
         }
     }
 
@@ -211,22 +221,16 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
         List<BaseItem> itemsRemoved;
         lock (_libraryChangedSyncLock)
         {
-            // Remove dupes in case some were saved multiple times
-            foldersAddedTo = _foldersAddedTo
-                .DistinctBy(x => x.Id)
-                .ToList();
-
-            foldersRemovedFrom = _foldersRemovedFrom
-                .DistinctBy(x => x.Id)
-                .ToList();
+            foldersAddedTo = _foldersAddedTo.Values.ToList();
+            foldersRemovedFrom = _foldersRemovedFrom.Values.ToList();
 
             itemsUpdated = _itemsUpdated
-                .Where(i => !_itemsAdded.Contains(i))
-                .DistinctBy(x => x.Id)
+                .Where(e => !_itemsAdded.ContainsKey(e.Key))
+                .Select(e => e.Value)
                 .ToList();
 
-            itemsAdded = _itemsAdded.ToList();
-            itemsRemoved = _itemsRemoved.ToList();
+            itemsAdded = _itemsAdded.Values.ToList();
+            itemsRemoved = _itemsRemoved.Values.ToList();
 
             if (_libraryUpdateTimer is not null)
             {
@@ -239,6 +243,15 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
             _itemsUpdated.Clear();
             _foldersAddedTo.Clear();
             _foldersRemovedFrom.Clear();
+        }
+
+        if (itemsAdded.Count == 0
+            && itemsUpdated.Count == 0
+            && itemsRemoved.Count == 0
+            && foldersAddedTo.Count == 0
+            && foldersRemovedFrom.Count == 0)
+        {
+            return;
         }
 
         await SendChangeNotifications(itemsAdded, itemsUpdated, itemsRemoved, foldersAddedTo, foldersRemovedFrom, CancellationToken.None).ConfigureAwait(false);

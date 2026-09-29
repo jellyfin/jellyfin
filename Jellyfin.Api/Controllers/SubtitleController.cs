@@ -233,18 +233,17 @@ public class SubtitleController : BaseJellyfinApiController
             format = "json";
         }
 
-        if (string.IsNullOrEmpty(format))
+        // Graphical subtitles cannot be parsed or rewritten, so they are always delivered as the raw
+        // stream for the client to render. Serve them straight from disk instead of piping them
+        // through the encoder, so that range requests keep working: clients fetch these tracks
+        // incrementally while rendering them, and they are far too large to hand over in one piece.
+        if (MediaStream.IsPgsFormat(format) || MediaStream.IsVobSubFormat(format))
         {
-            var item = _libraryManager.GetItemById<Video>(itemId.Value);
-
-            var idString = itemId.Value.ToString("N", CultureInfo.InvariantCulture);
-            var mediaSource = _mediaSourceManager.GetStaticMediaSources(item, false)
-                .First(i => string.Equals(i.Id, mediaSourceId ?? idString, StringComparison.Ordinal));
-
-            var subtitleStream = mediaSource.MediaStreams
-                .First(i => i.Type == MediaStreamType.Subtitle && i.Index == index);
-
-            return PhysicalFile(subtitleStream.Path, MimeTypes.GetMimeType(subtitleStream.Path));
+            var subtitlePath = await GetGraphicalSubtitlePath(itemId.Value, mediaSourceId, index.Value).ConfigureAwait(false);
+            if (!string.IsNullOrEmpty(subtitlePath))
+            {
+                return PhysicalFile(subtitlePath, MimeTypes.GetMimeType(subtitlePath), true);
+            }
         }
 
         if (string.Equals(format, "vtt", StringComparison.OrdinalIgnoreCase) && addVttTimeMap)
@@ -454,6 +453,46 @@ public class SubtitleController : BaseJellyfinApiController
                 return NoContent();
             }
         }
+    }
+
+    private async Task<string?> GetGraphicalSubtitlePath(Guid id, string? mediaSourceId, int index)
+    {
+        var item = _libraryManager.GetItemById<BaseItem>(id);
+        if (item is null)
+        {
+            return null;
+        }
+
+        var idString = id.ToString("N", CultureInfo.InvariantCulture);
+        var mediaSource = _mediaSourceManager.GetStaticMediaSources(item, false)
+            .FirstOrDefault(i => string.Equals(i.Id, mediaSourceId ?? idString, StringComparison.OrdinalIgnoreCase));
+
+        var subtitleStream = mediaSource?.MediaStreams
+            .FirstOrDefault(i => i.Type == MediaStreamType.Subtitle && i.Index == index);
+
+        if (mediaSource is null || subtitleStream is null
+            || !(subtitleStream.IsPgsSubtitleStream || subtitleStream.IsVobSubSubtitleStream))
+        {
+            return null;
+        }
+
+        var path = await _subtitleEncoder.GetSubtitleFilePath(subtitleStream, mediaSource, CancellationToken.None).ConfigureAwait(false);
+        if (string.IsNullOrEmpty(path))
+        {
+            return null;
+        }
+
+        // Only a raw PGS payload or an extracted .mks can be handed over untouched. Anything else the
+        // encoder resolved to (e.g. a VobSub .idx/.sub pair, which it converts) is not a passthrough.
+        var extension = Path.GetExtension(path.AsSpan()).TrimStart('.').ToString();
+        if (!MediaStream.IsPgsFormat(extension)
+            && !string.Equals(extension, "mks", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        // Remotely hosted external subtitles have no local file to serve; those fall back to the encoder.
+        return _fileSystem.FileExists(path) ? path : null;
     }
 
     /// <summary>
