@@ -107,6 +107,7 @@ public class SqlSearchProvider : IInternalSearchProvider
         // great benefit for users with metadata in non-latin script,
         // since SortName is among other things stored transliterated
         var sortNameShape = BaseItem.GetSortName(rawSearchTerm, true, _configurationManager.Configuration);
+        var likeSortName = $"%{sortNameShape}%";
 
         var limit = query.Limit ?? DefaultSearchLimit;
 
@@ -120,7 +121,7 @@ public class SqlSearchProvider : IInternalSearchProvider
                 .Where(e => !e.IsVirtualItem)
                 .Where(e => e.CleanName!.Contains(cleanSearchTerm)
                     || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeOriginal))
-                    || (e.SortName != null && e.SortName.Contains(sortNameShape)));
+                    || (!string.IsNullOrEmpty(sortNameShape) && e.SortName != null && EF.Functions.Like(e.SortName, likeSortName)));
 
             dbQuery = ApplyTypeFilter(dbQuery, query.IncludeItemTypes, query.ExcludeItemTypes);
             dbQuery = ApplyMediaTypeFilter(dbQuery, query.MediaTypes);
