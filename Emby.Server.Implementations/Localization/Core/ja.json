@@ -109,5 +109,17 @@
     "CleanupUserDataTaskDescription": "90日以上存在しないメディアに対して、視聴状態やお気に入り状態などのユーザーデータをすべて削除します。",
     "LyricDownloadFailureFromForItem": "歌詞",
     "Original": "オリジナル",
-    "NameExtraThemeVideo": "テーマビデオ"
+    "NameExtraThemeVideo": "テーマビデオ",
+    "NameExtraBehindTheScenes": "舞台裏",
+    "NameExtraClip": "クリップ",
+    "NameExtraDeletedScene": "未公開シーン",
+    "NameExtraFeaturette": "短編",
+    "NameExtraInterview": "インタビュー",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "サンプル",
+    "NameExtraScene": "シーン",
+    "NameExtraShort": "ショート",
+    "NameExtraThemeSong": "テーマ曲",
+    "NameExtraTrailer": "予告編",
+    "NameExtraUnknown": "特典"
 }
