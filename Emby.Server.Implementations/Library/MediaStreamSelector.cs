@@ -63,7 +63,6 @@ namespace Emby.Server.Implementations.Library
             else if (mode == SubtitlePlaybackMode.Smart)
             {
                 // Only attempt to load subtitles if the audio language is not the user's first preferred subtitle language.
-                // Fallback languages do not suppress subtitles, e.g. "nld,eng" still loads Dutch subtitles for English audio.
                 // If no subtitles of preferred language available, use none.
                 // If the audio language is the user's first preferred subtitle language behave like OnlyForced.
                 if (!IsFirstPreferredLanguage(audioTrackLanguage, preferredLanguageGroups))

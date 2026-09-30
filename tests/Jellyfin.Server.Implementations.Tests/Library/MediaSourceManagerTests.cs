@@ -223,7 +223,6 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         [Fact]
         public void SetDefaultSubtitleStreamIndex_SingleLanguageWithTwoCodes_KeepsExternalPreference()
         {
-            // "nld" normalizes to both ISO 639-2 codes; the code order must not outrank the external flag.
             _mockLocalizationManager
                 .Setup(m => m.FindLanguageInfo("nld"))
                 .Returns(new CultureDto("Dutch", "Dutch", "nl", new EditableList<string> { "nld", "dut" }));

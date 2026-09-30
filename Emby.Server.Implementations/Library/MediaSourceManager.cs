@@ -497,7 +497,7 @@ namespace Emby.Server.Implementations.Library
                 return [];
             }
 
-            // Keep one entry per preference so all codes of a language (e.g. "nld" and "dut") share the same rank.
+            // One entry per preference, so "nld" and "dut" share a rank.
             return languages
                 .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
                 .Select(NormalizeLanguage)
