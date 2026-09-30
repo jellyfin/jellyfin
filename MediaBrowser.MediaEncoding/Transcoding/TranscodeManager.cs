@@ -731,7 +731,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting encoded media cache file {Path}", path);
+                _logger.LogError(ex, "Error deleting encoded media cache file {Path}", file);
             }
         }
     }
