@@ -1,7 +1,9 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints;
 
@@ -16,24 +18,36 @@ namespace Emby.Server.Implementations.EntryPoints;
 /// <see cref="MediaBrowser.MediaEncoding.Transcoding.TranscodeManager"/>'s constructor, which is a
 /// lazily-constructed DI singleton: the wipe actually ran on whatever stream was requested first,
 /// which could delete a Live TV buffer file already open for writing (jellyfin/jellyfin#17593).
+/// An error during the wipe is logged and does not prevent the server from starting.
 /// </summary>
 public sealed class TranscodeCacheCleaner : IHostedService
 {
     private readonly ITranscodeManager _transcodeManager;
+    private readonly ILogger<TranscodeCacheCleaner> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TranscodeCacheCleaner"/> class.
     /// </summary>
     /// <param name="transcodeManager">The <see cref="ITranscodeManager"/>.</param>
-    public TranscodeCacheCleaner(ITranscodeManager transcodeManager)
+    /// <param name="logger">The <see cref="ILogger{TranscodeCacheCleaner}"/>.</param>
+    public TranscodeCacheCleaner(ITranscodeManager transcodeManager, ILogger<TranscodeCacheCleaner> logger)
     {
         _transcodeManager = transcodeManager;
+        _logger = logger;
     }
 
     /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _transcodeManager.DeleteEncodedMediaCache();
+        try
+        {
+            _transcodeManager.DeleteEncodedMediaCache();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to wipe the transcode cache at startup, continuing server startup");
+        }
+
         return Task.CompletedTask;
     }
 
