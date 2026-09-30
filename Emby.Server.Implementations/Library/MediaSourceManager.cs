@@ -490,17 +490,17 @@ namespace Emby.Server.Implementations.Library
             return [language];
         }
 
-        private IReadOnlyList<string> NormalizeLanguages(string languages)
+        private IReadOnlyList<IReadOnlyList<string>> NormalizeLanguages(string languages)
         {
             if (string.IsNullOrEmpty(languages))
             {
                 return [];
             }
 
+            // Keep one entry per preference so all codes of a language (e.g. "nld" and "dut") share the same rank.
             return languages
                 .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-                .SelectMany(NormalizeLanguage)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(NormalizeLanguage)
                 .ToArray();
         }
 

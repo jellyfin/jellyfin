@@ -221,6 +221,55 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         }
 
         [Fact]
+        public void SetDefaultSubtitleStreamIndex_SingleLanguageWithTwoCodes_KeepsExternalPreference()
+        {
+            // "nld" normalizes to both ISO 639-2 codes; the code order must not outrank the external flag.
+            _mockLocalizationManager
+                .Setup(m => m.FindLanguageInfo("nld"))
+                .Returns(new CultureDto("Dutch", "Dutch", "nl", new EditableList<string> { "nld", "dut" }));
+
+            var mediaInfo = new MediaSourceInfo
+            {
+                MediaStreams = new MediaStream[]
+                {
+                    new() { Index = 0, Type = MediaStreamType.Video, IsDefault = true },
+                    new() { Index = 1, Type = MediaStreamType.Audio, Language = "eng", IsDefault = true },
+                    new() { Index = 2, Type = MediaStreamType.Subtitle, Language = "nld" },
+                    new() { Index = 3, Type = MediaStreamType.Subtitle, Language = "dut", IsExternal = true }
+                }
+            };
+            _user.SubtitleMode = SubtitlePlaybackMode.Always;
+            _user.SubtitleLanguagePreference = "nld";
+            _user.AudioLanguagePreference = string.Empty;
+
+            _mediaSourceManager.SetDefaultAudioAndSubtitleStreamIndices(_item, mediaInfo, _user);
+
+            Assert.Equal(3, mediaInfo.DefaultSubtitleStreamIndex);
+        }
+
+        [Fact]
+        public void SetDefaultSubtitleStreamIndex_SmartWithAudioInFallbackLanguage_SelectsFirstLanguage()
+        {
+            var mediaInfo = new MediaSourceInfo
+            {
+                MediaStreams = new MediaStream[]
+                {
+                    new() { Index = 0, Type = MediaStreamType.Video, IsDefault = true },
+                    new() { Index = 1, Type = MediaStreamType.Audio, Language = "eng", IsDefault = true },
+                    new() { Index = 2, Type = MediaStreamType.Subtitle, Language = "nld" },
+                    new() { Index = 3, Type = MediaStreamType.Subtitle, Language = "eng" }
+                }
+            };
+            _user.SubtitleMode = SubtitlePlaybackMode.Smart;
+            _user.SubtitleLanguagePreference = "nld,eng";
+            _user.AudioLanguagePreference = string.Empty;
+
+            _mediaSourceManager.SetDefaultAudioAndSubtitleStreamIndices(_item, mediaInfo, _user);
+
+            Assert.Equal(2, mediaInfo.DefaultSubtitleStreamIndex);
+        }
+
+        [Fact]
         public void SetDefaultSubtitleStreamIndex_OnlyForcedRemembersFullTrackWithNoForcedStream_SelectsNothing()
         {
             _mockUserDataManager
