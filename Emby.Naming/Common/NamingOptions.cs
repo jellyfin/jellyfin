@@ -16,6 +16,10 @@ namespace Emby.Naming.Common
     /// </summary>
     public class NamingOptions
     {
+        // A website name, with or without "www.". Without it, only a few common top-level domains are accepted,
+        // so dotted titles such as "Apocalypse.Now" or "Exit.Through.the.Gift.Shop" are not mistaken for one.
+        private const string WebsitePattern = @"(?:www\.\S+|[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:com|org|net|info|io|cc|ws|xyz|to|mx|am|ag|lt|se|nl|ru|eu|sx|cx|pw))";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="NamingOptions"/> class.
         /// </summary>
@@ -151,6 +155,9 @@ namespace Emby.Naming.Common
 
             CleanStrings =
             [
+                // Website names are removed first, as some top-level domains are also release tags (e.g. ".ws", ".se")
+                $@"^\s*{WebsitePattern}\s+-\s+(?<cleaned>.+)",
+                $@"^\s*(?<cleaned>.+?)\s+-\s+{WebsitePattern}\s*$",
                 @"^\s*(?<cleaned>.+?)[ _\,\.\(\)\[\]\-](3d|sbs|tab|hsbs|htab|mvc|HDR|HDC|UHD|UltraHD|4k|ac3|dts|custom|dc|divx|divx5|dsr|dsrip|dutch|dvd|dvdrip|dvdscr|dvdscreener|screener|dvdivx|cam|fragment|fs|hdtv|hdrip|hdtvrip|internal|limited|multi|subs|ntsc|ogg|ogm|pal|pdtv|proper|repack|rerip|retail|cd[1-9]|r5|bd5|bd|se|svcd|swedish|german|read.nfo|nfofix|unrated|ws|web-dl|telesync|ts|telecine|tc|brrip|bdrip|480p|480i|576p|576i|720p|720i|1080p|1080i|2160p|hrhd|hrhdtv|hddvd|bluray|blu-ray|x264|x265|h264|h265|xvid|xvidvd|xxx|www.www|AAC|DTS)(?=[ _\,\.\(\)\[\]\-]|$)",
                 @"^\s*(?<cleaned>.+?)((\s*\[[^\]]+\]\s*)+)(\.[^\s]+)?$",
                 @"^\s*(?<cleaned>.+?)\WE[0-9]+(-|~)E?[0-9]+(\W|$)",

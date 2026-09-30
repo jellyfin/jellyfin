@@ -34,6 +34,13 @@ namespace Jellyfin.Naming.Tests.Video
 
             data.Add(
                 new VideoFileInfo(
+                    path: "/server/Movies/Before Sunset (2004)/www.example.org    -    Before Sunset 2004 1080p.mkv",
+                    container: "mkv",
+                    name: "Before Sunset",
+                    year: 2004));
+
+            data.Add(
+                new VideoFileInfo(
                     path: "/server/Movies/brave (2007)/brave (2006).3d.sbs.mkv",
                     container: "mkv",
                     name: "brave",
