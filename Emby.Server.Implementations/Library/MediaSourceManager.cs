@@ -490,6 +490,20 @@ namespace Emby.Server.Implementations.Library
             return [language];
         }
 
+        private IReadOnlyList<string> NormalizeLanguages(string languages)
+        {
+            if (string.IsNullOrEmpty(languages))
+            {
+                return [];
+            }
+
+            return languages
+                .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                .SelectMany(NormalizeLanguage)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
+
         private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
         {
             if (userData is not null
@@ -512,7 +526,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var preferredSubs = NormalizeLanguage(user.SubtitleLanguagePreference);
+            var preferredSubs = NormalizeLanguages(user.SubtitleLanguagePreference);
 
             var defaultAudioIndex = source.DefaultAudioStreamIndex;
             var audioLanguage = defaultAudioIndex is null

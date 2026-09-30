@@ -39,10 +39,11 @@ namespace Emby.Server.Implementations.Library
                 return null;
             }
 
-            // Sort in the following order: Default > No tag > Forced
+            // For ordered preferences, sort by language first, then external/default/forced flags.
             var sortedStreams = streams
                 .Where(i => i.Type == MediaStreamType.Subtitle)
-                .OrderByDescending(x => x.IsExternal)
+                .OrderBy(x => preferredLanguages.Count > 1 ? GetLanguagePreferenceIndex(x.Language, preferredLanguages) : 0)
+                .ThenByDescending(x => x.IsExternal)
                 .ThenByDescending(x => x.IsDefault)
                 .ThenByDescending(x => !x.IsForced && MatchesPreferredLanguage(x.Language, preferredLanguages))
                 .ThenByDescending(x => x.IsForced && MatchesPreferredLanguage(x.Language, preferredLanguages))
@@ -158,6 +159,12 @@ namespace Emby.Server.Implementations.Library
                 preferredLanguages.Contains(language, StringComparison.OrdinalIgnoreCase);
         }
 
+        private static int GetLanguagePreferenceIndex(string language, IReadOnlyList<string> preferredLanguages)
+        {
+            var index = preferredLanguages.FindIndex(x => string.Equals(x, language, StringComparison.OrdinalIgnoreCase));
+            return index == -1 ? int.MaxValue : index;
+        }
+
         private static bool IsLanguageUndefined(string language)
         {
             // Check for null, empty, or known placeholders
@@ -173,7 +180,8 @@ namespace Emby.Server.Implementations.Library
         {
             return sortedStreams
                 .Where(s => s.IsForced && (MatchesPreferredLanguage(s.Language, preferredLanguages) || IsLanguageUndefined(s.Language)))
-                .OrderByDescending(s => MatchesPreferredLanguage(s.Language, preferredLanguages))
+                .OrderBy(s => preferredLanguages.Count > 1 ? GetLanguagePreferenceIndex(s.Language, preferredLanguages) : 0)
+                .ThenByDescending(s => MatchesPreferredLanguage(s.Language, preferredLanguages))
                 .ThenByDescending(s => IsLanguageUndefined(s.Language))
                 .ToList();
         }
