@@ -358,6 +358,8 @@ public class ItemUpdateController : BaseJellyfinApiController
         {
             foreach (var ep in season.Children.OfType<Episode>())
             {
+                ep.SeasonName = season.Name;
+
                 if (!ep.LockedFields.Contains(MetadataField.OfficialRating))
                 {
                     ep.OfficialRating = request.OfficialRating;
