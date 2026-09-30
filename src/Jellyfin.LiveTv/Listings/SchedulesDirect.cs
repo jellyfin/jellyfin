@@ -55,6 +55,9 @@ namespace Jellyfin.LiveTv.Listings
         // The spec requires a client to stay away for an hour once the service reports Offline.
         private const int OfflineBackoffMinutes = 60;
 
+        private const int LoginBackoffMinutes = 30;
+        private const int MaxLoginsBackoffHours = 24;
+
         private const int StatusCacheMinutes = 10;
 
         private readonly ILogger<SchedulesDirect> _logger;
@@ -74,7 +77,7 @@ namespace Jellyfin.LiveTv.Listings
 
         private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new();
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
-        private long _lastErrorResponseTicks;
+        private long _loginBackoffUntilTicks;
         private volatile bool _accountError;
         private bool _disposed;
 
@@ -372,7 +375,7 @@ namespace Jellyfin.LiveTv.Listings
 
             // A station-wide failure such as SCHEDULE_QUEUED arrives as a bare object rather than
             // the usual array, so the shape has to be inspected before it is deserialized.
-            var payload = await Request<JsonElement>(options, true, info, cancellationToken).ConfigureAwait(false);
+            var payload = await Request<JsonElement>(options, true, info, cancellationToken, bodyCodeIsError: false).ConfigureAwait(false);
             var dailySchedules = payload.ValueKind switch
             {
                 JsonValueKind.Array => payload.Deserialize<IReadOnlyList<DayDto>>(_jsonOptions),
@@ -938,7 +941,7 @@ namespace Jellyfin.LiveTv.Listings
         private void ResetErrorState(ListingsProviderInfo info)
         {
             _accountError = false;
-            Interlocked.Exchange(ref _lastErrorResponseTicks, 0);
+            Interlocked.Exchange(ref _loginBackoffUntilTicks, 0);
             Interlocked.Exchange(ref _offlineUntilTicks, 0);
             _status = null;
 
@@ -973,10 +976,13 @@ namespace Jellyfin.LiveTv.Listings
                 return null;
             }
 
-            // Avoid hammering SD after transient login failures (e.g. max attempts / temporary lockout)
-            if ((DateTime.UtcNow - new DateTime(Interlocked.Read(ref _lastErrorResponseTicks), DateTimeKind.Utc)).TotalMinutes < 30)
+            // Avoid hammering SD after login failures (temporary lockout, too many logins).
+            var backoffUntil = Interlocked.Read(ref _loginBackoffUntilTicks);
+            if (DateTime.UtcNow.Ticks < backoffUntil)
             {
-                _logger.LogWarning("Skipping Schedules Direct request because of a recent login failure. Retrying no earlier than 30 minutes after it.");
+                _logger.LogWarning(
+                    "Skipping Schedules Direct request because of a recent login failure. Retrying no earlier than {RetryAt}.",
+                    new DateTime(backoffUntil, DateTimeKind.Utc));
 
                 return null;
             }
@@ -1017,7 +1023,7 @@ namespace Jellyfin.LiveTv.Listings
                         && (int)ex.StatusCode.Value < 500)
                     {
                         _tokens.Clear();
-                        Interlocked.Exchange(ref _lastErrorResponseTicks, DateTime.UtcNow.Ticks);
+                        BackOffLogins(TimeSpan.FromMinutes(LoginBackoffMinutes));
                     }
 
                     throw;
@@ -1036,8 +1042,9 @@ namespace Jellyfin.LiveTv.Listings
             var status = await GetStatus(info, cancellationToken).ConfigureAwait(false);
             if (status is null)
             {
-                // A failed status check is not a reason to skip the refresh on its own.
-                return true;
+                // A failed status check is not a reason to skip the refresh on its own, unless it
+                // failed with SERVICE_OFFLINE.
+                return DateTime.UtcNow.Ticks >= Interlocked.Read(ref _offlineUntilTicks);
             }
 
             // The spec does not define the order of the entries, so any of them can be the one
@@ -1133,17 +1140,28 @@ namespace Jellyfin.LiveTv.Listings
                 case SdErrorCode.ServiceBusy:
                 case SdErrorCode.AccountTempLock:
                     // Transient login errors — back off for 30 minutes, then allow retry.
-                    _logger.LogError("Schedules Direct transient error (code {SdCode}). Backing off for 30 minutes.", sdCode);
+                    _logger.LogError("Schedules Direct transient error (code {SdCode}). Backing off for {Minutes} minutes.", sdCode, LoginBackoffMinutes);
                     _tokens.Clear();
-                    Interlocked.Exchange(ref _lastErrorResponseTicks, DateTime.UtcNow.Ticks);
+                    BackOffLogins(TimeSpan.FromMinutes(LoginBackoffMinutes));
                     return true;
 
                 case SdErrorCode.MaxLoginAttempts:
-                case SdErrorCode.MaxIPAttempts:
-                    // These count logins, so continuing to ask for a token is what earned them.
-                    // The user has to contact SD support, so nothing is retried automatically.
+                    // Counts logins, so asking for a token again is what earned it. SD support confirmed it
+                    // clears 24 hours after the first login; waiting 24 hours from now is always past that.
                     _logger.LogError(
-                        "Schedules Direct account limit error (code {SdCode}). Disabling SD until server restart; the user has to contact Schedules Direct support.",
+                        "Schedules Direct login limit reached (code {SdCode}). Not logging in again for {Hours} hours.",
+                        sdCode,
+                        MaxLoginsBackoffHours);
+                    _tokens.Clear();
+                    BackOffLogins(TimeSpan.FromHours(MaxLoginsBackoffHours));
+                    SetImageLimitHit();
+                    SetMetadataLimitHit();
+                    return true;
+
+                case SdErrorCode.MaxIPAttempts:
+                    // Unconfirmed whether this one self-heals, so it stays disabled like an account error.
+                    _logger.LogError(
+                        "Schedules Direct unique IP limit reached (code {SdCode}). Disabling SD until server restart; the user has to contact Schedules Direct support.",
                         sdCode);
                     _tokens.Clear();
                     _accountError = true;
@@ -1174,19 +1192,21 @@ namespace Jellyfin.LiveTv.Listings
             bool enableRetry,
             ListingsProviderInfo providerInfo,
             CancellationToken cancellationToken,
-            HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead)
+            bool bodyCodeIsError = true)
         {
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                .SendAsync(message, completionOption, cancellationToken)
+                .SendAsync(message, HttpCompletionOption.ResponseContentRead, cancellationToken)
                 .ConfigureAwait(false);
-            if (response.IsSuccessStatusCode)
-            {
-                return await response.Content.ReadFromJsonAsync<T>(_jsonOptions, cancellationToken).ConfigureAwait(false);
-            }
-
             var responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
+            // SD can report a failure as HTTP 200 with a non-zero code, which would otherwise
+            // deserialize into an empty object and read as success.
             var errorCode = TryGetErrorCode(responseBody);
+            if (response.IsSuccessStatusCode && (!bodyCodeIsError || errorCode is null or 0))
+            {
+                return JsonSerializer.Deserialize<T>(responseBody, _jsonOptions);
+            }
+
             var sdCode = ToKnownErrorCode(errorCode);
 
             _logger.LogError(
@@ -1239,14 +1259,6 @@ namespace Jellyfin.LiveTv.Listings
             {
                 _logger.LogInformation("Authenticated with Schedules Direct token: {Token}", root.Token);
                 return root.Token;
-            }
-
-            // A rejected login can still arrive as HTTP 200 with an error code in the body, so the
-            // code has to be acted on here as well or we keep retrying a disabled account.
-            var tokenCode = ToKnownErrorCode(root?.Code);
-            if (tokenCode.HasValue)
-            {
-                ApplyErrorCode(tokenCode.Value);
             }
 
             throw new AuthenticationException("Could not authenticate with Schedules Direct Error: " + (root?.Message ?? "empty response"));
@@ -1487,7 +1499,8 @@ namespace Jellyfin.LiveTv.Listings
 
         private static int? TryGetErrorCode(string responseBody)
         {
-            if (string.IsNullOrWhiteSpace(responseBody))
+            // Only an object can carry a code; this also spares parsing large program arrays twice.
+            if (string.IsNullOrWhiteSpace(responseBody) || !responseBody.AsSpan().TrimStart().StartsWith('{'))
             {
                 return null;
             }
@@ -1509,6 +1522,9 @@ namespace Jellyfin.LiveTv.Listings
 
             return null;
         }
+
+        private void BackOffLogins(TimeSpan duration)
+            => Interlocked.Exchange(ref _loginBackoffUntilTicks, DateTime.UtcNow.Add(duration).Ticks);
 
         private static SdErrorCode? ToKnownErrorCode(int? code)
             => code.HasValue && Enum.IsDefined((SdErrorCode)code.Value) ? (SdErrorCode)code.Value : null;

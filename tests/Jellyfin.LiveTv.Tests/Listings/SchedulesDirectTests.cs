@@ -245,6 +245,19 @@ public class SchedulesDirectTests : IDisposable
     }
 
     [Fact]
+    public async Task GetProgramsAsync_OfflineCodeWithHttp200_ThrowsInsteadOfReportingNoPrograms()
+    {
+        // A 200 carrying an error code used to deserialize into an empty status that read as online.
+        var server = new FakeServer { StatusCode = 3000 };
+        using var provider = CreateProvider(server);
+
+        await Assert.ThrowsAnyAsync<Exception>(
+            () => provider.GetProgramsAsync(_info, "20454", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), TestContext.Current.CancellationToken));
+
+        Assert.Equal(0, server.Counts.GetValueOrDefault("/schedules"));
+    }
+
+    [Fact]
     public async Task GetProgramsAsync_ImageLimitHit_StillReturnsPrograms()
     {
         // The image limit must not be mistaken for a fetch failure: the listings are still good,
@@ -355,13 +368,14 @@ public class SchedulesDirectTests : IDisposable
     }
 
     [Theory]
-    [InlineData(4009, "TOO_MANY_LOGINS")]
-    [InlineData(4010, "TOO_MANY_UNIQUE_IPS")]
-    public async Task GetLineups_AccountLimitReached_StopsLoggingIn(int code, string response)
+    [InlineData(HttpStatusCode.Forbidden, 4009, "TOO_MANY_LOGINS")]
+    [InlineData(HttpStatusCode.OK, 4009, "TOO_MANY_LOGINS")]
+    [InlineData(HttpStatusCode.Forbidden, 4010, "TOO_MANY_UNIQUE_IPS")]
+    public async Task GetLineups_AccountLimitReached_StopsLoggingIn(HttpStatusCode status, int code, string response)
     {
         var login = new Response
         {
-            Status = HttpStatusCode.Forbidden,
+            Status = status,
             Body = ErrorBody(code, response)
         };
         using var provider = CreateProvider(login, await GetHeadendsResponse());
@@ -530,6 +544,8 @@ public class SchedulesDirectTests : IDisposable
 
         public string SystemStatus { get; set; } = "Online";
 
+        public int StatusCode { get; set; }
+
         public string Md5Salt { get; set; } = "base";
 
         public HttpStatusCode LineupPutStatus { get; set; } = HttpStatusCode.OK;
@@ -565,7 +581,7 @@ public class SchedulesDirectTests : IDisposable
                     break;
 
                 case "/status":
-                    body = "{\"code\":0,\"account\":{\"maxLineups\":4},\"lineups\":[{\"lineup\":\"USA-OTA-90210\",\"modified\":\""
+                    body = "{\"code\":" + StatusCode.ToString(CultureInfo.InvariantCulture) + ",\"account\":{\"maxLineups\":4},\"lineups\":[{\"lineup\":\"USA-OTA-90210\",\"modified\":\""
                         + LineupModified.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)
                         + "\"}],\"systemStatus\":[{\"status\":\"" + SystemStatus + "\",\"message\":\"test\"}]}";
                     break;

@@ -200,7 +200,7 @@ public enum SdErrorCode
     AccountInactive = 4008,
 
     /// <summary>
-    /// Exceeded the maximum number of logins in 24 hours; the user must contact SD support.
+    /// Exceeded the maximum number of logins in 24 hours; clears 24 hours after the first login.
     /// </summary>
     MaxLoginAttempts = 4009,
 
