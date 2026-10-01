@@ -25,6 +25,18 @@ public class TrickplayOptions
     public bool EnableKeyFrameOnlyExtraction { get; set; } = false;
 
     /// <summary>
+    /// Restrict trickplay generation to primary media only.
+    /// This is a global server setting, not a library setting.
+    /// </summary>
+    public bool GenerateTrickplayForPrimaryMediaOnly { get; set; } = false;
+
+    /// <summary>
+    /// Remove existing trickplay for excluded media during the next pass.
+    /// This only has an effect when GenerateTrickplayForPrimaryMediaOnly is enabled.
+    /// </summary>
+    public bool RemoveUnwantedTrickplayOnNextPass { get; set; } = false;
+
+    /// <summary>
     /// Gets or sets the behavior used by trickplay provider on library scan/update.
     /// </summary>
     public TrickplayScanBehavior ScanBehavior { get; set; } = TrickplayScanBehavior.NonBlocking;
