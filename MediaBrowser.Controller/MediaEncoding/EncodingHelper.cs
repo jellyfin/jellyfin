@@ -2693,6 +2693,28 @@ namespace MediaBrowser.Controller.MediaEncoding
             return reasons;
         }
 
+        private static int GetBitDepthCompensatedBitrate(int bitrate, MediaStream videoStream, int targetBitDepth)
+        {
+            if (targetBitDepth >= 10
+                || (videoStream.BitDepth is int bitDepth && bitDepth <= targetBitDepth)
+                || videoStream.BitRate is not int sourceBitrate)
+            {
+                return bitrate;
+            }
+
+            // Bit depth reduction requires bit rate compensation because
+            // 10-bit encoded video is significantly more efficient.
+            var factor = sourceBitrate switch
+            {
+                <= 4_000_000 => 1.5,
+                <= 8_000_000 => 1.2,
+                <= 12_000_000 => 1.1,
+                _ => 1.05
+            };
+
+            return Convert.ToInt32(bitrate * factor);
+        }
+
         public int GetVideoBitrateParamValue(BaseEncodingJobOptions request, MediaStream videoStream, string outputVideoCodec)
         {
             var bitrate = request.VideoBitRate;
@@ -2715,6 +2737,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (bitrate.HasValue)
                 {
                     var inputVideoCodec = videoStream.Codec;
+                    bitrate = GetBitDepthCompensatedBitrate(bitrate.Value, videoStream, 8);
                     bitrate = ScaleBitrate(bitrate.Value, inputVideoCodec, outputVideoCodec);
 
                     // If a max bitrate was requested, don't let the scaled bitrate exceed it
