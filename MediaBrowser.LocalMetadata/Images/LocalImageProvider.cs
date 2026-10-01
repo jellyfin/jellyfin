@@ -348,7 +348,7 @@ namespace MediaBrowser.LocalMetadata.Images
         {
             var imageFiles = _fileSystem.GetFiles(path, BaseItem.SupportedImageExtensions, false, false);
 
-            images.AddRange(imageFiles.Where(i => i.Length > 0).Select(i => new LocalImageInfo
+            images.AddRange(imageFiles.Where(i => i.Length > 0 && !i.Name.StartsWith('.')).Select(i => new LocalImageInfo
             {
                 FileInfo = i,
                 Type = ImageType.Backdrop
