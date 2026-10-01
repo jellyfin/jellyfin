@@ -52,6 +52,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             "tvcomid",
             "tagline",
             "studio",
+            "network",
             "genre",
             "tag",
             "runtime",
@@ -690,6 +691,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
             foreach (var studio in item.Studios.Trimmed().OrderBy(studio => studio))
             {
                 writer.WriteElementString("studio", studio);
+            }
+
+            foreach (var network in item.Networks.Trimmed().OrderBy(network => network))
+            {
+                writer.WriteElementString("network", network);
             }
 
             foreach (var tag in item.Tags.Trimmed().OrderBy(tag => tag))

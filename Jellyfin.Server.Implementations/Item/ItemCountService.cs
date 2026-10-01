@@ -135,6 +135,7 @@ public class ItemCountService : IItemCountService
             BaseItemKind.MusicArtist => [ItemValueType.Artist, ItemValueType.AlbumArtist],
             BaseItemKind.Genre or BaseItemKind.MusicGenre => [ItemValueType.Genre],
             BaseItemKind.Studio => [ItemValueType.Studios],
+            BaseItemKind.Network => [ItemValueType.Networks],
             _ => []
         };
 
