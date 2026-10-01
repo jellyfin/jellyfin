@@ -1,46 +1,29 @@
 #nullable disable
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.StudioImages
 {
     /// <summary>
-    /// Studio image provider.
+    /// Studio image provider. Serves images from the local jellyfin-artwork bundle maintained by
+    /// <see cref="RefreshStudioArtworkTask"/>; returns nothing when no local match exists.
     /// </summary>
     public class StudiosImageProvider : IRemoteImageProvider
     {
-        private readonly IServerConfigurationManager _config;
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IFileSystem _fileSystem;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="StudiosImageProvider"/> class.
-        /// </summary>
-        /// <param name="config">The <see cref="IServerConfigurationManager"/>.</param>
-        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
-        /// <param name="fileSystem">The <see cref="IFileSystem"/>.</param>
-        public StudiosImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory, IFileSystem fileSystem)
-        {
-            _config = config;
-            _httpClientFactory = httpClientFactory;
-            _fileSystem = fileSystem;
-        }
-
         /// <inheritdoc />
         public string Name => "Artwork Repository";
 
@@ -53,140 +36,147 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
         /// <inheritdoc />
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
-            return [ImageType.Thumb];
+            return [ImageType.Primary, ImageType.Thumb, ImageType.Logo];
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var thumbsPath = Path.Combine(_config.ApplicationPaths.CachePath, "imagesbyname", "remotestudiothumbs.txt");
+            var slug = StudioArtworkManager.ResolveStudioSlug(item.Name, item.ProviderIds);
+            var hasPrimary = StudioArtworkManager.TryGetStudioImagePath(slug, "primary", out var primaryPath);
+            var hasThumb = StudioArtworkManager.TryGetStudioImagePath(slug, "thumb", out var thumbPath);
+            var hasLogo = StudioArtworkManager.TryGetStudioImagePath(slug, "logo", out var logoPath);
 
-            await EnsureThumbsList(thumbsPath, cancellationToken).ConfigureAwait(false);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var imageInfo = GetImage(item, thumbsPath, ImageType.Thumb, "thumb");
-
-            if (imageInfo is null)
+            // Last-resort: bundle-wide placeholders at <artworkRoot>/placeholder-<kind>.<ext>.
+            if (!hasPrimary && StudioArtworkManager.TryGetPlaceholderImagePath("primary", out var placeholderPrimaryPath))
             {
-                return [];
+                hasPrimary = true;
+                primaryPath = placeholderPrimaryPath;
             }
 
-            return [imageInfo];
-        }
-
-        private RemoteImageInfo GetImage(BaseItem item, string filename, ImageType type, string remoteFilename)
-        {
-            var list = GetAvailableImages(filename);
-
-            var match = FindMatch(item, list);
-
-            if (!string.IsNullOrEmpty(match))
+            if (!hasThumb && StudioArtworkManager.TryGetPlaceholderImagePath("thumb", out var placeholderThumbPath))
             {
-                var url = GetUrl(match, remoteFilename);
-
-                return new RemoteImageInfo
-                {
-                    ProviderName = Name,
-                    Type = type,
-                    Url = url
-                };
+                hasThumb = true;
+                thumbPath = placeholderThumbPath;
             }
 
-            return null;
-        }
+            if (!hasLogo && StudioArtworkManager.TryGetPlaceholderImagePath("primary", out var placeholderLogoPath))
+            {
+                hasLogo = true;
+                logoPath = placeholderLogoPath;
+            }
 
-        private string GetUrl(string image, string filename)
-        {
-            return string.Format(CultureInfo.InvariantCulture, "{0}/images/{1}/{2}.jpg", GetRepositoryUrl(), image, filename);
-        }
+            var results = new List<RemoteImageInfo>(capacity: 3);
 
-        private async Task EnsureThumbsList(string file, CancellationToken cancellationToken)
-        {
-            string url = string.Format(CultureInfo.InvariantCulture, "{0}/thumbs.txt", GetRepositoryUrl());
+            if (hasPrimary)
+            {
+                results.Add(new RemoteImageInfo { ProviderName = Name, Type = ImageType.Primary, Url = primaryPath });
+            }
 
-            await EnsureList(url, file, _fileSystem, cancellationToken).ConfigureAwait(false);
+            if (hasThumb)
+            {
+                results.Add(new RemoteImageInfo { ProviderName = Name, Type = ImageType.Thumb, Url = thumbPath });
+            }
+
+            if (hasLogo)
+            {
+                results.Add(new RemoteImageInfo { ProviderName = Name, Type = ImageType.Logo, Url = logoPath });
+            }
+
+            return Task.FromResult<IEnumerable<RemoteImageInfo>>(results);
         }
 
         /// <inheritdoc />
-        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
+        public async Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-            return httpClient.GetAsync(url, cancellationToken);
+            // The only URLs this provider hands out are local paths into the artwork bundle, so
+            // serve them straight from disk. Read fully into memory because the returned
+            // HttpResponseMessage outlives this method; a StreamContent wrapping a still-open
+            // FileStream would either leak the handle or be disposed too early.
+            var bytes = await File.ReadAllBytesAsync(url, cancellationToken).ConfigureAwait(false);
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(bytes)
+            };
+
+            var mime = MimeTypes.GetMimeType(url);
+            if (!string.IsNullOrEmpty(mime))
+            {
+                response.Content.Headers.ContentType = new MediaTypeHeaderValue(mime);
+            }
+
+            return response;
         }
 
         /// <summary>
-        /// Ensures the existence of a file listing.
+        /// Converts a display name to the kebab-case machine-name used by the jellyfin-artwork layout.
         /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="file">The file.</param>
-        /// <param name="fileSystem">The file system.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A Task to ensure existence of a file listing.</returns>
-        public async Task EnsureList(string url, string file, IFileSystem fileSystem, CancellationToken cancellationToken)
+        /// <remarks>
+        /// Falls back to ICU transliteration (<see cref="StringExtensions.Transliterated(string)"/>)
+        /// when plain NFKD normalisation yields nothing - that's the case for names written entirely
+        /// in non-Latin scripts (CJK, Cyrillic, Arabic, ...). Without the fallback those names would
+        /// slug to the empty string and never resolve against the bundle.
+        /// </remarks>
+        /// <param name="name">The display name.</param>
+        /// <returns>The slug.</returns>
+        public static string Slugify(string name)
         {
-            var fileInfo = fileSystem.GetFileInfo(file);
-
-            if (!fileInfo.Exists || (DateTime.UtcNow - fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays > 1)
+            if (string.IsNullOrEmpty(name))
             {
-                var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
+                return string.Empty;
+            }
 
-                Directory.CreateDirectory(Path.GetDirectoryName(file));
-                var response = await httpClient.GetStreamAsync(url, cancellationToken).ConfigureAwait(false);
-                await using (response.ConfigureAwait(false))
+            var slug = SlugifyCore(name);
+            if (!string.IsNullOrEmpty(slug))
+            {
+                return slug;
+            }
+
+            // Names made up entirely of glyphs the ASCII filter drops (e.g. "中央电视台",
+            // "Кино", "السينما") slug to the empty string. Run the original through the
+            // ICU transliterator - which maps Han → Latin via pinyin, Cyrillic via BGN, etc. -
+            // and re-slug the Latin result. The transliterator's output is already lowercase
+            // ASCII with diacritics and punctuation stripped, but SlugifyCore still handles
+            // collapsing whitespace to hyphens and trimming.
+            return SlugifyCore(name.Transliterated());
+        }
+
+        private static string SlugifyCore(string name)
+        {
+            // The jellyfin-artwork bundle uses ASCII-only kebab-case directory names. NFKD
+            // (compatibility) decomposition reduces most Latin accents to base letter +
+            // combining mark (e.g. "é" -> "e" + COMBINING ACUTE; we drop the combining mark)
+            // AND expands compatibility characters to their ASCII equivalents - superscripts
+            // (² -> 2, ³ -> 3), roman numerals (Ⅱ -> II), ligatures (ﬁ -> fi), etc. Plain NFD
+            // would skip those, so e.g. "EMT²" -> "emt" instead of "emt2", which doesn't
+            // match the bundle's "studios/emt2/" directory (the bundle is built with NFKD).
+            // Letters that do not decompose (ł, ø, đ, ...) and non-Latin scripts (CJK,
+            // Cyrillic, ...) are NOT letter-or-digit in the ASCII range, so they become
+            // hyphens.
+            var normalized = name.Normalize(NormalizationForm.FormKD);
+            var builder = new StringBuilder(normalized.Length);
+            var lastWasHyphen = true;
+
+            foreach (var c in normalized)
+            {
+                if (CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.NonSpacingMark)
                 {
-                    var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
-                    await using (fileStream.ConfigureAwait(false))
-                    {
-                        await response.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                    }
+                    continue;
+                }
+
+                if (c < 128 && char.IsLetterOrDigit(c))
+                {
+                    builder.Append(char.ToLowerInvariant(c));
+                    lastWasHyphen = false;
+                }
+                else if (!lastWasHyphen)
+                {
+                    builder.Append('-');
+                    lastWasHyphen = true;
                 }
             }
+
+            return builder.ToString().Trim('-');
         }
-
-        /// <summary>
-        /// Get matching image for an item.
-        /// </summary>
-        /// <param name="item">The <see cref="BaseItem"/>.</param>
-        /// <param name="images">The enumerable of image strings.</param>
-        /// <returns>The matching image string.</returns>
-        public string FindMatch(BaseItem item, IEnumerable<string> images)
-        {
-            var name = GetComparableName(item.Name);
-
-            return images.FirstOrDefault(i => string.Equals(name, GetComparableName(i), StringComparison.OrdinalIgnoreCase));
-        }
-
-        private string GetComparableName(string name)
-        {
-            return name.Replace(" ", string.Empty, StringComparison.Ordinal)
-                .Replace(".", string.Empty, StringComparison.Ordinal)
-                .Replace("&", string.Empty, StringComparison.Ordinal)
-                .Replace("!", string.Empty, StringComparison.Ordinal)
-                .Replace(",", string.Empty, StringComparison.Ordinal)
-                .Replace("/", string.Empty, StringComparison.Ordinal);
-        }
-
-        /// <summary>
-        /// Get available image strings for a file.
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <returns>All images strings of a file.</returns>
-        public IEnumerable<string> GetAvailableImages(string file)
-        {
-            using var fileStream = File.OpenRead(file);
-            using var reader = new StreamReader(fileStream);
-
-            foreach (var line in reader.ReadAllLines())
-            {
-                if (!string.IsNullOrWhiteSpace(line))
-                {
-                    yield return line;
-                }
-            }
-        }
-
-        private string GetRepositoryUrl()
-            => Plugin.Instance.Configuration.RepositoryUrl;
     }
 }
