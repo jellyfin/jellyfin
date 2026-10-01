@@ -1928,7 +1928,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             {
                 // Transcoding job is over, so assume all existing files are ready
                 _logger.LogDebug("serving up {0} as transcode is over", segmentPath);
-                return GetSegmentResult(state, segmentPath, transcodingJob);
+                return GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob);
             }
 
             var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
@@ -1937,7 +1937,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             if (segmentIndex < currentTranscodingIndex)
             {
                 _logger.LogDebug("serving up {0} as transcode index {1} is past requested point {2}", segmentPath, currentTranscodingIndex, segmentIndex);
-                return GetSegmentResult(state, segmentPath, transcodingJob);
+                return GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob);
             }
         }
 
@@ -1953,7 +1953,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                     if (transcodingJob.HasExited || System.IO.File.Exists(nextSegmentPath))
                     {
                         _logger.LogDebug("Serving up {SegmentPath} as it deemed ready", segmentPath);
-                        return GetSegmentResult(state, segmentPath, transcodingJob);
+                        return GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob);
                     }
                 }
                 else
@@ -1984,10 +1984,10 @@ public class DynamicHlsController : BaseJellyfinApiController
             _logger.LogWarning("cannot serve {0} as it doesn't exist and no transcode is running", segmentPath);
         }
 
-        return GetSegmentResult(state, segmentPath, transcodingJob);
+        return GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob);
     }
 
-    private ActionResult GetSegmentResult(StreamState state, string segmentPath, TranscodingJob? transcodingJob)
+    private ActionResult GetSegmentResult(StreamState state, string segmentPath, int segmentIndex, TranscodingJob? transcodingJob)
     {
         var segmentEndingPositionTicks = state.Request.CurrentRuntimeTicks + state.Request.ActualSegmentLengthTicks;
 
@@ -1997,6 +1997,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             if (transcodingJob is not null)
             {
                 transcodingJob.DownloadPositionTicks = Math.Max(transcodingJob.DownloadPositionTicks ?? segmentEndingPositionTicks, segmentEndingPositionTicks);
+                transcodingJob.ReportSegmentDownloaded(segmentIndex, segmentEndingPositionTicks);
                 _transcodeManager.OnTranscodeEndRequest(transcodingJob);
             }
 
