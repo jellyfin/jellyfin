@@ -32,6 +32,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
@@ -58,6 +59,7 @@ public class LibraryController : BaseJellyfinApiController
     private readonly ILibraryMonitor _libraryMonitor;
     private readonly ILogger<LibraryController> _logger;
     private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IFileSystem _fileSystem;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LibraryController"/> class.
@@ -73,6 +75,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <param name="libraryMonitor">Instance of the <see cref="ILibraryMonitor"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{LibraryController}"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     public LibraryController(
         IProviderManager providerManager,
         ISimilarItemsManager similarItemsManager,
@@ -84,7 +87,8 @@ public class LibraryController : BaseJellyfinApiController
         ILocalizationManager localization,
         ILibraryMonitor libraryMonitor,
         ILogger<LibraryController> logger,
-        IServerConfigurationManager serverConfigurationManager)
+        IServerConfigurationManager serverConfigurationManager,
+        IFileSystem fileSystem)
     {
         _providerManager = providerManager;
         _similarItemsManager = similarItemsManager;
@@ -97,6 +101,7 @@ public class LibraryController : BaseJellyfinApiController
         _libraryMonitor = libraryMonitor;
         _logger = logger;
         _serverConfigurationManager = serverConfigurationManager;
+        _fileSystem = fileSystem;
     }
 
     /// <summary>
@@ -657,6 +662,218 @@ public class LibraryController : BaseJellyfinApiController
 
         return NoContent();
     }
+
+    /// <summary>
+    /// Directly adds new media paths to the library without refreshing the nearest known parent folder.
+    /// </summary>
+    /// <param name="dto">The media paths to add.</param>
+    /// <response code="200">Media add results returned.</response>
+    /// <returns>The per-path add results.</returns>
+    [HttpPost("Library/Media/Added")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<MediaAddResultDto> PostAddedMedia([FromBody, Required] MediaAddRequestDto dto)
+    {
+        var results = dto.Paths
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Select(path => AddMediaPath(path, dto.RefreshExisting, dto.RefreshNewItems))
+            .ToArray();
+
+        return new MediaAddResultDto
+        {
+            Results = results
+        };
+    }
+
+    private MediaAddPathResultDto AddMediaPath(string path, bool refreshExisting, bool refreshNewItems)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return new MediaAddPathResultDto
+            {
+                Path = path,
+                Status = "Invalid",
+                Error = "Path must not be empty."
+            };
+        }
+
+        string normalizedPath;
+        try
+        {
+            normalizedPath = Path.GetFullPath(path);
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException or System.Security.SecurityException)
+        {
+            return new MediaAddPathResultDto
+            {
+                Path = path,
+                Status = "Invalid",
+                Error = ex.Message
+            };
+        }
+
+        if (!Directory.Exists(normalizedPath) && !System.IO.File.Exists(normalizedPath))
+        {
+            return new MediaAddPathResultDto
+            {
+                Path = path,
+                Status = "NotFound",
+                Error = "Path does not exist on the Jellyfin server."
+            };
+        }
+
+        var existing = _libraryManager.FindByPath(normalizedPath, null);
+        if (existing is not null)
+        {
+            if (refreshExisting)
+            {
+                QueueRefresh(existing);
+            }
+
+            return CreateResult(path, existing, existing.GetParent() as Folder, "Exists", normalizedPath, null);
+        }
+
+        var addTarget = GetAddTarget(normalizedPath);
+        if (addTarget is null)
+        {
+            return new MediaAddPathResultDto
+            {
+                Path = path,
+                Status = "NoParent",
+                Error = "No existing Jellyfin folder parent was found for this path."
+            };
+        }
+
+        var (parent, childPath) = addTarget.Value;
+        var alreadyCreated = _libraryManager.FindByPath(childPath, null);
+        if (alreadyCreated is not null)
+        {
+            if (refreshExisting)
+            {
+                QueueRefresh(alreadyCreated);
+            }
+
+            return CreateResult(path, alreadyCreated, parent, "Exists", childPath, null);
+        }
+
+        BaseItem? resolvedItem;
+        try
+        {
+            resolvedItem = _libraryManager.ResolvePath(
+                _fileSystem.GetFileSystemInfo(childPath),
+                parent,
+                new DirectoryService(_fileSystem),
+                _libraryManager.GetContentType(parent));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resolving added media path {Path}", childPath);
+            return new MediaAddPathResultDto
+            {
+                Path = path,
+                ResolvedPath = childPath,
+                ParentId = parent.Id,
+                ParentPath = parent.Path,
+                Status = "Error",
+                Error = ex.Message
+            };
+        }
+
+        if (resolvedItem is null)
+        {
+            return new MediaAddPathResultDto
+            {
+                Path = path,
+                ResolvedPath = childPath,
+                ParentId = parent.Id,
+                ParentPath = parent.Path,
+                Status = "Ignored",
+                Error = "Path could not be resolved to a Jellyfin item."
+            };
+        }
+
+        resolvedItem.SetParent(parent);
+        try
+        {
+            _libraryManager.CreateItems([resolvedItem], parent, CancellationToken.None);
+
+            if (refreshNewItems)
+            {
+                QueueRefresh(resolvedItem);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving added media path {Path}", childPath);
+            return new MediaAddPathResultDto
+            {
+                Path = path,
+                ResolvedPath = childPath,
+                ParentId = parent.Id,
+                ParentPath = parent.Path,
+                Status = "Error",
+                Error = ex.Message
+            };
+        }
+
+        return CreateResult(path, resolvedItem, parent, "Created", childPath, null);
+    }
+
+    private (Folder Parent, string ChildPath)? GetAddTarget(string path)
+    {
+        var childPath = Directory.Exists(path)
+            ? Path.TrimEndingDirectorySeparator(path)
+            : path;
+
+        while (!string.IsNullOrEmpty(childPath))
+        {
+            var parentPath = Path.GetDirectoryName(childPath);
+            if (string.IsNullOrEmpty(parentPath))
+            {
+                return null;
+            }
+
+            if (_libraryManager.FindByPath(parentPath, true) is Folder parent)
+            {
+                return (parent, childPath);
+            }
+
+            childPath = Path.TrimEndingDirectorySeparator(parentPath);
+        }
+
+        return null;
+    }
+
+    private void QueueRefresh(BaseItem item)
+    {
+        var refreshOptions = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+        {
+            IsAutomated = true
+        };
+
+        _providerManager.QueueRefresh(item.Id, refreshOptions, RefreshPriority.High);
+    }
+
+    private static MediaAddPathResultDto CreateResult(
+        string requestedPath,
+        BaseItem item,
+        Folder? parent,
+        string status,
+        string? resolvedPath,
+        string? error)
+        => new()
+        {
+            Path = requestedPath,
+            ItemPath = item.Path,
+            ResolvedPath = resolvedPath,
+            ParentPath = parent?.Path,
+            ItemId = item.Id,
+            ParentId = parent?.Id,
+            ItemName = item.Name,
+            ItemType = item.GetType().Name,
+            Status = status,
+            Error = error
+        };
 
     /// <summary>
     /// Downloads item media.
