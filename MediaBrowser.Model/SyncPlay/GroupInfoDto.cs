@@ -16,13 +16,15 @@ namespace MediaBrowser.Model.SyncPlay
         /// <param name="state">The group state.</param>
         /// <param name="participants">The participants.</param>
         /// <param name="lastUpdatedAt">The date when this DTO has been created.</param>
-        public GroupInfoDto(Guid groupId, string groupName, GroupStateType state, IReadOnlyList<string> participants, DateTime lastUpdatedAt)
+        /// <param name="hostUsername">The username of the group's host.</param>
+        public GroupInfoDto(Guid groupId, string groupName, GroupStateType state, IReadOnlyList<string> participants, DateTime lastUpdatedAt, string? hostUsername = null)
         {
             GroupId = groupId;
             GroupName = groupName;
             State = state;
             Participants = participants;
             LastUpdatedAt = lastUpdatedAt;
+            HostUsername = hostUsername ?? string.Empty;
         }
 
         /// <summary>
@@ -54,5 +56,15 @@ namespace MediaBrowser.Model.SyncPlay
         /// </summary>
         /// <value>The date when this DTO has been created.</value>
         public DateTime LastUpdatedAt { get; }
+
+        /// <summary>
+        /// Gets the username of the group's host. Initially the user that created the group;
+        /// if the host leaves while other participants remain, the server promotes the
+        /// longest-standing remaining participant. This always identifies a current member
+        /// of the group, so clients can use it as a stable "who is host" identity instead of
+        /// deriving it from participant list ordering.
+        /// </summary>
+        /// <value>The host's username.</value>
+        public string HostUsername { get; }
     }
 }
