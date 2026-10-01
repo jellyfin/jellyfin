@@ -46,6 +46,7 @@
     <PackageReference Include="CommandLineParser" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
     <PackageReference Include="Morestachio" />
+    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="prometheus-net" />
     <PackageReference Include="prometheus-net.AspNetCore" />
     <PackageReference Include="Serilog.AspNetCore" />
@@ -55,7 +56,8 @@
     <PackageReference Include="Serilog.Sinks.Async" />
     <PackageReference Include="Serilog.Sinks.Console" />
     <PackageReference Include="Serilog.Sinks.File" />
-    <PackageReference Include="Serilog.Sinks.Graylog" />
+    <PackageReference Include="Serilog.Sinks.Graylog" TreatAsUsed="true" />
+    <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" />
   </ItemGroup>
 
   <ItemGroup>
