@@ -125,7 +125,7 @@ public class TmdbMissingEpisodeProviderTests
     }
 
     [Fact]
-    public void GetPremiereDate_AirDate_ReturnsUtc()
+    public void GetPremiereDate_AirDate_ReturnsUtcMidnightOnSameCalendarDay()
     {
         var airDate = new DateTime(2026, 7, 28);
 
@@ -133,7 +133,10 @@ public class TmdbMissingEpisodeProviderTests
 
         Assert.NotNull(result);
         Assert.Equal(DateTimeKind.Utc, result!.Value.Kind);
-        Assert.Equal(DateTime.SpecifyKind(airDate, DateTimeKind.Local).ToUniversalTime(), result.Value);
+
+        // The calendar day must survive regardless of the server's timezone, otherwise clients that read
+        // the date components straight off the wire render the air date a day early or late.
+        Assert.Equal(new DateTime(2026, 7, 28, 0, 0, 0, DateTimeKind.Utc), result.Value);
     }
 
     [Fact]
@@ -172,7 +175,7 @@ public class TmdbMissingEpisodeProviderTests
     {
         var episode = new Episode { Name = "X", PremiereDate = new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc) };
         var newAirDate = new DateTime(2026, 8, 15);
-        var newPremiere = DateTime.SpecifyKind(newAirDate, DateTimeKind.Local).ToUniversalTime();
+        var newPremiere = DateTime.SpecifyKind(newAirDate, DateTimeKind.Utc);
         var tmdbEpisode = new TvSeasonEpisode { Name = "X", AirDate = newAirDate };
 
         Assert.True(TmdbMissingEpisodeProvider.UpdateVirtualEpisode(episode, tmdbEpisode, newPremiere));
