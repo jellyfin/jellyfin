@@ -740,7 +740,7 @@ public partial class TrickplayManager : ITrickplayManager
         var trickplayManifest = new Dictionary<string, Dictionary<int, TrickplayInfo>>();
         foreach (var mediaSource in item.GetMediaSources(false))
         {
-            if (mediaSource.IsRemote || !Guid.TryParse(mediaSource.Id, out var mediaSourceId))
+            if (!Guid.TryParse(mediaSource.Id, out var mediaSourceId))
             {
                 continue;
             }
