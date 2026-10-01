@@ -37,10 +37,23 @@ namespace Emby.Server.Implementations.Collections
         /// <inheritdoc />
         protected override bool Supports(BaseItem item)
         {
-            // Right now this is the only way to prevent this image from getting created ahead of internet image providers
-            if (!item.IsLocked)
+            // If the collection is locked, always allow dynamic images
+            if (item.IsLocked)
             {
-                return false;
+                return base.Supports(item);
+            }
+
+            // If not locked, only allow dynamic images if there's no local Primary image
+            // This allows fallback generation when remote providers don't provide images
+            // while still preventing it from running ahead of internet image providers
+            var image = item.GetImageInfo(ImageType.Primary, 0);
+            if (image is not null)
+            {
+                // If there's a local Primary image in the metadata folder, don't generate
+                if (image.IsLocalFile && FileSystem.ContainsSubPath(item.GetInternalMetadataPath(), image.Path))
+                {
+                    return false;
+                }
             }
 
             return base.Supports(item);
