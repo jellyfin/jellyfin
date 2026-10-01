@@ -5,10 +5,10 @@ using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers;
 
-public class PlaystateControllerTests : IClassFixture<JellyfinApplicationFactory>
+[Collection("Controller collection")]
+public class PlaystateControllerTests
 {
     private readonly JellyfinApplicationFactory _factory;
-    private static string? _accessToken;
 
     public PlaystateControllerTests(JellyfinApplicationFactory factory)
     {
@@ -19,7 +19,7 @@ public class PlaystateControllerTests : IClassFixture<JellyfinApplicationFactory
     public async Task DeleteMarkUnplayedItem_NonexistentUserId_NotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         using var response = await client.DeleteAsync($"Users/{Guid.NewGuid()}/PlayedItems/{Guid.NewGuid()}", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -29,7 +29,7 @@ public class PlaystateControllerTests : IClassFixture<JellyfinApplicationFactory
     public async Task PostMarkPlayedItem_NonexistentUserId_NotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         using var response = await client.PostAsync($"Users/{Guid.NewGuid()}/PlayedItems/{Guid.NewGuid()}", null, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -39,7 +39,7 @@ public class PlaystateControllerTests : IClassFixture<JellyfinApplicationFactory
     public async Task DeleteMarkUnplayedItem_NonexistentItemId_NotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var userDto = await AuthHelper.GetUserDtoAsync(client);
 
@@ -51,7 +51,7 @@ public class PlaystateControllerTests : IClassFixture<JellyfinApplicationFactory
     public async Task PostMarkPlayedItem_NonexistentItemId_NotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var userDto = await AuthHelper.GetUserDtoAsync(client);
 
