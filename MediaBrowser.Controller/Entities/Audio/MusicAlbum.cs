@@ -218,16 +218,18 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         private async Task RefreshArtists(MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
+            // Buffer MusicArtist, which performs lookups access and may create an artist
+            var musicArtist = MusicArtist;
             var allArtists = this.GetAllArtists().ToList();
 
-            // If a 'MusicArtist' exists but doesn't exactly match at least one artist, perform necessary corrections
-            if (MusicArtist is not null && allArtists.Count > 0 && !allArtists.Contains(MusicArtist.Name))
+            // If a 'musicArtist' exists but doesn't exactly match at least one artist, perform necessary corrections
+            if (musicArtist is not null && allArtists.Count > 0 && !allArtists.Contains(musicArtist.Name))
             {
-                var oldMusicArtist = MusicArtist.Name;
+                var oldMusicArtist = musicArtist.Name;
                 var firstArtist = allArtists[0];
 
                 // Use album artist instead of mismatched folder name
-                MusicArtist.Name = firstArtist;
+                musicArtist.Name = firstArtist;
 
                 // Only full refresh images/metadata with force save if clean values don't match
                 // e.g. Rush1 vs Rush = Refresh, RUSH vs Rush = Update
@@ -240,11 +242,11 @@ namespace MediaBrowser.Controller.Entities.Audio
                         MetadataRefreshMode = MetadataRefreshMode.FullRefresh
                     };
 
-                    await MusicArtist.RefreshMetadata(fullRefreshOptions, cancellationToken).ConfigureAwait(false);
+                    await musicArtist.RefreshMetadata(fullRefreshOptions, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
-                    await MusicArtist.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                    await musicArtist.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
                 }
             }
 
