@@ -69,6 +69,13 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// </summary>
     public bool EnableMetrics { get; set; } = false;
 
+    /// <summary>
+    /// Gets or sets the port number for the prometheus metrics exporter.
+    /// If set to 0 or less, metrics will be exported on the default application port.
+    /// Requires a restart to take effect.
+    /// </summary>
+    public int MetricsListenPort { get; set; } = 0;
+
     public bool EnableNormalizedItemByNameIds { get; set; } = true;
 
     /// <summary>
