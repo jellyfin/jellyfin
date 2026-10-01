@@ -25,6 +25,7 @@ public class EncodingOptions
         ThrottleDelaySeconds = 180;
         EnableSegmentDeletion = false;
         SegmentKeepSeconds = 720;
+        LiveStreamKeepSeconds = 300;
         EncodingThreadCount = -1;
         // This is a DRM device that is almost guaranteed to be there on every intel platform,
         // plus it's the default one in ffmpeg if you don't specify anything
@@ -124,6 +125,14 @@ public class EncodingOptions
     /// Gets or sets seconds for which segments should be kept before being deleted.
     /// </summary>
     public int SegmentKeepSeconds { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of seconds of live stream content to retain as a rolling rewind buffer.
+    /// The raw capture is split into rolling chunk files and chunks outside the window are deleted,
+    /// bounding disk usage for long-running streams. Set to 0 to disable chunking and use a single
+    /// growing file instead (legacy behaviour).
+    /// </summary>
+    public int LiveStreamKeepSeconds { get; set; }
 
     /// <summary>
     /// Gets or sets the hardware acceleration type.
