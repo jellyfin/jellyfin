@@ -52,6 +52,7 @@ public interface ITranscodeManager
     /// <param name="percentComplete">The completion percentage of the transcode.</param>
     /// <param name="bytesTranscoded">The number of bytes transcoded.</param>
     /// <param name="bitRate">The bitrate of the transcoding job.</param>
+    /// <param name="encodingSpeed">The encoding speed as a realtime multiplier.</param>
     public void ReportTranscodingProgress(
         TranscodingJob job,
         StreamState state,
@@ -59,7 +60,8 @@ public interface ITranscodeManager
         float? framerate,
         double? percentComplete,
         long? bytesTranscoded,
-        int? bitRate);
+        int? bitRate,
+        float? encodingSpeed);
 
     /// <summary>
     /// Starts FFMpeg.
