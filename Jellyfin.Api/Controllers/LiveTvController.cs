@@ -1093,6 +1093,17 @@ public class LiveTvController : BaseJellyfinApiController
         => _tunerHostManager.GetTunerHostTypes();
 
     /// <summary>
+    /// Get listing provider types.
+    /// </summary>
+    /// <response code="200">Listing provider types returned.</response>
+    /// <returns>An <see cref="OkResult"/> containing the listing provider types.</returns>
+    [HttpGet("ListingProviders/Types")]
+    [Authorize(Policy = Policies.LiveTvAccess)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public IEnumerable<NameIdPair> GetListingProviderTypes()
+        => _listingsManager.GetListingProviderTypes();
+
+    /// <summary>
     /// Discover tuners.
     /// </summary>
     /// <param name="newDevicesOnly">Only discover new tuners.</param>
