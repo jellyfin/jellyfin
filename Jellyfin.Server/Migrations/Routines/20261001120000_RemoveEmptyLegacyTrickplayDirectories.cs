@@ -70,6 +70,7 @@ public class RemoveEmptyLegacyTrickplayDirectories : IAsyncMigrationRoutine
                     continue;
                 }
 
+                // Recursive because empty width subdirectories (e.g. "320 - 10x10") can remain; there are no files to lose.
                 if (TryDelete(trickplayDir, recursive: true))
                 {
                     removed++;
