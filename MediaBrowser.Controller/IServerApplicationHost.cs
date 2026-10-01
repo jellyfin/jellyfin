@@ -4,6 +4,7 @@
 
 using System.Net;
 using MediaBrowser.Common;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller
@@ -20,17 +21,6 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The HTTP server port.</value>
         int HttpPort { get; }
-
-        /// <summary>
-        /// Gets the HTTPS port.
-        /// </summary>
-        /// <value>The HTTPS port.</value>
-        int HttpsPort { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the server should listen on an HTTPS port.
-        /// </summary>
-        bool ListenWithHttps { get; }
 
         /// <summary>
         /// Gets the name of the friendly.
@@ -81,12 +71,8 @@ namespace MediaBrowser.Controller
         /// The scheme to use for the URL. If null, the scheme will be selected automatically,
         /// preferring HTTPS, if available.
         /// </param>
-        /// <param name="port">
-        /// The port to use for the URL. If null, the port will be selected automatically,
-        /// preferring the HTTPS port, if available.
-        /// </param>
         /// <returns>The API URL.</returns>
-        string GetLocalApiUrl(string hostname, string scheme = null, int? port = null);
+        string GetLocalApiUrl(string hostname, string scheme = null);
 
         string ExpandVirtualPath(string path);
 

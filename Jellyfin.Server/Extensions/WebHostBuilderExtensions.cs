@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using Jellyfin.Server.Helpers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -28,27 +29,55 @@ public static class WebHostBuilderExtensions
     /// <param name="startupConfig">The application configuration.</param>
     /// <param name="appPaths">The application paths.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="serverAddressesFeature">The server addresses feature shared with the app host.</param>
     /// <returns>The configured web host builder.</returns>
     public static IWebHostBuilder ConfigureWebHostBuilder(
         this IWebHostBuilder builder,
         CoreAppHost appHost,
         IConfiguration startupConfig,
         IApplicationPaths appPaths,
-        ILogger logger)
+        ILogger logger,
+        IServerAddressesFeature serverAddressesFeature)
     {
         return builder
             .UseKestrel((builderContext, options) =>
             {
+                var addressess = appHost.NetManager.GetAllBindInterfaces(false);
                 SetupJellyfinWebServer(
-                    appHost.NetManager.GetAllBindInterfaces(false),
+                    addressess,
                     appHost.HttpPort,
-                    appHost.ListenWithHttps ? appHost.HttpsPort : null,
-                    appHost.Certificate,
                     startupConfig,
                     appPaths,
                     logger,
                     builderContext,
                     options);
+
+                serverAddressesFeature.Addresses.Clear();
+                if (addressess.Count == 0)
+                {
+                    logger.LogWarning("No network interfaces found to bind to. Kestrel will be configured to listen on localhost only. Please check your network configuration.");
+                    serverAddressesFeature.Addresses.Add($"http://localhost:{appHost.HttpPort}");
+                    return;
+                }
+
+                var smartUrl = startupConfig[MediaBrowser.Controller.Extensions.ConfigurationExtensions.AddressOverrideKey];
+                if (!string.IsNullOrEmpty(smartUrl))
+                {
+                    logger.LogInformation("Using published server URL from configuration: {SmartUrl}", smartUrl);
+                    serverAddressesFeature.Addresses.Add(smartUrl);
+                    return;
+                }
+
+                foreach (var address in addressess)
+                {
+                    var uriBuilder = new UriBuilder
+                    {
+                        Scheme = "http",
+                        Host = (address.Address.Equals(IPAddress.IPv6Any) || address.Address.Equals(IPAddress.Any)) ? "localhost" : address.Address.ToString(),
+                        Port = appHost.HttpPort
+                    };
+                    serverAddressesFeature.Addresses.Add(uriBuilder.ToString());
+                }
             })
             .UseStartup(context => new Startup(appHost, context.Configuration));
     }
@@ -58,8 +87,6 @@ public static class WebHostBuilderExtensions
     /// </summary>
     /// <param name="addresses">The IP addresses that should be listend to.</param>
     /// <param name="httpPort">The http port.</param>
-    /// <param name="httpsPort">If set the https port. If set you must also set the certificate.</param>
-    /// <param name="certificate">The certificate used for https port.</param>
     /// <param name="startupConfig">The startup config.</param>
     /// <param name="appPaths">The app paths.</param>
     /// <param name="logger">A logger.</param>
@@ -69,8 +96,6 @@ public static class WebHostBuilderExtensions
     public static void SetupJellyfinWebServer(
         IReadOnlyList<IPData> addresses,
         int httpPort,
-        int? httpsPort,
-        X509Certificate2? certificate,
         IConfiguration startupConfig,
         IApplicationPaths appPaths,
         ILogger logger,
@@ -78,42 +103,28 @@ public static class WebHostBuilderExtensions
         KestrelServerOptions options)
     {
         bool flagged = false;
+
         foreach (var netAdd in addresses)
         {
             var address = netAdd.Address;
             logger.LogInformation("Kestrel is listening on {Address}", address.Equals(IPAddress.IPv6Any) ? "all interfaces" : address);
             options.Listen(netAdd.Address, httpPort);
-            if (httpsPort.HasValue)
+            if (builderContext.HostingEnvironment.IsDevelopment())
             {
-                if (builderContext.HostingEnvironment.IsDevelopment())
+                try
                 {
-                    try
-                    {
-                        options.Listen(
-                            address,
-                            httpsPort.Value,
-                            listenOptions => listenOptions.UseHttps());
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        if (!flagged)
-                        {
-                            logger.LogWarning("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted");
-                            flagged = true;
-                        }
-                    }
-                }
-                else
-                {
-                    if (certificate is null)
-                    {
-                        throw new InvalidOperationException("Cannot run jellyfin with https without setting a valid certificate.");
-                    }
-
                     options.Listen(
                         address,
-                        httpsPort.Value,
-                        listenOptions => listenOptions.UseHttps(certificate));
+                        8090,
+                        listenOptions => listenOptions.UseHttps());
+                }
+                catch (InvalidOperationException)
+                {
+                    if (!flagged)
+                    {
+                        logger.LogWarning("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted");
+                        flagged = true;
+                    }
                 }
             }
         }
