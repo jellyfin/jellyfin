@@ -65,27 +65,37 @@ public class RemoveEmptyLegacyTrickplayDirectories : IAsyncMigrationRoutine
                     _logger.LogInformation("Legacy trickplay cleanup: {Scanned} directories examined, {Removed} removed so far", scanned, removed);
                 }
 
-                if (Directory.EnumerateFiles(trickplayDir, "*", SearchOption.AllDirectories).Any())
-                {
-                    continue;
-                }
-
-                // Recursive because empty width subdirectories (e.g. "320 - 10x10") can remain; there are no files to lose.
-                if (TryDelete(trickplayDir, recursive: true))
+                if (TryRemoveEmptyTrickplayDirectory(itemDir, trickplayDir))
                 {
                     removed++;
-
-                    // The item directory may have existed only to hold trickplay tiles.
-                    if (!Directory.EnumerateFileSystemEntries(itemDir).Any())
-                    {
-                        TryDelete(itemDir, recursive: false);
-                    }
                 }
             }
         }
 
         _logger.LogInformation("Finished legacy trickplay cleanup: found {Scanned} directories, removed {Removed} empty ones", scanned, removed);
         return Task.CompletedTask;
+    }
+
+    private bool TryRemoveEmptyTrickplayDirectory(string itemDir, string trickplayDir)
+    {
+        if (Directory.EnumerateFiles(trickplayDir, "*", SearchOption.AllDirectories).Any())
+        {
+            return false;
+        }
+
+        // Recursive because empty width subdirectories (e.g. "320 - 10x10") can remain; there are no files to lose.
+        if (!TryDelete(trickplayDir, recursive: true))
+        {
+            return false;
+        }
+
+        // The item directory may have existed only to hold trickplay tiles.
+        if (!Directory.EnumerateFileSystemEntries(itemDir).Any())
+        {
+            TryDelete(itemDir, recursive: false);
+        }
+
+        return true;
     }
 
     private bool TryDelete(string dir, bool recursive)
