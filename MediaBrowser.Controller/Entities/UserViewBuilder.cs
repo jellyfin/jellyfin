@@ -584,6 +584,16 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
+            if (query.MinUserRating.HasValue)
+            {
+                userData ??= userDataManager.GetUserData(user, item);
+
+                if (!userData.Rating.HasValue || userData.Rating < query.MinUserRating.Value)
+                {
+                    return false;
+                }
+            }
+
             if (query.IsFavoriteOrLiked.HasValue)
             {
                 userData ??= userDataManager.GetUserData(user, item);
