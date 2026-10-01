@@ -170,6 +170,37 @@ namespace Jellyfin.Providers.Tests.Manager
             }
         }
 
+        [Theory]
+        [InlineData(DateTimeKind.Unspecified)] // As a provider parses "2000-05-18"
+        [InlineData(DateTimeKind.Local)]
+        public void MergeBaseItemData_ProviderDate_StoredAsMidnightUtcOnTheSameDate(DateTimeKind kind)
+        {
+            var providerDate = new DateTime(2000, 5, 18, 0, 0, 0, kind);
+            var source = new MetadataResult<Movie> { Item = new Movie { PremiereDate = providerDate, EndDate = providerDate } };
+            var target = new MetadataResult<Movie> { Item = new Movie() };
+
+            MetadataService<Movie, MovieInfo>.MergeBaseItemData(source, target, [], true, false);
+
+            var expected = new DateTime(2000, 5, 18, 0, 0, 0, DateTimeKind.Utc);
+            Assert.Equal(expected, target.Item.PremiereDate);
+            Assert.Equal(DateTimeKind.Utc, target.Item.PremiereDate!.Value.Kind);
+            Assert.Equal(expected, target.Item.EndDate);
+            Assert.Equal(DateTimeKind.Utc, target.Item.EndDate!.Value.Kind);
+        }
+
+        [Fact]
+        public void MergeBaseItemData_UtcDate_LeftAsItIs()
+        {
+            // Already UTC, as read from an NFO or loaded from the database, so there is nothing to convert.
+            var storedDate = new DateTime(2000, 5, 17, 23, 0, 0, DateTimeKind.Utc);
+            var source = new MetadataResult<Movie> { Item = new Movie { PremiereDate = storedDate } };
+            var target = new MetadataResult<Movie> { Item = new Movie() };
+
+            MetadataService<Movie, MovieInfo>.MergeBaseItemData(source, target, Array.Empty<MetadataField>(), true, false);
+
+            Assert.Equal(storedDate, target.Item.PremiereDate);
+        }
+
         [Fact]
         public void MergeBaseItemData_MergeTrailers_ReplacesAppropriately()
         {
