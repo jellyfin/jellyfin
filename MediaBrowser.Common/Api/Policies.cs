@@ -94,4 +94,24 @@ public static class Policies
     /// Policy name for accessing lyric management.
     /// </summary>
     public const string LyricManagement = "LyricManagement";
+
+    /// <summary>
+    /// Policy name for requiring elevated access to plugin assets.
+    /// </summary>
+    public const string ElevatePlugin = "ElevatePlugin";
+
+    /// <summary>
+    /// Policy name for requiring elevated access to all configuration routes.
+    /// </summary>
+    public const string ElevateConfiguration = "ElevateConfiguration";
+
+    /// <summary>
+    /// Policy name for requiring authenticated access to audio streams.
+    /// </summary>
+    public const string AuthenticateAudio = "AuthorizeAudio";
+
+    /// <summary>
+    /// Policy name for requiring authenticated access to video streams.
+    /// </summary>
+    public const string AuthenticateVideo = "AuthorizeVideo";
 }
