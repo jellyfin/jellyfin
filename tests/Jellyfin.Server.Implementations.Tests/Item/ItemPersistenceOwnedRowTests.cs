@@ -151,6 +151,40 @@ public sealed class ItemPersistenceOwnedRowTests : SqliteDbTestFixture
     }
 
     [Fact]
+    public async Task ReattachUserData_ExistingRowUnderUnreportedKey_IsKeptInAgreement()
+    {
+        var movie = CreateMovie(Guid.Parse("ffffffff-ffff-ffff-ffff-ffffffffffff"));
+        var keys = movie.GetUserDataKeys();
+        const string UnreportedKey = "tvdb-key-missing-mid-refresh";
+        SeedUserDataItem(movie);
+
+        using (var ctx = CreateDbContext())
+        {
+            ctx.UserData.AddRange(
+                CreateRow(movie.Id, UnreportedKey, new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), playCount: 1, positionTicks: 123),
+                CreateDetachedRow(keys[0], new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc), playCount: 2, positionTicks: 0, played: true));
+            await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
+        }
+
+        await _service.ReattachUserDataAsync(movie, TestContext.Current.CancellationToken);
+
+        using (var ctx = CreateDbContext())
+        {
+            var rows = ctx.UserData.Where(e => e.ItemId.Equals(movie.Id)).ToList();
+
+            Assert.Equal(
+                keys.Append(UnreportedKey).OrderBy(e => e, StringComparer.Ordinal),
+                rows.Select(e => e.CustomDataKey).OrderBy(e => e, StringComparer.Ordinal));
+            Assert.All(rows, row =>
+            {
+                Assert.True(row.Played);
+                Assert.Equal(2, row.PlayCount);
+                Assert.Equal(0, row.PlaybackPositionTicks);
+            });
+        }
+    }
+
+    [Fact]
     public async Task ReattachUserData_NoDetachedRows_LeavesExistingRowsAlone()
     {
         var movie = CreateMovie(Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"));

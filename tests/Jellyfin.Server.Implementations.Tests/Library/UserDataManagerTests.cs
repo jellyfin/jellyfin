@@ -211,7 +211,7 @@ public sealed class UserDataManagerTests : IDisposable
     }
 
     [Fact]
-    public void SaveUserData_RowUnderRetiredKey_IsDropped()
+    public void SaveUserData_RowUnderRetiredKey_IsKeptInAgreement()
     {
         var item = CreateAudioBook();
 
@@ -234,10 +234,10 @@ public sealed class UserDataManagerTests : IDisposable
         {
             var rows = ctx.UserData.Where(e => e.ItemId.Equals(item.Id)).ToList();
 
-            // The retired-key row would otherwise keep a playback position the query layer still
-            // honours, holding the item in Continue Watching after it was marked played.
+            // The retired-key row is what a re-added item reattaches by, so it survives, but it must
+            // not keep a playback position that holds the item in Continue Watching.
             Assert.Equal(
-                item.GetUserDataKeys().OrderBy(e => e, StringComparer.Ordinal),
+                item.GetUserDataKeys().Append("Author-Old Album-0001Old File Name").OrderBy(e => e, StringComparer.Ordinal),
                 rows.Select(e => e.CustomDataKey).OrderBy(e => e, StringComparer.Ordinal));
             Assert.All(rows, row =>
             {

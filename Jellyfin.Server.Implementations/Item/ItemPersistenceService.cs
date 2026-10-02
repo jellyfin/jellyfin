@@ -266,22 +266,25 @@ public class ItemPersistenceService : IItemPersistenceService
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
+        // Keys the item no longer reports are carried over: they may only be missing mid-refresh.
         var winners = detached.Concat(existing)
             .GroupBy(e => e.UserId)
-            .Select(g => g
-                .OrderByDescending(e => e.LastPlayedDate)
-                .ThenByDescending(e => e.PlayCount)
-                .ThenByDescending(e => e.PlaybackPositionTicks)
-                .First())
+            .Select(g => (
+                Winner: g
+                    .OrderByDescending(e => e.LastPlayedDate)
+                    .ThenByDescending(e => e.PlayCount)
+                    .ThenByDescending(e => e.PlaybackPositionTicks)
+                    .First(),
+                Keys: userKeys.Union(g.Select(e => e.CustomDataKey)).ToList()))
             .ToList();
 
         dbContext.UserData.RemoveRange(detached);
         dbContext.UserData.RemoveRange(existing);
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-        foreach (var winner in winners)
+        foreach (var (winner, keys) in winners)
         {
-            foreach (var key in userKeys)
+            foreach (var key in keys)
             {
                 dbContext.UserData.Add(new UserData
                 {
