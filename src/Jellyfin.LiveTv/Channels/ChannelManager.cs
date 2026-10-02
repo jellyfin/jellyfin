@@ -51,7 +51,12 @@ namespace Jellyfin.LiveTv.Channels
         private readonly IFileSystem _fileSystem;
         private readonly IProviderManager _providerManager;
         private readonly IMemoryCache _memoryCache;
-        private readonly AsyncNonKeyedLocker _resourcePool = new(1);
+        private readonly AsyncKeyedLocker<string> _folderLocks = new(o =>
+        {
+            o.PoolSize = 20;
+            o.PoolInitialFill = 1;
+        });
+
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private bool _disposed = false;
 
@@ -720,7 +725,7 @@ namespace Jellyfin.LiveTv.Channels
 
             var externalFolderId = parentItem is Channel ? null : parentItem.ExternalId;
             var userId = query.User?.Id.ToString("N", CultureInfo.InvariantCulture);
-            var cachePath = GetChannelDataCachePath(channelProvider, userId, externalFolderId, null, false);
+            var cachePath = GetChannelDataCachePath(channelProvider, userId, externalFolderId);
 
             if (query.ParentId.IsEmpty())
             {
@@ -734,9 +739,9 @@ namespace Jellyfin.LiveTv.Channels
 
             if (!await IsCacheFreshAsync(cachePath, cancellationToken).ConfigureAwait(false))
             {
-                // The lock is held until the items are in the library, so that a request
+                // The lock of the folder is held until its items are in the library, so that a request
                 // waiting on it never reads the library before the items it expects exist.
-                using (await _resourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
+                using (await _folderLocks.LockAsync(cachePath, cancellationToken).ConfigureAwait(false))
                 {
                     // Another request may have refreshed the folder while this one waited.
                     if (!await IsCacheFreshAsync(cachePath, cancellationToken).ConfigureAwait(false))
@@ -835,6 +840,11 @@ namespace Jellyfin.LiveTv.Channels
             catch (IOException)
             {
             }
+            catch (JsonException ex)
+            {
+                // E.g. truncated by a crash while it was written; the folder is fetched again and the file replaced.
+                _logger.LogWarning(ex, "Ignoring unreadable channel cache file: {Path}", cachePath);
+            }
 
             return false;
         }
@@ -863,28 +873,38 @@ namespace Jellyfin.LiveTv.Channels
 
         private async Task CacheResponse(ChannelItemResult result, string path)
         {
+            // Written next to the cache file and moved over it, so that the cache file is always complete.
+            var tempPath = path + "." + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture) + ".tmp";
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-                var createStream = AsyncFile.Create(path);
+                var createStream = AsyncFile.Create(tempPath);
                 await using (createStream.ConfigureAwait(false))
                 {
                     await JsonSerializer.SerializeAsync(createStream, result, _jsonOptions).ConfigureAwait(false);
                 }
+
+                File.Move(tempPath, path, true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error writing to channel cache file: {Path}", path);
+
+                try
+                {
+                    File.Delete(tempPath);
+                }
+                catch (IOException)
+                {
+                }
             }
         }
 
         private string GetChannelDataCachePath(
             IChannel channel,
             string userId,
-            string externalFolderId,
-            ChannelItemSortField? sortField,
-            bool sortDescending)
+            string externalFolderId)
         {
             var channelId = GetInternalChannelId(channel.Name).ToString("N", CultureInfo.InvariantCulture);
 
@@ -899,16 +919,6 @@ namespace Jellyfin.LiveTv.Channels
             filename += userCacheKey;
 
             var version = ((channel.DataVersion ?? string.Empty) + "2").GetMD5().ToString("N", CultureInfo.InvariantCulture);
-
-            if (sortField.HasValue)
-            {
-                filename += "-sortField-" + sortField.Value;
-            }
-
-            if (sortDescending)
-            {
-                filename += "-sortDescending";
-            }
 
             filename = filename.GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
@@ -1209,7 +1219,7 @@ namespace Jellyfin.LiveTv.Channels
 
             if (disposing)
             {
-                _resourcePool?.Dispose();
+                _folderLocks?.Dispose();
             }
 
             _disposed = true;
