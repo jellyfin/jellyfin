@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
@@ -8,6 +9,7 @@ using Jellyfin.Extensions;
 using Jellyfin.LiveTv.Configuration;
 using Jellyfin.LiveTv.Listings;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -749,24 +751,16 @@ public class GuideManager : IGuideManager
 
     private async Task PreCacheImages(IReadOnlyList<BaseItem> programs, DateTime maxCacheDate)
     {
-        var sdLimitActive = _schedulesDirectService.IsImageDailyLimitActive();
-
         await Parallel.ForEachAsync(
             programs
                 .Where(p => p.EndDate.HasValue && p.EndDate.Value < maxCacheDate)
-                .Where(p => !sdLimitActive || !p.ImageInfos.All(
-                    img => img.IsLocalFile || img.Path.Contains("schedulesdirect", StringComparison.OrdinalIgnoreCase)))
+                .Where(p => p.ImageInfos.Any(
+                    img => !img.IsLocalFile && _schedulesDirectService.CanDownloadImage(img.Path)))
                 .DistinctBy(p => p.Id),
             _cacheParallelOptions,
             async (program, cancellationToken) =>
             {
-                // Re-check: limit may have been set by a parallel task since the LINQ filter ran.
-                if (_schedulesDirectService.IsImageDailyLimitActive()
-                    && program.ImageInfos.All(
-                        img => img.IsLocalFile || img.Path.Contains("schedulesdirect", StringComparison.OrdinalIgnoreCase)))
-                {
-                    return;
-                }
+                List<ItemImageInfo>? deadImages = null;
 
                 for (var i = 0; i < program.ImageInfos.Length; i++)
                 {
@@ -781,9 +775,8 @@ public class GuideManager : IGuideManager
                         continue;
                     }
 
-                    // Skip SD downloads once the daily limit has been hit.
-                    if (imageInfo.Path.Contains("schedulesdirect", StringComparison.OrdinalIgnoreCase)
-                        && _schedulesDirectService.IsImageDailyLimitActive())
+                    // Re-checked per image: the limit may have been hit by a parallel task.
+                    if (!_schedulesDirectService.CanDownloadImage(imageInfo.Path))
                     {
                         continue;
                     }
@@ -797,11 +790,34 @@ public class GuideManager : IGuideManager
                                 imageIndex: 0,
                                 removeOnFailure: false)
                             .ConfigureAwait(false);
+                        _schedulesDirectService.ReportImageDownloadSuccess(imageInfo.Path);
                     }
                     catch (Exception ex)
                     {
+                        // A rejected download never surfaces as an error on its own, so feed the
+                        // response back to the provider to stop us hammering an exhausted account.
+                        var httpException = (ex as HttpRequestException) ?? ex.InnerException as HttpRequestException;
+                        var action = _schedulesDirectService.ReportImageDownloadFailure(
+                            imageInfo.Path,
+                            httpException?.StatusCode,
+                            (httpException as HttpResponseBodyException)?.ResponseBody);
+
+                        if (action == ImageDownloadFailureAction.RemoveImage)
+                        {
+                            deadImages ??= [];
+                            deadImages.Add(imageInfo);
+                        }
+
                         _logger.LogWarning(ex, "Unable to pre-cache {Url}", imageInfo.Path);
                     }
+                }
+
+                if (deadImages is not null)
+                {
+                    // Requesting a url Schedules Direct has already rejected is what gets an
+                    // account blocked, so it must not survive to the next refresh.
+                    program.RemoveImages(deadImages);
+                    await program.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, cancellationToken).ConfigureAwait(false);
                 }
             }).ConfigureAwait(false);
     }
