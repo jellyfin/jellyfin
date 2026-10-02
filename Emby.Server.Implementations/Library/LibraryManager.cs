@@ -2452,6 +2452,9 @@ namespace Emby.Server.Implementations.Library
             var parentCollectionType = parent is not null ? GetTopFolderContentType(parent) : null;
             foreach (var item in items)
             {
+                // Parental controls filter on the stored score, so it has to match the ratings being saved.
+                item.OnMetadataChanged();
+
                 if (item is Video video && video.LocalAlternateVersions.Length > 0)
                 {
                     var videoType = video.GetType();
@@ -2658,6 +2661,9 @@ namespace Emby.Server.Implementations.Library
         {
             foreach (var item in items)
             {
+                // Parental controls filter on the stored score, so it has to match the ratings being saved.
+                item.OnMetadataChanged();
+
                 item.DateLastSaved = DateTime.UtcNow;
                 await RunMetadataSavers(item, updateReason).ConfigureAwait(false);
 
