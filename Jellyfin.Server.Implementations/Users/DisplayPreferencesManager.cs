@@ -52,7 +52,7 @@ public sealed class DisplayPreferencesManager : IDisplayPreferencesManager
 
         if (prefs is null)
         {
-            prefs = new ItemDisplayPreferences(userId, Guid.Empty, client);
+            prefs = new ItemDisplayPreferences(userId, itemId, client);
             dbContext.ItemDisplayPreferences.Add(prefs);
             dbContext.SaveChanges();
         }
