@@ -678,7 +678,8 @@ namespace Emby.Server.Implementations.Session
             var inactiveSessions = Sessions.Where(i =>
                     i.NowPlayingItem is not null
                     && i.PlayState.IsPaused
-                    && (DateTime.UtcNow - i.LastPausedDate).Value.TotalMinutes > _config.Configuration.InactiveSessionThreshold);
+                    && i.LastPausedDate is not null
+                    && (DateTime.UtcNow - i.LastPausedDate.Value).TotalMinutes > _config.Configuration.InactiveSessionThreshold);
 
             foreach (var session in inactiveSessions)
             {
