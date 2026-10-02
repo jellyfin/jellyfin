@@ -1198,8 +1198,6 @@ namespace Jellyfin.LiveTv.Channels
         /// <param name="item">The item, with its parent set.</param>
         private static void SetSeriesKeys(BaseItem item)
         {
-            item.PresentationUniqueKey = item.CreatePresentationUniqueKey();
-
             if (item is IHasSeries hasSeries)
             {
                 hasSeries.SeriesId = hasSeries.FindSeriesId();
@@ -1210,6 +1208,9 @@ namespace Jellyfin.LiveTv.Channels
             {
                 episode.SeasonId = episode.FindSeasonId();
             }
+
+            // Last, since the key of a season is derived from its series, which is found by SeriesId once set.
+            item.PresentationUniqueKey = item.CreatePresentationUniqueKey();
         }
 
         internal IChannel GetChannelProvider(Channel channel)

@@ -248,6 +248,30 @@ public sealed class ChannelManagerTests : IDisposable
         Assert.Equal(season2.Id, moved.SeasonId);
     }
 
+    [Fact]
+    public async Task GetChannelItemsInternal_SeasonMovedToAnotherSeries_IsRelatedToItsNewSeries()
+    {
+        AddSeries();
+        _folders[string.Empty] = [.. _folders[string.Empty], new ChannelItemInfo { Id = "other", Name = "Other", Type = ChannelItemType.Folder, FolderType = ChannelFolderType.Series }];
+        _folders["other"] = [];
+
+        var allSeries = (await ListAsync(null)).Items;
+        var series = allSeries.Single(i => i.Name == "Series");
+        var other = allSeries.Single(i => i.Name == "Other");
+        var season = (await ListAsync(series.Id)).Items.Single(i => i.IndexNumber == 1);
+        Assert.NotEqual(series.PresentationUniqueKey, other.PresentationUniqueKey);
+
+        // The provider now lists the season under the other series.
+        _folders["other"] = [_folders["series"][0]];
+        _folders["series"] = [];
+        var moved = Assert.IsType<Season>(Assert.Single((await ListAsync(other.Id)).Items));
+
+        Assert.Equal(season.Id, moved.Id);
+        Assert.Equal(other.Id, moved.SeriesId);
+        Assert.Equal(other.PresentationUniqueKey, moved.SeriesPresentationUniqueKey);
+        Assert.Equal(other.PresentationUniqueKey + "-001", moved.PresentationUniqueKey);
+    }
+
     public void Dispose()
     {
         BaseItem.LibraryManager = _previousLibraryManager;
