@@ -18,4 +18,16 @@ public class AudioFileProberTests
 
         Assert.Equal(expected, AudioFileProber.SplitTagValues(value, libraryOptions));
     }
+
+    [Theory]
+    [InlineData("Artist B / Artist C", "Artist A", new[] { "Artist B", "Artist C" })]
+    [InlineData(null, "Artist A", new[] { "Artist A" })]
+    [InlineData("", "Artist A", new[] { "Artist A" })]
+    [InlineData("/", "Artist A", new[] { "Artist A" })]
+    public void SplitTagValuesWithFallback_UsesFallbackWhenPreferredTagHasNoValues(string? preferred, string fallback, string[] expected)
+    {
+        var libraryOptions = new LibraryOptions { UseCustomTagDelimiters = true };
+
+        Assert.Equal(expected, AudioFileProber.SplitTagValuesWithFallback(preferred, fallback, libraryOptions));
+    }
 }
