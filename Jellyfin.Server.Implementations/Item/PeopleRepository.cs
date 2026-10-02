@@ -423,6 +423,13 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                 .Any(m => m.PeopleId == e.Id && accessibleItems.Any(i => i.Id == m.ItemId)));
         }
 
+        if (filter.MustHaveItem)
+        {
+            // A credit with no by-name item behind it cannot be handed back as one.
+            var personType = itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
+            query = query.Where(e => context.BaseItems.Any(b => b.Type == personType && b.Name == e.Name));
+        }
+
         if (!filter.ItemId.IsEmpty())
         {
             var itemId = filter.ItemId;

@@ -612,11 +612,12 @@ public sealed partial class BaseItemRepository
             var blockedTagItemIds = context.ItemValuesMap
                 .Where(f => f.ItemValue.Type == ItemValueType.Tags && excludedTags.Contains(f.ItemValue.CleanValue))
                 .Select(f => f.ItemId);
+            var blockedByAncestor = ItemsBelowTaggedAncestor(context, blockedTagItemIds);
 
             baseQuery = baseQuery.Where(e =>
                 !blockedTagItemIds.Contains(e.Id)
                 && !(e.SeriesId.HasValue && blockedTagItemIds.Contains(e.SeriesId.Value))
-                && !e.Parents!.Any(p => blockedTagItemIds.Contains(p.ParentItemId))
+                && !blockedByAncestor.Contains(e.Id)
                 && !(e.TopParentId.HasValue && blockedTagItemIds.Contains(e.TopParentId.Value)));
         }
 
@@ -629,10 +630,12 @@ public sealed partial class BaseItemRepository
                 .Where(f => f.ItemValue.Type == ItemValueType.Tags && includeTags.Contains(f.ItemValue.CleanValue))
                 .Select(f => f.ItemId);
 
+            var allowedByAncestor = ItemsBelowTaggedAncestor(context, allowedTagItemIds);
+
             baseQuery = baseQuery.Where(e =>
                 allowedTagItemIds.Contains(e.Id)
                 || (e.SeriesId.HasValue && allowedTagItemIds.Contains(e.SeriesId.Value))
-                || e.Parents!.Any(p => allowedTagItemIds.Contains(p.ParentItemId))
+                || allowedByAncestor.Contains(e.Id)
                 || (e.TopParentId.HasValue && allowedTagItemIds.Contains(e.TopParentId.Value))
 
                 // People don't carry the tags of the media they appear in and would never match
@@ -641,6 +644,17 @@ public sealed partial class BaseItemRepository
 
         return baseQuery;
     }
+
+    /// <summary>
+    /// Reads back the items that carry one of the tagged items as an ancestor.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    /// <param name="taggedItemIds">The ids of the items carrying the tag.</param>
+    /// <returns>The ids of the items below one of them.</returns>
+    private static IQueryable<Guid> ItemsBelowTaggedAncestor(JellyfinDbContext context, IQueryable<Guid> taggedItemIds)
+        => context.AncestorIds
+            .Where(a => taggedItemIds.Contains(a.ParentItemId))
+            .Select(a => a.ItemId);
 
     /// <summary>
     /// Builds a filter expression for max parental rating that handles both rated items
