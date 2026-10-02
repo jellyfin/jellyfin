@@ -15,6 +15,7 @@ using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -243,6 +244,8 @@ namespace MediaBrowser.Providers.MediaInfo
                     performers = performers.SelectMany(p => SplitWithCustomDelimiter(p, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                 }
 
+                var composers = SplitTagValues(trackComposer, libraryOptions);
+
                 var isAudioBook = audio is AudioBook;
 
                 if (isAudioBook)
@@ -269,7 +272,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     // Composer tag = Narrator (Audiobookshelf and other tools use Composer for narrator)
                     if (!string.IsNullOrWhiteSpace(trackComposer))
                     {
-                        foreach (var composer in trackComposer.Split(InternalValueSeparator))
+                        foreach (var composer in composers)
                         {
                             if (!string.IsNullOrWhiteSpace(composer))
                             {
@@ -324,7 +327,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                     if (!string.IsNullOrWhiteSpace(trackComposer))
                     {
-                        foreach (var composer in trackComposer.Split(InternalValueSeparator))
+                        foreach (var composer in composers)
                         {
                             if (!string.IsNullOrWhiteSpace(composer))
                             {
@@ -588,7 +591,25 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private List<string> SplitWithCustomDelimiter(string val, char[] tagDelimiters, string[] whitelist)
+        /// <summary>
+        /// Splits a tag value into its individual values, using the library's custom tag delimiters when enabled.
+        /// </summary>
+        /// <param name="value">The tag value.</param>
+        /// <param name="libraryOptions">The library options.</param>
+        /// <returns>The individual values.</returns>
+        internal static string[] SplitTagValues(string? value, LibraryOptions libraryOptions)
+        {
+            var values = string.IsNullOrEmpty(value) ? [] : value.Split(InternalValueSeparator);
+
+            if (libraryOptions.UseCustomTagDelimiters)
+            {
+                values = values.SelectMany(v => SplitWithCustomDelimiter(v, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
+            }
+
+            return values;
+        }
+
+        private static List<string> SplitWithCustomDelimiter(string val, char[] tagDelimiters, string[] whitelist)
         {
             var items = new List<string>();
             var temp = val;
