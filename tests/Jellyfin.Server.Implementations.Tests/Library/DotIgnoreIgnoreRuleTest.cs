@@ -470,4 +470,105 @@ public class DotIgnoreIgnoreRuleTest
             Directory.Delete(tempDir, true);
         }
     }
+
+    [Fact]
+    public void LibraryRoot_IgnoreFileAboveRoot_IsNotConsulted()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var libraryRoot = Path.Combine(tempDir, "Movies");
+        var movieDir = Path.Combine(libraryRoot, "Movie (2020)");
+        Directory.CreateDirectory(movieDir);
+
+        try
+        {
+            File.WriteAllText(Path.Combine(tempDir, ".ignore"), string.Empty);
+
+            var rule = new DotIgnoreIgnoreRule();
+            var fileInfo = new FileSystemMetadata
+            {
+                FullName = Path.Combine(movieDir, "Movie (2020).mkv"),
+                IsDirectory = false
+            };
+
+            // Without library roots the walk reaches the filesystem root
+            Assert.True(rule.ShouldIgnore(fileInfo, null));
+
+            rule.SetLibraryRootsProvider(() => [libraryRoot + Path.DirectorySeparatorChar]);
+            Assert.False(rule.ShouldIgnore(fileInfo, null));
+
+            // A .ignore in the library root itself still applies
+            File.WriteAllText(Path.Combine(libraryRoot, ".ignore"), "*.mkv");
+            rule.ClearDirectoryCache();
+            Assert.True(rule.ShouldIgnore(fileInfo, null));
+        }
+        finally
+        {
+            Directory.Delete(tempDir, true);
+        }
+    }
+
+    [Fact]
+    public void LibraryRoot_NestedRoots_StopAtOutermost()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var outerRoot = Path.Combine(tempDir, "Media");
+        var innerRoot = Path.Combine(outerRoot, "Movies");
+        Directory.CreateDirectory(innerRoot);
+
+        try
+        {
+            File.WriteAllText(Path.Combine(outerRoot, ".ignore"), "*.mkv");
+
+            var rule = new DotIgnoreIgnoreRule();
+            rule.SetLibraryRootsProvider(() => [innerRoot, outerRoot]);
+            var fileInfo = new FileSystemMetadata
+            {
+                FullName = Path.Combine(innerRoot, "Movie.mkv"),
+                IsDirectory = false
+            };
+
+            Assert.True(rule.ShouldIgnore(fileInfo, null));
+        }
+        finally
+        {
+            Directory.Delete(tempDir, true);
+        }
+    }
+
+    [Fact]
+    public void LibraryRoot_PathOutsideLibraries_WalksToFilesystemRoot()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var libraryRoot = Path.Combine(tempDir, "Movies");
+        var otherDir = Path.Combine(tempDir, "Other", "Sub");
+        Directory.CreateDirectory(libraryRoot);
+        Directory.CreateDirectory(otherDir);
+
+        try
+        {
+            File.WriteAllText(Path.Combine(tempDir, ".ignore"), string.Empty);
+
+            var rule = new DotIgnoreIgnoreRule();
+            rule.SetLibraryRootsProvider(() => [libraryRoot]);
+
+            // A sibling whose name only shares the root's prefix is not inside the library
+            var fileInfo = new FileSystemMetadata
+            {
+                FullName = Path.Combine(tempDir, "MoviesExtra", "Movie.mkv"),
+                IsDirectory = false
+            };
+            Assert.True(rule.ShouldIgnore(fileInfo, null));
+
+            fileInfo = new FileSystemMetadata
+            {
+                FullName = Path.Combine(otherDir, "Movie.mkv"),
+                IsDirectory = false
+            };
+            Assert.True(rule.ShouldIgnore(fileInfo, null));
+        }
+        finally
+        {
+            Directory.Delete(tempDir, true);
+        }
+    }
 }
