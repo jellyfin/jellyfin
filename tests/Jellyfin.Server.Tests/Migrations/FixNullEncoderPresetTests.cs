@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Serialization;
 using Emby.Server.Implementations;
 using Jellyfin.Server.Migrations.PreStartupRoutines;
@@ -46,7 +47,7 @@ public sealed class FixNullEncoderPresetTests : IDisposable
         await _migration.PerformAsync(TestContext.Current.CancellationToken);
 
         var serializer = new XmlSerializer(typeof(EncodingOptions));
-        using var reader = File.OpenRead(_encodingConfigurationPath);
+        using var reader = XmlReader.Create(_encodingConfigurationPath);
         var encodingOptions = Assert.IsType<EncodingOptions>(serializer.Deserialize(reader));
         Assert.Equal(EncoderPreset.auto, encodingOptions.EncoderPreset);
         Assert.Equal(HardwareAccelerationType.qsv, encodingOptions.HardwareAccelerationType);
@@ -104,7 +105,7 @@ public sealed class FixNullEncoderPresetTests : IDisposable
         migration.Perform();
 
         var serializer = new XmlSerializer(typeof(EncodingOptions));
-        using var reader = File.OpenRead(_encodingConfigurationPath);
+        using var reader = XmlReader.Create(_encodingConfigurationPath);
         var encodingOptions = Assert.IsType<EncodingOptions>(serializer.Deserialize(reader));
         Assert.Equal(EncoderPreset.auto, encodingOptions.EncoderPreset);
         Assert.Equal(HardwareAccelerationType.qsv, encodingOptions.HardwareAccelerationType);
