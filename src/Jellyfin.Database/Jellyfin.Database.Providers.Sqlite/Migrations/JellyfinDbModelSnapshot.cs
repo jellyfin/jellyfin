@@ -365,7 +365,8 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("Name");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("OwnerId")
+                        .HasFilter("\"OwnerId\" IS NOT NULL");
 
                     b.HasIndex("ParentId");
 
@@ -382,7 +383,8 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("SeriesName");
 
-                    b.HasIndex("ExtraType", "OwnerId");
+                    b.HasIndex("ExtraType", "OwnerId")
+                        .HasFilter("\"ExtraType\" IS NOT NULL");
 
                     b.HasIndex("TopParentId", "Id");
 
