@@ -31,5 +31,17 @@ namespace MediaBrowser.Controller.Session
         /// <param name="cancellationToken">CancellationToken for operation.</param>
         /// <returns>A task.</returns>
         Task SendMessage<T>(SessionMessageType name, Guid messageId, T data, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sends the message to every client of this session instead of just one of them.
+        /// </summary>
+        /// <typeparam name="T">The type of data.</typeparam>
+        /// <param name="name">Name of message type.</param>
+        /// <param name="messageId">Message ID.</param>
+        /// <param name="data">Data to send.</param>
+        /// <param name="cancellationToken">CancellationToken for operation.</param>
+        /// <returns>A task.</returns>
+        Task SendMessageToAllClients<T>(SessionMessageType name, Guid messageId, T data, CancellationToken cancellationToken)
+            => SendMessage(name, messageId, data, cancellationToken);
     }
 }
