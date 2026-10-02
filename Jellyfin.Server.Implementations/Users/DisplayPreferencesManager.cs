@@ -84,6 +84,7 @@ public sealed class DisplayPreferencesManager : IDisplayPreferencesManager
     public void SetCustomItemDisplayPreferences(Guid userId, Guid itemId, string client, Dictionary<string, string?> customPreferences)
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
+        using var transaction = dbContext.Database.BeginTransaction();
         dbContext.CustomItemDisplayPreferences.Where(prefs => prefs.UserId.Equals(userId)
                             && prefs.ItemId.Equals(itemId)
                             && prefs.Client == client)
@@ -96,6 +97,7 @@ public sealed class DisplayPreferencesManager : IDisplayPreferencesManager
         }
 
         dbContext.SaveChanges();
+        transaction.Commit();
     }
 
     /// <inheritdoc/>
