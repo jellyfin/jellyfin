@@ -5,6 +5,8 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Globalization;
+using Moq;
 using Xunit;
 using LinkedChildType = Jellyfin.Database.Implementations.Entities.LinkedChildType;
 
@@ -180,6 +182,19 @@ public sealed class BaseItemRepositoryStreamFilterTests : SqliteDbTestFixture
     public void HasNoAudioTrackWithLanguage_ExcludesAnItemWhoseAlternateVersionHasIt()
     {
         Assert.DoesNotContain(_versionedMovie, _repository.GetItemIdsList(new InternalItemsQuery { HasNoAudioTrackWithLanguage = "fre" }));
+    }
+
+    [Fact]
+    public void HasNoAudioTrackWithLanguage_VariantExcludesAnItemWithItsBaseCode()
+    {
+        // ffprobe tags a fr-CA track as the base code, so a fr-ca setting has to see it.
+        var localizationManager = new Mock<ILocalizationManager>();
+        localizationManager
+            .Setup(m => m.FindLanguageInfo("fr-ca"))
+            .Returns(new CultureDto("fr-ca", "French (Canada)", "fr-ca", ["frc", "fre"]));
+        var repository = CreateBaseItemRepository(new ItemTypeLookup(), localizationManager.Object);
+
+        Assert.DoesNotContain(_versionedMovie, repository.GetItemIdsList(new InternalItemsQuery { HasNoAudioTrackWithLanguage = "fr-ca" }));
     }
 
     [Fact]
