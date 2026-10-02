@@ -12,6 +12,15 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
+        /// <summary>
+        /// Gets or sets the stored row's identity.
+        /// </summary>
+        /// <remarks>
+        /// Carried back and forth so an image keeps the same row across a save. Empty on an image
+        /// that has not been stored yet; the persistence layer assigns one.
+        /// </remarks>
+        public Guid Id { get; set; }
+
         public required string Path { get; set; }
 
         /// <summary>

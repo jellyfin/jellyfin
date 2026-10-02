@@ -113,6 +113,9 @@ public sealed class ItemPersistenceOwnedRowTests : SqliteDbTestFixture
         };
 
         book.SetImage(new ItemImageInfo { Path = "/img/primary.jpg", Type = ImageType.Primary }, 0);
+
+        // Stands in for an item read with everything, which is what may rewrite the stored rows.
+        book.MarkOwnedRowsRead(OwnedItemRows.All);
         return book;
     }
 }

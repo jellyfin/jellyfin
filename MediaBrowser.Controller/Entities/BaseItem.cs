@@ -136,6 +136,13 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public string Tagline { get; set; }
 
+        /// <summary>
+        /// Gets or sets the images this item owns.
+        /// </summary>
+        /// <remarks>
+        /// An item read without its images holds only the ones added since, not the stored set — see
+        /// <see cref="OwnedRowsRead"/>.
+        /// </remarks>
         [JsonIgnore]
         public virtual ItemImageInfo[] ImageInfos { get; set; }
 
@@ -732,6 +739,19 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The provider ids.</value>
         [JsonIgnore]
         public Dictionary<string, string> ProviderIds { get; set; }
+
+        /// <summary>
+        /// Gets the owned collections that have been read from storage on this instance.
+        /// </summary>
+        /// <remarks>
+        /// Only storage sets these: a query that loaded the collection, or the insert that wrote it (see
+        /// <see cref="MarkOwnedRowsRead"/>). Saving rewrites a read collection wholesale, so removals
+        /// persist; an unread one holds only what was added to it, so saving merges it into the stored
+        /// rows instead. Assigning a collection does not make it read, because the new value is usually
+        /// derived from the old, and a new instance may share its id with rows it knows nothing about.
+        /// </remarks>
+        [JsonIgnore]
+        public OwnedItemRows OwnedRowsRead { get; private set; }
 
         [JsonIgnore]
         public virtual Folder LatestItemsIndexContainer => null;
@@ -1499,6 +1519,16 @@ namespace MediaBrowser.Controller.Entities
         public Task RefreshMetadata(CancellationToken cancellationToken)
         {
             return RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(FileSystem)), cancellationToken);
+        }
+
+        /// <summary>
+        /// Records that these owned collections hold exactly what is stored, as after reading or
+        /// inserting them.
+        /// </summary>
+        /// <param name="rows">The collections storage has just filled or written.</param>
+        public void MarkOwnedRowsRead(OwnedItemRows rows)
+        {
+            OwnedRowsRead |= rows;
         }
 
         /// <summary>

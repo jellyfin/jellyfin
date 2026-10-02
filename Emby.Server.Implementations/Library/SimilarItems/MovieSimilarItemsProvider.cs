@@ -219,9 +219,13 @@ public sealed class MovieSimilarItemsProvider : ILocalSimilarItemsProvider<Movie
                 .AsSplitQuery()
                 .ToListAsync(cancellationToken).ConfigureAwait(false);
 
-            var entitiesById = entities
-                .Select(e => _queryHelpers.DeserializeBaseItem(e, filter.SkipDeserialization))
-                .Where(dto => dto is not null)
+            var entitiesById = _queryHelpers.LoadCollections(
+                    context,
+                    filter,
+                    entities
+                        .Select(e => _queryHelpers.DeserializeBaseItem(e, filter.SkipDeserialization))
+                        .Where(dto => dto is not null)
+                        .ToArray()!)
                 .ToDictionary(i => i!.Id);
 
             // Phase 5: Split by source, preserving score order

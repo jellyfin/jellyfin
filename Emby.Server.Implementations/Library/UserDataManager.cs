@@ -353,11 +353,20 @@ namespace Emby.Server.Implementations.Library
         public UserItemData? GetUserData(User user, BaseItem item)
         {
             ArgumentNullException.ThrowIfNull(user);
+            ArgumentNullException.ThrowIfNull(item);
+
             var row = ResolveUserDataRow(item, item.UserData?.Where(e => e.UserId.Equals(user.Id)));
-            return row is not null ? Map(row) : new UserItemData()
+            if (row is not null)
             {
-                Key = item.GetUserDataKeys()[0],
-            };
+                return Map(row);
+            }
+
+            // Nothing attached does not mean nothing stored: an item can be read without its user
+            // data, and one read for another user is cached and handed on to this one. Reporting an
+            // unwatched, unrated item here would be a wrong answer, so go and look, the way the
+            // batch path above does.
+            return GetUserDataBatch([item], user).GetValueOrDefault(item.Id)
+                ?? new UserItemData { Key = item.GetUserDataKeys()[0] };
         }
 
         /// <summary>
