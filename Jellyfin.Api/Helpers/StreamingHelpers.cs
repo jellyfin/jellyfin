@@ -288,7 +288,7 @@ public static class StreamingHelpers
     /// <param name="state">The state.</param>
     /// <param name="mediaSource">The mediaSource.</param>
     /// <returns>System.String.</returns>
-    private static string GetOutputFileExtension(StreamState state, MediaSourceInfo? mediaSource)
+    internal static string GetOutputFileExtension(StreamState state, MediaSourceInfo? mediaSource)
     {
         var ext = Path.GetExtension(state.RequestedUrl);
         if (!string.IsNullOrEmpty(ext))
@@ -296,73 +296,68 @@ public static class StreamingHelpers
             return ext;
         }
 
-        // Try to infer based on the desired video codec
-        if (state.IsVideoRequest)
+        var codecExtension = state.IsVideoRequest
+            ? GetVideoOutputFileExtension(state.Request.VideoCodec)
+            : GetAudioOutputFileExtension(state.Request.AudioCodec);
+        if (codecExtension is not null)
         {
-            var videoCodec = state.Request.VideoCodec;
-
-            if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase))
-            {
-                return ".ts";
-            }
-
-            if (string.Equals(videoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(videoCodec, "av1", StringComparison.OrdinalIgnoreCase))
-            {
-                return ".mp4";
-            }
-
-            if (string.Equals(videoCodec, "theora", StringComparison.OrdinalIgnoreCase))
-            {
-                return ".ogv";
-            }
-
-            if (string.Equals(videoCodec, "vp8", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(videoCodec, "vp9", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(videoCodec, "vpx", StringComparison.OrdinalIgnoreCase))
-            {
-                return ".webm";
-            }
-
-            if (string.Equals(videoCodec, "wmv", StringComparison.OrdinalIgnoreCase))
-            {
-                return ".asf";
-            }
-        }
-        else
-        {
-            // Try to infer based on the desired audio codec
-            var audioCodec = state.Request.AudioCodec;
-
-            if (string.Equals("aac", audioCodec, StringComparison.OrdinalIgnoreCase))
-            {
-                return ".aac";
-            }
-
-            if (string.Equals("mp3", audioCodec, StringComparison.OrdinalIgnoreCase))
-            {
-                return ".mp3";
-            }
-
-            if (string.Equals("vorbis", audioCodec, StringComparison.OrdinalIgnoreCase))
-            {
-                return ".ogg";
-            }
-
-            if (string.Equals("wma", audioCodec, StringComparison.OrdinalIgnoreCase))
-            {
-                return ".wma";
-            }
+            return codecExtension;
         }
 
-        // Fallback to the container of mediaSource
+        // Extensionless progressive routes such as /Videos/{itemId}/stream can reach this fallback
+        // when neither a container nor a recognized output codec was requested.
         if (!string.IsNullOrEmpty(mediaSource?.Container))
         {
+            var mediaSourceExtension = GetMediaSourceFileExtension(mediaSource);
+            if (!string.IsNullOrEmpty(mediaSourceExtension))
+            {
+                return mediaSourceExtension;
+            }
+
             var idx = mediaSource.Container.IndexOf(',', StringComparison.OrdinalIgnoreCase);
             return '.' + (idx == -1 ? mediaSource.Container : mediaSource.Container[..idx]).Trim();
         }
 
         throw new InvalidOperationException("Failed to find an appropriate file extension");
+    }
+
+    private static string? GetVideoOutputFileExtension(string? codec)
+        => codec?.ToLowerInvariant() switch
+        {
+            "h264" => ".ts",
+            "hevc" or "av1" => ".mp4",
+            "theora" => ".ogv",
+            "vp8" or "vp9" or "vpx" => ".webm",
+            "wmv" => ".asf",
+            _ => null
+        };
+
+    private static string? GetAudioOutputFileExtension(string? codec)
+        => codec?.ToLowerInvariant() switch
+        {
+            "aac" => ".aac",
+            "mp3" => ".mp3",
+            "vorbis" => ".ogg",
+            "wma" => ".wma",
+            _ => null
+        };
+
+    private static string? GetMediaSourceFileExtension(MediaSourceInfo mediaSource)
+    {
+        if (string.IsNullOrEmpty(mediaSource.Path) || string.IsNullOrEmpty(mediaSource.Container))
+        {
+            return null;
+        }
+
+        var extension = Path.GetExtension(mediaSource.Path);
+        if (string.IsNullOrEmpty(extension))
+        {
+            return null;
+        }
+
+        var extensionContainer = extension.TrimStart('.');
+        var containers = mediaSource.Container.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return containers.Contains(extensionContainer, StringComparer.OrdinalIgnoreCase) ? extension : null;
     }
 
     /// <summary>
