@@ -362,7 +362,7 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
             .Where(b => b.TopParentId.HasValue)
             .Where(b => !context.BaseItems.Any(lib => lib.Id.Equals(b.TopParentId!.Value)))
             .Select(b => new { b.Id, b.Path })
-            .ToList()
+            .AsEnumerable()
             .Where(b => !IsInternalData(b.Path))
             .Select(b => b.Id)
             .ToList();
