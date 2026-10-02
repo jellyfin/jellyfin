@@ -292,6 +292,8 @@ public class ItemUpdateController : BaseJellyfinApiController
         item.PremiereDate = request.PremiereDate.HasValue ? NormalizeDateTime(request.PremiereDate.Value) : null;
         item.ProductionYear = request.ProductionYear;
 
+        var previousOfficialRating = item.OfficialRating;
+        var previousCustomRating = item.CustomRating;
         request.OfficialRating = string.IsNullOrWhiteSpace(request.OfficialRating) ? null : request.OfficialRating;
         item.OfficialRating = request.OfficialRating;
         item.CustomRating = request.CustomRating;
@@ -318,12 +320,14 @@ public class ItemUpdateController : BaseJellyfinApiController
             {
                 season.SeriesName = rseries.Name;
 
+                var previousSeasonOfficialRating = season.OfficialRating;
+                var previousSeasonCustomRating = season.CustomRating;
                 if (!season.LockedFields.Contains(MetadataField.OfficialRating))
                 {
-                    season.OfficialRating = request.OfficialRating;
+                    season.OfficialRating = GetPropagatedRating(season.OfficialRating, previousOfficialRating, request.OfficialRating);
                 }
 
-                season.CustomRating = request.CustomRating;
+                season.CustomRating = GetPropagatedRating(season.CustomRating, previousCustomRating, request.CustomRating);
 
                 if (!season.LockedFields.Contains(MetadataField.Tags))
                 {
@@ -339,10 +343,10 @@ public class ItemUpdateController : BaseJellyfinApiController
 
                     if (!ep.LockedFields.Contains(MetadataField.OfficialRating))
                     {
-                        ep.OfficialRating = request.OfficialRating;
+                        ep.OfficialRating = GetPropagatedRating(ep.OfficialRating, previousSeasonOfficialRating, season.OfficialRating);
                     }
 
-                    ep.CustomRating = request.CustomRating;
+                    ep.CustomRating = GetPropagatedRating(ep.CustomRating, previousSeasonCustomRating, season.CustomRating);
 
                     if (!ep.LockedFields.Contains(MetadataField.Tags))
                     {
@@ -360,10 +364,10 @@ public class ItemUpdateController : BaseJellyfinApiController
             {
                 if (!ep.LockedFields.Contains(MetadataField.OfficialRating))
                 {
-                    ep.OfficialRating = request.OfficialRating;
+                    ep.OfficialRating = GetPropagatedRating(ep.OfficialRating, previousOfficialRating, request.OfficialRating);
                 }
 
-                ep.CustomRating = request.CustomRating;
+                ep.CustomRating = GetPropagatedRating(ep.CustomRating, previousCustomRating, request.CustomRating);
 
                 if (!ep.LockedFields.Contains(MetadataField.Tags))
                 {
@@ -380,10 +384,10 @@ public class ItemUpdateController : BaseJellyfinApiController
             {
                 if (!track.LockedFields.Contains(MetadataField.OfficialRating))
                 {
-                    track.OfficialRating = request.OfficialRating;
+                    track.OfficialRating = GetPropagatedRating(track.OfficialRating, previousOfficialRating, request.OfficialRating);
                 }
 
-                track.CustomRating = request.CustomRating;
+                track.CustomRating = GetPropagatedRating(track.CustomRating, previousCustomRating, request.CustomRating);
 
                 if (!track.LockedFields.Contains(MetadataField.Tags))
                 {
@@ -473,6 +477,23 @@ public class ItemUpdateController : BaseJellyfinApiController
                     break;
                 }
         }
+    }
+
+    /// <summary>
+    /// Gets the rating a child should carry after its parent's rating changed from <paramref name="previousRating"/>
+    /// to <paramref name="newRating"/>: a child with no rating, or the parent's previous one, follows the parent.
+    /// A child with a rating of its own, or any child when the parent's rating did not change, keeps its rating.
+    /// </summary>
+    private static string? GetPropagatedRating(string? childRating, string? previousRating, string? newRating)
+    {
+        if (string.Equals(previousRating ?? string.Empty, newRating ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+        {
+            return childRating;
+        }
+
+        return string.IsNullOrEmpty(childRating) || string.Equals(childRating, previousRating, StringComparison.OrdinalIgnoreCase)
+            ? newRating
+            : childRating;
     }
 
     private SeriesStatus? GetSeriesStatus(BaseItemDto item)
