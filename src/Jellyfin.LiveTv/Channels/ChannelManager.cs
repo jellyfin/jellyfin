@@ -1079,7 +1079,8 @@ namespace Jellyfin.LiveTv.Channels
 
             item.ChannelId = internalChannelId;
 
-            if (!item.ParentId.Equals(parentFolderId))
+            var parentChanged = !item.ParentId.Equals(parentFolderId);
+            if (parentChanged)
             {
                 forceUpdate = true;
                 _logger.LogDebug("Forcing update due to parent folder Id {0}", item.Name);
@@ -1148,7 +1149,7 @@ namespace Jellyfin.LiveTv.Channels
                 }
             }
 
-            if (isNew)
+            if (isNew || parentChanged)
             {
                 SetSeriesKeys(item);
             }
@@ -1190,11 +1191,11 @@ namespace Jellyfin.LiveTv.Channels
         }
 
         /// <summary>
-        /// Sets the keys which relate a new item to its series. A library scan sets them in the metadata refresh,
-        /// which only runs in the background for channel items, and until then the item does not match
-        /// the queries for the seasons and episodes of its series.
+        /// Sets the keys which relate an item to its series, when it is new or moved to another folder.
+        /// A library scan sets them in the metadata refresh, which only runs in the background for channel items,
+        /// and until then the item does not match the queries for the seasons and episodes of its series.
         /// </summary>
-        /// <param name="item">The new item, with its parent set.</param>
+        /// <param name="item">The item, with its parent set.</param>
         private static void SetSeriesKeys(BaseItem item)
         {
             item.PresentationUniqueKey = item.CreatePresentationUniqueKey();

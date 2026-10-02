@@ -5,9 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.LiveTv.Channels;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -42,6 +46,7 @@ public sealed class ChannelManagerTests : IDisposable
     private readonly Channel _channelItem;
     private readonly ILibraryManager _previousLibraryManager = BaseItem.LibraryManager;
     private readonly IServerConfigurationManager _previousConfigurationManager = BaseItem.ConfigurationManager;
+    private readonly IChannelManager _previousChannelManager = BaseItem.ChannelManager;
     private readonly IRecordingsManager _previousRecordingsManager = Video.RecordingsManager;
     private readonly Dictionary<string, List<ChannelItemInfo>> _folders = new()
     {
@@ -84,7 +89,11 @@ public sealed class ChannelManagerTests : IDisposable
             .Setup(x => x.GetItemsResult(It.IsAny<InternalItemsQuery>()))
             .Returns((InternalItemsQuery query) =>
             {
-                var items = ChildrenOf(query.ParentId);
+                var items = ChildrenOf(query.ParentId)
+                    .Where(i => query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(i.GetBaseItemKind()))
+                    .Where(i => query.SeriesPresentationUniqueKey is null
+                        || (i is IHasSeries hasSeries && hasSeries.SeriesPresentationUniqueKey == query.SeriesPresentationUniqueKey))
+                    .ToList();
                 if (_releaseCreationOnLibraryRead)
                 {
                     _releaseCreation.Set();
@@ -98,6 +107,9 @@ public sealed class ChannelManagerTests : IDisposable
         _libraryManager
             .Setup(x => x.GetCollectionFolders(It.IsAny<BaseItem>()))
             .Returns([]);
+        _libraryManager
+            .Setup(x => x.Sort(It.IsAny<IEnumerable<BaseItem>>(), It.IsAny<User>(), It.IsAny<IEnumerable<ItemSortBy>>(), It.IsAny<SortOrder>()))
+            .Returns((IEnumerable<BaseItem> items, User _, IEnumerable<ItemSortBy> _, SortOrder _) => items);
 
         BaseItem.LibraryManager = _libraryManager.Object;
 
@@ -138,6 +150,7 @@ public sealed class ChannelManagerTests : IDisposable
             Mock.Of<IProviderManager>(),
             _memoryCache,
             [_channel.Object]);
+        BaseItem.ChannelManager = _channelManager;
     }
 
     [Fact]
@@ -195,11 +208,71 @@ public sealed class ChannelManagerTests : IDisposable
     }
 
     [Fact]
-    public async Task GetChannelItemsInternal_NewEpisode_IsRelatedToItsSeasonAndSeries()
+    public async Task GetEpisodes_SeasonOpenedRightAfterItsSeries_ListsItsEpisodes()
+    {
+        AddSeries();
+
+        var series = Assert.IsType<Series>(Assert.Single((await ListAsync(null)).Items));
+        var season = Assert.IsType<Season>((await ListAsync(series.Id)).Items.Single(i => i.IndexNumber == 1));
+
+        // As the episodes endpoint lists them, before the metadata refresh of any item has run.
+        var episode = Assert.IsType<Episode>(Assert.Single(season.GetEpisodes(null, new DtoOptions(true), true)));
+
+        Assert.False(string.IsNullOrEmpty(series.PresentationUniqueKey));
+        Assert.Equal(series.PresentationUniqueKey + "-001", season.PresentationUniqueKey);
+        Assert.Equal(series.Id, season.SeriesId);
+        Assert.Equal(series.PresentationUniqueKey, season.SeriesPresentationUniqueKey);
+        Assert.Equal(series.Id, episode.SeriesId);
+        Assert.Equal(season.Id, episode.SeasonId);
+        Assert.Equal(series.PresentationUniqueKey, episode.SeriesPresentationUniqueKey);
+    }
+
+    [Fact]
+    public async Task GetChannelItemsInternal_EpisodeMovedToAnotherSeason_IsRelatedToItsNewSeason()
+    {
+        AddSeries();
+
+        var series = Assert.IsType<Series>(Assert.Single((await ListAsync(null)).Items));
+        var seasons = (await ListAsync(series.Id)).Items;
+        var season1 = seasons.Single(i => i.IndexNumber == 1);
+        var season2 = seasons.Single(i => i.IndexNumber == 2);
+        var episode = Assert.IsType<Episode>(Assert.Single((await ListAsync(season1.Id)).Items));
+        Assert.Equal(season1.Id, episode.SeasonId);
+
+        // The provider now lists the episode in the other season.
+        _folders["season2"] = _folders["season1"];
+        _folders["season1"] = [];
+        var moved = Assert.IsType<Episode>(Assert.Single((await ListAsync(season2.Id)).Items));
+
+        Assert.Equal(episode.Id, moved.Id);
+        Assert.Equal(season2.Id, moved.SeasonId);
+    }
+
+    public void Dispose()
+    {
+        BaseItem.LibraryManager = _previousLibraryManager;
+        BaseItem.ConfigurationManager = _previousConfigurationManager;
+        BaseItem.ChannelManager = _previousChannelManager;
+        Video.RecordingsManager = _previousRecordingsManager;
+        _channelManager.Dispose();
+        _memoryCache.Dispose();
+        _creatingItem.Dispose();
+        _releaseCreation.Dispose();
+        if (Directory.Exists(_cachePath))
+        {
+            Directory.Delete(_cachePath, true);
+        }
+    }
+
+    private void AddSeries()
     {
         _folders[string.Empty] = [new ChannelItemInfo { Id = "series", Name = "Series", Type = ChannelItemType.Folder, FolderType = ChannelFolderType.Series }];
-        _folders["series"] = [new ChannelItemInfo { Id = "season", Name = "Season 1", Type = ChannelItemType.Folder, FolderType = ChannelFolderType.Season, IndexNumber = 1 }];
-        _folders["season"] =
+        _folders["series"] =
+        [
+            new ChannelItemInfo { Id = "season1", Name = "Season 1", Type = ChannelItemType.Folder, FolderType = ChannelFolderType.Season, IndexNumber = 1 },
+            new ChannelItemInfo { Id = "season2", Name = "Season 2", Type = ChannelItemType.Folder, FolderType = ChannelFolderType.Season, IndexNumber = 2 },
+        ];
+        _folders["season1"] =
         [
             new ChannelItemInfo
             {
@@ -212,33 +285,7 @@ public sealed class ChannelManagerTests : IDisposable
                 ParentIndexNumber = 1,
             },
         ];
-
-        var series = Assert.IsType<Series>(Assert.Single((await ListAsync(null)).Items));
-        var season = Assert.IsType<Season>(Assert.Single((await ListAsync(series.Id)).Items));
-        var episode = Assert.IsType<Episode>(Assert.Single((await ListAsync(season.Id)).Items));
-
-        // The episodes of a season are queried by these, before the metadata refresh of the items has run.
-        Assert.False(string.IsNullOrEmpty(series.PresentationUniqueKey));
-        Assert.Equal(series.Id, season.SeriesId);
-        Assert.Equal(series.PresentationUniqueKey, season.SeriesPresentationUniqueKey);
-        Assert.Equal(series.Id, episode.SeriesId);
-        Assert.Equal(season.Id, episode.SeasonId);
-        Assert.Equal(series.PresentationUniqueKey, episode.SeriesPresentationUniqueKey);
-    }
-
-    public void Dispose()
-    {
-        BaseItem.LibraryManager = _previousLibraryManager;
-        BaseItem.ConfigurationManager = _previousConfigurationManager;
-        Video.RecordingsManager = _previousRecordingsManager;
-        _channelManager.Dispose();
-        _memoryCache.Dispose();
-        _creatingItem.Dispose();
-        _releaseCreation.Dispose();
-        if (Directory.Exists(_cachePath))
-        {
-            Directory.Delete(_cachePath, true);
-        }
+        _folders["season2"] = [];
     }
 
     private Task<QueryResult<BaseItem>> ListAsync(Guid? parentId)
