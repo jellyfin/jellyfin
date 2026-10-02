@@ -31,6 +31,12 @@ namespace Jellyfin.Naming.Tests.Video
         [InlineData("[tvN] 혼술남녀.E01-E16.720p-NEXT", "혼술남녀")]
         [InlineData("[tvN] 연애말고 결혼 E01~E16 END HDTV.H264.720p-WITH", "연애말고 결혼")]
         [InlineData("2026年01月10日23時00分00秒-[新]TRIGUN　STARGAZE[字].mp4", "2026年01月10日23時00分00秒-[新]TRIGUN　STARGAZE")]
+        [InlineData("www.example.org - Before Sunset", "Before Sunset")]
+        [InlineData("www.example.org    -    Before Sunset 1080p", "Before Sunset")]
+        [InlineData("example.org - Before Sunset", "Before Sunset")]
+        [InlineData("example.ws - Before Sunset 1080p", "Before Sunset")]
+        [InlineData("Before Sunset - www.example.org", "Before Sunset")]
+        [InlineData("Before Sunset - example.org", "Before Sunset")]
         // FIXME: [InlineData("After The Sunset - [0004].mkv", "After The Sunset")]
         public void CleanStringTest_NeedsCleaning_Success(string input, string expectedName)
         {
@@ -45,6 +51,9 @@ namespace Jellyfin.Naming.Tests.Video
         [InlineData("[rec].mkv")]
         [InlineData("American.Psycho.mkv")]
         [InlineData("American Psycho.mkv")]
+        [InlineData("The Falls - Peter Greenaway.mkv")]
+        [InlineData("Exit.Through.the.Gift.Shop - Banksy.mkv")]
+        [InlineData("Apocalypse.Now - Redux.mkv")]
         [InlineData("Run lola run (lola rennt) (2009).mp4")]
         [InlineData("2026年01月05日00時55分00秒-[新]違国日記【ＡＮｉＭｉＤＮｉＧＨＴ！！！】＃１.mp4")]
         public void CleanStringTest_DoesntNeedCleaning_False(string? input)
