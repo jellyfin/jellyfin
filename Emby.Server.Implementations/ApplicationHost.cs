@@ -728,7 +728,7 @@ namespace Emby.Server.Implementations
             _pluginManager.CreatePlugins();
 
             Resolve<ILibraryManager>().AddParts(
-                GetExports<IResolverIgnoreRule>(),
+                GetExports<IResolverIgnoreRule>(type => ServiceProvider.GetService(type) ?? CreateInstanceSafe(type)),
                 GetExports<IItemResolver>(),
                 GetExports<IIntroProvider>(),
                 GetExports<IBaseItemComparer>(),
