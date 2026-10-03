@@ -27,7 +27,7 @@ namespace MediaBrowser.Controller.LiveTv
         public override SourceType SourceType => SourceType.LiveTV;
 
         [JsonIgnore]
-        public override bool EnableRememberingTrackSelections => false;
+        public override bool EnableRememberingTrackSelections => true;
 
         /// <summary>
         /// Gets or sets the number.
