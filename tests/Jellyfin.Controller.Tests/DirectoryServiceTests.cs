@@ -257,7 +257,7 @@ namespace Jellyfin.Controller.Tests
         public void GetFileSystemEntries_RepeatedPath_ReadsTheFileSystemOnce()
         {
             var fileSystemMock = new Mock<IFileSystem>(MockBehavior.Strict);
-            fileSystemMock.Setup(f => f.GetFileSystemEntries(_lowerCasePath))
+            fileSystemMock.Setup(f => f.GetFileSystemEntries(_lowerCasePath, false))
                 .Returns(_lowerCaseFileSystemMetadata);
 
             var directoryService = new DirectoryService(fileSystemMock.Object);
@@ -265,14 +265,14 @@ namespace Jellyfin.Controller.Tests
             directoryService.GetFileSystemEntries(_lowerCasePath);
             directoryService.GetFileSystemEntries(_lowerCasePath);
 
-            fileSystemMock.Verify(f => f.GetFileSystemEntries(_lowerCasePath), Times.Once);
+            fileSystemMock.Verify(f => f.GetFileSystemEntries(_lowerCasePath, false), Times.Once);
         }
 
         [Fact]
         public void Invalidate_GivenADirectory_DropsBothTheListingAndTheFilePaths()
         {
             var fileSystemMock = new Mock<IFileSystem>();
-            fileSystemMock.SetupSequence(f => f.GetFileSystemEntries(_lowerCasePath))
+            fileSystemMock.SetupSequence(f => f.GetFileSystemEntries(_lowerCasePath, false))
                 .Returns(_lowerCaseFileSystemMetadata)
                 .Returns(_upperCaseFileSystemMetadata);
             fileSystemMock.SetupSequence(f => f.GetFilePaths(_lowerCasePath, false))
@@ -295,7 +295,7 @@ namespace Jellyfin.Controller.Tests
             var newFile = Path.Combine(_lowerCasePath, "Song 2.srt");
 
             var fileSystemMock = new Mock<IFileSystem>();
-            fileSystemMock.SetupSequence(f => f.GetFileSystemEntries(_lowerCasePath))
+            fileSystemMock.SetupSequence(f => f.GetFileSystemEntries(_lowerCasePath, false))
                 .Returns(_lowerCaseFileSystemMetadata)
                 .Returns(_upperCaseFileSystemMetadata);
 
@@ -313,9 +313,9 @@ namespace Jellyfin.Controller.Tests
             var parentPath = LocalPath("/music");
 
             var fileSystemMock = new Mock<IFileSystem>();
-            fileSystemMock.Setup(f => f.GetFilePaths(_lowerCasePath))
+            fileSystemMock.Setup(f => f.GetFilePaths(_lowerCasePath, false))
                 .Returns(new[] { Path.Combine(_lowerCasePath, "Song 2.mp3") });
-            fileSystemMock.Setup(f => f.GetFileSystemEntries(parentPath))
+            fileSystemMock.Setup(f => f.GetFileSystemEntries(parentPath, false))
                 .Returns(_lowerCaseFileSystemMetadata);
 
             var directoryService = new DirectoryService(fileSystemMock.Object);
@@ -324,7 +324,7 @@ namespace Jellyfin.Controller.Tests
             directoryService.GetFilePaths(_lowerCasePath, true);
 
             directoryService.GetFileSystemEntries(parentPath);
-            fileSystemMock.Verify(f => f.GetFileSystemEntries(parentPath), Times.Once);
+            fileSystemMock.Verify(f => f.GetFileSystemEntries(parentPath, false), Times.Once);
         }
 
         [Fact]
@@ -344,7 +344,7 @@ namespace Jellyfin.Controller.Tests
             }
 
             var fileSystemMock = new Mock<IFileSystem>();
-            fileSystemMock.Setup(f => f.GetFileSystemEntries(It.IsAny<string>()))
+            fileSystemMock.Setup(f => f.GetFileSystemEntries(It.IsAny<string>(), false))
                 .Returns(bigListing);
 
             var directoryService = new DirectoryService(fileSystemMock.Object);
@@ -359,7 +359,7 @@ namespace Jellyfin.Controller.Tests
 
             directoryService.GetFileSystemEntries(FirstPath);
 
-            fileSystemMock.Verify(f => f.GetFileSystemEntries(FirstPath), Times.Exactly(2));
+            fileSystemMock.Verify(f => f.GetFileSystemEntries(FirstPath, false), Times.Exactly(2));
         }
 
         [Fact]
@@ -379,7 +379,7 @@ namespace Jellyfin.Controller.Tests
             }
 
             var fileSystemMock = new Mock<IFileSystem>();
-            fileSystemMock.Setup(f => f.GetFileSystemEntries(It.IsAny<string>()))
+            fileSystemMock.Setup(f => f.GetFileSystemEntries(It.IsAny<string>(), false))
                 .Returns(bigListing);
 
             var directoryService = new DirectoryService(fileSystemMock.Object);
@@ -396,7 +396,7 @@ namespace Jellyfin.Controller.Tests
 
             directoryService.GetFileSystemEntries(StablePath);
 
-            fileSystemMock.Verify(f => f.GetFileSystemEntries(StablePath), Times.Once);
+            fileSystemMock.Verify(f => f.GetFileSystemEntries(StablePath, false), Times.Once);
         }
 
         [Fact]
