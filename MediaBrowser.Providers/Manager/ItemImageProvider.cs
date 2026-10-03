@@ -465,7 +465,7 @@ namespace MediaBrowser.Providers.Manager
 
                         // If date changed then we need to reset saved image dimensions. Stores such as PostgreSQL keep
                         // only microseconds, so an exact comparison would treat every unchanged image as modified.
-                        if (currentImage.DateModified.Subtract(newDateModified).Duration().TotalSeconds > 1 && (currentImage.Width > 0 || currentImage.Height > 0))
+                        if (Math.Abs((currentImage.DateModified - newDateModified).TotalSeconds) > 1 && (currentImage.Width > 0 || currentImage.Height > 0))
                         {
                             currentImage.Width = 0;
                             currentImage.Height = 0;
