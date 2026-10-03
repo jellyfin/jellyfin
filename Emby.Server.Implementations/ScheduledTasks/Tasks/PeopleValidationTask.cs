@@ -155,7 +155,7 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
             }
             finally
             {
-                ArrayPool<Guid[]>.Shared.Return(buffer);
+                ArrayPool<Guid[]>.Shared.Return(buffer, clearArray: true);
             }
 
             var peopleToDelete = await context.Peoples
