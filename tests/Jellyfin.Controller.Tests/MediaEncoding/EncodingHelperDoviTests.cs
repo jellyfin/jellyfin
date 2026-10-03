@@ -115,6 +115,123 @@ public class EncodingHelperDoviTests
         Assert.Equal("-bsf:v hevc_mp4toannexb", helper.GetBitStreamArgs(state, MediaStreamType.Video));
     }
 
+    [Theory]
+    [InlineData(5, true, true)]
+    [InlineData(7, true, true)]
+    [InlineData(8, true, true)]
+    [InlineData(null, true, false)]
+    [InlineData(5, false, false)]
+    public void RequiresLibplaceboDoviToneMapping_ProfilesAndOptions(int? profile, bool enableTonemapping, bool expected)
+    {
+        var options = new EncodingOptions { EnableTonemapping = enableTonemapping };
+        var stream = new MediaStream
+        {
+            Type = MediaStreamType.Video,
+            DvProfile = profile,
+            DvBlSignalCompatibilityId = profile switch
+            {
+                5 => 0,
+                7 => 6,
+                8 => 1,
+                _ => 0
+            },
+            RpuPresentFlag = profile.HasValue ? 1 : 0,
+            BlPresentFlag = profile.HasValue ? 1 : 0,
+            ColorTransfer = profile is 7 or 8 ? "smpte2084" : null,
+            ColorSpace = profile is 7 or 8 ? "bt2020nc" : null,
+            ColorPrimaries = profile is 7 or 8 ? "bt2020" : null
+        };
+
+        var result = EncodingHelper.RequiresLibplaceboDoviToneMapping(stream, options, isTranscodingToSdr: true);
+        Assert.Equal(expected, result);
+
+        // When not transcoding to SDR, should always be false
+        var resultHdr = EncodingHelper.RequiresLibplaceboDoviToneMapping(stream, options, isTranscodingToSdr: false);
+        Assert.False(resultHdr);
+    }
+
+    [Fact]
+    public void RequiresLibplaceboDoviToneMapping_StateOverload_EvaluatesCorrectly()
+    {
+        var options = new EncodingOptions { EnableTonemapping = true };
+        var state = CreateState("hevc", "smpte2084");
+        state.OutputVideoCodec = "h264";
+        state.VideoStream.DvProfile = 5;
+        state.VideoStream.DvBlSignalCompatibilityId = 0;
+        state.BaseRequest.VideoRangeType = "SDR";
+
+        Assert.True(EncodingHelper.RequiresLibplaceboDoviToneMapping(state, options));
+
+        // When target is HDR, should return false
+        state.BaseRequest.VideoRangeType = "HDR10";
+        Assert.False(EncodingHelper.RequiresLibplaceboDoviToneMapping(state, options));
+    }
+
+    [Fact]
+    public void IsVulkanHwTonemapAvailable_ReturnsTrue_ForDolbyVision()
+    {
+        var helper = CreateHelper(true);
+        var options = new EncodingOptions { EnableTonemapping = true };
+        var state = CreateState("hevc", "smpte2084");
+        state.OutputVideoCodec = "h264";
+        state.VideoStream.DvProfile = 5;
+        state.VideoStream.DvBlSignalCompatibilityId = 0;
+        state.BaseRequest.VideoRangeType = "SDR";
+
+        Assert.True(helper.IsVulkanHwTonemapAvailable(state, options));
+    }
+
+    [Fact]
+    public void GetInputVideoHwaccelArgs_DolbyVisionVaapi_InitializesVulkanViaDrm()
+    {
+        var helper = CreateVaapiVulkanHelper(isInteliHD: true, supportsVulkanDrmInterop: true);
+        var options = new EncodingOptions
+        {
+            HardwareAccelerationType = HardwareAccelerationType.vaapi,
+            VaapiDevice = "/dev/dri/renderD128",
+            EnableTonemapping = true
+        };
+        var state = CreateState("hevc", "smpte2084");
+        state.VideoStream.DvProfile = 5;
+        state.VideoStream.DvBlSignalCompatibilityId = 0;
+        state.BaseRequest.VideoRangeType = "SDR";
+        state.OutputVideoCodec = "h264_vaapi";
+
+        var args = helper.GetInputVideoHwaccelArgs(state, options);
+
+        Assert.Contains("-init_hw_device drm=dr:/dev/dri/renderD128", args, StringComparison.Ordinal);
+        Assert.Contains("-init_hw_device vaapi=va@dr", args, StringComparison.Ordinal);
+        Assert.Contains("-init_hw_device vulkan=vk@dr", args, StringComparison.Ordinal);
+        Assert.Contains("-filter_hw_device vk", args, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void GetVaapiVidFilterChain_DolbyVisionVaapi_UsesVulkanLibplacebo()
+    {
+        var helper = CreateVaapiVulkanHelper(isInteliHD: true, supportsVulkanDrmInterop: true);
+        var options = new EncodingOptions
+        {
+            HardwareAccelerationType = HardwareAccelerationType.vaapi,
+            VaapiDevice = "/dev/dri/renderD128",
+            EnableTonemapping = true,
+            TonemappingAlgorithm = TonemappingAlgorithm.bt2390,
+            HardwareDecodingCodecs = ["h264", "hevc", "vc1"]
+        };
+        var state = CreateState("hevc", "smpte2084");
+        state.VideoStream.PixelFormat = "yuv420p10le";
+        state.VideoStream.DvProfile = 5;
+        state.VideoStream.DvBlSignalCompatibilityId = 0;
+        state.BaseRequest.VideoRangeType = "SDR";
+        state.OutputVideoCodec = "h264_vaapi";
+
+        var (mainFilters, _, _) = helper.GetVaapiVidFilterChain(state, options, "h264_vaapi");
+        var filterChain = string.Join(',', mainFilters);
+
+        Assert.Contains("libplacebo=", filterChain, StringComparison.Ordinal);
+        Assert.Contains("tonemapping=bt.2390", filterChain, StringComparison.Ordinal);
+        Assert.Contains("format=drm_prime", filterChain, StringComparison.Ordinal);
+    }
+
     private static EncodingJobInfo CreateState(string codec, string? transfer)
     {
         var stream = new MediaStream
@@ -149,6 +266,41 @@ public class EncodingHelperDoviTests
         var encoder = new Mock<IMediaEncoder>();
         encoder.Setup(x => x.SupportsBitStreamFilterWithOption(It.IsAny<BitStreamFilterOptionType>())).Returns(supportsRemoval);
         encoder.Setup(x => x.SupportsFilter("tonemapx")).Returns(true);
+        encoder.SetupGet(x => x.EncoderVersion).Returns(new Version(8, 1));
+
+        return new EncodingHelper(
+            Mock.Of<IApplicationPaths>(),
+            encoder.Object,
+            Mock.Of<ISubtitleEncoder>(),
+            Mock.Of<IConfiguration>(),
+            Mock.Of<IConfigurationManager>(),
+            Mock.Of<IPathManager>());
+    }
+
+    private static EncodingHelper CreateVaapiVulkanHelper(bool isInteliHD, bool supportsVulkanDrmInterop)
+    {
+        var encoder = new Mock<IMediaEncoder>();
+        encoder.Setup(x => x.SupportsHwaccel("vaapi")).Returns(true);
+        encoder.Setup(x => x.SupportsHwaccel("vulkan")).Returns(true);
+        encoder.Setup(x => x.SupportsHwaccel("drm")).Returns(true);
+        encoder.Setup(x => x.SupportsFilter("libplacebo")).Returns(true);
+        encoder.Setup(x => x.SupportsFilter("scale_vulkan")).Returns(true);
+        encoder.Setup(x => x.SupportsFilter("transpose_vulkan")).Returns(true);
+        encoder.Setup(x => x.SupportsFilter("flip_vulkan")).Returns(true);
+        encoder.Setup(x => x.SupportsFilter("scale_vaapi")).Returns(true);
+        encoder.Setup(x => x.SupportsFilter("deinterlace_vaapi")).Returns(true);
+        encoder.Setup(x => x.SupportsFilter("tonemap_vaapi")).Returns(true);
+        encoder.Setup(x => x.SupportsFilter("procamp_vaapi")).Returns(true);
+        encoder.Setup(x => x.SupportsFilter("transpose_vaapi")).Returns(true);
+        encoder.Setup(x => x.SupportsFilter("hwupload_vaapi")).Returns(true);
+        encoder.Setup(x => x.SupportsFilter("alphasrc")).Returns(true);
+        encoder.Setup(x => x.SupportsFilterWithOption(FilterOptionType.OverlayVaapiFrameSync)).Returns(true);
+        encoder.Setup(x => x.SupportsFilterWithOption(FilterOptionType.OverlayVulkanFrameSync)).Returns(true);
+        encoder.Setup(x => x.SupportsDecoder("hevc_vaapi")).Returns(true);
+        encoder.Setup(x => x.SupportsEncoder("h264_vaapi")).Returns(true);
+        encoder.SetupGet(x => x.IsVaapiDeviceInteliHD).Returns(isInteliHD);
+        encoder.SetupGet(x => x.IsVaapiDeviceSupportVulkanDrmInterop).Returns(supportsVulkanDrmInterop);
+        encoder.SetupGet(x => x.IsVaapiDeviceSupportVulkanDrmModifier).Returns(true);
         encoder.SetupGet(x => x.EncoderVersion).Returns(new Version(8, 1));
 
         return new EncodingHelper(

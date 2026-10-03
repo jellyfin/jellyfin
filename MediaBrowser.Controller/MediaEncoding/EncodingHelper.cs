@@ -390,16 +390,20 @@ namespace MediaBrowser.Controller.MediaEncoding
             return state.VideoStream.VideoRange == VideoRange.HDR;
         }
 
-        private bool IsVulkanHwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
+        public bool IsVulkanHwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
         {
-            if (state.VideoStream is null)
+            if (state.VideoStream is null || !options.EnableTonemapping)
             {
                 return false;
             }
 
+            if (RequiresLibplaceboDoviToneMapping(state, options))
+            {
+                return true;
+            }
+
             // libplacebo has partial Dolby Vision to SDR tonemapping support.
-            return options.EnableTonemapping
-                   && state.VideoStream.VideoRange == VideoRange.HDR
+            return state.VideoStream.VideoRange == VideoRange.HDR
                    && GetVideoColorBitDepth(state) == 10;
         }
 
@@ -1048,7 +1052,20 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return string.Empty;
                 }
 
-                if (_mediaEncoder.IsVaapiDeviceInteliHD)
+                var filterDevArgs = string.Empty;
+                var doOclTonemap = isHwTonemapAvailable && IsOpenclFullSupported();
+                var isDoviTonemap = RequiresLibplaceboDoviToneMapping(state, options);
+                var isVaapiVkSupported = IsVaapiSupported(state) && IsVaapiFullSupported() && IsVulkanFullSupported();
+                var canUseVulkanPipeline = isVaapiVkSupported && _mediaEncoder.IsVaapiDeviceSupportVulkanDrmInterop;
+
+                if (isDoviTonemap && canUseVulkanPipeline)
+                {
+                    args.Append(GetDrmDeviceArgs(options.VaapiDevice, DrmAlias));
+                    args.Append(GetVaapiDeviceArgs(null, null, null, null, DrmAlias, VaapiAlias));
+                    args.Append(GetVulkanDeviceArgs(0, null, DrmAlias, VulkanAlias));
+                    filterDevArgs = GetFilterHwDeviceArgs(VulkanAlias);
+                }
+                else if (_mediaEncoder.IsVaapiDeviceInteliHD)
                 {
                     args.Append(GetVaapiDeviceArgs(options.VaapiDevice, "iHD", null, null, null, VaapiAlias));
                 }
@@ -1060,50 +1077,49 @@ namespace MediaBrowser.Controller.MediaEncoding
                     args.Append(GetVaapiDeviceArgs(options.VaapiDevice, "i965", null, null, null, VaapiAlias));
                 }
 
-                var filterDevArgs = string.Empty;
-                var doOclTonemap = isHwTonemapAvailable && IsOpenclFullSupported();
-
-                if (_mediaEncoder.IsVaapiDeviceInteliHD || _mediaEncoder.IsVaapiDeviceInteli965)
+                if (!isDoviTonemap || !canUseVulkanPipeline)
                 {
-                    if (doOclTonemap && !isVaapiDecoder)
+                    if (_mediaEncoder.IsVaapiDeviceInteliHD || _mediaEncoder.IsVaapiDeviceInteli965)
                     {
-                        args.Append(GetOpenclDeviceArgs(0, null, VaapiAlias, OpenclAlias));
-                        filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
-                    }
-                }
-                else if (_mediaEncoder.IsVaapiDeviceAmd)
-                {
-                    // Disable AMD EFC feature since it's still unstable in upstream Mesa.
-                    Environment.SetEnvironmentVariable("AMD_DEBUG", "noefc");
-
-                    if (IsVulkanFullSupported()
-                        && _mediaEncoder.IsVaapiDeviceSupportVulkanDrmInterop
-                        && Environment.OSVersion.Version >= _minKernelVersionAmdVkFmtModifier)
-                    {
-                        args.Append(GetDrmDeviceArgs(options.VaapiDevice, DrmAlias));
-                        args.Append(GetVaapiDeviceArgs(null, null, null, null, DrmAlias, VaapiAlias));
-                        args.Append(GetVulkanDeviceArgs(0, null, DrmAlias, VulkanAlias));
-
-                        // libplacebo wants an explicitly set vulkan filter device.
-                        filterDevArgs = GetFilterHwDeviceArgs(VulkanAlias);
-                    }
-                    else
-                    {
-                        args.Append(GetVaapiDeviceArgs(options.VaapiDevice, null, null, null, null, VaapiAlias));
-                        filterDevArgs = GetFilterHwDeviceArgs(VaapiAlias);
-
-                        if (doOclTonemap)
+                        if (doOclTonemap && !isVaapiDecoder)
                         {
-                            // ROCm/ROCr OpenCL runtime
-                            args.Append(GetOpenclDeviceArgs(0, "Advanced Micro Devices", null, OpenclAlias));
+                            args.Append(GetOpenclDeviceArgs(0, null, VaapiAlias, OpenclAlias));
                             filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
                         }
                     }
-                }
-                else if (doOclTonemap)
-                {
-                    args.Append(GetOpenclDeviceArgs(0, null, null, OpenclAlias));
-                    filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
+                    else if (_mediaEncoder.IsVaapiDeviceAmd)
+                    {
+                        // Disable AMD EFC feature since it's still unstable in upstream Mesa.
+                        Environment.SetEnvironmentVariable("AMD_DEBUG", "noefc");
+
+                        if (canUseVulkanPipeline
+                            && Environment.OSVersion.Version >= _minKernelVersionAmdVkFmtModifier)
+                        {
+                            args.Append(GetDrmDeviceArgs(options.VaapiDevice, DrmAlias));
+                            args.Append(GetVaapiDeviceArgs(null, null, null, null, DrmAlias, VaapiAlias));
+                            args.Append(GetVulkanDeviceArgs(0, null, DrmAlias, VulkanAlias));
+
+                            // libplacebo wants an explicitly set vulkan filter device.
+                            filterDevArgs = GetFilterHwDeviceArgs(VulkanAlias);
+                        }
+                        else
+                        {
+                            args.Append(GetVaapiDeviceArgs(options.VaapiDevice, null, null, null, null, VaapiAlias));
+                            filterDevArgs = GetFilterHwDeviceArgs(VaapiAlias);
+
+                            if (doOclTonemap)
+                            {
+                                // ROCm/ROCr OpenCL runtime
+                                args.Append(GetOpenclDeviceArgs(0, "Advanced Micro Devices", null, OpenclAlias));
+                                filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
+                            }
+                        }
+                    }
+                    else if (doOclTonemap)
+                    {
+                        args.Append(GetOpenclDeviceArgs(0, null, null, OpenclAlias));
+                        filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
+                    }
                 }
 
                 args.Append(filterDevArgs);
@@ -1413,6 +1429,61 @@ namespace MediaBrowser.Controller.MediaEncoding
             return rangeType is VideoRangeType.HDR10Plus
                        or VideoRangeType.DOVIWithHDR10Plus
                        or VideoRangeType.DOVIWithELHDR10Plus;
+        }
+
+        /// <summary>
+        /// Determines whether the video stream requires libplacebo Dolby Vision tone-mapping.
+        /// </summary>
+        /// <param name="videoStream">The video stream.</param>
+        /// <param name="options">The encoding options.</param>
+        /// <param name="isTranscodingToSdr">Whether the destination target is SDR.</param>
+        /// <returns>True if libplacebo Dolby Vision tone-mapping is required; otherwise, false.</returns>
+        public static bool RequiresLibplaceboDoviToneMapping(
+            MediaStream videoStream,
+            EncodingOptions options,
+            bool isTranscodingToSdr)
+        {
+            if (videoStream is null || !options.EnableTonemapping || !isTranscodingToSdr)
+            {
+                return false;
+            }
+
+            // Profile 5 is always routed to libplacebo for ICtCp -> BT.709 matrix transform
+            if (videoStream.DvProfile == 5 || videoStream.VideoRangeType == VideoRangeType.DOVI)
+            {
+                return true;
+            }
+
+            // Profile 7 and Profile 8 with RPU metadata for dynamic curve tone-mapping
+            if (videoStream.DvProfile is 7 or 8)
+            {
+                return true;
+            }
+
+            // Fallback for DV streams identified by range type and RPU flag
+            if (videoStream.RpuPresentFlag == 1 && IsDovi(videoStream))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the encoding job requires libplacebo Dolby Vision tone-mapping.
+        /// </summary>
+        /// <param name="state">The encoding job info.</param>
+        /// <param name="options">The encoding options.</param>
+        /// <returns>True if libplacebo Dolby Vision tone-mapping is required; otherwise, false.</returns>
+        public static bool RequiresLibplaceboDoviToneMapping(EncodingJobInfo state, EncodingOptions options)
+        {
+            if (state?.VideoStream is null)
+            {
+                return false;
+            }
+
+            var isTranscodingToSdr = state.TargetVideoRangeType is VideoRangeType.SDR or VideoRangeType.Unknown;
+            return RequiresLibplaceboDoviToneMapping(state.VideoStream, options, isTranscodingToSdr);
         }
 
         /// <summary>
@@ -5048,6 +5119,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isVaapiFullSupported = isLinux && IsVaapiSupported(state) && IsVaapiFullSupported();
             var isVaapiOclSupported = isVaapiFullSupported && IsOpenclFullSupported();
             var isVaapiVkSupported = isVaapiFullSupported && IsVulkanFullSupported();
+            var isDoviTonemap = RequiresLibplaceboDoviToneMapping(state, options);
+            var canUseVulkanPipeline = isVaapiVkSupported && _mediaEncoder.IsVaapiDeviceSupportVulkanDrmInterop;
+
+            // Preferred vaapi + vulkan filters pipeline for Dolby Vision
+            if (isDoviTonemap && canUseVulkanPipeline)
+            {
+                return GetAmdVaapiFullVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
+            }
 
             // legacy vaapi pipeline(copy-back)
             if ((isSwDecoder && isSwEncoder)
@@ -5080,8 +5159,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // preferred vaapi + vulkan filters pipeline
             if (_mediaEncoder.IsVaapiDeviceAmd
-                && isVaapiVkSupported
-                && _mediaEncoder.IsVaapiDeviceSupportVulkanDrmInterop
+                && canUseVulkanPipeline
                 && Environment.OSVersion.Version >= _minKernelVersionAmdVkFmtModifier)
             {
                 // AMD radeonsi path(targeting Polaris/gfx8+), with extra vulkan tonemap and overlay support.

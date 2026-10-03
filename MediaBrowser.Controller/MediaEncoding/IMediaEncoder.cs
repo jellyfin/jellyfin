@@ -76,6 +76,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         bool IsVaapiDeviceSupportVulkanDrmInterop { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the libplacebo filter is supported.
+        /// </summary>
+        /// <value><c>true</c> if libplacebo is supported; otherwise, <c>false</c>.</value>
+        bool IsLibplaceboFilterSupported { get; }
+
+        /// <summary>
         /// Gets a value indicating whether av1 decoding is available via VideoToolbox.
         /// </summary>
         /// <value><c>true</c> if the av1 is available via VideoToolbox, <c>false</c> otherwise.</value>

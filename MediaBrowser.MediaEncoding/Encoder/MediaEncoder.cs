@@ -166,6 +166,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public bool IsVaapiDeviceSupportVulkanDrmInterop => _isVaapiDeviceSupportVulkanDrmInterop;
 
+        /// <inheritdoc />
+        public bool IsLibplaceboFilterSupported => SupportsFilter("libplacebo");
+
         public bool IsVideoToolboxAv1DecodeAvailable => _isVideoToolboxAv1DecodeAvailable;
 
         [GeneratedRegex(@"[^\/\\]+?(\.[^\/\\\n.]+)?$")]
