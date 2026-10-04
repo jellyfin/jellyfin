@@ -132,8 +132,10 @@ internal class JellyfinMigrationService
         }
         else
         {
-            // Do not refuse a restore; it replaces the database later, in StartServer.
-            if (string.IsNullOrWhiteSpace(startupOptions.RestoreArchive))
+            // Only a media server start is refused. A MigrateSystem run is left to the migrations, which another database
+            // provider may rely on to initialise its database, and a restore replaces the database later, in StartServer.
+            var startupMode = startupOptions.StartupMode ?? Configuration.StartupMode.MediaServer;
+            if (startupMode == Configuration.StartupMode.MediaServer && string.IsNullOrWhiteSpace(startupOptions.RestoreArchive))
             {
                 await EnsureExistingDatabaseAsync(appPaths, logger).ConfigureAwait(false);
             }

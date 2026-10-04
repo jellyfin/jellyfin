@@ -117,14 +117,11 @@ public sealed class JellyfinMigrationServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task CheckFirstTimeRunOrMigration_MigrateSystemOnSetUpServerWithoutDatabase_Throws()
+    public async Task CheckFirstTimeRunOrMigration_MigrateSystemOnSetUpServerWithoutDatabase_Passes()
     {
         WriteServerConfiguration(wizardCompleted: true);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => CreateService().CheckFirstTimeRunOrMigration(_paths, new StartupOptions { StartupMode = Configuration.StartupMode.MigrateSystem }));
-
-        Assert.Empty(Directory.GetFiles(_paths.DataPath, "jellyfin.db*"));
+        await CreateService().CheckFirstTimeRunOrMigration(_paths, new StartupOptions { StartupMode = Configuration.StartupMode.MigrateSystem });
     }
 
     [Fact]
