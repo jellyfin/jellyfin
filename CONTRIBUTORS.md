@@ -244,6 +244,7 @@
  - [Oggeb1](https://github.com/Oggeb1)
  - [scr4bble](https://github.com/scr4bble)
  - [Mateus Bandeira](https://github.com/mateusbandeiraa)
+ - [excelsior](https://github.com/excelsior-dev)
  - [TheDreadPirate](https://github.com/thedreaddpirate)
  - [Daniel Aquino](https://github.com/chino)
  - [klizas](https://github.com/klizas)
