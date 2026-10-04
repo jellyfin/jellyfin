@@ -104,10 +104,10 @@ public class SqlSearchProvider : IInternalSearchProvider
         // that may not translate to SQL on every provider.
         var likeOriginal = $"%{rawSearchTerm}%";
 
-        // great benefit for users with metadata in non-latin script,
-        // since SortName is among other things stored transliterated
+        // Great benefit for users with metadata in non-latin script
+        // since SortName is among other things stored transliterated.
         var sortNameShape = BaseItem.GetSortName(rawSearchTerm, true, _configurationManager.Configuration);
-        var likeSortName = $"%{sortNameShape}%";
+        var likeSortName = string.IsNullOrWhiteSpace(sortNameShape) ? null : $"%{sortNameShape}%";
 
         var limit = query.Limit ?? DefaultSearchLimit;
 
@@ -118,10 +118,21 @@ public class SqlSearchProvider : IInternalSearchProvider
             var dbQuery = dbContext.BaseItems
                 .AsNoTracking()
                 .Where(e => e.Id != _placeholderId)
-                .Where(e => !e.IsVirtualItem)
-                .Where(e => e.CleanName!.Contains(cleanSearchTerm)
-                    || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeOriginal))
-                    || (!string.IsNullOrEmpty(sortNameShape) && e.SortName != null && EF.Functions.Like(e.SortName, likeSortName)));
+                .Where(e => !e.IsVirtualItem);
+
+            if (likeSortName is null)
+            {
+                dbQuery = dbQuery
+                    .Where(e => e.CleanName!.Contains(cleanSearchTerm)
+                        || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeOriginal)));
+            }
+            else
+            {
+                dbQuery = dbQuery
+                    .Where(e => e.CleanName!.Contains(cleanSearchTerm)
+                        || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeOriginal))
+                        || (e.SortName != null && EF.Functions.Like(e.SortName, likeSortName)));
+            }
 
             dbQuery = ApplyTypeFilter(dbQuery, query.IncludeItemTypes, query.ExcludeItemTypes);
             dbQuery = ApplyMediaTypeFilter(dbQuery, query.MediaTypes);
