@@ -246,6 +246,7 @@
  - [Mateus Bandeira](https://github.com/mateusbandeiraa)
  - [TheDreadPirate](https://github.com/thedreaddpirate)
  - [Daniel Aquino](https://github.com/chino)
+ - [klizas](https://github.com/klizas)
 
 # Emby Contributors
 
