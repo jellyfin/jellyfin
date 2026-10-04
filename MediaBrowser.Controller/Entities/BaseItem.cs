@@ -2560,8 +2560,9 @@ namespace MediaBrowser.Controller.Entities
                     {
                         var newDateModified = FileSystem.GetLastWriteTimeUtc(newImage);
 
-                        // If date changed then we need to reset saved image dimensions
-                        if (existing.DateModified != newDateModified && (existing.Width > 0 || existing.Height > 0))
+                        // If date changed then we need to reset saved image dimensions. Stores such as PostgreSQL keep
+                        // only microseconds, so an exact comparison would treat every unchanged image as modified.
+                        if (Math.Abs((existing.DateModified - newDateModified).TotalSeconds) > 1 && (existing.Width > 0 || existing.Height > 0))
                         {
                             existing.Width = 0;
                             existing.Height = 0;

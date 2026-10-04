@@ -177,6 +177,100 @@ namespace Jellyfin.Providers.Tests.Manager
         }
 
         [Theory]
+        [InlineData(ImageType.Primary, 1)]
+        [InlineData(ImageType.Backdrop, 2)]
+        public void MergeImages_StoredTimeTruncatedToMicroseconds_NoChange(ImageType imageType, int imageCount)
+        {
+            // Regression test for https://github.com/jellyfin/jellyfin/issues/18274
+            var fileTime = new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddTicks(1234567);
+            var storedTime = fileTime.AddTicks(-(fileTime.Ticks % 10));
+
+            var fileSystem = new Mock<IFileSystem>();
+            fileSystem.Setup(fs => fs.GetLastWriteTimeUtc(It.IsAny<FileSystemMetadata>()))
+                .Returns(fileTime);
+            BaseItem.FileSystem = fileSystem.Object;
+
+            var item = GetItemWithImages(imageType, imageCount, true);
+            foreach (var image in item.GetImages(imageType))
+            {
+                image.DateModified = storedTime;
+                image.Height = 1;
+                image.Width = 1;
+            }
+
+            var images = GetImages(imageType, imageCount, true);
+
+            var itemImageProvider = GetItemImageProvider(null, fileSystem);
+            var changed = itemImageProvider.MergeImages(item, images, new ImageRefreshOptions(Mock.Of<IDirectoryService>()));
+
+            Assert.False(changed);
+            Assert.All(item.GetImages(imageType), image => Assert.Equal(1, image.Width));
+        }
+
+        [Theory]
+        [InlineData(ImageType.Primary, 1)]
+        [InlineData(ImageType.Backdrop, 2)]
+        public void AddImages_StoredTimeTruncatedToMicroseconds_NoChange(ImageType imageType, int imageCount)
+        {
+            var fileTime = new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddTicks(1234567);
+            var storedTime = fileTime.AddTicks(-(fileTime.Ticks % 10));
+            var fileSystem = new Mock<IFileSystem>();
+            fileSystem.Setup(fs => fs.GetLastWriteTimeUtc(It.IsAny<FileSystemMetadata>()))
+                .Returns(fileTime);
+            BaseItem.FileSystem = fileSystem.Object;
+
+            var item = GetItemWithImages(imageType, imageCount, true);
+            foreach (var image in item.GetImages(imageType))
+            {
+                image.DateModified = storedTime;
+                image.Height = 1;
+                image.Width = 1;
+            }
+
+            var newImages = Enumerable.Range(0, imageCount)
+                .Select(i => new FileSystemMetadata
+                {
+                    FullName = string.Format(CultureInfo.InvariantCulture, _testDataImagePath.Format, i)
+                })
+                .ToList();
+
+            Assert.False(item.AddImages(imageType, newImages));
+            Assert.All(item.GetImages(imageType), image => Assert.Equal(1, image.Width));
+        }
+
+        [Theory]
+        [InlineData(ImageType.Primary, 1)]
+        [InlineData(ImageType.Backdrop, 2)]
+        public void AddImages_PopulatedItemWithGoodPathsAndSameImages_ResetIfTimeChanges(ImageType imageType, int imageCount)
+        {
+            var oldTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            var updatedTime = new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            var fileSystem = new Mock<IFileSystem>();
+            fileSystem.Setup(fs => fs.GetLastWriteTimeUtc(It.IsAny<FileSystemMetadata>()))
+                .Returns(updatedTime);
+            BaseItem.FileSystem = fileSystem.Object;
+
+            var item = GetItemWithImages(imageType, imageCount, true);
+            foreach (var image in item.GetImages(imageType))
+            {
+                image.DateModified = oldTime;
+                image.Height = 1;
+                image.Width = 1;
+            }
+
+            var newImages = Enumerable.Range(0, imageCount)
+                .Select(i => new FileSystemMetadata
+                {
+                    FullName = string.Format(CultureInfo.InvariantCulture, _testDataImagePath.Format, i)
+                })
+                .ToList();
+
+            Assert.True(item.AddImages(imageType, newImages));
+            Assert.All(item.GetImages(imageType), image => Assert.Equal(0, image.Width));
+            Assert.All(item.GetImages(imageType), image => Assert.Equal(0, image.Height));
+        }
+
+        [Theory]
         [InlineData(ImageType.Primary, 0)]
         [InlineData(ImageType.Primary, 1)]
         [InlineData(ImageType.Backdrop, 2)]
