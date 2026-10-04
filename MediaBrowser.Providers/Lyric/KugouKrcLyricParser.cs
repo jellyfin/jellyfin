@@ -40,6 +40,7 @@ public partial class KugouKrcLyricParser : ILyricParser
         {
             var lines = TimedLyricParserHelpers.SplitLines(lyrics.Content, StringSplitOptions.None);
             var metadata = ParseMetadata(lines.FirstOrDefault(i => i.TrimStart().StartsWith("[language:", StringComparison.Ordinal)));
+            var offset = TimedLyricParserHelpers.ParseOffset(lyrics.Content);
             var mainLines = new List<LyricLine>();
             var backgroundLines = new List<LyricLine>();
             var lineIndex = 0;
@@ -54,7 +55,7 @@ public partial class KugouKrcLyricParser : ILyricParser
 
                 if (line.StartsWith("[bg:", StringComparison.Ordinal))
                 {
-                    var background = ParseBackgroundLine(line);
+                    var background = ParseBackgroundLine(line, offset);
                     if (background is not null)
                     {
                         backgroundLines.Add(background);
@@ -64,8 +65,17 @@ public partial class KugouKrcLyricParser : ILyricParser
                 }
 
                 var match = KrcLineRegex().Match(line);
-                if (!match.Success || !TimedLyricParserHelpers.TryMilliseconds(match.Groups[1].Value, out var lineStart)
-                    || !TimedLyricParserHelpers.TryMilliseconds(match.Groups[2].Value, out var lineDuration))
+                if (!match.Success)
+                {
+                    continue;
+                }
+
+                // Metadata indexes the source rows, including rows we cannot emit.
+                var sourceIndex = lineIndex++;
+                if (!TimedLyricParserHelpers.TryMilliseconds(match.Groups[1].Value, out var lineStart)
+                    || !TimedLyricParserHelpers.TryMilliseconds(match.Groups[2].Value, out var lineDuration)
+                    || !TimedLyricParserHelpers.TryApplyOffset(lineStart, offset, out lineStart)
+                    || !TimedLyricParserHelpers.TryAdd(lineStart, lineDuration, out var end))
                 {
                     continue;
                 }
@@ -73,11 +83,10 @@ public partial class KugouKrcLyricParser : ILyricParser
                 var syllables = ParseSyllables(match.Groups[3].Value, lineStart);
                 if (syllables.Count == 0)
                 {
-                    lineIndex++;
                     continue;
                 }
 
-                if (metadata.Phonetics.TryGetValue(lineIndex, out var phonetics) && phonetics.Count == syllables.Count)
+                if (metadata.Phonetics.TryGetValue(sourceIndex, out var phonetics) && phonetics.Count == syllables.Count)
                 {
                     for (var i = 0; i < syllables.Count; i++)
                     {
@@ -85,11 +94,8 @@ public partial class KugouKrcLyricParser : ILyricParser
                     }
                 }
 
-                if (!TimedLyricParserHelpers.TryAdd(lineStart, lineDuration, out var end))
-                {
-                    continue;
-                }
-
+                syllables = MergeColonSyllables(syllables);
+                end = Math.Max(end, syllables.Max(i => i.End ?? end));
                 var text = string.Concat(syllables.Select(i => i.Text));
                 var mainLine = new LyricLine(text, lineStart)
                 {
@@ -98,12 +104,10 @@ public partial class KugouKrcLyricParser : ILyricParser
                 };
                 mainLines.Add(mainLine);
 
-                if (metadata.Translations.TryGetValue(lineIndex, out var translation))
+                if (metadata.Translations.TryGetValue(sourceIndex, out var translation))
                 {
                     metadata.TranslationLines.Add(new LyricLine(translation, lineStart) { End = end });
                 }
-
-                lineIndex++;
             }
 
             if (mainLines.Count == 0)
@@ -133,7 +137,7 @@ public partial class KugouKrcLyricParser : ILyricParser
         }
     }
 
-    private static LyricLine? ParseBackgroundLine(string line)
+    private static LyricLine? ParseBackgroundLine(string line, long offset)
     {
         var match = BackgroundLineRegex().Match(line);
         if (!match.Success)
@@ -141,16 +145,22 @@ public partial class KugouKrcLyricParser : ILyricParser
             return null;
         }
 
-        var syllables = MergeColonSyllables(ParseSyllables(match.Groups[1].Value, 0));
+        if (!TimedLyricParserHelpers.TryApplyOffset(0, offset, out var baseStart))
+        {
+            return null;
+        }
+
+        var syllables = MergeColonSyllables(ParseSyllables(match.Groups[1].Value, baseStart));
         if (syllables.Count == 0)
         {
             return null;
         }
 
-        var text = string.Concat(syllables.Select(i => i.Text)).Trim();
-        return new LyricLine(text.Trim('(', ')', '（', '）'), syllables[0].Start)
+        TimedLyricParserHelpers.StripBackgroundParentheses(syllables);
+        var text = string.Concat(syllables.Select(i => i.Text));
+        return new LyricLine(text, syllables[0].Start)
         {
-            End = syllables[^1].End,
+            End = syllables.Max(i => i.End),
             Syllables = syllables
         };
     }
@@ -187,7 +197,7 @@ public partial class KugouKrcLyricParser : ILyricParser
             result.Add(new LyricSyllable { Text = text, Start = start, End = end });
         }
 
-        return MergeColonSyllables(result);
+        return result;
     }
 
     private static List<LyricSyllable> MergeColonSyllables(List<LyricSyllable> syllables)
@@ -200,7 +210,11 @@ public partial class KugouKrcLyricParser : ILyricParser
             {
                 var colon = syllables[++i];
                 current.Text += colon.Text;
-                current.End = colon.End;
+                current.End = Math.Max(current.End ?? current.Start, colon.End ?? colon.Start);
+                if (current.Phonetic is not null && colon.Phonetic is not null)
+                {
+                    current.Phonetic += colon.Phonetic;
+                }
             }
 
             result.Add(current);
@@ -222,32 +236,42 @@ public partial class KugouKrcLyricParser : ILyricParser
             var encoded = languageLine[(languageLine.IndexOf(':', StringComparison.Ordinal) + 1)..].Trim().TrimEnd(']');
             var json = Encoding.UTF8.GetString(Convert.FromBase64String(encoded));
             using var document = JsonDocument.Parse(json);
-            if (!document.RootElement.TryGetProperty("content", out var content))
+            if (document.RootElement.ValueKind != JsonValueKind.Object
+                || !document.RootElement.TryGetProperty("content", out var content)
+                || content.ValueKind != JsonValueKind.Array)
             {
                 return metadata;
             }
 
             foreach (var item in content.EnumerateArray())
             {
-                var type = item.TryGetProperty("type", out var typeValue) && typeValue.TryGetInt32(out var parsedType)
-                    ? parsedType
-                    : -1;
-                if (!item.TryGetProperty("lyricContent", out var rows))
+                if (item.ValueKind != JsonValueKind.Object
+                    || !item.TryGetProperty("type", out var typeValue)
+                    || typeValue.ValueKind != JsonValueKind.Number
+                    || !typeValue.TryGetInt32(out var type)
+                    || type is not (0 or 1)
+                    || !item.TryGetProperty("lyricContent", out var rows)
+                    || rows.ValueKind != JsonValueKind.Array)
                 {
                     continue;
                 }
 
+                var rowIndex = 0;
                 foreach (var row in rows.EnumerateArray())
                 {
+                    var sourceIndex = rowIndex++;
+                    if (!TryReadMetadataRow(row, out var values))
+                    {
+                        continue;
+                    }
+
                     if (type == 1)
                     {
-                        metadata.Translations[metadata.Translations.Count] = string.Concat(row.EnumerateArray().Select(i => i.GetString() ?? string.Empty));
+                        metadata.Translations.TryAdd(sourceIndex, string.Concat(values));
                     }
                     else if (type == 0)
                     {
-                        metadata.Phonetics[metadata.Phonetics.Count] = row.EnumerateArray()
-                            .Select(i => string.Concat(i.EnumerateArray().Select(j => j.GetString() ?? string.Empty)))
-                            .ToList();
+                        metadata.Phonetics.TryAdd(sourceIndex, values);
                     }
                 }
             }
@@ -260,13 +284,48 @@ public partial class KugouKrcLyricParser : ILyricParser
         return metadata;
     }
 
+    private static bool TryReadMetadataRow(JsonElement row, out IReadOnlyList<string> values)
+    {
+        var result = new List<string>();
+        values = result;
+        if (row.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        foreach (var item in row.EnumerateArray())
+        {
+            if (item.ValueKind == JsonValueKind.String)
+            {
+                result.Add(item.GetString() ?? string.Empty);
+            }
+            else if (item.ValueKind == JsonValueKind.Array)
+            {
+                // Also tolerate the nested variant used by some lyric exporters.
+                var parts = item.EnumerateArray().ToArray();
+                if (parts.Any(i => i.ValueKind != JsonValueKind.String))
+                {
+                    return false;
+                }
+
+                result.Add(string.Concat(parts.Select(i => i.GetString())));
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     [GeneratedRegex(@"^\[(\d+),(\d+)\](.*)$")]
     private static partial Regex KrcLineRegex();
 
     [GeneratedRegex(@"^\[bg:(.*)\](.*)$")]
     private static partial Regex BackgroundLineRegex();
 
-    [GeneratedRegex(@"<(\d+),(\d+),\d+>")]
+    [GeneratedRegex(@"<([+-]?\d+),([+-]?\d+),\d+>")]
     private static partial Regex SyllableRegex();
 
     private sealed class KrcMetadata

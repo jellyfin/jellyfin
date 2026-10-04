@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -34,8 +33,7 @@ public partial class LyricifySyllableParser : ILyricParser
     /// <inheritdoc />
     public LyricDto? ParseLyrics(LyricFile lyrics)
     {
-        if (!_supportedMediaTypes.Contains(Path.GetExtension(lyrics.Name.AsSpan()), StringComparison.OrdinalIgnoreCase)
-            || !DetectionRegex().IsMatch(lyrics.Content))
+        if (!_supportedMediaTypes.Contains(Path.GetExtension(lyrics.Name.AsSpan()), StringComparison.OrdinalIgnoreCase))
         {
             return null;
         }
@@ -44,7 +42,8 @@ public partial class LyricifySyllableParser : ILyricParser
         {
             var mainLines = new List<LyricLine>();
             var backgroundLines = new List<LyricLine>();
-            foreach (var rawLine in lyrics.Content.Split(["\r\n", "\r", "\n"], StringSplitOptions.RemoveEmptyEntries))
+            var offset = TimedLyricParserHelpers.ParseOffset(lyrics.Content);
+            foreach (var rawLine in TimedLyricParserHelpers.SplitLines(lyrics.Content, StringSplitOptions.RemoveEmptyEntries))
             {
                 var line = rawLine.Trim();
                 if (line.Length == 0 || IsMetadata(line))
@@ -52,7 +51,7 @@ public partial class LyricifySyllableParser : ILyricParser
                     continue;
                 }
 
-                var parsed = ParseLine(line);
+                var parsed = ParseLine(line, offset);
                 if (parsed is null)
                 {
                     continue;
@@ -92,56 +91,36 @@ public partial class LyricifySyllableParser : ILyricParser
         }
     }
 
-    private static (LyricLine Line, bool IsBackground)? ParseLine(string line)
+    private static (LyricLine Line, bool IsBackground)? ParseLine(string line, long offset)
     {
         var attribute = AttributeRegex().Match(line);
         var isBackground = false;
-        if (attribute.Success && attribute.Index == 0 && attribute.Length == 3)
+        if (attribute.Success)
         {
-            var value = int.Parse(attribute.Groups[1].Value, CultureInfo.InvariantCulture);
-            isBackground = value is < 0 or > 5;
-            line = line[attribute.Length..];
-        }
-
-        var syllables = new List<LyricSyllable>();
-        foreach (Match match in SyllableRegex().Matches(line))
-        {
-            if (!long.TryParse(match.Groups[2].Value, NumberStyles.None, CultureInfo.InvariantCulture, out var start)
-                || !long.TryParse(match.Groups[3].Value, NumberStyles.None, CultureInfo.InvariantCulture, out var duration)
-                || start < 0 || duration < 0)
-            {
-                continue;
-            }
-
-            try
-            {
-                syllables.Add(new LyricSyllable
-                {
-                    Text = match.Groups[1].Value,
-                    Start = checked(start * TimeSpan.TicksPerMillisecond),
-                    End = checked((start + duration) * TimeSpan.TicksPerMillisecond)
-                });
-            }
-            catch (OverflowException)
+            if (!int.TryParse(attribute.Groups[1].Value, out var value) || value > 8)
             {
                 return null;
             }
+
+            isBackground = value > 5;
+            line = line[attribute.Length..];
         }
 
+        var syllables = TimedLyricParserHelpers.ParsePostfixSyllables(line, offset, out _);
         if (syllables.Count == 0)
         {
             return null;
         }
 
-        var text = string.Concat(syllables.Select(i => i.Text));
         if (isBackground)
         {
-            text = text.Trim('(', ')', '（', '）');
+            TimedLyricParserHelpers.StripBackgroundParentheses(syllables);
         }
 
+        var text = string.Concat(syllables.Select(i => i.Text));
         return (new LyricLine(text, syllables[0].Start)
         {
-            End = syllables[^1].End,
+            End = syllables.Max(i => i.End),
             Syllables = syllables
         }, isBackground);
     }
@@ -152,14 +131,8 @@ public partial class LyricifySyllableParser : ILyricParser
         return match.Success && _metadataTags.Contains(match.Groups[1].Value);
     }
 
-    [GeneratedRegex(@"[A-Za-z]+\s*\(\d+,\d+\)")]
-    private static partial Regex DetectionRegex();
-
     [GeneratedRegex(@"^\[(\d+)\]")]
     private static partial Regex AttributeRegex();
-
-    [GeneratedRegex(@"(.*?)\((\d+),(\d+)\)")]
-    private static partial Regex SyllableRegex();
 
     [GeneratedRegex(@"^\[([A-Za-z]+):\s*(.*)\]\s*$")]
     private static partial Regex MetadataRegex();

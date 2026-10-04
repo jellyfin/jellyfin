@@ -53,6 +53,7 @@ public partial class LrcLyricParser : ILyricParser
         try
         {
             var lyricData = _lrcLyricParser.Decode(lyrics.Content);
+            var offset = TimedLyricParserHelpers.ParseOffset(lyrics.Content);
             List<LrcParser.Model.Lyric> sortedLyricData = lyricData.Lyrics.OrderBy(x => x.StartTime).ToList();
 
             if (sortedLyricData.Count == 0)
@@ -64,7 +65,9 @@ public partial class LrcLyricParser : ILyricParser
             for (var lineIndex = 0; lineIndex < sortedLyricData.Count; lineIndex++)
             {
                 var lyric = sortedLyricData[lineIndex];
-                if (lyric.Text is null || !TimedLyricParserHelpers.TryMilliseconds(lyric.StartTime, out var lyricStartTicks))
+                if (lyric.Text is null
+                    || !TimedLyricParserHelpers.TryMilliseconds(lyric.StartTime, out var lyricStartTicks)
+                    || !TimedLyricParserHelpers.TryApplyOffset(lyricStartTicks, offset, out lyricStartTicks))
                 {
                     return null;
                 }
@@ -72,7 +75,8 @@ public partial class LrcLyricParser : ILyricParser
                 long? lyricEndTicks = null;
                 if (lineIndex + 1 < sortedLyricData.Count)
                 {
-                    if (!TimedLyricParserHelpers.TryMilliseconds(sortedLyricData[lineIndex + 1].StartTime, out var nextLineStartTicks))
+                    if (!TimedLyricParserHelpers.TryMilliseconds(sortedLyricData[lineIndex + 1].StartTime, out var nextLineStartTicks)
+                        || !TimedLyricParserHelpers.TryApplyOffset(nextLineStartTicks, offset, out nextLineStartTicks))
                     {
                         return null;
                     }
@@ -92,7 +96,9 @@ public partial class LrcLyricParser : ILyricParser
                         var nextPos = nextKey.State == IndexState.End ? (long)nextKey.Index + 1 : nextKey.Index;
                         if (currentPos < 0 || nextPos < currentPos || nextPos > lyric.Text.Length
                             || !TimedLyricParserHelpers.TryMilliseconds(lyric.TimeTags[currentKey] ?? 0, out var currentTicks)
-                            || !TimedLyricParserHelpers.TryMilliseconds(lyric.TimeTags[nextKey] ?? 0, out var nextTicks))
+                            || !TimedLyricParserHelpers.TryMilliseconds(lyric.TimeTags[nextKey] ?? 0, out var nextTicks)
+                            || !TimedLyricParserHelpers.TryApplyOffset(currentTicks, offset, out currentTicks)
+                            || !TimedLyricParserHelpers.TryApplyOffset(nextTicks, offset, out nextTicks))
                         {
                             return null;
                         }
@@ -112,7 +118,8 @@ public partial class LrcLyricParser : ILyricParser
                     var lastKey = keys[^1];
                     var lastPos = lastKey.State == IndexState.End ? (long)lastKey.Index + 1 : lastKey.Index;
                     if (lastPos < 0 || lastPos > lyric.Text.Length
-                        || !TimedLyricParserHelpers.TryMilliseconds(lyric.TimeTags[lastKey] ?? 0, out var lastTicks))
+                        || !TimedLyricParserHelpers.TryMilliseconds(lyric.TimeTags[lastKey] ?? 0, out var lastTicks)
+                        || !TimedLyricParserHelpers.TryApplyOffset(lastTicks, offset, out lastTicks))
                     {
                         return null;
                     }

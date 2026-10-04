@@ -52,7 +52,7 @@ public partial class NeteaseYrcLyricParser : ILyricParser
                     continue;
                 }
 
-                var syllables = ParseSyllables(match.Groups[3].Value, lineStart);
+                var syllables = ParseSyllables(match.Groups[3].Value, lineStart, out var hasTiming);
                 if (!TimedLyricParserHelpers.TryAdd(lineStart, lineDuration, out var lineEnd))
                 {
                     continue;
@@ -60,14 +60,14 @@ public partial class NeteaseYrcLyricParser : ILyricParser
 
                 if (syllables.Count > 0)
                 {
-                    lineEnd = Math.Max(lineEnd, syllables[^1].End ?? lineEnd);
+                    lineEnd = Math.Max(lineEnd, syllables.Max(i => i.End ?? lineEnd));
                     result.Add(new LyricLine(string.Concat(syllables.Select(i => i.Text)), syllables[0].Start)
                     {
                         End = lineEnd,
                         Syllables = syllables
                     });
                 }
-                else if (match.Groups[3].Value.Trim().Length > 0)
+                else if (!hasTiming && match.Groups[3].Value.Trim().Length > 0)
                 {
                     result.Add(new LyricLine(match.Groups[3].Value.Trim(), lineStart) { End = lineEnd });
                 }
@@ -86,18 +86,29 @@ public partial class NeteaseYrcLyricParser : ILyricParser
         }
     }
 
-    private static List<LyricSyllable> ParseSyllables(string content, long lineStart)
+    private static List<LyricSyllable> ParseSyllables(string content, long lineStart, out bool hasTiming)
     {
         var raw = new List<LyricSyllable>();
-        foreach (Match match in SyllableRegex().Matches(content))
+        var matches = SyllableRegex().Matches(content);
+        hasTiming = matches.Count > 0;
+        // YRC normally uses absolute times. Only a zero first marker is an
+        // unambiguous indication of the relative variant, even if its text is empty.
+        var isRelative = matches.Count > 0
+            && TimedLyricParserHelpers.TryMilliseconds(matches[0].Groups[1].Value, out var firstStart)
+            && firstStart == 0
+            && lineStart > 0;
+        for (var i = 0; i < matches.Count; i++)
         {
+            var match = matches[i];
             if (!TimedLyricParserHelpers.TryMilliseconds(match.Groups[1].Value, out var start)
                 || !TimedLyricParserHelpers.TryMilliseconds(match.Groups[2].Value, out var duration))
             {
                 continue;
             }
 
-            var text = match.Groups[3].Value;
+            var textStart = match.Index + match.Length;
+            var textEnd = i + 1 < matches.Count ? matches[i + 1].Index : content.Length;
+            var text = content[textStart..textEnd];
             if (text.Length == 0)
             {
                 continue;
@@ -111,7 +122,7 @@ public partial class NeteaseYrcLyricParser : ILyricParser
             raw.Add(new LyricSyllable { Text = text, Start = start, End = end });
         }
 
-        if (raw.Count == 0 || raw[0].Start >= lineStart)
+        if (!isRelative)
         {
             return raw;
         }
@@ -135,6 +146,6 @@ public partial class NeteaseYrcLyricParser : ILyricParser
     [GeneratedRegex(@"^\[(\d+),\s*(\d+)\](.*)$")]
     private static partial Regex LineRegex();
 
-    [GeneratedRegex(@"\((\d+),\s*(\d+),\s*-?\d+\)([^()\r\n]*)")]
+    [GeneratedRegex(@"\(([+-]?\d+),\s*([+-]?\d+),\s*-?\d+\)")]
     private static partial Regex SyllableRegex();
 }

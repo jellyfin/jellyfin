@@ -56,4 +56,23 @@ public static class LrcLyricParserTests
         Assert.Equal("storm", lastLine.Syllables[^1].Text.Trim());
         Assert.Null(lastLine.Syllables[^1].End);
     }
+
+    [Theory]
+    [InlineData("100", 9000000)]
+    [InlineData("+100", 9000000)]
+    [InlineData("-100", 11000000)]
+    public static void ParseLrcOffsetAppliesToLinesAndSyllables(string offset, long start)
+    {
+        var parsed = new LrcLyricParser().ParseLyrics(new LyricFile("sample.elrc", $"[offset:{offset}]\r\n[00:01.00]<00:01.00>Hello<00:01.50>world\r\n[00:02.00]Next"));
+
+        Assert.NotNull(parsed);
+        var line = parsed.Tracks[0].Lines[0];
+        Assert.Equal(start, line.Start);
+        Assert.Equal(start + 10000000, line.End);
+        Assert.Equal(2, line.Syllables.Count);
+        Assert.Equal(start, line.Syllables[0].Start);
+        Assert.Equal(start + 5000000, line.Syllables[0].End);
+        Assert.Equal(start + 5000000, line.Syllables[1].Start);
+        Assert.Equal(line.End, line.Syllables[1].End);
+    }
 }
