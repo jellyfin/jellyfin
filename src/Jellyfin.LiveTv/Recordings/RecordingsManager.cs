@@ -771,7 +771,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     private string EnsureFileUnique(string path, string timerId)
     {
         var parent = Path.GetDirectoryName(path)!;
-        var name = Path.GetFileNameWithoutExtension(path);
+        var baseName = Path.GetFileNameWithoutExtension(path);
         var extension = Path.GetExtension(path);
 
         var index = 1;
@@ -779,14 +779,15 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
                    => string.Equals(i.Value.Path, path, StringComparison.OrdinalIgnoreCase)
                       && !string.Equals(i.Value.Timer.Id, timerId, StringComparison.OrdinalIgnoreCase)))
         {
-            name += " - " + index.ToString(CultureInfo.InvariantCulture);
-
-            path = Path.ChangeExtension(Path.Combine(parent, name), extension);
+            path = BuildSuffixedPath(parent, baseName, extension, index);
             index++;
         }
 
         return path;
     }
+
+    internal static string BuildSuffixedPath(string parent, string baseName, string extension, int index)
+        => Path.Combine(parent, baseName + " - " + index.ToString(CultureInfo.InvariantCulture) + extension);
 
     private IRecorder GetRecorder(MediaSourceInfo mediaSource)
     {
