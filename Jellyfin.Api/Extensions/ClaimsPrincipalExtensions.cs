@@ -77,10 +77,10 @@ public static class ClaimsPrincipalExtensions
     }
 
     /// <summary>
-    /// Gets the query parameter that authorizes the media resources linked from a playlist.
+    /// Gets the authentication query parameter for playlist URLs.
     /// </summary>
     /// <param name="user">Current claims principal.</param>
-    /// <returns>The query parameter, without a leading separator.</returns>
+    /// <returns><c>PlaybackToken=...</c> or <c>ApiKey=...</c>, without a leading <c>?</c> or <c>&amp;</c>.</returns>
     public static string GetMediaAuthorizationQuery(this ClaimsPrincipal user)
         => GetClaimValue(user, InternalClaimTypes.PlaybackToken) is { } playbackToken
             ? PlaybackAccessAuthenticationHandler.TokenParameter + "=" + playbackToken

@@ -22,14 +22,14 @@ public interface IPlaybackAccessManager
     Task<PlaybackAccessGrant> CreateAsync(Guid userId, Guid itemId, string mediaSourceId, string deviceId, string playSessionId, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Gets a valid grant.
+    /// Gets an unexpired grant whose owner exists and is enabled.
     /// </summary>
     /// <param name="token">The token.</param>
-    /// <returns>The grant, or <c>null</c> if it is unknown, expired or its user is disabled.</returns>
+    /// <returns>The grant, or <c>null</c> if unavailable.</returns>
     PlaybackAccessGrant? Get(string token);
 
     /// <summary>
-    /// Revokes the grants of a play session.
+    /// Revokes all grants for the user's play session.
     /// </summary>
     /// <param name="playSessionId">The play session id.</param>
     /// <param name="userId">The user id.</param>

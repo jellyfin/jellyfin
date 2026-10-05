@@ -249,7 +249,7 @@ public class StreamInfo
     public string? PlaySessionId { get; set; }
 
     /// <summary>
-    /// Gets or sets the playback grant token, which replaces the access token in the stream URL.
+    /// Gets or sets the playback grant token used instead of the access token when nonempty.
     /// </summary>
     public string? PlaybackToken { get; set; }
 

@@ -86,7 +86,7 @@ public class PlaybackAccessAuthenticationHandler : AuthenticationHandler<Authent
             return string.Equals(mediaSourceId, grant.MediaSourceId, StringComparison.Ordinal);
         }
 
-        // Params and LiveStreamId would replace the media source that is checked here.
+        // Reject Params and LiveStreamId: either can override the checked media source.
         return query["MediaSourceId"] == grant.MediaSourceId
             && query["DeviceId"] == grant.DeviceId
             && query["PlaySessionId"] == grant.PlaySessionId

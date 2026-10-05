@@ -95,7 +95,7 @@ namespace Jellyfin.Server.Extensions
         }
 
         /// <summary>
-        /// Adds custom legacy authentication to the service collection.
+        /// Adds legacy and playback grant authentication to the service collection.
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
         /// <returns>The updated service collection.</returns>
