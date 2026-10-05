@@ -136,7 +136,17 @@ public sealed class BackupServiceTests : IDisposable
         Assert.Empty(Directory.GetFiles(_backupPath));
     }
 
-    private BackupService CreateBackupService()
+    [Fact]
+    public async Task CreateBackupAsync_OptimizationFails_StillCreatesTheBackup()
+    {
+        var backupService = CreateBackupService(new SqliteException("database or disk is full", 13));
+
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+
+        Assert.True(File.Exists(manifest.Path));
+    }
+
+    private BackupService CreateBackupService(Exception? optimizationError = null)
     {
         var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
         factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
@@ -154,7 +164,8 @@ public sealed class BackupServiceTests : IDisposable
         applicationPaths.Setup(a => a.DefaultInternalMetadataPath).Returns(Path.Combine(_testRoot, "MetadataDefault"));
 
         var jellyfinDatabaseProvider = new Mock<IJellyfinDatabaseProvider>();
-        jellyfinDatabaseProvider.Setup(p => p.RunScheduledOptimisation(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        jellyfinDatabaseProvider.Setup(p => p.RunScheduledOptimisation(It.IsAny<CancellationToken>()))
+            .Returns(optimizationError is null ? Task.CompletedTask : Task.FromException(optimizationError));
         jellyfinDatabaseProvider.Setup(p => p.PurgeDatabase(It.IsAny<JellyfinDbContext>(), It.IsAny<System.Collections.Generic.IEnumerable<string>>())).Returns(Task.CompletedTask);
 
         var applicationLifetime = new Mock<IHostApplicationLifetime>();
