@@ -28,16 +28,30 @@ public sealed class DisplayPreferencesManager : IDisplayPreferencesManager
     public DisplayPreferences GetDisplayPreferences(Guid userId, Guid itemId, string client)
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
-        var prefs = dbContext.DisplayPreferences
-            .Include(pref => pref.HomeSections)
-            .FirstOrDefault(pref =>
-                pref.UserId.Equals(userId) && pref.Client == client && pref.ItemId.Equals(itemId));
-
-        if (prefs is null)
+        var prefs = FindDisplayPreferences(dbContext, userId, itemId, client);
+        if (prefs is not null)
         {
-            prefs = new DisplayPreferences(userId, itemId, client);
-            dbContext.DisplayPreferences.Add(prefs);
+            return prefs;
+        }
+
+        prefs = new DisplayPreferences(userId, itemId, client);
+        dbContext.DisplayPreferences.Add(prefs);
+        try
+        {
             dbContext.SaveChanges();
+        }
+        catch (DbUpdateException)
+        {
+            // Another request may have stored the preferences between the lookup and the insert, and the unique index
+            // rejected this one. Return the stored preferences; if there are none, the insert failed for another reason.
+            using var retryContext = _dbContextFactory.CreateDbContext();
+            var stored = FindDisplayPreferences(retryContext, userId, itemId, client);
+            if (stored is null)
+            {
+                throw;
+            }
+
+            return stored;
         }
 
         return prefs;
@@ -115,4 +129,9 @@ public sealed class DisplayPreferencesManager : IDisplayPreferencesManager
         dbContext.ItemDisplayPreferences.Attach(itemDisplayPreferences).State = EntityState.Modified;
         dbContext.SaveChanges();
     }
+
+    private static DisplayPreferences? FindDisplayPreferences(JellyfinDbContext dbContext, Guid userId, Guid itemId, string client)
+        => dbContext.DisplayPreferences
+            .Include(pref => pref.HomeSections)
+            .FirstOrDefault(pref => pref.UserId.Equals(userId) && pref.Client == client && pref.ItemId.Equals(itemId));
 }
