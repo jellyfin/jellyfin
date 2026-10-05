@@ -244,12 +244,15 @@
  - [Oggeb1](https://github.com/Oggeb1)
  - [scr4bble](https://github.com/scr4bble)
  - [Mateus Bandeira](https://github.com/mateusbandeiraa)
+ - [excelsior](https://github.com/excelsior-dev)
  - [TheDreadPirate](https://github.com/thedreaddpirate)
  - [Mateus Bandeira](https://github.com/mateusbandeiraa)
  - [TheDreadPirate](https://github.com/thedreaddpirate)
  - [Mateus Bandeira](https://github.com/mateusbandeiraa)
  - [TheDreadPirate](https://github.com/thedreaddpirate)
  - [p27ZuH6CNAdzr](https://github.com/p27ZuH6CNAdzr)
+ - [Daniel Aquino](https://github.com/chino)
+ - [klizas](https://github.com/klizas)
 
 # Emby Contributors
 
