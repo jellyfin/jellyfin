@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -368,6 +369,12 @@ public class BackupService : IBackupService
                                             try
                                             {
                                                 hasNext = await enumerator.MoveNextAsync();
+                                            }
+                                            catch (DbException ex)
+                                            {
+                                                // The database failed to read the table, not to convert one row. The reader does not get past that:
+                                                // it fails the same way on every call, or reports the end of the table and leaves the rest out.
+                                                throw new InvalidOperationException($"Could not read the {entityType.SourceName} table.", ex);
                                             }
                                             catch (Exception ex)
                                             {
