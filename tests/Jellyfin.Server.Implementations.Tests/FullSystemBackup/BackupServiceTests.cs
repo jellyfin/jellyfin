@@ -1,4 +1,5 @@
 using System;
+using System.Data.Common;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -15,6 +16,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.SystemBackupService;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -31,6 +33,7 @@ namespace Jellyfin.Server.Implementations.Tests.FullSystemBackup;
 public sealed class BackupServiceTests : IDisposable
 {
     private readonly SqliteConnection _connection;
+    private readonly FailingTableReadInterceptor _failingTableRead = new();
     private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly string _testRoot;
     private readonly string _backupPath;
@@ -43,6 +46,7 @@ public sealed class BackupServiceTests : IDisposable
 
         _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
             .UseSqlite(_connection)
+            .AddInterceptors(_failingTableRead)
             .Options;
 
         using (var ctx = CreateDbContext())
@@ -120,6 +124,18 @@ public sealed class BackupServiceTests : IDisposable
         Assert.Equal(validItemId, singleRow.GetProperty("ItemId").GetGuid());
     }
 
+    [Fact(Timeout = 60_000)]
+    public async Task CreateBackupAsync_TableCannotBeRead_FailsNamingTheTable()
+    {
+        _failingTableRead.Table = "ActivityLogs";
+
+        // Run off the test thread, so a backup that never finishes fails the test through the timeout instead of hanging it.
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => Task.Run(() => CreateBackupService().CreateBackupAsync(new BackupOptionsDto()))).ConfigureAwait(true);
+
+        Assert.Contains("ActivityLogs", exception.Message, StringComparison.Ordinal);
+        Assert.Empty(Directory.GetFiles(_backupPath));
+    }
+
     private BackupService CreateBackupService()
     {
         var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
@@ -178,5 +194,18 @@ public sealed class BackupServiceTests : IDisposable
             NullLogger<JellyfinDbContext>.Instance,
             new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
             new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
+    }
+
+    /// <summary>
+    /// Fails every query that reads <see cref="Table"/>, the way SQLite fails a query on a corrupt table.
+    /// </summary>
+    private sealed class FailingTableReadInterceptor : DbCommandInterceptor
+    {
+        public string? Table { get; set; }
+
+        public override ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result, CancellationToken cancellationToken = default)
+            => Table is not null && command.CommandText.Contains($"FROM \"{Table}\"", StringComparison.Ordinal)
+                ? throw new SqliteException("database disk image is malformed", 11)
+                : ValueTask.FromResult(result);
     }
 }
