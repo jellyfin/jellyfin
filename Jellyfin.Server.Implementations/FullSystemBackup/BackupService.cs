@@ -288,7 +288,15 @@ public class BackupService : IBackupService
 
         _logger.LogInformation("Running database optimization before backup");
 
-        await _jellyfinDatabaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false);
+        try
+        {
+            await _jellyfinDatabaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            // The backup does not depend on the optimization: it reads every row itself, and fails if the database cannot read them.
+            _logger.LogWarning(ex, "Database optimization before backup failed, continuing with the backup");
+        }
 
         var backupFolder = Path.Combine(_applicationPaths.BackupPath);
 
