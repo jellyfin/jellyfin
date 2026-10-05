@@ -11,7 +11,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Auth;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.SubtitleDtos;
@@ -206,8 +205,6 @@ public class SubtitleController : BaseJellyfinApiController
     /// <param name="startPositionTicks">The start position of the subtitle in ticks.</param>
     /// <response code="200">File returned.</response>
     /// <returns>A <see cref="FileContentResult"/> with the subtitle file.</returns>
-    [PlaybackAccess]
-    [Authorize(Policy = Policies.Streaming)]
     [HttpGet("Videos/{routeItemId}/{routeMediaSourceId}/Subtitles/{routeIndex}/Stream.{routeFormat}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesFile("text/*")]
@@ -294,8 +291,6 @@ public class SubtitleController : BaseJellyfinApiController
     /// <param name="addVttTimeMap">Optional. Whether to add a VTT time map.</param>
     /// <response code="200">File returned.</response>
     /// <returns>A <see cref="FileContentResult"/> with the subtitle file.</returns>
-    [PlaybackAccess]
-    [Authorize(Policy = Policies.Streaming)]
     [HttpGet("Videos/{routeItemId}/{routeMediaSourceId}/Subtitles/{routeIndex}/{routeStartPositionTicks}/Stream.{routeFormat}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesFile("text/*")]
@@ -339,9 +334,8 @@ public class SubtitleController : BaseJellyfinApiController
     /// <response code="200">Subtitle playlist retrieved.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="FileContentResult"/> with the HLS subtitle playlist.</returns>
-    [PlaybackAccess]
-    [Authorize(Policy = Policies.Streaming)]
     [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/subtitles.m3u8")]
+    [Authorize(Policy = Policies.Streaming)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesPlaylistFile]
@@ -384,7 +378,7 @@ public class SubtitleController : BaseJellyfinApiController
 
         long positionTicks = 0;
 
-        var authorizationQuery = User.GetMediaAuthorizationQuery();
+        var accessToken = User.GetToken();
 
         while (positionTicks < runtime)
         {
@@ -400,10 +394,10 @@ public class SubtitleController : BaseJellyfinApiController
 
             var url = string.Format(
                 CultureInfo.InvariantCulture,
-                "stream.vtt?CopyTimestamps=true&AddVttTimeMap=true&StartPositionTicks={0}&EndPositionTicks={1}&{2}",
+                "stream.vtt?CopyTimestamps=true&AddVttTimeMap=true&StartPositionTicks={0}&EndPositionTicks={1}&ApiKey={2}",
                 positionTicks.ToString(CultureInfo.InvariantCulture),
                 endPositionTicks.ToString(CultureInfo.InvariantCulture),
-                authorizationQuery);
+                accessToken);
 
             builder.AppendLine(url);
 

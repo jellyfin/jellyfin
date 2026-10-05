@@ -336,11 +336,7 @@ public class DynamicHlsHelper
         {
             var sourceId = Guid.Parse(state.Request.MediaSourceId);
             var trickplayResolutions = await _trickplayManager.GetTrickplayResolutions(sourceId).ConfigureAwait(false);
-            // Trickplay is outside the initial playback-grant resource set.
-            if (!_httpContextAccessor.HttpContext.User.HasClaim(claim => claim.Type == Jellyfin.Api.Constants.InternalClaimTypes.PlaybackToken))
-            {
-                AddTrickplay(state, trickplayResolutions, builder, _httpContextAccessor.HttpContext.User);
-            }
+            AddTrickplay(state, trickplayResolutions, builder, _httpContextAccessor.HttpContext.User);
         }
 
         return new FileContentResult(Encoding.UTF8.GetBytes(builder.ToString()), MimeTypes.GetMimeType("playlist.m3u8"));

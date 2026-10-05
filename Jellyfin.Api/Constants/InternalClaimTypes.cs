@@ -41,12 +41,7 @@ public static class InternalClaimTypes
     public const string IsApiKey = "Jellyfin-IsApiKey";
 
     /// <summary>
-    /// The scoped playback credential. This is never an account token.
+    /// Playback grant token.
     /// </summary>
     public const string PlaybackToken = "Jellyfin-PlaybackToken";
-
-    /// <summary>
-    /// The playback session authorized by the credential.
-    /// </summary>
-    public const string PlaybackSessionId = "Jellyfin-PlaybackSessionId";
 }

@@ -11,7 +11,7 @@ public static class AuthenticationSchemes
     public const string CustomAuthentication = "CustomAuthentication";
 
     /// <summary>
-    /// Scheme accepted only by media resource endpoints.
+    /// Scheme name for the playback grant authentication.
     /// </summary>
     public const string PlaybackAccess = "PlaybackAccess";
 }

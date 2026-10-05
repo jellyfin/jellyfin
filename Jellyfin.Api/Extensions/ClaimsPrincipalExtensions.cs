@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Security.Claims;
+using Jellyfin.Api.Auth;
 using Jellyfin.Api.Constants;
 
 namespace Jellyfin.Api.Extensions;
@@ -76,22 +77,14 @@ public static class ClaimsPrincipalExtensions
     }
 
     /// <summary>
-    /// Builds the credential query for child media resources without converting a
-    /// playback credential into a general account credential.
+    /// Gets the query parameter that authorizes the media resources linked from a playlist.
     /// </summary>
-    /// <param name="user">The current principal.</param>
-    /// <returns>The media authorization query, without a leading question mark.</returns>
+    /// <param name="user">Current claims principal.</param>
+    /// <returns>The query parameter, without a leading separator.</returns>
     public static string GetMediaAuthorizationQuery(this ClaimsPrincipal user)
-    {
-        var playbackToken = GetClaimValue(user, InternalClaimTypes.PlaybackToken);
-        if (!string.IsNullOrEmpty(playbackToken))
-        {
-            return "PlaybackToken=" + Uri.EscapeDataString(playbackToken)
-                + "&PlaySessionId=" + Uri.EscapeDataString(GetClaimValue(user, InternalClaimTypes.PlaybackSessionId) ?? string.Empty);
-        }
-
-        return "ApiKey=" + Uri.EscapeDataString(user.GetToken() ?? string.Empty);
-    }
+        => GetClaimValue(user, InternalClaimTypes.PlaybackToken) is { } playbackToken
+            ? PlaybackAccessAuthenticationHandler.TokenParameter + "=" + playbackToken
+            : "ApiKey=" + user.GetToken();
 
     private static string? GetClaimValue(in ClaimsPrincipal user, string name)
         => user.Claims.FirstOrDefault(claim => claim.Type.Equals(name, StringComparison.OrdinalIgnoreCase))?.Value;

@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Auth;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.StreamingDtos;
@@ -38,7 +37,7 @@ namespace Jellyfin.Api.Controllers;
 /// Dynamic hls controller.
 /// </summary>
 [Route("")]
-[Authorize(Policy = Policies.Streaming)]
+[Authorize]
 [ApiExplorerSettings(IgnoreApi = true)]
 public class DynamicHlsController : BaseJellyfinApiController
 {
@@ -403,8 +402,8 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
-    [PlaybackAccess]
     [HttpGet("Videos/{itemId}/master.m3u8")]
+    [Authorize(Policy = Policies.Streaming)]
     [HttpHead("Videos/{itemId}/master.m3u8", Name = "HeadMasterHlsVideoPlaylist")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesPlaylistFile]
@@ -577,8 +576,8 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Audio stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
-    [PlaybackAccess]
     [HttpGet("Audio/{itemId}/master.m3u8")]
+    [Authorize(Policy = Policies.Streaming)]
     [HttpHead("Audio/{itemId}/master.m3u8", Name = "HeadMasterHlsAudioPlaylist")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesPlaylistFile]
@@ -746,8 +745,8 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
-    [PlaybackAccess]
     [HttpGet("Videos/{itemId}/main.m3u8")]
+    [Authorize(Policy = Policies.Streaming)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesPlaylistFile]
     public async Task<ActionResult> GetVariantHlsVideoPlaylist(
@@ -916,8 +915,8 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Audio stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
-    [PlaybackAccess]
     [HttpGet("Audio/{itemId}/main.m3u8")]
+    [Authorize(Policy = Policies.Streaming)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesPlaylistFile]
     public async Task<ActionResult> GetVariantHlsAudioPlaylist(
@@ -1089,8 +1088,8 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
-    [PlaybackAccess]
     [HttpGet("Videos/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
+    [Authorize(Policy = Policies.Streaming)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesVideoFile]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "playlistId", Justification = "Imported from ServiceStack")]
@@ -1272,8 +1271,8 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
-    [PlaybackAccess]
     [HttpGet("Audio/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
+    [Authorize(Policy = Policies.Streaming)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesAudioFile]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "playlistId", Justification = "Imported from ServiceStack")]

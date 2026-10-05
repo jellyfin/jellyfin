@@ -5,41 +5,33 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Controller.Streaming;
 
 /// <summary>
-/// Issues playback credentials without granting account or administrative access.
-/// Trusted server callers must obtain the user from the authorized playback command.
+/// Manages playback grants, which let a device stream an item without the user's access token.
 /// </summary>
 public interface IPlaybackAccessManager
 {
     /// <summary>
-    /// Authorizes an on-demand media source and creates a playback grant.
+    /// Creates a grant for a media source the user is allowed to play.
     /// </summary>
-    /// <param name="userId">The initiating user.</param>
-    /// <param name="itemId">The item to play.</param>
-    /// <param name="mediaSourceId">The media source to play.</param>
-    /// <param name="deviceId">The renderer identifier, used for playback accounting.</param>
-    /// <param name="playSessionId">A unique playback session identifier.</param>
+    /// <param name="userId">The user id.</param>
+    /// <param name="itemId">The item id.</param>
+    /// <param name="mediaSourceId">The media source id.</param>
+    /// <param name="deviceId">The device id.</param>
+    /// <param name="playSessionId">The play session id.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The playback grant.</returns>
+    /// <returns>The grant.</returns>
     Task<PlaybackAccessGrant> CreateAsync(Guid userId, Guid itemId, string mediaSourceId, string deviceId, string playSessionId, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Gets an unexpired grant whose owner still has playback access.
-    /// Does not extend its lifetime.
+    /// Gets a valid grant.
     /// </summary>
-    /// <param name="token">The playback credential.</param>
-    /// <returns>The grant, or null when invalid.</returns>
+    /// <param name="token">The token.</param>
+    /// <returns>The grant, or <c>null</c> if it is unknown, expired or its user is disabled.</returns>
     PlaybackAccessGrant? Get(string token);
 
     /// <summary>
-    /// Records a successfully authorized resource request, within the absolute expiry.
+    /// Revokes the grants of a play session.
     /// </summary>
-    /// <param name="token">The playback credential.</param>
-    void Touch(string token);
-
-    /// <summary>
-    /// Ends a user's playback grants, allowing outstanding requests a short grace period.
-    /// </summary>
-    /// <param name="playSessionId">The playback session identifier.</param>
-    /// <param name="userId">The owner of the playback session.</param>
+    /// <param name="playSessionId">The play session id.</param>
+    /// <param name="userId">The user id.</param>
     void Revoke(string playSessionId, Guid userId);
 }

@@ -249,7 +249,7 @@ public class StreamInfo
     public string? PlaySessionId { get; set; }
 
     /// <summary>
-    /// Gets or sets the scoped credential for delegated playback.
+    /// Gets or sets the playback grant token, which replaces the access token in the stream URL.
     /// </summary>
     public string? PlaybackToken { get; set; }
 
@@ -1037,10 +1037,9 @@ public class StreamInfo
         if (!string.IsNullOrEmpty(PlaybackToken))
         {
             sb.Append("&PlaybackToken=");
-            sb.Append(Uri.EscapeDataString(PlaybackToken));
+            sb.Append(PlaybackToken);
         }
-
-        if (string.IsNullOrEmpty(PlaybackToken) && !string.IsNullOrEmpty(accessToken))
+        else if (!string.IsNullOrEmpty(accessToken))
         {
             sb.Append("&ApiKey=");
             sb.Append(accessToken);
@@ -1284,14 +1283,8 @@ public class StreamInfo
                 info.IsExternalUrl = true;
             }
 
-            if (!info.IsExternalUrl && !string.IsNullOrEmpty(PlaybackToken))
-            {
-                info.Url += "?PlaybackToken=" + Uri.EscapeDataString(PlaybackToken)
-                    + "&PlaySessionId=" + Uri.EscapeDataString(PlaySessionId ?? string.Empty);
-            }
-
             // Append ApiKey only if we are using the API URL
-            if (!info.IsExternalUrl && string.IsNullOrEmpty(PlaybackToken) && !string.IsNullOrEmpty(accessToken))
+            if (!info.IsExternalUrl && !string.IsNullOrEmpty(accessToken))
             {
                 // Use "?ApiKey=" as seen in HEAD and other parts of the code
                 info.Url += "?ApiKey=" + accessToken;

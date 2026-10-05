@@ -87,7 +87,6 @@ namespace Jellyfin.Server
             serviceCollection.AddSingleton<IPasswordResetProvider, DefaultPasswordResetProvider>();
             serviceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
             serviceCollection.AddSingleton<IDeviceManager, DeviceManager>();
-            serviceCollection.AddSingleton(TimeProvider.System);
             serviceCollection.AddSingleton<IPlaybackAccessManager, PlaybackAccessManager>();
             serviceCollection.AddSingleton<ITrickplayManager, TrickplayManager>();
 

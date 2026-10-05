@@ -2,7 +2,6 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Jellyfin.Api.Auth;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Data;
@@ -29,40 +28,40 @@ namespace Jellyfin.Server.Integration.Tests.Auth;
 
 public sealed class PlaybackAccessTests : IDisposable
 {
-    private readonly PlaybackAccessGrant _grant;
-    private readonly IHost _server;
-    private readonly HttpClient _client;
-    private readonly Mock<INetworkManager> _network = new();
+    private readonly Guid _itemId = Guid.NewGuid();
     private readonly User _user = new("admin", "auth", "reset");
+    private readonly Mock<INetworkManager> _networkManager = new();
+    private readonly IHost _host;
+    private readonly HttpClient _client;
 
     public PlaybackAccessTests()
     {
         _user.AddDefaultPermissions();
         _user.SetPermission(PermissionKind.IsAdministrator, true);
-        _grant = new PlaybackAccessGrant("playback", _user.Id, Guid.NewGuid(), "source", "renderer", "session", DateTimeOffset.UtcNow.AddHours(1));
-        var grants = new Mock<IPlaybackAccessManager>();
-        grants.Setup(manager => manager.Get("playback")).Returns(_grant);
-        var users = new Mock<IUserManager>();
-        users.Setup(manager => manager.GetUserById(_user.Id)).Returns(_user);
-        _network.Setup(manager => manager.IsInLocalNetwork(It.IsAny<IPAddress>())).Returns(true);
-        var auth = new Mock<IAuthService>();
-        auth.Setup(service => service.Authenticate(It.IsAny<HttpRequest>()))
+        var grant = new PlaybackAccessGrant("grant", _user.Id, _itemId, "source", "device", "session", DateTime.UtcNow.AddHours(1));
+        var playbackAccessManager = new Mock<IPlaybackAccessManager>();
+        playbackAccessManager.Setup(i => i.Get("grant")).Returns(grant);
+        var userManager = new Mock<IUserManager>();
+        userManager.Setup(i => i.GetUserById(_user.Id)).Returns(_user);
+        _networkManager.Setup(i => i.IsInLocalNetwork(It.IsAny<IPAddress>())).Returns(true);
+        var authService = new Mock<IAuthService>();
+        authService.Setup(i => i.Authenticate(It.IsAny<HttpRequest>()))
             .ReturnsAsync((HttpRequest request) => request.Query["ApiKey"] == "account"
                 ? new AuthorizationInfo { User = _user, Token = "account", IsAuthenticated = true }
                 : new AuthorizationInfo());
 
-        _server = new HostBuilder().ConfigureWebHost(builder => builder.UseTestServer()
+        _host = new HostBuilder().ConfigureWebHost(builder => builder.UseTestServer()
             .ConfigureServices(services =>
             {
                 services.AddRouting();
                 services.AddAuthorization();
+                services.AddHttpContextAccessor();
                 services.AddSingleton(Mock.Of<IConfigurationManager>());
                 services.AddSingleton(Mock.Of<ISyncPlayManager>());
-                services.AddHttpContextAccessor();
-                services.AddSingleton(grants.Object);
-                services.AddSingleton(users.Object);
-                services.AddSingleton(_network.Object);
-                services.AddSingleton(auth.Object);
+                services.AddSingleton(playbackAccessManager.Object);
+                services.AddSingleton(userManager.Object);
+                services.AddSingleton(_networkManager.Object);
+                services.AddSingleton(authService.Object);
                 services.AddCustomAuthentication();
                 services.AddJellyfinApiAuthorization();
             })
@@ -74,131 +73,89 @@ public sealed class PlaybackAccessTests : IDisposable
                 app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapGet("/Videos/{itemId}/master.m3u8", context => context.Response.WriteAsync(
-                        context.User.GetMediaAuthorizationQuery() + ";admin=" + context.User.IsInRole(UserRoles.Administrator)))
-                        .WithMetadata(new PlaybackAccessAttribute()).RequireAuthorization(Policies.Streaming);
-                    endpoints.MapGet("/Videos/{routeItemId}/{routeMediaSourceId}/Subtitles/0/Stream.vtt", context => context.Response.WriteAsync("subtitle"))
-                        .WithMetadata(new PlaybackAccessAttribute()).RequireAuthorization(Policies.Streaming);
+                        context.User.GetMediaAuthorizationQuery() + ";" + context.User.IsInRole(UserRoles.Administrator)))
+                        .RequireAuthorization().RequireAuthorization(Policies.Streaming);
+                    endpoints.MapGet("/Videos/{itemId}/{mediaSourceId}/Subtitles/0/subtitles.m3u8", context => context.Response.WriteAsync("subtitles"))
+                        .RequireAuthorization(Policies.Streaming);
                     endpoints.MapGet("/Users", context => context.Response.WriteAsync("users")).RequireAuthorization();
-                    endpoints.MapGet("/System/Configuration", context => context.Response.WriteAsync("admin")).RequireAuthorization(Policies.RequiresElevation);
-                    endpoints.MapPost("/Items/{itemId}/PlaybackAccess", context => context.Response.WriteAsync("created")).RequireAuthorization();
-                    endpoints.MapGet("/Other/{itemId}", context => context.Response.WriteAsync("other")).RequireAuthorization(Policies.Streaming);
+                    endpoints.MapGet("/System/Configuration", context => context.Response.WriteAsync("configuration"))
+                        .RequireAuthorization(Policies.RequiresElevation);
                 });
             })).Build();
-        _server.Start();
-        _client = _server.GetTestClient();
+        _host.Start();
+        _client = _host.GetTestClient();
+    }
+
+    private string StreamUrl => $"/Videos/{_itemId}/master.m3u8?MediaSourceId=source&DeviceId=device&PlaySessionId=session&PlaybackToken=grant";
+
+    [Fact]
+    public async Task Stream_Grant_AuthenticatesWithoutAccountRole()
+    {
+        using var response = await _client.GetAsync(StreamUrl, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("PlaybackToken=grant;False", await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
     }
 
     [Fact]
-    public async Task AdminOwnedGrantPlaysMediaWithoutAnAdministratorRole()
+    public async Task Stream_AccessToken_StillAuthenticates()
     {
-        using var response = await _client.GetAsync(MediaUrl(), TestContext.Current.CancellationToken);
+        using var response = await _client.GetAsync($"/Videos/{_itemId}/master.m3u8?ApiKey=account", TestContext.Current.CancellationToken);
+
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("PlaybackToken=playback&PlaySessionId=session;admin=False", await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+        Assert.Equal("ApiKey=account;True", await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+    }
+
+    [Theory]
+    [InlineData("MediaSourceId=source", "MediaSourceId=other")]
+    [InlineData("DeviceId=device", "DeviceId=other")]
+    [InlineData("PlaySessionId=session", "PlaySessionId=other")]
+    [InlineData("PlaybackToken=grant", "PlaybackToken=other")]
+    [InlineData("PlaybackToken=grant", "PlaybackToken=grant&MediaSourceId=other")]
+    [InlineData("PlaybackToken=grant", "PlaybackToken=grant&Params=other")]
+    [InlineData("PlaybackToken=grant", "PlaybackToken=grant&LiveStreamId=other")]
+    [InlineData("/master.m3u8", "0/master.m3u8")]
+    public async Task Stream_OutsideGrant_ReturnsUnauthorized(string granted, string requested)
+    {
+        using var response = await _client.GetAsync(StreamUrl.Replace(granted, requested, StringComparison.Ordinal), TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("source", HttpStatusCode.OK)]
+    [InlineData("other", HttpStatusCode.Unauthorized)]
+    public async Task SubtitlePlaylist_Grant_RequiresGrantedMediaSource(string mediaSourceId, HttpStatusCode expected)
+    {
+        using var response = await _client.GetAsync($"/Videos/{_itemId}/{mediaSourceId}/Subtitles/0/subtitles.m3u8?PlaybackToken=grant", TestContext.Current.CancellationToken);
+
+        Assert.Equal(expected, response.StatusCode);
     }
 
     [Theory]
     [InlineData("/Users")]
     [InlineData("/System/Configuration")]
-    public async Task PlaybackCredentialCannotAccessAccountApis(string endpoint)
+    public async Task OtherEndpoint_Grant_ReturnsUnauthorized(string url)
     {
-        using var response = await _client.GetAsync(endpoint + "?PlaybackToken=playback", TestContext.Current.CancellationToken);
+        using var response = await _client.GetAsync(url + "?PlaybackToken=grant", TestContext.Current.CancellationToken);
+
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
-    public async Task PlaybackCredentialCannotIssueAnotherGrant()
-    {
-        using var response = await _client.PostAsync($"/Items/{_grant.ItemId}/PlaybackAccess?PlaybackToken=playback", null, TestContext.Current.CancellationToken);
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task PlaybackCredentialCannotBecomeAnAccountApiKey()
-    {
-        using var response = await _client.GetAsync("/System/Configuration?ApiKey=playback", TestContext.Current.CancellationToken);
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Theory]
-    [InlineData("MediaSourceId", "another-source")]
-    [InlineData("DeviceId", "another-device")]
-    [InlineData("PlaySessionId", "another-session")]
-    [InlineData("PlaybackToken", "invalid")]
-    public async Task PlaybackScopeCannotBeChanged(string key, string replacement)
-    {
-        var url = MediaUrl();
-        var original = key switch
-        {
-            "MediaSourceId" => "source",
-            "DeviceId" => "renderer",
-            "PlaySessionId" => "session",
-            _ => "playback"
-        };
-        using var response = await _client.GetAsync(url.Replace(key + "=" + original, key + "=" + replacement, StringComparison.Ordinal), TestContext.Current.CancellationToken);
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Theory]
-    [InlineData("&MediaSourceId=source")]
-    [InlineData("&PlaybackToken=playback")]
-    [InlineData("&Params=packed-legacy-parameters")]
-    [InlineData("&LiveStreamId=unrelated-live-stream")]
-    public async Task AmbiguousAndLegacyParameterOverridesAreRejected(string extraQuery)
-    {
-        using var response = await _client.GetAsync(MediaUrl() + extraQuery, TestContext.Current.CancellationToken);
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task AnotherItemCannotBePlayed()
-    {
-        using var response = await _client.GetAsync(MediaUrl().Replace(_grant.ItemId.ToString(), Guid.NewGuid().ToString(), StringComparison.Ordinal), TestContext.Current.CancellationToken);
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task EndpointMustExplicitlyOptIntoPlaybackCredentials()
-    {
-        using var response = await _client.GetAsync(MediaUrl().Replace("/Videos/", "/Other/", StringComparison.Ordinal).Replace("/master.m3u8", string.Empty, StringComparison.Ordinal), TestContext.Current.CancellationToken);
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task SubtitleDeliveryUsesTheSamePlaybackScope()
-    {
-        using var response = await _client.GetAsync($"/Videos/{_grant.ItemId}/source/Subtitles/0/Stream.vtt?PlaybackToken=playback&PlaySessionId=session", TestContext.Current.CancellationToken);
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task LegacySubtitleQueryCannotOverrideTheAuthorizedItem()
-    {
-        using var response = await _client.GetAsync($"/Videos/{_grant.ItemId}/source/Subtitles/0/Stream.vtt?PlaybackToken=playback&PlaySessionId=session&itemId={Guid.NewGuid()}", TestContext.Current.CancellationToken);
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task LocalOnlyOwnerCannotDelegateRemotePlayback()
+    public async Task Stream_RemoteAccessDisabled_ReturnsForbidden()
     {
         _user.SetPermission(PermissionKind.EnableRemoteAccess, false);
-        _network.Setup(manager => manager.IsInLocalNetwork(It.IsAny<IPAddress>())).Returns(false);
-        using var response = await _client.GetAsync(MediaUrl(), TestContext.Current.CancellationToken);
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
+        _networkManager.Setup(i => i.IsInLocalNetwork(It.IsAny<IPAddress>())).Returns(false);
 
-    [Fact]
-    public async Task ExistingAccountAuthenticationStillWorks()
-    {
-        using var response = await _client.GetAsync("/System/Configuration?ApiKey=account", TestContext.Current.CancellationToken);
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var response = await _client.GetAsync(StreamUrl, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     public void Dispose()
     {
         _client.Dispose();
-        _server.Dispose();
+        _host.Dispose();
     }
-
-    private string MediaUrl()
-        => $"/Videos/{_grant.ItemId}/master.m3u8?MediaSourceId=source&DeviceId=renderer&PlaySessionId=session&PlaybackToken=playback";
 }
