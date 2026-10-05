@@ -5,10 +5,10 @@ using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers
 {
-    public sealed class ActivityLogControllerTests : IClassFixture<JellyfinApplicationFactory>
+    [Collection("Controller collection")]
+    public sealed class ActivityLogControllerTests
     {
         private readonly JellyfinApplicationFactory _factory;
-        private static string? _accessToken;
 
         public ActivityLogControllerTests(JellyfinApplicationFactory factory)
         {
@@ -19,7 +19,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task ActivityLog_GetEntries_Ok()
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+            client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
             var response = await client.GetAsync("System/ActivityLog/Entries", TestContext.Current.CancellationToken);
 

@@ -13,14 +13,14 @@ using Xunit.v3.Priority;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers
 {
+    [Collection("Controller collection")]
     [TestCaseOrderer(typeof(PriorityOrderer))]
-    public sealed class UserControllerTests : IClassFixture<JellyfinApplicationFactory>
+    public sealed class UserControllerTests
     {
         private const string TestUsername = "testUser01";
 
         private readonly JellyfinApplicationFactory _factory;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
-        private static string? _accessToken;
         private static Guid _testUserId = Guid.Empty;
 
         public UserControllerTests(JellyfinApplicationFactory factory)
@@ -53,7 +53,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task GetUsers_Valid_Success()
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+            client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
             using var response = await client.GetAsync("Users", TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -67,7 +67,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task Me_Valid_Success()
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+            client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
             _ = await AuthHelper.GetUserDtoAsync(client);
         }
@@ -78,8 +78,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         {
             var client = _factory.CreateClient();
 
-            // access token can't be null here as the previous test populated it
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken!);
+            client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
             var createRequest = new CreateUserByName()
             {
@@ -106,8 +105,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         {
             var client = _factory.CreateClient();
 
-            // access token can't be null here as the previous test populated it
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken!);
+            client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
             var createRequest = new CreateUserByName()
             {
@@ -124,8 +122,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         {
             var client = _factory.CreateClient();
 
-            // access token can't be null here as the previous test populated it
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken!);
+            client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
             using var response = await client.DeleteAsync($"User/{Guid.NewGuid()}", TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -136,7 +133,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task UpdateUserPassword_Valid_Success()
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken!);
+            client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
             var createRequest = new UpdateUserPassword()
             {
@@ -153,7 +150,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         {
             var client = _factory.CreateClient();
 
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken!);
+            client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
             var createRequest = new UpdateUserPassword()
             {
@@ -170,7 +167,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         {
             var client = _factory.CreateClient();
 
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken!);
+            client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
             using var response = await client.GetAsync("Users/" + _testUserId, TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
