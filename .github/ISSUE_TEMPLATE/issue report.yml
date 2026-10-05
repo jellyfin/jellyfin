@@ -87,6 +87,7 @@ body:
       label: Jellyfin Server version
       description: What version of Jellyfin are you using?
       options:
+        - 12.2
         - 12.1
         - 12.0
         - 10.11.11
@@ -142,7 +143,7 @@ body:
         - **GPU Model**: [e.g. none, UHD630, GTX1050, etc.]
         - **Installed Plugins**: [e.g. none, Fanart, Anime, etc.]
         - **Reverse Proxy**: [e.g. none, nginx, apache, etc.]
-        - **Base URL**: [e.g. none, yes: /example]
+        - **Base URL**: [e.g. none, yes: /example - Do not include your domain name]
         - **Networking**: [e.g. Host, Bridge/NAT]
         - **Jellyfin Data Storage & Filesystem**: [e.g. local SATA SSD - ext4, local HDD - NTFS]
         - **Media Storage & Filesystem**: [e.g. Local HDD - ext4, SMB Share]
