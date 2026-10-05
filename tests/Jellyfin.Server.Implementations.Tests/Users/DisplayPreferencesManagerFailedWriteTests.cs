@@ -17,18 +17,18 @@ public sealed class DisplayPreferencesManagerFailedWriteTests : SqliteDbTestFixt
     private static readonly Guid _userId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid _itemId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
 
-    private readonly InsertFailer _insertFailer;
+    private readonly StatementInterceptor _statements;
     private readonly DisplayPreferencesManager _manager;
 
     public DisplayPreferencesManagerFailedWriteTests()
-        : this(new InsertFailer())
+        : this(new StatementInterceptor())
     {
     }
 
-    private DisplayPreferencesManagerFailedWriteTests(InsertFailer insertFailer)
-        : base(insertFailer)
+    private DisplayPreferencesManagerFailedWriteTests(StatementInterceptor statements)
+        : base(statements)
     {
-        _insertFailer = insertFailer;
+        _statements = statements;
         _manager = new DisplayPreferencesManager(CreateDbContextFactory());
     }
 
@@ -37,7 +37,7 @@ public sealed class DisplayPreferencesManagerFailedWriteTests : SqliteDbTestFixt
     {
         _manager.SetCustomItemDisplayPreferences(_userId, _itemId, Client, new Dictionary<string, string?> { ["first"] = "1" });
 
-        _insertFailer.FailNextInsert = true;
+        _statements.FailInserts = true;
         Assert.Throws<DbUpdateException>(() => _manager.SetCustomItemDisplayPreferences(_userId, _itemId, Client, new Dictionary<string, string?> { ["second"] = "2" }));
 
         Assert.Equal(
@@ -45,12 +45,30 @@ public sealed class DisplayPreferencesManagerFailedWriteTests : SqliteDbTestFixt
             _manager.ListCustomItemDisplayPreferences(_userId, _itemId, Client));
     }
 
-    /// <summary>
-    /// Fails the next insert into CustomItemDisplayPreferences with the error SQLite reports when the unique index rejects a row.
-    /// </summary>
-    private sealed class InsertFailer : DbCommandInterceptor
+    [Fact]
+    public void SetCustomItemDisplayPreferences_AnotherRequestStoredAKeyAfterTheDelete_StoresThePreferencesItWasGiven()
     {
-        public bool FailNextInsert { get; set; }
+        _manager.SetCustomItemDisplayPreferences(_userId, _itemId, Client, new Dictionary<string, string?> { ["first"] = "1" });
+
+        // The delete misses the row, as it does when another request stores it after this one's delete, so the unique
+        // index rejects this request's insert.
+        _statements.SkipNextDelete = true;
+        _manager.SetCustomItemDisplayPreferences(_userId, _itemId, Client, new Dictionary<string, string?> { ["first"] = "2" });
+
+        Assert.Equal(
+            new Dictionary<string, string?> { ["first"] = "2" },
+            _manager.ListCustomItemDisplayPreferences(_userId, _itemId, Client));
+    }
+
+    /// <summary>
+    /// Fails inserts into CustomItemDisplayPreferences with the error SQLite reports when the unique index rejects a row, or
+    /// leaves out the next delete from it.
+    /// </summary>
+    private sealed class StatementInterceptor : DbCommandInterceptor
+    {
+        public bool FailInserts { get; set; }
+
+        public bool SkipNextDelete { get; set; }
 
         public override InterceptionResult<DbDataReader> ReaderExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result)
         {
@@ -60,15 +78,20 @@ public sealed class DisplayPreferencesManagerFailedWriteTests : SqliteDbTestFixt
 
         public override InterceptionResult<int> NonQueryExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<int> result)
         {
+            if (SkipNextDelete && command.CommandText.StartsWith("DELETE FROM \"CustomItemDisplayPreferences\"", StringComparison.Ordinal))
+            {
+                SkipNextDelete = false;
+                return InterceptionResult<int>.SuppressWithResult(0);
+            }
+
             FailInsert(command);
             return result;
         }
 
         private void FailInsert(DbCommand command)
         {
-            if (FailNextInsert && command.CommandText.StartsWith("INSERT INTO \"CustomItemDisplayPreferences\"", StringComparison.Ordinal))
+            if (FailInserts && command.CommandText.StartsWith("INSERT INTO \"CustomItemDisplayPreferences\"", StringComparison.Ordinal))
             {
-                FailNextInsert = false;
                 throw new SqliteException("SQLite Error 19: 'UNIQUE constraint failed: CustomItemDisplayPreferences.UserId, CustomItemDisplayPreferences.ItemId, CustomItemDisplayPreferences.Client, CustomItemDisplayPreferences.Key'.", 19);
             }
         }

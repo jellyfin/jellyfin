@@ -13,6 +13,8 @@ namespace Jellyfin.Server.Implementations.Users;
 /// </summary>
 public sealed class DisplayPreferencesManager : IDisplayPreferencesManager
 {
+    private const int MaxSaveAttempts = 3;
+
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
 
     /// <summary>
@@ -97,21 +99,35 @@ public sealed class DisplayPreferencesManager : IDisplayPreferencesManager
     /// <inheritdoc />
     public void SetCustomItemDisplayPreferences(Guid userId, Guid itemId, string client, Dictionary<string, string?> customPreferences)
     {
-        using var dbContext = _dbContextFactory.CreateDbContext();
-        using var transaction = dbContext.Database.BeginTransaction();
-        dbContext.CustomItemDisplayPreferences.Where(prefs => prefs.UserId.Equals(userId)
-                            && prefs.ItemId.Equals(itemId)
-                            && prefs.Client == client)
-                            .ExecuteDelete();
-
-        foreach (var (key, value) in customPreferences)
+        // Another request can store one of these keys after this one's delete, and the unique index then rejects the
+        // insert. Replacing the set again gives the same result, so the replace is repeated.
+        for (var attempt = 1; ; attempt++)
         {
-            dbContext.CustomItemDisplayPreferences
-                .Add(new CustomItemDisplayPreferences(userId, itemId, client, key, value));
-        }
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            using var transaction = dbContext.Database.BeginTransaction();
+            dbContext.CustomItemDisplayPreferences.Where(prefs => prefs.UserId.Equals(userId)
+                                && prefs.ItemId.Equals(itemId)
+                                && prefs.Client == client)
+                                .ExecuteDelete();
 
-        dbContext.SaveChanges();
-        transaction.Commit();
+            foreach (var (key, value) in customPreferences)
+            {
+                dbContext.CustomItemDisplayPreferences
+                    .Add(new CustomItemDisplayPreferences(userId, itemId, client, key, value));
+            }
+
+            try
+            {
+                dbContext.SaveChanges();
+            }
+            catch (DbUpdateException) when (attempt < MaxSaveAttempts)
+            {
+                continue;
+            }
+
+            transaction.Commit();
+            return;
+        }
     }
 
     /// <inheritdoc/>
