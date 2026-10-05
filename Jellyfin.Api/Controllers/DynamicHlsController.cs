@@ -1784,7 +1784,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <returns>The MP4 sample entry tag.</returns>
     internal static string GetDolbyVisionHevcCodecTag(MediaStream stream)
     {
-        return stream.DvProfile == 8 || stream.VideoRangeType == VideoRangeType.DOVIWithHLG ? "hvc1" : "dvh1";
+        return stream.DvProfile == 8 ? "hvc1" : "dvh1";
     }
 
     /// <summary>
