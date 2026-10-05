@@ -94,4 +94,9 @@ public static class Policies
     /// Policy name for accessing lyric management.
     /// </summary>
     public const string LyricManagement = "LyricManagement";
+
+    /// <summary>
+    /// Allows account authentication or a scoped playback grant on media endpoints.
+    /// </summary>
+    public const string Streaming = "Streaming";
 }

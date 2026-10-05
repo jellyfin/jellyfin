@@ -5,8 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -14,6 +17,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -160,6 +164,13 @@ public static class StreamingHelpers
             }
         }
 
+        // A reused transcode job must not substitute a source outside the grant.
+        if (httpContext.User.HasClaim(claim => claim.Type == InternalClaimTypes.PlaybackToken)
+            && (mediaSource is null || !string.Equals(mediaSource.Id, streamingRequest.MediaSourceId, StringComparison.Ordinal)))
+        {
+            throw new SecurityException("The transcode media source does not match the playback grant.");
+        }
+
         var encodingOptions = serverConfigurationManager.GetEncodingOptions();
 
         encodingHelper.AttachMediaSourceInfo(state, encodingOptions, mediaSource, url);
@@ -257,7 +268,25 @@ public static class StreamingHelpers
 
         state.OutputFilePath = GetOutputFilePath(state, ext, serverConfigurationManager, streamingRequest.DeviceId, streamingRequest.PlaySessionId);
 
+        if (httpContext.User.HasClaim(claim => claim.Type == InternalClaimTypes.PlaybackToken))
+        {
+            ValidateDelegatedPlayback(state);
+        }
+
         return state;
+    }
+
+    internal static void ValidateDelegatedPlayback(StreamState state)
+    {
+        var user = state.User ?? throw new SecurityException("The playback owner no longer exists.");
+        var copiesVideo = state.VideoStream is null || EncodingHelper.IsCopyCodec(state.OutputVideoCodec);
+        var copiesAudio = state.AudioStream is null || EncodingHelper.IsCopyCodec(state.OutputAudioCodec);
+        if ((!copiesVideo && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding))
+            || (!copiesAudio && !user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding))
+            || (copiesVideo && copiesAudio && !user.HasPermission(PermissionKind.EnablePlaybackRemuxing)))
+        {
+            throw new SecurityException("The requested stream exceeds the user's playback permissions.");
+        }
     }
 
     /// <summary>

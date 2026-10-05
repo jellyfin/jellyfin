@@ -231,6 +231,8 @@ public class StreamInfoTests
         for (int i = 0; i < 100000; i++)
         {
             FillAllProperties(streamInfo);
+            // Scoped playback has a separate URL contract from legacy account authentication.
+            streamInfo.PlaybackToken = null;
             string legacyUrl = streamInfo.ToUrl_Original(BaseUrl, "123");
 
             string newUrl = streamInfo.ToUrl(BaseUrl, "123", null);

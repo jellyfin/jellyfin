@@ -9,12 +9,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
+using Jellyfin.Api.Auth;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.MediaEncoding.Hls.Playlist;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
@@ -36,7 +38,7 @@ namespace Jellyfin.Api.Controllers;
 /// Dynamic hls controller.
 /// </summary>
 [Route("")]
-[Authorize]
+[Authorize(Policy = Policies.Streaming)]
 [ApiExplorerSettings(IgnoreApi = true)]
 public class DynamicHlsController : BaseJellyfinApiController
 {
@@ -401,6 +403,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
+    [PlaybackAccess]
     [HttpGet("Videos/{itemId}/master.m3u8")]
     [HttpHead("Videos/{itemId}/master.m3u8", Name = "HeadMasterHlsVideoPlaylist")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -574,6 +577,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Audio stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
+    [PlaybackAccess]
     [HttpGet("Audio/{itemId}/master.m3u8")]
     [HttpHead("Audio/{itemId}/master.m3u8", Name = "HeadMasterHlsAudioPlaylist")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -742,6 +746,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
+    [PlaybackAccess]
     [HttpGet("Videos/{itemId}/main.m3u8")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesPlaylistFile]
@@ -911,6 +916,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Audio stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
+    [PlaybackAccess]
     [HttpGet("Audio/{itemId}/main.m3u8")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesPlaylistFile]
@@ -1083,6 +1089,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
+    [PlaybackAccess]
     [HttpGet("Videos/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesVideoFile]
@@ -1265,6 +1272,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
+    [PlaybackAccess]
     [HttpGet("Audio/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesAudioFile]

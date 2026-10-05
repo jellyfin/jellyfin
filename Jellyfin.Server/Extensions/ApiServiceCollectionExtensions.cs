@@ -54,6 +54,7 @@ namespace Jellyfin.Server.Extensions
         {
             // The default handler must be first so that it is evaluated first
             serviceCollection.AddSingleton<IAuthorizationHandler, DefaultAuthorizationHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, StreamingAuthorizationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, UserPermissionHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, AnonymousLanAccessHandler>();
@@ -66,6 +67,11 @@ namespace Jellyfin.Server.Extensions
                     .AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication)
                     .AddRequirements(new DefaultAuthorizationRequirement())
                     .Build();
+
+                options.AddPolicy(Policies.Streaming, new AuthorizationPolicyBuilder()
+                    .AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication, AuthenticationSchemes.PlaybackAccess)
+                    .AddRequirements(new StreamingAuthorizationRequirement())
+                    .Build());
 
                 options.AddPolicy(Policies.AnonymousLanAccessPolicy, new AnonymousLanAccessRequirement());
                 options.AddPolicy(Policies.CollectionManagement, new UserPermissionRequirement(PermissionKind.EnableCollectionManagement));
@@ -98,7 +104,8 @@ namespace Jellyfin.Server.Extensions
         public static AuthenticationBuilder AddCustomAuthentication(this IServiceCollection serviceCollection)
         {
             return serviceCollection.AddAuthentication(AuthenticationSchemes.CustomAuthentication)
-                .AddScheme<AuthenticationSchemeOptions, CustomAuthenticationHandler>(AuthenticationSchemes.CustomAuthentication, null);
+                .AddScheme<AuthenticationSchemeOptions, CustomAuthenticationHandler>(AuthenticationSchemes.CustomAuthentication, null)
+                .AddScheme<AuthenticationSchemeOptions, PlaybackAccessAuthenticationHandler>(AuthenticationSchemes.PlaybackAccess, null);
         }
 
         /// <summary>
