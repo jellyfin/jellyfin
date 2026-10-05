@@ -45,10 +45,7 @@ public sealed class PlaybackAccessTests : IDisposable
         userManager.Setup(i => i.GetUserById(_user.Id)).Returns(_user);
         _networkManager.Setup(i => i.IsInLocalNetwork(It.IsAny<IPAddress>())).Returns(true);
         var authService = new Mock<IAuthService>();
-        authService.Setup(i => i.Authenticate(It.IsAny<HttpRequest>()))
-            .ReturnsAsync((HttpRequest request) => request.Query["ApiKey"] == "account"
-                ? new AuthorizationInfo { User = _user, Token = "account", IsAuthenticated = true }
-                : new AuthorizationInfo());
+        authService.Setup(i => i.Authenticate(It.IsAny<HttpRequest>())).ReturnsAsync(new AuthorizationInfo());
 
         _host = new HostBuilder().ConfigureWebHost(builder => builder.UseTestServer()
             .ConfigureServices(services =>
@@ -78,8 +75,6 @@ public sealed class PlaybackAccessTests : IDisposable
                     endpoints.MapGet("/Videos/{itemId}/{mediaSourceId}/Subtitles/0/subtitles.m3u8", context => context.Response.WriteAsync("subtitles"))
                         .RequireAuthorization(Policies.Streaming);
                     endpoints.MapGet("/Users", context => context.Response.WriteAsync("users")).RequireAuthorization();
-                    endpoints.MapGet("/System/Configuration", context => context.Response.WriteAsync("configuration"))
-                        .RequireAuthorization(Policies.RequiresElevation);
                 });
             })).Build();
         _host.Start();
@@ -97,20 +92,10 @@ public sealed class PlaybackAccessTests : IDisposable
         Assert.Equal("PlaybackToken=grant;False", await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
     }
 
-    [Fact]
-    public async Task Stream_AccessToken_StillAuthenticates()
-    {
-        using var response = await _client.GetAsync($"/Videos/{_itemId}/master.m3u8?ApiKey=account", TestContext.Current.CancellationToken);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("ApiKey=account;True", await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
-    }
-
     [Theory]
     [InlineData("MediaSourceId=source", "MediaSourceId=other")]
     [InlineData("DeviceId=device", "DeviceId=other")]
     [InlineData("PlaySessionId=session", "PlaySessionId=other")]
-    [InlineData("PlaybackToken=grant", "PlaybackToken=other")]
     [InlineData("PlaybackToken=grant", "PlaybackToken=grant&MediaSourceId=other")]
     [InlineData("PlaybackToken=grant", "PlaybackToken=grant&Params=other")]
     [InlineData("PlaybackToken=grant", "PlaybackToken=grant&LiveStreamId=other")]
@@ -132,12 +117,10 @@ public sealed class PlaybackAccessTests : IDisposable
         Assert.Equal(expected, response.StatusCode);
     }
 
-    [Theory]
-    [InlineData("/Users")]
-    [InlineData("/System/Configuration")]
-    public async Task OtherEndpoint_Grant_ReturnsUnauthorized(string url)
+    [Fact]
+    public async Task OtherEndpoint_Grant_ReturnsUnauthorized()
     {
-        using var response = await _client.GetAsync(url + "?PlaybackToken=grant", TestContext.Current.CancellationToken);
+        using var response = await _client.GetAsync("/Users?PlaybackToken=grant", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }

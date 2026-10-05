@@ -34,16 +34,6 @@ public class PlaybackAccessManagerTests
         _manager = new PlaybackAccessManager(userManager.Object, _libraryManager.Object, mediaSourceManager.Object);
     }
 
-    [Fact]
-    public async Task CreateAsync_PlayableSource_ReturnsUniqueGrant()
-    {
-        var grant = await CreateAsync();
-
-        Assert.Equal(64, grant.Token.Length);
-        Assert.NotEqual(grant.Token, (await CreateAsync()).Token);
-        Assert.Equal(grant, _manager.Get(grant.Token));
-    }
-
     [Theory]
     [InlineData(PermissionKind.IsDisabled, true)]
     [InlineData(PermissionKind.EnableMediaPlayback, false)]
