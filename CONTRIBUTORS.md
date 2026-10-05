@@ -245,6 +245,7 @@
  - [scr4bble](https://github.com/scr4bble)
  - [Mateus Bandeira](https://github.com/mateusbandeiraa)
  - [TheDreadPirate](https://github.com/thedreaddpirate)
+ - [klizas](https://github.com/klizas)
 
 # Emby Contributors
 
