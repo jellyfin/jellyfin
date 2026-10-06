@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Database.Providers.Sqlite.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    [Migration("20260824111535_AddAudioSkipAndPartialPlayTracking")]
+    [Migration("20261006021527_AddAudioSkipAndPartialPlayTracking")]
     partial class AddAudioSkipAndPartialPlayTracking
     {
         /// <inheritdoc />
@@ -368,7 +368,8 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
 
                     b.HasIndex("Name");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("OwnerId")
+                        .HasFilter("\"OwnerId\" IS NOT NULL");
 
                     b.HasIndex("ParentId");
 
@@ -385,7 +386,8 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
 
                     b.HasIndex("SeriesName");
 
-                    b.HasIndex("ExtraType", "OwnerId");
+                    b.HasIndex("ExtraType", "OwnerId")
+                        .HasFilter("\"ExtraType\" IS NOT NULL");
 
                     b.HasIndex("TopParentId", "Id");
 

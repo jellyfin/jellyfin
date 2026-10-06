@@ -849,17 +849,12 @@ namespace Emby.Server.Implementations.Session
             {
                 data.PlayCount++;
 
-            	// Re-watching a played item only counts once a progress or stop report gets past the resume threshold,
-            	// otherwise rewatch Next Up moves on from an episode that was barely started
-            	if (!data.Played || !item.SupportsPositionTicksResume)
-            	{
-            	    data.LastPlayedDate = DateTime.UtcNow;
-            	}
-
-            if (item.SupportsPlayedStatus && !item.SupportsPositionTicksResume)
-            {
-                data.PlayCount++;
-                data.LastPlayedDate = DateTime.UtcNow;
+                // Re-watching a played item only counts once a progress or stop report gets past the resume threshold,
+                // otherwise rewatch Next Up moves on from an episode that was barely started
+                if (!data.Played || !item.SupportsPositionTicksResume)
+                {
+                    data.LastPlayedDate = DateTime.UtcNow;
+                }
 
                 if (item.SupportsPlayedStatus && !item.SupportsPositionTicksResume)
                 {
