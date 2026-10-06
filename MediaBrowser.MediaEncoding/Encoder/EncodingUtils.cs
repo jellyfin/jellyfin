@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Extensions;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.MediaEncoding.Encoder
@@ -42,7 +43,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // If there's more than one we'll need to use the concat command
             if (inputFiles.Count > 1)
             {
-                var files = string.Join('|', inputFiles.Select(NormalizePath));
+                var files = string.Join('|', inputFiles.Select(f => f.EscapeProcessArgument()));
 
                 return string.Format(CultureInfo.InvariantCulture, "concat:\"{0}\"", files);
             }
@@ -64,21 +65,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return string.Format(CultureInfo.InvariantCulture, "\"{0}\"", path);
             }
 
-            // Quotes are valid path characters in linux and they need to be escaped here with a leading \
-            path = NormalizePath(path);
+            path = path.EscapeProcessArgument();
 
             return string.Format(CultureInfo.InvariantCulture, "{1}:\"{0}\"", path, inputPrefix);
-        }
-
-        /// <summary>
-        /// Normalizes the path.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>System.String.</returns>
-        public static string NormalizePath(string path)
-        {
-            // Quotes are valid path characters in linux and they need to be escaped here with a leading \
-            return path.Replace("\"", "\\\"", StringComparison.Ordinal);
         }
     }
 }

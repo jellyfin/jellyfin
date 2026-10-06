@@ -61,6 +61,7 @@ namespace Jellyfin.Server
         private static ILogger _logger = NullLogger.Instance;
         private static bool _restartOnShutdown;
         private static IStartupLogger<JellyfinMigrationService>? _migrationLogger;
+        private static bool _optimizeDatabaseAfterMigration;
         private static string? _restoreFromBackup;
 
         /// <summary>
@@ -148,8 +149,16 @@ namespace Jellyfin.Server
                 if (_restartOnShutdown)
                 {
                     _startTimestamp = Stopwatch.GetTimestamp();
-                    await _setupServer.StopAsync().ConfigureAwait(false);
-                    await _setupServer.RunAsync().ConfigureAwait(false);
+                    try
+                    {
+                        await _setupServer.StopAsync().ConfigureAwait(false);
+                        await _setupServer.RunAsync().ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        // The startup page is optional, losing it must not take the restart down with it.
+                        _logger.LogError(ex, "Failed to bring the startup server back up");
+                    }
                 }
             } while (_restartOnShutdown);
 
@@ -180,9 +189,7 @@ namespace Jellyfin.Server
                     })
                     .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(options, appPaths, startupConfig))
                     .UseSerilog()
-                    .ConfigureServices(e => e
-                        .RegisterStartupLogger()
-                        .AddSingleton<IServiceCollection>(e))
+                    .ConfigureServices(e => e.RegisterStartupLogger())
                     .Build();
 
                 /*
@@ -209,14 +216,15 @@ namespace Jellyfin.Server
                 await jellyfinMigrationService.PrepareSystemForMigration(_logger).ConfigureAwait(false);
                 // "Preparing migrations" carries through the DB read; per-migration progress is reported
                 // as "Running migration X of Y" from inside the step once the pending set is known.
-                await jellyfinMigrationService.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, appHost.ServiceProvider).ConfigureAwait(false);
+                _optimizeDatabaseAfterMigration |= await jellyfinMigrationService.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, appHost.ServiceProvider).ConfigureAwait(false);
 
                 SetupServer.ReportActivity(StartupActivity.InitializingServices);
                 await appHost.InitializeServices(startupConfig).ConfigureAwait(false);
                 _appHost = appHost;
 
-                await jellyfinMigrationService.MigrateStepAsync(JellyfinMigrationStageTypes.AppInitialisation, appHost.ServiceProvider).ConfigureAwait(false);
+                _optimizeDatabaseAfterMigration |= await jellyfinMigrationService.MigrateStepAsync(JellyfinMigrationStageTypes.AppInitialisation, appHost.ServiceProvider).ConfigureAwait(false);
                 await jellyfinMigrationService.CleanupSystemAfterMigration(_logger).ConfigureAwait(false);
+                await OptimizeDatabaseAfterMigrationAsync(appHost.ServiceProvider).ConfigureAwait(false);
                 try
                 {
                     configurationCompleted = true;
@@ -245,7 +253,15 @@ namespace Jellyfin.Server
                     await appHost.RunStartupTasksAsync().ConfigureAwait(false);
                     _logger.LogInformation("Startup complete {Time:g}", Stopwatch.GetElapsedTime(_startTimestamp));
 
-                    await _jellyfinHost.WaitForShutdownAsync().ConfigureAwait(false);
+                    try
+                    {
+                        await _jellyfinHost.WaitForShutdownAsync().ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        // A hosted service that throws or times out while stopping must not cancel a pending restart.
+                        _logger.LogError(ex, "Failure while stopping the server");
+                    }
                 }
 
                 _restartOnShutdown = appHost.ShouldRestart;
@@ -271,12 +287,10 @@ namespace Jellyfin.Server
                 // Don't throw additional exception if startup failed.
                 if (appHost.ServiceProvider is not null)
                 {
-                    _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
+                    _logger.LogInformation("Preparing the database for shutdown...");
 
                     var databaseProvider = appHost.ServiceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
-                    using var shutdownSource = new CancellationTokenSource();
-                    shutdownSource.CancelAfter((int)TimeSpan.FromSeconds(60).TotalMicroseconds);
-                    await databaseProvider.RunShutdownTask(shutdownSource.Token).ConfigureAwait(false);
+                    await databaseProvider.RunShutdownTask(CancellationToken.None).ConfigureAwait(false);
                 }
 
                 _appHost = null;
@@ -307,14 +321,13 @@ namespace Jellyfin.Server
                 .AddSingleton<ServerApplicationPaths>(appPaths)
                 .RegisterStartupLogger();
 
-            migrationStartupServiceProvider.AddSingleton(migrationStartupServiceProvider);
             var startupService = migrationStartupServiceProvider.BuildServiceProvider();
 
             PrepareDatabaseProvider(startupService);
 
             var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(startupService);
             await jellyfinMigrationService.CheckFirstTimeRunOrMigration(appPaths, startupOptions).ConfigureAwait(false);
-            await jellyfinMigrationService.MigrateStepAsync(Migrations.Stages.JellyfinMigrationStageTypes.PreInitialisation, startupService).ConfigureAwait(false);
+            _optimizeDatabaseAfterMigration |= await jellyfinMigrationService.MigrateStepAsync(Migrations.Stages.JellyfinMigrationStageTypes.PreInitialisation, startupService).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -329,7 +342,32 @@ namespace Jellyfin.Server
         public static async Task ApplyCoreMigrationsAsync(IServiceProvider serviceProvider, Migrations.Stages.JellyfinMigrationStageTypes jellyfinMigrationStage)
         {
             var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(serviceProvider, _migrationLogger!);
-            await jellyfinMigrationService.MigrateStepAsync(jellyfinMigrationStage, serviceProvider).ConfigureAwait(false);
+            _optimizeDatabaseAfterMigration |= await jellyfinMigrationService.MigrateStepAsync(jellyfinMigrationStage, serviceProvider).ConfigureAwait(false);
+        }
+
+        private static async Task OptimizeDatabaseAfterMigrationAsync(IServiceProvider serviceProvider)
+        {
+            if (!_optimizeDatabaseAfterMigration)
+            {
+                return;
+            }
+
+            // Reset first: a restart runs no migrations and must not optimize again.
+            _optimizeDatabaseAfterMigration = false;
+            SetupServer.ReportActivity(StartupActivity.OptimizingDatabase);
+            _logger.LogInformation("Migrations have been applied, optimizing the database... This might take a while");
+
+            try
+            {
+                // Deliberately untimed: incomplete statistics are worse than a slow start.
+                var databaseProvider = serviceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
+                await databaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // A missed optimization only costs performance, so never fail startup over this.
+                _logger.LogError(ex, "Error while optimizing the database after migration");
+            }
         }
 
         /// <summary>

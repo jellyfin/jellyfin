@@ -86,6 +86,15 @@ libswscale      5.  9.100 /  5.  9.100
 libswresample   3.  9.100 /  3.  9.100
 libpostproc    55.  9.100 / 55.  9.100";
 
+        public const string FFmpegGitWithoutLibpostprocOutput = @"ffmpeg version N-122128-gdeadbeef Copyright (c) 2000-2026 the FFmpeg developers
+libavutil      60. 26.102 / 60. 26.102
+libavcodec     62. 28.102 / 62. 28.102
+libavformat    62. 12.102 / 62. 12.102
+libavdevice    62.  3.102 / 62.  3.102
+libavfilter    11. 14.102 / 11. 14.102
+libswscale      9.  5.102 /  9.  5.102
+libswresample   6.  3.102 /  6.  3.102";
+
         public const string FFmpegGitUnknownOutput = @"ffmpeg version N-45325-gb173e0353-static https://johnvansickle.com/ffmpeg/  Copyright (c) 2000-2018 the FFmpeg developers
 built with gcc 6.3.0 (Debian 6.3.0-18+deb9u1) 20170516
 configuration: --enable-gpl --enable-version3 --enable-static --disable-debug --disable-ffplay --disable-indev=sndio --disable-outdev=sndio --cc=gcc-6 --enable-fontconfig --enable-frei0r --enable-gnutls --enable-gray --enable-libfribidi --enable-libass --enable-libfreetype --enable-libmp3lame --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-librubberband --enable-libsoxr --enable-libspeex --enable-libvorbis --enable-libopus --enable-libtheora --enable-libvidstab --enable-libvo-amrwbenc --enable-libvpx --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxvid --enable-libzimg

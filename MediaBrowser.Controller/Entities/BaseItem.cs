@@ -27,6 +27,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -46,6 +47,10 @@ namespace MediaBrowser.Controller.Entities
         private BaseItemKind? _baseItemKind;
 
         public const string ThemeSongFileName = "theme";
+
+        // Well below the 255 byte limit of the common Linux filesystems and the 255 character limit
+        // of Windows, so the files inside the folder still fit within MAX_PATH.
+        private const int MaxItemByNameFolderNameBytes = 128;
 
         /// <summary>
         /// The supported image extensions.
@@ -87,7 +92,7 @@ namespace MediaBrowser.Controller.Entities
             Model.Entities.ExtraType.Short
         };
 
-        private static readonly char[] VersionDelimiters = ['-', '_', '.'];
+        private protected static readonly char[] VersionDelimiters = ['-', '_', '.'];
 
         private string _sortName;
 
@@ -540,8 +545,8 @@ namespace MediaBrowser.Controller.Entities
                 {
                     if (!string.IsNullOrEmpty(ForcedSortName))
                     {
-                        // Need the ToLower because that's what CreateSortName does
-                        _sortName = ModifySortChunks(ForcedSortName).ToLowerInvariant();
+                        // Run the forced sort name through the same cleaning as auto-generated sort names.
+                        _sortName = GetSortName(ForcedSortName, EnableAlphaNumericSorting, ConfigurationManager.Configuration);
                     }
                     else
                     {
@@ -770,6 +775,17 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         protected virtual bool SupportsOwnedItems => !ParentId.IsEmpty() && IsFileProtocol;
 
+        /// <summary>
+        /// Gets a value indicating whether this item searches the folder it lives in for its own extras.
+        /// </summary>
+        [JsonIgnore]
+        protected virtual bool SearchesContainingFolderForExtras =>
+            IsFileProtocol
+            && SupportsOwnedItems
+            && !IsInMixedFolder
+            && this is not (ICollectionFolder or UserRootFolder or AggregateFolder)
+            && GetType() != typeof(Folder);
+
         [JsonIgnore]
         public virtual bool SupportsPeople => false;
 
@@ -926,19 +942,68 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>System.String.</returns>
         protected virtual string CreateSortName()
         {
-            if (Name is null)
+            return GetSortName(Name, EnableAlphaNumericSorting, ConfigurationManager.Configuration);
+        }
+
+        /// <summary>
+        /// Turns an item-by-name entity's name into a folder name every supported filesystem accepts.
+        /// </summary>
+        /// <param name="name">The entity's name.</param>
+        /// <returns>The folder name.</returns>
+        public static string GetItemByNameFolderName(string name)
+        {
+            // Trim the period at the end because windows will have a hard time with that
+            var validName = FileSystem.GetValidFilename(name).Trim().TrimEnd('.');
+
+            // Most Linux filesystems cap a path component at 255 bytes, so a name past that cannot be
+            // turned into a folder at all - and an entity with no folder can never be created, which
+            // leaves the credit behind it stuck: not refreshable, not deletable, retried on every scan.
+            // Only broken provider data gets this long, but it still has to resolve to something, so
+            // keep a readable prefix and let a hash of the whole name tell two of them apart.
+            if (Encoding.UTF8.GetByteCount(validName) <= MaxItemByNameFolderNameBytes)
+            {
+                return validName;
+            }
+
+            var suffix = "-" + validName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            var budget = MaxItemByNameFolderNameBytes - suffix.Length;
+            var length = Math.Min(validName.Length, budget);
+            while (length > 0 && Encoding.UTF8.GetByteCount(validName.AsSpan(0, length)) > budget)
+            {
+                length--;
+            }
+
+            // Never cut a surrogate pair in half, the lone half is not a valid file name character.
+            if (length > 0 && char.IsHighSurrogate(validName[length - 1]))
+            {
+                length--;
+            }
+
+            return string.Concat(validName.AsSpan(0, length).TrimEnd().TrimEnd('.'), suffix);
+        }
+
+        /// <summary>
+        /// Cleans a raw name into its sortable form by applying the configured sort rules.
+        /// </summary>
+        /// <param name="name">The raw name to clean.</param>
+        /// <param name="enableAlphaNumericSorting">Whether alphanumeric sorting rules should be applied.</param>
+        /// <param name="configuration">The server configuration providing the sort rules.</param>
+        /// <returns>The cleaned, sortable name, or <c>null</c> if <paramref name="name"/> is <c>null</c>.</returns>
+        public static string GetSortName(string name, bool enableAlphaNumericSorting, ServerConfiguration configuration)
+        {
+            if (name is null)
             {
                 return null; // some items may not have name filled in properly
             }
 
-            if (!EnableAlphaNumericSorting)
+            if (!enableAlphaNumericSorting)
             {
-                return Name.TrimStart();
+                return name.TrimStart();
             }
 
-            var sortable = Name.Trim().ToLowerInvariant();
+            var sortable = name.Trim().ToLowerInvariant();
 
-            foreach (var search in ConfigurationManager.Configuration.SortRemoveWords)
+            foreach (var search in configuration.SortRemoveWords)
             {
                 // Remove from beginning if a space follows
                 if (sortable.StartsWith(search + " ", StringComparison.Ordinal))
@@ -956,12 +1021,12 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            foreach (var removeChar in ConfigurationManager.Configuration.SortRemoveCharacters)
+            foreach (var removeChar in configuration.SortRemoveCharacters)
             {
                 sortable = sortable.Replace(removeChar, string.Empty, StringComparison.Ordinal);
             }
 
-            foreach (var replaceChar in ConfigurationManager.Configuration.SortReplaceCharacters)
+            foreach (var replaceChar in configuration.SortReplaceCharacters)
             {
                 sortable = sortable.Replace(replaceChar, " ", StringComparison.Ordinal);
             }
@@ -1346,7 +1411,8 @@ namespace MediaBrowser.Controller.Entities
         /// token shared by the descriptors but separated only by spaces (e.g. a common "2160p ") is
         /// kept in the label, falling back to a space only when no structural delimiter is shared. The
         /// separators mirror the version delimiters recognised by the naming layer (Emby.Naming
-        /// VideoFlagDelimiters).
+        /// VideoFlagDelimiters), except that a dot between digits is a decimal point rather than a
+        /// delimiter, so numeric version labels stay whole.
         /// </summary>
         /// <param name="fileNames">The version file names without extension; must contain at least one entry.</param>
         /// <returns>The shared prefix retreated to a separator boundary, or an empty string when none is shared.</returns>
@@ -1380,9 +1446,12 @@ namespace MediaBrowser.Controller.Entities
 
             if (!prefixIsWholeName)
             {
-                // Retreat to the last structural delimiter ('-', '_', '.').
+                // Retreat to the last structural delimiter ('-', '_', '.'), skipping dots that are
+                // decimal points within a number rather than delimiters (see IsDecimalPoint).
                 var cut = prefix.Length;
-                while (cut > 0 && Array.IndexOf(VersionDelimiters, prefix[cut - 1]) < 0)
+                while (cut > 0
+                    && (Array.IndexOf(VersionDelimiters, prefix[cut - 1]) < 0
+                        || IsDecimalPoint(prefix, cut - 1, fileNames)))
                 {
                     cut--;
                 }
@@ -1400,6 +1469,31 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return prefix;
+        }
+
+        private static bool IsDecimalPoint(string prefix, int index, IReadOnlyList<string> fileNames)
+        {
+            if (index == 0 || prefix[index] != '.' || !char.IsDigit(prefix[index - 1]))
+            {
+                return false;
+            }
+
+            if (index + 1 < prefix.Length)
+            {
+                return char.IsDigit(prefix[index + 1]);
+            }
+
+            // The dot ends the prefix, so the character after it is the first one that differs between
+            // the versions: only a decimal point when every version continues the number.
+            for (var i = 0; i < fileNames.Count; i++)
+            {
+                if (fileNames[i].Length <= index + 1 || !char.IsDigit(fileNames[i][index + 1]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public Task RefreshMetadata(CancellationToken cancellationToken)
@@ -1515,7 +1609,14 @@ namespace MediaBrowser.Controller.Entities
         /// <returns><c>true</c> if any items have changed, else <c>false</c>.</returns>
         protected virtual async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, IReadOnlyList<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
-            if (!IsFileProtocol || !SupportsOwnedItems || IsInMixedFolder || this is ICollectionFolder or UserRootFolder or AggregateFolder || this.GetType() == typeof(Folder))
+            if (!SearchesContainingFolderForExtras)
+            {
+                return false;
+            }
+
+            if (GetParent() is Folder container
+                && container.SearchesContainingFolderForExtras
+                && string.Equals(container.Path, ContainingFolderPath, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -1530,33 +1631,59 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<bool> RefreshExtras(BaseItem item, MetadataRefreshOptions options, IReadOnlyList<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
+            // An extra is owned by the version it is named after, so all of them are maintained together.
+            var currentExtras = LibraryManager.GetItemList(new InternalItemsQuery()
+            {
+                OwnerIds = item.GetOwnedVersionIds()
+            }).Where(e => e.ExtraType.HasValue).ToList();
+
+            var currentExtraIds = currentExtras.Select(e => e.Id).ToArray();
+
+            // Snapshot the persisted names before resolving, as FindExtras corrects the name on the
+            // items it hands back and may well hand back these very instances.
+            var currentExtraNames = new Dictionary<Guid, string>();
+            foreach (var extra in currentExtras)
+            {
+                currentExtraNames[extra.Id] = extra.Name;
+            }
+
             var extras = LibraryManager.FindExtras(item, fileSystemChildren, options.DirectoryService).ToArray();
             var newExtraIds = Array.ConvertAll(extras, x => x.Id);
 
-            var currentExtraIds = LibraryManager.GetItemList(new InternalItemsQuery()
-            {
-                OwnerIds = [item.Id]
-            }).Select(e => e.Id).ToArray();
+            var renamedExtraIds = extras
+                .Where(e => currentExtraNames.TryGetValue(e.Id, out var oldName) && !string.Equals(oldName, e.Name, StringComparison.Ordinal))
+                .Select(e => e.Id)
+                .ToHashSet();
 
             var extrasChanged = !currentExtraIds.OrderBy(x => x).SequenceEqual(newExtraIds.OrderBy(x => x));
 
-            if (!extrasChanged && !options.ReplaceAllMetadata && options.MetadataRefreshMode != MetadataRefreshMode.FullRefresh)
+            if (!extrasChanged && renamedExtraIds.Count == 0 && !options.ReplaceAllMetadata && options.MetadataRefreshMode != MetadataRefreshMode.FullRefresh)
             {
+                // The owner's dates may only have become known after its extras were created, so keep
+                // them in sync even when there is nothing to refresh.
+                foreach (var extra in currentExtras)
+                {
+                    if (extra.ExtraType is not null && InheritDatesFromOwner(item, extra))
+                    {
+                        await extra.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+
                 return false;
             }
 
-            var ownerId = item.Id;
-
             var tasks = extras.Select(i =>
             {
+                var ownerId = item.GetOwnerIdForExtra(i);
                 var subOptions = new MetadataRefreshOptions(options);
-                if (!i.OwnerId.Equals(ownerId) || !i.ParentId.IsEmpty())
+                if (!i.OwnerId.Equals(ownerId) || !i.ParentId.IsEmpty() || renamedExtraIds.Contains(i.Id))
                 {
                     subOptions.ForceSave = true;
                 }
 
                 i.OwnerId = ownerId;
                 i.ParentId = Guid.Empty;
+
                 return RefreshMetadataForOwnedItem(i, true, subOptions, cancellationToken);
             });
 
@@ -2433,8 +2560,9 @@ namespace MediaBrowser.Controller.Entities
                     {
                         var newDateModified = FileSystem.GetLastWriteTimeUtc(newImage);
 
-                        // If date changed then we need to reset saved image dimensions
-                        if (existing.DateModified != newDateModified && (existing.Width > 0 || existing.Height > 0))
+                        // If date changed then we need to reset saved image dimensions. Stores such as PostgreSQL keep
+                        // only microseconds, so an exact comparison would treat every unchanged image as modified.
+                        if (Math.Abs((existing.DateModified - newDateModified).TotalSeconds) > 1 && (existing.Width > 0 || existing.Height > 0))
                         {
                             existing.Width = 0;
                             existing.Height = 0;
@@ -2639,6 +2767,32 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        /// <summary>
+        /// Applies the owner's premiere date and production year to an owned item, returning whether anything changed.
+        /// </summary>
+        /// <param name="owner">The owner.</param>
+        /// <param name="ownedItem">The owned item.</param>
+        /// <returns><c>true</c> if the owned item was changed, else <c>false</c>.</returns>
+        internal static bool InheritDatesFromOwner(BaseItem owner, BaseItem ownedItem)
+        {
+            // Extras have no release date of their own, so the owner's is authoritative.
+            var changed = false;
+
+            if (owner.ProductionYear is not null && ownedItem.ProductionYear != owner.ProductionYear)
+            {
+                ownedItem.ProductionYear = owner.ProductionYear;
+                changed = true;
+            }
+
+            if (owner.PremiereDate is not null && ownedItem.PremiereDate != owner.PremiereDate)
+            {
+                ownedItem.PremiereDate = owner.PremiereDate;
+                changed = true;
+            }
+
+            return changed;
+        }
+
         protected async Task RefreshMetadataForOwnedItem(BaseItem ownedItem, bool copyTitleMetadata, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var newOptions = new MetadataRefreshOptions(options)
@@ -2696,6 +2850,11 @@ namespace MediaBrowser.Controller.Entities
                 if (!string.Equals(item.CustomRating, ownedItem.CustomRating, StringComparison.Ordinal))
                 {
                     ownedItem.CustomRating = item.CustomRating;
+                    newOptions.ForceSave = true;
+                }
+
+                if (InheritDatesFromOwner(item, ownedItem))
+                {
                     newOptions.ForceSave = true;
                 }
             }
@@ -2861,6 +3020,25 @@ namespace MediaBrowser.Controller.Entities
         protected virtual Guid[] GetExtraOwnerIds()
         {
             return [Id];
+        }
+
+        /// <summary>
+        /// Gets the ids of this item and the versions of it whose extras it maintains.
+        /// </summary>
+        /// <returns>An array containing the version ids.</returns>
+        protected virtual Guid[] GetOwnedVersionIds()
+        {
+            return [Id];
+        }
+
+        /// <summary>
+        /// Gets the id of the version an extra belongs to.
+        /// </summary>
+        /// <param name="extra">The extra.</param>
+        /// <returns>The id of the owning version.</returns>
+        protected virtual Guid GetOwnerIdForExtra(BaseItem extra)
+        {
+            return Id;
         }
 
         /// <summary>

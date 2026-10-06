@@ -48,6 +48,7 @@ namespace Jellyfin.Server.Extensions
                     c.SwaggerEndpoint($"/{baseUrl}api-docs/openapi.json", "Jellyfin API");
                     c.InjectStylesheet($"/{baseUrl}api-docs/swagger/custom.css");
                     c.RoutePrefix = "api-docs/swagger";
+                    c.UseRequestInterceptor("""(req) => { req.headers['Authorization'] = `MediaBrowser Token=\"${req.headers['Authorization']}\"`; return req; }""");
                 })
                 .UseReDoc(c =>
                 {

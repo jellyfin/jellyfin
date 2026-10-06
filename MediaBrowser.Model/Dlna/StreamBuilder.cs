@@ -26,6 +26,8 @@ namespace MediaBrowser.Model.Dlna
         internal const TranscodeReason VideoReasons = TranscodeReason.VideoCodecNotSupported | VideoCodecReasons;
         internal const TranscodeReason DirectStreamReasons = AudioReasons | TranscodeReason.ContainerNotSupported | TranscodeReason.VideoCodecTagNotSupported;
 
+        private const string ManifestContainers = "hls,applehttp,dash";
+
         private readonly ILogger _logger;
         private readonly ITranscoderSupport _transcoderSupport;
         private static readonly string[] _supportedHlsVideoCodecs = ["h264", "hevc", "vp9", "av1"];
@@ -576,11 +578,8 @@ namespace MediaBrowser.Model.Dlna
                     foreach (var profile in subtitleProfiles)
                     {
                         if (profile.Method == SubtitleDeliveryMethod.External
-                            && (string.Equals(profile.Format, stream.Codec, StringComparison.OrdinalIgnoreCase)
-                                // FFmpeg cannot mux VobSub back into an .idx/.sub pair, so extracted VobSub streams are exposed as .mks.
-                                || (string.Equals(profile.Format, "mks", StringComparison.OrdinalIgnoreCase)
-                                    && stream.IsVobSubSubtitleStream
-                                    && (!stream.IsExternal || stream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase)))))
+                            && (IsVobSubMksProfile(profile, stream)
+                                || (!IsVobSubMksDeliveryProfile(profile) && string.Equals(profile.Format, stream.Codec, StringComparison.OrdinalIgnoreCase))))
                         {
                             return stream.Index;
                         }
@@ -717,6 +716,14 @@ namespace MediaBrowser.Model.Dlna
 
             // Force transcode or remux for BD/DVD folders
             if (item.VideoType == VideoType.Dvd || item.VideoType == VideoType.BluRay)
+            {
+                isEligibleForDirectPlay = false;
+            }
+
+            // A manifest is not a byte stream, so it cannot be handed to the client as one. The variant
+            // and segment URIs inside it are relative to the origin and do not resolve against the
+            // Jellyfin url the client would fetch it from.
+            if (ContainerHelper.ContainsContainer(ManifestContainers, item.Container))
             {
                 isEligibleForDirectPlay = false;
             }
@@ -1585,18 +1592,20 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (!subtitleStream.IsExternal && playMethod == PlayMethod.Transcode && !transcoderSupport.CanExtractSubtitles(subtitleStream.Codec))
+                if (!subtitleStream.IsExternal
+                    && playMethod == PlayMethod.Transcode
+                    && !transcoderSupport.CanExtractSubtitles(subtitleStream.Codec)
+                    && !subtitleStream.IsPgsSubtitleStream
+                    && !subtitleStream.IsVobSubSubtitleStream)
                 {
                     continue;
                 }
 
-                // FFmpeg cannot mux VobSub back into an .idx/.sub pair, so extracted VobSub streams are matched against external .mks delivery profiles.
-                bool isVobSubMksProfile = string.Equals(profile.Format, "mks", StringComparison.OrdinalIgnoreCase)
-                    && subtitleStream.IsVobSubSubtitleStream
-                    && (!subtitleStream.IsExternal || subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase));
+                bool isVobSubMksProfile = IsVobSubMksProfile(profile, subtitleStream);
 
                 if ((profile.Method == SubtitleDeliveryMethod.External
-                        && (isVobSubMksProfile || subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))) ||
+                        && (isVobSubMksProfile
+                            || (!IsVobSubMksDeliveryProfile(profile) && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format)))) ||
                     (profile.Method == SubtitleDeliveryMethod.Hls && subtitleStream.IsTextSubtitleStream))
                 {
                     bool requiresConversion = !isVobSubMksProfile
@@ -1626,6 +1635,21 @@ namespace MediaBrowser.Model.Dlna
             }
 
             return null;
+        }
+
+        private static bool IsVobSubMksDeliveryProfile(SubtitleProfile profile)
+        {
+            return MediaStream.IsVobSubFormat(profile.Format)
+                && !string.IsNullOrWhiteSpace(profile.Container)
+                && ContainerHelper.ContainsContainer(profile.Container, "mks");
+        }
+
+        private static bool IsVobSubMksProfile(SubtitleProfile profile, MediaStream subtitleStream)
+        {
+            // FFmpeg cannot mux VobSub back into an .idx/.sub pair, so extracted VobSub streams are exposed as .mks.
+            return IsVobSubMksDeliveryProfile(profile)
+                && subtitleStream.IsVobSubSubtitleStream
+                && (!subtitleStream.IsExternal || subtitleStream.Path?.EndsWith(".mks", StringComparison.OrdinalIgnoreCase) == true);
         }
 
         private bool IsBitrateLimitExceeded(MediaSourceInfo item, long maxBitrate)

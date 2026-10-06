@@ -36,7 +36,7 @@ public class InternalComicInfoProvider : IComicProvider
 
         if (comicInfoXml is null)
         {
-            _logger.LogInformation("Could not load ComicInfo metadata for {Path} from XML file. No internal XML in comic archive.", info.Path);
+            _logger.LogDebug("Could not load ComicInfo metadata for {Path} from XML file. No internal XML in comic archive.", info.Path);
             return new MetadataResult<Book> { HasMetadata = false };
         }
 
@@ -50,7 +50,7 @@ public class InternalComicInfoProvider : IComicProvider
         var metadataResult = new MetadataResult<Book> { Item = book, HasMetadata = true };
 
         ComicInfoReader.ReadPeopleMetadata(comicInfoXml, metadataResult);
-        ComicInfoReader.ReadCultureInfoInto(comicInfoXml, "ComicInfo/LanguageISO", cultureInfo => metadataResult.ResultLanguage = cultureInfo.ThreeLetterISOLanguageName);
+        ComicInfoReader.ReadCultureInfoInto(comicInfoXml, "ComicInfo/LanguageISO", cultureInfo => metadataResult.ResultLanguage = cultureInfo.TwoLetterISOLanguageName);
 
         return metadataResult;
     }

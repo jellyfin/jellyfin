@@ -219,7 +219,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal("eng", res.MediaStreams[4].Language);
             Assert.Equal(MediaStreamType.Subtitle, res.MediaStreams[4].Type);
             Assert.Equal("mov_text", res.MediaStreams[4].Codec);
-            Assert.Null(res.MediaStreams[4].Title);
+            Assert.Equal("SDH", res.MediaStreams[4].Title);
             Assert.True(res.MediaStreams[4].IsHearingImpaired);
 
             Assert.Equal("eng", res.MediaStreams[5].Language);

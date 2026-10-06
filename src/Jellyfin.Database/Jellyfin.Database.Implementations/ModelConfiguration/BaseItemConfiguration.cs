@@ -35,9 +35,11 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
 
         builder.HasIndex(e => e.Path);
         builder.HasIndex(e => e.ParentId);
-        builder.HasIndex(e => e.OwnerId);
+        builder.HasIndex(e => e.OwnerId)
+            .HasFilter("\"OwnerId\" IS NOT NULL");
         builder.HasIndex(e => e.Name);
-        builder.HasIndex(e => new { e.ExtraType, e.OwnerId });
+        builder.HasIndex(e => new { e.ExtraType, e.OwnerId })
+            .HasFilter("\"ExtraType\" IS NOT NULL");
         builder.HasIndex(e => e.PresentationUniqueKey);
         // covering index
         builder.HasIndex(e => new { e.TopParentId, e.Id });
@@ -61,6 +63,11 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasIndex(e => new { e.TopParentId, e.MediaType, e.IsVirtualItem, e.DateCreated });
         // resume
         builder.HasIndex(e => new { e.MediaType, e.TopParentId, e.IsVirtualItem, e.PresentationUniqueKey });
+        // alternate versions of an item, e.g. resolving the played date of a version onto its primary.
+        // Filtered: almost no item has a primary version, and an index covering those rows too would tempt
+        // the planner into serving "PrimaryVersionId IS NULL" - true for the whole library - out of it.
+        builder.HasIndex(e => e.PrimaryVersionId)
+            .HasFilter("\"PrimaryVersionId\" IS NOT NULL");
         // sorted library queries (e.g., Series sorted by SortName)
         builder.HasIndex(e => new { e.Type, e.TopParentId, e.SortName });
         // NextUp: per-series episode ordering (index seek + range scan on season/episode)

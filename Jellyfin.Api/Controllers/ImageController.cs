@@ -125,7 +125,13 @@ public class ImageController : BaseJellyfinApiController
         {
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
-            var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
+            var userConfigurationDirectoryPath = _serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath;
+            var userDataPath = Path.Combine(userConfigurationDirectoryPath, user.Username);
+            if (!PathHelper.IsContainedIn(userConfigurationDirectoryPath, userDataPath))
+            {
+                return BadRequest("Invalid user.");
+            }
+
             if (user.ProfileImage is not null)
             {
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);

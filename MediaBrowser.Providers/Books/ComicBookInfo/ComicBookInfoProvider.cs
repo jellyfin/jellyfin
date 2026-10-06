@@ -42,7 +42,7 @@ public class ComicBookInfoProvider : IComicProvider
 
         if (path is null)
         {
-            _logger.LogError("could not load comic: {Path}", info.Path);
+            _logger.LogDebug("could not load comic: {Path}", info.Path);
             return new MetadataResult<Book> { HasMetadata = false };
         }
 
@@ -54,9 +54,10 @@ public class ComicBookInfoProvider : IComicProvider
                 var archive = await ZipArchive.CreateAsync(stream, ZipArchiveMode.Read, false, null, cancellationToken).ConfigureAwait(false);
                 await using (archive.ConfigureAwait(false))
                 {
-                    if (archive.Comment is null)
+                    // ZipArchive.Comment is an empty string, not null, when the archive has no comment
+                    if (string.IsNullOrWhiteSpace(archive.Comment))
                     {
-                        _logger.LogInformation("missing ComicBookInfo in archive comment: {Path}", info.Path);
+                        _logger.LogDebug("missing ComicBookInfo in archive comment: {Path}", info.Path);
                         return new MetadataResult<Book> { HasMetadata = false };
                     }
 
@@ -70,6 +71,12 @@ public class ComicBookInfoProvider : IComicProvider
                     return SaveMetadata(comicBookMetadata);
                 }
             }
+        }
+        catch (JsonException ex)
+        {
+            // the archive comment is not reserved for ComicBookInfo, so any other content is not an error
+            _logger.LogDebug("archive comment is not valid ComicBookInfo metadata: {Path}: {Message}", info.Path, ex.Message);
+            return new MetadataResult<Book> { HasMetadata = false };
         }
         catch (Exception ex)
         {
@@ -204,7 +211,7 @@ public class ComicBookInfoProvider : IComicProvider
     {
         try
         {
-            return CultureInfo.GetCultureInfo(language).DisplayName;
+            return CultureInfo.GetCultureInfo(language).TwoLetterISOLanguageName;
         }
         catch (CultureNotFoundException)
         {

@@ -34,10 +34,23 @@ public interface IPeopleRepository
     IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery filter);
 
     /// <summary>
+    /// Deletes every credit that no item maps to any more.
+    /// </summary>
+    /// <returns>The number of credits that were deleted.</returns>
+    int DeleteOrphanedCredits();
+
+    /// <summary>
     /// Gets the distinct people names per item for multiple items efficiently by querying from the mapping table.
     /// </summary>
     /// <param name="itemIds">The item IDs to get people for.</param>
     /// <param name="personTypes">The person types to include (e.g. "Actor", "Director").</param>
     /// <returns>A dictionary mapping each item ID to its distinct people names, ordered by cast list order. Items with no matching people are omitted.</returns>
     IReadOnlyDictionary<Guid, IReadOnlyList<string>> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes);
+
+    /// <summary>
+    /// Gets the people for multiple items in a single query, keyed by item id.
+    /// </summary>
+    /// <param name="itemIds">The item IDs to get people for.</param>
+    /// <returns>A dictionary mapping each item ID to its people (with role, type and sort order), ordered by cast list order. Items with no people are omitted.</returns>
+    IReadOnlyDictionary<Guid, IReadOnlyList<PersonInfo>> GetPeopleByItems(IReadOnlyList<Guid> itemIds);
 }

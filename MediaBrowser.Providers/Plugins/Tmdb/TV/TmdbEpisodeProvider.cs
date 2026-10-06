@@ -91,8 +91,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string? tmdbId);
 
-            var seriesTmdbId = Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture);
-            if (seriesTmdbId <= 0)
+            if (!TmdbUtils.TryParseTmdbId(tmdbId, out var seriesTmdbId))
             {
                 return metadataResult;
             }
@@ -125,6 +124,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     // Forces a deep copy of the first TvEpisode, so we don't modify the original because it's cached
                     episodeResult = new TvEpisode()
                     {
+                        Id = result[0].Id,
                         Name = result[0].Name,
                         Overview = result[0].Overview,
                         AirDate = result[0].AirDate,
@@ -188,6 +188,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 Overview = episodeResult.Overview,
                 CommunityRating = Convert.ToSingle(episodeResult.VoteAverage)
             };
+
+            if (episodeResult.Id is int episodeTmdbId and > 0)
+            {
+                item.SetProviderId(MetadataProvider.Tmdb, episodeTmdbId.ToString(CultureInfo.InvariantCulture));
+            }
 
             var externalIds = episodeResult.ExternalIds;
             item.TrySetProviderId(MetadataProvider.Tvdb, externalIds?.TvdbId);

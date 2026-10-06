@@ -32,6 +32,7 @@ namespace Jellyfin.Naming.Tests.Video
         public void TestExpandedExtras()
         {
             Test("trailer.mp4", ExtraType.Trailer);
+            Test("trailer2.mp4", ExtraType.Trailer);
             Test("trailer.mp3", null);
             Test("300-trailer.mp4", ExtraType.Trailer);
             Test("stuff trailerthings.mkv", null);
@@ -133,6 +134,8 @@ namespace Jellyfin.Naming.Tests.Video
             Test("300.sample.mp4", ExtraType.Sample);
             Test("300_sample.mp4", ExtraType.Sample);
             Test("300 - sample.mp4", ExtraType.Sample);
+            Test("sample1.mp4", ExtraType.Sample);
+            Test("Sample2.mkv", ExtraType.Sample);
         }
 
         [Fact]

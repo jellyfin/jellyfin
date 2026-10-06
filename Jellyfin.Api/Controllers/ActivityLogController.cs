@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Queries;
 using Jellyfin.Database.Implementations.Enums;
@@ -84,36 +84,9 @@ public class ActivityLogController : BaseJellyfinApiController
             ItemId = itemId,
             Username = username,
             Severity = severity,
-            OrderBy = GetOrderBy(sortBy ?? [], sortOrder ?? []),
+            OrderBy = RequestHelpers.GetOrderBy(sortBy ?? [], sortOrder ?? []),
         };
 
         return await _activityManager.GetPagedResultAsync(query).ConfigureAwait(false);
-    }
-
-    private static (ActivityLogSortBy SortBy, SortOrder SortOrder)[] GetOrderBy(
-        IReadOnlyList<ActivityLogSortBy> sortBy,
-        IReadOnlyList<SortOrder> requestedSortOrder)
-    {
-        if (sortBy.Count == 0)
-        {
-            return [];
-        }
-
-        var result = new (ActivityLogSortBy, SortOrder)[sortBy.Count];
-        var i = 0;
-        for (; i < requestedSortOrder.Count; i++)
-        {
-            result[i] = (sortBy[i], requestedSortOrder[i]);
-        }
-
-        // Add remaining elements with the first specified SortOrder
-        // or the default one if no SortOrders are specified
-        var order = requestedSortOrder.Count > 0 ? requestedSortOrder[0] : SortOrder.Ascending;
-        for (; i < sortBy.Count; i++)
-        {
-            result[i] = (sortBy[i], order);
-        }
-
-        return result;
     }
 }

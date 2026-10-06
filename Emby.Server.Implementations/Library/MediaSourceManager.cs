@@ -384,7 +384,13 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentNullException.ThrowIfNull(item);
 
-            var hasMediaSources = (IHasMediaSources)item;
+            // Clients can ask for the sources of an item that has none (a container queued by mistake).
+            if (item is not IHasMediaSources hasMediaSources)
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.InvariantCulture, "{0} {1} has no media sources and cannot be played.", item.GetType().Name, item.Id),
+                    nameof(item));
+            }
 
             var sources = hasMediaSources.GetMediaSources(enablePathSubstitution);
 
@@ -418,10 +424,10 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Populates each source's own playback position for the user and, when the queried item is a
-        /// primary, moves the most recently played version to the front so that resuming without an
-        /// explicit source selection plays the version that was last watched. A directly queried
-        /// alternate version keeps its own source first.
+        /// When the queried item is a primary, moves the most recently played version to the front so
+        /// that resuming without an explicit source selection plays the version that was last watched.
+        /// A directly queried alternate version keeps its own source first. Per-user playback position
+        /// is not surfaced on the source itself; it is carried by each version's own UserData.
         /// </summary>
         /// <param name="item">The queried item.</param>
         /// <param name="sources">The item's media sources.</param>
@@ -448,16 +454,6 @@ namespace Emby.Server.Implementations.Library
                 if (userDataByVersion.TryGetValue(version.Id, out var data))
                 {
                     dataBySourceId[version.Id.ToString("N", CultureInfo.InvariantCulture)] = data;
-                }
-            }
-
-            foreach (var source in sources)
-            {
-                if (source.Id is not null
-                    && dataBySourceId.TryGetValue(source.Id, out var data)
-                    && data.PlaybackPositionTicks > 0)
-                {
-                    source.PlaybackPositionTicks = data.PlaybackPositionTicks;
                 }
             }
 
@@ -504,7 +500,12 @@ namespace Emby.Server.Implementations.Library
             {
                 var index = userData.SubtitleStreamIndex.Value;
                 // Make sure the saved index is still valid
-                if (index == -1 || source.MediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && i.Index == index))
+                var savedStream = source.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Subtitle && i.Index == index);
+                // "Only forced" rules out full tracks entirely, so a remembered one must not resurrect them.
+                // The client reports whatever is playing, so an index remembered under another mode sticks forever otherwise.
+                if (index == -1
+                    || (savedStream is not null
+                        && (user.SubtitleMode != SubtitlePlaybackMode.OnlyForced || savedStream.IsForced)))
                 {
                     source.DefaultSubtitleStreamIndex = index;
                     return;

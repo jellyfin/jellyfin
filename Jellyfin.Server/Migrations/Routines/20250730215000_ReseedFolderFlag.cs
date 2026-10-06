@@ -24,7 +24,7 @@ internal class ReseedFolderFlag : IAsyncMigrationRoutine
     private readonly IDbContextFactory<JellyfinDbContext> _provider;
 
     public ReseedFolderFlag(
-            IStartupLogger<MigrateLibraryDb> startupLogger,
+            IStartupLogger<ReseedFolderFlag> startupLogger,
             IDbContextFactory<JellyfinDbContext> provider,
             IServerApplicationPaths paths)
     {

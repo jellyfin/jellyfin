@@ -24,7 +24,7 @@ public static class DtoExtensions
             case CollectionType.tvshows:
                 return [BaseItemKind.Series];
             case CollectionType.music:
-                return [BaseItemKind.MusicAlbum, BaseItemKind.MusicArtist];
+                return [BaseItemKind.MusicAlbum];
             case CollectionType.musicvideos:
                 return [BaseItemKind.MusicVideo];
             case CollectionType.books:

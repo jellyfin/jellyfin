@@ -8,12 +8,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -101,7 +101,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             CancellationToken cancellationToken)
         {
             var shouldExtractOneByOne = mediaSource.MediaAttachments.Any(a => !string.IsNullOrEmpty(a.FileName)
-                                                                              && (a.FileName.Contains('/', StringComparison.OrdinalIgnoreCase) || a.FileName.Contains('\\', StringComparison.OrdinalIgnoreCase)));
+                                                                              && !string.Equals(PathHelper.GetSafeLeafFileName(a.FileName), a.FileName, StringComparison.Ordinal));
             if (shouldExtractOneByOne && !inputFile.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
             {
                 await ExtractAllAttachmentsIndividuallyInternal(
@@ -159,7 +159,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                         CultureInfo.InvariantCulture,
                         "-dump_attachment:{0} \"{1}\" ",
                         attachment.Index,
-                        EncodingUtils.NormalizePath(attachmentPath));
+                        attachmentPath.EscapeProcessArgument());
                     missingPaths.Add(attachmentPath);
                 }
 
@@ -387,7 +387,9 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             using (await _semaphoreLocks.LockAsync(attachmentFolderPath, cancellationToken).ConfigureAwait(false))
             {
-                var attachmentPath = _pathManager.GetAttachmentPath(mediaSource.Id, mediaAttachment.FileName ?? mediaAttachment.Index.ToString(CultureInfo.InvariantCulture))!;
+                var indexName = mediaAttachment.Index.ToString(CultureInfo.InvariantCulture);
+                var attachmentPath = _pathManager.GetAttachmentPath(mediaSource.Id, mediaAttachment.FileName ?? indexName)
+                                     ?? _pathManager.GetAttachmentPath(mediaSource.Id, indexName)!;
                 if (!File.Exists(attachmentPath))
                 {
                     await ExtractAttachmentInternal(
@@ -422,7 +424,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 "-dump_attachment:{1} \"{2}\" -i {0} {3}",
                 inputPath,
                 attachmentStreamIndex,
-                EncodingUtils.NormalizePath(outputPath),
+                outputPath.EscapeProcessArgument(),
                 hasVideoOrAudioStream ? "-t 0 -f null null" : string.Empty);
 
             int exitCode;

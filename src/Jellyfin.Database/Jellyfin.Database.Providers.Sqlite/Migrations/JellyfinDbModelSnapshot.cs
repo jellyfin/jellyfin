@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
@@ -365,7 +365,8 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("Name");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("OwnerId")
+                        .HasFilter("\"OwnerId\" IS NOT NULL");
 
                     b.HasIndex("ParentId");
 
@@ -373,13 +374,17 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("PresentationUniqueKey");
 
+                    b.HasIndex("PrimaryVersionId")
+                        .HasFilter("\"PrimaryVersionId\" IS NOT NULL");
+
                     b.HasIndex("SeasonId");
 
                     b.HasIndex("SeriesId");
 
                     b.HasIndex("SeriesName");
 
-                    b.HasIndex("ExtraType", "OwnerId");
+                    b.HasIndex("ExtraType", "OwnerId")
+                        .HasFilter("\"ExtraType\" IS NOT NULL");
 
                     b.HasIndex("TopParentId", "Id");
 
@@ -812,22 +817,20 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<Guid>("ParentId")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
                     b.Property<Guid>("ChildId")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("ChildType")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("SortOrder")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("ParentId", "ChildId");
+                    b.HasKey("ParentId", "SortOrder");
 
                     b.HasIndex("ChildId", "ChildType");
 
                     b.HasIndex("ParentId", "ChildType");
-
-                    b.HasIndex("ParentId", "SortOrder");
 
                     b.ToTable("LinkedChildren", (string)null);
 
@@ -1011,6 +1014,8 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "StreamIndex");
 
+                    b.HasIndex("StreamType", "ItemId", "Language", "IsExternal");
+
                     b.ToTable("MediaStreamInfos");
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
@@ -1057,11 +1062,11 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "PeopleId", "Role");
 
-                    b.HasIndex("PeopleId");
-
                     b.HasIndex("ItemId", "ListOrder");
 
                     b.HasIndex("ItemId", "SortOrder");
+
+                    b.HasIndex("PeopleId", "ItemId");
 
                     b.ToTable("PeopleBaseItemMap");
 
@@ -1077,14 +1082,11 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int>("Kind")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("Permission_Permissions_Guid")
-                        .HasColumnType("TEXT");
-
                     b.Property<uint>("RowVersion")
                         .IsConcurrencyToken()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("UserId")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("Value")
@@ -1093,8 +1095,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("UserId", "Kind")
-                        .IsUnique()
-                        .HasFilter("[UserId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Permissions");
 
@@ -1110,14 +1111,11 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int>("Kind")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("Preference_Preferences_Guid")
-                        .HasColumnType("TEXT");
-
                     b.Property<uint>("RowVersion")
                         .IsConcurrencyToken()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("UserId")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Value")
@@ -1128,8 +1126,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("UserId", "Kind")
-                        .IsUnique()
-                        .HasFilter("[UserId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Preferences");
 
@@ -1698,7 +1695,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.User", null)
                         .WithMany("Permissions")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.Preference", b =>
@@ -1706,7 +1704,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.User", null)
                         .WithMany("Preferences")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.Security.Device", b =>

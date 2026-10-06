@@ -107,5 +107,19 @@
     "TaskAudioNormalizationDescription": "Escanea ficheiros á procura de datos de normalización de volume.",
     "CleanupUserDataTask": "Tarefa de limpeza de datos dos usuarios",
     "CleanupUserDataTaskDescription": "Limpa todos os datos do usuario (estado de visualización, de favorito etc.) dos medios ausentes polo menos 90 días.",
-    "Original": "Orixinal"
+    "Original": "Orixinal",
+    "LyricDownloadFailureFromForItem": "Non se puideron descargar as letras desde {0} para {1}",
+    "NameExtraBehindTheScenes": "Detrás das Cámaras",
+    "NameExtraClip": "Clip",
+    "NameExtraDeletedScene": "Escena Eliminada",
+    "NameExtraFeaturette": "Reportaxe especial",
+    "NameExtraInterview": "Entrevista",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Mostra",
+    "NameExtraScene": "Escena",
+    "NameExtraShort": "Curtametraxe",
+    "NameExtraThemeSong": "Canción principal",
+    "NameExtraThemeVideo": "Vídeo da canción principal",
+    "NameExtraTrailer": "Tráiler",
+    "NameExtraUnknown": "Extra"
 }

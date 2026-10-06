@@ -3,32 +3,24 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
-using System.IO;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.AudioDb
 {
     public class AudioDbArtistImageProvider : IRemoteImageProvider, IHasOrder
     {
-        private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
-        public AudioDbArtistImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory)
+        public AudioDbArtistImageProvider(IHttpClientFactory httpClientFactory)
         {
-            _config = config;
             _httpClientFactory = httpClientFactory;
         }
 
@@ -54,22 +46,14 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            if (item.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out var id))
+            item.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out var musicBrainzId);
+            item.TryGetProviderId(MetadataProvider.AudioDbArtist, out var audioDbId);
+
+            var artist = await AudioDbArtistProvider.Current.GetArtist(musicBrainzId, audioDbId, cancellationToken).ConfigureAwait(false);
+
+            if (artist is not null)
             {
-                await AudioDbArtistProvider.Current.EnsureArtistInfo(id, cancellationToken).ConfigureAwait(false);
-
-                var path = AudioDbArtistProvider.GetArtistInfoPath(_config.ApplicationPaths, id);
-
-                FileStream jsonStream = AsyncFile.OpenRead(path);
-                await using (jsonStream.ConfigureAwait(false))
-                {
-                    var obj = await JsonSerializer.DeserializeAsync<AudioDbArtistProvider.RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-
-                    if (obj is not null && obj.artists is not null && obj.artists.Count > 0)
-                    {
-                        return GetImages(obj.artists[0]);
-                    }
-                }
+                return GetImages(artist);
             }
 
             return [];

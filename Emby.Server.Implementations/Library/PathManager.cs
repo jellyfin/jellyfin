@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -43,7 +44,19 @@ public class PathManager : IPathManager
     public string? GetAttachmentPath(string mediaSourceId, string fileName)
     {
         var folder = GetAttachmentFolderPath(mediaSourceId);
-        return folder is null ? null : Path.Combine(folder, fileName);
+        if (folder is null)
+        {
+            return null;
+        }
+
+        var safeName = PathHelper.GetSafeLeafFileName(fileName);
+        if (safeName is null)
+        {
+            _logger.LogWarning("Rejecting attachment filename '{FileName}' for MediaSource {MediaSourceId}: not a valid leaf name.", fileName, mediaSourceId);
+            return null;
+        }
+
+        return Path.Combine(folder, safeName);
     }
 
     /// <inheritdoc />

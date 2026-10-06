@@ -57,7 +57,6 @@ namespace Emby.Naming.Common
                 ".nrg",
                 ".nsv",
                 ".nuv",
-                ".ogg",
                 ".ogm",
                 ".ogv",
                 ".pva",
@@ -152,7 +151,7 @@ namespace Emby.Naming.Common
 
             CleanStrings =
             [
-                @"^\s*(?<cleaned>.+?)[ _\,\.\(\)\[\]\-](3d|sbs|tab|hsbs|htab|mvc|HDR|HDC|UHD|UltraHD|4k|ac3|dts|custom|dc|divx|divx5|dsr|dsrip|dutch|dvd|dvdrip|dvdscr|dvdscreener|screener|dvdivx|cam|fragment|fs|hdtv|hdrip|hdtvrip|internal|limited|multi|subs|ntsc|ogg|ogm|pal|pdtv|proper|repack|rerip|retail|cd[1-9]|r5|bd5|bd|se|svcd|swedish|german|read.nfo|nfofix|unrated|ws|telesync|ts|telecine|tc|brrip|bdrip|480p|480i|576p|576i|720p|720i|1080p|1080i|2160p|hrhd|hrhdtv|hddvd|bluray|blu-ray|x264|x265|h264|h265|xvid|xvidvd|xxx|www.www|AAC|DTS)(?=[ _\,\.\(\)\[\]\-]|$)",
+                @"^\s*(?<cleaned>.+?)[ _\,\.\(\)\[\]\-](3d|sbs|tab|hsbs|htab|mvc|HDR|HDC|UHD|UltraHD|4k|ac3|dts|custom|dc|divx|divx5|dsr|dsrip|dutch|dvd|dvdrip|dvdscr|dvdscreener|screener|dvdivx|cam|fragment|fs|hdtv|hdrip|hdtvrip|internal|limited|multi|subs|ntsc|ogg|ogm|pal|pdtv|proper|repack|rerip|retail|cd[1-9]|r5|bd5|bd|se|svcd|swedish|german|read.nfo|nfofix|unrated|ws|web-dl|telesync|ts|telecine|tc|brrip|bdrip|480p|480i|576p|576i|720p|720i|1080p|1080i|2160p|hrhd|hrhdtv|hddvd|bluray|blu-ray|x264|x265|h264|h265|xvid|xvidvd|xxx|www.www|AAC|DTS)(?=[ _\,\.\(\)\[\]\-]|$)",
                 @"^\s*(?<cleaned>.+?)((\s*\[[^\]]+\]\s*)+)(\.[^\s]+)?$",
                 @"^\s*(?<cleaned>.+?)\WE[0-9]+(-|~)E?[0-9]+(\W|$)",
                 @"^\s*\[[^\]]+\](?!\.\w+$)\s*(?<cleaned>.+)",
@@ -362,7 +361,10 @@ namespace Emby.Naming.Common
                 // Not a Kodi rule as well, but the expression below also causes false positives,
                 // so we make sure this one gets tested first.
                 // "Foo Bar 889"
-                new EpisodeExpression(@".*[\\\/](?![Ee]pisode)(?<seriesname>[\w\s]+?)\s(?<epnumber>[0-9]{1,4})(-(?<endingepnumber>[0-9]{2,4}))*[^\\\/x]*$")
+                // Names carrying an SxxEyy marker are excluded because the Kodi expression above already covers them.
+                // Without that guard this expression reads digits out of the title instead, turning
+                // "S01E01 1-23-45 [Bluray-1080p]" into episodes 1 through 45.
+                new EpisodeExpression(@".*[\\\/](?![Ee]pisode)(?![^\\\/]*[Ss][0-9]+[][ ._-]*[Ee][0-9]+)(?<seriesname>[\w\s]+?)\s(?<epnumber>[0-9]{1,4})(-(?<endingepnumber>[0-9]{2,4}))*[^\\\/x]*$")
                 {
                     IsNamed = true
                 },
@@ -538,6 +540,12 @@ namespace Emby.Naming.Common
                     ExtraType.Sample,
                     ExtraRuleType.DirectoryName,
                     "samples",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Sample,
+                    ExtraRuleType.DirectoryName,
+                    "sample",
                     MediaType.Video),
 
                 new ExtraRule(

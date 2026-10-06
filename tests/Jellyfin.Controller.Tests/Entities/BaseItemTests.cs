@@ -1,23 +1,147 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Database.Implementations.Entities;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaSegments;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Querying;
 using Moq;
 using Xunit;
 
 namespace Jellyfin.Controller.Tests.Entities;
 
+[Collection("LibraryManagerTests")]
 public class BaseItemTests
 {
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task ValidateChildren_FailedEnumeration_DoesNotReconcileOrDeleteChildren(bool failAfterFirstChild, bool accessDenied)
+    {
+        var previousLibrary = BaseItem.LibraryManager;
+        var previousRepository = BaseItem.ItemRepository;
+        var previousLogger = BaseItem.Logger;
+        var previousMediaSourceManager = BaseItem.MediaSourceManager;
+        var library = new Mock<ILibraryManager>(MockBehavior.Strict);
+        var repository = new Mock<MediaBrowser.Controller.Persistence.IItemRepository>(MockBehavior.Strict);
+        var directory = new Mock<IDirectoryService>();
+        directory.Setup(d => d.IsAccessible(It.IsAny<string>())).Returns(true);
+
+        // IsLibraryFolderAccessible reads FileNameWithoutExtension, which resolves the path protocol
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        mediaSourceManager.Setup(x => x.GetPathProtocol(It.IsAny<string>())).Returns(MediaProtocol.File);
+        try
+        {
+            BaseItem.LibraryManager = library.Object;
+            BaseItem.ItemRepository = repository.Object;
+            BaseItem.Logger = Microsoft.Extensions.Logging.Abstractions.NullLogger<BaseItem>.Instance;
+            BaseItem.MediaSourceManager = mediaSourceManager.Object;
+            var folder = new FailingEnumerationFolder(failAfterFirstChild, accessDenied)
+            {
+                Id = Guid.NewGuid(),
+                Path = "/media/review-folder"
+            };
+            await folder.ValidateChildren(new Progress<double>(), new MetadataRefreshOptions(directory.Object), recursive: false, cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true);
+            Assert.True(folder.EnumerationAttempted);
+            repository.VerifyNoOtherCalls();
+            library.VerifyNoOtherCalls();
+        }
+        finally
+        {
+            BaseItem.LibraryManager = previousLibrary;
+            BaseItem.ItemRepository = previousRepository;
+            BaseItem.Logger = previousLogger;
+            BaseItem.MediaSourceManager = previousMediaSourceManager;
+        }
+    }
+
+    [Fact]
+    public void SetPrimaryVersionId_Null_RestoresTheItemsOwnPresentationKey()
+    {
+        var primaryId = Guid.NewGuid();
+        var video = new Video { Id = Guid.NewGuid(), Path = "/Movies/Movie/Movie - 4K.mkv" };
+
+        // While it is a version, it presents as the primary so lists collapse the two together.
+        video.SetPrimaryVersionId(primaryId);
+        Assert.Equal(primaryId.ToString("N", CultureInfo.InvariantCulture), video.PresentationUniqueKey);
+
+        // Promoting it back has to restore its own key, or it keeps collapsing onto - and staying
+        // hidden behind - a primary it no longer belongs to.
+        video.SetPrimaryVersionId(null);
+        Assert.Null(video.PrimaryVersionId);
+        Assert.Equal(video.Id.ToString("N", CultureInfo.InvariantCulture), video.PresentationUniqueKey);
+    }
+
+    [Fact]
+    public void GetItemByNameFolderName_ShortName_IsKeptAsIs()
+    {
+        SetupPassThroughFileSystem();
+
+        Assert.Equal("Mairghread Scott", BaseItem.GetItemByNameFolderName("Mairghread Scott."));
+    }
+
+    [Fact]
+    public void GetItemByNameFolderName_OverlongName_FitsInAPathComponent()
+    {
+        SetupPassThroughFileSystem();
+
+        // What a provider result that concatenated a whole credit list into one name looks like.
+        var name = string.Join(", ", Enumerable.Repeat("Jerry Siegel (created by: Superman)", 20));
+
+        var folderName = BaseItem.GetItemByNameFolderName(name);
+
+        Assert.True(Encoding.UTF8.GetByteCount(folderName) <= 128);
+        Assert.StartsWith("Jerry Siegel (created by: Superman)", folderName, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void GetItemByNameFolderName_OverlongNamesSharingAPrefix_StayApart()
+    {
+        SetupPassThroughFileSystem();
+
+        var prefix = new string('a', 200);
+
+        Assert.NotEqual(
+            BaseItem.GetItemByNameFolderName(prefix + "Joe Shuster"),
+            BaseItem.GetItemByNameFolderName(prefix + "Bob Kane"));
+    }
+
+    [Fact]
+    public void GetItemByNameFolderName_OverlongName_IsStable()
+    {
+        SetupPassThroughFileSystem();
+
+        var name = new string('a', 300);
+
+        Assert.Equal(BaseItem.GetItemByNameFolderName(name), BaseItem.GetItemByNameFolderName(name));
+    }
+
+    private static void SetupPassThroughFileSystem()
+    {
+        var fileSystem = new Mock<IFileSystem>();
+        fileSystem.Setup(x => x.GetValidFilename(It.IsAny<string>())).Returns((string name) => name);
+        BaseItem.FileSystem = fileSystem.Object;
+    }
+
     [Theory]
     [InlineData("", "")]
     [InlineData("1", "0000000001")]
@@ -27,6 +151,35 @@ public class BaseItemTests
     [InlineData("1test 2", "0000000001test 0000000002")]
     public void BaseItem_ModifySortChunks_Valid(string input, string expected)
         => Assert.Equal(expected, BaseItem.ModifySortChunks(input));
+
+    [Theory]
+    [InlineData("The Matrix", "matrix")]
+    [InlineData("Spider-Man", "spiderman")]
+    [InlineData("A Movie: Part 2", "movie: part 0000000002")]
+    public void GetSortName_AppliesConfiguredCleaning(string input, string expected)
+        => Assert.Equal(expected, BaseItem.GetSortName(input, true, new ServerConfiguration()));
+
+    [Fact]
+    public void GetSortName_WithoutAlphaNumericSorting_ReturnsTrimmedInput()
+        => Assert.Equal("The Matrix", BaseItem.GetSortName("  The Matrix", false, new ServerConfiguration()));
+
+    [Fact]
+    public void SortName_ForcedSortName_IsCleanedLikeAutoSortName()
+    {
+        var configManager = new Mock<IServerConfigurationManager>();
+        configManager.Setup(x => x.Configuration).Returns(new ServerConfiguration());
+        BaseItem.ConfigurationManager = configManager.Object;
+
+        const string Raw = "The Spider-Man: Homecoming";
+
+        var auto = new Video { Name = Raw };
+        var forced = new Video { Name = "zzz unrelated name", ForcedSortName = Raw };
+
+        // A forced sort name must be cleaned the same way as an auto-generated one so both sort together (#17388).
+        Assert.Equal(auto.SortName, forced.SortName);
+        // Sanity: cleaning actually ran (leading article and hyphen removed, colon kept, lowercased).
+        Assert.Equal("spiderman: homecoming", forced.SortName);
+    }
 
     [Theory]
     [InlineData("/Movies/Ted/Ted.mp4", "/Movies/Ted/Ted - Unrated Edition.mp4", "Ted", "Unrated Edition")]
@@ -95,6 +248,17 @@ public class BaseItemTests
         "Blade Runner (1982) [EE by ADM] [480p HEVC AAC]",
         "[Final Cut] [1080p HEVC AAC]",
         "[EE by ADM] [480p HEVC AAC]")]
+    // Numeric version labels: the dot between the digits is a decimal point, not a delimiter, so the
+    // prefix retreats past it to the '-' instead of leaving "0" / "11".
+    [InlineData(
+        "Evangelion 1.0 You Are (Not) Alone (2007) - 1.0",
+        "Evangelion 1.0 You Are (Not) Alone (2007) - 1.11",
+        "1.0",
+        "1.11")]
+    // Numeric labels with no structural delimiter at all fall back to the space boundary.
+    [InlineData("Movie (2007) 1.0", "Movie (2007) 1.11", "1.0", "1.11")]
+    // A dot followed by a non-digit is still a delimiter, even after a digit.
+    [InlineData("Movie - Part 1.HDR", "Movie - Part 1.SDR", "HDR", "SDR")]
     public void GetMediaSourceName_CommonPrefix_Valid(string primaryName, string altName, string expectedPrimary, string expectedAlt)
     {
         var primaryPath = "/Shows/Demo/Season 01/" + primaryName + ".mkv";
@@ -123,6 +287,24 @@ public class BaseItemTests
 
         Assert.Equal(expectedPrimary, video.GetMediaSourceName(video, commonPrefix));
         Assert.Equal(expectedAlt, videoAlt.GetMediaSourceName(videoAlt, commonPrefix));
+    }
+
+    [Fact]
+    public void GetCommonVersionPrefix_NumericLabels_KeepsWholeNumber()
+    {
+        // Three versions labelled "1.0", "1.01" and "1.11": the common prefix stops inside the version
+        // number, so it must retreat past the decimal point to the '-' delimiter.
+        string[] fileNames =
+        [
+            "Evangelion 1.0 You Are (Not) Alone (2007) - 1.0",
+            "Evangelion 1.0 You Are (Not) Alone (2007) - 1.01",
+            "Evangelion 1.0 You Are (Not) Alone (2007) - 1.11"
+        ];
+
+        var prefix = BaseItem.GetCommonVersionPrefix(fileNames);
+
+        Assert.Equal("Evangelion 1.0 You Are (Not) Alone (2007) -", prefix);
+        Assert.Equal(["1.0", "1.01", "1.11"], fileNames.Select(n => n[prefix.Length..].TrimStart(' ')));
     }
 
     [Fact]
@@ -261,6 +443,85 @@ public class BaseItemTests
             Times.Never);
     }
 
+    [Theory]
+    // A version file the scan just found beside the episode is not linked yet, so it does not count
+    // towards MediaSourceCount. The episode still has to refresh its owned items, as that is what
+    // creates the item for the version and links it.
+    [InlineData(true, false, true)]
+    [InlineData(false, true, true)]
+    [InlineData(false, false, false)]
+    public void SupportsOwnedItems_EpisodeWithResolvedVersionOrPart_IsTrue(bool hasLocalVersion, bool isStacked, bool expected)
+    {
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager.Setup(x => x.GetLinkedAlternateVersions(It.IsAny<Video>())).Returns(Array.Empty<Video>());
+        libraryManager.Setup(x => x.GetLocalAlternateVersionIds(It.IsAny<Video>())).Returns(Array.Empty<Guid>());
+        BaseItem.LibraryManager = libraryManager.Object;
+
+        var episode = new Episode
+        {
+            Id = Guid.NewGuid(),
+            Path = "/TV/Show/Season 1/S01E01 - 1080p.mkv",
+            LocalAlternateVersions = hasLocalVersion ? ["/TV/Show/Season 1/S01E01 - 720p.mkv"] : [],
+            AdditionalParts = isStacked ? ["/TV/Show/Season 1/S01E01 - 1080p-part2.mkv"] : []
+        };
+
+        var property = typeof(Episode).GetProperty("SupportsOwnedItems", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(property);
+
+        Assert.Equal(expected, (bool)property!.GetValue(episode)!);
+    }
+
+    [Theory]
+    // The season folder is the season's own, so the extras that sit in it are the season's. Whether
+    // the season holds one episode or two must not decide where its extras show up.
+    [InlineData(false, false)]
+    // An episode with a folder of its own keeps the extras in it, as nothing else searches there
+    [InlineData(true, true)]
+    public async Task RefreshedOwnedItems_EpisodeInAContainersOwnFolder_LeavesExtrasToTheContainer(bool episodeHasOwnFolder, bool expectSearch)
+    {
+        var seasonPath = Path.Combine("TV", "Show", "Season 1");
+        var episodeFolder = episodeHasOwnFolder ? Path.Combine(seasonPath, "S01E01") : seasonPath;
+        var episodePath = Path.Combine(episodeFolder, "S01E01 - 1080p.mkv");
+
+        // The season needs a parent of its own, as an item without one maintains no owned items
+        var season = new Season { Id = Guid.NewGuid(), ParentId = Guid.NewGuid(), Path = seasonPath };
+        var episode = new Episode
+        {
+            Id = Guid.NewGuid(),
+            ParentId = season.Id,
+            Path = episodePath,
+            // A version file is what makes an episode maintain owned items at all
+            LocalAlternateVersions = [Path.Combine(episodeFolder, "S01E01 - 720p.mkv")]
+        };
+
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        mediaSourceManager.Setup(x => x.GetPathProtocol(It.IsAny<string>())).Returns(MediaProtocol.File);
+        BaseItem.MediaSourceManager = mediaSourceManager.Object;
+
+        var fileSystem = new Mock<IFileSystem>();
+        fileSystem.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
+        BaseItem.FileSystem = fileSystem.Object;
+
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager.Setup(x => x.GetItemById(season.Id)).Returns(season);
+        libraryManager.Setup(x => x.GetLinkedAlternateVersions(It.IsAny<Video>())).Returns(Array.Empty<Video>());
+        libraryManager.Setup(x => x.GetLocalAlternateVersionIds(It.IsAny<Video>())).Returns(Array.Empty<Guid>());
+        libraryManager.Setup(x => x.GetItemList(It.IsAny<InternalItemsQuery>())).Returns(Array.Empty<BaseItem>());
+        libraryManager.Setup(x => x.FindExtras(It.IsAny<BaseItem>(), It.IsAny<IReadOnlyList<FileSystemMetadata>>(), It.IsAny<IDirectoryService>()))
+            .Returns(Array.Empty<BaseItem>());
+        BaseItem.LibraryManager = libraryManager.Object;
+
+        var method = typeof(BaseItem).GetMethod("RefreshedOwnedItems", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+
+        var options = new MetadataRefreshOptions(Mock.Of<IDirectoryService>());
+        await (Task<bool>)method!.Invoke(episode, [options, Array.Empty<FileSystemMetadata>(), CancellationToken.None])!;
+
+        libraryManager.Verify(
+            x => x.FindExtras(episode, It.IsAny<IReadOnlyList<FileSystemMetadata>>(), It.IsAny<IDirectoryService>()),
+            expectSearch ? Times.Once() : Times.Never());
+    }
+
     private static (Video Primary, Video Alt1, Video Alt2) SetupVersionGroup()
     {
         var primary = new Video { Id = Guid.NewGuid(), Path = "/Movies/Movie/Movie.mkv" };
@@ -333,6 +594,167 @@ public class BaseItemTests
             Assert.Contains(primary.Id, ids);
             Assert.Contains(alt1.Id, ids);
             Assert.Contains(alt2.Id, ids);
+        }
+    }
+
+    [Fact]
+    public void InheritDatesFromOwner_OwnerHasDates_OverwritesOwnedItemDates()
+    {
+        var owner = new Movie
+        {
+            ProductionYear = 1982,
+            PremiereDate = new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+        // 2016 is what the container creation date of a re-encoded trailer would have yielded.
+        var trailer = new Trailer
+        {
+            ExtraType = ExtraType.Trailer,
+            ProductionYear = 2016,
+            PremiereDate = new DateTime(2016, 5, 4, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+        Assert.True(BaseItem.InheritDatesFromOwner(owner, trailer));
+        Assert.Equal(owner.ProductionYear, trailer.ProductionYear);
+        Assert.Equal(owner.PremiereDate, trailer.PremiereDate);
+    }
+
+    [Fact]
+    public void InheritDatesFromOwner_OwnerHasNoDates_KeepsOwnedItemDates()
+    {
+        var owner = new Movie();
+        var trailer = new Trailer
+        {
+            ExtraType = ExtraType.Trailer,
+            ProductionYear = 1982,
+            PremiereDate = new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+        Assert.False(BaseItem.InheritDatesFromOwner(owner, trailer));
+        Assert.Equal(1982, trailer.ProductionYear);
+        Assert.Equal(new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc), trailer.PremiereDate);
+    }
+
+    [Fact]
+    public void InheritDatesFromOwner_DatesAlreadyMatch_ReportsNoChange()
+    {
+        var owner = new Movie
+        {
+            ProductionYear = 1982,
+            PremiereDate = new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+        var trailer = new Trailer
+        {
+            ExtraType = ExtraType.Trailer,
+            ProductionYear = owner.ProductionYear,
+            PremiereDate = owner.PremiereDate
+        };
+
+        Assert.False(BaseItem.InheritDatesFromOwner(owner, trailer));
+    }
+
+    [Fact]
+    public void InheritDatesFromOwner_OwnedItemHasNoDates_TakesOwnerDates()
+    {
+        var owner = new Movie
+        {
+            ProductionYear = 1982,
+            PremiereDate = new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+        var trailer = new Trailer
+        {
+            ExtraType = ExtraType.Trailer
+        };
+
+        Assert.True(BaseItem.InheritDatesFromOwner(owner, trailer));
+        Assert.Equal(1982, trailer.ProductionYear);
+        Assert.Equal(new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc), trailer.PremiereDate);
+    }
+
+    [Theory]
+    // An extra named after a version belongs to that version, not to the primary whose name it
+    // also starts with
+    [InlineData("/Movies/Movie/Movie - 4K-trailer.mkv", 2)]
+    [InlineData("/Movies/Movie/Movie - 1080p-behindthescenes.mkv", 1)]
+    // Named after the movie rather than one of its versions
+    [InlineData("/Movies/Movie/Movie-trailer.mkv", 0)]
+    // In an extras folder, so named after nothing in particular
+    [InlineData("/Movies/Movie/trailers/Official.mkv", 0)]
+    // A version name is only a match when it is followed by the extra's own suffix
+    [InlineData("/Movies/Movie/Movie - 4Kish-trailer.mkv", 0)]
+    public void GetOwnerIdForExtra_AssignsExtraToItsVersion(string extraPath, int expectedVersion)
+    {
+        var (primary, alt1, alt2) = SetupVersionGroup();
+        var expectedId = expectedVersion switch
+        {
+            1 => alt1.Id,
+            2 => alt2.Id,
+            _ => primary.Id
+        };
+
+        var method = typeof(Video).GetMethod("GetOwnerIdForExtra", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+
+        var ownerId = (Guid)method!.Invoke(primary, [new Video { Id = Guid.NewGuid(), Path = extraPath }])!;
+
+        Assert.Equal(expectedId, ownerId);
+    }
+
+    [Fact]
+    public void GetExtraOwnerIds_FromAnyVersion_CoversEveryVersion()
+    {
+        var (primary, alt1, alt2) = SetupVersionGroup();
+
+        var method = typeof(Video).GetMethod("GetExtraOwnerIds", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+
+        // An extra is owned by the one version it is named after, and the extras of the movie as a
+        // whole are owned by the primary, so every version has to read all of them back
+        foreach (var version in new[] { primary, alt1, alt2 })
+        {
+            var ids = (Guid[])method!.Invoke(version, null)!;
+
+            Assert.Equal(3, ids.Length);
+            Assert.Contains(primary.Id, ids);
+            Assert.Contains(alt1.Id, ids);
+            Assert.Contains(alt2.Id, ids);
+        }
+    }
+
+    [Fact]
+    public void GetOwnedVersionIds_CoversEveryLocalVersion()
+    {
+        var (primary, alt1, alt2) = SetupVersionGroup();
+
+        var method = typeof(Video).GetMethod("GetOwnedVersionIds", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+
+        // The extras of all versions are maintained together, so all of them have to be read back
+        var ids = (Guid[])method!.Invoke(primary, null)!;
+
+        Assert.Equal([primary.Id, alt1.Id, alt2.Id], ids);
+    }
+
+    private sealed class FailingEnumerationFolder(bool failAfterFirstChild, bool accessDenied) : Folder
+    {
+        public bool EnumerationAttempted { get; private set; }
+
+        protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
+        {
+            EnumerationAttempted = true;
+            if (failAfterFirstChild)
+            {
+                yield return new Movie { Id = Guid.NewGuid(), Path = "/media/review-folder/movie.mkv" };
+            }
+
+            if (accessDenied)
+            {
+                throw new System.Security.SecurityException("Simulated access failure");
+            }
+
+            throw new IOException("Simulated directory read failure");
         }
     }
 }

@@ -46,9 +46,9 @@ public class OptimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
             TimeSpan.FromSeconds(3)
         ];
 
-        Func<int, Context, TimeSpan> backoffProvider = (index, context) =>
+        Func<int, Context, TimeSpan> backoffProvider = (retryNo, context) =>
         {
-            var backoff = sleepDurations[index];
+            var backoff = sleepDurations[retryNo - 1];
             return backoff + TimeSpan.FromMilliseconds(RandomNumberGenerator.GetInt32(0, (int)(backoff.TotalMilliseconds * .5)));
         };
 
@@ -88,13 +88,13 @@ public class OptimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
     /// <inheritdoc/>
     public void OnSaveChanges(JellyfinDbContext context, Action saveChanges)
     {
-        _writePolicy.ExecuteAndCapture(saveChanges);
+        _writePolicy.Execute(saveChanges);
     }
 
     /// <inheritdoc/>
     public async Task OnSaveChangesAsync(JellyfinDbContext context, Func<Task> saveChanges)
     {
-        await _writeAsyncPolicy.ExecuteAndCaptureAsync(saveChanges).ConfigureAwait(false);
+        await _writeAsyncPolicy.ExecuteAsync(saveChanges).ConfigureAwait(false);
     }
 
     private sealed class TransactionLockingInterceptor : DbTransactionInterceptor

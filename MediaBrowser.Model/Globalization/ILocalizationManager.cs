@@ -73,6 +73,14 @@ public interface ILocalizationManager
     CultureDto? FindLanguageInfo(string language);
 
     /// <summary>
+    /// Gets a human-readable display name for the given language code.
+    /// Truncates at the first semicolon or comma to avoid cluttered ISO-639-2 names.
+    /// </summary>
+    /// <param name="language">An ISO language code.</param>
+    /// <returns>The display name, or null if not found.</returns>
+    string? GetLanguageDisplayName(string language);
+
+    /// <summary>
     /// Returns the language in ISO 639-2/T when the input is ISO 639-2/B.
     /// </summary>
     /// <param name="isoB">The language in ISO 639-2/B.</param>
