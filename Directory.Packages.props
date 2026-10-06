@@ -9,7 +9,7 @@
     <PackageVersion Include="AutoFixture.Xunit3" Version="4.19.0" />
     <PackageVersion Include="AutoFixture" Version="4.18.1" />
     <PackageVersion Include="BDInfo" Version="0.8.0" />
-    <PackageVersion Include="BitFaster.Caching" Version="2.6.0" />
+    <PackageVersion Include="BitFaster.Caching" Version="2.6.1" />
     <PackageVersion Include="BlurHashSharp.SkiaSharp" Version="1.4.0-pre.1" />
     <PackageVersion Include="BlurHashSharp" Version="1.4.0-pre.1" />
     <PackageVersion Include="CommandLineParser" Version="2.9.1" />
@@ -80,9 +80,9 @@
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.2.3" />
     <PackageVersion Include="System.Text.Json" Version="10.0.11" />
     <PackageVersion Include="TagLibSharp" Version="2.3.0" />
-    <PackageVersion Include="z440.atl.core" Version="7.16.0" />
+    <PackageVersion Include="z440.atl.core" Version="7.18.0" />
     <PackageVersion Include="TMDbLib" Version="3.0.0" />
-    <PackageVersion Include="UTF.Unknown" Version="2.6.0" />
+    <PackageVersion Include="UTF.Unknown" Version="2.7.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
     <PackageVersion Include="Xunit.v3.Priority" Version="1.1.18" />

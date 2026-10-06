@@ -365,7 +365,8 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("Name");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("OwnerId")
+                        .HasFilter("\"OwnerId\" IS NOT NULL");
 
                     b.HasIndex("ParentId");
 
@@ -382,7 +383,8 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("SeriesName");
 
-                    b.HasIndex("ExtraType", "OwnerId");
+                    b.HasIndex("ExtraType", "OwnerId")
+                        .HasFilter("\"ExtraType\" IS NOT NULL");
 
                     b.HasIndex("TopParentId", "Id");
 
@@ -1421,13 +1423,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<DateTime?>("LastPlayedDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("LastSkippedDate")
-                        .HasColumnType("TEXT");
-
                     b.Property<bool?>("Likes")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("PartiallyPlayed")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("PlayCount")
@@ -1444,9 +1440,6 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.Property<DateTime?>("RetentionDate")
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("SkipCount")
-                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("SubtitleStreamIndex")
                         .HasColumnType("INTEGER");

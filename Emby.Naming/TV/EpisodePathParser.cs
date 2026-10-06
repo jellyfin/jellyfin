@@ -158,7 +158,9 @@ namespace Emby.Naming.TV
                         if (nextIndex >= name.Length
                             || !"0123456789iIpP".Contains(name[nextIndex], StringComparison.Ordinal))
                         {
-                            if (int.TryParse(endingNumberGroup.ValueSpan, NumberStyles.Integer, CultureInfo.InvariantCulture, out num))
+                            // A range cannot end before it starts, so a lower number belongs to the episode title rather than to a range.
+                            if (int.TryParse(endingNumberGroup.ValueSpan, NumberStyles.Integer, CultureInfo.InvariantCulture, out num)
+                                && num >= result.EpisodeNumber)
                             {
                                 result.EndingEpisodeNumber = num;
                             }
@@ -226,7 +228,7 @@ namespace Emby.Naming.TV
                     info.SeriesName = result.SeriesName;
                 }
 
-                if (!info.EndingEpisodeNumber.HasValue && info.EpisodeNumber.HasValue)
+                if (!info.EndingEpisodeNumber.HasValue && result.EndingEpisodeNumber >= info.EpisodeNumber)
                 {
                     info.EndingEpisodeNumber = result.EndingEpisodeNumber;
                 }

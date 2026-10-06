@@ -458,6 +458,7 @@ public class DynamicHlsHelper
                     {
                         case VideoRangeType.HLG:
                         case VideoRangeType.DOVIWithHLG:
+                        case VideoRangeType.DOVIInvalid when string.Equals(state.VideoStream.ColorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase):
                             builder.Append(",VIDEO-RANGE=HLG");
                             break;
                         default:

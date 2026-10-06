@@ -127,18 +127,61 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         var distinctCredits = credits.DistinctBy(e => (e.LoweredName, e.PersonType, e.LoweredRole)).ToArray();
 
         var distinctPersons = distinctCredits.DistinctBy(e => (e.LoweredName, e.PersonType)).ToArray();
-        var personKeys = distinctPersons.Select(e => e.LoweredName + "-" + e.PersonType).ToArray();
 
         using var context = _dbProvider.CreateDbContext();
-        using var transaction = context.Database.BeginTransaction();
-        var existingPersons = context.Peoples.Select(e => new
+        var existingMaps = context.PeopleBaseItemMap
+            .AsNoTracking()
+            .Include(e => e.People)
+            .Where(e => e.ItemId == itemId)
+            .ToList();
+
+        // Most library scans refresh unchanged local metadata. Avoid opening a write
+        // transaction when the item's people mappings, order and roles are unchanged.
+        var incomingCredits = distinctCredits
+            .Select((credit, index) => new
+            {
+                Key = (credit.LoweredName, credit.PersonType, credit.LoweredRole),
+                Role = credit.Person.Role,
+                ListOrder = index,
+                SortOrder = credit.Person.SortOrder
+            })
+            .ToDictionary(e => e.Key);
+        var mappingsAreUnchanged = existingMaps.Count == incomingCredits.Count
+            && existingMaps.All(map =>
+                incomingCredits.TryGetValue(
+                    (map.People.Name.ToLowerInvariant(), map.People.PersonType ?? string.Empty, map.Role?.ToLowerInvariant() ?? string.Empty),
+                    out var incoming)
+                && map.ListOrder == incoming.ListOrder
+                && map.SortOrder == incoming.SortOrder
+                && string.Equals(map.Role ?? string.Empty, incoming.Role, StringComparison.OrdinalIgnoreCase));
+
+        if (mappingsAreUnchanged)
         {
-            item = e,
-            SelectionKey = e.Name.ToLower() + "-" + e.PersonType
-        })
-            .Where(p => personKeys.Contains(p.SelectionKey))
-            .Select(f => f.item)
-            .ToArray();
+            return;
+        }
+
+        using var transaction = context.Database.BeginTransaction();
+        // The fast-path snapshot was read before acquiring the write transaction. Reload
+        // tracked mappings inside it so a concurrent refresh cannot leave stale credits.
+        existingMaps = context.PeopleBaseItemMap
+            .Include(e => e.People)
+            .Where(e => e.ItemId == itemId)
+            .ToList();
+
+        // Query each person type separately so SQLite can use IX_Peoples_NameLower.
+        // Combining the two fields into `lower(Name) || '-' || PersonType` forces a full
+        // scan of Peoples for every media item, which is prohibitive during a large import.
+        var existingPersons = new List<People>();
+        foreach (var personTypeGroup in distinctPersons.GroupBy(e => e.PersonType, StringComparer.Ordinal))
+        {
+            var names = personTypeGroup
+                .Select(e => e.LoweredName)
+                .ToArray();
+
+            existingPersons.AddRange(context.Peoples
+                .Where(e => e.PersonType == personTypeGroup.Key && names.Contains(e.Name.ToLower()))
+                .ToArray());
+        }
 
         var existingPersonKeys = existingPersons.Select(e => (e.Name.ToLowerInvariant(), e.PersonType ?? string.Empty)).ToHashSet();
 
@@ -157,7 +200,6 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             personsEntities.TryAdd((entity.Name.ToLowerInvariant(), entity.PersonType ?? string.Empty), entity);
         }
 
-        var existingMaps = context.PeopleBaseItemMap.Include(e => e.People).Where(e => e.ItemId == itemId).ToList();
         var existingMapsByCredit = new Dictionary<(string LoweredName, string PersonType, string LoweredRole), PeopleBaseItemMap>();
         foreach (var map in existingMaps)
         {
@@ -194,10 +236,42 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             listOrder++;
         }
 
+        var droppedCredits = existingMaps.Select(e => e.PeopleId).Distinct().ToArray();
         context.PeopleBaseItemMap.RemoveRange(existingMaps);
 
         context.SaveChanges();
+
+        // Nothing else ever deletes a credit row, so one left without a single mapping outlives the
+        // credit it stood for: it keeps a person of that name off the dead-person sweep, which only
+        // sees items no credit names, and keeps the name in every by-name list. That is how a credit
+        // a provider dropped, or one a broken provider result invented, becomes impossible to clean up.
+        DeleteCreditsWithoutMapping(context, droppedCredits);
+
+        context.SaveChanges();
         transaction.Commit();
+    }
+
+    /// <inheritdoc/>
+    public int DeleteOrphanedCredits()
+    {
+        using var context = _dbProvider.CreateDbContext();
+
+        return DeleteCreditsWithoutMapping(context, null);
+    }
+
+    // A null candidate list sweeps every credit, anything else only the ones just unmapped.
+    private int DeleteCreditsWithoutMapping(JellyfinDbContext context, IReadOnlyList<Guid>? candidates)
+    {
+        if (candidates is not null && candidates.Count == 0)
+        {
+            return 0;
+        }
+
+        var credits = candidates is null
+            ? context.Peoples.AsQueryable()
+            : context.Peoples.WhereOneOrMany(candidates, e => e.Id);
+
+        return credits.Where(e => !context.PeopleBaseItemMap.Any(f => f.PeopleId == e.Id)).ExecuteDelete();
     }
 
     /// <inheritdoc/>
@@ -206,7 +280,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         using var context = _dbProvider.CreateDbContext();
         var query = context.PeopleBaseItemMap
             .AsNoTracking()
-            .Where(m => itemIds.Contains(m.ItemId));
+            .WhereOneOrMany(itemIds, m => m.ItemId);
 
         if (personTypes.Count > 0)
         {
@@ -242,7 +316,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         using var context = _dbProvider.CreateDbContext();
         var rows = context.PeopleBaseItemMap
             .AsNoTracking()
-            .Where(m => itemIds.Contains(m.ItemId))
+            .WhereOneOrMany(itemIds, m => m.ItemId)
             .OrderBy(m => m.ListOrder)
             .Select(m => new
             {
@@ -349,6 +423,13 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                 .Any(m => m.PeopleId == e.Id && accessibleItems.Any(i => i.Id == m.ItemId)));
         }
 
+        if (filter.MustHaveItem)
+        {
+            // A credit with no by-name item behind it cannot be handed back as one.
+            var personType = itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
+            query = query.Where(e => context.BaseItems.Any(b => b.Type == personType && b.Name == e.Name));
+        }
+
         if (!filter.ItemId.IsEmpty())
         {
             var itemId = filter.ItemId;
@@ -403,12 +484,12 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (!string.IsNullOrWhiteSpace(filter.NameLessThan))
         {
-            query = query.Where(e => e.Name.CompareTo(filter.NameLessThan.ToLowerInvariant()) < 0);
+            query = query.Where(e => e.Name.ToLower().CompareTo(filter.NameLessThan.ToLowerInvariant()) < 0);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWithOrGreater))
         {
-            query = query.Where(e => e.Name.CompareTo(filter.NameStartsWithOrGreater.ToLowerInvariant()) >= 0);
+            query = query.Where(e => e.Name.ToLower().CompareTo(filter.NameStartsWithOrGreater.ToLowerInvariant()) >= 0);
         }
 
         return query;
