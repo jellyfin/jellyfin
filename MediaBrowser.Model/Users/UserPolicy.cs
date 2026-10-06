@@ -29,6 +29,7 @@ namespace MediaBrowser.Model.Users
             EnableAudioPlaybackTranscoding = true;
             EnableVideoPlaybackTranscoding = true;
             EnablePlaybackRemuxing = true;
+            ForcePlaybackRemuxing = false;
             ForceRemoteSourceTranscoding = false;
             EnableLiveTvManagement = true;
             EnableLiveTvAccess = true;
@@ -140,6 +141,11 @@ namespace MediaBrowser.Model.Users
         public bool EnableVideoPlaybackTranscoding { get; set; }
 
         public bool EnablePlaybackRemuxing { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to remux playback when direct play is possible.
+        /// </summary>
+        public bool ForcePlaybackRemuxing { get; set; }
 
         public bool ForceRemoteSourceTranscoding { get; set; }
 

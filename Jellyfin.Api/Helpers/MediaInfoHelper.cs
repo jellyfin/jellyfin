@@ -224,7 +224,11 @@ public class MediaInfoHelper
 
         var user = _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException();
 
-        if (!enableDirectPlay)
+        var forcePlaybackRemuxing = user.HasPermission(PermissionKind.ForcePlaybackRemuxing)
+            && user.HasPermission(PermissionKind.EnablePlaybackRemuxing);
+        options.EnableDirectPlay = enableDirectPlay && !forcePlaybackRemuxing;
+
+        if (!enableDirectPlay || forcePlaybackRemuxing)
         {
             mediaSource.SupportsDirectPlay = false;
         }
