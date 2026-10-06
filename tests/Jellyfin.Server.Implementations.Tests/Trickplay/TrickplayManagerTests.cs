@@ -23,7 +23,7 @@ using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationMa
 
 namespace Jellyfin.Server.Implementations.Tests.Trickplay;
 
-public class TrickplayManagerTests : SqliteDbTestFixture
+public sealed class TrickplayManagerTests : SqliteDbTestFixture
 {
     [Fact]
     public async Task GetTrickplayManifest_RemoteSourceWithPersistedTrickplay_IncludesPersistedInfo()
@@ -139,6 +139,37 @@ public class TrickplayManagerTests : SqliteDbTestFixture
             pathManager);
     }
 
+    [Fact]
+    public async Task DeleteTrickplayDataAsync_DisposesDbContext()
+    {
+        var contexts = new List<JellyfinDbContext>();
+        var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
+        factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                var context = CreateDbContext();
+                contexts.Add(context);
+                return context;
+            });
+
+        // Only the database context factory is used when deleting trickplay data.
+        var trickplayManager = new TrickplayManager(
+            NullLogger<TrickplayManager>.Instance,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            factory.Object,
+            null!,
+            null!);
+
+        await trickplayManager.DeleteTrickplayDataAsync(Guid.NewGuid(), CancellationToken.None);
+
+        var context = Assert.Single(contexts);
+        Assert.Throws<ObjectDisposedException>(() => context.Model);
+    }
+
     private sealed class TestVideo(MediaSourceInfo mediaSource) : Video
     {
         private readonly IReadOnlyList<MediaSourceInfo> _mediaSources = [mediaSource];
@@ -149,3 +180,4 @@ public class TrickplayManagerTests : SqliteDbTestFixture
         }
     }
 }
+

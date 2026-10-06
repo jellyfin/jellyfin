@@ -35,6 +35,37 @@ public sealed partial class BaseItemRepository
     // instance across several lambdas, and this filter is combined into a tree more than once.
     private static Expression<Func<BaseItemEntity, bool>> IsFolderFilter => e => e.IsFolder;
 
+    // Shared by the isPlayed filter and the IsPlayed/IsUnplayed ordering so the two cannot disagree.
+    private Expression<Func<BaseItemEntity, bool>> BuildIsPlayedFilter(JellyfinDbContext context, User user)
+    {
+        // Folders (Series, Seasons, BoxSets, albums, ...) carry no played state of their own and count
+        // as played once no descendant is left unplayed.
+        var unplayedLeafItems = GetAccessFilteredLeafItemsQuery(context, user)
+            .Where(BuildLeafIsPlayedFilter(context, user.Id).Not());
+
+        return IsFolderFilter.And(BuildHasDescendantFilter(context, unplayedLeafItems).Not())
+            .Or(IsFolderFilter.Not().And(BuildLeafIsPlayedFilter(context, user.Id)));
+    }
+
+    private static Expression<Func<BaseItemEntity, bool>> BuildLeafIsPlayedFilter(JellyfinDbContext context, Guid userId)
+    {
+        var playedItemIds = context.UserData
+            .Where(ud => ud.UserId == userId && ud.Played)
+            .Select(ud => ud.ItemId);
+
+        // The primaries of every version group holding a played row, whichever version carries it.
+        var playedGroupIds = context.BaseItems
+            .Where(v => v.PrimaryVersionId != null
+                && context.UserData.Any(ud => ud.UserId == userId
+                    && ud.Played
+                    && (ud.ItemId == v.Id || ud.ItemId == v.PrimaryVersionId)))
+            .Select(v => v.PrimaryVersionId!.Value);
+
+        return e => playedItemIds.Contains(e.Id)
+            || playedGroupIds.Contains(e.Id)
+            || (e.PrimaryVersionId != null && playedGroupIds.Contains(e.PrimaryVersionId.Value));
+    }
+
     // "und" is the language filters' stand-in for a track that declares no language at all.
     private static string NormalizeLanguage(string language)
         => string.Equals(language, "und", StringComparison.OrdinalIgnoreCase) ? "und" : language;
@@ -445,16 +476,8 @@ public sealed partial class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.Name))
         {
-            if (filter.UseRawName == true)
-            {
-                var nameLower = filter.Name.ToLowerInvariant();
-                baseQuery = baseQuery.Where(e => e.Name!.ToLower() == nameLower);
-            }
-            else
-            {
-                var cleanName = filter.Name.GetCleanValue();
-                baseQuery = baseQuery.Where(e => e.CleanName == cleanName);
-            }
+            var cleanName = filter.Name.GetCleanValue();
+            baseQuery = baseQuery.Where(e => e.CleanName == cleanName);
         }
 
         var nameContains = filter.NameContains;
@@ -523,22 +546,7 @@ public sealed partial class BaseItemRepository
 
         if (filter.IsPlayed.HasValue)
         {
-            var userId = filter.User!.Id;
-
-            // Leaf items carry their own played state.
-            var playedItemIds = context.UserData
-                .Where(ud => ud.UserId == userId && ud.Played)
-                .Select(ud => ud.ItemId);
-
-            // Folders (Series, Seasons, BoxSets, albums, ...) have none and count as played once no
-            // descendant is left unplayed, matching what the DTO reports for them. This has to key off
-            // the item itself rather than off the requested item types: tag and collection listings mix
-            // folders and leaf items in a single query.
-            var unplayedLeafItems = GetAccessFilteredLeafItemsQuery(context, filter.User!)
-                .Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
-
-            var isPlayedFilter = IsFolderFilter.And(BuildHasDescendantFilter(context, unplayedLeafItems).Not())
-                .Or(IsFolderFilter.Not().And(e => playedItemIds.Contains(e.Id)));
+            var isPlayedFilter = BuildIsPlayedFilter(context, filter.User!);
 
             baseQuery = baseQuery.Where(filter.IsPlayed.Value ? isPlayedFilter : isPlayedFilter.Not());
         }
@@ -565,8 +573,8 @@ public sealed partial class BaseItemRepository
                 .ToArray();
             var folderIsResumableFilter = IsFolderFilter.And(e => resumableFolderTypes.Contains(e.Type))
                 .And(BuildHasDescendantFilter(context, inProgressLeafItems)
-                    .Or(BuildHasDescendantFilter(context, leafItems.Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played)))
-                        .And(BuildHasDescendantFilter(context, leafItems.Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played))))));
+                    .Or(BuildHasDescendantFilter(context, leafItems.Where(BuildLeafIsPlayedFilter(context, userId)))
+                        .And(BuildHasDescendantFilter(context, leafItems.Where(BuildLeafIsPlayedFilter(context, userId).Not())))));
 
             if (isResumable)
             {
@@ -791,11 +799,16 @@ public sealed partial class BaseItemRepository
         {
             // Exclude owned non-extra items from general queries.
             // Extras (trailers, etc.) have OwnerId set but also have ExtraType set - keep those.
-            // Alternate versions (PrimaryVersionId set) are normally excluded too, but resume queries
-            // keep them so the actually-played version can surface instead of collapsing onto the primary.
-            baseQuery = filter.IsResumable == true
-                ? baseQuery.Where(e => e.OwnerId == null || e.ExtraType != null)
-                : baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
+            baseQuery = baseQuery.Where(e => e.OwnerId == null || e.ExtraType != null);
+
+            // Alternate versions (PrimaryVersionId set) are normally hidden behind their primary, but
+            // resume queries keep them so the actually-played version can surface instead of collapsing
+            // onto the primary, and the library scan keeps them so a merged version is not mistaken for
+            // a new item.
+            if (filter.IsResumable != true && !filter.IncludeAlternateVersions)
+            {
+                baseQuery = ApplyAlternateVersionFiltering(context, baseQuery);
+            }
         }
 
         if (filter.OwnerIds.Length > 0)
@@ -1085,6 +1098,12 @@ public sealed partial class BaseItemRepository
             baseQuery = baseQuery.Where(e => e.Parents!.AsQueryable().Any(ancestorFilter));
         }
 
+        if (filter.DescendantOfId.HasValue)
+        {
+            var descendantIds = DescendantQueryHelper.GetAllDescendantIds(context, filter.DescendantOfId.Value);
+            baseQuery = baseQuery.Where(e => descendantIds.Contains(e.Id));
+        }
+
         if (filter.LinkedChildAncestorIds.Length > 0)
         {
             // Keep folder-like items (BoxSets, Playlists) whose linked children descend from any of the requested ancestor ids.
@@ -1113,11 +1132,12 @@ public sealed partial class BaseItemRepository
             var blockedTagItemIds = context.ItemValuesMap
                 .Where(f => f.ItemValue.Type == ItemValueType.Tags && excludedTags.Contains(f.ItemValue.CleanValue))
                 .Select(f => f.ItemId);
+            var blockedByAncestor = ItemsBelowTaggedAncestor(context, blockedTagItemIds);
 
             baseQuery = baseQuery.Where(e =>
                 !blockedTagItemIds.Contains(e.Id)
                 && !(e.SeriesId.HasValue && blockedTagItemIds.Contains(e.SeriesId.Value))
-                && !e.Parents!.Any(p => blockedTagItemIds.Contains(p.ParentItemId))
+                && !blockedByAncestor.Contains(e.Id)
                 && !(e.TopParentId.HasValue && blockedTagItemIds.Contains(e.TopParentId.Value)));
         }
 
@@ -1129,11 +1149,12 @@ public sealed partial class BaseItemRepository
             var allowedTagItemIds = context.ItemValuesMap
                 .Where(f => f.ItemValue.Type == ItemValueType.Tags && includeTags.Contains(f.ItemValue.CleanValue))
                 .Select(f => f.ItemId);
+            var allowedByAncestor = ItemsBelowTaggedAncestor(context, allowedTagItemIds);
 
             baseQuery = baseQuery.Where(e =>
                 allowedTagItemIds.Contains(e.Id)
                 || (e.SeriesId.HasValue && allowedTagItemIds.Contains(e.SeriesId.Value))
-                || e.Parents!.Any(p => allowedTagItemIds.Contains(p.ParentItemId))
+                || allowedByAncestor.Contains(e.Id)
                 || (e.TopParentId.HasValue && allowedTagItemIds.Contains(e.TopParentId.Value))
 
                 // People don't carry the tags of the media they appear in and would never match

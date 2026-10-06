@@ -138,6 +138,7 @@
  - [SegiH](https://github.com/SegiH)
  - [SenorSmartyPants](https://github.com/SenorSmartyPants)
  - [shemanaev](https://github.com/shemanaev)
+ - [SimonvBez](https://github.com/SimonvBez)
  - [skaro13](https://github.com/skaro13)
  - [sl1288](https://github.com/sl1288)
  - [Smith00101010](https://github.com/Smith00101010)
@@ -240,6 +241,13 @@
  - [Florin-Popescu](https://github.com/Florin-Popescu)
  - [m0g3r](https://github.com/m0g3r)
  - [martin-77](https://github.com/martin-77)
+ - [Oggeb1](https://github.com/Oggeb1)
+ - [scr4bble](https://github.com/scr4bble)
+ - [Mateus Bandeira](https://github.com/mateusbandeiraa)
+ - [excelsior](https://github.com/excelsior-dev)
+ - [TheDreadPirate](https://github.com/thedreaddpirate)
+ - [Daniel Aquino](https://github.com/chino)
+ - [klizas](https://github.com/klizas)
 
 # Emby Contributors
 

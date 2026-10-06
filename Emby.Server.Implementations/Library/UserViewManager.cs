@@ -62,12 +62,11 @@ namespace Emby.Server.Implementations.Library
                 // Playlist and BoxSet libraries require special handling because the folder only references linked items
                 if (folderViewType == CollectionType.playlists || folderViewType == CollectionType.boxsets)
                 {
-                    var items = folder.GetItemList(new InternalItemsQuery(user)
-                    {
-                        ParentId = folder.ParentId
-                    });
+                    var itemKind = folderViewType == CollectionType.playlists
+                        ? BaseItemKind.Playlist
+                        : BaseItemKind.BoxSet;
 
-                    if (!items.Any(item => item.IsVisible(user)))
+                    if (!HasVisibleItem(itemKind, folders, user))
                     {
                         continue;
                     }
@@ -112,7 +111,7 @@ namespace Emby.Server.Implementations.Library
 
             if (_config.Configuration.EnableFolderView)
             {
-                var name = _localizationManager.GetLocalizedString("Folders");
+                var name = _localizationManager.GetServerLocalizedString("Folders");
                 list.Add(_libraryManager.GetNamedView(name, CollectionType.folders, string.Empty));
             }
 
@@ -127,7 +126,7 @@ namespace Emby.Server.Implementations.Library
 
                 list.AddRange(channels);
 
-                if (_liveTvManager.GetEnabledUsers().Select(i => i.Id).Contains(user.Id))
+                if (_liveTvManager.IsEnabledForUser(user))
                 {
                     list.Add(_liveTvManager.GetInternalLiveTvFolder(CancellationToken.None));
                 }
@@ -159,6 +158,32 @@ namespace Emby.Server.Implementations.Library
                 .ToArray();
         }
 
+        private bool HasVisibleItem(BaseItemKind itemKind, IReadOnlyList<Folder> folders, User user)
+        {
+            var topParentIds = folders.SelectMany(GetTopParentIds).ToArray();
+            if (topParentIds.Length == 0)
+            {
+                return false;
+            }
+
+            var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
+            {
+                IncludeItemTypes = [itemKind],
+                TopParentIds = topParentIds,
+                GroupByPresentationUniqueKey = false,
+                DtoOptions = DtoOptions.StoredColumnsOnly
+            });
+
+            return items.Any(item => item.IsVisible(user));
+        }
+
+        private static IEnumerable<Guid> GetTopParentIds(Folder folder)
+        {
+            return folder is CollectionFolder collectionFolder && collectionFolder.PhysicalFolderIds.Length > 0
+                ? collectionFolder.PhysicalFolderIds
+                : [folder.Id];
+        }
+
         public UserView GetUserSubViewWithName(string name, Guid parentId, CollectionType? type, string sortName)
         {
             var uniqueId = parentId + "subview" + type;
@@ -168,7 +193,7 @@ namespace Emby.Server.Implementations.Library
 
         public UserView GetUserSubView(Guid parentId, CollectionType? type, string localizationKey, string sortName)
         {
-            var name = _localizationManager.GetLocalizedString(localizationKey);
+            var name = _localizationManager.GetServerLocalizedString(localizationKey);
 
             return GetUserSubViewWithName(name, parentId, type, sortName);
         }
@@ -191,7 +216,7 @@ namespace Emby.Server.Implementations.Library
                 return GetUserView((Folder)parents[0], viewType, string.Empty);
             }
 
-            var name = _localizationManager.GetLocalizedString(localizationKey);
+            var name = _localizationManager.GetServerLocalizedString(localizationKey);
             return _libraryManager.GetNamedView(user, name, viewType, sortName);
         }
 

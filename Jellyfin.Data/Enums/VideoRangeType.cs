@@ -61,8 +61,9 @@ public enum VideoRangeType
     DOVIWithELHDR10Plus,
 
     /// <summary>
-    /// Dolby Vision with invalid configuration. e.g. Profile 8 compat id 6.
-    /// When using this range, the server would assume the video is still HDR10 after removing the Dolby Vision metadata.
+    /// Dolby Vision with invalid configuration, e.g. Profile 8 compat id 6 or inconsistent base-layer color metadata.
+    /// The base layer is classified as HDR only when its transfer characteristics signal PQ or HLG.
+    /// Otherwise, it is classified as SDR.
     /// </summary>
     DOVIInvalid,
 
