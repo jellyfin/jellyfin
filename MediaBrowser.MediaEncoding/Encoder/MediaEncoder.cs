@@ -749,7 +749,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
             var args = string.Format(
                 CultureInfo.InvariantCulture,
-                "-i {0}{1} -threads {2} -v quiet -vframes 1 -vf {3}{4}{5} -f image2 \"{6}\"",
+                "-i {0}{1} -threads {2} -v quiet -vframes 1 -vf \"{3}\"{4}{5} -f image2 \"{6}\"",
                 inputPath,
                 mapArg,
                 _threads,
