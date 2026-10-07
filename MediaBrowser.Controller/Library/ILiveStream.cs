@@ -24,6 +24,11 @@ namespace MediaBrowser.Controller.Library
 
         string UniqueId { get; }
 
+        /// <summary>
+        /// Gets or sets the channel id for live tv streams.
+        /// </summary>
+        Guid ChannelId { get; set; }
+
         Task Open(CancellationToken openCancellationToken);
 
         Task Close();
