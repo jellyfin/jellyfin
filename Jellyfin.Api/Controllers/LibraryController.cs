@@ -663,14 +663,16 @@ public class LibraryController : BaseJellyfinApiController
     /// </summary>
     /// <param name="itemId">The item id.</param>
     /// <response code="200">Media downloaded.</response>
+    /// <response code="403">User is not allowed to download this item.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="FileResult"/> containing the media stream.</returns>
-    /// <exception cref="ArgumentException">User can't download or item can't be downloaded.</exception>
+    /// <exception cref="ArgumentException">Item can't be downloaded.</exception>
     [HttpGet("Items/{itemId}/Download")]
-    [Authorize(Policy = Policies.Download)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesFile("video/*", "audio/*")]
+    [ProducesFile("video/*", "audio/*", "application/*")]
     public async Task<ActionResult> GetDownload([FromRoute, Required] Guid itemId)
     {
         var userId = User.GetUserId();
@@ -685,7 +687,12 @@ public class LibraryController : BaseJellyfinApiController
 
         if (user is not null)
         {
-            if (!item.CanDownload(user))
+            if (!item.IsAuthorizedToDownload(user))
+            {
+                return Forbid();
+            }
+
+            if (!item.CanDownload())
             {
                 throw new ArgumentException("Item does not support downloading");
             }
