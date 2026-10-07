@@ -47,16 +47,16 @@ public class ApiKeyController : BaseJellyfinApiController
     /// Create a new api key.
     /// </summary>
     /// <param name="app">Name of the app using the authentication key.</param>
-    /// <response code="204">Api key created.</response>
-    /// <returns>A <see cref="NoContentResult"/>.</returns>
+    /// <response code="201">Api key created.</response>
+    /// <returns>The created <see cref="AuthenticationInfo"/>.</returns>
     [HttpPost("Keys")]
     [Authorize(Policy = Policies.RequiresElevation)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult> CreateKey([FromQuery, Required] string app)
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    public async Task<ActionResult<AuthenticationInfo>> CreateKey([FromQuery, Required] string app)
     {
-        await _authenticationManager.CreateApiKey(app).ConfigureAwait(false);
+        var created = await _authenticationManager.CreateApiKey(app).ConfigureAwait(false);
 
-        return NoContent();
+        return StatusCode(StatusCodes.Status201Created, created);
     }
 
     /// <summary>
