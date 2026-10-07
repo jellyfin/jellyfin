@@ -73,9 +73,9 @@ public class TmdbMovieProviderTests
     {
         _searches.Add((name, year));
 
-        IReadOnlyList<SearchMovie>? results = name == "Hoop Dreams"
+        IReadOnlyList<SearchMovie> results = name == "Hoop Dreams"
             ? [new SearchMovie { Id = 1234, Title = "Hoop Dreams", ReleaseDate = new DateTime(1994, 10, 14, 0, 0, 0, DateTimeKind.Utc) }]
             : [];
-        return Task.FromResult(results);
+        return Task.FromResult<IReadOnlyList<SearchMovie>?>(results);
     }
 }
