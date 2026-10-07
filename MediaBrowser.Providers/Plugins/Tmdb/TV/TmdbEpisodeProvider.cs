@@ -104,6 +104,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return metadataResult;
             }
 
+            var episodeGroup = info.SeriesProviderIds.GetValueOrDefault(TmdbEpisodeGroupId.ProviderKey);
             TvEpisode? episodeResult = null;
             if (info.IndexNumberEnd.HasValue)
             {
@@ -112,7 +113,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 List<TvEpisode>? result = null;
                 for (int? episode = startindex; episode <= endindex; episode++)
                 {
-                    var episodeInfo = await _tmdbClientManager.GetEpisodeAsync(seriesTmdbId, seasonNumber, episode.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                    var episodeInfo = await _tmdbClientManager.GetEpisodeAsync(seriesTmdbId, seasonNumber, episode.Value, episodeGroup, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
                     if (episodeInfo is not null)
                     {
                         (result ??= new List<TvEpisode>()).Add(episodeInfo);
@@ -124,6 +125,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     // Forces a deep copy of the first TvEpisode, so we don't modify the original because it's cached
                     episodeResult = new TvEpisode()
                     {
+                        Id = result[0].Id,
                         Name = result[0].Name,
                         Overview = result[0].Overview,
                         AirDate = result[0].AirDate,
@@ -156,7 +158,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             else
             {
                 episodeResult = await _tmdbClientManager
-                    .GetEpisodeAsync(seriesTmdbId, seasonNumber, episodeNumber.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken)
+                    .GetEpisodeAsync(seriesTmdbId, seasonNumber, episodeNumber.Value, episodeGroup, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken)
                     .ConfigureAwait(false);
             }
 
@@ -185,6 +187,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 Overview = episodeResult.Overview,
                 CommunityRating = Convert.ToSingle(episodeResult.VoteAverage)
             };
+
+            if (episodeResult.Id is int episodeTmdbId and > 0)
+            {
+                item.SetProviderId(MetadataProvider.Tmdb, episodeTmdbId.ToString(CultureInfo.InvariantCulture));
+            }
 
             var externalIds = episodeResult.ExternalIds;
             item.TrySetProviderId(MetadataProvider.Tvdb, externalIds?.TvdbId);

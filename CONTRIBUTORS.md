@@ -231,6 +231,7 @@
  - [bjorntp](https://github.com/bjorntp)
  - [martenumberto](https://github.com/martenumberto)
  - [ZeusCraft10](https://github.com/ZeusCraft10)
+ - [AliveDevil](https://github.com/AliveDevil)
  - [MarcoCoreDuo](https://github.com/MarcoCoreDuo)
  - [LiHRaM](https://github.com/LiHRaM)
  - [MSalman5230](https://github.com/MSalman5230)
@@ -242,6 +243,12 @@
  - [m0g3r](https://github.com/m0g3r)
  - [martin-77](https://github.com/martin-77)
  - [Oggeb1](https://github.com/Oggeb1)
+ - [scr4bble](https://github.com/scr4bble)
+ - [Mateus Bandeira](https://github.com/mateusbandeiraa)
+ - [excelsior](https://github.com/excelsior-dev)
+ - [TheDreadPirate](https://github.com/thedreaddpirate)
+ - [Daniel Aquino](https://github.com/chino)
+ - [klizas](https://github.com/klizas)
 
 # Emby Contributors
 

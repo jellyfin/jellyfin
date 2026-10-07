@@ -29,6 +29,7 @@ public class FindExtrasTests
 {
     private readonly Emby.Server.Implementations.Library.LibraryManager _libraryManager;
     private readonly Mock<IFileSystem> _fileSystemMock;
+    private readonly Mock<IItemRepository> _itemRepositoryMock;
 
     public FindExtrasTests()
     {
@@ -36,8 +37,8 @@ public class FindExtrasTests
         fixture.Register(() => new NamingOptions());
         var configMock = fixture.Freeze<Mock<IServerConfigurationManager>>();
         configMock.Setup(c => c.ApplicationPaths.ProgramDataPath).Returns("/data");
-        var itemRepository = fixture.Freeze<Mock<IItemRepository>>();
-        itemRepository.Setup(i => i.RetrieveItem(It.IsAny<Guid>())).Returns<BaseItem>(null);
+        _itemRepositoryMock = fixture.Freeze<Mock<IItemRepository>>();
+        _itemRepositoryMock.Setup(i => i.RetrieveItem(It.IsAny<Guid>())).Returns<BaseItem>(null);
         _fileSystemMock = fixture.Freeze<Mock<IFileSystem>>();
         _fileSystemMock.Setup(f => f.GetFileInfo(It.IsAny<string>())).Returns<string>(path => new FileSystemMetadata { FullName = path });
 
@@ -479,6 +480,69 @@ public class FindExtrasTests
         Assert.Equal("Trailer 2", extras[1].Name);
         Assert.Equal("Trailer 3", extras[2].Name);
         Assert.Equal("Trailer 4", extras[3].Name);
+    }
+
+    [Fact]
+    public void FindExtras_ExtraNamedByLocalMetadata_KeepsItsNameOnRescan()
+    {
+        var owner = new Movie { Name = "Up", Path = "/movies/Up (2009)/Up (2009).mkv" };
+        var paths = new List<string>
+        {
+            "/movies/Up (2009)/Up (2009).mkv",
+            "/movies/Up (2009)/Up (2009)-trailer.mkv"
+        };
+
+        var files = paths.Select(p => new FileSystemMetadata
+        {
+            FullName = p,
+            IsDirectory = false
+        }).ToList();
+
+        var directoryService = new DirectoryService(_fileSystemMock.Object);
+        var extra = Assert.Single(_libraryManager.FindExtras(owner, files, directoryService));
+        Assert.Equal("Trailer", extra.Name);
+
+        // A local metadata file gives the extra a title of its own, which the refresh persists
+        extra.Name = "Cannes Teaser";
+        _itemRepositoryMock.Setup(i => i.RetrieveItem(extra.Id)).Returns(extra);
+
+        var rescanned = Assert.Single(_libraryManager.FindExtras(owner, files, directoryService));
+        Assert.Equal("Cannes Teaser", rescanned.Name);
+    }
+
+    [Fact]
+    public void FindExtras_ExtraKeptItsGeneratedName_IsRenumberedOnRescan()
+    {
+        var owner = new Movie { Name = "Up", Path = "/movies/Up (2009)/Up (2009).mkv" };
+        var paths = new List<string>
+        {
+            "/movies/Up (2009)/Up (2009).mkv",
+            "/movies/Up (2009)/Up (2009)-trailer2.mkv"
+        };
+
+        var files = paths.Select(p => new FileSystemMetadata
+        {
+            FullName = p,
+            IsDirectory = false
+        }).ToList();
+
+        var directoryService = new DirectoryService(_fileSystemMock.Object);
+        var extra = Assert.Single(_libraryManager.FindExtras(owner, files, directoryService));
+        Assert.Equal("Trailer", extra.Name);
+        _itemRepositoryMock.Setup(i => i.RetrieveItem(extra.Id)).Returns(extra);
+
+        // A trailer sorting before the known one takes the first number, so the known one moves on
+        files.Add(new FileSystemMetadata
+        {
+            FullName = "/movies/Up (2009)/Up (2009)-trailer1.mkv",
+            IsDirectory = false
+        });
+
+        var rescanned = _libraryManager.FindExtras(owner, files, directoryService)
+            .ToDictionary(e => e.Path, e => e.Name, StringComparer.Ordinal);
+
+        Assert.Equal("Trailer", rescanned["/movies/Up (2009)/Up (2009)-trailer1.mkv"]);
+        Assert.Equal("Trailer 2", rescanned["/movies/Up (2009)/Up (2009)-trailer2.mkv"]);
     }
 
     [Fact]

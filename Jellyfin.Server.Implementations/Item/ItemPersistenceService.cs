@@ -141,12 +141,12 @@ public class ItemPersistenceService : IItemPersistenceService
         context.Chapters.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.CustomItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.ItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDelete();
         context.ItemValuesMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ParentId).ExecuteDelete();
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ChildId).ExecuteDelete();
         var peopleIds = context.PeopleBaseItemMap.WhereOneOrMany(relatedItems, e => e.ItemId).Select(f => f.PeopleId).Distinct().ToArray();
         context.BaseItems.WhereOneOrMany(relatedItems, e => e.Id).ExecuteDelete();
+        context.ItemValues.Where(e => !e.BaseItemsMap!.Any()).ExecuteDelete();
         context.KeyframeData.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.MediaSegments.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.MediaStreamInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
@@ -230,17 +230,18 @@ public class ItemPersistenceService : IItemPersistenceService
             var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
             await using (transaction.ConfigureAwait(false))
             {
-                var userKeys = item.GetUserDataKeys().ToArray();
-                var retentionDate = (DateTime?)null;
+                var userKeys = item.GetUserDataKeys().Distinct().ToList();
 
-                await dbContext.UserData
+                var detached = await dbContext.UserData
                     .Where(e => e.ItemId == BaseItemRepository.PlaceholderId)
                     .Where(e => userKeys.Contains(e.CustomDataKey))
-                    .ExecuteUpdateAsync(
-                        e => e
-                            .SetProperty(f => f.ItemId, item.Id)
-                            .SetProperty(f => f.RetentionDate, retentionDate),
-                        cancellationToken).ConfigureAwait(false);
+                    .ToListAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (detached.Count > 0)
+                {
+                    await ReconcileUserDataAsync(dbContext, item, userKeys, detached, cancellationToken).ConfigureAwait(false);
+                }
 
                 item.UserData = await dbContext.UserData
                     .AsNoTracking()
@@ -251,6 +252,62 @@ public class ItemPersistenceService : IItemPersistenceService
                 await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
             }
         }
+    }
+
+    private static async Task ReconcileUserDataAsync(
+        JellyfinDbContext dbContext,
+        BaseItemDto item,
+        IReadOnlyList<string> userKeys,
+        List<UserData> detached,
+        CancellationToken cancellationToken)
+    {
+        var existing = await dbContext.UserData
+            .Where(e => e.ItemId == item.Id)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        // Keys the item no longer reports are carried over: they may only be missing mid-refresh.
+        var winners = detached.Concat(existing)
+            .GroupBy(e => e.UserId)
+            .Select(g => (
+                Winner: g
+                    .OrderByDescending(e => e.LastPlayedDate)
+                    .ThenByDescending(e => e.PlayCount)
+                    .ThenByDescending(e => e.PlaybackPositionTicks)
+                    .First(),
+                Keys: userKeys.Union(g.Select(e => e.CustomDataKey)).ToList()))
+            .ToList();
+
+        dbContext.UserData.RemoveRange(detached);
+        dbContext.UserData.RemoveRange(existing);
+        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        foreach (var (winner, keys) in winners)
+        {
+            foreach (var key in keys)
+            {
+                dbContext.UserData.Add(new UserData
+                {
+                    ItemId = item.Id,
+                    Item = null,
+                    UserId = winner.UserId,
+                    User = null,
+                    CustomDataKey = key,
+                    RetentionDate = null,
+                    AudioStreamIndex = winner.AudioStreamIndex,
+                    IsFavorite = winner.IsFavorite,
+                    LastPlayedDate = winner.LastPlayedDate,
+                    Likes = winner.Likes,
+                    PlaybackPositionTicks = winner.PlaybackPositionTicks,
+                    PlayCount = winner.PlayCount,
+                    Played = winner.Played,
+                    Rating = winner.Rating,
+                    SubtitleStreamIndex = winner.SubtitleStreamIndex
+                });
+            }
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private void UpdateOrInsertItems(IReadOnlyList<BaseItemDto> items, CancellationToken cancellationToken)
