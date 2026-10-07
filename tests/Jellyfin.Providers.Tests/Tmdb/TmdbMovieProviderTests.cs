@@ -12,8 +12,8 @@ namespace Jellyfin.Providers.Tests.Tmdb;
 
 public class TmdbMovieProviderTests
 {
-    private const string FolderName = "www.UIndex.org    -    Misery 1990 1080p BluRay x264-OFT";
-    private const string FilePath = "/movies/www.UIndex.org    -    Misery 1990 1080p BluRay x264-OFT/Misery 1990 1080p BluRay x264-OFT.mkv";
+    private const string FolderName = "www.example.org    -    Hoop Dreams 1994 1080p";
+    private const string FilePath = "/movies/www.example.org    -    Hoop Dreams 1994 1080p/Hoop Dreams 1994 1080p.mkv";
 
     private static readonly NamingOptions _namingOptions = new();
 
@@ -26,23 +26,23 @@ public class TmdbMovieProviderTests
 
         Assert.NotNull(match);
         Assert.Equal(1234, match.Id);
-        Assert.Equal([("www UIndex org Misery", 1990), ("Misery", 1990)], _searches);
+        Assert.Equal([("www example org Hoop Dreams", 1994), ("Hoop Dreams", 1994)], _searches);
     }
 
     [Fact]
     public async Task FindMatchAsync_FolderNameFindsResults_DoesNotSearchByFileName()
     {
-        var match = await TmdbMovieProvider.FindMatchAsync("Misery 1990", FilePath, null, ParseName, SearchOnlyKnownTitle);
+        var match = await TmdbMovieProvider.FindMatchAsync("Hoop Dreams 1994", FilePath, null, ParseName, SearchOnlyKnownTitle);
 
         Assert.NotNull(match);
         Assert.Equal(1234, match.Id);
-        Assert.Equal([("Misery", 1990)], _searches);
+        Assert.Equal([("Hoop Dreams", 1994)], _searches);
     }
 
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    [InlineData("/movies/www.UIndex.org    -    Misery 1990 1080p BluRay x264-OFT.mkv")]
+    [InlineData("/movies/www.example.org    -    Hoop Dreams 1994 1080p.mkv")]
     public async Task FindMatchAsync_NoDifferentFileName_SearchesOnce(string? path)
     {
         var match = await TmdbMovieProvider.FindMatchAsync(FolderName, path, null, ParseName, SearchOnlyKnownTitle);
@@ -73,8 +73,8 @@ public class TmdbMovieProviderTests
     {
         _searches.Add((name, year));
 
-        IReadOnlyList<SearchMovie>? results = name == "Misery"
-            ? [new SearchMovie { Id = 1234, Title = "Misery", ReleaseDate = new DateTime(1990, 11, 30, 0, 0, 0, DateTimeKind.Utc) }]
+        IReadOnlyList<SearchMovie>? results = name == "Hoop Dreams"
+            ? [new SearchMovie { Id = 1234, Title = "Hoop Dreams", ReleaseDate = new DateTime(1994, 10, 14, 0, 0, 0, DateTimeKind.Utc) }]
             : [];
         return Task.FromResult(results);
     }
