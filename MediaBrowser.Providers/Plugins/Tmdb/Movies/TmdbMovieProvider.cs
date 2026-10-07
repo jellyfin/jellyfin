@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -148,6 +149,18 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             return remoteSearchResults;
         }
 
+        private async Task<(IReadOnlyList<SearchMovie>? Results, ItemLookupInfo ParsedName, int Year)> SearchByNameAsync(string name, MovieInfo info, CancellationToken cancellationToken)
+        {
+            // ParseName is required here.
+            // Caller provides the name with extension stripped and NOT the parsed name
+            var parsedName = _libraryManager.ParseName(name);
+            var cleanedName = TmdbUtils.CleanName(parsedName.Name);
+            var searchYear = info.Year ?? parsedName.Year ?? 0;
+
+            var results = await _tmdbClientManager.SearchMovieAsync(cleanedName, searchYear, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+            return (results, parsedName, searchYear);
+        }
+
         /// <inheritdoc />
         public async Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
         {
@@ -159,13 +172,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             if (tmdbId <= 0 && string.IsNullOrEmpty(imdbId))
             {
-                // ParseName is required here.
-                // Caller provides the filename with extension stripped and NOT the parsed filename
-                var parsedName = _libraryManager.ParseName(info.Name);
-                var cleanedName = TmdbUtils.CleanName(parsedName.Name);
-                var searchYear = info.Year ?? parsedName.Year ?? 0;
+                var (searchResults, parsedName, searchYear) = await SearchByNameAsync(info.Name, info, cancellationToken).ConfigureAwait(false);
 
-                var searchResults = await _tmdbClientManager.SearchMovieAsync(cleanedName, searchYear, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                // The folder name can carry text that is not part of the title (e.g. "www.example.org - Movie"), which
+                // leaves the search empty. The file name often doesn't, so try it before giving up.
+                if (searchResults is null or { Count: 0 }
+                    && !string.IsNullOrEmpty(info.Path)
+                    && Path.GetFileNameWithoutExtension(info.Path) is { Length: > 0 } fileName
+                    && !string.Equals(fileName, info.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    (searchResults, parsedName, searchYear) = await SearchByNameAsync(fileName, info, cancellationToken).ConfigureAwait(false);
+                }
 
                 var match = TmdbUtils.FindBestMatch(searchResults, parsedName.Name, searchYear);
 
