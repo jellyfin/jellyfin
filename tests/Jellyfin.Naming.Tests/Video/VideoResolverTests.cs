@@ -34,6 +34,13 @@ namespace Jellyfin.Naming.Tests.Video
 
             data.Add(
                 new VideoFileInfo(
+                    path: "/server/Movies/Misery (1990)/www.UIndex.org    -    Misery 1990 1080p.mkv",
+                    container: "mkv",
+                    name: "Misery",
+                    year: 1990));
+
+            data.Add(
+                new VideoFileInfo(
                     path: "/server/Movies/brave (2007)/brave (2006).3d.sbs.mkv",
                     container: "mkv",
                     name: "brave",
