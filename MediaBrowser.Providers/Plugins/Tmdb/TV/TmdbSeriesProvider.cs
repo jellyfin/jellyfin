@@ -146,7 +146,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             WithDisplayOrder(series, remoteResult, search);
 
-            remoteResult.PremiereDate = series.FirstAirDate?.ToUniversalTime();
+            remoteResult.PremiereDate = series.FirstAirDate?.ToUtcDate();
             remoteResult.ProductionYear = series.FirstAirDate?.Year;
 
             return remoteResult;
