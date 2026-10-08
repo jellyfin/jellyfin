@@ -488,6 +488,42 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             {
                                 video.Video3DFormat = Video3DFormat.MVC;
                             }
+                            else if (string.Equals("MVHEVC", val, StringComparison.OrdinalIgnoreCase))
+                            {
+                                video.Video3DFormat = Video3DFormat.MVHEVC;
+                            }
+                            else if (string.Equals("180SBS", val, StringComparison.OrdinalIgnoreCase))
+                            {
+                                video.Video3DFormat = Video3DFormat.Equirectangular180SideBySide;
+                            }
+                            else if (string.Equals("180TAB", val, StringComparison.OrdinalIgnoreCase))
+                            {
+                                video.Video3DFormat = Video3DFormat.Equirectangular180TopAndBottom;
+                            }
+                            else if (string.Equals("180MONO", val, StringComparison.OrdinalIgnoreCase))
+                            {
+                                video.Video3DFormat = Video3DFormat.Equirectangular180Mono;
+                            }
+                            else if (string.Equals("360SBS", val, StringComparison.OrdinalIgnoreCase))
+                            {
+                                video.Video3DFormat = Video3DFormat.Equirectangular360SideBySide;
+                            }
+                            else if (string.Equals("360TAB", val, StringComparison.OrdinalIgnoreCase))
+                            {
+                                video.Video3DFormat = Video3DFormat.Equirectangular360TopAndBottom;
+                            }
+                            else if (string.Equals("360MONO", val, StringComparison.OrdinalIgnoreCase))
+                            {
+                                video.Video3DFormat = Video3DFormat.Equirectangular360Mono;
+                            }
+                            else if (string.Equals("FISHEYE180SBS", val, StringComparison.OrdinalIgnoreCase))
+                            {
+                                video.Video3DFormat = Video3DFormat.Fisheye180SideBySide;
+                            }
+                            else if (string.Equals("FISHEYE180MONO", val, StringComparison.OrdinalIgnoreCase))
+                            {
+                                video.Video3DFormat = Video3DFormat.Fisheye180Mono;
+                            }
                         }
 
                         break;
