@@ -35,6 +35,7 @@ using Emby.Server.Implementations.QuickConnect;
 using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Session;
+using Emby.Server.Implementations.Streaming;
 using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
@@ -80,6 +81,7 @@ using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Controller.TV;
@@ -627,6 +629,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
 
+            serviceCollection.AddSingleton<IStreamProvider, CbzStreamProvider>();
             serviceCollection.AddSingleton<ITranscodeManager, TranscodeManager>();
             serviceCollection.AddScoped<MediaInfoHelper>();
             serviceCollection.AddScoped<AudioHelper>();
