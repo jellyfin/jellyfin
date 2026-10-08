@@ -405,7 +405,7 @@ namespace MediaBrowser.Providers.Manager
             var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
             var fetcherOrder = typeOptions?.ImageFetcherOrder ?? options.ImageFetcherOrder;
 
-            return _imageProviders.Where(i => CanRefreshImages(i, item, typeOptions, refreshOptions, includeDisabled))
+            return _imageProviders.Where(i => CanRefreshImages(i, item, libraryOptions, typeOptions, refreshOptions, includeDisabled))
                 .OrderBy(i => GetConfiguredOrder(fetcherOrder, i.Name))
                 .ThenBy(GetDefaultOrder);
         }
@@ -413,6 +413,7 @@ namespace MediaBrowser.Providers.Manager
         private bool CanRefreshImages(
             IImageProvider provider,
             BaseItem item,
+            LibraryOptions libraryOptions,
             TypeOptions? libraryTypeOptions,
             ImageRefreshOptions refreshOptions,
             bool includeDisabled)
@@ -430,9 +431,16 @@ namespace MediaBrowser.Providers.Manager
                 return false;
             }
 
-            if (includeDisabled || provider is ILocalImageProvider)
+            if (includeDisabled)
             {
                 return true;
+            }
+
+            // Local image providers are not part of the image fetcher list and are enabled
+            // unless the library opts out of them.
+            if (provider is ILocalImageProvider)
+            {
+                return libraryOptions.DisabledLocalImageProviders?.Contains(provider.Name, StringComparison.OrdinalIgnoreCase) != true;
             }
 
             if (item.IsLocked && refreshOptions.ImageRefreshMode != MetadataRefreshMode.FullRefresh)
