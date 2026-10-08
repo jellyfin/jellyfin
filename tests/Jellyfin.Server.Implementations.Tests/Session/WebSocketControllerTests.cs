@@ -79,6 +79,20 @@ public class WebSocketControllerTests
         Assert.Empty(context.Exceptions);
     }
 
+    [Fact]
+    public async Task IsSessionActive_AfterDispose_IsFalse()
+    {
+        var socket = new Mock<IWebSocketConnection>();
+        socket.Setup(s => s.DisposeAsync()).Returns(ValueTask.CompletedTask);
+
+        var controller = CreateController();
+        controller.AddWebSocket(socket.Object);
+        await controller.DisposeAsync();
+
+        Assert.False(controller.IsSessionActive);
+        Assert.False(controller.SupportsMediaControl);
+    }
+
     private static WebSocketController CreateController()
     {
         var sessionManager = Mock.Of<ISessionManager>();
