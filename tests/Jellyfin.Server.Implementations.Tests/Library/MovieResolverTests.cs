@@ -70,6 +70,26 @@ public class MovieResolverTests
     }
 
     [Fact]
+    public void ResolveMultiple_GivenMixedCollectionSeries_CreatesEpisodeItemsWithAlternateVersions()
+    {
+        var movieResolver = new MovieResolver(Mock.Of<IImageProcessor>(), Mock.Of<ILogger<MovieResolver>>(), _namingOptions, Mock.Of<IDirectoryService>(), _videoListResolver);
+
+        var parent = new Series { Path = "/TV/Show (2024)" };
+        var files = new List<FileSystemMetadata>
+        {
+            new() { FullName = "/TV/Show (2024)/Show (2024) S01E01 - 1080p.mkv", Name = "Show (2024) S01E01 - 1080p.mkv", IsDirectory = false },
+            new() { FullName = "/TV/Show (2024)/Show (2024) S01E01 - 720p.mkv", Name = "Show (2024) S01E01 - 720p.mkv", IsDirectory = false }
+        };
+
+        var result = movieResolver.ResolveMultiple(parent, files, null, Mock.Of<IDirectoryService>());
+
+        Assert.NotNull(result);
+        var episode = Assert.Single(result.Items);
+        Assert.IsType<Episode>(episode);
+        Assert.Single(((Video)episode).LocalAlternateVersions);
+    }
+
+    [Fact]
     public void ResolveMultiple_GivenMoviesCollection_CreatesMovieItems()
     {
         // For a movies collection, the multi-version grouping must produce Movie
