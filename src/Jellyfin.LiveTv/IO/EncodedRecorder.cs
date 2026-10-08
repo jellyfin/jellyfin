@@ -179,7 +179,6 @@ namespace Jellyfin.LiveTv.IO
 
             if (mediaSource.RequiredHttpHeaders.TryGetValue("User-Agent", out string useragent))
             {
-                _logger.LogInformation("Recording user agent::: {Useragent}", useragent);
                 inputModifier += " -user_agent \"" + useragent + "\"";
             }
 
