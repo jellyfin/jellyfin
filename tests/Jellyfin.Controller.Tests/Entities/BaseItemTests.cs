@@ -248,6 +248,13 @@ public class BaseItemTests
         "Blade Runner (1982) [EE by ADM] [480p HEVC AAC]",
         "[Final Cut] [1080p HEVC AAC]",
         "[EE by ADM] [480p HEVC AAC]")]
+    // Mixed delimiters: one version uses '-' and the other uses '[...]' after a shared token
+    // (e.g. a UPC code). The '[' acts as an implicit boundary; the shared token is fully removed.
+    [InlineData(
+        "Pure Country (1992) - UPC 085391259329 - 480p",
+        "Pure Country (1992) - UPC 085391259329 [Fullscreen] - 480p",
+        "480p",
+        "[Fullscreen] - 480p")]
     // Numeric version labels: the dot between the digits is a decimal point, not a delimiter, so the
     // prefix retreats past it to the '-' instead of leaving "0" / "11".
     [InlineData(
