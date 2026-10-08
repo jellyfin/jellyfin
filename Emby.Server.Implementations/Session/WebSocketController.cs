@@ -141,7 +141,7 @@ namespace Emby.Server.Implementations.Session
             }
             catch (Exception ex) when (ex is WebSocketException or ObjectDisposedException)
             {
-                _logger.LogWarning("WS {IP} error sending data: {Message}", socket.RemoteEndPoint, ex.Message);
+                _logger.LogWarning(ex, "WS {IP} error sending data", socket.RemoteEndPoint);
             }
         }
 
