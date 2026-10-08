@@ -39,4 +39,9 @@ public static class InternalClaimTypes
     /// Is Api Key.
     /// </summary>
     public const string IsApiKey = "Jellyfin-IsApiKey";
+
+    /// <summary>
+    /// Playback grant token.
+    /// </summary>
+    public const string PlaybackToken = "Jellyfin-PlaybackToken";
 }

@@ -335,7 +335,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="FileContentResult"/> with the HLS subtitle playlist.</returns>
     [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/subtitles.m3u8")]
-    [Authorize]
+    [Authorize(Policy = Policies.Streaming)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesPlaylistFile]

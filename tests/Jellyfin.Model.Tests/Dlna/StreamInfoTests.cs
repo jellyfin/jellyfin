@@ -222,6 +222,17 @@ public class StreamInfoTests
     }
 
     [Fact]
+    public void ToUrl_PlaybackToken_ReplacesAccessToken()
+    {
+        var streamInfo = new StreamInfo { DeviceProfile = new DeviceProfile(), PlaybackToken = "grant" };
+
+        string url = streamInfo.ToUrl(BaseUrl, "123", null);
+
+        Assert.Contains("PlaybackToken=grant", url, StringComparison.Ordinal);
+        Assert.DoesNotContain("ApiKey", url, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Fuzzy_Comparison()
     {
         var streamInfo = new LegacyStreamInfo(Guid.Empty, DlnaProfileType.Video)
@@ -231,6 +242,7 @@ public class StreamInfoTests
         for (int i = 0; i < 100000; i++)
         {
             FillAllProperties(streamInfo);
+            streamInfo.PlaybackToken = null;
             string legacyUrl = streamInfo.ToUrl_Original(BaseUrl, "123");
 
             string newUrl = streamInfo.ToUrl(BaseUrl, "123", null);

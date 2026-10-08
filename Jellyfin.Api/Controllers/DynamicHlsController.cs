@@ -15,6 +15,7 @@ using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.MediaEncoding.Hls.Playlist;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
@@ -402,6 +403,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
     [HttpGet("Videos/{itemId}/master.m3u8")]
+    [Authorize(Policy = Policies.Streaming)]
     [HttpHead("Videos/{itemId}/master.m3u8", Name = "HeadMasterHlsVideoPlaylist")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesPlaylistFile]
@@ -575,6 +577,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <response code="200">Audio stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
     [HttpGet("Audio/{itemId}/master.m3u8")]
+    [Authorize(Policy = Policies.Streaming)]
     [HttpHead("Audio/{itemId}/master.m3u8", Name = "HeadMasterHlsAudioPlaylist")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesPlaylistFile]
@@ -743,6 +746,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("Videos/{itemId}/main.m3u8")]
+    [Authorize(Policy = Policies.Streaming)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesPlaylistFile]
     public async Task<ActionResult> GetVariantHlsVideoPlaylist(
@@ -912,6 +916,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <response code="200">Audio stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("Audio/{itemId}/main.m3u8")]
+    [Authorize(Policy = Policies.Streaming)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesPlaylistFile]
     public async Task<ActionResult> GetVariantHlsAudioPlaylist(
@@ -1084,6 +1089,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("Videos/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
+    [Authorize(Policy = Policies.Streaming)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesVideoFile]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "playlistId", Justification = "Imported from ServiceStack")]
@@ -1266,6 +1272,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("Audio/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
+    [Authorize(Policy = Policies.Streaming)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesAudioFile]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "playlistId", Justification = "Imported from ServiceStack")]

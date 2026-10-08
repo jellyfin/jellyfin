@@ -94,4 +94,9 @@ public static class Policies
     /// Policy name for accessing lyric management.
     /// </summary>
     public const string LyricManagement = "LyricManagement";
+
+    /// <summary>
+    /// Policy name for streaming with an account or a playback grant.
+    /// </summary>
+    public const string Streaming = "Streaming";
 }
