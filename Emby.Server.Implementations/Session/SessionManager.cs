@@ -67,6 +67,9 @@ namespace Emby.Server.Implementations.Session
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> _activeLiveStreamSessions
             = new(StringComparer.OrdinalIgnoreCase);
 
+        private readonly ConcurrentDictionary<string, string> _replacedLiveStreamPlaySessions
+            = new(StringComparer.OrdinalIgnoreCase);
+
         private Timer _idleTimer;
         private Timer _inactiveTimer;
 
@@ -341,6 +344,11 @@ namespace Emby.Server.Implementations.Session
                 if (activeSessionMappings.IsEmpty)
                 {
                     _activeLiveStreamSessions.TryRemove(liveStreamId, out _);
+
+                    foreach (var replaced in _replacedLiveStreamPlaySessions.Where(i => string.Equals(i.Value, liveStreamId, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        _replacedLiveStreamPlaySessions.TryRemove(replaced);
+                    }
                 }
             }
             else
@@ -359,6 +367,18 @@ namespace Emby.Server.Implementations.Session
                     _logger.LogError(ex, "Error closing live stream");
                 }
             }
+        }
+
+        private Task CloseLiveStreamForStoppedPlaybackAsync(PlaybackStopInfo info, SessionInfo session)
+        {
+            // The consumer of a replaced play session was already closed when it was replaced. A late stop
+            // report for it must not close the consumer of the play session that replaced it.
+            if (!string.IsNullOrEmpty(info.PlaySessionId) && _replacedLiveStreamPlaySessions.TryRemove(info.PlaySessionId, out _))
+            {
+                return Task.CompletedTask;
+            }
+
+            return CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id);
         }
 
         /// <inheritdoc />
@@ -796,7 +816,7 @@ namespace Emby.Server.Implementations.Session
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
             {
-                UpdateLiveStreamActiveSessionMappings(info.LiveStreamId, info.SessionId, info.PlaySessionId);
+                await UpdateLiveStreamActiveSessionMappings(info.LiveStreamId, info.SessionId, info.PlaySessionId).ConfigureAwait(false);
             }
 
             var eventArgs = new PlaybackStartEventArgs
@@ -868,7 +888,7 @@ namespace Emby.Server.Implementations.Session
             return OnPlaybackProgress(info, false);
         }
 
-        private void UpdateLiveStreamActiveSessionMappings(string liveStreamId, string sessionId, string playSessionId)
+        private async Task UpdateLiveStreamActiveSessionMappings(string liveStreamId, string sessionId, string playSessionId)
         {
             var activeSessionMappings = _activeLiveStreamSessions.GetOrAdd(liveStreamId, _ => new ConcurrentDictionary<string, string>());
 
@@ -879,6 +899,15 @@ namespace Emby.Server.Implementations.Session
                     if (!string.IsNullOrEmpty(currentPlaySessionId))
                     {
                         activeSessionMappings.TryRemove(currentPlaySessionId, out _);
+
+                        // A session plays one thing at a time, and the replaced play session may never be reported
+                        // as stopped. If both play sessions opened their own consumer, close the replaced one.
+                        // A play session that reuses the stream (e.g. a transcoding fallback) opened none.
+                        if (_mediaSourceManager.IsLiveStreamOpenedFor(liveStreamId, playSessionId)
+                            && await _mediaSourceManager.CloseLiveStream(liveStreamId, currentPlaySessionId).ConfigureAwait(false))
+                        {
+                            _replacedLiveStreamPlaySessions[currentPlaySessionId] = liveStreamId;
+                        }
                     }
 
                     activeSessionMappings[sessionId] = playSessionId;
@@ -937,7 +966,7 @@ namespace Emby.Server.Implementations.Session
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
             {
-                UpdateLiveStreamActiveSessionMappings(info.LiveStreamId, info.SessionId, info.PlaySessionId);
+                await UpdateLiveStreamActiveSessionMappings(info.LiveStreamId, info.SessionId, info.PlaySessionId).ConfigureAwait(false);
             }
 
             var eventArgs = new PlaybackProgressEventArgs
@@ -1077,7 +1106,7 @@ namespace Emby.Server.Implementations.Session
                 // resource leaks when stalled clients report a negative PositionTicks.
                 if (!string.IsNullOrEmpty(info.LiveStreamId))
                 {
-                    await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id).ConfigureAwait(false);
+                    await CloseLiveStreamForStoppedPlaybackAsync(info, session).ConfigureAwait(false);
                 }
 
                 throw new ArgumentOutOfRangeException(nameof(info), "The PlaybackStopInfo's PositionTicks was negative.");
@@ -1150,7 +1179,7 @@ namespace Emby.Server.Implementations.Session
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
             {
-                await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id).ConfigureAwait(false);
+                await CloseLiveStreamForStoppedPlaybackAsync(info, session).ConfigureAwait(false);
             }
 
             var eventArgs = new PlaybackStopEventArgs

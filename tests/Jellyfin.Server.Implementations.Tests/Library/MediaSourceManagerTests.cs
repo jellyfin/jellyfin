@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Castle.Components.DictionaryAdapter;
@@ -8,6 +11,7 @@ using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -324,6 +328,73 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             Video.RecordingsManager = recordingsManager.Object;
 
             return (primary, alt1, alt2);
+        }
+
+        [Fact]
+        public async Task CloseLiveStream_PlaySession_ClosesOnlyThatPlaySessionsConsumer()
+        {
+            var (liveStream, liveStreamId) = await OpenSharedLiveStream("play-1", "play-2");
+
+            Assert.True(_mediaSourceManager.IsLiveStreamOpenedFor(liveStreamId, "play-1"));
+            Assert.True(_mediaSourceManager.IsLiveStreamOpenedFor(liveStreamId, "play-2"));
+            Assert.False(_mediaSourceManager.IsLiveStreamOpenedFor(liveStreamId, "play-3"));
+            Assert.Equal(2, liveStream.Object.ConsumerCount);
+
+            Assert.True(await _mediaSourceManager.CloseLiveStream(liveStreamId, "play-1"));
+            Assert.False(await _mediaSourceManager.CloseLiveStream(liveStreamId, "play-1"));
+            Assert.False(await _mediaSourceManager.CloseLiveStream(liveStreamId, "play-3"));
+
+            Assert.Equal(1, liveStream.Object.ConsumerCount);
+            Assert.False(_mediaSourceManager.IsLiveStreamOpenedFor(liveStreamId, "play-1"));
+            liveStream.Verify(s => s.Close(), Times.Never);
+
+            Assert.True(await _mediaSourceManager.CloseLiveStream(liveStreamId, "play-2"));
+
+            Assert.Equal(0, liveStream.Object.ConsumerCount);
+            liveStream.Verify(s => s.Close(), Times.Once);
+        }
+
+        [Fact]
+        public async Task CloseLiveStream_LastConsumer_ForgetsPlaySessions()
+        {
+            var (liveStream, liveStreamId) = await OpenSharedLiveStream("play-1", "play-2");
+
+            await _mediaSourceManager.CloseLiveStream(liveStreamId);
+            await _mediaSourceManager.CloseLiveStream(liveStreamId);
+
+            liveStream.Verify(s => s.Close(), Times.Once);
+            Assert.False(_mediaSourceManager.IsLiveStreamOpenedFor(liveStreamId, "play-1"));
+            Assert.False(_mediaSourceManager.IsLiveStreamOpenedFor(liveStreamId, "play-2"));
+            Assert.False(await _mediaSourceManager.CloseLiveStream(liveStreamId, "play-1"));
+        }
+
+        private async Task<(Mock<ILiveStream> LiveStream, string LiveStreamId)> OpenSharedLiveStream(params string[] playSessionIds)
+        {
+            var liveStream = new Mock<ILiveStream>();
+            liveStream.SetupProperty(s => s.ConsumerCount, 0);
+            liveStream.SetupProperty(s => s.MediaSource, new MediaSourceInfo { LiveStreamId = "stream", SupportsProbing = false });
+            liveStream.Setup(s => s.Close()).Returns(Task.CompletedTask);
+
+            var provider = new Mock<IMediaSourceProvider>();
+            provider
+                .Setup(p => p.OpenMediaSource(It.IsAny<string>(), It.IsAny<List<ILiveStream>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(() =>
+                {
+                    // Tuner hosts share an open stream by counting another consumer.
+                    liveStream.Object.ConsumerCount++;
+                    return liveStream.Object;
+                });
+            _mediaSourceManager.AddParts([provider.Object]);
+
+            var openToken = provider.Object.GetType().FullName!.GetMD5().ToString("N", CultureInfo.InvariantCulture) + "_channel";
+            string? liveStreamId = null;
+            foreach (var playSessionId in playSessionIds)
+            {
+                var response = await _mediaSourceManager.OpenLiveStream(new LiveStreamRequest { OpenToken = openToken, PlaySessionId = playSessionId }, CancellationToken.None);
+                liveStreamId = response.MediaSource.LiveStreamId;
+            }
+
+            return (liveStream, liveStreamId!);
         }
     }
 }
