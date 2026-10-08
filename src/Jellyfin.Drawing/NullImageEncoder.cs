@@ -60,4 +60,10 @@ public class NullImageEncoder : IImageEncoder
     {
         throw new NotImplementedException();
     }
+
+    /// <inheritdoc />
+    public string? DetectContentAspectRatio(IReadOnlyList<string> tilePaths, int tileWidth, int tileHeight, int thumbWidth, int thumbHeight, int thumbnailCount)
+    {
+        throw new NotImplementedException();
+    }
 }
