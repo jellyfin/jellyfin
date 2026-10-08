@@ -132,6 +132,22 @@ namespace MediaBrowser.Controller.Library
         /// <returns>Task.</returns>
         Task CloseLiveStream(string id);
 
+        /// <summary>
+        /// Closes the live stream consumer that was opened for a play session, if it is still open.
+        /// </summary>
+        /// <param name="id">The live stream identifier.</param>
+        /// <param name="playSessionId">The play session the consumer was opened for.</param>
+        /// <returns><c>true</c> if a consumer was closed.</returns>
+        Task<bool> CloseLiveStream(string id, string playSessionId);
+
+        /// <summary>
+        /// Gets a value indicating whether a play session holds an open consumer of a live stream.
+        /// </summary>
+        /// <param name="id">The live stream identifier.</param>
+        /// <param name="playSessionId">The play session identifier.</param>
+        /// <returns><c>true</c> if the play session opened a consumer of the live stream that is still open.</returns>
+        bool IsLiveStreamOpenedFor(string id, string playSessionId);
+
         Task<MediaSourceInfo> GetLiveStreamMediaInfo(string id, CancellationToken cancellationToken);
 
         bool SupportsDirectStream(string path, MediaProtocol protocol);
