@@ -44,6 +44,7 @@
  - [DrPandemic](https://github.com/DrPandemic)
  - [eglia](https://github.com/eglia)
  - [EgorBakanov](https://github.com/EgorBakanov)
+ - [eilandnl](https://github.com/eilandnl)
  - [EraYaN](https://github.com/EraYaN)
  - [escabe](https://github.com/escabe)
  - [excelite](https://github.com/excelite)
