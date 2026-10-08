@@ -4,12 +4,14 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
@@ -20,6 +22,12 @@ namespace Jellyfin.LiveTv.TunerHosts
     public class LiveStream : ILiveStream
     {
         private readonly IConfigurationManager _configurationManager;
+        private readonly object _chunkLock = new();
+        private readonly List<string> _chunkPaths = new();
+        private readonly bool _isRollingChunkEnabled;
+        private readonly string _singleFilePath;
+        private int _nextChunkIndex;
+        private string _chunkDirectory = string.Empty;
 
         public LiveStream(
             MediaSourceInfo mediaSource,
@@ -45,7 +53,9 @@ namespace Jellyfin.LiveTv.TunerHosts
             StreamHelper = streamHelper;
 
             ConsumerCount = 1;
-            SetTempFilePath("ts");
+            _isRollingChunkEnabled = configurationManager.GetEncodingOptions().LiveStreamKeepSeconds > 0;
+            SetChunkDirectory();
+            _singleFilePath = Path.Combine(configurationManager.GetTranscodePath(), UniqueId + ".ts");
         }
 
         protected IFileSystem FileSystem { get; }
@@ -56,7 +66,9 @@ namespace Jellyfin.LiveTv.TunerHosts
 
         protected CancellationTokenSource LiveStreamCancellationTokenSource { get; } = new CancellationTokenSource();
 
-        protected string TempFilePath { get; set; }
+        internal string ChunkDirectory => _chunkDirectory;
+
+        protected bool IsRollingChunkEnabled => _isRollingChunkEnabled;
 
         public MediaSourceInfo OriginalMediaSource { get; set; }
 
@@ -74,9 +86,9 @@ namespace Jellyfin.LiveTv.TunerHosts
 
         public DateTime DateOpened { get; protected set; }
 
-        protected void SetTempFilePath(string extension)
+        private void SetChunkDirectory()
         {
-            TempFilePath = Path.Combine(_configurationManager.GetTranscodePath(), UniqueId + "." + extension);
+            _chunkDirectory = Path.Combine(_configurationManager.GetTranscodePath(), UniqueId);
         }
 
         public virtual Task Open(CancellationToken openCancellationToken)
@@ -96,21 +108,118 @@ namespace Jellyfin.LiveTv.TunerHosts
 
         public Stream GetStream()
         {
-            var stream = new FileStream(
-                TempFilePath,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.ReadWrite,
-                IODefaults.FileStreamBufferSize,
-                FileOptions.SequentialScan | FileOptions.Asynchronous);
-
-            bool seekFile = (DateTime.UtcNow - DateOpened).TotalSeconds > 10;
-            if (seekFile)
+            lock (_chunkLock)
             {
-                TrySeek(stream, -20000);
+                if (_chunkPaths.Count == 0)
+                {
+                    throw new InvalidOperationException("Live stream has not started yet.");
+                }
+            }
+
+            if (!_isRollingChunkEnabled)
+            {
+                return new FileStream(
+                    _singleFilePath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.ReadWrite | FileShare.Delete,
+                    IODefaults.FileStreamBufferSize,
+                    FileOptions.Asynchronous);
+            }
+
+            bool seekToLiveEdge = (DateTime.UtcNow - DateOpened).TotalSeconds > 10;
+            return new RollingChunkStream(_chunkPaths, _chunkLock, Logger, seekToLiveEdge);
+        }
+
+        /// <summary>
+        /// Opens the first chunk file for writing. Must be called before <see cref="RotateChunk"/>.
+        /// </summary>
+        /// <returns>A <see cref="FileStream"/> open for writing to the first chunk.</returns>
+        protected FileStream OpenInitialChunk()
+        {
+            string path;
+            if (_isRollingChunkEnabled)
+            {
+                Directory.CreateDirectory(_chunkDirectory);
+                path = GetChunkPath(_nextChunkIndex++);
+            }
+            else
+            {
+                path = _singleFilePath;
+            }
+
+            // Create the file before making the path visible to readers.
+            var stream = OpenWriteStream(path);
+            lock (_chunkLock)
+            {
+                _chunkPaths.Add(path);
             }
 
             return stream;
+        }
+
+        /// <summary>
+        /// Returns true when the current chunk has been open long enough to rotate.
+        /// </summary>
+        /// <param name="chunkOpenedAt">The UTC time when the current chunk was opened.</param>
+        /// <returns><see langword="true"/> when the chunk should be rotated; otherwise <see langword="false"/>.</returns>
+        protected bool ShouldRotateChunk(DateTime chunkOpenedAt)
+        {
+            var options = _configurationManager.GetEncodingOptions();
+            if (options.LiveStreamKeepSeconds <= 0)
+            {
+                return false;
+            }
+
+            int chunkDurationSeconds = ComputeChunkDurationSeconds(options);
+            return (DateTime.UtcNow - chunkOpenedAt).TotalSeconds >= chunkDurationSeconds;
+        }
+
+        /// <summary>
+        /// Seals the current chunk, opens the next one, and deletes any chunk outside the keep window.
+        /// Returns the new write stream and the time the new chunk was opened.
+        /// </summary>
+        /// <returns>The new <see cref="FileStream"/> and the UTC time it was opened.</returns>
+        protected (FileStream NewStream, DateTime NewChunkTime) RotateChunk()
+        {
+            string newPath;
+            string toDelete = null;
+
+            lock (_chunkLock)
+            {
+                newPath = GetChunkPath(_nextChunkIndex++);
+
+                var options = _configurationManager.GetEncodingOptions();
+                int maxChunks = ComputeMaxChunks(options);
+
+                // +1 because we are about to add newPath but want the file to exist first.
+                if (_chunkPaths.Count + 1 > maxChunks)
+                {
+                    toDelete = _chunkPaths[0];
+                    _chunkPaths.RemoveAt(0);
+                }
+            }
+
+            if (toDelete is not null)
+            {
+                try
+                {
+                    FileSystem.DeleteFile(toDelete);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogDebug(ex, "Error deleting live stream chunk {Path}", toDelete);
+                }
+            }
+
+            // Create the file before making the path visible to readers.
+            var newStream = OpenWriteStream(newPath);
+            lock (_chunkLock)
+            {
+                _chunkPaths.Add(newPath);
+            }
+
+            return (newStream, DateTime.UtcNow);
         }
 
         /// <inheritdoc />
@@ -128,49 +237,82 @@ namespace Jellyfin.LiveTv.TunerHosts
             }
         }
 
-        protected async Task DeleteTempFiles(string path, int retryCount = 0)
+        protected async Task DeleteChunks(int retryCount = 0)
         {
+            if (!_isRollingChunkEnabled)
+            {
+                if (retryCount == 0)
+                {
+                    Logger.LogInformation("Deleting live stream file {Path}", _singleFilePath);
+                }
+
+                try
+                {
+                    if (File.Exists(_singleFilePath))
+                    {
+                        File.Delete(_singleFilePath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error deleting live stream file {Path}", _singleFilePath);
+                    if (retryCount <= 40)
+                    {
+                        await Task.Delay(500).ConfigureAwait(false);
+                        await DeleteChunks(retryCount + 1).ConfigureAwait(false);
+                    }
+                }
+
+                return;
+            }
+
             if (retryCount == 0)
             {
-                Logger.LogInformation("Deleting temp file {FilePath}", path);
+                Logger.LogInformation("Deleting live stream chunk directory {Directory}", _chunkDirectory);
             }
 
             try
             {
-                FileSystem.DeleteFile(path);
+                if (Directory.Exists(_chunkDirectory))
+                {
+                    Directory.Delete(_chunkDirectory, recursive: true);
+                }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error deleting file {FilePath}", path);
+                Logger.LogError(ex, "Error deleting chunk directory {Directory}", _chunkDirectory);
                 if (retryCount <= 40)
                 {
                     await Task.Delay(500).ConfigureAwait(false);
-                    await DeleteTempFiles(path, retryCount + 1).ConfigureAwait(false);
+                    await DeleteChunks(retryCount + 1).ConfigureAwait(false);
                 }
             }
         }
 
-        private void TrySeek(FileStream stream, long offset)
-        {
-            if (!stream.CanSeek)
-            {
-                return;
-            }
+        private string GetChunkPath(int index)
+            => Path.Combine(_chunkDirectory, $"chunk_{index.ToString(CultureInfo.InvariantCulture)}.ts");
 
-            try
-            {
-                stream.Seek(offset, SeekOrigin.End);
-            }
-            catch (IOException)
-            {
-            }
-            catch (ArgumentException)
-            {
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error seeking stream");
-            }
+        private static FileStream OpenWriteStream(string path)
+            => new FileStream(
+                path,
+                FileMode.Create,
+                FileAccess.Write,
+                FileShare.ReadWrite | FileShare.Delete,
+                IODefaults.FileStreamBufferSize,
+                FileOptions.Asynchronous);
+
+        private static int ComputeChunkDurationSeconds(EncodingOptions options)
+        {
+            int keepSeconds = Math.Max(options.LiveStreamKeepSeconds, 60);
+            return Math.Max(keepSeconds / 4, 30);
+        }
+
+        private static int ComputeMaxChunks(EncodingOptions options)
+        {
+            int keepSeconds = Math.Max(options.LiveStreamKeepSeconds, 60);
+            int chunkDuration = Math.Max(keepSeconds / 4, 30);
+            // +1 for the in-progress chunk being written
+            return (keepSeconds / chunkDuration) + 1;
         }
     }
 }
