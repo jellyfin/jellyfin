@@ -513,6 +513,7 @@ namespace Jellyfin.Server.Implementations.Users
                     EnableAllFolders = user.HasPermission(PermissionKind.EnableAllFolders),
                     EnableRemoteControlOfOtherUsers = user.HasPermission(PermissionKind.EnableRemoteControlOfOtherUsers),
                     EnablePlaybackRemuxing = user.HasPermission(PermissionKind.EnablePlaybackRemuxing),
+                    ForcePlaybackRemuxing = user.HasPermission(PermissionKind.ForcePlaybackRemuxing),
                     ForceRemoteSourceTranscoding = user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding),
                     EnablePublicSharing = user.HasPermission(PermissionKind.EnablePublicSharing),
                     EnableCollectionManagement = user.HasPermission(PermissionKind.EnableCollectionManagement),
@@ -896,6 +897,7 @@ namespace Jellyfin.Server.Implementations.Users
                     user.SetPermission(PermissionKind.EnableAllFolders, policy.EnableAllFolders);
                     user.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, policy.EnableRemoteControlOfOtherUsers);
                     user.SetPermission(PermissionKind.EnablePlaybackRemuxing, policy.EnablePlaybackRemuxing);
+                    user.SetPermission(PermissionKind.ForcePlaybackRemuxing, policy.ForcePlaybackRemuxing);
                     user.SetPermission(PermissionKind.EnableCollectionManagement, policy.EnableCollectionManagement);
                     user.SetPermission(PermissionKind.EnableSubtitleManagement, policy.EnableSubtitleManagement);
                     user.SetPermission(PermissionKind.EnableLyricManagement, policy.EnableLyricManagement);
