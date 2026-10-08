@@ -950,19 +950,19 @@ namespace MediaBrowser.Controller.MediaEncoding
                 renderNodePath);
         }
 
-        private string GetQsvDeviceArgs(string renderNodePath, string alias)
+        private string GetQsvDeviceArgs(string deviceIdentifier, string alias)
         {
             var arg = " -init_hw_device qsv=" + (alias ?? QsvAlias);
             if (OperatingSystem.IsLinux())
             {
                 // derive qsv from vaapi device
-                return GetVaapiDeviceArgs(renderNodePath, "iHD", "i915", "0x8086", null, VaapiAlias) + arg + "@" + VaapiAlias;
+                return GetVaapiDeviceArgs(deviceIdentifier, "iHD", "i915", "0x8086", null, VaapiAlias) + arg + "@" + VaapiAlias;
             }
 
             if (OperatingSystem.IsWindows())
             {
                 // on Windows, the deviceIndex is an int
-                if (int.TryParse(renderNodePath, NumberStyles.Integer, CultureInfo.InvariantCulture, out int deviceIndex))
+                if (int.TryParse(deviceIdentifier, NumberStyles.Integer, CultureInfo.InvariantCulture, out int deviceIndex))
                 {
                     return GetD3d11vaDeviceArgs(deviceIndex, string.Empty, D3d11vaAlias) + arg + "@" + D3d11vaAlias;
                 }
