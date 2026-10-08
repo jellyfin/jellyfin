@@ -65,6 +65,8 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.HardwareAccelerationDevices;
+using MediaBrowser.Controller.HardwareAccelerationDevices.ConcreteDiscoverers;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LibraryTaskScheduler;
@@ -635,6 +637,10 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IDirectoryService, DirectoryService>();
 
             serviceCollection.AddSingleton<IMediaSegmentManager, MediaSegmentManager>();
+
+            serviceCollection.AddSingleton<ILinuxDrmDeviceNodesDiscoverer, LinuxDrmDeviceNodesDiscoverer>();
+            serviceCollection.AddSingleton<IHardwareAccelerationTypeDeviceDiscoverer, LinuxVaapiDeviceDiscoverer>();
+            serviceCollection.AddSingleton<IHardwareAccelerationDeviceManager, HardwareAccelerationDeviceManager>();
         }
 
         /// <summary>
