@@ -183,13 +183,8 @@ namespace Emby.Server.Implementations.QuickConnect
             return result.AuthenticationResult;
         }
 
-        private string GenerateSecureRandom(int length = 32)
-        {
-            Span<byte> bytes = stackalloc byte[length];
-            RandomNumberGenerator.Fill(bytes);
-
-            return Convert.ToHexString(bytes);
-        }
+        private static string GenerateSecureRandom(int length = 32) =>
+            RandomNumberGenerator.GetHexString(length * 2);
 
         /// <summary>
         /// Expire quick connect requests that are over the time limit. If <paramref name="expireAll"/> is true, all requests are unconditionally expired.

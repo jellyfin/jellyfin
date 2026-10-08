@@ -1,5 +1,4 @@
 using System;
-using System.Buffers;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net.Mime;
@@ -331,15 +330,8 @@ public class MediaInfoController : BaseJellyfinApiController
     [ProducesFile(MediaTypeNames.Application.Octet)]
     public ActionResult GetBitrateTestBytes([FromQuery][Range(1, 100_000_000, ErrorMessage = "The requested size must be greater than or equal to {1} and less than or equal to {2}")] int size = 102400)
     {
-        byte[] buffer = ArrayPool<byte>.Shared.Rent(size);
-        try
-        {
-            Random.Shared.NextBytes(buffer);
-            return File(buffer, MediaTypeNames.Application.Octet);
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(buffer);
-        }
+        byte[] buffer = new byte[size];
+        Random.Shared.NextBytes(buffer);
+        return File(buffer, MediaTypeNames.Application.Octet);
     }
 }

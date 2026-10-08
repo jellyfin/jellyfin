@@ -194,7 +194,7 @@ public static class QueryPartitionHelpers
         }
         finally
         {
-            ArrayPool<TEntity>.Shared.Return(items);
+            ArrayPool<TEntity>.Shared.Return(items, clearArray: RuntimeHelpers.IsReferenceOrContainsReferences<TEntity>());
         }
     }
 
