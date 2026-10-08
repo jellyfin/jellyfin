@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using Emby.Naming.Book;
+using Emby.Naming.Common;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
@@ -14,7 +15,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
 {
     public class BookResolver : ItemResolver<Book>
     {
-        private readonly string[] _validExtensions = { ".azw", ".azw3", ".cb7", ".cbr", ".cbt", ".cbz", ".epub", ".mobi", ".pdf" };
+        private readonly NamingOptions _namingOptions;
+
+        public BookResolver(NamingOptions namingOptions)
+        {
+            _namingOptions = namingOptions;
+        }
 
         protected override Book? Resolve(ItemResolveArgs args)
         {
@@ -33,7 +39,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
 
             var extension = Path.GetExtension(args.Path.AsSpan());
 
-            if (!_validExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
+            if (!_namingOptions.BookFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
@@ -58,7 +64,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
             {
                 var fileExtension = Path.GetExtension(f.FullName.AsSpan());
 
-                return _validExtensions.Contains(
+                return _namingOptions.BookFileExtensions.Contains(
                     fileExtension,
                     StringComparison.OrdinalIgnoreCase);
             }).ToList();
