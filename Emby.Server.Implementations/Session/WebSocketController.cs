@@ -106,13 +106,12 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public Task SendMessage<T>(
+        public async Task SendMessage<T>(
             SessionMessageType name,
             Guid messageId,
             T data,
             CancellationToken cancellationToken)
         {
-            ObjectDisposedException.ThrowIf(_disposed != 0, this);
             IWebSocketConnection? socket;
             try
             {
@@ -126,17 +125,24 @@ namespace Emby.Server.Implementations.Session
 
             if (socket is null)
             {
-                return Task.CompletedTask;
+                return;
             }
 
-            return socket.SendAsync(
-                new OutboundWebSocketMessage<T>
-                {
-                    Data = data,
-                    MessageType = name,
-                    MessageId = messageId
-                },
-                cancellationToken);
+            try
+            {
+                await socket.SendAsync(
+                    new OutboundWebSocketMessage<T>
+                    {
+                        Data = data,
+                        MessageType = name,
+                        MessageId = messageId
+                    },
+                    cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is WebSocketException or ObjectDisposedException)
+            {
+                _logger.LogWarning("WS {IP} error sending data: {Message}", socket.RemoteEndPoint, ex.Message);
+            }
         }
 
         /// <inheritdoc />
