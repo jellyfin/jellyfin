@@ -94,6 +94,41 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
         public void GetEstimatedAudioBitrate_ReturnsExpected(string codec, string? profile, int? channels, int? expected)
             => Assert.Equal(expected, ProbeResultNormalizer.GetEstimatedAudioBitrate(codec, profile, channels));
 
+        [Theory]
+        [InlineData("IMDB", "tt0092099", MetadataProvider.Imdb, "tt0092099")]
+        [InlineData("IMDBID", "tt0092099", MetadataProvider.Imdb, "tt0092099")]
+        [InlineData("IMDB_ID", "tt0092099", MetadataProvider.Imdb, "tt0092099")]
+        [InlineData("TMDB", "movie/744", MetadataProvider.Tmdb, "744")]
+        [InlineData("TMDBID", "744", MetadataProvider.Tmdb, "744")]
+        [InlineData("TMDB_ID", "movie/744/", MetadataProvider.Tmdb, "744")]
+        [InlineData("TVDB", "movies/905", MetadataProvider.Tvdb, "905")]
+        [InlineData("TVDBID", "905", MetadataProvider.Tvdb, "905")]
+        [InlineData("TVDB_ID", "movies/905/", MetadataProvider.Tvdb, "905")]
+        public void GetMediaInfo_EmbeddedProviderId_Success(
+            string tagName,
+            string tagValue,
+            MetadataProvider provider,
+            string expectedId)
+        {
+            var bytes = File.ReadAllBytes("Test Data/Probing/video_metadata.json");
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+
+            var tags = internalMediaInfoResult!.Format!.Tags
+                .ToDictionary(i => i.Key, i => i.Value, StringComparer.OrdinalIgnoreCase);
+
+            tags[tagName] = tagValue;
+            internalMediaInfoResult.Format.Tags = tags;
+
+            var result = _probeResultNormalizer.GetMediaInfo(
+                internalMediaInfoResult,
+                VideoType.VideoFile,
+                false,
+                "Test Data/Probing/video_metadata.mkv",
+                MediaProtocol.File);
+
+            Assert.Equal(expectedId, result.GetProviderId(provider));
+        }
+
         [Fact]
         public void GetMediaInfo_MetaData_Success()
         {
