@@ -425,6 +425,11 @@ namespace MediaBrowser.Model.Dto
         public string DisplayOrder { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the series inverts episode ordering.
+        /// </summary>
+        public bool? InvertEpisodeOrder { get; set; }
+
+        /// <summary>
         /// Gets or sets the album id.
         /// </summary>
         /// <value>The album id.</value>
