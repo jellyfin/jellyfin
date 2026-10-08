@@ -40,7 +40,11 @@ namespace Emby.Server.Implementations.Session
         {
             get
             {
-                ObjectDisposedException.ThrowIf(_disposed != 0, this);
+                if (_disposed != 0)
+                {
+                    return false;
+                }
+
                 try
                 {
                     _socketsLock.EnterReadLock();
