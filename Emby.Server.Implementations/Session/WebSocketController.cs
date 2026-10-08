@@ -66,10 +66,10 @@ namespace Emby.Server.Implementations.Session
         public void AddWebSocket(IWebSocketConnection connection)
         {
             _logger.LogDebug("Adding websocket to session {Session}", _session.Id);
-            ObjectDisposedException.ThrowIf(_disposed != 0, this);
             try
             {
                 _socketsLock.EnterWriteLock();
+                ObjectDisposedException.ThrowIf(_disposed != 0, this);
                 _sockets.Add(connection);
                 connection.Closed += OnConnectionClosed;
             }
