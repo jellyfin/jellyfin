@@ -270,14 +270,25 @@ namespace Emby.Server.Implementations.Localization
                 return null;
             }
 
-            var displayName = FindLanguageInfo(language)?.DisplayName;
-            if (displayName is null)
+            var culture = FindLanguageInfo(language);
+            if (culture is null)
             {
                 return null;
             }
 
             // Truncate at the first delimiter to avoid cluttered display names
-            return displayName.Split([';', ','], StringSplitOptions.None)[0].Trim();
+            var displayName = culture.DisplayName.Split([';', ','], StringSplitOptions.None)[0].Trim();
+
+            // Use the name in the current UI culture, like the other localized stream labels,
+            // when .NET describes the same language (it calls zh-CN "Chinese (China)", for example).
+            if (!string.IsNullOrEmpty(culture.TwoLetterISOLanguageName)
+                && TryGetCultureInfo(culture.TwoLetterISOLanguageName, out var cultureInfo)
+                && string.Equals(cultureInfo.EnglishName, displayName, StringComparison.OrdinalIgnoreCase))
+            {
+                return cultureInfo.DisplayName;
+            }
+
+            return displayName;
         }
 
         /// <inheritdoc />

@@ -75,6 +75,7 @@ public interface ILocalizationManager
     /// <summary>
     /// Gets a human-readable display name for the given language code.
     /// Truncates at the first semicolon or comma to avoid cluttered ISO-639-2 names.
+    /// The name is localized to the current UI culture when .NET knows the same language.
     /// </summary>
     /// <param name="language">An ISO language code.</param>
     /// <returns>The display name, or null if not found.</returns>
