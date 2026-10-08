@@ -3,6 +3,7 @@ using System.IO;
 using System.Net.Mime;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
@@ -92,6 +93,12 @@ public class ExceptionMiddleware
             context.Response.StatusCode = GetStatusCode(ex);
             context.Response.ContentType = MediaTypeNames.Text.Plain;
 
+            // Let the client tell this apart from an ordinary permission denial
+            if (IsParentalControlRejection(ex))
+            {
+                context.Response.Headers[ApplicationErrorCodes.HeaderName] = ApplicationErrorCodes.ParentalControl;
+            }
+
             // Don't send exception unless the server is in a Development environment
             var errorContent = _hostEnvironment.IsDevelopment()
                     ? NormalizeExceptionMessage(ex.Message)
@@ -118,6 +125,20 @@ public class ExceptionMiddleware
         }
 
         return ex;
+    }
+
+    private static bool IsParentalControlRejection(Exception? ex)
+    {
+        // UserController rethrows a plain SecurityException to add the remote IP, losing the type
+        for (var current = ex; current is not null; current = current.InnerException)
+        {
+            if (current is ParentalControlException)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static int GetStatusCode(Exception ex)
