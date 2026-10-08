@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Providers;
 
 namespace MediaBrowser.Controller.Entities
@@ -56,6 +57,14 @@ namespace MediaBrowser.Controller.Entities
         public override bool CanDownload()
         {
             return IsFileProtocol;
+        }
+
+        /// <inheritdoc />
+        public override bool IsAuthorizedToDownload(User user)
+        {
+            // Clients read books by fetching the file through the download endpoint,
+            // so books must stay accessible to users without the download permission.
+            return true;
         }
 
         /// <inheritdoc />
