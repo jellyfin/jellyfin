@@ -106,7 +106,9 @@ public class WebSocketControllerTests
         var controller = CreateController();
         controller.AddWebSocket(socket.Object);
 
-        await controller.SendMessage(SessionMessageType.UserDataChanged, Guid.NewGuid(), "data", TestContext.Current.CancellationToken);
+        Assert.Null(await Record.ExceptionAsync(
+            () => controller.SendMessage(SessionMessageType.UserDataChanged, Guid.NewGuid(), "data", TestContext.Current.CancellationToken)));
+        socket.Verify(s => s.SendAsync(It.IsAny<OutboundWebSocketMessage<string>>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
@@ -119,7 +121,9 @@ public class WebSocketControllerTests
         controller.AddWebSocket(socket.Object);
         await controller.DisposeAsync();
 
-        await controller.SendMessage(SessionMessageType.UserDataChanged, Guid.NewGuid(), "data", TestContext.Current.CancellationToken);
+        Assert.Null(await Record.ExceptionAsync(
+            () => controller.SendMessage(SessionMessageType.UserDataChanged, Guid.NewGuid(), "data", TestContext.Current.CancellationToken)));
+        socket.Verify(s => s.SendAsync(It.IsAny<OutboundWebSocketMessage<string>>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 
     [Fact]
