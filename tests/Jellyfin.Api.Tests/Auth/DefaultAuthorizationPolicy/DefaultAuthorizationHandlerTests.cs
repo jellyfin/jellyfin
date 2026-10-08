@@ -8,6 +8,7 @@ using AutoFixture.AutoMoq;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Server.Implementations.Security;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Library;
@@ -79,6 +80,28 @@ namespace Jellyfin.Api.Tests.Auth.DefaultAuthorizationPolicy
 
             await _sut.HandleAsync(context);
             Assert.True(context.HasSucceeded);
+        }
+
+        [Fact]
+        public async Task ShouldFailWithParentalControlErrorCodeWhenScheduleDisallowsAccess()
+        {
+            var accessSchedules = new[]
+            {
+                new AccessSchedule(DynamicDayOfWeek.Everyday, 24, 24, Guid.Empty)
+            };
+            var claims = TestHelpers.SetupUser(
+                _userManagerMock,
+                _httpContextAccessor,
+                UserRoles.User,
+                accessSchedules);
+            var httpContext = new DefaultHttpContext();
+            _httpContextAccessor.SetupGet(h => h.HttpContext).Returns(httpContext);
+            var context = new AuthorizationHandlerContext(_requirements, claims, null);
+
+            await _sut.HandleAsync(context);
+
+            Assert.True(context.HasFailed);
+            Assert.Equal("ParentalControl", httpContext.Response.Headers["X-Application-Error-Code"]);
         }
 
         [Theory]
