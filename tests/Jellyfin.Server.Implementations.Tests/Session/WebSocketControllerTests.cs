@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Session;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Net.WebSocketMessages;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -91,6 +94,53 @@ public class WebSocketControllerTests
 
         Assert.False(controller.IsSessionActive);
         Assert.False(controller.SupportsMediaControl);
+    }
+
+    [Fact]
+    public async Task SendMessage_SocketGoneDuringSend_DoesNotThrow()
+    {
+        var socket = OpenSocket();
+        socket.Setup(s => s.SendAsync(It.IsAny<OutboundWebSocketMessage<string>>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new WebSocketException(WebSocketError.ConnectionClosedPrematurely));
+
+        var controller = CreateController();
+        controller.AddWebSocket(socket.Object);
+
+        await controller.SendMessage(SessionMessageType.UserDataChanged, Guid.NewGuid(), "data", TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task SendMessage_AfterDispose_DoesNotThrow()
+    {
+        var socket = OpenSocket();
+        socket.Setup(s => s.DisposeAsync()).Returns(ValueTask.CompletedTask);
+
+        var controller = CreateController();
+        controller.AddWebSocket(socket.Object);
+        await controller.DisposeAsync();
+
+        await controller.SendMessage(SessionMessageType.UserDataChanged, Guid.NewGuid(), "data", TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task SendMessage_Cancelled_Throws()
+    {
+        var socket = OpenSocket();
+        socket.Setup(s => s.SendAsync(It.IsAny<OutboundWebSocketMessage<string>>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        var controller = CreateController();
+        controller.AddWebSocket(socket.Object);
+
+        await Assert.ThrowsAsync<OperationCanceledException>(
+            () => controller.SendMessage(SessionMessageType.UserDataChanged, Guid.NewGuid(), "data", TestContext.Current.CancellationToken));
+    }
+
+    private static Mock<IWebSocketConnection> OpenSocket()
+    {
+        var socket = new Mock<IWebSocketConnection>();
+        socket.Setup(s => s.State).Returns(WebSocketState.Open);
+        return socket;
     }
 
     private static WebSocketController CreateController()
