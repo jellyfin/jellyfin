@@ -118,6 +118,10 @@ public class ItemCountService : IItemCountService
             {
                 result.BookCount = count.Count;
             }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.AudioBook], StringComparison.Ordinal))
+            {
+                result.AudioBookCount = count.Count;
+            }
         }
 
         return result;
@@ -293,6 +297,10 @@ public class ItemCountService : IItemCountService
                 && !years.Contains(year))
             {
                 years.Add(year);
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.AudioBook], StringComparison.Ordinal))
+            {
+                result.AudioBookCount = count.Count;
             }
         }
 
