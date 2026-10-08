@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace MediaBrowser.Model.Lyrics;
 
 /// <summary>
@@ -6,9 +8,19 @@ namespace MediaBrowser.Model.Lyrics;
 public class LyricMetadata
 {
     /// <summary>
+    /// Gets or sets the lyric id.
+    /// </summary>
+    public string? Id { get; set; }
+
+    /// <summary>
     /// Gets or sets the song artist.
     /// </summary>
     public string? Artist { get; set; }
+
+    /// <summary>
+    /// Gets or sets the lyric artists.
+    /// </summary>
+    public IReadOnlyList<Artist> Artists { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the album this song is on.
@@ -28,10 +40,19 @@ public class LyricMetadata
     /// <summary>
     /// Gets or sets the length of the song in ticks.
     /// </summary>
-    public long? Length { get; set; }
+    public long? Length
+    {
+        get => Duration;
+        set => Duration = value;
+    }
 
     /// <summary>
-    /// Gets or sets who the LRC file was created by.
+    /// Gets or sets the duration of the song in ticks.
+    /// </summary>
+    public long? Duration { get; set; }
+
+    /// <summary>
+    /// Gets or sets who the lyrics file was created by.
     /// </summary>
     public string? By { get; set; }
 
@@ -41,7 +62,7 @@ public class LyricMetadata
     public long? Offset { get; set; }
 
     /// <summary>
-    /// Gets or sets the software used to create the LRC file.
+    /// Gets or sets the software used to create the lyrics file.
     /// </summary>
     public string? Creator { get; set; }
 

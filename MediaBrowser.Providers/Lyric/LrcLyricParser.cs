@@ -40,6 +40,9 @@ public partial class LrcLyricParser : ILyricParser
     public ResolverPriority Priority => ResolverPriority.Fourth;
 
     /// <inheritdoc />
+    public IReadOnlyList<string> SupportedExtensions => _supportedMediaTypes;
+
+    /// <inheritdoc />
     public LyricDto? ParseLyrics(LyricFile lyrics)
     {
         if (!_supportedMediaTypes.Contains(Path.GetExtension(lyrics.Name.AsSpan()), StringComparison.OrdinalIgnoreCase))
@@ -47,76 +50,115 @@ public partial class LrcLyricParser : ILyricParser
             return null;
         }
 
-        Song lyricData;
-
         try
         {
-            lyricData = _lrcLyricParser.Decode(lyrics.Content);
-        }
-        catch (Exception)
-        {
-            // Failed to parse, return null so the next parser will be tried
-            return null;
-        }
+            var lyricData = _lrcLyricParser.Decode(lyrics.Content);
+            var offset = TimedLyricParserHelpers.ParseOffset(lyrics.Content);
+            List<LrcParser.Model.Lyric> sortedLyricData = lyricData.Lyrics.OrderBy(x => x.StartTime).ToList();
 
-        List<LrcParser.Model.Lyric> sortedLyricData = lyricData.Lyrics.OrderBy(x => x.StartTime).ToList();
-
-        if (sortedLyricData.Count == 0)
-        {
-            return null;
-        }
-
-        List<LyricLine> lyricList = [];
-        for (var lineIndex = 0; lineIndex < sortedLyricData.Count; lineIndex++)
-        {
-            var lyric = sortedLyricData[lineIndex];
-
-            // Extract cues from time tags
-            var cues = new List<LyricLineCue>();
-            if (lyric.TimeTags.Count > 0)
+            if (sortedLyricData.Count == 0)
             {
-                var keys = lyric.TimeTags.Keys.ToList();
-                for (var tagIndex = 0; tagIndex < keys.Count - 1; tagIndex++)
-                {
-                    var currentKey = keys[tagIndex];
-                    var nextKey = keys[tagIndex + 1];
+                return null;
+            }
 
-                    var currentPos = currentKey.State == IndexState.End ? currentKey.Index + 1 : currentKey.Index;
-                    var nextPos = nextKey.State == IndexState.End ? nextKey.Index + 1 : nextKey.Index;
-                    var currentMs = lyric.TimeTags[currentKey] ?? 0;
-                    var nextMs = lyric.TimeTags[keys[tagIndex + 1]] ?? 0;
-                    var currentSlice = lyric.Text[currentPos..nextPos];
-                    var currentSliceTrimmed = currentSlice.Trim();
-                    if (currentSliceTrimmed.Length > 0)
+            List<LyricLine> lyricList = [];
+            for (var lineIndex = 0; lineIndex < sortedLyricData.Count; lineIndex++)
+            {
+                var lyric = sortedLyricData[lineIndex];
+                if (lyric.Text is null
+                    || !TimedLyricParserHelpers.TryMilliseconds(lyric.StartTime, out var lyricStartTicks)
+                    || !TimedLyricParserHelpers.TryApplyOffset(lyricStartTicks, offset, out lyricStartTicks))
+                {
+                    return null;
+                }
+
+                long? lyricEndTicks = null;
+                if (lineIndex + 1 < sortedLyricData.Count)
+                {
+                    if (!TimedLyricParserHelpers.TryMilliseconds(sortedLyricData[lineIndex + 1].StartTime, out var nextLineStartTicks)
+                        || !TimedLyricParserHelpers.TryApplyOffset(nextLineStartTicks, offset, out nextLineStartTicks))
                     {
-                        cues.Add(new LyricLineCue(
-                            position: currentPos,
-                            endPosition: nextPos,
-                            start: TimeSpan.FromMilliseconds(currentMs).Ticks,
-                            end: TimeSpan.FromMilliseconds(nextMs).Ticks));
+                        return null;
+                    }
+
+                    lyricEndTicks = nextLineStartTicks;
+                }
+
+                var syllables = new List<LyricSyllable>();
+                if (lyric.TimeTags.Count > 0)
+                {
+                    var keys = lyric.TimeTags.Keys.ToList();
+                    for (var tagIndex = 0; tagIndex < keys.Count - 1; tagIndex++)
+                    {
+                        var currentKey = keys[tagIndex];
+                        var nextKey = keys[tagIndex + 1];
+                        var currentPos = currentKey.State == IndexState.End ? (long)currentKey.Index + 1 : currentKey.Index;
+                        var nextPos = nextKey.State == IndexState.End ? (long)nextKey.Index + 1 : nextKey.Index;
+                        if (currentPos < 0 || nextPos < currentPos || nextPos > lyric.Text.Length
+                            || !TimedLyricParserHelpers.TryMilliseconds(lyric.TimeTags[currentKey] ?? 0, out var currentTicks)
+                            || !TimedLyricParserHelpers.TryMilliseconds(lyric.TimeTags[nextKey] ?? 0, out var nextTicks)
+                            || !TimedLyricParserHelpers.TryApplyOffset(currentTicks, offset, out currentTicks)
+                            || !TimedLyricParserHelpers.TryApplyOffset(nextTicks, offset, out nextTicks))
+                        {
+                            return null;
+                        }
+
+                        var currentSlice = lyric.Text[(int)currentPos..(int)nextPos];
+                        if (currentSlice.Trim().Length > 0)
+                        {
+                            syllables.Add(new LyricSyllable
+                            {
+                                Text = currentSlice,
+                                Start = currentTicks,
+                                End = nextTicks
+                            });
+                        }
+                    }
+
+                    var lastKey = keys[^1];
+                    var lastPos = lastKey.State == IndexState.End ? (long)lastKey.Index + 1 : lastKey.Index;
+                    if (lastPos < 0 || lastPos > lyric.Text.Length
+                        || !TimedLyricParserHelpers.TryMilliseconds(lyric.TimeTags[lastKey] ?? 0, out var lastTicks)
+                        || !TimedLyricParserHelpers.TryApplyOffset(lastTicks, offset, out lastTicks))
+                    {
+                        return null;
+                    }
+
+                    var lastSlice = lyric.Text[(int)lastPos..];
+                    if (lastSlice.Trim().Length > 0)
+                    {
+                        syllables.Add(new LyricSyllable
+                        {
+                            Text = lastSlice,
+                            Start = lastTicks,
+                            End = lyricEndTicks
+                        });
                     }
                 }
 
-                var lastKey = keys[^1];
-                var lastPos = lastKey.State == IndexState.End ? lastKey.Index + 1 : lastKey.Index;
-                var lastMs = lyric.TimeTags[lastKey] ?? 0;
-                var lastSlice = lyric.Text[lastPos..];
-                var lastSliceTrimmed = lastSlice.Trim();
-
-                if (lastSliceTrimmed.Length > 0)
+                lyricList.Add(new LyricLine(lyric.Text, lyricStartTicks)
                 {
-                    cues.Add(new LyricLineCue(
-                        position: lastPos,
-                        endPosition: lyric.Text.Length,
-                        start: TimeSpan.FromMilliseconds(lastMs).Ticks,
-                        end: lineIndex + 1 < sortedLyricData.Count ? TimeSpan.FromMilliseconds(sortedLyricData[lineIndex + 1].StartTime).Ticks : null));
-                }
+                    End = lyricEndTicks,
+                    Syllables = syllables
+                });
             }
 
-            long lyricStartTicks = TimeSpan.FromMilliseconds(lyric.StartTime).Ticks;
-            lyricList.Add(new LyricLine(lyric.Text, lyricStartTicks, cues));
+            return new LyricDto
+            {
+                Tracks =
+                [
+                    new LyricTrack
+                    {
+                        Type = LyricTrackType.Main,
+                        Lines = lyricList
+                    }
+                ]
+            };
         }
-
-        return new LyricDto { Lyrics = lyricList };
+        catch (Exception)
+        {
+            // Malformed parser output must not abort lyric loading.
+            return null;
+        }
     }
 }
