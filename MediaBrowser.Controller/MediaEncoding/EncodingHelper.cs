@@ -523,7 +523,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             if (state.RemoteHttpHeaders.TryGetValue("User-Agent", out string useragent))
             {
-                return "-user_agent \"" + useragent + "\"";
+                return "-user_agent \"" + useragent.EscapeProcessArgument() + "\"";
             }
 
             return string.Empty;
