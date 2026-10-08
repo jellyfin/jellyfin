@@ -21,8 +21,13 @@ namespace Jellyfin.Database.Implementations;
 /// <param name="logger">Logger.</param>
 /// <param name="jellyfinDatabaseProvider">The provider for the database engine specific operations.</param>
 /// <param name="entityFrameworkCoreLocking">The locking behavior.</param>
-public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILogger<JellyfinDbContext> logger, IJellyfinDatabaseProvider jellyfinDatabaseProvider, IEntityFrameworkCoreLockingBehavior entityFrameworkCoreLocking) : DbContext(options)
+public class JellyfinDbContext(DbContextOptions options, ILogger<JellyfinDbContext> logger, IJellyfinDatabaseProvider jellyfinDatabaseProvider, IEntityFrameworkCoreLockingBehavior entityFrameworkCoreLocking) : DbContext(options)
 {
+    /// <summary>
+    /// Gets the database provider for database-specific operations.
+    /// </summary>
+    public IJellyfinDatabaseProvider DatabaseProvider { get; } = jellyfinDatabaseProvider;
+
     /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the access schedules.
     /// </summary>
@@ -325,7 +330,7 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        jellyfinDatabaseProvider.OnModelCreating(modelBuilder);
+        DatabaseProvider.OnModelCreating(modelBuilder);
         base.OnModelCreating(modelBuilder);
 
         // Configuration for each entity is in its own class inside 'ModelConfiguration'.
@@ -335,7 +340,7 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     /// <inheritdoc />
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
-        jellyfinDatabaseProvider.ConfigureConventions(configurationBuilder);
+        DatabaseProvider.ConfigureConventions(configurationBuilder);
         base.ConfigureConventions(configurationBuilder);
     }
 }
