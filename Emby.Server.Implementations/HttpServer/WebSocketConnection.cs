@@ -215,11 +215,14 @@ namespace Emby.Server.Implementations.HttpServer
                     }
                 }
             }
-            while ((_socket.State == WebSocketState.Open || _socket.State == WebSocketState.Connecting)
-                && receiveResult.MessageType != WebSocketMessageType.Close);
+            while (IsReceiving(receiveResult));
 
             return WebSocketCloseStatus.NormalClosure;
         }
+
+        private bool IsReceiving(ValueWebSocketReceiveResult receiveResult)
+            => (_socket.State == WebSocketState.Open || _socket.State == WebSocketState.Connecting)
+                && receiveResult.MessageType != WebSocketMessageType.Close;
 
         private static bool IsConnectionGone(Exception ex)
             => ex is WebSocketException or ObjectDisposedException or OperationCanceledException;
