@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
+using Jellyfin.LiveTv.TunerHosts;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
@@ -175,6 +176,12 @@ namespace Jellyfin.LiveTv.IO
             var analyzeDuration = " -analyzeduration " +
                   (analyzeDurationSeconds * 1000000).ToString(CultureInfo.InvariantCulture);
             inputModifier += analyzeDuration;
+
+            if (mediaSource.RequiredHttpHeaders.TryGetValue("User-Agent", out string useragent))
+            {
+                _logger.LogInformation("Recording user agent::: {Useragent}", useragent);
+                inputModifier += " -user_agent \"" + useragent + "\"";
+            }
 
             var subtitleArgs = CopySubtitles ? " -codec:s copy" : " -sn";
 
