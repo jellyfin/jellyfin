@@ -225,7 +225,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                     continue;
                 }
 
-                var artist = LibraryManager.GetArtist(i);
+                var artist = LibraryManager.GetOrCreateArtist(i);
 
                 if (!artist.IsAccessedByName)
                 {

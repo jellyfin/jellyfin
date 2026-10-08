@@ -148,9 +148,13 @@ public class MusicGenresController : BaseJellyfinApiController
     /// </summary>
     /// <param name="genreName">The genre name.</param>
     /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
-    /// <returns>An <see cref="OkResult"/> containing a <see cref="BaseItemDto"/> with the music genre.</returns>
+    /// <response code="200">Music genre returned.</response>
+    /// <response code="404">Music genre not found.</response>
+    /// <returns>An <see cref="OkResult"/> containing a <see cref="BaseItemDto"/> with the music genre on success,
+    /// or a <see cref="NotFoundResult"/> if the music genre was not found.</returns>
     [HttpGet("{genreName}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Obsolete("Use GetGenre instead")]
     public ActionResult<BaseItemDto> GetMusicGenre([FromRoute, Required] string genreName, [FromQuery] Guid? userId)
     {

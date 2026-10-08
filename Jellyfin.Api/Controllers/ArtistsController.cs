@@ -362,9 +362,12 @@ public class ArtistsController : BaseJellyfinApiController
     /// <param name="name">Studio name.</param>
     /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
     /// <response code="200">Artist returned.</response>
-    /// <returns>An <see cref="OkResult"/> containing the artist.</returns>
+    /// <response code="404">Artist not found.</response>
+    /// <returns>An <see cref="OkResult"/> containing the artist on success,
+    /// or a <see cref="NotFoundResult"/> if the artist was not found.</returns>
     [HttpGet("{name}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Obsolete("Use GetPerson")]
     public ActionResult<BaseItemDto> GetArtistByName([FromRoute, Required] string name, [FromQuery] Guid? userId)
     {
@@ -372,6 +375,10 @@ public class ArtistsController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions();
 
         var item = _libraryManager.GetArtist(name, dtoOptions);
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         if (!userId.IsNullOrEmpty())
         {
