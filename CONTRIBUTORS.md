@@ -14,6 +14,7 @@
  - [barronpm](https://github.com/barronpm)
  - [bilde2910](https://github.com/bilde2910)
  - [bfayers](https://github.com/bfayers)
+ - [Blackclaws](https://github.com/Blackclaws)
  - [BnMcG](https://github.com/BnMcG)
  - [Bond_009](https://github.com/Bond-009)
  - [brianjmurrell](https://github.com/brianjmurrell)
