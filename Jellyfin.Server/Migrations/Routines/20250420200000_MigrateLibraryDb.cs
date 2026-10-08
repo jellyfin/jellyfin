@@ -1304,44 +1304,49 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         };
     }
 
-    internal ItemImageInfo[] DeserializeImages(string value)
+    internal static ItemImageInfo[] DeserializeImages(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
             return Array.Empty<ItemImageInfo>();
         }
 
-        // TODO The following is an ugly performance optimization, but it's extremely unlikely that the data in the database would be malformed
+        var result = new List<ItemImageInfo>();
         var valueSpan = value.AsSpan();
-        var count = valueSpan.Count('|') + 1;
-
-        var position = 0;
-        var result = new ItemImageInfo[count];
-        foreach (var part in valueSpan.Split('|'))
+        while (!valueSpan.IsEmpty)
         {
-            var image = ItemImageInfoFromValueString(part);
+            // A record is path*date*type with optional *width*height*blurhash. Of these only the
+            // path may contain a raw '|' (the blurhash is stored with '|' escaped as '\'), so a
+            // '|' is only a record separator once at least two '*' have been seen.
+            var separatorIndex = -1;
+            var fieldDelimiters = 0;
+            for (var i = 0; i < valueSpan.Length; i++)
+            {
+                var c = valueSpan[i];
+                if (c == '*')
+                {
+                    fieldDelimiters++;
+                }
+                else if (c == '|' && fieldDelimiters >= 2)
+                {
+                    separatorIndex = i;
+                    break;
+                }
+            }
 
+            var image = ItemImageInfoFromValueString(separatorIndex == -1 ? valueSpan : valueSpan[..separatorIndex]);
             if (image is not null)
             {
-                result[position++] = image;
+                result.Add(image);
             }
+
+            valueSpan = separatorIndex == -1 ? default : valueSpan[(separatorIndex + 1)..];
         }
 
-        if (position == count)
-        {
-            return result;
-        }
-
-        if (position == 0)
-        {
-            return Array.Empty<ItemImageInfo>();
-        }
-
-        // Extremely unlikely, but somehow one or more of the image strings were malformed. Cut the array.
-        return result[..position];
+        return result.ToArray();
     }
 
-    internal ItemImageInfo? ItemImageInfoFromValueString(ReadOnlySpan<char> value)
+    internal static ItemImageInfo? ItemImageInfoFromValueString(ReadOnlySpan<char> value)
     {
         const char Delimiter = '*';
 
