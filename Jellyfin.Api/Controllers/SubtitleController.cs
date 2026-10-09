@@ -155,17 +155,10 @@ public class SubtitleController : BaseJellyfinApiController
             return NotFound();
         }
 
-        try
-        {
-            await _subtitleManager.DownloadSubtitles(item, subtitleId, CancellationToken.None)
-                .ConfigureAwait(false);
+        await _subtitleManager.DownloadSubtitles(item, subtitleId, CancellationToken.None)
+            .ConfigureAwait(false);
 
-            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error downloading subtitles");
-        }
+        _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
 
         return NoContent();
     }
