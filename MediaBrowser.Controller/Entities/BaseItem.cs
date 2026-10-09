@@ -1700,6 +1700,17 @@ namespace MediaBrowser.Controller.Entities
                     // Items with OwnerId but no ExtraType might be alternate versions, not extras
                     if (removedExtra.ExtraType.HasValue)
                     {
+                        if (!LibraryManager.GetLibraryOptions(removedExtra).RemoveMissingItemsAutomatically)
+                        {
+                            continue;
+                        }
+
+                        if (!LibraryManager.CanRemoveMissingItem(removedExtra.Path, removedExtra.GetTopParent()?.Path))
+                        {
+                            Logger.LogWarning("Keeping extra {Path}: library root is unavailable", removedExtra.Path);
+                            continue;
+                        }
+
                         LibraryManager.DeleteItem(removedExtra, new DeleteOptions()
                         {
                             DeleteFileLocation = false

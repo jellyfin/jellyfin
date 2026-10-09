@@ -650,6 +650,17 @@ namespace MediaBrowser.Controller.Entities
             // Check if the file still exists
             if (!FileSystem.FileExists(path))
             {
+                if (!LibraryManager.GetLibraryOptions(this).RemoveMissingItemsAutomatically)
+                {
+                    return;
+                }
+
+                if (!LibraryManager.CanRemoveMissingItem(path, GetTopParent()?.Path))
+                {
+                    Logger.LogWarning("Keeping owned video {Path}: library root is unavailable", path);
+                    return;
+                }
+
                 // File was removed - clean up any orphaned database entry
                 if (LibraryManager.GetItemById(id) is Video orphanedVideo && orphanedVideo.OwnerId.Equals(Id))
                 {

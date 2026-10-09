@@ -140,6 +140,17 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
 
             if (playlist.IsFile && !File.Exists(playlist.Path))
             {
+                if (!_libraryManager.GetLibraryOptions(playlist).RemoveMissingItemsAutomatically)
+                {
+                    continue;
+                }
+
+                if (!_libraryManager.CanRemoveMissingItem(playlist.Path, playlist.GetTopParent()?.Path))
+                {
+                    _logger.LogWarning("Keeping file-based playlist {Path}: library root is unavailable", playlist.Path);
+                    continue;
+                }
+
                 _logger.LogInformation("Removing file-based playlist {Name} because source file {Path} no longer exists", playlist.Name, playlist.Path);
                 _libraryManager.DeleteItem(playlist, new DeleteOptions { DeleteFileLocation = false });
             }
