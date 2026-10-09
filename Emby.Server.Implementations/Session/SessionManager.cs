@@ -843,6 +843,10 @@ namespace Emby.Server.Implementations.Session
         /// <param name="item">The item.</param>
         private void OnPlaybackStart(User user, BaseItem item)
         {
+            // The session keeps its item instance for the whole playback (see GetNowPlayingItem), so
+            // reload before saving: changes made meanwhile through other instances (e.g. marking it a
+            // favorite) must not be written back over. Progress and stop do the same.
+            _userDataManager.RefreshUserData(item);
             var data = _userDataManager.GetUserData(user, item);
 
             data.PlayCount++;
@@ -970,6 +974,7 @@ namespace Emby.Server.Implementations.Session
 
         private void OnPlaybackProgress(User user, BaseItem item, PlaybackProgressInfo info)
         {
+            _userDataManager.RefreshUserData(item);
             var data = _userDataManager.GetUserData(user, item);
 
             var positionTicks = info.PositionTicks;
@@ -1180,6 +1185,7 @@ namespace Emby.Server.Implementations.Session
                 return false;
             }
 
+            _userDataManager.RefreshUserData(item);
             var data = _userDataManager.GetUserData(user, item);
             bool playedToCompletion;
             if (positionTicks.HasValue)
