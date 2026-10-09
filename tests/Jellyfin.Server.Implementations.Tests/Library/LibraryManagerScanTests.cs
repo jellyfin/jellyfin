@@ -7,6 +7,7 @@ using Emby.Naming.Common;
 using Emby.Server.Implementations.ScheduledTasks.Tasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
 using Moq;
 using Xunit;
@@ -16,6 +17,21 @@ namespace Jellyfin.Server.Implementations.Tests.Library;
 
 public class LibraryManagerScanTests
 {
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    public void CanRemoveMissingItem_RequiresEnumerableLibraryRoot(bool canEnumerate, bool expected)
+    {
+        var fixture = new Fixture().Customize(new AutoMoqCustomization());
+        fixture.Register(() => new NamingOptions());
+        var fileSystem = fixture.Freeze<Mock<IFileSystem>>();
+        fileSystem.Setup(fs => fs.ContainsSubPath("/media", "/media/deleted.mkv")).Returns(true);
+        fileSystem.Setup(fs => fs.CanEnumerateDirectory("/media")).Returns(canEnumerate);
+        var manager = fixture.Create<ServerLibraryManager>();
+
+        Assert.Equal(expected, manager.CanRemoveMissingItem("/media/deleted.mkv", "/media"));
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
