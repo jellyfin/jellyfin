@@ -54,6 +54,21 @@ namespace MediaBrowser.Controller.Library
         bool IsScanRunning { get; }
 
         /// <summary>
+        /// Determines whether a missing item belongs to an enumerable library root.
+        /// </summary>
+        /// <param name="path">The missing item's path.</param>
+        /// <param name="libraryRoot">The containing library root.</param>
+        /// <returns>Whether the item may be removed.</returns>
+        bool CanRemoveMissingItem(string? path, string? libraryRoot);
+
+        /// <summary>
+        /// Determines whether a library root can be enumerated, including an empty root.
+        /// </summary>
+        /// <param name="libraryRoot">The library root.</param>
+        /// <returns>Whether the root is available.</returns>
+        bool IsLibraryRootAvailable(string? libraryRoot);
+
+        /// <summary>
         /// Resolves the path.
         /// </summary>
         /// <param name="fileInfo">The file information.</param>
