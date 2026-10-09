@@ -375,7 +375,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     imdbParam,
                     seasonId));
 
-            var rootObject = await _httpClientFactory.CreateClient(NamedClient.Default).GetFromJsonAsync<SeasonRootObject>(url, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            var rootObject = await GetJsonObjectAsync<SeasonRootObject>(url, cancellationToken).ConfigureAwait(false);
             FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             await using (jsonFileStream.ConfigureAwait(false))
             {
@@ -383,6 +383,32 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             return path;
+        }
+
+        internal async Task<T> GetJsonObjectAsync<T>(string url, CancellationToken cancellationToken)
+            where T : class
+        {
+            // Fetch as bytes first to avoid repeated request on catch
+            var bytes = await _httpClientFactory.CreateClient(NamedClient.Default).GetByteArrayAsync(url, cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                // OMDb returns 'Content-Type: application/json; charset=utf-8' without a BOM
+                // Therefore, deserializing raw bytes is expected to have parity with 'GetFromJsonAsync'
+                return JsonSerializer.Deserialize<T>(bytes, _jsonOptions);
+            }
+            catch (JsonException)
+            {
+                var escapedBytes = EscapeLineFeedsInJsonStrings(bytes);
+
+                // Re-throw on same length, exception likely not caused by raw line feed '0x0A' byte(s)
+                if (escapedBytes.Length == bytes.Length)
+                {
+                    throw;
+                }
+
+                return JsonSerializer.Deserialize<T>(escapedBytes, _jsonOptions);
+            }
         }
 
         internal string GetDataFilePath(string imdbId)
@@ -405,6 +431,70 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             var filename = string.Format(CultureInfo.InvariantCulture, "{0}_season_{1}.json", imdbId, seasonId);
 
             return Path.Combine(dataPath, filename);
+        }
+
+        internal static ReadOnlySpan<byte> EscapeLineFeedsInJsonStrings(ReadOnlySpan<byte> jsonAsBytes)
+        {
+            // Do nothing if there are no line feeds (0x0A = \n)
+            int lfCount = jsonAsBytes.Count((byte)'\n');
+
+            if (lfCount == 0)
+            {
+                return jsonAsBytes;
+            }
+
+            // An extra byte is required per escaped line feed ('\n' -> "\\n")
+            // Worst case is that all line feeds are within strings
+            var outputBytes = new byte[jsonAsBytes.Length + lfCount];
+            int readIndex = 0;
+            int writeIndex = 0;
+            bool inQuotes = false;
+
+            while (readIndex < jsonAsBytes.Length)
+            {
+                // Slice and copy used for efficiency
+                var slicedBytes = jsonAsBytes[readIndex..];
+                var idx = slicedBytes.IndexOfAny((byte)'"', (byte)'\\', (byte)'\n');
+
+                if (idx == -1)
+                {
+                    slicedBytes.CopyTo(outputBytes.AsSpan(writeIndex));
+                    writeIndex += slicedBytes.Length;
+                    break;
+                }
+
+                slicedBytes[..idx].CopyTo(outputBytes.AsSpan(writeIndex));
+                readIndex += idx;
+                writeIndex += idx;
+
+                var b = slicedBytes[idx];
+                readIndex++;
+
+                // Only handle line feeds within quotes
+                if (b == (byte)'\n' && inQuotes)
+                {
+                    outputBytes[writeIndex++] = (byte)'\\';
+                    outputBytes[writeIndex++] = (byte)'n';
+                }
+                else
+                {
+                    outputBytes[writeIndex++] = b;
+
+                    if (b == (byte)'"')
+                    {
+                        inQuotes = !inQuotes;
+                    }
+                    else if (b == (byte)'\\' && idx + 1 < slicedBytes.Length)
+                    {
+                        // Copy escaped byte if possible
+                        outputBytes[writeIndex++] = slicedBytes[idx + 1];
+                        readIndex++;
+                    }
+                }
+            }
+
+            // 'AsSpan' used in case there were line feeds outside quotes
+            return outputBytes.AsSpan(0, writeIndex);
         }
 
         private static void ParseAdditionalMetadata<T>(MetadataResult<T> itemResult, RootObject result, bool isEnglishRequested)
