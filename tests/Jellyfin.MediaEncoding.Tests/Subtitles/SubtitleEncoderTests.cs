@@ -308,6 +308,7 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
                 File.Delete(path);
             }
         }
+        
         private static SubtitleEncoder CreateEncoder()
         {
             var fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
