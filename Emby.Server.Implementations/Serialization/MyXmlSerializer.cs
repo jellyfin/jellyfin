@@ -15,13 +15,14 @@ namespace Emby.Server.Implementations.Serialization
     {
         // Need to cache these
         // http://dotnetcodebox.blogspot.com/2013/01/xmlserializer-class-may-result-in.html
-        private readonly ConcurrentDictionary<string, XmlSerializer> _serializers = new();
+        // Keyed by the Type instance itself, not its name: plugins with the same type
+        // name loaded side by side (e.g. two versions of a plugin, each in its own
+        // PluginLoadContext) are distinct types, and sharing one serializer between
+        // them fails at serialize time with an InvalidCastException across load contexts.
+        private readonly ConcurrentDictionary<Type, XmlSerializer> _serializers = new();
 
         private XmlSerializer GetSerializer(Type type)
-            => _serializers.GetOrAdd(
-                type.FullName ?? throw new ArgumentException($"Invalid type {type}."),
-                static (_, t) => new XmlSerializer(t),
-                type);
+            => _serializers.GetOrAdd(type, static t => new XmlSerializer(t));
 
         /// <summary>
         /// Serializes to writer.
@@ -71,9 +72,35 @@ namespace Emby.Server.Implementations.Serialization
         /// <param name="file">The file.</param>
         public void SerializeToFile(object obj, string file)
         {
-            using (var stream = new FileStream(file, FileMode.Create, FileAccess.Write))
+            // Serialize into a sibling temp file and swap it in, so a failure partway
+            // through serialization (a throwing property getter, an incompatible type)
+            // can never leave a truncated file where the configuration used to be.
+            // Callers rely on this: BasePlugin.LoadConfiguration re-saves defaults over
+            // an unreadable config, which is fine only because a failed save leaves the
+            // previous bytes intact instead of a half-written document.
+            // Note on SonarCloud S2083: this is not user input — `file` is a
+            // server-internal path from the caller (e.g. BasePlugin.ConfigurationFilePath),
+            // the same provenance as the direct FileStream(file) this replaces.
+            var tempFile = file + "." + Guid.NewGuid().ToString("N") + ".tmp";
+            try
             {
-                SerializeToStream(obj, stream);
+                using (var stream = new FileStream(tempFile, FileMode.Create, FileAccess.Write))
+                {
+                    SerializeToStream(obj, stream);
+                }
+
+                File.Move(tempFile, file, overwrite: true);
+            }
+            finally
+            {
+                try
+                {
+                    File.Delete(tempFile);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // Best-effort cleanup of the temp file; the swap is what matters.
+                }
             }
         }
 
