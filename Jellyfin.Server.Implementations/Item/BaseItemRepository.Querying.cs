@@ -273,6 +273,11 @@ public sealed partial class BaseItemRepository
     ///     <item>Otherwise → return the most recent Episode</item>
     /// </list>
     /// </para>
+    /// <para>
+    /// The behavior is affected by <see cref="InternalItemsQuery.DisplayLatestSeasons"/> (Season cards, off by default)
+    /// and <see cref="InternalItemsQuery.DisplayLatestEpisodes"/> (24h grouping, off by default).
+    /// When DisplayLatestEpisodes is off, every episode counts as recent and a Series card is always returned.
+    /// </para>
     /// </remarks>
     /// <param name="context">The database context.</param>
     /// <param name="baseQuery">The base query with filters already applied.</param>
@@ -283,6 +288,8 @@ public sealed partial class BaseItemRepository
     {
         // Episodes added within this window are considered "recently added together"
         const double RecentAdditionWindowHours = 24.0;
+
+        var displayEpisodes = filter.DisplayLatestEpisodes;
 
         // Step 1: Find the top N series with recently added content, ordered by most recent addition
         var topSeriesWithDates = baseQuery
@@ -306,7 +313,7 @@ public sealed partial class BaseItemRepository
         // Compute a global date cutoff: the oldest series' max date minus the window.
         // Episodes before this cutoff cannot be in any series' "recent additions" window,
         // so we can safely exclude them to avoid loading ancient episodes.
-        var globalCutoff = topSeriesData.Count > 0
+        var globalCutoff = displayEpisodes && topSeriesData.Count > 0
             ? topSeriesData.Min(g => g.MaxDate)?.AddHours(-RecentAdditionWindowHours)
             : null;
 
@@ -341,7 +348,9 @@ public sealed partial class BaseItemRepository
         {
             var episodes = group.ToList();
             var mostRecentDate = episodes[0].DateCreated ?? DateTime.MinValue;
-            var recentCutoff = mostRecentDate.AddHours(-RecentAdditionWindowHours);
+            var recentCutoff = displayEpisodes
+                ? mostRecentDate.AddHours(-RecentAdditionWindowHours)
+                : DateTime.MinValue;
 
             // Find episodes added within the recent window
             var recentEpisodeCount = 0;
@@ -390,7 +399,7 @@ public sealed partial class BaseItemRepository
                 .ToDictionary(x => x.SeasonId, x => x.Count)
             : [];
 
-        var seriesSeasonCounts = allSeriesIds.Count > 0
+        var seriesSeasonCounts = filter.DisplayLatestSeasons && allSeriesIds.Count > 0
             ? context.BaseItems
                 .AsNoTracking()
                 .Where(e => e.SeriesId.HasValue && allSeriesIds.Contains(e.SeriesId.Value) && e.Type == seasonType)
@@ -423,7 +432,7 @@ public sealed partial class BaseItemRepository
                     : 1;
 
                 // Check if multiple episodes were added, or if all episodes in the season were added
-                var hasMultipleOrAllEpisodes = recentEpisodeCount > 1 || recentEpisodeCount == totalEpisodes;
+                var hasMultipleOrAllEpisodes = !displayEpisodes || recentEpisodeCount > 1 || recentEpisodeCount == totalEpisodes;
 
                 if (totalSeasonsInSeries > 1 && hasMultipleOrAllEpisodes)
                 {
@@ -445,6 +454,12 @@ public sealed partial class BaseItemRepository
                 // Recent episodes span multiple seasons: show the Series
                 seriesId = firstRecentSeriesId;
                 entitiesToFetch.Add(seriesId!.Value);
+            }
+            else if (!displayEpisodes && firstRecentSeriesId.HasValue)
+            {
+                // Episodes with no season id would fall through to an Episode, so show the Series instead
+                seriesId = firstRecentSeriesId;
+                entitiesToFetch.Add(firstRecentSeriesId.Value);
             }
 
             if (seasonId is null && seriesId is null)
