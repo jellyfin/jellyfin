@@ -29,6 +29,7 @@ using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Jellyfin.Api.Controllers;
 
@@ -47,6 +48,7 @@ public class VideosController : BaseJellyfinApiController
     private readonly ITranscodeManager _transcodeManager;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly EncodingHelper _encodingHelper;
+    private readonly IMemoryCache _memoryCache;
 
     private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
 
@@ -62,6 +64,7 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
+    /// <param name="memoryCache">The media probe cache.</param>
     public VideosController(
         ILibraryManager libraryManager,
         IUserManager userManager,
@@ -71,7 +74,8 @@ public class VideosController : BaseJellyfinApiController
         IMediaEncoder mediaEncoder,
         ITranscodeManager transcodeManager,
         IHttpClientFactory httpClientFactory,
-        EncodingHelper encodingHelper)
+        EncodingHelper encodingHelper,
+        IMemoryCache memoryCache)
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
@@ -82,6 +86,7 @@ public class VideosController : BaseJellyfinApiController
         _transcodeManager = transcodeManager;
         _httpClientFactory = httpClientFactory;
         _encodingHelper = encodingHelper;
+        _memoryCache = memoryCache;
     }
 
     /// <summary>
@@ -462,6 +467,22 @@ public class VideosController : BaseJellyfinApiController
         if (@static.HasValue && @static.Value && state.InputProtocol != MediaProtocol.File)
         {
             return BadRequest($"Input protocol {state.InputProtocol} cannot be streamed statically");
+        }
+
+        if (
+            @static == true
+            && state.MediaSource.VideoType == VideoType.BluRay
+            && await FileStreamResponseHelpers
+                .GetStaticBlurayFileResult(
+                    state.MediaSource,
+                    _mediaEncoder,
+                    _memoryCache,
+                    HttpContext.RequestAborted)
+                .ConfigureAwait(false)
+                is { } result
+        )
+        {
+            return result;
         }
 
         // Static stream

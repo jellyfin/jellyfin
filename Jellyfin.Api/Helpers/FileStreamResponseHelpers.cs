@@ -4,11 +4,17 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using Jellyfin.Api.Extensions;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
+using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Helpers;
@@ -18,6 +24,8 @@ namespace Jellyfin.Api.Helpers;
 /// </summary>
 public static class FileStreamResponseHelpers
 {
+    private static readonly AsyncKeyedLocker<string> _blurayProbeLocks = new();
+
     /// <summary>
     /// Returns a static file from a remote source.
     /// </summary>
@@ -107,6 +115,94 @@ public static class FileStreamResponseHelpers
         string contentType)
     {
         return new PhysicalFileResult(path, contentType) { EnableRangeProcessing = true };
+    }
+
+    /// <summary>
+    /// Returns the original clip for a single-file Blu-ray title when its duration matches the title.
+    /// </summary>
+    /// <param name="source">The Blu-ray media source.</param>
+    /// <param name="mediaEncoder">The media encoder.</param>
+    /// <param name="memoryCache">The media probe cache.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A static file result, or null when the title requires playlist processing.</returns>
+    public static async Task<ActionResult?> GetStaticBlurayFileResult(
+        MediaSourceInfo source,
+        IMediaEncoder mediaEncoder,
+        IMemoryCache memoryCache,
+        CancellationToken cancellationToken)
+    {
+        var files = mediaEncoder.GetPrimaryPlaylistM2tsFiles(source.Path);
+        if (files is not { Count: 1 } || source.RunTimeTicks is not > 0)
+        {
+            return null;
+        }
+
+        var duration = await GetBlurayClipDuration(
+                files[0],
+                mediaEncoder,
+                memoryCache,
+                cancellationToken)
+            .ConfigureAwait(false);
+        var frameRate = source.VideoStream?.AverageFrameRate ?? source.VideoStream?.RealFrameRate;
+
+        // A single playlist entry may select only part of a clip. Do not serve the whole
+        // file in that case. Allow one video frame for ffprobe/playlist duration rounding.
+        if (
+            duration is not > 0
+            || frameRate is not > 0
+            || !float.IsFinite(frameRate.Value)
+            || Math.Abs((double)duration.Value - source.RunTimeTicks.Value)
+                > TimeSpan.TicksPerSecond / frameRate.Value
+        )
+        {
+            return null;
+        }
+
+        return GetStaticFileResult(files[0], "video/mp2t");
+    }
+
+    private static async Task<long?> GetBlurayClipDuration(
+        string path,
+        IMediaEncoder mediaEncoder,
+        IMemoryCache memoryCache,
+        CancellationToken cancellationToken)
+    {
+        // Serialize probes of the same clip, including concurrent HEAD and Range requests.
+        using var acquired = await _blurayProbeLocks
+            .LockAsync(path, cancellationToken)
+            .ConfigureAwait(false);
+        var file = new FileInfo(path);
+        var key = (typeof(FileStreamResponseHelpers), path);
+        if (
+            memoryCache.TryGetValue(key, out (long Length, DateTime Modified, long Duration) cached)
+            && cached.Length == file.Length
+            && cached.Modified == file.LastWriteTimeUtc
+        )
+        {
+            return cached.Duration;
+        }
+
+        var info = await mediaEncoder
+            .GetMediaInfo(
+                new MediaInfoRequest
+                {
+                    MediaType = DlnaProfileType.Video,
+                    MediaSource = new MediaSourceInfo
+                    {
+                        Path = path,
+                        Protocol = MediaProtocol.File,
+                        VideoType = VideoType.VideoFile,
+                    },
+                },
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        if (info.RunTimeTicks is > 0)
+        {
+            memoryCache.Set(key, (file.Length, file.LastWriteTimeUtc, info.RunTimeTicks.Value));
+        }
+
+        return info.RunTimeTicks;
     }
 
     /// <summary>
