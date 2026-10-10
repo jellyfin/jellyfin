@@ -131,6 +131,12 @@ public class EncodingOptions
     public HardwareAccelerationType HardwareAccelerationType { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the server is done picking hardware acceleration settings for the machine it runs on.
+    /// Once set, the hardware acceleration settings are left to the administrator.
+    /// </summary>
+    public bool IsHardwareAccelerationAutoConfigured { get; set; }
+
+    /// <summary>
     /// Gets or sets the FFmpeg path as set by the user via the UI.
     /// </summary>
     public string EncoderAppPath { get; set; }
