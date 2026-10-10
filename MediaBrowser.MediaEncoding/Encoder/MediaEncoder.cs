@@ -237,6 +237,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _isLowPriorityHwDecodeSupported = validator.CheckSupportedHwaccelFlag("low_priority");
                 _proberSupportsFirstVideoFrame = validator.CheckSupportedProberOption("only_first_vframe", _ffprobePath);
 
+                if (!options.IsHardwareAccelerationAutoConfigured)
+                {
+                    AutoConfigureHardwareAcceleration(validator, options);
+                }
+
                 // Check the Vaapi device vendor
                 if (OperatingSystem.IsLinux()
                     && SupportsHwaccel("vaapi")
@@ -282,6 +287,34 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             _logger.LogInformation("FFmpeg: {FfmpegPath}", _ffmpegPath ?? string.Empty);
             return !string.IsNullOrWhiteSpace(ffmpegPath);
+        }
+
+        /// <summary>
+        /// Enables the hardware acceleration recommended for this machine, unless the administrator already picked one.
+        /// </summary>
+        private void AutoConfigureHardwareAcceleration(EncoderValidator validator, EncodingOptions options)
+        {
+            if (options.HardwareAccelerationType == HardwareAccelerationType.none)
+            {
+                if (!OperatingSystem.IsMacOS())
+                {
+                    return;
+                }
+
+                if (!SupportsHwaccel("videotoolbox")
+                    || !SupportsEncoder("h264_videotoolbox")
+                    || !validator.CheckIsVideoToolboxEncodeAvailable())
+                {
+                    // Check again on the next start, e.g. after switching to jellyfin-ffmpeg
+                    _logger.LogInformation("Not enabling VideoToolbox hardware acceleration, FFmpeg can't encode with it");
+                    return;
+                }
+
+                ApplePlatformHelper.ApplyRecommendedVideoToolboxOptions(options, _logger);
+            }
+
+            options.IsHardwareAccelerationAutoConfigured = true;
+            _configurationManager.SaveConfiguration("encoding", options);
         }
 
         /// <summary>
