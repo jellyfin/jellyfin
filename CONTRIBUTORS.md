@@ -125,6 +125,7 @@
  - [PrplHaz4](https://github.com/PrplHaz4)
  - [RazeLighter777](https://github.com/RazeLighter777)
  - [redSpoutnik](https://github.com/redSpoutnik)
+ - [rfvgyhn](https://github.com/rfvgyhn)
  - [ringmatter](https://github.com/ringmatter)
  - [Robert Lützner](https://github.com/rluetzner)
  - [ryan-hartzell](https://github.com/ryan-hartzell)
