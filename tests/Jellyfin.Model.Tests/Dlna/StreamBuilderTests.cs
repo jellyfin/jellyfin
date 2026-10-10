@@ -410,6 +410,34 @@ namespace Jellyfin.Model.Tests
             Assert.Null(query["SubtitleMethod"]);
         }
 
+        [Theory]
+        [InlineData("", true)]
+        [InlineData("-mp4", true)]
+        [InlineData("mkv", false)]
+        [InlineData("iso", true)]
+        [InlineData("mkv,ISO", true)]
+        public async Task RealBlurayIso_PreservesContainerProfileSupport(
+            string containers,
+            bool directPlay)
+        {
+            var options = await GetMediaOptions("DirectMedia", "mp4-h264-aac-vtt-2600k");
+            var source = options.MediaSources[0];
+            source.VideoType = VideoType.Iso;
+            source.IsoType = IsoType.BluRay;
+            source.Container = "iso";
+            options.Profile.DirectPlayProfiles =
+            [
+                new DirectPlayProfile { Type = DlnaProfileType.Video, Container = containers },
+            ];
+
+            var stream = GetStreamBuilder().GetOptimalVideoStream(options);
+
+            Assert.NotNull(stream);
+            Assert.Equal(
+                directPlay ? PlayMethod.DirectPlay : PlayMethod.Transcode,
+                stream.PlayMethod);
+        }
+
         private StreamInfo? BuildVideoItemSimpleTest(MediaOptions options, PlayMethod? playMethod, TranscodeReason why, string transcodeMode, string transcodeProtocol)
         {
             if (string.IsNullOrEmpty(transcodeProtocol))
