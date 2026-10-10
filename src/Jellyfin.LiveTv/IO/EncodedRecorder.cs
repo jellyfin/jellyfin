@@ -176,6 +176,11 @@ namespace Jellyfin.LiveTv.IO
                   (analyzeDurationSeconds * 1000000).ToString(CultureInfo.InvariantCulture);
             inputModifier += analyzeDuration;
 
+            if (mediaSource.RequiredHttpHeaders.TryGetValue("User-Agent", out string useragent))
+            {
+                inputModifier += " -user_agent \"" + useragent + "\"";
+            }
+
             var subtitleArgs = CopySubtitles ? " -codec:s copy" : " -sn";
 
             // var outputParam = string.Equals(Path.GetExtension(targetFile), ".mp4", StringComparison.OrdinalIgnoreCase) ?
