@@ -47,6 +47,16 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// </summary>
         public const string LevelValidationRegexStr = @"-?[0-9]+(?:\.[0-9]+)?";
 
+        /// <summary>
+        /// The offset added to an HLS remux seek so that ffmpeg lands on the segment's own keyframe instead of the one before it.
+        /// </summary>
+        public const long HlsRemuxSeekOffsetTicks = TimeSpan.TicksPerSecond / 2;
+
+        /// <summary>
+        /// The distance from the end of the input that a seek is clamped to, so that the muxer still receives packets.
+        /// </summary>
+        public const long SeekMarginFromEndTicks = 5 * TimeSpan.TicksPerSecond;
+
         private const string _defaultMjpegEncoder = "mjpeg";
 
         private const string QsvAlias = "qs";
@@ -3106,13 +3116,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // Workaround this by adding 0.5s offset to the seeking time to get the exact keyframe on most videos.
                 // This will help subtitle syncing.
                 var isHlsRemuxing = state.IsVideoRequest && state.TranscodingType is TranscodingJobType.Hls && IsCopyCodec(state.OutputVideoCodec);
-                var seekTick = isHlsRemuxing ? time + 5000000L : time;
+                var seekTick = isHlsRemuxing ? time + HlsRemuxSeekOffsetTicks : time;
 
                 // Seeking beyond EOF makes no sense in transcoding. Clamp the seekTick value to
-                // [0, RuntimeTicks - 5.0s], so that the muxer gets packets and avoid error codes.
+                // [0, RuntimeTicks - SeekMarginFromEndTicks], so that the muxer gets packets and avoid error codes.
                 if (maxTime > 0)
                 {
-                    seekTick = Math.Clamp(seekTick, 0, Math.Max(maxTime - 50000000L, 0));
+                    seekTick = Math.Clamp(seekTick, 0, Math.Max(maxTime - SeekMarginFromEndTicks, 0));
                 }
 
                 seekParam += string.Format(CultureInfo.InvariantCulture, "-ss {0}", _mediaEncoder.GetTimeParameter(seekTick));
