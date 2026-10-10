@@ -48,6 +48,13 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableLUFSScan { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether embedded audio images are cached by album identity.
+        /// Enabling this may slow down library scans.
+        /// </summary>
+        [DefaultValue(false)]
+        public bool EnableAlbumSpecificImageExtraction { get; set; }
+
         public bool EnableChapterImageExtraction { get; set; }
 
         public bool ExtractChapterImagesDuringLibraryScan { get; set; }
