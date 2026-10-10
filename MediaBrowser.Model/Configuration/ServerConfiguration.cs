@@ -202,6 +202,12 @@ public class ServerConfiguration : BaseApplicationConfiguration
 
     public int RemoteClientBitrateLimit { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether single-clip Blu-rays are exposed as virtual ISO images.
+    /// Multi-clip Blu-rays always use virtual ISO images when available.
+    /// </summary>
+    public bool UseVirtualIsoForSingleClipBluRays { get; set; }
+
     public bool EnableFolderView { get; set; } = false;
 
     public bool EnableGroupingMoviesIntoCollections { get; set; } = false;

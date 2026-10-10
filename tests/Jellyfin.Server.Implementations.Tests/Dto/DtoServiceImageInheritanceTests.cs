@@ -5,6 +5,7 @@ using Emby.Server.Implementations.Playlists;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Chapters;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -14,8 +15,11 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Trickplay;
+using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Querying;
+using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using Xunit;
 
@@ -325,6 +329,11 @@ public class DtoServiceImageInheritanceTests
             mediaSourceManager.Object,
             new Lazy<ILiveTvManager>(() => liveTvManager.Object),
             trickplayManager.Object,
-            chapterManager.Object);
+            chapterManager.Object,
+            new VirtualBlurayImageManager(
+                Mock.Of<IBlurayExaminer>(),
+                Mock.Of<IServerConfigurationManager>(),
+                Mock.Of<IMemoryCache>(),
+                Mock.Of<Microsoft.Extensions.Logging.ILogger<VirtualBlurayImageManager>>()));
     }
 }
