@@ -8,6 +8,7 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Chapters;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -16,8 +17,11 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Trickplay;
+using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Querying;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -58,7 +62,12 @@ public class DtoServiceTests
             new Mock<IMediaSourceManager>().Object,
             new Lazy<ILiveTvManager>(() => new Mock<ILiveTvManager>().Object),
             new Mock<ITrickplayManager>().Object,
-            new Mock<IChapterManager>().Object);
+            new Mock<IChapterManager>().Object,
+            new VirtualBlurayImageManager(
+                Mock.Of<IBlurayExaminer>(),
+                Mock.Of<IServerConfigurationManager>(),
+                Mock.Of<IMemoryCache>(),
+                Mock.Of<Microsoft.Extensions.Logging.ILogger<VirtualBlurayImageManager>>()));
 
         // Episode.Series / Episode.Season resolve through the static BaseItem.LibraryManager.
         BaseItem.LibraryManager = _libraryManagerMock.Object;

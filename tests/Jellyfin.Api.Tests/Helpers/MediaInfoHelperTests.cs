@@ -13,9 +13,11 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -45,7 +47,12 @@ namespace Jellyfin.Api.Tests.Helpers
                 Mock.Of<ILogger<MediaInfoHelper>>(),
                 Mock.Of<INetworkManager>(),
                 Mock.Of<IDeviceManager>(),
-                appHost ?? Mock.Of<IServerApplicationHost>());
+                appHost ?? Mock.Of<IServerApplicationHost>(),
+                new VirtualBlurayImageManager(
+                    Mock.Of<IBlurayExaminer>(),
+                    Mock.Of<IServerConfigurationManager>(),
+                    Mock.Of<IMemoryCache>(),
+                    Mock.Of<Microsoft.Extensions.Logging.ILogger<VirtualBlurayImageManager>>()));
         }
 
         private static MediaSourceInfo CreateSource(Guid itemId, int bitrate, bool supportsDirectPlay = true)

@@ -547,6 +547,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ILocalizationManager, LocalizationManager>();
 
             serviceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
+            serviceCollection.AddSingleton<VirtualBlurayImageManager>();
 
             serviceCollection.AddSingleton<IUserDataManager, UserDataManager>();
 

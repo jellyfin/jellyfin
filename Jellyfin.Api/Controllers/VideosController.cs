@@ -20,6 +20,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
+using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -29,6 +30,7 @@ using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Controllers;
 
@@ -38,6 +40,7 @@ namespace Jellyfin.Api.Controllers;
 [Tags("Video")]
 public class VideosController : BaseJellyfinApiController
 {
+    private readonly VirtualBlurayImageManager _virtualBlurayImages;
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
     private readonly IDtoService _dtoService;
@@ -62,6 +65,7 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
+    /// <param name="virtualBlurayImages">The virtual Blu-ray image provider.</param>
     public VideosController(
         ILibraryManager libraryManager,
         IUserManager userManager,
@@ -71,7 +75,8 @@ public class VideosController : BaseJellyfinApiController
         IMediaEncoder mediaEncoder,
         ITranscodeManager transcodeManager,
         IHttpClientFactory httpClientFactory,
-        EncodingHelper encodingHelper)
+        EncodingHelper encodingHelper,
+        VirtualBlurayImageManager virtualBlurayImages)
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
@@ -82,6 +87,7 @@ public class VideosController : BaseJellyfinApiController
         _transcodeManager = transcodeManager;
         _httpClientFactory = httpClientFactory;
         _encodingHelper = encodingHelper;
+        _virtualBlurayImages = virtualBlurayImages;
     }
 
     /// <summary>
@@ -464,20 +470,9 @@ public class VideosController : BaseJellyfinApiController
             return BadRequest($"Input protocol {state.InputProtocol} cannot be streamed statically");
         }
 
-        // Static stream
-        if (@static.HasValue && @static.Value && !(state.MediaSource.VideoType == VideoType.BluRay || state.MediaSource.VideoType == VideoType.Dvd))
+        if (@static == true && GetStaticLocalVideoResult(state, container) is { } staticResult)
         {
-            var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
-
-            if (state.MediaSource.IsInfiniteStream)
-            {
-                var liveStream = new ProgressiveFileStream(state.MediaPath, null, _transcodeManager);
-                return File(liveStream, contentType);
-            }
-
-            return FileStreamResponseHelpers.GetStaticFileResult(
-                state.MediaPath,
-                contentType);
+            return staticResult;
         }
 
         // Need to start ffmpeg (because media can't be returned directly)
@@ -491,6 +486,46 @@ public class VideosController : BaseJellyfinApiController
             ffmpegCommandLineArguments,
             _transcodingJobType,
             cancellationTokenSource).ConfigureAwait(false);
+    }
+
+    private ActionResult? GetStaticLocalVideoResult(StreamState state, string? container)
+    {
+        if (state.MediaSource.VideoType == VideoType.BluRay)
+        {
+            // The explicit ISO URL stays stable if the single-clip preference changes during playback.
+            if (!string.Equals(container, "iso", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            var image = _virtualBlurayImages.GetImage(state.MediaPath);
+            if (image is null)
+            {
+                return NotFound();
+            }
+
+            return new FileStreamResult(image.Open(), "application/octet-stream")
+            {
+                EnableRangeProcessing = true,
+                EntityTag = new EntityTagHeaderValue('"' + image.Tag + '"'),
+            };
+        }
+
+        if (state.MediaSource.VideoType == VideoType.Dvd)
+        {
+            return null;
+        }
+
+        var contentType =
+            state.GetMimeType("." + state.OutputContainer, false)
+            ?? state.GetMimeType(state.MediaPath);
+        if (state.MediaSource.IsInfiniteStream)
+        {
+            var liveStream = new ProgressiveFileStream(state.MediaPath, null, _transcodeManager);
+            return File(liveStream, contentType);
+        }
+
+        return FileStreamResponseHelpers.GetStaticFileResult(state.MediaPath, contentType);
     }
 
     /// <summary>

@@ -21,6 +21,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -37,6 +38,7 @@ namespace Jellyfin.Api.Helpers;
 /// </summary>
 public class MediaInfoHelper
 {
+    private readonly VirtualBlurayImageManager _virtualBlurayImages;
     private readonly IUserManager _userManager;
     private readonly ILibraryManager _libraryManager;
     private readonly IMediaSourceManager _mediaSourceManager;
@@ -59,6 +61,7 @@ public class MediaInfoHelper
     /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
     /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
     /// <param name="appHost">Instance of the <see cref="IServerApplicationHost"/> interface.</param>
+    /// <param name="virtualBlurayImages">The virtual Blu-ray image provider.</param>
     public MediaInfoHelper(
         IUserManager userManager,
         ILibraryManager libraryManager,
@@ -68,7 +71,8 @@ public class MediaInfoHelper
         ILogger<MediaInfoHelper> logger,
         INetworkManager networkManager,
         IDeviceManager deviceManager,
-        IServerApplicationHost appHost)
+        IServerApplicationHost appHost,
+        VirtualBlurayImageManager virtualBlurayImages)
     {
         _userManager = userManager;
         _libraryManager = libraryManager;
@@ -79,6 +83,7 @@ public class MediaInfoHelper
         _networkManager = networkManager;
         _deviceManager = deviceManager;
         _appHost = appHost;
+        _virtualBlurayImages = virtualBlurayImages;
     }
 
     /// <summary>
@@ -123,6 +128,7 @@ public class MediaInfoHelper
 
                 foreach (var mediaSource in mediaSourcesClone)
                 {
+                    _virtualBlurayImages.ApplyTo(mediaSource);
                     RewritePublishedLiveStreamPath(mediaSource, request);
                 }
 
