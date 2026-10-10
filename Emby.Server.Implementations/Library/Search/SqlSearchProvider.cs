@@ -136,7 +136,7 @@ public class SqlSearchProvider : IInternalSearchProvider
 
             dbQuery = ApplyTypeFilter(dbQuery, query.IncludeItemTypes, query.ExcludeItemTypes);
             dbQuery = ApplyMediaTypeFilter(dbQuery, query.MediaTypes);
-            dbQuery = ApplyParentFilter(dbQuery, query.ParentId);
+            dbQuery = ApplyParentFilter(dbContext, dbQuery, query.ParentId);
             dbQuery = ApplyUserAccessFilter(dbContext, dbQuery, query);
             dbQuery = ExcludeVersionsOfMatchedPrimaries(dbQuery);
 
@@ -205,6 +205,7 @@ public class SqlSearchProvider : IInternalSearchProvider
     }
 
     private static IQueryable<BaseItemEntity> ApplyParentFilter(
+        JellyfinDbContext context,
         IQueryable<BaseItemEntity> query,
         Guid? parentId)
     {
@@ -214,7 +215,10 @@ public class SqlSearchProvider : IInternalSearchProvider
         }
 
         var pid = parentId.Value;
-        return query.Where(e => e.ParentId == pid || e.Parents!.Any(p => p.ParentItemId == pid));
+        var descendantIds = context.AncestorIds
+            .Where(a => a.ParentItemId == pid)
+            .Select(a => a.ItemId);
+        return query.Where(e => e.ParentId == pid || descendantIds.Contains(e.Id));
     }
 
     private static IQueryable<BaseItemEntity> ExcludeVersionsOfMatchedPrimaries(IQueryable<BaseItemEntity> query)
