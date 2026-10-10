@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -333,12 +334,20 @@ public class LibraryController : BaseJellyfinApiController
     /// Starts a library scan.
     /// </summary>
     /// <response code="204">Library scan started.</response>
+    /// <response code="403">Library refresh from the local network without authentication is not enabled.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Library/Refresh")]
-    [Authorize(Policy = Policies.LoopbackLibraryRefreshOrRequiresElevation)]
+    [Authorize(Policy = Policies.LocalAccessOrRequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> RefreshLibrary()
     {
+        // The policy lets local network requests through without authentication, which has to be enabled in the server settings.
+        if (!User.IsInRole(UserRoles.Administrator) && !_serverConfigurationManager.Configuration.AllowLocalNetworkLibraryRefresh)
+        {
+            return Forbid();
+        }
+
         try
         {
             await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
