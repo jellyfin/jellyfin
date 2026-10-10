@@ -144,6 +144,13 @@ namespace MediaBrowser.Controller.SyncPlay
         void SetIgnoreGroupWait(SessionInfo session, bool ignoreGroupWait);
 
         /// <summary>
+        /// Checks whether every member of the group can access all the given items.
+        /// </summary>
+        /// <param name="queue">The items to check.</param>
+        /// <returns><c>true</c> if every member can access every item; <c>false</c> otherwise.</returns>
+        bool AllUsersHaveAccessToQueue(IReadOnlyList<Guid> queue) => true;
+
+        /// <summary>
         /// Sets a new play queue.
         /// </summary>
         /// <param name="playQueue">The new play queue.</param>

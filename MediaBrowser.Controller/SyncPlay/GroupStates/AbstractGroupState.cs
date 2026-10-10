@@ -1,5 +1,7 @@
 #nullable disable
 
+using System;
+using System.Collections.Generic;
 using System.Threading;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay.PlaybackRequests;
@@ -118,6 +120,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             if (!result)
             {
                 _logger.LogError("Unable to add items to play queue in group {GroupId}.", context.GroupId.ToString());
+                NotifyQueueRejected(context, request.ItemIds, session, cancellationToken);
                 return;
             }
 
@@ -223,6 +226,32 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             var stateUpdate = new GroupStateUpdate(Type, reason.Action);
             var update = new SyncPlayStateUpdate(context.GroupId, stateUpdate);
             context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
+        }
+
+        /// <summary>
+        /// Tells the session that made a request why its items were refused, when the reason is one
+        /// the client can act on.
+        /// </summary>
+        /// <param name="context">The context of the state.</param>
+        /// <param name="queue">The items that were refused.</param>
+        /// <param name="session">The session that made the request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        protected void NotifyQueueRejected(IGroupStateContext context, IReadOnlyList<Guid> queue, SessionInfo session, CancellationToken cancellationToken)
+        {
+            if (context.AllUsersHaveAccessToQueue(queue))
+            {
+                // The queue itself was malformed, which is a client bug rather than something to
+                // report to the user.
+                return;
+            }
+
+            _logger.LogInformation(
+                "Session {SessionId} requested items that not every member of group {GroupId} can access.",
+                session.Id,
+                context.GroupId.ToString());
+
+            var update = new SyncPlayLibraryAccessDeniedUpdate(context.GroupId, string.Empty);
+            context.SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, update, cancellationToken);
         }
 
         private void UnhandledRequest(IGroupPlaybackRequest request)
