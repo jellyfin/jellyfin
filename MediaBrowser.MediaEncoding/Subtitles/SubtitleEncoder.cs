@@ -188,6 +188,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 _logger.LogDebug("charset {CharSet} detected for {Path}", detected.EncodingName, fileInfo.Path);
 
+                // If encoding is not supported by .NET (e.g., ISO-8859-16), return stream as-is
+                // The charset name will be passed to ffmpeg via -sub_charenc if needed
+                if (detected.Encoding is null)
+                {
+                    _logger.LogWarning("Encoding {Encoding} is not supported by .NET for {Path}, returning stream as-is", detected.EncodingName, fileInfo.Path);
+                    return stream;
+                }
+
                 await using (stream.ConfigureAwait(false))
                 {
                     using var reader = new StreamReader(stream, detected.Encoding);
