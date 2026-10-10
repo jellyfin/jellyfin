@@ -83,6 +83,11 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public bool QuickConnectAvailable { get; set; } = true;
 
     /// <summary>
+    /// Gets or sets a value indicating whether applications on the server machine itself may refresh the libraries without authenticating.
+    /// </summary>
+    public bool AllowLoopbackLibraryRefresh { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether [enable case-sensitive item ids].
     /// </summary>
     /// <value><c>true</c> if [enable case-sensitive item ids]; otherwise, <c>false</c>.</value>

@@ -41,6 +41,11 @@ public static class Policies
     public const string LocalAccessOrRequiresElevation = "LocalAccessOrRequiresElevation";
 
     /// <summary>
+    /// Policy name for allowing loopback library refresh access, if enabled, or requiring elevated privileges.
+    /// </summary>
+    public const string LoopbackLibraryRefreshOrRequiresElevation = "LoopbackLibraryRefreshOrRequiresElevation";
+
+    /// <summary>
     /// Policy name for requiring (anonymous) LAN access.
     /// </summary>
     public const string AnonymousLanAccessPolicy = "AnonymousLanAccessPolicy";
