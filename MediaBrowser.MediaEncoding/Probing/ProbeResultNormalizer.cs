@@ -1110,6 +1110,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                     && width > 0
                     && height > 0))
             {
+                // Live TV and other early probes can report neither a usable display aspect ratio nor the frame size
+                if (info.Width is not > 0 || info.Height is not > 0)
+                {
+                    return original;
+                }
+
                 width = info.Width.Value;
                 height = info.Height.Value;
             }
