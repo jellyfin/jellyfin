@@ -13,6 +13,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Chapters;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -126,6 +127,7 @@ namespace Emby.Server.Implementations.Dto
 
         private readonly ITrickplayManager _trickplayManager;
         private readonly IChapterManager _chapterManager;
+        private readonly IServerConfigurationManager _config;
 
         public DtoService(
             ILogger<DtoService> logger,
@@ -138,7 +140,8 @@ namespace Emby.Server.Implementations.Dto
             IMediaSourceManager mediaSourceManager,
             Lazy<ILiveTvManager> livetvManagerFactory,
             ITrickplayManager trickplayManager,
-            IChapterManager chapterManager)
+            IChapterManager chapterManager,
+            IServerConfigurationManager config)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -151,6 +154,7 @@ namespace Emby.Server.Implementations.Dto
             _livetvManagerFactory = livetvManagerFactory;
             _trickplayManager = trickplayManager;
             _chapterManager = chapterManager;
+            _config = config;
         }
 
         private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
@@ -1551,7 +1555,7 @@ namespace Emby.Server.Implementations.Dto
                 if (options.GetImageLimit(ImageType.Primary) > 0)
                 {
                     var episodeSeason = episode.Season;
-                    var seasonPrimaryTag = episodeSeason is not null
+                    var seasonPrimaryTag = episodeSeason is not null && _config.Configuration.DisplayLatestSeasons
                         ? GetTagAndFillBlurhash(dto, episodeSeason, ImageType.Primary)
                         : null;
 
