@@ -12,6 +12,40 @@ namespace Jellyfin.Api.Tests.Controllers
     public class DynamicHlsControllerTests
     {
         [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void FormatHlsCommandLineArguments_GeneratesLiveAndVodCommands(bool isInfiniteStream)
+        {
+            var arguments = DynamicHlsController.FormatHlsCommandLineArguments(
+                isInfiniteStream,
+                "-input_modifier",
+                "-i source",
+                "0",
+                "-map 0",
+                "-codec:v copy",
+                "-codec:a copy",
+                "128",
+                "6",
+                "mpegts",
+                "0",
+                string.Empty,
+                "segment%d.ts",
+                "-hls_playlist_type event",
+                "playlist.m3u8");
+            Assert.Contains("-f hls", arguments, StringComparison.Ordinal);
+            Assert.Contains("-hls_segment_filename \"segment%d.ts\"", arguments, StringComparison.Ordinal);
+            Assert.Contains("-avoid_negative_ts disabled", arguments, StringComparison.Ordinal);
+            if (isInfiniteStream)
+            {
+                Assert.DoesNotContain("-copyts", arguments, StringComparison.Ordinal);
+            }
+            else
+            {
+                Assert.Contains("-copyts", arguments, StringComparison.Ordinal);
+            }
+        }
+
+        [Theory]
         [InlineData(8, 1, "smpte2084", false, "hvc1")]
         [InlineData(8, 1, "smpte2084", true, "hvc1")]
         [InlineData(8, 2, "bt709", false, "hvc1")]
