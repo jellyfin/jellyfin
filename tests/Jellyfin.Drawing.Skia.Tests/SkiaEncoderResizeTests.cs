@@ -62,10 +62,9 @@ public class SkiaEncoderResizeTests
         using var source = CreateEdgeBitmap(16, 16);
 
         using var result = SkiaEncoder.ResizeImage(source, InfoFor(source, 16, 16));
-        using var resultBitmap = SKBitmap.FromImage(result);
 
         // Unsharpened, so the edge is still exactly where it was.
-        AssertSamePixels(source, resultBitmap);
+        AssertSamePixels(source, result);
     }
 
     [Fact]
@@ -75,10 +74,9 @@ public class SkiaEncoderResizeTests
         var targetInfo = InfoFor(source, 24, 24);
 
         using var result = SkiaEncoder.ResizeImage(source, targetInfo);
-        using var resultBitmap = SKBitmap.FromImage(result);
         using var expected = DrawOnly(source, targetInfo, SkiaEncoder.UpscaleSamplingOptions);
 
-        AssertSamePixels(expected, resultBitmap);
+        AssertSamePixels(expected, result);
     }
 
     [Fact]
@@ -88,12 +86,11 @@ public class SkiaEncoderResizeTests
         var targetInfo = InfoFor(source, 16, 16);
 
         using var result = SkiaEncoder.ResizeImage(source, targetInfo);
-        using var resultBitmap = SKBitmap.FromImage(result);
         using var unsharpened = DrawOnly(source, targetInfo, SkiaEncoder.DefaultSamplingOptions);
         using var sharpened = DrawOnly(source, targetInfo, SkiaEncoder.DefaultSamplingOptions);
         SkiaEncoder.SharpenInPlace(sharpened);
 
-        AssertSamePixels(sharpened, resultBitmap);
+        AssertSamePixels(sharpened, result);
         // Guards the test itself: the edge has to be something sharpening actually changes.
         Assert.NotEqual(unsharpened.GetPixel(8, 8), sharpened.GetPixel(8, 8));
     }
