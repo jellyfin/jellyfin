@@ -41,9 +41,9 @@ public static class Policies
     public const string LocalAccessOrRequiresElevation = "LocalAccessOrRequiresElevation";
 
     /// <summary>
-    /// Policy name for requiring access from the server machine itself.
+    /// Policy name for requiring loopback access or elevated privileges.
     /// </summary>
-    public const string LoopbackAccess = "LoopbackAccess";
+    public const string LoopbackOrRequiresElevation = "LoopbackOrRequiresElevation";
 
     /// <summary>
     /// Policy name for requiring (anonymous) LAN access.
