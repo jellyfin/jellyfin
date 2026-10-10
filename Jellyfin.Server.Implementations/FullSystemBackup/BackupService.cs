@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -287,7 +288,15 @@ public class BackupService : IBackupService
 
         _logger.LogInformation("Running database optimization before backup");
 
-        await _jellyfinDatabaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false);
+        try
+        {
+            await _jellyfinDatabaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            // The backup does not depend on the optimization: it reads every row itself, and fails if the database cannot read them.
+            _logger.LogWarning(ex, "Database optimization before backup failed, continuing with the backup");
+        }
 
         var backupFolder = Path.Combine(_applicationPaths.BackupPath);
 
@@ -368,6 +377,12 @@ public class BackupService : IBackupService
                                             try
                                             {
                                                 hasNext = await enumerator.MoveNextAsync();
+                                            }
+                                            catch (DbException ex)
+                                            {
+                                                // The database failed to read the table, not to convert one row. The reader does not get past that:
+                                                // it fails the same way on every call, or reports the end of the table and leaves the rest out.
+                                                throw new InvalidOperationException($"Could not read the {entityType.SourceName} table.", ex);
                                             }
                                             catch (Exception ex)
                                             {
