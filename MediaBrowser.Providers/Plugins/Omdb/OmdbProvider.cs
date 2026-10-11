@@ -436,29 +436,29 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         /// <summary>
         /// Escapes line feeds in JSON strings to avoid deserialization errors.
         /// </summary>
-        /// <param name="jsonAsBytes">A JSON response as bytes.</param>
+        /// <param name="jsonBytes">A JSON response as bytes.</param>
         /// <returns>An escaped JSON response.</returns>
-        internal static ReadOnlySpan<byte> EscapeLineFeedsInJsonStrings(ReadOnlySpan<byte> jsonAsBytes)
+        internal static ReadOnlySpan<byte> EscapeLineFeedsInJsonStrings(ReadOnlySpan<byte> jsonBytes)
         {
             // Do nothing if there are no line feeds (0x0A = \n)
-            int lfCount = jsonAsBytes.Count((byte)'\n');
+            int lfCount = jsonBytes.Count((byte)'\n');
 
             if (lfCount == 0)
             {
-                return jsonAsBytes;
+                return jsonBytes;
             }
 
             // An extra byte is required per escaped line feed ('\n' -> "\\n")
             // Worst case is that all line feeds are within strings
-            var outputBytes = new byte[jsonAsBytes.Length + lfCount];
+            var outputBytes = new byte[jsonBytes.Length + lfCount];
             int readIndex = 0;
             int writeIndex = 0;
             bool inString = false;
 
-            while (readIndex < jsonAsBytes.Length)
+            while (readIndex < jsonBytes.Length)
             {
                 // Slice and copy used for efficiency
-                var slicedBytes = jsonAsBytes[readIndex..];
+                var slicedBytes = jsonBytes[readIndex..];
                 var idx = slicedBytes.IndexOfAny((byte)'"', (byte)'\\', (byte)'\n');
 
                 if (idx == -1)

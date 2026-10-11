@@ -91,8 +91,8 @@ namespace Jellyfin.Providers.Tests.Omdb
         }
 
         [Theory]
-        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\\nLine 2\"}]}")] // Escaped line feed
-        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\nLine 2\"}]}")] // Raw line feed (0x0A)
+        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\\nLine 2\"}]}")]
+        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\nLine 2\"}]}")] // Raw line feed
         public async Task GetJsonObjectAsync_LineFeedInJsonString_ReturnsExpectedResult(string jsonResponse)
         {
             var provider = SetupOmdbProvider(response: jsonResponse);
@@ -104,14 +104,62 @@ namespace Jellyfin.Providers.Tests.Omdb
         }
 
         [Theory]
-        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\\nLine 2\"")] // Escaped line feed, truncated JSON
-        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\nLine 2\"")] // Raw line feed, truncated JSON
+        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\\nLine 2\"")]
+        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\nLine 2\"")] // Raw line feed
         public async Task GetJsonObjectAsync_TruncatedJson_ThrowsJsonException(string jsonResponse)
         {
             var provider = SetupOmdbProvider(response: jsonResponse);
 
             await Assert.ThrowsAsync<JsonException>(
                 () => provider.GetJsonObjectAsync<OmdbProvider.SeasonRootObject>(TestUrl, CancellationToken.None));
+        }
+
+        [Theory]
+        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\\nLine 2\"}]}")]
+        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\nLine 2\"}]}")] // Raw line feed
+        public void EscapeLineFeedsInJsonStrings_LineFeedInJsonBytes_ReturnsExpectedBytes(string jsonResponse)
+        {
+            var result = OmdbProvider.EscapeLineFeedsInJsonStrings(Encoding.UTF8.GetBytes(jsonResponse));
+
+            var expectedBytes = "{\"Episodes\":[{\"Plot\":\"Line 1\\nLine 2\"}]}"u8;
+
+            Assert.Equal(expectedBytes, result);
+        }
+
+        [Theory]
+        [InlineData("{\n\"Plot\":\"Line 1\\nLine 2\"\n}")]
+        [InlineData("{\n\"Plot\":\"Line 1\nLine 2\"\n}")] // Raw line feed
+        public void EscapeLineFeedsInJsonStrings_LineFeedInPrettyJson_ReturnsExpectedBytes(string prettyJson)
+        {
+            var result = OmdbProvider.EscapeLineFeedsInJsonStrings(Encoding.UTF8.GetBytes(prettyJson));
+
+            var expectedBytes = "{\n\"Plot\":\"Line 1\\nLine 2\"\n}"u8;
+
+            Assert.Equal(expectedBytes, result);
+        }
+
+        [Theory]
+        [InlineData("{\"Plot\":\"Line 1\\\"\\nLine 2\"}")]
+        [InlineData("{\"Plot\":\"Line 1\\\"\nLine 2\"}")]
+        public void EscapeLineFeedsInJsonStrings_QuoteAndLineFeed_ReturnsExpectedBytes(string jsonResponse)
+        {
+            var result = OmdbProvider.EscapeLineFeedsInJsonStrings(Encoding.UTF8.GetBytes(jsonResponse));
+
+            var expectedBytes = "{\"Plot\":\"Line 1\\\"\\nLine 2\"}"u8;
+
+            Assert.Equal(expectedBytes, result);
+        }
+
+        [Theory]
+        [InlineData("{\"Plot\":\"Line 1\\\\\\nLine 2\"}")]
+        [InlineData("{\"Plot\":\"Line 1\\\\\nLine 2\"}")]
+        public void EscapeLineFeedsInJsonStrings_BackslashAndLineFeed_ReturnsExpectedBytes(string jsonResponse)
+        {
+            var result = OmdbProvider.EscapeLineFeedsInJsonStrings(Encoding.UTF8.GetBytes(jsonResponse));
+
+            var expectedBytes = "{\"Plot\":\"Line 1\\\\\\nLine 2\"}"u8;
+
+            Assert.Equal(expectedBytes, result);
         }
 
         private static OmdbProvider SetupOmdbProvider(string response)
