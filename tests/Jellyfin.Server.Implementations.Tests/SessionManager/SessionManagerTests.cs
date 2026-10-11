@@ -217,7 +217,54 @@ public class SessionManagerTests
         Assert.Throws<SecurityException>(() => sessionManager.ReportCapabilities(attackerSession.Id, victimSession.Id, new ClientCapabilities()));
     }
 
+    [Fact]
+    public async Task OnPlaybackProgress_DoesNotRemapLiveStreamAfterSessionClosed()
+    {
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        var userA = new User("userA", "default", "default");
+        var userB = new User("userB", "default", "default");
+        await using var sessionManager = CreateSessionManager(mediaSourceManager.Object, userA, userB);
+
+        var sessionA = await sessionManager.LogSessionActivity("Jellyfin Web", "1.0.0", "device-A", "deviceA", "127.0.0.1", userA);
+        var sessionB = await sessionManager.LogSessionActivity("Jellyfin Web", "1.0.0", "device-B", "deviceB", "127.0.0.1", userB);
+
+        const string liveStreamId = "live-stream-1";
+
+        await sessionManager.OnPlaybackStart(new PlaybackStartInfo
+        {
+            SessionId = sessionA.Id,
+            LiveStreamId = liveStreamId
+        });
+
+        await sessionManager.OnPlaybackStart(new PlaybackStartInfo
+        {
+            SessionId = sessionB.Id,
+            LiveStreamId = liveStreamId
+        });
+
+        await sessionManager.CloseIfNeededAsync(sessionA);
+        mediaSourceManager.Verify(m => m.CloseLiveStream(liveStreamId), Times.Once);
+
+        var reconnectedSessionA = await sessionManager.LogSessionActivity("Jellyfin Web", "1.0.0", "device-A", "deviceA", "127.0.0.1", userA);
+        Assert.Equal(sessionA.Id, reconnectedSessionA.Id);
+
+        await sessionManager.OnPlaybackProgress(new PlaybackProgressInfo
+        {
+            SessionId = reconnectedSessionA.Id,
+            LiveStreamId = liveStreamId
+        });
+
+        await sessionManager.CloseIfNeededAsync(reconnectedSessionA);
+        mediaSourceManager.Verify(m => m.CloseLiveStream(liveStreamId), Times.Once);
+
+        await sessionManager.CloseIfNeededAsync(sessionB);
+        mediaSourceManager.Verify(m => m.CloseLiveStream(liveStreamId), Times.Exactly(2));
+    }
+
     private static Emby.Server.Implementations.Session.SessionManager CreateSessionManager(params User[] users)
+        => CreateSessionManager(Mock.Of<IMediaSourceManager>(), users);
+
+    private static Emby.Server.Implementations.Session.SessionManager CreateSessionManager(IMediaSourceManager mediaSourceManager, params User[] users)
     {
         var userManager = new Mock<IUserManager>();
         foreach (var user in users)
@@ -225,11 +272,14 @@ public class SessionManagerTests
             userManager.Setup(i => i.GetUserById(user.Id)).Returns(user);
         }
 
+        var configManager = new Mock<IServerConfigurationManager>();
+        configManager.Setup(c => c.Configuration).Returns(new MediaBrowser.Model.Configuration.ServerConfiguration());
+
         return new Emby.Server.Implementations.Session.SessionManager(
             NullLogger<Emby.Server.Implementations.Session.SessionManager>.Instance,
             Mock.Of<IEventManager>(),
             Mock.Of<IUserDataManager>(),
-            Mock.Of<IServerConfigurationManager>(),
+            configManager.Object,
             Mock.Of<ILibraryManager>(),
             userManager.Object,
             Mock.Of<IMusicManager>(),
@@ -237,7 +287,7 @@ public class SessionManagerTests
             Mock.Of<IImageProcessor>(),
             Mock.Of<IServerApplicationHost>(),
             Mock.Of<IDeviceManager>(),
-            Mock.Of<IMediaSourceManager>(),
+            mediaSourceManager,
             Mock.Of<IHostApplicationLifetime>());
     }
 
