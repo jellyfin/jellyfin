@@ -31,20 +31,7 @@ public class IdlePlaybackTests
             .Setup(manager => manager.PublishAsync(It.IsAny<PlaybackStopEventArgs>()))
             .Callback<PlaybackStopEventArgs>(eventArgs => playbackStopped.TrySetResult(eventArgs.PlaybackPositionTicks))
             .Returns(Task.CompletedTask);
-        await using var sessionManager = new Emby.Server.Implementations.Session.SessionManager(
-            NullLogger<Emby.Server.Implementations.Session.SessionManager>.Instance,
-            eventManager.Object,
-            Mock.Of<IUserDataManager>(),
-            Mock.Of<IServerConfigurationManager>(),
-            Mock.Of<ILibraryManager>(),
-            Mock.Of<IUserManager>(),
-            Mock.Of<IMusicManager>(),
-            Mock.Of<IDtoService>(),
-            Mock.Of<IImageProcessor>(),
-            Mock.Of<IServerApplicationHost>(),
-            Mock.Of<IDeviceManager>(),
-            Mock.Of<IMediaSourceManager>(),
-            Mock.Of<IHostApplicationLifetime>());
+        await using var sessionManager = CreateSessionManager(eventManager.Object, Mock.Of<IMediaSourceManager>());
         var session = await sessionManager.LogSessionActivity(
             "Test Client",
             "1.0.0",
@@ -69,12 +56,77 @@ public class IdlePlaybackTests
             session.StopAutomaticProgress();
         }
 
-        var idlePlaybackCallback = typeof(Emby.Server.Implementations.Session.SessionManager)
-            .GetMethod("CheckForIdlePlayback", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        idlePlaybackCallback.Invoke(sessionManager, new object?[] { null });
+        InvokeCheckForIdlePlayback(sessionManager);
 
         var stoppedPositionTicks = await playbackStopped.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
         Assert.Equal(expectedPositionTicks, stoppedPositionTicks);
     }
+
+    [Fact]
+    public async Task CheckForIdlePlayback_ReleasesSharedLiveStream()
+    {
+        const string LiveStreamId = "live-stream";
+        var playbackStopped = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var eventManager = new Mock<IEventManager>();
+        eventManager
+            .Setup(manager => manager.PublishAsync(It.IsAny<PlaybackStopEventArgs>()))
+            .Callback(() => playbackStopped.TrySetResult())
+            .Returns(Task.CompletedTask);
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        await using var sessionManager = CreateSessionManager(eventManager.Object, mediaSourceManager.Object);
+        var idleSession = await sessionManager.LogSessionActivity(
+            "Test Client",
+            "1.0.0",
+            "idle-device",
+            "Idle Device",
+            "127.0.0.1",
+            null);
+        idleSession.NowPlayingItem = new BaseItemDto
+        {
+            Id = Guid.NewGuid(),
+            Name = "Live Channel"
+        };
+        idleSession.PlayState.LiveStreamId = LiveStreamId;
+        MapLiveStreamSession(sessionManager, LiveStreamId, idleSession.Id, "idle-play-session");
+        MapLiveStreamSession(sessionManager, LiveStreamId, "watching-session", "watching-play-session");
+
+        InvokeCheckForIdlePlayback(sessionManager);
+
+        await playbackStopped.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+        mediaSourceManager.Verify(manager => manager.CloseLiveStream(LiveStreamId), Times.Once);
+    }
+
+    private static Emby.Server.Implementations.Session.SessionManager CreateSessionManager(
+        IEventManager eventManager,
+        IMediaSourceManager mediaSourceManager)
+        => new(
+            NullLogger<Emby.Server.Implementations.Session.SessionManager>.Instance,
+            eventManager,
+            Mock.Of<IUserDataManager>(),
+            Mock.Of<IServerConfigurationManager>(),
+            Mock.Of<ILibraryManager>(),
+            Mock.Of<IUserManager>(),
+            Mock.Of<IMusicManager>(),
+            Mock.Of<IDtoService>(),
+            Mock.Of<IImageProcessor>(),
+            Mock.Of<IServerApplicationHost>(),
+            Mock.Of<IDeviceManager>(),
+            mediaSourceManager,
+            Mock.Of<IHostApplicationLifetime>());
+
+    private static void InvokeCheckForIdlePlayback(Emby.Server.Implementations.Session.SessionManager sessionManager)
+        => typeof(Emby.Server.Implementations.Session.SessionManager)
+            .GetMethod("CheckForIdlePlayback", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .Invoke(sessionManager, new object?[] { null });
+
+    private static void MapLiveStreamSession(
+        Emby.Server.Implementations.Session.SessionManager sessionManager,
+        string liveStreamId,
+        string sessionId,
+        string playSessionId)
+        => typeof(Emby.Server.Implementations.Session.SessionManager)
+            .GetMethod("UpdateLiveStreamActiveSessionMappings", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .Invoke(sessionManager, new object?[] { liveStreamId, sessionId, playSessionId });
 }
