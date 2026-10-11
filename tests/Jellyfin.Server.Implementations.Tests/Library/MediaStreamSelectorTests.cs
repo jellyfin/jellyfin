@@ -8,6 +8,28 @@ namespace Jellyfin.Server.Implementations.Tests.Library;
 
 public class MediaStreamSelectorTests
 {
+    [Fact]
+    public void AlwaysSubtitle_MissingFullPreferredLanguage_ScoresOnlyForcedFallback()
+    {
+        var streams = new MediaStream[]
+        {
+            new() { Index = 0, Type = MediaStreamType.Subtitle, Language = "fra" },
+            new() { Index = 1, Type = MediaStreamType.Subtitle, Language = "und", IsForced = true },
+            new() { Index = 2, Type = MediaStreamType.Subtitle, Language = "fra", IsForced = true }
+        };
+        var preferredLanguages = new[] { "eng" };
+
+        Assert.Equal(1, MediaStreamSelector.GetDefaultSubtitleStreamIndex(
+            streams, preferredLanguages, SubtitlePlaybackMode.Always, "eng"));
+
+        MediaStreamSelector.SetSubtitleStreamScores(
+            streams, preferredLanguages, SubtitlePlaybackMode.Always, "eng");
+
+        Assert.Null(streams[0].Score);
+        Assert.True(streams[1].Score.HasValue);
+        Assert.Null(streams[2].Score);
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
