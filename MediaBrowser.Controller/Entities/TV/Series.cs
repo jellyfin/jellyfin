@@ -245,7 +245,9 @@ namespace MediaBrowser.Controller.Entities.TV
             query.AncestorWithPresentationUniqueKey = null;
             query.SeriesPresentationUniqueKey = seriesKey;
             query.IncludeItemTypes = new[] { BaseItemKind.Season };
-            query.OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) };
+            // Order by season number, not sort name: season sort names can be name-based
+            // (sort titles, arc-style season names) and do not match the season number.
+            query.OrderBy = new[] { (ItemSortBy.IndexNumber, SortOrder.Ascending) };
 
             if (user is not null && !user.DisplayMissingEpisodes)
             {
@@ -319,7 +321,9 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var allSeriesEpisodes = allItems.OfType<Episode>().ToList();
 
-            var allEpisodes = allItems.OfType<Season>()
+            // Season sort names can be name-based (sort titles, arc-style season names) and
+            // therefore not match the season number, so order by the number itself.
+            var allEpisodes = OrderBySeasonNumber(allItems.OfType<Season>())
                 .SelectMany(i => i.GetEpisodes(this, user, allSeriesEpisodes, options, shouldIncludeMissingEpisodes))
                 .Reverse();
 
@@ -329,6 +333,14 @@ namespace MediaBrowser.Controller.Entities.TV
 
             return allEpisodes.DistinctBy(i => i.Id).Reverse();
         }
+
+        /// <summary>
+        /// Orders seasons by season number, with seasons without a number first.
+        /// </summary>
+        /// <param name="seasons">The seasons.</param>
+        /// <returns>The seasons ordered by season number.</returns>
+        internal static IOrderedEnumerable<Season> OrderBySeasonNumber(IEnumerable<Season> seasons)
+            => seasons.OrderBy(i => i.IndexNumber ?? -1);
 
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
