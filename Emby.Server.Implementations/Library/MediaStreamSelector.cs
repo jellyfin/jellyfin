@@ -55,7 +55,7 @@ namespace Emby.Server.Implementations.Library
             if (mode == SubtitlePlaybackMode.Default)
             {
                 // Load subtitles according to external, default and forced flags.
-                stream = sortedStreams.FirstOrDefault(x => x.IsExternal || x.IsDefault || x.IsForced);
+                stream = sortedStreams.FirstOrDefault(x => IsDefaultSubtitleEligible(x, preferredLanguages, audioTrackLanguage));
             }
             else if (mode == SubtitlePlaybackMode.Smart)
             {
@@ -113,7 +113,7 @@ namespace Emby.Server.Implementations.Library
             {
                 // Prefer embedded metadata over smart logic
                 // Load subtitles according to external, default, and forced flags.
-                filteredStreams = sortedStreams.Where(s => s.IsExternal || s.IsDefault || s.IsForced)
+                filteredStreams = sortedStreams.Where(s => IsDefaultSubtitleEligible(s, preferredLanguages, audioTrackLanguage))
                     .ToList();
             }
             else if (mode == SubtitlePlaybackMode.Smart)
@@ -149,6 +149,18 @@ namespace Emby.Server.Implementations.Library
             {
                 stream.Score = GetStreamScore(stream, preferredLanguages);
             }
+        }
+
+        private static bool IsDefaultSubtitleEligible(MediaStream stream, IReadOnlyList<string> preferredLanguages, string audioTrackLanguage)
+        {
+            if (stream.IsForced)
+            {
+                return IsLanguageUndefined(stream.Language) ||
+                    string.Equals(stream.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase) ||
+                    (preferredLanguages.Count > 0 && MatchesPreferredLanguage(stream.Language, preferredLanguages));
+            }
+
+            return stream.IsExternal || stream.IsDefault;
         }
 
         private static bool MatchesPreferredLanguage(string language, IReadOnlyList<string> preferredLanguages)

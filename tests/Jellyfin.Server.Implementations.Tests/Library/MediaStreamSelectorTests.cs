@@ -1,5 +1,6 @@
 using System;
 using Emby.Server.Implementations.Library;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Model.Entities;
 using Xunit;
 
@@ -50,6 +51,41 @@ public class MediaStreamSelectorTests
         };
 
         Assert.Equal(expectedIndex, MediaStreamSelector.GetDefaultAudioStreamIndex(streams, preferredLanguages, preferDefaultTrack));
+    }
+
+    [Theory]
+    [InlineData("eng", "fra", false, true, new[] { "eng" }, null)]
+    [InlineData("eng", "fra", true, true, new[] { "eng" }, null)]
+    [InlineData("eng", "fra", true, true, new[] { "fra" }, 2)]
+    [InlineData("fra", "fra", true, true, new[] { "eng" }, 2)]
+    [InlineData("eng", "und", true, true, new[] { "eng" }, 2)]
+    [InlineData("eng", "fra", true, false, new[] { "eng" }, 2)]
+    [InlineData("eng", "fra", false, false, new[] { "eng" }, null)]
+    public void DefaultSubtitle_ForcedLanguageMustFitPlayback(
+        string audioLanguage,
+        string subtitleLanguage,
+        bool isDefault,
+        bool isForced,
+        string[] preferredLanguages,
+        int? expectedIndex)
+    {
+        var subtitle = new MediaStream
+        {
+            Index = 2,
+            Type = MediaStreamType.Subtitle,
+            Language = subtitleLanguage,
+            IsDefault = isDefault,
+            IsForced = isForced
+        };
+
+        Assert.Equal(
+            expectedIndex,
+            MediaStreamSelector.GetDefaultSubtitleStreamIndex(
+                new[] { subtitle }, preferredLanguages, SubtitlePlaybackMode.Default, audioLanguage));
+
+        MediaStreamSelector.SetSubtitleStreamScores(
+            new[] { subtitle }, preferredLanguages, SubtitlePlaybackMode.Default, audioLanguage);
+        Assert.Equal(expectedIndex.HasValue, subtitle.Score.HasValue);
     }
 
     public static TheoryData<MediaStream, int> GetStreamScore_MediaStream_TestData()
