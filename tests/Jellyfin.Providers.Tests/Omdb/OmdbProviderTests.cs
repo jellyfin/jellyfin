@@ -1,14 +1,26 @@
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Plugins.Omdb;
+using Moq;
 using Xunit;
 
 namespace Jellyfin.Providers.Tests.Omdb
 {
     public class OmdbProviderTests
     {
+        private const string TestUrl = "http://localhost/omdb";
+
         [Fact]
         public void AddPeople_CommaSeparatedList_SplitsIntoIndividualPeople()
         {
@@ -76,6 +88,64 @@ namespace Jellyfin.Providers.Tests.Omdb
             OmdbProvider.AddPeople(result, credits!, PersonKind.Actor);
 
             Assert.Null(result.People);
+        }
+
+        [Theory]
+        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\\nLine 2\"}]}")] // Escaped line feed
+        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\nLine 2\"}]}")] // Raw line feed (0x0A)
+        public async Task GetJsonObjectAsync_LineFeedInJsonString_ReturnsExpectedResult(string jsonResponse)
+        {
+            var provider = SetupOmdbProvider(response: jsonResponse);
+
+            var result = await provider.GetJsonObjectAsync<OmdbProvider.SeasonRootObject>(TestUrl, CancellationToken.None);
+
+            Assert.NotNull(result);
+            Assert.Equal("Line 1\nLine 2", result.Episodes[0].Plot);
+        }
+
+        [Theory]
+        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\\nLine 2\"")] // Escaped line feed, truncated JSON
+        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\nLine 2\"")] // Raw line feed, truncated JSON
+        public async Task GetJsonObjectAsync_TruncatedJson_ThrowsJsonException(string jsonResponse)
+        {
+            var provider = SetupOmdbProvider(response: jsonResponse);
+
+            await Assert.ThrowsAsync<JsonException>(
+                () => provider.GetJsonObjectAsync<OmdbProvider.SeasonRootObject>(TestUrl, CancellationToken.None));
+        }
+
+        private static OmdbProvider SetupOmdbProvider(string response)
+        {
+            // Mock factory to return faked client that returns response as bytes
+            var client = new HttpClient(new FakeHttpMessageHandler(Encoding.UTF8.GetBytes(response)));
+            var factory = new Mock<IHttpClientFactory>();
+
+            factory.Setup(f => f.CreateClient(NamedClient.Default)).Returns(client);
+
+            return new OmdbProvider(
+                factory.Object,
+                Mock.Of<IFileSystem>(),
+                Mock.Of<IServerConfigurationManager>());
+        }
+
+        private sealed class FakeHttpMessageHandler : HttpMessageHandler
+        {
+            private readonly byte[] _bytes;
+
+            public FakeHttpMessageHandler(byte[] bytes)
+            {
+                _bytes = bytes;
+            }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new ByteArrayContent(_bytes)
+                };
+
+                return Task.FromResult(response);
+            }
         }
     }
 }

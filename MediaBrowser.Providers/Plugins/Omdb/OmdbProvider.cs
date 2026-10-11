@@ -433,6 +433,11 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return Path.Combine(dataPath, filename);
         }
 
+        /// <summary>
+        /// Escapes line feeds in JSON strings to avoid deserialization errors.
+        /// </summary>
+        /// <param name="jsonAsBytes">A JSON response as bytes.</param>
+        /// <returns>An escaped JSON response.</returns>
         internal static ReadOnlySpan<byte> EscapeLineFeedsInJsonStrings(ReadOnlySpan<byte> jsonAsBytes)
         {
             // Do nothing if there are no line feeds (0x0A = \n)
@@ -448,7 +453,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             var outputBytes = new byte[jsonAsBytes.Length + lfCount];
             int readIndex = 0;
             int writeIndex = 0;
-            bool inQuotes = false;
+            bool inString = false;
 
             while (readIndex < jsonAsBytes.Length)
             {
@@ -471,7 +476,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 readIndex++;
 
                 // Only handle line feeds within quotes
-                if (b == (byte)'\n' && inQuotes)
+                if (b == (byte)'\n' && inString)
                 {
                     outputBytes[writeIndex++] = (byte)'\\';
                     outputBytes[writeIndex++] = (byte)'n';
@@ -482,7 +487,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
                     if (b == (byte)'"')
                     {
-                        inQuotes = !inQuotes;
+                        inString = !inString;
                     }
                     else if (b == (byte)'\\' && idx + 1 < slicedBytes.Length)
                     {
