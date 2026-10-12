@@ -93,4 +93,16 @@ public interface IJellyfinDatabaseProvider
     /// <param name="tableNames">The names of the tables to purge or null for all tables to be purged.</param>
     /// <returns>A Task.</returns>
     Task PurgeDatabase(JellyfinDbContext dbContext, IEnumerable<string>? tableNames);
+
+    /// <summary>
+    /// Determines whether a write failed because it lost a race with another writer, such as a unique constraint
+    /// violation or a deadlock, so that running the same unit of work again against fresh state can succeed.
+    /// Constraint violations that would fail every time, such as a foreign key or a not null violation, are not
+    /// retryable. Neither are errors about a busy or locked database, which say nothing about rows another writer
+    /// inserted and which the provider already waits out for each command.
+    /// The exception may be wrapped, for example in a <see cref="DbUpdateException"/>.
+    /// </summary>
+    /// <param name="exception">The exception thrown by the failed write.</param>
+    /// <returns><c>true</c> if repeating the write can succeed; otherwise, <c>false</c>.</returns>
+    bool IsRetryableWriteConflict(Exception exception) => false;
 }
