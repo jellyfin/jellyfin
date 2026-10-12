@@ -111,15 +111,23 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     /// <inheritdoc />
     public void UpdatePeople(Guid itemId, IReadOnlyList<PersonInfo> people)
     {
+        var namedPeople = new List<PersonInfo>(people.Count);
         foreach (var person in people)
         {
-            person.Name = person.Name.Trim();
-            person.Role = person.Role?.Trim() ?? string.Empty;
+            var hadNul = person.Name.Contains('\0', StringComparison.Ordinal);
+            person.Name = person.Name.RemoveNullCharacters().Trim();
+            person.Role = person.Role?.RemoveNullCharacters().Trim() ?? string.Empty;
+
+            // A name that is empty or whitespace once its NUL characters are removed does not name anyone.
+            if (!hadNul || person.Name.Length > 0)
+            {
+                namedPeople.Add(person);
+            }
         }
 
         // Project the values every comparison below needs once, so neither the case folding nor the
         // enum formatting is repeated per candidate.
-        var credits = people.Select(e => (Person: e, LoweredName: e.Name.ToLowerInvariant(), PersonType: e.Type.ToString(), LoweredRole: e.Role.ToLowerInvariant()));
+        var credits = namedPeople.Select(e => (Person: e, LoweredName: e.Name.ToLowerInvariant(), PersonType: e.Type.ToString(), LoweredRole: e.Role.ToLowerInvariant()));
 
         // multiple metadata providers can provide the _same_ credit; dedupe case-insensitively.
         // The role is part of the key because one person can hold several credits of the same type

@@ -29,6 +29,9 @@ namespace Jellyfin.Server.Implementations.Tests.Users
         [InlineData(" this has a space at both ends and inbetween ")]
         [InlineData(".")]
         [InlineData("..")]
+        [InlineData("name\0")]
+        [InlineData("na\0me")]
+        [InlineData("\0name")]
         public void ThrowIfInvalidUsername_WhenInvalidUsername_ThrowsArgumentException(string username)
         {
             Assert.Throws<ArgumentException>(() => UserManager.ThrowIfInvalidUsername(username));

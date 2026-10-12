@@ -197,6 +197,62 @@ public sealed class PeopleRepositoryUpdatePeopleTests : SqliteDbTestFixture
         Assert.Single(after.Peoples);
     }
 
+    [Fact]
+    public void UpdatePeople_RolesDifferingOnlyByNul_KeepOneCredit()
+    {
+        _repository.UpdatePeople(_itemId, [
+            CreatePerson("Person A", PersonKind.Writer, "Writer"),
+            CreatePerson("Person A", PersonKind.Writer, "Writer\0")
+        ]);
+
+        using var ctx = CreateDbContext();
+        Assert.Single(ctx.Peoples);
+        Assert.Equal("Writer", Assert.Single(ctx.PeopleBaseItemMap).Role);
+    }
+
+    [Theory]
+    [InlineData("Person A\0")]
+    [InlineData("Pers\0on A")]
+    [InlineData("\0Person A")]
+    public void UpdatePeople_NameDifferingOnlyByNulFromStoredPerson_ReusesThePerson(string name)
+    {
+        _repository.UpdatePeople(_itemId, [CreatePerson("Person A", PersonKind.Actor, "Hero")]);
+
+        _repository.UpdatePeople(_itemId, [CreatePerson(name, PersonKind.Actor, "Hero")]);
+
+        using var ctx = CreateDbContext();
+        Assert.Equal("Person A", Assert.Single(ctx.Peoples).Name);
+        Assert.Single(ctx.PeopleBaseItemMap);
+    }
+
+    [Fact]
+    public void UpdatePeople_SameNameWithNulSavedTwice_KeepsOnePerson()
+    {
+        _repository.UpdatePeople(_itemId, [CreatePerson("Person A\0", PersonKind.Actor, "Hero")]);
+
+        _repository.UpdatePeople(_itemId, [CreatePerson("Person A\0", PersonKind.Actor, "Hero")]);
+
+        using var ctx = CreateDbContext();
+        Assert.Single(ctx.Peoples);
+        Assert.Single(ctx.PeopleBaseItemMap);
+    }
+
+    [Theory]
+    [InlineData("\0")]
+    [InlineData("\0 \0")]
+    [InlineData(" \0")]
+    public void UpdatePeople_NameBlankOnceNulIsRemoved_IsNotStored(string name)
+    {
+        _repository.UpdatePeople(_itemId, [
+            CreatePerson(name, PersonKind.Actor, "Hero"),
+            CreatePerson("Person A", PersonKind.Actor, "Hero")
+        ]);
+
+        using var ctx = CreateDbContext();
+        Assert.Equal("Person A", Assert.Single(ctx.Peoples).Name);
+        Assert.Single(ctx.PeopleBaseItemMap);
+    }
+
     private Guid AddMovie(string name)
     {
         var id = Guid.NewGuid();

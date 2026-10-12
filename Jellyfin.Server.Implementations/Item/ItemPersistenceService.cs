@@ -230,11 +230,15 @@ public class ItemPersistenceService : IItemPersistenceService
             var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
             await using (transaction.ConfigureAwait(false))
             {
-                var userKeys = item.GetUserDataKeys().Distinct().ToList();
+                var rawKeys = item.GetUserDataKeys().ToList();
+                var userKeys = rawKeys.Select(e => e.RemoveNullCharacters()).Distinct().ToList();
+
+                // A row detached before NUL characters were removed is stored under the key as it was reported.
+                var lookupKeys = rawKeys.Concat(userKeys).Distinct().ToList();
 
                 var detached = await dbContext.UserData
                     .Where(e => e.ItemId == BaseItemRepository.PlaceholderId)
-                    .Where(e => userKeys.Contains(e.CustomDataKey))
+                    .Where(e => lookupKeys.Contains(e.CustomDataKey))
                     .ToListAsync(cancellationToken)
                     .ConfigureAwait(false);
 
@@ -275,7 +279,7 @@ public class ItemPersistenceService : IItemPersistenceService
                     .ThenByDescending(e => e.PlayCount)
                     .ThenByDescending(e => e.PlaybackPositionTicks)
                     .First(),
-                Keys: userKeys.Union(g.Select(e => e.CustomDataKey)).ToList()))
+                Keys: userKeys.Union(g.Select(e => e.CustomDataKey.RemoveNullCharacters())).ToList()))
             .ToList();
 
         dbContext.UserData.RemoveRange(detached);
@@ -809,8 +813,12 @@ public class ItemPersistenceService : IItemPersistenceService
 
         list.AddRange(inheritedTags.Select(i => (ItemValueType.InheritedTags, i)));
 
-        list.RemoveAll(i => string.IsNullOrWhiteSpace(i.Item2));
-
-        return list;
+        // Cleaned before the values are de-duplicated and matched against stored rows, so that a value with a NUL
+        // maps to the row stored without it. A row stored earlier may still hold a NUL and is not matched.
+        return list
+            .Where(i => !string.IsNullOrWhiteSpace(i.Item2))
+            .Select(i => (i.Item1, i.Item2.RemoveNullCharacters()))
+            .Where(i => !string.IsNullOrWhiteSpace(i.Item2))
+            .ToList();
     }
 }
