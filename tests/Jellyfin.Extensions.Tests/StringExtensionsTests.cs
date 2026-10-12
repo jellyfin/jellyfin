@@ -98,5 +98,26 @@ namespace Jellyfin.Extensions.Tests
         {
             Assert.Same(input, input.EscapeProcessArgument());
         }
+
+        [Theory]
+        [InlineData("ab\0cd", "abcd")]
+        [InlineData("The Matrix\0", "the matrix")]
+        [InlineData("\0The Matrix", "the matrix")]
+        [InlineData("\0", "")]
+        public void GetCleanValue_NulCharacter_IsRemoved(string input, string expectedResult)
+        {
+            Assert.Equal(expectedResult, input.GetCleanValue());
+        }
+
+        [Theory]
+        [InlineData("abc", "abc")]
+        [InlineData("a\0b\0c", "abc")]
+        [InlineData("\0abc\0", "abc")]
+        [InlineData("\0", "")]
+        [InlineData("", "")]
+        public void RemoveNullCharacters_Text_RemovesEveryNul(string input, string expectedResult)
+        {
+            Assert.Equal(expectedResult, input.RemoveNullCharacters());
+        }
     }
 }

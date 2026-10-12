@@ -151,7 +151,17 @@ namespace Jellyfin.Extensions
         }
 
         /// <summary>
-        /// Normalizes a string for comparison by removing diacritics, converting to lowercase,
+        /// Removes every null character ('\0') from a string.
+        /// </summary>
+        /// <param name="text">The input string.</param>
+        /// <returns>The string without null characters, or the original string if it has none.</returns>
+        public static string RemoveNullCharacters(this string text)
+        {
+            return text.Replace("\0", string.Empty, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Normalizes a string for comparison by removing null characters and diacritics, converting to lowercase,
         /// replacing punctuation/special characters with spaces, and collapsing whitespace.
         /// </summary>
         /// <param name="value">The string to normalize.</param>
@@ -163,8 +173,8 @@ namespace Jellyfin.Extensions
                 return value;
             }
 
-            // Remove diacritics and convert to lowercase
-            var cleaned = value.RemoveDiacritics().ToLowerInvariant();
+            // Remove null characters and diacritics, and convert to lowercase
+            var cleaned = value.RemoveNullCharacters().RemoveDiacritics().ToLowerInvariant();
 
             // Replace all punctuation and special characters with spaces
             cleaned = Regex.Replace(cleaned, @"[^\p{L}\p{N}\s]", " ");
