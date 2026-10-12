@@ -211,7 +211,7 @@ public static class ComicInfoReader
 
         try
         {
-            var dateTime = new DateTime(year, month, day, 0, 0, 0, DateTimeKind.Unspecified);
+            var dateTime = new DateTime(year, month, day, 0, 0, 0, DateTimeKind.Utc);
 
             commitResult(dateTime);
             return true;

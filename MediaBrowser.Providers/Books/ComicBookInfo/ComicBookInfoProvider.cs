@@ -235,7 +235,7 @@ public class ComicBookInfoProvider : IComicProvider
         try
         {
             // use first day of the month because this format doesn't include a day
-            return new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Unspecified);
+            return new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
         }
         catch (ArgumentOutOfRangeException)
         {

@@ -80,6 +80,31 @@ public sealed class ComicBookInfoProviderTests : IDisposable
         VerifyNothingLoggedAbove(logger, LogLevel.Debug);
     }
 
+    [Theory]
+    [InlineData(2021, 3)]
+    [InlineData(1999, 12)]
+    [InlineData(2020, 2)]
+    public async Task ReadMetadata_PublicationYearAndMonth_ReturnsUtcFirstOfMonth(int year, int month)
+    {
+        var logger = new Mock<ILogger<ComicBookInfoProvider>>();
+        var comment = $$$"""
+            {"appID":"test","ComicBookInfo/1.0":{"series":"Jungle Juice","publicationYear":{{{year}}},"publicationMonth":{{{month}}},"issue":1}}
+            """;
+        var path = CreateArchive(comment);
+        var provider = new ComicBookInfoProvider(CreateFileSystem(path), logger.Object);
+
+        var result = await provider.ReadMetadata(new ItemInfo(new Book { Path = path }), Mock.Of<IDirectoryService>(), CancellationToken.None);
+
+        Assert.True(result.HasMetadata);
+        Assert.NotNull(result.Item);
+        var premiereDate = Assert.NotNull(result.Item.PremiereDate);
+        Assert.Equal(DateTimeKind.Utc, premiereDate.Kind);
+        Assert.Equal(year, premiereDate.Year);
+        Assert.Equal(month, premiereDate.Month);
+        Assert.Equal(1, premiereDate.Day);
+        Assert.Equal(TimeSpan.Zero, premiereDate.TimeOfDay);
+    }
+
     private static void VerifyLogged(Mock<ILogger<ComicBookInfoProvider>> logger, LogLevel level, string message)
     {
         logger.Verify(
