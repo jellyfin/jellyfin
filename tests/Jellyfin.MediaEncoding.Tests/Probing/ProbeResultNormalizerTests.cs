@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -552,6 +553,42 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Contains("Trance", res.Genres);
             Assert.Contains("Dance", res.Genres);
             Assert.Contains("Jazz", res.Genres);
+        }
+
+        [Fact]
+        public void GetMediaInfo_WtvBroadcastDateAndYearOnly_UsesBroadcastDateAsPremiereDate()
+        {
+            MediaInfo res = GetWtvMediaInfo("2010-05-04T20:00:00Z", "2009");
+
+            Assert.Equal(2009, res.ProductionYear);
+            Assert.True(res.PremiereDate.HasValue);
+            Assert.Equal(new DateTime(2010, 5, 4, 20, 0, 0, DateTimeKind.Utc), res.PremiereDate);
+            Assert.Equal(DateTimeKind.Utc, res.PremiereDate.Value.Kind);
+        }
+
+        [Fact]
+        public void GetMediaInfo_WtvBroadcastDateAndFullOriginalReleaseTime_IgnoresReleaseTimeForPremiereDate()
+        {
+            MediaInfo res = GetWtvMediaInfo("2010-05-04T20:00:00Z", "2009-01-02T03:04:05Z");
+
+            Assert.Null(res.ProductionYear);
+            Assert.True(res.PremiereDate.HasValue);
+            Assert.Equal(new DateTime(2010, 5, 4, 20, 0, 0, DateTimeKind.Utc), res.PremiereDate);
+            Assert.Equal(DateTimeKind.Utc, res.PremiereDate.Value.Kind);
+        }
+
+        private MediaInfo GetWtvMediaInfo(string broadcastDate, string originalReleaseTime)
+        {
+            var bytes = File.ReadAllBytes("Test Data/Probing/video_ts.json");
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+            Assert.NotNull(internalMediaInfoResult);
+            internalMediaInfoResult.Format.Tags = new Dictionary<string, string>
+            {
+                ["WM/MediaOriginalBroadcastDateTime"] = broadcastDate,
+                ["WM/OriginalReleaseTime"] = originalReleaseTime
+            };
+
+            return _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_metadata.mkv", MediaProtocol.File);
         }
     }
 }
