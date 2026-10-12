@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Users;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.Users
 {
@@ -24,6 +25,7 @@ namespace Jellyfin.Server.Implementations.Users
         private const string BaseResetFileName = "passwordreset";
 
         private readonly IApplicationHost _appHost;
+        private readonly ILogger<DefaultPasswordResetProvider> _logger;
 
         private readonly string _passwordResetFileBase;
         private readonly string _passwordResetFileBaseDir;
@@ -33,11 +35,13 @@ namespace Jellyfin.Server.Implementations.Users
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="appHost">The application host.</param>
-        public DefaultPasswordResetProvider(IServerConfigurationManager configurationManager, IApplicationHost appHost)
+        /// <param name="logger">The logger.</param>
+        public DefaultPasswordResetProvider(IServerConfigurationManager configurationManager, IApplicationHost appHost, ILogger<DefaultPasswordResetProvider> logger)
         {
             _passwordResetFileBaseDir = configurationManager.ApplicationPaths.ProgramDataPath;
             _passwordResetFileBase = Path.Combine(_passwordResetFileBaseDir, BaseResetFileName);
             _appHost = appHost;
+            _logger = logger;
             // TODO: Remove the circular dependency on UserManager
         }
 
@@ -93,13 +97,34 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc />
-        public async Task<ForgotPasswordResult> StartForgotPasswordProcess(User? user, string enteredUsername, bool isInNetwork)
+        public Task<ForgotPasswordResult> StartForgotPasswordProcess(User? user, string enteredUsername, bool isInNetwork)
         {
             DateTime expireTime = DateTime.UtcNow.AddMinutes(30);
             var usernameHash = enteredUsername.ToUpperInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture);
             var pinFile = _passwordResetFileBase + usernameHash + ".json";
 
             if (user is not null && isInNetwork)
+            {
+                // Write the PIN file off the request path: the result below does not depend on it,
+                // and waiting for it would make the response time reveal whether the user exists.
+                var username = user.Username;
+                _ = Task.Run(() => WritePinFileAsync(pinFile, username, expireTime));
+            }
+
+            return Task.FromResult(new ForgotPasswordResult
+            {
+                Action = ForgotPasswordAction.PinCode,
+                PinExpirationDate = expireTime,
+                PinFile = pinFile
+            });
+        }
+
+        private async Task WritePinFileAsync(string pinFile, string username, DateTime expireTime)
+        {
+            // Write to a temporary file and then move it into place, so that PIN redemption never reads a half-written file.
+            // The temporary name must not start with the reset file name, because redemption enumerates files by that prefix.
+            var tempFile = Path.Combine(_passwordResetFileBaseDir, Path.GetRandomFileName() + ".tmp");
+            try
             {
                 byte[] bytes = new byte[4];
                 RandomNumberGenerator.Fill(bytes);
@@ -110,22 +135,34 @@ namespace Jellyfin.Server.Implementations.Users
                     ExpirationDate = expireTime,
                     Pin = pin,
                     PinFile = pinFile,
-                    UserName = user.Username
+                    UserName = username
                 };
 
-                FileStream fileStream = AsyncFile.Create(pinFile);
+                FileStream fileStream = AsyncFile.Create(tempFile);
                 await using (fileStream.ConfigureAwait(false))
                 {
                     await JsonSerializer.SerializeAsync(fileStream, spr).ConfigureAwait(false);
                 }
-            }
 
-            return new ForgotPasswordResult
+                File.Move(tempFile, pinFile, overwrite: true);
+            }
+            catch (Exception ex)
             {
-                Action = ForgotPasswordAction.PinCode,
-                PinExpirationDate = expireTime,
-                PinFile = pinFile
-            };
+                _logger.LogError(ex, "Failed to write password reset PIN file {PinFile}", pinFile);
+                TryDeleteTempFile(tempFile);
+            }
+        }
+
+        private void TryDeleteTempFile(string tempFile)
+        {
+            try
+            {
+                File.Delete(tempFile);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _logger.LogDebug(ex, "Failed to delete temporary password reset file {TempFile}", tempFile);
+            }
         }
 
 #nullable disable

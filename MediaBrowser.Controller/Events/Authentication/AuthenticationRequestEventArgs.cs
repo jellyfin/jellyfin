@@ -57,4 +57,9 @@ public class AuthenticationRequestEventArgs : EventArgs
     /// Gets or sets the remote endpoint.
     /// </summary>
     public string? RemoteEndPoint { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the entered username does not belong to any user.
+    /// </summary>
+    public bool IsUnknownUser { get; set; }
 }
