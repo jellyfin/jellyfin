@@ -16,16 +16,19 @@ namespace Jellyfin.Server.Implementations.Users
     {
         private readonly ILogger<DefaultAuthenticationProvider> _logger;
         private readonly ICryptoProvider _cryptographyProvider;
+        private readonly DummyPasswordVerifier _dummyPasswordVerifier;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultAuthenticationProvider"/> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="cryptographyProvider">The cryptography provider.</param>
-        public DefaultAuthenticationProvider(ILogger<DefaultAuthenticationProvider> logger, ICryptoProvider cryptographyProvider)
+        /// <param name="dummyPasswordVerifier">The dummy password verifier.</param>
+        public DefaultAuthenticationProvider(ILogger<DefaultAuthenticationProvider> logger, ICryptoProvider cryptographyProvider, DummyPasswordVerifier dummyPasswordVerifier)
         {
             _logger = logger;
             _cryptographyProvider = cryptographyProvider;
+            _dummyPasswordVerifier = dummyPasswordVerifier;
         }
 
         /// <inheritdoc />
@@ -55,6 +58,8 @@ namespace Jellyfin.Server.Implementations.Users
 
             if (resolvedUser is null)
             {
+                // Match the cost of a real password check so the response time does not reveal that the user exists.
+                _dummyPasswordVerifier.Verify(password);
                 ThrowAuthenticationException();
             }
 
@@ -70,6 +75,8 @@ namespace Jellyfin.Server.Implementations.Users
             // Handle the case when the stored password is null, but the user tried to login with a password
             if (resolvedUser.Password is null)
             {
+                // Match the cost of a real password check so the response time does not reveal that the user has no password set.
+                _dummyPasswordVerifier.Verify(password);
                 ThrowAuthenticationException();
             }
 

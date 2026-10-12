@@ -5,11 +5,13 @@ using Jellyfin.Data;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Events.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
@@ -217,6 +219,78 @@ public class SessionManagerTests
         Assert.Throws<SecurityException>(() => sessionManager.ReportCapabilities(attackerSession.Id, victimSession.Id, new ClientCapabilities()));
     }
 
+    [Fact]
+    public async Task AuthenticateNewSession_UnknownUser_PublishesFailedAuthenticationEvent()
+    {
+        var userManager = new Mock<IUserManager>();
+        userManager.Setup(i => i.AuthenticateUser("ghost", "wrong", "127.0.0.1", true))
+            .ThrowsAsync(new AuthenticationException("Invalid username or password entered."));
+        var eventManager = new Mock<IEventManager>();
+        await using var sessionManager = CreateSessionManager(userManager.Object, eventManager.Object);
+
+        await Assert.ThrowsAsync<AuthenticationException>(() => sessionManager.AuthenticateNewSession(CreateLoginRequest("ghost")));
+
+        eventManager.Verify(i => i.PublishAsync(It.Is<AuthenticationRequestEventArgs>(e => e.IsUnknownUser)), Times.Once);
+    }
+
+    [Fact]
+    public async Task AuthenticateNewSession_WrongPassword_PublishesFailedAuthenticationEvent()
+    {
+        var userManager = new Mock<IUserManager>();
+        userManager.Setup(i => i.AuthenticateUser("someone", "wrong", "127.0.0.1", true))
+            .ReturnsAsync((User?)null);
+        var eventManager = new Mock<IEventManager>();
+        await using var sessionManager = CreateSessionManager(userManager.Object, eventManager.Object);
+
+        await Assert.ThrowsAsync<AuthenticationException>(() => sessionManager.AuthenticateNewSession(CreateLoginRequest("someone")));
+
+        eventManager.Verify(i => i.PublishAsync(It.Is<AuthenticationRequestEventArgs>(e => !e.IsUnknownUser)), Times.Once);
+    }
+
+    [Fact]
+    public async Task AuthenticateNewSession_WithPassword_DoesNotLookUpUserSeparately()
+    {
+        var userManager = new Mock<IUserManager>();
+        userManager.Setup(i => i.AuthenticateUser("someone", "wrong", "127.0.0.1", true))
+            .ReturnsAsync((User?)null);
+        await using var sessionManager = CreateSessionManager(userManager.Object, Mock.Of<IEventManager>());
+        var request = CreateLoginRequest("someone");
+        request.UserId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<AuthenticationException>(() => sessionManager.AuthenticateNewSession(request));
+
+        userManager.Verify(i => i.GetUserByName(It.IsAny<string>()), Times.Never);
+        userManager.Verify(i => i.GetUserById(It.IsAny<Guid>()), Times.Never);
+    }
+
+    private static AuthenticationRequest CreateLoginRequest(string username)
+        => new()
+        {
+            App = "app_name",
+            AppVersion = "0.0.0",
+            DeviceId = "device_id",
+            DeviceName = "device_name",
+            Username = username,
+            Password = "wrong",
+            RemoteEndPoint = "127.0.0.1"
+        };
+
+    private static Emby.Server.Implementations.Session.SessionManager CreateSessionManager(IUserManager userManager, IEventManager eventManager)
+        => new(
+            NullLogger<Emby.Server.Implementations.Session.SessionManager>.Instance,
+            eventManager,
+            Mock.Of<IUserDataManager>(),
+            Mock.Of<IServerConfigurationManager>(),
+            Mock.Of<ILibraryManager>(),
+            userManager,
+            Mock.Of<IMusicManager>(),
+            Mock.Of<IDtoService>(),
+            Mock.Of<IImageProcessor>(),
+            Mock.Of<IServerApplicationHost>(),
+            Mock.Of<IDeviceManager>(),
+            Mock.Of<IMediaSourceManager>(),
+            Mock.Of<IHostApplicationLifetime>());
+
     private static Emby.Server.Implementations.Session.SessionManager CreateSessionManager(params User[] users)
     {
         var userManager = new Mock<IUserManager>();
@@ -225,20 +299,7 @@ public class SessionManagerTests
             userManager.Setup(i => i.GetUserById(user.Id)).Returns(user);
         }
 
-        return new Emby.Server.Implementations.Session.SessionManager(
-            NullLogger<Emby.Server.Implementations.Session.SessionManager>.Instance,
-            Mock.Of<IEventManager>(),
-            Mock.Of<IUserDataManager>(),
-            Mock.Of<IServerConfigurationManager>(),
-            Mock.Of<ILibraryManager>(),
-            userManager.Object,
-            Mock.Of<IMusicManager>(),
-            Mock.Of<IDtoService>(),
-            Mock.Of<IImageProcessor>(),
-            Mock.Of<IServerApplicationHost>(),
-            Mock.Of<IDeviceManager>(),
-            Mock.Of<IMediaSourceManager>(),
-            Mock.Of<IHostApplicationLifetime>());
+        return CreateSessionManager(userManager.Object, Mock.Of<IEventManager>());
     }
 
     // All sessions are logged with the same client and device id on purpose, those values are taken
