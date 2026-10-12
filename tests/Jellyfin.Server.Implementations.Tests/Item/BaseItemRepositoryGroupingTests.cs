@@ -16,15 +16,25 @@ public sealed class BaseItemRepositoryGroupingTests : SqliteDbTestFixture
     private static readonly Guid _movieLibraryId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid _movie4KLibraryId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
 
+    // Canonical order puts each lower id first, while the Guid.ToByteArray() byte order and the
+    // uniqueidentifier order of SQL Server both put it last.
+    private static readonly Guid _lowerId = Guid.Parse("0fffffff-0000-0000-0000-0000000000ff");
+    private static readonly Guid _higherId = Guid.Parse("10000000-0000-0000-0000-000000000000");
+    private static readonly Guid _alternateId = Guid.Parse("00000000-0000-0000-0000-000000000002");
+    private static readonly Guid _otherLowerId = Guid.Parse("0fffffff-0000-0000-0000-0000000000fe");
+    private static readonly Guid _otherHigherId = Guid.Parse("10000000-0000-0000-0000-000000000001");
+
     private readonly BaseItemRepository _repository;
     private readonly string _movieTypeName;
     private readonly string _folderTypeName;
+    private readonly string _episodeTypeName;
 
     public BaseItemRepositoryGroupingTests()
     {
         var itemTypeLookup = new ItemTypeLookup();
         _movieTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie];
         _folderTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Folder];
+        _episodeTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
 
         _repository = CreateBaseItemRepository(itemTypeLookup);
     }
@@ -32,30 +42,29 @@ public sealed class BaseItemRepositoryGroupingTests : SqliteDbTestFixture
     [Fact]
     public void GetItemList_VersionGroup_ReturnsPrimaryVersion()
     {
-        // The alternate version sorts before the primary by id, so a plain Min(Id) per
+        // The alternate version sorts before both primaries by id, so a plain Min(Id) per
         // presentation key would wrongly pick the alternate as the group representative.
-        var primaryId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
-        var alternateId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-        var presentationKey = primaryId.ToString("N");
+        var presentationKey = _lowerId.ToString("N");
 
         using (var ctx = CreateDbContext())
         {
-            ctx.BaseItems.Add(CreateMovieEntity(primaryId, "Movie", presentationKey, null));
-            ctx.BaseItems.Add(CreateMovieEntity(alternateId, "Movie - 1080p", presentationKey, primaryId));
+            ctx.BaseItems.Add(CreateMovieEntity(_higherId, "Movie - 4K", presentationKey, null));
+            ctx.BaseItems.Add(CreateMovieEntity(_lowerId, "Movie", presentationKey, null));
+            ctx.BaseItems.Add(CreateMovieEntity(_alternateId, "Movie - 1080p", presentationKey, _lowerId));
             ctx.SaveChanges();
         }
 
         var result = _repository.GetItemList(CreateQuery());
 
         var item = Assert.Single(result);
-        Assert.Equal(primaryId, item.Id);
+        Assert.Equal(_lowerId, item.Id);
     }
 
     [Fact]
     public void GetItemList_GroupWithoutPrimary_FallsBackToMinId()
     {
-        var firstId = Guid.Parse("22222222-2222-2222-2222-222222222222");
-        var secondId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
+        var firstId = _lowerId;
+        var secondId = _higherId;
         var otherPrimaryId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
         var presentationKey = otherPrimaryId.ToString("N");
 
@@ -70,6 +79,29 @@ public sealed class BaseItemRepositoryGroupingTests : SqliteDbTestFixture
 
         var item = Assert.Single(result);
         Assert.Equal(firstId, item.Id);
+    }
+
+    [Fact]
+    public void GetItemList_GroupBySeriesPresentationKey_ReturnsLowestIdOfEachSeries()
+    {
+        using (var ctx = CreateDbContext())
+        {
+            ctx.BaseItems.Add(CreateEpisodeEntity(_higherId, "series-a"));
+            ctx.BaseItems.Add(CreateEpisodeEntity(_lowerId, "series-a"));
+            ctx.BaseItems.Add(CreateEpisodeEntity(_otherHigherId, "series-b"));
+            ctx.BaseItems.Add(CreateEpisodeEntity(_otherLowerId, "series-b"));
+            ctx.SaveChanges();
+        }
+
+        var result = _repository.GetItemList(new InternalItemsQuery(new Database.Implementations.Entities.User("test", "auth", "reset"))
+        {
+            IncludeItemTypes = [BaseItemKind.Episode],
+            GroupBySeriesPresentationUniqueKey = true
+        });
+
+        Assert.Equal(
+            new[] { _lowerId, _otherLowerId }.Order(),
+            result.Select(i => i.Id).Order());
     }
 
     [Fact]
@@ -192,6 +224,21 @@ public sealed class BaseItemRepositoryGroupingTests : SqliteDbTestFixture
         {
             IncludeItemTypes = [BaseItemKind.Movie],
             IncludeOwnedItems = true
+        };
+    }
+
+    private BaseItemEntity CreateEpisodeEntity(Guid id, string seriesPresentationKey)
+    {
+        return new BaseItemEntity
+        {
+            Id = id,
+            Type = _episodeTypeName,
+            Name = "Episode",
+            PresentationUniqueKey = id.ToString("N"),
+            SeriesPresentationUniqueKey = seriesPresentationKey,
+            MediaType = "Video",
+            IsFolder = false,
+            IsVirtualItem = false
         };
     }
 
