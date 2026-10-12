@@ -12,6 +12,7 @@ using MediaBrowser.Common.Configuration;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Database.Providers.Sqlite;
@@ -141,6 +142,15 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // SQLite's LIKE already ignores the case of ASCII letters, and only those (Jellyfin does not turn on
+        // case_sensitive_like), so value LIKE pattern gives the same rows as the default lower(value) LIKE pattern
+        // without a lower() per row.
+        modelBuilder.HasDbFunction(() => JellyfinDbFunctions.LikeIgnoreAsciiCase(default, default!))
+            .HasTranslation(args =>
+            {
+                var escape = new SqlConstantExpression(LikePatterns.Escape, typeof(string), args[0].TypeMapping);
+                return new LikeExpression(args[0], args[1], escape, typeMapping: null);
+            });
     }
 
     /// <inheritdoc/>

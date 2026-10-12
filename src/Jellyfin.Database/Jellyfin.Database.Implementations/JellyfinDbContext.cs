@@ -326,6 +326,8 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Registered before the provider's model configuration, so that a provider can replace a translation.
+        JellyfinDbFunctions.ConfigureDefaults(modelBuilder);
         jellyfinDatabaseProvider.OnModelCreating(modelBuilder);
         base.OnModelCreating(modelBuilder);
 
