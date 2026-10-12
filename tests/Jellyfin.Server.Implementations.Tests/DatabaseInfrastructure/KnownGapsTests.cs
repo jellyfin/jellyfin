@@ -37,30 +37,6 @@ public class KnownGapsTests
             () => KnownGap.On(gap, () => throw CreatePostgresException("42883", "function lower(integer) does not exist")));
     }
 
-    [Fact]
-    public void PostgresMigrations_MessageOfTheBackend_Matches()
-    {
-        var exception = Assert.Throws<NotSupportedException>(
-            () => PostgresTestBackend.Instance.Create(TestSchemaSource.Migrations, []));
-
-        Assert.True(KnownGaps.PostgresMigrations.Matches(exception));
-    }
-
-    [Fact]
-    public void PostgresMigrations_OtherNotSupportedException_DoesNotMatch()
-    {
-        Assert.False(KnownGaps.PostgresMigrations.Matches(new NotSupportedException("Specified method is not supported.")));
-    }
-
-    [Fact]
-    public void PostgresMigrations_OtherNotSupportedExceptionOnTheSelectedProvider_IsNotSkipped()
-    {
-        var gap = KnownGaps.PostgresMigrations with { Provider = TestDatabaseEnvironment.Provider };
-
-        Assert.Throws<NotSupportedException>(
-            () => KnownGap.On(gap, () => throw new NotSupportedException("Specified method is not supported.")));
-    }
-
     private static PostgresException CreatePostgresException(string sqlState, string messageText)
         => new(messageText, "ERROR", "ERROR", sqlState);
 }

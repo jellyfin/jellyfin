@@ -1,4 +1,3 @@
-using System;
 using Xunit.Sdk;
 
 namespace Jellyfin.Database.Testing;
@@ -9,11 +8,6 @@ namespace Jellyfin.Database.Testing;
 /// </summary>
 public static class KnownGaps
 {
-    public static readonly KnownGapDefinition PostgresMigrations = new(
-        TestDbProvider.Postgres,
-        "PostgreSQL has no migrations",
-        ex => ex is NotSupportedException && string.Equals(ex.Message, PostgresTestBackend.NoMigrationsMessage, StringComparison.Ordinal));
-
     public static readonly KnownGapDefinition GuidAggregates = new(
         TestDbProvider.Postgres,
         "PostgreSQL has no min/max over uuid",

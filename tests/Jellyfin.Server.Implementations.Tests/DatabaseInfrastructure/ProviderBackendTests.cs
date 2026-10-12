@@ -30,7 +30,7 @@ public class ProviderBackendTests
     [Fact]
     public void Create_MigrationsSchema_ProducesUsableDatabase()
     {
-        KnownGap.On(KnownGaps.PostgresMigrations, () => AssertUsable(TestSchemaSource.Migrations));
+        AssertUsable(TestSchemaSource.Migrations);
     }
 
     private static void AssertUsable(TestSchemaSource source)
