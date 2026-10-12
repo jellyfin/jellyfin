@@ -32,12 +32,9 @@ public sealed class BaseItemRepositoryItemValueStringTests : JellyfinDbTestFixtu
     {
         Seed(ItemValueType.Tags);
 
-        KnownGap.On(KnownGaps.StringCollation, () =>
-        {
-            var result = _repository.GetTagNames(CreateQuery());
+        var result = _repository.GetTagNames(CreateQuery());
 
-            Assert.Equal(_expected, result);
-        });
+        Assert.Equal(_expected, result);
     }
 
     [Fact]
@@ -45,12 +42,9 @@ public sealed class BaseItemRepositoryItemValueStringTests : JellyfinDbTestFixtu
     {
         Seed(ItemValueType.Genre);
 
-        KnownGap.On(KnownGaps.StringCollation, () =>
-        {
-            var result = _repository.GetGenreNames();
+        var result = _repository.GetGenreNames();
 
-            Assert.Equal(_expected, result.Order(StringComparer.Ordinal));
-        });
+        Assert.Equal(_expected, result.Order(StringComparer.Ordinal));
     }
 
     [Fact]
@@ -59,13 +53,10 @@ public sealed class BaseItemRepositoryItemValueStringTests : JellyfinDbTestFixtu
         Seed(ItemValueType.Tags);
         Seed(ItemValueType.Genre);
 
-        KnownGap.On(KnownGaps.StringCollation, () =>
-        {
-            var result = _repository.GetQueryFiltersLegacy(CreateQuery());
+        var result = _repository.GetQueryFiltersLegacy(CreateQuery());
 
-            Assert.Equal(_expected, result.Tags);
-            Assert.Equal(_expected, result.Genres);
-        });
+        Assert.Equal(_expected, result.Tags);
+        Assert.Equal(_expected, result.Genres);
     }
 
     private static InternalItemsQuery CreateQuery()

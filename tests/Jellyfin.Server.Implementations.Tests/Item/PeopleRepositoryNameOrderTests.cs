@@ -37,12 +37,9 @@ public sealed class PeopleRepositoryNameOrderTests : JellyfinDbTestFixture
     [Fact]
     public void GetPeople_NoFilter_OrdersByLowerCasedNameCodePoint()
     {
-        KnownGap.On(KnownGaps.StringCollation, () =>
-        {
-            var result = _repository.GetPeople(new InternalPeopleQuery());
+        var result = _repository.GetPeople(new InternalPeopleQuery());
 
-            Assert.Equal(["_zed", "alice", "Bob", "Zed", "Ángel", "élan"], result.Items.Select(p => p.Name));
-        });
+        Assert.Equal(["_zed", "alice", "Bob", "Zed", "Ángel", "élan"], result.Items.Select(p => p.Name));
     }
 
     [Theory]
@@ -51,16 +48,13 @@ public sealed class PeopleRepositoryNameOrderTests : JellyfinDbTestFixture
     [InlineData(null, "é", new[] { "_zed", "alice", "Bob", "Zed", "Ángel" })]
     public void GetPeople_NameRange_BoundsByLowerCasedNameCodePoint(string? nameStartsWithOrGreater, string? nameLessThan, string[] expected)
     {
-        KnownGap.On(KnownGaps.StringCollation, () =>
+        var result = _repository.GetPeople(new InternalPeopleQuery
         {
-            var result = _repository.GetPeople(new InternalPeopleQuery
-            {
-                NameStartsWithOrGreater = nameStartsWithOrGreater,
-                NameLessThan = nameLessThan
-            });
-
-            Assert.Equal(expected, result.Items.Select(p => p.Name));
-            Assert.Equal(expected.Length, result.TotalRecordCount);
+            NameStartsWithOrGreater = nameStartsWithOrGreater,
+            NameLessThan = nameLessThan
         });
+
+        Assert.Equal(expected, result.Items.Select(p => p.Name));
+        Assert.Equal(expected.Length, result.TotalRecordCount);
     }
 }

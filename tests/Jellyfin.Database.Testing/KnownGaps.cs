@@ -24,23 +24,8 @@ public static class KnownGaps
         "PostgreSQL rejects a NUL character in any string parameter",
         ex => PostgresErrors.HasSqlState(ex, "22021"));
 
-    public static readonly KnownGapDefinition StringColumnLength = new(
-        TestDbProvider.Postgres,
-        "PostgreSQL enforces the declared length of a string column",
-        ex => PostgresErrors.HasSqlState(ex, "22001"));
-
-    public static readonly KnownGapDefinition StringCollation = new(
-        TestDbProvider.Postgres,
-        "PostgreSQL orders strings by collation",
-        ex => ex is IAssertionException);
-
     public static readonly KnownGapDefinition NullOrdering = new(
         TestDbProvider.Postgres,
         "PostgreSQL sorts NULL first in descending order",
-        ex => ex is IAssertionException);
-
-    public static readonly KnownGapDefinition UnicodeLower = new(
-        TestDbProvider.Postgres,
-        "PostgreSQL lower() follows the database collation",
         ex => ex is IAssertionException);
 }

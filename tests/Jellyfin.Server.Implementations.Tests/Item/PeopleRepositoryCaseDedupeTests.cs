@@ -47,10 +47,7 @@ public sealed class PeopleRepositoryCaseDedupeTests : JellyfinDbTestFixture
     {
         var result = _repository.GetPeople(new InternalPeopleQuery());
 
-        KnownGap.On(KnownGaps.UnicodeLower, () =>
-        {
-            Assert.Equal(["Bob", "Émile", "émile"], result.Items.Select(p => p.Name).Order(StringComparer.Ordinal).ToArray());
-            Assert.Equal(3, result.TotalRecordCount);
-        });
+        Assert.Equal(["Bob", "Émile", "émile"], result.Items.Select(p => p.Name).Order(StringComparer.Ordinal).ToArray());
+        Assert.Equal(3, result.TotalRecordCount);
     }
 }

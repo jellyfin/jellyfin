@@ -103,7 +103,7 @@ public sealed class BaseItemRepositoryItemValueTests : JellyfinDbTestFixture
 
         Assert.Equal(["alpha", "beta"], result.Tags.Select(s => s.ToLowerInvariant()).Order(StringComparer.Ordinal));
         Assert.Equal(["Genre Leak"], result.Genres);
-        KnownGap.On(KnownGaps.StringCollation, () => Assert.Equal(["Alpha", "Beta"], result.Tags));
+        Assert.Equal(["Alpha", "Beta"], result.Tags);
     }
 
     [Fact]
@@ -148,7 +148,7 @@ public sealed class BaseItemRepositoryItemValueTests : JellyfinDbTestFixture
         });
 
         Assert.Equal(["alpha", "beta"], result.Select(s => s.ToLowerInvariant()).Order(StringComparer.Ordinal));
-        KnownGap.On(KnownGaps.StringCollation, () => Assert.Equal(["Alpha", "Beta"], result));
+        Assert.Equal(["Alpha", "Beta"], result);
     }
 
     [Fact]
@@ -184,7 +184,7 @@ public sealed class BaseItemRepositoryItemValueTests : JellyfinDbTestFixture
 
         Assert.Equal(["Music Genre"], _repository.GetMusicGenreNames());
         Assert.Equal(["movie genre"], genreNames.Select(s => s.ToLowerInvariant()));
-        KnownGap.On(KnownGaps.StringCollation, () => Assert.Equal(["Movie Genre"], genreNames));
+        Assert.Equal(["Movie Genre"], genreNames);
     }
 
     private BaseItemEntity CreateMovieEntity(Guid id, string name)

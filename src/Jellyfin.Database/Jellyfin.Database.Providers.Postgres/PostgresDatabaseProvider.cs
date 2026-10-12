@@ -106,6 +106,10 @@ public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
+        configurationBuilder
+            .Properties<string>()
+            .HaveColumnType("text")
+            .UseCollation("C");
     }
 
     /// <inheritdoc/>

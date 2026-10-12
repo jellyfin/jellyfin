@@ -27,7 +27,7 @@ public sealed class TextColumnLengthTests : JellyfinDbTestFixture
             context.Users.Add(new User("user", "auth", "reset") { Id = userId });
             context.ActivityLogs.Add(new ActivityLog("Over-long overview", "Test", userId) { Overview = overview });
             context.Devices.Add(new Device(userId, "app", appVersion, "device", "device-id"));
-            KnownGap.On(KnownGaps.StringColumnLength, () => context.SaveChanges());
+            context.SaveChanges();
         }
 
         using (var context = CreateDbContext())
@@ -51,7 +51,7 @@ public sealed class TextColumnLengthTests : JellyfinDbTestFixture
                 Id = userId,
                 ProfileImage = new ImageInfo(path)
             });
-            KnownGap.On(KnownGaps.StringColumnLength, () => context.SaveChanges());
+            context.SaveChanges();
         }
 
         using (var context = CreateDbContext())
