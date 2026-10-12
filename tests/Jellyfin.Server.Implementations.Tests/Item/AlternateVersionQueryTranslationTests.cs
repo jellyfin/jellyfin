@@ -140,7 +140,7 @@ public sealed class AlternateVersionQueryTranslationTests : JellyfinDbTestFixtur
             Assert.Equal(seededIds.Order(), ordered.Order());
 
             // The movie whose only progress is on its alternate version sorts before the unplayed one.
-            KnownGap.On(KnownGaps.NullOrdering, () => Assert.Equal([primaryId, otherId], ordered));
+            Assert.Equal([primaryId, otherId], ordered);
         }
     }
 

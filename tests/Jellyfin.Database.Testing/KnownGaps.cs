@@ -23,9 +23,4 @@ public static class KnownGaps
         TestDbProvider.Postgres,
         "PostgreSQL rejects a NUL character in any string parameter",
         ex => PostgresErrors.HasSqlState(ex, "22021"));
-
-    public static readonly KnownGapDefinition NullOrdering = new(
-        TestDbProvider.Postgres,
-        "PostgreSQL sorts NULL first in descending order",
-        ex => ex is IAssertionException);
 }

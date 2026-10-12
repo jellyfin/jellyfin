@@ -11,6 +11,7 @@ using Jellyfin.Database.Implementations.DbConfiguration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -92,6 +93,7 @@ public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
                     .MigrationsAssembly(GetType().Assembly)
                     .SetPostgresVersion(16, 0)
                     .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery))
+            .ReplaceService<IQuerySqlGeneratorFactory, NullOrderingQuerySqlGeneratorFactory>()
             .ConfigureWarnings(warnings =>
                 warnings.Throw(RelationalEventId.NonTransactionalMigrationOperationWarning));
 

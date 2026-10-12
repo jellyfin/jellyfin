@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.DbConfiguration;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Providers.Postgres;
 using Jellyfin.Database.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -205,5 +206,129 @@ public sealed class PostgresConventionTests : DatabaseTestFixture
             .ToListAsync();
 
         Assert.Empty(columns);
+    }
+
+    [ProviderFact(TestDbProvider.Postgres)]
+    public async Task OrderBy_NullableColumn_SpellsOutTheNullPlacementOfSqlite()
+    {
+        await using var context = CreateDbContext();
+
+        var itemsAscending = context.BaseItems.OrderBy(e => e.PremiereDate).Select(e => e.Id).ToQueryString();
+        var itemsDescending = context.BaseItems.OrderByDescending(e => e.PremiereDate).Select(e => e.Id).ToQueryString();
+        var userDataAscending = context.UserData.OrderBy(e => e.LastPlayedDate).Select(e => e.ItemId).ToQueryString();
+        var userDataDescending = context.UserData.OrderByDescending(e => e.LastPlayedDate).Select(e => e.ItemId).ToQueryString();
+
+        Assert.Contains("\"PremiereDate\" NULLS FIRST", itemsAscending, StringComparison.Ordinal);
+        Assert.Contains("\"PremiereDate\" DESC NULLS LAST", itemsDescending, StringComparison.Ordinal);
+        Assert.Contains("\"LastPlayedDate\" NULLS FIRST", userDataAscending, StringComparison.Ordinal);
+        Assert.Contains("\"LastPlayedDate\" DESC NULLS LAST", userDataDescending, StringComparison.Ordinal);
+    }
+
+    [ProviderFact(TestDbProvider.Postgres)]
+    public async Task OrderBy_NonNullableColumn_HasNoNullPlacement()
+    {
+        await using var context = CreateDbContext();
+
+        var ascending = context.BaseItems.OrderBy(e => e.Id).Select(e => e.Id).ToQueryString();
+        var descending = context.BaseItems.OrderByDescending(e => e.Id).Select(e => e.Id).ToQueryString();
+
+        Assert.Contains("ORDER BY b.\"Id\"", ascending, StringComparison.Ordinal);
+        Assert.Contains("ORDER BY b.\"Id\" DESC", descending, StringComparison.Ordinal);
+        Assert.DoesNotContain("NULLS", ascending, StringComparison.Ordinal);
+        Assert.DoesNotContain("NULLS", descending, StringComparison.Ordinal);
+    }
+
+    [ProviderFact(TestDbProvider.Postgres)]
+    public async Task OrderBy_ExpressionThatIsNotAColumn_SpellsOutTheNullPlacement()
+    {
+        await using var context = CreateDbContext();
+
+        var ascending = context.BaseItems.OrderBy(e => e.Name!.Length).Select(e => e.Id).ToQueryString();
+        var descending = context.BaseItems.OrderByDescending(e => e.Name!.Length).Select(e => e.Id).ToQueryString();
+
+        Assert.Contains("length(b.\"Name\")::int NULLS FIRST", ascending, StringComparison.Ordinal);
+        Assert.Contains("length(b.\"Name\")::int DESC NULLS LAST", descending, StringComparison.Ordinal);
+    }
+
+    [ProviderFact(TestDbProvider.Postgres)]
+    public async Task OrderBy_ColumnThroughAnOptionalNavigation_SpellsOutTheNullPlacement()
+    {
+        await using var context = CreateDbContext();
+
+        var ascending = context.BaseItems.OrderBy(b => b.Owner!.Type).Select(b => b.Id).ToQueryString();
+        var descending = context.BaseItems.OrderByDescending(b => b.Owner!.Type).Select(b => b.Id).ToQueryString();
+
+        Assert.Contains("LEFT JOIN", ascending, StringComparison.Ordinal);
+        Assert.Contains("\"Type\" NULLS FIRST", ascending, StringComparison.Ordinal);
+        Assert.Contains("\"Type\" DESC NULLS LAST", descending, StringComparison.Ordinal);
+    }
+
+    [ProviderFact(TestDbProvider.Postgres)]
+    public async Task OrderBy_PrimaryKeyWithLimit_UsesTheIndexInsteadOfSorting()
+    {
+        await using (var context = CreateDbContext())
+        {
+            context.BaseItems.AddRange(
+                Enumerable.Range(0, 5000).Select(_ => new BaseItemEntity { Id = Guid.NewGuid(), Type = "Movie" }));
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+            await context.Database.ExecuteSqlRawAsync("ANALYZE \"BaseItems\"", TestContext.Current.CancellationToken);
+        }
+
+        await using (var context = CreateDbContext())
+        {
+            var query = context.BaseItems.OrderBy(e => e.Id).Select(e => e.Id).ToQueryString();
+            var sql = string.Join('\n', query.Split('\n').Where(l => !l.StartsWith("--", StringComparison.Ordinal)));
+            var plan = new StringBuilder();
+            await context.Database.OpenConnectionAsync(TestContext.Current.CancellationToken);
+            await using var command = context.Database.GetDbConnection().CreateCommand();
+#pragma warning disable CA2100 // The SQL is the query that EF Core generated from the model above.
+            command.CommandText = $"EXPLAIN {sql} LIMIT 10";
+#pragma warning restore CA2100
+            await using (var reader = await command.ExecuteReaderAsync(TestContext.Current.CancellationToken))
+            {
+                while (await reader.ReadAsync(TestContext.Current.CancellationToken))
+                {
+                    plan.AppendLine(reader.GetString(0));
+                }
+            }
+
+            Assert.Contains("Index", plan.ToString(), StringComparison.Ordinal);
+            Assert.DoesNotContain("Sort", plan.ToString(), StringComparison.Ordinal);
+        }
+    }
+
+    [ProviderFact(TestDbProvider.Postgres)]
+    public async Task OrderBy_NullableColumn_PutsNullsFirstAscendingAndLastDescending()
+    {
+        var withoutDate = Guid.NewGuid();
+        var early = Guid.NewGuid();
+        var late = Guid.NewGuid();
+        await using (var context = CreateDbContext())
+        {
+            context.BaseItems.AddRange(
+                new BaseItemEntity { Id = early, Type = "Movie", PremiereDate = new DateTime(2001, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new BaseItemEntity { Id = withoutDate, Type = "Movie" },
+                new BaseItemEntity { Id = late, Type = "Movie", PremiereDate = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc) });
+            await context.SaveChangesAsync();
+        }
+
+        await using (var context = CreateDbContext())
+        {
+            var seeded = new[] { withoutDate, early, late };
+
+            var ascending = await context.BaseItems
+                .Where(e => seeded.Contains(e.Id))
+                .OrderBy(e => e.PremiereDate)
+                .Select(e => e.Id)
+                .ToListAsync();
+            var descending = await context.BaseItems
+                .Where(e => seeded.Contains(e.Id))
+                .OrderByDescending(e => e.PremiereDate)
+                .Select(e => e.Id)
+                .ToListAsync();
+
+            Assert.Equal([withoutDate, early, late], ascending);
+            Assert.Equal([late, early, withoutDate], descending);
+        }
     }
 }
