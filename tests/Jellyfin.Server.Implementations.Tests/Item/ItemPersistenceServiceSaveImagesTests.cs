@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
-public class ItemPersistenceServiceSaveImagesTests : SqliteDbTestFixture
+public class ItemPersistenceServiceSaveImagesTests : JellyfinDbTestFixture
 {
     private readonly ItemPersistenceService _service;
 

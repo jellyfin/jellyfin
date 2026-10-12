@@ -21,7 +21,7 @@ using ServerLibraryManager = Emby.Server.Implementations.Library.LibraryManager;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
-public sealed class ArtistNameLookupTests : SqliteDbTestFixture
+public sealed class ArtistNameLookupTests : JellyfinDbTestFixture
 {
     private readonly CommandRecorder _recorder;
 

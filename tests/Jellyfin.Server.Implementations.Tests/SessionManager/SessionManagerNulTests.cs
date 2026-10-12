@@ -26,7 +26,7 @@ namespace Jellyfin.Server.Implementations.Tests.SessionManager;
 /// the same device is found by it. A device id with a NUL character has to find the device stored for it,
 /// so that the old token is logged out and no second device is added.
 /// </summary>
-public sealed class SessionManagerNulTests : SqliteDbTestFixture
+public sealed class SessionManagerNulTests : JellyfinDbTestFixture
 {
     private readonly Guid _userId = Guid.NewGuid();
     private readonly DeviceManager _deviceManager;

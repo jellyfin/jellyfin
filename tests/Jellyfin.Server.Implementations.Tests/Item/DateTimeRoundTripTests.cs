@@ -13,7 +13,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// and SQLite reads it back as UTC. Values are compared to within a microsecond,
 /// as the stored precision is not under test.
 /// </summary>
-public sealed class DateTimeRoundTripTests : SqliteDbTestFixture
+public sealed class DateTimeRoundTripTests : JellyfinDbTestFixture
 {
     private static readonly TimeSpan _microsecond = TimeSpan.FromTicks(10);
 

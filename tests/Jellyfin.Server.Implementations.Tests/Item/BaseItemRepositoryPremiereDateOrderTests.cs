@@ -17,7 +17,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// that year, among the items that have a premiere date. An item with neither is the lowest.
 /// Each item gets a distinct name so no assertion relies on how equal keys are ordered.
 /// </summary>
-public sealed class BaseItemRepositoryPremiereDateOrderTests : SqliteDbTestFixture
+public sealed class BaseItemRepositoryPremiereDateOrderTests : JellyfinDbTestFixture
 {
     private readonly BaseItemRepository _repository;
     private readonly ItemTypeLookup _itemTypeLookup = new();

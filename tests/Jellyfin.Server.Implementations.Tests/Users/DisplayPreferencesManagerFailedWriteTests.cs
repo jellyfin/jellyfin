@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Users;
 
-public sealed class DisplayPreferencesManagerFailedWriteTests : SqliteDbTestFixture
+public sealed class DisplayPreferencesManagerFailedWriteTests : JellyfinDbTestFixture
 {
     private const string Client = "client";
 

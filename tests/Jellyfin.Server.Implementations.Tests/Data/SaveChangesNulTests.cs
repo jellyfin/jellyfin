@@ -17,7 +17,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data;
 /// unique index are not changed: code that compares them with stored rows has to clean them first, and a value
 /// cleaned on save would no longer be the string it compared.
 /// </summary>
-public sealed class SaveChangesNulTests : SqliteDbTestFixture
+public sealed class SaveChangesNulTests : JellyfinDbTestFixture
 {
     [Theory]
     [InlineData(false)]

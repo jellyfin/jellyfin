@@ -12,7 +12,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// A publication date read from comic metadata is a calendar date, so it has to come back from the
 /// database as the same day whatever time zone the server runs in.
 /// </summary>
-public sealed class ComicPremiereDateStorageTests : SqliteDbTestFixture
+public sealed class ComicPremiereDateStorageTests : JellyfinDbTestFixture
 {
     [Theory]
     [InlineData(2021, 3, 1)]

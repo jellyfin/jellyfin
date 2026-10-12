@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// only return the people that have one, so the count it reports has to leave out the rest rather than
 /// describe a larger set than it can page through.
 /// </summary>
-public sealed class PeopleRepositoryMustHaveItemTests : SqliteDbTestFixture
+public sealed class PeopleRepositoryMustHaveItemTests : JellyfinDbTestFixture
 {
     private readonly PeopleRepository _people;
     private readonly Guid _movie = Guid.NewGuid();

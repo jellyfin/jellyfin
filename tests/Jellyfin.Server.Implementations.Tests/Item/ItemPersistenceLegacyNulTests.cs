@@ -30,7 +30,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// seasons and episodes. The rows are seeded as that code stored them, straight into the database, the
 /// upgrade routine runs, and the series is then loaded and saved the way the application does.
 /// </summary>
-public sealed class ItemPersistenceLegacyNulTests : SqliteDbTestFixture
+public sealed class ItemPersistenceLegacyNulTests : JellyfinDbTestFixture
 {
     private const string TvdbId = "12\03";
 

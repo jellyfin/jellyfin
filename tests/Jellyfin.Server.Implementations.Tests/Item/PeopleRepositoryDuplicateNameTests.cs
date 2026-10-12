@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// so that their canonical order is the opposite of both their <see cref="Guid.ToByteArray()"/> byte order
 /// and the uniqueidentifier order of SQL Server.
 /// </summary>
-public sealed class PeopleRepositoryDuplicateNameTests : SqliteDbTestFixture
+public sealed class PeopleRepositoryDuplicateNameTests : JellyfinDbTestFixture
 {
     private readonly PeopleRepository _repository;
 

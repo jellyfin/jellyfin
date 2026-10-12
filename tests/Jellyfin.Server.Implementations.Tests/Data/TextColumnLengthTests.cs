@@ -12,7 +12,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data;
 /// The <c>[MaxLength]</c> attributes on text columns are model metadata only: a value longer than the
 /// declared length is stored and read back whole, and is never truncated or rejected.
 /// </summary>
-public sealed class TextColumnLengthTests : SqliteDbTestFixture
+public sealed class TextColumnLengthTests : JellyfinDbTestFixture
 {
     [Fact]
     public void OverLength_DisplayText_IsStoredWhole()

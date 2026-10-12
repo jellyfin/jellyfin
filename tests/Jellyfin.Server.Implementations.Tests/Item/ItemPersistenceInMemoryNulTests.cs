@@ -28,7 +28,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// An item that kept its NUL characters would be matched against rows that no longer have them, for example a
 /// series looking for its seasons and episodes by its presentation key.
 /// </summary>
-public sealed class ItemPersistenceInMemoryNulTests : SqliteDbTestFixture
+public sealed class ItemPersistenceInMemoryNulTests : JellyfinDbTestFixture
 {
     private const string KeyWithNul = "tt0903747\0-en";
     private const string CleanKey = "tt0903747-en";

@@ -22,7 +22,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// PrimaryVersionId the item queries hide it by, including when it was already a library
 /// item in its own right before it became a version.
 /// </summary>
-public sealed class ItemPersistenceAlternateVersionTests : SqliteDbTestFixture
+public sealed class ItemPersistenceAlternateVersionTests : JellyfinDbTestFixture
 {
     private const string PrimaryPath = "/movies/Movie/Movie - 4K.mkv";
     private const string VersionPath = "/movies/Movie/Movie - 1080p.mkv";

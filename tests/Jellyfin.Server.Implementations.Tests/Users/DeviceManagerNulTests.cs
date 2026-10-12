@@ -22,7 +22,7 @@ namespace Jellyfin.Server.Implementations.Tests.Users;
 /// only by a NUL is added again and the stored options are never found. The same goes for the devices: whoever
 /// calls the manager, a device id with a NUL finds the device stored without it.
 /// </summary>
-public sealed class DeviceManagerNulTests : SqliteDbTestFixture
+public sealed class DeviceManagerNulTests : JellyfinDbTestFixture
 {
     private readonly Guid _userId = Guid.NewGuid();
     private readonly User _user;

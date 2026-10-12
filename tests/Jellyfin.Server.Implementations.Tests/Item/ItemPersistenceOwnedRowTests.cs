@@ -20,7 +20,7 @@ using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
-public sealed class ItemPersistenceOwnedRowTests : SqliteDbTestFixture
+public sealed class ItemPersistenceOwnedRowTests : JellyfinDbTestFixture
 {
     private readonly ItemPersistenceService _service;
     private readonly ILibraryManager? _previousLibraryManager;

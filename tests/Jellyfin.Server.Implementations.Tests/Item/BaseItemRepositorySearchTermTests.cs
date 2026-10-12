@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// wrote it in. The match ignores ASCII case only, treats <c>\</c> as an ordinary character and leaves
 /// <c>%</c> and <c>_</c> as wildcards.
 /// </summary>
-public sealed class BaseItemRepositorySearchTermTests : SqliteDbTestFixture
+public sealed class BaseItemRepositorySearchTermTests : JellyfinDbTestFixture
 {
     private readonly BaseItemRepository _repository;
     private readonly ItemTypeLookup _itemTypeLookup = new();

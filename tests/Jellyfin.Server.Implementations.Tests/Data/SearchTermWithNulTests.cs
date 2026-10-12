@@ -28,7 +28,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data;
 /// "%Quasar", which only finds values that end in "quasar", and "%\0Quasar%" behaved as "%", which finds
 /// every row. The second item of each pair is a decoy that only the last of these would also find.
 /// </summary>
-public sealed class SearchTermWithNulTests : SqliteDbTestFixture
+public sealed class SearchTermWithNulTests : JellyfinDbTestFixture
 {
     private readonly ItemTypeLookup _itemTypeLookup = new();
     private readonly BaseItemRepository _repository;

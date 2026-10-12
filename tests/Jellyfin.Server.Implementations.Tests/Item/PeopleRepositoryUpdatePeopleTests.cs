@@ -13,7 +13,7 @@ using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
-public sealed class PeopleRepositoryUpdatePeopleTests : SqliteDbTestFixture
+public sealed class PeopleRepositoryUpdatePeopleTests : JellyfinDbTestFixture
 {
     private static readonly Guid _itemId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 

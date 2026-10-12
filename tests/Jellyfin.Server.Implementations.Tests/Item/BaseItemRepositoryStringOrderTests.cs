@@ -17,7 +17,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// accented letters. The name range filters compare the lower-cased sort name instead, so they ignore case
 /// but still place '_' before letters and 'é' after 'z'.
 /// </summary>
-public sealed class BaseItemRepositoryStringOrderTests : SqliteDbTestFixture
+public sealed class BaseItemRepositoryStringOrderTests : JellyfinDbTestFixture
 {
     private static readonly string[] _values = ["Bob", "_zed", "alice", "Ángel"];
 

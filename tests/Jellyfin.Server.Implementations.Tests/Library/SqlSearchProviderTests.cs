@@ -25,7 +25,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library;
 /// libraries: the primary represents the group wherever it is visible, and the version stands in
 /// for it for a user who cannot open the library the primary lives in.
 /// </summary>
-public sealed class SqlSearchProviderTests : SqliteDbTestFixture
+public sealed class SqlSearchProviderTests : JellyfinDbTestFixture
 {
     private static readonly Guid _movieLibraryId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid _movie4KLibraryId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");

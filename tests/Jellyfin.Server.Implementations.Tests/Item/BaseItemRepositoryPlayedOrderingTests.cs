@@ -19,7 +19,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// has to read the played state the isPlayed filter reports: folders hold none of their own and count
 /// as played once no descendant is left unplayed.
 /// </summary>
-public sealed class BaseItemRepositoryPlayedOrderingTests : SqliteDbTestFixture
+public sealed class BaseItemRepositoryPlayedOrderingTests : JellyfinDbTestFixture
 {
     private const string SeriesType = "MediaBrowser.Controller.Entities.TV.Series";
     private const string EpisodeType = "MediaBrowser.Controller.Entities.TV.Episode";

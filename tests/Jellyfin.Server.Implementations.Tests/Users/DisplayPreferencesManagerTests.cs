@@ -10,7 +10,7 @@ namespace Jellyfin.Server.Implementations.Tests.Users;
 /// Item display preferences are looked up by the item they belong to, so they have to be stored under it as well:
 /// a row stored under any other item is never found again, and every later request stores another one.
 /// </summary>
-public sealed class DisplayPreferencesManagerTests : SqliteDbTestFixture
+public sealed class DisplayPreferencesManagerTests : JellyfinDbTestFixture
 {
     private const string Client = "client";
 

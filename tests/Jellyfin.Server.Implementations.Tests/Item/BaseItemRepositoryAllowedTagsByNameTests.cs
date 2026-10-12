@@ -16,7 +16,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// artists - of the media those tags let through. The by-name item carries none of the media's tags,
 /// so the allowed-tags filter would otherwise hide every one of them.
 /// </summary>
-public sealed class BaseItemRepositoryAllowedTagsByNameTests : SqliteDbTestFixture
+public sealed class BaseItemRepositoryAllowedTagsByNameTests : JellyfinDbTestFixture
 {
     private const string AllowedTag = "kids";
 

@@ -16,7 +16,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// BoxSet or Playlist runs on. Those hold their contents as linked children, so the items below a
 /// linked folder are only reachable by following the link and then the ancestor chain.
 /// </summary>
-public sealed class BaseItemRepositoryDescendantFilterTests : SqliteDbTestFixture
+public sealed class BaseItemRepositoryDescendantFilterTests : JellyfinDbTestFixture
 {
     private const string FolderType = "MediaBrowser.Controller.Entities.Folder";
     private const string BoxSetType = "MediaBrowser.Controller.Entities.Movies.BoxSet";

@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// hidden from ordinary queries, but the scan has to see it or it takes the row for a new item and
 /// recreates it, splitting the version group apart again.
 /// </summary>
-public sealed class BaseItemRepositoryChildrenTests : SqliteDbTestFixture
+public sealed class BaseItemRepositoryChildrenTests : JellyfinDbTestFixture
 {
     private static readonly Guid _folderId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid _primaryId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");

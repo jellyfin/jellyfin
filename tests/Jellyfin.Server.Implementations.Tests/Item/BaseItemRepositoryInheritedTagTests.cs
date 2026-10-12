@@ -16,7 +16,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// four ways - on the item, on its series, on an ancestor and on its library - and each of them has to
 /// keep answering the same after the ancestor check moved off a per-row correlated subquery.
 /// </summary>
-public sealed class BaseItemRepositoryInheritedTagTests : SqliteDbTestFixture
+public sealed class BaseItemRepositoryInheritedTagTests : JellyfinDbTestFixture
 {
     private const string FolderType = "MediaBrowser.Controller.Entities.Folder";
     private const string SeriesType = "MediaBrowser.Controller.Entities.TV.Series";

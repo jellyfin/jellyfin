@@ -20,7 +20,7 @@ namespace Jellyfin.Server.Implementations.Tests.Security;
 /// The device id, device name, client name and version of the authorization header are compared with the stored
 /// device and used to look up the devices of a user, so they are cleaned of NUL characters where the header is read.
 /// </summary>
-public sealed class AuthorizationContextNulTests : SqliteDbTestFixture
+public sealed class AuthorizationContextNulTests : JellyfinDbTestFixture
 {
     private readonly Mock<IDeviceManager> _deviceManager = new();
     private readonly AuthorizationContext _authorizationContext;

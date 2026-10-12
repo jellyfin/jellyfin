@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Tests.Activity;
 /// Username, ignoring ASCII case. A <c>\</c> in the filter is an ordinary character; <c>%</c> and
 /// <c>_</c> are wildcards.
 /// </summary>
-public sealed class ActivityManagerFilterTests : SqliteDbTestFixture
+public sealed class ActivityManagerFilterTests : JellyfinDbTestFixture
 {
     private readonly ActivityManager _manager;
 

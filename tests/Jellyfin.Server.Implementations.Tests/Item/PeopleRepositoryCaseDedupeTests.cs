@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// SQL <c>lower()</c> folds ASCII only, so names that differ only in the case of a non-ASCII letter stay
 /// separate.
 /// </summary>
-public sealed class PeopleRepositoryCaseDedupeTests : SqliteDbTestFixture
+public sealed class PeopleRepositoryCaseDedupeTests : JellyfinDbTestFixture
 {
     private readonly PeopleRepository _repository;
 

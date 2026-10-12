@@ -8,7 +8,7 @@ using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
-public sealed class BaseItemRepositoryItemValueTests : SqliteDbTestFixture
+public sealed class BaseItemRepositoryItemValueTests : JellyfinDbTestFixture
 {
     private readonly BaseItemRepository _repository;
     private readonly string _audioTypeName;

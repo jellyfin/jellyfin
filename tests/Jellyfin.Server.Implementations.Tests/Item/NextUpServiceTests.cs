@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// Covers Next Up over episodes with alternate versions: the episode that was watched is the one
 /// whose alternate carries the played row, so an episode already seen must not be offered again.
 /// </summary>
-public sealed class NextUpServiceTests : SqliteDbTestFixture
+public sealed class NextUpServiceTests : JellyfinDbTestFixture
 {
     private const string SeriesKey = "next-up-series";
     private const string EpisodeType = "MediaBrowser.Controller.Entities.TV.Episode";

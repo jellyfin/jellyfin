@@ -13,7 +13,7 @@ namespace Jellyfin.Server.Implementations.Tests.Users;
 /// cleaned of NUL characters before it is stored or looked up. Otherwise a client name that differs from the
 /// stored one only by a NUL is added again and the stored preferences are never found.
 /// </summary>
-public sealed class DisplayPreferencesManagerNulTests : SqliteDbTestFixture
+public sealed class DisplayPreferencesManagerNulTests : JellyfinDbTestFixture
 {
     private static readonly Guid _userId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid _itemId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");

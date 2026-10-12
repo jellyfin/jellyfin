@@ -13,7 +13,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// are picked so that their canonical order is the opposite of both their <see cref="Guid.ToByteArray()"/>
 /// byte order and the uniqueidentifier order of SQL Server.
 /// </summary>
-public sealed class BaseItemRepositoryByNameRepresentativeTests : SqliteDbTestFixture
+public sealed class BaseItemRepositoryByNameRepresentativeTests : JellyfinDbTestFixture
 {
     private static readonly Guid _lowestId = Guid.Parse("0fffffff-0000-0000-0000-0000000000ff");
     private static readonly Guid _highestId = Guid.Parse("10000000-0000-0000-0000-000000000000");

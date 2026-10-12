@@ -16,7 +16,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// A missing value is the lowest value of its sort key: it comes first when ascending and last when
 /// descending. Each item gets a distinct name so no assertion relies on how equal keys are ordered.
 /// </summary>
-public sealed class BaseItemRepositoryNullOrderTests : SqliteDbTestFixture
+public sealed class BaseItemRepositoryNullOrderTests : JellyfinDbTestFixture
 {
     private const string MissingName = "Missing";
     private const string LowName = "Low";

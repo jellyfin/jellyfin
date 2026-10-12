@@ -14,9 +14,9 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// Base fixture for the item tests: one database per test instance on the selected provider, plus the wiring the
 /// repositories under test need. Derived classes seed in their own constructor.
 /// </summary>
-public abstract class SqliteDbTestFixture : DatabaseTestFixture
+public abstract class JellyfinDbTestFixture : DatabaseTestFixture
 {
-    protected SqliteDbTestFixture(params IInterceptor[] interceptors)
+    protected JellyfinDbTestFixture(params IInterceptor[] interceptors)
         : base(interceptors)
     {
     }

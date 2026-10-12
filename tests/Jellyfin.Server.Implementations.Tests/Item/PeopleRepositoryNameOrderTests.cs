@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// People are listed by lower-cased name in Unicode code point order, so '_' comes before letters and
 /// accented letters after 'z'. The name range filters compare the lower-cased name the same way.
 /// </summary>
-public sealed class PeopleRepositoryNameOrderTests : SqliteDbTestFixture
+public sealed class PeopleRepositoryNameOrderTests : JellyfinDbTestFixture
 {
     private readonly PeopleRepository _repository;
 

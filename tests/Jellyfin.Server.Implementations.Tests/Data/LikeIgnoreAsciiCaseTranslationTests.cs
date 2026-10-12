@@ -129,7 +129,7 @@ public sealed class LikeIgnoreAsciiCaseTranslationTests
         return (value, Assert.IsType<LikeExpression>(translated));
     }
 
-    private sealed class SqliteContext : SqliteDbTestFixture
+    private sealed class SqliteContext : JellyfinDbTestFixture
     {
         public string QueryString()
         {

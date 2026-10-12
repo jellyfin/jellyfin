@@ -11,7 +11,7 @@ namespace Jellyfin.Server.Implementations.Tests.Users;
 /// Two first-ever requests for the same preferences can both find nothing and both insert; the unique index lets one
 /// through. The other has to return the stored preferences instead of failing.
 /// </summary>
-public sealed class DisplayPreferencesManagerConcurrentCreateTests : SqliteDbTestFixture
+public sealed class DisplayPreferencesManagerConcurrentCreateTests : JellyfinDbTestFixture
 {
     private const string Client = "client";
 

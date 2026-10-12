@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Trickplay;
 
-public sealed class TrickplayManagerTests : SqliteDbTestFixture
+public sealed class TrickplayManagerTests : JellyfinDbTestFixture
 {
     [Fact]
     public async Task DeleteTrickplayDataAsync_DisposesDbContext()

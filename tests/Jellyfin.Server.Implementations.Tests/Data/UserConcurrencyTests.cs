@@ -12,7 +12,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data;
 /// another context has changed in the meantime is rejected instead of overwriting that change, and each
 /// successful save raises the row version by one.
 /// </summary>
-public sealed class UserConcurrencyTests : SqliteDbTestFixture
+public sealed class UserConcurrencyTests : JellyfinDbTestFixture
 {
     [Fact]
     public async Task SaveChanges_StaleUser_ThrowsConcurrencyErrorAndRowVersionRisesOnce()

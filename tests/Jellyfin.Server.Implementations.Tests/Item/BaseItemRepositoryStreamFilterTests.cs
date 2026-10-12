@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// Covers the filters resolving "folders with a matching descendant" through
 /// <see cref="DescendantQueryHelper.GetFolderIdsMatching"/>, positive and negated.
 /// </summary>
-public sealed class BaseItemRepositoryStreamFilterTests : SqliteDbTestFixture
+public sealed class BaseItemRepositoryStreamFilterTests : JellyfinDbTestFixture
 {
     private const string FolderType = "MediaBrowser.Controller.Entities.Folder";
     private const string BoxSetType = "MediaBrowser.Controller.Entities.Movies.BoxSet";

@@ -25,7 +25,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library;
 /// primary's genres, tags, studios and people, so they score like it and must not be offered as
 /// something similar - neither as another copy of a recommendation nor as a match for the source.
 /// </summary>
-public sealed class MovieSimilarItemsProviderTests : SqliteDbTestFixture
+public sealed class MovieSimilarItemsProviderTests : JellyfinDbTestFixture
 {
     private static readonly Guid _movieLibraryId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid _movie4KLibraryId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");

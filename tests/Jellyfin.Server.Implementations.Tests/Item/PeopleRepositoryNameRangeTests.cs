@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// Names keep the case a metadata provider wrote them in, so the range has to ignore case the same way
 /// the list is sorted, or a capitalised name lands before every lowercase bound.
 /// </summary>
-public sealed class PeopleRepositoryNameRangeTests : SqliteDbTestFixture
+public sealed class PeopleRepositoryNameRangeTests : JellyfinDbTestFixture
 {
     private readonly PeopleRepository _repository;
 

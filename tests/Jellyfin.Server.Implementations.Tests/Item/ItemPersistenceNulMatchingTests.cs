@@ -26,7 +26,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// A value that is matched against stored rows is cleaned of NUL characters first, so a value that differs
 /// from a stored one only by a NUL finds the row instead of being added again.
 /// </summary>
-public sealed class ItemPersistenceNulMatchingTests : SqliteDbTestFixture
+public sealed class ItemPersistenceNulMatchingTests : JellyfinDbTestFixture
 {
     private readonly ItemPersistenceService _service;
     private readonly ILibraryManager? _previousLibraryManager;

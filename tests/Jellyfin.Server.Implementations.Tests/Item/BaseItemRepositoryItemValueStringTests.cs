@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// text is smallest by Unicode code point, case-sensitively: upper case before '_' before lower case
 /// before accented letters.
 /// </summary>
-public sealed class BaseItemRepositoryItemValueStringTests : SqliteDbTestFixture
+public sealed class BaseItemRepositoryItemValueStringTests : JellyfinDbTestFixture
 {
     private static readonly string[] _expected = ["Rock", "_zed", "alpha", "Élan"];
 

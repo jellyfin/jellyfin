@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// <summary>
 /// The person NameStartsWith filter on a database whose <c>LIKE</c> is case-sensitive, as on PostgreSQL.
 /// </summary>
-public sealed class PeopleRepositoryCaseSensitiveLikeTests : SqliteDbTestFixture
+public sealed class PeopleRepositoryCaseSensitiveLikeTests : JellyfinDbTestFixture
 {
     private readonly PeopleRepository _repository;
 

@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data;
 /// Statistics taken on a freshly created database describe every table as a single row, and SQLite then plans
 /// the user data and series queries of a filled library as full scans (#17886).
 /// </summary>
-public sealed class SqliteDatabaseStatisticsTests : SqliteDbTestFixture
+public sealed class SqliteDatabaseStatisticsTests : JellyfinDbTestFixture
 {
     private readonly SqliteDatabaseProvider _provider;
 

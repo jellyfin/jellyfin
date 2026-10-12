@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// The name-contains filter looks in the normalized <c>CleanName</c> and in <c>OriginalTitle</c>, which keeps the
 /// case it was written in.
 /// </summary>
-public sealed class BaseItemRepositoryNameContainsTests : SqliteDbTestFixture
+public sealed class BaseItemRepositoryNameContainsTests : JellyfinDbTestFixture
 {
     private readonly BaseItemRepository _repository;
     private readonly ItemTypeLookup _itemTypeLookup = new();

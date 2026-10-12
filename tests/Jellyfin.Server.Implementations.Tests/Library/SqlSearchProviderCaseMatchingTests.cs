@@ -21,7 +21,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library;
 /// provider wrote them in. The match ignores ASCII case only, treats <c>\</c> as an ordinary character and
 /// leaves <c>%</c> and <c>_</c> as wildcards.
 /// </summary>
-public sealed class SqlSearchProviderCaseMatchingTests : SqliteDbTestFixture
+public sealed class SqlSearchProviderCaseMatchingTests : JellyfinDbTestFixture
 {
     private readonly SqlSearchProvider _provider;
 

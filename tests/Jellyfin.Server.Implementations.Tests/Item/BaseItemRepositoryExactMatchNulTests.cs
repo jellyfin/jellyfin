@@ -19,7 +19,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// matches nothing. SQLite compares it as given and returns no rows; an engine that rejects a NUL in a query
 /// parameter would raise an error instead.
 /// </summary>
-public sealed class BaseItemRepositoryExactMatchNulTests : SqliteDbTestFixture
+public sealed class BaseItemRepositoryExactMatchNulTests : JellyfinDbTestFixture
 {
     private const string MoviePath = "/media/movies/bob.mkv";
 

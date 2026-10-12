@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// Person names keep the case a metadata provider wrote them in. The prefix, substring and range filters
 /// ignore ASCII case on both sides of the comparison, whichever case the caller typed.
 /// </summary>
-public sealed class PeopleRepositoryNameFilterTests : SqliteDbTestFixture
+public sealed class PeopleRepositoryNameFilterTests : JellyfinDbTestFixture
 {
     private readonly PeopleRepository _repository;
 

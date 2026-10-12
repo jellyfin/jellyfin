@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// A NUL character in the text a caller filters people by is ignored, so the filter returns what it returns
 /// without the NUL. Some engines reject a NUL in a query parameter.
 /// </summary>
-public sealed class PeopleRepositoryNulTermTests : SqliteDbTestFixture
+public sealed class PeopleRepositoryNulTermTests : JellyfinDbTestFixture
 {
     private static readonly string[] _allNames = ["ALICE", "Bob", "Rob", "Zoe", "bo", "bobby"];
 

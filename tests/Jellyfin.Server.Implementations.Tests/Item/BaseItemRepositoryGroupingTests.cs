@@ -11,7 +11,7 @@ using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
-public sealed class BaseItemRepositoryGroupingTests : SqliteDbTestFixture
+public sealed class BaseItemRepositoryGroupingTests : JellyfinDbTestFixture
 {
     private static readonly Guid _movieLibraryId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid _movie4KLibraryId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");

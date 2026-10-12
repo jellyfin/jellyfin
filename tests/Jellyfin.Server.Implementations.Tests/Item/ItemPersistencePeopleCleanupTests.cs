@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
-public sealed class ItemPersistencePeopleCleanupTests : SqliteDbTestFixture
+public sealed class ItemPersistencePeopleCleanupTests : JellyfinDbTestFixture
 {
     private readonly ItemPersistenceService _service;
 

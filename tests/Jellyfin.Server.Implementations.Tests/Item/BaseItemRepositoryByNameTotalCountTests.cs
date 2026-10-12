@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// <c>GetItemValues</c>. A query without a <c>Limit</c> used to have its total record count
 /// silently disabled, so callers got a populated <c>Items</c> array next to a zero total.
 /// </summary>
-public sealed class BaseItemRepositoryByNameTotalCountTests : SqliteDbTestFixture
+public sealed class BaseItemRepositoryByNameTotalCountTests : JellyfinDbTestFixture
 {
     private readonly BaseItemRepository _repository;
     private readonly ItemTypeLookup _itemTypeLookup;
