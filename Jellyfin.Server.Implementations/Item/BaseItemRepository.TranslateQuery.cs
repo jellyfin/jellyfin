@@ -264,13 +264,13 @@ public sealed partial class BaseItemRepository
             if (SearchWildcardTerms.Any(f => cleanedSearchTerm.Contains(f)))
             {
                 cleanedSearchTerm = $"%{cleanedSearchTerm.Trim('%')}%";
-                var likeSearchTerm = $"%{originalSearchTerm.Trim('%')}%";
-                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!, cleanedSearchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeSearchTerm)));
+                var likeSearchTerm = LikePatterns.ContainsIgnoreAsciiCase(originalSearchTerm.Trim('%'));
+                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!, cleanedSearchTerm, LikePatterns.Escape) || (e.OriginalTitle != null && JellyfinDbFunctions.LikeIgnoreAsciiCase(e.OriginalTitle, likeSearchTerm)));
             }
             else
             {
-                var likeSearchTerm = $"%{originalSearchTerm}%";
-                baseQuery = baseQuery.Where(e => e.CleanName!.Contains(cleanedSearchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeSearchTerm)));
+                var likeSearchTerm = LikePatterns.ContainsIgnoreAsciiCase(originalSearchTerm);
+                baseQuery = baseQuery.Where(e => e.CleanName!.Contains(cleanedSearchTerm) || (e.OriginalTitle != null && JellyfinDbFunctions.LikeIgnoreAsciiCase(e.OriginalTitle, likeSearchTerm)));
             }
         }
 

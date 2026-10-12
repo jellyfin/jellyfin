@@ -79,22 +79,22 @@ public class ActivityManager : IActivityManager
 
             if (!string.IsNullOrEmpty(query.Name))
             {
-                entries = entries.Where(e => EF.Functions.Like(e.ActivityLog.Name, $"%{query.Name}%"));
+                entries = entries.Where(e => JellyfinDbFunctions.LikeIgnoreAsciiCase(e.ActivityLog.Name, LikePatterns.ContainsIgnoreAsciiCase(query.Name)));
             }
 
             if (!string.IsNullOrEmpty(query.Overview))
             {
-                entries = entries.Where(e => EF.Functions.Like(e.ActivityLog.Overview, $"%{query.Overview}%"));
+                entries = entries.Where(e => JellyfinDbFunctions.LikeIgnoreAsciiCase(e.ActivityLog.Overview, LikePatterns.ContainsIgnoreAsciiCase(query.Overview)));
             }
 
             if (!string.IsNullOrEmpty(query.ShortOverview))
             {
-                entries = entries.Where(e => EF.Functions.Like(e.ActivityLog.ShortOverview, $"%{query.ShortOverview}%"));
+                entries = entries.Where(e => JellyfinDbFunctions.LikeIgnoreAsciiCase(e.ActivityLog.ShortOverview, LikePatterns.ContainsIgnoreAsciiCase(query.ShortOverview)));
             }
 
             if (!string.IsNullOrEmpty(query.Type))
             {
-                entries = entries.Where(e => EF.Functions.Like(e.ActivityLog.Type, $"%{query.Type}%"));
+                entries = entries.Where(e => JellyfinDbFunctions.LikeIgnoreAsciiCase(e.ActivityLog.Type, LikePatterns.ContainsIgnoreAsciiCase(query.Type)));
             }
 
             if (!query.ItemId.IsNullOrEmpty())
@@ -105,7 +105,7 @@ public class ActivityManager : IActivityManager
 
             if (!string.IsNullOrEmpty(query.Username))
             {
-                entries = entries.Where(e => EF.Functions.Like(e.Username, $"%{query.Username}%"));
+                entries = entries.Where(e => JellyfinDbFunctions.LikeIgnoreAsciiCase(e.Username, LikePatterns.ContainsIgnoreAsciiCase(query.Username)));
             }
 
             if (query.Severity is not null)

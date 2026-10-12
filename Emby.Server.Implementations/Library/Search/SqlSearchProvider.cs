@@ -100,14 +100,13 @@ public class SqlSearchProvider : IInternalSearchProvider
 
         var cleanPrefix = cleanSearchTerm + " ";
         // OriginalTitle is stored mixed-case and isn't pre-normalized like CleanName,
-        // so match it via a case-insensitive LIKE rather than a per-row case conversion
-        // that may not translate to SQL on every provider.
-        var likeOriginal = $"%{rawSearchTerm}%";
+        // so it is matched with a LIKE that ignores the case of ASCII letters.
+        var likeOriginal = LikePatterns.ContainsIgnoreAsciiCase(rawSearchTerm);
 
         // Great benefit for users with metadata in non-latin script
         // since SortName is among other things stored transliterated.
         var sortNameShape = BaseItem.GetSortName(rawSearchTerm, true, _configurationManager.Configuration);
-        var likeSortName = string.IsNullOrWhiteSpace(sortNameShape) ? null : $"%{sortNameShape}%";
+        var likeSortName = string.IsNullOrWhiteSpace(sortNameShape) ? null : LikePatterns.ContainsIgnoreAsciiCase(sortNameShape);
 
         var limit = query.Limit ?? DefaultSearchLimit;
 
@@ -124,14 +123,14 @@ public class SqlSearchProvider : IInternalSearchProvider
             {
                 dbQuery = dbQuery
                     .Where(e => e.CleanName!.Contains(cleanSearchTerm)
-                        || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeOriginal)));
+                        || (e.OriginalTitle != null && JellyfinDbFunctions.LikeIgnoreAsciiCase(e.OriginalTitle, likeOriginal)));
             }
             else
             {
                 dbQuery = dbQuery
                     .Where(e => e.CleanName!.Contains(cleanSearchTerm)
-                        || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeOriginal))
-                        || (e.SortName != null && EF.Functions.Like(e.SortName, likeSortName)));
+                        || (e.OriginalTitle != null && JellyfinDbFunctions.LikeIgnoreAsciiCase(e.OriginalTitle, likeOriginal))
+                        || (e.SortName != null && JellyfinDbFunctions.LikeIgnoreAsciiCase(e.SortName, likeSortName!)));
             }
 
             dbQuery = ApplyTypeFilter(dbQuery, query.IncludeItemTypes, query.ExcludeItemTypes);
