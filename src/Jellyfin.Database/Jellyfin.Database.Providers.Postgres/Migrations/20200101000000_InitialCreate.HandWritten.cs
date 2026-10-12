@@ -12,10 +12,12 @@ public partial class InitialCreate
     {
         // Looks up people by their lowercased name. The model has no index on an expression.
         migrationBuilder.Sql("""CREATE INDEX IF NOT EXISTS "IX_Peoples_NameLower" ON "Peoples" (lower("Name"));""");
+        migrationBuilder.Sql(PostgresUuidAggregate.CreateSql);
     }
 
     private static void DropHandWrittenObjects(MigrationBuilder migrationBuilder)
     {
+        migrationBuilder.Sql(PostgresUuidAggregate.DropSql);
         migrationBuilder.Sql("""DROP INDEX IF EXISTS "IX_Peoples_NameLower";""");
     }
 }
