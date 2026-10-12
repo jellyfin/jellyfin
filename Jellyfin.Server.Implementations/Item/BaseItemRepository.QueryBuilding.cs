@@ -225,21 +225,24 @@ public sealed partial class BaseItemRepository
 
     private static IQueryable<BaseItemEntity> ApplyNameFilters(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
-        if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
+        var nameStartsWith = filter.NameStartsWith?.RemoveNullCharacters();
+        if (!string.IsNullOrWhiteSpace(nameStartsWith))
         {
-            var nameStartsWithLower = filter.NameStartsWith.ToLowerInvariant();
+            var nameStartsWithLower = nameStartsWith.ToLowerInvariant();
             dbQuery = dbQuery.Where(e => e.SortName!.ToLower().StartsWith(nameStartsWithLower));
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.NameStartsWithOrGreater))
+        var nameStartsWithOrGreater = filter.NameStartsWithOrGreater?.RemoveNullCharacters();
+        if (!string.IsNullOrWhiteSpace(nameStartsWithOrGreater))
         {
-            var startsOrGreaterLower = filter.NameStartsWithOrGreater.ToLowerInvariant();
+            var startsOrGreaterLower = nameStartsWithOrGreater.ToLowerInvariant();
             dbQuery = dbQuery.Where(e => e.SortName!.ToLower().CompareTo(startsOrGreaterLower) >= 0);
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.NameLessThan))
+        var nameLessThan = filter.NameLessThan?.RemoveNullCharacters();
+        if (!string.IsNullOrWhiteSpace(nameLessThan))
         {
-            var lessThanLower = filter.NameLessThan.ToLowerInvariant();
+            var lessThanLower = nameLessThan.ToLowerInvariant();
             dbQuery = dbQuery.Where(e => e.SortName!.ToLower().CompareTo(lessThanLower) < 0);
         }
 

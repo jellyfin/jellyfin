@@ -98,6 +98,7 @@ public static class OrderMapper
     /// <returns>An expression that returns an integer representing match quality (lower is better).</returns>
     public static Expression<Func<BaseItemEntity, int>> MapSearchRelevanceOrder(string searchTerm)
     {
+        searchTerm = searchTerm.RemoveNullCharacters();
         var cleanSearchTerm = GetCleanValue(searchTerm);
         var searchPrefix = cleanSearchTerm + " ";
         var originalSearchLower = searchTerm.ToLowerInvariant();
