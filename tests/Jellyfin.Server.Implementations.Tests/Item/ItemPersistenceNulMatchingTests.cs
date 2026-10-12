@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -171,7 +172,7 @@ public sealed class ItemPersistenceNulMatchingTests : JellyfinDbTestFixture
         }
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task ReattachUserData_StoredRowKeyWithLegacyNul_IsCarriedOverWithoutDuplicatingTheCleanedKey()
     {
         var movie = CreateMovie(Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"), "tt0001");
@@ -198,7 +199,7 @@ public sealed class ItemPersistenceNulMatchingTests : JellyfinDbTestFixture
         }
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task ReattachUserData_DetachedRowKeyedWithNul_IsReattachedWhenTheItemReportsTheSameKey()
     {
         // A file that is moved or replaced is added again with the same metadata, so it reports the same key.

@@ -5,6 +5,7 @@ using System.Linq;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
@@ -66,7 +67,7 @@ public sealed class PeopleUpdateQueryTests : JellyfinDbTestFixture
         Assert.Equal(2, Assert.Single(context.PeopleBaseItemMap).SortOrder);
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public void UpdatePeople_GeneratedSqlUsesPeopleNameIndex()
     {
         ApplyMigration(new Jellyfin.Server.Implementations.Migrations.AddPeopleNameLowerIndex());

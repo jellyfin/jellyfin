@@ -5,6 +5,7 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Entities.Security;
 using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Database.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -35,7 +36,7 @@ public sealed class SqliteDatabaseProviderPurgeTests : IDisposable
         _connection.Dispose();
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task PurgeDatabase_ForTableThatHeldRows_RestartsIdentityAtOne()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -56,7 +57,7 @@ public sealed class SqliteDatabaseProviderPurgeTests : IDisposable
         Assert.Equal(1, added.Id);
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task PurgeDatabase_ForTableThatNeverHeldRows_StartsIdentityAtOne()
     {
         var cancellationToken = TestContext.Current.CancellationToken;

@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Tests.Item;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -27,7 +28,7 @@ public sealed class SqliteDatabaseStatisticsTests : JellyfinDbTestFixture
         };
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task RunScheduledOptimisation_EmptyLibrary_RecordsNoStatistics()
     {
         SeedFolders(3);
@@ -37,7 +38,7 @@ public sealed class SqliteDatabaseStatisticsTests : JellyfinDbTestFixture
         Assert.Null(ReadAnalyzedItemCount());
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task RunScheduledOptimisation_LibraryWithItems_RecordsStatistics()
     {
         SeedFolders(1);
@@ -48,7 +49,7 @@ public sealed class SqliteDatabaseStatisticsTests : JellyfinDbTestFixture
         Assert.Equal(CountItems(), ReadAnalyzedItemCount());
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task RefreshStatistics_NoStatistics_Analyzes()
     {
         SeedEpisodes(5);
@@ -58,7 +59,7 @@ public sealed class SqliteDatabaseStatisticsTests : JellyfinDbTestFixture
         Assert.Equal(CountItems(), ReadAnalyzedItemCount());
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task RefreshStatistics_LibraryChanged_Reanalyzes()
     {
         SeedEpisodes(10);
@@ -70,7 +71,7 @@ public sealed class SqliteDatabaseStatisticsTests : JellyfinDbTestFixture
         Assert.Equal(CountItems(), ReadAnalyzedItemCount());
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task RefreshStatistics_EmptyLibrary_RecordsNoStatistics()
     {
         SeedFolders(2);

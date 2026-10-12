@@ -1,5 +1,6 @@
 using System;
 using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Database.Testing;
 using MediaBrowser.Common.Configuration;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -48,7 +49,7 @@ public sealed class SqliteWriteConflictClassificationTests : IDisposable
 
     public void Dispose() => _connection.Dispose();
 
-    [Theory]
+    [ProviderTheory(TestDbProvider.Sqlite)]
     [InlineData("INSERT INTO Children VALUES ('b', 'alpha', 'x', 1, 1)", ConstraintUnique, true)]
     [InlineData("INSERT INTO Children VALUES ('a', 'beta', 'x', 1, 1)", ConstraintPrimaryKey, true)]
     [InlineData("INSERT INTO Children VALUES ('b', 'beta', 'x', 2, 1)", ConstraintForeignKey, false)]
@@ -65,7 +66,7 @@ public sealed class SqliteWriteConflictClassificationTests : IDisposable
         Assert.Equal(expectedRetryable, _provider.IsRetryableWriteConflict(exception));
     }
 
-    [Theory]
+    [ProviderTheory(TestDbProvider.Sqlite)]
     [InlineData("INSERT INTO Children VALUES ('b', 'alpha', 'x', 1, 1)", true)]
     [InlineData("INSERT INTO Children VALUES ('a', 'beta', 'x', 1, 1)", true)]
     [InlineData("INSERT INTO Children VALUES ('b', 'beta', 'x', 2, 1)", false)]
@@ -80,7 +81,7 @@ public sealed class SqliteWriteConflictClassificationTests : IDisposable
         Assert.Equal(expectedRetryable, _provider.IsRetryableWriteConflict(wrapped));
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public void IsRetryableWriteConflict_ViolationNestedDeeper_IsFound()
     {
         var inner = Assert.Throws<SqliteException>(() => Execute("INSERT INTO Children VALUES ('b', 'alpha', 'x', 1, 1)"));
@@ -91,7 +92,7 @@ public sealed class SqliteWriteConflictClassificationTests : IDisposable
         Assert.True(_provider.IsRetryableWriteConflict(nested));
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public void IsRetryableWriteConflict_UnrelatedExceptions_AreNotRetryable()
     {
         Assert.False(_provider.IsRetryableWriteConflict(new InvalidOperationException("unique")));
@@ -99,7 +100,7 @@ public sealed class SqliteWriteConflictClassificationTests : IDisposable
         Assert.False(_provider.IsRetryableWriteConflict(new DbUpdateException("wrapped", new TimeoutException())));
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public void IsRetryableWriteConflict_Null_Throws()
     {
         Assert.Throws<ArgumentNullException>(() => _provider.IsRetryableWriteConflict(null!));

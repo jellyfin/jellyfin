@@ -81,6 +81,7 @@
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.2.3" />
     <PackageVersion Include="System.Text.Json" Version="10.0.13" />
     <PackageVersion Include="TagLibSharp" Version="2.3.0" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.16.0" />
     <PackageVersion Include="z440.atl.core" Version="7.18.0" />
     <PackageVersion Include="TMDbLib" Version="3.0.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.7.0" />

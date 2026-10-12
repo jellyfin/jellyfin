@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Tests.Item;
 using MediaBrowser.Common.Configuration;
 using Microsoft.Data.Sqlite;
@@ -61,7 +62,7 @@ public sealed class LikeIgnoreAsciiCaseTranslationTests
         Assert.Equal("\\", Assert.IsType<SqlConstantExpression>(like.EscapeChar).Value);
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public void JellyfinDbContext_OnSqlite_TranslatesToAPlainLike()
     {
         using var fixture = new SqliteContext();
@@ -83,7 +84,7 @@ public sealed class LikeIgnoreAsciiCaseTranslationTests
     /// The SQLite translation drops <c>lower()</c>. That is exact because, with <c>case_sensitive_like</c> off (Jellyfin
     /// never turns it on), SQLite's <c>LIKE</c> folds ASCII letters only and <c>lower()</c> folds ASCII letters only.
     /// </summary>
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public void Sqlite_LikeAndLowerLike_AgreeOnEveryValueAndPattern()
     {
         using var connection = new SqliteConnection("Data Source=:memory:");

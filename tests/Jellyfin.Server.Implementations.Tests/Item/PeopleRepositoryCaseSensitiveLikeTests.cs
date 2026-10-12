@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
@@ -34,7 +35,7 @@ public sealed class PeopleRepositoryCaseSensitiveLikeTests : JellyfinDbTestFixtu
         _repository = new PeopleRepository(CreateDbContextFactory(), new ItemTypeLookup(), new Mock<IItemQueryHelpers>().Object);
     }
 
-    [Theory]
+    [ProviderTheory(TestDbProvider.Sqlite)]
     [InlineData("bo")]
     [InlineData("BO")]
     [InlineData("Bo")]

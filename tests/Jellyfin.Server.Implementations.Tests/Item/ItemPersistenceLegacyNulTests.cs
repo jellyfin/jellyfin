@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Item;
 using Jellyfin.Server.Migrations.Routines;
 using Jellyfin.Server.ServerSetupApp;
@@ -89,7 +90,7 @@ public sealed class ItemPersistenceLegacyNulTests : JellyfinDbTestFixture
         base.Dispose(disposing);
     }
 
-    [Theory]
+    [ProviderTheory(TestDbProvider.Sqlite)]
     [InlineData(true)]
     [InlineData(false)]
     public async Task LegacyLibrary_LoadedAndNotSaved_SeasonsAndEpisodesAreFoundThroughTheSeries(bool automaticGrouping)
@@ -102,7 +103,7 @@ public sealed class ItemPersistenceLegacyNulTests : JellyfinDbTestFixture
         AssertChildrenFound(series);
     }
 
-    [Theory]
+    [ProviderTheory(TestDbProvider.Sqlite)]
     [InlineData(true)]
     [InlineData(false)]
     public async Task LegacyLibrary_OnlyTheSeriesSaved_SeasonsAndEpisodesAreFoundThroughTheSeries(bool automaticGrouping)
@@ -116,7 +117,7 @@ public sealed class ItemPersistenceLegacyNulTests : JellyfinDbTestFixture
         AssertChildrenFound(series);
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task LegacyLibrary_SeriesSavedAfterTheKeyIsRecomputed_SeasonsAndEpisodesAreFoundThroughTheSeries()
     {
         SeedLegacyLibrary(automaticGrouping: true);
@@ -130,7 +131,7 @@ public sealed class ItemPersistenceLegacyNulTests : JellyfinDbTestFixture
         AssertChildrenFound(series);
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task LegacyDetachedUserData_KeyedWithNul_IsReattachedToTheItemAfterTheRoutine()
     {
         var userId = Guid.NewGuid();

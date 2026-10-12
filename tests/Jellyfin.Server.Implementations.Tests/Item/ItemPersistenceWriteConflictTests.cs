@@ -9,6 +9,7 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
@@ -84,7 +85,7 @@ public sealed class ItemPersistenceWriteConflictTests : IDisposable
         }
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task UserData_ConflictingInsertBetweenReadAndWrite_Retries()
     {
         var userId = Guid.NewGuid();
@@ -127,7 +128,7 @@ public sealed class ItemPersistenceWriteConflictTests : IDisposable
         Assert.Equal(key, Assert.Single(item.UserData).CustomDataKey);
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public void ItemValues_ConflictingInsertBetweenReadAndWrite_Retries()
     {
         var winnerId = Guid.NewGuid();

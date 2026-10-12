@@ -14,7 +14,11 @@ public class ProviderBackendTests
     [Fact]
     public void ProviderBackend_IsLive()
     {
-        Assert.True(TestDatabaseEnvironment.Backend.ServerVersion.Major > 0);
+        var backend = TestDatabaseEnvironment.Backend;
+        var floor = ServerVersionFloors.For(backend.Provider);
+
+        Assert.True(backend.ServerVersion.Major > 0);
+        Assert.True(backend.ServerVersion >= floor, $"{backend.Provider} {backend.ServerVersion} is older than the supported {floor}.");
     }
 
     [Theory]

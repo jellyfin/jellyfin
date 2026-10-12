@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <PackageReference Include="Moq" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
     <PackageReference Include="xunit.v3.assert" />
     <PackageReference Include="xunit.v3.extensibility.core" />
   </ItemGroup>
@@ -9,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Jellyfin.Database/Jellyfin.Database.Implementations/Jellyfin.Database.Implementations.csproj" />
     <ProjectReference Include="../../src/Jellyfin.Database/Jellyfin.Database.Providers.Sqlite/Jellyfin.Database.Providers.Sqlite.csproj" />
+    <ProjectReference Include="../../src/Jellyfin.Database/Jellyfin.Database.Providers.Postgres/Jellyfin.Database.Providers.Postgres.csproj" />
   </ItemGroup>
 
 </Project>

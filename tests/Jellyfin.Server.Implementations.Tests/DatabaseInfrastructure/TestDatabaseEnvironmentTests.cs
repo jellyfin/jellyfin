@@ -12,7 +12,7 @@ public class TestDatabaseEnvironmentTests
     [InlineData("  ", TestDbProvider.Sqlite)]
     [InlineData("Sqlite", TestDbProvider.Sqlite)]
     [InlineData("sqlite", TestDbProvider.Sqlite)]
-    [InlineData("SQLITE", TestDbProvider.Sqlite)]
+    [InlineData("POSTGRES", TestDbProvider.Postgres)]
     public void ParseProvider_KnownValue_ReturnsProvider(string? value, TestDbProvider expected)
     {
         Assert.Equal(expected, TestDatabaseEnvironment.ParseProvider(value));
@@ -21,7 +21,7 @@ public class TestDatabaseEnvironmentTests
     [Theory]
     [InlineData("oracle")]
     [InlineData("42")]
-    [InlineData("Sqlite,Sqlite")]
+    [InlineData("Sqlite,Postgres")]
     public void ParseProvider_UnknownValue_Throws(string value)
     {
         var ex = Assert.Throws<InvalidOperationException>(() => TestDatabaseEnvironment.ParseProvider(value));
