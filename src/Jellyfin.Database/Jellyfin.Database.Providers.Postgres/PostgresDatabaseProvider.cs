@@ -73,6 +73,9 @@ public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
             connectionStringBuilder.MaxPoolSize = maxPoolSize.Value;
         }
 
+        // Dates are stored as UTC, so server-side date functions must not depend on the time zone of the server.
+        connectionStringBuilder.Timezone = "UTC";
+
         var loggableConnectionString = new NpgsqlConnectionStringBuilder(connectionStringBuilder.ConnectionString)
         {
             Password = null,

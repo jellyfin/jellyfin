@@ -1,8 +1,14 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.DbConfiguration;
+using Jellyfin.Database.Providers.Postgres;
 using Jellyfin.Database.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.Logging.Abstractions;
+using Npgsql;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Postgres;
@@ -54,6 +60,70 @@ public sealed class PostgresConventionTests : DatabaseTestFixture
 
         Assert.Empty(expected.Except(textColumns, StringComparer.Ordinal));
         Assert.Empty(notCollated);
+    }
+
+    [ProviderFact(TestDbProvider.Postgres)]
+    public async Task Session_ConnectionStringNamingAnotherTimeZone_StillUsesUtc()
+    {
+        await using var context = CreateDbContext();
+        var configured = new NpgsqlConnectionStringBuilder(context.Database.GetConnectionString())
+        {
+            Timezone = "Europe/Paris"
+        };
+        var options = new DbContextOptionsBuilder<JellyfinDbContext>();
+        new PostgresDatabaseProvider(NullLogger<PostgresDatabaseProvider>.Instance).Initialise(
+            options,
+            new DatabaseConfigurationOptions
+            {
+                DatabaseType = "Jellyfin-PostgreSQL",
+                CustomProviderOptions = new CustomDatabaseOptions
+                {
+                    PluginName = string.Empty,
+                    PluginAssembly = string.Empty,
+                    ConnectionString = configured.ConnectionString
+                }
+            });
+
+        await using var connection = new NpgsqlConnection(RelationalOptionsExtension.Extract(options.Options).ConnectionString);
+        await connection.OpenAsync();
+        await using var command = new NpgsqlCommand("SHOW TimeZone", connection);
+
+        Assert.Equal("UTC", await command.ExecuteScalarAsync());
+    }
+
+    [ProviderFact(TestDbProvider.Postgres)]
+    public async Task DateTimeColumns_AreTimestampsWithTimeZone()
+    {
+        await using var context = CreateDbContext();
+        var expected = context.Model.GetEntityTypes()
+            .Where(e => e.GetTableName() is not null)
+            .SelectMany(e => e.GetProperties()
+                .Where(p => p.ClrType == typeof(DateTime) || p.ClrType == typeof(DateTime?))
+                .Select(p => $"{e.GetTableName()}.{p.GetColumnName()}"))
+            .ToHashSet(StringComparer.Ordinal);
+        Assert.NotEmpty(expected);
+
+        var timestamps = await context.Database
+            .SqlQueryRaw<string>(
+                """
+                SELECT table_name || '.' || column_name AS "Value"
+                FROM information_schema.columns
+                WHERE table_schema = current_schema()
+                  AND data_type = 'timestamp with time zone'
+                """)
+            .ToListAsync();
+        var plainTimestamps = await context.Database
+            .SqlQueryRaw<string>(
+                """
+                SELECT table_name || '.' || column_name AS "Value"
+                FROM information_schema.columns
+                WHERE table_schema = current_schema()
+                  AND data_type = 'timestamp without time zone'
+                """)
+            .ToListAsync();
+
+        Assert.Equal(expected.Order(StringComparer.Ordinal), timestamps.Order(StringComparer.Ordinal));
+        Assert.Empty(plainTimestamps);
     }
 
     [ProviderFact(TestDbProvider.Postgres)]

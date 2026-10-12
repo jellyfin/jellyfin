@@ -63,6 +63,17 @@ public class PostgresDatabaseProviderInitialiseTests
         Assert.Equal(120, ReadCommandTimeout(options));
     }
 
+    [Theory]
+    [InlineData("Host=db;Database=jellyfin")]
+    [InlineData("Host=db;Database=jellyfin;Timezone=Europe/Paris")]
+    public void Initialise_Timezone_IsAlwaysUtc(string connectionString)
+    {
+        var options = Initialise(connectionString);
+
+        var effective = RelationalOptionsExtension.Extract(options.Options).ConnectionString;
+        Assert.Equal("UTC", new NpgsqlConnectionStringBuilder(effective).Timezone);
+    }
+
     private static DbContextOptionsBuilder<JellyfinDbContext> Initialise(string connectionString, params CustomDatabaseOption[] providerOptions)
     {
         var options = new DbContextOptionsBuilder<JellyfinDbContext>();
