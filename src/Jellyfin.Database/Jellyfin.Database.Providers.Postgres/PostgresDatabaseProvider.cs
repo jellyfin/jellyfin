@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Conventions;
 using Jellyfin.Database.Implementations.DbConfiguration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -28,6 +29,7 @@ public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
     public const string NoSnapshotKey = "postgres:no-snapshot";
 
     private const int DefaultCommandTimeout = 60;
+    private const int MaxIdentifierLength = 63;
     private static readonly TimeSpan _maintenanceCommandTimeout = TimeSpan.FromHours(1);
     private readonly ILogger<PostgresDatabaseProvider> _logger;
 
@@ -113,6 +115,8 @@ public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
             .Properties<string>()
             .HaveColumnType("text")
             .UseCollation("C");
+
+        configurationBuilder.Conventions.Add(_ => new IdentifierLengthConvention(MaxIdentifierLength));
     }
 
     /// <inheritdoc/>

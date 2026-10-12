@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.DbConfiguration;
@@ -7,6 +8,7 @@ using Jellyfin.Database.Providers.Postgres;
 using Jellyfin.Database.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
 using Xunit;
@@ -124,6 +126,67 @@ public sealed class PostgresConventionTests : DatabaseTestFixture
 
         Assert.Equal(expected.Order(StringComparer.Ordinal), timestamps.Order(StringComparer.Ordinal));
         Assert.Empty(plainTimestamps);
+    }
+
+    [ProviderFact(TestDbProvider.Postgres)]
+    public async Task ModelIdentifiers_FitThePostgresLimit_AndAreUnique()
+    {
+        await using var context = CreateDbContext();
+        var model = context.GetService<IDesignTimeModel>().Model;
+        var entityTypes = model.GetEntityTypes().Where(e => e.GetTableName() is not null).ToList();
+
+        var tables = entityTypes.Select(e => e.GetTableName()!).ToList();
+        var columns = entityTypes.SelectMany(e => e.GetProperties().Select(p => p.GetColumnName())).ToList();
+        var keysAndIndexes = entityTypes
+            .SelectMany(e => e.GetKeys().Select(k => k.GetName()!).Concat(e.GetIndexes().Select(i => i.GetDatabaseName()!)))
+            .ToList();
+        var foreignKeys = entityTypes.SelectMany(e => e.GetForeignKeys().Select(f => f.GetConstraintName()!)).ToList();
+
+        var all = tables.Concat(columns).Concat(keysAndIndexes).Concat(foreignKeys).ToList();
+        var tooLong = all.Where(n => Encoding.UTF8.GetByteCount(n) > 63).ToList();
+        var truncated = all.Where(n => n.Contains('~', StringComparison.Ordinal)).ToList();
+        Assert.Empty(tooLong);
+        Assert.Empty(truncated);
+
+        var relationNames = tables.Concat(keysAndIndexes).ToList();
+        Assert.Empty(relationNames.GroupBy(n => n, StringComparer.Ordinal).Where(g => g.Count() > 1).Select(g => g.Key));
+        Assert.Empty(entityTypes
+            .SelectMany(e => e.GetForeignKeys().Select(f => (Table: e.GetTableName(), Name: f.GetConstraintName())))
+            .GroupBy(f => f)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key));
+    }
+
+    [ProviderFact(TestDbProvider.Postgres)]
+    public async Task Database_HoldsEveryIndexAndConstraintNameOfTheModel()
+    {
+        await using var context = CreateDbContext();
+        var model = context.GetService<IDesignTimeModel>().Model;
+        var entityTypes = model.GetEntityTypes().Where(e => e.GetTableName() is not null).ToList();
+        var expectedIndexes = entityTypes
+            .SelectMany(e => e.GetIndexes().Select(i => i.GetDatabaseName()!).Concat(e.GetKeys().Select(k => k.GetName()!)))
+            .Order(StringComparer.Ordinal)
+            .ToList();
+        var expectedForeignKeys = entityTypes
+            .SelectMany(e => e.GetForeignKeys().Select(f => f.GetConstraintName()!))
+            .Order(StringComparer.Ordinal)
+            .ToList();
+
+        var indexes = await context.Database
+            .SqlQueryRaw<string>("""SELECT indexname AS "Value" FROM pg_indexes WHERE schemaname = current_schema() ORDER BY 1""")
+            .ToListAsync();
+        var foreignKeys = await context.Database
+            .SqlQueryRaw<string>(
+                """
+                SELECT conname AS "Value"
+                FROM pg_constraint
+                WHERE contype = 'f' AND connamespace = current_schema()::regnamespace
+                ORDER BY 1
+                """)
+            .ToListAsync();
+
+        Assert.Equal(expectedIndexes, indexes.Order(StringComparer.Ordinal));
+        Assert.Equal(expectedForeignKeys, foreignKeys.Order(StringComparer.Ordinal));
     }
 
     [ProviderFact(TestDbProvider.Postgres)]
