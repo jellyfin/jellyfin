@@ -8,6 +8,7 @@ namespace Jellyfin.Server.Implementations.Tests.EfMigrations;
 public class EfMigrationTests
 {
     [Fact]
+    [Trait("Category", "Migrations")]
     public void CheckForUnappliedMigrations_SqLite()
     {
         var dbDesignContext = new SqliteDesignTimeJellyfinDbFactory();
