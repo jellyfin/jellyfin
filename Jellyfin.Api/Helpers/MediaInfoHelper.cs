@@ -144,7 +144,7 @@ public class MediaInfoHelper
 
     private void ApplyVirtualBluraySource(MediaSourceInfo source, DeviceProfile? profile)
     {
-        if (source.VideoType != VideoType.BluRay)
+        if (source.VideoType is not (VideoType.BluRay or VideoType.Dvd))
         {
             return;
         }

@@ -489,7 +489,7 @@ public class VideosController : BaseJellyfinApiController
 
     private ActionResult? GetStaticLocalVideoResult(StreamState state, string? container)
     {
-        if (state.MediaSource.VideoType == VideoType.BluRay)
+        if (state.MediaSource.VideoType is VideoType.BluRay or VideoType.Dvd)
         {
             var explicitIso = string.Equals(container, "iso", StringComparison.OrdinalIgnoreCase);
             if (!explicitIso && !string.IsNullOrEmpty(container))
@@ -506,16 +506,11 @@ public class VideosController : BaseJellyfinApiController
             return new FileStreamResult(image.Open(), "application/octet-stream")
             {
                 EnableRangeProcessing = true,
-                EntityTag = new EntityTagHeaderValue('"' + image.Tag + '"'),
+                EntityTag = new EntityTagHeaderValue($"\"{image.Tag}\""),
             };
         }
 
-        if (state.MediaSource.VideoType == VideoType.Dvd)
-        {
-            return null;
-        }
-
-        var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
+        var contentType = state.GetMimeType($".{state.OutputContainer}", false) ?? state.GetMimeType(state.MediaPath);
 
         if (state.MediaSource.IsInfiniteStream)
         {

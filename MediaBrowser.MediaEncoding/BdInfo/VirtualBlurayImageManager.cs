@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.MediaEncoding.BdInfo;
 
 /// <summary>
-/// Exposes Blu-ray folders as seekable UDF images backed by their original files.
+/// Exposes Blu-ray and DVD folders as seekable UDF images backed by their original files.
 /// </summary>
 /// <param name="cache">The metadata cache.</param>
 /// <param name="logger">The logger.</param>
@@ -28,6 +28,8 @@ public sealed class VirtualBlurayImageManager(
     ILogger<VirtualBlurayImageManager> logger,
     Func<string, bool> shouldIgnore) : IVirtualBlurayImageManager, IDisposable
 {
+    private const string DvdDirectoryName = "VIDEO_TS";
+
     private static readonly EnumerationOptions _ignoreCase = new()
     {
         MatchCasing = MatchCasing.CaseInsensitive,
@@ -39,12 +41,14 @@ public sealed class VirtualBlurayImageManager(
 
     /// <summary>
     /// Selects the virtual image representation for an outgoing API source.
-    /// Internal media sources retain their Blu-ray folder type for FFmpeg.
+    /// Internal media sources retain their original folder type for FFmpeg.
     /// </summary>
     /// <param name="source">The client-facing media source.</param>
     public void ApplyTo(MediaSourceInfo source)
     {
-        if (source.Protocol != MediaProtocol.File || source.VideoType != VideoType.BluRay)
+        if (
+            source.Protocol != MediaProtocol.File
+            || source.VideoType is not (VideoType.BluRay or VideoType.Dvd))
         {
             return;
         }
@@ -56,10 +60,10 @@ public sealed class VirtualBlurayImageManager(
             return;
         }
 
+        source.IsoType = source.VideoType == VideoType.Dvd ? IsoType.Dvd : IsoType.BluRay;
         source.Container = "iso";
         source.VideoType = VideoType.Iso;
-        source.IsoType = IsoType.BluRay;
-        source.Path = Path.TrimEndingDirectorySeparator(source.Path) + ".iso";
+        source.Path = $"{Path.TrimEndingDirectorySeparator(source.Path)}.iso";
         source.Size = image.Length;
         source.ETag = image.Tag;
     }
@@ -68,7 +72,7 @@ public sealed class VirtualBlurayImageManager(
     /// Builds or reuses an image after checking the source paths, lengths and modification times.
     /// No media payload is read or copied to create the image.
     /// </summary>
-    /// <param name="path">The disc folder or its BDMV directory.</param>
+    /// <param name="path">The disc folder or its BDMV/VIDEO_TS directory.</param>
     /// <returns>The image, or null when the folder cannot be represented.</returns>
     public IVirtualBlurayImage? GetImage(string path) => GetImage(path, validate: true);
 
@@ -111,7 +115,7 @@ public sealed class VirtualBlurayImageManager(
         {
             logger.LogWarning(
                 exception,
-                "Unable to expose Blu-ray folder {Path} as a virtual ISO",
+                "Unable to expose disc folder {Path} as a virtual ISO",
                 path);
             return null;
         }
@@ -120,7 +124,9 @@ public sealed class VirtualBlurayImageManager(
     private static DirectoryInfo GetDiscRoot(string path)
     {
         var root = new DirectoryInfo(Path.TrimEndingDirectorySeparator(Path.GetFullPath(path)));
-        return root.Name.Equals("BDMV", StringComparison.OrdinalIgnoreCase)
+        return
+            root.Name.Equals("BDMV", StringComparison.OrdinalIgnoreCase)
+            || root.Name.Equals(DvdDirectoryName, StringComparison.OrdinalIgnoreCase)
             ? root.Parent
                 ?? throw new DirectoryNotFoundException("The disc directory has no parent.")
             : root;
@@ -141,7 +147,7 @@ public sealed class VirtualBlurayImageManager(
     {
         var builder = new UdfBuilder
         {
-            VolumeIdentifier = "BLURAY",
+            VolumeIdentifier = entries[0].Name == DvdDirectoryName ? "DVD_VIDEO" : "BLURAY",
             VolumeSetIdentifier = tag,
             RecordingTime = entries.Max(entry => entry.File?.LastWriteTimeUtc ?? DateTime.MinValue),
         };
@@ -214,6 +220,19 @@ public sealed class VirtualBlurayImageManager(
 
     private DiscEntry[]? ReadDisc(DirectoryInfo root)
     {
+        if (root.Exists)
+        {
+            var videoTs = root.EnumerateDirectories(DvdDirectoryName, _ignoreCase).FirstOrDefault();
+            if (videoTs?.EnumerateFiles($"{DvdDirectoryName}.IFO", _ignoreCase).Any() == true)
+            {
+                var dvdAncestors = new HashSet<string>(
+                    OperatingSystem.IsWindows()
+                        ? StringComparer.OrdinalIgnoreCase
+                        : StringComparer.Ordinal);
+                return [.. EnumerateDisc(videoTs, DvdDirectoryName, dvdAncestors)];
+            }
+        }
+
         var bdmv = GetBlurayDirectory(root);
         if (bdmv is null)
         {
@@ -250,7 +269,7 @@ public sealed class VirtualBlurayImageManager(
                 .EnumerateFileSystemInfos()
                 .OrderBy(entry => entry.Name, StringComparer.Ordinal))
         {
-            var relative = name + "/" + entry.Name;
+            var relative = $"{name}/{entry.Name}";
             if (shouldIgnore(relative))
             {
                 continue;

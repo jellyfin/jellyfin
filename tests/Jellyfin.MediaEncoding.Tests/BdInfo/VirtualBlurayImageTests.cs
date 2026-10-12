@@ -56,7 +56,7 @@ public sealed class VirtualBlurayImageTests : IDisposable
         Assert.Equal(VideoType.Iso, source.VideoType);
         Assert.Equal("iso", source.Container);
         Assert.Equal("source", source.Id);
-        Assert.Equal(_root + ".iso", source.Path);
+        Assert.Equal($"{_root}.iso", source.Path);
     }
 
     [Fact]
@@ -93,7 +93,7 @@ public sealed class VirtualBlurayImageTests : IDisposable
                         {
                             Path =
                                 i % 2 == 0
-                                    ? _root + Path.DirectorySeparatorChar
+                                    ? $"{_root}{Path.DirectorySeparatorChar}"
                                     : Path.Combine(_root, "BDMV"),
                             VideoType = VideoType.BluRay,
                             Protocol = MediaProtocol.File,

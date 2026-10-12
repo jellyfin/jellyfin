@@ -148,7 +148,7 @@ public class DtoServiceBlurayTests
             Assert.Equal(VideoType.BluRay, dto.VideoType);
             Assert.Equal(container, dto.Container);
             Assert.Equal(movie.IsoType, dto.IsoType);
-            var expectedPath = root.FullName + ".iso";
+            var expectedPath = $"{root.FullName}.iso";
             Assert.Equal(root.FullName, dto.Path);
             Assert.Equal(VideoType.BluRay, movie.VideoType);
             Assert.Equal(root.FullName, movie.Path);

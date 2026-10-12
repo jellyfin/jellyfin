@@ -233,6 +233,47 @@ public sealed class VirtualBlurayStreamingTests : IDisposable
             response.Content.Headers.ContentRange!.Length);
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData(".iso")]
+    public async Task DvdFolder_StaticStreamSupportsHeadAndRangeWithoutEncoding(string extension)
+    {
+        Directory.Delete(Path.Combine(_directory, "BDMV"), true);
+        var videoTs = Directory.CreateDirectory(Path.Combine(_directory, "VIDEO_TS"));
+        File.WriteAllBytes(Path.Combine(videoTs.FullName, "VIDEO_TS.IFO"), [1, 2, 3]);
+        File.WriteAllBytes(Path.Combine(videoTs.FullName, "VTS_01_1.VOB"), [4, 5, 6]);
+        _source.VideoType = VideoType.Dvd;
+        _source.Container = "dvd";
+        using var client = _host.GetTestClient();
+        var url = $"/Videos/{_itemId}/stream{extension}?static=true";
+        using var head = new HttpRequestMessage(HttpMethod.Head, url);
+        using var response = await client.SendAsync(head, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(_images.GetImage(_directory)!.Length, response.Content.Headers.ContentLength);
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Add("Range", "bytes=32768-34815");
+        using var range = await client.SendAsync(request, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.PartialContent, range.StatusCode);
+        using var expected = _images.GetImage(_directory)!.Open();
+        expected.Position = 32768;
+        var bytes = new byte[2048];
+        expected.ReadExactly(bytes);
+        Assert.Equal(
+            bytes,
+            await range.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken));
+        _encoder.Verify(
+            e => e.GetPrimaryPlaylistVobFiles(It.IsAny<string>(), It.IsAny<uint?>()),
+            Times.Never);
+        _encoder.Verify(
+            e => e.GenerateConcatConfig(It.IsAny<MediaSourceInfo>(), It.IsAny<string>()),
+            Times.Never);
+        _encoder.Verify(
+            e => e.GetMediaInfo(It.IsAny<MediaInfoRequest>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        Assert.Equal(VideoType.Dvd, _source.VideoType);
+        Assert.Equal(_directory, _source.Path);
+    }
+
     public void Dispose()
     {
         _host.Dispose();

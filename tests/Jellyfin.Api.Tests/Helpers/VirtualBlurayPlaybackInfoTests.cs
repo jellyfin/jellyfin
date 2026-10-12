@@ -39,23 +39,32 @@ public class VirtualBlurayPlaybackInfoTests
     [InlineData(true, "iso", true)]
     [InlineData(true, "mkv,ISO", true)]
     [InlineData(true, null, true)]
+    [InlineData(true, "", false, VideoType.Dvd)]
+    [InlineData(true, "-mp4", false, VideoType.Dvd)]
+    [InlineData(true, "mkv", false, VideoType.Dvd)]
+    [InlineData(true, "iso", true, VideoType.Dvd)]
+    [InlineData(true, "mkv,ISO", true, VideoType.Dvd)]
+    [InlineData(false, "", true, VideoType.Dvd)]
     public async Task PlaybackInfo_OnlyVirtualIsoRequiresExplicitSupport(
         bool virtualIso,
         string? containers,
-        bool directPlay)
+        bool directPlay,
+        VideoType folderType = VideoType.BluRay)
     {
         var root = Directory.CreateTempSubdirectory();
         try
         {
-            Directory.CreateDirectory(Path.Combine(root.FullName, "BDMV"));
-            File.WriteAllBytes(Path.Combine(root.FullName, "BDMV", "index.bdmv"), [1]);
+            var discDirectory = folderType == VideoType.Dvd ? "VIDEO_TS" : "BDMV";
+            var index = folderType == VideoType.Dvd ? "VIDEO_TS.IFO" : "index.bdmv";
+            Directory.CreateDirectory(Path.Combine(root.FullName, discDirectory));
+            File.WriteAllBytes(Path.Combine(root.FullName, discDirectory, index), [1]);
             var movie = new Movie { Id = Guid.NewGuid(), Path = root.FullName };
             var original = new MediaSourceInfo
             {
                 Id = movie.Id.ToString("N"),
-                Path = virtualIso ? root.FullName : root.FullName + ".iso",
-                VideoType = virtualIso ? VideoType.BluRay : VideoType.Iso,
-                IsoType = IsoType.BluRay,
+                Path = virtualIso ? root.FullName : $"{root.FullName}.iso",
+                VideoType = virtualIso ? folderType : VideoType.Iso,
+                IsoType = folderType == VideoType.Dvd ? IsoType.Dvd : IsoType.BluRay,
                 Protocol = MediaProtocol.File,
                 Container = "iso",
                 Bitrate = 1128000,
@@ -173,8 +182,9 @@ public class VirtualBlurayPlaybackInfoTests
                     StringComparison.OrdinalIgnoreCase);
             }
 
+            Assert.Equal(virtualIso ? root.FullName : $"{root.FullName}.iso", original.Path);
             Assert.True(original.SupportsDirectPlay);
-            Assert.Equal(virtualIso ? VideoType.BluRay : VideoType.Iso, original.VideoType);
+            Assert.Equal(virtualIso ? folderType : VideoType.Iso, original.VideoType);
         }
         finally
         {
