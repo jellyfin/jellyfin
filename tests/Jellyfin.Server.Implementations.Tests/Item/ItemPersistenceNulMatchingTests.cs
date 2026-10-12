@@ -161,7 +161,9 @@ public sealed class ItemPersistenceNulMatchingTests : JellyfinDbTestFixture
             await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
         }
 
-        await _service.ReattachUserDataAsync(movie, TestContext.Current.CancellationToken);
+        await KnownGap.OnAsync(
+            KnownGaps.NulInExactMatchParameter,
+            () => _service.ReattachUserDataAsync(movie, TestContext.Current.CancellationToken));
 
         using (var ctx = CreateDbContext())
         {

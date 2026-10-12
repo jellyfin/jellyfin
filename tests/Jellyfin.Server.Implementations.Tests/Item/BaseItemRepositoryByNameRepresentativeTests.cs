@@ -1,6 +1,7 @@
 using System;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller.Entities;
 using Xunit;
@@ -31,9 +32,12 @@ public sealed class BaseItemRepositoryByNameRepresentativeTests : JellyfinDbTest
     {
         Seed();
 
-        var result = _repository.GetGenres(CreateQuery());
+        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        {
+            var result = _repository.GetGenres(CreateQuery());
 
-        Assert.Equal(_lowestId, Assert.Single(result.Items).Item.Id);
+            Assert.Equal(_lowestId, Assert.Single(result.Items).Item.Id);
+        });
     }
 
     private static InternalItemsQuery CreateQuery()

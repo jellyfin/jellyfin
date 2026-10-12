@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Entities.Security;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Tests.Item;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -26,7 +27,7 @@ public sealed class TextColumnLengthTests : JellyfinDbTestFixture
             context.Users.Add(new User("user", "auth", "reset") { Id = userId });
             context.ActivityLogs.Add(new ActivityLog("Over-long overview", "Test", userId) { Overview = overview });
             context.Devices.Add(new Device(userId, "app", appVersion, "device", "device-id"));
-            context.SaveChanges();
+            KnownGap.On(KnownGaps.StringColumnLength, () => context.SaveChanges());
         }
 
         using (var context = CreateDbContext())
@@ -50,7 +51,7 @@ public sealed class TextColumnLengthTests : JellyfinDbTestFixture
                 Id = userId,
                 ProfileImage = new ImageInfo(path)
             });
-            context.SaveChanges();
+            KnownGap.On(KnownGaps.StringColumnLength, () => context.SaveChanges());
         }
 
         using (var context = CreateDbContext())

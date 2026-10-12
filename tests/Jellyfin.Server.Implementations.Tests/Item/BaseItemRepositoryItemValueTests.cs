@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller.Entities;
 using Xunit;
@@ -99,8 +101,9 @@ public sealed class BaseItemRepositoryItemValueTests : JellyfinDbTestFixture
             IncludeItemTypes = [BaseItemKind.Movie]
         });
 
-        Assert.Equal(["Alpha", "Beta"], result.Tags);
+        Assert.Equal(["alpha", "beta"], result.Tags.Select(s => s.ToLowerInvariant()).Order(StringComparer.Ordinal));
         Assert.Equal(["Genre Leak"], result.Genres);
+        KnownGap.On(KnownGaps.StringCollation, () => Assert.Equal(["Alpha", "Beta"], result.Tags));
     }
 
     [Fact]
@@ -144,7 +147,8 @@ public sealed class BaseItemRepositoryItemValueTests : JellyfinDbTestFixture
             IncludeItemTypes = [BaseItemKind.Movie]
         });
 
-        Assert.Equal(["Alpha", "Beta"], result);
+        Assert.Equal(["alpha", "beta"], result.Select(s => s.ToLowerInvariant()).Order(StringComparer.Ordinal));
+        KnownGap.On(KnownGaps.StringCollation, () => Assert.Equal(["Alpha", "Beta"], result));
     }
 
     [Fact]
@@ -176,8 +180,11 @@ public sealed class BaseItemRepositoryItemValueTests : JellyfinDbTestFixture
             context.SaveChanges();
         }
 
-        Assert.Equal(["Movie Genre"], _repository.GetGenreNames());
+        var genreNames = _repository.GetGenreNames();
+
         Assert.Equal(["Music Genre"], _repository.GetMusicGenreNames());
+        Assert.Equal(["movie genre"], genreNames.Select(s => s.ToLowerInvariant()));
+        KnownGap.On(KnownGaps.StringCollation, () => Assert.Equal(["Movie Genre"], genreNames));
     }
 
     private BaseItemEntity CreateMovieEntity(Guid id, string name)

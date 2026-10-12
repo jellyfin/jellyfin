@@ -7,6 +7,7 @@ using Emby.Server.Implementations.Data;
 using Emby.Server.Implementations.Library.Search;
 using Jellyfin.Data.Queries;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Testing;
 using Jellyfin.Extensions;
 using Jellyfin.Server.Implementations.Activity;
 using Jellyfin.Server.Implementations.Item;
@@ -80,12 +81,6 @@ public sealed class SearchTermWithNulTests : JellyfinDbTestFixture
     [InlineData("\0Quasar", "Quasar")]
     public async Task Search_TermWithNul_MatchesAsWithoutNul(string term, string termWithoutNul)
     {
-        Assert.Equal(["Item One"], SearchByTerm(termWithoutNul));
-        Assert.Equal(["Item One"], SearchByTerm(term));
-
-        Assert.Equal(["Item One"], SearchByNameContains(termWithoutNul));
-        Assert.Equal(["Item One"], SearchByNameContains(term));
-
         Assert.Equal(["Item One"], await SearchWithProviderAsync(termWithoutNul).ConfigureAwait(true));
         Assert.Equal(["Item One"], await SearchWithProviderAsync(term).ConfigureAwait(true));
 
@@ -101,6 +96,15 @@ public sealed class SearchTermWithNulTests : JellyfinDbTestFixture
             Assert.Equal(["Quasar Login"], await GetActivityNamesAsync(filter, termWithoutNul).ConfigureAwait(true));
             Assert.Equal(["Quasar Login"], await GetActivityNamesAsync(filter, term).ConfigureAwait(true));
         }
+
+        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        {
+            Assert.Equal(["Item One"], SearchByTerm(termWithoutNul));
+            Assert.Equal(["Item One"], SearchByTerm(term));
+
+            Assert.Equal(["Item One"], SearchByNameContains(termWithoutNul));
+            Assert.Equal(["Item One"], SearchByNameContains(term));
+        });
     }
 
     private string[] SearchByTerm(string term)

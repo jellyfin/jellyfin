@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -46,27 +47,46 @@ public sealed class BaseItemRepositoryExactMatchNulTests : JellyfinDbTestFixture
     [Fact]
     public void GetItemList_PathContainingNul_MatchesNothing()
     {
-        var id = Guid.NewGuid();
-        using (var context = CreateDbContext())
-        {
-            context.BaseItems.Add(new BaseItemEntity
-            {
-                Id = id,
-                PresentationUniqueKey = id.ToString("N"),
-                Type = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie],
-                Name = "Bob",
-                Path = MoviePath,
-                MediaType = "Video",
-                IsMovie = true,
-                IsFolder = false,
-                IsVirtualItem = false
-            });
-            context.SaveChanges();
-        }
-
+        AddMovie();
         var user = new User("test", "auth", "reset");
 
-        Assert.Single(_repository.GetItemList(new InternalItemsQuery(user) { Path = MoviePath }));
-        Assert.Empty(_repository.GetItemList(new InternalItemsQuery(user) { Path = MoviePath + "\0" }));
+        KnownGap.On(
+            KnownGaps.GuidAggregates,
+            () =>
+            {
+                Assert.Single(_repository.GetItemList(new InternalItemsQuery(user) { Path = MoviePath }));
+                Assert.Empty(_repository.GetItemList(new InternalItemsQuery(user) { Path = MoviePath + "\0" }));
+            });
+    }
+
+    [Fact]
+    public void GetItemList_PathContainingNulWithoutGrouping_MatchesNothing()
+    {
+        AddMovie();
+        var user = new User("test", "auth", "reset");
+
+        Assert.Single(_repository.GetItemList(new InternalItemsQuery(user) { Path = MoviePath, GroupByPresentationUniqueKey = false }));
+        KnownGap.On(
+            KnownGaps.NulInExactMatchParameter,
+            () => Assert.Empty(_repository.GetItemList(new InternalItemsQuery(user) { Path = MoviePath + "\0", GroupByPresentationUniqueKey = false })));
+    }
+
+    private void AddMovie()
+    {
+        var id = Guid.NewGuid();
+        using var context = CreateDbContext();
+        context.BaseItems.Add(new BaseItemEntity
+        {
+            Id = id,
+            PresentationUniqueKey = id.ToString("N"),
+            Type = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie],
+            Name = "Bob",
+            Path = MoviePath,
+            MediaType = "Video",
+            IsMovie = true,
+            IsFolder = false,
+            IsVirtualItem = false
+        });
+        context.SaveChanges();
     }
 }

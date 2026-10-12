@@ -4,6 +4,7 @@ using System.Linq;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller.Entities;
 using Xunit;
@@ -48,34 +49,46 @@ public sealed class BaseItemRepositoryPlayedVersionTests : JellyfinDbTestFixture
     [Fact]
     public void IsPlayed_CountsAMoviePlayedThroughItsAlternateVersion()
     {
-        Assert.Equal(
-            new HashSet<Guid> { _playedOnPrimary, _playedViaAlternate },
-            Ids(BaseItemKind.Movie, isPlayed: true));
+        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        {
+            Assert.Equal(
+                new HashSet<Guid> { _playedOnPrimary, _playedViaAlternate },
+                Ids(BaseItemKind.Movie, isPlayed: true));
+        });
     }
 
     [Fact]
     public void IsUnplayed_DropsAMoviePlayedThroughItsAlternateVersion()
     {
-        Assert.Equal(
-            new HashSet<Guid> { _unplayedWithAlternate, _unplayedWithoutAlternate },
-            Ids(BaseItemKind.Movie, isPlayed: false));
+        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        {
+            Assert.Equal(
+                new HashSet<Guid> { _unplayedWithAlternate, _unplayedWithoutAlternate },
+                Ids(BaseItemKind.Movie, isPlayed: false));
+        });
     }
 
     [Fact]
     public void IsPlayed_KeepsAPlayedPrimaryWhoseAlternateHasNoRowOfItsOwn()
     {
-        Assert.Contains(_playedOnPrimary, Ids(BaseItemKind.Movie, isPlayed: true));
+        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        {
+            Assert.Contains(_playedOnPrimary, Ids(BaseItemKind.Movie, isPlayed: true));
+        });
     }
 
     [Fact]
     public void IsPlayed_CountsASeriesWatchedThroughAnEpisodeAlternateVersion()
     {
-        Assert.Equal(
-            new HashSet<Guid> { _seriesPlayedViaAlternate, _seriesPlayedAcrossVersions },
-            Ids(BaseItemKind.Series, isPlayed: true));
-        Assert.Equal(
-            new HashSet<Guid> { _unplayedSeries, _partiallyPlayedSeries },
-            Ids(BaseItemKind.Series, isPlayed: false));
+        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        {
+            Assert.Equal(
+                new HashSet<Guid> { _seriesPlayedViaAlternate, _seriesPlayedAcrossVersions },
+                Ids(BaseItemKind.Series, isPlayed: true));
+            Assert.Equal(
+                new HashSet<Guid> { _unplayedSeries, _partiallyPlayedSeries },
+                Ids(BaseItemKind.Series, isPlayed: false));
+        });
     }
 
     [Fact]

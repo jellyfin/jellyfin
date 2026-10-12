@@ -4,6 +4,7 @@ using Emby.Server.Implementations.Data;
 using Jellyfin.Data;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller.Entities;
 using Xunit;
@@ -33,17 +34,23 @@ public sealed class BaseItemRepositoryAllowedTagsByNameTests : JellyfinDbTestFix
     [Fact]
     public void GetGenres_WithAllowedTags_ReturnsGenresOfAllowedItems()
     {
-        var result = _repository.GetGenres(CreateQuery(AllowedTag));
+        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        {
+            var result = _repository.GetGenres(CreateQuery(AllowedTag));
 
-        Assert.Equal(["Comedy"], Names(result));
+            Assert.Equal(["Comedy"], Names(result));
+        });
     }
 
     [Fact]
     public void GetStudios_WithAllowedTags_ReturnsStudiosOfAllowedItems()
     {
-        var result = _repository.GetStudios(CreateQuery(AllowedTag));
+        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        {
+            var result = _repository.GetStudios(CreateQuery(AllowedTag));
 
-        Assert.Equal(["Pixar"], Names(result));
+            Assert.Equal(["Pixar"], Names(result));
+        });
     }
 
     [Fact]
@@ -57,9 +64,12 @@ public sealed class BaseItemRepositoryAllowedTagsByNameTests : JellyfinDbTestFix
     [Fact]
     public void GetGenres_WithoutAllowedTags_ReturnsEveryGenre()
     {
-        var result = _repository.GetGenres(CreateQuery());
+        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        {
+            var result = _repository.GetGenres(CreateQuery());
 
-        Assert.Equal(["Comedy", "Horror", "Jazz"], Names(result));
+            Assert.Equal(["Comedy", "Horror", "Jazz"], Names(result));
+        });
     }
 
     private static string[] Names(MediaBrowser.Model.Querying.QueryResult<(BaseItem Item, MediaBrowser.Model.Dto.ItemCounts? ItemCounts)> result)

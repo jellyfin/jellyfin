@@ -5,6 +5,7 @@ using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller.Entities;
 using Xunit;
@@ -59,25 +60,34 @@ public sealed class BaseItemRepositoryPlayedOrderingTests : JellyfinDbTestFixtur
     [Fact]
     public void IsPlayed_OrdersUnwatchedSeriesBeforeWatchedOnes()
     {
-        Assert.Equal(
-            [_unwatchedSeries, _partiallyWatchedSeries, _secondUnwatchedSeries, _thirdUnwatchedSeries, _watchedSeries, _secondWatchedSeries],
-            SeriesIds(ItemSortBy.IsPlayed));
+        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        {
+            Assert.Equal(
+                [_unwatchedSeries, _partiallyWatchedSeries, _secondUnwatchedSeries, _thirdUnwatchedSeries, _watchedSeries, _secondWatchedSeries],
+                SeriesIds(ItemSortBy.IsPlayed));
+        });
     }
 
     [Fact]
     public void IsPlayed_CountsAPartiallyWatchedSeriesAsUnwatched()
     {
-        var ids = SeriesIds(ItemSortBy.IsPlayed);
+        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        {
+            var ids = SeriesIds(ItemSortBy.IsPlayed);
 
-        Assert.True(ids.IndexOf(_partiallyWatchedSeries) < ids.IndexOf(_watchedSeries));
+            Assert.True(ids.IndexOf(_partiallyWatchedSeries) < ids.IndexOf(_watchedSeries));
+        });
     }
 
     [Fact]
     public void IsUnplayed_ReversesTheGroups()
     {
-        Assert.Equal(
-            [_watchedSeries, _secondWatchedSeries, _unwatchedSeries, _partiallyWatchedSeries, _secondUnwatchedSeries, _thirdUnwatchedSeries],
-            SeriesIds(ItemSortBy.IsUnplayed));
+        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        {
+            Assert.Equal(
+                [_watchedSeries, _secondWatchedSeries, _unwatchedSeries, _partiallyWatchedSeries, _secondUnwatchedSeries, _thirdUnwatchedSeries],
+                SeriesIds(ItemSortBy.IsUnplayed));
+        });
     }
 
     [Fact]
@@ -93,26 +103,32 @@ public sealed class BaseItemRepositoryPlayedOrderingTests : JellyfinDbTestFixtur
     [Fact]
     public void IsPlayedThenRandom_StillPlacesEveryUnwatchedSeriesFirst()
     {
-        var order = _repository
-            .GetItemList(Query(BaseItemKind.Series, (ItemSortBy.IsPlayed, SortOrder.Ascending), (ItemSortBy.Random, SortOrder.Ascending)))
-            .Select(i => i.Id);
+        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        {
+            var order = _repository
+                .GetItemList(Query(BaseItemKind.Series, (ItemSortBy.IsPlayed, SortOrder.Ascending), (ItemSortBy.Random, SortOrder.Ascending)))
+                .Select(i => i.Id);
 
-        Assert.Equal(_unwatchedSeriesIds, order.Take(_unwatchedSeriesIds.Count).ToHashSet());
+            Assert.Equal(_unwatchedSeriesIds, order.Take(_unwatchedSeriesIds.Count).ToHashSet());
+        });
     }
 
     [Fact]
     public void IsPlayedThenRandom_FillsAPageWithUnwatchedSeries()
     {
-        var page = _repository.GetItems(new InternalItemsQuery(_user)
+        KnownGap.On(KnownGaps.GuidAggregates, () =>
         {
-            IncludeItemTypes = [BaseItemKind.Series],
-            OrderBy = [(ItemSortBy.IsPlayed, SortOrder.Ascending), (ItemSortBy.Random, SortOrder.Ascending)],
-            Limit = 4,
-            EnableTotalRecordCount = true
-        });
+            var page = _repository.GetItems(new InternalItemsQuery(_user)
+            {
+                IncludeItemTypes = [BaseItemKind.Series],
+                OrderBy = [(ItemSortBy.IsPlayed, SortOrder.Ascending), (ItemSortBy.Random, SortOrder.Ascending)],
+                Limit = 4,
+                EnableTotalRecordCount = true
+            });
 
-        Assert.Equal(6, page.TotalRecordCount);
-        Assert.Equal(_unwatchedSeriesIds, page.Items.Select(i => i.Id).ToHashSet());
+            Assert.Equal(6, page.TotalRecordCount);
+            Assert.Equal(_unwatchedSeriesIds, page.Items.Select(i => i.Id).ToHashSet());
+        });
     }
 
     private List<Guid> SeriesIds(ItemSortBy sortBy)

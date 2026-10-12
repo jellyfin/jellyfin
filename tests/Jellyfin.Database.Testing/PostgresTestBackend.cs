@@ -23,6 +23,8 @@ namespace Jellyfin.Database.Testing;
 /// </summary>
 public sealed class PostgresTestBackend : ITestDatabaseBackend
 {
+    internal const string NoMigrationsMessage = "The PostgreSQL provider has no migrations yet, so there is no migrated schema to create.";
+
     private const string DefaultImage = "postgres:16.15-trixie";
 
     private static readonly TimeSpan _containerStopTimeout = TimeSpan.FromSeconds(30);
@@ -53,7 +55,7 @@ public sealed class PostgresTestBackend : ITestDatabaseBackend
     {
         if (source == TestSchemaSource.Migrations)
         {
-            throw new NotSupportedException("The PostgreSQL provider has no migrations yet, so there is no migrated schema to create.");
+            throw new NotSupportedException(NoMigrationsMessage);
         }
 
         var template = _templates.GetOrAdd(source, key => new Lazy<string>(() => CreateTemplate(key))).Value;

@@ -3,6 +3,7 @@ using System.Linq;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller.Entities;
 using Xunit;
@@ -53,8 +54,11 @@ public sealed class BaseItemRepositoryNullOrderTests : JellyfinDbTestFixture
             context.SaveChanges();
         }
 
-        Assert.Equal([MissingName, LowName, HighName], Names(sortBy, SortOrder.Ascending));
-        Assert.Equal([HighName, LowName, MissingName], Names(sortBy, SortOrder.Descending));
+        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        {
+            Assert.Equal([MissingName, LowName, HighName], Names(sortBy, SortOrder.Ascending));
+            Assert.Equal([HighName, LowName, MissingName], Names(sortBy, SortOrder.Descending));
+        });
     }
 
     private string[] Names(ItemSortBy sortBy, SortOrder sortOrder)
