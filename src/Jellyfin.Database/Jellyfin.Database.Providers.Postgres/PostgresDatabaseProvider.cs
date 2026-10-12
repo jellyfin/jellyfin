@@ -119,6 +119,7 @@ public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
             .UseCollation("C");
 
         configurationBuilder.Conventions.Add(_ => new IdentifierLengthConvention(MaxIdentifierLength));
+        configurationBuilder.Conventions.Add(_ => new NullsFirstIndexConvention());
     }
 
     /// <inheritdoc/>
