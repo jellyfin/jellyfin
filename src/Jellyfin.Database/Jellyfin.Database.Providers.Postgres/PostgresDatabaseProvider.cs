@@ -1,0 +1,284 @@
+using System;
+using System.Collections.Generic;
+using System.Data.Common;
+using System.Globalization;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.DbConfiguration;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Logging;
+using Npgsql;
+
+namespace Jellyfin.Database.Providers.Postgres;
+
+/// <summary>
+/// Configures jellyfin to use a PostgreSQL database.
+/// </summary>
+[JellyfinDatabaseProviderKey("Jellyfin-PostgreSQL")]
+public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
+{
+    /// <summary>
+    /// The key <see cref="MigrationBackupFast"/> returns, as PostgreSQL has nothing to snapshot.
+    /// </summary>
+    public const string NoSnapshotKey = "postgres:no-snapshot";
+
+    private const int DefaultCommandTimeout = 60;
+    private static readonly TimeSpan _maintenanceCommandTimeout = TimeSpan.FromHours(1);
+    private readonly ILogger<PostgresDatabaseProvider> _logger;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PostgresDatabaseProvider"/> class.
+    /// </summary>
+    /// <param name="logger">A logger.</param>
+    public PostgresDatabaseProvider(ILogger<PostgresDatabaseProvider> logger)
+    {
+        _logger = logger;
+    }
+
+    /// <inheritdoc/>
+    public IDbContextFactory<JellyfinDbContext>? DbContextFactory { get; set; }
+
+    /// <inheritdoc/>
+    public void Initialise(DbContextOptionsBuilder options, DatabaseConfigurationOptions databaseConfiguration)
+    {
+        var customOptions = databaseConfiguration.CustomProviderOptions;
+        if (string.IsNullOrWhiteSpace(customOptions?.ConnectionString))
+        {
+            throw new InvalidOperationException(
+                "No PostgreSQL connection string is configured. Set CustomProviderOptions/ConnectionString in database.xml, "
+                + "or the database:ConnectionString configuration key (environment variable JELLYFIN_DATABASE__CONNECTIONSTRING).");
+        }
+
+        var providerOptions = customOptions.Options;
+        var connectionStringBuilder = new NpgsqlConnectionStringBuilder(customOptions.ConnectionString);
+
+        var commandTimeout = GetOption<int?>(providerOptions, "command-timeout", e => int.Parse(e, CultureInfo.InvariantCulture));
+        if (commandTimeout is not null)
+        {
+            connectionStringBuilder.CommandTimeout = commandTimeout.Value;
+        }
+        else if (!SpecifiesCommandTimeout(customOptions.ConnectionString))
+        {
+            connectionStringBuilder.CommandTimeout = DefaultCommandTimeout;
+        }
+
+        var maxPoolSize = GetOption<int?>(providerOptions, "max-pool-size", e => int.Parse(e, CultureInfo.InvariantCulture));
+        if (maxPoolSize is not null)
+        {
+            connectionStringBuilder.MaxPoolSize = maxPoolSize.Value;
+        }
+
+        var loggableConnectionString = new NpgsqlConnectionStringBuilder(connectionStringBuilder.ConnectionString)
+        {
+            Password = null,
+            SslPassword = null
+        };
+        _logger.LogInformation("PostgreSQL connection string: {ConnectionString}", loggableConnectionString.ConnectionString);
+
+        options
+            .UseNpgsql(
+                connectionStringBuilder.ConnectionString,
+                npgsqlOptions => npgsqlOptions
+                    .MigrationsAssembly(GetType().Assembly)
+                    .SetPostgresVersion(16, 0)
+                    .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery))
+            .ConfigureWarnings(warnings =>
+                warnings.Throw(RelationalEventId.NonTransactionalMigrationOperationWarning));
+
+        var enableSensitiveDataLogging = GetOption(providerOptions, "EnableSensitiveDataLogging", e => e.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase));
+        if (enableSensitiveDataLogging)
+        {
+            options.EnableSensitiveDataLogging();
+            _logger.LogInformation("EnableSensitiveDataLogging is enabled on PostgreSQL connection");
+        }
+    }
+
+    /// <inheritdoc/>
+    public void OnModelCreating(ModelBuilder modelBuilder)
+    {
+    }
+
+    /// <inheritdoc/>
+    public void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+    }
+
+    /// <inheritdoc/>
+    public async Task RunScheduledOptimisation(CancellationToken cancellationToken)
+    {
+        if (DbContextFactory is null)
+        {
+            return;
+        }
+
+        var context = await DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            context.Database.SetCommandTimeout(_maintenanceCommandTimeout);
+            await context.Database.ExecuteSqlRawAsync("VACUUM", cancellationToken).ConfigureAwait(false);
+
+            if (await HasLibraryItemsAsync(context, cancellationToken).ConfigureAwait(false))
+            {
+                await context.Database.ExecuteSqlRawAsync("ANALYZE", cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                _logger.LogInformation("Not analyzing the database, the library holds no items yet");
+            }
+
+            _logger.LogInformation("The database was optimized successfully");
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task RefreshStatistics(CancellationToken cancellationToken)
+    {
+        if (DbContextFactory is null)
+        {
+            return;
+        }
+
+        var context = await DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            context.Database.SetCommandTimeout(_maintenanceCommandTimeout);
+
+            if (!await HasLibraryItemsAsync(context, cancellationToken).ConfigureAwait(false))
+            {
+                return;
+            }
+
+            _logger.LogInformation("Analyzing the database");
+            await context.Database.ExecuteSqlRawAsync("ANALYZE", cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc/>
+    public Task RunShutdownTask(CancellationToken cancellationToken)
+    {
+        NpgsqlConnection.ClearAllPools();
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public async Task<string> MigrationBackupFast(CancellationToken cancellationToken)
+    {
+        if (await HasAppliedMigrationsAsync(cancellationToken).ConfigureAwait(false))
+        {
+            _logger.LogWarning(
+                "Migrations on PostgreSQL are applied one at a time and cannot be rolled back as a whole. Take a pg_dump "
+                + "of the database before upgrading, it is the only way to return to the state before a failed upgrade.");
+        }
+
+        return NoSnapshotKey;
+    }
+
+    /// <inheritdoc/>
+    public async Task RestoreBackupFast(string key, CancellationToken cancellationToken)
+    {
+        if (!string.Equals(key, NoSnapshotKey, StringComparison.Ordinal))
+        {
+            _logger.LogCritical("Tried to restore a backup that does not exist: {Key}", key);
+            return;
+        }
+
+        var lastApplied = await GetLastAppliedMigrationAsync(cancellationToken).ConfigureAwait(false);
+        _logger.LogCritical(
+            "There is no snapshot to restore on PostgreSQL. The database was left at the last migration that applied "
+            + "completely ({Migration}). Restore the pg_dump taken before the upgrade to return to the previous version.",
+            lastApplied ?? "none");
+    }
+
+    /// <inheritdoc/>
+    public Task DeleteBackup(string key)
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public async Task PurgeDatabase(JellyfinDbContext dbContext, IEnumerable<string>? tableNames)
+    {
+        ArgumentNullException.ThrowIfNull(tableNames);
+
+        var quotedTableNames = tableNames.Select(QuoteTableName).ToList();
+        if (quotedTableNames.Count == 0)
+        {
+            return;
+        }
+
+        var truncateQuery = $"TRUNCATE TABLE {string.Join(", ", quotedTableNames)} RESTART IDENTITY CASCADE";
+        await dbContext.Database.ExecuteSqlRawAsync(truncateQuery).ConfigureAwait(false);
+    }
+
+    private static T? GetOption<T>(ICollection<CustomDatabaseOption>? options, string key, Func<string, T> converter)
+    {
+        var value = options?.FirstOrDefault(e => e.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
+        return value is null ? default : converter(value.Value);
+    }
+
+    private static bool SpecifiesCommandTimeout(string connectionString)
+    {
+        var builder = new DbConnectionStringBuilder { ConnectionString = connectionString };
+        return builder.ContainsKey("Command Timeout") || builder.ContainsKey("CommandTimeout");
+    }
+
+    private static Task<bool> HasLibraryItemsAsync(JellyfinDbContext context, CancellationToken cancellationToken)
+    {
+        // Folders and the seeded placeholder exist before any library has been scanned.
+        return context.BaseItems.AnyAsync(e => !e.IsFolder && e.Type != "PLACEHOLDER", cancellationToken);
+    }
+
+    private static string QuoteTableName(string tableName)
+    {
+        var separator = tableName.IndexOf('.', StringComparison.Ordinal);
+        return separator < 0
+            ? QuoteIdentifier(tableName)
+            : $"{QuoteIdentifier(tableName[..separator])}.{QuoteIdentifier(tableName[(separator + 1)..])}";
+    }
+
+    private static string QuoteIdentifier(string identifier)
+    {
+        return $"\"{identifier.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
+    }
+
+    private async Task<bool> HasAppliedMigrationsAsync(CancellationToken cancellationToken)
+    {
+        if (DbContextFactory is null)
+        {
+            // Without a way to look, assume there is something to lose.
+            return true;
+        }
+
+        var context = await DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            return (await context.Database.GetAppliedMigrationsAsync(cancellationToken).ConfigureAwait(false)).Any();
+        }
+    }
+
+    private async Task<string?> GetLastAppliedMigrationAsync(CancellationToken cancellationToken)
+    {
+        if (DbContextFactory is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var context = await DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+            await using (context.ConfigureAwait(false))
+            {
+                return (await context.Database.GetAppliedMigrationsAsync(cancellationToken).ConfigureAwait(false)).LastOrDefault();
+            }
+        }
+        catch (DbException ex)
+        {
+            // This runs because a migration just failed, so the database may well be unreachable.
+            _logger.LogError(ex, "Could not read the applied migrations");
+            return null;
+        }
+    }
+}
