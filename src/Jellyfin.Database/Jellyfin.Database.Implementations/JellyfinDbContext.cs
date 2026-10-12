@@ -7,6 +7,7 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Entities.Security;
 using Jellyfin.Database.Implementations.Interfaces;
 using Jellyfin.Database.Implementations.Locking;
+using Jellyfin.Database.Implementations.ValueConverters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
@@ -335,6 +336,8 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     /// <inheritdoc />
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
+        // Registered before the provider's conventions, so that a provider can replace it.
+        configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
         jellyfinDatabaseProvider.ConfigureConventions(configurationBuilder);
         base.ConfigureConventions(configurationBuilder);
     }

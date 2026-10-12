@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.ValueConverters;
 using MediaBrowser.Controller.Entities;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
@@ -50,6 +52,20 @@ public sealed class DateTimeRoundTripTests : SqliteDbTestFixture
         Assert.Equal(DateTimeKind.Utc, dateCreated!.Value.Kind);
         Assert.Equal(DateTimeKind.Utc, premiereDate!.Value.Kind);
         Assert.Equal(DateTimeKind.Utc, activityDateCreated.Kind);
+    }
+
+    [Fact]
+    public void Model_DateTimeProperties_UseSharedUtcConverter()
+    {
+        using var context = CreateDbContext();
+
+        var properties = context.Model.GetEntityTypes()
+            .SelectMany(e => e.GetProperties())
+            .Where(p => (Nullable.GetUnderlyingType(p.ClrType) ?? p.ClrType) == typeof(DateTime))
+            .ToList();
+
+        Assert.NotEmpty(properties);
+        Assert.All(properties, p => Assert.IsType<UtcDateTimeConverter>(p.GetValueConverter()));
     }
 
     private static void AssertUtc(DateTime expected, DateTime? actual)

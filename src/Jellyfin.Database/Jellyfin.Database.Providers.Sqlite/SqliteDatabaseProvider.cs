@@ -141,7 +141,6 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.SetDefaultDateTimeKind(DateTimeKind.Utc);
     }
 
     /// <inheritdoc/>
