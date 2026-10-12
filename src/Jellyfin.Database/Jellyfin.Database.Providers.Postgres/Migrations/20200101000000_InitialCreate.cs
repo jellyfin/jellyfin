@@ -1181,11 +1181,15 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
                 table: "Users",
                 column: "Username",
                 unique: true);
+
+            CreateHandWrittenObjects(migrationBuilder);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            DropHandWrittenObjects(migrationBuilder);
+
             migrationBuilder.DropTable(
                 name: "AccessSchedules");
 

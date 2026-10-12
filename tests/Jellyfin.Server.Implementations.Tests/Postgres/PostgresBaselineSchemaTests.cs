@@ -80,6 +80,41 @@ public sealed class PostgresBaselineSchemaTests
             $"The {description} differ.{Environment.NewLine}Only in the model: {string.Join("; ", expected.Except(actual))}{Environment.NewLine}Only in the migrations: {string.Join("; ", actual.Except(expected))}");
     }
 
+    [ProviderFact(TestDbProvider.Postgres)]
+    public async Task MigratedDatabase_IndexesThePeopleByLowercasedName()
+    {
+        using var database = TestDatabaseEnvironment.Backend.Create(TestSchemaSource.Migrations, []);
+        await using var context = CreateContext(database);
+
+        var definition = await context.Database
+            .SqlQueryRaw<string>("""SELECT indexdef AS "Value" FROM pg_indexes WHERE schemaname = current_schema() AND indexname = 'IX_Peoples_NameLower'""")
+            .SingleAsync(TestContext.Current.CancellationToken);
+
+        Assert.EndsWith("(lower(\"Name\"))", definition, StringComparison.Ordinal);
+    }
+
+    [ProviderFact(TestDbProvider.Postgres)]
+    public async Task LowercasedNameLookup_CanBeAnsweredFromTheNameIndex()
+    {
+        using var database = TestDatabaseEnvironment.Backend.Create(TestSchemaSource.Migrations, []);
+        await using var context = CreateContext(database);
+        await context.Database.OpenConnectionAsync(TestContext.Current.CancellationToken);
+
+        // An empty table is always scanned, so the planner is told that a scan is the worse choice.
+        await context.Database.ExecuteSqlRawAsync("SET enable_seqscan = off", TestContext.Current.CancellationToken);
+
+        await using var command = context.Database.GetDbConnection().CreateCommand();
+        command.CommandText = """EXPLAIN SELECT "Id" FROM "Peoples" WHERE "PersonType" = 'Actor' AND lower("Name") = ANY (ARRAY['a', 'b'])""";
+        await using var reader = await command.ExecuteReaderAsync(TestContext.Current.CancellationToken);
+        var lines = new List<string>();
+        while (await reader.ReadAsync(TestContext.Current.CancellationToken))
+        {
+            lines.Add(reader.GetString(0));
+        }
+
+        Assert.Contains(lines, line => line.Contains("IX_Peoples_NameLower", StringComparison.Ordinal));
+    }
+
     private static async Task<List<string>> ReadAsync(TestDatabase database, string query)
     {
         await using var context = CreateContext(database);
