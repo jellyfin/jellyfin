@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Threading;
@@ -9,6 +10,7 @@ using Jellyfin.Database.Implementations.Interfaces;
 using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Implementations.ValueConverters;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 
@@ -263,7 +265,9 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
         bool acceptAllChangesOnSuccess,
         CancellationToken cancellationToken = default)
     {
-        HandleConcurrencyToken();
+        var entries = ChangeTracker.Entries().ToList();
+        HandleConcurrencyToken(entries);
+        SanitizeStrings(entries);
 
         try
         {
@@ -289,7 +293,9 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     /// <inheritdoc/>
     public override int SaveChanges(bool acceptAllChangesOnSuccess) // SaveChanges(bool) is beeing called by SaveChanges() with default to false.
     {
-        HandleConcurrencyToken();
+        var entries = ChangeTracker.Entries().ToList();
+        HandleConcurrencyToken(entries);
+        SanitizeStrings(entries);
 
         try
         {
@@ -312,14 +318,48 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
         }
     }
 
-    private void HandleConcurrencyToken()
+    private static void HandleConcurrencyToken(IReadOnlyList<EntityEntry> entries)
     {
-        foreach (var saveEntity in ChangeTracker.Entries()
+        foreach (var saveEntity in entries
                      .Where(e => e.State == EntityState.Modified)
                      .Select(entry => entry.Entity)
                      .OfType<IHasConcurrencyToken>())
         {
             saveEntity.OnSavingChanges();
+        }
+    }
+
+    /// <summary>
+    /// Removes NUL characters from the string properties of the entities that are about to be inserted or updated.
+    /// SQLite stores them, but some engines reject them in text. Text after a NUL is kept.
+    /// Properties that are part of a key or of a unique index are left as they are: code that de-duplicates
+    /// or looks up rows by such a value compares the string it holds, and a value changed on save would no
+    /// longer be that string. Those values are cleaned where they enter the application.
+    /// </summary>
+    private static void SanitizeStrings(IReadOnlyList<EntityEntry> entries)
+    {
+        foreach (var entry in entries)
+        {
+            if (entry.State is not (EntityState.Added or EntityState.Modified))
+            {
+                continue;
+            }
+
+            var values = entry.CurrentValues;
+            foreach (var property in entry.Metadata.GetProperties())
+            {
+                if (property.ClrType != typeof(string)
+                    || property.IsKey()
+                    || property.GetContainingIndexes().Any(i => i.IsUnique))
+                {
+                    continue;
+                }
+
+                if (values[property] is string text && text.Contains('\0', StringComparison.Ordinal))
+                {
+                    values[property] = text.Replace("\0", string.Empty, StringComparison.Ordinal);
+                }
+            }
         }
     }
 

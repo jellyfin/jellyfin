@@ -12,6 +12,8 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using Microsoft.EntityFrameworkCore;
@@ -180,6 +182,7 @@ public class ItemPersistenceService : IItemPersistenceService
     {
         ArgumentNullException.ThrowIfNull(item);
 
+        RemoveNulCharacters(item.ImageInfos);
         var images = item.ImageInfos.Select(e => BaseItemMapper.MapImageToEntity(item.Id, e)).ToArray();
 
         var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
@@ -322,6 +325,8 @@ public class ItemPersistenceService : IItemPersistenceService
         var tuples = new List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey, List<string> InheritedTags)>();
         foreach (var item in items.GroupBy(e => e.Id).Select(e => e.Last()).Where(e => e.Id != BaseItemRepository.PlaceholderId))
         {
+            RemoveNulCharacters(item);
+
             var ancestorIds = item.SupportsAncestors ?
                 item.GetAncestorIds().Distinct().ToList() :
                 null;
@@ -791,6 +796,191 @@ public class ItemPersistenceService : IItemPersistenceService
 
         context.SaveChanges();
         transaction.Commit();
+    }
+
+    /// <summary>
+    /// Removes NUL characters from the item itself, from every string that <see cref="BaseItemMapper"/> copies into a column.
+    /// Saving cleans the mapped copy, but the item is what stays in memory, and what is later matched against
+    /// the stored rows by its keys: a series finds its seasons and episodes by its presentation key, and the
+    /// external ids are looked up as they are. If only the copy was cleaned, the item would no longer find the rows it saved.
+    /// </summary>
+    /// <param name="item">The item about to be mapped.</param>
+    private static void RemoveNulCharacters(BaseItemDto item)
+    {
+        // The name and the forced sort name reset the sort name, so they are cleaned before it is read.
+        if (HasNulCharacter(item.Name))
+        {
+            item.Name = item.Name.RemoveNullCharacters();
+        }
+
+        if (HasNulCharacter(item.ForcedSortName))
+        {
+            item.ForcedSortName = item.ForcedSortName.RemoveNullCharacters();
+        }
+
+        if (HasNulCharacter(item.SortName))
+        {
+            item.SortName = item.SortName.RemoveNullCharacters();
+        }
+
+        if (HasNulCharacter(item.Path))
+        {
+            item.Path = item.Path.RemoveNullCharacters();
+        }
+
+        // The setter looks the language up, so it is only called for a value that has to change.
+        if (HasNulCharacter(item.OriginalLanguage))
+        {
+            item.OriginalLanguage = item.OriginalLanguage.RemoveNullCharacters();
+        }
+
+        item.CustomRating = item.CustomRating?.RemoveNullCharacters();
+        item.OfficialRating = item.OfficialRating?.RemoveNullCharacters();
+        item.Overview = item.Overview?.RemoveNullCharacters();
+        item.PreferredMetadataLanguage = item.PreferredMetadataLanguage?.RemoveNullCharacters();
+        item.PreferredMetadataCountryCode = item.PreferredMetadataCountryCode?.RemoveNullCharacters();
+        item.PresentationUniqueKey = item.PresentationUniqueKey?.RemoveNullCharacters();
+        item.OriginalTitle = item.OriginalTitle?.RemoveNullCharacters();
+        item.Album = item.Album?.RemoveNullCharacters();
+        item.ExternalSeriesId = item.ExternalSeriesId?.RemoveNullCharacters();
+        item.Tagline = item.Tagline?.RemoveNullCharacters();
+        item.ExternalId = item.ExternalId?.RemoveNullCharacters();
+
+        // Stored in one column each, joined with a separator.
+        if (HasNulCharacter(item.Genres))
+        {
+            item.Genres = RemoveNulCharacters(item.Genres);
+        }
+
+        if (HasNulCharacter(item.ProductionLocations))
+        {
+            item.ProductionLocations = RemoveNulCharacters(item.ProductionLocations);
+        }
+
+        if (HasNulCharacter(item.Studios))
+        {
+            item.Studios = RemoveNulCharacters(item.Studios);
+        }
+
+        if (HasNulCharacter(item.Tags))
+        {
+            item.Tags = RemoveNulCharacters(item.Tags);
+        }
+
+        if (item.ProviderIds is { } providerIds)
+        {
+            // Only the entries that change are touched, so the ids of an item other threads may be reading
+            // are never cleared and refilled.
+            foreach (var (key, value) in providerIds.ToList())
+            {
+                if (!HasNulCharacter(key) && !HasNulCharacter(value))
+                {
+                    continue;
+                }
+
+                var cleanKey = key.RemoveNullCharacters();
+                var cleanValue = value?.RemoveNullCharacters();
+
+                // An id that held nothing but NUL characters names nothing once they are gone, so it is dropped.
+                var drop = cleanKey.Length == 0 || (HasNulCharacter(value) && cleanValue?.Length == 0);
+                if (drop)
+                {
+                    providerIds.Remove(key);
+                }
+                else if (string.Equals(key, cleanKey, StringComparison.Ordinal))
+                {
+                    providerIds[key] = cleanValue!;
+                }
+                else
+                {
+                    // An id stored under the clean key already wins over one that only differs by a NUL.
+                    providerIds.TryAdd(cleanKey, cleanValue!);
+                    providerIds.Remove(key);
+                }
+            }
+        }
+
+        RemoveNulCharacters(item.ImageInfos);
+
+        if (item is IHasProgramAttributes hasProgramAttributes)
+        {
+            hasProgramAttributes.EpisodeTitle = hasProgramAttributes.EpisodeTitle?.RemoveNullCharacters();
+        }
+
+        if (item is LiveTvChannel liveTvChannel)
+        {
+            liveTvChannel.ServiceName = liveTvChannel.ServiceName?.RemoveNullCharacters();
+        }
+
+        if (item is IHasSeries hasSeries)
+        {
+            hasSeries.SeriesName = hasSeries.SeriesName?.RemoveNullCharacters();
+            hasSeries.SeriesPresentationUniqueKey = hasSeries.SeriesPresentationUniqueKey?.RemoveNullCharacters();
+        }
+
+        if (item is Episode episode)
+        {
+            episode.SeasonName = episode.SeasonName?.RemoveNullCharacters();
+        }
+
+        if (item is LiveTvProgram program)
+        {
+            program.ShowId = program.ShowId?.RemoveNullCharacters();
+        }
+
+        if (item is IHasArtist hasArtist && HasNulCharacter(hasArtist.Artists))
+        {
+            hasArtist.Artists = RemoveNulCharacters(hasArtist.Artists);
+        }
+
+        if (item is IHasAlbumArtist hasAlbumArtist && HasNulCharacter(hasAlbumArtist.AlbumArtists))
+        {
+            hasAlbumArtist.AlbumArtists = RemoveNulCharacters(hasAlbumArtist.AlbumArtists);
+        }
+    }
+
+    private static void RemoveNulCharacters(ItemImageInfo[]? images)
+    {
+        if (images is null)
+        {
+            return;
+        }
+
+        foreach (var image in images)
+        {
+            if (HasNulCharacter(image.Path))
+            {
+                image.Path = image.Path.RemoveNullCharacters();
+            }
+        }
+    }
+
+    private static string[] RemoveNulCharacters(IEnumerable<string> values)
+    {
+        // An entry that held nothing but NUL characters names nothing once they are gone, so it is dropped.
+        // Entries that become equal are kept once, as the first one: the columns de-duplicate them when saving.
+        var cleaned = new List<string>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var value in values)
+        {
+            var clean = value?.RemoveNullCharacters()!;
+            if ((!HasNulCharacter(value) || clean.Length > 0) && seen.Add(clean))
+            {
+                cleaned.Add(clean);
+            }
+        }
+
+        return cleaned.ToArray();
+    }
+
+    private static bool HasNulCharacter(IEnumerable<string>? values)
+    {
+        return values is not null && values.Any(HasNulCharacter);
+    }
+
+    private static bool HasNulCharacter(string? value)
+    {
+        return value is not null && value.Contains('\0', StringComparison.Ordinal);
     }
 
     private static List<(ItemValueType MagicNumber, string Value)> GetItemValuesToSave(BaseItemDto item, List<string> inheritedTags)
