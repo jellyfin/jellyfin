@@ -118,7 +118,7 @@ internal class JellyfinMigrationService
                 await historyRepository.CreateIfNotExistsAsync().ConfigureAwait(false);
                 var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync().ConfigureAwait(false);
                 var startupScripts = flatApplyMigrations
-                    .Where(e => !appliedMigrations.Any(f => f != e.BuildCodeMigrationId()))
+                    .Where(e => !appliedMigrations.Contains(e.BuildCodeMigrationId()))
                     .Select(e => (Migration: e.Metadata, Script: historyRepository.GetInsertScript(new HistoryRow(e.BuildCodeMigrationId(), GetJellyfinVersion()))))
                     .ToArray();
                 foreach (var item in startupScripts)

@@ -117,6 +117,35 @@ public sealed class JellyfinMigrationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task CheckFirstTimeRunOrMigration_ServerWithoutCompletedSetupAndPartialHistory_SeedsMissingCodeMigrations()
+    {
+        WriteServerConfiguration(wizardCompleted: false);
+        await CreateService().CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+        var applied = await GetAppliedMigrationIdsAsync();
+        Assert.True(applied.Length > 1, "Setup should seed more than one code migration.");
+        await DeleteAppliedMigrationsAsync(applied[..1]);
+
+        await CreateService().CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+
+        Assert.Equal(applied, await GetAppliedMigrationIdsAsync());
+    }
+
+    [Fact]
+    public async Task CheckFirstTimeRunOrMigration_SeedSystemOnSetUpServerWithSingleSeededMigration_SeedsMissingCodeMigrations()
+    {
+        WriteServerConfiguration(wizardCompleted: false);
+        await CreateService().CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+        var applied = await GetAppliedMigrationIdsAsync();
+        Assert.True(applied.Length > 1, "Setup should seed more than one code migration.");
+        await DeleteAppliedMigrationsAsync(applied[1..]);
+        WriteServerConfiguration(wizardCompleted: true);
+
+        await CreateService().CheckFirstTimeRunOrMigration(_paths, new StartupOptions { StartupMode = Configuration.StartupMode.SeedSystem });
+
+        Assert.Equal(applied, await GetAppliedMigrationIdsAsync());
+    }
+
+    [Fact]
     public async Task CheckFirstTimeRunOrMigration_MigrateSystemOnSetUpServerWithoutDatabase_Passes()
     {
         WriteServerConfiguration(wizardCompleted: true);
@@ -176,6 +205,16 @@ public sealed class JellyfinMigrationServiceTests : IDisposable
     {
         var factory = _serviceProviders[^1].GetRequiredService<IDbContextFactory<JellyfinDbContext>>();
         return await factory.CreateDbContextAsync(TestContext.Current.CancellationToken);
+    }
+
+    private async Task DeleteAppliedMigrationsAsync(string[] migrationIds)
+    {
+        await using var context = await CreateDbContextAsync();
+        var historyRepository = context.GetService<IHistoryRepository>();
+        foreach (var migrationId in migrationIds)
+        {
+            await context.Database.ExecuteSqlRawAsync(historyRepository.GetDeleteScript(migrationId), TestContext.Current.CancellationToken);
+        }
     }
 
     private async Task<string[]> GetAppliedMigrationIdsAsync()
