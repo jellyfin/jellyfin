@@ -47,6 +47,16 @@ public class LikePatternsTests
         Assert.Equal(expected, LikePatterns.ContainsIgnoreAsciiCase(term));
     }
 
+    [Theory]
+    [InlineData("a\0b", "%ab%")]
+    [InlineData("\0world", "%world%")]
+    [InlineData("WORLD\0", "%world%")]
+    [InlineData("\0", "%%")]
+    public void ContainsIgnoreAsciiCase_Nul_IsDropped(string term, string expected)
+    {
+        Assert.Equal(expected, LikePatterns.ContainsIgnoreAsciiCase(term));
+    }
+
     [Fact]
     public void ContainsIgnoreAsciiCase_Null_Throws()
     {

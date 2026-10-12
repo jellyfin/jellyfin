@@ -19,7 +19,8 @@ public static class LikePatterns
     /// <summary>
     /// Builds a pattern matching values that contain <paramref name="term"/>. Only ASCII letters are lower-cased,
     /// as SQLite's <c>lower()</c> does. Backslashes are matched literally, while <c>%</c> and <c>_</c> keep their
-    /// wildcard meaning.
+    /// wildcard meaning. NUL characters are dropped, as they are not stored and some engines reject them in a
+    /// parameter.
     /// </summary>
     /// <param name="term">The text to look for.</param>
     /// <returns>The pattern, ASCII-lower-cased, with <c>\</c> escaped.</returns>
@@ -30,6 +31,11 @@ public static class LikePatterns
         var pattern = new StringBuilder(term.Length + 2).Append('%');
         foreach (var c in term)
         {
+            if (c == '\0')
+            {
+                continue;
+            }
+
             if (c == '\\')
             {
                 pattern.Append('\\');
