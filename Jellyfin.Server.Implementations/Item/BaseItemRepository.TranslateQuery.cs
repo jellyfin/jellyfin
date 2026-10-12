@@ -485,15 +485,25 @@ public sealed partial class BaseItemRepository
         {
             if (SearchWildcardTerms.Any(f => nameContains.Contains(f)))
             {
-                nameContains = $"%{nameContains.Trim('%')}%";
-                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName, nameContains) || EF.Functions.Like(e.OriginalTitle, nameContains));
+                var likeNameContains = LikePatterns.ContainsIgnoreAsciiCase(nameContains.Trim('%'));
+                baseQuery = baseQuery.Where(e =>
+                    EF.Functions.Like(e.CleanName, likeNameContains, LikePatterns.Escape)
+                    || JellyfinDbFunctions.LikeIgnoreAsciiCase(e.OriginalTitle, likeNameContains));
             }
             else
             {
-                var likeNameContains = $"%{nameContains}%";
-                baseQuery = baseQuery.Where(e =>
-                                    e.CleanName!.Contains(nameContains)
-                                    || EF.Functions.Like(e.OriginalTitle, likeNameContains));
+                var cleanNameContains = nameContains.GetCleanValue();
+                var likeNameContains = LikePatterns.ContainsIgnoreAsciiCase(nameContains);
+                if (string.IsNullOrEmpty(cleanNameContains))
+                {
+                    baseQuery = baseQuery.Where(e => JellyfinDbFunctions.LikeIgnoreAsciiCase(e.OriginalTitle, likeNameContains));
+                }
+                else
+                {
+                    baseQuery = baseQuery.Where(e =>
+                        e.CleanName!.Contains(cleanNameContains)
+                        || JellyfinDbFunctions.LikeIgnoreAsciiCase(e.OriginalTitle, likeNameContains));
+                }
             }
         }
 
