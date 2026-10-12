@@ -66,7 +66,7 @@ public static class OrderMapper
             (ItemSortBy.SeriesSortName, _) => e => e.SeriesName,
             (ItemSortBy.Album, _) => e => e.Album,
             (ItemSortBy.DateCreated, _) => e => e.DateCreated,
-            (ItemSortBy.PremiereDate, _) => e => e.PremiereDate ?? (e.ProductionYear.HasValue ? DateTime.MinValue.AddYears(e.ProductionYear.Value - 1) : null),
+            (ItemSortBy.PremiereDate, _) => e => e.PremiereDate ?? (e.ProductionYear.HasValue ? new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddYears(e.ProductionYear.Value - 2000) : null),
             (ItemSortBy.StartDate, _) => e => e.StartDate,
             (ItemSortBy.Name, _) => e => e.CleanName,
             (ItemSortBy.CommunityRating, _) => e => e.CommunityRating,
