@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using BitFaster.Caching.Lru;
 using MediaBrowser.Controller.Entities;
@@ -16,9 +17,13 @@ namespace Emby.Server.Implementations.Library;
 public class DotIgnoreIgnoreRule : IResolverIgnoreRule
 {
     private static readonly bool IsWindows = OperatingSystem.IsWindows();
+    private static readonly StringComparison PathComparison = IsWindows ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
     private readonly FastConcurrentLru<string, IgnoreFileCacheEntry> _directoryCache;
     private readonly FastConcurrentLru<string, ParsedIgnoreCacheEntry> _rulesCache;
+
+    private Func<IEnumerable<string>>? _libraryRootsProvider;
+    private volatile string[]? _libraryRoots;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DotIgnoreIgnoreRule"/> class.
@@ -40,11 +45,23 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
     public bool ShouldIgnore(FileSystemMetadata fileInfo, BaseItem? parent) => IsIgnoredInternal(fileInfo, parent);
 
     /// <summary>
-    /// Clears the directory lookup cache. The parsed rules cache is not cleared
+    /// Sets the provider of library root paths. The search for a .ignore file stops at the
+    /// outermost library root containing the path instead of walking up to the filesystem root.
+    /// </summary>
+    /// <param name="libraryRootsProvider">The library root paths provider.</param>
+    public void SetLibraryRootsProvider(Func<IEnumerable<string>> libraryRootsProvider)
+    {
+        _libraryRootsProvider = libraryRootsProvider;
+        ClearDirectoryCache();
+    }
+
+    /// <summary>
+    /// Clears the directory lookup cache and the library roots. The parsed rules cache is not cleared
     /// as it validates file modification time on each access.
     /// </summary>
     public void ClearDirectoryCache()
     {
+        _libraryRoots = null;
         _directoryCache.Clear();
     }
 
@@ -164,7 +181,9 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
             return null;
         }
 
-        // Walk up the directory tree to find .ignore file using DirectoryInfo.Parent
+        // Walk up the directory tree to find .ignore file using DirectoryInfo.Parent,
+        // never leaving the library: probing above it can hit autofs or network mounts (#17364)
+        var stopDirectory = GetOutermostLibraryRoot(startDir.FullName);
         var checkedDirs = new List<string> { directory };
 
         for (var current = startDir; current is not null; current = current.Parent)
@@ -203,6 +222,11 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
             {
                 checkedDirs.Add(currentPath);
             }
+
+            if (stopDirectory is not null && IsSamePath(currentPath, stopDirectory))
+            {
+                break;
+            }
         }
 
         // No .ignore file found - cache null result for all directories
@@ -214,6 +238,58 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
 
         return null;
     }
+
+    private string? GetOutermostLibraryRoot(string path)
+    {
+        string? outermost = null;
+        foreach (var root in GetLibraryRoots())
+        {
+            if ((outermost is null || root.Length < outermost.Length)
+                && IsSameOrChildPath(path, root))
+            {
+                outermost = root;
+            }
+        }
+
+        return outermost;
+    }
+
+    private string[] GetLibraryRoots()
+    {
+        var roots = _libraryRoots;
+        if (roots is not null)
+        {
+            return roots;
+        }
+
+        var provider = _libraryRootsProvider;
+        if (provider is null)
+        {
+            return [];
+        }
+
+        roots = provider()
+            .Where(r => !string.IsNullOrEmpty(r))
+            .Select(r => Path.TrimEndingDirectorySeparator(Path.GetFullPath(r)))
+            .ToArray();
+        _libraryRoots = roots;
+        return roots;
+    }
+
+    private static bool IsSameOrChildPath(string path, string root)
+    {
+        if (IsSamePath(path, root))
+        {
+            return true;
+        }
+
+        // A filesystem root such as "/" keeps its trailing separator after trimming
+        return path.StartsWith(root, PathComparison)
+            && (Path.EndsInDirectorySeparator(root) || path[root.Length] == Path.DirectorySeparatorChar);
+    }
+
+    private static bool IsSamePath(string path1, string path2)
+        => Path.TrimEndingDirectorySeparator(path1.AsSpan()).Equals(Path.TrimEndingDirectorySeparator(path2.AsSpan()), PathComparison);
 
     private ParsedIgnoreCacheEntry? GetParsedRules(FileInfo ignoreFile)
     {
