@@ -87,18 +87,23 @@ namespace Jellyfin.Server.Extensions
                     Policies.RequiresElevation,
                     policy => policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication)
                         .RequireClaim(ClaimTypes.Role, UserRoles.Administrator));
+                options.AddPolicy(
+                    Policies.Streaming,
+                    policy => policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication, AuthenticationSchemes.PlaybackAccess)
+                        .AddRequirements(new DefaultAuthorizationRequirement()));
             });
         }
 
         /// <summary>
-        /// Adds custom legacy authentication to the service collection.
+        /// Adds legacy and playback grant authentication to the service collection.
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
         /// <returns>The updated service collection.</returns>
         public static AuthenticationBuilder AddCustomAuthentication(this IServiceCollection serviceCollection)
         {
             return serviceCollection.AddAuthentication(AuthenticationSchemes.CustomAuthentication)
-                .AddScheme<AuthenticationSchemeOptions, CustomAuthenticationHandler>(AuthenticationSchemes.CustomAuthentication, null);
+                .AddScheme<AuthenticationSchemeOptions, CustomAuthenticationHandler>(AuthenticationSchemes.CustomAuthentication, null)
+                .AddScheme<AuthenticationSchemeOptions, PlaybackAccessAuthenticationHandler>(AuthenticationSchemes.PlaybackAccess, null);
         }
 
         /// <summary>

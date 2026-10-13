@@ -9,4 +9,9 @@ public static class AuthenticationSchemes
     /// Scheme name for the custom legacy authentication.
     /// </summary>
     public const string CustomAuthentication = "CustomAuthentication";
+
+    /// <summary>
+    /// Scheme name for the playback grant authentication.
+    /// </summary>
+    public const string PlaybackAccess = "PlaybackAccess";
 }

@@ -691,11 +691,11 @@ public class DynamicHlsHelper
 
             var url = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}&ApiKey={3}",
+                "{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}&{3}",
                 state.Request.MediaSourceId,
                 stream.Index.ToString(CultureInfo.InvariantCulture),
                 30.ToString(CultureInfo.InvariantCulture),
-                user.GetToken());
+                user.GetMediaAuthorizationQuery());
 
             var line = string.Format(
                 CultureInfo.InvariantCulture,

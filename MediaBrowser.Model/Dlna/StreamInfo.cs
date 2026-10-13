@@ -249,6 +249,11 @@ public class StreamInfo
     public string? PlaySessionId { get; set; }
 
     /// <summary>
+    /// Gets or sets the playback grant token used instead of the access token when nonempty.
+    /// </summary>
+    public string? PlaybackToken { get; set; }
+
+    /// <summary>
     /// Gets or sets the transcode reasons.
     /// </summary>
     /// <value>The transcode reasons.</value>
@@ -1029,7 +1034,12 @@ public class StreamInfo
             sb.Append(PlaySessionId);
         }
 
-        if (!string.IsNullOrEmpty(accessToken))
+        if (!string.IsNullOrEmpty(PlaybackToken))
+        {
+            sb.Append("&PlaybackToken=");
+            sb.Append(PlaybackToken);
+        }
+        else if (!string.IsNullOrEmpty(accessToken))
         {
             sb.Append("&ApiKey=");
             sb.Append(accessToken);

@@ -25,6 +25,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Providers.Lyric;
@@ -86,6 +87,7 @@ namespace Jellyfin.Server
             serviceCollection.AddSingleton<IPasswordResetProvider, DefaultPasswordResetProvider>();
             serviceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
             serviceCollection.AddSingleton<IDeviceManager, DeviceManager>();
+            serviceCollection.AddSingleton<IPlaybackAccessManager, PlaybackAccessManager>();
             serviceCollection.AddSingleton<ITrickplayManager, TrickplayManager>();
 
             // TODO search the assemblies instead of adding them manually?

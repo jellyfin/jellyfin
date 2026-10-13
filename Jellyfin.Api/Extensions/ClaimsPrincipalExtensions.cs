@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Security.Claims;
+using Jellyfin.Api.Auth;
 using Jellyfin.Api.Constants;
 
 namespace Jellyfin.Api.Extensions;
@@ -74,6 +75,16 @@ public static class ClaimsPrincipalExtensions
         return bool.TryParse(claimValue, out var parsedClaimValue)
                && parsedClaimValue;
     }
+
+    /// <summary>
+    /// Gets the authentication query parameter for playlist URLs.
+    /// </summary>
+    /// <param name="user">Current claims principal.</param>
+    /// <returns><c>PlaybackToken=...</c> or <c>ApiKey=...</c>, without a leading <c>?</c> or <c>&amp;</c>.</returns>
+    public static string GetMediaAuthorizationQuery(this ClaimsPrincipal user)
+        => GetClaimValue(user, InternalClaimTypes.PlaybackToken) is { } playbackToken
+            ? PlaybackAccessAuthenticationHandler.TokenParameter + "=" + playbackToken
+            : "ApiKey=" + user.GetToken();
 
     private static string? GetClaimValue(in ClaimsPrincipal user, string name)
         => user.Claims.FirstOrDefault(claim => claim.Type.Equals(name, StringComparison.OrdinalIgnoreCase))?.Value;
