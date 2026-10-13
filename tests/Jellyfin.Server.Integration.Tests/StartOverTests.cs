@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Api.Models.StartupDtos;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Testing;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
@@ -28,7 +29,7 @@ public sealed class StartOverTests : IDisposable
     private readonly string _root = Path.Combine(Path.GetTempPath(), "jellyfin-test-data", "start-over-" + Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task DeletedDatabase_WizardReset_StartsAsNewServer()
     {
         var paths = await SetUpServerAndDeleteDatabaseAsync();
@@ -46,7 +47,7 @@ public sealed class StartOverTests : IDisposable
         Assert.All(context.GetService<IMigrationsAssembly>().Migrations.Keys, id => Assert.Contains(id, applied));
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task DeletedDatabase_WizardStillCompleted_RefusesToStart()
     {
         var paths = await SetUpServerAndDeleteDatabaseAsync();
