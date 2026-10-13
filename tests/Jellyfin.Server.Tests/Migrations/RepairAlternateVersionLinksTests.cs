@@ -5,15 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using Jellyfin.Database.Implementations.Locking;
-using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Migrations.Routines;
 using Jellyfin.Server.ServerSetupApp;
-using MediaBrowser.Common.Configuration;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 using Xunit;
 
 namespace Jellyfin.Server.Tests.Migrations;
@@ -22,28 +18,8 @@ namespace Jellyfin.Server.Tests.Migrations;
 /// Covers the repair of the PrimaryVersionId the item queries hide an alternate version by,
 /// including the link shapes that would otherwise leave a whole version group hidden.
 /// </summary>
-public sealed class RepairAlternateVersionLinksTests : IDisposable
+public sealed class RepairAlternateVersionLinksTests : DatabaseTestFixture
 {
-    private readonly SqliteConnection _connection;
-    private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
-    private readonly IApplicationPaths _applicationPaths;
-
-    public RepairAlternateVersionLinksTests()
-    {
-        _applicationPaths = new Mock<IApplicationPaths>().Object;
-
-        // The connection owns the in-memory database, so it stays open for the whole test.
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
-        _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-
-        using var context = CreateDbContext();
-        context.Database.EnsureCreated();
-    }
-
     [Fact]
     public async Task PerformAsync_VersionLinkedToPrimary_PointsItAtThePrimary()
     {
@@ -139,11 +115,6 @@ public sealed class RepairAlternateVersionLinksTests : IDisposable
         Assert.Null(Get(context, itemId).PrimaryVersionId);
     }
 
-    public void Dispose()
-    {
-        _connection.Dispose();
-    }
-
     private static void AssertIsPrimary(JellyfinDbContext context, Guid id)
     {
         var item = Get(context, id);
@@ -162,12 +133,6 @@ public sealed class RepairAlternateVersionLinksTests : IDisposable
 
     private static BaseItemEntity Get(JellyfinDbContext context, Guid id)
         => context.BaseItems.AsNoTracking().First(e => e.Id.Equals(id));
-
-    private JellyfinDbContext CreateDbContext() => new(
-        _dbOptions,
-        NullLogger<JellyfinDbContext>.Instance,
-        new SqliteDatabaseProvider(_applicationPaths, NullLogger<SqliteDatabaseProvider>.Instance),
-        new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
 
     private void Seed(
         (Guid Id, Guid? PrimaryVersionId)[] items,
@@ -202,14 +167,9 @@ public sealed class RepairAlternateVersionLinksTests : IDisposable
 
     private Task PerformAsync()
     {
-        var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
-        factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
-        factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(CreateDbContext);
-
         var migration = new RepairAlternateVersionLinks(
             new StartupLogger<RepairAlternateVersionLinks>(NullLogger<RepairAlternateVersionLinks>.Instance),
-            factory.Object);
+            CreateDbContextFactory());
 
         return migration.PerformAsync(CancellationToken.None);
     }

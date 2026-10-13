@@ -5,19 +5,15 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
-using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using Jellyfin.Database.Implementations.Locking;
-using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Migrations.Routines;
 using Jellyfin.Server.ServerSetupApp;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -30,28 +26,12 @@ namespace Jellyfin.Server.Tests.Migrations;
 /// is about to drop. Only ParentId cascades; everything else here is a NO ACTION foreign key that
 /// used to abort the migration, and with it the whole startup.
 /// </summary>
-public sealed class ConsolidateLocalizedUserViewsTests : IDisposable
+public sealed class ConsolidateLocalizedUserViewsTests : DatabaseTestFixture
 {
     private const string MetadataPath = "/metadata";
 
     private static readonly Guid _staleId = new("11111111-1111-1111-1111-111111111111");
     private static readonly Guid _canonicalId = new("22222222-2222-2222-2222-222222222222");
-
-    private readonly SqliteConnection _connection;
-    private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
-
-    public ConsolidateLocalizedUserViewsTests()
-    {
-        _connection = new SqliteConnection("Data Source=:memory:;Foreign Keys=True");
-        _connection.Open();
-
-        _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-
-        using var context = CreateDbContext();
-        context.Database.EnsureCreated();
-    }
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
@@ -98,7 +78,8 @@ public sealed class ConsolidateLocalizedUserViewsTests : IDisposable
         }
     }
 
-    [Fact]
+    // The orphan only exists because SQLite let the row in with foreign keys off; PostgreSQL always enforces them.
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task PerformAsync_OrphanedAncestry_IsNotResurrectedUnderTheCanonicalView()
     {
         var childId = Guid.NewGuid();
@@ -132,24 +113,12 @@ public sealed class ConsolidateLocalizedUserViewsTests : IDisposable
         }
     }
 
-    public void Dispose()
-    {
-        _connection.Dispose();
-        GC.SuppressFinalize(this);
-    }
-
     private static BaseItemEntity StaleView() => new()
     {
         Id = _staleId,
         Type = "MediaBrowser.Controller.Entities.UserView",
         Path = Path.Combine(MetadataPath, "views", "livetv")
     };
-
-    private JellyfinDbContext CreateDbContext() => new(
-        _dbOptions,
-        NullLogger<JellyfinDbContext>.Instance,
-        new SqliteDatabaseProvider(new Mock<IApplicationPaths>().Object, NullLogger<SqliteDatabaseProvider>.Instance),
-        new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
 
     private ConsolidateLocalizedUserViews CreateMigration()
     {
@@ -188,15 +157,11 @@ public sealed class ConsolidateLocalizedUserViewsTests : IDisposable
                 context.SaveChanges();
             });
 
-        var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
-        factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
-        factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>())).ReturnsAsync(CreateDbContext);
-
         return new ConsolidateLocalizedUserViews(
             new StartupLogger<ConsolidateLocalizedUserViews>(NullLogger<ConsolidateLocalizedUserViews>.Instance),
             libraryManager.Object,
             configurationManager.Object,
             fileSystem.Object,
-            factory.Object);
+            CreateDbContextFactory());
     }
 }

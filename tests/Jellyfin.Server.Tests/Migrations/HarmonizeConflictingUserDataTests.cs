@@ -2,45 +2,22 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using Jellyfin.Database.Implementations.Locking;
-using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Item;
 using Jellyfin.Server.Migrations.Routines;
 using Jellyfin.Server.ServerSetupApp;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 using Xunit;
 
 namespace Jellyfin.Server.Tests.Migrations;
 
-public sealed class HarmonizeConflictingUserDataTests : IDisposable
+public sealed class HarmonizeConflictingUserDataTests : DatabaseTestFixture
 {
-    private readonly SqliteConnection _connection;
-    private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly Guid _userId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private readonly Guid _itemId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private readonly Guid _untouchedId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
-
-    public HarmonizeConflictingUserDataTests()
-    {
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
-        _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-
-        using var context = CreateDbContext();
-        context.Database.EnsureCreated();
-    }
-
-    public void Dispose() => _connection.Dispose();
 
     [Fact]
     public async Task Perform_ConflictingRows_CollapsesToMostRecentPlay()
@@ -120,19 +97,10 @@ public sealed class HarmonizeConflictingUserDataTests : IDisposable
         };
     }
 
-    private JellyfinDbContext CreateDbContext() => new(
-        _dbOptions,
-        NullLogger<JellyfinDbContext>.Instance,
-        new SqliteDatabaseProvider(new Mock<IApplicationPaths>().Object, NullLogger<SqliteDatabaseProvider>.Instance),
-        new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
-
     private HarmonizeConflictingUserData CreateMigration()
     {
-        var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
-        factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>())).ReturnsAsync(CreateDbContext);
-
         return new HarmonizeConflictingUserData(
             new StartupLogger<HarmonizeConflictingUserData>(NullLogger<HarmonizeConflictingUserData>.Instance),
-            factory.Object);
+            CreateDbContextFactory());
     }
 }

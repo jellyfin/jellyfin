@@ -1,50 +1,45 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using Jellyfin.Database.Implementations.Locking;
-using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Migrations.Routines;
 using Jellyfin.Server.ServerSetupApp;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 using Xunit;
 
 namespace Jellyfin.Server.Tests.Migrations;
 
-public sealed class RemoveNulFromItemKeysTests : IDisposable
+/// <summary>
+/// The values the migration cleans were stored by SQLite, which accepts NUL characters. PostgreSQL rejects them, so
+/// no such row can exist there and the tests that seed one only run on SQLite.
+/// </summary>
+public sealed class RemoveNulFromItemKeysTests : DatabaseTestFixture
 {
-    private readonly SqliteConnection _connection;
-    private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly Guid _legacyId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private readonly Guid _cleanId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
     private readonly Guid _userId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
     private readonly CapturingLogger<RemoveNulFromItemKeys> _log = new();
+    private readonly WriteRecorder _recorder;
 
     public RemoveNulFromItemKeysTests()
+        : this(new WriteRecorder())
     {
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
-        _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-
-        using var context = CreateDbContext();
-        context.Database.EnsureCreated();
     }
 
-    public void Dispose() => _connection.Dispose();
+    private RemoveNulFromItemKeysTests(WriteRecorder recorder)
+        : base(recorder)
+    {
+        _recorder = recorder;
+    }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task Perform_ValuesWithNul_RemovesNulFromEveryMatchedColumn()
     {
         await SeedAsync();
@@ -61,7 +56,7 @@ public sealed class RemoveNulFromItemKeysTests : IDisposable
         Assert.Equal("12345", ctx.BaseItemProviders.Single(e => e.ItemId.Equals(_legacyId) && e.ProviderId == "Tvdb").ProviderValue);
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task Perform_ValuesWithNul_LeavesOtherColumnsAndRowsAlone()
     {
         await SeedAsync();
@@ -76,7 +71,7 @@ public sealed class RemoveNulFromItemKeysTests : IDisposable
         Assert.Equal("999", ctx.BaseItemProviders.Single(e => e.ItemId.Equals(_cleanId)).ProviderValue);
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task Perform_ProviderIdHoldingOnlyNul_RemovesTheProviderId()
     {
         await SeedAsync();
@@ -98,16 +93,16 @@ public sealed class RemoveNulFromItemKeysTests : IDisposable
         }
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task Perform_RunTwice_SecondRunWritesNothing()
     {
         await SeedAsync();
         await CreateMigration().PerformAsync(TestContext.Current.CancellationToken);
-        var changesBefore = TotalChanges();
+        var changesBefore = _recorder.WriteCount;
 
         await CreateMigration().PerformAsync(TestContext.Current.CancellationToken);
 
-        Assert.Equal(changesBefore, TotalChanges());
+        Assert.Equal(changesBefore, _recorder.WriteCount);
         using var ctx = CreateDbContext();
         Assert.Equal("tvdb-12345", ctx.BaseItems.Single(e => e.Id.Equals(_legacyId)).PresentationUniqueKey);
     }
@@ -123,14 +118,14 @@ public sealed class RemoveNulFromItemKeysTests : IDisposable
             await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
         }
 
-        var changesBefore = TotalChanges();
+        var changesBefore = _recorder.WriteCount;
 
         await CreateMigration().PerformAsync(TestContext.Current.CancellationToken);
 
-        Assert.Equal(changesBefore, TotalChanges());
+        Assert.Equal(changesBefore, _recorder.WriteCount);
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task Perform_UserDataKeyWithNul_RemovesNulFromTheKey()
     {
         await SeedAsync();
@@ -146,7 +141,7 @@ public sealed class RemoveNulFromItemKeysTests : IDisposable
         Assert.DoesNotContain(_log.Messages, m => m.Contains("Merged", StringComparison.Ordinal));
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task Perform_CleanedUserDataKeyCollides_KeepsTheNewerRowAndLogsTheMerge()
     {
         await SeedAsync();
@@ -168,7 +163,7 @@ public sealed class RemoveNulFromItemKeysTests : IDisposable
         Assert.DoesNotContain(_log.Messages, m => m.Contains("tt0001", StringComparison.Ordinal));
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task Perform_CleanedUserDataKeyCollidesWithNewerCleanRow_KeepsTheCleanRow()
     {
         await SeedAsync();
@@ -183,7 +178,7 @@ public sealed class RemoveNulFromItemKeysTests : IDisposable
         Assert.Equal(2, row.PlayCount);
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task Perform_CollidingUserDataWithEqualDates_KeepsTheRowWithMoreInformation()
     {
         await SeedAsync();
@@ -203,7 +198,7 @@ public sealed class RemoveNulFromItemKeysTests : IDisposable
         Assert.Contains(_log.Entries, e => e.Level == LogLevel.Information && e.Message.Contains("2 user data rows", StringComparison.Ordinal));
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task Perform_CollidingUserDataWithEqualDates_PlayedRowWinsOverMorePlays()
     {
         await SeedAsync();
@@ -220,7 +215,7 @@ public sealed class RemoveNulFromItemKeysTests : IDisposable
         Assert.Equal(1, row.PlayCount);
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task Perform_CollidingUserDataEqualInEveryField_TheRowWithTheCleanKeyWins()
     {
         await SeedAsync();
@@ -236,7 +231,7 @@ public sealed class RemoveNulFromItemKeysTests : IDisposable
         Assert.Equal(9, row.Rating);
     }
 
-    [Fact]
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task Perform_UserDataKeyWithNul_SecondRunWritesNothing()
     {
         await SeedAsync();
@@ -244,11 +239,11 @@ public sealed class RemoveNulFromItemKeysTests : IDisposable
         await AddUserDataAsync("tt0001\0", lastPlayed: null, playCount: 2);
         await AddUserDataAsync("tt0002\0", lastPlayed: null, playCount: 1);
         await CreateMigration().PerformAsync(TestContext.Current.CancellationToken);
-        var changesBefore = TotalChanges();
+        var changesBefore = _recorder.WriteCount;
 
         await CreateMigration().PerformAsync(TestContext.Current.CancellationToken);
 
-        Assert.Equal(changesBefore, TotalChanges());
+        Assert.Equal(changesBefore, _recorder.WriteCount);
     }
 
     [Fact]
@@ -261,11 +256,11 @@ public sealed class RemoveNulFromItemKeysTests : IDisposable
         }
 
         await AddUserDataAsync("tt0001", lastPlayed: null, playCount: 1, itemId: _cleanId);
-        var changesBefore = TotalChanges();
+        var changesBefore = _recorder.WriteCount;
 
         await CreateMigration().PerformAsync(TestContext.Current.CancellationToken);
 
-        Assert.Equal(changesBefore, TotalChanges());
+        Assert.Equal(changesBefore, _recorder.WriteCount);
     }
 
     private async Task AddUserDataAsync(string key, DateTime? lastPlayed, int playCount, bool played = false, double? rating = null, Guid? itemId = null)
@@ -325,28 +320,63 @@ public sealed class RemoveNulFromItemKeysTests : IDisposable
         Assert.Contains("\0", ctx.BaseItems.AsNoTracking().Single(e => e.Id.Equals(_legacyId)).PresentationUniqueKey!, StringComparison.Ordinal);
     }
 
-    // Rows written by every statement on this connection since it was opened.
-    private long TotalChanges()
-    {
-        using var command = _connection.CreateCommand();
-        command.CommandText = "SELECT total_changes()";
-        return (long)command.ExecuteScalar()!;
-    }
-
-    private JellyfinDbContext CreateDbContext() => new(
-        _dbOptions,
-        NullLogger<JellyfinDbContext>.Instance,
-        new SqliteDatabaseProvider(new Mock<IApplicationPaths>().Object, NullLogger<SqliteDatabaseProvider>.Instance),
-        new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
-
     private RemoveNulFromItemKeys CreateMigration()
     {
-        var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
-        factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>())).ReturnsAsync(CreateDbContext);
-
         return new RemoveNulFromItemKeys(
             new StartupLogger<RemoveNulFromItemKeys>(_log),
-            factory.Object);
+            CreateDbContextFactory());
+    }
+
+    private sealed class WriteRecorder : DbCommandInterceptor
+    {
+        public int WriteCount { get; private set; }
+
+        public override InterceptionResult<DbDataReader> ReaderExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result)
+        {
+            Record(command);
+            return result;
+        }
+
+        public override InterceptionResult<int> NonQueryExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<int> result)
+        {
+            Record(command);
+            return result;
+        }
+
+        public override InterceptionResult<object> ScalarExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<object> result)
+        {
+            Record(command);
+            return result;
+        }
+
+        public override ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result, CancellationToken cancellationToken = default)
+        {
+            Record(command);
+            return ValueTask.FromResult(result);
+        }
+
+        public override ValueTask<InterceptionResult<int>> NonQueryExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
+        {
+            Record(command);
+            return ValueTask.FromResult(result);
+        }
+
+        public override ValueTask<InterceptionResult<object>> ScalarExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<object> result, CancellationToken cancellationToken = default)
+        {
+            Record(command);
+            return ValueTask.FromResult(result);
+        }
+
+        private void Record(DbCommand command)
+        {
+            var text = command.CommandText.AsSpan().TrimStart();
+            if (text.StartsWith("INSERT", StringComparison.Ordinal)
+                || text.StartsWith("UPDATE", StringComparison.Ordinal)
+                || text.StartsWith("DELETE", StringComparison.Ordinal))
+            {
+                WriteCount++;
+            }
+        }
     }
 
     private sealed class CapturingLogger<T> : ILogger<T>

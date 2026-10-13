@@ -2,19 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using Jellyfin.Database.Implementations.Locking;
-using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Migrations.Routines;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -26,29 +21,15 @@ namespace Jellyfin.Server.Tests.Migrations;
 /// Covers which items the stale file cleanup is allowed to delete. Resolving no library locations at
 /// all puts every file-backed item outside every location, so acting on that emptied whole libraries.
 /// </summary>
-public sealed class MigrateLinkedChildrenStaleItemsTests : IDisposable
+public sealed class MigrateLinkedChildrenStaleItemsTests : DatabaseTestFixture
 {
-    private readonly SqliteConnection _connection;
-    private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
-    private readonly IApplicationPaths _applicationPaths;
     private readonly string _root;
 
     public MigrateLinkedChildrenStaleItemsTests()
     {
-        _applicationPaths = new Mock<IApplicationPaths>().Object;
         _root = Path.Combine(Path.GetTempPath(), "jf-stale-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(Path.Combine(_root, "media"));
         Directory.CreateDirectory(Path.Combine(_root, "root", "default"));
-
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
-        _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-
-        using var context = CreateDbContext();
-        context.Database.EnsureCreated();
     }
 
     private string LibraryDefinitionRoot => Path.Combine(_root, "root", "default");
@@ -136,20 +117,15 @@ public sealed class MigrateLinkedChildrenStaleItemsTests : IDisposable
         Assert.Equal([itemId], deleted);
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        _connection.Dispose();
-        if (Directory.Exists(_root))
+        if (disposing && Directory.Exists(_root))
         {
             Directory.Delete(_root, true);
         }
-    }
 
-    private JellyfinDbContext CreateDbContext() => new(
-        _dbOptions,
-        NullLogger<JellyfinDbContext>.Instance,
-        new SqliteDatabaseProvider(_applicationPaths, NullLogger<SqliteDatabaseProvider>.Instance),
-        new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
+        base.Dispose(disposing);
+    }
 
     private void SeedLibrary(Guid id, string name, bool createDefinitionFolder)
     {
@@ -196,7 +172,7 @@ public sealed class MigrateLinkedChildrenStaleItemsTests : IDisposable
         if (libraryId.HasValue)
         {
             context.Database.ExecuteSql(
-                $"INSERT INTO AncestorIds (ItemId, ParentItemId) VALUES ({id}, {libraryId.Value})");
+                $"INSERT INTO \"AncestorIds\" (\"ItemId\", \"ParentItemId\") VALUES ({id}, {libraryId.Value})");
         }
     }
 
@@ -225,13 +201,9 @@ public sealed class MigrateLinkedChildrenStaleItemsTests : IDisposable
         appPaths.SetupGet(p => p.InternalMetadataPath).Returns(Path.Combine(_root, "metadata"));
         appPaths.SetupGet(p => p.DefaultUserViewsPath).Returns(LibraryDefinitionRoot);
 
-        var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
-        factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
-        factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>())).ReturnsAsync(CreateDbContext);
-
         new MigrateLinkedChildren(
             NullLoggerFactory.Instance,
-            factory.Object,
+            CreateDbContextFactory(),
             libraryManager.Object,
             appHost.Object,
             appPaths.Object)
