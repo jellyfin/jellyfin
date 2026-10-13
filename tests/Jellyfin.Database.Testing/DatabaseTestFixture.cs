@@ -24,10 +24,21 @@ public abstract class DatabaseTestFixture : IDisposable
     }
 
     protected DatabaseTestFixture(TestSchemaSource schemaSource, params IInterceptor[] interceptors)
+        : this(schemaSource, false, interceptors)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DatabaseTestFixture"/> class.
+    /// </summary>
+    /// <param name="schemaSource">Where the schema of the database comes from.</param>
+    /// <param name="fresh">Whether the test changes the schema and so needs a database that no other test has used or will use.</param>
+    /// <param name="interceptors">The interceptors that see the commands of the test.</param>
+    protected DatabaseTestFixture(TestSchemaSource schemaSource, bool fresh, params IInterceptor[] interceptors)
     {
         ApplicationPaths = new Mock<IApplicationPaths>().Object;
 
-        _database = TestDatabaseEnvironment.Backend.Create(schemaSource, interceptors);
+        _database = TestDatabaseEnvironment.Backend.Create(schemaSource, interceptors, fresh);
         try
         {
             DatabaseProvider = _database.CreateProvider();

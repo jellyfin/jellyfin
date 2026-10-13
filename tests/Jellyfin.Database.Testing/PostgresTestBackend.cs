@@ -62,7 +62,7 @@ public sealed class PostgresTestBackend : ITestDatabaseBackend
         }
     }
 
-    public TestDatabase Create(TestSchemaSource source, IInterceptor[] interceptors)
+    public TestDatabase Create(TestSchemaSource source, IInterceptor[] interceptors, bool fresh = false)
     {
         var template = _templates.GetOrAdd(source, key => new Lazy<string>(() => CreateTemplate(key))).Value;
         var name = $"jf_{Guid.NewGuid():N}";

@@ -33,14 +33,48 @@ public class ProviderBackendTests(ITestOutputHelper output)
         AssertUsable(TestSchemaSource.Migrations);
     }
 
-    private static void AssertUsable(TestSchemaSource source)
+    [Fact]
+    public void Create_FreshModelSchema_ProducesUsableDatabase()
     {
-        using var database = TestDatabaseEnvironment.Backend.Create(source, []);
-        using var context = new JellyfinDbContext(
+        AssertUsable(TestSchemaSource.Model, fresh: true);
+    }
+
+    [Fact]
+    public void Create_FreshMigrationsSchema_ProducesUsableDatabase()
+    {
+        AssertUsable(TestSchemaSource.Migrations, fresh: true);
+    }
+
+    [Fact]
+    public void Create_FreshDatabases_DoNotShareData()
+    {
+        using var first = TestDatabaseEnvironment.Backend.Create(TestSchemaSource.Model, [], fresh: true);
+        using var second = TestDatabaseEnvironment.Backend.Create(TestSchemaSource.Model, [], fresh: true);
+
+        var id = Guid.NewGuid();
+        using (var context = CreateContext(first))
+        {
+            context.BaseItems.Add(new BaseItemEntity { Id = id, Type = "Test", IsFolder = false });
+            context.SaveChanges();
+        }
+
+        using var other = CreateContext(second);
+        Assert.False(other.BaseItems.Any(e => e.Id.Equals(id)));
+    }
+
+    private static JellyfinDbContext CreateContext(TestDatabase database)
+    {
+        return new JellyfinDbContext(
             database.Options,
             NullLogger<JellyfinDbContext>.Instance,
             database.CreateProvider(),
             new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
+    }
+
+    private static void AssertUsable(TestSchemaSource source, bool fresh = false)
+    {
+        using var database = TestDatabaseEnvironment.Backend.Create(source, [], fresh);
+        using var context = CreateContext(database);
 
         var id = Guid.NewGuid();
         context.BaseItems.Add(new BaseItemEntity { Id = id, Type = "Test", IsFolder = false });

@@ -115,7 +115,7 @@ public class BackendLivenessTests
 
         public Version ServerVersion => serverVersion ?? throw new InvalidOperationException("The server cannot be reached.");
 
-        public TestDatabase Create(TestSchemaSource source, IInterceptor[] interceptors) => throw new NotSupportedException();
+        public TestDatabase Create(TestSchemaSource source, IInterceptor[] interceptors, bool fresh = false) => throw new NotSupportedException();
 
         public TestDatabase CreateEmpty() => throw new NotSupportedException();
     }

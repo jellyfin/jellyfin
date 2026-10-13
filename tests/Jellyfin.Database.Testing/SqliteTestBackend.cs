@@ -35,7 +35,7 @@ public sealed class SqliteTestBackend : ITestDatabaseBackend
 
     public Version ServerVersion { get; } = ReadServerVersion();
 
-    public TestDatabase Create(TestSchemaSource source, IInterceptor[] interceptors)
+    public TestDatabase Create(TestSchemaSource source, IInterceptor[] interceptors, bool fresh = false)
     {
         var template = _templates.GetOrAdd(source, key => new Lazy<SqliteConnection>(() => CreateTemplate(key))).Value;
 
