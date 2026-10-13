@@ -209,6 +209,10 @@ public class BackupService : IBackupService
                         }
                     }
 
+                    // A restore runs before the startup migrations. On a server that was never started the database holds no tables
+                    // yet, and one that was updated since its last start is missing columns the rows are restored into.
+                    await dbContext.Database.MigrateAsync().ConfigureAwait(false);
+
                     var transaction = await dbContext.Database.BeginTransactionAsync().ConfigureAwait(false);
                     await using (transaction.ConfigureAwait(false))
                     {

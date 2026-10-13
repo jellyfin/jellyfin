@@ -687,6 +687,38 @@ public sealed class BackupServiceTests : IDisposable
         Assert.DoesNotContain(_logger.Entries, e => e.Message.Contains("Rock", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public async Task RestoreBackupAsync_IntoADatabaseThatWasOnlySeeded_CreatesTheSchemaAndRestoresTheRows()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var expected = await SnapshotAsync(cancellationToken).ConfigureAwait(true);
+        var manifest = await CreateBackupService().CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+
+        // What a first start leaves behind: an empty database with the history of the code routines, but no tables.
+        using var seededConnection = new SqliteConnection("Data Source=:memory:");
+        await seededConnection.OpenAsync(cancellationToken).ConfigureAwait(true);
+        var seededOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
+            .UseSqlite(seededConnection, sqliteOptions => sqliteOptions.MigrationsAssembly(typeof(SqliteDatabaseProvider).Assembly))
+            .Options;
+        await using (var seeded = CreateDbContext(seededOptions))
+        {
+            await seeded.GetService<IHistoryRepository>().CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(true);
+            await seeded.Database.ExecuteSqlInterpolatedAsync(
+                $"INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES ({RoutineOnlyInTargetId}, {"10.11.0"})",
+                cancellationToken).ConfigureAwait(true);
+        }
+
+        await CreateBackupService(seededOptions).RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        await using var restored = CreateDbContext(seededOptions);
+        Assert.Empty(await restored.Database.GetPendingMigrationsAsync(cancellationToken).ConfigureAwait(true));
+        Assert.Equal(
+            expected.Where(e => e.StartsWith("User ", StringComparison.Ordinal)),
+            (await restored.Users.AsNoTracking().OrderBy(e => e.Username).ToListAsync(cancellationToken).ConfigureAwait(true)).Select(e => $"User {e.Id} {e.Username}"));
+        Assert.Equal(2, await restored.BaseItems.CountAsync(e => e.Type == "Movie", cancellationToken).ConfigureAwait(true));
+    }
+
     private async Task RestoreWithRockAndNulRockAsync(bool nulRowFirst, Guid[] mapItemIds)
     {
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -895,11 +927,11 @@ public sealed class BackupServiceTests : IDisposable
         return ids;
     }
 
-    private BackupService CreateBackupService()
+    private BackupService CreateBackupService(DbContextOptions<JellyfinDbContext>? dbOptions = null)
     {
         var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
-        factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
-        factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>())).ReturnsAsync(CreateDbContext);
+        factory.Setup(f => f.CreateDbContext()).Returns(() => CreateDbContext(dbOptions));
+        factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>())).ReturnsAsync(() => CreateDbContext(dbOptions));
 
         var applicationHost = new Mock<IServerApplicationHost>();
         applicationHost.Setup(a => a.ApplicationVersion).Returns(new Version(10, 11, 0));
@@ -984,10 +1016,10 @@ public sealed class BackupServiceTests : IDisposable
         };
     }
 
-    private JellyfinDbContext CreateDbContext()
+    private JellyfinDbContext CreateDbContext(DbContextOptions<JellyfinDbContext>? dbOptions = null)
     {
         return new JellyfinDbContext(
-            _dbOptions,
+            dbOptions ?? _dbOptions,
             NullLogger<JellyfinDbContext>.Instance,
             new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
             new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
