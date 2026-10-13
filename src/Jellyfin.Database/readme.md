@@ -12,13 +12,21 @@ When creating a new migration, you always have to create migrations for all prov
 dotnet ef migrations add MIGRATION_NAME --project "PATH_TO_PROJECT" -- --provider PROVIDER_KEY
 ```
 
-with SQLite currently being the only supported provider, you need to run the Entity Framework tool with the correct project to tell EFCore where to store the migrations and the correct provider key to tell Jellyfin to load that provider.
+You need to run the Entity Framework tool with the correct project to tell EFCore where to store the migrations and the correct provider key to tell Jellyfin to load that provider.
 
 The example is made from the root folder of the project e.g for codespaces `/workspaces/jellyfin`
 
 ```cmd
 dotnet ef migrations add {MIGRATION_NAME} --project "src/Jellyfin.Database/Jellyfin.Database.Providers.Sqlite" --output-dir Migrations -- --migration-provider Jellyfin-SQLite
 ```
+
+The same for PostgreSQL, which is selected with `Jellyfin-PostgreSQL`:
+
+```cmd
+dotnet ef migrations add {MIGRATION_NAME} --project "src/Jellyfin.Database/Jellyfin.Database.Providers.Postgres" --output-dir Migrations -- --migration-provider Jellyfin-PostgreSQL
+```
+
+A PostgreSQL migration that mirrors a SQLite one must carry the same migration id, so that the two histories line up. The baseline migration `20200101000000_InitialCreate` contains hand-written parts (the `jf_uuid_smaller` function and the `min(uuid)` aggregate) in `Migrations/20200101000000_InitialCreate.HandWritten.cs`. If the baseline is ever regenerated, restore the call `CreateHandWrittenObjects(migrationBuilder);` at the end of `Up` and `DropHandWrittenObjects(migrationBuilder);` at the start of `Down`.
 
 If you get the error: `Run "dotnet tool restore" to make the "dotnet-ef" command available.` Run `dotnet restore`.
 
