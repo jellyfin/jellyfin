@@ -12,7 +12,7 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Entities.Security;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Database.Implementations.Locking;
-using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.FullSystemBackup;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
@@ -26,6 +26,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using Npgsql;
 using Xunit;
 using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
 
@@ -36,20 +37,19 @@ namespace Jellyfin.Server.Implementations.Tests.FullSystemBackup;
 /// <see cref="KeyframeData"/> (e.g. malformed <c>KeyframeTicks</c> JSON) does not abort
 /// an otherwise healthy backup. See https://github.com/jellyfin/jellyfin/issues/17216.
 /// </summary>
-public sealed class BackupServiceTests : IDisposable
+public sealed class BackupServiceTests : DatabaseTestFixture
 {
     private const string RoutineInArchiveId = "20250101120000_RoutineInArchive";
     private const string RoutineOnlyInTargetId = "20250101130000_RoutineOnlyInTarget";
     private const string ForeignSchemaMigrationId = "20250101140000_SchemaMigrationOfAnotherEngine";
     private const string RemovedRoutineId = "20250101150000_RoutineThisServerNoLongerHas";
+    private const int SqliteConstraintUnique = 2067;
 
     private static readonly Guid MovieId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid OtherMovieId = Guid.Parse("22222222-2222-2222-2222-222222222222");
     private static readonly Guid RockId = Guid.Parse("33333333-3333-3333-3333-333333333333");
     private static readonly Guid NulRockId = Guid.Parse("44444444-4444-4444-4444-444444444444");
 
-    private readonly SqliteConnection _connection;
-    private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly string _testRoot;
     private readonly string _backupPath;
     private readonly string _configurationDirectoryPath;
@@ -62,18 +62,6 @@ public sealed class BackupServiceTests : IDisposable
 
     public BackupServiceTests()
     {
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
-        _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(_connection, sqliteOptions => sqliteOptions.MigrationsAssembly(typeof(SqliteDatabaseProvider).Assembly))
-            .Options;
-
-        using (var ctx = CreateDbContext())
-        {
-            ctx.Database.Migrate();
-        }
-
         // Use the test assembly's own output directory instead of Path.GetTempPath(). On GitHub-hosted
         // windows-latest runners, the system temp directory lives on the constrained C: drive, which can have
         // less than the 5GiB BackupService requires free, causing spurious failures. AppContext.BaseDirectory
@@ -85,17 +73,18 @@ public sealed class BackupServiceTests : IDisposable
         Directory.CreateDirectory(_configurationDirectoryPath);
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        _connection.Dispose();
-
-        if (Directory.Exists(_testRoot))
+        if (disposing && Directory.Exists(_testRoot))
         {
             Directory.Delete(_testRoot, true);
         }
+
+        base.Dispose(disposing);
     }
 
-    [Fact]
+    // SQLite keeps KeyframeTicks as JSON text, which a damaged row can hold; PostgreSQL stores an array of bigint.
+    [ProviderFact(TestDbProvider.Sqlite)]
     public async Task CreateBackupAsync_WithCorruptKeyframeDataRow_SkipsRowAndCompletesBackup()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -120,7 +109,7 @@ public sealed class BackupServiceTests : IDisposable
             // Simulate a corrupted database row: truncated JSON array for KeyframeTicks,
             // written directly via SQL to bypass EF's normal (well-formed) write path.
             await ctx.Database.ExecuteSqlInterpolatedAsync(
-                $"INSERT INTO KeyframeData (ItemId, TotalDuration, KeyframeTicks) VALUES ({corruptItemId.ToString()}, {5000L}, {"[1,2,3"})",
+                $"INSERT INTO \"KeyframeData\" (\"ItemId\", \"TotalDuration\", \"KeyframeTicks\") VALUES ({corruptItemId}, {5000L}, {"[1,2,3"})",
                 cancellationToken).ConfigureAwait(true);
         }
 
@@ -279,7 +268,20 @@ public sealed class BackupServiceTests : IDisposable
 
         var exception = await Assert.ThrowsAsync<DbUpdateException>(() => backupService.RestoreBackupAsync(manifest.Path)).ConfigureAwait(true);
 
-        Assert.IsType<SqliteException>(exception.InnerException);
+        switch (DbProvider)
+        {
+            case TestDbProvider.Sqlite:
+                var sqliteViolation = Assert.IsType<SqliteException>(exception.InnerException);
+                Assert.Equal(SqliteConstraintUnique, sqliteViolation.SqliteExtendedErrorCode);
+                break;
+            case TestDbProvider.Postgres:
+                var postgresViolation = Assert.IsType<PostgresException>(exception.InnerException);
+                Assert.Equal(PostgresErrorCodes.UniqueViolation, postgresViolation.SqlState);
+                break;
+            default:
+                throw new NotSupportedException($"No unique violation is known for {DbProvider}.");
+        }
+
         Assert.Equal(1, _purgeCalls);
         Assert.Equal(before, await SnapshotAsync(cancellationToken).ConfigureAwait(true));
     }
@@ -696,16 +698,13 @@ public sealed class BackupServiceTests : IDisposable
         var manifest = await CreateBackupService().CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
 
         // What a first start leaves behind: an empty database with the history of the code routines, but no tables.
-        using var seededConnection = new SqliteConnection("Data Source=:memory:");
-        await seededConnection.OpenAsync(cancellationToken).ConfigureAwait(true);
-        var seededOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(seededConnection, sqliteOptions => sqliteOptions.MigrationsAssembly(typeof(SqliteDatabaseProvider).Assembly))
-            .Options;
+        using var seededDatabase = TestDatabaseEnvironment.Backend.CreateEmpty();
+        var seededOptions = seededDatabase.Options;
         await using (var seeded = CreateDbContext(seededOptions))
         {
             await seeded.GetService<IHistoryRepository>().CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(true);
             await seeded.Database.ExecuteSqlInterpolatedAsync(
-                $"INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES ({RoutineOnlyInTargetId}, {"10.11.0"})",
+                $"INSERT INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\") VALUES ({RoutineOnlyInTargetId}, {"10.11.0"})",
                 cancellationToken).ConfigureAwait(true);
         }
 
@@ -819,7 +818,7 @@ public sealed class BackupServiceTests : IDisposable
     {
         await using var ctx = CreateDbContext();
         await ctx.Database.ExecuteSqlInterpolatedAsync(
-            $"INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES ({migrationId}, {"10.11.0"})",
+            $"INSERT INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\") VALUES ({migrationId}, {"10.11.0"})",
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -930,8 +929,8 @@ public sealed class BackupServiceTests : IDisposable
     private BackupService CreateBackupService(DbContextOptions<JellyfinDbContext>? dbOptions = null)
     {
         var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
-        factory.Setup(f => f.CreateDbContext()).Returns(() => CreateDbContext(dbOptions));
-        factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>())).ReturnsAsync(() => CreateDbContext(dbOptions));
+        factory.Setup(f => f.CreateDbContext()).Returns(() => dbOptions is null ? CreateDbContext() : CreateDbContext(dbOptions));
+        factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>())).ReturnsAsync(() => dbOptions is null ? CreateDbContext() : CreateDbContext(dbOptions));
 
         var applicationHost = new Mock<IServerApplicationHost>();
         applicationHost.Setup(a => a.ApplicationVersion).Returns(new Version(10, 11, 0));
@@ -946,7 +945,6 @@ public sealed class BackupServiceTests : IDisposable
         applicationPaths.Setup(a => a.InternalMetadataPath).Returns(Path.Combine(_testRoot, "Metadata"));
         applicationPaths.Setup(a => a.DefaultInternalMetadataPath).Returns(Path.Combine(_testRoot, "MetadataDefault"));
 
-        var sqliteProvider = new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance);
         var jellyfinDatabaseProvider = new Mock<IJellyfinDatabaseProvider>();
         jellyfinDatabaseProvider.Setup(p => p.RunScheduledOptimisation(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
         jellyfinDatabaseProvider
@@ -954,30 +952,35 @@ public sealed class BackupServiceTests : IDisposable
             .Returns((JellyfinDbContext context, IEnumerable<string> tableNames) =>
             {
                 _purgeCalls++;
-                return sqliteProvider.PurgeDatabase(context, tableNames);
+                return DatabaseProvider.PurgeDatabase(context, tableNames);
             });
 
         jellyfinDatabaseProvider
             .Setup(p => p.BeginExplicitIdentityInsertAsync(It.IsAny<JellyfinDbContext>(), It.IsAny<IEntityType>(), It.IsAny<CancellationToken>()))
-            .Returns((JellyfinDbContext context, IEntityType entityType, CancellationToken _) =>
+            .Returns(async (JellyfinDbContext context, IEntityType entityType, CancellationToken cancellationToken) =>
             {
                 _identityScopeEvents.Add($"open {entityType.ClrType.Name}");
                 _identityScopeTypes.Add(entityType);
-                return ValueTask.FromResult<IAsyncDisposable>(new IdentityScope(() =>
+                var scope = await DatabaseProvider.BeginExplicitIdentityInsertAsync(context, entityType, cancellationToken).ConfigureAwait(false);
+                return (IAsyncDisposable)new IdentityScope(async () =>
                 {
                     _identityScopeEvents.Add($"close {entityType.ClrType.Name}");
                     if (context.ChangeTracker.Entries().Any(e => e.State != EntityState.Unchanged))
                     {
                         _unsavedWhenScopeClosed.Add(entityType.ClrType.Name);
                     }
-                }));
+
+                    await scope.DisposeAsync().ConfigureAwait(false);
+                });
             });
         jellyfinDatabaseProvider
             .Setup(p => p.CompleteDatabaseRestoreAsync(It.IsAny<JellyfinDbContext>(), It.IsAny<CancellationToken>()))
-            .Returns(() =>
+            .Returns((JellyfinDbContext context, CancellationToken cancellationToken) =>
             {
                 _identityScopeEvents.Add("complete");
-                return _failCompletion ? Task.FromException(new InvalidOperationException("Completion failed")) : Task.CompletedTask;
+                return _failCompletion
+                    ? Task.FromException(new InvalidOperationException("Completion failed"))
+                    : DatabaseProvider.CompleteDatabaseRestoreAsync(context, cancellationToken);
             });
 
         var applicationLifetime = new Mock<IHostApplicationLifetime>();
@@ -1016,22 +1019,18 @@ public sealed class BackupServiceTests : IDisposable
         };
     }
 
-    private JellyfinDbContext CreateDbContext(DbContextOptions<JellyfinDbContext>? dbOptions = null)
+    private JellyfinDbContext CreateDbContext(DbContextOptions<JellyfinDbContext> dbOptions)
     {
         return new JellyfinDbContext(
-            dbOptions ?? _dbOptions,
+            dbOptions,
             NullLogger<JellyfinDbContext>.Instance,
-            new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
+            DatabaseProvider,
             new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
     }
 
-    private sealed class IdentityScope(Action onDispose) : IAsyncDisposable
+    private sealed class IdentityScope(Func<ValueTask> onDispose) : IAsyncDisposable
     {
-        public ValueTask DisposeAsync()
-        {
-            onDispose();
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask DisposeAsync() => onDispose();
     }
 
     private sealed class RecordingLogger<T> : ILogger<T>

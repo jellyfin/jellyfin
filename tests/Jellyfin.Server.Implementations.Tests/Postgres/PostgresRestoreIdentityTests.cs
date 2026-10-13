@@ -9,13 +9,11 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Entities.Security;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Database.Implementations.Locking;
-using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.FullSystemBackup;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.SystemBackupService;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -151,21 +149,14 @@ public sealed class PostgresRestoreIdentityTests : DatabaseTestFixture
 
     private async Task<string> CreateSqliteArchiveAsync(bool seed)
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync(TestContext.Current.CancellationToken);
-        var options = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(connection, sqliteOptions => sqliteOptions.MigrationsAssembly(typeof(SqliteDatabaseProvider).Assembly))
-            .Options;
-        var sqliteProvider = new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance);
-        JellyfinDbContext Create() => new(options, NullLogger<JellyfinDbContext>.Instance, sqliteProvider, new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
+        using var sqlite = SqliteTestBackend.Instance.Create(TestSchemaSource.Migrations, []);
+        var sqliteProvider = sqlite.CreateProvider();
+        JellyfinDbContext Create() => new(sqlite.Options, NullLogger<JellyfinDbContext>.Instance, sqliteProvider, new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
 
-        await using (var context = Create())
+        if (seed)
         {
-            await context.Database.MigrateAsync(TestContext.Current.CancellationToken);
-            if (seed)
-            {
-                await SeedAsync(context);
-            }
+            await using var context = Create();
+            await SeedAsync(context);
         }
 
         var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();

@@ -10,4 +10,10 @@ public interface ITestDatabaseBackend
     Version ServerVersion { get; }
 
     TestDatabase Create(TestSchemaSource source, IInterceptor[] interceptors);
+
+    /// <summary>
+    /// Creates a database without any schema.
+    /// </summary>
+    /// <returns>The database.</returns>
+    TestDatabase CreateEmpty();
 }

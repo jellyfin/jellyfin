@@ -57,6 +57,12 @@ public sealed class SqliteTestBackend : ITestDatabaseBackend
         return new TestDatabase(CreateOptions(connection, interceptors), CreateProvider, connection.Dispose);
     }
 
+    public TestDatabase CreateEmpty()
+    {
+        var connection = OpenInMemory();
+        return new TestDatabase(CreateOptions(connection, []), CreateProvider, connection.Dispose);
+    }
+
     private static IJellyfinDatabaseProvider CreateProvider()
     {
         return new SqliteDatabaseProvider(_applicationPaths, NullLogger<SqliteDatabaseProvider>.Instance);
