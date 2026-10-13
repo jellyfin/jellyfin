@@ -1,10 +1,7 @@
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Database.Implementations;
-using Jellyfin.Database.Implementations.Locking;
-using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Server.Implementations.Tests.Item;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
@@ -15,38 +12,18 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Cryptography;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Users
 {
-    public sealed class UserManagerNormalizedUsernameTests : IDisposable
+    public sealed class UserManagerNormalizedUsernameTests : JellyfinDbTestFixture
     {
-        private readonly SqliteConnection _connection;
-        private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
         private readonly UserManager _userManager;
 
         public UserManagerNormalizedUsernameTests()
         {
-            _connection = new SqliteConnection("Data Source=:memory:");
-            _connection.Open();
-
-            _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-                .UseSqlite(_connection)
-                .Options;
-
-            // Create the schema
-            using var ctx = CreateDbContext();
-            ctx.Database.EnsureCreated();
-
-            var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
-            factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
-            factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(CreateDbContext);
-
             var cryptoProvider = new Mock<ICryptoProvider>();
             var configManager = new Mock<IServerConfigurationManager>();
             var appPaths = new Mock<IServerApplicationPaths>();
@@ -64,7 +41,7 @@ namespace Jellyfin.Server.Implementations.Tests.Users
                 appHost.Object);
 
             _userManager = new UserManager(
-                factory.Object,
+                CreateDbContextFactory(),
                 new NoopEventManager(),
                 new Mock<INetworkManager>().Object,
                 appHost.Object,
@@ -75,19 +52,14 @@ namespace Jellyfin.Server.Implementations.Tests.Users
                 new IAuthenticationProvider[] { defaultAuthProvider, invalidAuthProvider });
         }
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            _userManager.Dispose();
-            _connection.Dispose();
-        }
+            if (disposing)
+            {
+                _userManager.Dispose();
+            }
 
-        private JellyfinDbContext CreateDbContext()
-        {
-            return new JellyfinDbContext(
-                _dbOptions,
-                NullLogger<JellyfinDbContext>.Instance,
-                new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
-                new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
+            base.Dispose(disposing);
         }
 
         // ----- GetUserByName tests -----

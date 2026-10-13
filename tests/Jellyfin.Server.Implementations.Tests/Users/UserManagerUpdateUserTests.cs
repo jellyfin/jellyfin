@@ -5,11 +5,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data;
-using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
-using Jellyfin.Database.Implementations.Locking;
-using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Server.Implementations.Tests.Item;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
@@ -19,7 +17,6 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Users;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -27,30 +24,12 @@ using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Users;
 
-public sealed class UserManagerUpdateUserTests : IDisposable
+public sealed class UserManagerUpdateUserTests : JellyfinDbTestFixture
 {
-    private readonly SqliteConnection _connection;
-    private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly UserManager _userManager;
 
     public UserManagerUpdateUserTests()
     {
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
-        _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-
-        // Create the schema
-        using var ctx = CreateDbContext();
-        ctx.Database.EnsureCreated();
-
-        var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
-        factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
-        factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(CreateDbContext);
-
         var cryptoProvider = new Mock<ICryptoProvider>();
         var configManager = new Mock<IServerConfigurationManager>();
         var appPaths = new Mock<IServerApplicationPaths>();
@@ -68,7 +47,7 @@ public sealed class UserManagerUpdateUserTests : IDisposable
             appHost.Object);
 
         _userManager = new UserManager(
-            factory.Object,
+            CreateDbContextFactory(),
             new NoopEventManager(),
             new Mock<INetworkManager>().Object,
             appHost.Object,
@@ -79,10 +58,14 @@ public sealed class UserManagerUpdateUserTests : IDisposable
             [defaultAuthProvider, invalidAuthProvider]);
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        _userManager.Dispose();
-        _connection.Dispose();
+        if (disposing)
+        {
+            _userManager.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 
     [Fact]
@@ -161,15 +144,6 @@ public sealed class UserManagerUpdateUserTests : IDisposable
 
         await using var context = CreateDbContext();
         Assert.Equal(reloaded.Permissions.Count, await context.Permissions.CountAsync(TestContext.Current.CancellationToken));
-    }
-
-    private JellyfinDbContext CreateDbContext()
-    {
-        return new JellyfinDbContext(
-            _dbOptions,
-            NullLogger<JellyfinDbContext>.Instance,
-            new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
-            new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
     }
 
     /// <summary>
