@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using Jellyfin.Database.Implementations;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -34,7 +36,7 @@ public sealed class SqliteFileTestBackend : ITestDatabaseBackend, IDisposable
 
     public TestDatabase Create(TestSchemaSource source, IInterceptor[] interceptors, bool fresh = false)
     {
-        return _pool.Lease(source, interceptors);
+        return _pool.Lease(source, interceptors, fresh);
     }
 
     public TestDatabase CreateEmpty()
@@ -65,6 +67,27 @@ public sealed class SqliteFileTestBackend : ITestDatabaseBackend, IDisposable
         }
 
         public IJellyfinDatabaseProvider CreateProvider() => SqliteTestBackend.CreateProvider();
+
+        public string GetSchemaFingerprint(string database)
+        {
+            using var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = GetPath(database), Mode = SqliteOpenMode.ReadWrite, Pooling = false }.ConnectionString);
+            connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT type, name, tbl_name, sql FROM sqlite_master ORDER BY type, name";
+            using var reader = command.ExecuteReader();
+            var description = new StringBuilder();
+            while (reader.Read())
+            {
+                for (var column = 0; column < reader.FieldCount; column++)
+                {
+                    description.Append(reader.IsDBNull(column) ? string.Empty : reader.GetString(column)).Append('\u001f');
+                }
+
+                description.Append('\u001e');
+            }
+
+            return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(description.ToString())));
+        }
 
         public void DropDatabase(string database)
         {
