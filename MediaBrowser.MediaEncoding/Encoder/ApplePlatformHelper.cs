@@ -116,7 +116,7 @@ public static partial class ApplePlatformHelper
         }
         catch (NotSupportedException e)
         {
-            logger.LogError("Error getting Mac model: {Message}", e.Message);
+            logger.LogError(e, "Error getting Mac model");
         }
 
         var isAppleSilicon = RuntimeInformation.OSArchitecture.Equals(Architecture.Arm64);
