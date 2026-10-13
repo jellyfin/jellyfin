@@ -292,7 +292,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             if (OperatingSystem.IsMacOS())
             {
-                return CanEncode(validator, "videotoolbox", "h264_videotoolbox", string.Empty)
+                return CanEncode(validator, "h264_videotoolbox", string.Empty)
                     ? HardwareAccelerationType.videotoolbox
                     : HardwareAccelerationType.none;
             }
@@ -302,26 +302,33 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return HardwareAccelerationType.none;
             }
 
-            if (CanEncode(validator, "cuda", "h264_nvenc", string.Empty))
+            if (CanEncode(validator, "h264_nvenc", string.Empty))
             {
                 return HardwareAccelerationType.nvenc;
             }
 
-            if (OperatingSystem.IsWindows())
-            {
-                if (CanEncode(validator, "qsv", "h264_qsv", "-init_hw_device d3d11va=dx11:,vendor=0x8086 -init_hw_device qsv=qs@dx11"))
-                {
-                    return HardwareAccelerationType.qsv;
-                }
+            return OperatingSystem.IsWindows()
+                ? GetRecommendedWindowsHardwareAccelerationType(validator)
+                : GetRecommendedLinuxHardwareAccelerationType(validator, vaapiDevice);
+        }
 
-                return CanEncode(validator, "d3d11va", "h264_amf", "-init_hw_device d3d11va=dx11:,vendor=0x1002")
-                    ? HardwareAccelerationType.amf
-                    : HardwareAccelerationType.none;
+        private HardwareAccelerationType GetRecommendedWindowsHardwareAccelerationType(EncoderValidator validator)
+        {
+            if (CanEncode(validator, "h264_qsv", "-init_hw_device d3d11va=dx11:,vendor=0x8086 -init_hw_device qsv=qs@dx11"))
+            {
+                return HardwareAccelerationType.qsv;
             }
 
+            return CanEncode(validator, "h264_amf", "-init_hw_device d3d11va=dx11:,vendor=0x1002")
+                ? HardwareAccelerationType.amf
+                : HardwareAccelerationType.none;
+        }
+
+        private HardwareAccelerationType GetRecommendedLinuxHardwareAccelerationType(EncoderValidator validator, string vaapiDevice)
+        {
             // QSV needs the iHD driver, which supports Broadwell and newer Intel GPUs
             var intelDevice = _ffmpegVersion >= _minFFmpegVaapiDeviceVendorId ? "vendor_id=0x8086" : "kernel_driver=i915";
-            if (CanEncode(validator, "qsv", "h264_qsv", $"-init_hw_device vaapi=va:,{intelDevice},driver=iHD -init_hw_device qsv=qs@va"))
+            if (CanEncode(validator, "h264_qsv", $"-init_hw_device vaapi=va:,{intelDevice},driver=iHD -init_hw_device qsv=qs@va"))
             {
                 return HardwareAccelerationType.qsv;
             }
@@ -331,21 +338,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 && (validator.CheckVaapiDeviceByDriverName("Intel iHD driver", vaapiDevice)
                     || validator.CheckVaapiDeviceByDriverName("Intel i965 driver", vaapiDevice)
                     || validator.CheckVaapiDeviceByDriverName("Mesa Gallium driver", vaapiDevice))
-                && CanEncode(validator, "vaapi", "h264_vaapi", $"-init_hw_device vaapi=va:{vaapiDevice} -filter_hw_device va", "-vf format=nv12,hwupload"))
+                && CanEncode(validator, "h264_vaapi", $"-init_hw_device vaapi=va:{vaapiDevice} -filter_hw_device va", "-vf format=nv12,hwupload"))
             {
                 return HardwareAccelerationType.vaapi;
             }
 
-            return CanEncode(validator, "rkmpp", "h264_rkmpp", string.Empty)
+            return CanEncode(validator, "h264_rkmpp", string.Empty)
                 ? HardwareAccelerationType.rkmpp
                 : HardwareAccelerationType.none;
         }
 
-        private bool CanEncode(EncoderValidator validator, string hwaccel, string encoder, string deviceArgs, string filterArgs = "")
+        private bool CanEncode(EncoderValidator validator, string encoder, string deviceArgs, string filterArgs = "")
         {
-            return SupportsHwaccel(hwaccel)
-                && SupportsEncoder(encoder)
-                && validator.CheckHardwareEncoder(encoder, deviceArgs, filterArgs);
+            return SupportsEncoder(encoder) && validator.CheckHardwareEncoder(encoder, deviceArgs, filterArgs);
         }
 
         /// <summary>
