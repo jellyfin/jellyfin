@@ -149,7 +149,9 @@ public sealed class PostgresRestoreIdentityTests : DatabaseTestFixture
 
     private async Task<string> CreateSqliteArchiveAsync(bool seed)
     {
+#pragma warning disable RS0030 // Do not use banned APIs: The archive to restore has to come from SQLite whichever provider the tests run on.
         using var sqlite = SqliteTestBackend.Instance.Create(TestSchemaSource.Migrations, []);
+#pragma warning restore RS0030
         var sqliteProvider = sqlite.CreateProvider();
         JellyfinDbContext Create() => new(sqlite.Options, NullLogger<JellyfinDbContext>.Instance, sqliteProvider, new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
 

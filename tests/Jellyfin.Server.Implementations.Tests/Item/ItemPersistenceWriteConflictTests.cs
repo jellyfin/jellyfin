@@ -177,10 +177,12 @@ public sealed class ItemPersistenceWriteConflictTests : IDisposable
     }
 
     private DbContextOptions<JellyfinDbContext> CreateOptions(params IInterceptor[] interceptors)
+#pragma warning disable RS0030 // Do not use banned APIs: The race needs a database file that a second connection can write to.
         => new DbContextOptionsBuilder<JellyfinDbContext>()
             .UseSqlite(_connectionString)
             .AddInterceptors(interceptors)
             .Options;
+#pragma warning restore RS0030
 
     private JellyfinDbContext CreateDbContext(DbContextOptions<JellyfinDbContext> options) => new(
         options,
@@ -286,7 +288,9 @@ public sealed class ItemPersistenceWriteConflictTests : IDisposable
                 return;
             }
 
+#pragma warning disable RS0030 // Do not use banned APIs: The winner is committed on a connection of its own.
             using var connection = new SqliteConnection(connectionString);
+#pragma warning restore RS0030
             connection.Open();
             _insert(connection, null);
             WinnerCommitted = true;

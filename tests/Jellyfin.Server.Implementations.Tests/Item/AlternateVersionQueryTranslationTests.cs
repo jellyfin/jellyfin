@@ -1,5 +1,3 @@
-#pragma warning disable RS0030 // Do not use banned APIs: Guid == is required inside EF expression trees to mirror the production query shapes.
-
 using System;
 using System.Linq;
 using Jellyfin.Database.Implementations;
@@ -32,14 +30,17 @@ public sealed class AlternateVersionQueryTranslationTests : JellyfinDbTestFixtur
 
         using (var ctx = CreateDbContext())
         {
+#pragma warning disable RS0030 // Do not use banned APIs: Guid == is required inside EF expression trees to mirror the production query shapes.
             var inProgress = ctx.UserData
                 .Where(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0);
+#pragma warning restore RS0030
 
             // Scope to the seeded items; the schema also seeds a placeholder row.
             var seededIds = new[] { primaryId, versionId, otherId };
 
             // Mirrors the resumable=true filter in BaseItemRepository.TranslateQuery.
             var inProgressIds = inProgress.Select(ud => ud.ItemId);
+#pragma warning disable RS0030 // Do not use banned APIs: Guid == is required inside EF expression trees to mirror the production query shapes.
             var resumable = ctx.BaseItems
                 .Where(e => seededIds.Contains(e.Id))
                 .Where(e => inProgressIds.Contains(e.Id))
@@ -55,17 +56,20 @@ public sealed class AlternateVersionQueryTranslationTests : JellyfinDbTestFixtur
                             && s.Id.CompareTo(e.Id) < 0)))
                 .Select(e => e.Id)
                 .ToList();
+#pragma warning restore RS0030
 
             Assert.Equal([versionId], resumable);
 
             // The not-resumable direction keeps primaries only.
             var resumableMovieIds = inProgress
                 .Join(ctx.BaseItems, ud => ud.ItemId, bi => bi.Id, (ud, bi) => bi.PrimaryVersionId ?? bi.Id);
+#pragma warning disable RS0030 // Do not use banned APIs: Guid == is required inside EF expression trees to mirror the production query shapes.
             var notResumable = ctx.BaseItems
                 .Where(e => seededIds.Contains(e.Id) && e.PrimaryVersionId == null)
                 .Where(e => !resumableMovieIds.Contains(e.Id))
                 .Select(e => e.Id)
                 .ToList();
+#pragma warning restore RS0030
 
             Assert.Equal([otherId], notResumable);
         }
@@ -83,8 +87,10 @@ public sealed class AlternateVersionQueryTranslationTests : JellyfinDbTestFixtur
 
         using (var ctx = CreateDbContext())
         {
+#pragma warning disable RS0030 // Do not use banned APIs: Guid == is required inside EF expression trees to mirror the production query shapes.
             var inProgress = ctx.UserData
                 .Where(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0);
+#pragma warning restore RS0030
 
             var seededIds = new[] { primaryId, versionAId, versionBId };
             var inProgressIds = inProgress.Select(ud => ud.ItemId);
@@ -92,6 +98,7 @@ public sealed class AlternateVersionQueryTranslationTests : JellyfinDbTestFixtur
             // The exact production dedup, including the Guid.CompareTo tie-break. This asserts the
             // expression translates on SQLite and that two versions sharing an identical LastPlayedDate
             // collapse to a single row instead of double-listing the item in Continue Watching.
+#pragma warning disable RS0030 // Do not use banned APIs: Guid == is required inside EF expression trees to mirror the production query shapes.
             var resumable = ctx.BaseItems
                 .Where(e => seededIds.Contains(e.Id))
                 .Where(e => inProgressIds.Contains(e.Id))
@@ -107,6 +114,7 @@ public sealed class AlternateVersionQueryTranslationTests : JellyfinDbTestFixtur
                             && s.Id.CompareTo(e.Id) < 0)))
                 .Select(e => e.Id)
                 .ToList();
+#pragma warning restore RS0030
 
             var survivor = Assert.Single(resumable);
             Assert.Contains(survivor, new[] { versionAId, versionBId });
@@ -129,6 +137,7 @@ public sealed class AlternateVersionQueryTranslationTests : JellyfinDbTestFixtur
             var seededIds = new[] { primaryId, otherId };
 
             // Mirrors the DatePlayed mapping in OrderMapper.
+#pragma warning disable RS0030 // Do not use banned APIs: Guid == is required inside EF expression trees to mirror the production query shapes.
             var ordered = ctx.BaseItems
                 .Where(e => seededIds.Contains(e.Id) && e.PrimaryVersionId == null)
                 .OrderByDescending(e => ctx.UserData
@@ -136,6 +145,7 @@ public sealed class AlternateVersionQueryTranslationTests : JellyfinDbTestFixtur
                     .Max(f => f.LastPlayedDate))
                 .Select(e => e.Id)
                 .ToList();
+#pragma warning restore RS0030
 
             Assert.Equal(seededIds.Order(), ordered.Order());
 

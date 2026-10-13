@@ -26,7 +26,9 @@ public sealed class RecordingDatabaseProvider : IJellyfinDatabaseProvider
     public void Initialise(DbContextOptionsBuilder options, DatabaseConfigurationOptions databaseConfiguration)
     {
         _received.Add(databaseConfiguration);
+#pragma warning disable RS0030 // Do not use banned APIs: The provider only has to configure some database; nothing is ever opened.
         options.UseSqlite("Data Source=:memory:");
+#pragma warning restore RS0030
     }
 
     public void OnModelCreating(ModelBuilder modelBuilder)

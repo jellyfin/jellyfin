@@ -19,4 +19,9 @@
     <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" PrivateAssets="All" />
   </ItemGroup>
 
+  <!-- The harness backends are the one place that opens a database directly -->
+  <ItemGroup Condition=" '$(MSBuildProjectName)' != 'Jellyfin.Database.Testing' ">
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.Tests.txt" />
+  </ItemGroup>
+
 </Project>

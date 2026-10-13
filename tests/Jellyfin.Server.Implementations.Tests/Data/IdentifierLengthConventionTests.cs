@@ -598,9 +598,11 @@ public class IdentifierLengthConventionTests
     private static IModel GetModel<TContext>()
         where TContext : JellyfinDbContext
     {
+#pragma warning disable RS0030 // Do not use banned APIs: The model is built without opening a database.
         var options = new DbContextOptionsBuilder<JellyfinDbContext>()
             .UseSqlite("Data Source=:memory:")
             .Options;
+#pragma warning restore RS0030
         var provider = new SqliteDatabaseProvider(new Mock<IApplicationPaths>().Object, NullLogger<SqliteDatabaseProvider>.Instance);
         var locking = new NoLockBehavior(NullLogger<NoLockBehavior>.Instance);
         using var context = (TContext)Activator.CreateInstance(typeof(TContext), options, NullLogger<JellyfinDbContext>.Instance, provider, locking)!;

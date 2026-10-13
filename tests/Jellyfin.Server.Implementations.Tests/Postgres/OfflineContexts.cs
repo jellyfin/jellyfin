@@ -38,8 +38,10 @@ internal static class OfflineContexts
     public static JellyfinDbContext Sqlite()
     {
         var provider = new SqliteDatabaseProvider(new Mock<IApplicationPaths>().Object, NullLogger<SqliteDatabaseProvider>.Instance);
+#pragma warning disable RS0030 // Do not use banned APIs: The context is only inspected offline and never opens a database.
         var builder = new DbContextOptionsBuilder<JellyfinDbContext>()
             .UseSqlite("Data Source=:memory:", sqlite => sqlite.MigrationsAssembly(typeof(SqliteDatabaseProvider).Assembly));
+#pragma warning restore RS0030
 
         return new JellyfinDbContext(builder.Options, NullLogger<JellyfinDbContext>.Instance, provider, new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
     }
