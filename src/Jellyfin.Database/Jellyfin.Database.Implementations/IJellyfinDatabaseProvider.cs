@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations.DbConfiguration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Jellyfin.Database.Implementations;
 
@@ -105,4 +106,28 @@ public interface IJellyfinDatabaseProvider
     /// <param name="exception">The exception thrown by the failed write.</param>
     /// <returns><c>true</c> if repeating the write can succeed; otherwise, <c>false</c>.</returns>
     bool IsRetryableWriteConflict(Exception exception) => false;
+
+    /// <summary>
+    /// Prepares the database for inserting rows of <paramref name="entityType"/> with explicit values in its
+    /// generated key columns, as a restore does. Engines that refuse such values by default can allow them here, for
+    /// example SQL Server with <c>SET IDENTITY_INSERT</c>, which applies to a single table of a session at a time.
+    /// The caller inserts the rows of one table, saves them, and then disposes the returned object before it begins
+    /// the next table. The default does nothing.
+    /// </summary>
+    /// <param name="dbContext">The context that inserts the rows.</param>
+    /// <param name="entityType">The entity type whose rows are inserted.</param>
+    /// <param name="cancellationToken">The token to abort the operation.</param>
+    /// <returns>An object that ends the preparation when disposed. It is never <see langword="null"/>.</returns>
+    ValueTask<IAsyncDisposable> BeginExplicitIdentityInsertAsync(JellyfinDbContext dbContext, IEntityType entityType, CancellationToken cancellationToken)
+        => ValueTask.FromResult<IAsyncDisposable>(NoOpAsyncDisposable.Instance);
+
+    /// <summary>
+    /// Brings the database into a usable state after a restore inserted rows with explicit generated key values, for
+    /// example by moving the sequences of an engine behind the highest restored value. It runs inside the restore
+    /// transaction, after all tables are inserted. The default does nothing.
+    /// </summary>
+    /// <param name="dbContext">The context of the restore.</param>
+    /// <param name="cancellationToken">The token to abort the operation.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    Task CompleteDatabaseRestoreAsync(JellyfinDbContext dbContext, CancellationToken cancellationToken) => Task.CompletedTask;
 }

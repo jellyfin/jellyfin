@@ -20,6 +20,7 @@ using MediaBrowser.Controller.SystemBackupService;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -46,7 +47,11 @@ public sealed class BackupServiceTests : IDisposable
     private readonly string _testRoot;
     private readonly string _backupPath;
     private readonly string _configurationDirectoryPath;
+    private readonly List<string> _identityScopeEvents = [];
+    private readonly List<IEntityType> _identityScopeTypes = [];
+    private readonly List<string> _unsavedWhenScopeClosed = [];
     private int _purgeCalls;
+    private bool _failCompletion;
 
     public BackupServiceTests()
     {
@@ -315,6 +320,80 @@ public sealed class BackupServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task RestoreBackupAsync_OpensAndClosesAnIdentityScopePerTableBeforeFinishing()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        Assert.Contains(typeof(User), _identityScopeTypes.Select(e => e.ClrType));
+        Assert.Contains(typeof(Permission), _identityScopeTypes.Select(e => e.ClrType));
+        Assert.Equal(_identityScopeTypes.Count, _identityScopeTypes.Distinct().Count());
+        var expected = _identityScopeTypes.SelectMany(e => new[] { $"open {e.ClrType.Name}", $"close {e.ClrType.Name}" }).Append("complete");
+        Assert.Equal(expected, _identityScopeEvents);
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_SavesEachTableBeforeClosingItsIdentityScope()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        Assert.NotEmpty(_identityScopeEvents);
+        Assert.Empty(_unsavedWhenScopeClosed);
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_RestoresTablesBeforeTheTablesThatReferenceThem()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        var references = _identityScopeTypes
+            .SelectMany(dependent => dependent.GetForeignKeys()
+                .Select(key => key.PrincipalEntityType)
+                .Where(principal => principal != dependent && _identityScopeTypes.Contains(principal))
+                .Select(principal => (Dependent: dependent, Principal: principal)))
+            .ToList();
+        Assert.NotEmpty(references);
+        Assert.All(references, e => Assert.True(
+            _identityScopeTypes.IndexOf(e.Principal) < _identityScopeTypes.IndexOf(e.Dependent),
+            $"{e.Principal.ClrType.Name} is restored after {e.Dependent.ClrType.Name}, which refers to it"));
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_WhenFinishingFails_RollsBackThePurge()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await using (var ctx = CreateDbContext())
+        {
+            ctx.BaseItems.Add(CreateMovieEntity(Guid.NewGuid(), "Added After Backup"));
+            await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(true);
+        }
+
+        var before = await SnapshotAsync(cancellationToken).ConfigureAwait(true);
+        _failCompletion = true;
+
+        await Assert.ThrowsAnyAsync<Exception>(() => backupService.RestoreBackupAsync(manifest.Path)).ConfigureAwait(true);
+
+        Assert.Equal(before, await SnapshotAsync(cancellationToken).ConfigureAwait(true));
+    }
+
+    [Fact]
     public async Task RestoreBackupAsync_WithHistoryFromAnotherSchema_LeavesNoPendingMigrations()
     {
         var (_, pending) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
@@ -561,6 +640,29 @@ public sealed class BackupServiceTests : IDisposable
                 return sqliteProvider.PurgeDatabase(context, tableNames);
             });
 
+        jellyfinDatabaseProvider
+            .Setup(p => p.BeginExplicitIdentityInsertAsync(It.IsAny<JellyfinDbContext>(), It.IsAny<IEntityType>(), It.IsAny<CancellationToken>()))
+            .Returns((JellyfinDbContext context, IEntityType entityType, CancellationToken _) =>
+            {
+                _identityScopeEvents.Add($"open {entityType.ClrType.Name}");
+                _identityScopeTypes.Add(entityType);
+                return ValueTask.FromResult<IAsyncDisposable>(new IdentityScope(() =>
+                {
+                    _identityScopeEvents.Add($"close {entityType.ClrType.Name}");
+                    if (context.ChangeTracker.Entries().Any(e => e.State != EntityState.Unchanged))
+                    {
+                        _unsavedWhenScopeClosed.Add(entityType.ClrType.Name);
+                    }
+                }));
+            });
+        jellyfinDatabaseProvider
+            .Setup(p => p.CompleteDatabaseRestoreAsync(It.IsAny<JellyfinDbContext>(), It.IsAny<CancellationToken>()))
+            .Returns(() =>
+            {
+                _identityScopeEvents.Add("complete");
+                return _failCompletion ? Task.FromException(new InvalidOperationException("Completion failed")) : Task.CompletedTask;
+            });
+
         var applicationLifetime = new Mock<IHostApplicationLifetime>();
 
         var libraryManager = new Mock<ILibraryManager>();
@@ -604,5 +706,14 @@ public sealed class BackupServiceTests : IDisposable
             NullLogger<JellyfinDbContext>.Instance,
             new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
             new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
+    }
+
+    private sealed class IdentityScope(Action onDispose) : IAsyncDisposable
+    {
+        public ValueTask DisposeAsync()
+        {
+            onDispose();
+            return ValueTask.CompletedTask;
+        }
     }
 }

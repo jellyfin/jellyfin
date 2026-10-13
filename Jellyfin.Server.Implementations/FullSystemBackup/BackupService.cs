@@ -246,40 +246,48 @@ public class BackupService : IBackupService
                         await _jellyfinDatabaseProvider.PurgeDatabase(dbContext, tableNames).ConfigureAwait(false);
                         _logger.LogInformation("Database Purged");
 
-                        foreach (var entityType in entityTypes)
+                        // Each table is saved on its own, so the tables its keys refer to have to be saved before it.
+                        foreach (var entitySet in OrderByForeignKeys(entityTypes.Select(e => e.Type), dbContext.Model))
                         {
-                            _logger.LogInformation("Read backup of {Table}", entityType.Type.Name);
+                            _logger.LogInformation("Read backup of {Table}", entitySet.Name);
 
-                            var zipEntry = zipArchive.GetEntry(NormalizePathSeparator(Path.Combine("Database", $"{entityType.Type.Name}.json")));
+                            var zipEntry = zipArchive.GetEntry(NormalizePathSeparator(Path.Combine("Database", $"{entitySet.Name}.json")));
                             if (zipEntry is null)
                             {
-                                _logger.LogInformation("No backup of expected table {Table} is present in backup, continuing anyway", entityType.Type.Name);
+                                _logger.LogInformation("No backup of expected table {Table} is present in backup, continuing anyway", entitySet.Name);
                                 continue;
                             }
 
-                            _logger.LogInformation("Restore backup of {Table}", entityType.Type.Name);
+                            _logger.LogInformation("Restore backup of {Table}", entitySet.Name);
                             var records = 0;
-                            var entityClrType = entityType.Type.PropertyType.GetGenericArguments()[0];
-                            var generatedKeys = GetGeneratedKeys(dbContext.Model.FindEntityType(entityClrType)!);
-                            await foreach (var (source, entity) in ReadEntitiesAsync(zipEntry, entityClrType).ConfigureAwait(false))
+                            var entityClrType = entitySet.PropertyType.GetGenericArguments()[0];
+                            var modelType = dbContext.Model.FindEntityType(entityClrType)!;
+                            var generatedKeys = GetGeneratedKeys(modelType);
+                            var identityScope = await _jellyfinDatabaseProvider.BeginExplicitIdentityInsertAsync(dbContext, modelType, CancellationToken.None).ConfigureAwait(false);
+                            await using (identityScope.ConfigureAwait(false))
                             {
-                                try
+                                await foreach (var (source, entity) in ReadEntitiesAsync(zipEntry, entityClrType).ConfigureAwait(false))
                                 {
-                                    records++;
-                                    RestoreGeneratedKeys(dbContext, entity, ReadGeneratedKeys(source, generatedKeys));
-                                    dbContext.Add(entity);
+                                    try
+                                    {
+                                        records++;
+                                        RestoreGeneratedKeys(dbContext, entity, ReadGeneratedKeys(source, generatedKeys));
+                                        dbContext.Add(entity);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError(ex, "Could not store entity {Entity}, continuing anyway", entity);
+                                    }
                                 }
-                                catch (Exception ex)
-                                {
-                                    _logger.LogError(ex, "Could not store entity {Entity}, continuing anyway", entity);
-                                }
-                            }
 
-                            _logger.LogInformation("Prepared to restore {Number} entries for {Table}", records, entityType.Type.Name);
+                                _logger.LogInformation("Prepared to restore {Number} entries for {Table}", records, entitySet.Name);
+                                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                                dbContext.ChangeTracker.Clear();
+                            }
                         }
 
-                        _logger.LogInformation("Try restore Database");
-                        await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                        _logger.LogInformation("Finish restoring Database");
+                        await _jellyfinDatabaseProvider.CompleteDatabaseRestoreAsync(dbContext, CancellationToken.None).ConfigureAwait(false);
                         await transaction.CommitAsync().ConfigureAwait(false);
                     }
 
@@ -289,6 +297,30 @@ public class BackupService : IBackupService
 
             _logger.LogInformation("Restored Jellyfin system from {Date}", manifest.DateCreated);
         }
+    }
+
+    private static List<System.Reflection.PropertyInfo> OrderByForeignKeys(IEnumerable<System.Reflection.PropertyInfo> sets, IModel model)
+    {
+        var remaining = sets
+            .Select(e => (Set: e, Type: model.FindEntityType(e.PropertyType.GetGenericArguments()[0])!))
+            .ToList();
+        var ordered = new List<System.Reflection.PropertyInfo>();
+        while (remaining.Count > 0)
+        {
+            var ready = remaining
+                .Where(e => e.Type.GetForeignKeys().All(key => key.PrincipalEntityType == e.Type || remaining.All(other => other.Type != key.PrincipalEntityType)))
+                .ToList();
+            if (ready.Count == 0)
+            {
+                // Tables that refer to each other cannot be put in an order, so they stay as they are.
+                ready = remaining.ToList();
+            }
+
+            ordered.AddRange(ready.Select(e => e.Set));
+            remaining.RemoveAll(e => ready.Contains(e));
+        }
+
+        return ordered;
     }
 
     // The serializer cannot set a property with a non-public setter, which is how most generated ids are declared.
