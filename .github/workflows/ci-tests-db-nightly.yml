@@ -1,0 +1,24 @@
+name: Database Tests (Nightly)
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  run-tests-db:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci-tests-db.yml
+    with:
+      matrix: |
+        [
+          {
+            "name": "Postgres newest",
+            "provider": "Postgres",
+            "version": "18",
+            "image": "postgres:18.6-trixie@sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336",
+            "imageVariable": "JELLYFIN_TEST_POSTGRES_IMAGE",
+            "settings": "postgres.runsettings",
+            "requiredTests": "DatabaseRestoredFromPgDump_CanBeGroupedByPresentationKey CreateClient_SelectedProvider_RunsTheServerOnThatProvider"
+          }
+        ]
