@@ -260,17 +260,19 @@ public sealed partial class BaseItemRepository
         if (!string.IsNullOrEmpty(filter.SearchTerm))
         {
             var cleanedSearchTerm = filter.SearchTerm.GetCleanValue();
-            var originalSearchTerm = filter.SearchTerm;
-            if (SearchWildcardTerms.Any(f => cleanedSearchTerm.Contains(f)))
+            var originalTitlePattern = MatchNormalizer.ContainsCleanOriginalTitlePattern(filter.SearchTerm);
+            if (originalTitlePattern is null)
+            {
+                baseQuery = baseQuery.Where(e => false);
+            }
+            else if (SearchWildcardTerms.Any(f => cleanedSearchTerm.Contains(f)))
             {
                 cleanedSearchTerm = $"%{cleanedSearchTerm.Trim('%')}%";
-                var likeSearchTerm = LikePatterns.ContainsIgnoreAsciiCase(originalSearchTerm.Trim('%'));
-                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!, cleanedSearchTerm, LikePatterns.Escape) || (e.OriginalTitle != null && JellyfinDbFunctions.LikeIgnoreAsciiCase(e.OriginalTitle, likeSearchTerm)));
+                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!, cleanedSearchTerm, LikePatterns.Escape) || EF.Functions.Like(e.CleanOriginalTitle, originalTitlePattern, LikePatterns.Escape));
             }
             else
             {
-                var likeSearchTerm = LikePatterns.ContainsIgnoreAsciiCase(originalSearchTerm);
-                baseQuery = baseQuery.Where(e => e.CleanName!.Contains(cleanedSearchTerm) || (e.OriginalTitle != null && JellyfinDbFunctions.LikeIgnoreAsciiCase(e.OriginalTitle, likeSearchTerm)));
+                baseQuery = baseQuery.Where(e => e.CleanName!.Contains(cleanedSearchTerm) || EF.Functions.Like(e.CleanOriginalTitle, originalTitlePattern, LikePatterns.Escape));
             }
         }
 
@@ -483,27 +485,26 @@ public sealed partial class BaseItemRepository
         var nameContains = filter.NameContains;
         if (!string.IsNullOrWhiteSpace(nameContains))
         {
+            var originalTitlePattern = MatchNormalizer.ContainsCleanOriginalTitlePattern(nameContains);
             if (SearchWildcardTerms.Any(f => nameContains.Contains(f)))
             {
                 var likeNameContains = LikePatterns.ContainsIgnoreAsciiCase(nameContains.Trim('%'));
-                baseQuery = baseQuery.Where(e =>
-                    EF.Functions.Like(e.CleanName, likeNameContains, LikePatterns.Escape)
-                    || JellyfinDbFunctions.LikeIgnoreAsciiCase(e.OriginalTitle, likeNameContains));
+                baseQuery = originalTitlePattern is null
+                    ? baseQuery.Where(e => EF.Functions.Like(e.CleanName, likeNameContains, LikePatterns.Escape))
+                    : baseQuery.Where(e =>
+                        EF.Functions.Like(e.CleanName, likeNameContains, LikePatterns.Escape)
+                        || EF.Functions.Like(e.CleanOriginalTitle, originalTitlePattern, LikePatterns.Escape));
+            }
+            else if (originalTitlePattern is null)
+            {
+                baseQuery = baseQuery.Where(e => false);
             }
             else
             {
                 var cleanNameContains = nameContains.GetCleanValue();
-                var likeNameContains = LikePatterns.ContainsIgnoreAsciiCase(nameContains);
-                if (string.IsNullOrEmpty(cleanNameContains))
-                {
-                    baseQuery = baseQuery.Where(e => JellyfinDbFunctions.LikeIgnoreAsciiCase(e.OriginalTitle, likeNameContains));
-                }
-                else
-                {
-                    baseQuery = baseQuery.Where(e =>
-                        e.CleanName!.Contains(cleanNameContains)
-                        || JellyfinDbFunctions.LikeIgnoreAsciiCase(e.OriginalTitle, likeNameContains));
-                }
+                baseQuery = baseQuery.Where(e =>
+                    e.CleanName!.Contains(cleanNameContains)
+                    || EF.Functions.Like(e.CleanOriginalTitle, originalTitlePattern, LikePatterns.Escape));
             }
         }
 

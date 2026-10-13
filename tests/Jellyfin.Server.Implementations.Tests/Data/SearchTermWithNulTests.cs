@@ -178,6 +178,7 @@ public sealed class SearchTermWithNulTests : JellyfinDbTestFixture
             CleanName = name.GetCleanValue(),
             SortName = name.ToLowerInvariant(),
             OriginalTitle = originalTitle,
+            CleanOriginalTitle = MatchNormalizer.CleanOriginalTitle(originalTitle),
             MediaType = "Video",
             IsMovie = true,
             IsFolder = false,

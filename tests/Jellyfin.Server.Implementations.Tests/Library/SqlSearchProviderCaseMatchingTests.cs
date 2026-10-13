@@ -17,9 +17,9 @@ using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
 namespace Jellyfin.Server.Implementations.Tests.Library;
 
 /// <summary>
-/// Items found through <c>OriginalTitle</c> or <c>SortName</c>, which are stored in the case the metadata
-/// provider wrote them in. The match ignores ASCII case only, treats <c>\</c> as an ordinary character and
-/// leaves <c>%</c> and <c>_</c> as wildcards.
+/// Items found through <c>CleanOriginalTitle</c>, the form of the original title without case, diacritics and
+/// punctuation, or through <c>SortName</c>, which is stored in the case the metadata provider wrote it in and is
+/// matched ignoring ASCII case only. <c>%</c> and <c>_</c> stay wildcards.
 /// </summary>
 public sealed class SqlSearchProviderCaseMatchingTests : JellyfinDbTestFixture
 {
@@ -39,6 +39,8 @@ public sealed class SqlSearchProviderCaseMatchingTests : JellyfinDbTestFixture
             context.BaseItems.Add(CreateMovie(movieTypeName, "Item Five", originalTitle: "Alpha Omega"));
             context.BaseItems.Add(CreateMovie(movieTypeName, "Item Six", originalTitle: "Beta"));
             context.BaseItems.Add(CreateMovie(movieTypeName, "Item Seven", sortName: "Mixed Sort Name"));
+            context.BaseItems.Add(CreateMovie(movieTypeName, "Item Eight", originalTitle: "élan Vital"));
+            context.BaseItems.Add(CreateMovie(movieTypeName, "Item Nine", originalTitle: "Ångström"));
             context.SaveChanges();
         }
 
@@ -65,6 +67,35 @@ public sealed class SqlSearchProviderCaseMatchingTests : JellyfinDbTestFixture
     }
 
     [Theory]
+    [InlineData("ÉMILE")]
+    [InlineData("émile")]
+    [InlineData("Émile")]
+    [InlineData("emile")]
+    [InlineData("EMILE")]
+    public async Task SearchAsync_OriginalTitleWithAccents_IgnoresCaseAndDiacriticsOfTheTerm(string term)
+    {
+        Assert.Equal(["Émile Zola"], await SearchAsync(term).ConfigureAwait(true));
+    }
+
+    [Theory]
+    [InlineData("ÉLAN")]
+    [InlineData("élan")]
+    [InlineData("elan")]
+    public async Task SearchAsync_LowerCaseAccentedOriginalTitle_IgnoresCaseAndDiacriticsOfTheTerm(string term)
+    {
+        Assert.Equal(["élan Vital"], await SearchAsync(term).ConfigureAwait(true));
+    }
+
+    [Theory]
+    [InlineData("ångström")]
+    [InlineData("ÅNGSTRÖM")]
+    [InlineData("angstrom")]
+    public async Task SearchAsync_UpperCaseAccentedOriginalTitle_IgnoresCaseAndDiacriticsOfTheTerm(string term)
+    {
+        Assert.Equal(["Ångström"], await SearchAsync(term).ConfigureAwait(true));
+    }
+
+    [Theory]
     [InlineData("SORT")]
     [InlineData("sort")]
     public async Task SearchAsync_SortNameInMixedCase_IgnoresAsciiCase(string term)
@@ -72,10 +103,21 @@ public sealed class SqlSearchProviderCaseMatchingTests : JellyfinDbTestFixture
         Assert.Equal(["Mixed Sort Name"], await SearchAsync(term).ConfigureAwait(true));
     }
 
+    [Theory]
+    [InlineData("-")]
+    [InlineData("...")]
+    [InlineData("\\")]
+    [InlineData("[]^")]
+    public async Task SearchAsync_TermOfOnlyPunctuation_FindsNothing(string term)
+    {
+        Assert.Empty(await SearchAsync(term).ConfigureAwait(true));
+    }
+
     [Fact]
-    public async Task SearchAsync_BackslashInTerm_IsLiteral()
+    public async Task SearchAsync_BackslashInTerm_IsIgnoredLikeOtherPunctuation()
     {
         Assert.Equal(["AC\\DC"], await SearchAsync("AC\\DC").ConfigureAwait(true));
+        Assert.Equal(["AC\\DC"], await SearchAsync("ac dc").ConfigureAwait(true));
     }
 
     [Theory]
@@ -114,6 +156,7 @@ public sealed class SqlSearchProviderCaseMatchingTests : JellyfinDbTestFixture
             CleanName = name.ToLowerInvariant(),
             SortName = sortName ?? name.ToLowerInvariant(),
             OriginalTitle = originalTitle,
+            CleanOriginalTitle = MatchNormalizer.CleanOriginalTitle(originalTitle),
             MediaType = "Video",
             IsMovie = true,
             IsFolder = false,

@@ -12,8 +12,8 @@ using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
 /// <summary>
-/// The name-contains filter looks in the normalized <c>CleanName</c> and in <c>OriginalTitle</c>, which keeps the
-/// case it was written in.
+/// The name-contains filter looks in the normalized <c>CleanName</c> and in <c>CleanOriginalTitle</c>, the form of
+/// <c>OriginalTitle</c> without case, diacritics and punctuation.
 /// </summary>
 public sealed class BaseItemRepositoryNameContainsTests : JellyfinDbTestFixture
 {
@@ -33,6 +33,8 @@ public sealed class BaseItemRepositoryNameContainsTests : JellyfinDbTestFixture
             context.BaseItems.Add(CreateMovie("Item Four", "ACDC"));
             context.BaseItems.Add(CreateMovie("Item Five", "Alpha Omega"));
             context.BaseItems.Add(CreateMovie("Item Six", "Spider-Man"));
+            context.BaseItems.Add(CreateMovie("Item Seven", "Ångelholm Études"));
+            context.BaseItems.Add(CreateMovie("Item Eight", "éclair Noir"));
             context.SaveChanges();
         }
     }
@@ -65,25 +67,66 @@ public sealed class BaseItemRepositoryNameContainsTests : JellyfinDbTestFixture
         Assert.Equal(["Item One"], Search(term));
     }
 
-    [Fact]
-    public void GetItemList_BackslashInNameContains_IsLiteral()
+    [Theory]
+    [InlineData("ångelholm")]
+    [InlineData("ÅNGELHOLM")]
+    [InlineData("Ångelholm")]
+    [InlineData("angelholm")]
+    [InlineData("études")]
+    [InlineData("ETUDES")]
+    public void GetItemList_NameContainsAgainstUpperCaseAccentedOriginalTitle_IgnoresCaseAndDiacritics(string term)
     {
-        Assert.Equal(["Item Three"], Search("AC\\DC"));
+        Assert.Equal(["Item Seven"], Search(term));
+    }
+
+    [Theory]
+    [InlineData("éclair")]
+    [InlineData("ÉCLAIR")]
+    [InlineData("Éclair")]
+    [InlineData("eclair")]
+    [InlineData("ECLAIR")]
+    public void GetItemList_NameContainsAgainstLowerCaseAccentedOriginalTitle_IgnoresCaseAndDiacritics(string term)
+    {
+        Assert.Equal(["Item Eight"], Search(term));
+    }
+
+    [Theory]
+    [InlineData("AC\\DC")]
+    [InlineData("AC DC")]
+    [InlineData("ac-dc")]
+    public void GetItemList_PunctuationInNameContains_IsIgnoredLikeInTheTitle(string term)
+    {
+        Assert.Equal(["Item Three"], Search(term));
+    }
+
+    [Theory]
+    [InlineData("Spider-Man")]
+    [InlineData("spider man")]
+    [InlineData("er-ma")]
+    public void GetItemList_NameContainsAgainstOriginalTitleWithPunctuation_MatchesWithoutIt(string term)
+    {
+        Assert.Equal(["Item Six"], Search(term));
     }
 
     [Theory]
     [InlineData("St%r", "Star Wars")]
     [InlineData("Al_ha", "Item Five")]
     [InlineData("%EGA", "Item Five")]
+    [InlineData("%CLAI", "Item Eight")]
+    [InlineData("Ecl_ir", "Item Eight")]
     public void GetItemList_PercentAndUnderscoreInNameContains_StayWildcards(string term, string expected)
     {
         Assert.Equal([expected], Search(term));
     }
 
-    [Fact]
-    public void GetItemList_NameContainsOfOnlyPunctuation_MatchesOriginalTitleOnly()
+    [Theory]
+    [InlineData("-")]
+    [InlineData("...")]
+    [InlineData("\\")]
+    [InlineData("[]^")]
+    public void GetItemList_NameContainsOfOnlyPunctuation_MatchesNothing(string term)
     {
-        Assert.Equal(["Item Six"], Search("-"));
+        Assert.Empty(Search(term));
     }
 
     private string[] Search(string term)
@@ -109,6 +152,7 @@ public sealed class BaseItemRepositoryNameContainsTests : JellyfinDbTestFixture
             CleanName = name.GetCleanValue(),
             SortName = name.ToLowerInvariant(),
             OriginalTitle = originalTitle,
+            CleanOriginalTitle = MatchNormalizer.CleanOriginalTitle(originalTitle),
             MediaType = "Video",
             IsMovie = true,
             IsFolder = false,
