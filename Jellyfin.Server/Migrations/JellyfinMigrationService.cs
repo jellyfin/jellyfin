@@ -4,10 +4,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Extensions.Json;
 using Jellyfin.Server.Implementations.SystemBackupService;
 using Jellyfin.Server.Migrations.Stages;
 using Jellyfin.Server.ServerSetupApp;
@@ -86,6 +88,8 @@ internal class JellyfinMigrationService
     }
 
     private HashSet<MigrationStage> Migrations { get; set; }
+
+    private string MigrationInProgressMarkerPath => Path.Combine(_applicationPaths.DataPath, MigrationInProgressMarker.FileName);
 
     public async Task CheckFirstTimeRunOrMigration(IApplicationPaths appPaths, StartupOptions startupOptions)
     {
@@ -297,6 +301,12 @@ internal class JellyfinMigrationService
                 // Surface generic "Running migration X of Y" progress in the always-visible startup UI header.
                 SetupServer.ReportActivity(StartupActivity.Migration(completedMigrations + 1, completedMigrations + pendingMigrations.Length));
                 var migrationLogger = logger.With(_loggerFactory.CreateLogger(item.Migration.GetType().Name)).BeginGroup($"{item.Key}");
+                var recordsProgress = item.Migration is InternalDatabaseMigration && _jellyfinDatabaseProvider is { SupportsTransactionalMigrations: false };
+                if (recordsProgress)
+                {
+                    await WriteMigrationInProgressMarkerAsync(migrationLogger, item.Key).ConfigureAwait(false);
+                }
+
                 try
                 {
                     migrationLogger.LogInformation("Perform migration {Name}", item.Key);
@@ -351,13 +361,90 @@ internal class JellyfinMigrationService
                         }
                     }
 
+                    if (recordsProgress)
+                    {
+                        migrationLogger.LogCritical(
+                            "Schema migration {Name} did not finish and left {Path} in place. To continue, restore the database from the backup taken before the upgrade, then delete that file.",
+                            item.Key,
+                            MigrationInProgressMarkerPath);
+                    }
+
                     throw;
+                }
+
+                if (recordsProgress && await IsMigrationRecordedAsync(historyRepository, item.Key).ConfigureAwait(false))
+                {
+                    DeleteMigrationInProgressMarker(migrationLogger, item.Key);
                 }
 
                 completedMigrations++;
             }
 
             return completedMigrations > 0;
+        }
+    }
+
+    private static async Task<bool> IsMigrationRecordedAsync(IHistoryRepository historyRepository, string migrationId)
+    {
+        var appliedMigrations = await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false);
+        return appliedMigrations.Any(e => string.Equals(e.MigrationId, migrationId, StringComparison.Ordinal));
+    }
+
+    private static string GetProviderKey(IJellyfinDatabaseProvider provider)
+    {
+        var providerType = provider.GetType();
+        return providerType.GetCustomAttribute<JellyfinDatabaseProviderKeyAttribute>()?.DatabaseProviderKey ?? providerType.FullName ?? providerType.Name;
+    }
+
+    private static string DescribeUndeletableMarker(string migrationId, string markerPath)
+    {
+        return string.Format(
+            CultureInfo.InvariantCulture,
+            "Schema migration {0} was applied, but {1} could not be deleted. Delete that file, then start Jellyfin again.",
+            migrationId,
+            markerPath);
+    }
+
+    private void DeleteMigrationInProgressMarker(ILogger logger, string migrationId)
+    {
+        var markerPath = MigrationInProgressMarkerPath;
+        try
+        {
+            File.Delete(markerPath);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            var message = DescribeUndeletableMarker(migrationId, markerPath);
+            logger.LogCritical(ex, "{Message}", message);
+            throw new InvalidOperationException(message, ex);
+        }
+    }
+
+    private async Task WriteMigrationInProgressMarkerAsync(ILogger logger, string migrationId)
+    {
+        var markerPath = MigrationInProgressMarkerPath;
+        var marker = new MigrationInProgressMarker(migrationId, GetProviderKey(_jellyfinDatabaseProvider!), DateTime.UtcNow);
+        try
+        {
+            var stream = new FileStream(markerPath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.WriteThrough);
+            await using (stream.ConfigureAwait(false))
+            {
+                await JsonSerializer.SerializeAsync(stream, marker, JsonDefaults.Options).ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            logger.LogCritical(ex, "Could not write {Path} to record schema migration {Name}, so the migration was not started.", markerPath, migrationId);
+            try
+            {
+                File.Delete(markerPath);
+            }
+            catch (Exception inner) when (inner is IOException or UnauthorizedAccessException)
+            {
+                logger.LogWarning(inner, "Could not delete the incomplete {Path}.", markerPath);
+            }
+
+            throw;
         }
     }
 
