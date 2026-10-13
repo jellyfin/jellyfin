@@ -25,6 +25,9 @@ namespace Jellyfin.Server.Helpers;
 /// </summary>
 public static class StartupHelpers
 {
+    private const string ConfigurationEnvironmentPrefix = "JELLYFIN_";
+    private const string ConnectionStringConfigurationKey = "database:ConnectionString";
+
     private static readonly string[] _relevantEnvVarPrefixes = { "JELLYFIN_", "DOTNET_", "ASPNETCORE_" };
 
     /// <summary>
@@ -46,7 +49,7 @@ public static class StartupHelpers
         {
             if (_relevantEnvVarPrefixes.Any(prefix => key.ToString()!.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
             {
-                relevantEnvVars.Add(key, allEnvVars[key]!);
+                relevantEnvVars.Add(key, IsConnectionStringVariable(key.ToString()!) ? "[redacted]" : allEnvVars[key]!);
             }
         }
 
@@ -65,6 +68,20 @@ public static class StartupHelpers
         logger.LogInformation("Web resources path: {WebPath}", appPaths.WebPath);
         logger.LogInformation("Application directory: {ApplicationPath}", appPaths.ProgramSystemPath);
     }
+
+    /// <summary>
+    /// Whether the environment variable ends up as the database connection string override in the configuration.
+    /// Mirrors how the environment variables configuration provider maps names: the prefix is matched
+    /// and the key compared without regard to case, and a double underscore stands for the key delimiter.
+    /// </summary>
+    /// <param name="name">The name of the environment variable.</param>
+    /// <returns><c>true</c> if the value must not be logged.</returns>
+    private static bool IsConnectionStringVariable(string name)
+        => name.StartsWith(ConfigurationEnvironmentPrefix, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(
+                name[ConfigurationEnvironmentPrefix.Length..].Replace("__", ":", StringComparison.Ordinal),
+                ConnectionStringConfigurationKey,
+                StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Create the data, config and log paths from the variety of inputs(command line args,

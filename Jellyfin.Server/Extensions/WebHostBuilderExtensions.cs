@@ -50,7 +50,7 @@ public static class WebHostBuilderExtensions
                     builderContext,
                     options);
             })
-            .UseStartup(context => new Startup(appHost, context.Configuration));
+            .UseStartup(context => new Startup(appHost, context.Configuration, startupConfig));
     }
 
     /// <summary>

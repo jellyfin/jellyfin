@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -41,8 +42,11 @@ namespace Jellyfin.Server
     /// </summary>
     public class Startup
     {
+        // Must match ServiceCollectionExtensions.ConnectionStringOverrideKey.
+        private const string ConnectionStringOverrideKey = "database:ConnectionString";
+
         private readonly CoreAppHost _serverApplicationHost;
-        private readonly IConfiguration _configuration;
+        private readonly IConfiguration _databaseConfiguration;
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
@@ -51,10 +55,42 @@ namespace Jellyfin.Server
         /// <param name="appHost">The server application host.</param>
         /// <param name="configuration">The used Configuration.</param>
         public Startup(CoreAppHost appHost, IConfiguration configuration)
+            : this(appHost, configuration, configuration)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Startup" /> class.
+        /// </summary>
+        /// <param name="appHost">The server application host.</param>
+        /// <param name="configuration">The used Configuration.</param>
+        /// <param name="startupConfig">The startup configuration the server was started with.</param>
+        internal Startup(CoreAppHost appHost, IConfiguration configuration, IConfiguration startupConfig)
         {
             _serverApplicationHost = appHost;
-            _configuration = configuration;
+            _databaseConfiguration = CreateDatabaseConfiguration(configuration, startupConfig);
             _serverConfigurationManager = appHost.ConfigurationManager;
+        }
+
+        /// <summary>
+        /// Creates the configuration the database is registered with in the container of the web host.
+        /// </summary>
+        /// <remarks>
+        /// Only the startup configuration (the <c>JELLYFIN_</c> environment variables and the command line) may provide
+        /// the connection string override, as it does for the startup migrations. The configuration of the web host
+        /// also contains unprefixed, <c>DOTNET_</c> and <c>ASPNETCORE_</c> variables, which would otherwise let the
+        /// server and its migrations work on different databases. Everything else is read from the web host
+        /// configuration as before.
+        /// </remarks>
+        /// <param name="configuration">The configuration of the web host.</param>
+        /// <param name="startupConfig">The startup configuration the server was started with.</param>
+        /// <returns>The configuration to register the database with.</returns>
+        internal static IConfiguration CreateDatabaseConfiguration(IConfiguration configuration, IConfiguration startupConfig)
+        {
+            return new ConfigurationBuilder()
+                .AddConfiguration(configuration)
+                .AddInMemoryCollection(new Dictionary<string, string?> { [ConnectionStringOverrideKey] = startupConfig[ConnectionStringOverrideKey] })
+                .Build();
         }
 
         /// <summary>
@@ -71,7 +107,7 @@ namespace Jellyfin.Server
             });
 
             services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
-            services.AddJellyfinDbContext(_serverApplicationHost.ConfigurationManager, _configuration);
+            services.AddJellyfinDbContext(_serverApplicationHost.ConfigurationManager, _databaseConfiguration);
             services.AddJellyfinApiSwagger();
 
             // configure custom legacy authentication
