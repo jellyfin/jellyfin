@@ -249,6 +249,7 @@
  - [TheDreadPirate](https://github.com/thedreaddpirate)
  - [Daniel Aquino](https://github.com/chino)
  - [klizas](https://github.com/klizas)
+ - [orut34iop](https://github.com/orut34iop)
 
 # Emby Contributors
 
