@@ -59,6 +59,7 @@ namespace Emby.Server.Implementations.Library
         private readonly IMediaStreamRepository _mediaStreamRepository;
         private readonly IMediaAttachmentRepository _mediaAttachmentRepository;
         private readonly ConcurrentDictionary<string, ILiveStream> _openStreams = new ConcurrentDictionary<string, ILiveStream>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, string> _liveStreamPlaySessions = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly AsyncNonKeyedLocker _liveStreamLocker = new(1);
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
@@ -666,6 +667,11 @@ namespace Emby.Server.Implementations.Library
                 SetKeyProperties(provider, mediaSource);
 
                 _openStreams[mediaSource.LiveStreamId] = liveStream;
+
+                if (!string.IsNullOrEmpty(request.PlaySessionId))
+                {
+                    _liveStreamPlaySessions[request.PlaySessionId] = mediaSource.LiveStreamId;
+                }
             }
 
             try
@@ -1020,6 +1026,11 @@ namespace Emby.Server.Implementations.Library
                     {
                         _openStreams.TryRemove(id, out _);
 
+                        foreach (var playSession in _liveStreamPlaySessions.Where(i => string.Equals(i.Value, id, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            _liveStreamPlaySessions.TryRemove(playSession);
+                        }
+
                         _logger.LogInformation("Closing live stream {0}", id);
 
                         await liveStream.Close().ConfigureAwait(false);
@@ -1027,6 +1038,31 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
             }
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> CloseLiveStream(string id, string playSessionId)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(id);
+
+            if (string.IsNullOrEmpty(playSessionId)
+                || !_liveStreamPlaySessions.TryGetValue(playSessionId, out var openedId)
+                || !string.Equals(openedId, id, StringComparison.OrdinalIgnoreCase)
+                || !_liveStreamPlaySessions.TryRemove(new KeyValuePair<string, string>(playSessionId, openedId)))
+            {
+                return false;
+            }
+
+            await CloseLiveStream(id).ConfigureAwait(false);
+            return true;
+        }
+
+        /// <inheritdoc />
+        public bool IsLiveStreamOpenedFor(string id, string playSessionId)
+        {
+            return !string.IsNullOrEmpty(playSessionId)
+                && _liveStreamPlaySessions.TryGetValue(playSessionId, out var openedId)
+                && string.Equals(openedId, id, StringComparison.OrdinalIgnoreCase);
         }
 
         private (IMediaSourceProvider MediaSourceProvider, string KeyId) GetProvider(string key)
