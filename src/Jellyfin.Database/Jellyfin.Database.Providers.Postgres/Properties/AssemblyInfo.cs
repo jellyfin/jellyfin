@@ -16,7 +16,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 [assembly: NeutralResourcesLanguage("en")]
 [assembly: InternalsVisibleTo("Jellyfin.Server.Implementations.Tests")]
-[assembly: InternalsVisibleTo("Jellyfin.Database.Testing")]
 [assembly: InternalsVisibleTo("Jellyfin.Server.Tests")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
