@@ -246,6 +246,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         bool SetFFmpegPath();
 
         /// <summary>
+        /// Enables the hardware acceleration the documentation recommends for this machine, if no method is set yet and FFmpeg can encode with it.
+        /// </summary>
+        void EnableRecommendedHardwareAcceleration();
+
+        /// <summary>
         /// Gets the primary playlist of .vob files.
         /// </summary>
         /// <param name="path">The to the .vob files.</param>
