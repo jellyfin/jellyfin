@@ -5,6 +5,8 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
@@ -16,12 +18,17 @@ public class StartupControllerTests
     private readonly StartupController _subject;
     private readonly Mock<IUserManager> _mockUserManager;
     private readonly Mock<IServerConfigurationManager> _mockConfig;
+    private readonly Mock<IMediaEncoder> _mockMediaEncoder;
+    private readonly ServerConfiguration _configuration;
 
     public StartupControllerTests()
     {
         _mockUserManager = new Mock<IUserManager>();
         _mockConfig = new Mock<IServerConfigurationManager>();
-        _subject = new StartupController(_mockConfig.Object, _mockUserManager.Object);
+        _mockMediaEncoder = new Mock<IMediaEncoder>();
+        _configuration = new ServerConfiguration();
+        _mockConfig.Setup(m => m.Configuration).Returns(_configuration);
+        _subject = new StartupController(_mockConfig.Object, _mockUserManager.Object, _mockMediaEncoder.Object);
     }
 
     private static User CreateUser()
@@ -66,5 +73,26 @@ public class StartupControllerTests
 
         Assert.IsType<NoContentResult>(result);
         _mockUserManager.Verify(m => m.ChangePassword(user.Id, "first-pw"), Times.Once);
+    }
+
+    [Fact]
+    public void CompleteWizard_FirstTime_EnablesRecommendedHardwareAcceleration()
+    {
+        var result = _subject.CompleteWizard();
+
+        Assert.IsType<NoContentResult>(result);
+        Assert.True(_configuration.IsStartupWizardCompleted);
+        _mockMediaEncoder.Verify(m => m.EnableRecommendedHardwareAcceleration(), Times.Once);
+    }
+
+    [Fact]
+    public void CompleteWizard_AlreadyCompleted_LeavesHardwareAccelerationAlone()
+    {
+        _configuration.IsStartupWizardCompleted = true;
+
+        var result = _subject.CompleteWizard();
+
+        Assert.IsType<NoContentResult>(result);
+        _mockMediaEncoder.Verify(m => m.EnableRecommendedHardwareAcceleration(), Times.Never);
     }
 }
