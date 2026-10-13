@@ -166,6 +166,35 @@ public sealed class PostgresMigrationServiceTests : IDisposable
         Assert.Contains("the migration history of the database is empty", exception.Message, StringComparison.Ordinal);
     }
 
+    [ProviderFact(TestDbProvider.Postgres)]
+    public async Task PrepareSystemForMigration_PendingSchemaMigration_AnnouncesTheBackupWithoutNamingAFile()
+    {
+        WriteServerConfiguration(wizardCompleted: false);
+        var service = CreateService();
+        await service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+        var logger = new CollectingLogger();
+
+        await service.PrepareSystemForMigration(logger);
+
+        Assert.Single(logger.Entries, e => e.Message == "A migration will attempt to modify the Jellyfin database, will ask its provider for a backup now.");
+        Assert.DoesNotContain(logger.Entries, e => e.Message.Contains("jellyfin.db", StringComparison.Ordinal));
+    }
+
+    [ProviderFact(TestDbProvider.Postgres)]
+    public async Task PrepareSystemForMigration_ProviderWithoutASnapshot_SaysNoBackupWasTakenAndNeverNamesAKey()
+    {
+        WriteServerConfiguration(wizardCompleted: false);
+        var service = CreateService();
+        await service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+        var logger = new CollectingLogger();
+
+        await service.PrepareSystemForMigration(logger);
+
+        Assert.Single(logger.Entries, e => e.Message == "No backup of the Jellyfin database was taken, as its provider has nothing to snapshot");
+        Assert.DoesNotContain(logger.Entries, e => e.Message.Contains("backed up as", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, e => e.Properties.ContainsKey("BackupPath"));
+    }
+
     public void Dispose()
     {
         foreach (var serviceProvider in _serviceProviders)

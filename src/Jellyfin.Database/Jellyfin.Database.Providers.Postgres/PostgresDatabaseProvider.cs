@@ -26,11 +26,6 @@ namespace Jellyfin.Database.Providers.Postgres;
 [JellyfinDatabaseProviderKey("Jellyfin-PostgreSQL")]
 public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
 {
-    /// <summary>
-    /// The key <see cref="MigrationBackupFast"/> returns, as PostgreSQL has nothing to snapshot.
-    /// </summary>
-    public const string NoSnapshotKey = "postgres:no-snapshot";
-
     private const int DefaultCommandTimeout = 60;
     private const int MaxIdentifierLength = 63;
 
@@ -222,13 +217,14 @@ public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
                 + "of the database before upgrading, it is the only way to return to the state before a failed upgrade.");
         }
 
-        return NoSnapshotKey;
+        // PostgreSQL has nothing to snapshot, the empty key says that no snapshot was taken.
+        return string.Empty;
     }
 
     /// <inheritdoc/>
     public async Task RestoreBackupFast(string key, CancellationToken cancellationToken)
     {
-        if (!string.Equals(key, NoSnapshotKey, StringComparison.Ordinal))
+        if (!string.IsNullOrEmpty(key))
         {
             _logger.LogCritical("Tried to restore a backup that does not exist: {Key}", key);
             return;

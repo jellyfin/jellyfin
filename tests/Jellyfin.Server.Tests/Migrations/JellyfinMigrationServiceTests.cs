@@ -161,6 +161,38 @@ public sealed class JellyfinMigrationServiceTests : IDisposable
         await CreateService().CheckFirstTimeRunOrMigration(_paths, new StartupOptions { RestoreArchive = Path.Combine(_root, "backup.zip") });
     }
 
+    [Fact]
+    public async Task PrepareSystemForMigration_PendingSchemaMigration_AnnouncesTheBackupWithoutNamingAFile()
+    {
+        WriteServerConfiguration(wizardCompleted: false);
+        var service = CreateService();
+        await service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+        var logger = new CollectingLogger();
+
+        await service.PrepareSystemForMigration(logger);
+
+        Assert.Single(logger.Entries, e => e.Message == "A migration will attempt to modify the Jellyfin database, will ask its provider for a backup now.");
+        Assert.DoesNotContain(logger.Entries, e => e.Message.Contains("jellyfin.db", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task PrepareSystemForMigration_ProviderWithABackupKey_LogsTheKeyAsTheBackupPathAndNotThatNoBackupWasTaken()
+    {
+        WriteServerConfiguration(wizardCompleted: false);
+        var service = CreateService();
+        await service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+        var logger = new CollectingLogger();
+
+        await service.PrepareSystemForMigration(logger);
+
+        var backedUp = Assert.Single(logger.Entries, e => e.Message.StartsWith("Jellyfin database has been backed up as ", StringComparison.Ordinal));
+        Assert.Equal("Jellyfin database has been backed up as {BackupPath}", backedUp.OriginalFormat);
+        var backupPath = Assert.IsType<string>(backedUp.Properties["BackupPath"]);
+        Assert.Matches(@"^\d{14}(_\d+)?$", backupPath);
+        Assert.Equal("Jellyfin database has been backed up as " + backupPath, backedUp.Message);
+        Assert.DoesNotContain(logger.Entries, e => e.Message.Contains("No backup of the Jellyfin database was taken", StringComparison.Ordinal));
+    }
+
     public void Dispose()
     {
         foreach (var serviceProvider in _serviceProviders)

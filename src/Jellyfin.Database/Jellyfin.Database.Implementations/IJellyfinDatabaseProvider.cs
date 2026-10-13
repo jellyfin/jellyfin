@@ -68,14 +68,21 @@ public interface IJellyfinDatabaseProvider
     /// Runs a full Database backup that can later be restored to.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token.</param>
-    /// <returns>A key to identify the backup.</returns>
+    /// <returns>
+    /// A key to identify the backup, or an empty string when no snapshot was taken, as the database has nothing that
+    /// the provider can snapshot. <see cref="RestoreBackupFast(string, CancellationToken)"/> and
+    /// <see cref="DeleteBackup(string)"/> are called with that empty key all the same.
+    /// </returns>
     /// <exception cref="NotImplementedException">May throw an NotImplementException if this operation is not supported for this database.</exception>
     Task<string> MigrationBackupFast(CancellationToken cancellationToken);
 
     /// <summary>
     /// Restores a backup that has been previously created by <see cref="MigrationBackupFast(CancellationToken)"/>.
     /// </summary>
-    /// <param name="key">The key to the backup from which the current database should be restored from.</param>
+    /// <param name="key">
+    /// The key to the backup from which the current database should be restored from, which is empty when
+    /// <see cref="MigrationBackupFast(CancellationToken)"/> took no snapshot.
+    /// </param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     Task RestoreBackupFast(string key, CancellationToken cancellationToken);
@@ -83,7 +90,10 @@ public interface IJellyfinDatabaseProvider
     /// <summary>
     /// Deletes a backup that has been previously created by <see cref="MigrationBackupFast(CancellationToken)"/>.
     /// </summary>
-    /// <param name="key">The key to the backup which should be cleaned up.</param>
+    /// <param name="key">
+    /// The key to the backup which should be cleaned up, which is empty when
+    /// <see cref="MigrationBackupFast(CancellationToken)"/> took no snapshot.
+    /// </param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     Task DeleteBackup(string key);
 
