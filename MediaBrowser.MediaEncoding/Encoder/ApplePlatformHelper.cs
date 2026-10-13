@@ -123,7 +123,7 @@ public static partial class ApplePlatformHelper
         ApplyRecommendedVideoToolboxOptions(options, model, isAppleSilicon, isAppleSilicon && HasAv1HardwareAccel(logger));
 
         logger.LogInformation(
-            "Enabled VideoToolbox hardware acceleration for {Model}, decoding {Codecs} in hardware, tone-mapping {Tonemapping}",
+            "Recommending VideoToolbox hardware acceleration for {Model}, decoding {Codecs} in hardware, tone-mapping {Tonemapping}",
             model,
             options.HardwareDecodingCodecs,
             options.EnableVideoToolboxTonemapping ? "enabled" : "disabled");

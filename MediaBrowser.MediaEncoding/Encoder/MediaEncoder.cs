@@ -238,7 +238,41 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _isLowPriorityHwDecodeSupported = validator.CheckSupportedHwaccelFlag("low_priority");
                 _proberSupportsFirstVideoFrame = validator.CheckSupportedProberOption("only_first_vframe", _ffprobePath);
 
-                CheckVaapiDevice(validator, options);
+                // Check the Vaapi device vendor
+                if (OperatingSystem.IsLinux()
+                    && SupportsHwaccel("vaapi")
+                    && !string.IsNullOrEmpty(options.VaapiDevice)
+                    && options.HardwareAccelerationType == HardwareAccelerationType.vaapi)
+                {
+                    _isVaapiDeviceAmd = validator.CheckVaapiDeviceByDriverName("Mesa Gallium driver", options.VaapiDevice);
+                    _isVaapiDeviceInteliHD = validator.CheckVaapiDeviceByDriverName("Intel iHD driver", options.VaapiDevice);
+                    _isVaapiDeviceInteli965 = validator.CheckVaapiDeviceByDriverName("Intel i965 driver", options.VaapiDevice);
+                    _isVaapiDeviceSupportVulkanDrmModifier = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanImageDrmFmtModifierExts);
+                    _isVaapiDeviceSupportVulkanDrmInterop = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanExternalMemoryDmaBufExts);
+
+                    if (_isVaapiDeviceAmd)
+                    {
+                        _logger.LogInformation("VAAPI device {RenderNodePath} is AMD GPU", options.VaapiDevice);
+                    }
+                    else if (_isVaapiDeviceInteliHD)
+                    {
+                        _logger.LogInformation("VAAPI device {RenderNodePath} is Intel GPU (iHD)", options.VaapiDevice);
+                    }
+                    else if (_isVaapiDeviceInteli965)
+                    {
+                        _logger.LogInformation("VAAPI device {RenderNodePath} is Intel GPU (i965)", options.VaapiDevice);
+                    }
+
+                    if (_isVaapiDeviceSupportVulkanDrmModifier)
+                    {
+                        _logger.LogInformation("VAAPI device {RenderNodePath} supports Vulkan DRM modifier", options.VaapiDevice);
+                    }
+
+                    if (_isVaapiDeviceSupportVulkanDrmInterop)
+                    {
+                        _logger.LogInformation("VAAPI device {RenderNodePath} supports Vulkan DRM interop", options.VaapiDevice);
+                    }
+                }
 
                 // Check if VideoToolbox supports AV1 decode
                 if (OperatingSystem.IsMacOS() && SupportsHwaccel("videotoolbox"))
@@ -252,20 +286,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         /// <inheritdoc />
-        public void EnableRecommendedHardwareAcceleration()
+        public bool ApplyRecommendedHardwareAcceleration(EncodingOptions options)
         {
-            var options = _configurationManager.GetEncodingOptions();
-            if (string.IsNullOrEmpty(_ffmpegPath) || options.HardwareAccelerationType != HardwareAccelerationType.none)
+            if (string.IsNullOrEmpty(_ffmpegPath))
             {
-                return;
+                return false;
             }
 
             var validator = new EncoderValidator(_logger, _ffmpegPath);
             var type = GetRecommendedHardwareAccelerationType(validator, options.VaapiDevice);
             if (type == HardwareAccelerationType.none)
             {
-                _logger.LogInformation("Not enabling hardware acceleration, FFmpeg can't encode with a supported GPU");
-                return;
+                _logger.LogInformation("No hardware acceleration to recommend, FFmpeg can't encode with a supported GPU");
+                return false;
             }
 
             if (OperatingSystem.IsMacOS())
@@ -278,11 +311,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 options.HardwareAccelerationType = type;
                 options.EnableHardwareEncoding = true;
                 options.HardwareDecodingCodecs = ["h264"];
-                _logger.LogInformation("Enabled {Type} hardware acceleration, decoding H.264 in hardware", type);
+                _logger.LogInformation("Recommending {Type} hardware acceleration, decoding H.264 in hardware", type);
             }
 
-            _configurationManager.SaveConfiguration("encoding", options);
-            CheckVaapiDevice(validator, options);
+            return true;
         }
 
         /// <summary>
@@ -351,47 +383,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private bool CanEncode(EncoderValidator validator, string encoder, string deviceArgs, string filterArgs = "")
         {
             return SupportsEncoder(encoder) && validator.CheckHardwareEncoder(encoder, deviceArgs, filterArgs);
-        }
-
-        /// <summary>
-        /// Checks the vendor and the Vulkan support of the VA-API device.
-        /// </summary>
-        private void CheckVaapiDevice(EncoderValidator validator, EncodingOptions options)
-        {
-            if (OperatingSystem.IsLinux()
-                && SupportsHwaccel("vaapi")
-                && !string.IsNullOrEmpty(options.VaapiDevice)
-                && options.HardwareAccelerationType == HardwareAccelerationType.vaapi)
-            {
-                _isVaapiDeviceAmd = validator.CheckVaapiDeviceByDriverName("Mesa Gallium driver", options.VaapiDevice);
-                _isVaapiDeviceInteliHD = validator.CheckVaapiDeviceByDriverName("Intel iHD driver", options.VaapiDevice);
-                _isVaapiDeviceInteli965 = validator.CheckVaapiDeviceByDriverName("Intel i965 driver", options.VaapiDevice);
-                _isVaapiDeviceSupportVulkanDrmModifier = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanImageDrmFmtModifierExts);
-                _isVaapiDeviceSupportVulkanDrmInterop = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanExternalMemoryDmaBufExts);
-
-                if (_isVaapiDeviceAmd)
-                {
-                    _logger.LogInformation("VAAPI device {RenderNodePath} is AMD GPU", options.VaapiDevice);
-                }
-                else if (_isVaapiDeviceInteliHD)
-                {
-                    _logger.LogInformation("VAAPI device {RenderNodePath} is Intel GPU (iHD)", options.VaapiDevice);
-                }
-                else if (_isVaapiDeviceInteli965)
-                {
-                    _logger.LogInformation("VAAPI device {RenderNodePath} is Intel GPU (i965)", options.VaapiDevice);
-                }
-
-                if (_isVaapiDeviceSupportVulkanDrmModifier)
-                {
-                    _logger.LogInformation("VAAPI device {RenderNodePath} supports Vulkan DRM modifier", options.VaapiDevice);
-                }
-
-                if (_isVaapiDeviceSupportVulkanDrmInterop)
-                {
-                    _logger.LogInformation("VAAPI device {RenderNodePath} supports Vulkan DRM interop", options.VaapiDevice);
-                }
-            }
         }
 
         /// <summary>
