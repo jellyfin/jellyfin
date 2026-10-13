@@ -39,6 +39,7 @@ public sealed class JellyfinApplicationFactoryTests
             var other => throw new NotSupportedException($"{other} is not covered.")
         };
         Assert.IsType(expected, factory.Services.GetRequiredService<IJellyfinDatabaseProvider>());
+        BackendLiveness.VerifyProvider(Environment.GetEnvironmentVariable(BackendLiveness.ExpectedProviderVariable), TestDatabaseEnvironment.Provider);
 
         var dbContextFactory = factory.Services.GetRequiredService<IDbContextFactory<JellyfinDbContext>>();
         await using var context = await dbContextFactory.CreateDbContextAsync(TestContext.Current.CancellationToken);

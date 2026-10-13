@@ -9,16 +9,16 @@ using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 
-public class ProviderBackendTests
+public class ProviderBackendTests(ITestOutputHelper output)
 {
     [Fact]
     public void ProviderBackend_IsLive()
     {
         var backend = TestDatabaseEnvironment.Backend;
-        var floor = ServerVersionFloors.For(backend.Provider);
 
-        Assert.True(backend.ServerVersion.Major > 0);
-        Assert.True(backend.ServerVersion >= floor, $"{backend.Provider} {backend.ServerVersion} is older than the supported {floor}.");
+        BackendLiveness.Verify(Environment.GetEnvironmentVariable(BackendLiveness.ExpectedProviderVariable), backend);
+
+        output.WriteLine($"Database backend: {backend.Provider} {backend.ServerVersion}");
     }
 
     [Fact]
