@@ -62,4 +62,43 @@ public class LikePatternsTests
     {
         Assert.Throws<ArgumentNullException>(() => LikePatterns.ContainsIgnoreAsciiCase(null!));
     }
+
+    [Theory]
+    [InlineData("", "%")]
+    [InlineData("Alpha", "alpha%")]
+    [InlineData("ALPHA B", "alpha b%")]
+    [InlineData("ÉMILE", "Émile%")]
+    [InlineData("é", "é%")]
+    [InlineData("\u212A", "\u212A%")]
+    public void StartsWithIgnoreAsciiCase_Term_LowersAsciiLettersAndEndsWithAWildcard(string term, string expected)
+    {
+        Assert.Equal(expected, LikePatterns.StartsWithIgnoreAsciiCase(term));
+    }
+
+    [Theory]
+    [InlineData("AC\\DC", "ac\\\\dc%")]
+    [InlineData("\\", "\\\\%")]
+    [InlineData("50%", "50\\%%")]
+    [InlineData("a_b", "a\\_b%")]
+    [InlineData("%", "\\%%")]
+    [InlineData("_", "\\_%")]
+    [InlineData("\\%_", "\\\\\\%\\_%")]
+    public void StartsWithIgnoreAsciiCase_BackslashPercentAndUnderscore_AreEscaped(string term, string expected)
+    {
+        Assert.Equal(expected, LikePatterns.StartsWithIgnoreAsciiCase(term));
+    }
+
+    [Theory]
+    [InlineData("a\0b", "ab%")]
+    [InlineData("\0", "%")]
+    public void StartsWithIgnoreAsciiCase_Nul_IsDropped(string term, string expected)
+    {
+        Assert.Equal(expected, LikePatterns.StartsWithIgnoreAsciiCase(term));
+    }
+
+    [Fact]
+    public void StartsWithIgnoreAsciiCase_Null_Throws()
+    {
+        Assert.Throws<ArgumentNullException>(() => LikePatterns.StartsWithIgnoreAsciiCase(null!));
+    }
 }

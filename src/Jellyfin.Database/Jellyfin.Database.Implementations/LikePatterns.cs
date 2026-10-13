@@ -25,10 +25,28 @@ public static class LikePatterns
     /// <param name="term">The text to look for.</param>
     /// <returns>The pattern, ASCII-lower-cased, with <c>\</c> escaped.</returns>
     public static string ContainsIgnoreAsciiCase(string term)
+        => Build(term, contains: true);
+
+    /// <summary>
+    /// Builds a pattern matching values that start with <paramref name="term"/>. Only ASCII letters are lower-cased,
+    /// as SQLite's <c>lower()</c> does. Backslashes, <c>%</c> and <c>_</c> are matched literally. NUL characters are
+    /// dropped, as they are not stored and some engines reject them in a parameter.
+    /// </summary>
+    /// <param name="term">The text the value must start with.</param>
+    /// <returns>The pattern, ASCII-lower-cased, with <c>\</c>, <c>%</c> and <c>_</c> escaped.</returns>
+    internal static string StartsWithIgnoreAsciiCase(string term)
+        => Build(term, contains: false);
+
+    private static string Build(string term, bool contains)
     {
         ArgumentNullException.ThrowIfNull(term);
 
-        var pattern = new StringBuilder(term.Length + 2).Append('%');
+        var pattern = new StringBuilder(term.Length + 2);
+        if (contains)
+        {
+            pattern.Append('%');
+        }
+
         foreach (var c in term)
         {
             if (c == '\0')
@@ -36,7 +54,8 @@ public static class LikePatterns
                 continue;
             }
 
-            if (c == '\\')
+            var isWildcard = c is '%' or '_';
+            if (c == '\\' || (!contains && isWildcard))
             {
                 pattern.Append('\\');
             }

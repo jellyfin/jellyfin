@@ -228,10 +228,11 @@ public sealed partial class BaseItemRepository
         var nameStartsWith = filter.NameStartsWith?.RemoveNullCharacters();
         if (!string.IsNullOrWhiteSpace(nameStartsWith))
         {
-            var nameStartsWithLower = nameStartsWith.ToLowerInvariant();
-            dbQuery = dbQuery.Where(e => e.SortName!.ToLower().StartsWith(nameStartsWithLower));
+            var nameStartsWithPattern = LikePatterns.StartsWithIgnoreAsciiCase(nameStartsWith.ToLowerInvariant());
+            dbQuery = dbQuery.Where(e => JellyfinDbFunctions.LikeIgnoreAsciiCase(e.SortName, nameStartsWithPattern));
         }
 
+        // The range filters below still compare with the engine's own lower().
         var nameStartsWithOrGreater = filter.NameStartsWithOrGreater?.RemoveNullCharacters();
         if (!string.IsNullOrWhiteSpace(nameStartsWithOrGreater))
         {
