@@ -11,7 +11,7 @@ using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
-public sealed class BaseItemRepositoryGroupingTests : SqliteDbTestFixture
+public abstract class BaseItemRepositoryGroupingTests : DbTestFixture
 {
     private static readonly Guid _movieLibraryId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid _movie4KLibraryId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
@@ -20,7 +20,8 @@ public sealed class BaseItemRepositoryGroupingTests : SqliteDbTestFixture
     private readonly string _movieTypeName;
     private readonly string _folderTypeName;
 
-    public BaseItemRepositoryGroupingTests()
+    protected BaseItemRepositoryGroupingTests(TestDatabase database)
+        : base(database)
     {
         var itemTypeLookup = new ItemTypeLookup();
         _movieTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie];
@@ -212,4 +213,6 @@ public sealed class BaseItemRepositoryGroupingTests : SqliteDbTestFixture
             IsVirtualItem = false
         };
     }
+
+    public sealed class Sqlite() : BaseItemRepositoryGroupingTests(new SqliteTestDatabase());
 }
