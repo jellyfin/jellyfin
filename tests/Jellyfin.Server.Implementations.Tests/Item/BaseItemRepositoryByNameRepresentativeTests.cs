@@ -32,12 +32,9 @@ public sealed class BaseItemRepositoryByNameRepresentativeTests : JellyfinDbTest
     {
         Seed();
 
-        KnownGap.On(KnownGaps.GuidAggregates, () =>
-        {
-            var result = _repository.GetGenres(CreateQuery());
+        var result = _repository.GetGenres(CreateQuery());
 
-            Assert.Equal(_lowestId, Assert.Single(result.Items).Item.Id);
-        });
+        Assert.Equal(_lowestId, Assert.Single(result.Items).Item.Id);
     }
 
     private static InternalItemsQuery CreateQuery()

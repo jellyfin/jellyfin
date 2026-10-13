@@ -1,5 +1,3 @@
-using Xunit.Sdk;
-
 namespace Jellyfin.Database.Testing;
 
 /// <summary>
@@ -8,11 +6,6 @@ namespace Jellyfin.Database.Testing;
 /// </summary>
 public static class KnownGaps
 {
-    public static readonly KnownGapDefinition GuidAggregates = new(
-        TestDbProvider.Postgres,
-        "PostgreSQL has no min/max over uuid",
-        ex => PostgresErrors.HasSqlState(ex, "42883", "min(uuid)", "max(uuid)"));
-
     public static readonly KnownGapDefinition NulInExactMatchParameter = new(
         TestDbProvider.Postgres,
         "PostgreSQL rejects a NUL character in any string parameter",

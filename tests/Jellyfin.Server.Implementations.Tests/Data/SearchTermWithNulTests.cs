@@ -97,14 +97,11 @@ public sealed class SearchTermWithNulTests : JellyfinDbTestFixture
             Assert.Equal(["Quasar Login"], await GetActivityNamesAsync(filter, term).ConfigureAwait(true));
         }
 
-        KnownGap.On(KnownGaps.GuidAggregates, () =>
-        {
-            Assert.Equal(["Item One"], SearchByTerm(termWithoutNul));
-            Assert.Equal(["Item One"], SearchByTerm(term));
+        Assert.Equal(["Item One"], SearchByTerm(termWithoutNul));
+        Assert.Equal(["Item One"], SearchByTerm(term));
 
-            Assert.Equal(["Item One"], SearchByNameContains(termWithoutNul));
-            Assert.Equal(["Item One"], SearchByNameContains(term));
-        });
+        Assert.Equal(["Item One"], SearchByNameContains(termWithoutNul));
+        Assert.Equal(["Item One"], SearchByNameContains(term));
     }
 
     private string[] SearchByTerm(string term)

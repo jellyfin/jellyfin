@@ -97,11 +97,8 @@ public sealed class ItemPersistenceInMemoryNulTests : JellyfinDbTestFixture
         series.PresentationUniqueKey = KeyWithNul;
         SaveSeriesWithChildren(series, season, episode);
 
-        KnownGap.On(KnownGaps.GuidAggregates, () =>
-        {
-            Assert.Equal([season.Id], FindIds(BaseItemKind.Season, series.PresentationUniqueKey));
-            Assert.Equal([episode.Id], FindIds(BaseItemKind.Episode, series.PresentationUniqueKey));
-        });
+        Assert.Equal([season.Id], FindIds(BaseItemKind.Season, series.PresentationUniqueKey));
+        Assert.Equal([episode.Id], FindIds(BaseItemKind.Episode, series.PresentationUniqueKey));
     }
 
     [Fact]
@@ -140,11 +137,8 @@ public sealed class ItemPersistenceInMemoryNulTests : JellyfinDbTestFixture
 
         _service.SaveItems([book], CancellationToken.None);
 
-        KnownGap.On(KnownGaps.GuidAggregates, () =>
-        {
-            var found = _repository.GetItemList(new InternalItemsQuery(_user) { ExternalId = book.ExternalId });
-            Assert.Equal([book.Id], found.Select(e => e.Id));
-        });
+        var found = _repository.GetItemList(new InternalItemsQuery(_user) { ExternalId = book.ExternalId });
+        Assert.Equal([book.Id], found.Select(e => e.Id));
     }
 
     [Fact]
@@ -154,11 +148,8 @@ public sealed class ItemPersistenceInMemoryNulTests : JellyfinDbTestFixture
 
         _service.SaveItems([book], CancellationToken.None);
 
-        KnownGap.On(KnownGaps.GuidAggregates, () =>
-        {
-            var found = _repository.GetItemList(new InternalItemsQuery(_user) { ExternalSeriesId = book.ExternalSeriesId });
-            Assert.Equal([book.Id], found.Select(e => e.Id));
-        });
+        var found = _repository.GetItemList(new InternalItemsQuery(_user) { ExternalSeriesId = book.ExternalSeriesId });
+        Assert.Equal([book.Id], found.Select(e => e.Id));
     }
 
     [Fact]

@@ -54,11 +54,8 @@ public sealed class BaseItemRepositoryNullOrderTests : JellyfinDbTestFixture
             context.SaveChanges();
         }
 
-        KnownGap.On(KnownGaps.GuidAggregates, () =>
-        {
-            Assert.Equal([MissingName, LowName, HighName], Names(sortBy, SortOrder.Ascending));
-            Assert.Equal([HighName, LowName, MissingName], Names(sortBy, SortOrder.Descending));
-        });
+        Assert.Equal([MissingName, LowName, HighName], Names(sortBy, SortOrder.Ascending));
+        Assert.Equal([HighName, LowName, MissingName], Names(sortBy, SortOrder.Descending));
     }
 
     private string[] Names(ItemSortBy sortBy, SortOrder sortOrder)

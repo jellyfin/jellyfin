@@ -38,11 +38,8 @@ public sealed class BaseItemRepositoryStringOrderTests : JellyfinDbTestFixture
     {
         AddMovies(_values);
 
-        KnownGap.On(KnownGaps.GuidAggregates, () =>
-        {
-            Assert.Equal(["Bob", "_zed", "alice", "Ángel"], Names(OrderedBy(sortBy, SortOrder.Ascending)));
-            Assert.Equal(["Ángel", "alice", "_zed", "Bob"], Names(OrderedBy(sortBy, SortOrder.Descending)));
-        });
+        Assert.Equal(["Bob", "_zed", "alice", "Ángel"], Names(OrderedBy(sortBy, SortOrder.Ascending)));
+        Assert.Equal(["Ángel", "alice", "_zed", "Bob"], Names(OrderedBy(sortBy, SortOrder.Descending)));
     }
 
     [Theory]
@@ -53,17 +50,14 @@ public sealed class BaseItemRepositoryStringOrderTests : JellyfinDbTestFixture
     {
         AddMovies("alice", "Bob", "_zed", "Zed", "élan");
 
-        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        var result = _repository.GetItemList(new InternalItemsQuery(new User("test", "auth", "reset"))
         {
-            var result = _repository.GetItemList(new InternalItemsQuery(new User("test", "auth", "reset"))
-            {
-                IncludeItemTypes = [BaseItemKind.Movie],
-                NameStartsWithOrGreater = nameStartsWithOrGreater,
-                NameLessThan = nameLessThan
-            });
-
-            Assert.Equal(expected.Order(StringComparer.Ordinal), SortedNames(result));
+            IncludeItemTypes = [BaseItemKind.Movie],
+            NameStartsWithOrGreater = nameStartsWithOrGreater,
+            NameLessThan = nameLessThan
         });
+
+        Assert.Equal(expected.Order(StringComparer.Ordinal), SortedNames(result));
     }
 
     private static string[] SortedNames(IReadOnlyList<BaseItem> items)

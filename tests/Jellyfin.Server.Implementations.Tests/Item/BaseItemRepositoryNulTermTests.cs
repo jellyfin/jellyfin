@@ -39,14 +39,11 @@ public sealed class BaseItemRepositoryNulTermTests : JellyfinDbTestFixture
     {
         AddMovies("Bob", "bobby", "Rob", "ALICE", "bo", "Zoe");
 
-        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        Assert.Equal(["Bob", "bobby"], Names(new InternalItemsQuery(new User("test", "auth", "reset"))
         {
-            Assert.Equal(["Bob", "bobby"], Names(new InternalItemsQuery(new User("test", "auth", "reset"))
-            {
-                IncludeItemTypes = [BaseItemKind.Movie],
-                NameStartsWith = prefix
-            }));
-        });
+            IncludeItemTypes = [BaseItemKind.Movie],
+            NameStartsWith = prefix
+        }));
     }
 
     [Theory]
@@ -58,14 +55,11 @@ public sealed class BaseItemRepositoryNulTermTests : JellyfinDbTestFixture
     {
         AddMovies("Bob", "bobby", "Rob", "ALICE", "bo", "Zoe");
 
-        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        Assert.Equal(["ALICE", "bo"], Names(new InternalItemsQuery(new User("test", "auth", "reset"))
         {
-            Assert.Equal(["ALICE", "bo"], Names(new InternalItemsQuery(new User("test", "auth", "reset"))
-            {
-                IncludeItemTypes = [BaseItemKind.Movie],
-                NameLessThan = bound
-            }));
-        });
+            IncludeItemTypes = [BaseItemKind.Movie],
+            NameLessThan = bound
+        }));
     }
 
     [Theory]
@@ -77,14 +71,11 @@ public sealed class BaseItemRepositoryNulTermTests : JellyfinDbTestFixture
     {
         AddMovies("Bob", "bobby", "Rob", "ALICE", "bo", "Zoe");
 
-        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        Assert.Equal(["Bob", "Rob", "Zoe", "bobby"], Names(new InternalItemsQuery(new User("test", "auth", "reset"))
         {
-            Assert.Equal(["Bob", "Rob", "Zoe", "bobby"], Names(new InternalItemsQuery(new User("test", "auth", "reset"))
-            {
-                IncludeItemTypes = [BaseItemKind.Movie],
-                NameStartsWithOrGreater = bound
-            }));
-        });
+            IncludeItemTypes = [BaseItemKind.Movie],
+            NameStartsWithOrGreater = bound
+        }));
     }
 
     [Fact]
@@ -92,24 +83,21 @@ public sealed class BaseItemRepositoryNulTermTests : JellyfinDbTestFixture
     {
         AddMovies("Bob", "bobby", "Rob", "ALICE", "bo", "Zoe");
 
-        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        Assert.Equal(_allNames, Names(new InternalItemsQuery(new User("test", "auth", "reset"))
         {
-            Assert.Equal(_allNames, Names(new InternalItemsQuery(new User("test", "auth", "reset"))
-            {
-                IncludeItemTypes = [BaseItemKind.Movie],
-                NameStartsWith = "\0"
-            }));
-            Assert.Equal(_allNames, Names(new InternalItemsQuery(new User("test", "auth", "reset"))
-            {
-                IncludeItemTypes = [BaseItemKind.Movie],
-                NameLessThan = "\0"
-            }));
-            Assert.Equal(_allNames, Names(new InternalItemsQuery(new User("test", "auth", "reset"))
-            {
-                IncludeItemTypes = [BaseItemKind.Movie],
-                NameStartsWithOrGreater = "\0"
-            }));
-        });
+            IncludeItemTypes = [BaseItemKind.Movie],
+            NameStartsWith = "\0"
+        }));
+        Assert.Equal(_allNames, Names(new InternalItemsQuery(new User("test", "auth", "reset"))
+        {
+            IncludeItemTypes = [BaseItemKind.Movie],
+            NameLessThan = "\0"
+        }));
+        Assert.Equal(_allNames, Names(new InternalItemsQuery(new User("test", "auth", "reset"))
+        {
+            IncludeItemTypes = [BaseItemKind.Movie],
+            NameStartsWithOrGreater = "\0"
+        }));
     }
 
     [Theory]
@@ -123,16 +111,13 @@ public sealed class BaseItemRepositoryNulTermTests : JellyfinDbTestFixture
         // does not recognise the term leaves them in the wrong order.
         AddMovies("Quasarium", "Quasar Wave", "Quasar");
 
-        KnownGap.On(KnownGaps.GuidAggregates, () =>
+        var result = _repository.GetItemList(new InternalItemsQuery(new User("test", "auth", "reset"))
         {
-            var result = _repository.GetItemList(new InternalItemsQuery(new User("test", "auth", "reset"))
-            {
-                IncludeItemTypes = [BaseItemKind.Movie],
-                SearchTerm = term
-            });
-
-            Assert.Equal(["Quasar", "Quasar Wave", "Quasarium"], result.Select(i => i.Name).ToArray());
+            IncludeItemTypes = [BaseItemKind.Movie],
+            SearchTerm = term
         });
+
+        Assert.Equal(["Quasar", "Quasar Wave", "Quasarium"], result.Select(i => i.Name).ToArray());
     }
 
     private string[] Names(InternalItemsQuery query)

@@ -50,13 +50,10 @@ public sealed class BaseItemRepositoryExactMatchNulTests : JellyfinDbTestFixture
         AddMovie();
         var user = new User("test", "auth", "reset");
 
+        Assert.Single(_repository.GetItemList(new InternalItemsQuery(user) { Path = MoviePath }));
         KnownGap.On(
-            KnownGaps.GuidAggregates,
-            () =>
-            {
-                Assert.Single(_repository.GetItemList(new InternalItemsQuery(user) { Path = MoviePath }));
-                Assert.Empty(_repository.GetItemList(new InternalItemsQuery(user) { Path = MoviePath + "\0" }));
-            });
+            KnownGaps.NulInExactMatchParameter,
+            () => Assert.Empty(_repository.GetItemList(new InternalItemsQuery(user) { Path = MoviePath + "\0" })));
     }
 
     [Fact]

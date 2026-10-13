@@ -66,11 +66,8 @@ public sealed class BaseItemRepositoryPremiereDateOrderTests : JellyfinDbTestFix
             "Year 9999"
         ];
 
-        KnownGap.On(KnownGaps.GuidAggregates, () =>
-        {
-            Assert.Equal(ascending, Names(SortOrder.Ascending));
-            Assert.Equal(ascending.Reverse(), Names(SortOrder.Descending));
-        });
+        Assert.Equal(ascending, Names(SortOrder.Ascending));
+        Assert.Equal(ascending.Reverse(), Names(SortOrder.Descending));
     }
 
     [Fact]
@@ -89,9 +86,7 @@ public sealed class BaseItemRepositoryPremiereDateOrderTests : JellyfinDbTestFix
             context.SaveChanges();
         }
 
-        KnownGap.On(
-            KnownGaps.GuidAggregates,
-            () => Assert.Equal(["Year 2005", "Premiered 2010, year 1980", "Year 2015"], Names(SortOrder.Ascending)));
+        Assert.Equal(["Year 2005", "Premiered 2010, year 1980", "Year 2015"], Names(SortOrder.Ascending));
     }
 
     private string[] Names(SortOrder sortOrder)

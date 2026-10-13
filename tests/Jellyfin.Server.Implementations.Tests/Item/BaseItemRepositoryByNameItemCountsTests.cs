@@ -77,15 +77,12 @@ public sealed class BaseItemRepositoryByNameItemCountsTests : JellyfinDbTestFixt
         // or a box set read as zero in a list and as one on the genre's own page.
         SeedGenreWith(kind);
 
-        KnownGap.On(KnownGaps.GuidAggregates, () =>
-        {
-            var result = _repository.GetGenres(CreateCountingQuery());
+        var result = _repository.GetGenres(CreateCountingQuery());
 
-            var (_, counts) = Assert.Single(result.Items);
-            Assert.NotNull(counts);
-            Assert.Equal(1, kind == BaseItemKind.Book ? counts.BookCount : counts.BoxSetCount);
-            Assert.Equal(1, counts.ItemCount);
-        });
+        var (_, counts) = Assert.Single(result.Items);
+        Assert.NotNull(counts);
+        Assert.Equal(1, kind == BaseItemKind.Book ? counts.BookCount : counts.BoxSetCount);
+        Assert.Equal(1, counts.ItemCount);
     }
 
     /// <summary>

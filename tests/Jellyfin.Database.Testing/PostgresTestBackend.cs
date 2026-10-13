@@ -7,6 +7,7 @@ using System.Threading;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.DbConfiguration;
 using Jellyfin.Database.Providers.Postgres;
+using Jellyfin.Database.Providers.Postgres.Migrations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -200,6 +201,11 @@ public sealed class PostgresTestBackend : ITestDatabaseBackend
 
         var connectionString = WithDatabase(name);
         source.Apply(CreateOptions(connectionString, []), CreateProvider());
+        if (source == TestSchemaSource.Model)
+        {
+            // The model cannot describe the aggregate, only the migrations create it.
+            Execute(new NpgsqlConnectionStringBuilder(connectionString) { Pooling = false }.ConnectionString, PostgresUuidAggregate.CreateSql);
+        }
 
         // A pooled connection would keep the template in use, and a database cannot be copied while it is.
         ClearPool(name);

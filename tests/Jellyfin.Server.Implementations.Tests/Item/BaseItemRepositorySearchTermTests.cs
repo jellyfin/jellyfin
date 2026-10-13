@@ -40,25 +40,25 @@ public sealed class BaseItemRepositorySearchTermTests : JellyfinDbTestFixture
     [InlineData("wOrLd")]
     public void GetItemList_SearchTermAgainstMixedCaseOriginalTitle_IgnoresAsciiCase(string term)
     {
-        KnownGap.On(KnownGaps.GuidAggregates, () => Assert.Equal(["hello World"], Search(term)));
+        Assert.Equal(["hello World"], Search(term));
     }
 
     [Fact]
     public void GetItemList_SearchTermWithUpperCaseNonAsciiLetter_FindsOriginalTitle()
     {
-        KnownGap.On(KnownGaps.GuidAggregates, () => Assert.Equal(["Émile Zola"], Search("ÉMILE")));
+        Assert.Equal(["Émile Zola"], Search("ÉMILE"));
     }
 
     [Fact]
     public void GetItemList_SearchTermWithLowerCaseNonAsciiLetter_DoesNotFindUpperCaseOriginalTitle()
     {
-        KnownGap.On(KnownGaps.GuidAggregates, () => Assert.Empty(Search("émile")));
+        Assert.Empty(Search("émile"));
     }
 
     [Fact]
     public void GetItemList_BackslashInSearchTerm_IsLiteral()
     {
-        KnownGap.On(KnownGaps.GuidAggregates, () => Assert.Equal(["AC\\DC"], Search("AC\\DC")));
+        Assert.Equal(["AC\\DC"], Search("AC\\DC"));
     }
 
     [Theory]
@@ -67,7 +67,7 @@ public sealed class BaseItemRepositorySearchTermTests : JellyfinDbTestFixture
     [InlineData("%eta", "Beta")]
     public void GetItemList_PercentAndUnderscoreInSearchTerm_StayWildcards(string term, string expected)
     {
-        KnownGap.On(KnownGaps.GuidAggregates, () => Assert.Equal([expected], Search(term)));
+        Assert.Equal([expected], Search(term));
     }
 
     private string[] Search(string term)

@@ -45,7 +45,7 @@ public sealed class BaseItemRepositoryNameContainsTests : JellyfinDbTestFixture
     [InlineData("Star  Wars")]
     public void GetItemList_NameContainsAgainstCleanName_IgnoresCase(string term)
     {
-        KnownGap.On(KnownGaps.GuidAggregates, () => Assert.Equal(["Star Wars"], Search(term)));
+        Assert.Equal(["Star Wars"], Search(term));
     }
 
     [Theory]
@@ -53,7 +53,7 @@ public sealed class BaseItemRepositoryNameContainsTests : JellyfinDbTestFixture
     [InlineData("emile")]
     public void GetItemList_NameContainsAgainstCleanName_IgnoresDiacritics(string term)
     {
-        KnownGap.On(KnownGaps.GuidAggregates, () => Assert.Equal(["Émile Zola"], Search(term)));
+        Assert.Equal(["Émile Zola"], Search(term));
     }
 
     [Theory]
@@ -62,13 +62,13 @@ public sealed class BaseItemRepositoryNameContainsTests : JellyfinDbTestFixture
     [InlineData("wOrLd")]
     public void GetItemList_NameContainsAgainstMixedCaseOriginalTitle_IgnoresAsciiCase(string term)
     {
-        KnownGap.On(KnownGaps.GuidAggregates, () => Assert.Equal(["Item One"], Search(term)));
+        Assert.Equal(["Item One"], Search(term));
     }
 
     [Fact]
     public void GetItemList_BackslashInNameContains_IsLiteral()
     {
-        KnownGap.On(KnownGaps.GuidAggregates, () => Assert.Equal(["Item Three"], Search("AC\\DC")));
+        Assert.Equal(["Item Three"], Search("AC\\DC"));
     }
 
     [Theory]
@@ -77,13 +77,13 @@ public sealed class BaseItemRepositoryNameContainsTests : JellyfinDbTestFixture
     [InlineData("%EGA", "Item Five")]
     public void GetItemList_PercentAndUnderscoreInNameContains_StayWildcards(string term, string expected)
     {
-        KnownGap.On(KnownGaps.GuidAggregates, () => Assert.Equal([expected], Search(term)));
+        Assert.Equal([expected], Search(term));
     }
 
     [Fact]
     public void GetItemList_NameContainsOfOnlyPunctuation_MatchesOriginalTitleOnly()
     {
-        KnownGap.On(KnownGaps.GuidAggregates, () => Assert.Equal(["Item Six"], Search("-")));
+        Assert.Equal(["Item Six"], Search("-"));
     }
 
     private string[] Search(string term)
