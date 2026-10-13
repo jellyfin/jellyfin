@@ -441,7 +441,15 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (filter.ParentId != null)
         {
-            query = query.Where(e => e.BaseItems!.Any(w => context.AncestorIds.Any(i => i.ParentItemId == filter.ParentId && i.ItemId == w.ItemId)));
+            // Seek the credits through IX_AncestorIds_ParentItemId; a correlated EXISTS walks every person.
+            var parentId = filter.ParentId.Value;
+            var descendantIds = context.AncestorIds
+                .Where(a => a.ParentItemId == parentId)
+                .Select(a => a.ItemId);
+            var creditedPeopleIds = context.PeopleBaseItemMap
+                .Where(m => descendantIds.Contains(m.ItemId))
+                .Select(m => m.PeopleId);
+            query = query.Where(e => creditedPeopleIds.Contains(e.Id));
         }
 
         if (!filter.AppearsInItemId.IsEmpty())
