@@ -217,6 +217,7 @@ namespace Jellyfin.Server
                 // "Preparing migrations" carries through the DB read; per-migration progress is reported
                 // as "Running migration X of Y" from inside the step once the pending set is known.
                 _optimizeDatabaseAfterMigration |= await jellyfinMigrationService.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, appHost.ServiceProvider).ConfigureAwait(false);
+                await ApplyDatabaseSettingsAsync(appHost.ServiceProvider, CancellationToken.None).ConfigureAwait(false);
 
                 SetupServer.ReportActivity(StartupActivity.InitializingServices);
                 await appHost.InitializeServices(startupConfig).ConfigureAwait(false);
@@ -343,6 +344,17 @@ namespace Jellyfin.Server
         {
             var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(serviceProvider, _migrationLogger!);
             _optimizeDatabaseAfterMigration |= await jellyfinMigrationService.MigrateStepAsync(jellyfinMigrationStage, serviceProvider).ConfigureAwait(false);
+        }
+
+        internal static async Task ApplyDatabaseSettingsAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken)
+        {
+            var databaseProvider = serviceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
+            var dbContextFactory = serviceProvider.GetRequiredService<IDbContextFactory<JellyfinDbContext>>();
+            var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+            await using (dbContext.ConfigureAwait(false))
+            {
+                await databaseProvider.ApplyDatabaseSettingsAsync(dbContext, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         private static async Task OptimizeDatabaseAfterMigrationAsync(IServiceProvider serviceProvider)

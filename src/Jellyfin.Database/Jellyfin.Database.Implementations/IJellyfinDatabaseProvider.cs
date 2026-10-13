@@ -130,4 +130,16 @@ public interface IJellyfinDatabaseProvider
     /// <param name="cancellationToken">The token to abort the operation.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task CompleteDatabaseRestoreAsync(JellyfinDbContext dbContext, CancellationToken cancellationToken) => Task.CompletedTask;
+
+    /// <summary>
+    /// Applies the settings the provider needs on the database server that persist across sessions, so that they also
+    /// reach connections that are pooled or opened later. It is called at every startup, after the schema migrations,
+    /// and may run again after a restore, so implementations must be idempotent. Implementations must not throw when
+    /// the server refuses a change, for example because of missing privileges: they log it and continue, because
+    /// startup must not fail over a setting. The default does nothing.
+    /// </summary>
+    /// <param name="dbContext">A context on the database that is in use.</param>
+    /// <param name="cancellationToken">The token to abort the operation.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    Task ApplyDatabaseSettingsAsync(JellyfinDbContext dbContext, CancellationToken cancellationToken) => Task.CompletedTask;
 }

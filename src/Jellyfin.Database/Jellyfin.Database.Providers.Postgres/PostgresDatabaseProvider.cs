@@ -270,6 +270,85 @@ public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
         }
     }
 
+    /// <inheritdoc/>
+    public async Task ApplyDatabaseSettingsAsync(JellyfinDbContext dbContext, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(dbContext);
+
+        // Jellyfin runs short queries, for which compiling with JIT costs more than it saves. A default stored for the
+        // role also applies to pooled sessions, which reset their own settings, and to sessions behind a pooler.
+        string? command = null;
+        try
+        {
+            // The role is matched by name and never cast to regrole, which would read it back as an identifier.
+            var session = (await dbContext.Database
+                .SqlQueryRaw<JitSession>(
+                    """
+                    SELECT
+                        current_setting('jit', true) AS "Jit",
+                        current_database() AS "DatabaseName",
+                        current_user AS "RoleName",
+                        EXISTS (
+                            SELECT 1
+                            FROM pg_db_role_setting s
+                            CROSS JOIN unnest(s.setconfig) AS c
+                            WHERE s.setrole IN (0, (SELECT r.oid FROM pg_roles r WHERE r.rolname = current_user))
+                              AND s.setdatabase IN (0, (SELECT d.oid FROM pg_database d WHERE d.datname = current_database()))
+                              AND starts_with(c, 'jit=')
+                        ) AS "HasConfiguredDefault"
+                    """)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false)).Single();
+
+            if (session.Jit is null || string.Equals(session.Jit, "off", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (session.HasConfiguredDefault)
+            {
+                _logger.LogInformation(
+                    "JIT compilation is on for role {Role} in database {Database} as configured on the server, leaving it as it is",
+                    session.RoleName,
+                    session.DatabaseName);
+                return;
+            }
+
+            var role = QuoteIdentifier(session.RoleName);
+            var database = QuoteIdentifier(session.DatabaseName);
+            command = $"ALTER ROLE {role} IN DATABASE {database} SET jit = off";
+
+            // The statement is formatted before it is sent, so braces in the name must be doubled.
+            var statement = $"ALTER ROLE CURRENT_USER IN DATABASE {database} SET jit = off"
+                .Replace("{", "{{", StringComparison.Ordinal)
+                .Replace("}", "}}", StringComparison.Ordinal);
+            await dbContext.Database.ExecuteSqlRawAsync(statement, cancellationToken).ConfigureAwait(false);
+
+            // Sessions that are already pooled still have JIT on.
+            NpgsqlConnection.ClearPool((NpgsqlConnection)dbContext.Database.GetDbConnection());
+            _logger.LogInformation(
+                "Turned off JIT compilation for role {Role} in database {Database}, as it slows down the short queries of Jellyfin. To keep it on, run: ALTER ROLE {QuotedRole} IN DATABASE {QuotedDatabase} SET jit = on",
+                session.RoleName,
+                session.DatabaseName,
+                role,
+                database);
+        }
+        catch (DbException ex)
+        {
+            if (command is null)
+            {
+                _logger.LogWarning(ex, "Could not read the JIT setting, so it is left as it is. Jellyfin runs faster on PostgreSQL with JIT compilation turned off");
+            }
+            else
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Could not turn off JIT compilation, which slows down the short queries of Jellyfin. To do so, run the following as a user who may alter the role: {Command}",
+                    command);
+            }
+        }
+    }
+
     private static bool IsGeneratedIntegerKey(IProperty property, StoreObjectIdentifier table)
     {
         var type = Nullable.GetUnderlyingType(property.ClrType) ?? property.ClrType;
@@ -348,4 +427,6 @@ public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
             return null;
         }
     }
+
+    private sealed record JitSession(string? Jit, string DatabaseName, string RoleName, bool HasConfiguredDefault);
 }
