@@ -12,7 +12,10 @@ using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -33,7 +36,10 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 public sealed class ItemPersistenceWriteConflictTests : IDisposable
 {
     private const int ConstraintPrimaryKey = 1555;
+    private const int ConstraintUnique = 2067;
 
+    private readonly ILibraryManager? _previousLibraryManager;
+    private readonly IServerConfigurationManager? _previousConfigurationManager;
     private readonly string _directory;
     private readonly string _connectionString;
     private readonly SqliteDatabaseProvider _provider = new(
@@ -42,6 +48,19 @@ public sealed class ItemPersistenceWriteConflictTests : IDisposable
 
     public ItemPersistenceWriteConflictTests()
     {
+        // BaseItem resolves these through process-wide statics; restored in Dispose.
+        _previousLibraryManager = BaseItem.LibraryManager;
+        _previousConfigurationManager = BaseItem.ConfigurationManager;
+
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager.Setup(l => l.GetCollectionFolders(It.IsAny<BaseItem>()))
+            .Returns([]);
+        BaseItem.LibraryManager = libraryManager.Object;
+
+        var configurationManager = new Mock<IServerConfigurationManager>();
+        configurationManager.Setup(c => c.Configuration).Returns(new ServerConfiguration());
+        BaseItem.ConfigurationManager = configurationManager.Object;
+
         _directory = Path.Combine(AppContext.BaseDirectory, "item-write-conflict-tests-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_directory);
         _connectionString = new SqliteConnectionStringBuilder
@@ -56,6 +75,9 @@ public sealed class ItemPersistenceWriteConflictTests : IDisposable
 
     public void Dispose()
     {
+        BaseItem.LibraryManager = _previousLibraryManager!;
+        BaseItem.ConfigurationManager = _previousConfigurationManager!;
+
         if (Directory.Exists(_directory))
         {
             Directory.Delete(_directory, true);
@@ -105,6 +127,32 @@ public sealed class ItemPersistenceWriteConflictTests : IDisposable
         Assert.Equal(key, Assert.Single(item.UserData).CustomDataKey);
     }
 
+    [Fact]
+    public void ItemValues_ConflictingInsertBetweenReadAndWrite_Retries()
+    {
+        var winnerId = Guid.NewGuid();
+        var item = new Folder { Id = Guid.NewGuid(), Name = "Marvel", Genres = ["Drama"] };
+
+        var race = new InsertRace(
+            "FROM \"ItemValues\"",
+            (connection, transaction) => InsertItemValue(connection, transaction, winnerId, ItemValueType.Genre, "Drama"));
+        var service = CreateService(race);
+
+        service.SaveItems([item], CancellationToken.None);
+
+        var failure = Assert.IsType<SqliteException>(Assert.Single(race.Failures));
+        Assert.Equal(ConstraintUnique, failure.SqliteExtendedErrorCode);
+        Assert.True(race.WinnerCommitted);
+
+        using var verification = CreateDbContext(CreateOptions());
+        var value = Assert.Single(verification.ItemValues.AsNoTracking().ToList());
+        Assert.Equal(winnerId, value.ItemValueId);
+        Assert.Equal("Drama", value.Value);
+        var map = Assert.Single(verification.ItemValuesMap.AsNoTracking().ToList());
+        Assert.Equal(item.Id, map.ItemId);
+        Assert.Equal(value.ItemValueId, map.ItemValueId);
+    }
+
     private static void InsertUserData(DbConnection connection, DbTransaction? transaction, Guid itemId, Guid userId, string key)
     {
         using var command = connection.CreateCommand();
@@ -113,6 +161,17 @@ public sealed class ItemPersistenceWriteConflictTests : IDisposable
         command.Parameters.Add(new SqliteParameter("$itemId", itemId));
         command.Parameters.Add(new SqliteParameter("$userId", userId));
         command.Parameters.Add(new SqliteParameter("$key", key));
+        command.ExecuteNonQuery();
+    }
+
+    private static void InsertItemValue(DbConnection connection, DbTransaction? transaction, Guid id, ItemValueType type, string value)
+    {
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = "INSERT INTO \"ItemValues\" (\"ItemValueId\", \"Type\", \"Value\", \"CleanValue\") VALUES ($id, $type, $value, $value)";
+        command.Parameters.Add(new SqliteParameter("$id", id));
+        command.Parameters.Add(new SqliteParameter("$type", (int)type));
+        command.Parameters.Add(new SqliteParameter("$value", value));
         command.ExecuteNonQuery();
     }
 
@@ -132,12 +191,15 @@ public sealed class ItemPersistenceWriteConflictTests : IDisposable
     {
         var options = CreateOptions(race);
         var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
+        JellyfinDbContext CreateAfterTheWinnerIsCommitted()
+        {
+            race.CommitWinnerAfterFailure(_connectionString);
+            return CreateDbContext(options);
+        }
+
+        factory.Setup(f => f.CreateDbContext()).Returns(CreateAfterTheWinnerIsCommitted);
         factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(() =>
-            {
-                race.CommitWinnerAfterFailure(_connectionString);
-                return CreateDbContext(options);
-            });
+            .ReturnsAsync(CreateAfterTheWinnerIsCommitted);
 
         return new ItemPersistenceService(
             factory.Object,
@@ -166,19 +228,32 @@ public sealed class ItemPersistenceWriteConflictTests : IDisposable
 
         public bool WinnerCommitted { get; private set; }
 
+        public override InterceptionResult<DbDataReader> ReaderExecuting(
+            DbCommand command,
+            CommandEventData eventData,
+            InterceptionResult<DbDataReader> result)
+        {
+            StageBefore(command);
+            return result;
+        }
+
         public override ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(
             DbCommand command,
             CommandEventData eventData,
             InterceptionResult<DbDataReader> result,
             CancellationToken cancellationToken = default)
         {
-            if (_armed && !_staged)
-            {
-                _staged = true;
-                _insert(command.Connection!, command.Transaction);
-            }
-
+            StageBefore(command);
             return ValueTask.FromResult(result);
+        }
+
+        public override DbDataReader ReaderExecuted(
+            DbCommand command,
+            CommandExecutedEventData eventData,
+            DbDataReader result)
+        {
+            Arm(command);
+            return result;
         }
 
         public override ValueTask<DbDataReader> ReaderExecutedAsync(
@@ -187,9 +262,12 @@ public sealed class ItemPersistenceWriteConflictTests : IDisposable
             DbDataReader result,
             CancellationToken cancellationToken = default)
         {
-            _armed |= command.CommandText.Contains(_marker, StringComparison.Ordinal);
+            Arm(command);
             return ValueTask.FromResult(result);
         }
+
+        public override void CommandFailed(DbCommand command, CommandErrorEventData eventData)
+            => Failures.Add(eventData.Exception);
 
         public override Task CommandFailedAsync(
             DbCommand command,
@@ -211,6 +289,17 @@ public sealed class ItemPersistenceWriteConflictTests : IDisposable
             connection.Open();
             _insert(connection, null);
             WinnerCommitted = true;
+        }
+
+        private void Arm(DbCommand command) => _armed |= command.CommandText.Contains(_marker, StringComparison.Ordinal);
+
+        private void StageBefore(DbCommand command)
+        {
+            if (_armed && !_staged)
+            {
+                _staged = true;
+                _insert(command.Connection!, command.Transaction);
+            }
         }
     }
 }

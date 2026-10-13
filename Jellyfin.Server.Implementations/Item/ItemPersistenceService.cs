@@ -350,6 +350,11 @@ public class ItemPersistenceService : IItemPersistenceService
             tuples.Add((item, ancestorIds, topParent, userdataKey, inheritedTags));
         }
 
+        _writeConflictRetry.Execute(() => SaveItemTuples(tuples), cancellationToken);
+    }
+
+    private void SaveItemTuples(List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey, List<string> InheritedTags)> tuples)
+    {
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
 
