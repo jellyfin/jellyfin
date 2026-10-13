@@ -32,21 +32,25 @@ public class ItemPersistenceService : IItemPersistenceService
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IServerApplicationHost _appHost;
     private readonly ILogger<ItemPersistenceService> _logger;
+    private readonly WriteConflictRetry _writeConflictRetry;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ItemPersistenceService"/> class.
     /// </summary>
     /// <param name="dbProvider">The database context factory.</param>
+    /// <param name="databaseProvider">The database provider, which classifies write conflicts.</param>
     /// <param name="appHost">The application host.</param>
     /// <param name="logger">The logger.</param>
     public ItemPersistenceService(
         IDbContextFactory<JellyfinDbContext> dbProvider,
+        IJellyfinDatabaseProvider databaseProvider,
         IServerApplicationHost appHost,
         ILogger<ItemPersistenceService> logger)
     {
         _dbProvider = dbProvider;
         _appHost = appHost;
         _logger = logger;
+        _writeConflictRetry = new WriteConflictRetry(databaseProvider, logger);
     }
 
     /// <inheritdoc />
@@ -226,6 +230,13 @@ public class ItemPersistenceService : IItemPersistenceService
         ArgumentNullException.ThrowIfNull(item);
         cancellationToken.ThrowIfCancellationRequested();
 
+        await _writeConflictRetry
+            .ExecuteAsync(ct => ReattachUserDataOnceAsync(item, ct), cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task ReattachUserDataOnceAsync(BaseItemDto item, CancellationToken cancellationToken)
+    {
         var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         await using (dbContext.ConfigureAwait(false))

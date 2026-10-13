@@ -1,0 +1,216 @@
+using System;
+using System.Collections.Generic;
+using System.Data.Common;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Locking;
+using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Server.Implementations.Item;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Entities;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
+using Xunit;
+
+namespace Jellyfin.Server.Implementations.Tests.Item;
+
+/// <summary>
+/// Another writer can insert a row between a read and the write that depends on it. SQLite serialises
+/// writers, so the race is staged: the other writer's row is inserted inside the failing attempt's own
+/// transaction, which makes SQLite itself report the constraint violation, and then committed from a
+/// connection of its own before the next attempt reads. The database is a file for that reason.
+/// The race is staged on the attempt's own connection, so these tests hold on SQLite, although a transaction there
+/// takes the write lock when it begins and a real second writer would be refused at once.
+/// </summary>
+public sealed class ItemPersistenceWriteConflictTests : IDisposable
+{
+    private const int ConstraintPrimaryKey = 1555;
+
+    private readonly string _directory;
+    private readonly string _connectionString;
+    private readonly SqliteDatabaseProvider _provider = new(
+        Mock.Of<IApplicationPaths>(),
+        NullLogger<SqliteDatabaseProvider>.Instance);
+
+    public ItemPersistenceWriteConflictTests()
+    {
+        _directory = Path.Combine(AppContext.BaseDirectory, "item-write-conflict-tests-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(_directory);
+        _connectionString = new SqliteConnectionStringBuilder
+        {
+            DataSource = Path.Combine(_directory, "jellyfin.db"),
+            Pooling = false
+        }.ToString();
+
+        using var context = CreateDbContext(new DbContextOptionsBuilder<JellyfinDbContext>().UseSqlite(_connectionString).Options);
+        context.Database.EnsureCreated();
+    }
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_directory))
+        {
+            Directory.Delete(_directory, true);
+        }
+    }
+
+    [Fact]
+    public async Task UserData_ConflictingInsertBetweenReadAndWrite_Retries()
+    {
+        var userId = Guid.NewGuid();
+        var item = new Folder { Id = Guid.NewGuid(), Name = "Marvel" };
+        var key = Assert.Single(item.GetUserDataKeys());
+        using (var context = CreateDbContext(CreateOptions()))
+        {
+            context.Users.Add(new User("viewer", "auth", "reset") { Id = userId });
+            context.BaseItems.Add(new BaseItemEntity { Id = item.Id, Type = typeof(Folder).FullName! });
+            context.UserData.Add(new UserData
+            {
+                ItemId = BaseItemRepository.PlaceholderId,
+                Item = null,
+                UserId = userId,
+                User = null,
+                CustomDataKey = key,
+                PlayCount = 3,
+                Played = true,
+                RetentionDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            });
+            await context.SaveChangesAsync(CancellationToken.None);
+        }
+
+        var race = new InsertRace(
+            "DELETE FROM \"UserData\"",
+            (connection, transaction) => InsertUserData(connection, transaction, item.Id, userId, key));
+        var service = CreateService(race);
+
+        await service.ReattachUserDataAsync(item, CancellationToken.None);
+
+        var failure = Assert.IsType<SqliteException>(Assert.Single(race.Failures));
+        Assert.Equal(ConstraintPrimaryKey, failure.SqliteExtendedErrorCode);
+        Assert.True(race.WinnerCommitted);
+
+        using var verification = CreateDbContext(CreateOptions());
+        var row = Assert.Single(verification.UserData.AsNoTracking().Where(e => e.UserId.Equals(userId)).ToList());
+        Assert.Equal(item.Id, row.ItemId);
+        Assert.Equal(key, row.CustomDataKey);
+        Assert.Equal(3, row.PlayCount);
+        Assert.Equal(key, Assert.Single(item.UserData).CustomDataKey);
+    }
+
+    private static void InsertUserData(DbConnection connection, DbTransaction? transaction, Guid itemId, Guid userId, string key)
+    {
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = "INSERT INTO \"UserData\" (\"ItemId\", \"UserId\", \"CustomDataKey\", \"PlaybackPositionTicks\", \"PlayCount\", \"IsFavorite\", \"Played\") VALUES ($itemId, $userId, $key, 0, 0, 0, 0)";
+        command.Parameters.Add(new SqliteParameter("$itemId", itemId));
+        command.Parameters.Add(new SqliteParameter("$userId", userId));
+        command.Parameters.Add(new SqliteParameter("$key", key));
+        command.ExecuteNonQuery();
+    }
+
+    private DbContextOptions<JellyfinDbContext> CreateOptions(params IInterceptor[] interceptors)
+        => new DbContextOptionsBuilder<JellyfinDbContext>()
+            .UseSqlite(_connectionString)
+            .AddInterceptors(interceptors)
+            .Options;
+
+    private JellyfinDbContext CreateDbContext(DbContextOptions<JellyfinDbContext> options) => new(
+        options,
+        NullLogger<JellyfinDbContext>.Instance,
+        _provider,
+        new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
+
+    private ItemPersistenceService CreateService(InsertRace race)
+    {
+        var options = CreateOptions(race);
+        var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
+        factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                race.CommitWinnerAfterFailure(_connectionString);
+                return CreateDbContext(options);
+            });
+
+        return new ItemPersistenceService(
+            factory.Object,
+            _provider,
+            Mock.Of<IServerApplicationHost>(),
+            NullLogger<ItemPersistenceService>.Instance);
+    }
+
+    // Once a statement containing the marker has run, the next command of that attempt is preceded by the
+    // other writer's insert, in the same transaction, so SQLite itself rejects the command. The same insert
+    // is committed on a connection of its own once the failed attempt has been rolled back.
+    private sealed class InsertRace : DbCommandInterceptor
+    {
+        private readonly string _marker;
+        private readonly Action<DbConnection, DbTransaction?> _insert;
+        private bool _armed;
+        private bool _staged;
+
+        public InsertRace(string marker, Action<DbConnection, DbTransaction?> insert)
+        {
+            _marker = marker;
+            _insert = insert;
+        }
+
+        public List<Exception> Failures { get; } = [];
+
+        public bool WinnerCommitted { get; private set; }
+
+        public override ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(
+            DbCommand command,
+            CommandEventData eventData,
+            InterceptionResult<DbDataReader> result,
+            CancellationToken cancellationToken = default)
+        {
+            if (_armed && !_staged)
+            {
+                _staged = true;
+                _insert(command.Connection!, command.Transaction);
+            }
+
+            return ValueTask.FromResult(result);
+        }
+
+        public override ValueTask<DbDataReader> ReaderExecutedAsync(
+            DbCommand command,
+            CommandExecutedEventData eventData,
+            DbDataReader result,
+            CancellationToken cancellationToken = default)
+        {
+            _armed |= command.CommandText.Contains(_marker, StringComparison.Ordinal);
+            return ValueTask.FromResult(result);
+        }
+
+        public override Task CommandFailedAsync(
+            DbCommand command,
+            CommandErrorEventData eventData,
+            CancellationToken cancellationToken = default)
+        {
+            Failures.Add(eventData.Exception);
+            return Task.CompletedTask;
+        }
+
+        public void CommitWinnerAfterFailure(string connectionString)
+        {
+            if (Failures.Count == 0 || WinnerCommitted)
+            {
+                return;
+            }
+
+            using var connection = new SqliteConnection(connectionString);
+            connection.Open();
+            _insert(connection, null);
+            WinnerCommitted = true;
+        }
+    }
+}

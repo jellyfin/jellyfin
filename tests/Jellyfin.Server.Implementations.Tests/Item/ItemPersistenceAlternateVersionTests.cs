@@ -58,6 +58,7 @@ public sealed class ItemPersistenceAlternateVersionTests : SqliteDbTestFixture
 
         _service = new ItemPersistenceService(
             CreateDbContextFactory(),
+            DatabaseProvider,
             appHost.Object,
             NullLogger<ItemPersistenceService>.Instance);
     }

@@ -66,6 +66,7 @@ public sealed class ItemPersistenceInMemoryNulTests : SqliteDbTestFixture
 
         _service = new ItemPersistenceService(
             CreateDbContextFactory(),
+            DatabaseProvider,
             _appHost,
             NullLogger<ItemPersistenceService>.Instance);
         _repository = new BaseItemRepository(

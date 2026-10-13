@@ -54,6 +54,7 @@ public sealed class ItemPersistenceNulMatchingTests : SqliteDbTestFixture
 
         _service = new ItemPersistenceService(
             CreateDbContextFactory(),
+            DatabaseProvider,
             new Mock<IServerApplicationHost>().Object,
             NullLogger<ItemPersistenceService>.Instance);
     }

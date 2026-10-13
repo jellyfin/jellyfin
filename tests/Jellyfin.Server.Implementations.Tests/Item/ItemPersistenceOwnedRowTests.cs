@@ -49,6 +49,7 @@ public sealed class ItemPersistenceOwnedRowTests : SqliteDbTestFixture
 
         _service = new ItemPersistenceService(
             CreateDbContextFactory(),
+            DatabaseProvider,
             new Mock<IServerApplicationHost>().Object,
             NullLogger<ItemPersistenceService>.Instance);
     }
