@@ -7,6 +7,7 @@ using MediaBrowser.Common.Configuration;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
@@ -63,9 +64,14 @@ public sealed class SqliteTestBackend : ITestDatabaseBackend
         return new TestDatabase(CreateOptions(connection, []), CreateProvider, connection.Dispose);
     }
 
-    private static IJellyfinDatabaseProvider CreateProvider()
+    internal static IJellyfinDatabaseProvider CreateProvider()
     {
         return new SqliteDatabaseProvider(_applicationPaths, NullLogger<SqliteDatabaseProvider>.Instance);
+    }
+
+    internal static DbContextOptions<JellyfinDbContext> CreateOptions(string connectionString, IInterceptor[] interceptors)
+    {
+        return Build(builder => builder.UseSqlite(connectionString, ConfigureSqlite), interceptors);
     }
 
     private static SqliteConnection OpenInMemory()
@@ -77,10 +83,19 @@ public sealed class SqliteTestBackend : ITestDatabaseBackend
 
     private static DbContextOptions<JellyfinDbContext> CreateOptions(SqliteConnection connection, IInterceptor[] interceptors)
     {
-        return new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(connection, sqliteOptions => sqliteOptions.MigrationsAssembly(typeof(SqliteDatabaseProvider).Assembly))
-            .AddInterceptors(interceptors)
-            .Options;
+        return Build(builder => builder.UseSqlite(connection, ConfigureSqlite), interceptors);
+    }
+
+    private static void ConfigureSqlite(SqliteDbContextOptionsBuilder sqliteOptions)
+    {
+        sqliteOptions.MigrationsAssembly(typeof(SqliteDatabaseProvider).Assembly);
+    }
+
+    private static DbContextOptions<JellyfinDbContext> Build(Action<DbContextOptionsBuilder<JellyfinDbContext>> useSqlite, IInterceptor[] interceptors)
+    {
+        var builder = new DbContextOptionsBuilder<JellyfinDbContext>();
+        useSqlite(builder);
+        return builder.AddInterceptors(interceptors).Options;
     }
 
     private static SqliteConnection CreateTemplate(TestSchemaSource source)

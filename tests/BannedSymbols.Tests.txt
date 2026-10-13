@@ -3,3 +3,4 @@ M:Microsoft.Data.Sqlite.SqliteConnection.#ctor(System.String);Use DatabaseTestFi
 M:Microsoft.Data.Sqlite.SqliteFactory.CreateConnection;Use DatabaseTestFixture so the test runs on the selected database provider, or mark a test of SQLite itself ProviderFact(TestDbProvider.Sqlite)
 T:Microsoft.EntityFrameworkCore.SqliteDbContextOptionsBuilderExtensions;Use DatabaseTestFixture so the test runs on the selected database provider, or mark a test of SQLite itself ProviderFact(TestDbProvider.Sqlite)
 P:Jellyfin.Database.Testing.SqliteTestBackend.Instance;Use DatabaseTestFixture, which takes the backend of the selected database provider, or mark a test that needs SQLite ProviderFact(TestDbProvider.Sqlite)
+M:Jellyfin.Database.Testing.SqliteFileTestBackend.#ctor;Use DatabaseTestFixture, which takes the backend of the selected database provider, or mark a test that needs SQLite ProviderFact(TestDbProvider.Sqlite)
