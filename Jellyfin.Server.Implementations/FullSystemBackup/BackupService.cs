@@ -246,6 +246,8 @@ public class BackupService : IBackupService
                         await _jellyfinDatabaseProvider.PurgeDatabase(dbContext, tableNames).ConfigureAwait(false);
                         _logger.LogInformation("Database Purged");
 
+                        var rowCleaner = new RestoredRowCleaner(_logger);
+
                         // Each table is saved on its own, so the tables its keys refer to have to be saved before it.
                         foreach (var entitySet in OrderByForeignKeys(entityTypes.Select(e => e.Type), dbContext.Model))
                         {
@@ -266,13 +268,17 @@ public class BackupService : IBackupService
                             var identityScope = await _jellyfinDatabaseProvider.BeginExplicitIdentityInsertAsync(dbContext, modelType, CancellationToken.None).ConfigureAwait(false);
                             await using (identityScope.ConfigureAwait(false))
                             {
+                                rowCleaner.BeginTable(modelType);
                                 await foreach (var (source, entity) in ReadEntitiesAsync(zipEntry, entityClrType).ConfigureAwait(false))
                                 {
                                     try
                                     {
                                         records++;
                                         RestoreGeneratedKeys(dbContext, entity, ReadGeneratedKeys(source, generatedKeys));
-                                        dbContext.Add(entity);
+                                        if (rowCleaner.TryAccept(dbContext.Entry(entity)))
+                                        {
+                                            dbContext.Add(entity);
+                                        }
                                     }
                                     catch (Exception ex)
                                     {
@@ -280,6 +286,7 @@ public class BackupService : IBackupService
                                     }
                                 }
 
+                                rowCleaner.EndTable();
                                 _logger.LogInformation("Prepared to restore {Number} entries for {Table}", records, entitySet.Name);
                                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
                                 dbContext.ChangeTracker.Clear();
@@ -308,7 +315,8 @@ public class BackupService : IBackupService
         while (remaining.Count > 0)
         {
             var ready = remaining
-                .Where(e => e.Type.GetForeignKeys().All(key => key.PrincipalEntityType == e.Type || remaining.All(other => other.Type != key.PrincipalEntityType)))
+                .Where(e => e.Type.GetForeignKeys().All(key => key.PrincipalEntityType == e.Type || remaining.All(other => other.Type != key.PrincipalEntityType))
+                    && RestoredRowCleaner.SoftReferences.Where(reference => reference.Dependent == e.Type.ClrType).All(reference => remaining.All(other => other.Type.ClrType != reference.Principal)))
                 .ToList();
             if (ready.Count == 0)
             {

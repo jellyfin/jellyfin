@@ -23,6 +23,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -42,11 +43,17 @@ public sealed class BackupServiceTests : IDisposable
     private const string ForeignSchemaMigrationId = "20250101140000_SchemaMigrationOfAnotherEngine";
     private const string RemovedRoutineId = "20250101150000_RoutineThisServerNoLongerHas";
 
+    private static readonly Guid MovieId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+    private static readonly Guid OtherMovieId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+    private static readonly Guid RockId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+    private static readonly Guid NulRockId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+
     private readonly SqliteConnection _connection;
     private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly string _testRoot;
     private readonly string _backupPath;
     private readonly string _configurationDirectoryPath;
+    private readonly RecordingLogger<BackupService> _logger = new();
     private readonly List<string> _identityScopeEvents = [];
     private readonly List<IEntityType> _identityScopeTypes = [];
     private readonly List<string> _unsavedWhenScopeClosed = [];
@@ -452,6 +459,286 @@ public sealed class BackupServiceTests : IDisposable
         Assert.Equal(before, await ReadHistoryAsync(cancellationToken).ConfigureAwait(true));
     }
 
+    [Fact]
+    public async Task RestoreBackupAsync_WithValuesThatDifferOnlyByNul_RestoresOneRow()
+    {
+        await RestoreWithRockAndNulRockAsync(nulRowFirst: false, mapItemIds: []).ConfigureAwait(true);
+
+        await using var ctx = CreateDbContext();
+        var value = await ctx.ItemValues.AsNoTracking().SingleAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        Assert.Equal("Rock", value.Value);
+        Assert.Equal(RockId, value.ItemValueId);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RestoreBackupAsync_WithValuesThatDifferOnlyByNul_KeepsTheRowWithoutNul(bool nulRowFirst)
+    {
+        await RestoreWithRockAndNulRockAsync(nulRowFirst, mapItemIds: [OtherMovieId]).ConfigureAwait(true);
+
+        await using var ctx = CreateDbContext();
+        var value = await ctx.ItemValues.AsNoTracking().SingleAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        Assert.Equal("Rock", value.Value);
+        Assert.Equal(RockId, value.ItemValueId);
+        var maps = await ctx.ItemValuesMap.AsNoTracking().ToListAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        Assert.Equal(2, maps.Count);
+        Assert.All(maps, e => Assert.Equal(RockId, e.ItemValueId));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RestoreBackupAsync_WhenAllRowsThatCollideHadNul_KeepsTheFirstRowOfTheArchive(bool secondRowFirst)
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await RewriteJsonArrayAsync(
+            manifest.Path,
+            "ItemValues",
+            values =>
+            {
+                values[0]!["Value"] = "Ro\0ck";
+                var duplicate = JsonNode.Parse(values[0]!.ToJsonString())!;
+                duplicate["ItemValueId"] = NulRockId;
+                duplicate["Value"] = "Rock\0";
+                values.Insert(secondRowFirst ? 0 : values.Count, duplicate);
+            },
+            cancellationToken).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        await using var ctx = CreateDbContext();
+        var value = await ctx.ItemValues.AsNoTracking().SingleAsync(cancellationToken).ConfigureAwait(true);
+        Assert.Equal("Rock", value.Value);
+        Assert.Equal(secondRowFirst ? NulRockId : RockId, value.ItemValueId);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RestoreBackupAsync_WithDisplayPreferencesThatDifferOnlyByNul_KeepsTheRowWithoutNul(bool staleRowFirst)
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        int currentId;
+        await using (var seedContext = CreateDbContext())
+        {
+            var alice = await seedContext.Users.SingleAsync(e => e.Username == "alice", cancellationToken).ConfigureAwait(true);
+            var preferences = new DisplayPreferences(alice.Id, MovieId, "web");
+            seedContext.DisplayPreferences.Add(preferences);
+            await seedContext.SaveChangesAsync(cancellationToken).ConfigureAwait(true);
+            currentId = preferences.Id;
+        }
+
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await RewriteJsonArrayAsync(
+            manifest.Path,
+            "DisplayPreferences",
+            rows =>
+            {
+                var stale = JsonNode.Parse(rows[0]!.ToJsonString())!;
+                stale["Id"] = currentId + 100;
+                stale["Client"] = "web\0";
+                rows.Insert(staleRowFirst ? 0 : rows.Count, stale);
+            },
+            cancellationToken).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        await using var ctx = CreateDbContext();
+        var restored = await ctx.DisplayPreferences.AsNoTracking().SingleAsync(cancellationToken).ConfigureAwait(true);
+        Assert.Equal("web", restored.Client);
+        Assert.Equal(currentId, restored.Id);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RestoreBackupAsync_WithUsersThatDifferOnlyByNul_PointsTheActivityLogAtTheKeptUser(bool staleRowFirst)
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var staleUserId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+        Guid bobId;
+        await using (var seedContext = CreateDbContext())
+        {
+            bobId = (await seedContext.Users.SingleAsync(e => e.Username == "bob", cancellationToken).ConfigureAwait(true)).Id;
+            seedContext.ActivityLogs.Add(new ActivityLog("Signed in", "SessionStarted", staleUserId));
+            await seedContext.SaveChangesAsync(cancellationToken).ConfigureAwait(true);
+        }
+
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await RewriteJsonArrayAsync(
+            manifest.Path,
+            "Users",
+            rows =>
+            {
+                var stale = JsonNode.Parse(rows.Single(e => e!["Username"]!.GetValue<string>() == "bob")!.ToJsonString())!;
+                stale["Id"] = staleUserId;
+                stale["Username"] = "bob\0";
+                stale["NormalizedUsername"] = "BOB\0";
+                rows.Insert(staleRowFirst ? 0 : rows.Count, stale);
+            },
+            cancellationToken).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        await using var ctx = CreateDbContext();
+        Assert.Equal(1, await ctx.Users.CountAsync(e => e.Username == "bob", cancellationToken).ConfigureAwait(true));
+        var log = await ctx.ActivityLogs.AsNoTracking().SingleAsync(cancellationToken).ConfigureAwait(true);
+        Assert.Equal(bobId, log.UserId);
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_WithValuesThatDifferOnlyByNul_PointsReferencesToTheDroppedRowAtTheKeptRow()
+    {
+        await RestoreWithRockAndNulRockAsync(nulRowFirst: false, mapItemIds: [OtherMovieId]).ConfigureAwait(true);
+
+        await using var ctx = CreateDbContext();
+        var maps = await ctx.ItemValuesMap.AsNoTracking().OrderBy(e => e.ItemId).ToListAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        Assert.Equal([MovieId, OtherMovieId], maps.Select(e => e.ItemId));
+        Assert.All(maps, e => Assert.Equal(RockId, e.ItemValueId));
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_WhenReferencesBecomeDuplicates_KeepsOneOfThem()
+    {
+        await RestoreWithRockAndNulRockAsync(nulRowFirst: false, mapItemIds: [MovieId]).ConfigureAwait(true);
+
+        await using var ctx = CreateDbContext();
+        var map = await ctx.ItemValuesMap.AsNoTracking().SingleAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        Assert.Equal(MovieId, map.ItemId);
+        Assert.Equal(RockId, map.ItemValueId);
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_WithNulInAKeyColumnOnly_RemovesIt()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await RewriteJsonArrayAsync(manifest.Path, "ItemValues", values => values[0]!["Value"] = "Ro\0ck", cancellationToken).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        await using var ctx = CreateDbContext();
+        var value = await ctx.ItemValues.AsNoTracking().SingleAsync(cancellationToken).ConfigureAwait(true);
+        Assert.Equal("Rock", value.Value);
+        Assert.Equal(RockId, value.ItemValueId);
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_WithNulInAColumnThatIsNotAKey_RemovesIt()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await RewriteJsonArrayAsync(
+            manifest.Path,
+            "BaseItems",
+            items => items.Single(e => MovieId.Equals(e!["Id"]!.GetValue<Guid>()))!["Name"] = "First\0Movie",
+            cancellationToken).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        await using var ctx = CreateDbContext();
+        var item = await ctx.BaseItems.AsNoTracking().SingleAsync(e => e.Id.Equals(MovieId), cancellationToken).ConfigureAwait(true);
+        Assert.Equal("FirstMovie", item.Name);
+    }
+
+    [Fact]
+    public void Model_HasNoTableThatRefersToItselfAndHasAUniqueStringColumn()
+    {
+        using var ctx = CreateDbContext();
+        var selfReferencing = ctx.Model.GetEntityTypes()
+            .Where(e => e.GetForeignKeys().Any(key => key.PrincipalEntityType == e))
+            .ToList();
+        var offenders = selfReferencing
+            .Where(e => e.GetKeys().Select(key => key.Properties)
+                .Concat(e.GetIndexes().Where(index => index.IsUnique).Select(index => index.Properties))
+                .Any(properties => properties.Any(property => property.ClrType == typeof(string))))
+            .Select(e => e.ClrType.Name)
+            .ToList();
+
+        Assert.NotEmpty(selfReferencing);
+        Assert.True(
+            offenders.Count == 0,
+            $"Restored-row cleaning would lose the references of {string.Join(", ", offenders)} to rows of the same table, as it drops or replaces rows whose unique string columns collide once NUL characters are removed.");
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_WhenRowsAreDropped_LogsTheCountAndTheColumnsButNotTheValues()
+    {
+        await RestoreWithRockAndNulRockAsync(nulRowFirst: false, mapItemIds: []).ConfigureAwait(true);
+
+        var information = Assert.Single(_logger.Entries, e => e.Level == LogLevel.Information && e.Message.StartsWith("Dropped", StringComparison.Ordinal));
+        Assert.Contains("ItemValue", information.Message, StringComparison.Ordinal);
+        Assert.Contains("1", information.Message, StringComparison.Ordinal);
+        var debug = Assert.Single(_logger.Entries, e => e.Level == LogLevel.Debug && e.Message.StartsWith("Dropped", StringComparison.Ordinal));
+        Assert.Contains("ItemValue", debug.Message, StringComparison.Ordinal);
+        Assert.Contains("Value", debug.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(_logger.Entries, e => e.Message.Contains("Rock", StringComparison.Ordinal));
+    }
+
+    private async Task RestoreWithRockAndNulRockAsync(bool nulRowFirst, Guid[] mapItemIds)
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+
+        // An archive from SQLite, which stores NUL characters, holding a value twice: with and without the character.
+        await RewriteJsonArrayAsync(
+            manifest.Path,
+            "ItemValues",
+            values =>
+            {
+                var duplicate = JsonNode.Parse(values[0]!.ToJsonString())!;
+                duplicate["ItemValueId"] = NulRockId;
+                duplicate["Value"] = "Rock\0";
+                values.Insert(nulRowFirst ? 0 : values.Count, duplicate);
+            },
+            cancellationToken).ConfigureAwait(true);
+
+        await RewriteJsonArrayAsync(
+            manifest.Path,
+            "ItemValuesMap",
+            maps =>
+            {
+                foreach (var itemId in mapItemIds)
+                {
+                    var map = JsonNode.Parse(maps[0]!.ToJsonString())!;
+                    map["ItemValueId"] = NulRockId;
+                    map["ItemId"] = itemId;
+                    maps.Add(map);
+                }
+            },
+            cancellationToken).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+    }
+
+    private static Task RewriteJsonArrayAsync(string archivePath, string table, Action<JsonArray> rewrite, CancellationToken cancellationToken)
+    {
+        return RewriteEntryAsync(
+            archivePath,
+            $"Database/{table}.json",
+            json =>
+            {
+                var rows = JsonNode.Parse(json)!.AsArray();
+                rewrite(rows);
+                return rows.ToJsonString();
+            },
+            cancellationToken);
+    }
+
     private async Task<(IReadOnlyList<string> History, IReadOnlyList<string> Pending)> RestoreWithRewrittenHistoryAsync()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -534,11 +821,9 @@ public sealed class BackupServiceTests : IDisposable
         var bob = new User("bob", "provider", "reset");
         bob.Permissions.Add(new Permission(PermissionKind.IsAdministrator, false));
 
-        var movieId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-        var otherMovieId = Guid.Parse("22222222-2222-2222-2222-222222222222");
         var rock = new ItemValue
         {
-            ItemValueId = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+            ItemValueId = RockId,
             Type = ItemValueType.Genre,
             Value = "Rock",
             CleanValue = "rock"
@@ -546,14 +831,14 @@ public sealed class BackupServiceTests : IDisposable
 
         await using var ctx = CreateDbContext();
         ctx.Users.AddRange(alice, bob);
-        ctx.BaseItems.Add(CreateMovieEntity(movieId, "First Movie"));
-        ctx.BaseItems.Add(CreateMovieEntity(otherMovieId, "Second Movie"));
+        ctx.BaseItems.Add(CreateMovieEntity(MovieId, "First Movie"));
+        ctx.BaseItems.Add(CreateMovieEntity(OtherMovieId, "Second Movie"));
         ctx.ItemValues.Add(rock);
         await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         ctx.AccessSchedules.Add(new AccessSchedule(DynamicDayOfWeek.Weekday, 8, 17, alice.Id));
         ctx.Devices.Add(new Device(alice.Id, "App", "1.0", "Phone", "device-1"));
-        ctx.ItemValuesMap.Add(new ItemValueMap { ItemId = movieId, ItemValueId = rock.ItemValueId, Item = null!, ItemValue = null! });
+        ctx.ItemValuesMap.Add(new ItemValueMap { ItemId = MovieId, ItemValueId = rock.ItemValueId, Item = null!, ItemValue = null! });
         await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -674,7 +959,7 @@ public sealed class BackupServiceTests : IDisposable
             .Returns(new HashSet<string>(StringComparer.Ordinal) { RoutineInArchiveId, RoutineOnlyInTargetId });
 
         return new BackupService(
-            NullLogger<BackupService>.Instance,
+            _logger,
             factory.Object,
             applicationHost.Object,
             applicationPaths.Object,
@@ -715,5 +1000,19 @@ public sealed class BackupServiceTests : IDisposable
             onDispose();
             return ValueTask.CompletedTask;
         }
+    }
+
+    private sealed class RecordingLogger<T> : ILogger<T>
+    {
+        public List<(LogLevel Level, string Message)> Entries { get; } = [];
+
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull
+            => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            => Entries.Add((logLevel, formatter(state, exception)));
     }
 }
