@@ -6,7 +6,6 @@ using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.MediaEncoding;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,19 +20,16 @@ public class StartupController : BaseJellyfinApiController
 {
     private readonly IServerConfigurationManager _config;
     private readonly IUserManager _userManager;
-    private readonly IMediaEncoder _mediaEncoder;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StartupController" /> class.
     /// </summary>
     /// <param name="config">The server configuration manager.</param>
     /// <param name="userManager">The user manager.</param>
-    /// <param name="mediaEncoder">The media encoder.</param>
-    public StartupController(IServerConfigurationManager config, IUserManager userManager, IMediaEncoder mediaEncoder)
+    public StartupController(IServerConfigurationManager config, IUserManager userManager)
     {
         _config = config;
         _userManager = userManager;
-        _mediaEncoder = mediaEncoder;
     }
 
     /// <summary>
@@ -45,11 +41,6 @@ public class StartupController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult CompleteWizard()
     {
-        if (!_config.Configuration.IsStartupWizardCompleted)
-        {
-            _mediaEncoder.EnableRecommendedHardwareAcceleration();
-        }
-
         _config.Configuration.IsStartupWizardCompleted = true;
         _config.SaveConfiguration();
         return NoContent();

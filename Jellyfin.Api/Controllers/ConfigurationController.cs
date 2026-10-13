@@ -5,6 +5,7 @@ using System.Text.Json;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Api;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Branding;
@@ -117,6 +118,31 @@ public class ConfigurationController : BaseJellyfinApiController
     public ActionResult<MetadataOptions> GetDefaultMetadataOptions()
     {
         return new MetadataOptions();
+    }
+
+    /// <summary>
+    /// Gets the encoding options with the hardware acceleration recommended for this server, without saving them.
+    /// </summary>
+    /// <response code="200">Encoding options returned.</response>
+    /// <response code="404">FFmpeg can't encode with a supported GPU.</response>
+    /// <returns>The encoding options with the recommended hardware acceleration.</returns>
+    [HttpGet("Configuration/Encoding/Recommended")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<EncodingOptions> GetRecommendedEncodingOptions()
+    {
+        // Work on a copy, the stored options only change when the administrator saves them
+        var options = JsonSerializer.Deserialize<EncodingOptions>(
+            JsonSerializer.SerializeToUtf8Bytes(_configurationManager.GetEncodingOptions(), _serializerOptions),
+            _serializerOptions)!;
+
+        if (!_mediaEncoder.ApplyRecommendedHardwareAcceleration(options))
+        {
+            return NotFound();
+        }
+
+        return options;
     }
 
     /// <summary>
