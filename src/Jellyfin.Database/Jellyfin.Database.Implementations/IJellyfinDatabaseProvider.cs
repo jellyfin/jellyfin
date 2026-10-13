@@ -19,6 +19,15 @@ public interface IJellyfinDatabaseProvider
     IDbContextFactory<JellyfinDbContext>? DbContextFactory { get; set; }
 
     /// <summary>
+    /// Gets a value indicating whether the engine undoes a schema migration that fails part way, so that the database
+    /// is left as it was before the migration. Engines that commit DDL statements implicitly, such as MySQL and
+    /// MariaDB, cannot: a failed migration leaves the schema partly changed and without a history row. For those, the
+    /// server records the migration it is about to apply in a file in the data directory, and refuses to migrate
+    /// again until an operator has restored the database and deleted that file. The default is <see langword="true"/>.
+    /// </summary>
+    bool SupportsTransactionalMigrations => true;
+
+    /// <summary>
     /// Initialises jellyfins EFCore database access.
     /// </summary>
     /// <param name="options">The EFCore database options.</param>
