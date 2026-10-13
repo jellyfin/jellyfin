@@ -31,18 +31,35 @@ internal sealed class LeasedDatabasePool : IDisposable
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
     }
 
+    /// <summary>
+    /// Gets or sets a callback run in the window between the first check of disposal and taking the lock to pick an idle
+    /// database. It exists so that a test can dispose the pool exactly there, which no other test can do on purpose.
+    /// </summary>
+    internal Action? BeforeIdleDatabaseIsTaken { get; set; }
+
     public TestDatabase Lease(TestSchemaSource source, IInterceptor[] interceptors, bool fresh)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         if (fresh)
         {
-            var name = CreateDatabase(source);
+            // A database that is dropped when the lease ends is never compared with its fingerprint.
+            var name = CreateDatabase(source, recordFingerprint: false);
             return Hand(name, interceptors, () => Drop(name));
         }
 
         var stack = _idle.GetOrAdd(source, _ => new ConcurrentStack<string>());
-        var leased = stack.TryPop(out var idle) ? idle : CreateDatabase(source);
+
+        // The sweep on disposal drops the idle databases too, so one must not be taken once it has begun.
+        BeforeIdleDatabaseIsTaken?.Invoke();
+        string? idle;
+        lock (_registration)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            stack.TryPop(out idle);
+        }
+
+        var leased = idle ?? CreateDatabase(source, recordFingerprint: true);
         return Hand(leased, interceptors, () => Return(leased, stack));
     }
 
@@ -117,13 +134,16 @@ internal sealed class LeasedDatabasePool : IDisposable
         throw new ObjectDisposedException(GetType().FullName);
     }
 
-    private string CreateDatabase(TestSchemaSource source)
+    private string CreateDatabase(TestSchemaSource source, bool recordFingerprint)
     {
         var name = CreateDatabase();
         try
         {
             source.Apply(_server.CreateOptions(name, []), _server.CreateProvider());
-            _fingerprints[name] = _server.GetSchemaFingerprint(name);
+            if (recordFingerprint)
+            {
+                _fingerprints[name] = _server.GetSchemaFingerprint(name);
+            }
         }
         catch (Exception failure)
         {
@@ -171,15 +191,16 @@ internal sealed class LeasedDatabasePool : IDisposable
         }
         catch (Exception resetFailure)
         {
-            // A database in an unknown state is never leased again.
-            DropAfterFailure(name, resetFailure);
-
-            // A reset that fails because the sweep dropped the database underneath it is expected at the end of the process.
+            // A reset that fails because the sweep dropped the database underneath it is expected at the end of the
+            // process. What the sweep could not drop is dropped here, like any database that is returned after disposal.
             if (_disposed)
             {
+                Drop(name);
                 return;
             }
 
+            // A database in an unknown state is never leased again.
+            DropAfterFailure(name, resetFailure);
             throw;
         }
 
