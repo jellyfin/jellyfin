@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations.Entities;
@@ -12,6 +13,7 @@ using Jellyfin.Database.Implementations.ValueConverters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Database.Implementations;
@@ -26,6 +28,8 @@ namespace Jellyfin.Database.Implementations;
 /// <param name="entityFrameworkCoreLocking">The locking behavior.</param>
 public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILogger<JellyfinDbContext> logger, IJellyfinDatabaseProvider jellyfinDatabaseProvider, IEntityFrameworkCoreLockingBehavior entityFrameworkCoreLocking) : DbContext(options)
 {
+    private static readonly ConditionalWeakTable<IEntityType, (IProperty Property, int MaxLength)[]> _boundedKeyProperties = new();
+
     /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the access schedules.
     /// </summary>
@@ -268,6 +272,7 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
         var entries = ChangeTracker.Entries().ToList();
         HandleConcurrencyToken(entries);
         SanitizeStrings(entries);
+        EnforceKeyLengths(entries);
 
         try
         {
@@ -296,6 +301,7 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
         var entries = ChangeTracker.Entries().ToList();
         HandleConcurrencyToken(entries);
         SanitizeStrings(entries);
+        EnforceKeyLengths(entries);
 
         try
         {
@@ -361,6 +367,54 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Rejects a string that is longer than the maximum length of its property when the property is part of a key
+    /// or of an index, as some engines cannot index such a value. This is a backstop for code that does not cut,
+    /// drop or refuse a value where it enters the application.
+    /// Only the values that are inserted or changed are checked, so a row that is stored with a longer value stays
+    /// readable and can be saved again, even by code that marks all of its properties as modified.
+    /// </summary>
+    /// <param name="entries">The tracked entries.</param>
+    /// <exception cref="InvalidOperationException">A value is longer than the maximum length of its property.</exception>
+    internal static void EnforceKeyLengths(IReadOnlyList<EntityEntry> entries)
+    {
+        foreach (var entry in entries)
+        {
+            if (entry.State is not (EntityState.Added or EntityState.Modified))
+            {
+                continue;
+            }
+
+            foreach (var (property, maxLength) in _boundedKeyProperties.GetValue(entry.Metadata, FindBoundedKeyProperties))
+            {
+                var propertyEntry = entry.Property(property);
+                if (propertyEntry.CurrentValue is not string text || text.Length <= maxLength)
+                {
+                    continue;
+                }
+
+                if (entry.State == EntityState.Modified
+                    && (!propertyEntry.IsModified || string.Equals(text, propertyEntry.OriginalValue as string, StringComparison.Ordinal)))
+                {
+                    continue;
+                }
+
+                throw new InvalidOperationException(
+                    $"{entry.Metadata.DisplayName()}.{property.Name} is {text.Length} characters long, but a key or index value can have at most {maxLength}.");
+            }
+        }
+    }
+
+    private static (IProperty Property, int MaxLength)[] FindBoundedKeyProperties(IEntityType entityType)
+    {
+        return entityType.GetProperties()
+            .Where(e => e.ClrType == typeof(string) && (e.IsKey() || e.GetContainingIndexes().Any()))
+            .Select(e => (Property: e, MaxLength: e.GetMaxLength()))
+            .Where(e => e.MaxLength.HasValue)
+            .Select(e => (e.Property, e.MaxLength!.Value))
+            .ToArray();
     }
 
     /// <inheritdoc />
