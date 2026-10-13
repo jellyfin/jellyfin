@@ -52,12 +52,12 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             // lowest id per lowercased name so case-only duplicates collapse together.
             var candidates = dbQuery;
             dbQuery = candidates
-                .Where(p => !candidates.Any(other => other.Name.ToLower() == p.Name.ToLower() && other.Id < p.Id))
-                .OrderBy(e => e.Name.ToLower());
+                .Where(p => !candidates.Any(other => other.NameLower == p.NameLower && other.Id < p.Id))
+                .OrderBy(e => e.NameLower);
 
             if (filter.EnableTotalRecordCount)
             {
-                distinctNameCount = candidates.Select(e => e.Name.ToLower()).Distinct().Count();
+                distinctNameCount = candidates.Select(e => e.NameLower).Distinct().Count();
             }
         }
 
@@ -187,7 +187,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                 .ToArray();
 
             existingPersons.AddRange(context.Peoples
-                .Where(e => e.PersonType == personTypeGroup.Key && names.Contains(e.Name.ToLower()))
+                .Where(e => e.PersonType == personTypeGroup.Key && names.Contains(e.NameLower))
                 .ToArray());
         }
 
@@ -398,6 +398,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         var personInfo = new People()
         {
             Name = people.Name,
+            NameLower = MatchNormalizer.NameLower(people.Name),
             PersonType = people.Type.ToString(),
             Id = people.Id,
         };
@@ -482,29 +483,29 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         var nameContains = filter.NameContains?.RemoveNullCharacters();
         if (!string.IsNullOrWhiteSpace(nameContains))
         {
-            var nameContainsUpper = nameContains.ToUpper();
-            query = query.Where(e => e.Name.ToUpper().Contains(nameContainsUpper));
+            var nameContainsLower = MatchNormalizer.NameLower(nameContains);
+            query = query.Where(e => e.NameLower.Contains(nameContainsLower));
         }
 
         var nameStartsWith = filter.NameStartsWith?.RemoveNullCharacters();
         if (!string.IsNullOrWhiteSpace(nameStartsWith))
         {
-            var nameStartsWithLower = nameStartsWith.ToLowerInvariant();
-            query = query.Where(e => e.Name.ToLower().StartsWith(nameStartsWithLower));
+            var nameStartsWithLower = MatchNormalizer.NameLower(nameStartsWith);
+            query = query.Where(e => e.NameLower.StartsWith(nameStartsWithLower));
         }
 
         var nameLessThan = filter.NameLessThan?.RemoveNullCharacters();
         if (!string.IsNullOrWhiteSpace(nameLessThan))
         {
-            var nameLessThanLower = nameLessThan.ToLowerInvariant();
-            query = query.Where(e => e.Name.ToLower().CompareTo(nameLessThanLower) < 0);
+            var nameLessThanLower = MatchNormalizer.NameLower(nameLessThan);
+            query = query.Where(e => e.NameLower.CompareTo(nameLessThanLower) < 0);
         }
 
         var nameStartsWithOrGreater = filter.NameStartsWithOrGreater?.RemoveNullCharacters();
         if (!string.IsNullOrWhiteSpace(nameStartsWithOrGreater))
         {
-            var startsOrGreaterLower = nameStartsWithOrGreater.ToLowerInvariant();
-            query = query.Where(e => e.Name.ToLower().CompareTo(startsOrGreaterLower) >= 0);
+            var startsOrGreaterLower = MatchNormalizer.NameLower(nameStartsWithOrGreater);
+            query = query.Where(e => e.NameLower.CompareTo(startsOrGreaterLower) >= 0);
         }
 
         return query;

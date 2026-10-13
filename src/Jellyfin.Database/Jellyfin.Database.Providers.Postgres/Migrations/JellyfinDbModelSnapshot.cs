@@ -181,6 +181,10 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
                         .UseCollation("C")
                         .HasAnnotation("Jellyfin:UnboundedIndexedText", true);
 
+                    b.Property<string>("CleanOriginalTitle")
+                        .HasColumnType("text")
+                        .UseCollation("C");
+
                     b.Property<float?>("CommunityRating")
                         .HasColumnType("real");
 
@@ -1164,6 +1168,12 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
                         .UseCollation("C")
                         .HasAnnotation("Jellyfin:UnboundedIndexedText", true);
 
+                    b.Property<string>("NameLower")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .UseCollation("C")
+                        .HasAnnotation("Jellyfin:UnboundedIndexedText", true);
+
                     b.Property<string>("PersonType")
                         .HasColumnType("text")
                         .UseCollation("C");
@@ -1171,6 +1181,8 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("NameLower");
 
                     b.ToTable("Peoples");
                 });

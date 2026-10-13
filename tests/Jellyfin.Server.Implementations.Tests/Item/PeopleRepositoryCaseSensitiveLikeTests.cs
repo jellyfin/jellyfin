@@ -25,7 +25,7 @@ public sealed class PeopleRepositoryCaseSensitiveLikeTests : JellyfinDbTestFixtu
         {
             foreach (var name in new[] { "Bob", "bobby", "Rob", "ALICE", "bo", "Zoe" })
             {
-                context.Peoples.Add(new People { Id = Guid.NewGuid(), Name = name, PersonType = "Actor" });
+                context.Peoples.Add(new People { Id = Guid.NewGuid(), Name = name, NameLower = MatchNormalizer.NameLower(name), PersonType = "Actor" });
             }
 
             context.SaveChanges();

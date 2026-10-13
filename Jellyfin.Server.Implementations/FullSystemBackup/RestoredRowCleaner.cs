@@ -18,6 +18,7 @@ namespace Jellyfin.Server.Implementations.FullSystemBackup;
 /// NUL characters are removed: SQLite stores them, but some engines reject them in text, so a backup that holds them
 /// could not be restored there. Keys, roles and item values that are longer than their column are shortened the way
 /// they are when they are stored, and provider ids that are longer are dropped.
+/// The normalized copies of the original title of an item and of the name of a person are computed again, whatever the backup holds.
 /// Cleaning a key or a column of a unique index can make two rows equal. Of such rows the one that needed no cleaning
 /// in the columns of that index is kept, because the others are the stale copies the cleaning left behind. When all of
 /// them needed cleaning the first in the archive is kept. The rows that referred to a dropped row refer to the kept one.
@@ -116,6 +117,18 @@ internal sealed class RestoredRowCleaner
                     changed.Add(property);
                 }
             }
+        }
+
+        // A backup made before these columns existed holds nothing in them, and one made since holds what the
+        // application computed then, so they are always computed again.
+        switch (entry.Entity)
+        {
+            case BaseItemEntity item:
+                item.CleanOriginalTitle = MatchNormalizer.CleanOriginalTitle(item.OriginalTitle);
+                break;
+            case People person:
+                person.NameLower = MatchNormalizer.NameLower(person.Name);
+                break;
         }
 
         if (entry.Entity is BaseItemProvider provider && provider.ProviderId.Length > KeyNormalizer.ProviderIdMaxLength)

@@ -791,7 +791,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         await SeedAsync(cancellationToken).ConfigureAwait(true);
         await using (var ctx = CreateDbContext())
         {
-            ctx.Peoples.Add(new People { Id = personId, Name = "Person" });
+            ctx.Peoples.Add(new People { Id = personId, Name = "Person", NameLower = MatchNormalizer.NameLower("Person") });
             await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(true);
             ctx.PeopleBaseItemMap.Add(new PeopleBaseItemMap { ItemId = MovieId, PeopleId = personId, Role = "role", Item = null!, People = null! });
             await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(true);
@@ -849,6 +849,85 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         var maps = await ctx.ItemValuesMap.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(true);
         Assert.Equal(2, maps.Count);
         Assert.All(maps, e => Assert.Equal(value.ItemValueId, e.ItemValueId));
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_BackupFromBeforeTheNormalizedColumns_RestoresThemFilledIn()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedNormalizedSourcesAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await RewriteJsonArrayAsync(manifest.Path, "BaseItems", rows => RemoveProperty(rows, "CleanOriginalTitle"), cancellationToken).ConfigureAwait(true);
+        await RewriteJsonArrayAsync(manifest.Path, "Peoples", rows => RemoveProperty(rows, "NameLower"), cancellationToken).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        await AssertNormalizedColumnsAsync(cancellationToken).ConfigureAwait(true);
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_BackupWithEmptyOrStaleNormalizedColumns_RestoresThemRecomputed()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedNormalizedSourcesAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await RewriteJsonArrayAsync(
+            manifest.Path,
+            "BaseItems",
+            rows =>
+            {
+                foreach (var row in rows)
+                {
+                    row!["CleanOriginalTitle"] = Guid.Parse(row["Id"]!.GetValue<string>()).Equals(MovieId) ? string.Empty : "stale";
+                }
+            },
+            cancellationToken).ConfigureAwait(true);
+        await RewriteJsonArrayAsync(
+            manifest.Path,
+            "Peoples",
+            rows =>
+            {
+                foreach (var row in rows)
+                {
+                    row!["NameLower"] = "stale";
+                }
+            },
+            cancellationToken).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        await AssertNormalizedColumnsAsync(cancellationToken).ConfigureAwait(true);
+    }
+
+    private static void RemoveProperty(JsonArray rows, string name)
+    {
+        foreach (var row in rows)
+        {
+            Assert.True(row!.AsObject().Remove(name));
+        }
+    }
+
+    private async Task SeedNormalizedSourcesAsync(CancellationToken cancellationToken)
+    {
+        await SeedAsync(cancellationToken).ConfigureAwait(false);
+        await using var ctx = CreateDbContext();
+        await ctx.BaseItems.Where(e => e.Id.Equals(MovieId))
+            .ExecuteUpdateAsync(s => s.SetProperty(e => e.OriginalTitle, "Émile Zola").SetProperty(e => e.CleanOriginalTitle, "emile zola"), cancellationToken)
+            .ConfigureAwait(false);
+        ctx.Peoples.Add(new People { Id = Guid.Parse("55555555-5555-5555-5555-555555555555"), Name = "Émile ZOLA", NameLower = "émile zola" });
+        await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task AssertNormalizedColumnsAsync(CancellationToken cancellationToken)
+    {
+        await using var restored = CreateDbContext();
+        var items = await restored.BaseItems.AsNoTracking().ToDictionaryAsync(e => e.Id, e => e.CleanOriginalTitle, cancellationToken).ConfigureAwait(false);
+        Assert.Equal("emile zola", items[MovieId]);
+        Assert.Null(items[OtherMovieId]);
+        var person = await restored.Peoples.AsNoTracking().SingleAsync(cancellationToken).ConfigureAwait(false);
+        Assert.Equal("émile zola", person.NameLower);
     }
 
     [Fact]

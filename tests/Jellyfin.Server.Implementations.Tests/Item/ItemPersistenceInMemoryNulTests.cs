@@ -350,7 +350,7 @@ public sealed class ItemPersistenceInMemoryNulTests : JellyfinDbTestFixture
         });
 
         // Columns that are not copied from a string of the item, or that are not stored as given.
-        var notCopied = new HashSet<string> { "Type", "Data", "MediaType", "UnratedType", "CleanName" };
+        var notCopied = new HashSet<string> { "Type", "Data", "MediaType", "UnratedType", "CleanName", "CleanOriginalTitle" };
         var expected = columns.Select(c => c.Name).Where(c => !notCopied.Contains(c)).Order().ToArray();
 
         Assert.Equal(expected, mappedBeforeCleaning.Order().ToArray());

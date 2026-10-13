@@ -22,8 +22,8 @@ public sealed class PeopleRepositoryDuplicateNameTests : JellyfinDbTestFixture
     {
         using (var context = CreateDbContext())
         {
-            context.Peoples.Add(new People { Id = Guid.Parse("10000000-0000-0000-0000-000000000000"), Name = "ANA", PersonType = "Director" });
-            context.Peoples.Add(new People { Id = Guid.Parse("0fffffff-0000-0000-0000-0000000000ff"), Name = "Ana", PersonType = "Actor" });
+            context.Peoples.Add(new People { Id = Guid.Parse("10000000-0000-0000-0000-000000000000"), Name = "ANA", NameLower = MatchNormalizer.NameLower("ANA"), PersonType = "Director" });
+            context.Peoples.Add(new People { Id = Guid.Parse("0fffffff-0000-0000-0000-0000000000ff"), Name = "Ana", NameLower = MatchNormalizer.NameLower("Ana"), PersonType = "Actor" });
             context.SaveChanges();
         }
 

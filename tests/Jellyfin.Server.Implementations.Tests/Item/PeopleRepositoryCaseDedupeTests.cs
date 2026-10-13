@@ -12,9 +12,8 @@ using Xunit;
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
 /// <summary>
-/// The person list collapses rows whose names differ only in case, comparing the names lower-cased in SQL.
-/// SQL <c>lower()</c> folds ASCII only, so names that differ only in the case of a non-ASCII letter stay
-/// separate.
+/// The person list collapses rows whose names differ only in case, comparing the lower case names the rows hold.
+/// They are lower-cased in code, so names that differ only in the case of a non-ASCII letter collapse as well.
 /// </summary>
 public sealed class PeopleRepositoryCaseDedupeTests : JellyfinDbTestFixture
 {
@@ -24,10 +23,10 @@ public sealed class PeopleRepositoryCaseDedupeTests : JellyfinDbTestFixture
     {
         using (var context = CreateDbContext())
         {
-            context.Peoples.Add(new People { Id = Guid.Parse("00000000-0000-0000-0000-000000000001"), Name = "Bob", PersonType = "Actor" });
-            context.Peoples.Add(new People { Id = Guid.Parse("00000000-0000-0000-0000-000000000002"), Name = "bob", PersonType = "Director" });
-            context.Peoples.Add(new People { Id = Guid.Parse("00000000-0000-0000-0000-000000000003"), Name = "Émile", PersonType = "Actor" });
-            context.Peoples.Add(new People { Id = Guid.Parse("00000000-0000-0000-0000-000000000004"), Name = "émile", PersonType = "Director" });
+            context.Peoples.Add(new People { Id = Guid.Parse("00000000-0000-0000-0000-000000000001"), Name = "Bob", NameLower = MatchNormalizer.NameLower("Bob"), PersonType = "Actor" });
+            context.Peoples.Add(new People { Id = Guid.Parse("00000000-0000-0000-0000-000000000002"), Name = "bob", NameLower = MatchNormalizer.NameLower("bob"), PersonType = "Director" });
+            context.Peoples.Add(new People { Id = Guid.Parse("00000000-0000-0000-0000-000000000003"), Name = "Émile", NameLower = MatchNormalizer.NameLower("Émile"), PersonType = "Actor" });
+            context.Peoples.Add(new People { Id = Guid.Parse("00000000-0000-0000-0000-000000000004"), Name = "émile", NameLower = MatchNormalizer.NameLower("émile"), PersonType = "Director" });
             context.SaveChanges();
         }
 
@@ -43,11 +42,11 @@ public sealed class PeopleRepositoryCaseDedupeTests : JellyfinDbTestFixture
     }
 
     [Fact]
-    public void GetPeople_NonAsciiNamesDifferingInCase_StaySeparate_CurrentBehaviour()
+    public void GetPeople_NonAsciiNamesDifferingInCase_CollapseIntoOneKeepingTheLowestId()
     {
         var result = _repository.GetPeople(new InternalPeopleQuery());
 
-        Assert.Equal(["Bob", "Émile", "émile"], result.Items.Select(p => p.Name).Order(StringComparer.Ordinal).ToArray());
-        Assert.Equal(3, result.TotalRecordCount);
+        Assert.Equal(["Bob", "Émile"], result.Items.Select(p => p.Name).Order(StringComparer.Ordinal).ToArray());
+        Assert.Equal(2, result.TotalRecordCount);
     }
 }

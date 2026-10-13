@@ -25,7 +25,7 @@ public sealed class PeopleRepositoryNameRangeTests : JellyfinDbTestFixture
         {
             foreach (var name in new[] { "50 Cent", "alpha centauri", "Brad Pitt", "bob dylan", "Zoe Saldana" })
             {
-                context.Peoples.Add(new People { Id = Guid.NewGuid(), Name = name, PersonType = "Actor" });
+                context.Peoples.Add(new People { Id = Guid.NewGuid(), Name = name, NameLower = MatchNormalizer.NameLower(name), PersonType = "Actor" });
             }
 
             context.SaveChanges();

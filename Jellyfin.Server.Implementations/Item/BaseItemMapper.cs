@@ -293,6 +293,7 @@ public static class BaseItemMapper
         entity.CriticRating = dto.CriticRating;
         entity.PresentationUniqueKey = dto.PresentationUniqueKey;
         entity.OriginalTitle = dto.OriginalTitle;
+        entity.CleanOriginalTitle = MatchNormalizer.CleanOriginalTitle(dto.OriginalTitle);
         entity.OriginalLanguage = dto.OriginalLanguage;
         entity.Album = dto.Album;
         entity.LUFS = dto.LUFS;

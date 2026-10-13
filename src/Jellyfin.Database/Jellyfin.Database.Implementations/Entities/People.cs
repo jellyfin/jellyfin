@@ -21,6 +21,14 @@ public class People
     public required string Name { get; set; }
 
     /// <summary>
+    /// Gets or Sets <see cref="Name"/> in lower case (invariant culture), which the application stores so that names can
+    /// be matched without the database folding case. The value is <c>Name.ToLowerInvariant()</c> and is maintained by the
+    /// writers through <c>MatchNormalizer</c>. It is empty until the application has stored it, and a row whose value is
+    /// not set is not found by name lookups.
+    /// </summary>
+    public string NameLower { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or Sets the Type.
     /// </summary>
     public string? PersonType { get; set; }

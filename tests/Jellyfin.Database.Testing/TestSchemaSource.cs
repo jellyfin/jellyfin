@@ -7,9 +7,8 @@ public enum TestSchemaSource
 {
     /// <summary>
     /// The schema EF Core derives from the model, and nothing else. What only the migrations create is missing, among
-    /// other things the index on the lowercased name of people, the column defaults the migrations set on SQLite,
-    /// and on PostgreSQL the min aggregate over uuid, without which queries that group by an item id fail. It has no
-    /// migration history either.
+    /// other things the column defaults the migrations set on SQLite, and on PostgreSQL the min aggregate over uuid,
+    /// without which queries that group by an item id fail. It has no migration history either.
     /// </summary>
     Model,
 

@@ -842,7 +842,7 @@ public sealed class ItemCountServiceTests : JellyfinDbTestFixture
             person.CleanName = personName;
             context.BaseItems.Add(person);
 
-            var people = new People { Id = Guid.NewGuid(), Name = personName };
+            var people = new People { Id = Guid.NewGuid(), Name = personName, NameLower = MatchNormalizer.NameLower(personName) };
             context.Peoples.Add(people);
 
             var year = 2000 + i;

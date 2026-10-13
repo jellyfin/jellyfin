@@ -38,7 +38,6 @@ public sealed class PostgresBaselineSchemaTests
         FROM pg_indexes
         WHERE schemaname = current_schema()
           AND tablename <> '__EFMigrationsHistory'
-          AND indexname <> 'IX_Peoples_NameLower'
         """;
 
     private const string ConstraintsQuery =
@@ -51,14 +50,15 @@ public sealed class PostgresBaselineSchemaTests
         """;
 
     [ProviderFact(TestDbProvider.Postgres)]
-    public async Task MigratedDatabase_HasOnlyTheBaselineApplied()
+    public async Task MigratedDatabase_HasEveryMigrationAppliedStartingWithTheBaseline()
     {
         using var database = TestDatabaseEnvironment.Backend.Create(TestSchemaSource.Migrations, []);
         await using var context = CreateContext(database);
 
         var applied = await context.Database.GetAppliedMigrationsAsync(TestContext.Current.CancellationToken);
 
-        Assert.Equal([PostgresMigrationBaseline.MigrationId], applied);
+        Assert.Equal(PostgresMigrationBaseline.MigrationId, applied.First());
+        Assert.Equal(context.Database.GetMigrations(), applied);
         Assert.Empty(await context.Database.GetPendingMigrationsAsync(TestContext.Current.CancellationToken));
     }
 
@@ -90,7 +90,7 @@ public sealed class PostgresBaselineSchemaTests
             .SqlQueryRaw<string>("""SELECT indexdef AS "Value" FROM pg_indexes WHERE schemaname = current_schema() AND indexname = 'IX_Peoples_NameLower'""")
             .SingleAsync(TestContext.Current.CancellationToken);
 
-        Assert.EndsWith("(lower(\"Name\"))", definition, StringComparison.Ordinal);
+        Assert.EndsWith("(\"NameLower\")", definition, StringComparison.Ordinal);
     }
 
     [ProviderFact(TestDbProvider.Postgres)]
@@ -104,7 +104,7 @@ public sealed class PostgresBaselineSchemaTests
         await context.Database.ExecuteSqlRawAsync("SET enable_seqscan = off", TestContext.Current.CancellationToken);
 
         await using var command = context.Database.GetDbConnection().CreateCommand();
-        command.CommandText = """EXPLAIN SELECT "Id" FROM "Peoples" WHERE "PersonType" = 'Actor' AND lower("Name") = ANY (ARRAY['a', 'b'])""";
+        command.CommandText = """EXPLAIN SELECT "Id" FROM "Peoples" WHERE "PersonType" = 'Actor' AND "NameLower" = ANY (ARRAY['a', 'b'])""";
         await using var reader = await command.ExecuteReaderAsync(TestContext.Current.CancellationToken);
         var lines = new List<string>();
         while (await reader.ReadAsync(TestContext.Current.CancellationToken))

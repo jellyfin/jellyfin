@@ -96,6 +96,13 @@ public class BaseItemEntity
 
     public string? OriginalTitle { get; set; }
 
+    /// <summary>
+    /// Gets or Sets <see cref="OriginalTitle"/> in the normalized form of <see cref="CleanName"/> (lower case, without
+    /// diacritics and punctuation), which the application stores so that titles can be matched without the database
+    /// folding case. It is <c>null</c> if <see cref="OriginalTitle"/> is.
+    /// </summary>
+    public string? CleanOriginalTitle { get; set; }
+
     public string? OriginalLanguage { get; set; }
 
     public Guid? PrimaryVersionId { get; set; }

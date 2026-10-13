@@ -166,7 +166,6 @@ public sealed class PostgresConventionTests : DatabaseTestFixture
         var entityTypes = model.GetEntityTypes().Where(e => e.GetTableName() is not null).ToList();
         var expectedIndexes = entityTypes
             .SelectMany(e => e.GetIndexes().Select(i => i.GetDatabaseName()!).Concat(e.GetKeys().Select(k => k.GetName()!)))
-            .Append("IX_Peoples_NameLower")
             .Order(StringComparer.Ordinal)
             .ToList();
         var expectedForeignKeys = entityTypes
@@ -342,8 +341,7 @@ public sealed class PostgresConventionTests : DatabaseTestFixture
         await using var context = CreateDbContext();
 
         // Bit 0 of indoption is DESC and bit 1 is NULLS FIRST. A column that cannot be null needs the default order,
-        // which is also the one of the index behind a key, and one that can be null needs NULLS FIRST. A column of an
-        // expression is taken as nullable, except in the index of lowercased people names, whose column cannot be null.
+        // which is also the one of the index behind a key, and one that can be null needs NULLS FIRST.
         var deviating = await context.Database
             .SqlQueryRaw<string>(
                 """
@@ -353,7 +351,6 @@ public sealed class PostgresConventionTests : DatabaseTestFixture
                 CROSS JOIN LATERAL unnest(i.indoption::int2[], i.indkey::int2[]) WITH ORDINALITY AS o(option, attnum, ordinality)
                 LEFT JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = o.attnum
                 WHERE c.relnamespace = current_schema()::regnamespace
-                  AND NOT (c.relname = 'IX_Peoples_NameLower' AND o.attnum = 0)
                   AND o.ordinality <= i.indnkeyatts
                   AND (o.option & 3) <> CASE WHEN a.attnotnull IS TRUE THEN 0 ELSE 2 END
                 """)

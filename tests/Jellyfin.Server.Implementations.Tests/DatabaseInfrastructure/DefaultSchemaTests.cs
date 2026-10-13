@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Jellyfin.Database.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -23,11 +24,11 @@ public sealed class DefaultSchemaTests : DatabaseTestFixture
     {
         using var context = CreateDbContext();
 
-        var count = context.Database
-            .SqlQueryRaw<long>("""SELECT count(*) AS "Value" FROM sqlite_master WHERE type = 'index' AND name = 'IX_Peoples_NameLower'""")
+        var definition = context.Database
+            .SqlQueryRaw<string>("""SELECT sql AS "Value" FROM sqlite_master WHERE type = 'index' AND name = 'IX_Peoples_NameLower'""")
             .Single();
 
-        Assert.Equal(1, count);
+        Assert.Contains("(\"NameLower\")", definition, StringComparison.Ordinal);
     }
 
     [ProviderFact(TestDbProvider.Postgres)]
@@ -35,11 +36,11 @@ public sealed class DefaultSchemaTests : DatabaseTestFixture
     {
         using var context = CreateDbContext();
 
-        var count = context.Database
-            .SqlQueryRaw<long>("""SELECT count(*) AS "Value" FROM pg_indexes WHERE schemaname = current_schema() AND indexname = 'IX_Peoples_NameLower'""")
+        var definition = context.Database
+            .SqlQueryRaw<string>("""SELECT indexdef AS "Value" FROM pg_indexes WHERE schemaname = current_schema() AND indexname = 'IX_Peoples_NameLower'""")
             .Single();
 
-        Assert.Equal(1, count);
+        Assert.EndsWith("(\"NameLower\")", definition, StringComparison.Ordinal);
     }
 
     [ProviderFact(TestDbProvider.Postgres)]

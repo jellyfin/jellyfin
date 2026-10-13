@@ -627,10 +627,12 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
     private People GetPerson(SqliteDataReader reader)
     {
+        var name = reader.GetString(1);
         var item = new People
         {
             Id = Guid.NewGuid(),
-            Name = reader.GetString(1),
+            Name = name,
+            NameLower = MatchNormalizer.NameLower(name),
         };
 
         if (reader.TryGetString(3, out var type))
@@ -1128,6 +1130,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         if (reader.TryGetString(index++, out var originalTitle))
         {
             entity.OriginalTitle = originalTitle;
+            entity.CleanOriginalTitle = MatchNormalizer.CleanOriginalTitle(originalTitle);
         }
 
         if (reader.TryGetString(index++, out var primaryVersionId) && Guid.TryParse(primaryVersionId, out var primaryVersionGuid))

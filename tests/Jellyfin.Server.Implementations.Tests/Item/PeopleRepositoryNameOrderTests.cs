@@ -25,7 +25,7 @@ public sealed class PeopleRepositoryNameOrderTests : JellyfinDbTestFixture
         {
             foreach (var name in new[] { "Bob", "Zed", "élan", "_zed", "alice", "Ángel" })
             {
-                context.Peoples.Add(new People { Id = Guid.NewGuid(), Name = name, PersonType = "Actor" });
+                context.Peoples.Add(new People { Id = Guid.NewGuid(), Name = name, NameLower = MatchNormalizer.NameLower(name), PersonType = "Actor" });
             }
 
             context.SaveChanges();

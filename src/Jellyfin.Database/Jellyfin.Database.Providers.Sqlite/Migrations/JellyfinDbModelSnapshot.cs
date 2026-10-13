@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
@@ -165,6 +165,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<string>("CleanName")
                         .HasColumnType("TEXT")
                         .HasAnnotation("Jellyfin:UnboundedIndexedText", true);
+
+                    b.Property<string>("CleanOriginalTitle")
+                        .HasColumnType("TEXT");
 
                     b.Property<float?>("CommunityRating")
                         .HasColumnType("REAL");
@@ -1047,12 +1050,19 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("TEXT")
                         .HasAnnotation("Jellyfin:UnboundedIndexedText", true);
 
+                    b.Property<string>("NameLower")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasAnnotation("Jellyfin:UnboundedIndexedText", true);
+
                     b.Property<string>("PersonType")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("NameLower");
 
                     b.ToTable("Peoples");
 
