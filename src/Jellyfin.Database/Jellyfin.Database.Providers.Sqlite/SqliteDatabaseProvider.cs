@@ -440,6 +440,9 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         foreach (var tableName in tableNames)
         {
             deleteQueries.Add($"DELETE FROM \"{tableName}\";");
+
+            // AUTOINCREMENT keeps the highest id a table ever used, even after its rows are gone.
+            deleteQueries.Add($"DELETE FROM sqlite_sequence WHERE name = '{tableName.Replace("'", "''", StringComparison.Ordinal)}';");
         }
 
         // SQLite ignores PRAGMA foreign_keys inside a transaction, so there the checks are postponed to the commit instead.

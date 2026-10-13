@@ -211,6 +211,32 @@ public sealed class BackupServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task RestoreBackupAsync_WithDamagedGeneratedId_LeavesDatabaseUntouched()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await RewriteEntryAsync(
+            manifest.Path,
+            "Database/Permissions.json",
+            json =>
+            {
+                var permissions = JsonNode.Parse(json)!.AsArray();
+                permissions[0]!["Id"] = "not-a-number";
+                return permissions.ToJsonString();
+            },
+            cancellationToken).ConfigureAwait(true);
+
+        var before = await SnapshotAsync(cancellationToken).ConfigureAwait(true);
+
+        await Assert.ThrowsAnyAsync<Exception>(() => backupService.RestoreBackupAsync(manifest.Path)).ConfigureAwait(true);
+
+        Assert.Equal(0, _purgeCalls);
+        Assert.Equal(before, await SnapshotAsync(cancellationToken).ConfigureAwait(true));
+    }
+
+    [Fact]
     public async Task RestoreBackupAsync_WhenInsertingRowsFails_RollsBackThePurge()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -244,6 +270,48 @@ public sealed class BackupServiceTests : IDisposable
         Assert.IsType<SqliteException>(exception.InnerException);
         Assert.Equal(1, _purgeCalls);
         Assert.Equal(before, await SnapshotAsync(cancellationToken).ConfigureAwait(true));
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_KeepsTheGeneratedIdsOfTheArchive()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        await using (var ctx = CreateDbContext())
+        {
+            // Removing a row in the middle leaves a gap that is only kept if the ids are restored rather than generated again.
+            var second = await ctx.Permissions.OrderBy(e => e.Id).Skip(1).FirstAsync(cancellationToken).ConfigureAwait(true);
+            ctx.Permissions.Remove(second);
+            await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(true);
+        }
+
+        var expected = await GeneratedIdsAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        Assert.Equal(expected, await GeneratedIdsAsync(cancellationToken).ConfigureAwait(true));
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_GivesNewIdentityRowsTheIdAfterTheHighestRestoredOne()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        await using var ctx = CreateDbContext();
+        var highestRestored = await ctx.Permissions.MaxAsync(e => e.Id, cancellationToken).ConfigureAwait(true);
+        var bob = await ctx.Users.Include(e => e.Permissions).SingleAsync(e => e.Username == "bob", cancellationToken).ConfigureAwait(true);
+        var added = new Permission(PermissionKind.EnableAllFolders, true);
+        bob.Permissions.Add(added);
+        await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(true);
+
+        Assert.Equal(highestRestored + 1, added.Id);
     }
 
     [Fact]
@@ -451,6 +519,16 @@ public sealed class BackupServiceTests : IDisposable
         }
 
         return rows;
+    }
+
+    private async Task<List<string>> GeneratedIdsAsync(CancellationToken cancellationToken)
+    {
+        await using var ctx = CreateDbContext();
+        var ids = new List<string>();
+        ids.AddRange((await ctx.Permissions.AsNoTracking().OrderBy(e => e.Id).Select(e => e.Id).ToListAsync(cancellationToken).ConfigureAwait(false)).Select(e => $"Permission {e}"));
+        ids.AddRange((await ctx.AccessSchedules.AsNoTracking().OrderBy(e => e.Id).Select(e => e.Id).ToListAsync(cancellationToken).ConfigureAwait(false)).Select(e => $"AccessSchedule {e}"));
+        ids.AddRange((await ctx.Devices.AsNoTracking().OrderBy(e => e.Id).Select(e => e.Id).ToListAsync(cancellationToken).ConfigureAwait(false)).Select(e => $"Device {e}"));
+        return ids;
     }
 
     private BackupService CreateBackupService()

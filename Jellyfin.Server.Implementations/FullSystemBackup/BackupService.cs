@@ -16,6 +16,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.SystemBackupService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -200,8 +201,11 @@ public class BackupService : IBackupService
                         }
 
                         _logger.LogInformation("Validate backup of {Table}", entityType.Type.Name);
-                        await foreach (var unused in ReadEntitiesAsync(zipEntry, entityType.Type.PropertyType.GetGenericArguments()[0]).ConfigureAwait(false))
+                        var validatedClrType = entityType.Type.PropertyType.GetGenericArguments()[0];
+                        var validatedKeys = GetGeneratedKeys(dbContext.Model.FindEntityType(validatedClrType)!);
+                        await foreach (var (source, _) in ReadEntitiesAsync(zipEntry, validatedClrType).ConfigureAwait(false))
                         {
+                            ReadGeneratedKeys(source, validatedKeys);
                         }
                     }
 
@@ -255,11 +259,14 @@ public class BackupService : IBackupService
 
                             _logger.LogInformation("Restore backup of {Table}", entityType.Type.Name);
                             var records = 0;
-                            await foreach (var entity in ReadEntitiesAsync(zipEntry, entityType.Type.PropertyType.GetGenericArguments()[0]).ConfigureAwait(false))
+                            var entityClrType = entityType.Type.PropertyType.GetGenericArguments()[0];
+                            var generatedKeys = GetGeneratedKeys(dbContext.Model.FindEntityType(entityClrType)!);
+                            await foreach (var (source, entity) in ReadEntitiesAsync(zipEntry, entityClrType).ConfigureAwait(false))
                             {
                                 try
                                 {
                                     records++;
+                                    RestoreGeneratedKeys(dbContext, entity, ReadGeneratedKeys(source, generatedKeys));
                                     dbContext.Add(entity);
                                 }
                                 catch (Exception ex)
@@ -284,7 +291,41 @@ public class BackupService : IBackupService
         }
     }
 
-    private static async IAsyncEnumerable<object> ReadEntitiesAsync(ZipArchiveEntry zipEntry, Type entityClrType)
+    // The serializer cannot set a property with a non-public setter, which is how most generated ids are declared.
+    // Without this they would be generated again and no longer match the rows that refer to them.
+    private static void RestoreGeneratedKeys(JellyfinDbContext dbContext, object entity, IReadOnlyList<(IProperty Key, object? Value)> values)
+    {
+        var entry = dbContext.Entry(entity);
+        foreach (var (key, value) in values)
+        {
+            entry.Property(key.Name).CurrentValue = value;
+        }
+    }
+
+    private static IProperty[] GetGeneratedKeys(IEntityType entityType)
+    {
+        return entityType.FindPrimaryKey()!.Properties
+            .Where(e => e.ValueGenerated == ValueGenerated.OnAdd)
+            .ToArray();
+    }
+
+    // Reads the generated keys of a row before the restore changes anything. An id that cannot be read fails the whole restore
+    // while the database is still intact, instead of dropping the row after the old data is gone.
+    private static List<(IProperty Key, object? Value)> ReadGeneratedKeys(JsonObject source, IReadOnlyList<IProperty> generatedKeys)
+    {
+        var values = new List<(IProperty, object?)>(generatedKeys.Count);
+        foreach (var key in generatedKeys)
+        {
+            if (source[key.Name] is { } value)
+            {
+                values.Add((key, value.Deserialize(key.ClrType)));
+            }
+        }
+
+        return values;
+    }
+
+    private static async IAsyncEnumerable<(JsonObject Source, object Entity)> ReadEntitiesAsync(ZipArchiveEntry zipEntry, Type entityClrType)
     {
         var zipEntryStream = await zipEntry.OpenAsync().ConfigureAwait(false);
         await using (zipEntryStream.ConfigureAwait(false))
@@ -292,12 +333,12 @@ public class BackupService : IBackupService
             await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<JsonObject>(zipEntryStream, _serializerSettings).ConfigureAwait(false))
             {
                 var entity = item.Deserialize(entityClrType);
-                if (entity is null)
+                if (item is null || entity is null)
                 {
                     throw new InvalidOperationException($"Cannot deserialize entity '{item}'");
                 }
 
-                yield return entity;
+                yield return (item, entity);
             }
         }
     }
