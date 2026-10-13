@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Database.Implementations.Interfaces;
+using Jellyfin.Database.Implementations.ModelConfiguration;
 
 namespace Jellyfin.Database.Implementations.Entities
 {
@@ -69,8 +70,8 @@ namespace Jellyfin.Database.Implementations.Entities
         /// <remarks>
         /// Required, Max length = 255.
         /// </remarks>
-        [MaxLength(255)]
-        [StringLength(255)]
+        [MaxLength(KeyLengths.Username)]
+        [StringLength(KeyLengths.Username)]
         public string Username { get; set; }
 
         /// <summary>
@@ -79,8 +80,8 @@ namespace Jellyfin.Database.Implementations.Entities
         /// <remarks>
         /// Required, Max length = 255.
         /// </remarks>
-        [MaxLength(255)]
-        [StringLength(255)]
+        [MaxLength(KeyLengths.Username)]
+        [StringLength(KeyLengths.Username)]
         public string NormalizedUsername { get; set; }
 
         /// <summary>

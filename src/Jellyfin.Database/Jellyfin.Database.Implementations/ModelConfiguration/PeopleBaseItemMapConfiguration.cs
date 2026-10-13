@@ -13,6 +13,7 @@ public class PeopleBaseItemMapConfiguration : IEntityTypeConfiguration<PeopleBas
     public void Configure(EntityTypeBuilder<PeopleBaseItemMap> builder)
     {
         builder.HasKey(e => new { e.ItemId, e.PeopleId, e.Role });
+        builder.Property(e => e.Role).HasMaxLength(KeyLengths.PersonRole);
         builder.HasIndex(e => new { e.ItemId, e.SortOrder });
         builder.HasIndex(e => new { e.ItemId, e.ListOrder });
         builder.HasIndex(e => new { e.PeopleId, e.ItemId });

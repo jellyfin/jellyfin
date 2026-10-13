@@ -13,6 +13,7 @@ public class MediaStreamInfoConfiguration : IEntityTypeConfiguration<MediaStream
     public void Configure(EntityTypeBuilder<MediaStreamInfo> builder)
     {
         builder.HasKey(e => new { e.ItemId, e.StreamIndex });
+        builder.Property(e => e.Language).IsUnboundedIndexedText();
 
         // Covering index for the stream filters. ItemId comes second because it is what they project and
         // dedupe on; Language and IsExternal follow only to keep their predicates off the table.

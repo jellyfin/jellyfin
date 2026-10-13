@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
+using Jellyfin.Database.Implementations.ModelConfiguration;
 
 namespace Jellyfin.Database.Implementations.Entities.Security
 {
@@ -75,8 +76,8 @@ namespace Jellyfin.Database.Implementations.Entities.Security
         /// <summary>
         /// Gets or sets the device id.
         /// </summary>
-        [MaxLength(256)]
-        [StringLength(256)]
+        [MaxLength(KeyLengths.DeviceId)]
+        [StringLength(KeyLengths.DeviceId)]
         public string DeviceId { get; set; }
 
         /// <summary>

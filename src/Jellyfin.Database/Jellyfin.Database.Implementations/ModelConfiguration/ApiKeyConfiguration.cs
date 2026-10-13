@@ -13,6 +13,10 @@ namespace Jellyfin.Database.Implementations.ModelConfiguration
         public void Configure(EntityTypeBuilder<ApiKey> builder)
         {
             builder
+                .Property(entity => entity.AccessToken)
+                .HasMaxLength(KeyLengths.AccessToken);
+
+            builder
                 .HasIndex(entity => entity.AccessToken)
                 .IsUnique();
         }

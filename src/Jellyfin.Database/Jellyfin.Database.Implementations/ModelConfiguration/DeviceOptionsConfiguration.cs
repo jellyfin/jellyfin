@@ -13,6 +13,10 @@ namespace Jellyfin.Database.Implementations.ModelConfiguration
         public void Configure(EntityTypeBuilder<DeviceOptions> builder)
         {
             builder
+                .Property(entity => entity.DeviceId)
+                .HasMaxLength(KeyLengths.DeviceId);
+
+            builder
                 .HasIndex(entity => entity.DeviceId)
                 .IsUnique();
         }

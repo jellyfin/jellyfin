@@ -13,6 +13,10 @@ namespace Jellyfin.Database.Implementations.ModelConfiguration
         public void Configure(EntityTypeBuilder<Device> builder)
         {
             builder
+                .Property(entity => entity.AccessToken)
+                .HasMaxLength(KeyLengths.AccessToken);
+
+            builder
                 .HasIndex(entity => new { entity.DeviceId, entity.DateLastActivity });
 
             builder

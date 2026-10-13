@@ -13,6 +13,10 @@ namespace Jellyfin.Database.Implementations.ModelConfiguration
         public void Configure(EntityTypeBuilder<CustomItemDisplayPreferences> builder)
         {
             builder
+                .Property(entity => entity.Key)
+                .HasMaxLength(KeyLengths.DisplayPreferencesKey);
+
+            builder
                 .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client, entity.Key })
                 .IsUnique();
         }

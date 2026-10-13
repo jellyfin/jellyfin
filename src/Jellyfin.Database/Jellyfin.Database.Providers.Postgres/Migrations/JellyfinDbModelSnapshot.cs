@@ -178,7 +178,8 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
 
                     b.Property<string>("CleanName")
                         .HasColumnType("text")
-                        .UseCollation("C");
+                        .UseCollation("C")
+                        .HasAnnotation("Jellyfin:UnboundedIndexedText", true);
 
                     b.Property<float?>("CommunityRating")
                         .HasColumnType("real");
@@ -276,12 +277,14 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
                         .HasColumnType("real");
 
                     b.Property<string>("MediaType")
+                        .HasMaxLength(64)
                         .HasColumnType("text")
                         .UseCollation("C");
 
                     b.Property<string>("Name")
                         .HasColumnType("text")
-                        .UseCollation("C");
+                        .UseCollation("C")
+                        .HasAnnotation("Jellyfin:UnboundedIndexedText", true);
 
                     b.Property<float?>("NormalizationGain")
                         .HasColumnType("real");
@@ -313,7 +316,8 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
 
                     b.Property<string>("Path")
                         .HasColumnType("text")
-                        .UseCollation("C");
+                        .UseCollation("C")
+                        .HasAnnotation("Jellyfin:UnboundedIndexedText", true);
 
                     b.Property<string>("PreferredMetadataCountryCode")
                         .HasColumnType("text")
@@ -328,7 +332,8 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
 
                     b.Property<string>("PresentationUniqueKey")
                         .HasColumnType("text")
-                        .UseCollation("C");
+                        .UseCollation("C")
+                        .HasAnnotation("Jellyfin:UnboundedIndexedText", true);
 
                     b.Property<Guid?>("PrimaryVersionId")
                         .HasColumnType("uuid");
@@ -355,11 +360,13 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
 
                     b.Property<string>("SeriesName")
                         .HasColumnType("text")
-                        .UseCollation("C");
+                        .UseCollation("C")
+                        .HasAnnotation("Jellyfin:UnboundedIndexedText", true);
 
                     b.Property<string>("SeriesPresentationUniqueKey")
                         .HasColumnType("text")
-                        .UseCollation("C");
+                        .UseCollation("C")
+                        .HasAnnotation("Jellyfin:UnboundedIndexedText", true);
 
                     b.Property<string>("ShowId")
                         .HasColumnType("text")
@@ -370,7 +377,8 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
 
                     b.Property<string>("SortName")
                         .HasColumnType("text")
-                        .UseCollation("C");
+                        .UseCollation("C")
+                        .HasAnnotation("Jellyfin:UnboundedIndexedText", true);
 
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("timestamp with time zone");
@@ -395,6 +403,7 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
 
                     b.Property<string>("Type")
                         .IsRequired()
+                        .HasMaxLength(256)
                         .HasColumnType("text")
                         .UseCollation("C");
 
@@ -596,13 +605,15 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("ProviderId")
+                        .HasMaxLength(128)
                         .HasColumnType("text")
                         .UseCollation("C");
 
                     b.Property<string>("ProviderValue")
                         .IsRequired()
                         .HasColumnType("text")
-                        .UseCollation("C");
+                        .UseCollation("C")
+                        .HasAnnotation("Jellyfin:UnboundedIndexedText", true);
 
                     b.HasKey("ItemId", "ProviderId");
 
@@ -672,6 +683,7 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
 
                     b.Property<string>("Key")
                         .IsRequired()
+                        .HasMaxLength(256)
                         .HasColumnType("text")
                         .UseCollation("C");
 
@@ -863,13 +875,15 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
                     b.Property<string>("CleanValue")
                         .IsRequired()
                         .HasColumnType("text")
-                        .UseCollation("C");
+                        .UseCollation("C")
+                        .HasAnnotation("Jellyfin:UnboundedIndexedText", true);
 
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
                     b.Property<string>("Value")
                         .IsRequired()
+                        .HasMaxLength(512)
                         .HasColumnType("text")
                         .UseCollation("C");
 
@@ -1078,7 +1092,8 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
 
                     b.Property<string>("Language")
                         .HasColumnType("text")
-                        .UseCollation("C");
+                        .UseCollation("C")
+                        .HasAnnotation("Jellyfin:UnboundedIndexedText", true);
 
                     b.Property<float?>("Level")
                         .HasColumnType("real");
@@ -1146,7 +1161,8 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text")
-                        .UseCollation("C");
+                        .UseCollation("C")
+                        .HasAnnotation("Jellyfin:UnboundedIndexedText", true);
 
                     b.Property<string>("PersonType")
                         .HasColumnType("text")
@@ -1168,6 +1184,7 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Role")
+                        .HasMaxLength(400)
                         .HasColumnType("text")
                         .UseCollation("C");
 
@@ -1263,6 +1280,7 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
 
                     b.Property<string>("AccessToken")
                         .IsRequired()
+                        .HasMaxLength(128)
                         .HasColumnType("text")
                         .UseCollation("C");
 
@@ -1296,6 +1314,7 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
 
                     b.Property<string>("AccessToken")
                         .IsRequired()
+                        .HasMaxLength(128)
                         .HasColumnType("text")
                         .UseCollation("C");
 
@@ -1363,6 +1382,7 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
 
                     b.Property<string>("DeviceId")
                         .IsRequired()
+                        .HasMaxLength(256)
                         .HasColumnType("text")
                         .UseCollation("C");
 
@@ -1545,6 +1565,7 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("CustomDataKey")
+                        .HasMaxLength(256)
                         .HasColumnType("text")
                         .UseCollation("C");
 

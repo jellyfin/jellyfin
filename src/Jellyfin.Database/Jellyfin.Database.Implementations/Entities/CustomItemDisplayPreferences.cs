@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Jellyfin.Database.Implementations.ModelConfiguration;
 
 namespace Jellyfin.Database.Implementations.Entities
 {
@@ -57,8 +58,8 @@ namespace Jellyfin.Database.Implementations.Entities
         /// <remarks>
         /// Required. Max Length = 32.
         /// </remarks>
-        [MaxLength(32)]
-        [StringLength(32)]
+        [MaxLength(KeyLengths.DisplayPreferencesClient)]
+        [StringLength(KeyLengths.DisplayPreferencesClient)]
         public string Client { get; set; }
 
         /// <summary>

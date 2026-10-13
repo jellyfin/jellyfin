@@ -14,6 +14,15 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
     public void Configure(EntityTypeBuilder<BaseItemEntity> builder)
     {
         builder.HasKey(e => e.Id);
+        builder.Property(e => e.Type).HasMaxLength(KeyLengths.ItemType);
+        builder.Property(e => e.MediaType).HasMaxLength(KeyLengths.MediaType);
+        builder.Property(e => e.Path).IsUnboundedIndexedText();
+        builder.Property(e => e.Name).IsUnboundedIndexedText();
+        builder.Property(e => e.SortName).IsUnboundedIndexedText();
+        builder.Property(e => e.CleanName).IsUnboundedIndexedText();
+        builder.Property(e => e.SeriesName).IsUnboundedIndexedText();
+        builder.Property(e => e.PresentationUniqueKey).IsUnboundedIndexedText();
+        builder.Property(e => e.SeriesPresentationUniqueKey).IsUnboundedIndexedText();
         // TODO: See rant in entity file.
         // builder.HasOne(e => e.Parent).WithMany(e => e.DirectChildren).HasForeignKey(e => e.ParentId);
         // builder.HasOne(e => e.TopParent).WithMany(e => e.AllChildren).HasForeignKey(e => e.TopParentId);

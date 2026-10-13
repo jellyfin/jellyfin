@@ -13,6 +13,8 @@ public class ItemValuesConfiguration : IEntityTypeConfiguration<ItemValue>
     public void Configure(EntityTypeBuilder<ItemValue> builder)
     {
         builder.HasKey(e => e.ItemValueId);
+        builder.Property(e => e.Value).HasMaxLength(KeyLengths.ItemValue);
+        builder.Property(e => e.CleanValue).IsUnboundedIndexedText();
         builder.HasIndex(e => new { e.Type, e.CleanValue });
         builder.HasIndex(e => new { e.Type, e.Value }).IsUnique();
     }

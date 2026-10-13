@@ -13,6 +13,7 @@ public class PeopleConfiguration : IEntityTypeConfiguration<People>
     public void Configure(EntityTypeBuilder<People> builder)
     {
         builder.HasKey(e => e.Id);
+        builder.Property(e => e.Name).IsUnboundedIndexedText();
         builder.HasIndex(e => e.Name);
         builder.HasMany(e => e.BaseItems);
     }
