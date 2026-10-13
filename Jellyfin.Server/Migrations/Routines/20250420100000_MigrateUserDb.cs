@@ -6,6 +6,7 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions.Json;
+using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
@@ -185,7 +186,7 @@ public class MigrateUserDb : IMigrationRoutine
 
                 user.SetPreference(PreferenceKind.BlockedTags, policy.BlockedTags);
                 user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels);
-                user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
+                user.SetPreference(PreferenceKind.EnabledDevices, KeyNormalizer.NormalizeDeviceIds(policy.EnabledDevices));
                 user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders);
                 user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
                 user.SetPreference(PreferenceKind.OrderedViews, config.OrderedViews);

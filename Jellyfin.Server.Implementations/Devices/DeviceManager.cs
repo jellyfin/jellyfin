@@ -58,7 +58,7 @@ namespace Jellyfin.Server.Implementations.Devices
                          .OrderBy(d => d.Id)
                          .AsEnumerable())
             {
-                _deviceOptions.TryAdd(deviceOption.DeviceId.RemoveNullCharacters(), deviceOption);
+                _deviceOptions.TryAdd(ToStoredId(deviceOption.DeviceId), deviceOption);
             }
         }
 
@@ -68,13 +68,13 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public void SaveCapabilities(string deviceId, ClientCapabilities capabilities)
         {
-            _capabilitiesMap[deviceId.RemoveNullCharacters()] = capabilities;
+            _capabilitiesMap[ToStoredId(deviceId)] = capabilities;
         }
 
         /// <inheritdoc />
         public async Task UpdateDeviceOptions(string deviceId, string? deviceName)
         {
-            deviceId = deviceId.RemoveNullCharacters();
+            deviceId = ToStoredId(deviceId);
             DeviceOptions? deviceOptions;
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
@@ -98,7 +98,7 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public async Task<Device> CreateDevice(Device device)
         {
-            device.DeviceId = device.DeviceId.RemoveNullCharacters();
+            device.DeviceId = ToStoredId(device.DeviceId);
             device.DeviceName = device.DeviceName.RemoveNullCharacters();
             device.AppName = device.AppName.RemoveNullCharacters();
             device.AppVersion = device.AppVersion.RemoveNullCharacters();
@@ -116,7 +116,7 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public DeviceOptionsDto? GetDeviceOptions(string deviceId)
         {
-            if (_deviceOptions.TryGetValue(deviceId.RemoveNullCharacters(), out var deviceOptions))
+            if (_deviceOptions.TryGetValue(ToStoredId(deviceId), out var deviceOptions))
             {
                 return ToDeviceOptionsDto(deviceOptions);
             }
@@ -132,7 +132,7 @@ namespace Jellyfin.Server.Implementations.Devices
                 return new();
             }
 
-            return _capabilitiesMap.TryGetValue(deviceId.RemoveNullCharacters(), out ClientCapabilities? result)
+            return _capabilitiesMap.TryGetValue(ToStoredId(deviceId), out ClientCapabilities? result)
                 ? result
                 : new();
         }
@@ -140,8 +140,8 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public DeviceInfoDto? GetDevice(string id)
         {
-            id = id.RemoveNullCharacters();
-            var device = _devices.Values.Where(d => d.DeviceId.RemoveNullCharacters() == id).OrderByDescending(d => d.DateLastActivity).FirstOrDefault();
+            id = ToStoredId(id);
+            var device = _devices.Values.Where(d => ToStoredId(d.DeviceId) == id).OrderByDescending(d => d.DateLastActivity).FirstOrDefault();
             _deviceOptions.TryGetValue(id, out var deviceOption);
 
             var deviceInfo = device is null ? null : ToDeviceInfo(device, deviceOption);
@@ -151,10 +151,10 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public QueryResult<Device> GetDevices(DeviceQuery query)
         {
-            var deviceId = query.DeviceId?.RemoveNullCharacters();
+            var deviceId = query.DeviceId is null ? null : ToStoredId(query.DeviceId);
             IEnumerable<Device> devices = _devices.Values
                 .Where(device => !query.UserId.HasValue || device.UserId.Equals(query.UserId.Value))
-                .Where(device => deviceId is null || device.DeviceId.RemoveNullCharacters() == deviceId)
+                .Where(device => deviceId is null || ToStoredId(device.DeviceId) == deviceId)
                 .Where(device => query.AccessToken is null || device.AccessToken == query.AccessToken)
                 .OrderBy(d => d.Id)
                 .ToList();
@@ -204,7 +204,7 @@ namespace Jellyfin.Server.Implementations.Devices
 
             var array = devices.Select(device =>
                 {
-                    _deviceOptions.TryGetValue(device.DeviceId.RemoveNullCharacters(), out var option);
+                    _deviceOptions.TryGetValue(ToStoredId(device.DeviceId), out var option);
                     return ToDeviceInfo(device, option);
                 })
                 .Select(ToDeviceInfoDto)
@@ -245,7 +245,7 @@ namespace Jellyfin.Server.Implementations.Devices
         {
             ArgumentNullException.ThrowIfNull(user);
             ArgumentException.ThrowIfNullOrEmpty(deviceId);
-            deviceId = deviceId.RemoveNullCharacters();
+            deviceId = ToStoredId(deviceId);
 
             if (user.HasPermission(PermissionKind.EnableAllDevices) || user.HasPermission(PermissionKind.IsAdministrator))
             {
@@ -255,6 +255,10 @@ namespace Jellyfin.Server.Implementations.Devices
             return user.GetPreference(PreferenceKind.EnabledDevices).Contains(deviceId, StringComparison.OrdinalIgnoreCase)
                    || !GetCapabilities(deviceId).SupportsPersistentIdentifier;
         }
+
+        // A device id is stored without NUL characters and within its column length, so every lookup cleans it the same way.
+        private static string ToStoredId(string deviceId)
+            => KeyNormalizer.NormalizeDeviceId(deviceId.RemoveNullCharacters());
 
         private DeviceInfo ToDeviceInfo(Device authInfo, DeviceOptions? options = null)
         {

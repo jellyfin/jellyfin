@@ -71,6 +71,24 @@ namespace Jellyfin.Server.Implementations.Tests.QuickConnect
                 }));
 
         [Fact]
+        public void TryConnect_DeviceIdOverTheBound_KeepsTheShortenedId()
+        {
+            _config.QuickConnectAvailable = true;
+            var deviceId = new string('d', KeyNormalizer.DeviceIdMaxLength + 100);
+
+            var result = _quickConnectManager.TryConnect(
+                new AuthorizationInfo
+                {
+                    Device = "Device",
+                    DeviceId = deviceId,
+                    Client = "Client",
+                    Version = "1.0.0"
+                });
+
+            Assert.Equal(KeyNormalizer.NormalizeDeviceId(deviceId), result.DeviceId);
+        }
+
+        [Fact]
         public void TryConnect_QuickConnectUnavailable_ThrowsAuthenticationException()
         {
             _config.QuickConnectAvailable = false;

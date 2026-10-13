@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Server.Implementations.Devices;
 using Jellyfin.Server.Implementations.Tests.Item;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Common;
@@ -15,7 +16,9 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Cryptography;
+using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -123,6 +126,29 @@ public sealed class UserManagerUpdateUserTests : JellyfinDbTestFixture
 
         Assert.NotNull(updated);
         Assert.Equal(user.Id, updated.Id);
+    }
+
+    [Fact]
+    public async Task UpdatePolicyAsync_EnabledDeviceOverTheBound_StoresTheShortenedIdAndGrantsTheDevice()
+    {
+        var user = await _userManager.CreateUserAsync("deviceuser");
+        var deviceId = new string('d', KeyNormalizer.DeviceIdMaxLength + 60);
+
+        await _userManager.UpdatePolicyAsync(
+            user.Id,
+            new UserPolicy
+            {
+                EnableAllDevices = false,
+                EnabledDevices = [deviceId, "short", deviceId + "\0"],
+                AuthenticationProviderId = user.AuthenticationProviderId,
+                PasswordResetProviderId = user.PasswordResetProviderId
+            });
+
+        var reloaded = _userManager.GetUserById(user.Id)!;
+        Assert.Equal([KeyNormalizer.NormalizeDeviceId(deviceId), "short"], reloaded.GetPreference(PreferenceKind.EnabledDevices));
+        var deviceManager = new DeviceManager(CreateDbContextFactory(), new Mock<IUserManager>().Object);
+        deviceManager.SaveCapabilities(deviceId, new ClientCapabilities { SupportsPersistentIdentifier = true });
+        Assert.True(deviceManager.CanAccessDevice(reloaded, deviceId));
     }
 
     [Fact]

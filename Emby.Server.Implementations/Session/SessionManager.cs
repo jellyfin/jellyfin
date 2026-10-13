@@ -15,6 +15,7 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Entities.Security;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
+using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
@@ -254,6 +255,7 @@ namespace Emby.Server.Implementations.Session
             ArgumentException.ThrowIfNullOrEmpty(appName);
             ArgumentException.ThrowIfNullOrEmpty(appVersion);
             ArgumentException.ThrowIfNullOrEmpty(deviceId);
+            deviceId = ToStoredDeviceId(deviceId);
 
             var activityDate = DateTime.UtcNow;
             var session = GetSessionInfo(appName, appVersion, deviceId, deviceName, remoteEndPoint, user);
@@ -480,6 +482,10 @@ namespace Emby.Server.Implementations.Session
         // could claim another user's client/device pair and take over their session.
         private static string GetSessionKey(string appName, string deviceId, Guid userId)
             => appName + deviceId + userId.ToString("N", CultureInfo.InvariantCulture);
+
+        // The sessions and the devices hold the device id without NUL characters and within its column length.
+        private static string ToStoredDeviceId(string deviceId)
+            => string.IsNullOrEmpty(deviceId) ? deviceId : KeyNormalizer.NormalizeDeviceId(deviceId.RemoveNullCharacters());
 
         /// <summary>
         /// Gets the connection.
@@ -1722,6 +1728,8 @@ namespace Emby.Server.Implementations.Session
             ArgumentException.ThrowIfNullOrEmpty(request.DeviceName);
             ArgumentException.ThrowIfNullOrEmpty(request.AppVersion);
 
+            var deviceId = KeyNormalizer.NormalizeDeviceId(request.DeviceId.RemoveNullCharacters());
+
             User user = null;
             if (!request.UserId.IsEmpty())
             {
@@ -1745,8 +1753,8 @@ namespace Emby.Server.Implementations.Session
                 throw new AuthenticationException("Invalid username or password entered.");
             }
 
-            if (!string.IsNullOrEmpty(request.DeviceId)
-                && !_deviceManager.CanAccessDevice(user, request.DeviceId))
+            if (!string.IsNullOrEmpty(deviceId)
+                && !_deviceManager.CanAccessDevice(user, deviceId))
             {
                 throw new SecurityException("User is not allowed access from this device.");
             }
@@ -1759,12 +1767,12 @@ namespace Emby.Server.Implementations.Session
                 throw new SecurityException("User is at their maximum number of sessions.");
             }
 
-            var token = await GetAuthorizationToken(user, request.DeviceId, request.App, request.AppVersion, request.DeviceName).ConfigureAwait(false);
+            var token = await GetAuthorizationToken(user, deviceId, request.App, request.AppVersion, request.DeviceName).ConfigureAwait(false);
 
             var session = await LogSessionActivity(
                 request.App,
                 request.AppVersion,
-                request.DeviceId,
+                deviceId,
                 request.DeviceName,
                 request.RemoteEndPoint,
                 user).ConfigureAwait(false);
@@ -2007,6 +2015,7 @@ namespace Emby.Server.Implementations.Session
         /// <inheritdoc />
         public void ReportTranscodingInfo(string deviceId, TranscodingInfo info)
         {
+            deviceId = ToStoredDeviceId(deviceId);
             var session = Sessions.FirstOrDefault(i =>
                 string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase));
 
@@ -2025,6 +2034,7 @@ namespace Emby.Server.Implementations.Session
         /// <inheritdoc />
         public SessionInfo GetSession(string deviceId, string client, string version)
         {
+            deviceId = ToStoredDeviceId(deviceId);
             return Sessions.FirstOrDefault(i =>
                 string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase)
                     && string.Equals(i.Client, client, StringComparison.OrdinalIgnoreCase));
@@ -2088,6 +2098,7 @@ namespace Emby.Server.Implementations.Session
             var result = Sessions;
             if (!string.IsNullOrEmpty(deviceId))
             {
+                deviceId = ToStoredDeviceId(deviceId);
                 result = result.Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase));
             }
 
@@ -2222,6 +2233,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
+            deviceId = ToStoredDeviceId(deviceId);
             var sessions = Sessions.Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase));
 
             return SendMessageToSessions(sessions, name, data, cancellationToken);

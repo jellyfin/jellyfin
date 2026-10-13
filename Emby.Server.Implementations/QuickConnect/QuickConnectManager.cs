@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
@@ -85,7 +86,7 @@ namespace Emby.Server.Implementations.QuickConnect
                 secret,
                 code,
                 DateTime.UtcNow,
-                authorizationInfo.DeviceId,
+                KeyNormalizer.NormalizeDeviceId(authorizationInfo.DeviceId),
                 authorizationInfo.Device,
                 authorizationInfo.Client,
                 authorizationInfo.Version);

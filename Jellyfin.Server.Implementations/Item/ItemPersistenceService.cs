@@ -245,10 +245,10 @@ public class ItemPersistenceService : IItemPersistenceService
             await using (transaction.ConfigureAwait(false))
             {
                 var rawKeys = item.GetUserDataKeys().ToList();
-                var userKeys = rawKeys.Select(e => e.RemoveNullCharacters()).Distinct().ToList();
+                var userKeys = rawKeys.Select(e => KeyNormalizer.NormalizeUserDataKey(e.RemoveNullCharacters())).Distinct().ToList();
 
                 // A row detached before NUL characters were removed is stored under the key as it was reported.
-                var lookupKeys = rawKeys.Concat(userKeys).Distinct().ToList();
+                var lookupKeys = rawKeys.Select(KeyNormalizer.NormalizeUserDataKey).Concat(userKeys).Distinct().ToList();
 
                 var detached = await dbContext.UserData
                     .Where(e => e.ItemId == BaseItemRepository.PlaceholderId)
@@ -293,7 +293,7 @@ public class ItemPersistenceService : IItemPersistenceService
                     .ThenByDescending(e => e.PlayCount)
                     .ThenByDescending(e => e.PlaybackPositionTicks)
                     .First(),
-                Keys: userKeys.Union(g.Select(e => e.CustomDataKey.RemoveNullCharacters())).ToList()))
+                Keys: userKeys.Union(g.Select(e => KeyNormalizer.NormalizeUserDataKey(e.CustomDataKey.RemoveNullCharacters()))).ToList()))
             .ToList();
 
         dbContext.UserData.RemoveRange(detached);
