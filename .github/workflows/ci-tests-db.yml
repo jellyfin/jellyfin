@@ -1,0 +1,125 @@
+name: Database Tests
+on:
+  workflow_call:
+    inputs:
+      matrix:
+        description: >-
+          JSON array with one object per database server to test. Each
+          object has name (the name of the job, which must not contain
+          the version so that a required check survives an upgrade),
+          provider (the name of the provider), version (the major
+          version of the server, which the tests must report), image
+          (the pinned image), imageVariable (the environment variable
+          through which the tests take the image, which must be
+          JELLYFIN_TEST_, the provider in capitals and _IMAGE),
+          settings (the run settings file in tests/), requiredTests (a
+          space separated list of tests that must pass because they
+          skip when the server tools are unavailable) and optionally
+          timeoutMinutes (the time the job may take, 30 by default).
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  SDK_VERSION: "10.0.x"
+
+jobs:
+  run-tests-db:
+    name: ${{ matrix.name }}
+    strategy:
+      matrix:
+        include: ${{ fromJSON(inputs.matrix) }}
+      fail-fast: false
+
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ matrix.timeoutMinutes || 30 }}
+
+    env:
+      JELLYFIN_TEST_EXPECTED_PROVIDER: ${{ matrix.provider }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: ${{ env.SDK_VERSION }}
+
+      - name: Pull the database image
+        env:
+          IMAGE: ${{ matrix.image }}
+          IMAGE_VARIABLE: ${{ matrix.imageVariable }}
+          PROVIDER: ${{ matrix.provider }}
+          RYUK_IMAGE: testcontainers/ryuk:0.14.0@sha256:7c1a8a9a47c780ed0f983770a662f80deb115d95cce3e2daa3d12115b8cd28f0
+        run: |
+          if [[ "$IMAGE_VARIABLE" != "JELLYFIN_TEST_${PROVIDER^^}_IMAGE" ]]; then
+            echo "::error::imageVariable is '$IMAGE_VARIABLE' but the tests read JELLYFIN_TEST_${PROVIDER^^}_IMAGE for $PROVIDER"
+            exit 1
+          fi
+
+          echo "$IMAGE_VARIABLE=$IMAGE" >> "$GITHUB_ENV"
+          docker pull "$IMAGE"
+          docker pull "$RYUK_IMAGE"
+
+      - name: Run database tests
+        env:
+          PROVIDER: ${{ matrix.provider }}
+          SETTINGS: ${{ matrix.settings }}
+        run: |
+          projects=$(grep -l Jellyfin.Database.Testing tests/*/*.csproj || true)
+          if [ -z "$projects" ]; then
+            echo "::error::No test project references Jellyfin.Database.Testing"
+            exit 1
+          fi
+
+          status=0
+          for project in $projects; do
+            dotnet test "$project" \
+              --configuration Release \
+              --settings "tests/$SETTINGS" \
+              --logger "trx;LogFileName=$PROVIDER-$(basename "$project" .csproj).trx" \
+              --results-directory TestResults \
+              --verbosity minimal || status=1
+          done
+          exit $status
+
+      - name: Check that the tests ran on ${{ matrix.provider }} ${{ matrix.version }}
+        env:
+          PROVIDER: ${{ matrix.provider }}
+          VERSION: ${{ matrix.version }}
+          REQUIRED_TESTS: ${{ matrix.requiredTests }}
+        run: |
+          shopt -s nullglob
+          files=(TestResults/"$PROVIDER"-*.trx)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::No test results for $PROVIDER"
+            exit 1
+          fi
+
+          set -f
+          for test in ProviderBackend_IsLive $REQUIRED_TESTS; do
+            if [[ ! $test =~ ^[A-Za-z0-9_]+$ ]]; then
+              echo "::error::'$test' in requiredTests is not a test method name"
+              exit 1
+            fi
+            results=$(grep -h -o -E "<UnitTestResult [^>]*testName=\"[^\"]*\.$test(\(|\")[^>]*>" "${files[@]}" || true)
+            if [ -z "$results" ] || grep -q -v 'outcome="Passed"' <<< "$results"; then
+              echo "::error::$test did not pass for $PROVIDER"
+              echo "$results"
+              exit 1
+            fi
+          done
+
+          if ! grep -q -h -E "Database backend: $PROVIDER $VERSION([^0-9]|$)" "${files[@]}"; then
+            echo "::error::The tests did not run on $PROVIDER $VERSION"
+            exit 1
+          fi
+
+      - name: Upload the test results
+        if: failure() || cancelled()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: test-results-${{ matrix.name }}-${{ matrix.version }}
+          path: TestResults/*.trx
+          retention-days: 14
