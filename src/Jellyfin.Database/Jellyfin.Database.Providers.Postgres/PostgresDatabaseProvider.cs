@@ -107,6 +107,22 @@ public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
     }
 
     /// <inheritdoc/>
+    public bool IsRetryableWriteConflict(Exception exception)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+
+        for (var current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation or PostgresErrorCodes.SerializationFailure or PostgresErrorCodes.DeadlockDetected })
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <inheritdoc/>
     public async Task RunScheduledOptimisation(CancellationToken cancellationToken)
     {
         if (DbContextFactory is null)
