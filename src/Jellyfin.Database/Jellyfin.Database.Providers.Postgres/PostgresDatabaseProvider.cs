@@ -9,8 +9,10 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.DbConfiguration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Jellyfin.Database.Providers.Postgres;
 
@@ -227,6 +229,48 @@ public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
 
         var truncateQuery = $"TRUNCATE TABLE {string.Join(", ", quotedTableNames)} RESTART IDENTITY CASCADE";
         await dbContext.Database.ExecuteSqlRawAsync(truncateQuery).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public async Task CompleteDatabaseRestoreAsync(JellyfinDbContext dbContext, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(dbContext);
+
+        foreach (var entityType in dbContext.Model.GetEntityTypes())
+        {
+            var tableName = entityType.GetTableName();
+            if (tableName is null)
+            {
+                continue;
+            }
+
+            var schema = entityType.GetSchema();
+            var table = StoreObjectIdentifier.Table(tableName, schema);
+            var qualifiedTableName = schema is null ? QuoteIdentifier(tableName) : $"{QuoteIdentifier(schema)}.{QuoteIdentifier(tableName)}";
+            foreach (var property in entityType.GetProperties().Where(e => IsGeneratedIntegerKey(e, table)))
+            {
+                if (property.GetColumnName(table) is not { } column)
+                {
+                    continue;
+                }
+
+                // setval is not rolled back, so a failed restore only restores these sequences because the earlier TRUNCATE ... RESTART IDENTITY of the purge gave them storage that the rollback discards.
+                // An empty table starts again at 1, as nothing in it holds an id yet.
+                var quotedColumn = QuoteIdentifier(column);
+                var setvalQuery = $"SELECT setval(pg_get_serial_sequence({{0}}, {{1}}), COALESCE(MAX({quotedColumn}), 1), MAX({quotedColumn}) IS NOT NULL) FROM {qualifiedTableName}";
+                await dbContext.Database.ExecuteSqlRawAsync(setvalQuery, [qualifiedTableName, column], cancellationToken).ConfigureAwait(false);
+            }
+        }
+    }
+
+    private static bool IsGeneratedIntegerKey(IProperty property, StoreObjectIdentifier table)
+    {
+        var type = Nullable.GetUnderlyingType(property.ClrType) ?? property.ClrType;
+        return property.ValueGenerated == ValueGenerated.OnAdd
+            && (type == typeof(int) || type == typeof(long) || type == typeof(short))
+            && property.GetValueGenerationStrategy(table) is NpgsqlValueGenerationStrategy.IdentityByDefaultColumn
+                or NpgsqlValueGenerationStrategy.IdentityAlwaysColumn
+                or NpgsqlValueGenerationStrategy.SerialColumn;
     }
 
     private static T? GetOption<T>(ICollection<CustomDatabaseOption>? options, string key, Func<string, T> converter)
