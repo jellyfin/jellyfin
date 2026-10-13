@@ -99,6 +99,7 @@
  - [mitchfizz05](https://github.com/mitchfizz05)
  - [mohd-akram](https://github.com/mohd-akram)
  - [MrTimscampi](https://github.com/MrTimscampi)
+ - [myristate](https://github.com/myristate)
  - [n8225](https://github.com/n8225)
  - [Nalsai](https://github.com/Nalsai)
  - [Narfinger](https://github.com/Narfinger)
