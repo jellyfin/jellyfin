@@ -99,6 +99,7 @@
  - [mitchfizz05](https://github.com/mitchfizz05)
  - [mohd-akram](https://github.com/mohd-akram)
  - [MrTimscampi](https://github.com/MrTimscampi)
+ - [myristate](https://github.com/myristate)
  - [n8225](https://github.com/n8225)
  - [Nalsai](https://github.com/Nalsai)
  - [Narfinger](https://github.com/Narfinger)
@@ -146,6 +147,7 @@
  - [Soumyadip Auddy](https://github.com/SoumyadipAuddy)
  - [st7105](https://github.com/st7105)
  - [sparky8251](https://github.com/sparky8251)
+ - [Speenah](https://github.com/Speenah)
  - [spookbits](https://github.com/spookbits)
  - [ssenart](https://github.com/ssenart)
  - [stanionascu](https://github.com/stanionascu)
@@ -250,6 +252,7 @@
  - [Daniel Aquino](https://github.com/chino)
  - [klizas](https://github.com/klizas)
  - [orut34iop](https://github.com/orut34iop)
+ - [p27ZuH6CNAdzr](https://github.com/p27ZuH6CNAdzr)
 
 # Emby Contributors
 
