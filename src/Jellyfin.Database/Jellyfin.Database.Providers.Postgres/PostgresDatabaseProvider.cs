@@ -10,7 +10,9 @@ using Jellyfin.Database.Implementations.Conventions;
 using Jellyfin.Database.Implementations.DbConfiguration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
 using Npgsql;
@@ -408,7 +410,10 @@ public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
         var context = await DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
-            return (await context.Database.GetAppliedMigrationsAsync(cancellationToken).ConfigureAwait(false)).Any();
+            // The history also holds the code routines, which a fresh install records before the schema exists.
+            var schemaMigrations = context.GetService<IMigrationsAssembly>().Migrations.Keys;
+            return (await context.Database.GetAppliedMigrationsAsync(cancellationToken).ConfigureAwait(false))
+                .Any(id => schemaMigrations.Contains(id));
         }
     }
 

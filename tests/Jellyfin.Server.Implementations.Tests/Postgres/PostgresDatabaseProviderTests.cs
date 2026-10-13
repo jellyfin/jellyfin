@@ -145,6 +145,17 @@ public sealed class PostgresDatabaseProviderTests : DatabaseTestFixture
     }
 
     [ProviderFact(TestDbProvider.Postgres)]
+    public async Task MigrationBackupFast_OnlyCodeRoutinesRecorded_DoesNotWarn()
+    {
+        // A fresh install records the routines that have nothing to do before the schema migrations have run.
+        RecordAppliedMigration("20250420050000_DisableTranscodingThrottling");
+
+        await CreateProvider().MigrationBackupFast(CancellationToken.None);
+
+        Assert.DoesNotContain(_logger.Entries, e => e.Level == LogLevel.Warning);
+    }
+
+    [ProviderFact(TestDbProvider.Postgres)]
     public async Task RestoreBackupFast_NoSnapshotKey_LogsCriticalWithTheLastAppliedMigration()
     {
         RecordAppliedMigration("20200101000000_InitialCreate");
