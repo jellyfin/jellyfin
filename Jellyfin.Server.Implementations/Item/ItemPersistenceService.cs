@@ -337,6 +337,7 @@ public class ItemPersistenceService : IItemPersistenceService
         foreach (var item in items.GroupBy(e => e.Id).Select(e => e.Last()).Where(e => e.Id != BaseItemRepository.PlaceholderId))
         {
             RemoveNulCharacters(item);
+            DropOverlongProviderIds(item);
 
             var ancestorIds = item.SupportsAncestors ?
                 item.GetAncestorIds().Distinct().ToList() :
@@ -955,6 +956,26 @@ public class ItemPersistenceService : IItemPersistenceService
         }
     }
 
+    // The name of a provider is part of the key of its row, so an id with a longer name cannot be stored. It is
+    // removed from the item, so that it does not fail the save of the items saved with it.
+    private void DropOverlongProviderIds(BaseItemDto item)
+    {
+        if (item.ProviderIds is not { } providerIds)
+        {
+            return;
+        }
+
+        foreach (var key in providerIds.Keys.Where(e => e.Length > KeyNormalizer.ProviderIdMaxLength).ToList())
+        {
+            _logger.LogWarning(
+                "Dropped a provider id of item {ItemId} whose name is {Length} characters long, the maximum is {MaxLength}",
+                item.Id,
+                key.Length,
+                KeyNormalizer.ProviderIdMaxLength);
+            providerIds.Remove(key);
+        }
+    }
+
     private static void RemoveNulCharacters(ItemImageInfo[]? images)
     {
         if (images is null)
@@ -1019,11 +1040,12 @@ public class ItemPersistenceService : IItemPersistenceService
 
         list.AddRange(inheritedTags.Select(i => (ItemValueType.InheritedTags, i)));
 
-        // Cleaned before the values are de-duplicated and matched against stored rows, so that a value with a NUL
-        // maps to the row stored without it. A row stored earlier may still hold a NUL and is not matched.
+        // Cleaned and cut before the values are de-duplicated and matched against stored rows, so that a value with a
+        // NUL maps to the row stored without it, and values that are equal up to the length of the column are one
+        // value. A row stored earlier may still hold a NUL, or be longer, and is not matched.
         return list
             .Where(i => !string.IsNullOrWhiteSpace(i.Item2))
-            .Select(i => (i.Item1, i.Item2.RemoveNullCharacters()))
+            .Select(i => (i.Item1, KeyNormalizer.CutItemValue(i.Item2.RemoveNullCharacters())))
             .Where(i => !string.IsNullOrWhiteSpace(i.Item2))
             .ToList();
     }

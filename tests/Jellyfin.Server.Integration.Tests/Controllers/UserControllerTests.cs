@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.Extensions.Json;
+using Jellyfin.Server.Implementations;
 using MediaBrowser.Model.Dto;
 using Xunit;
 using Xunit.v3.Priority;
@@ -115,6 +116,19 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             };
 
             using var response = await CreateUserByName(client, createRequest);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
+        [Priority(0)]
+        public async Task New_UsernameLongerThanTheColumn_BadRequest()
+        {
+            var client = _factory.CreateClient();
+
+            // access token can't be null here as the previous test populated it
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken!);
+
+            using var response = await CreateUserByName(client, new CreateUserByName() { Name = new string('a', KeyNormalizer.UsernameMaxLength + 1) });
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 

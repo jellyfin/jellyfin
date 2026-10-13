@@ -51,7 +51,7 @@ public class DisplayPreferencesController : BaseJellyfinApiController
     public ActionResult<DisplayPreferencesDto> GetDisplayPreferences(
         [FromRoute, Required] string displayPreferencesId,
         [FromQuery] Guid? userId,
-        [FromQuery, Required] string client)
+        [FromQuery, Required, StringLength(32)] string client)
     {
         userId = RequestHelpers.GetUserId(User, userId);
 
@@ -115,7 +115,7 @@ public class DisplayPreferencesController : BaseJellyfinApiController
     public ActionResult UpdateDisplayPreferences(
         [FromRoute, Required] string displayPreferencesId,
         [FromQuery] Guid? userId,
-        [FromQuery, Required] string client,
+        [FromQuery, Required, StringLength(32)] string client,
         [FromBody, Required] DisplayPreferencesDto displayPreferences)
     {
         userId = RequestHelpers.GetUserId(User, userId);

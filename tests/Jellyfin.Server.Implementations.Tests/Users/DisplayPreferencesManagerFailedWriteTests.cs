@@ -6,6 +6,7 @@ using Jellyfin.Server.Implementations.Users;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Users;
@@ -29,7 +30,7 @@ public sealed class DisplayPreferencesManagerFailedWriteTests : JellyfinDbTestFi
         : base(statements)
     {
         _statements = statements;
-        _manager = new DisplayPreferencesManager(CreateDbContextFactory());
+        _manager = new DisplayPreferencesManager(CreateDbContextFactory(), NullLogger<DisplayPreferencesManager>.Instance);
     }
 
     [Fact]

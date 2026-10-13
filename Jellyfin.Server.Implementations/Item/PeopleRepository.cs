@@ -116,7 +116,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         {
             var hadNul = person.Name.Contains('\0', StringComparison.Ordinal);
             person.Name = person.Name.RemoveNullCharacters().Trim();
-            person.Role = person.Role?.RemoveNullCharacters().Trim() ?? string.Empty;
+            person.Role = KeyNormalizer.CutPersonRole(person.Role?.RemoveNullCharacters().Trim() ?? string.Empty);
 
             // A name that is empty or whitespace once its NUL characters are removed does not name anyone.
             if (!hadNul || person.Name.Length > 0)

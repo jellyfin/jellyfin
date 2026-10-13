@@ -962,6 +962,11 @@ namespace Jellyfin.Server.Implementations.Users
 
         internal static void ThrowIfInvalidUsername(string name)
         {
+            if (name is not null && name.Length > KeyNormalizer.UsernameMaxLength)
+            {
+                throw new ArgumentException($"Usernames can contain at most {KeyNormalizer.UsernameMaxLength} characters", nameof(name));
+            }
+
             if (!string.IsNullOrWhiteSpace(name) && ValidUsernameRegex().IsMatch(name) && !string.Equals(name, ".", StringComparison.Ordinal) && !string.Equals(name, "..", StringComparison.Ordinal))
             {
                 return;

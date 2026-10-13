@@ -676,6 +676,29 @@ public sealed class BackupServiceTests : DatabaseTestFixture
     }
 
     [Fact]
+    public void Model_BoundedKeyColumns_AreTheColumnsTheRestoreHasARuleFor()
+    {
+        using var ctx = CreateDbContext();
+        var bounded = ctx.Model.GetEntityTypes()
+            .SelectMany(e => e.GetProperties())
+            .Where(e => e.ClrType == typeof(string) && e.GetMaxLength().HasValue && (e.IsKey() || e.GetContainingIndexes().Any()))
+            .Select(e => (Entity: e.DeclaringType.ClrType, e.Name))
+            .ToList();
+        var ruled = RestoredRowCleaner.GetRuledColumns();
+
+        var withoutRule = bounded.Where(e => !ruled.Contains(e)).Select(e => $"{e.Entity.Name}.{e.Name}").ToList();
+        var withoutBound = ruled.Where(e => !bounded.Contains(e)).Select(e => $"{e.Entity.Name}.{e.Property}").ToList();
+
+        Assert.NotEmpty(bounded);
+        Assert.True(
+            withoutRule.Count == 0,
+            $"A value in {string.Join(", ", withoutRule)} that is longer than the column is neither shortened, dropped nor refused by the restore. Add a rule for the column to RestoredRowCleaner.");
+        Assert.True(
+            withoutBound.Count == 0,
+            $"RestoredRowCleaner has a rule for {string.Join(", ", withoutBound)}, which is not a bounded key or index column.");
+    }
+
+    [Fact]
     public async Task RestoreBackupAsync_WhenRowsAreDropped_LogsTheCountAndTheColumnsButNotTheValues()
     {
         await RestoreWithRockAndNulRockAsync(nulRowFirst: false, mapItemIds: []).ConfigureAwait(true);
@@ -716,6 +739,178 @@ public sealed class BackupServiceTests : DatabaseTestFixture
             expected.Where(e => e.StartsWith("User ", StringComparison.Ordinal)),
             (await restored.Users.AsNoTracking().OrderBy(e => e.Username).ToListAsync(cancellationToken).ConfigureAwait(true)).Select(e => $"User {e.Id} {e.Username}"));
         Assert.Equal(2, await restored.BaseItems.CountAsync(e => e.Type == "Movie", cancellationToken).ConfigureAwait(true));
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_WithDeviceIdOverTheBound_RestoresItShortened()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var deviceId = new string('d', KeyNormalizer.DeviceIdMaxLength + 100);
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await RewriteJsonArrayAsync(manifest.Path, "Devices", devices => devices[0]!["DeviceId"] = deviceId, cancellationToken).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        await using var ctx = CreateDbContext();
+        var device = await ctx.Devices.AsNoTracking().SingleAsync(cancellationToken).ConfigureAwait(true);
+        Assert.Equal(KeyNormalizer.NormalizeDeviceId(deviceId), device.DeviceId);
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_WithUserDataKeyOverTheBound_RestoresItShortened()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var key = new string('k', KeyNormalizer.UserDataKeyMaxLength + 44);
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        await using (var ctx = CreateDbContext())
+        {
+            var userId = await ctx.Users.Select(e => e.Id).FirstAsync(cancellationToken).ConfigureAwait(true);
+            ctx.UserData.Add(new UserData { CustomDataKey = "placeholder", ItemId = MovieId, UserId = userId, Item = null, User = null });
+            await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(true);
+        }
+
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await RewriteJsonArrayAsync(manifest.Path, "UserData", rows => rows[0]!["CustomDataKey"] = key, cancellationToken).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        await using var restored = CreateDbContext();
+        var userData = await restored.UserData.AsNoTracking().SingleAsync(cancellationToken).ConfigureAwait(true);
+        Assert.Equal(KeyNormalizer.NormalizeUserDataKey(key), userData.CustomDataKey);
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_WithRoleOverTheBound_RestoresItCutAndTrimmed()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var personId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+        var role = new string('r', KeyNormalizer.PersonRoleMaxLength - 1) + " tail";
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        await using (var ctx = CreateDbContext())
+        {
+            ctx.Peoples.Add(new People { Id = personId, Name = "Person" });
+            await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(true);
+            ctx.PeopleBaseItemMap.Add(new PeopleBaseItemMap { ItemId = MovieId, PeopleId = personId, Role = "role", Item = null!, People = null! });
+            await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(true);
+        }
+
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await RewriteJsonArrayAsync(manifest.Path, "PeopleBaseItemMap", rows => rows[0]!["Role"] = role, cancellationToken).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        await using var restored = CreateDbContext();
+        var map = await restored.PeopleBaseItemMap.AsNoTracking().SingleAsync(cancellationToken).ConfigureAwait(true);
+        Assert.Equal(new string('r', KeyNormalizer.PersonRoleMaxLength - 1), map.Role);
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_WithValuesThatAreEqualAfterTheCut_RestoresOneValueForBoth()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var prefix = new string('v', KeyNormalizer.ItemValueMaxLength);
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await RewriteJsonArrayAsync(
+            manifest.Path,
+            "ItemValues",
+            values =>
+            {
+                var duplicate = JsonNode.Parse(values[0]!.ToJsonString())!;
+                duplicate["ItemValueId"] = NulRockId;
+                duplicate["Value"] = prefix + "second";
+                values[0]!["Value"] = prefix + "first";
+                values.Add(duplicate);
+            },
+            cancellationToken).ConfigureAwait(true);
+        await RewriteJsonArrayAsync(
+            manifest.Path,
+            "ItemValuesMap",
+            maps =>
+            {
+                var map = JsonNode.Parse(maps[0]!.ToJsonString())!;
+                map["ItemValueId"] = NulRockId;
+                map["ItemId"] = OtherMovieId;
+                maps.Add(map);
+            },
+            cancellationToken).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        await using var ctx = CreateDbContext();
+        var value = await ctx.ItemValues.AsNoTracking().SingleAsync(cancellationToken).ConfigureAwait(true);
+        Assert.Equal(prefix, value.Value);
+        Assert.Equal(prefix, value.CleanValue);
+        var maps = await ctx.ItemValuesMap.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(true);
+        Assert.Equal(2, maps.Count);
+        Assert.All(maps, e => Assert.Equal(value.ItemValueId, e.ItemValueId));
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_WithProviderIdOverTheBound_DropsItAndKeepsTheOthers()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        await using (var ctx = CreateDbContext())
+        {
+            ctx.BaseItemProviders.Add(new BaseItemProvider { ItemId = MovieId, ProviderId = "Imdb", ProviderValue = "tt1", Item = null! });
+            ctx.BaseItemProviders.Add(new BaseItemProvider { ItemId = MovieId, ProviderId = "Tmdb", ProviderValue = "2", Item = null! });
+            await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(true);
+        }
+
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await RewriteJsonArrayAsync(
+            manifest.Path,
+            "BaseItemProviders",
+            rows => rows.Single(e => e!["ProviderId"]!.GetValue<string>() == "Tmdb")!["ProviderId"] = new string('p', KeyNormalizer.ProviderIdMaxLength + 1),
+            cancellationToken).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        await using var restored = CreateDbContext();
+        Assert.Equal("Imdb", (await restored.BaseItemProviders.AsNoTracking().SingleAsync(cancellationToken).ConfigureAwait(true)).ProviderId);
+        Assert.Single(_logger.Entries, e => e.Level == LogLevel.Warning && e.Message.StartsWith("Dropped 1 provider ids", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("BaseItems", "Type", 256)]
+    [InlineData("BaseItems", "MediaType", 64)]
+    [InlineData("Devices", "AccessToken", 128)]
+    [InlineData("CustomItemDisplayPreferences", "Key", 256)]
+    [InlineData("CustomItemDisplayPreferences", "Client", 32)]
+    [InlineData("DisplayPreferences", "Client", 32)]
+    [InlineData("Users", "Username", 255)]
+    [InlineData("Users", "NormalizedUsername", 255)]
+    public async Task RestoreBackupAsync_WithValueOverTheBoundThatIsNotShortened_FailsBeforeThePurgeNamingTheColumn(string table, string column, int maxLength)
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        await using (var ctx = CreateDbContext())
+        {
+            var user = await ctx.Users.FirstAsync(cancellationToken).ConfigureAwait(true);
+            ctx.CustomItemDisplayPreferences.Add(new CustomItemDisplayPreferences(user.Id, MovieId, "client", "key", "value"));
+            ctx.DisplayPreferences.Add(new DisplayPreferences(user.Id, MovieId, "client"));
+            await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(true);
+        }
+
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await RewriteJsonArrayAsync(manifest.Path, table, rows => rows[0]![column] = new string('x', maxLength + 1), cancellationToken).ConfigureAwait(true);
+        var before = await SnapshotAsync(cancellationToken).ConfigureAwait(true);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => backupService.RestoreBackupAsync(manifest.Path)).ConfigureAwait(true);
+
+        Assert.Contains(table, exception.Message, StringComparison.Ordinal);
+        Assert.Contains(column, exception.Message, StringComparison.Ordinal);
+        Assert.Contains(maxLength.ToString(System.Globalization.CultureInfo.InvariantCulture), exception.Message, StringComparison.Ordinal);
+        Assert.Equal(0, _purgeCalls);
+        Assert.Equal(before, await SnapshotAsync(cancellationToken).ConfigureAwait(true));
     }
 
     private async Task RestoreWithRockAndNulRockAsync(bool nulRowFirst, Guid[] mapItemIds)

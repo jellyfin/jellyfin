@@ -124,4 +124,86 @@ public class KeyNormalizerTests
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => KeyNormalizer.Normalize("a", 64));
     }
+
+    [Theory]
+    [InlineData("", 3, "")]
+    [InlineData("abc", 3, "abc")]
+    [InlineData("abc", 4, "abc")]
+    [InlineData("abcd", 3, "abc")]
+    [InlineData("abcd", 0, "")]
+    public void Cut_Ascii_KeepsTheBeginning(string value, int maxLength, string expected)
+    {
+        Assert.Equal(expected, KeyNormalizer.Cut(value, maxLength));
+    }
+
+    [Fact]
+    public void Cut_StringThatFits_IsReturnedUnchanged()
+    {
+        var value = new string('a', 10);
+
+        Assert.Same(value, KeyNormalizer.Cut(value, 10));
+    }
+
+    [Fact]
+    public void Cut_CutBetweenSurrogates_DropsTheWholePair()
+    {
+        Assert.Equal("ab", KeyNormalizer.Cut("ab\U0001F600cd", 3));
+    }
+
+    [Fact]
+    public void Cut_CutAfterSurrogatePair_KeepsThePair()
+    {
+        Assert.Equal("ab\U0001F600", KeyNormalizer.Cut("ab\U0001F600cd", 4));
+    }
+
+    [Fact]
+    public void Cut_PairAtTheStartWithRoomForOneCharacter_IsEmpty()
+    {
+        Assert.Equal(string.Empty, KeyNormalizer.Cut("\U0001F600", 1));
+    }
+
+    [Fact]
+    public void Cut_LoneHighSurrogateAtTheCut_IsKept()
+    {
+        Assert.Equal("ab\uD83D", KeyNormalizer.Cut("ab\uD83Dcd", 3));
+    }
+
+    [Fact]
+    public void Cut_ResultIsNeverLongerThanTheBound()
+    {
+        const string Value = "a\U0001F600b\U0001F600c\U0001F600d";
+
+        for (var maxLength = 0; maxLength <= Value.Length; maxLength++)
+        {
+            var result = KeyNormalizer.Cut(Value, maxLength);
+
+            Assert.True(result.Length <= maxLength);
+            Assert.StartsWith(result, Value, StringComparison.Ordinal);
+            Assert.False(result.Length > 0 && char.IsHighSurrogate(result[^1]));
+        }
+    }
+
+    [Fact]
+    public void CutPersonRole_RoleAtTheBound_IsUnchanged()
+    {
+        var role = new string('r', KeyNormalizer.PersonRoleMaxLength);
+
+        Assert.Same(role, KeyNormalizer.CutPersonRole(role));
+    }
+
+    [Fact]
+    public void CutPersonRole_RoleOverTheBound_IsCutAndTrimmed()
+    {
+        var role = new string('r', KeyNormalizer.PersonRoleMaxLength - 1) + " tail";
+
+        Assert.Equal(new string('r', KeyNormalizer.PersonRoleMaxLength - 1), KeyNormalizer.CutPersonRole(role));
+    }
+
+    [Fact]
+    public void CutItemValue_ValueOverTheBound_IsCutWithoutTrimming()
+    {
+        var value = new string('v', KeyNormalizer.ItemValueMaxLength - 1) + " tail";
+
+        Assert.Equal(new string('v', KeyNormalizer.ItemValueMaxLength - 1) + " ", KeyNormalizer.CutItemValue(value));
+    }
 }

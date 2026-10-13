@@ -203,9 +203,11 @@ public class BackupService : IBackupService
                         _logger.LogInformation("Validate backup of {Table}", entityType.Type.Name);
                         var validatedClrType = entityType.Type.PropertyType.GetGenericArguments()[0];
                         var validatedKeys = GetGeneratedKeys(dbContext.Model.FindEntityType(validatedClrType)!);
-                        await foreach (var (source, _) in ReadEntitiesAsync(zipEntry, validatedClrType).ConfigureAwait(false))
+                        var validatedModelType = dbContext.Model.FindEntityType(validatedClrType)!;
+                        await foreach (var (source, validatedEntity) in ReadEntitiesAsync(zipEntry, validatedClrType).ConfigureAwait(false))
                         {
                             ReadGeneratedKeys(source, validatedKeys);
+                            RestoredRowCleaner.ThrowIfValueCannotBeShortened(validatedModelType, validatedEntity);
                         }
                     }
 

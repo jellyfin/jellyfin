@@ -4,6 +4,7 @@ using System.Linq;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Server.Implementations.Tests.Item;
 using Jellyfin.Server.Implementations.Users;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Users;
@@ -22,7 +23,7 @@ public sealed class DisplayPreferencesManagerNulTests : JellyfinDbTestFixture
 
     public DisplayPreferencesManagerNulTests()
     {
-        _manager = new DisplayPreferencesManager(CreateDbContextFactory());
+        _manager = new DisplayPreferencesManager(CreateDbContextFactory(), NullLogger<DisplayPreferencesManager>.Instance);
 
         using var context = CreateDbContext();
         context.Users.Add(new User("user", "auth-provider", "reset-provider") { Id = _userId });

@@ -9,7 +9,7 @@ using Jellyfin.Extensions;
 namespace Jellyfin.Server.Implementations;
 
 /// <summary>
-/// Makes the values that identify a row fit the key column they are stored in.
+/// Makes the values that are part of a key fit the column they are stored in.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -23,6 +23,10 @@ namespace Jellyfin.Server.Implementations;
 /// Both the code that stores a value and the code that looks it up must normalize it, or they will not find each
 /// other's rows.
 /// </para>
+/// <para>
+/// The text that metadata describes an item with, such as the role of a credit or the value of a tag, is cut to the
+/// column instead. Cutting never splits a surrogate pair, and values that are equal up to the cut are one value.
+/// </para>
 /// </remarks>
 public static class KeyNormalizer
 {
@@ -35,6 +39,36 @@ public static class KeyNormalizer
     /// The maximum length of a device id.
     /// </summary>
     public const int DeviceIdMaxLength = KeyLengths.DeviceId;
+
+    /// <summary>
+    /// The maximum length of the role of a credit.
+    /// </summary>
+    public const int PersonRoleMaxLength = KeyLengths.PersonRole;
+
+    /// <summary>
+    /// The maximum length of the value of an item value, such as a tag or a genre.
+    /// </summary>
+    public const int ItemValueMaxLength = KeyLengths.ItemValue;
+
+    /// <summary>
+    /// The maximum length of the name of a metadata provider of an item.
+    /// </summary>
+    public const int ProviderIdMaxLength = KeyLengths.ProviderId;
+
+    /// <summary>
+    /// The maximum length of the key of a custom display preference.
+    /// </summary>
+    public const int DisplayPreferencesKeyMaxLength = KeyLengths.DisplayPreferencesKey;
+
+    /// <summary>
+    /// The maximum length of the name of a user.
+    /// </summary>
+    public const int UsernameMaxLength = KeyLengths.Username;
+
+    /// <summary>
+    /// The maximum length of the client name of display preferences.
+    /// </summary>
+    public const int DisplayPreferencesClientMaxLength = KeyLengths.DisplayPreferencesClient;
 
     private const int HashLength = 64;
 
@@ -65,6 +99,47 @@ public static class KeyNormalizer
     {
         ArgumentNullException.ThrowIfNull(deviceIds);
         return deviceIds.Select(e => NormalizeDeviceId(e.RemoveNullCharacters())).Distinct(StringComparer.Ordinal).ToArray();
+    }
+
+    /// <summary>
+    /// Cuts the role of a credit to its column.
+    /// </summary>
+    /// <param name="role">The role.</param>
+    /// <returns>The role, or its beginning without trailing white space when it is too long.</returns>
+    public static string CutPersonRole(string role)
+        => Cut(role, PersonRoleMaxLength).TrimEnd();
+
+    /// <summary>
+    /// Cuts the value of an item value to its column.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <returns>The value, or its beginning when it is too long.</returns>
+    public static string CutItemValue(string value)
+        => Cut(value, ItemValueMaxLength);
+
+    /// <summary>
+    /// Cuts a value to at most the given number of characters without splitting a surrogate pair.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <param name="maxLength">The maximum number of UTF-16 code units to keep.</param>
+    /// <returns>The value itself when it fits, otherwise its beginning, one character shorter when the cut would
+    /// fall between the two halves of a surrogate pair.</returns>
+    internal static string Cut(string value, int maxLength)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+
+        if (value.Length <= maxLength)
+        {
+            return value;
+        }
+
+        var length = maxLength;
+        if (length > 0 && char.IsHighSurrogate(value[length - 1]) && char.IsLowSurrogate(value[length]))
+        {
+            length--;
+        }
+
+        return value[..length];
     }
 
     /// <summary>

@@ -6,6 +6,7 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.Users;
 
@@ -17,14 +18,17 @@ public sealed class DisplayPreferencesManager : IDisplayPreferencesManager
     private const int MaxSaveAttempts = 3;
 
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
+    private readonly ILogger<DisplayPreferencesManager> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DisplayPreferencesManager"/> class.
     /// </summary>
     /// <param name="dbContextFactory">The database context factory.</param>
-    public DisplayPreferencesManager(IDbContextFactory<JellyfinDbContext> dbContextFactory)
+    /// <param name="logger">The logger.</param>
+    public DisplayPreferencesManager(IDbContextFactory<JellyfinDbContext> dbContextFactory, ILogger<DisplayPreferencesManager> logger)
     {
         _dbContextFactory = dbContextFactory;
+        _logger = logger;
     }
 
     /// <inheritdoc />
@@ -108,7 +112,17 @@ public sealed class DisplayPreferencesManager : IDisplayPreferencesManager
         var cleanedPreferences = new Dictionary<string, string?>();
         foreach (var (key, value) in customPreferences)
         {
-            cleanedPreferences[key.RemoveNullCharacters()] = value;
+            var cleanedKey = key.RemoveNullCharacters();
+            if (cleanedKey.Length > KeyNormalizer.DisplayPreferencesKeyMaxLength)
+            {
+                _logger.LogWarning(
+                    "Dropping a custom display preference with a key of {Length} characters, the maximum is {Max}",
+                    cleanedKey.Length,
+                    KeyNormalizer.DisplayPreferencesKeyMaxLength);
+                continue;
+            }
+
+            cleanedPreferences[cleanedKey] = value;
         }
 
         // Another request can store one of these keys after this one's delete, and the unique index then rejects the

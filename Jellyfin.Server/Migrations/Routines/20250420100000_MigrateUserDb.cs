@@ -95,6 +95,17 @@ public class MigrateUserDb : IMigrationRoutine
                     continue;
                 }
 
+                if (mockup.Name.Length > KeyNormalizer.UsernameMaxLength)
+                {
+                    _logger.LogWarning(
+                        "Skipping the user {UserId} named {Username}, as the name is {Length} characters long and the maximum is {Max}",
+                        entry.GetGuid(1),
+                        mockup.Name,
+                        mockup.Name.Length,
+                        KeyNormalizer.UsernameMaxLength);
+                    continue;
+                }
+
                 var userDataDir = Path.Combine(_paths.UserConfigurationDirectoryPath, mockup.Name);
 
                 var configPath = Path.Combine(userDataDir, "config.xml");

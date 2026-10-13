@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Item;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Controller;
@@ -98,6 +99,7 @@ internal class MigrateLibraryUserData : IAsyncMigrationRoutine
                     continue;
                 }
 
+                userData.CustomDataKey = KeyNormalizer.NormalizeUserDataKey(userData.CustomDataKey);
                 var ogId = userData.ItemId;
                 userData.ItemId = BaseItemRepository.PlaceholderId;
                 userData.RetentionDate = retentionDate;

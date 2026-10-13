@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Server.Implementations.Tests.Item;
 using Jellyfin.Server.Implementations.Users;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Users;
@@ -21,7 +24,7 @@ public sealed class DisplayPreferencesManagerTests : JellyfinDbTestFixture
 
     public DisplayPreferencesManagerTests()
     {
-        _manager = new DisplayPreferencesManager(CreateDbContextFactory());
+        _manager = new DisplayPreferencesManager(CreateDbContextFactory(), NullLogger<DisplayPreferencesManager>.Instance);
 
         using var context = CreateDbContext();
         context.Users.Add(new User("user", "auth-provider", "reset-provider") { Id = _userId });
@@ -49,5 +52,21 @@ public sealed class DisplayPreferencesManagerTests : JellyfinDbTestFixture
 
         using var context = CreateDbContext();
         Assert.Single(context.ItemDisplayPreferences);
+    }
+
+    [Fact]
+    public void SetCustomItemDisplayPreferences_KeyOverTheBound_DropsThatPreferenceAndKeepsTheOthers()
+    {
+        var overlong = new string('k', KeyNormalizer.DisplayPreferencesKeyMaxLength + 1);
+        var atTheBound = new string('b', KeyNormalizer.DisplayPreferencesKeyMaxLength);
+
+        _manager.SetCustomItemDisplayPreferences(
+            _userId,
+            _itemId,
+            Client,
+            new Dictionary<string, string?> { ["short"] = "1", [atTheBound] = "2", [overlong] = "3" });
+
+        using var context = CreateDbContext();
+        Assert.Equal(new[] { atTheBound, "short" }.Order(StringComparer.Ordinal), context.CustomItemDisplayPreferences.Select(p => p.Key).AsEnumerable().Order(StringComparer.Ordinal));
     }
 }

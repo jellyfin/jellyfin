@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Entities.Security;
+using Jellyfin.Database.Implementations.ModelConfiguration;
 using Jellyfin.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -12,13 +14,14 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Implementations.FullSystemBackup;
 
 /// <summary>
-/// Removes NUL characters from the rows of a backup before they are restored.
-/// SQLite stores them, but some engines reject them in text, so a backup that holds them could not be restored there.
-/// Removing them from a key or from a column of a unique index can make two rows equal. Of such rows the one that
-/// needed no cleaning in the columns of that index is kept, because the others are the stale copies a NUL character
-/// left behind. When all of them needed cleaning the first in the archive is kept. The rows that referred to a dropped
-/// row refer to the kept one.
-/// Rows that collide without a NUL character having been removed are not touched, saving them fails as it always did.
+/// Makes the rows of a backup fit the database before they are restored.
+/// NUL characters are removed: SQLite stores them, but some engines reject them in text, so a backup that holds them
+/// could not be restored there. Keys, roles and item values that are longer than their column are shortened the way
+/// they are when they are stored, and provider ids that are longer are dropped.
+/// Cleaning a key or a column of a unique index can make two rows equal. Of such rows the one that needed no cleaning
+/// in the columns of that index is kept, because the others are the stale copies the cleaning left behind. When all of
+/// them needed cleaning the first in the archive is kept. The rows that referred to a dropped row refer to the kept one.
+/// Rows that collide without having been cleaned are not touched, saving them fails as it always did.
 /// References from a table to rows of itself are not pointed at the kept row, because the rows that refer to a row
 /// may already have been accepted when it is dropped. That would take a table that refers to itself and has a unique
 /// index on a string column, which the model does not have, and a test guards that.
@@ -33,17 +36,50 @@ internal sealed class RestoredRowCleaner
         (typeof(ActivityLog), nameof(ActivityLog.UserId), typeof(User))
     ];
 
+    private static readonly IReadOnlyList<(Type Entity, string Property, Func<string, string> Shorten)> _lengthRules =
+    [
+        (typeof(UserData), nameof(UserData.CustomDataKey), KeyNormalizer.NormalizeUserDataKey),
+        (typeof(Device), nameof(Device.DeviceId), KeyNormalizer.NormalizeDeviceId),
+        (typeof(DeviceOptions), nameof(DeviceOptions.DeviceId), KeyNormalizer.NormalizeDeviceId),
+        (typeof(PeopleBaseItemMap), nameof(PeopleBaseItemMap.Role), KeyNormalizer.CutPersonRole),
+        (typeof(ItemValue), nameof(ItemValue.Value), KeyNormalizer.CutItemValue)
+    ];
+
+    private static readonly IReadOnlyList<(Type Entity, string Property, int MaxLength)> _unshortenableBounds =
+    [
+        (typeof(CustomItemDisplayPreferences), nameof(CustomItemDisplayPreferences.Key), KeyLengths.DisplayPreferencesKey),
+        (typeof(BaseItemEntity), nameof(BaseItemEntity.Type), KeyLengths.ItemType),
+        (typeof(BaseItemEntity), nameof(BaseItemEntity.MediaType), KeyLengths.MediaType),
+        (typeof(Device), nameof(Device.AccessToken), KeyLengths.AccessToken),
+        (typeof(ApiKey), nameof(ApiKey.AccessToken), KeyLengths.AccessToken),
+        (typeof(User), nameof(User.Username), KeyLengths.Username),
+        (typeof(User), nameof(User.NormalizedUsername), KeyLengths.Username),
+        (typeof(DisplayPreferences), nameof(DisplayPreferences.Client), KeyLengths.DisplayPreferencesClient),
+        (typeof(CustomItemDisplayPreferences), nameof(CustomItemDisplayPreferences.Client), KeyLengths.DisplayPreferencesClient)
+    ];
+
     private readonly ILogger _logger;
     private readonly Dictionary<IEntityType, Dictionary<string, object?[]>> _replacedKeys = [];
     private IEntityType? _table;
     private List<IReadOnlyList<IProperty>> _uniqueKeys = [];
     private List<Dictionary<string, (bool Changed, object?[] PrimaryKey, EntityEntry Entry)>> _seen = [];
     private int _dropped;
+    private int _droppedProviderIds;
 
     public RestoredRowCleaner(ILogger logger)
     {
         _logger = logger;
     }
+
+    /// <summary>
+    /// Gets the columns that a restore shortens, drops or refuses a value of when it is longer than the column.
+    /// </summary>
+    /// <returns>The entity types and the names of the properties.</returns>
+    internal static IReadOnlyList<(Type Entity, string Property)> GetRuledColumns()
+        => _lengthRules.Select(e => (e.Entity, e.Property))
+            .Concat(_unshortenableBounds.Select(e => (e.Entity, e.Property)))
+            .Append((typeof(BaseItemProvider), nameof(BaseItemProvider.ProviderId)))
+            .ToList();
 
     /// <summary>
     /// Prepares for the rows of one table. Tables have to be restored after the tables their rows refer to.
@@ -53,6 +89,7 @@ internal sealed class RestoredRowCleaner
     {
         _table = table;
         _dropped = 0;
+        _droppedProviderIds = 0;
         _uniqueKeys = [table.FindPrimaryKey()!.Properties];
         _uniqueKeys.AddRange(table.GetIndexes().Where(i => i.IsUnique && i.GetFilter() is null).Select(i => i.Properties));
         _seen = _uniqueKeys.Select(_ => new Dictionary<string, (bool, object?[], EntityEntry)>(StringComparer.Ordinal)).ToList();
@@ -77,6 +114,26 @@ internal sealed class RestoredRowCleaner
                 {
                     propertyEntry.CurrentValue = cleaned;
                     changed.Add(property);
+                }
+            }
+        }
+
+        if (entry.Entity is BaseItemProvider provider && provider.ProviderId.Length > KeyNormalizer.ProviderIdMaxLength)
+        {
+            _droppedProviderIds++;
+            return false;
+        }
+
+        foreach (var (_, ruleProperty, shorten) in _lengthRules.Where(e => e.Entity == table.ClrType))
+        {
+            var propertyEntry = entry.Property(ruleProperty);
+            if (propertyEntry.CurrentValue is string text && shorten(text) is var shortened && !string.Equals(shortened, text, StringComparison.Ordinal))
+            {
+                propertyEntry.CurrentValue = shortened;
+                changed.Add(propertyEntry.Metadata);
+                if (entry.Entity is ItemValue itemValue)
+                {
+                    itemValue.CleanValue = shortened.GetCleanValue();
                 }
             }
         }
@@ -158,9 +215,37 @@ internal sealed class RestoredRowCleaner
         if (_dropped > 0)
         {
             _logger.LogInformation(
-                "Dropped {Count} rows of {Table} that are duplicates of other rows once NUL characters are removed",
+                "Dropped {Count} rows of {Table} that are duplicates of other rows once they are cleaned",
                 _dropped,
                 _table!.ClrType.Name);
+        }
+
+        if (_droppedProviderIds > 0)
+        {
+            _logger.LogWarning(
+                "Dropped {Count} provider ids of {Table} that are longer than the {MaxLength} characters that are stored",
+                _droppedProviderIds,
+                _table!.ClrType.Name,
+                KeyNormalizer.ProviderIdMaxLength);
+        }
+    }
+
+    /// <summary>
+    /// Fails for a row that holds a value which is longer than its column and which the restore does not shorten.
+    /// </summary>
+    /// <param name="table">The table of the row.</param>
+    /// <param name="entity">The row.</param>
+    /// <exception cref="InvalidOperationException">The value is longer than its column.</exception>
+    public static void ThrowIfValueCannotBeShortened(IEntityType table, object entity)
+    {
+        foreach (var (_, property, maxLength) in _unshortenableBounds.Where(e => e.Entity == table.ClrType))
+        {
+            var value = (table.FindProperty(property)!.GetGetter().GetClrValue(entity) as string)?.RemoveNullCharacters();
+            if (value is not null && value.Length > maxLength)
+            {
+                throw new InvalidOperationException(
+                    $"The backup cannot be restored: column {property} of table {table.GetTableName()} holds a value of {value.Length.ToString(CultureInfo.InvariantCulture)} characters and the longest that can be stored is {maxLength.ToString(CultureInfo.InvariantCulture)}.");
+            }
         }
     }
 
@@ -183,7 +268,7 @@ internal sealed class RestoredRowCleaner
     {
         _dropped++;
         _logger.LogDebug(
-            "Dropped a row of {Table} whose columns {Columns} duplicate those of another row once NUL characters are removed",
+            "Dropped a row of {Table} whose columns {Columns} duplicate those of another row once it is cleaned",
             table.ClrType.Name,
             string.Join(", ", key.Select(e => e.Name)));
 
@@ -205,7 +290,7 @@ internal sealed class RestoredRowCleaner
 
         _dropped++;
         _logger.LogDebug(
-            "Dropped a row of {Table} whose columns {Columns} duplicate those of another row once NUL characters are removed",
+            "Dropped a row of {Table} whose columns {Columns} duplicate those of another row once it is cleaned",
             table.ClrType.Name,
             string.Join(", ", key.Select(e => e.Name)));
 
