@@ -19,6 +19,8 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.SystemBackupService;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -34,6 +36,11 @@ namespace Jellyfin.Server.Implementations.Tests.FullSystemBackup;
 /// </summary>
 public sealed class BackupServiceTests : IDisposable
 {
+    private const string RoutineInArchiveId = "20250101120000_RoutineInArchive";
+    private const string RoutineOnlyInTargetId = "20250101130000_RoutineOnlyInTarget";
+    private const string ForeignSchemaMigrationId = "20250101140000_SchemaMigrationOfAnotherEngine";
+    private const string RemovedRoutineId = "20250101150000_RoutineThisServerNoLongerHas";
+
     private readonly SqliteConnection _connection;
     private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly string _testRoot;
@@ -47,12 +54,12 @@ public sealed class BackupServiceTests : IDisposable
         _connection.Open();
 
         _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(_connection)
+            .UseSqlite(_connection, sqliteOptions => sqliteOptions.MigrationsAssembly(typeof(SqliteDatabaseProvider).Assembly))
             .Options;
 
         using (var ctx = CreateDbContext())
         {
-            ctx.Database.EnsureCreated();
+            ctx.Database.Migrate();
         }
 
         // Use the test assembly's own output directory instead of Path.GetTempPath(). On GitHub-hosted
@@ -239,6 +246,117 @@ public sealed class BackupServiceTests : IDisposable
         Assert.Equal(before, await SnapshotAsync(cancellationToken).ConfigureAwait(true));
     }
 
+    [Fact]
+    public async Task RestoreBackupAsync_WithHistoryFromAnotherSchema_LeavesNoPendingMigrations()
+    {
+        var (_, pending) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
+
+        Assert.Empty(pending);
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_KeepsTheSchemaMigrationRowsOfTheTarget()
+    {
+        var (history, _) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
+
+        await using var ctx = CreateDbContext();
+        var schemaMigrationIds = ctx.GetService<IMigrationsAssembly>().Migrations.Keys;
+        Assert.NotEmpty(schemaMigrationIds);
+        Assert.All(schemaMigrationIds, id => Assert.Contains(id, history));
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_ReplacesCodeRoutinesWithThoseOfTheArchive()
+    {
+        var (history, _) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
+
+        Assert.Contains(RoutineInArchiveId, history);
+        Assert.DoesNotContain(RoutineOnlyInTargetId, history);
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_DoesNotTakeOverSchemaMigrationsOfAnotherEngine()
+    {
+        var (history, _) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
+
+        Assert.DoesNotContain(ForeignSchemaMigrationId, history);
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_DoesNotTakeOverRoutinesThisServerNoLongerHas()
+    {
+        var (history, _) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
+
+        Assert.DoesNotContain(RemovedRoutineId, history);
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_WithArchiveOfTheSameSchema_RestoresTheHistoryAsItWas()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await InsertHistoryRowAsync(RoutineInArchiveId, cancellationToken).ConfigureAwait(true);
+        var before = await ReadHistoryAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await InsertHistoryRowAsync(RoutineOnlyInTargetId, cancellationToken).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        Assert.Equal(before, await ReadHistoryAsync(cancellationToken).ConfigureAwait(true));
+    }
+
+    private async Task<(IReadOnlyList<string> History, IReadOnlyList<string> Pending)> RestoreWithRewrittenHistoryAsync()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await InsertHistoryRowAsync(RoutineInArchiveId, cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+
+        // An archive taken by a server that knew fewer schema migrations than this one, plus a schema migration that
+        // only another database engine knows and a routine that this server has since removed.
+        await RewriteEntryAsync(
+            manifest.Path,
+            "Database/HistoryRow.json",
+            json =>
+            {
+                var rows = JsonNode.Parse(json)!.AsArray();
+                var schemaRows = rows.Where(e => e!["MigrationId"]!.GetValue<string>() != RoutineInArchiveId).ToList();
+                foreach (var row in schemaRows.OrderBy(e => e!["MigrationId"]!.GetValue<string>(), StringComparer.Ordinal).TakeLast(2))
+                {
+                    rows.Remove(row);
+                }
+
+                rows.Add(new JsonObject { ["MigrationId"] = ForeignSchemaMigrationId, ["ProductVersion"] = "9.0.0" });
+                rows.Add(new JsonObject { ["MigrationId"] = RemovedRoutineId, ["ProductVersion"] = "9.0.0" });
+                return rows.ToJsonString();
+            },
+            cancellationToken).ConfigureAwait(true);
+
+        await InsertHistoryRowAsync(RoutineOnlyInTargetId, cancellationToken).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        await using var ctx = CreateDbContext();
+        var history = (await ctx.Database.GetAppliedMigrationsAsync(cancellationToken).ConfigureAwait(true)).ToList();
+        var pending = (await ctx.Database.GetPendingMigrationsAsync(cancellationToken).ConfigureAwait(true)).ToList();
+        return (history, pending);
+    }
+
+    private async Task<List<(string MigrationId, string ProductVersion)>> ReadHistoryAsync(CancellationToken cancellationToken)
+    {
+        await using var ctx = CreateDbContext();
+        var rows = await ctx.GetService<IHistoryRepository>().GetAppliedMigrationsAsync(cancellationToken).ConfigureAwait(false);
+        return rows.Select(row => (row.MigrationId, row.ProductVersion)).OrderBy(row => row.MigrationId, StringComparer.Ordinal).ToList();
+    }
+
+    private async Task InsertHistoryRowAsync(string migrationId, CancellationToken cancellationToken)
+    {
+        await using var ctx = CreateDbContext();
+        await ctx.Database.ExecuteSqlInterpolatedAsync(
+            $"INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES ({migrationId}, {"10.11.0"})",
+            cancellationToken).ConfigureAwait(false);
+    }
+
     private static async Task RewriteEntryAsync(string archivePath, string entryName, Func<string, string> transform, CancellationToken cancellationToken)
     {
         using var archive = await ZipFile.OpenAsync(archivePath, ZipArchiveMode.Update, cancellationToken).ConfigureAwait(false);
@@ -370,6 +488,11 @@ public sealed class BackupServiceTests : IDisposable
         var libraryManager = new Mock<ILibraryManager>();
         libraryManager.Setup(l => l.IsScanRunning).Returns(false);
 
+        var routineCatalog = new Mock<IMigrationRoutineCatalog>();
+        routineCatalog
+            .Setup(c => c.RoutineIds)
+            .Returns(new HashSet<string>(StringComparer.Ordinal) { RoutineInArchiveId, RoutineOnlyInTargetId });
+
         return new BackupService(
             NullLogger<BackupService>.Instance,
             factory.Object,
@@ -377,7 +500,8 @@ public sealed class BackupServiceTests : IDisposable
             applicationPaths.Object,
             jellyfinDatabaseProvider.Object,
             applicationLifetime.Object,
-            libraryManager.Object);
+            libraryManager.Object,
+            routineCatalog.Object);
     }
 
     private static BaseItemEntity CreateMovieEntity(Guid id, string name)

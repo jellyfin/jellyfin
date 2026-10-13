@@ -35,6 +35,7 @@ public class BackupService : IBackupService
     private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly ILibraryManager _libraryManager;
+    private readonly IMigrationRoutineCatalog _migrationRoutineCatalog;
     private static readonly JsonSerializerOptions _serializerSettings = new JsonSerializerOptions(JsonSerializerDefaults.General)
     {
         AllowTrailingCommas = true,
@@ -53,6 +54,7 @@ public class BackupService : IBackupService
     /// <param name="jellyfinDatabaseProvider">The Jellyfin database Provider in use.</param>
     /// <param name="applicationLifetime">The SystemManager.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="migrationRoutineCatalog">The code migration routines of this server.</param>
     public BackupService(
         ILogger<BackupService> logger,
         IDbContextFactory<JellyfinDbContext> dbProvider,
@@ -60,7 +62,8 @@ public class BackupService : IBackupService
         IServerApplicationPaths applicationPaths,
         IJellyfinDatabaseProvider jellyfinDatabaseProvider,
         IHostApplicationLifetime applicationLifetime,
-        ILibraryManager libraryManager)
+        ILibraryManager libraryManager,
+        IMigrationRoutineCatalog migrationRoutineCatalog)
     {
         _logger = logger;
         _dbProvider = dbProvider;
@@ -69,6 +72,7 @@ public class BackupService : IBackupService
         _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
         _hostApplicationLifetime = applicationLifetime;
         _libraryManager = libraryManager;
+        _migrationRoutineCatalog = migrationRoutineCatalog;
     }
 
     /// <inheritdoc/>
@@ -204,17 +208,31 @@ public class BackupService : IBackupService
                     var transaction = await dbContext.Database.BeginTransactionAsync().ConfigureAwait(false);
                     await using (transaction.ConfigureAwait(false))
                     {
+                        // The tables keep the schema of this server, so its schema migrations stay as they are and the ones
+                        // of the archive are not taken over. Only the code routines follow the archive, as they describe the data.
+                        var routineIds = _migrationRoutineCatalog.RoutineIds;
                         var historyRepository = dbContext.GetService<IHistoryRepository>();
+                        var schemaMigrations = dbContext.GetService<IMigrationsAssembly>().Migrations;
                         await historyRepository.CreateIfNotExistsAsync().ConfigureAwait(false);
 
                         foreach (var item in await historyRepository.GetAppliedMigrationsAsync(CancellationToken.None).ConfigureAwait(false))
                         {
+                            if (schemaMigrations.ContainsKey(item.MigrationId))
+                            {
+                                continue;
+                            }
+
                             var insertScript = historyRepository.GetDeleteScript(item.MigrationId);
                             await dbContext.Database.ExecuteSqlRawAsync(insertScript).ConfigureAwait(false);
                         }
 
                         foreach (var item in historyEntries)
                         {
+                            if (!routineIds.Contains(item.MigrationId))
+                            {
+                                continue;
+                            }
+
                             var insertScript = historyRepository.GetInsertScript(item);
                             await dbContext.Database.ExecuteSqlRawAsync(insertScript).ConfigureAwait(false);
                         }
