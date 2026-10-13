@@ -216,6 +216,298 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.DoesNotContain(CriticalMessages(), message => message.Contains(MarkerFileName, StringComparison.Ordinal));
     }
 
+    [Fact]
+    public async Task CheckFirstTimeRunOrMigration_AfterFailedSchemaMigration_RefusesToStartAndNamesTheMigration()
+    {
+        WriteServerConfiguration(wizardCompleted: false);
+        var failedRun = CreateService(new NonTransactionalProvider(_provider));
+        await failedRun.CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+        await CreateConflictingTableAsync();
+        var firstMigration = GetSchemaMigrationIds()[0];
+        await Assert.ThrowsAnyAsync<Exception>(() => failedRun.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, _serviceProviders[^1]));
+        var markerBefore = await File.ReadAllTextAsync(MarkerPath, TestContext.Current.CancellationToken);
+        var criticalBefore = CriticalMessages().Length;
+        WriteServerConfiguration(wizardCompleted: true);
+        var nextStartup = CreateService(new NonTransactionalProvider(_provider));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => nextStartup.CheckFirstTimeRunOrMigration(_paths, new StartupOptions()));
+
+        Assert.Contains(firstMigration, exception.Message, StringComparison.Ordinal);
+        Assert.Contains(RestoreInstruction, exception.Message, StringComparison.Ordinal);
+        Assert.Contains(MarkerPath, exception.Message, StringComparison.Ordinal);
+        var logged = Assert.Single(CriticalMessages().Skip(criticalBefore));
+        Assert.Equal(exception.Message, logged);
+        Assert.Equal(markerBefore, await File.ReadAllTextAsync(MarkerPath, TestContext.Current.CancellationToken));
+        Assert.Empty(await GetAppliedMigrationIdsAsync(firstMigration));
+    }
+
+    [Fact]
+    public async Task MigrateStepAsync_AfterFailedSchemaMigration_RefusesToMigrateAndLeavesTheDatabaseAlone()
+    {
+        WriteServerConfiguration(wizardCompleted: false);
+        var failedRun = CreateService(new NonTransactionalProvider(_provider));
+        await failedRun.CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+        await CreateConflictingTableAsync();
+        var firstMigration = GetSchemaMigrationIds()[0];
+        await Assert.ThrowsAnyAsync<Exception>(() => failedRun.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, _serviceProviders[^1]));
+        var nextStartup = CreateService(new NonTransactionalProvider(_provider));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => nextStartup.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, _serviceProviders[^1]));
+
+        Assert.Contains(firstMigration, exception.Message, StringComparison.Ordinal);
+        Assert.Contains(RestoreInstruction, exception.Message, StringComparison.Ordinal);
+        Assert.True(File.Exists(MarkerPath));
+        Assert.Empty(await GetAppliedMigrationIdsAsync(firstMigration));
+    }
+
+    [Fact]
+    public async Task CheckFirstTimeRunOrMigration_MarkerNamesAnotherProvider_RefusesAndNamesBothProviders()
+    {
+        WriteServerConfiguration(wizardCompleted: false);
+        WriteMarker("20990101000000_Unfinished", "Jellyfin-Elsewhere");
+        var service = CreateService(new NonTransactionalProvider(_provider));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions()));
+
+        Assert.Contains("20990101000000_Unfinished", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("Jellyfin-Elsewhere", exception.Message, StringComparison.Ordinal);
+        Assert.Contains(NonTransactionalKey, exception.Message, StringComparison.Ordinal);
+        Assert.Contains(RestoreInstruction, exception.Message, StringComparison.Ordinal);
+        Assert.Single(CriticalMessages(), message => message == exception.Message);
+        Assert.Equal(0, _observer.CommandCount);
+    }
+
+    [Fact]
+    public async Task CheckFirstTimeRunOrMigration_StrayMarkerOnProviderWithTransactionalMigrations_Refuses()
+    {
+        WriteServerConfiguration(wizardCompleted: false);
+        WriteMarker("20990101000000_Unfinished", NonTransactionalKey);
+        var service = CreateService(_provider);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions()));
+
+        Assert.True(_provider.SupportsTransactionalMigrations);
+        Assert.Contains("20990101000000_Unfinished", exception.Message, StringComparison.Ordinal);
+        Assert.Contains(RestoreInstruction, exception.Message, StringComparison.Ordinal);
+        Assert.Equal(0, _observer.CommandCount);
+    }
+
+    [Fact]
+    public async Task MigrateStepAsync_StrayMarkerOnProviderWithTransactionalMigrations_RefusesBeforeTouchingTheDatabase()
+    {
+        WriteServerConfiguration(wizardCompleted: false);
+        var service = CreateService(_provider);
+        await service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+        var commandsBefore = _observer.CommandCount;
+        WriteMarker("20990101000000_Unfinished", NonTransactionalKey);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, _serviceProviders[^1]));
+
+        Assert.Equal(commandsBefore, _observer.CommandCount);
+        Assert.True(File.Exists(MarkerPath));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("backup.zip")]
+    public async Task CheckFirstTimeRunOrMigration_MarkerNamesAMigrationThatIsRecorded_DeletesItAndContinues(string? restoreArchive)
+    {
+        await MigrateEverythingAsync();
+        var firstMigration = GetSchemaMigrationIds()[0];
+        WriteMarker(firstMigration, NonTransactionalKey);
+        var service = CreateService(new NonTransactionalProvider(_provider));
+        var criticalBefore = CriticalMessages().Length;
+
+        await service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions { RestoreArchive = restoreArchive });
+
+        Assert.False(File.Exists(MarkerPath));
+        var warning = Assert.Single(_logs.Entries, entry => entry.Level == LogLevel.Warning && entry.Message.Contains(MarkerPath, StringComparison.Ordinal));
+        Assert.Contains(firstMigration, warning.Message, StringComparison.Ordinal);
+        Assert.Equal(criticalBefore, CriticalMessages().Length);
+    }
+
+    [Fact]
+    public async Task MigrateStepAsync_MarkerCouldNotBeDeletedAfterTheMigrationWasApplied_DeletesItAndDoesNotRepeatIt()
+    {
+        WriteServerConfiguration(wizardCompleted: false);
+        var failedRun = CreateService(new NonTransactionalProvider(_provider));
+        await failedRun.CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+        var firstMigration = GetSchemaMigrationIds()[0];
+        _faults.ReplaceMarkerWithDirectoryWhenRecorded(HistoryRepository.DefaultTableName);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => failedRun.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, _serviceProviders[^1]));
+        _faults.Reset();
+        Directory.Delete(MarkerPath);
+        WriteMarker(firstMigration, NonTransactionalKey);
+        var criticalBefore = CriticalMessages().Length;
+        var nextStartup = CreateService(new NonTransactionalProvider(_provider));
+
+        await nextStartup.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, _serviceProviders[^1]);
+
+        Assert.False(File.Exists(MarkerPath));
+        Assert.Single(_logs.Entries, entry => entry.Level == LogLevel.Warning && entry.Message.Contains(firstMigration, StringComparison.Ordinal));
+        Assert.Equal(criticalBefore, CriticalMessages().Length);
+        var schemaMigrations = GetSchemaMigrationIds();
+        Assert.Equal(schemaMigrations, await GetAppliedMigrationIdsAsync(schemaMigrations));
+    }
+
+    [Fact]
+    public async Task CheckFirstTimeRunOrMigration_MarkerNamesARecordedMigrationButCannotBeDeleted_RefusesAndSaysSo()
+    {
+        await MigrateEverythingAsync();
+        var firstMigration = GetSchemaMigrationIds()[0];
+        WriteMarker(firstMigration, NonTransactionalKey);
+        var service = CreateService(new NonTransactionalProvider(_provider));
+        _faults.ReplaceMarkerWithDirectoryOnNextCommand();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions()));
+
+        Assert.Contains(firstMigration, exception.Message, StringComparison.Ordinal);
+        Assert.Contains(MarkerPath, exception.Message, StringComparison.Ordinal);
+        Assert.Contains("was applied", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("could not be deleted", exception.Message, StringComparison.Ordinal);
+        Assert.Equal(exception.Message, Assert.Single(CriticalMessages()));
+        Assert.True(Directory.Exists(MarkerPath));
+    }
+
+    [Fact]
+    public async Task CheckFirstTimeRunOrMigration_MarkerNamesAMigrationThatIsNotRecorded_RefusesEvenThoughOthersAre()
+    {
+        await MigrateEverythingAsync();
+        WriteMarker("20990101000000_Unfinished", NonTransactionalKey);
+        var service = CreateService(new NonTransactionalProvider(_provider));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions()));
+
+        Assert.Contains("20990101000000_Unfinished", exception.Message, StringComparison.Ordinal);
+        Assert.Contains(RestoreInstruction, exception.Message, StringComparison.Ordinal);
+        Assert.True(File.Exists(MarkerPath));
+        Assert.DoesNotContain(_logs.Entries, entry => entry.Level == LogLevel.Warning);
+    }
+
+    [Fact]
+    public async Task MigrateStepAsync_MarkerNamesAMigrationThatIsNotRecorded_RefusesEvenThoughOthersAre()
+    {
+        await MigrateEverythingAsync();
+        WriteMarker("20990101000000_Unfinished", NonTransactionalKey);
+        var service = CreateService(new NonTransactionalProvider(_provider));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, _serviceProviders[^1]));
+
+        Assert.Contains("20990101000000_Unfinished", exception.Message, StringComparison.Ordinal);
+        Assert.True(File.Exists(MarkerPath));
+    }
+
+    [Fact]
+    public async Task CheckFirstTimeRunOrMigration_MarkerNamesARecordedMigrationOfAnotherProvider_Refuses()
+    {
+        await MigrateEverythingAsync();
+        var firstMigration = GetSchemaMigrationIds()[0];
+        WriteMarker(firstMigration, "Jellyfin-Elsewhere");
+        var service = CreateService(new NonTransactionalProvider(_provider));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions()));
+
+        Assert.Contains("Jellyfin-Elsewhere", exception.Message, StringComparison.Ordinal);
+        Assert.Contains(NonTransactionalKey, exception.Message, StringComparison.Ordinal);
+        Assert.True(File.Exists(MarkerPath));
+    }
+
+    [Fact]
+    public async Task CheckFirstTimeRunOrMigration_MarkerWithoutAMigratedDatabase_RefusesAndCreatesNothing()
+    {
+        WriteServerConfiguration(wizardCompleted: true);
+        WriteMarker(GetSchemaMigrationIds()[0], NonTransactionalKey);
+        var service = CreateService(new NonTransactionalProvider(_provider));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions()));
+
+        Assert.Contains(RestoreInstruction, exception.Message, StringComparison.Ordinal);
+        Assert.True(File.Exists(MarkerPath));
+        await using var context = CreateDbContext();
+        Assert.False(await context.GetService<IRelationalDatabaseCreator>().HasTablesAsync(TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task CheckFirstTimeRunOrMigration_RestoringAnArchiveWhileMarked_SaysTheArchiveCannotRepairTheSchema()
+    {
+        WriteServerConfiguration(wizardCompleted: true);
+        WriteMarker("20990101000000_Unfinished", NonTransactionalKey);
+        var service = CreateService(new NonTransactionalProvider(_provider));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions { RestoreArchive = "backup.zip" }));
+
+        Assert.Contains("--restore-archive", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("cannot repair the database schema", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("restore the database dump", exception.Message, StringComparison.Ordinal);
+        Assert.Contains(RestoreInstruction, exception.Message, StringComparison.Ordinal);
+        Assert.Equal(exception.Message, Assert.Single(CriticalMessages()));
+    }
+
+    [Fact]
+    public async Task CheckFirstTimeRunOrMigration_MarkedWithoutRestoringAnArchive_DoesNotMentionArchives()
+    {
+        WriteServerConfiguration(wizardCompleted: true);
+        WriteMarker("20990101000000_Unfinished", NonTransactionalKey);
+        var service = CreateService(new NonTransactionalProvider(_provider));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions()));
+
+        Assert.DoesNotContain("--restore-archive", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("{ this is not json")]
+    [InlineData("")]
+    [InlineData("null")]
+    [InlineData("{}")]
+    public async Task CheckFirstTimeRunOrMigration_MarkerCannotBeRead_RefusesAndSaysSo(string content)
+    {
+        WriteServerConfiguration(wizardCompleted: false);
+        await File.WriteAllTextAsync(MarkerPath, content, TestContext.Current.CancellationToken);
+        var service = CreateService(new NonTransactionalProvider(_provider));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions()));
+
+        Assert.Contains(MarkerPath, exception.Message, StringComparison.Ordinal);
+        Assert.Contains("cannot be read", exception.Message, StringComparison.Ordinal);
+        Assert.Contains(RestoreInstruction, exception.Message, StringComparison.Ordinal);
+        Assert.Contains(CriticalMessages(), message => message == exception.Message);
+        Assert.Equal(0, _observer.CommandCount);
+    }
+
+    [Fact]
+    public async Task MigrateStepAsync_MarkerDeletedAfterRestore_MigratesAndLeavesNoMarker()
+    {
+        WriteServerConfiguration(wizardCompleted: false);
+        var failedRun = CreateService(new NonTransactionalProvider(_provider));
+        await failedRun.CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+        await CreateConflictingTableAsync();
+        await Assert.ThrowsAnyAsync<Exception>(() => failedRun.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, _serviceProviders[^1]));
+        await DropConflictingTableAsync();
+        File.Delete(MarkerPath);
+        var nextStartup = CreateService(new NonTransactionalProvider(_provider));
+        await nextStartup.CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+
+        var applied = await nextStartup.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, _serviceProviders[^1]);
+
+        Assert.True(applied);
+        Assert.False(File.Exists(MarkerPath));
+        var schemaMigrations = GetSchemaMigrationIds();
+        Assert.Equal(schemaMigrations, await GetAppliedMigrationIdsAsync(schemaMigrations));
+    }
+
+    [Fact]
+    public async Task MigrateStepAsync_NoMarker_LogsNoCriticalEntry()
+    {
+        WriteServerConfiguration(wizardCompleted: false);
+        var service = CreateService(_provider);
+        await service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+
+        await service.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, _serviceProviders[^1]);
+
+        Assert.DoesNotContain(_logs.Entries, entry => entry.Level >= LogLevel.Error);
+    }
+
     public void Dispose()
     {
         foreach (var serviceProvider in _serviceProviders)
@@ -274,6 +566,30 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         var table = helper.DelimitIdentifier("ActivityLogs");
         var statement = "CREATE TABLE " + table + " (Id integer)";
         await context.Database.ExecuteSqlRawAsync(statement, TestContext.Current.CancellationToken);
+    }
+
+    private async Task DropConflictingTableAsync()
+    {
+        await using var context = CreateDbContext();
+        var helper = context.GetService<ISqlGenerationHelper>();
+        var table = helper.DelimitIdentifier("ActivityLogs");
+        var statement = "DROP TABLE " + table;
+        await context.Database.ExecuteSqlRawAsync(statement, TestContext.Current.CancellationToken);
+    }
+
+    private async Task MigrateEverythingAsync()
+    {
+        WriteServerConfiguration(wizardCompleted: false);
+        var service = CreateService(new NonTransactionalProvider(_provider));
+        await service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+        await service.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, _serviceProviders[^1]);
+        WriteServerConfiguration(wizardCompleted: true);
+    }
+
+    private void WriteMarker(string migrationId, string providerKey)
+    {
+        var marker = new { MigrationId = migrationId, ProviderKey = providerKey, StartedAtUtc = DateTime.UtcNow };
+        File.WriteAllText(MarkerPath, JsonSerializer.Serialize(marker));
     }
 
     private string[] CriticalMessages()
@@ -338,6 +654,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         private readonly string _markerPath;
         private string? _replaceMarkerWhenRecordedIn;
         private string? _suppressRecordsIn;
+        private bool _replaceMarkerOnNextCommand;
 
         public FaultInjector(string markerPath)
         {
@@ -346,7 +663,27 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
 
         public void ReplaceMarkerWithDirectoryWhenRecorded(string historyTable) => _replaceMarkerWhenRecordedIn = historyTable;
 
+        public void ReplaceMarkerWithDirectoryOnNextCommand() => _replaceMarkerOnNextCommand = true;
+
         public void SuppressHistoryRows(string historyTable) => _suppressRecordsIn = historyTable;
+
+        public void Reset()
+        {
+            _replaceMarkerWhenRecordedIn = null;
+            _replaceMarkerOnNextCommand = false;
+            _suppressRecordsIn = null;
+        }
+
+        public override DbCommand CommandCreated(CommandEndEventData eventData, DbCommand result)
+        {
+            if (_replaceMarkerOnNextCommand)
+            {
+                _replaceMarkerOnNextCommand = false;
+                ReplaceMarkerWithDirectory();
+            }
+
+            return result;
+        }
 
         public override InterceptionResult<int> NonQueryExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<int> result)
             => Intercept(command, result);
@@ -372,11 +709,16 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
 
             if (IsRecordIn(command, _replaceMarkerWhenRecordedIn))
             {
-                File.Delete(_markerPath);
-                Directory.CreateDirectory(_markerPath);
+                ReplaceMarkerWithDirectory();
             }
 
             return result;
+        }
+
+        private void ReplaceMarkerWithDirectory()
+        {
+            File.Delete(_markerPath);
+            Directory.CreateDirectory(_markerPath);
         }
     }
 
@@ -410,16 +752,34 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         public override DbCommand CommandCreated(CommandEndEventData eventData, DbCommand result)
         {
             Interlocked.Increment(ref _commandCount);
-            if (File.Exists(_markerPath))
+            var migrationId = ReadMarkedMigration();
+            if (migrationId is not null)
             {
-                using var marker = JsonDocument.Parse(File.ReadAllText(_markerPath));
                 lock (_markedMigrations)
                 {
-                    _markedMigrations.Add(marker.RootElement.GetProperty("MigrationId").GetString()!);
+                    _markedMigrations.Add(migrationId);
                 }
             }
 
             return result;
+        }
+
+        private string? ReadMarkedMigration()
+        {
+            if (!File.Exists(_markerPath))
+            {
+                return null;
+            }
+
+            try
+            {
+                using var marker = JsonDocument.Parse(File.ReadAllText(_markerPath));
+                return marker.RootElement.TryGetProperty("MigrationId", out var migrationId) ? migrationId.GetString() : null;
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
         }
     }
 }
