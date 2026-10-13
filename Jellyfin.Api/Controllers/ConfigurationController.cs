@@ -135,9 +135,9 @@ public class ConfigurationController : BaseJellyfinApiController
         // Work on a copy, the stored options only change when the administrator saves them
         var options = JsonSerializer.Deserialize<EncodingOptions>(
             JsonSerializer.SerializeToUtf8Bytes(_configurationManager.GetEncodingOptions(), _serializerOptions),
-            _serializerOptions)!;
+            _serializerOptions);
 
-        if (!_mediaEncoder.ApplyRecommendedHardwareAcceleration(options))
+        if (options is null || !_mediaEncoder.ApplyRecommendedHardwareAcceleration(options))
         {
             return NotFound();
         }
