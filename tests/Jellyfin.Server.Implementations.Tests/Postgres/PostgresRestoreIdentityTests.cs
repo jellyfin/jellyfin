@@ -32,18 +32,6 @@ public sealed class PostgresRestoreIdentityTests : DatabaseTestFixture
 {
     private readonly string _testRoot = Path.Combine(AppContext.BaseDirectory, "jellyfin-postgres-restore-" + Guid.NewGuid().ToString("N"));
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PostgresRestoreIdentityTests"/> class.
-    /// </summary>
-    /// <remarks>
-    /// A restore migrates the database first, so the database it restores into has the migration history a server
-    /// leaves behind. A schema made from the model has none, and the baseline would try to create its tables again.
-    /// </remarks>
-    public PostgresRestoreIdentityTests()
-        : base(TestSchemaSource.Migrations)
-    {
-    }
-
     protected override void Dispose(bool disposing)
     {
         if (disposing && Directory.Exists(_testRoot))

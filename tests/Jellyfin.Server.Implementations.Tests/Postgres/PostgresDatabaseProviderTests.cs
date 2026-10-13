@@ -128,6 +128,8 @@ public sealed class PostgresDatabaseProviderTests : DatabaseTestFixture
     [ProviderFact(TestDbProvider.Postgres)]
     public async Task MigrationBackupFast_NothingApplied_DoesNotWarn()
     {
+        DropMigrationHistory();
+
         await CreateProvider().MigrationBackupFast(CancellationToken.None);
 
         Assert.DoesNotContain(_logger.Entries, e => e.Level == LogLevel.Warning);
@@ -136,7 +138,7 @@ public sealed class PostgresDatabaseProviderTests : DatabaseTestFixture
     [ProviderFact(TestDbProvider.Postgres)]
     public async Task MigrationBackupFast_MigrationsApplied_WarnsAboutPgDump()
     {
-        RecordAppliedMigration("20200101000000_InitialCreate");
+        SetAppliedMigrations("20200101000000_InitialCreate");
 
         await CreateProvider().MigrationBackupFast(CancellationToken.None);
 
@@ -148,7 +150,7 @@ public sealed class PostgresDatabaseProviderTests : DatabaseTestFixture
     public async Task MigrationBackupFast_OnlyCodeRoutinesRecorded_DoesNotWarn()
     {
         // A fresh install records the routines that have nothing to do before the schema migrations have run.
-        RecordAppliedMigration("20250420050000_DisableTranscodingThrottling");
+        SetAppliedMigrations("20250420050000_DisableTranscodingThrottling");
 
         await CreateProvider().MigrationBackupFast(CancellationToken.None);
 
@@ -158,8 +160,7 @@ public sealed class PostgresDatabaseProviderTests : DatabaseTestFixture
     [ProviderFact(TestDbProvider.Postgres)]
     public async Task RestoreBackupFast_EmptyKey_LogsCriticalWithTheLastAppliedMigration()
     {
-        RecordAppliedMigration("20200101000000_InitialCreate");
-        RecordAppliedMigration("20200102000000_Later");
+        SetAppliedMigrations("20200101000000_InitialCreate", "20200102000000_Later");
 
         await CreateProvider().RestoreBackupFast(string.Empty, CancellationToken.None);
 
@@ -237,14 +238,20 @@ public sealed class PostgresDatabaseProviderTests : DatabaseTestFixture
         return false;
     }
 
-    private void RecordAppliedMigration(string migrationId)
+    private void DropMigrationHistory()
     {
         using var context = CreateDbContext();
-        context.Database.ExecuteSql(
-            $"""
-            CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" ("MigrationId" character varying(150) NOT NULL PRIMARY KEY, "ProductVersion" character varying(32) NOT NULL)
-            """);
-        context.Database.ExecuteSql($"""INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion") VALUES ({migrationId}, '10.0.0')""");
+        context.Database.ExecuteSqlRaw("""DROP TABLE "__EFMigrationsHistory";""");
+    }
+
+    private void SetAppliedMigrations(params string[] migrationIds)
+    {
+        using var context = CreateDbContext();
+        context.Database.ExecuteSqlRaw("""DELETE FROM "__EFMigrationsHistory";""");
+        foreach (var migrationId in migrationIds)
+        {
+            context.Database.ExecuteSql($"""INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion") VALUES ({migrationId}, '10.0.0')""");
+        }
     }
 
     private sealed class CommandRecorder : DbCommandInterceptor

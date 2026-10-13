@@ -35,7 +35,7 @@ public sealed class AlternateVersionQueryTranslationTests : JellyfinDbTestFixtur
             var inProgress = ctx.UserData
                 .Where(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0);
 
-            // Scope to the seeded items; EnsureCreated also seeds a placeholder row.
+            // Scope to the seeded items; the schema also seeds a placeholder row.
             var seededIds = new[] { primaryId, versionId, otherId };
 
             // Mirrors the resumable=true filter in BaseItemRepository.TranslateQuery.
@@ -125,7 +125,7 @@ public sealed class AlternateVersionQueryTranslationTests : JellyfinDbTestFixtur
 
         using (var ctx = CreateDbContext())
         {
-            // Scope to the seeded items; EnsureCreated also seeds a placeholder row.
+            // Scope to the seeded items; the schema also seeds a placeholder row.
             var seededIds = new[] { primaryId, otherId };
 
             // Mirrors the DatePlayed mapping in OrderMapper.

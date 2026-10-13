@@ -11,8 +11,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Moq;
 using Xunit;
 
@@ -70,7 +68,6 @@ public sealed class PeopleUpdateQueryTests : JellyfinDbTestFixture
     [ProviderFact(TestDbProvider.Sqlite)]
     public void UpdatePeople_GeneratedSqlUsesPeopleNameIndex()
     {
-        ApplyMigration(new Jellyfin.Server.Implementations.Migrations.AddPeopleNameLowerIndex());
         _recorder.Commands.Clear();
         _people.UpdatePeople(_itemId, [
             new PersonInfo { Name = "Actor A", Type = PersonKind.Actor },
@@ -78,15 +75,6 @@ public sealed class PeopleUpdateQueryTests : JellyfinDbTestFixture
         ]);
         var query = Assert.Single(_recorder.Commands, c => c.Sql.Contains("lower(\"p\".\"Name\")", StringComparison.Ordinal));
         Assert.Contains(Explain(query), line => line.Contains("SEARCH p USING INDEX IX_Peoples_NameLower", StringComparison.Ordinal));
-    }
-
-    private void ApplyMigration(Migration migration)
-    {
-        using var context = CreateDbContext();
-        foreach (var operation in migration.UpOperations.Cast<SqlOperation>())
-        {
-            context.Database.ExecuteSqlRaw(operation.Sql);
-        }
     }
 
     private string[] Explain(RecordedCommand query)
