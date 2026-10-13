@@ -48,6 +48,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.12" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.12" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+    <PackageVersion Include=\"Microting.EntityFrameworkCore.MySql\" Version=\"10.0.12\" />
     <PackageVersion Include="MimeTypes" Version="2.5.2" />
     <PackageVersion Include="Morestachio" Version="5.0.1.670" />
     <PackageVersion Include="Moq" Version="4.18.4" />
@@ -81,6 +82,8 @@
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.2.3" />
     <PackageVersion Include="System.Text.Json" Version="10.0.13" />
     <PackageVersion Include="TagLibSharp" Version="2.3.0" />
+    <PackageVersion Include="Testcontainers.MariaDb" Version="4.16.0" />
+    <PackageVersion Include="Testcontainers.MySql" Version="4.16.0" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.16.0" />
     <PackageVersion Include="z440.atl.core" Version="7.18.0" />
     <PackageVersion Include="TMDbLib" Version="3.0.0" />

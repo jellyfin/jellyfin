@@ -1,6 +1,7 @@
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.DbConfiguration;
 using Jellyfin.Database.Implementations.Locking;
+using Jellyfin.Database.Providers.MySql;
 using Jellyfin.Database.Providers.Postgres;
 using Jellyfin.Database.Providers.Sqlite;
 using MediaBrowser.Common.Configuration;
@@ -29,6 +30,27 @@ internal static class OfflineContexts
                     PluginName = string.Empty,
                     PluginAssembly = string.Empty,
                     ConnectionString = "Host=localhost;Database=jellyfin_offline"
+                }
+            });
+
+        return new JellyfinDbContext(builder.Options, NullLogger<JellyfinDbContext>.Instance, provider, new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
+    }
+
+    public static JellyfinDbContext MySql(string serverVersion = "8.4-mysql")
+    {
+        var provider = new MySqlDatabaseProvider(NullLogger<MySqlDatabaseProvider>.Instance);
+        var builder = new DbContextOptionsBuilder<JellyfinDbContext>();
+        provider.Initialise(
+            builder,
+            new DatabaseConfigurationOptions
+            {
+                DatabaseType = "Jellyfin-MySQL",
+                CustomProviderOptions = new CustomDatabaseOptions
+                {
+                    PluginName = string.Empty,
+                    PluginAssembly = string.Empty,
+                    ConnectionString = "Server=localhost;Database=jellyfin_offline",
+                    Options = [new CustomDatabaseOption { Key = "server-version", Value = serverVersion }]
                 }
             });
 

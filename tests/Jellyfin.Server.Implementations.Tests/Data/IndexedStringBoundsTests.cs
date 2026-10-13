@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.ModelConfiguration;
+using Jellyfin.Database.Providers.MySql;
 using Jellyfin.Server.Implementations.Tests.Postgres;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microting.EntityFrameworkCore.MySql.Metadata;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Data;
@@ -46,7 +48,7 @@ public class IndexedStringBoundsTests
         [typeof(decimal)] = 17
     };
 
-    public static TheoryData<string> Providers => new() { "Sqlite", "Postgres" };
+    public static TheoryData<string> Providers => new() { "Sqlite", "Postgres", "MySql" };
 
     [Theory]
     [MemberData(nameof(Providers))]
@@ -64,6 +66,45 @@ public class IndexedStringBoundsTests
         using var context = CreateContext(provider);
 
         Assert.Empty(FindOversizedKeys(context.GetService<IDesignTimeModel>().Model));
+    }
+
+    [Fact]
+    public void MySqlBudget_IsTheOneThePrefixConventionPlansWith()
+    {
+        var mysql = Assert.Single(_engines, e => e.Name == "MySQL");
+
+        Assert.Equal(IndexPrefixLengthConvention.MaxKeyBytes, mysql.IndexBytes);
+        Assert.Equal(IndexPrefixLengthConvention.MaxKeyBytes, mysql.ClusteredKeyBytes);
+        Assert.Equal(IndexPrefixLengthConvention.BytesPerChar, mysql.BytesPerChar);
+    }
+
+    [Fact]
+    public void MySqlIndexes_WithTheirPrefixes_FitTheBudgetThisTestChecks()
+    {
+        using var context = CreateContext("MySql");
+        var mysql = Assert.Single(_engines, e => e.Name == "MySQL");
+        var model = context.GetService<IDesignTimeModel>().Model;
+
+        foreach (var index in model.GetEntityTypes().SelectMany(e => e.GetIndexes()))
+        {
+            var prefixes = index.PrefixLength();
+            var bytes = 0;
+            for (var i = 0; i < index.Properties.Count; i++)
+            {
+                var property = index.Properties[i];
+                if (property.IsUnboundedIndexedText())
+                {
+                    Assert.NotNull(prefixes);
+                    bytes += prefixes[i] * mysql.BytesPerChar;
+                }
+                else
+                {
+                    bytes += SizeOf([property], mysql) ?? throw new InvalidOperationException($"{property.Name} has no known size.");
+                }
+            }
+
+            Assert.True(bytes <= mysql.IndexBytes, $"{index.DeclaringEntityType.DisplayName()} ({string.Join(", ", index.Properties.Select(p => p.Name))}) takes {bytes} bytes with its prefixes.");
+        }
     }
 
     [Fact]
@@ -204,7 +245,12 @@ public class IndexedStringBoundsTests
 
     private static JellyfinDbContext CreateContext(string provider)
     {
-        return provider == "Postgres" ? OfflineContexts.Postgres() : OfflineContexts.Sqlite();
+        return provider switch
+        {
+            "Postgres" => OfflineContexts.Postgres(),
+            "MySql" => OfflineContexts.MySql(),
+            _ => OfflineContexts.Sqlite()
+        };
     }
 
     private static IReadOnlyModel BuildModel(Action<ModelBuilder> configure)

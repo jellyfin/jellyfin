@@ -320,6 +320,9 @@ internal class JellyfinMigrationService
                     migrationLogger.LogCritical("Error: {Error}", ex.Message);
                     migrationLogger.LogError(ex, "Migration {Name} failed", item.Key);
 
+                    // A provider that cannot undo a failed migration and took no snapshot has nothing to roll back to. It is not asked to,
+                    // as the instruction that follows is the one thing that can be done.
+                    var providerTookNoSnapshot = string.IsNullOrEmpty(_backupKey.JellyfinDb);
                     if (_backupKey != default && _backupService is not null && _jellyfinDatabaseProvider is not null)
                     {
                         if (_backupKey.LibraryDb is not null)
@@ -336,7 +339,7 @@ internal class JellyfinMigrationService
                             }
                         }
 
-                        if (_backupKey.JellyfinDb is not null)
+                        if (_backupKey.JellyfinDb is not null && !(recordsProgress && providerTookNoSnapshot))
                         {
                             migrationLogger.LogInformation("Attempt to rollback JellyfinDb.");
                             try
@@ -366,9 +369,16 @@ internal class JellyfinMigrationService
                     if (recordsProgress)
                     {
                         migrationLogger.LogCritical(
-                            "Schema migration {Name} did not finish and left {Path} in place. To continue, restore the database from the backup taken before the upgrade, then delete that file.",
+                            "Schema migration {Name} did not finish and left {Path} in place, so the database may be partly migrated. {Instruction}",
                             item.Key,
-                            MigrationInProgressMarkerPath);
+                            MigrationInProgressMarkerPath,
+                            providerTookNoSnapshot
+                                ? "This database engine takes no snapshot before a migration, so Jellyfin did not try to roll the database back. "
+                                    + "To continue, restore the database from the backup your database engine took before the upgrade (for example a dump made with mysqldump), "
+                                    + "then delete that file and start Jellyfin again. Restoring a Jellyfin backup archive does not repair the database."
+                                : "If Jellyfin attempted to roll the database back from the snapshot taken before the migration, the log above says whether that succeeded. "
+                                    + "If the database is not in the state before the upgrade, restore the database from the backup your database engine took before the upgrade, "
+                                    + "then delete that file and start Jellyfin again. Restoring a Jellyfin backup archive does not repair the database.");
                     }
 
                     throw;
@@ -504,14 +514,18 @@ internal class JellyfinMigrationService
                 marker.StartedAtUtc);
         }
 
+        // A Jellyfin backup archive cannot repair a schema, so only the backup of the database engine leads out of this.
         var message = string.Format(
             CultureInfo.InvariantCulture,
-            "{0} Jellyfin will not migrate. To continue, restore the database from the backup taken before the upgrade, then delete {1}.",
+            "{0} Jellyfin will not migrate. To continue, restore the database from the backup your database engine took before the upgrade "
+            + "(for example a dump made with mysqldump), then delete {1}. Restoring a Jellyfin backup archive does not repair the database.",
             problem,
             markerPath);
         if (restoringArchive)
         {
-            message += " The archive given with --restore-archive was not restored: a Jellyfin backup archive cannot repair the database schema, so restore the database dump, not the archive.";
+            message += " The archive given with --restore-archive was not restored. "
+                + "After the database is restored and the file is deleted, run Jellyfin once with --mode MigrateSystem so that it migrates the database, "
+                + "then restore the archive again.";
         }
 
         logger.LogCritical(failure, "{Message}", message);
