@@ -22,6 +22,19 @@ public class PostgresTestBackendTests
         Assert.False(DatabaseExists(connectionString.ConnectionString, name));
     }
 
+    [ProviderFact(TestDbProvider.Postgres)]
+    public void Create_InContainerMode_KeepsTheDataDirectoryUnderTheMountedStorage()
+    {
+        Assert.SkipUnless(PostgresTestBackend.Instance.CanRunServerTools, "The server is not a container started by the backend.");
+
+        using var database = TestDatabaseEnvironment.Backend.Create(TestSchemaSource.Model, []);
+        using var connection = new NpgsqlConnection(RelationalOptionsExtension.Extract(database.Options).ConnectionString);
+        connection.Open();
+        using var command = new NpgsqlCommand("SHOW data_directory", connection);
+
+        Assert.Equal("/var/lib/postgresql/pgdata", (string)command.ExecuteScalar()!);
+    }
+
     private static bool DatabaseExists(string adminConnectionString, string name)
     {
         using var connection = new NpgsqlConnection(adminConnectionString);

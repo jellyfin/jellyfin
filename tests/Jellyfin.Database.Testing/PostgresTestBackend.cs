@@ -136,7 +136,8 @@ public sealed class PostgresTestBackend : ITestDatabaseBackend
         }
 
         _container = new PostgreSqlBuilder(TestDatabaseEnvironment.GetProviderSetting(TestDbProvider.Postgres, "IMAGE") ?? DefaultImage)
-            .WithTmpfsMount("/var/lib/postgresql/data")
+            .WithTmpfsMount("/var/lib/postgresql")
+            .WithEnvironment("PGDATA", "/var/lib/postgresql/pgdata")
             .WithCommand("-c", "fsync=off", "-c", "synchronous_commit=off", "-c", "full_page_writes=off", "-c", "max_connections=300")
             .Build();
         _container.StartAsync().GetAwaiter().GetResult();
