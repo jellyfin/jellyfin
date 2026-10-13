@@ -180,56 +180,65 @@ public class BackupService : IBackupService
                             throw new InvalidOperationException("Cannot restore backup that has no History data.");
                     }
 
-                    var historyRepository = dbContext.GetService<IHistoryRepository>();
-                    await historyRepository.CreateIfNotExistsAsync().ConfigureAwait(false);
-
-                    foreach (var item in await historyRepository.GetAppliedMigrationsAsync(CancellationToken.None).ConfigureAwait(false))
-                    {
-                        var insertScript = historyRepository.GetDeleteScript(item.MigrationId);
-                        await dbContext.Database.ExecuteSqlRawAsync(insertScript).ConfigureAwait(false);
-                    }
-
-                    foreach (var item in historyEntries)
-                    {
-                        var insertScript = historyRepository.GetInsertScript(item);
-                        await dbContext.Database.ExecuteSqlRawAsync(insertScript).ConfigureAwait(false);
-                    }
-
                     dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
                     var entityTypes = typeof(JellyfinDbContext).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
                         .Where(e => e.PropertyType.IsAssignableTo(typeof(IQueryable)))
                         .Select(e => (Type: e, Set: e.GetValue(dbContext) as IQueryable))
                         .ToArray();
 
-                    var tableNames = entityTypes.Select(f => dbContext.Model.FindEntityType(f.Type.PropertyType.GetGenericArguments()[0])!.GetSchemaQualifiedTableName()!);
-                    _logger.LogInformation("Begin purging database");
-                    await _jellyfinDatabaseProvider.PurgeDatabase(dbContext, tableNames).ConfigureAwait(false);
-                    _logger.LogInformation("Database Purged");
-
+                    // Read every table once before anything is replaced, so a damaged archive is rejected while the current database is still intact.
                     foreach (var entityType in entityTypes)
                     {
-                        _logger.LogInformation("Read backup of {Table}", entityType.Type.Name);
-
                         var zipEntry = zipArchive.GetEntry(NormalizePathSeparator(Path.Combine("Database", $"{entityType.Type.Name}.json")));
                         if (zipEntry is null)
                         {
-                            _logger.LogInformation("No backup of expected table {Table} is present in backup, continuing anyway", entityType.Type.Name);
                             continue;
                         }
 
-                        var zipEntryStream = await zipEntry.OpenAsync().ConfigureAwait(false);
-                        await using (zipEntryStream.ConfigureAwait(false))
+                        _logger.LogInformation("Validate backup of {Table}", entityType.Type.Name);
+                        await foreach (var unused in ReadEntitiesAsync(zipEntry, entityType.Type.PropertyType.GetGenericArguments()[0]).ConfigureAwait(false))
                         {
+                        }
+                    }
+
+                    var transaction = await dbContext.Database.BeginTransactionAsync().ConfigureAwait(false);
+                    await using (transaction.ConfigureAwait(false))
+                    {
+                        var historyRepository = dbContext.GetService<IHistoryRepository>();
+                        await historyRepository.CreateIfNotExistsAsync().ConfigureAwait(false);
+
+                        foreach (var item in await historyRepository.GetAppliedMigrationsAsync(CancellationToken.None).ConfigureAwait(false))
+                        {
+                            var insertScript = historyRepository.GetDeleteScript(item.MigrationId);
+                            await dbContext.Database.ExecuteSqlRawAsync(insertScript).ConfigureAwait(false);
+                        }
+
+                        foreach (var item in historyEntries)
+                        {
+                            var insertScript = historyRepository.GetInsertScript(item);
+                            await dbContext.Database.ExecuteSqlRawAsync(insertScript).ConfigureAwait(false);
+                        }
+
+                        var tableNames = entityTypes.Select(f => dbContext.Model.FindEntityType(f.Type.PropertyType.GetGenericArguments()[0])!.GetSchemaQualifiedTableName()!);
+                        _logger.LogInformation("Begin purging database");
+                        await _jellyfinDatabaseProvider.PurgeDatabase(dbContext, tableNames).ConfigureAwait(false);
+                        _logger.LogInformation("Database Purged");
+
+                        foreach (var entityType in entityTypes)
+                        {
+                            _logger.LogInformation("Read backup of {Table}", entityType.Type.Name);
+
+                            var zipEntry = zipArchive.GetEntry(NormalizePathSeparator(Path.Combine("Database", $"{entityType.Type.Name}.json")));
+                            if (zipEntry is null)
+                            {
+                                _logger.LogInformation("No backup of expected table {Table} is present in backup, continuing anyway", entityType.Type.Name);
+                                continue;
+                            }
+
                             _logger.LogInformation("Restore backup of {Table}", entityType.Type.Name);
                             var records = 0;
-                            await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<JsonObject>(zipEntryStream, _serializerSettings).ConfigureAwait(false))
+                            await foreach (var entity in ReadEntitiesAsync(zipEntry, entityType.Type.PropertyType.GetGenericArguments()[0]).ConfigureAwait(false))
                             {
-                                var entity = item.Deserialize(entityType.Type.PropertyType.GetGenericArguments()[0]);
-                                if (entity is null)
-                                {
-                                    throw new InvalidOperationException($"Cannot deserialize entity '{item}'");
-                                }
-
                                 try
                                 {
                                     records++;
@@ -237,21 +246,41 @@ public class BackupService : IBackupService
                                 }
                                 catch (Exception ex)
                                 {
-                                    _logger.LogError(ex, "Could not store entity {Entity}, continuing anyway", item);
+                                    _logger.LogError(ex, "Could not store entity {Entity}, continuing anyway", entity);
                                 }
                             }
 
                             _logger.LogInformation("Prepared to restore {Number} entries for {Table}", records, entityType.Type.Name);
                         }
+
+                        _logger.LogInformation("Try restore Database");
+                        await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                        await transaction.CommitAsync().ConfigureAwait(false);
                     }
 
-                    _logger.LogInformation("Try restore Database");
-                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
                     _logger.LogInformation("Restored database");
                 }
             }
 
             _logger.LogInformation("Restored Jellyfin system from {Date}", manifest.DateCreated);
+        }
+    }
+
+    private static async IAsyncEnumerable<object> ReadEntitiesAsync(ZipArchiveEntry zipEntry, Type entityClrType)
+    {
+        var zipEntryStream = await zipEntry.OpenAsync().ConfigureAwait(false);
+        await using (zipEntryStream.ConfigureAwait(false))
+        {
+            await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<JsonObject>(zipEntryStream, _serializerSettings).ConfigureAwait(false))
+            {
+                var entity = item.Deserialize(entityClrType);
+                if (entity is null)
+                {
+                    throw new InvalidOperationException($"Cannot deserialize entity '{item}'");
+                }
+
+                yield return entity;
+            }
         }
     }
 

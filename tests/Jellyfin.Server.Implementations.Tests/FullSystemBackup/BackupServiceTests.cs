@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
@@ -38,6 +39,7 @@ public sealed class BackupServiceTests : IDisposable
     private readonly string _testRoot;
     private readonly string _backupPath;
     private readonly string _configurationDirectoryPath;
+    private int _purgeCalls;
 
     public BackupServiceTests()
     {
@@ -175,6 +177,90 @@ public sealed class BackupServiceTests : IDisposable
         Assert.Equal(expected, await SnapshotAsync(cancellationToken).ConfigureAwait(true));
     }
 
+    [Theory]
+    [InlineData("KeyframeData", "[{\"ItemId\":\"11111111-1111-1111-11")]
+    [InlineData("KeyframeData", "[{\"ItemId\":\"not-a-guid\",\"TotalDuration\":1,\"KeyframeTicks\":[]}]")]
+    [InlineData("Users", "{\"not\":\"an array\"}")]
+    public async Task RestoreBackupAsync_WithCorruptTableEntry_LeavesDatabaseUntouched(string table, string content)
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await RewriteEntryAsync(manifest.Path, $"Database/{table}.json", _ => content, cancellationToken).ConfigureAwait(true);
+
+        await using (var ctx = CreateDbContext())
+        {
+            ctx.BaseItems.Add(CreateMovieEntity(Guid.NewGuid(), "Added After Backup"));
+            await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(true);
+        }
+
+        var before = await SnapshotAsync(cancellationToken).ConfigureAwait(true);
+
+        await Assert.ThrowsAnyAsync<Exception>(() => backupService.RestoreBackupAsync(manifest.Path)).ConfigureAwait(true);
+
+        Assert.Equal(0, _purgeCalls);
+        Assert.Equal(before, await SnapshotAsync(cancellationToken).ConfigureAwait(true));
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_WhenInsertingRowsFails_RollsBackThePurge()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await RewriteEntryAsync(
+            manifest.Path,
+            "Database/Users.json",
+            json =>
+            {
+                // A second user with the same name but a new id, which the unique index on the name rejects when it is inserted.
+                var users = JsonNode.Parse(json)!.AsArray();
+                var duplicate = JsonNode.Parse(users[0]!.ToJsonString())!;
+                duplicate["Id"] = Guid.NewGuid();
+                users.Add(duplicate);
+                return users.ToJsonString();
+            },
+            cancellationToken).ConfigureAwait(true);
+
+        await using (var ctx = CreateDbContext())
+        {
+            ctx.BaseItems.Add(CreateMovieEntity(Guid.NewGuid(), "Added After Backup"));
+            await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(true);
+        }
+
+        var before = await SnapshotAsync(cancellationToken).ConfigureAwait(true);
+
+        var exception = await Assert.ThrowsAsync<DbUpdateException>(() => backupService.RestoreBackupAsync(manifest.Path)).ConfigureAwait(true);
+
+        Assert.IsType<SqliteException>(exception.InnerException);
+        Assert.Equal(1, _purgeCalls);
+        Assert.Equal(before, await SnapshotAsync(cancellationToken).ConfigureAwait(true));
+    }
+
+    private static async Task RewriteEntryAsync(string archivePath, string entryName, Func<string, string> transform, CancellationToken cancellationToken)
+    {
+        using var archive = await ZipFile.OpenAsync(archivePath, ZipArchiveMode.Update, cancellationToken).ConfigureAwait(false);
+        var entry = archive.GetEntry(entryName)!;
+        string content;
+        var readStream = await entry.OpenAsync(cancellationToken).ConfigureAwait(false);
+        await using (readStream.ConfigureAwait(false))
+        using (var reader = new StreamReader(readStream))
+        {
+            content = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        entry.Delete();
+        var replacement = archive.CreateEntry(entryName);
+        var writeStream = await replacement.OpenAsync(cancellationToken).ConfigureAwait(false);
+        await using (writeStream.ConfigureAwait(false))
+        using (var writer = new StreamWriter(writeStream))
+        {
+            await writer.WriteAsync(transform(content)).ConfigureAwait(false);
+        }
+    }
+
     private async Task SeedAsync(CancellationToken cancellationToken)
     {
         var alice = new User("alice", "provider", "reset");
@@ -273,7 +359,11 @@ public sealed class BackupServiceTests : IDisposable
         jellyfinDatabaseProvider.Setup(p => p.RunScheduledOptimisation(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
         jellyfinDatabaseProvider
             .Setup(p => p.PurgeDatabase(It.IsAny<JellyfinDbContext>(), It.IsAny<IEnumerable<string>>()))
-            .Returns((JellyfinDbContext context, IEnumerable<string> tableNames) => sqliteProvider.PurgeDatabase(context, tableNames));
+            .Returns((JellyfinDbContext context, IEnumerable<string> tableNames) =>
+            {
+                _purgeCalls++;
+                return sqliteProvider.PurgeDatabase(context, tableNames);
+            });
 
         var applicationLifetime = new Mock<IHostApplicationLifetime>();
 

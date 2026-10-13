@@ -442,11 +442,15 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             deleteQueries.Add($"DELETE FROM \"{tableName}\";");
         }
 
+        // SQLite ignores PRAGMA foreign_keys inside a transaction, so there the checks are postponed to the commit instead.
+        var inTransaction = dbContext.Database.CurrentTransaction is not null;
+        var disableForeignKeys = inTransaction ? "PRAGMA defer_foreign_keys = ON;" : "PRAGMA foreign_keys = OFF;";
+        var enableForeignKeys = inTransaction ? string.Empty : "PRAGMA foreign_keys = ON;";
         var deleteAllQuery =
         $"""
-        PRAGMA foreign_keys = OFF;
+        {disableForeignKeys}
         {string.Join('\n', deleteQueries)}
-        PRAGMA foreign_keys = ON;
+        {enableForeignKeys}
         """;
 
         await dbContext.Database.ExecuteSqlRawAsync(deleteAllQuery).ConfigureAwait(false);
