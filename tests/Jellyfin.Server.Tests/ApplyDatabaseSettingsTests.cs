@@ -2,23 +2,21 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
-using Jellyfin.Database.Implementations.Locking;
+using Jellyfin.Database.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
 namespace Jellyfin.Server.Tests;
 
-public class ApplyDatabaseSettingsTests
+public sealed class ApplyDatabaseSettingsTests : DatabaseTestFixture
 {
     [Fact]
     public async Task ApplyDatabaseSettingsAsync_ProviderRegistered_PassesItAContextFromTheFactoryAndDisposesIt()
     {
         var databaseProvider = new Mock<IJellyfinDatabaseProvider>();
-        var options = new DbContextOptionsBuilder<JellyfinDbContext>().UseSqlite("Data Source=:memory:").Options;
-        var context = new JellyfinDbContext(options, NullLogger<JellyfinDbContext>.Instance, databaseProvider.Object, new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
+        var context = CreateDbContext();
         var contextFactory = new Mock<IDbContextFactory<JellyfinDbContext>>();
         contextFactory
             .Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>()))

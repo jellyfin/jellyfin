@@ -1,11 +1,7 @@
 using System;
-using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Database.Testing;
-using MediaBrowser.Common.Configuration;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Data;
@@ -14,7 +10,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data;
 /// The exceptions here come from real constraint violations on an in-memory database, so the extended result codes
 /// the provider classifies on are the ones SQLite reports, not ones assumed by the test.
 /// </summary>
-public sealed class SqliteWriteConflictClassificationTests : IDisposable
+public sealed class SqliteWriteConflictClassificationTests : DatabaseTestFixture
 {
     private const int ConstraintCheck = 275;
     private const int ConstraintForeignKey = 787;
@@ -22,16 +18,8 @@ public sealed class SqliteWriteConflictClassificationTests : IDisposable
     private const int ConstraintPrimaryKey = 1555;
     private const int ConstraintUnique = 2067;
 
-    private readonly SqliteConnection _connection;
-    private readonly SqliteDatabaseProvider _provider = new(
-        Mock.Of<IApplicationPaths>(),
-        NullLogger<SqliteDatabaseProvider>.Instance);
-
     public SqliteWriteConflictClassificationTests()
     {
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
         Execute("PRAGMA foreign_keys = ON");
         Execute("CREATE TABLE Parents (Id INTEGER NOT NULL PRIMARY KEY)");
         Execute(
@@ -47,8 +35,6 @@ public sealed class SqliteWriteConflictClassificationTests : IDisposable
         Execute("INSERT INTO Children (Id, Name, Label, ParentId, Size) VALUES ('a', 'alpha', 'x', 1, 1)");
     }
 
-    public void Dispose() => _connection.Dispose();
-
     [ProviderTheory(TestDbProvider.Sqlite)]
     [InlineData("INSERT INTO Children VALUES ('b', 'alpha', 'x', 1, 1)", ConstraintUnique, true)]
     [InlineData("INSERT INTO Children VALUES ('a', 'beta', 'x', 1, 1)", ConstraintPrimaryKey, true)]
@@ -63,7 +49,7 @@ public sealed class SqliteWriteConflictClassificationTests : IDisposable
         var exception = Assert.Throws<SqliteException>(() => Execute(statement));
         Assert.Equal(expectedExtendedCode, exception.SqliteExtendedErrorCode);
 
-        Assert.Equal(expectedRetryable, _provider.IsRetryableWriteConflict(exception));
+        Assert.Equal(expectedRetryable, DatabaseProvider.IsRetryableWriteConflict(exception));
     }
 
     [ProviderTheory(TestDbProvider.Sqlite)]
@@ -78,7 +64,7 @@ public sealed class SqliteWriteConflictClassificationTests : IDisposable
         var inner = Assert.Throws<SqliteException>(() => Execute(statement));
         var wrapped = new DbUpdateException("An error occurred while saving the entity changes.", inner);
 
-        Assert.Equal(expectedRetryable, _provider.IsRetryableWriteConflict(wrapped));
+        Assert.Equal(expectedRetryable, DatabaseProvider.IsRetryableWriteConflict(wrapped));
     }
 
     [ProviderFact(TestDbProvider.Sqlite)]
@@ -89,29 +75,26 @@ public sealed class SqliteWriteConflictClassificationTests : IDisposable
             "outer",
             new DbUpdateException("middle", inner));
 
-        Assert.True(_provider.IsRetryableWriteConflict(nested));
+        Assert.True(DatabaseProvider.IsRetryableWriteConflict(nested));
     }
 
     [ProviderFact(TestDbProvider.Sqlite)]
     public void IsRetryableWriteConflict_UnrelatedExceptions_AreNotRetryable()
     {
-        Assert.False(_provider.IsRetryableWriteConflict(new InvalidOperationException("unique")));
-        Assert.False(_provider.IsRetryableWriteConflict(new DbUpdateException("unique")));
-        Assert.False(_provider.IsRetryableWriteConflict(new DbUpdateException("wrapped", new TimeoutException())));
+        Assert.False(DatabaseProvider.IsRetryableWriteConflict(new InvalidOperationException("unique")));
+        Assert.False(DatabaseProvider.IsRetryableWriteConflict(new DbUpdateException("unique")));
+        Assert.False(DatabaseProvider.IsRetryableWriteConflict(new DbUpdateException("wrapped", new TimeoutException())));
     }
 
     [ProviderFact(TestDbProvider.Sqlite)]
     public void IsRetryableWriteConflict_Null_Throws()
     {
-        Assert.Throws<ArgumentNullException>(() => _provider.IsRetryableWriteConflict(null!));
+        Assert.Throws<ArgumentNullException>(() => DatabaseProvider.IsRetryableWriteConflict(null!));
     }
 
     private void Execute(string sql)
     {
-        using var command = _connection.CreateCommand();
-#pragma warning disable CA2100 // The statements are constants of this test class.
-        command.CommandText = sql;
-#pragma warning restore CA2100
-        command.ExecuteNonQuery();
+        using var context = CreateDbContext();
+        context.Database.ExecuteSqlRaw(sql);
     }
 }

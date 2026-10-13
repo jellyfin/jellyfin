@@ -7,7 +7,6 @@ using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Tests.Item;
 using MediaBrowser.Common.Configuration;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -87,12 +86,7 @@ public sealed class LikeIgnoreAsciiCaseTranslationTests
     [ProviderFact(TestDbProvider.Sqlite)]
     public void Sqlite_LikeAndLowerLike_AgreeOnEveryValueAndPattern()
     {
-        using var connection = new SqliteConnection("Data Source=:memory:");
-        connection.Open();
-        using var command = connection.CreateCommand();
-        command.CommandText = "SELECT $value LIKE $pattern ESCAPE '\\', lower($value) LIKE $pattern ESCAPE '\\'";
-        var value = command.Parameters.Add("$value", SqliteType.Text);
-        var pattern = command.Parameters.Add("$pattern", SqliteType.Text);
+        using var fixture = new SqliteContext();
 
         var disagreements = new List<string>();
         var matches = 0;
@@ -100,12 +94,7 @@ public sealed class LikeIgnoreAsciiCaseTranslationTests
         {
             foreach (var t in _terms)
             {
-                value.Value = v;
-                pattern.Value = LikePatterns.ContainsIgnoreAsciiCase(t);
-                using var reader = command.ExecuteReader();
-                reader.Read();
-                var plain = reader.GetInt64(0);
-                var lowered = reader.GetInt64(1);
+                var (plain, lowered) = fixture.Like(v, LikePatterns.ContainsIgnoreAsciiCase(t));
                 matches += (int)plain;
                 if (plain != lowered)
                 {
@@ -140,6 +129,18 @@ public sealed class LikeIgnoreAsciiCaseTranslationTests
                 .Where(e => JellyfinDbFunctions.LikeIgnoreAsciiCase(e.OriginalTitle, pattern))
                 .Select(e => e.Id)
                 .ToQueryString();
+        }
+
+        public (long Plain, long Lowered) Like(string value, string pattern)
+        {
+            using var context = CreateDbContext();
+            var plain = context.Database
+                .SqlQueryRaw<long>("""SELECT {0} LIKE {1} ESCAPE '\' AS "Value" """, value, pattern)
+                .Single();
+            var lowered = context.Database
+                .SqlQueryRaw<long>("""SELECT lower({0}) LIKE {1} ESCAPE '\' AS "Value" """, value, pattern)
+                .Single();
+            return (plain, lowered);
         }
     }
 }

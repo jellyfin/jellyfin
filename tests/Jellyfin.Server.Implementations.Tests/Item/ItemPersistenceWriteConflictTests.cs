@@ -70,7 +70,7 @@ public sealed class ItemPersistenceWriteConflictTests : IDisposable
             Pooling = false
         }.ToString();
 
-        using var context = CreateDbContext(new DbContextOptionsBuilder<JellyfinDbContext>().UseSqlite(_connectionString).Options);
+        using var context = CreateDbContext(CreateOptions());
         context.Database.EnsureCreated();
     }
 
