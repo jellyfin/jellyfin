@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Locking;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,11 @@ internal static class TestSchemaSourceExtensions
                 context.Database.EnsureCreated();
                 break;
             case TestSchemaSource.Migrations:
+                if (!context.Database.GetMigrations().Any())
+                {
+                    throw new NotSupportedException($"The provider {context.Database.ProviderName} has no migrations to build a schema from.");
+                }
+
                 context.Database.Migrate();
                 break;
             default:

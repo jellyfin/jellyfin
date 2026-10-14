@@ -12,14 +12,15 @@ namespace Jellyfin.Database.Testing;
 /// <summary>
 /// Base fixture for tests that need a database: one empty database per test instance, on the provider selected by
 /// <see cref="TestDatabaseEnvironment"/>. Its schema comes from the migrations unless the derived class asks for the
-/// model. Derived classes seed in their own constructor.
+/// model, or the provider has no migrations. Derived classes seed in their own constructor.
 /// </summary>
 public abstract class DatabaseTestFixture : IDisposable
 {
     private readonly TestDatabase _database;
+    private readonly ITestDatabaseBackend _backend;
 
     protected DatabaseTestFixture(params IInterceptor[] interceptors)
-        : this(TestSchemaSource.Migrations, interceptors)
+        : this(TestDatabaseEnvironment.DefaultSchemaSource, interceptors)
     {
     }
 
@@ -35,10 +36,23 @@ public abstract class DatabaseTestFixture : IDisposable
     /// <param name="fresh">Whether the test changes the schema and so needs a database that no other test has used or will use.</param>
     /// <param name="interceptors">The interceptors that see the commands of the test.</param>
     protected DatabaseTestFixture(TestSchemaSource schemaSource, bool fresh, params IInterceptor[] interceptors)
+        : this(TestDatabaseEnvironment.Backend, schemaSource, fresh, interceptors)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DatabaseTestFixture"/> class on a given backend.
+    /// </summary>
+    /// <param name="backend">The backend that creates the database.</param>
+    /// <param name="schemaSource">Where the schema of the database comes from.</param>
+    /// <param name="fresh">Whether the test changes the schema and so needs a database that no other test has used or will use.</param>
+    /// <param name="interceptors">The interceptors that see the commands of the test.</param>
+    protected DatabaseTestFixture(ITestDatabaseBackend backend, TestSchemaSource schemaSource, bool fresh, params IInterceptor[] interceptors)
     {
         ApplicationPaths = new Mock<IApplicationPaths>().Object;
 
-        _database = TestDatabaseEnvironment.Backend.Create(schemaSource, interceptors, fresh);
+        _backend = backend;
+        _database = backend.Create(schemaSource, interceptors, fresh);
         try
         {
             DatabaseProvider = _database.CreateProvider();
@@ -53,7 +67,7 @@ public abstract class DatabaseTestFixture : IDisposable
 
     protected IApplicationPaths ApplicationPaths { get; }
 
-    protected TestDbProvider DbProvider => TestDatabaseEnvironment.Provider;
+    protected TestDbProvider DbProvider => _backend.Provider;
 
     protected IJellyfinDatabaseProvider DatabaseProvider { get; }
 

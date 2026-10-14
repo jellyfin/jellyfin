@@ -93,6 +93,33 @@ public class BackendLivenessTests
         BackendLiveness.Verify(null, new StubBackend(TestDbProvider.Postgres, ServerVersionFloors.For(TestDbProvider.Postgres)));
     }
 
+    [Theory]
+    [InlineData(TestDbProvider.MySql, "8.3.99")]
+    [InlineData(TestDbProvider.MariaDb, "11.4.6")]
+    [InlineData(TestDbProvider.MariaDb, "10.11.9")]
+    public void Verify_MySqlFamilyServerOlderThanTheFloor_Fails(TestDbProvider provider, string version)
+    {
+        Assert.ThrowsAny<XunitException>(() => BackendLiveness.Verify(null, new StubBackend(provider, Version.Parse(version))));
+    }
+
+    [Theory]
+    [InlineData(TestDbProvider.MySql, "8.4.11")]
+    [InlineData(TestDbProvider.MySql, "9.1.0")]
+    [InlineData(TestDbProvider.MariaDb, "11.4.7")]
+    [InlineData(TestDbProvider.MariaDb, "11.8.0")]
+    public void Verify_MySqlFamilyServerAtOrAboveTheFloor_Passes(TestDbProvider provider, string version)
+    {
+        BackendLiveness.Verify(null, new StubBackend(provider, Version.Parse(version)));
+    }
+
+    [Theory]
+    [InlineData(TestDbProvider.MySql, "MariaDb")]
+    [InlineData(TestDbProvider.MariaDb, "MySql")]
+    public void VerifyProvider_OtherEngineOfTheMySqlFamily_Fails(TestDbProvider actual, string expected)
+    {
+        Assert.ThrowsAny<XunitException>(() => BackendLiveness.VerifyProvider(expected, actual));
+    }
+
     [Fact]
     public void Verify_ExpectedProviderIsNotTheBackend_FailsBeforeReachingTheServer()
     {

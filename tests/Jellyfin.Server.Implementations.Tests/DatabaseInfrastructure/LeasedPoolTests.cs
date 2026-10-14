@@ -20,10 +20,6 @@ namespace Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 
 public sealed class LeasedPoolTests : IDisposable
 {
-    private const string MigrationHistoryTable = "__EFMigrationsHistory";
-
-    private static readonly Guid _placeholderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-
 #pragma warning disable RS0030 // The pool is tested on SQLite files whichever provider is selected
     private readonly SqliteFileTestBackend _backend = new();
 #pragma warning restore RS0030
@@ -204,27 +200,7 @@ public sealed class LeasedPoolTests : IDisposable
     [InlineData(TestSchemaSource.Migrations)]
     public void Dispose_ReturnedLease_LeavesEveryTableAsInAFreshDatabase(TestSchemaSource source)
     {
-        Dictionary<string, int> expected;
-        using (var fresh = _backend.Create(source, [], fresh: true))
-        {
-            expected = CountRows(fresh);
-        }
-
-        Assert.Equal(source == TestSchemaSource.Migrations, expected.ContainsKey(MigrationHistoryTable));
-        Assert.All(expected.Where(table => table.Key == MigrationHistoryTable), table => Assert.True(table.Value > 0));
-
-        using (var database = _backend.Create(source, []))
-        {
-            using var context = CreateContext(database);
-            ModelRows.Fill(context, 3);
-
-            var dirty = CountRows(database);
-            Assert.All(ModelRows.Tables(context), entityType => Assert.True(dirty[entityType.GetTableName()!] > 0, entityType.GetTableName()));
-        }
-
-        using var reused = _backend.Create(source, []);
-
-        Assert.Equal(expected, CountRows(reused));
+        PoolChecks.AssertResetMatchesFreshDatabase(_backend, source);
     }
 
     [Theory]
@@ -232,45 +208,13 @@ public sealed class LeasedPoolTests : IDisposable
     [InlineData(TestSchemaSource.Migrations)]
     public void Dispose_ReturnedLease_RestartsIdentityAtOneOnEveryTable(TestSchemaSource source)
     {
-        using (var database = _backend.Create(source, []))
-        {
-            using var context = CreateContext(database);
-            ModelRows.Fill(context, 3);
-        }
-
-        using var reused = _backend.Create(source, []);
-        using var reusedContext = CreateContext(reused);
-        var withIdentity = ModelRows.TablesWithIdentity(reusedContext);
-        Assert.NotEmpty(withIdentity);
-
-        var added = ModelRows.Fill(reusedContext, 1);
-
-        Assert.All(
-            added.Where(row => withIdentity.Contains(row.EntityType)),
-            row => Assert.Equal(1, Convert.ToInt64(row.Entry.Property(ModelRows.GetIdentityKey(row.EntityType)!.Name).CurrentValue, CultureInfo.InvariantCulture)));
+        PoolChecks.AssertIdentityRestartsAtOne(_backend, source);
     }
 
     [Fact]
     public void Dispose_ReturnedLease_RestoresSeedData()
     {
-        using var fresh = _backend.Create(TestSchemaSource.Model, [], fresh: true);
-        using (var freshContext = CreateContext(fresh))
-        {
-            Assert.Single(freshContext.BaseItems);
-        }
-
-        using (var database = _backend.Create(TestSchemaSource.Model, []))
-        {
-            using var context = CreateContext(database);
-            context.BaseItems.ExecuteDelete();
-            Assert.Empty(context.BaseItems);
-        }
-
-        using var reused = _backend.Create(TestSchemaSource.Model, []);
-        using var reusedContext = CreateContext(reused);
-
-        var seeded = Assert.Single(reusedContext.BaseItems);
-        Assert.Equal(_placeholderId, seeded.Id);
+        PoolChecks.AssertSeedDataIsRestored(_backend);
     }
 
     [Fact]
@@ -350,26 +294,15 @@ public sealed class LeasedPoolTests : IDisposable
     }
 
     [Theory]
-    [InlineData("CREATE TABLE \"Scratch\" (\"Id\" INTEGER)")]
-    [InlineData("CREATE INDEX \"IX_Scratch\" ON \"ActivityLogs\" (\"Name\")")]
-    [InlineData("CREATE TRIGGER \"Scratch\" AFTER INSERT ON \"ActivityLogs\" BEGIN SELECT 1; END")]
-    [InlineData("ALTER TABLE \"ActivityLogs\" ADD COLUMN \"Scratch\" INTEGER")]
-    public void Dispose_LeaseThatChangedTheSchema_IsDroppedInsteadOfReused(string statement)
+    [InlineData(SchemaChange.Table)]
+    [InlineData(SchemaChange.Index)]
+    [InlineData(SchemaChange.Trigger)]
+    [InlineData(SchemaChange.Column)]
+    public void Dispose_LeaseThatChangedTheSchema_IsDroppedInsteadOfReused(SchemaChange change)
     {
-        string changed;
-        using (var database = _backend.Create(TestSchemaSource.Model, []))
-        {
-            changed = DatabaseOf(database);
-            using var context = CreateContext(database);
-            context.Database.ExecuteSqlRaw(statement);
-        }
+        PoolChecks.AssertChangedSchemaIsNotReused(_backend, change);
 
-        using var next = _backend.Create(TestSchemaSource.Model, []);
-        using var nextContext = CreateContext(next);
-
-        Assert.NotEqual(changed, DatabaseOf(next));
         Assert.Single(Directory.GetFiles(_backend.DatabaseDirectory));
-        Assert.DoesNotContain("Scratch", TableNames(nextContext));
     }
 
     [Fact]
@@ -380,7 +313,7 @@ public sealed class LeasedPoolTests : IDisposable
         {
             name = DatabaseOf(database);
             using var context = CreateContext(database);
-            context.Database.ExecuteSqlRaw($"DELETE FROM \"{MigrationHistoryTable}\"");
+            PoolChecks.DeleteMigrationHistory(context);
         }
 
         using var next = _backend.Create(TestSchemaSource.Migrations, []);
@@ -432,36 +365,7 @@ public sealed class LeasedPoolTests : IDisposable
         Assert.False(Directory.Exists(_backend.DatabaseDirectory));
     }
 
-    private static List<string> TableNames(JellyfinDbContext context)
-    {
-        return context.Database.SqlQueryRaw<string>("SELECT name AS Value FROM sqlite_master WHERE type = 'table'").ToList();
-    }
+    private static string DatabaseOf(TestDatabase database) => PoolChecks.DatabaseOf(database);
 
-    private static Dictionary<string, int> CountRows(TestDatabase database)
-    {
-        using var context = CreateContext(database);
-        var counts = new Dictionary<string, int>();
-        foreach (var table in context.Database.SqlQueryRaw<string>("SELECT name AS Value FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'").ToList())
-        {
-#pragma warning disable EF1002, CA2100 // The table names come from the database.
-            counts[table] = context.Database.SqlQueryRaw<int>($"SELECT COUNT(*) AS Value FROM \"{table}\"").Single();
-#pragma warning restore EF1002, CA2100
-        }
-
-        return counts;
-    }
-
-    private static string DatabaseOf(TestDatabase database)
-    {
-        return RelationalOptionsExtension.Extract(database.Options).ConnectionString!;
-    }
-
-    private static JellyfinDbContext CreateContext(TestDatabase database)
-    {
-        return new JellyfinDbContext(
-            database.Options,
-            NullLogger<JellyfinDbContext>.Instance,
-            database.CreateProvider(),
-            new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
-    }
+    private static JellyfinDbContext CreateContext(TestDatabase database) => PoolChecks.CreateContext(database);
 }

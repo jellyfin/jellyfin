@@ -13,6 +13,8 @@ public class TestDatabaseEnvironmentTests
     [InlineData("Sqlite", TestDbProvider.Sqlite)]
     [InlineData("sqlite", TestDbProvider.Sqlite)]
     [InlineData("POSTGRES", TestDbProvider.Postgres)]
+    [InlineData("MySql", TestDbProvider.MySql)]
+    [InlineData("mariadb", TestDbProvider.MariaDb)]
     public void ParseProvider_KnownValue_ReturnsProvider(string? value, TestDbProvider expected)
     {
         Assert.Equal(expected, TestDatabaseEnvironment.ParseProvider(value));

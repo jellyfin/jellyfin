@@ -26,6 +26,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using MySqlConnector;
 using Npgsql;
 using Xunit;
 using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
@@ -278,6 +279,11 @@ public sealed class BackupServiceTests : DatabaseTestFixture
                 var postgresViolation = Assert.IsType<PostgresException>(exception.InnerException);
                 Assert.Equal(PostgresErrorCodes.UniqueViolation, postgresViolation.SqlState);
                 break;
+            case TestDbProvider.MySql:
+            case TestDbProvider.MariaDb:
+                var mySqlViolation = Assert.IsType<MySqlException>(exception.InnerException);
+                Assert.Equal(MySqlErrorCode.DuplicateKeyEntry, mySqlViolation.ErrorCode);
+                break;
             default:
                 throw new NotSupportedException($"No unique violation is known for {DbProvider}.");
         }
@@ -402,7 +408,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.Equal(before, await SnapshotAsync(cancellationToken).ConfigureAwait(true));
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task RestoreBackupAsync_WithHistoryFromAnotherSchema_LeavesNoPendingMigrations()
     {
         var (_, pending) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
@@ -410,7 +416,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.Empty(pending);
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task RestoreBackupAsync_KeepsTheSchemaMigrationRowsOfTheTarget()
     {
         var (history, _) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
@@ -421,7 +427,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.All(schemaMigrationIds, id => Assert.Contains(id, history));
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task RestoreBackupAsync_ReplacesCodeRoutinesWithThoseOfTheArchive()
     {
         var (history, _) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
@@ -430,7 +436,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.DoesNotContain(RoutineOnlyInTargetId, history);
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task RestoreBackupAsync_DoesNotTakeOverSchemaMigrationsOfAnotherEngine()
     {
         var (history, _) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
@@ -438,7 +444,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.DoesNotContain(ForeignSchemaMigrationId, history);
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task RestoreBackupAsync_DoesNotTakeOverRoutinesThisServerNoLongerHas()
     {
         var (history, _) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
@@ -446,7 +452,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.DoesNotContain(RemovedRoutineId, history);
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task RestoreBackupAsync_WithArchiveOfTheSameSchema_RestoresTheHistoryAsItWas()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -712,7 +718,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.DoesNotContain(_logger.Entries, e => e.Message.Contains("Rock", StringComparison.Ordinal));
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task RestoreBackupAsync_IntoADatabaseThatWasOnlySeeded_CreatesTheSchemaAndRestoresTheRows()
     {
         var cancellationToken = TestContext.Current.CancellationToken;

@@ -10,6 +10,14 @@ internal static class ProviderRequirement
             ? null
             : $"Requires provider(s) {string.Join(", ", providers)} (set {TestDatabaseEnvironment.ProviderVariable})";
 
+    public static string? MigrationsSkipReason()
+        => TestDatabaseEnvironment.Provider switch
+        {
+            TestDbProvider.MySql => "no MySQL migrations yet",
+            TestDbProvider.MariaDb => "no MariaDB migrations yet",
+            _ => null
+        };
+
     public static IReadOnlyCollection<KeyValuePair<string, string>> Traits(IEnumerable<TestDbProvider> providers)
         => providers.Select(provider => new KeyValuePair<string, string>("Provider", provider.ToString())).ToArray();
 }

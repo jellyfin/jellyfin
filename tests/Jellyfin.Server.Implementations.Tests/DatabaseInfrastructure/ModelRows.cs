@@ -68,9 +68,19 @@ internal static class ModelRows
 
         // The rows only have to exist, so they do not have to point at each other.
         context.Database.OpenConnection();
-        context.Database.ExecuteSqlRaw("PRAGMA foreign_keys = OFF");
+        context.Database.ExecuteSqlRaw(GetDisableForeignKeysSql(context));
         context.SaveChanges();
         return added;
+    }
+
+    private static string GetDisableForeignKeysSql(JellyfinDbContext context)
+    {
+        return context.Database.ProviderName switch
+        {
+            "Microsoft.EntityFrameworkCore.Sqlite" => "PRAGMA foreign_keys = OFF",
+            "Microting.EntityFrameworkCore.MySql" => "SET SESSION foreign_key_checks = 0",
+            var other => throw new NotSupportedException($"Foreign keys cannot be switched off for {other}.")
+        };
     }
 
     private static object? CreateValue(Type type)
