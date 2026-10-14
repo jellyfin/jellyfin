@@ -80,9 +80,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 return [];
             }
 
-            // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
             var movie = await _tmdbClientManager
-                .GetMovieAsync(movieTmdbId, null, null, null, cancellationToken)
+                .GetMovieAsync(movieTmdbId, language, TmdbUtils.GetImageLanguagesParam(language, countryCode), countryCode, cancellationToken)
                 .ConfigureAwait(false);
 
             if (movie?.Images is null)
