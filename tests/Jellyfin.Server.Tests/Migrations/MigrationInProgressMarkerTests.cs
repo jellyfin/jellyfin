@@ -73,7 +73,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
 
     private string MarkerPath => Path.Combine(_paths.DataPath, MarkerFileName);
 
-    [Fact]
+    [MigrationsFact]
     public async Task MigrateStepAsync_ProviderWithoutTransactionalMigrations_NamesEachSchemaMigrationWhileItRunsAndLeavesNoFile()
     {
         WriteServerConfiguration(wizardCompleted: false);
@@ -89,7 +89,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.Equal(schemaMigrations, _observer.MarkedMigrations.Distinct().Order(StringComparer.Ordinal));
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task MigrateStepAsync_FailingSchemaMigration_LeavesAMarkerThatNamesIt()
     {
         WriteServerConfiguration(wizardCompleted: false);
@@ -111,7 +111,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.Empty(await GetAppliedMigrationIdsAsync(firstMigration));
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task MigrateStepAsync_FailingSchemaMigration_LogsWhereTheMarkerIsAndWhatToDo()
     {
         WriteServerConfiguration(wizardCompleted: false);
@@ -130,7 +130,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.Contains("does not repair the database", logged, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task MigrateStepAsync_FailingSchemaMigrationOnAProviderThatTookNoSnapshot_DoesNotAskForARollbackAndSaysWhatToDo()
     {
         WriteServerConfiguration(wizardCompleted: false);
@@ -152,7 +152,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.DoesNotContain(CriticalMessages(), message => message.Contains("Could not rollback", StringComparison.Ordinal));
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task MigrateStepAsync_FailingSchemaMigrationOnAProviderThatTookASnapshot_RollsBackFromItAndSaysWhatElseToDo()
     {
         WriteServerConfiguration(wizardCompleted: false);
@@ -171,7 +171,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.Contains(RestoreInstruction, logged, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task MigrateStepAsync_FailingSchemaMigrationOnAProviderWithTransactionalMigrations_StillAsksForTheRollbackWithAnEmptyKey()
     {
         WriteServerConfiguration(wizardCompleted: false);
@@ -187,7 +187,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.False(File.Exists(MarkerPath));
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task MigrateStepAsync_MarkerCannotBeDeletedAfterTheMigrationWasApplied_SaysSoAndDoesNotRollBack()
     {
         WriteServerConfiguration(wizardCompleted: false);
@@ -209,7 +209,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.True(Directory.Exists(MarkerPath));
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task MigrateStepAsync_MigrationLeavesNoHistoryRow_KeepsTheMarkerAndDoesNotRepeat()
     {
         WriteServerConfiguration(wizardCompleted: false);
@@ -227,7 +227,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.Equal(firstMigration, marker.RootElement.GetProperty("MigrationId").GetString());
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task MigrateStepAsync_MarkerCannotBeWritten_DoesNotStartTheMigrationAndSaysSo()
     {
         WriteServerConfiguration(wizardCompleted: false);
@@ -247,7 +247,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.True(Directory.Exists(MarkerPath));
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task MigrateStepAsync_ProviderWithTransactionalMigrations_NeverWritesTheMarker()
     {
         WriteServerConfiguration(wizardCompleted: false);
@@ -264,7 +264,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.False(File.Exists(MarkerPath));
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task MigrateStepAsync_FailingSchemaMigrationOnAProviderWithTransactionalMigrations_LeavesNoMarker()
     {
         WriteServerConfiguration(wizardCompleted: false);
@@ -279,7 +279,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.DoesNotContain(CriticalMessages(), message => message.Contains(MarkerFileName, StringComparison.Ordinal));
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task CheckFirstTimeRunOrMigration_AfterFailedSchemaMigration_RefusesToStartAndNamesTheMigration()
     {
         WriteServerConfiguration(wizardCompleted: false);
@@ -304,7 +304,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.Empty(await GetAppliedMigrationIdsAsync(firstMigration));
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task MigrateStepAsync_AfterFailedSchemaMigration_RefusesToMigrateAndLeavesTheDatabaseAlone()
     {
         WriteServerConfiguration(wizardCompleted: false);
@@ -340,7 +340,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.Equal(0, _observer.CommandCount);
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task CheckFirstTimeRunOrMigration_StrayMarkerOnProviderWithTransactionalMigrations_Refuses()
     {
         WriteServerConfiguration(wizardCompleted: false);
@@ -370,7 +370,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.True(File.Exists(MarkerPath));
     }
 
-    [Theory]
+    [MigrationsTheory]
     [InlineData(null)]
     [InlineData("backup.zip")]
     public async Task CheckFirstTimeRunOrMigration_MarkerNamesAMigrationThatIsRecorded_DeletesItAndContinues(string? restoreArchive)
@@ -389,7 +389,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.Equal(criticalBefore, CriticalMessages().Length);
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task MigrateStepAsync_MarkerCouldNotBeDeletedAfterTheMigrationWasApplied_DeletesItAndDoesNotRepeatIt()
     {
         WriteServerConfiguration(wizardCompleted: false);
@@ -413,7 +413,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.Equal(schemaMigrations, await GetAppliedMigrationIdsAsync(schemaMigrations));
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task CheckFirstTimeRunOrMigration_MarkerNamesARecordedMigrationButCannotBeDeleted_RefusesAndSaysSo()
     {
         await MigrateEverythingAsync();
@@ -460,7 +460,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.True(File.Exists(MarkerPath));
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task CheckFirstTimeRunOrMigration_MarkerNamesARecordedMigrationOfAnotherProvider_Refuses()
     {
         await MigrateEverythingAsync();
@@ -475,7 +475,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.True(File.Exists(MarkerPath));
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task CheckFirstTimeRunOrMigration_MarkerWithoutAMigratedDatabase_RefusesAndCreatesNothing()
     {
         WriteServerConfiguration(wizardCompleted: true);
@@ -539,7 +539,7 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
         Assert.Equal(0, _observer.CommandCount);
     }
 
-    [Fact]
+    [MigrationsFact]
     public async Task MigrateStepAsync_MarkerDeletedAfterRestore_MigratesAndLeavesNoMarker()
     {
         WriteServerConfiguration(wizardCompleted: false);

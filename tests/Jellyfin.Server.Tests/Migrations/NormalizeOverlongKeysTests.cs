@@ -23,7 +23,8 @@ namespace Jellyfin.Server.Tests.Migrations;
 
 /// <summary>
 /// The rows the migration rewrites were stored before the length of the key columns was limited. No provider limits
-/// the length of the column itself, so the tests seed such a row around the model and run on every provider.
+/// the length of the column itself, so the tests seed such a row around the model. The columns of an indexed string
+/// have their maximum length on MySQL and MariaDB, where no such row can exist and the tests are skipped.
 /// </summary>
 public sealed class NormalizeOverlongKeysTests : DatabaseTestFixture
 {
@@ -242,6 +243,7 @@ public sealed class NormalizeOverlongKeysTests : DatabaseTestFixture
     // The overlong values are written around the model, the way they were stored before the length was limited.
     private async Task AddUserDataAsync(string key, DateTime? lastPlayed, int playCount, bool overlong = true)
     {
+        SkipWhenOverlongCannotBeStored(overlong);
         await EnsureUserAndItemAsync();
         using var ctx = CreateDbContext();
         ctx.UserData.Add(new UserData
@@ -266,6 +268,7 @@ public sealed class NormalizeOverlongKeysTests : DatabaseTestFixture
 
     private async Task AddDeviceAsync(string deviceId, bool overlong = true)
     {
+        SkipWhenOverlongCannotBeStored(overlong);
         await EnsureUserAndItemAsync();
         using var ctx = CreateDbContext();
         var device = new Device(_userId, "App", "1.0", "Name", overlong ? "placeholder" : deviceId);
@@ -283,6 +286,7 @@ public sealed class NormalizeOverlongKeysTests : DatabaseTestFixture
 
     private async Task AddDeviceOptionsAsync(string deviceId, string name, bool overlong = true)
     {
+        SkipWhenOverlongCannotBeStored(overlong);
         using var ctx = CreateDbContext();
         var options = new DeviceOptions(overlong ? "placeholder-" + name : deviceId) { CustomName = name };
         ctx.DeviceOptions.Add(options);
@@ -295,6 +299,13 @@ public sealed class NormalizeOverlongKeysTests : DatabaseTestFixture
                 .Where(e => e.Id == id)
                 .ExecuteUpdateAsync(s => s.SetProperty(e => e.DeviceId, deviceId), TestContext.Current.CancellationToken);
         }
+    }
+
+    private static void SkipWhenOverlongCannotBeStored(bool overlong)
+    {
+        Assert.SkipWhen(
+            overlong && TestDatabaseEnvironment.Provider is TestDbProvider.MySql or TestDbProvider.MariaDb,
+            "The column of an indexed string has its maximum length on this engine, so no row can be stored over it.");
     }
 
     private NormalizeOverlongKeys CreateMigration()

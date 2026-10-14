@@ -171,8 +171,8 @@ public sealed class MigrateLinkedChildrenStaleItemsTests : DatabaseTestFixture
 
         if (libraryId.HasValue)
         {
-            context.Database.ExecuteSql(
-                $"INSERT INTO \"AncestorIds\" (\"ItemId\", \"ParentItemId\") VALUES ({id}, {libraryId.Value})");
+            context.AncestorIds.Add(new AncestorId { ItemId = id, ParentItemId = libraryId.Value, Item = null!, ParentItem = null! });
+            context.SaveChanges();
         }
     }
 
