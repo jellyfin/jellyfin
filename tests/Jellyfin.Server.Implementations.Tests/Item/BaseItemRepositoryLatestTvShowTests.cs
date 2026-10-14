@@ -16,6 +16,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 public sealed class BaseItemRepositoryLatestTvShowTests : SqliteDbTestFixture
 {
     private const string EpisodeType = "MediaBrowser.Controller.Entities.TV.Episode";
+    private const int Limit = 10;
 
     private readonly BaseItemRepository _repository;
     private readonly User _user = new("test", "auth-provider", "reset-provider");
@@ -59,11 +60,32 @@ public sealed class BaseItemRepositoryLatestTvShowTests : SqliteDbTestFixture
         Assert.Equal(dated, Assert.Single(items).Id);
     }
 
+    [Fact]
+    public void GetLatestItemList_MoreUndatedSeriesThanTheLimit_ReturnsTheDatedEpisode()
+    {
+        var dated = Guid.NewGuid();
+        using (var context = CreateDbContext())
+        {
+            context.Users.Add(_user);
+            AddEpisode(context, dated, "Dated", new DateTime(2026, 3, 1, 12, 0, 0, DateTimeKind.Utc));
+            for (var i = 0; i < Limit + 2; i++)
+            {
+                AddEpisode(context, Guid.NewGuid(), $"Undated {i}", null);
+            }
+
+            context.SaveChanges();
+        }
+
+        var items = _repository.GetLatestItemList(Query(), CollectionType.tvshows);
+
+        Assert.Equal(dated, Assert.Single(items).Id);
+    }
+
     private InternalItemsQuery Query()
         => new(_user)
         {
             IncludeItemTypes = [BaseItemKind.Episode],
-            Limit = 10
+            Limit = Limit
         };
 
     private static void AddEpisode(JellyfinDbContext context, Guid id, string seriesName, DateTime? dateCreated)
