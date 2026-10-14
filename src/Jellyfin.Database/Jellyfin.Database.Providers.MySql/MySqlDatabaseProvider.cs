@@ -22,7 +22,7 @@ namespace Jellyfin.Database.Providers.MySql;
 /// </summary>
 /// <remarks>
 /// One provider serves both servers. The server is named in the <c>server-version</c> option, for example
-/// <c>8.4-mysql</c> or <c>11.4-mariadb</c>, and is asked for its kind and version when the option is missing.
+/// <c>8.4-mysql</c> or <c>11.4.7-mariadb</c>, and is asked for its kind and version when the option is missing.
 /// </remarks>
 [JellyfinDatabaseProviderKey("Jellyfin-MySQL")]
 public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider

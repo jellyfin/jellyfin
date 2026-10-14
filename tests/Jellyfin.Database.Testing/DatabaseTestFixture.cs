@@ -12,7 +12,7 @@ namespace Jellyfin.Database.Testing;
 /// <summary>
 /// Base fixture for tests that need a database: one empty database per test instance, on the provider selected by
 /// <see cref="TestDatabaseEnvironment"/>. Its schema comes from the migrations unless the derived class asks for the
-/// model, or the provider has no migrations. Derived classes seed in their own constructor.
+/// model. Derived classes seed in their own constructor.
 /// </summary>
 public abstract class DatabaseTestFixture : IDisposable
 {
@@ -20,7 +20,7 @@ public abstract class DatabaseTestFixture : IDisposable
     private readonly ITestDatabaseBackend _backend;
 
     protected DatabaseTestFixture(params IInterceptor[] interceptors)
-        : this(TestDatabaseEnvironment.DefaultSchemaSource, interceptors)
+        : this(TestSchemaSource.Migrations, interceptors)
     {
     }
 

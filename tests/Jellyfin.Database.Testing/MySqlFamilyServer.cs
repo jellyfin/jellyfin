@@ -69,7 +69,7 @@ internal sealed class MySqlFamilyServer : IPooledDatabaseServer
                     PluginName = string.Empty,
                     PluginAssembly = string.Empty,
                     ConnectionString = WithDatabase(database),
-                    Options = [new CustomDatabaseOption { Key = "server-version", Value = _provider == TestDbProvider.MariaDb ? "11.4-mariadb" : "8.4-mysql" }]
+                    Options = [new CustomDatabaseOption { Key = "server-version", Value = _provider == TestDbProvider.MariaDb ? "11.4.7-mariadb" : "8.4-mysql" }]
                 }
             });
         return builder.AddInterceptors(interceptors).Options;
