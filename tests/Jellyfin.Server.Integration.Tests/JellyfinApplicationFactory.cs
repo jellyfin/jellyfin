@@ -7,6 +7,7 @@ using Emby.Server.Implementations;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.DbConfiguration;
+using Jellyfin.Database.Providers.MySql;
 using Jellyfin.Database.Providers.Postgres;
 using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Database.Testing;
@@ -187,7 +188,7 @@ namespace Jellyfin.Server.Integration.Tests
         }
 
         /// <summary>
-        /// Writes the <c>database.xml</c> that makes the server use a PostgreSQL database.
+        /// Writes the <c>database.xml</c> that makes the server use the server database of the test run.
         /// </summary>
         /// <param name="configurationDirectory">The configuration directory of the server.</param>
         /// <param name="database">The database to use.</param>
@@ -195,7 +196,7 @@ namespace Jellyfin.Server.Integration.Tests
         {
             var configuration = new DatabaseConfigurationOptions
             {
-                DatabaseType = GetProviderKey(TestDbProvider.Postgres),
+                DatabaseType = GetProviderKey(TestDatabaseEnvironment.Provider),
                 CustomProviderOptions = new CustomDatabaseOptions
                 {
                     PluginName = string.Empty,
@@ -219,6 +220,7 @@ namespace Jellyfin.Server.Integration.Tests
             {
                 TestDbProvider.Sqlite => typeof(SqliteDatabaseProvider),
                 TestDbProvider.Postgres => typeof(PostgresDatabaseProvider),
+                TestDbProvider.MySql or TestDbProvider.MariaDb => typeof(MySqlDatabaseProvider),
                 _ => throw new NotSupportedException($"The integration tests cannot run on {provider} yet.")
             };
             return type.GetCustomAttribute<JellyfinDatabaseProviderKeyAttribute>()!.DatabaseProviderKey;
@@ -261,7 +263,7 @@ namespace Jellyfin.Server.Integration.Tests
                 return;
             }
 
-            _database = PostgresTestBackend.Instance.CreateEmpty();
+            _database = TestDatabaseEnvironment.Backend.CreateEmpty();
             WriteDatabaseConfiguration(configurationDirectory, _database);
             _provisionedConfigurationPath = path;
         }

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -17,6 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
+using MySqlConnector;
 using Npgsql;
 using Xunit;
 
@@ -71,10 +74,10 @@ public sealed class StartOverTests : IDisposable
         Assert.Equal(systemConfiguration, await File.ReadAllBytesAsync(paths.SystemConfigurationFilePath, TestContext.Current.CancellationToken));
     }
 
-    [ProviderTheory(TestDbProvider.Postgres)]
+    [ProviderTheory(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb)]
     [InlineData(DatabaseLoss.Dropped)]
     [InlineData(DatabaseLoss.Emptied)]
-    public async Task DeletedDatabase_Postgres_WizardReset_StartsAsNewServer(DatabaseLoss loss)
+    public async Task DeletedDatabase_OnDatabaseServer_WizardReset_StartsAsNewServer(DatabaseLoss loss)
     {
         var paths = await SetUpServerAndLoseDatabaseAsync(loss);
         SetWizardCompleted(paths, false);
@@ -91,11 +94,12 @@ public sealed class StartOverTests : IDisposable
         Assert.All(context.GetService<IMigrationsAssembly>().Migrations.Keys, id => Assert.Contains(id, applied));
     }
 
-    [ProviderTheory(TestDbProvider.Postgres)]
-    [InlineData(DatabaseLoss.Dropped, "the database does not exist")]
-    [InlineData(DatabaseLoss.Emptied, "the migration history of the database is empty")]
-    public async Task DeletedDatabase_Postgres_WizardStillCompleted_RefusesToStart(DatabaseLoss loss, string problem)
+    [ProviderTheory(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [InlineData(DatabaseLoss.Dropped)]
+    [InlineData(DatabaseLoss.Emptied)]
+    public async Task DeletedDatabase_OnDatabaseServer_WizardStillCompleted_RefusesToStart(DatabaseLoss loss)
     {
+        var problem = ExpectedProblem(loss);
         var paths = await SetUpServerAndLoseDatabaseAsync(loss);
         var systemConfiguration = await File.ReadAllBytesAsync(paths.SystemConfigurationFilePath, TestContext.Current.CancellationToken);
         var databaseConfiguration = await File.ReadAllBytesAsync(Path.Combine(paths.ConfigurationDirectoryPath, "database.xml"), TestContext.Current.CancellationToken);
@@ -113,8 +117,7 @@ public sealed class StartOverTests : IDisposable
 
     public void Dispose()
     {
-        SqliteConnection.ClearAllPools();
-        NpgsqlConnection.ClearAllPools();
+        ClearAllPools();
         _database?.Dispose();
         try
         {
@@ -124,6 +127,26 @@ public sealed class StartOverTests : IDisposable
         {
             // Best effort, a locked file must not fail the test.
         }
+    }
+
+    private static string ExpectedProblem(DatabaseLoss loss)
+    {
+        if (loss == DatabaseLoss.Dropped)
+        {
+            return "the database does not exist";
+        }
+
+        // Dropping every table on MySQL and MariaDB drops the history table as well.
+        return TestDatabaseEnvironment.Provider == TestDbProvider.Postgres
+            ? "the migration history of the database is empty"
+            : "the database has no migration history";
+    }
+
+    private static void ClearAllPools()
+    {
+        SqliteConnection.ClearAllPools();
+        NpgsqlConnection.ClearAllPools();
+        MySqlConnection.ClearAllPools();
     }
 
     private static void SetWizardCompleted(IApplicationPaths paths, bool completed)
@@ -148,26 +171,54 @@ public sealed class StartOverTests : IDisposable
 
     private async Task<IApplicationPaths> SetUpServerAndLoseDatabaseAsync(DatabaseLoss loss)
     {
-        _database = PostgresTestBackend.Instance.CreateEmpty();
+        _database = TestDatabaseEnvironment.Backend.CreateEmpty();
         var configurationDirectory = Path.Combine(_root, "config");
         Directory.CreateDirectory(configurationDirectory);
         JellyfinApplicationFactory.WriteDatabaseConfiguration(configurationDirectory, _database);
 
         var paths = await SetUpServerAsync();
-        NpgsqlConnection.ClearAllPools();
+        ClearAllPools();
         if (loss == DatabaseLoss.Dropped)
         {
             _database.Dispose();
         }
-        else
+        else if (TestDatabaseEnvironment.Provider == TestDbProvider.Postgres)
         {
-            await using var connection = new NpgsqlConnection(GetConnectionString());
+            await using var connection = new NpgsqlConnection(GetPostgresConnectionString());
             await connection.OpenAsync(TestContext.Current.CancellationToken);
             await using var command = new NpgsqlCommand("DROP SCHEMA public CASCADE; CREATE SCHEMA public;", connection);
             await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
         }
+        else
+        {
+            await DropAllMySqlTablesAsync();
+        }
 
         return paths;
+    }
+
+    private async Task DropAllMySqlTablesAsync()
+    {
+        await using var connection = new MySqlConnection(GetMySqlConnectionString());
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+
+        var tables = new List<string>();
+        await using (var query = new MySqlCommand("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE'", connection))
+        await using (var reader = await query.ExecuteReaderAsync(TestContext.Current.CancellationToken))
+        {
+            while (await reader.ReadAsync(TestContext.Current.CancellationToken))
+            {
+                tables.Add(reader.GetString(0));
+            }
+        }
+
+        await using var disableChecks = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 0", connection);
+        await disableChecks.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
+
+#pragma warning disable CA2100 // The names are read from the server and quoted.
+        await using var drop = new MySqlCommand("DROP TABLE " + string.Join(", ", tables.Select(table => "`" + table.Replace("`", "``", StringComparison.Ordinal) + "`")), connection);
+#pragma warning restore CA2100
+        await drop.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
     }
 
     private async Task<IApplicationPaths> SetUpServerAsync()
@@ -196,7 +247,7 @@ public sealed class StartOverTests : IDisposable
         return paths;
     }
 
-    private string GetConnectionString()
+    private string GetPostgresConnectionString()
     {
         var builder = new NpgsqlConnectionStringBuilder(RelationalOptionsExtension.Extract(_database!.Options).ConnectionString)
         {
@@ -205,11 +256,42 @@ public sealed class StartOverTests : IDisposable
         return builder.ConnectionString;
     }
 
+    private string GetMySqlConnectionString()
+    {
+        var builder = new MySqlConnectionStringBuilder(RelationalOptionsExtension.Extract(_database!.Options).ConnectionString!)
+        {
+            Pooling = false
+        };
+        return builder.ConnectionString;
+    }
+
     private async Task<long?> CountTablesAsync()
+    {
+        return TestDatabaseEnvironment.Provider == TestDbProvider.Postgres
+            ? await CountPostgresTablesAsync()
+            : await CountMySqlTablesAsync();
+    }
+
+    private async Task<long?> CountMySqlTablesAsync()
     {
         try
         {
-            await using var connection = new NpgsqlConnection(GetConnectionString());
+            await using var connection = new MySqlConnection(GetMySqlConnectionString());
+            await connection.OpenAsync(TestContext.Current.CancellationToken);
+            await using var command = new MySqlCommand("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE()", connection);
+            return Convert.ToInt64(await command.ExecuteScalarAsync(TestContext.Current.CancellationToken), CultureInfo.InvariantCulture);
+        }
+        catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.UnknownDatabase)
+        {
+            return null;
+        }
+    }
+
+    private async Task<long?> CountPostgresTablesAsync()
+    {
+        try
+        {
+            await using var connection = new NpgsqlConnection(GetPostgresConnectionString());
             await connection.OpenAsync(TestContext.Current.CancellationToken);
             await using var command = new NpgsqlCommand("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public'", connection);
             return (long?)await command.ExecuteScalarAsync(TestContext.Current.CancellationToken);

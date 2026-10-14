@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.DbConfiguration;
+using Jellyfin.Database.Providers.MySql;
 using Jellyfin.Database.Providers.Postgres;
 using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Database.Testing;
@@ -16,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
+using MySqlConnector;
 using Npgsql;
 using Xunit;
 
@@ -32,13 +34,7 @@ public sealed class JellyfinApplicationFactoryTests
         using var factory = new JellyfinApplicationFactory();
         using var client = factory.CreateClient();
 
-        var expected = TestDatabaseEnvironment.Provider switch
-        {
-            TestDbProvider.Sqlite => typeof(SqliteDatabaseProvider),
-            TestDbProvider.Postgres => typeof(PostgresDatabaseProvider),
-            var other => throw new NotSupportedException($"{other} is not covered.")
-        };
-        Assert.IsType(expected, factory.Services.GetRequiredService<IJellyfinDatabaseProvider>());
+        Assert.IsType(ProviderTypeOfTheRun(), factory.Services.GetRequiredService<IJellyfinDatabaseProvider>());
         BackendLiveness.VerifyProvider(Environment.GetEnvironmentVariable(BackendLiveness.ExpectedProviderVariable), TestDatabaseEnvironment.Provider);
 
         var dbContextFactory = factory.Services.GetRequiredService<IDbContextFactory<JellyfinDbContext>>();
@@ -59,8 +55,8 @@ public sealed class JellyfinApplicationFactoryTests
         Assert.Null(configuration.CustomProviderOptions);
     }
 
-    [ProviderFact(TestDbProvider.Postgres)]
-    public void CreateClient_Postgres_StartsEveryFactoryOnADatabaseOfItsOwn()
+    [ProviderFact(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    public void CreateClient_DatabaseServer_StartsEveryFactoryOnADatabaseOfItsOwn()
     {
         using var first = new JellyfinApplicationFactory();
         using var second = new JellyfinApplicationFactory();
@@ -70,13 +66,13 @@ public sealed class JellyfinApplicationFactoryTests
         var firstConfiguration = ReadDatabaseConfiguration(first);
         var secondConfiguration = ReadDatabaseConfiguration(second);
 
-        Assert.Equal("Jellyfin-PostgreSQL", firstConfiguration.DatabaseType);
-        Assert.Equal("Jellyfin-PostgreSQL", secondConfiguration.DatabaseType);
+        Assert.Equal(DatabaseTypeOfTheRun(), firstConfiguration.DatabaseType);
+        Assert.Equal(DatabaseTypeOfTheRun(), secondConfiguration.DatabaseType);
         Assert.NotEqual(DatabaseName(firstConfiguration), DatabaseName(secondConfiguration));
     }
 
-    [ProviderFact(TestDbProvider.Postgres)]
-    public void Dispose_Postgres_DropsTheDatabase()
+    [ProviderFact(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    public void Dispose_DatabaseServer_DropsTheDatabase()
     {
         string connectionString;
         using (var factory = new JellyfinApplicationFactory())
@@ -89,8 +85,8 @@ public sealed class JellyfinApplicationFactoryTests
         Assert.False(CanConnect(connectionString));
     }
 
-    [ProviderFact(TestDbProvider.Postgres)]
-    public async Task Services_Postgres_AreBuiltByTheMigrationsOfTheServer()
+    [ProviderFact(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    public async Task Services_DatabaseServer_AreBuiltByTheMigrationsOfTheServer()
     {
         using var factory = new JellyfinApplicationFactory();
         using var client = factory.CreateClient();
@@ -102,13 +98,13 @@ public sealed class JellyfinApplicationFactoryTests
         var applied = (await context.Database.GetAppliedMigrationsAsync(TestContext.Current.CancellationToken)).ToHashSet(StringComparer.Ordinal);
         var migrations = context.GetService<IMigrationsAssembly>();
 
-        Assert.Same(typeof(PostgresDatabaseProvider).Assembly, migrations.Assembly);
+        Assert.Same(ProviderTypeOfTheRun().Assembly, migrations.Assembly);
         Assert.NotEmpty(migrations.Migrations);
         Assert.All(migrations.Migrations.Keys, id => Assert.Contains(id, applied));
     }
 
-    [ProviderFact(TestDbProvider.Postgres)]
-    public void Dispose_Postgres_RemovesTheDirectoryItCreated()
+    [ProviderFact(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    public void Dispose_DatabaseServer_RemovesTheDirectoryItCreated()
     {
         string root;
         string configurationPath;
@@ -125,8 +121,8 @@ public sealed class JellyfinApplicationFactoryTests
         Assert.False(Directory.Exists(root));
     }
 
-    [ProviderFact(TestDbProvider.Postgres)]
-    public void Dispose_Postgres_KeepsTheDirectoryItDidNotCreate()
+    [ProviderFact(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    public void Dispose_DatabaseServer_KeepsTheDirectoryItDidNotCreate()
     {
         var root = CreateRoot();
         var sentinel = Path.Combine(root, "keep.txt");
@@ -150,9 +146,9 @@ public sealed class JellyfinApplicationFactoryTests
         }
     }
 
-    [ProviderFact(TestDbProvider.Postgres)]
+    [ProviderFact(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb)]
     [UnsupportedOSPlatform("windows")]
-    public void CreateClient_Postgres_KeepsTheDatabaseConfigurationPrivate()
+    public void CreateClient_DatabaseServer_KeepsTheDatabaseConfigurationPrivate()
     {
         Assert.SkipWhen(OperatingSystem.IsWindows(), "Unix-only test");
 
@@ -212,12 +208,58 @@ public sealed class JellyfinApplicationFactoryTests
         return (DatabaseConfigurationOptions)new MyXmlSerializer().DeserializeFromFile(typeof(DatabaseConfigurationOptions), path)!;
     }
 
+    private static Type ProviderTypeOfTheRun()
+    {
+        return TestDatabaseEnvironment.Provider switch
+        {
+            TestDbProvider.Sqlite => typeof(SqliteDatabaseProvider),
+            TestDbProvider.Postgres => typeof(PostgresDatabaseProvider),
+            TestDbProvider.MySql or TestDbProvider.MariaDb => typeof(MySqlDatabaseProvider),
+            var other => throw new NotSupportedException($"{other} is not covered.")
+        };
+    }
+
+    private static string DatabaseTypeOfTheRun()
+    {
+        return TestDatabaseEnvironment.Provider switch
+        {
+            TestDbProvider.Postgres => "Jellyfin-PostgreSQL",
+            TestDbProvider.MySql or TestDbProvider.MariaDb => "Jellyfin-MySQL",
+            var other => throw new NotSupportedException($"{other} is not covered.")
+        };
+    }
+
     private static string? DatabaseName(DatabaseConfigurationOptions configuration)
     {
-        return new NpgsqlConnectionStringBuilder(configuration.CustomProviderOptions!.ConnectionString).Database;
+        var connectionString = configuration.CustomProviderOptions!.ConnectionString;
+        return TestDatabaseEnvironment.Provider == TestDbProvider.Postgres
+            ? new NpgsqlConnectionStringBuilder(connectionString).Database
+            : new MySqlConnectionStringBuilder(connectionString).Database;
     }
 
     private static bool CanConnect(string connectionString)
+    {
+        return TestDatabaseEnvironment.Provider == TestDbProvider.Postgres
+            ? CanConnectToPostgres(connectionString)
+            : CanConnectToMySql(connectionString);
+    }
+
+    private static bool CanConnectToMySql(string connectionString)
+    {
+        var builder = new MySqlConnectionStringBuilder(connectionString) { Pooling = false };
+        try
+        {
+            using var connection = new MySqlConnection(builder.ConnectionString);
+            connection.Open();
+            return true;
+        }
+        catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.UnknownDatabase)
+        {
+            return false;
+        }
+    }
+
+    private static bool CanConnectToPostgres(string connectionString)
     {
         var builder = new NpgsqlConnectionStringBuilder(connectionString) { Pooling = false };
         try
