@@ -123,7 +123,7 @@ public sealed partial class BaseItemRepository
 
         if (collectionType is CollectionType.tvshows)
         {
-            return GetLatestTvShowItems(context, baseQuery, filter, limit);
+            return GetLatestTvShowItems(context, baseQuery, filter, limit).Select(r => r.Item).ToArray();
         }
 
         if (collectionType is CollectionType.movies)
@@ -137,11 +137,13 @@ public sealed partial class BaseItemRepository
             var latestMovies = GetLatestMovieItems(context, moviesQuery, filter, limit);
             var latestShows = GetLatestTvShowItems(context, baseQuery, filter, limit);
 
-            return latestMovies.Concat(latestShows)
-                .OrderByDescending(dto => dto.DateCreated)
-                .ThenByDescending(dto => dto.Id)
+            return [.. latestMovies
+                .Select(dto => (Item: dto, SortDate: dto.DateCreated))
+                .Concat(latestShows.Select(s => (s.Item, SortDate: s.MaxDate)))
+                .OrderByDescending(x => x.SortDate)
+                .ThenByDescending(x => x.Item.Id)
                 .Take(limit ?? int.MaxValue)
-                .ToList();
+                .Select(x => x.Item)];
         }
 
         var musicAlbumTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicAlbum]!;
@@ -284,7 +286,7 @@ public sealed partial class BaseItemRepository
     /// <param name="filter">The query filter options.</param>
     /// <param name="limit">Maximum number of items to return.</param>
     /// <returns>A list of BaseItemDto representing the latest TV content.</returns>
-    private IReadOnlyList<BaseItemDto> GetLatestTvShowItems(JellyfinDbContext context, IQueryable<BaseItemEntity> baseQuery, InternalItemsQuery filter, int? limit)
+    private IReadOnlyList<(BaseItemDto Item, DateTime MaxDate)> GetLatestTvShowItems(JellyfinDbContext context, IQueryable<BaseItemEntity> baseQuery, InternalItemsQuery filter, int? limit)
     {
         // Episodes added within this window are considered "recently added together"
         const double RecentAdditionWindowHours = 24.0;
@@ -548,10 +550,9 @@ public sealed partial class BaseItemRepository
             .ThenByDescending(r => r.Entity.Id);
         }
 
-        return finalResults
-            .Select(r => DeserializeBaseItem(r.Entity, filter.SkipDeserialization))
-            .Where(dto => dto is not null)
-            .ToArray()!;
+        return [.. finalResults
+            .Select(r => (Item: DeserializeBaseItem(r.Entity, filter.SkipDeserialization)!, r.MaxDate))
+            .Where(r => r.Item is not null)];
     }
 
     /// <inheritdoc/>
