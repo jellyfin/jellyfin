@@ -60,7 +60,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 return;
             }
 
-            using (var connection = new SqliteConnection($"Filename={dbFilePath}"))
+            using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = dbFilePath, Pooling = false }.ToString()))
             {
                 connection.Open();
 

@@ -67,7 +67,7 @@ public class MigrateUserDb : IMigrationRoutine
 
         _logger.LogInformation("Migrating the user database may take a while, do not stop Jellyfin.");
 
-        using (var connection = new SqliteConnection($"Filename={userDbPath}"))
+        using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = userDbPath, Pooling = false }.ToString()))
         {
             connection.Open();
             var tableQuery = connection.Query("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='LocalUsersv2';");
@@ -89,7 +89,8 @@ public class MigrateUserDb : IMigrationRoutine
 
             foreach (var entry in queryResult)
             {
-                UserMockup? mockup = JsonSerializer.Deserialize<UserMockup>(entry.GetStream(2), JsonDefaults.Options);
+                using var stream = entry.GetStream(2);
+                UserMockup? mockup = JsonSerializer.Deserialize<UserMockup>(stream, JsonDefaults.Options);
                 if (mockup is null)
                 {
                     continue;

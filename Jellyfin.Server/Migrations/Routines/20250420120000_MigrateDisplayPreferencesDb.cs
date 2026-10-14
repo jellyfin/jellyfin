@@ -86,7 +86,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 return;
             }
 
-            using (var connection = new SqliteConnection($"Filename={dbFilePath}"))
+            using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = dbFilePath, Pooling = false }.ToString()))
             {
                 connection.Open();
 
@@ -105,7 +105,8 @@ namespace Jellyfin.Server.Migrations.Routines
                 var results = connection.Query("SELECT * FROM userdisplaypreferences");
                 foreach (var result in results)
                 {
-                    var dto = JsonSerializer.Deserialize<DisplayPreferencesDto>(result.GetStream(3), _jsonOptions);
+                    using var stream = result.GetStream(3);
+                    var dto = JsonSerializer.Deserialize<DisplayPreferencesDto>(stream, _jsonOptions);
                     if (dto is null)
                     {
                         continue;

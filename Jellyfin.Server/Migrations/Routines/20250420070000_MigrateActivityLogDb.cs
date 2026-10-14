@@ -62,7 +62,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 return;
             }
 
-            using (var connection = new SqliteConnection($"Filename={activityLogPath}"))
+            using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = activityLogPath, Pooling = false }.ToString()))
             {
                 connection.Open();
                 var tableQuery = connection.Query("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='ActivityLog';");
@@ -75,7 +75,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     }
                 }
 
-                using var userDbConnection = new SqliteConnection($"Filename={Path.Combine(dataPath, "users.db")}");
+                using var userDbConnection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = Path.Combine(dataPath, "users.db"), Pooling = false }.ToString());
                 userDbConnection.Open();
                 _logger.LogWarning("Migrating the activity database may take a while, do not stop Jellyfin.");
                 using var dbContext = _provider.CreateDbContext();
