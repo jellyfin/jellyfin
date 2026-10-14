@@ -104,17 +104,7 @@ namespace Emby.Server.Implementations.Library
 
             if (!string.IsNullOrEmpty(cacheKey))
             {
-                var newList = new List<MediaStream>();
-                newList.AddRange(mediaStreams.Where(i => i.Type == MediaStreamType.Video).Take(1));
-                newList.AddRange(mediaStreams.Where(i => i.Type == MediaStreamType.Audio).Take(1));
-
-                foreach (var stream in newList)
-                {
-                    stream.Index = -1;
-                    stream.Language = null;
-                }
-
-                mediaStreams = newList;
+                mediaStreams = LiveStreamMediaStreamFilter.FilterProbedStreams(mediaStreams).ToList();
             }
 
             _logger.LogInformation("Live tv media info probe took {0} seconds", (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture));

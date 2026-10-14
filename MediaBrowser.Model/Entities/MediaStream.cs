@@ -761,6 +761,14 @@ namespace MediaBrowser.Model.Entities
                    || string.Equals(codec, "sup", StringComparison.OrdinalIgnoreCase);
         }
 
+        public static bool IsTeletextFormat(string format)
+        {
+            string codec = format ?? string.Empty;
+
+            return string.Equals(codec, "DVBTXT", StringComparison.OrdinalIgnoreCase)
+                   || codec.Contains("teletext", StringComparison.OrdinalIgnoreCase);
+        }
+
         public static bool IsVobSubFormat(string format)
         {
             string codec = format ?? string.Empty;
