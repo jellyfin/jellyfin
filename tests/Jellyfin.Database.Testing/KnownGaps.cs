@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using MySqlConnector;
 using Xunit.Sdk;
 
 namespace Jellyfin.Database.Testing;
@@ -22,12 +21,6 @@ public static class KnownGaps
         "PG-NUL-PARAMETER",
         "PostgreSQL rejects a NUL character in any string parameter",
         ex => PostgresErrors.HasSqlState(ex, "22021"));
-
-    public static readonly KnownGapDefinition OuterReferenceInDerivedTable = new(
-        TestDbProvider.MariaDb,
-        "MARIADB-OUTER-REF-DERIVED",
-        "MariaDB resolves no outer column inside a derived table",
-        ex => MySqlErrors.HasErrorCode(ex, MySqlErrorCode.BadFieldError));
 
     public static readonly KnownGapDefinition SortNameRangeLowersNonAsciiOnMySql = new(
         TestDbProvider.MySql,

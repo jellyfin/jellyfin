@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Jellyfin.Database.Testing;
-using MySqlConnector;
 using Npgsql;
 using Xunit;
 using Xunit.Sdk;
@@ -43,17 +42,6 @@ public class KnownGapsTests
 
         Assert.Throws<PostgresException>(
             () => KnownGap.On(gap, () => throw CreatePostgresException("42883", "function lower(integer) does not exist")));
-    }
-
-    [Theory]
-    [InlineData(MySqlErrorCode.BadFieldError, true)]
-    [InlineData(MySqlErrorCode.NoSuchTable, false)]
-    [InlineData(MySqlErrorCode.ParseError, false)]
-    public void OuterReferenceInDerivedTable_IsDecidedByTheErrorCode(MySqlErrorCode code, bool expected)
-    {
-        var exception = new InvalidOperationException("query failed", CreateMySqlException(code));
-
-        Assert.Equal(expected, KnownGaps.OuterReferenceInDerivedTable.Matches(exception));
     }
 
     [Theory]
@@ -103,22 +91,6 @@ public class KnownGapsTests
             Assert.InRange(gap.Id.Length, 1, 32);
         });
         Assert.Equal(gaps.Count, gaps.Select(g => g.Id).Distinct(StringComparer.Ordinal).Count());
-    }
-
-    private static MySqlException CreateMySqlException(MySqlErrorCode code)
-    {
-        var constructor = typeof(MySqlException)
-            .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-            .Where(c => c.GetParameters().Any(p => p.ParameterType == typeof(MySqlErrorCode)))
-            .OrderBy(c => c.GetParameters().Length)
-            .First();
-        var arguments = constructor.GetParameters()
-            .Select(p => p.ParameterType == typeof(MySqlErrorCode) ? (object)code
-                : p.ParameterType == typeof(string) ? "failure"
-                : p.ParameterType.IsValueType ? Activator.CreateInstance(p.ParameterType)
-                : null)
-            .ToArray();
-        return (MySqlException)constructor.Invoke(arguments);
     }
 
     private static PostgresException CreatePostgresException(string sqlState, string messageText)

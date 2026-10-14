@@ -50,7 +50,7 @@ public sealed class BaseItemRepositoryNullOrderTests : JellyfinDbTestFixture
     [Fact]
     public void GetItemList_DatePlayed_OrdersMissingValueLowest()
     {
-        KnownGap.On(KnownGaps.OuterReferenceInDerivedTable, () => AssertMissingValueIsLowest(ItemSortBy.DatePlayed));
+        AssertMissingValueIsLowest(ItemSortBy.DatePlayed);
     }
 
     private void AssertMissingValueIsLowest(ItemSortBy sortBy)

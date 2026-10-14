@@ -128,6 +128,11 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
                 string.IsNullOrWhiteSpace(configuredServer) ? SessionSettingsInterceptor.Instance : SessionSettingsInterceptor.ForConfiguredServer,
                 CollectionParameterInterceptor.Instance);
 
+        if (server.Flavor == ServerFlavor.MariaDb)
+        {
+            options.AddInterceptors(UnionAggregateInterceptor.Instance);
+        }
+
         var enableSensitiveDataLogging = GetOption(providerOptions, "EnableSensitiveDataLogging", e => e.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase));
         if (enableSensitiveDataLogging)
         {
