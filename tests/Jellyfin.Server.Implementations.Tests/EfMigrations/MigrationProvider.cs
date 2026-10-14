@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Providers.MySql;
 using Jellyfin.Database.Providers.Postgres;
 using Jellyfin.Server.Implementations.Tests.Postgres;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -33,7 +34,16 @@ internal sealed record MigrationProvider(
     public static IReadOnlyList<MigrationProvider> All { get; } =
     [
         new("SQLite", OfflineContexts.Sqlite),
-        new("PostgreSQL", OfflineContexts.Postgres, PostgresMigrationBaseline.MigrationId, PostgresMigrationBaseline.CoversThroughSqliteMigration)
+        new("PostgreSQL", OfflineContexts.Postgres, PostgresMigrationBaseline.MigrationId, PostgresMigrationBaseline.CoversThroughSqliteMigration),
+        // MySQL and MariaDB share one set of migrations, but the model snapshot of a migration depends on the server version,
+        // so the model is checked against the oldest supported version of each.
+        new("MySQL 8.4", () => OfflineContexts.MySql("8.4-mysql"), MySqlMigrationBaseline.MigrationId, MySqlMigrationBaseline.CoversThroughSqliteMigration),
+        new("MariaDB 11.4.7", () => OfflineContexts.MySql("11.4.7-mariadb"), MySqlMigrationBaseline.MigrationId, MySqlMigrationBaseline.CoversThroughSqliteMigration),
+        // The snapshot is built for the oldest supported version, but the provider has no newest supported version and builds
+        // its model for the server it finds, so the model is checked against newer releases of each as well.
+        new("MySQL 9.7", () => OfflineContexts.MySql("9.7.0-mysql"), MySqlMigrationBaseline.MigrationId, MySqlMigrationBaseline.CoversThroughSqliteMigration),
+        new("MariaDB 11.8", () => OfflineContexts.MySql("11.8.0-mariadb"), MySqlMigrationBaseline.MigrationId, MySqlMigrationBaseline.CoversThroughSqliteMigration),
+        new("MariaDB 12.3", () => OfflineContexts.MySql("12.3.0-mariadb"), MySqlMigrationBaseline.MigrationId, MySqlMigrationBaseline.CoversThroughSqliteMigration)
     ];
 
     /// <summary>
