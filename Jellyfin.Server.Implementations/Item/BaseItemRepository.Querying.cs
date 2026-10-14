@@ -123,7 +123,9 @@ public sealed partial class BaseItemRepository
 
         if (collectionType is CollectionType.tvshows)
         {
-            return GetLatestTvShowItems(context, baseQuery, filter, limit);
+            return GetLatestTvShowItems(context, baseQuery, filter, limit)
+                .Select(t => t.Dto)
+                .ToList();
         }
 
         if (collectionType is CollectionType.movies)
@@ -134,13 +136,20 @@ public sealed partial class BaseItemRepository
         if (collectionType is CollectionType.unknown)
         {
             var moviesQuery = baseQuery.Where(e => e.SeriesName == null);
-            var latestMovies = GetLatestMovieItems(context, moviesQuery, filter, limit);
-            var latestShows = GetLatestTvShowItems(context, baseQuery, filter, limit);
+            // Movies use their own DateCreated as the sort key.
+            // TV shows use MaxDate (newest episode date) rather than the container's DateCreated,
+            // so that a long-running series with new episodes today sorts ahead of a single movie
+            // added last week — not behind it at the series' original creation date.
+            var latestMovies = GetLatestMovieItems(context, moviesQuery, filter, limit)
+                .Select(dto => (dto, dto.DateCreated));
+            var latestShows = GetLatestTvShowItems(context, baseQuery, filter, limit)
+                .Select(t => (t.Dto, t.SortDate));
 
             return latestMovies.Concat(latestShows)
-                .OrderByDescending(dto => dto.DateCreated)
-                .ThenByDescending(dto => dto.Id)
+                .OrderByDescending(t => t.Item2)
+                .ThenByDescending(t => t.Item1.Id)
                 .Take(limit ?? int.MaxValue)
+                .Select(t => t.Item1)
                 .ToList();
         }
 
@@ -279,7 +288,7 @@ public sealed partial class BaseItemRepository
     /// <param name="filter">The query filter options.</param>
     /// <param name="limit">Maximum number of items to return.</param>
     /// <returns>A list of BaseItemDto representing the latest TV content.</returns>
-    private IReadOnlyList<BaseItemDto> GetLatestTvShowItems(JellyfinDbContext context, IQueryable<BaseItemEntity> baseQuery, InternalItemsQuery filter, int? limit)
+    private IReadOnlyList<(BaseItemDto Dto, DateTime SortDate)> GetLatestTvShowItems(JellyfinDbContext context, IQueryable<BaseItemEntity> baseQuery, InternalItemsQuery filter, int? limit)
     {
         // Episodes added within this window are considered "recently added together"
         const double RecentAdditionWindowHours = 24.0;
@@ -534,9 +543,10 @@ public sealed partial class BaseItemRepository
         }
 
         return finalResults
-            .Select(r => DeserializeBaseItem(r.Entity, filter.SkipDeserialization))
-            .Where(dto => dto is not null)
-            .ToArray()!;
+            .Select(r => (Dto: DeserializeBaseItem(r.Entity, filter.SkipDeserialization), r.MaxDate))
+            .Where(t => t.Dto is not null)
+            .Select(t => (t.Dto!, SortDate: t.MaxDate))
+            .ToArray();
     }
 
     /// <inheritdoc/>
