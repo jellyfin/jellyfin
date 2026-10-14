@@ -354,7 +354,10 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
         {
             try
             {
-                using var connection = new MySqlConnection(connectionString);
+                // The database may not exist yet, so the version is asked of the server without selecting it. The connection is
+                // used once, so it is not pooled, which would keep it open for a pool that nothing else uses.
+                var builder = new MySqlConnectionStringBuilder(connectionString) { Database = string.Empty, Pooling = false };
+                using var connection = new MySqlConnection(builder.ConnectionString);
                 connection.Open();
                 server = ReadDetected(connection.ServerVersion);
             }

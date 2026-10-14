@@ -1,7 +1,11 @@
 using System;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.DbConfiguration;
 using Jellyfin.Database.Providers.MySql;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Tests.Postgres;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -221,6 +225,55 @@ public class MySqlDatabaseProviderInitialiseTests
                 CreateConfiguration("Server=127.0.0.1;Port=1;Database=jellyfin;Connection Timeout=2")));
 
         Assert.Contains(ServerVersionOption, ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Initialise_WithoutServerVersionOptionAndAServerThatDoesNotAnswer_ThrowsAndExplainsTheOption()
+    {
+        // A server that accepts the connection and then says nothing makes the probe time out, which must not escape as it is.
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        try
+        {
+            var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+            var accepted = listener.AcceptTcpClientAsync(cancellationToken).AsTask();
+            var provider = new MySqlDatabaseProvider(new CollectingLogger<MySqlDatabaseProvider>());
+
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => provider.Initialise(
+                    new DbContextOptionsBuilder<JellyfinDbContext>(),
+                    CreateConfiguration($"Server=127.0.0.1;Port={port};Database=jellyfin;Connection Timeout=1")));
+
+            Assert.Contains(ServerVersionOption, ex.Message, StringComparison.Ordinal);
+            Assert.IsType<MySqlException>(ex.InnerException);
+            using var client = await accepted;
+        }
+        finally
+        {
+            listener.Stop();
+        }
+    }
+
+    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    public void Initialise_WithoutServerVersionOptionAndADatabaseThatDoesNotExist_DetectsTheServer()
+    {
+        using var database = TestDatabaseEnvironment.Backend.CreateEmpty();
+        var missing = new MySqlConnectionStringBuilder(RelationalOptionsExtension.Extract(database.Options).ConnectionString!)
+        {
+            Database = "jellyfin_missing_" + Guid.NewGuid().ToString("N")
+        };
+        var options = new DbContextOptionsBuilder<JellyfinDbContext>();
+
+        new MySqlDatabaseProvider(new CollectingLogger<MySqlDatabaseProvider>())
+            .Initialise(options, CreateConfiguration(missing.ConnectionString));
+
+#pragma warning disable EF1001 // Internal EF Core API usage: The options extension is the only place that holds the server the provider was set up for.
+        var serverVersion = options.Options.FindExtension<MySqlOptionsExtension>()?.ServerVersion;
+#pragma warning restore EF1001
+
+        Assert.NotNull(serverVersion);
+        Assert.Equal(TestDatabaseEnvironment.Provider == TestDbProvider.MariaDb ? ServerType.MariaDb : ServerType.MySql, serverVersion.Type);
     }
 
     [Fact]
