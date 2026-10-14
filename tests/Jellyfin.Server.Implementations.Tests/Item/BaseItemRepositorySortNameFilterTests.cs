@@ -61,6 +61,8 @@ public sealed class BaseItemRepositorySortNameFilterTests : JellyfinDbTestFixtur
     /// The term is lower-cased as a whole, but only ASCII letters of the sort name are, so a non-ASCII term finds the
     /// lower-case sort names and no other.
     /// </summary>
+    /// <param name="prefix">The term to filter by.</param>
+    /// <param name="expected">The sort names that the term finds.</param>
     [Theory]
     [InlineData("É", new[] { "émile" })]
     [InlineData("é", new[] { "émile" })]

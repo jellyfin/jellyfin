@@ -27,6 +27,7 @@ public sealed class PostgresMigrationAtomicityTests : IDisposable
     /// Pins how the provider configures EF Core, which runs every migration in a transaction of its own, using a test
     /// migration that fails after it created a table.
     /// </summary>
+    /// <returns>A task that completes when the test has run.</returns>
     [ProviderFact(TestDbProvider.Postgres)]
     public async Task Migrate_FailingMigration_RollsBackAllItsStatements()
     {
@@ -42,6 +43,7 @@ public sealed class PostgresMigrationAtomicityTests : IDisposable
     /// Pins how the provider configures EF Core, which commits a migration before it starts the next one, using test
     /// migrations of which the second fails.
     /// </summary>
+    /// <returns>A task that completes when the test has run.</returns>
     [ProviderFact(TestDbProvider.Postgres)]
     public async Task Migrate_FailingMigration_KeepsTheMigrationsBeforeIt()
     {
@@ -58,6 +60,7 @@ public sealed class PostgresMigrationAtomicityTests : IDisposable
     /// Pins how the provider configures EF Core, which throws for an operation that cannot run in a transaction
     /// (<c>NonTransactionalMigrationOperationWarning</c>), using a test migration with such an operation.
     /// </summary>
+    /// <returns>A task that completes when the test has run.</returns>
     [ProviderFact(TestDbProvider.Postgres)]
     public async Task Migrate_MigrationOutsideATransaction_IsRefused()
     {
@@ -74,6 +77,7 @@ public sealed class PostgresMigrationAtomicityTests : IDisposable
     /// Runs the real baseline and makes its last statements fail, after it created every table. A function named like
     /// the one that the baseline creates for the <c>min</c> aggregate is in the way.
     /// </summary>
+    /// <returns>A task that completes when the test has run.</returns>
     [ProviderFact(TestDbProvider.Postgres)]
     public async Task Migrate_BaselineFailingAfterCreatingTheTables_LeavesNoTableAndNoHistoryRow()
     {
