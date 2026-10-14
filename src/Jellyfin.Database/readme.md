@@ -40,6 +40,19 @@ uncommitted migration, for example because a rebase brought in a newer one,
 delete its files from every provider, restore their snapshots to the commit
 before it, and run the command again with a new name.
 
+The providers and their migrations:
+
+| Provider | Project | Servers | Baseline migration |
+| --- | --- | --- | --- |
+| SQLite | `Jellyfin.Database.Providers.Sqlite` | SQLite | none, it is the reference whose ids the others reuse |
+| PostgreSQL | `Jellyfin.Database.Providers.Postgres` | PostgreSQL | `20200101000000_InitialCreate`, with hand-written parts |
+| MySQL and MariaDB | `Jellyfin.Database.Providers.MySql` | MySQL 8.4 and MariaDB 11.4.7 or later | `20200101000000_InitialCreate`, generated |
+
+MySQL and MariaDB share one set of migrations. The command generates it for a
+fixed server version (MySQL 8.4) without connecting to a server, so the files
+come out the same wherever they are generated. The migrations are applied to
+both servers, so test a change on both.
+
 ## Review every generated migration
 
 A generated migration is a starting point. Read each one before committing it,
@@ -51,7 +64,7 @@ mean something different or be impossible on another engine.
 | Change | What to do |
 | --- | --- |
 | A query written in LINQ | Nothing. |
-| A new column, table or index | Run the command. Review both generated migrations and commit them with the change. |
+| A new column, table or index | Run the command. Review every generated migration and commit them with the change. |
 | A rename or a drop | EF scaffolds a drop plus an add, which loses the data. Edit the migrations by hand (`RenameColumn`, `RenameTable`, `RenameIndex`). |
 | A change of column type | Check the generated SQL. PostgreSQL often needs a `USING` clause for the conversion, which EF does not write. |
 | Data changes in SQL | Write them by hand in each provider, in the SQL of that provider. |
