@@ -42,7 +42,6 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
 
     private static readonly TimeSpan _maintenanceCommandTimeout = TimeSpan.FromHours(1);
     private readonly ILogger<MySqlDatabaseProvider> _logger;
-    private ServerFlavor _flavor = ServerFlavor.MySql;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MySqlDatabaseProvider"/> class.
@@ -107,7 +106,6 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
         var connectionString = connectionStringBuilder.ConnectionString;
         var configuredServer = GetOption(providerOptions, "server-version", e => e);
         var server = ResolveServer(configuredServer, connectionString);
-        _flavor = server.Flavor;
 
         var loggable = new MySqlConnectionStringBuilder(connectionString) { Password = string.Empty };
         _logger.LogInformation(
@@ -156,9 +154,9 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
             .Properties<DateTime>()
             .HaveConversion<ClampedUtcDateTimeConverter>();
 
-        configurationBuilder.Conventions.Add(_ => new UnindexedTextConvention());
         configurationBuilder.Conventions.Add(_ => new IdentifierLengthConvention(MaxIdentifierLength));
         configurationBuilder.Conventions.Add(_ => new IndexPrefixLengthConvention());
+        configurationBuilder.Conventions.Add(_ => new UnindexedTextConvention());
         configurationBuilder.Conventions.Add(_ => new IndexFilterConvention());
     }
 
@@ -410,17 +408,13 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
 
     private async Task ResetIdentityCountersAsync(JellyfinDbContext dbContext, List<string> tables)
     {
-        // MySQL caches the counters it reports, which would hide that a table was used since the last read.
-        if (_flavor == ServerFlavor.MySql)
-        {
-            await dbContext.Database.ExecuteSqlRawAsync("SET SESSION information_schema_stats_expiry = 0").ConfigureAwait(false);
-        }
-
-        var used = await dbContext.Database
-            .SqlQueryRaw<string>("SELECT CAST(TABLE_NAME AS CHAR) AS `Value` FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND AUTO_INCREMENT > 1")
+        // The counter a table reports is cached by the server and can be stale after the rows were deleted, so the tables
+        // are chosen by whether they have a counter, not by how far it has run.
+        var withCounter = await dbContext.Database
+            .SqlQueryRaw<string>("SELECT DISTINCT CAST(TABLE_NAME AS CHAR) AS `Value` FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND EXTRA LIKE '%auto_increment%'")
             .ToListAsync()
             .ConfigureAwait(false);
-        foreach (var table in used.Where(u => tables.Contains(u, StringComparer.OrdinalIgnoreCase)))
+        foreach (var table in withCounter.Where(u => tables.Contains(u, StringComparer.OrdinalIgnoreCase)))
         {
             var alter = $"ALTER TABLE {QuoteIdentifier(table)} AUTO_INCREMENT = 1";
             await dbContext.Database.ExecuteSqlRawAsync(alter).ConfigureAwait(false);
