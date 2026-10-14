@@ -1,0 +1,211 @@
+#!/usr/bin/env dotnet
+// Generates the migration for a change of the database model, once for every database provider.
+//
+//   dev/add-migration <Name>                      Linux and macOS
+//   dotnet run dev/add-migration -- <Name>        every platform
+//
+// The SQLite migration is generated first, and the other providers reuse its id. Nothing connects to a database.
+// A provider that already has a migration of the name is skipped, so a run that stopped can be repeated.
+
+using System.Diagnostics;
+using System.Text.RegularExpressions;
+
+const string Command = "dev/add-migration";
+
+// The first row is the reference provider. A new provider is added as one more row with the name of its
+// project in src/Jellyfin.Database.
+(string Name, string Project)[] providers =
+[
+    ("SQLite", "Jellyfin.Database.Providers.Sqlite"),
+    ("PostgreSQL", "Jellyfin.Database.Providers.Postgres"),
+];
+
+if (args.Length == 0 || string.IsNullOrWhiteSpace(args[0]))
+{
+    return Fail($"A migration name is required. Usage: {Command} <Name>, for example {Command} AddUserNickname.");
+}
+
+if (args.Length > 1)
+{
+    return Fail($"Only one migration name is expected, but {args.Length} arguments were given. Usage: {Command} <Name>.");
+}
+
+var name = args[0];
+if (!Regex.IsMatch(name, "^[A-Za-z_][A-Za-z0-9_]*$"))
+{
+    return Fail($"'{name}' is not a valid migration name. Use letters, digits and underscores only, for example {Command} AddUserNickname.");
+}
+
+var root = FindRepositoryRoot();
+if (root is null)
+{
+    return Fail($"Could not find Jellyfin.sln above the script. Run {Command} from a checkout of the repository.");
+}
+
+if (Run(root, ["ef", "--version"], quiet: true) != 0)
+{
+    return Fail("The Entity Framework tool (dotnet-ef) is not available. Run 'dotnet tool restore' in the repository root and try again.");
+}
+
+// A provider that already has the migration is skipped, so a run completes a change that only some providers have.
+// The id is the name of the file without the extension: 14 digits, an underscore, then the name.
+var migrationIds = providers.ToDictionary(e => e.Name, e => MigrationIds(root, e.Project));
+var existing = providers.ToDictionary(e => e.Name, e => migrationIds[e.Name].FirstOrDefault(id => id[15..] == name));
+var referenceId = existing[providers[0].Name];
+var others = providers.Skip(1).Where(e => existing[e.Name] is not null).ToList();
+if (referenceId is null && others.Count > 0)
+{
+    return Fail($"{others[0].Name} already has {existing[others[0].Name]} but {providers[0].Name} does not. "
+        + $"Delete the {others[0].Name} migration files, restore its JellyfinDbModelSnapshot.cs to the commit before the migration, and run {Command} {name} again.");
+}
+
+// Only the newest migration of the reference provider can be resumed. An older name, such as one from before the
+// baseline of another provider, would skip the reference provider and never put the change into it.
+var referenceIds = migrationIds[providers[0].Name];
+if (referenceId is not null && referenceId != referenceIds[^1])
+{
+    return Fail($"{providers[0].Name} already has {referenceId}, which is not its latest migration; choose a new name. "
+        + $"If {referenceId} belongs to this change, delete its files from every provider, restore their JellyfinDbModelSnapshot.cs "
+        + $"to the commit before it, and run {Command} again with a new name.");
+}
+
+if (others.FirstOrDefault(e => existing[e.Name] != referenceId).Name is { } different)
+{
+    return Fail($"{different} has {existing[different]} but {providers[0].Name} has {referenceId}, so the ids differ. "
+        + $"If the {providers[0].Name} migration is correct, delete the {different} migration files, restore its JellyfinDbModelSnapshot.cs to the commit before the migration, and run {Command} {name} again. "
+        + $"Otherwise delete the migration from every provider, restore their snapshots to the commit before it, and run {Command} {name} again.");
+}
+
+if (providers.All(e => existing[e.Name] is not null))
+{
+    return Fail($"A migration named {name} already exists for every provider; choose a new name.");
+}
+
+if (referenceId is null && referenceIds.FirstOrDefault(id => id[15..].Equals(name, StringComparison.OrdinalIgnoreCase)) is { } similar)
+{
+    return Fail($"{providers[0].Name} already has {similar}, which differs from '{name}' only in case; choose a new name.");
+}
+
+var ids = new List<(string Provider, string Id)>();
+var generated = new List<string>();
+foreach (var (provider, project) in providers)
+{
+    if (existing[provider] is { } existingId)
+    {
+        Console.WriteLine($"{provider} already has {existingId}, skipped");
+        ids.Add((provider, existingId));
+        continue;
+    }
+
+    var migrations = Path.Combine(root, "src", "Jellyfin.Database", project, "Migrations");
+    var before = Snapshot(migrations);
+
+    Console.WriteLine($"Generating the {provider} migration {name}");
+    var projectDirectory = Path.Combine("src", "Jellyfin.Database", project);
+    var exitCode = Run(root, ["build", projectDirectory, "--verbosity", "quiet"], quiet: false);
+    if (exitCode == 0)
+    {
+        exitCode = Run(root, ["ef", "migrations", "add", name, "--project", projectDirectory, "--output-dir", "Migrations", "--no-build"], quiet: false);
+    }
+
+    var after = Snapshot(migrations);
+    var created = after.Keys.Where(file => !before.ContainsKey(file)).Order(StringComparer.Ordinal).ToList();
+    var changed = after.Keys.Where(file => before.TryGetValue(file, out var time) && time != after[file]).Order(StringComparer.Ordinal).ToList();
+
+    foreach (var file in created)
+    {
+        Console.WriteLine($"  created  {Path.GetRelativePath(root, file)}");
+    }
+
+    foreach (var file in changed)
+    {
+        Console.WriteLine($"  updated  {Path.GetRelativePath(root, file)}");
+    }
+
+    if (exitCode != 0)
+    {
+        var notRun = providers.SkipWhile(e => e.Name != provider).Skip(1).Select(e => e.Name).ToList();
+        return Fail($"Generating the {provider} migration failed"
+            + (generated.Count > 0 ? $" after {string.Join(", ", generated)} succeeded" : string.Empty)
+            + (notRun.Count > 0 ? $". Not run: {string.Join(", ", notRun)}" : string.Empty)
+            + $". Fix the error above. If the {provider} lines above list created or updated files, delete the created ones and restore the updated ones. "
+            + $"Then run {Command} {name} again; the providers that have the migration are skipped.");
+    }
+
+    generated.Add(provider);
+
+    var idFile = created.FirstOrDefault(file => Regex.IsMatch(Path.GetFileName(file), $"^[0-9]{{14}}_{name}\\.cs$"));
+    ids.Add((provider, idFile is null ? string.Empty : Path.GetFileNameWithoutExtension(idFile)));
+}
+
+if (ids.Any(e => e.Id.Length == 0) || ids.Select(e => e.Id).Distinct().Count() != 1)
+{
+    return Fail(
+        "The providers did not produce the same migration id: "
+        + string.Join(", ", ids.Select(e => $"{e.Provider} '{(e.Id.Length == 0 ? "none" : e.Id)}'"))
+        + ". The usual cause is that a provider did not find the SQLite migration of this name, whose id the others reuse "
+        + "(see the warnings above). "
+        + "Delete the files this run created and restore the snapshots it updated (the created/updated lines above), then run again.");
+}
+
+Console.WriteLine();
+Console.WriteLine($"Generated migration {ids[0].Id} for {string.Join(", ", generated)}.");
+Console.WriteLine("Review every generated migration before committing. Do not copy SQL from one provider to another unchecked.");
+return 0;
+
+static int Fail(string message)
+{
+    Console.Error.WriteLine($"error: {message}");
+    return 1;
+}
+
+// The ids of the migrations of a provider, oldest first. Designer and other side files do not match.
+static List<string> MigrationIds(string root, string project)
+{
+    var directory = Path.Combine(root, "src", "Jellyfin.Database", project, "Migrations");
+    return Directory.Exists(directory)
+        ? [.. Directory.EnumerateFiles(directory, "*.cs").Select(file => Path.GetFileNameWithoutExtension(file)).Where(file => Regex.IsMatch(file, "^[0-9]{14}_\\w+$")).Order(StringComparer.Ordinal)]
+        : [];
+}
+
+static string? FindRepositoryRoot()
+{
+    var directory = AppContext.GetData("EntryPointFileDirectoryPath") as string ?? Directory.GetCurrentDirectory();
+    while (directory is not null && !File.Exists(Path.Combine(directory, "Jellyfin.sln")))
+    {
+        directory = Path.GetDirectoryName(directory);
+    }
+
+    return directory;
+}
+
+static Dictionary<string, DateTime> Snapshot(string directory)
+{
+    return Directory.Exists(directory)
+        ? Directory.EnumerateFiles(directory, "*.cs").ToDictionary(file => file, File.GetLastWriteTimeUtc)
+        : [];
+}
+
+static int Run(string workingDirectory, string[] arguments, bool quiet)
+{
+    var startInfo = new ProcessStartInfo("dotnet")
+    {
+        WorkingDirectory = workingDirectory,
+        RedirectStandardOutput = quiet,
+        RedirectStandardError = quiet
+    };
+    foreach (var argument in arguments)
+    {
+        startInfo.ArgumentList.Add(argument);
+    }
+
+    using var process = Process.Start(startInfo)!;
+    if (quiet)
+    {
+        process.StandardOutput.ReadToEnd();
+        process.StandardError.ReadToEnd();
+    }
+
+    process.WaitForExit();
+    return process.ExitCode;
+}
