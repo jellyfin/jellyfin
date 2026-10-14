@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
@@ -41,6 +42,11 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
         + "or the database:ConnectionString configuration key (environment variable JELLYFIN_DATABASE__CONNECTIONSTRING).";
 
     private static readonly TimeSpan _maintenanceCommandTimeout = TimeSpan.FromHours(1);
+
+    // The server builds a provider for the migrations that run before it starts and another for the running server, and
+    // each of them is set up once. The warning is given once for each database in the process, so a start shows it once.
+    private static readonly ConcurrentDictionary<string, bool> _databasesWarnedOf = new(StringComparer.Ordinal);
+
     private readonly ILogger<MySqlDatabaseProvider> _logger;
 
     /// <summary>
@@ -81,6 +87,8 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
                 "The configured MySQL or MariaDB connection string is not valid. It is not shown, as it may contain a password. "
                 + ConnectionStringGuidance);
         }
+
+        WarnOnceThatTheProviderIsExperimental(connectionStringBuilder);
 
         var commandTimeout = GetOption<int?>(providerOptions, "command-timeout", e => int.Parse(e, CultureInfo.InvariantCulture));
         if (commandTimeout is not null)
@@ -304,6 +312,16 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
     {
         // Folders and the seeded placeholder exist before any library has been scanned.
         return context.BaseItems.AnyAsync(e => !e.IsFolder && e.Type != "PLACEHOLDER", cancellationToken);
+    }
+
+    private void WarnOnceThatTheProviderIsExperimental(MySqlConnectionStringBuilder builder)
+    {
+        // The password is not part of the key, as the key is kept for the life of the process.
+        var database = string.Create(CultureInfo.InvariantCulture, $"{builder.Server}:{builder.Port}/{builder.Database}");
+        if (_databasesWarnedOf.TryAdd(database, true))
+        {
+            _logger.LogWarning("The MySQL and MariaDB database provider is experimental. Back up the data before using it with a library you cannot rebuild.");
+        }
     }
 
     private void RequireUtf8Mb4(MySqlConnectionStringBuilder builder)
