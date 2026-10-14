@@ -93,6 +93,17 @@ public sealed class PeopleUpdateQueryTests : JellyfinDbTestFixture
         Assert.Contains(ExplainOnPostgres(query), line => line.Contains("IX_Peoples_NameLower", StringComparison.Ordinal));
     }
 
+    [Theory]
+    [InlineData("\n")]
+    [InlineData("\r\n")]
+    public void IsPeopleFilter_StatementWithAnyLineEnding_IsRecognised(string lineEnding)
+    {
+        var sql = string.Join(lineEnding, "SELECT \"p\".\"Id\"", "FROM \"Peoples\" AS \"p\"", "WHERE \"p\".\"NameLower\" = @name");
+
+        Assert.True(IsPeopleFilter(new RecordedCommand(sql, [])));
+        Assert.StartsWith("WHERE p.\"NameLower\"", WhereClause(new RecordedCommand(sql, [])), StringComparison.Ordinal);
+    }
+
     private RecordedCommand RecordPrefixLookup()
     {
         _recorder.Commands.Clear();
@@ -117,15 +128,17 @@ public sealed class PeopleUpdateQueryTests : JellyfinDbTestFixture
     }
 
     private static bool IsPeopleFilter(RecordedCommand command) => command.Sql.StartsWith("SELECT", StringComparison.Ordinal)
-        && Unquoted(command.Sql).Contains("FROM \"Peoples\" AS p\nWHERE", StringComparison.Ordinal);
+        && Normalised(command.Sql).Contains("FROM \"Peoples\" AS p\nWHERE", StringComparison.Ordinal);
 
     private static string WhereClause(RecordedCommand command)
     {
-        var sql = Unquoted(command.Sql);
+        var sql = Normalised(command.Sql);
         return sql[sql.IndexOf("WHERE", StringComparison.Ordinal)..];
     }
 
-    private static string Unquoted(string sql) => sql.Replace("\"p\"", "p", StringComparison.Ordinal);
+    private static string Normalised(string sql) => sql
+        .Replace("\r\n", "\n", StringComparison.Ordinal)
+        .Replace("\"p\"", "p", StringComparison.Ordinal);
 
     private string[] ExplainOnPostgres(RecordedCommand query)
     {
