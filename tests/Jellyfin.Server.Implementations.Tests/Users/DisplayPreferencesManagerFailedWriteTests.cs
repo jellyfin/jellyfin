@@ -79,7 +79,7 @@ public sealed class DisplayPreferencesManagerFailedWriteTests : JellyfinDbTestFi
 
         public override InterceptionResult<int> NonQueryExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<int> result)
         {
-            if (SkipNextDelete && command.CommandText.StartsWith("DELETE FROM \"CustomItemDisplayPreferences\"", StringComparison.Ordinal))
+            if (SkipNextDelete && Targets(command, "DELETE FROM"))
             {
                 SkipNextDelete = false;
                 return InterceptionResult<int>.SuppressWithResult(0);
@@ -89,9 +89,15 @@ public sealed class DisplayPreferencesManagerFailedWriteTests : JellyfinDbTestFi
             return result;
         }
 
+        private static bool Targets(DbCommand command, string statement)
+        {
+            var text = command.CommandText.Replace("\"", string.Empty, StringComparison.Ordinal).Replace("`", string.Empty, StringComparison.Ordinal);
+            return text.StartsWith($"{statement} CustomItemDisplayPreferences", StringComparison.Ordinal);
+        }
+
         private void FailInsert(DbCommand command)
         {
-            if (FailInserts && command.CommandText.StartsWith("INSERT INTO \"CustomItemDisplayPreferences\"", StringComparison.Ordinal))
+            if (FailInserts && Targets(command, "INSERT INTO"))
             {
                 throw new SqliteException("SQLite Error 19: 'UNIQUE constraint failed: CustomItemDisplayPreferences.UserId, CustomItemDisplayPreferences.ItemId, CustomItemDisplayPreferences.Client, CustomItemDisplayPreferences.Key'.", 19);
             }

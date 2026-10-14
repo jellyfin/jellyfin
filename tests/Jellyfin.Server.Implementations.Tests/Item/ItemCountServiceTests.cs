@@ -7,6 +7,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -672,6 +673,9 @@ public sealed class ItemCountServiceTests : JellyfinDbTestFixture
         // Every id list has to be bound as one parameter rather than one placeholder each: that is
         // what keeps the statement off the SQLite variable ceiling and out of a per-size entry in
         // EF's compiled query cache. Identical SQL for two batch sizes is exactly that property.
+        Assert.SkipWhen(
+            TestDatabaseEnvironment.Provider is TestDbProvider.MySql or TestDbProvider.MariaDb,
+            "This engine has no way to read a list back from one parameter, so it sends one parameter per value.");
         var seeded = SeedArtists(6, out _);
 
         var small = CaptureSql(() => _service.GetItemCountsForNameItems(

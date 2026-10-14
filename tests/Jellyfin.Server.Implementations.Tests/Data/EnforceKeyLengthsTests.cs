@@ -19,10 +19,10 @@ namespace Jellyfin.Server.Implementations.Tests.Data;
 
 /// <summary>
 /// A string in a key or an index that has a maximum length is rejected on save when it is inserted or changed to a
-/// longer value, on every provider. No provider limits the length of the column itself, so the tests that need a row
-/// that is already stored with a longer value write it around the save hook. Such a row stays readable and can be
-/// saved again as long as the value is not changed, also when the entity is attached or updated as a whole and so
-/// has all of its properties marked as modified.
+/// longer value, on every provider. The column of an indexed string has its length only on MySQL and MariaDB, so the
+/// tests that need a row that is already stored with a longer value write it around the save hook and are skipped
+/// there. Such a row stays readable and can be saved again as long as the value is not changed, also when the entity
+/// is attached or updated as a whole and so has all of its properties marked as modified.
 /// </summary>
 public sealed class EnforceKeyLengthsTests : JellyfinDbTestFixture
 {
@@ -291,6 +291,7 @@ public sealed class EnforceKeyLengthsTests : JellyfinDbTestFixture
     [Fact]
     public async Task SaveChanges_UserWithAStoredNameOverTheBoundAttachedAsModified_SavesWhileUnchanged()
     {
+        SkipWhereIndexedTextIsBounded();
         var username = new string('u', 300);
         var userId = Guid.NewGuid();
         using (var context = CreateDbContext())
@@ -368,8 +369,16 @@ public sealed class EnforceKeyLengthsTests : JellyfinDbTestFixture
     }
 #pragma warning restore CA1849
 
+    private static void SkipWhereIndexedTextIsBounded()
+    {
+        Assert.SkipWhen(
+            TestDatabaseEnvironment.Provider is TestDbProvider.MySql or TestDbProvider.MariaDb,
+            "The column of an indexed string has its maximum length on this engine, so no row can be stored over it.");
+    }
+
     private async Task StoreApiKeyWithAccessTokenAsync(string token)
     {
+        SkipWhereIndexedTextIsBounded();
         using var context = CreateDbContext();
         context.ApiKeys.Add(new ApiKey("key"));
         await context.SaveChangesAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
@@ -382,6 +391,7 @@ public sealed class EnforceKeyLengthsTests : JellyfinDbTestFixture
 
     private async Task<Guid> StoreDeviceWithIdAsync(string deviceId)
     {
+        SkipWhereIndexedTextIsBounded();
         var userId = Guid.NewGuid();
         using var context = CreateDbContext();
         context.Users.Add(new User("user", "auth", "reset") { Id = userId });

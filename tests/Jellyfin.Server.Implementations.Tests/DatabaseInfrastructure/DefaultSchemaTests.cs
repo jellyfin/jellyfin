@@ -8,7 +8,7 @@ namespace Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 
 public sealed class DefaultSchemaTests : DatabaseTestFixture
 {
-    [Fact]
+    [MigrationsFact]
     public void DefaultDatabase_HasEveryMigrationApplied()
     {
         using var context = CreateDbContext();
