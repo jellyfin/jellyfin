@@ -47,7 +47,7 @@ public sealed class AddNormalisedMatchColumnsMigrationTests : IDisposable
         _database.Dispose();
     }
 
-    [MigrationsFact]
+    [MigrationFact(Target)]
     public async Task Migrate_DatabaseOfThePreviousMigrationWithRows_AddsTheColumnsAndKeepsTheRows()
     {
         await using var context = CreateContext();
@@ -68,7 +68,7 @@ public sealed class AddNormalisedMatchColumnsMigrationTests : IDisposable
         Assert.False(context.Database.HasPendingModelChanges());
     }
 
-    [MigrationsFact]
+    [MigrationFact(Target)]
     public async Task Migrate_ThenTheRoutine_FillsTheColumnsOfTheExistingRows()
     {
         await using var context = CreateContext();
@@ -87,7 +87,7 @@ public sealed class AddNormalisedMatchColumnsMigrationTests : IDisposable
         Assert.Equal("émile zola", person.NameLower);
     }
 
-    [MigrationsFact]
+    [MigrationFact(Target)]
     public async Task Migrate_NameLowerIndex_IsAPlainIndexOnTheColumn()
     {
         await using var context = CreateContext();
@@ -99,7 +99,7 @@ public sealed class AddNormalisedMatchColumnsMigrationTests : IDisposable
         Assert.DoesNotContain("lower(", definition, StringComparison.OrdinalIgnoreCase);
     }
 
-    [MigrationsFact]
+    [MigrationFact(Target)]
     public async Task Migrate_BackToThePreviousMigration_RestoresTheExpressionIndexAndDropsTheColumns()
     {
         await using var context = CreateContext();

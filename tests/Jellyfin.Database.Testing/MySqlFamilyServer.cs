@@ -30,6 +30,8 @@ internal sealed class MySqlFamilyServer : IPooledDatabaseServer
     // The tests send long lists of ids, which are sent as one parameter for each value.
     private const string MaxAllowedPacket = "--max-allowed-packet=67108864";
 
+    private const string MigrationHistoryQuery = "SELECT MigrationId, ProductVersion FROM `__EFMigrationsHistory` ORDER BY MigrationId";
+
     private static readonly TimeSpan _containerStopTimeout = TimeSpan.FromSeconds(30);
 
     private readonly TestDbProvider _provider;
@@ -80,7 +82,8 @@ internal sealed class MySqlFamilyServer : IPooledDatabaseServer
     public string GetSchemaFingerprint(string database)
     {
         // The statistics of a table, such as its row count and its next auto increment value, change with its contents,
-        // so only what describes the structure is read.
+        // so only what describes the structure is read. The migration history is read as well, as the reset of a lease
+        // keeps it and a later test would otherwise start from the migrations that an earlier one recorded or removed.
         string[] queries =
         [
             "SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = DATABASE()",
@@ -98,7 +101,7 @@ internal sealed class MySqlFamilyServer : IPooledDatabaseServer
         using var connection = new MySqlConnection(new MySqlConnectionStringBuilder(WithDatabase(database)) { Pooling = false }.ConnectionString);
         connection.Open();
         var description = new StringBuilder();
-        foreach (var query in queries)
+        foreach (var query in HasMigrationHistory(connection) ? [.. queries, MigrationHistoryQuery] : queries)
         {
             using var command = connection.CreateCommand();
 #pragma warning disable CA2100 // The queries are constants.
@@ -151,6 +154,13 @@ internal sealed class MySqlFamilyServer : IPooledDatabaseServer
         {
             Console.Error.WriteLine($"Could not stop the test database container: {ex.Message}");
         }
+    }
+
+    private static bool HasMigrationHistory(MySqlConnection connection)
+    {
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '__EFMigrationsHistory'";
+        return Convert.ToInt64(command.ExecuteScalar(), CultureInfo.InvariantCulture) > 0;
     }
 
     private static string Text(object value)

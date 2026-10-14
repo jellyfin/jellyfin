@@ -1,9 +1,11 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Xunit;
 
@@ -17,16 +19,20 @@ public class SelectedBackendPoolTests
 {
     private static ITestDatabaseBackend Backend => TestDatabaseEnvironment.Backend;
 
-    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
-    public void Dispose_ReturnedLease_LeavesEveryTableAsInAFreshDatabase()
+    [ProviderTheory(TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [InlineData(TestSchemaSource.Model)]
+    [InlineData(TestSchemaSource.Migrations)]
+    public void Dispose_ReturnedLease_LeavesEveryTableAsInAFreshDatabase(TestSchemaSource source)
     {
-        PoolChecks.AssertResetMatchesFreshDatabase(Backend, TestSchemaSource.Model);
+        PoolChecks.AssertResetMatchesFreshDatabase(Backend, source);
     }
 
-    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
-    public void Dispose_ReturnedLease_RestartsIdentityAtOneOnEveryTable()
+    [ProviderTheory(TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [InlineData(TestSchemaSource.Model)]
+    [InlineData(TestSchemaSource.Migrations)]
+    public void Dispose_ReturnedLease_RestartsIdentityAtOneOnEveryTable(TestSchemaSource source)
     {
-        PoolChecks.AssertIdentityRestartsAtOne(Backend, TestSchemaSource.Model);
+        PoolChecks.AssertIdentityRestartsAtOne(Backend, source);
     }
 
     [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
@@ -43,6 +49,22 @@ public class SelectedBackendPoolTests
     public void Dispose_LeaseThatChangedTheSchema_IsDroppedInsteadOfReused(SchemaChange change)
     {
         PoolChecks.AssertChangedSchemaIsNotReused(Backend, change);
+    }
+
+    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    public void Dispose_LeaseThatDeletedTheMigrationHistory_IsDroppedInsteadOfReused()
+    {
+        AssertChangedMigrationHistoryIsNotReused(PoolChecks.DeleteMigrationHistory);
+    }
+
+    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    public void Dispose_LeaseThatRecordedAnotherMigration_IsDroppedInsteadOfReused()
+    {
+        AssertChangedMigrationHistoryIsNotReused(context =>
+        {
+            var history = context.GetService<IHistoryRepository>();
+            context.Database.ExecuteSqlRaw(history.GetInsertScript(new HistoryRow("29990101000000_Recorded", "10.0.0")));
+        });
     }
 
     [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
@@ -123,6 +145,23 @@ public class SelectedBackendPoolTests
         Assert.False(CanConnect(fresh));
         using var reused = Backend.Create(TestSchemaSource.Model, []);
         Assert.Equal(pooled, PoolChecks.DatabaseOf(reused));
+    }
+
+    private static void AssertChangedMigrationHistoryIsNotReused(Action<JellyfinDbContext> change)
+    {
+        string changed;
+        using (var database = Backend.Create(TestSchemaSource.Migrations, []))
+        {
+            changed = PoolChecks.DatabaseOf(database);
+            using var context = PoolChecks.CreateContext(database);
+            change(context);
+        }
+
+        using var next = Backend.Create(TestSchemaSource.Migrations, []);
+        using var nextContext = PoolChecks.CreateContext(next);
+
+        Assert.NotEqual(changed, PoolChecks.DatabaseOf(next));
+        Assert.Equal(nextContext.Database.GetMigrations(), nextContext.Database.GetAppliedMigrations());
     }
 
     internal static bool CanConnect(TestDatabase database)

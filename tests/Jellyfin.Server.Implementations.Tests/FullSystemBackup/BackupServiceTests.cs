@@ -410,7 +410,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.Equal(before, await SnapshotAsync(cancellationToken).ConfigureAwait(true));
     }
 
-    [MigrationsFact]
+    [Fact]
     public async Task RestoreBackupAsync_WithHistoryFromAnotherSchema_LeavesNoPendingMigrations()
     {
         var (_, pending) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
@@ -418,7 +418,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.Empty(pending);
     }
 
-    [MigrationsFact]
+    [Fact]
     public async Task RestoreBackupAsync_KeepsTheSchemaMigrationRowsOfTheTarget()
     {
         var (history, _) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
@@ -429,7 +429,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.All(schemaMigrationIds, id => Assert.Contains(id, history));
     }
 
-    [MigrationsFact]
+    [Fact]
     public async Task RestoreBackupAsync_ReplacesCodeRoutinesWithThoseOfTheArchive()
     {
         var (history, _) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
@@ -438,7 +438,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.DoesNotContain(RoutineOnlyInTargetId, history);
     }
 
-    [MigrationsFact]
+    [Fact]
     public async Task RestoreBackupAsync_DoesNotTakeOverSchemaMigrationsOfAnotherEngine()
     {
         var (history, _) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
@@ -446,7 +446,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.DoesNotContain(ForeignSchemaMigrationId, history);
     }
 
-    [MigrationsFact]
+    [Fact]
     public async Task RestoreBackupAsync_DoesNotTakeOverRoutinesThisServerNoLongerHas()
     {
         var (history, _) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
@@ -454,7 +454,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.DoesNotContain(RemovedRoutineId, history);
     }
 
-    [MigrationsFact]
+    [Fact]
     public async Task RestoreBackupAsync_WithArchiveOfTheSameSchema_RestoresTheHistoryAsItWas()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -720,7 +720,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.DoesNotContain(_logger.Entries, e => e.Message.Contains("Rock", StringComparison.Ordinal));
     }
 
-    [MigrationsFact]
+    [Fact]
     public async Task RestoreBackupAsync_IntoADatabaseThatWasOnlySeeded_CreatesTheSchemaAndRestoresTheRows()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -733,10 +733,9 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         var seededOptions = seededDatabase.Options;
         await using (var seeded = CreateDbContext(seededOptions))
         {
-            await seeded.GetService<IHistoryRepository>().CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(true);
-            await seeded.Database.ExecuteSqlInterpolatedAsync(
-                $"INSERT INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\") VALUES ({RoutineOnlyInTargetId}, {"10.11.0"})",
-                cancellationToken).ConfigureAwait(true);
+            var history = seeded.GetService<IHistoryRepository>();
+            await history.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(true);
+            await seeded.Database.ExecuteSqlRawAsync(history.GetInsertScript(new HistoryRow(RoutineOnlyInTargetId, "10.11.0")), cancellationToken).ConfigureAwait(true);
         }
 
         await CreateBackupService(seededOptions).RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
@@ -749,7 +748,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.Equal(2, await restored.BaseItems.CountAsync(e => e.Type == "Movie", cancellationToken).ConfigureAwait(true));
     }
 
-    [MigrationsFact]
+    [Fact]
     public async Task RestoreBackupAsync_WhenMigrationsCannotBeUndoneAndSomeArePending_RefusesAndLeavesTheDatabaseAlone()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -1227,9 +1226,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
     private async Task InsertHistoryRowAsync(string migrationId, CancellationToken cancellationToken)
     {
         await using var ctx = CreateDbContext();
-        await ctx.Database.ExecuteSqlInterpolatedAsync(
-            $"INSERT INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\") VALUES ({migrationId}, {"10.11.0"})",
-            cancellationToken).ConfigureAwait(false);
+        await ctx.Database.ExecuteSqlRawAsync(ctx.GetService<IHistoryRepository>().GetInsertScript(new HistoryRow(migrationId, "10.11.0")), cancellationToken).ConfigureAwait(false);
     }
 
     private static async Task RewriteEntryAsync(string archivePath, string entryName, Func<string, string> transform, CancellationToken cancellationToken)

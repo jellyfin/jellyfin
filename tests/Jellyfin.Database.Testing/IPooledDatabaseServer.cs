@@ -22,8 +22,9 @@ internal interface IPooledDatabaseServer : IDisposable
     IJellyfinDatabaseProvider CreateProvider();
 
     /// <summary>
-    /// Describes the structure of a database, without its contents, so that a change to it can be detected. The
-    /// contents of the migration history are not part of the structure.
+    /// Describes the structure of a database, without its contents, so that a change to it can be detected. A server
+    /// whose reset keeps the migration history may include the history, so that a test that changes it is not handed
+    /// out again.
     /// </summary>
     /// <param name="database">The name of the database.</param>
     /// <returns>A value that is equal for databases of the same structure.</returns>

@@ -27,7 +27,7 @@ public class ProviderBackendTests(ITestOutputHelper output)
         AssertUsable(TestSchemaSource.Model);
     }
 
-    [MigrationsFact]
+    [Fact]
     public void Create_MigrationsSchema_ProducesUsableDatabase()
     {
         AssertUsable(TestSchemaSource.Migrations);
@@ -39,7 +39,7 @@ public class ProviderBackendTests(ITestOutputHelper output)
         AssertUsable(TestSchemaSource.Model, fresh: true);
     }
 
-    [MigrationsFact]
+    [Fact]
     public void Create_FreshMigrationsSchema_ProducesUsableDatabase()
     {
         AssertUsable(TestSchemaSource.Migrations, fresh: true);
