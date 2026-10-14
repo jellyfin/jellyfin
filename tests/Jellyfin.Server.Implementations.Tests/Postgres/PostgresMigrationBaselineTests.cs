@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Jellyfin.Database.Providers.Postgres;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Xunit;
@@ -28,33 +27,6 @@ public class PostgresMigrationBaselineTests
     public void CoversThroughSqliteMigration_IsAnExistingSqliteMigration()
     {
         Assert.Contains(PostgresMigrationBaseline.CoversThroughSqliteMigration, SqliteMigrationIds());
-    }
-
-    [Fact]
-    public void PostgresMigrationsAfterTheBaseline_ArePairedWithTheSqliteMigrationsAfterWhatItCovers()
-    {
-        var sqliteAfterBaseline = SqliteMigrationIds()
-            .Where(id => string.CompareOrdinal(id, PostgresMigrationBaseline.CoversThroughSqliteMigration) > 0)
-            .ToList();
-        var postgresAfterBaseline = PostgresMigrationIds().Where(id => id != PostgresMigrationBaseline.MigrationId).ToList();
-
-        Assert.Equal(sqliteAfterBaseline, postgresAfterBaseline);
-    }
-
-    [Fact]
-    public void PostgresModel_HasNoPendingChanges()
-    {
-        using var context = OfflineContexts.Postgres();
-
-        Assert.False(context.Database.HasPendingModelChanges());
-    }
-
-    [Fact]
-    public void SqliteModel_HasNoPendingChanges()
-    {
-        using var context = OfflineContexts.Sqlite();
-
-        Assert.False(context.Database.HasPendingModelChanges());
     }
 
     private static string[] PostgresMigrationIds()

@@ -13,6 +13,6 @@ public class EfMigrationTests
     {
         var dbDesignContext = new SqliteDesignTimeJellyfinDbFactory();
         var context = dbDesignContext.CreateDbContext([]);
-        Assert.False(context.Database.HasPendingModelChanges(), "There are unapplied changes to the EFCore model for SQLite. Please create a Migration.");
+        Assert.False(context.Database.HasPendingModelChanges(), "The EF Core model has changes that the SQLite migrations do not contain. Run 'dev/add-migration <Name>' with a name that describes the change. It generates the migrations of every provider with the same id. Review them and commit them with the change.");
     }
 }
