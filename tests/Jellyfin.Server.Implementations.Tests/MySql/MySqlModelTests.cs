@@ -117,6 +117,30 @@ public class MySqlModelTests
     }
 
     [Fact]
+    public void BoundedText_IsLongTextUnlessItIsKeyedOrIndexed()
+    {
+        using var context = OfflineContexts.MySql();
+
+        var bounded = Properties(context).Where(p => p.ClrType == typeof(string) && p.GetMaxLength() is not null).ToList();
+
+        Assert.NotEmpty(bounded);
+        Assert.Contains(bounded, p => IsIndexedOrKeyed(p));
+        Assert.Contains(bounded, p => !IsIndexedOrKeyed(p));
+        foreach (var property in bounded)
+        {
+            var name = $"{property.DeclaringType.DisplayName()}.{property.Name}";
+            if (IsIndexedOrKeyed(property))
+            {
+                Assert.True(property.GetColumnType().StartsWith("varchar(", StringComparison.Ordinal), $"{name} is {property.GetColumnType()}.");
+            }
+            else
+            {
+                Assert.Equal("longtext", property.GetColumnType());
+            }
+        }
+    }
+
+    [Fact]
     public void IndexesOverBoundedText_HaveNoPrefix()
     {
         using var context = OfflineContexts.MySql();
@@ -166,6 +190,11 @@ public class MySqlModelTests
 
             Assert.True(bytes <= IndexPrefixLengthConvention.MaxKeyBytes, $"{index.DeclaringEntityType.DisplayName()} {index.GetDatabaseName()} takes {bytes} bytes of text.");
         }
+    }
+
+    private static bool IsIndexedOrKeyed(IProperty property)
+    {
+        return property.IsKey() || property.IsForeignKey() || property.GetContainingIndexes().Any();
     }
 
     private static IEnumerable<IProperty> Properties(JellyfinDbContext context)

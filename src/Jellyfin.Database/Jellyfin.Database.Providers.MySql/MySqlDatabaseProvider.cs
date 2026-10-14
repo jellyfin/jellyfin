@@ -156,6 +156,7 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
             .Properties<DateTime>()
             .HaveConversion<ClampedUtcDateTimeConverter>();
 
+        configurationBuilder.Conventions.Add(_ => new UnindexedTextConvention());
         configurationBuilder.Conventions.Add(_ => new IdentifierLengthConvention(MaxIdentifierLength));
         configurationBuilder.Conventions.Add(_ => new IndexPrefixLengthConvention());
         configurationBuilder.Conventions.Add(_ => new IndexFilterConvention());
