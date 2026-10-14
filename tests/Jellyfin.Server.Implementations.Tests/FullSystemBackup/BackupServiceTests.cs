@@ -61,6 +61,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
     private readonly List<string> _unsavedWhenScopeClosed = [];
     private int _purgeCalls;
     private bool _failCompletion;
+    private bool _supportsTransactionalMigrations = true;
 
     public BackupServiceTests()
     {
@@ -748,6 +749,92 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.Equal(2, await restored.BaseItems.CountAsync(e => e.Type == "Movie", cancellationToken).ConfigureAwait(true));
     }
 
+    [MigrationsFact]
+    public async Task RestoreBackupAsync_WhenMigrationsCannotBeUndoneAndSomeArePending_RefusesAndLeavesTheDatabaseAlone()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var manifest = await CreateBackupWithFilesAsync().ConfigureAwait(true);
+        _supportsTransactionalMigrations = false;
+        var filesBefore = ReadFilesOfTheServer();
+
+        using var unmigratedDatabase = TestDatabaseEnvironment.Backend.CreateEmpty();
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => CreateBackupService(unmigratedDatabase.Options).RestoreBackupAsync(manifest.Path)).ConfigureAwait(true);
+
+        Assert.Contains("--mode MigrateSystem", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("Nothing was restored", exception.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("Start the server once", exception.Message, StringComparison.Ordinal);
+        Assert.Equal(0, _purgeCalls);
+        Assert.Equal(filesBefore, ReadFilesOfTheServer());
+        await using var untouched = CreateDbContext(unmigratedDatabase.Options);
+        Assert.NotEmpty(await untouched.Database.GetPendingMigrationsAsync(cancellationToken).ConfigureAwait(true));
+        Assert.Empty(await untouched.Database.GetAppliedMigrationsAsync(cancellationToken).ConfigureAwait(true));
+    }
+
+    // The marker does not depend on the schema of the database, so this runs on every engine.
+    [Fact]
+    public async Task RestoreBackupAsync_WhileAMigrationIsMarkedAsUnfinished_RefusesAndLeavesFilesAndDatabaseAlone()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var manifest = await CreateBackupWithFilesAsync().ConfigureAwait(true);
+        _supportsTransactionalMigrations = false;
+        var markerPath = Path.Combine(_testRoot, "Data", BackupService.MigrationInProgressMarkerFileName);
+        await File.WriteAllTextAsync(markerPath, "{}", cancellationToken).ConfigureAwait(true);
+        var expected = await SnapshotAsync(cancellationToken).ConfigureAwait(true);
+        var filesBefore = ReadFilesOfTheServer();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => CreateBackupService().RestoreBackupAsync(manifest.Path)).ConfigureAwait(true);
+
+        Assert.Contains(markerPath, exception.Message, StringComparison.Ordinal);
+        Assert.Contains("mysqldump", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("--mode MigrateSystem", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("Nothing was restored", exception.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("Start the server once", exception.Message, StringComparison.Ordinal);
+        Assert.Equal(0, _purgeCalls);
+        Assert.Equal(filesBefore, ReadFilesOfTheServer());
+        Assert.Equal(expected, await SnapshotAsync(cancellationToken).ConfigureAwait(true));
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_WithNoMarker_RestoresFilesOfTheArchive()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var manifest = await CreateBackupWithFilesAsync().ConfigureAwait(true);
+
+        await CreateBackupService().RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        Assert.Equal(
+            "box in the archive",
+            await File.ReadAllTextAsync(Path.Combine(_testRoot, "Data", "collections", "box.txt"), cancellationToken).ConfigureAwait(true));
+        Assert.Equal(
+            "<archived />",
+            await File.ReadAllTextAsync(Path.Combine(_configurationDirectoryPath, "system.xml"), cancellationToken).ConfigureAwait(true));
+    }
+
+    [Fact]
+    public async Task RestoreBackupAsync_WhenMigrationsCannotBeUndoneAndNoneArePending_RestoresTheRows()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        var expected = await SnapshotAsync(cancellationToken).ConfigureAwait(true);
+        _supportsTransactionalMigrations = false;
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await using (var ctx = CreateDbContext())
+        {
+            ctx.BaseItems.Add(CreateMovieEntity(Guid.NewGuid(), "Added After Backup"));
+            await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(true);
+        }
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        Assert.Equal(expected, await SnapshotAsync(cancellationToken).ConfigureAwait(true));
+    }
+
     [Fact]
     public async Task RestoreBackupAsync_WithDeviceIdOverTheBound_RestoresItShortened()
     {
@@ -1249,6 +1336,31 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         return ids;
     }
 
+    private async Task<BackupManifestDto> CreateBackupWithFilesAsync()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var collections = Path.Combine(_testRoot, "Data", "collections");
+        Directory.CreateDirectory(collections);
+        await File.WriteAllTextAsync(Path.Combine(collections, "box.txt"), "box in the archive", cancellationToken).ConfigureAwait(false);
+        await File.WriteAllTextAsync(Path.Combine(_configurationDirectoryPath, "system.xml"), "<archived />", cancellationToken).ConfigureAwait(false);
+        var manifest = await CreateBackupService().CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(false);
+
+        // What is on disk after the backup differs from what the archive holds, so a restore that wrote files would show.
+        File.Delete(Path.Combine(collections, "box.txt"));
+        await File.WriteAllTextAsync(Path.Combine(_configurationDirectoryPath, "system.xml"), "<changed after the backup />", cancellationToken).ConfigureAwait(false);
+        return manifest;
+    }
+
+    private List<string> ReadFilesOfTheServer()
+    {
+        return new[] { _configurationDirectoryPath, Path.Combine(_testRoot, "Data") }
+            .Where(Directory.Exists)
+            .SelectMany(root => Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories))
+            .Order(StringComparer.Ordinal)
+            .Select(file => file + "=" + File.ReadAllText(file))
+            .ToList();
+    }
+
     private BackupService CreateBackupService(DbContextOptions<JellyfinDbContext>? dbOptions = null)
     {
         var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
@@ -1270,6 +1382,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
 
         var jellyfinDatabaseProvider = new Mock<IJellyfinDatabaseProvider>();
         jellyfinDatabaseProvider.Setup(p => p.RunScheduledOptimisation(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        jellyfinDatabaseProvider.Setup(p => p.SupportsTransactionalMigrations).Returns(() => _supportsTransactionalMigrations);
         jellyfinDatabaseProvider
             .Setup(p => p.PurgeDatabase(It.IsAny<JellyfinDbContext>(), It.IsAny<IEnumerable<string>>()))
             .Returns((JellyfinDbContext context, IEnumerable<string> tableNames) =>

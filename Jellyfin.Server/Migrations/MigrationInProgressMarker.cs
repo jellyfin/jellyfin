@@ -1,4 +1,5 @@
 using System;
+using Jellyfin.Server.Implementations.FullSystemBackup;
 
 namespace Jellyfin.Server.Migrations;
 
@@ -13,5 +14,5 @@ internal sealed record MigrationInProgressMarker(string MigrationId, string Prov
     /// <summary>
     /// The name of the marker file in the data directory.
     /// </summary>
-    public const string FileName = "migration-in-progress.json";
+    public const string FileName = BackupService.MigrationInProgressMarkerFileName;
 }

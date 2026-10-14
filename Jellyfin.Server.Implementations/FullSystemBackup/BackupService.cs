@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -28,6 +29,12 @@ namespace Jellyfin.Server.Implementations.FullSystemBackup;
 /// </summary>
 public class BackupService : IBackupService
 {
+    /// <summary>
+    /// The name, in the data directory, of the file that the server leaves while a schema migration has begun and has not been
+    /// confirmed as applied. A database that this file belongs to may be partly migrated.
+    /// </summary>
+    public const string MigrationInProgressMarkerFileName = "migration-in-progress.json";
+
     private const string ManifestEntryName = "manifest.json";
     private readonly ILogger<BackupService> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
@@ -128,6 +135,12 @@ public class BackupService : IBackupService
                 throw new NotSupportedException($"The loaded archive '{archivePath}' is made for a newer version of Jellyfin ({manifest.ServerVersion}) and cannot be loaded in this version.");
             }
 
+            // Everything that can refuse the restore of the database runs before the first file is written, so that a refused
+            // restore leaves the configuration, the data and the database as they were.
+            var historyEntries = manifest.Options.Database
+                ? await CheckDatabaseCanBeRestoredAsync(zipArchive).ConfigureAwait(false)
+                : [];
+
             void CopyDirectory(string source, string target, string[]? exclude = null)
             {
                 var fullSourcePath = NormalizePathSeparator(Path.GetFullPath(source) + Path.DirectorySeparatorChar);
@@ -169,50 +182,9 @@ public class BackupService : IBackupService
                 var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
                 await using (dbContext.ConfigureAwait(false))
                 {
-                    // restore migration history manually
-                    var historyEntry = zipArchive.GetEntry(NormalizePathSeparator(Path.Combine("Database", $"{nameof(HistoryRow)}.json")));
-                    if (historyEntry is null)
-                    {
-                        _logger.LogInformation("No backup of the history table in archive. This is required for Jellyfin operation");
-                        throw new InvalidOperationException("Cannot restore backup that has no History data.");
-                    }
-
-                    HistoryRow[] historyEntries;
-                    var historyArchive = await historyEntry.OpenAsync().ConfigureAwait(false);
-                    await using (historyArchive.ConfigureAwait(false))
-                    {
-                        historyEntries = await JsonSerializer.DeserializeAsync<HistoryRow[]>(historyArchive).ConfigureAwait(false) ??
-                            throw new InvalidOperationException("Cannot restore backup that has no History data.");
-                    }
-
                     dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-                    var entityTypes = typeof(JellyfinDbContext).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
-                        .Where(e => e.PropertyType.IsAssignableTo(typeof(IQueryable)))
-                        .Select(e => (Type: e, Set: e.GetValue(dbContext) as IQueryable))
-                        .ToArray();
+                    var entityTypes = GetEntitySets(dbContext);
 
-                    // Read every table once before anything is replaced, so a damaged archive is rejected while the current database is still intact.
-                    foreach (var entityType in entityTypes)
-                    {
-                        var zipEntry = zipArchive.GetEntry(NormalizePathSeparator(Path.Combine("Database", $"{entityType.Type.Name}.json")));
-                        if (zipEntry is null)
-                        {
-                            continue;
-                        }
-
-                        _logger.LogInformation("Validate backup of {Table}", entityType.Type.Name);
-                        var validatedClrType = entityType.Type.PropertyType.GetGenericArguments()[0];
-                        var validatedKeys = GetGeneratedKeys(dbContext.Model.FindEntityType(validatedClrType)!);
-                        var validatedModelType = dbContext.Model.FindEntityType(validatedClrType)!;
-                        await foreach (var (source, validatedEntity) in ReadEntitiesAsync(zipEntry, validatedClrType).ConfigureAwait(false))
-                        {
-                            ReadGeneratedKeys(source, validatedKeys);
-                            RestoredRowCleaner.ThrowIfValueCannotBeShortened(validatedModelType, validatedEntity);
-                        }
-                    }
-
-                    // A restore runs before the startup migrations. On a server that was never started the database holds no tables
-                    // yet, and one that was updated since its last start is missing columns the rows are restored into.
                     await dbContext.Database.MigrateAsync().ConfigureAwait(false);
 
                     // Creating a table commits the transaction it runs in on some servers, so the history exists before it begins.
@@ -312,6 +284,96 @@ public class BackupService : IBackupService
 
             _logger.LogInformation("Restored Jellyfin system from {Date}", manifest.DateCreated);
         }
+    }
+
+    private static (System.Reflection.PropertyInfo Type, IQueryable? Set)[] GetEntitySets(JellyfinDbContext dbContext)
+    {
+        return typeof(JellyfinDbContext).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+            .Where(e => e.PropertyType.IsAssignableTo(typeof(IQueryable)))
+            .Select(e => (Type: e, Set: e.GetValue(dbContext) as IQueryable))
+            .ToArray();
+    }
+
+    /// <summary>
+    /// Runs every check that can refuse the restore of the database and reads the migration history of the archive.
+    /// Nothing is written, so a refused restore has changed nothing.
+    /// </summary>
+    private async Task<HistoryRow[]> CheckDatabaseCanBeRestoredAsync(ZipArchive zipArchive)
+    {
+        // The marker is left by a schema migration that did not finish, and the migrations that are pending then include the
+        // one that failed. It does not depend on the database, so a database without migrations of its own is refused too.
+        var markerPath = Path.Combine(_applicationPaths.DataPath, MigrationInProgressMarkerFileName);
+        if (File.Exists(markerPath))
+        {
+            var message = string.Format(
+                CultureInfo.InvariantCulture,
+                "The schema migration recorded in {0} did not finish, so the database may be partly migrated and a restore must not write into it. "
+                + "Nothing was restored and no file was changed. A Jellyfin backup archive cannot repair the database schema. "
+                + "Restore the database from the backup your database engine took before the upgrade (for example a dump made with mysqldump), "
+                + "delete {0}, run Jellyfin once with --mode MigrateSystem so that it migrates the database, then restore this archive again.",
+                markerPath);
+            _logger.LogCritical("{Message}", message);
+            throw new InvalidOperationException(message);
+        }
+
+        // restore migration history manually
+        var historyEntry = zipArchive.GetEntry(NormalizePathSeparator(Path.Combine("Database", $"{nameof(HistoryRow)}.json")));
+        if (historyEntry is null)
+        {
+            _logger.LogInformation("No backup of the history table in archive. This is required for Jellyfin operation");
+            throw new InvalidOperationException("Cannot restore backup that has no History data.");
+        }
+
+        HistoryRow[] historyEntries;
+        var historyArchive = await historyEntry.OpenAsync().ConfigureAwait(false);
+        await using (historyArchive.ConfigureAwait(false))
+        {
+            historyEntries = await JsonSerializer.DeserializeAsync<HistoryRow[]>(historyArchive).ConfigureAwait(false) ??
+                throw new InvalidOperationException("Cannot restore backup that has no History data.");
+        }
+
+        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
+        {
+            // A restore runs before the startup migrations. On a server that was never started the database holds no tables
+            // yet, and one that was updated since its last start is missing columns the rows are restored into.
+            // An engine that cannot undo a failed migration is migrated only by the startup, which records the migration it
+            // is about to apply so that a failure is noticed. A restore has no such record and so does not migrate.
+            if (!_jellyfinDatabaseProvider.SupportsTransactionalMigrations
+                && (await dbContext.Database.GetPendingMigrationsAsync().ConfigureAwait(false)).Any())
+            {
+                var message = "The database has migrations that are not applied yet (a new installation, or a server that was updated and not started since) "
+                    + "and this database engine cannot undo a failed migration, so a restore does not migrate it. "
+                    + "Nothing was restored and no file was changed. Run Jellyfin once with --mode MigrateSystem, "
+                    + "which migrates the database and exits, then restore this archive again.";
+                _logger.LogCritical("{Message}", message);
+                throw new InvalidOperationException(message);
+            }
+
+            dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+
+            // Read every table once before anything is replaced, so a damaged archive is rejected while the current database is still intact.
+            foreach (var entityType in GetEntitySets(dbContext))
+            {
+                var zipEntry = zipArchive.GetEntry(NormalizePathSeparator(Path.Combine("Database", $"{entityType.Type.Name}.json")));
+                if (zipEntry is null)
+                {
+                    continue;
+                }
+
+                _logger.LogInformation("Validate backup of {Table}", entityType.Type.Name);
+                var validatedClrType = entityType.Type.PropertyType.GetGenericArguments()[0];
+                var validatedKeys = GetGeneratedKeys(dbContext.Model.FindEntityType(validatedClrType)!);
+                var validatedModelType = dbContext.Model.FindEntityType(validatedClrType)!;
+                await foreach (var (source, validatedEntity) in ReadEntitiesAsync(zipEntry, validatedClrType).ConfigureAwait(false))
+                {
+                    ReadGeneratedKeys(source, validatedKeys);
+                    RestoredRowCleaner.ThrowIfValueCannotBeShortened(validatedModelType, validatedEntity);
+                }
+            }
+        }
+
+        return historyEntries;
     }
 
     private static List<System.Reflection.PropertyInfo> OrderByForeignKeys(IEnumerable<System.Reflection.PropertyInfo> sets, IModel model)
