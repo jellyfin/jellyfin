@@ -51,8 +51,8 @@ public static class KnownGap
     }
 
     private static string SkipMessage(KnownGapDefinition gap, Exception ex)
-        => $"[known gap {gap.Name}] {ex.GetType().Name}: {ex.Message}";
+        => $"[known gap {gap.Id}: {gap.Name}] {ex.GetType().Name}: {ex.Message}";
 
     private static string FixedMessage(KnownGapDefinition gap)
-        => $"[known gap {gap.Name}] The test passes on {gap.Provider}, remove the KnownGap marker.";
+        => $"[known gap {gap.Id}: {gap.Name}] The test passes on {gap.Provider}, remove the KnownGap marker.";
 }

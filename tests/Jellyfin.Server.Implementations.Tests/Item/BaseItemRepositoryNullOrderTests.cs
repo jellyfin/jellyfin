@@ -42,8 +42,18 @@ public sealed class BaseItemRepositoryNullOrderTests : JellyfinDbTestFixture
     [InlineData(ItemSortBy.ParentIndexNumber)]
     [InlineData(ItemSortBy.Album)]
     [InlineData(ItemSortBy.SeriesSortName)]
-    [InlineData(ItemSortBy.DatePlayed)]
     public void GetItemList_NullableSortKey_OrdersMissingValueLowest(ItemSortBy sortBy)
+    {
+        AssertMissingValueIsLowest(sortBy);
+    }
+
+    [Fact]
+    public void GetItemList_DatePlayed_OrdersMissingValueLowest()
+    {
+        KnownGap.On(KnownGaps.OuterReferenceInDerivedTable, () => AssertMissingValueIsLowest(ItemSortBy.DatePlayed));
+    }
+
+    private void AssertMissingValueIsLowest(ItemSortBy sortBy)
     {
         using (var context = CreateDbContext())
         {

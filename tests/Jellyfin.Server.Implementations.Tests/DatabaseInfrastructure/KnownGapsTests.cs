@@ -1,12 +1,22 @@
 using System;
+using System.Linq;
+using System.Reflection;
 using Jellyfin.Database.Testing;
+using MySqlConnector;
 using Npgsql;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 
 public class KnownGapsTests
 {
+    public static TheoryData<KnownGapDefinition> SortNameRangeGaps => new()
+    {
+        KnownGaps.SortNameRangeLowersNonAsciiOnMySql,
+        KnownGaps.SortNameRangeLowersNonAsciiOnMariaDb
+    };
+
     [Theory]
     [InlineData("invalid byte sequence for encoding \"UTF8\": 0x00")]
     [InlineData("séquence d'octets invalide pour l'encodage « UTF8 » : 0x00")]
@@ -33,6 +43,82 @@ public class KnownGapsTests
 
         Assert.Throws<PostgresException>(
             () => KnownGap.On(gap, () => throw CreatePostgresException("42883", "function lower(integer) does not exist")));
+    }
+
+    [Theory]
+    [InlineData(MySqlErrorCode.BadFieldError, true)]
+    [InlineData(MySqlErrorCode.NoSuchTable, false)]
+    [InlineData(MySqlErrorCode.ParseError, false)]
+    public void OuterReferenceInDerivedTable_IsDecidedByTheErrorCode(MySqlErrorCode code, bool expected)
+    {
+        var exception = new InvalidOperationException("query failed", CreateMySqlException(code));
+
+        Assert.Equal(expected, KnownGaps.OuterReferenceInDerivedTable.Matches(exception));
+    }
+
+    [Theory]
+    [MemberData(nameof(SortNameRangeGaps))]
+    public void SortNameRangeGap_TheKnownLists_Match(KnownGapDefinition gap)
+    {
+        var greater = Assert.ThrowsAny<Exception>(
+            () => AssertHelpers.AssertSameNames(new[] { "émile", "ölfass" }, new[] { "Émile", "Öland", "émile", "ölfass" }));
+        var less = Assert.ThrowsAny<Exception>(
+            () => AssertHelpers.AssertSameNames(new[] { "Emile", "Émile", "Öland" }, new[] { "Emile" }));
+
+        Assert.True(gap.Matches(greater));
+        Assert.True(gap.Matches(less));
+    }
+
+    [Theory]
+    [MemberData(nameof(SortNameRangeGaps))]
+    public void SortNameRangeGap_AnyOtherListOrFailure_DoesNotMatch(KnownGapDefinition gap)
+    {
+        var otherList = Assert.ThrowsAny<Exception>(
+            () => AssertHelpers.AssertSameNames(new[] { "émile", "ölfass" }, new[] { "Émile", "émile" }));
+        var emptyList = Assert.ThrowsAny<Exception>(
+            () => AssertHelpers.AssertSameNames(new[] { "Emile" }, Array.Empty<string>()));
+        var otherAssertion = Assert.ThrowsAny<Exception>(() => Assert.True(false));
+
+        Assert.IsAssignableFrom<IAssertionException>(otherList);
+        Assert.IsAssignableFrom<IAssertionException>(otherAssertion);
+        Assert.False(gap.Matches(otherList));
+        Assert.False(gap.Matches(emptyList));
+        Assert.False(gap.Matches(otherAssertion));
+        Assert.False(gap.Matches(new InvalidOperationException("boom")));
+    }
+
+    [Fact]
+    public void EveryGap_HasAnIdThatIsShortStableAndUnique()
+    {
+        var gaps = typeof(KnownGaps)
+            .GetFields(BindingFlags.Public | BindingFlags.Static)
+            .Where(f => f.FieldType == typeof(KnownGapDefinition))
+            .Select(f => (KnownGapDefinition)f.GetValue(null)!)
+            .ToList();
+
+        Assert.NotEmpty(gaps);
+        Assert.All(gaps, gap =>
+        {
+            Assert.Matches("^[A-Z0-9]+(-[A-Z0-9]+)+$", gap.Id);
+            Assert.InRange(gap.Id.Length, 1, 32);
+        });
+        Assert.Equal(gaps.Count, gaps.Select(g => g.Id).Distinct(StringComparer.Ordinal).Count());
+    }
+
+    private static MySqlException CreateMySqlException(MySqlErrorCode code)
+    {
+        var constructor = typeof(MySqlException)
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Where(c => c.GetParameters().Any(p => p.ParameterType == typeof(MySqlErrorCode)))
+            .OrderBy(c => c.GetParameters().Length)
+            .First();
+        var arguments = constructor.GetParameters()
+            .Select(p => p.ParameterType == typeof(MySqlErrorCode) ? (object)code
+                : p.ParameterType == typeof(string) ? "failure"
+                : p.ParameterType.IsValueType ? Activator.CreateInstance(p.ParameterType)
+                : null)
+            .ToArray();
+        return (MySqlException)constructor.Invoke(arguments);
     }
 
     private static PostgresException CreatePostgresException(string sqlState, string messageText)

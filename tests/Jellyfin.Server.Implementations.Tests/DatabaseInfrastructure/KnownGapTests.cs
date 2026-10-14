@@ -12,11 +12,11 @@ public class KnownGapTests
 
     private static readonly TestDbProvider _other = _selected == TestDbProvider.Sqlite ? TestDbProvider.Postgres : TestDbProvider.Sqlite;
 
-    private static readonly KnownGapDefinition _selectedGap = new(_selected, "test-gap", ex => ex is InvalidOperationException);
+    private static readonly KnownGapDefinition _selectedGap = new(_selected, "TEST-GAP", "test-gap", ex => ex is InvalidOperationException);
 
-    private static readonly KnownGapDefinition _otherGap = new(_other, "test-gap", ex => ex is InvalidOperationException);
+    private static readonly KnownGapDefinition _otherGap = new(_other, "TEST-GAP", "test-gap", ex => ex is InvalidOperationException);
 
-    private static readonly KnownGapDefinition _assertionGap = new(_selected, "test-gap", ex => ex is IAssertionException);
+    private static readonly KnownGapDefinition _assertionGap = new(_selected, "TEST-GAP", "test-gap", ex => ex is IAssertionException);
 
     [Fact]
     public void On_GapOnOtherProvider_RunsBody()
@@ -68,6 +68,7 @@ public class KnownGapTests
     {
         var ex = CaptureSkip(() => KnownGap.On(_selectedGap, () => Throw(new InvalidOperationException("boom"))));
 
+        Assert.Contains("TEST-GAP", ex.Message, StringComparison.Ordinal);
         Assert.Contains("test-gap", ex.Message, StringComparison.Ordinal);
         Assert.Contains("boom", ex.Message, StringComparison.Ordinal);
     }
@@ -100,6 +101,7 @@ public class KnownGapTests
     {
         var ex = Assert.Throws<FailException>(() => KnownGap.On(_selectedGap, () => { }));
 
+        Assert.Contains("TEST-GAP", ex.Message, StringComparison.Ordinal);
         Assert.Contains("remove the KnownGap marker", ex.Message, StringComparison.Ordinal);
     }
 

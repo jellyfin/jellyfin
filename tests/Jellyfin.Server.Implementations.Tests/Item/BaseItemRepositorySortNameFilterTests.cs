@@ -132,6 +132,33 @@ public sealed class BaseItemRepositorySortNameFilterTests : JellyfinDbTestFixtur
         Assert.Equal(["BRAVO", "Bob", "Carl", "bob"], result.Select(i => i.Name).Order(StringComparer.Ordinal).ToArray());
     }
 
+    /// <summary>
+    /// The range filters leave lower-casing the sort name to the engine, and MySQL and MariaDB lower-case non-ASCII
+    /// letters where SQLite and PostgreSQL leave them alone, so a non-ASCII bound selects different items there.
+    /// </summary>
+    [Fact]
+    public void GetItemList_NameStartsWithOrGreaterNonAsciiTerm_LeavesNonAsciiLettersOfSortNameAsStored()
+    {
+        AddMovies("Émile", "émile", "Öland", "ölfass", "Emile");
+
+        OnMySqlFamily(() => AssertHelpers.AssertSameNames(["émile", "ölfass"], Greater("É")));
+    }
+
+    [Fact]
+    public void GetItemList_NameLessThanNonAsciiTerm_LeavesNonAsciiLettersOfSortNameAsStored()
+    {
+        AddMovies("Émile", "émile", "Öland", "ölfass", "Emile");
+
+        OnMySqlFamily(() => AssertHelpers.AssertSameNames(["Emile", "Émile", "Öland"], Less("É")));
+    }
+
+    private static void OnMySqlFamily(Action body)
+    {
+        KnownGap.On(
+            KnownGaps.SortNameRangeLowersNonAsciiOnMySql,
+            () => KnownGap.On(KnownGaps.SortNameRangeLowersNonAsciiOnMariaDb, body));
+    }
+
     private string[] StartingWith(string prefix) => Names(new InternalItemsQuery(new User("test", "auth", "reset"))
     {
         IncludeItemTypes = [BaseItemKind.Movie],
