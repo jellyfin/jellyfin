@@ -19,6 +19,7 @@ namespace Jellyfin.Server.Tests.Migrations;
 /// The import of a legacy database renames the file afterwards. Windows refuses to rename a file that is still open, so
 /// the import must not keep a handle to it.
 /// </summary>
+[Collection(SqlitePoolIsolation.Name)]
 public sealed class LegacyDatabaseHandleTests : DatabaseTestFixture
 {
     private const string ProcessHandles = "/proc/self/fd";
@@ -33,7 +34,6 @@ public sealed class LegacyDatabaseHandleTests : DatabaseTestFixture
     [Fact]
     public void Perform_UserDb_DoesNotKeepTheLegacyDatabaseOpen()
     {
-        Assert.SkipUnless(Directory.Exists(ProcessHandles), "The open files of the process cannot be listed");
         CreateLegacyDb(
             "users.db",
             "CREATE TABLE LocalUsersv2 (Id INTEGER PRIMARY KEY, guid TEXT NOT NULL, data BLOB NOT NULL)",
@@ -41,27 +41,36 @@ public sealed class LegacyDatabaseHandleTests : DatabaseTestFixture
 
         new MigrateUserDb(NullLogger<MigrateUserDb>.Instance, CreatePaths(), CreateDbContextFactory(), Mock.Of<IXmlSerializer>()).Perform();
 
-        Assert.Empty(OpenLegacyFiles());
+        // An undisposed blob stream keeps the file open only until the garbage collector
+        // finalizes it, which can happen before this check. On Windows the '.old' assertion,
+        // here and in MigrateUserDbKeyLengthTests, guards that part.
+        if (Directory.Exists(ProcessHandles))
+        {
+            Assert.Empty(OpenLegacyFiles());
+        }
+
         Assert.True(File.Exists(Path.Combine(_dataPath, "users.db.old")));
     }
 
     [ProviderFact(TestDbProvider.Sqlite)]
     public void Perform_ActivityLogDb_DoesNotKeepTheLegacyDatabasesOpen()
     {
-        Assert.SkipUnless(Directory.Exists(ProcessHandles), "The open files of the process cannot be listed");
         CreateLegacyDb("activitylog.db", "CREATE TABLE ActivityLog (Id INTEGER PRIMARY KEY)");
         CreateLegacyDb("users.db", "CREATE TABLE LocalUsersv2 (Id INTEGER PRIMARY KEY, guid TEXT NOT NULL, data BLOB NOT NULL)");
 
         new MigrateActivityLogDb(NullLogger<MigrateActivityLogDb>.Instance, CreatePaths(), CreateDbContextFactory()).Perform();
 
-        Assert.Empty(OpenLegacyFiles());
+        if (Directory.Exists(ProcessHandles))
+        {
+            Assert.Empty(OpenLegacyFiles());
+        }
+
         Assert.True(File.Exists(Path.Combine(_dataPath, "activitylog.db.old")));
     }
 
     [Fact]
     public void Perform_AuthenticationDb_DoesNotKeepTheLegacyDatabaseOpen()
     {
-        Assert.SkipUnless(Directory.Exists(ProcessHandles), "The open files of the process cannot be listed");
         CreateLegacyDb(
             "authentication.db",
             "CREATE TABLE Tokens (Id INTEGER PRIMARY KEY)",
@@ -69,14 +78,17 @@ public sealed class LegacyDatabaseHandleTests : DatabaseTestFixture
 
         new MigrateAuthenticationDb(NullLogger<MigrateAuthenticationDb>.Instance, CreateDbContextFactory(), CreatePaths(), Mock.Of<IUserManager>()).Perform();
 
-        Assert.Empty(OpenLegacyFiles());
+        if (Directory.Exists(ProcessHandles))
+        {
+            Assert.Empty(OpenLegacyFiles());
+        }
+
         Assert.True(File.Exists(Path.Combine(_dataPath, "authentication.db.old")));
     }
 
     [Fact]
     public void Perform_DisplayPreferencesDb_DoesNotKeepTheLegacyDatabaseOpen()
     {
-        Assert.SkipUnless(Directory.Exists(ProcessHandles), "The open files of the process cannot be listed");
         CreateLegacyDb(
             "displaypreferences.db",
             "CREATE TABLE userdisplaypreferences (id INTEGER PRIMARY KEY, userId TEXT NOT NULL, client TEXT NOT NULL, data BLOB NOT NULL)",
@@ -84,8 +96,24 @@ public sealed class LegacyDatabaseHandleTests : DatabaseTestFixture
 
         new MigrateDisplayPreferencesDb(NullLogger<MigrateDisplayPreferencesDb>.Instance, CreatePaths(), CreateDbContextFactory(), Mock.Of<IUserManager>()).Perform();
 
-        Assert.Empty(OpenLegacyFiles());
+        // An undisposed blob stream keeps the file open only until the garbage collector
+        // finalizes it, which can happen before this check. On Windows the '.old' assertion
+        // guards that part.
+        if (Directory.Exists(ProcessHandles))
+        {
+            Assert.Empty(OpenLegacyFiles());
+        }
+
         Assert.True(File.Exists(Path.Combine(_dataPath, "displaypreferences.db.old")));
+    }
+
+    [Fact]
+    public void OpenLegacyFiles_FileHeldOpen_ListsTheFile()
+    {
+        Assert.SkipUnless(Directory.Exists(ProcessHandles), "The open files of the process cannot be listed");
+        using var file = new FileStream(Path.Combine(_dataPath, "held.db"), FileMode.Create);
+
+        Assert.Contains("held.db", OpenLegacyFiles());
     }
 
     protected override void Dispose(bool disposing)
@@ -129,22 +157,13 @@ public sealed class LegacyDatabaseHandleTests : DatabaseTestFixture
     private List<string> OpenLegacyFiles()
     {
         // The links of /proc are resolved paths, so the directory is matched by its unique name
-        // and not by the path, which may contain a symbolic link. Tests run in parallel, so a
-        // descriptor can be closed while the list is read, which skips that entry.
+        // and not by the path, which may contain a symbolic link. A descriptor that is closed
+        // after it is listed has no link target any more and is skipped.
         var directoryName = Path.GetFileName(_dataPath);
         var openFiles = new List<string>();
         foreach (var handle in Directory.EnumerateFileSystemEntries(ProcessHandles))
         {
-            string? target;
-            try
-            {
-                target = new FileInfo(handle).LinkTarget;
-            }
-            catch (IOException)
-            {
-                continue;
-            }
-
+            var target = new FileInfo(handle).LinkTarget;
             if (target is not null && target.Split('/').Contains(directoryName, StringComparer.Ordinal))
             {
                 openFiles.Add(Path.GetFileName(target));
