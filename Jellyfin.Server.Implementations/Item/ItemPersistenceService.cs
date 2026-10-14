@@ -151,6 +151,17 @@ public class ItemPersistenceService : IItemPersistenceService
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ParentId).ExecuteDelete();
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ChildId).ExecuteDelete();
         var peopleIds = context.PeopleBaseItemMap.WhereOneOrMany(relatedItems, e => e.ItemId).Select(f => f.PeopleId).Distinct().ToArray();
+
+        // Some servers check a foreign key per row rather than at the end of the statement, so an item cannot be deleted
+        // while another item that is deleted in the same statement still names it as its owner. They also stop a cascade
+        // that is nested more than 15 levels deep, which the ParentId cascade of a deep folder tree reaches, so the rows
+        // are cut loose from their parents as well and the delete cascades one level into the tables that hold their data.
+        context.BaseItems
+            .WhereOneOrMany(relatedItems, e => e.Id)
+            .Where(e => e.OwnerId != null || e.ParentId != null)
+            .ExecuteUpdate(e => e
+                .SetProperty(f => f.OwnerId, (Guid?)null)
+                .SetProperty(f => f.ParentId, (Guid?)null));
         context.BaseItems.WhereOneOrMany(relatedItems, e => e.Id).ExecuteDelete();
         context.ItemValues.Where(e => !e.BaseItemsMap!.Any()).ExecuteDelete();
         context.KeyframeData.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();

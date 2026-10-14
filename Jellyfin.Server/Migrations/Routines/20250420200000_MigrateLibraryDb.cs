@@ -81,6 +81,14 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         using (var operation = GetPreparedDbContext("Cleanup database"))
         {
             operation.JellyfinDbContext.AttachmentStreamInfos.ExecuteDelete();
+
+            // Some servers check a foreign key per row and stop a cascade nested more than 15 levels deep, so a table that
+            // refers to itself is emptied only after its rows have let go of each other.
+            operation.JellyfinDbContext.BaseItems
+                .Where(e => e.OwnerId != null || e.ParentId != null)
+                .ExecuteUpdate(e => e
+                    .SetProperty(f => f.OwnerId, (Guid?)null)
+                    .SetProperty(f => f.ParentId, (Guid?)null));
             operation.JellyfinDbContext.BaseItems.ExecuteDelete();
             operation.JellyfinDbContext.ItemValues.ExecuteDelete();
             operation.JellyfinDbContext.UserData.ExecuteDelete();
