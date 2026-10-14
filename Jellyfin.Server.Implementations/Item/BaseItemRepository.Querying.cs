@@ -340,8 +340,9 @@ public sealed partial class BaseItemRepository
         foreach (var group in allEpisodes.GroupBy(e => e.SeriesName))
         {
             var episodes = group.ToList();
-            var mostRecentDate = episodes[0].DateCreated ?? DateTime.MinValue;
-            var recentCutoff = mostRecentDate.AddHours(-RecentAdditionWindowHours);
+            var newestDateCreated = episodes[0].DateCreated;
+            var mostRecentDate = newestDateCreated ?? DateTime.MinValue;
+            var recentCutoff = newestDateCreated?.AddHours(-RecentAdditionWindowHours);
 
             // Find episodes added within the recent window
             var recentEpisodeCount = 0;
