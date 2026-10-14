@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.ValueConverters;
+using Jellyfin.Server.Implementations.Tests.Data;
 using MediaBrowser.Controller.Entities;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -13,6 +14,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// and SQLite reads it back as UTC. Values are compared to within a microsecond,
 /// as the stored precision is not under test.
 /// </summary>
+[Collection(TimeZoneIsolation.Name)]
 public sealed class DateTimeRoundTripTests : JellyfinDbTestFixture
 {
     private static readonly TimeSpan _microsecond = TimeSpan.FromTicks(10);
@@ -54,6 +56,82 @@ public sealed class DateTimeRoundTripTests : JellyfinDbTestFixture
         Assert.Equal(DateTimeKind.Utc, activityDateCreated.Kind);
     }
 
+    [Theory]
+    [InlineData(DateTimeKind.Local)]
+    [InlineData(DateTimeKind.Unspecified)]
+    public void DateTime_MinValueOfOtherKind_RoundTripsExactly(DateTimeKind kind)
+    {
+        var sentinel = new DateTime(DateTime.MinValue.Ticks, kind);
+
+        var (dateCreated, premiereDate, activityDateCreated) = RoundTrip(sentinel);
+
+        AssertSentinel(DateTime.MinValue.Ticks, dateCreated);
+        AssertSentinel(DateTime.MinValue.Ticks, premiereDate);
+        AssertSentinel(DateTime.MinValue.Ticks, activityDateCreated);
+    }
+
+    [Theory]
+    [InlineData(DateTimeKind.Local)]
+    [InlineData(DateTimeKind.Unspecified)]
+    public void DateTime_MaxValueOfOtherKind_RoundTripsExactly(DateTimeKind kind)
+    {
+        var sentinel = new DateTime(DateTime.MaxValue.Ticks, kind);
+
+        var (dateCreated, premiereDate, activityDateCreated) = RoundTrip(sentinel);
+
+        AssertSentinel(DateTime.MaxValue.Ticks, dateCreated);
+        AssertSentinel(DateTime.MaxValue.Ticks, premiereDate);
+        AssertSentinel(DateTime.MaxValue.Ticks, activityDateCreated);
+    }
+
+    [Theory]
+    [InlineData("America/New_York", 0, DateTimeKind.Local)]
+    [InlineData("America/New_York", 0, DateTimeKind.Unspecified)]
+    [InlineData("America/New_York", 3155378975999999999, DateTimeKind.Local)]
+    [InlineData("America/New_York", 3155378975999999999, DateTimeKind.Unspecified)]
+    [InlineData("Asia/Kolkata", 0, DateTimeKind.Local)]
+    [InlineData("Asia/Kolkata", 0, DateTimeKind.Unspecified)]
+    [InlineData("Asia/Kolkata", 3155378975999999999, DateTimeKind.Local)]
+    [InlineData("Asia/Kolkata", 3155378975999999999, DateTimeKind.Unspecified)]
+    public void DateTime_SentinelOfOtherKindInZone_RoundTripsExactly(string zoneId, long ticks, DateTimeKind kind)
+    {
+        using var zone = new TemporaryTimeZone(zoneId);
+
+        var (dateCreated, premiereDate, activityDateCreated) = RoundTrip(new DateTime(ticks, kind));
+
+        AssertSentinel(ticks, dateCreated);
+        AssertSentinel(ticks, premiereDate);
+        AssertSentinel(ticks, activityDateCreated);
+    }
+
+    [Theory]
+    [InlineData(DateTimeKind.Local, DateTimeKind.Unspecified)]
+    [InlineData(DateTimeKind.Local, DateTimeKind.Utc)]
+    [InlineData(DateTimeKind.Unspecified, DateTimeKind.Unspecified)]
+    [InlineData(DateTimeKind.Unspecified, DateTimeKind.Utc)]
+    public void DateTime_MinValueOfOtherKind_IsFoundByEquality(DateTimeKind storedKind, DateTimeKind queriedKind)
+    {
+        var queried = new DateTime(DateTime.MinValue.Ticks, queriedKind);
+
+        var found = StoreAndCountEqual(new DateTime(DateTime.MinValue.Ticks, storedKind), queried);
+
+        Assert.Equal(1, found);
+    }
+
+    [Theory]
+    [InlineData(DateTimeKind.Local, DateTimeKind.Unspecified)]
+    [InlineData(DateTimeKind.Local, DateTimeKind.Utc)]
+    [InlineData(DateTimeKind.Unspecified, DateTimeKind.Unspecified)]
+    [InlineData(DateTimeKind.Unspecified, DateTimeKind.Utc)]
+    public void DateTime_MaxValueOfOtherKind_IsFoundByEquality(DateTimeKind storedKind, DateTimeKind queriedKind)
+    {
+        var queried = new DateTime(DateTime.MaxValue.Ticks, queriedKind);
+
+        var found = StoreAndCountEqual(new DateTime(DateTime.MaxValue.Ticks, storedKind), queried);
+
+        Assert.Equal(1, found);
+    }
+
     [Fact]
     public void Model_DateTimeProperties_UseSharedUtcConverter()
     {
@@ -73,6 +151,33 @@ public sealed class DateTimeRoundTripTests : JellyfinDbTestFixture
         Assert.NotNull(actual);
         Assert.Equal(DateTimeKind.Utc, actual.Value.Kind);
         Assert.Equal(expected, actual.Value, _microsecond);
+    }
+
+    private static void AssertSentinel(long expectedTicks, DateTime? actual)
+    {
+        Assert.NotNull(actual);
+        Assert.Equal(expectedTicks, actual.Value.Ticks);
+        Assert.Equal(DateTimeKind.Utc, actual.Value.Kind);
+    }
+
+    private int StoreAndCountEqual(DateTime stored, DateTime queried)
+    {
+        var itemId = Guid.NewGuid();
+        using (var context = CreateDbContext())
+        {
+            context.BaseItems.Add(new BaseItemEntity
+            {
+                Id = itemId,
+                Type = typeof(Folder).FullName!,
+                PremiereDate = stored
+            });
+            context.SaveChanges();
+        }
+
+        using (var context = CreateDbContext())
+        {
+            return context.BaseItems.Count(i => i.Id.Equals(itemId) && i.PremiereDate == queried);
+        }
     }
 
     private (DateTime? DateCreated, DateTime? PremiereDate, DateTime ActivityDateCreated) RoundTrip(DateTime value)
