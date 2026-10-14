@@ -109,10 +109,9 @@ namespace Jellyfin.Server.Migrations.Routines
                         statement.TryBind("@Id", id);
 
                         using var reader = statement.ExecuteReader();
-                        if (reader.HasRows && reader.Read() && reader.TryGetGuid(0, out guid))
+                        if (!reader.HasRows || !reader.Read() || !reader.TryGetGuid(0, out guid))
                         {
-                            // Successfully parsed a Guid from the user table.
-                            break;
+                            guid = Guid.Empty;
                         }
                     }
 
