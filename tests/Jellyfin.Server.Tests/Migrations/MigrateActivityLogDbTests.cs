@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Testing;
 using Jellyfin.Server.Migrations.Routines;
 using MediaBrowser.Controller;
@@ -62,6 +63,22 @@ public sealed class MigrateActivityLogDbTests : DatabaseTestFixture
         Assert.Equal([_firstUserId, Guid.Empty, _lastUserId], logs.Select(l => l.UserId));
     }
 
+    [ProviderFact(TestDbProvider.Sqlite)]
+    public void Perform_PreviousImportRowsWereRemoved_RestartsIdsAtOne()
+    {
+        SeedActivityLogs(5);
+        CreateActivityLogDb(
+            ("first", _firstUserId.ToByteArray()),
+            ("second", _lastUserId.ToByteArray()));
+        CreateUserDb(userId: null);
+
+        Perform();
+
+        using var context = CreateDbContext();
+        var logs = context.ActivityLogs.OrderBy(l => l.Id).ToList();
+        Assert.Equal([1, 2], logs.Select(l => l.Id));
+    }
+
     protected override void Dispose(bool disposing)
     {
         if (disposing)
@@ -86,6 +103,12 @@ public sealed class MigrateActivityLogDbTests : DatabaseTestFixture
     }
 
     private void CreateActivityLogDb(bool guidsAsText)
+        => CreateActivityLogDb(
+            ("first", LegacyGuid(_firstUserId, guidsAsText)),
+            ("second", 1L),
+            ("third", LegacyGuid(_lastUserId, guidsAsText)));
+
+    private void CreateActivityLogDb(params (string Name, object UserId)[] entries)
     {
         using var connection = OpenLegacyDb("activitylog.db");
         using var create = connection.CreateCommand();
@@ -103,13 +126,25 @@ public sealed class MigrateActivityLogDbTests : DatabaseTestFixture
             """;
         create.ExecuteNonQuery();
 
-        InsertEntry(connection, "first", LegacyGuid(_firstUserId, guidsAsText));
-        InsertEntry(connection, "second", 1L);
-        InsertEntry(connection, "third", LegacyGuid(_lastUserId, guidsAsText));
+        foreach (var entry in entries)
+        {
+            InsertEntry(connection, entry.Name, entry.UserId);
+        }
     }
 
     private static object LegacyGuid(Guid guid, bool asText)
         => asText ? guid.ToString() : guid.ToByteArray();
+
+    private void SeedActivityLogs(int count)
+    {
+        using var context = CreateDbContext();
+        for (var i = 0; i < count; i++)
+        {
+            context.ActivityLogs.Add(new ActivityLog($"old {i}", "Old", Guid.Empty));
+        }
+
+        context.SaveChanges();
+    }
 
     private static void InsertEntry(SqliteConnection connection, string name, object userId)
     {
