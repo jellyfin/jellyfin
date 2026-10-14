@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -786,6 +787,48 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         await using var restored = CreateDbContext();
         var userData = await restored.UserData.AsNoTracking().SingleAsync(cancellationToken).ConfigureAwait(true);
         Assert.Equal(KeyNormalizer.NormalizeUserDataKey(key), userData.CustomDataKey);
+    }
+
+    // The bound counts the characters of a column on MySQL and MariaDB and the UTF-16 units of a string everywhere
+    // else. A value of four-byte characters that is cut in the middle of a pair would be rejected by a utf8mb4 column.
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    public async Task RestoreBackupAsync_WithKeysOfFourByteCharactersOverTheBound_RestoresThemShortenedWholeCharacters(int padding)
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        const string Clapper = "\U0001F3AC";
+        var deviceId = new string('d', padding) + string.Concat(Enumerable.Repeat(Clapper, KeyNormalizer.DeviceIdMaxLength));
+        var dataKey = new string('k', padding) + string.Concat(Enumerable.Repeat(Clapper, KeyNormalizer.UserDataKeyMaxLength));
+        await SeedAsync(cancellationToken).ConfigureAwait(true);
+        await using (var ctx = CreateDbContext())
+        {
+            var userId = await ctx.Users.Select(e => e.Id).FirstAsync(cancellationToken).ConfigureAwait(true);
+            ctx.UserData.Add(new UserData { CustomDataKey = "placeholder", ItemId = MovieId, UserId = userId, Item = null, User = null });
+            await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(true);
+        }
+
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        await RewriteJsonArrayAsync(manifest.Path, "Devices", devices => devices[0]!["DeviceId"] = deviceId, cancellationToken).ConfigureAwait(true);
+        await RewriteJsonArrayAsync(manifest.Path, "UserData", rows => rows[0]!["CustomDataKey"] = dataKey, cancellationToken).ConfigureAwait(true);
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        await using var restored = CreateDbContext();
+        var restoredDeviceId = (await restored.Devices.AsNoTracking().SingleAsync(cancellationToken).ConfigureAwait(true)).DeviceId;
+        var restoredDataKey = (await restored.UserData.AsNoTracking().SingleAsync(cancellationToken).ConfigureAwait(true)).CustomDataKey;
+        Assert.Equal(KeyNormalizer.NormalizeDeviceId(deviceId), restoredDeviceId);
+        Assert.Equal(KeyNormalizer.NormalizeUserDataKey(dataKey), restoredDataKey);
+        Assert.InRange(restoredDeviceId.Length, 1, KeyNormalizer.DeviceIdMaxLength);
+        Assert.InRange(restoredDataKey.Length, 1, KeyNormalizer.UserDataKeyMaxLength);
+        Assert.Contains(Clapper, restoredDeviceId, StringComparison.Ordinal);
+        Assert.Contains(Clapper, restoredDataKey, StringComparison.Ordinal);
+
+        // A lone surrogate cannot be encoded, which is also why a utf8mb4 column would reject it.
+        var strict = new UTF8Encoding(false, true);
+        Assert.NotEmpty(strict.GetBytes(restoredDeviceId));
+        Assert.NotEmpty(strict.GetBytes(restoredDataKey));
     }
 
     [Fact]

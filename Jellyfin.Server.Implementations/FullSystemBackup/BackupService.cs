@@ -215,15 +215,17 @@ public class BackupService : IBackupService
                     // yet, and one that was updated since its last start is missing columns the rows are restored into.
                     await dbContext.Database.MigrateAsync().ConfigureAwait(false);
 
+                    // Creating a table commits the transaction it runs in on some servers, so the history exists before it begins.
+                    var historyRepository = dbContext.GetService<IHistoryRepository>();
+                    await historyRepository.CreateIfNotExistsAsync().ConfigureAwait(false);
+
                     var transaction = await dbContext.Database.BeginTransactionAsync().ConfigureAwait(false);
                     await using (transaction.ConfigureAwait(false))
                     {
                         // The tables keep the schema of this server, so its schema migrations stay as they are and the ones
                         // of the archive are not taken over. Only the code routines follow the archive, as they describe the data.
                         var routineIds = _migrationRoutineCatalog.RoutineIds;
-                        var historyRepository = dbContext.GetService<IHistoryRepository>();
                         var schemaMigrations = dbContext.GetService<IMigrationsAssembly>().Migrations;
-                        await historyRepository.CreateIfNotExistsAsync().ConfigureAwait(false);
 
                         foreach (var item in await historyRepository.GetAppliedMigrationsAsync(CancellationToken.None).ConfigureAwait(false))
                         {
