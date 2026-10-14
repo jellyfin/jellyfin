@@ -79,7 +79,7 @@ public sealed class DisplayPreferencesManagerFailedWriteTests : JellyfinDbTestFi
 
         public override InterceptionResult<int> NonQueryExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<int> result)
         {
-            if (SkipNextDelete && Targets(command, "DELETE FROM"))
+            if (SkipNextDelete && IsDelete(command))
             {
                 SkipNextDelete = false;
                 return InterceptionResult<int>.SuppressWithResult(0);
@@ -89,15 +89,25 @@ public sealed class DisplayPreferencesManagerFailedWriteTests : JellyfinDbTestFi
             return result;
         }
 
-        private static bool Targets(DbCommand command, string statement)
+        private static bool IsInsert(DbCommand command)
         {
-            var text = command.CommandText.Replace("\"", string.Empty, StringComparison.Ordinal).Replace("`", string.Empty, StringComparison.Ordinal);
-            return text.StartsWith($"{statement} CustomItemDisplayPreferences", StringComparison.Ordinal);
+            return Unquoted(command).Contains("INSERT INTO CustomItemDisplayPreferences", StringComparison.Ordinal);
+        }
+
+        private static bool IsDelete(DbCommand command)
+        {
+            var text = Unquoted(command);
+            return text.StartsWith("DELETE", StringComparison.Ordinal) && text.Contains("FROM CustomItemDisplayPreferences", StringComparison.Ordinal);
+        }
+
+        private static string Unquoted(DbCommand command)
+        {
+            return command.CommandText.Replace("\"", string.Empty, StringComparison.Ordinal).Replace("`", string.Empty, StringComparison.Ordinal);
         }
 
         private void FailInsert(DbCommand command)
         {
-            if (FailInserts && Targets(command, "INSERT INTO"))
+            if (FailInserts && IsInsert(command))
             {
                 throw new SqliteException("SQLite Error 19: 'UNIQUE constraint failed: CustomItemDisplayPreferences.UserId, CustomItemDisplayPreferences.ItemId, CustomItemDisplayPreferences.Client, CustomItemDisplayPreferences.Key'.", 19);
             }
