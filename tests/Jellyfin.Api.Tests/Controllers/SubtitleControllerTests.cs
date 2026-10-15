@@ -94,6 +94,26 @@ public class SubtitleControllerTests
         Assert.IsType<FileStreamResult>(result);
     }
 
+    [Theory]
+    [InlineData("WEBVTT\n\n00:00:01.000 --> 00:00:02.000\nSay WEBVTT aloud\n", "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000\n\n00:00:01.000 --> 00:00:02.000\nSay WEBVTT aloud\n")]
+    [InlineData("WEBVTT\r\n\r\n00:00:01.000 --> 00:00:02.000\r\nSay WEBVTT aloud\r\n", "WEBVTT\r\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000\r\n\r\n00:00:01.000 --> 00:00:02.000\r\nSay WEBVTT aloud\r\n")]
+    [InlineData("WEBVTT - English\n\n00:00:01.000 --> 00:00:02.000\nSay WEBVTT aloud\n", "WEBVTT - English\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000\n\n00:00:01.000 --> 00:00:02.000\nSay WEBVTT aloud\n")]
+    [InlineData("WEBVTT - English\r\n\r\n00:00:01.000 --> 00:00:02.000\r\nSay WEBVTT aloud\r\n", "WEBVTT - English\r\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000\r\n\r\n00:00:01.000 --> 00:00:02.000\r\nSay WEBVTT aloud\r\n")]
+    [InlineData("WEBVTT", "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000")]
+    [InlineData("WEBVTT - English", "WEBVTT - English\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000")]
+    public async Task GetSubtitle_AddVttTimeMap_OnlyChangesHeaderLine(string vtt, string expected)
+    {
+        var encoder = new Mock<ISubtitleEncoder>(MockBehavior.Strict);
+        var controller = CreateController("subrip", "/media/sub.srt", encoder, out _);
+        encoder.Setup(e => e.GetSubtitles(It.IsAny<BaseItem>(), It.IsAny<string>(), SubtitleIndex, "vtt", 0, 0, false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MemoryStream(Encoding.UTF8.GetBytes(vtt)));
+
+        var result = await controller.GetSubtitle(_itemId, _itemId.ToString("N"), SubtitleIndex, "vtt", null, null, null, null, null, addVttTimeMap: true);
+
+        var fileResult = Assert.IsType<FileContentResult>(result);
+        Assert.Equal(expected, Encoding.UTF8.GetString(fileResult.FileContents));
+    }
+
     private static SubtitleController CreateController(
         string codec,
         string subtitlePath,

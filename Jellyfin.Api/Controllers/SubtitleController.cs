@@ -263,7 +263,20 @@ public class SubtitleController : BaseJellyfinApiController
 
                 var text = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-                text = text.Replace("WEBVTT", "WEBVTT\n" + GetVttTimestampMap(vttTimestampMapMpegts), StringComparison.Ordinal);
+                if (text.StartsWith("WEBVTT", StringComparison.Ordinal))
+                {
+                    var headerEnd = text.IndexOf('\n', StringComparison.Ordinal);
+                    var timestampMap = GetVttTimestampMap(vttTimestampMapMpegts);
+                    if (headerEnd >= 0)
+                    {
+                        var newLine = text[headerEnd - 1] == '\r' ? "\r\n" : "\n";
+                        text = text.Insert(headerEnd + 1, timestampMap + newLine);
+                    }
+                    else
+                    {
+                        text += "\n" + timestampMap;
+                    }
+                }
 
                 return File(Encoding.UTF8.GetBytes(text), MimeTypes.GetMimeType("file." + format));
             }
