@@ -1,16 +1,21 @@
 using System;
+using System.Data;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.DbConfiguration;
+using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Providers.MySql;
 using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.Tests.Postgres;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microting.EntityFrameworkCore.MySql.Infrastructure;
 using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Storage.Internal;
 using MySqlConnector;
 using Xunit;
 
@@ -293,6 +298,37 @@ public class MySqlDatabaseProviderInitialiseTests
         Assert.Equal(
             first.Options.FindExtension<CoreOptionsExtension>()!.Interceptors,
             second.Options.FindExtension<CoreOptionsExtension>()!.Interceptors);
+    }
+
+    [Fact]
+    public void Initialise_ReplacesTheConnectionOfEfCore_WithTheOneThatStartsTransactionsAtReadCommitted()
+    {
+        var options = Initialise("Server=db;Database=jellyfin");
+        using var context = new JellyfinDbContext(
+            options.Options,
+            NullLogger<JellyfinDbContext>.Instance,
+            new MySqlDatabaseProvider(new CollectingLogger<MySqlDatabaseProvider>()),
+            new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
+
+        // EF Core starts transactions through IRelationalConnection and through the transaction manager of the database
+        // facade, which both resolve to the connection, and the provider resolves it from its own interface.
+        Assert.IsType<ReadCommittedConnection>(context.GetService<IRelationalConnection>());
+        Assert.IsType<ReadCommittedConnection>(context.GetService<IDbContextTransactionManager>());
+#pragma warning disable EF1001 // Internal EF Core API usage: the provider registers its connection under its own interface.
+        Assert.IsType<ReadCommittedConnection>(context.GetService<IMySqlRelationalConnection>());
+#pragma warning restore EF1001
+    }
+
+    [Theory]
+    [InlineData(IsolationLevel.Unspecified, IsolationLevel.ReadCommitted)]
+    [InlineData(IsolationLevel.ReadCommitted, IsolationLevel.ReadCommitted)]
+    [InlineData(IsolationLevel.ReadUncommitted, IsolationLevel.ReadUncommitted)]
+    [InlineData(IsolationLevel.RepeatableRead, IsolationLevel.RepeatableRead)]
+    [InlineData(IsolationLevel.Serializable, IsolationLevel.Serializable)]
+    [InlineData(IsolationLevel.Snapshot, IsolationLevel.Snapshot)]
+    public void ReadCommittedConnection_StartsATransactionWithoutALevelAtReadCommitted_AndKeepsANamedLevel(IsolationLevel asked, IsolationLevel started)
+    {
+        Assert.Equal(started, ReadCommittedConnection.Resolve(asked));
     }
 
     [Fact]

@@ -23,6 +23,10 @@ namespace Jellyfin.Database.Providers.MySql;
 /// either, so that both servers run with one mode whatever their defaults are. Isolation is read committed, as on
 /// PostgreSQL, and the time zone of the session is UTC so that server side date functions do not depend on the server.
 /// </para>
+/// <para>
+/// MySqlConnector sets the isolation level of the session again for every transaction it starts, so the level set here
+/// holds for statements outside a transaction. <see cref="ReadCommittedConnection"/> keeps it for the transactions.
+/// </para>
 /// </remarks>
 internal sealed class SessionSettingsInterceptor : DbConnectionInterceptor
 {

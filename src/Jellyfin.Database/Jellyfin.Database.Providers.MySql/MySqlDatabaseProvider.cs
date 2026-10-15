@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Logging;
 using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Storage.Internal;
 using MySqlConnector;
 
 namespace Jellyfin.Database.Providers.MySql;
@@ -124,6 +125,7 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
 
         var version = new Version(server.Version.Major, server.Version.Minor, Math.Max(server.Version.Build, 0));
         ServerVersion serverVersion = server.Flavor == ServerFlavor.MariaDb ? new MariaDbServerVersion(version) : new MySqlServerVersion(version);
+#pragma warning disable EF1001 // The connection of the provider is internal, and replacing it is the only way to choose the level of a transaction before the interceptors see it.
         options
             .UseMySql(
                 connectionString,
@@ -132,9 +134,11 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
                     .MigrationsAssembly(GetType().Assembly)
                     .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
                     .UseParameterizedCollectionMode(ParameterTranslationMode.MultipleParameters))
+            .ReplaceService<IMySqlRelationalConnection, ReadCommittedConnection>()
             .AddInterceptors(
                 string.IsNullOrWhiteSpace(configuredServer) ? SessionSettingsInterceptor.Instance : SessionSettingsInterceptor.ForConfiguredServer,
                 CollectionParameterInterceptor.Instance);
+#pragma warning restore EF1001
 
         if (server.Flavor == ServerFlavor.MariaDb)
         {
