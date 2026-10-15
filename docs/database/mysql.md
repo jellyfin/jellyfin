@@ -63,7 +63,7 @@ GRANT ALL PRIVILEGES ON jellyfin.* TO 'jellyfin'@'%';
   `ANALYZE TABLE`, so the user needs all privileges on the database, and none outside it.
 - **Session settings.** Nothing is required of the server configuration. On every connection Jellyfin sets
   `READ-COMMITTED` isolation, the SQL mode `STRICT_ALL_TABLES,NO_ENGINE_SUBSTITUTION,ERROR_FOR_DIVISION_BY_ZERO`
-  and the time zone `+00:00`.
+  and the time zone `+00:00`, and it starts every transaction at `READ COMMITTED`.
 - **Packet size.** Jellyfin sends a list of ids as one parameter per id, about 26 bytes each, and the largest lists
   (whole-library operations) must fit into `max_allowed_packet`. MySQL 8.4's default of 64M takes about a million
   ids.

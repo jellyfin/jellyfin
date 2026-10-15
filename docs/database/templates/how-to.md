@@ -103,7 +103,7 @@ GRANT ALL PRIVILEGES ON jellyfin.* TO 'jellyfin'@'%';
   `ANALYZE TABLE`, so the user needs all privileges on the database, and none outside it.
 - **Session settings.** Nothing is required of the server configuration. On every connection Jellyfin sets
   `READ-COMMITTED` isolation, the SQL mode `STRICT_ALL_TABLES,NO_ENGINE_SUBSTITUTION,ERROR_FOR_DIVISION_BY_ZERO`
-  and the time zone `+00:00`.
+  and the time zone `+00:00`, and it starts every transaction at `READ COMMITTED`.
 {{/if}}
 {{#if mysql}}
 - **Packet size.** Jellyfin sends a list of ids as one parameter per id, about 26 bytes each, and the largest lists
@@ -114,14 +114,16 @@ GRANT ALL PRIVILEGES ON jellyfin.* TO 'jellyfin'@'%';
 - **Packet size.** Set `max_allowed_packet` to at least `64M`. Jellyfin sends a list of ids as one parameter per
   id, about 26 bytes each, and the largest lists (whole-library operations) must fit into one packet. MariaDB's
   default of 16M takes about 600,000 ids; 64M takes about a million.
-- **Known issue: error 1020 on MariaDB 11.8 and later.** From 11.8 on, including the 12.3 long-term release,
-  `innodb_snapshot_isolation` is on by default. A write can then fail now and then with error 1020, "Record has
-  changed since last read in table ...; try restarting transaction". The tests saw it in one integration test on
-  11.8.9 and on 12.3.3. The provider does not retry that error yet. The cause is being dealt with in step 27a of the
-  [plan](../adr/pr-plan.md): a transaction that Jellyfin starts without an isolation level runs at REPEATABLE READ
-  instead of the READ COMMITTED that Jellyfin sets for its connections, and under snapshot isolation that raises
-  1020. The fix makes every connection and transaction run at READ COMMITTED, and treats 1020 as a write conflict to
-  retry. Until then MariaDB 11.4 is the tested baseline, and 11.8 and 12.3 are tested only by advisory jobs.
+- **Fixed: error 1020 on MariaDB 11.8 and later.** From 11.8 on, including the 12.3 long-term release,
+  `innodb_snapshot_isolation` is on by default, and a write at REPEATABLE READ fails with error 1020, "Record has
+  changed since last read in table ...; try restarting transaction", when another connection changed the row after
+  the transaction read it. Before step 27a of the [plan](../adr/pr-plan.md), a transaction that Jellyfin started
+  without an isolation level ran at REPEATABLE READ, and one integration test failed that way now and then on 11.8.9
+  and 12.3.3. Every transaction now runs at READ COMMITTED, where 1020 does not occur, and the provider also retries
+  1020 as a write conflict ([ADR-0008](../adr/0008-concurrency-locking-and-retry.md) S5 and S6). In local runs of
+  the affected integration tests on MariaDB 11.8.9 and 12.3.3, error 1020 no longer occurs: no failure in 10 runs on
+  each, against 5 and 7 in 10 before the fix. MariaDB 11.4 is still the tested baseline, and 12.3 is still tested
+  only by the advisory job.
 {{/if}}
 
 ## 2. Write `database.xml`
