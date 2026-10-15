@@ -618,7 +618,8 @@ public sealed partial class BaseItemRepository
                 !blockedTagItemIds.Contains(e.Id)
                 && !(e.SeriesId.HasValue && blockedTagItemIds.Contains(e.SeriesId.Value))
                 && !blockedByAncestor.Contains(e.Id)
-                && !(e.TopParentId.HasValue && blockedTagItemIds.Contains(e.TopParentId.Value)));
+                && !(e.TopParentId.HasValue && blockedTagItemIds.Contains(e.TopParentId.Value))
+                && !(e.ExtraType != null && e.OwnerId.HasValue && (blockedTagItemIds.Contains(e.OwnerId.Value) || blockedByAncestor.Contains(e.OwnerId.Value))));
         }
 
         // Apply included tags filtering (allowed tags - item must have at least one).
@@ -637,6 +638,7 @@ public sealed partial class BaseItemRepository
                 || (e.SeriesId.HasValue && allowedTagItemIds.Contains(e.SeriesId.Value))
                 || allowedByAncestor.Contains(e.Id)
                 || (e.TopParentId.HasValue && allowedTagItemIds.Contains(e.TopParentId.Value))
+                || (e.ExtraType != null && e.OwnerId.HasValue && (allowedTagItemIds.Contains(e.OwnerId.Value) || allowedByAncestor.Contains(e.OwnerId.Value)))
 
                 // People don't carry the tags of the media they appear in and would never match
                 || e.Type == personTypeName);
