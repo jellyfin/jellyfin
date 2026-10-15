@@ -13,9 +13,12 @@ on:
           through which the tests take the image, which must be
           JELLYFIN_TEST_, the provider in capitals and _IMAGE),
           settings (the run settings file in tests/), requiredTests (a
-          space separated list of tests that must pass because they
-          skip when the server tools are unavailable) and optionally
-          timeoutMinutes (the time the job may take, 30 by default).
+          space separated list of project:test entries, each a test
+          method that must pass in the results of that test project
+          because it skips when the server tools are unavailable; the
+          sentinel of every project is required without being listed)
+          and optionally timeoutMinutes (the time the job may take, 30
+          by default).
         required: true
         type: string
 
@@ -84,37 +87,90 @@ jobs:
           done
           exit $status
 
-      - name: Check that the tests ran on ${{ matrix.provider }} ${{ matrix.version }}
+      - name: Check that every project ran on ${{ matrix.provider }} ${{ matrix.version }}
         env:
           PROVIDER: ${{ matrix.provider }}
           VERSION: ${{ matrix.version }}
           REQUIRED_TESTS: ${{ matrix.requiredTests }}
         run: |
-          shopt -s nullglob
-          files=(TestResults/"$PROVIDER"-*.trx)
-          if [ ${#files[@]} -eq 0 ]; then
-            echo "::error::No test results for $PROVIDER"
+          # The sentinel of every project that references Jellyfin.Database.Testing, by its full name. It
+          # must pass in the results of its own project, so a project whose sentinel was filtered out,
+          # skipped or not run fails the job even when another project's sentinel passed.
+          # ProviderBackend_IsLive also prints the backend and its version, which are checked as well.
+          declare -A sentinels=(
+            [Jellyfin.Server.Implementations.Tests]=Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure.ProviderBackendTests.ProviderBackend_IsLive
+            [Jellyfin.Server.Tests]=Jellyfin.Server.Tests.ProviderBackendTests.ProviderBackend_IsLive
+            [Jellyfin.Server.Integration.Tests]=Jellyfin.Server.Integration.Tests.JellyfinApplicationFactoryTests.CreateClient_SelectedProvider_RunsTheServerOnThatProvider
+          )
+
+          # The same projects as the step that ran the tests.
+          projects=()
+          for project in $(grep -l Jellyfin.Database.Testing tests/*/*.csproj || true); do
+            projects+=("$(basename "$project" .csproj)")
+          done
+          if [ ${#projects[@]} -eq 0 ]; then
+            echo "::error::No test project references Jellyfin.Database.Testing"
             exit 1
           fi
 
           set -f
-          for test in ProviderBackend_IsLive $REQUIRED_TESTS; do
-            if [[ ! $test =~ ^[A-Za-z0-9_]+$ ]]; then
-              echo "::error::'$test' in requiredTests is not a test method name"
+          declare -A required=()
+          for project in "${projects[@]}"; do
+            if [ -z "${sentinels[$project]:-}" ]; then
+              echo "::error::$project references Jellyfin.Database.Testing but has no sentinel in this check"
               exit 1
             fi
-            results=$(grep -h -o -E "<UnitTestResult [^>]*testName=\"[^\"]*\.$test(\(|\")[^>]*>" "${files[@]}" || true)
-            if [ -z "$results" ] || grep -q -v 'outcome="Passed"' <<< "$results"; then
-              echo "::error::$test did not pass for $PROVIDER"
-              echo "$results"
+            required[$project]="name:${sentinels[$project]}"
+          done
+          for project in "${!sentinels[@]}"; do
+            if [ -z "${required[$project]:-}" ]; then
+              echo "::error::$project has a sentinel in this check but does not reference Jellyfin.Database.Testing"
               exit 1
             fi
           done
+          for entry in $REQUIRED_TESTS; do
+            if [[ ! $entry =~ ^([A-Za-z0-9_.]+):([A-Za-z0-9_]+)$ ]]; then
+              echo "::error::'$entry' in requiredTests is not a project and a test method name, separated by a colon"
+              exit 1
+            fi
+            if [ -z "${required[${BASH_REMATCH[1]}]:-}" ]; then
+              echo "::error::'$entry' in requiredTests names a project that does not reference Jellyfin.Database.Testing"
+              exit 1
+            fi
+            required[${BASH_REMATCH[1]}]+=" method:${BASH_REMATCH[2]}"
+          done
 
-          if ! grep -q -h -E "Database backend: $PROVIDER $VERSION([^0-9]|$)" "${files[@]}"; then
-            echo "::error::The tests did not run on $PROVIDER $VERSION"
-            exit 1
-          fi
+          status=0
+          for project in "${projects[@]}"; do
+            file="TestResults/$PROVIDER-$project.trx"
+            if [ ! -f "$file" ]; then
+              echo "::error::No test results for $project on $PROVIDER"
+              status=1
+              continue
+            fi
+
+            for test in ${required[$project]}; do
+              # A full name matches that test only, a method name that method in any class of the project.
+              # Either matches every case of a theory, and every case must pass.
+              case $test in
+                name:*) pattern="testName=\"${test#name:}"; pattern=${pattern//./\\.} ;;
+                method:*) pattern="testName=\"[^\"]*\\.${test#method:}" ;;
+              esac
+              results=$(grep -o -E "<UnitTestResult [^>]*$pattern(\(|\")[^>]*>" "$file" || true)
+              if [ -z "$results" ] || grep -q -v 'outcome="Passed"' <<< "$results"; then
+                echo "::error::${test#*:} did not pass in $project on $PROVIDER"
+                echo "$results"
+                status=1
+              fi
+            done
+
+            if [[ ${sentinels[$project]} == *.ProviderBackend_IsLive ]] \
+              && ! grep -q -E "Database backend: $PROVIDER ${VERSION//./\\.}([^0-9]|$)" "$file"; then
+              echo "::error::$project did not run on $PROVIDER $VERSION"
+              status=1
+            fi
+          done
+          exit $status
 
       - name: Upload the test results
         if: failure() || cancelled()

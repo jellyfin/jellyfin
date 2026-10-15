@@ -58,6 +58,6 @@ jobs:
             "image": "postgres:16.15-trixie@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d",
             "imageVariable": "JELLYFIN_TEST_POSTGRES_IMAGE",
             "settings": "postgres.runsettings",
-            "requiredTests": "DatabaseRestoredFromPgDump_CanBeGroupedByPresentationKey CreateClient_SelectedProvider_RunsTheServerOnThatProvider"
+            "requiredTests": "Jellyfin.Server.Implementations.Tests:DatabaseRestoredFromPgDump_CanBeGroupedByPresentationKey"
           }
         ]
