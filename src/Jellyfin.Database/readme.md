@@ -100,6 +100,11 @@ through `20261013120000_AddNormalisedMatchColumns`. What one baseline already
 contains and the other provider adds in a later migration is recorded with the
 category `BaselineCoverage`, which the test accepts for a baseline id only.
 
+The provider table of the tests lists MySQL and MariaDB at several server
+versions, because the model depends on the version, but they share one set of
+migrations. The test compares that set once, under the name of its first row,
+`MySQL 8.4`, and the allowlist names it so.
+
 ## When a query behaves differently on one provider
 
 Work through these in order and stop at the first that is enough.

@@ -4,7 +4,8 @@
 // MigrationContents for what is not compared). Every difference needs exactly one entry here. An entry that matches no
 // difference fails the check as well.
 //
-// - "provider" is the provider that has the operation, or the providers separated by ", ".
+// - "provider" is the provider that has the operation, or the providers separated by ", ". A provider is named by its first row in
+//   MigrationProvider.All: "MySQL 8.4" stands for the one set of migrations that MySQL and MariaDB share.
 // - "operation" is exactly as the check prints it. SQL is named by a hash of its text, with white space runs made one space,
 //   followed by the start of that text.
 // - "category": EquivalentSql (SQL that does what the other providers' operations do), EngineSpecific (a step that only one
@@ -15,7 +16,7 @@
   {
     "migration": "20200101000000_InitialCreate",
     "direction": "Up",
-    "provider": "MySQL 8.4, MariaDB 11.4.7, MySQL 9.7, MariaDB 11.8, MariaDB 12.3",
+    "provider": "MySQL 8.4",
     "operation": "AlterDatabase",
     "category": "EngineSpecific",
     "reason": "Sets the character set of the MySQL or MariaDB database to utf8mb4, an annotation of the MySQL provider. PostgreSQL fixes the encoding when the database is created and has no such operation."
@@ -23,7 +24,7 @@
   {
     "migration": "20200101000000_InitialCreate",
     "direction": "Up",
-    "provider": "MySQL 8.4, MariaDB 11.4.7, MySQL 9.7, MariaDB 11.8, MariaDB 12.3",
+    "provider": "MySQL 8.4",
     "operation": "CreateIndex Peoples (NameLower)",
     "category": "BaselineCoverage",
     "reason": "The MySQL baseline covers the SQLite migrations through 20261013120000_AddNormalisedMatchColumns, the PostgreSQL baseline only through 20261002210711_MakeOwnerIdIndexesPartial. PostgreSQL creates this index in its own 20261013120000_AddNormalisedMatchColumns."
@@ -31,7 +32,7 @@
   {
     "migration": "20200101000000_InitialCreate",
     "direction": "Up",
-    "provider": "MySQL 8.4, MariaDB 11.4.7, MySQL 9.7, MariaDB 11.8, MariaDB 12.3",
+    "provider": "MySQL 8.4",
     "operation": "CreateTable BaseItems column CleanOriginalTitle null",
     "category": "BaselineCoverage",
     "reason": "The MySQL baseline covers the SQLite migrations through 20261013120000_AddNormalisedMatchColumns, the PostgreSQL baseline only through 20261002210711_MakeOwnerIdIndexesPartial. PostgreSQL adds this column in its own 20261013120000_AddNormalisedMatchColumns."
@@ -39,7 +40,7 @@
   {
     "migration": "20200101000000_InitialCreate",
     "direction": "Up",
-    "provider": "MySQL 8.4, MariaDB 11.4.7, MySQL 9.7, MariaDB 11.8, MariaDB 12.3",
+    "provider": "MySQL 8.4",
     "operation": "CreateTable Peoples column NameLower not null",
     "category": "BaselineCoverage",
     "reason": "The MySQL baseline covers the SQLite migrations through 20261013120000_AddNormalisedMatchColumns, the PostgreSQL baseline only through 20261002210711_MakeOwnerIdIndexesPartial. PostgreSQL adds this column in its own 20261013120000_AddNormalisedMatchColumns."
@@ -47,7 +48,7 @@
   {
     "migration": "20200101000000_InitialCreate",
     "direction": "Up",
-    "provider": "MySQL 8.4, MariaDB 11.4.7, MySQL 9.7, MariaDB 11.8, MariaDB 12.3",
+    "provider": "MySQL 8.4",
     "operation": "InsertData BaseItems (Id, Album, AlbumArtists, Artists, Audio, ChannelId, CleanName, CleanOriginalTitle, CommunityRating, CriticRating, CustomRating, Data, DateCreated, DateLastMediaAdded, DateLastRefreshed, DateLastSaved, DateModified, EndDate, EpisodeTitle, ExternalId, ExternalSeriesId, ExternalServiceId, ExtraType, ForcedSortName, Genres, Height, IndexNumber, InheritedParentalRatingSubValue, InheritedParentalRatingValue, IsFolder, IsInMixedFolder, IsLocked, IsMovie, IsRepeat, IsSeries, IsVirtualItem, LUFS, MediaType, Name, NormalizationGain, OfficialRating, OriginalLanguage, OriginalTitle, Overview, OwnerId, ParentId, ParentIndexNumber, Path, PreferredMetadataCountryCode, PreferredMetadataLanguage, PremiereDate, PresentationUniqueKey, PrimaryVersionId, ProductionLocations, ProductionYear, RunTimeTicks, SeasonId, SeasonName, SeriesId, SeriesName, SeriesPresentationUniqueKey, ShowId, Size, SortName, StartDate, Studios, Tagline, Tags, TopParentId, TotalBitrate, Type, UnratedType, Width)",
     "category": "BaselineCoverage",
     "reason": "Both baselines seed the PLACEHOLDER item. The MySQL one also lists CleanOriginalTitle, as null, because its BaseItems table already has the column that PostgreSQL adds in 20261013120000_AddNormalisedMatchColumns."

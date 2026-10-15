@@ -16,7 +16,7 @@ public class MigrationContentsTests
     [Trait("Category", "Migrations")]
     public void MigrationsThatShareAnId_HaveTheSameOperationsOrAnAllowlistEntry()
     {
-        var migrations = MigrationProvider.All.SelectMany(MigrationContents.Load).ToList();
+        var migrations = MigrationContents.MigrationSets().SelectMany(MigrationContents.Load).ToList();
         var differences = MigrationContents.Compare(migrations);
 
         // The operations of the paired migrations, so that the output of a run shows what was compared.
@@ -37,10 +37,38 @@ public class MigrationContentsTests
         var problems = MigrationContentsAllowlist.Check(
             differences,
             MigrationContentsAllowlist.Load(),
-            MigrationProvider.All.Select(e => e.Name).ToList(),
+            MigrationContents.MigrationSets().Select(e => e.Name).ToList(),
             MigrationProvider.All.Select(e => e.BaselineId).OfType<string>().ToHashSet());
 
         Assert.True(problems is null, problems);
+    }
+
+    [Fact]
+    [Trait("Category", "Migrations")]
+    public void RowsThatShareMigrations_HaveTheSameOperations()
+    {
+        var sets = MigrationProvider.All.GroupBy(MigrationContents.MigrationsAssembly).ToList();
+
+        Assert.Contains(sets, e => e.Count() > 1);
+        foreach (var set in sets.Where(e => e.Count() > 1))
+        {
+            var first = Describe(set.First());
+            Assert.All(set.Skip(1), row => Assert.Equal(first, Describe(row)));
+        }
+
+        static List<string> Describe(MigrationProvider provider) => MigrationContents.Load(provider)
+            .SelectMany(e => e.Up.SelectMany(MigrationContents.Describe).Prepend(e.MigrationId + " Up")
+                .Concat(e.Down.SelectMany(MigrationContents.Describe).Prepend(e.MigrationId + " Down")))
+            .ToList();
+    }
+
+    [Fact]
+    public void MigrationSets_HaveOneRowForEachMigrationsAssembly()
+    {
+        Assert.Equal(
+            MigrationProvider.All.Select(MigrationContents.MigrationsAssembly).Distinct(),
+            MigrationContents.MigrationSets().Select(MigrationContents.MigrationsAssembly));
+        Assert.Same(MigrationProvider.Reference, MigrationContents.MigrationSets()[0]);
     }
 
     [Fact]

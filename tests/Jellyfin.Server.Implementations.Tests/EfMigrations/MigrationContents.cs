@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -39,6 +40,29 @@ internal static partial class MigrationContents
 
     [GeneratedRegex(@"\s+")]
     private static partial Regex Whitespace();
+
+    /// <summary>
+    /// Gets the rows of the provider table whose migrations are compared: the first row of each migrations assembly.
+    /// MySQL and MariaDB share one set of migrations, which the table lists at several server versions because their models differ.
+    /// The operations of a migration do not depend on the version, which <c>RowsThatShareMigrations_HaveTheSameOperations</c> checks,
+    /// so the set is compared once, under the name of its first row.
+    /// </summary>
+    /// <returns>The rows.</returns>
+    public static IReadOnlyList<MigrationProvider> MigrationSets()
+    {
+        return MigrationProvider.All.DistinctBy(MigrationsAssembly).ToList();
+    }
+
+    /// <summary>
+    /// Gets the assembly that holds the migrations of a provider.
+    /// </summary>
+    /// <param name="provider">The provider.</param>
+    /// <returns>The assembly.</returns>
+    public static Assembly MigrationsAssembly(MigrationProvider provider)
+    {
+        using var context = provider.CreateContext();
+        return context.GetService<IMigrationsAssembly>().Assembly;
+    }
 
     /// <summary>
     /// Builds the operations of every migration of a provider. Nothing connects to a database.
