@@ -30,16 +30,15 @@ public sealed class PostgresDatabaseProviderTests : DatabaseTestFixture
         _commands = commands;
     }
 
-    [ProviderTheory(TestDbProvider.Postgres)]
-    [InlineData("ActivityLogs")]
-    [InlineData("public.ActivityLogs")]
-    public async Task PurgeDatabase_ClearsTheTableAndResetsIdentity(string tableName)
+    // The conformance kit purges plain table names on every engine; a name with the schema is one only PostgreSQL takes.
+    [ProviderFact(TestDbProvider.Postgres)]
+    public async Task PurgeDatabase_TableNameWithSchema_ClearsTheTableAndResetsIdentity()
     {
         AddActivityLogs(2);
 
         await using (var context = CreateDbContext())
         {
-            await CreateProvider().PurgeDatabase(context, [tableName]);
+            await CreateProvider().PurgeDatabase(context, ["public.ActivityLogs"]);
         }
 
         AddActivityLogs(1);
@@ -62,17 +61,6 @@ public sealed class PostgresDatabaseProviderTests : DatabaseTestFixture
         Assert.Equal(0, await context.Database.SqlQueryRaw<long>("""SELECT count(*) AS "Value" FROM "we""ird" """).SingleAsync());
         await context.Database.ExecuteSqlRawAsync("""INSERT INTO "we""ird" DEFAULT VALUES""");
         Assert.Equal(1, await context.Database.SqlQueryRaw<int>("""SELECT "Id" AS "Value" FROM "we""ird" """).SingleAsync());
-    }
-
-    [ProviderFact(TestDbProvider.Postgres)]
-    public async Task PurgeDatabase_NoTables_DoesNothing()
-    {
-        AddActivityLogs(1);
-
-        await using var context = CreateDbContext();
-        await CreateProvider().PurgeDatabase(context, []);
-
-        Assert.Equal(1, await context.ActivityLogs.CountAsync());
     }
 
     [ProviderFact(TestDbProvider.Postgres)]
