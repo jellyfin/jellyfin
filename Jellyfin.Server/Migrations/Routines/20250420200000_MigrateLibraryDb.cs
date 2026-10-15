@@ -82,11 +82,13 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
             // Some servers check a foreign key per row and stop a cascade nested more than 15 levels deep, so a table that
             // refers to itself is emptied only after its rows have let go of each other.
+#pragma warning disable RS0030 // Do not use banned APIs: Guid != null is a null test inside an EF expression tree.
             operation.JellyfinDbContext.BaseItems
                 .Where(e => e.OwnerId != null || e.ParentId != null)
                 .ExecuteUpdate(e => e
                     .SetProperty(f => f.OwnerId, (Guid?)null)
                     .SetProperty(f => f.ParentId, (Guid?)null));
+#pragma warning restore RS0030
             operation.JellyfinDbContext.BaseItems.ExecuteDelete();
             operation.JellyfinDbContext.ItemValues.ExecuteDelete();
             operation.JellyfinDbContext.UserData.ExecuteDelete();

@@ -14,10 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="../../Jellyfin.Server.Implementations/Jellyfin.Server.Implementations.csproj" />    <ProjectReference Include="../../src/Jellyfin.Database/Jellyfin.Database.Implementations/Jellyfin.Database.Implementations.csproj" />
+    <ProjectReference Include="../../Jellyfin.Server.Implementations/Jellyfin.Server.Implementations.csproj" />
+    <ProjectReference Include="../../src/Jellyfin.Database/Jellyfin.Database.Implementations/Jellyfin.Database.Implementations.csproj" />
     <ProjectReference Include="../../src/Jellyfin.Database/Jellyfin.Database.Providers.Sqlite/Jellyfin.Database.Providers.Sqlite.csproj" />
     <ProjectReference Include="../../src/Jellyfin.Database/Jellyfin.Database.Providers.MySql/Jellyfin.Database.Providers.MySql.csproj" />
     <ProjectReference Include="../../src/Jellyfin.Database/Jellyfin.Database.Providers.Postgres/Jellyfin.Database.Providers.Postgres.csproj" />
