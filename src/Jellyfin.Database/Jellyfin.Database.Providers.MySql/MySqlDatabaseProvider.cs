@@ -182,9 +182,11 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
     {
         ArgumentNullException.ThrowIfNull(exception);
 
+        // 1020 is raised by MariaDB under snapshot isolation when a row changed after the transaction read it. Jellyfin's
+        // transactions run at read committed, where it does not occur, so it is only retried in case one does not.
         for (var current = exception; current is not null; current = current.InnerException)
         {
-            if (current is MySqlException { ErrorCode: MySqlErrorCode.DuplicateKeyEntry or MySqlErrorCode.LockDeadlock or MySqlErrorCode.LockWaitTimeout })
+            if (current is MySqlException { ErrorCode: MySqlErrorCode.DuplicateKeyEntry or MySqlErrorCode.LockDeadlock or MySqlErrorCode.LockWaitTimeout or MySqlErrorCode.CheckRead })
             {
                 return true;
             }
