@@ -20,6 +20,19 @@ namespace Jellyfin.Database.Testing.Conformance;
 /// them; and a database the backend hands out, fresh or not, holds only the seed data, with every identity column
 /// starting at 1.
 /// </summary>
+/// <remarks>
+/// <para>
+/// A purge of some tables is only defined when no other table refers to them, and the rows that purge some tables
+/// choose such tables. When a table that is not purged refers to a purged one, an engine may delete its rows or keep
+/// them, so the kit does not check that.
+/// </para>
+/// <para>
+/// The rows that expect the identity columns to start again at 1 purge outside a transaction, where every provider
+/// starts them again. Inside a transaction, a provider whose engine commits the transaction to change a counter leaves
+/// the counters where they were (<see cref="EngineTraits.PurgeResetsIdentityInATransaction"/>), and a row checks that
+/// each provider does what its trait says.
+/// </para>
+/// </remarks>
 public abstract class PurgeConformance : ConformanceTestBase
 {
     [ConformanceFact]
@@ -51,6 +64,7 @@ public abstract class PurgeConformance : ConformanceTestBase
     {
         var activityLogs = Table<ActivityLog>();
         var apiKeys = Table<ApiKey>();
+        AssertNoTableRefersTo(activityLogs, apiKeys);
         for (var row = 0; row < 3; row++)
         {
             Rows.Save(activityLogs);
@@ -69,9 +83,11 @@ public abstract class PurgeConformance : ConformanceTestBase
     [ConformanceFact]
     public async Task PurgeDatabase_SomeTables_LeavesTheOtherTablesAndTheirIdentitiesAsTheyWere()
     {
+        // No table refers to any of them, so a purge of one of them alone is defined.
         var activityLogs = Table<ActivityLog>();
         var apiKeys = Table<ApiKey>();
         var deviceOptions = Table<DeviceOptions>();
+        AssertNoTableRefersTo(activityLogs, apiKeys, deviceOptions);
         Rows.Save(activityLogs);
         Rows.Save(apiKeys);
         Rows.Save(apiKeys);
@@ -92,6 +108,27 @@ public abstract class PurgeConformance : ConformanceTestBase
         Assert.Equal(keptRows, DescribeRows(deviceOptions));
         Assert.Equal(3, NextIdentity(apiKeys));
         Assert.Equal(2, NextIdentity(deviceOptions));
+    }
+
+    [ConformanceFact]
+    public async Task PurgeDatabase_InsideATransaction_EmptiesTheTablesAndResetsTheirIdentityAsTheTraitSays()
+    {
+        var activityLogs = Table<ActivityLog>();
+        AssertNoTableRefersTo(activityLogs);
+        for (var row = 0; row < 3; row++)
+        {
+            Rows.Save(activityLogs);
+        }
+
+        await using (var context = CreateDbContext())
+        {
+            await using var transaction = await context.Database.BeginTransactionAsync(CancellationToken);
+            await DatabaseProvider.PurgeDatabase(context, [activityLogs.GetTableName()!]);
+            await transaction.CommitAsync(CancellationToken);
+        }
+
+        Assert.Empty(DescribeRows(activityLogs));
+        Assert.Equal(EngineTraits.For(DbProvider).PurgeResetsIdentityInATransaction ? 1 : 4, NextIdentity(activityLogs));
     }
 
     [ConformanceFact]
@@ -148,6 +185,16 @@ public abstract class PurgeConformance : ConformanceTestBase
         }
 
         AssertIdentitiesStartAtOne(Create);
+    }
+
+    private void AssertNoTableRefersTo(params IEntityType[] purged)
+    {
+        var referring = Tables()
+            .SelectMany(table => table.GetForeignKeys())
+            .Where(foreignKey => purged.Any(table => foreignKey.PrincipalEntityType.GetTableName() == table.GetTableName()))
+            .Select(foreignKey => $"{foreignKey.DeclaringEntityType.GetTableName()} refers to {foreignKey.PrincipalEntityType.GetTableName()}")
+            .ToList();
+        AssertNone(referring);
     }
 
     /// <summary>

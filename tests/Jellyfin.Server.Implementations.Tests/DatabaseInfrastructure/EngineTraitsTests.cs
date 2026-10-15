@@ -90,6 +90,16 @@ public class EngineTraitsTests
         Assert.Equal(supported, EngineTraits.For(provider).SupportsPartialIndexes);
     }
 
+    [Theory]
+    [InlineData(TestDbProvider.Sqlite, true)]
+    [InlineData(TestDbProvider.Postgres, true)]
+    [InlineData(TestDbProvider.MySql, false)]
+    [InlineData(TestDbProvider.MariaDb, false)]
+    public void PurgeResetsIdentityInATransaction_IsFalseOnlyOnTheEnginesThatCommitToChangeACounter(TestDbProvider provider, bool resets)
+    {
+        Assert.Equal(resets, EngineTraits.For(provider).PurgeResetsIdentityInATransaction);
+    }
+
     [Fact]
     public void AssertUniqueViolation_AnotherErrorOrNone_FailsOnEveryEngine()
     {

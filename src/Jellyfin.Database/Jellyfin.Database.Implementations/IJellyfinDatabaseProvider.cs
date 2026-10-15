@@ -107,10 +107,27 @@ public interface IJellyfinDatabaseProvider
     Task DeleteBackup(string key);
 
     /// <summary>
-    /// Removes all contents from the database.
+    /// Removes every row of the given tables and starts their identity columns again at their first value.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The tables must include every table whose rows refer to a row of one of them, which in practice means every table
+    /// of the model, as a restore passes. For a table that refers to a purged one but is not given, the outcome depends on
+    /// the engine and on whether a transaction is open: its rows may be deleted together with the rows they refer to,
+    /// kept while referring to rows that no longer exist, or make the transaction fail when it commits. A table that is
+    /// not given and refers to none of the given ones keeps its rows, and its identity column goes on from where it was.
+    /// </para>
+    /// <para>
+    /// SQLite and PostgreSQL start the identity columns of the purged tables again whether or not a transaction is open.
+    /// MySQL and MariaDB do so only outside a transaction, as changing the counter of a table commits the transaction it
+    /// runs in; inside one, they leave the counters where they were. A caller that needs the identity columns to start
+    /// again purges outside a transaction. A restore purges inside its transaction and inserts the rows of the backup
+    /// with their own ids: SQLite, MySQL and MariaDB move their counters past such ids themselves, and on PostgreSQL,
+    /// which does not, <see cref="CompleteDatabaseRestoreAsync"/> moves them.
+    /// </para>
+    /// </remarks>
     /// <param name="dbContext">The Database context.</param>
-    /// <param name="tableNames">The names of the tables to purge or null for all tables to be purged.</param>
+    /// <param name="tableNames">The names of the tables to purge. It must not be <see langword="null"/>.</param>
     /// <returns>A Task.</returns>
     Task PurgeDatabase(JellyfinDbContext dbContext, IEnumerable<string>? tableNames);
 
