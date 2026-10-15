@@ -670,8 +670,9 @@ public sealed partial class BaseItemRepository
     /// <returns>The ids of the extras whose owner is tagged.</returns>
     private static IQueryable<Guid> ExtrasOfTaggedOwner(JellyfinDbContext context, IQueryable<Guid> taggedItemIds, IQueryable<Guid> itemsBelowTaggedAncestor)
         => context.BaseItems
-            .Where(e => e.ExtraType != null && e.OwnerId.HasValue)
-            .Where(e => taggedItemIds.Contains(e.OwnerId!.Value) || itemsBelowTaggedAncestor.Contains(e.OwnerId!.Value))
+            .Where(e => e.ExtraType != null
+                && e.OwnerId.HasValue
+                && (taggedItemIds.Contains(e.OwnerId.Value) || itemsBelowTaggedAncestor.Contains(e.OwnerId.Value)))
             .Select(e => e.Id);
 
     /// <summary>
