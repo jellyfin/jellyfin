@@ -399,7 +399,7 @@ public class SubtitleController : BaseJellyfinApiController
             var lengthTicks = Math.Min(remaining, segmentLengthTicks);
 
             builder.Append("#EXTINF:")
-                .Append(TimeSpan.FromTicks(lengthTicks).TotalSeconds)
+                .Append(TimeSpan.FromTicks(lengthTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture))
                 .Append(',')
                 .AppendLine();
 

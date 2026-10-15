@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Controllers;
@@ -14,6 +16,7 @@ using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -173,5 +176,49 @@ public class SubtitleControllerTests
             900000,
             "stream.vtt?CopyTimestamps=true&AddVttTimeMap=true&StartPositionTicks=300000000&EndPositionTicks=600000000&ApiKey=abc123&VttTimestampMapMpegts=900000");
         return data;
+    }
+
+    [Fact]
+    public async Task GetSubtitlePlaylist_CommaDecimalCulture_FormatsSegmentDurationInvariantly()
+    {
+        var item = new Movie { Id = _itemId };
+        var mediaSourceId = _itemId.ToString("N");
+
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager.Setup(l => l.GetItemById<Video>(_itemId, Guid.Empty)).Returns(item);
+
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        mediaSourceManager.Setup(m => m.GetMediaSource(item, mediaSourceId, null, false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MediaSourceInfo { Id = mediaSourceId, RunTimeTicks = 45_000_000 });
+
+        var controller = new SubtitleController(
+            Mock.Of<IServerConfigurationManager>(),
+            libraryManager.Object,
+            Mock.Of<ISubtitleManager>(),
+            Mock.Of<ISubtitleEncoder>(),
+            mediaSourceManager.Object,
+            Mock.Of<IProviderManager>(),
+            Mock.Of<IFileSystem>(),
+            NullLogger<SubtitleController>.Instance)
+        {
+            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+        };
+
+        var originalCulture = CultureInfo.CurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
+
+            var result = await controller.GetSubtitlePlaylist(_itemId, SubtitleIndex, mediaSourceId, 10);
+
+            var fileResult = Assert.IsType<FileContentResult>(result);
+            var lines = Encoding.UTF8.GetString(fileResult.FileContents).Split(Environment.NewLine);
+            Assert.Equal("#EXTINF:4.5,", Assert.Single(lines, line => line.StartsWith("#EXTINF:", StringComparison.Ordinal)));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+        }
     }
 }
