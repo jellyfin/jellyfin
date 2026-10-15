@@ -1,6 +1,8 @@
-// Raw SQL and checks for one database engine, which keep shared production code from working on every engine. Every
-// project reads this file except the database providers (src/Jellyfin.Database/Jellyfin.Database.Providers.*), where
-// such code belongs, and the projects under tests/, which may be about one engine; see Directory.Build.props.
+// Raw SQL and checks for one database engine, which keep shared production code from working on every engine. The rule
+// JF0002 of src/Jellyfin.CodeAnalysis reports their use. Every project reads this file except the database providers
+// (src/Jellyfin.Database/Jellyfin.Database.Providers.*), where such code belongs, and the projects under tests/, which
+// may be about one engine; see Directory.Build.props. The banned API analyzer only reads files named BannedSymbols.txt
+// or BannedSymbols.*.txt, so it does not read this one, and a disable of its rule RS0030 does not hide these.
 M:Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.ExecuteSqlRaw(Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade,System.String,System.Object[]);Raw SQL is written for one engine. Use LINQ, or a member of IJellyfinDatabaseProvider that the providers implement
 M:Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.ExecuteSqlRaw(Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade,System.String,System.Collections.Generic.IEnumerable{System.Object});Raw SQL is written for one engine. Use LINQ, or a member of IJellyfinDatabaseProvider that the providers implement
 M:Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.ExecuteSqlRawAsync(Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade,System.String,System.Threading.CancellationToken);Raw SQL is written for one engine. Use LINQ, or a member of IJellyfinDatabaseProvider that the providers implement

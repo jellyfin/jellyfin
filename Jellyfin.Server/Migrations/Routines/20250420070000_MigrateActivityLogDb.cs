@@ -84,9 +84,9 @@ namespace Jellyfin.Server.Migrations.Routines
                 dbContext.ActivityLogs.RemoveRange(dbContext.ActivityLogs);
                 dbContext.SaveChanges();
                 // Reset the autoincrement counter
-#pragma warning disable RS0030 // Do not use banned APIs: The routine only ever runs on SQLite, because a server that is set up on any other engine records it as applied without running it.
+#pragma warning disable JF0002 // The routine only ever runs on SQLite, because a server that is set up on any other engine records it as applied without running it.
                 dbContext.Database.ExecuteSqlRaw("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'ActivityLogs';");
-#pragma warning restore RS0030
+#pragma warning restore JF0002
                 dbContext.SaveChanges();
 
                 var newEntries = new List<ActivityLog>();

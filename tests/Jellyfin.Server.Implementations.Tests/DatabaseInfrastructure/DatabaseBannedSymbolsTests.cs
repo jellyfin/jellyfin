@@ -8,14 +8,14 @@ using Xunit;
 namespace Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 
 /// <summary>
-/// The analyzer ignores an entry of a banned symbols file that names no symbol, so a misspelt entry bans nothing
-/// without a word. Every entry of BannedSymbols.Database.txt has to name a public method or property that exists in
+/// The rule JF0002 ignores an entry of DatabaseBannedSymbols.txt that names no symbol, as the banned API analyzer does,
+/// so a misspelt entry bans nothing without a word. Every entry has to name a public method or property that exists in
 /// an assembly this project loads. Only an entry whose assembly this project does not reference at all is taken from
 /// a pinned list instead, which was checked against the documentation file of that package.
 /// </summary>
 public class DatabaseBannedSymbolsTests
 {
-    private const string FileName = "BannedSymbols.Database.txt";
+    private const string FileName = "DatabaseBannedSymbols.txt";
 
     private static readonly string[] _assemblies =
     [

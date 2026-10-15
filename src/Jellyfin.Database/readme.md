@@ -125,6 +125,59 @@ Work through these in order and stop at the first that is enough.
 Use `[ProviderFact(TestDbProvider.Sqlite)]` only for a test of SQLite itself.
 A test of behaviour that every provider shares runs on every provider.
 
+## Raw SQL and checks for one engine
+
+Shared production code may not run raw SQL or ask which engine it runs on,
+because such code works on that engine only. The rule `JF0002` of
+`src/Jellyfin.CodeAnalysis` reports every use of a member listed in
+`DatabaseBannedSymbols.txt`, at the root of the repository, as an error. The
+list holds `ExecuteSqlRaw`, `ExecuteSql`, `ExecuteSqlInterpolated`,
+`SqlQueryRaw`, `SqlQuery`, `FromSqlRaw`, `FromSql` and `FromSqlInterpolated`
+with their overloads and async forms, `GetDbConnection`, the engine checks
+`IsSqlite`, `IsNpgsql`, `IsMySql` and `IsSqlServer`,
+`DatabaseFacade.ProviderName` and `MigrationBuilder.ActiveProvider`. Use LINQ,
+or one of the options in the previous section.
+
+The rule applies to every project except the database providers
+(`Jellyfin.Database.Providers.*`), where such code belongs, and the projects
+under `tests/`, which may be about one engine. Like the other analyzers of the
+repository, it runs in Debug builds only, which is what `dotnet build` and
+`dotnet test` build unless told otherwise. A Release build does not check the
+rule. In the CI, the ABI compatibility job builds `Jellyfin.Server` in Debug,
+which checks every project that the server is built from.
+
+Where shared code has to run SQL that the provider in use generated, or runs
+on one engine only, suppress the rule around those statements only, and give
+the reason:
+
+```csharp
+#pragma warning disable JF0002 // The script comes from the history repository of the provider in use, so it is the SQL of that engine.
+await dbContext.Database.ExecuteSqlRawAsync(script).ConfigureAwait(false);
+#pragma warning restore JF0002
+```
+
+A disable of another rule, such as `RS0030` for the other banned APIs, does not
+switch the rule off, but a `#pragma warning disable` without a rule does.
+`DatabaseBanSuppressionTests` fails when production code names `JF0002`
+outside a `#pragma warning` line, when a disable of it has no reason or is not
+restored in the same file, and when production code adds a disable of every
+warning. It also fails when a file other than the root `Directory.Build.props`
+names the rule or the list, refers to the analyzer project, or switches off
+every analyzer, and when a nested `Directory.Build.props` does not import the
+one above it. A Debug build of a project that the rule applies to fails if the
+project is compiled without the analyzers or the list, with analyzers off, or
+with the rule in `NoWarn`. Setting `ImportDirectoryBuildProps=false` in the
+environment drops the root `Directory.Build.props`, and with it every analyzer
+setting, that check included. The tests cannot see a developer's shell; the
+CI is covered, because they fail when a workflow or a response file sets it,
+switches off analyzers, or puts the rule in `NoWarn`, and when the ABI job's
+build of `Jellyfin.Server` is given a configuration or a property.
+
+An entry of the list names one overload, so list every overload of a member.
+`DatabaseBannedSymbolsTests` fails when an entry names no member, and in a
+Debug build the rule `JF0003` reports an entry whose type a project has but
+which names no member of it.
+
 ## Tests
 
 `dotnet test` runs the tests against SQLite. The same tests run against

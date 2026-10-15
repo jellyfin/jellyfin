@@ -19,14 +19,26 @@
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)/stylecop.json" />
   </ItemGroup>
 
-  <!-- Raw SQL and checks for one database engine belong in the database providers, and tests may be about one engine -->
+  <!-- Raw SQL and checks for one database engine belong in the database providers, and tests may be about one engine. The custom analyzers read this file, see DatabaseBannedSymbolsAnalyzer -->
   <ItemGroup Condition=" !$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)').StartsWith('$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'tests'))', StringComparison.OrdinalIgnoreCase)) AND !$(MSBuildProjectName.StartsWith('Jellyfin.Database.Providers.')) ">
-    <AdditionalFiles Include="$(MSBuildThisFileDirectory)/BannedSymbols.Database.txt" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)/DatabaseBannedSymbols.txt" />
   </ItemGroup>
 
   <!-- Custom Analyzers -->
   <ItemGroup Condition=" '$(MSBuildProjectName)' != 'Jellyfin.CodeAnalysis' AND '$(Configuration)' == 'Debug' ">
     <ProjectReference Include="$(MSBuildThisFileDirectory)src/Jellyfin.CodeAnalysis/Jellyfin.CodeAnalysis.csproj" OutputItemType="Analyzer" />
   </ItemGroup>
+
+  <!-- A Debug build of a project that the database ban applies to compiles it with the custom analyzers and the list, with analyzers on and the rules of the ban not in NoWarn, or fails -->
+  <Target Name="CheckDatabaseBanIsInEffect" BeforeTargets="CoreCompile" Condition=" '$(Configuration)' == 'Debug' AND '$(DesignTimeBuild)' != 'true' AND '$(MSBuildProjectName)' != 'Jellyfin.CodeAnalysis' AND !$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)').StartsWith('$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'tests'))', StringComparison.OrdinalIgnoreCase)) AND !$(MSBuildProjectName.StartsWith('Jellyfin.Database.Providers.')) ">
+    <ItemGroup>
+      <_DatabaseBanAnalyzer Include="@(Analyzer)" Condition=" '%(Filename)%(Extension)' == 'Jellyfin.CodeAnalysis.dll' " />
+      <_DatabaseBanList Include="@(AdditionalFiles)" Condition=" '%(Filename)%(Extension)' == 'DatabaseBannedSymbols.txt' " />
+    </ItemGroup>
+    <Error Condition=" '@(_DatabaseBanAnalyzer)' == '' " Text="$(MSBuildProjectName) is compiled without the custom analyzers, so the database ban is not checked." />
+    <Error Condition=" '@(_DatabaseBanList)' == '' " Text="$(MSBuildProjectName) is compiled without DatabaseBannedSymbols.txt, so the database ban is not checked." />
+    <Error Condition=" '$(RunAnalyzers)' == 'false' OR '$(RunAnalyzersDuringBuild)' == 'false' " Text="$(MSBuildProjectName) is compiled without analyzers, so the database ban is not checked." />
+    <Error Condition=" $(NoWarn.ToUpperInvariant().Contains('JF0002')) OR $(NoWarn.ToUpperInvariant().Contains('JF0003')) " Text="The NoWarn of $(MSBuildProjectName) switches the database ban off." />
+  </Target>
 
 </Project>

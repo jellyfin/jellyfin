@@ -126,9 +126,9 @@ internal class JellyfinMigrationService
                 foreach (var item in startupScripts)
                 {
                     logger.LogInformation("Seed migration {Key}-{Name}.", item.Migration.Key, item.Migration.Name);
-#pragma warning disable RS0030 // Do not use banned APIs: The script comes from the history repository of the provider in use, so it is the SQL of that engine.
+#pragma warning disable JF0002 // The script comes from the history repository of the provider in use, so it is the SQL of that engine.
                     await dbContext.Database.ExecuteSqlRawAsync(item.Script).ConfigureAwait(false);
-#pragma warning restore RS0030
+#pragma warning restore JF0002
                 }
             }
 
@@ -179,9 +179,9 @@ internal class JellyfinMigrationService
                         foreach (var item in startupScripts)
                         {
                             logger.LogInformation("Migrate migration {Key}-{Name}.", item.Migration.Key, item.Migration.Name);
-#pragma warning disable RS0030 // Do not use banned APIs: The script comes from the history repository of the provider in use, so it is the SQL of that engine.
+#pragma warning disable JF0002 // The script comes from the history repository of the provider in use, so it is the SQL of that engine.
                             await dbContext.Database.ExecuteSqlRawAsync(item.Script).ConfigureAwait(false);
-#pragma warning restore RS0030
+#pragma warning restore JF0002
                         }
 
                         logger.LogInformation("Rename old migration.xml to migration.xml.backup");
@@ -747,9 +747,9 @@ internal class JellyfinMigrationService
 
             var historyRepository = _dbContext.GetService<IHistoryRepository>();
             var createScript = historyRepository.GetInsertScript(new HistoryRow(_codeMigration.BuildCodeMigrationId(), GetJellyfinVersion()));
-#pragma warning disable RS0030 // Do not use banned APIs: The script comes from the history repository of the provider in use, so it is the SQL of that engine.
+#pragma warning disable JF0002 // The script comes from the history repository of the provider in use, so it is the SQL of that engine.
             await _dbContext.Database.ExecuteSqlRawAsync(createScript).ConfigureAwait(false);
-#pragma warning restore RS0030
+#pragma warning restore JF0002
         }
     }
 
