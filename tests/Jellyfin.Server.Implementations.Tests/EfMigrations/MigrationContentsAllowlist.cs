@@ -75,10 +75,16 @@ internal static class MigrationContentsAllowlist
     /// <param name="differences">The differences between the migrations.</param>
     /// <param name="entries">The entries of the allowlist.</param>
     /// <param name="providers">The names of the providers whose migrations are compared. The first one is the reference provider.</param>
+    /// <param name="baselineIds">The ids of the baselines of the providers, the only ids that can have a
+    /// <see cref="MigrationContentsCategory.BaselineCoverage"/> difference.</param>
     /// <returns>A description of every problem, or <c>null</c> when there is none.</returns>
-    public static string? Check(IReadOnlyList<MigrationDifference> differences, IReadOnlyList<MigrationContentsAllowlistEntry> entries, IReadOnlyList<string> providers)
+    public static string? Check(
+        IReadOnlyList<MigrationDifference> differences,
+        IReadOnlyList<MigrationContentsAllowlistEntry> entries,
+        IReadOnlyList<string> providers,
+        IReadOnlyCollection<string>? baselineIds = null)
     {
-        var invalid = entries.Select(e => (Entry: e, Problem: Validate(e, providers))).Where(e => e.Problem is not null).ToList();
+        var invalid = entries.Select(e => (Entry: e, Problem: Validate(e, providers, baselineIds ?? []))).Where(e => e.Problem is not null).ToList();
         var byKey = entries.ToLookup(e => e.Key);
         var keys = differences.Select(e => e.Key).ToHashSet();
         var ambiguous = byKey.Where(e => e.Count() > 1).ToList();
@@ -99,7 +105,8 @@ internal static class MigrationContentsAllowlist
                 "  Make the same change in every provider's migration that has the id, or take the hand edit out. "
                 + "A fix for a bug in current code has to reach every provider and cannot be listed here. "
                 + "Only a fix for data that only old SQLite databases can hold, SQL that does the same as the other providers' operations, "
-                + "or an engine-specific step may be listed, with its category and reason. The entries would be:");
+                + "an engine-specific step, or what one baseline covers and another adds later may be listed, with its category and reason. "
+                + "The entries would be:");
             lines.AddRange(JsonSerializer.Serialize(missing.Select(Template), Options).Split('\n').Select(e => "  " + e.TrimEnd()));
         }
 
@@ -135,7 +142,7 @@ internal static class MigrationContentsAllowlist
         + "so a difference comes from a hand edit or from a migration that the command did not generate."
     ];
 
-    private static string? Validate(MigrationContentsAllowlistEntry entry, IReadOnlyList<string> providers)
+    private static string? Validate(MigrationContentsAllowlistEntry entry, IReadOnlyList<string> providers, IReadOnlyCollection<string> baselineIds)
     {
         if (entry.Direction is not (MigrationContents.Up or MigrationContents.Down))
         {
@@ -158,6 +165,12 @@ internal static class MigrationContentsAllowlist
         if (entry.Category == MigrationContentsCategory.LegacySqliteData && !(owners.Length == 1 && owners[0] == providers[0]))
         {
             return $"Only the reference provider {providers[0]} can have a {nameof(MigrationContentsCategory.LegacySqliteData)} difference";
+        }
+
+        // Only baselines cover several migrations of the reference provider at once.
+        if (entry.Category == MigrationContentsCategory.BaselineCoverage && !baselineIds.Contains(entry.Migration))
+        {
+            return $"Only the baseline of a provider can have a {nameof(MigrationContentsCategory.BaselineCoverage)} difference";
         }
 
         return string.IsNullOrWhiteSpace(entry.Reason) ? "The reason is missing" : null;

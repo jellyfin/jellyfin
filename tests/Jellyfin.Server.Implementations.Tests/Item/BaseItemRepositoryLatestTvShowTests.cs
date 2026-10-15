@@ -13,7 +13,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// <summary>
 /// Covers the latest TV items of a library when episodes carry no creation date.
 /// </summary>
-public sealed class BaseItemRepositoryLatestTvShowTests : SqliteDbTestFixture
+public sealed class BaseItemRepositoryLatestTvShowTests : JellyfinDbTestFixture
 {
     private const string EpisodeType = "MediaBrowser.Controller.Entities.TV.Episode";
     private const int Limit = 10;

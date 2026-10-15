@@ -34,7 +34,11 @@ public class MigrationContentsTests
             output?.WriteLine($"  {difference.MigrationId} {difference.Direction} {difference.Provider}: {difference.Operation}");
         }
 
-        var problems = MigrationContentsAllowlist.Check(differences, MigrationContentsAllowlist.Load(), MigrationProvider.All.Select(e => e.Name).ToList());
+        var problems = MigrationContentsAllowlist.Check(
+            differences,
+            MigrationContentsAllowlist.Load(),
+            MigrationProvider.All.Select(e => e.Name).ToList(),
+            MigrationProvider.All.Select(e => e.BaselineId).OfType<string>().ToHashSet());
 
         Assert.True(problems is null, problems);
     }
@@ -322,6 +326,33 @@ public class MigrationContentsTests
         var difference = new MigrationDifference("20990101000000_Change", MigrationContents.Up, "SQLite", "Sql 0123456789abcdef UPDATE \"Items\" SET \"A\" = 1;");
 
         Assert.Null(MigrationContentsAllowlist.Check([difference], [Entry(difference) with { Category = MigrationContentsCategory.LegacySqliteData }], Providers));
+    }
+
+    [Fact]
+    public void Check_BaselineCoverageOfAMigrationThatIsNoBaseline_IsInvalid()
+    {
+        var difference = new MigrationDifference("20990101000000_Change", MigrationContents.Up, "PostgreSQL", "AddColumn Items.Title null");
+
+        var problems = MigrationContentsAllowlist.Check(
+            [difference],
+            [Entry(difference) with { Category = MigrationContentsCategory.BaselineCoverage }],
+            Providers,
+            new HashSet<string> { "20200101000000_InitialCreate" });
+
+        Assert.NotNull(problems);
+        Assert.Contains("Only the baseline of a provider can have a BaselineCoverage difference", problems, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Check_BaselineCoverageOfABaseline_IsValid()
+    {
+        var difference = new MigrationDifference("20200101000000_InitialCreate", MigrationContents.Up, "PostgreSQL", "AddColumn Items.Title null");
+
+        Assert.Null(MigrationContentsAllowlist.Check(
+            [difference],
+            [Entry(difference) with { Category = MigrationContentsCategory.BaselineCoverage }],
+            Providers,
+            new HashSet<string> { "20200101000000_InitialCreate" }));
     }
 
     [Theory]

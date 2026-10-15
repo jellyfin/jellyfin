@@ -20,5 +20,11 @@ internal enum MigrationContentsCategory
     /// <summary>
     /// A fix for data that only databases created by old versions on SQLite can hold.
     /// </summary>
-    LegacySqliteData
+    LegacySqliteData,
+
+    /// <summary>
+    /// The baselines of two providers share an id, but cover a different number of SQLite migrations,
+    /// so one baseline contains what the other provider adds in a later migration.
+    /// </summary>
+    BaselineCoverage
 }
