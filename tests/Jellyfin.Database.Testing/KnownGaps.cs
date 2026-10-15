@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Microsoft.Data.Sqlite;
 using Xunit.Sdk;
 
 namespace Jellyfin.Database.Testing;
@@ -50,4 +51,8 @@ public static class KnownGaps
         return actual is not null
             && actual[ActualPrefix.Length..].Trim() is SortNameGreaterOutcome or SortNameLessOutcome;
     }
-}
+
+    public static readonly KnownGapDefinition ContainsOverManyValues = new(
+        TestDbProvider.Sqlite,
+        "SQLITE-CONTAINS-PARAMETER-LIMIT: SQLite gets a parameter for every value of a plain Contains, and takes at most 32,766",
+        ex => ex is SqliteException { SqliteErrorCode: 1 } sqlite && sqlite.Message.Contains("too many SQL variables", StringComparison.Ordinal));}
