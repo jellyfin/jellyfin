@@ -17,11 +17,13 @@ namespace Jellyfin.Server.Implementations.Tests.EfMigrations;
 /// <param name="CreateContext">Creates a context of the provider that is never connected.</param>
 /// <param name="BaselineId">The id of the migration that creates the whole schema. Required for every provider but the reference provider.</param>
 /// <param name="CoversThroughReferenceId">The last migration of the reference provider that the baseline already contains. Required for every provider but the reference provider.</param>
+/// <param name="ServerVersion">The version of the server that the model is built for, as the <c>server-version</c> option names it, for a provider whose model depends on it.</param>
 internal sealed record MigrationProvider(
     string Name,
     Func<JellyfinDbContext> CreateContext,
     string? BaselineId = null,
-    string? CoversThroughReferenceId = null)
+    string? CoversThroughReferenceId = null,
+    string? ServerVersion = null)
 {
     /// <summary>
     /// The command that generates the migrations of every provider.
@@ -37,13 +39,13 @@ internal sealed record MigrationProvider(
         new("PostgreSQL", OfflineContexts.Postgres, PostgresMigrationBaseline.MigrationId, PostgresMigrationBaseline.CoversThroughSqliteMigration),
         // MySQL and MariaDB share one set of migrations, but the model snapshot of a migration depends on the server version,
         // so the model is checked against the oldest supported version of each.
-        new("MySQL 8.4", () => OfflineContexts.MySql("8.4-mysql"), MySqlMigrationBaseline.MigrationId, MySqlMigrationBaseline.CoversThroughSqliteMigration),
-        new("MariaDB 11.4.7", () => OfflineContexts.MySql("11.4.7-mariadb"), MySqlMigrationBaseline.MigrationId, MySqlMigrationBaseline.CoversThroughSqliteMigration),
+        MySqlFamily("MySQL 8.4", "8.4-mysql"),
+        MySqlFamily("MariaDB 11.4.7", "11.4.7-mariadb"),
         // The snapshot is built for the oldest supported version, but the provider has no newest supported version and builds
         // its model for the server it finds, so the model is checked against newer releases of each as well.
-        new("MySQL 9.7", () => OfflineContexts.MySql("9.7.0-mysql"), MySqlMigrationBaseline.MigrationId, MySqlMigrationBaseline.CoversThroughSqliteMigration),
-        new("MariaDB 11.8", () => OfflineContexts.MySql("11.8.0-mariadb"), MySqlMigrationBaseline.MigrationId, MySqlMigrationBaseline.CoversThroughSqliteMigration),
-        new("MariaDB 12.3", () => OfflineContexts.MySql("12.3.0-mariadb"), MySqlMigrationBaseline.MigrationId, MySqlMigrationBaseline.CoversThroughSqliteMigration)
+        MySqlFamily("MySQL 9.7", "9.7.0-mysql"),
+        MySqlFamily("MariaDB 11.8", "11.8.0-mariadb"),
+        MySqlFamily("MariaDB 12.3", "12.3.0-mariadb")
     ];
 
     /// <summary>
@@ -72,4 +74,7 @@ internal sealed record MigrationProvider(
         using var context = CreateContext();
         return [.. context.GetService<IMigrationsAssembly>().Migrations.Keys.Order(StringComparer.Ordinal)];
     }
+
+    private static MigrationProvider MySqlFamily(string name, string serverVersion)
+        => new(name, () => OfflineContexts.MySql(serverVersion), MySqlMigrationBaseline.MigrationId, MySqlMigrationBaseline.CoversThroughSqliteMigration, serverVersion);
 }

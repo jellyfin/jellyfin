@@ -6,6 +6,7 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.DbConfiguration;
 using Jellyfin.Database.Providers.MySql;
 using Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
+using Jellyfin.Server.Implementations.Tests.EfMigrations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -31,15 +32,28 @@ public partial class MySqlCollationModelTests
         Second
     }
 
-    [Theory]
-    [InlineData("8.4-mysql")]
-    [InlineData("9.7.0-mysql")]
-    [InlineData("11.4.7-mariadb")]
-    [InlineData("11.8.0-mariadb")]
-    [InlineData("12.3.0-mariadb")]
-    public void TextColumns_HaveTheBinaryCollation(string server)
+    /// <summary>
+    /// Gets the rows of the provider table of the migration checks that are MySQL or MariaDB, one for each server version
+    /// whose model is checked.
+    /// </summary>
+    /// <returns>The names of the rows.</returns>
+    public static TheoryData<string> ServerRows() => new(ServerRowNames());
+
+    [Fact]
+    public void ServerRows_AreTheMySqlAndMariaDbRowsOfTheProviderTable()
     {
-        using var context = OfflineContexts.MySql(server);
+        var rows = ServerRowNames();
+
+        Assert.Equal(MigrationProvider.All.Where(IsMySqlFamily).Select(provider => provider.Name), rows);
+        Assert.Contains("MySQL 8.4", rows);
+        Assert.Contains("MariaDB 12.3", rows);
+    }
+
+    [Theory]
+    [MemberData(nameof(ServerRows))]
+    public void TextColumns_HaveTheBinaryCollation(string row)
+    {
+        using var context = MigrationProvider.Get(row).CreateContext();
 
         var text = Properties(context).Where(p => IsTextStoreType(p.GetColumnType())).ToList();
 
@@ -48,11 +62,10 @@ public partial class MySqlCollationModelTests
     }
 
     [Theory]
-    [InlineData("8.4-mysql")]
-    [InlineData("11.4.7-mariadb")]
-    public void PropertiesStoredAsStrings_HaveATextType(string server)
+    [MemberData(nameof(ServerRows))]
+    public void PropertiesStoredAsStrings_HaveATextType(string row)
     {
-        using var context = OfflineContexts.MySql(server);
+        using var context = MigrationProvider.Get(row).CreateContext();
 
         // A string type of the database that is not text, such as json, takes no collation and would need a decision.
         var strings = Properties(context).Where(p => ProviderClrType(p) == typeof(string)).ToList();
@@ -116,10 +129,11 @@ public partial class MySqlCollationModelTests
         Assert.Contains($"CHARACTER SET=utf8mb4 COLLATE={Binary};", script, StringComparison.Ordinal);
     }
 
-    [Fact]
-    public void Convention_ChoosesTheColumnsByTheirTypeInTheDatabase()
+    [Theory]
+    [MemberData(nameof(ServerRows))]
+    public void Convention_ChoosesTheColumnsByTheirTypeInTheDatabase(string row)
     {
-        using var context = new ProbeContext();
+        using var context = new ProbeContext(MigrationProvider.Get(row).ServerVersion!);
         var entityType = context.GetService<IDesignTimeModel>().Model.FindEntityType(typeof(Probe))!;
 
         string? Collation(string property) => entityType.FindProperty(property)!.GetCollation();
@@ -137,6 +151,15 @@ public partial class MySqlCollationModelTests
             () => Assert.Null(Collation(nameof(Probe.Key))),
             () => Assert.Null(Collation(nameof(Probe.Document))));
     }
+
+    private static bool IsMySqlFamily(MigrationProvider provider)
+    {
+        using var context = provider.CreateContext();
+        return context.Database.ProviderName == "Microting.EntityFrameworkCore.MySql";
+    }
+
+    private static List<string> ServerRowNames()
+        => [.. MigrationProvider.All.Where(provider => provider.ServerVersion is not null).Select(provider => provider.Name)];
 
     // Written apart from the convention, so that the test does not take the convention's word for what text is.
     private static bool IsTextStoreType(string? storeType)
@@ -190,10 +213,12 @@ public partial class MySqlCollationModelTests
         public string? Document { get; set; }
     }
 
-    // A model with a column of each kind, built by the provider as it builds the model of Jellyfin.
-    private sealed class ProbeContext : DbContext
+    // A model with a column of each kind, built by the provider as it builds the model of Jellyfin, for a server version.
+    private sealed class ProbeContext(string serverVersion) : DbContext
     {
         private readonly MySqlDatabaseProvider _provider = new(NullLogger<MySqlDatabaseProvider>.Instance);
+
+        public string ServerVersion => serverVersion;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -207,9 +232,12 @@ public partial class MySqlCollationModelTests
                         PluginName = string.Empty,
                         PluginAssembly = string.Empty,
                         ConnectionString = "Server=localhost;Database=jellyfin_offline",
-                        Options = [new CustomDatabaseOption { Key = "server-version", Value = "8.4-mysql" }]
+                        Options = [new CustomDatabaseOption { Key = "server-version", Value = serverVersion }]
                     }
                 });
+
+            // Each server version builds a model of its own, rather than one that EF Core cached for the type.
+            optionsBuilder.ReplaceService<IModelCacheKeyFactory, ProbeModelCacheKeyFactory>();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -227,5 +255,10 @@ public partial class MySqlCollationModelTests
         {
             _provider.ConfigureConventions(configurationBuilder);
         }
+    }
+
+    private sealed class ProbeModelCacheKeyFactory : IModelCacheKeyFactory
+    {
+        public object Create(DbContext context, bool designTime) => (context.GetType(), ((ProbeContext)context).ServerVersion, designTime);
     }
 }
