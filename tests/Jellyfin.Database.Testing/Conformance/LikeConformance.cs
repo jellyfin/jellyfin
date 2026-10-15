@@ -10,14 +10,20 @@ namespace Jellyfin.Database.Testing.Conformance;
 /// <summary>
 /// Kit row: a search with <see cref="JellyfinDbFunctions.LikeIgnoreAsciiCase"/> and a pattern from
 /// <see cref="LikePatterns"/> means the same on every engine. A contains pattern keeps <c>%</c> and <c>_</c> as
-/// wildcards and a starts-with pattern takes them literally; both take the escape character literally, fold the case
-/// of ASCII letters only, and match any other character, including one outside the Basic Multilingual Plane, exactly.
+/// wildcards and a starts-with pattern takes them literally; both take the escape character and <c>[</c> literally,
+/// fold the case of ASCII letters only, and match any other character, including one outside the Basic Multilingual
+/// Plane, exactly.
 /// </summary>
+/// <remarks>
+/// <c>[</c> opens a character class in the <c>LIKE</c> of some engines, so a pattern escapes it; on an engine where
+/// it has no special meaning, the escaped character must still match only itself.
+/// </remarks>
 public abstract class LikeConformance : ConformanceTestBase
 {
     private static readonly string[] _names =
     [
-        "100%", "1000", "a_b", "axb", "a\\b", "a\\\\b", "Émile", "émile", "MILE", "日本語", "日本", "Smile 😀", "Smile 😁"
+        "100%", "1000", "a_b", "axb", "a\\b", "a\\\\b", "Émile", "émile", "MILE", "日本語", "日本", "Smile 😀", "Smile 😁",
+        "[ab]", "x[ab]y", "a[", "xay", "c[^a]"
     ];
 
     protected LikeConformance()
@@ -57,6 +63,21 @@ public abstract class LikeConformance : ConformanceTestBase
     public void LikeIgnoreAsciiCase_StartsWithPattern_MatchesTheSameOnEveryEngine(string term, string[] expected)
     {
         Assert.Equal(expected, Match(LikePatterns.StartsWithIgnoreAsciiCase(term)));
+    }
+
+    [ConformanceTheory]
+    [InlineData("[ab]", false, new[] { "[ab]", "x[ab]y" })]
+    [InlineData("[", false, new[] { "[ab]", "a[", "c[^a]", "x[ab]y" })]
+    [InlineData("[^a]", false, new[] { "c[^a]" })]
+    [InlineData("[AB]", false, new[] { "[ab]", "x[ab]y" })]
+    [InlineData("[a", true, new[] { "[ab]" })]
+    [InlineData("X[", true, new[] { "x[ab]y" })]
+    [InlineData("C[^", true, new[] { "c[^a]" })]
+    public void LikeIgnoreAsciiCase_OpeningBracket_IsMatchedLiterallyOnEveryEngine(string term, bool startsWith, string[] expected)
+    {
+        var pattern = startsWith ? LikePatterns.StartsWithIgnoreAsciiCase(term) : LikePatterns.ContainsIgnoreAsciiCase(term);
+
+        Assert.Equal(expected, Match(pattern));
     }
 
     private string[] Match(string pattern)

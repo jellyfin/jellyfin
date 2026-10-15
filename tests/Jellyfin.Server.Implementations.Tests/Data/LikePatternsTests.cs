@@ -28,6 +28,17 @@ public class LikePatternsTests
     }
 
     [Theory]
+    [InlineData("[", "%\\[%")]
+    [InlineData("[ab]", "%\\[ab]%")]
+    [InlineData("[^A]", "%\\[^a]%")]
+    [InlineData("]", "%]%")]
+    [InlineData("\\[", "%\\\\\\[%")]
+    public void ContainsIgnoreAsciiCase_OpeningBracket_IsEscaped(string term, string expected)
+    {
+        Assert.Equal(expected, LikePatterns.ContainsIgnoreAsciiCase(term));
+    }
+
+    [Theory]
     [InlineData("100%", "%100%%")]
     [InlineData("a_b", "%a_b%")]
     [InlineData("%", "%%%")]
@@ -84,6 +95,15 @@ public class LikePatternsTests
     [InlineData("_", "\\_%")]
     [InlineData("\\%_", "\\\\\\%\\_%")]
     public void StartsWithIgnoreAsciiCase_BackslashPercentAndUnderscore_AreEscaped(string term, string expected)
+    {
+        Assert.Equal(expected, LikePatterns.StartsWithIgnoreAsciiCase(term));
+    }
+
+    [Theory]
+    [InlineData("[", "\\[%")]
+    [InlineData("[A]_", "\\[a]\\_%")]
+    [InlineData("]", "]%")]
+    public void StartsWithIgnoreAsciiCase_OpeningBracket_IsEscaped(string term, string expected)
     {
         Assert.Equal(expected, LikePatterns.StartsWithIgnoreAsciiCase(term));
     }
