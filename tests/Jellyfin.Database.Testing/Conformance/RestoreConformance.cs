@@ -4,8 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Jellyfin.Database.Implementations;
-using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Server.Implementations.FullSystemBackup;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
@@ -22,22 +20,15 @@ namespace Jellyfin.Database.Testing.Conformance;
 /// <summary>
 /// Kit row: rows inserted with explicit values in their identity column, as a restore inserts them, keep those values,
 /// and the next row saved afterwards gets a value above all of them; and a backup of every table, restored after the
-/// tables were changed, gives back exactly the rows that were backed up, with two named exceptions that the row checks
-/// are still needed.
+/// tables were changed, gives back exactly the rows that were backed up, with a named exception that the row checks
+/// is still needed.
 /// </summary>
+/// <remarks>
+/// The backup does not carry the concurrency tokens: they are read back as 0 after a restore. They are left out of the
+/// comparison, and the row fails once a restore keeps them.
+/// </remarks>
 public abstract class RestoreConformance : ConformanceTestBase
 {
-    /// <summary>
-    /// The tables a backup does not carry, so that a restore leaves them empty. The backup does not carry HomeSection,
-    /// which has no set on <see cref="JellyfinDbContext"/>, and the purge of DisplayPreferences deletes its rows in
-    /// cascade. A table here fails the row once the restore gives its rows back; remove it from the list then.
-    /// </summary>
-    /// <remarks>
-    /// The backup does not carry the concurrency tokens either: they are read back as 0 after a restore. They are left
-    /// out of the comparison, and the row fails once a restore keeps them.
-    /// </remarks>
-    private static readonly Type[] _notInTheBackup = [typeof(HomeSection)];
-
     private readonly string _root = Path.Combine(Path.GetTempPath(), "jellyfin-conformance-" + Guid.NewGuid().ToString("N"));
 
     [ConformanceFact]
@@ -118,14 +109,7 @@ public abstract class RestoreConformance : ConformanceTestBase
         foreach (var table in tables)
         {
             var restored = DescribeRows(table, IsNotAConcurrencyToken);
-            if (_notInTheBackup.Contains(table.ClrType))
-            {
-                if (restored.Count > 0)
-                {
-                    wrong.Add($"{table.GetTableName()}: the restore now gives rows back, remove the table from the tables the backup does not carry");
-                }
-            }
-            else if (!backedUp[table.Name].SequenceEqual(restored))
+            if (!backedUp[table.Name].SequenceEqual(restored))
             {
                 wrong.Add($"{table.GetTableName()}: lost [{string.Join(" | ", backedUp[table.Name].Except(restored))}], gained [{string.Join(" | ", restored.Except(backedUp[table.Name]))}]");
             }
@@ -139,7 +123,7 @@ public abstract class RestoreConformance : ConformanceTestBase
             }
         }
 
-        foreach (var table in TablesWithIdentity().Where(table => !_notInTheBackup.Contains(table.ClrType)))
+        foreach (var table in TablesWithIdentity())
         {
             var next = NextIdentity(table);
             if (next <= highest[table.Name])

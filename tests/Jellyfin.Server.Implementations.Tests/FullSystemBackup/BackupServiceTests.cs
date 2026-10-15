@@ -137,6 +137,29 @@ public sealed class BackupServiceTests : DatabaseTestFixture
     }
 
     [Fact]
+    public async Task RestoreBackupAsync_WithHomeSections_RestoresThem()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await SeedHomeSectionsAsync(cancellationToken).ConfigureAwait(true);
+        var expected = await DisplayPreferencesRowsAsync(cancellationToken).ConfigureAwait(true);
+        var backupService = CreateBackupService();
+        var manifest = await backupService.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+
+        // The sections change after the backup, so only the restore can bring them back.
+        await using (var ctx = CreateDbContext())
+        {
+            var sections = await ctx.Set<HomeSection>().OrderBy(e => e.Order).ToListAsync(cancellationToken).ConfigureAwait(true);
+            sections[0].Type = HomeSectionType.NextUp;
+            ctx.Set<HomeSection>().Remove(sections[1]);
+            await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(true);
+        }
+
+        await backupService.RestoreBackupAsync(manifest.Path).ConfigureAwait(true);
+
+        Assert.Equal(expected, await DisplayPreferencesRowsAsync(cancellationToken).ConfigureAwait(true));
+    }
+
+    [Fact]
     public async Task RestoreBackupAsync_AfterDataWasChanged_RestoresTheBackedUpRows()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -1249,6 +1272,41 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         {
             await writer.WriteAsync(transform(content)).ConfigureAwait(false);
         }
+    }
+
+    private async Task SeedHomeSectionsAsync(CancellationToken cancellationToken)
+    {
+        await using var ctx = CreateDbContext();
+        var user = new User("alice", "provider", "reset");
+        ctx.Users.Add(user);
+        await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        // The removed row leaves a gap, so the sections only point at their preferences if the ids are restored.
+        var removed = new DisplayPreferences(user.Id, Guid.Empty, "removed");
+        var preferences = new DisplayPreferences(user.Id, Guid.Empty, "web");
+        preferences.HomeSections.Add(new HomeSection { Order = 0, Type = HomeSectionType.LatestMedia });
+        preferences.HomeSections.Add(new HomeSection { Order = 1, Type = HomeSectionType.Resume });
+        ctx.DisplayPreferences.AddRange(removed, preferences);
+        await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        ctx.DisplayPreferences.Remove(removed);
+        await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<List<string>> DisplayPreferencesRowsAsync(CancellationToken cancellationToken)
+    {
+        await using var ctx = CreateDbContext();
+        var rows = new List<string>();
+        foreach (var row in await ctx.DisplayPreferences.AsNoTracking().OrderBy(e => e.Id).ToListAsync(cancellationToken).ConfigureAwait(false))
+        {
+            rows.Add($"DisplayPreferences {row.Id} {row.UserId} {row.Client}");
+        }
+
+        foreach (var row in await ctx.Set<HomeSection>().AsNoTracking().OrderBy(e => e.Id).ToListAsync(cancellationToken).ConfigureAwait(false))
+        {
+            rows.Add($"HomeSection {row.Id} {row.DisplayPreferencesId} {row.Order} {row.Type}");
+        }
+
+        return rows;
     }
 
     private async Task SeedAsync(CancellationToken cancellationToken)

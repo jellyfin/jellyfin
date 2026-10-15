@@ -61,6 +61,14 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<DisplayPreferences> DisplayPreferences => Set<DisplayPreferences>();
 
     /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the home sections of the display preferences.
+    /// </summary>
+    /// <remarks>
+    /// A set gives its name to its table, so it has the name the table already has. A backup also names the table by it.
+    /// </remarks>
+    public DbSet<HomeSection> HomeSection => Set<HomeSection>();
+
+    /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the image infos.
     /// </summary>
     public DbSet<ImageInfo> ImageInfos => Set<ImageInfo>();
