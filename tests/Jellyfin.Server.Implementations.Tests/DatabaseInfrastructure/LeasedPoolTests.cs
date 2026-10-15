@@ -141,18 +141,13 @@ public sealed class LeasedPoolTests : IDisposable
         Assert.NotEqual(name, DatabaseOf(second));
     }
 
-    [Fact]
-    public void Create_AfterLeaseWasReturned_ReusesTheDatabase()
+    [Theory]
+    [InlineData(TestSchemaSource.Model)]
+    [InlineData(TestSchemaSource.Migrations)]
+    public void Create_AfterLeaseWasReturned_ReusesTheDatabase(TestSchemaSource source)
     {
-        string first;
-        using (var database = _backend.Create(TestSchemaSource.Model, []))
-        {
-            first = DatabaseOf(database);
-        }
+        PoolChecks.AssertReturnedDatabaseIsReused(_backend, source);
 
-        using var again = _backend.Create(TestSchemaSource.Model, []);
-
-        Assert.Equal(first, DatabaseOf(again));
         Assert.Single(Directory.GetFiles(_backend.DatabaseDirectory));
     }
 
@@ -306,19 +301,19 @@ public sealed class LeasedPoolTests : IDisposable
     }
 
     [Fact]
-    public void Dispose_LeaseThatChangedOnlyTheMigrationHistory_IsReused()
+    public void Dispose_LeaseThatDeletedTheMigrationHistory_IsDroppedInsteadOfReused()
     {
-        string name;
-        using (var database = _backend.Create(TestSchemaSource.Migrations, []))
-        {
-            name = DatabaseOf(database);
-            using var context = CreateContext(database);
-            PoolChecks.DeleteMigrationHistory(context);
-        }
+        PoolChecks.AssertChangedMigrationHistoryIsNotReused(_backend, PoolChecks.DeleteMigrationHistory);
 
-        using var next = _backend.Create(TestSchemaSource.Migrations, []);
+        Assert.Single(Directory.GetFiles(_backend.DatabaseDirectory));
+    }
 
-        Assert.Equal(name, DatabaseOf(next));
+    [Fact]
+    public void Dispose_LeaseThatRecordedAnotherMigration_IsDroppedInsteadOfReused()
+    {
+        PoolChecks.AssertChangedMigrationHistoryIsNotReused(_backend, PoolChecks.RecordAnotherMigration);
+
+        Assert.Single(Directory.GetFiles(_backend.DatabaseDirectory));
     }
 
     [Fact]

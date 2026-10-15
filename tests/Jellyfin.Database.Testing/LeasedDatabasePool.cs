@@ -1,8 +1,14 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Locking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Jellyfin.Database.Testing;
 
@@ -10,10 +16,15 @@ namespace Jellyfin.Database.Testing;
 /// Hands out databases of one server, each to a single test instance at a time, for the engines that cannot copy a
 /// database cheaply. A database is built once and then reused: when its lease ends, it is reset and waits for the
 /// next test. The pool grows when every database of a schema source is leased, so a test never waits for another one,
-/// and for each schema source it can only grow as far as tests run at the same time. A database whose schema was
-/// changed by a test is dropped instead of being reused. Every database that was created is dropped when the pool is
-/// disposed, which also happens when the process exits.
+/// and for each schema source it can only grow as far as tests run at the same time. A database whose schema or
+/// migration history was changed by a test is dropped instead of being reused. Every database that was created is
+/// dropped when the pool is disposed, which also happens when the process exits.
 /// </summary>
+/// <remarks>
+/// The reset empties the tables of the model only, so it keeps the migration history. The pool compares the history
+/// together with the structure that the server describes: a later test would otherwise start from the migrations that
+/// an earlier one recorded or removed. This holds for every server, so no server has to remember to read the history.
+/// </remarks>
 internal sealed class LeasedDatabasePool : IDisposable
 {
     private readonly IPooledDatabaseServer _server;
@@ -142,7 +153,7 @@ internal sealed class LeasedDatabasePool : IDisposable
             source.Apply(_server.CreateOptions(name, []), _server.CreateProvider());
             if (recordFingerprint)
             {
-                _fingerprints[name] = _server.GetSchemaFingerprint(name);
+                _fingerprints[name] = Fingerprint(name);
             }
         }
         catch (Exception failure)
@@ -182,7 +193,7 @@ internal sealed class LeasedDatabasePool : IDisposable
         {
             // A reset only restores the contents of the tables of the model, so a test that changed more than that
             // leaves a database that no later test could rely on.
-            schemaChanged = _fingerprints.TryGetValue(name, out var expected) && _server.GetSchemaFingerprint(name) != expected;
+            schemaChanged = _fingerprints.TryGetValue(name, out var expected) && Fingerprint(name) != expected;
             if (!schemaChanged)
             {
                 // The interceptors of the test that is done must not see the reset.
@@ -211,6 +222,25 @@ internal sealed class LeasedDatabasePool : IDisposable
         }
 
         idle.Push(name);
+    }
+
+    /// <summary>
+    /// Describes the structure of a database, as its server does, and its migration history, which a reset keeps.
+    /// </summary>
+    /// <param name="name">The name of the database.</param>
+    /// <returns>A value that is equal for databases of the same structure and history.</returns>
+    private string Fingerprint(string name)
+    {
+        using var context = new JellyfinDbContext(
+            _server.CreateOptions(name, []),
+            NullLogger<JellyfinDbContext>.Instance,
+            _server.CreateProvider(),
+            new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
+        var history = context.GetService<IHistoryRepository>();
+        var applied = history.Exists()
+            ? history.GetAppliedMigrations().Select(row => row.MigrationId + '\u001f' + row.ProductVersion)
+            : [];
+        return _server.GetSchemaFingerprint(name) + '\u001d' + string.Join('\u001e', applied);
     }
 
     private void DropAfterFailure(string name, Exception failure)

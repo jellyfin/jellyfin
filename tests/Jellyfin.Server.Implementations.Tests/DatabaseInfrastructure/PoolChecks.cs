@@ -7,6 +7,7 @@ using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -87,6 +88,42 @@ internal static class PoolChecks
 #pragma warning disable EF1002, CA2100 // The table name is a constant.
         context.Database.ExecuteSqlRaw($"DELETE FROM {table}");
 #pragma warning restore EF1002, CA2100
+    }
+
+    public static void RecordAnotherMigration(JellyfinDbContext context)
+    {
+        var history = context.GetService<IHistoryRepository>();
+        context.Database.ExecuteSqlRaw(history.GetInsertScript(new HistoryRow("29990101000000_Recorded", "10.0.0")));
+    }
+
+    public static void AssertReturnedDatabaseIsReused(ITestDatabaseBackend backend, TestSchemaSource source)
+    {
+        string first;
+        using (var database = backend.Create(source, []))
+        {
+            first = DatabaseOf(database);
+        }
+
+        using var again = backend.Create(source, []);
+
+        Assert.Equal(first, DatabaseOf(again));
+    }
+
+    public static void AssertChangedMigrationHistoryIsNotReused(ITestDatabaseBackend backend, Action<JellyfinDbContext> change)
+    {
+        string changed;
+        using (var database = backend.Create(TestSchemaSource.Migrations, []))
+        {
+            changed = DatabaseOf(database);
+            using var context = CreateContext(database);
+            change(context);
+        }
+
+        using var next = backend.Create(TestSchemaSource.Migrations, []);
+        using var nextContext = CreateContext(next);
+
+        Assert.NotEqual(changed, DatabaseOf(next));
+        Assert.Equal(nextContext.Database.GetMigrations(), nextContext.Database.GetAppliedMigrations());
     }
 
     public static void AssertResetMatchesFreshDatabase(ITestDatabaseBackend backend, TestSchemaSource source)

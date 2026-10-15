@@ -1,11 +1,7 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Testing;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Xunit;
 
@@ -54,31 +50,21 @@ public class SelectedBackendPoolTests
     [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
     public void Dispose_LeaseThatDeletedTheMigrationHistory_IsDroppedInsteadOfReused()
     {
-        AssertChangedMigrationHistoryIsNotReused(PoolChecks.DeleteMigrationHistory);
+        PoolChecks.AssertChangedMigrationHistoryIsNotReused(Backend, PoolChecks.DeleteMigrationHistory);
     }
 
     [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
     public void Dispose_LeaseThatRecordedAnotherMigration_IsDroppedInsteadOfReused()
     {
-        AssertChangedMigrationHistoryIsNotReused(context =>
-        {
-            var history = context.GetService<IHistoryRepository>();
-            context.Database.ExecuteSqlRaw(history.GetInsertScript(new HistoryRow("29990101000000_Recorded", "10.0.0")));
-        });
+        PoolChecks.AssertChangedMigrationHistoryIsNotReused(Backend, PoolChecks.RecordAnotherMigration);
     }
 
-    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
-    public void Create_AfterLeaseWasReturned_ReusesTheDatabase()
+    [ProviderTheory(TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [InlineData(TestSchemaSource.Model)]
+    [InlineData(TestSchemaSource.Migrations)]
+    public void Create_AfterLeaseWasReturned_ReusesTheDatabase(TestSchemaSource source)
     {
-        string first;
-        using (var database = Backend.Create(TestSchemaSource.Model, []))
-        {
-            first = PoolChecks.DatabaseOf(database);
-        }
-
-        using var again = Backend.Create(TestSchemaSource.Model, []);
-
-        Assert.Equal(first, PoolChecks.DatabaseOf(again));
+        PoolChecks.AssertReturnedDatabaseIsReused(Backend, source);
     }
 
     [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
@@ -145,23 +131,6 @@ public class SelectedBackendPoolTests
         Assert.False(CanConnect(fresh));
         using var reused = Backend.Create(TestSchemaSource.Model, []);
         Assert.Equal(pooled, PoolChecks.DatabaseOf(reused));
-    }
-
-    private static void AssertChangedMigrationHistoryIsNotReused(Action<JellyfinDbContext> change)
-    {
-        string changed;
-        using (var database = Backend.Create(TestSchemaSource.Migrations, []))
-        {
-            changed = PoolChecks.DatabaseOf(database);
-            using var context = PoolChecks.CreateContext(database);
-            change(context);
-        }
-
-        using var next = Backend.Create(TestSchemaSource.Migrations, []);
-        using var nextContext = PoolChecks.CreateContext(next);
-
-        Assert.NotEqual(changed, PoolChecks.DatabaseOf(next));
-        Assert.Equal(nextContext.Database.GetMigrations(), nextContext.Database.GetAppliedMigrations());
     }
 
     internal static bool CanConnect(TestDatabase database)
