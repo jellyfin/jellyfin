@@ -1,0 +1,70 @@
+// The accepted differences between the migrations of the providers that share an id (ADR-0001 W2).
+// MigrationContentsTests compares the Up and Down operations of every such migration by kind, table and column, with the
+// nullability of columns, the uniqueness of indexes, the on-delete action of foreign keys and the text of SQL (see
+// MigrationContents for what is not compared). Every difference needs exactly one entry here. An entry that matches no
+// difference fails the check as well.
+//
+// - "provider" is the provider that has the operation, or the providers separated by ", ".
+// - "operation" is exactly as the check prints it. SQL is named by a hash of its text, with white space runs made one space,
+//   followed by the start of that text.
+// - "category": EquivalentSql (SQL that does what the other providers' operations do), EngineSpecific (a step that only one
+//   engine needs) or LegacySqliteData (a fix for data that only old SQLite databases can hold, on SQLite only).
+//   A fix for a bug in current code is not a category: it has to reach every provider's migration.
+[
+  {
+    "migration": "20261013120000_AddNormalisedMatchColumns",
+    "direction": "Up",
+    "provider": "PostgreSQL",
+    "operation": "Sql de16bcbf36ccb1c7 ALTER TABLE \"Peoples\" ALTER COLUMN \"NameLower\" DROP DEFAULT;",
+    "category": "EngineSpecific",
+    "reason": "The generated AddColumn gives the new required column a default of '' so that existing rows get a value, and the model has no default, so PostgreSQL drops it again. SQLite has no ALTER COLUMN and would have to rebuild Peoples to drop it. The default left on SQLite changes nothing the server does: NameLower is a mapped property without a store-generated value, so EF Core writes it in every insert."
+  },
+  {
+    "migration": "20261013120000_AddNormalisedMatchColumns",
+    "direction": "Down",
+    "provider": "PostgreSQL",
+    "operation": "DropColumn BaseItems.CleanOriginalTitle",
+    "category": "EquivalentSql",
+    "reason": "The structured side of the SQLite SQL 'ALTER TABLE \"BaseItems\" DROP COLUMN \"CleanOriginalTitle\";' in the same Down, which drops the same column."
+  },
+  {
+    "migration": "20261013120000_AddNormalisedMatchColumns",
+    "direction": "Down",
+    "provider": "PostgreSQL",
+    "operation": "DropColumn Peoples.NameLower",
+    "category": "EquivalentSql",
+    "reason": "The structured side of the SQLite SQL 'ALTER TABLE \"Peoples\" DROP COLUMN \"NameLower\";' in the same Down, which drops the same column."
+  },
+  {
+    "migration": "20261013120000_AddNormalisedMatchColumns",
+    "direction": "Down",
+    "provider": "PostgreSQL",
+    "operation": "DropIndex Peoples IX_Peoples_NameLower",
+    "category": "EquivalentSql",
+    "reason": "The structured side of the SQLite SQL 'DROP INDEX IF EXISTS \"IX_Peoples_NameLower\";' in the same Down, which drops the same index. Up created it on both providers."
+  },
+  {
+    "migration": "20261013120000_AddNormalisedMatchColumns",
+    "direction": "Down",
+    "provider": "SQLite",
+    "operation": "Sql cf3259df44a18de0 ALTER TABLE \"Peoples\" DROP COLUMN \"NameLower\";",
+    "category": "EquivalentSql",
+    "reason": "Drops the column that PostgreSQL drops with DropColumn Peoples.NameLower. Written as SQL, as the migration says, because DropColumn through the migration builder rebuilds the whole SQLite table."
+  },
+  {
+    "migration": "20261013120000_AddNormalisedMatchColumns",
+    "direction": "Down",
+    "provider": "SQLite",
+    "operation": "Sql d6b5c99dd12fbf4e ALTER TABLE \"BaseItems\" DROP COLUMN \"CleanOriginalTitle\";",
+    "category": "EquivalentSql",
+    "reason": "Drops the column that PostgreSQL drops with DropColumn BaseItems.CleanOriginalTitle. Written as SQL, as the migration says, because DropColumn through the migration builder rebuilds the whole SQLite table."
+  },
+  {
+    "migration": "20261013120000_AddNormalisedMatchColumns",
+    "direction": "Down",
+    "provider": "SQLite",
+    "operation": "Sql ecdc525fb61ca746 DROP INDEX IF EXISTS \"IX_Peoples_NameLower\";",
+    "category": "EquivalentSql",
+    "reason": "Drops the index that PostgreSQL drops with DropIndex Peoples IX_Peoples_NameLower, written as SQL together with the column drops that follow it."
+  }
+]
