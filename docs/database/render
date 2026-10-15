@@ -1,0 +1,256 @@
+#!/usr/bin/env dotnet
+// Renders the operator page of each database engine from one template, so the pages cannot drift apart.
+//
+//   docs/database/render                    Linux and macOS
+//   dotnet run docs/database/render         every platform
+//   docs/database/render --check            fails if a rendered file is not what the template gives
+//
+// A template is plain text with three kinds of markup:
+//   {{key}}                 the value of the key for the engine, or its id for {{id}}; an unknown key is an error
+//   {{#if tag ...}}         on a line of its own: the lines up to the matching {{else}} or {{/if}} are kept only
+//   {{else}} / {{/if}}      for an engine that has one of the tags; blocks can be nested
+// Edit the template or the table below, never a rendered file, and run the command again.
+
+using System.Text;
+using System.Text.RegularExpressions;
+
+const string Command = "docs/database/render";
+
+// One row per engine. The tags select the blocks of the template, the values fill in the keys.
+Engine[] engines =
+[
+    new(
+        "postgresql",
+        ["postgresql"],
+        new()
+        {
+            ["engine"] = "PostgreSQL",
+            ["provider-key"] = "Jellyfin-PostgreSQL",
+            ["provider-source"] = "src/Jellyfin.Database/Jellyfin.Database.Providers.Postgres/PostgresDatabaseProvider.cs",
+            ["tier"] = "Supported",
+            ["floor"] = "16",
+            ["image"] = "postgres:16.15-trixie",
+            ["port"] = "5432",
+            ["client"] = "psql",
+            ["dump-tool"] = "pg_dump",
+            ["test-provider"] = "Postgres",
+            ["run-settings"] = "postgres.runsettings",
+            ["connection-string"] = "Host=db.example.com;Port=5432;Database=jellyfin;Username=jellyfin;Password=CHANGE-ME",
+            ["connection-string-kind"] = "An [Npgsql connection string](https://www.npgsql.org/doc/connection-string-parameters.html).",
+            ["ci-jobs"] = "`run-tests-db / Postgres` on PostgreSQL 16.15, on every pull request, as a required check; "
+                + "`run-tests-db / Postgres newest` on PostgreSQL 18.6, every night",
+        }),
+    new(
+        "mysql",
+        ["mysql", "mysql-family"],
+        new()
+        {
+            ["engine"] = "MySQL",
+            ["provider-key"] = "Jellyfin-MySQL",
+            ["provider-source"] = "src/Jellyfin.Database/Jellyfin.Database.Providers.MySql/MySqlDatabaseProvider.cs",
+            ["tier"] = "Experimental",
+            ["floor"] = "8.4",
+            ["image"] = "mysql:8.4.11",
+            ["port"] = "3306",
+            ["client"] = "mysql",
+            ["dump-tool"] = "mysqldump",
+            ["test-provider"] = "MySql",
+            ["run-settings"] = "mysql.runsettings",
+            ["connection-string"] = "Server=db.example.com;Port=3306;Database=jellyfin;User ID=jellyfin;Password=CHANGE-ME",
+            ["connection-string-kind"] = "A [MySqlConnector connection string](https://mysqlconnector.net/connection-options/).",
+            ["server-version-example"] = "8.4-mysql",
+            ["server-default-collation"] = "`utf8mb4_0900_ai_ci` on MySQL 8.4",
+            ["other-engine"] = "MariaDB",
+            ["other-id"] = "mariadb",
+            ["ci-jobs"] = "`run-tests-db / MySql` on MySQL 8.4.11, not required, and `run-tests-db / MySql LTS newest` on "
+                + "MySQL 9.7.2, advisory; both on every pull request, every night and on demand, where the nightly and "
+                + "manual runs start once the workflow is on the default branch",
+        }),
+    new(
+        "mariadb",
+        ["mariadb", "mysql-family"],
+        new()
+        {
+            ["engine"] = "MariaDB",
+            ["provider-key"] = "Jellyfin-MySQL",
+            ["provider-source"] = "src/Jellyfin.Database/Jellyfin.Database.Providers.MySql/MySqlDatabaseProvider.cs",
+            ["tier"] = "Experimental",
+            ["floor"] = "11.4.7",
+            ["image"] = "mariadb:11.4.13",
+            ["port"] = "3306",
+            ["client"] = "mariadb",
+            ["dump-tool"] = "mariadb-dump",
+            ["test-provider"] = "MariaDb",
+            ["run-settings"] = "mariadb.runsettings",
+            ["connection-string"] = "Server=db.example.com;Port=3306;Database=jellyfin;User ID=jellyfin;Password=CHANGE-ME",
+            ["connection-string-kind"] = "A [MySqlConnector connection string](https://mysqlconnector.net/connection-options/).",
+            ["server-version-example"] = "11.4.13-mariadb",
+            ["server-default-collation"] = "`utf8mb4_uca1400_ai_ci` on MariaDB 11.4",
+            ["other-engine"] = "MySQL",
+            ["other-id"] = "mysql",
+            ["ci-jobs"] = "`run-tests-db / MariaDb` on MariaDB 11.4.13, not required, and `run-tests-db / MariaDb LTS newest` "
+                + "on MariaDB 12.3.3, advisory; both on every pull request, every night and on demand, where the nightly "
+                + "and manual runs start once the workflow is on the default branch",
+        }),
+];
+
+// Each template and where its output for an engine goes, relative to docs/database.
+(string Template, Func<Engine, string> Output, string NoticeFormat)[] templates =
+[
+    ("templates/how-to.md", e => $"{e.Id}.md", "<!-- {0} -->"),
+];
+
+if (args.Length > 1 || (args.Length == 1 && args[0] != "--check"))
+{
+    return Fail($"Usage: {Command} [--check]");
+}
+
+var check = args.Length == 1;
+var directory = FindDocsDirectory();
+if (directory is null)
+{
+    return Fail($"Could not find docs/database above the working directory. Run {Command} from a checkout of the repository.");
+}
+
+var stale = new List<string>();
+foreach (var (template, output, noticeFormat) in templates)
+{
+    var lines = File.ReadAllText(Path.Combine(directory, template)).ReplaceLineEndings("\n").Split('\n');
+    foreach (var engine in engines)
+    {
+        string rendered;
+        try
+        {
+            rendered = Render(lines, engine);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Fail($"{template} for {engine.Id}: {ex.Message}");
+        }
+
+        var notice = string.Format(
+            System.Globalization.CultureInfo.InvariantCulture,
+            noticeFormat,
+            $"Rendered from docs/database/{template} by {Command}. Edit the template, not this file.");
+        rendered = notice + "\n" + rendered;
+        var path = Path.Combine(directory, output(engine));
+        var relative = Path.GetRelativePath(directory, path).Replace('\\', '/');
+        var current = File.Exists(path) ? File.ReadAllText(path).ReplaceLineEndings("\n") : null;
+        if (current == rendered)
+        {
+            continue;
+        }
+
+        if (check)
+        {
+            stale.Add(relative);
+            continue;
+        }
+
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllText(path, rendered, new UTF8Encoding(false));
+        Console.WriteLine($"Wrote docs/database/{relative}");
+    }
+}
+
+if (stale.Count > 0)
+{
+    return Fail($"These files are not what their template gives: {string.Join(", ", stale.Select(e => "docs/database/" + e))}. Run {Command} and commit the result.");
+}
+
+if (check)
+{
+    Console.WriteLine("Every rendered file is up to date.");
+}
+
+return 0;
+
+static string Render(string[] lines, Engine engine)
+{
+    var output = new StringBuilder();
+
+    // One entry per open block: whether its lines are kept, and whether its {{else}} was seen.
+    var blocks = new Stack<(bool Keep, bool Else, bool ParentKeeps)>();
+    var keep = true;
+    for (var number = 1; number <= lines.Length; number++)
+    {
+        var line = lines[number - 1];
+        var trimmed = line.Trim();
+        var condition = Regex.Match(trimmed, @"^\{\{#if ((?:[a-z-]+ ?)+)\}\}$");
+        if (condition.Success)
+        {
+            var matches = condition.Groups[1].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries).Any(engine.Tags.Contains);
+            blocks.Push((matches, false, keep));
+            keep = keep && matches;
+            continue;
+        }
+
+        if (trimmed == "{{else}}")
+        {
+            if (blocks.Count == 0 || blocks.Peek().Else)
+            {
+                throw new InvalidOperationException($"line {number} has an {{{{else}}}} without an open {{{{#if}}}}.");
+            }
+
+            var block = blocks.Pop();
+            blocks.Push((!block.Keep, true, block.ParentKeeps));
+            keep = block.ParentKeeps && !block.Keep;
+            continue;
+        }
+
+        if (trimmed == "{{/if}}")
+        {
+            if (blocks.Count == 0)
+            {
+                throw new InvalidOperationException($"line {number} has an {{{{/if}}}} without an open {{{{#if}}}}.");
+            }
+
+            keep = blocks.Pop().ParentKeeps;
+            continue;
+        }
+
+        if (!keep)
+        {
+            continue;
+        }
+
+        output.Append(Regex.Replace(line, @"\{\{([^}]*)\}\}", m => m.Groups[1].Value == "id"
+            ? engine.Id
+            : engine.Values.TryGetValue(m.Groups[1].Value, out var value)
+                ? value
+                : throw new InvalidOperationException($"line {number} uses {m.Value}, which {engine.Id} has no value for.")));
+        if (number < lines.Length)
+        {
+            output.Append('\n');
+        }
+    }
+
+    if (blocks.Count > 0)
+    {
+        throw new InvalidOperationException("a {{#if}} is not closed.");
+    }
+
+    return output.ToString();
+}
+
+static string? FindDocsDirectory()
+{
+    for (var directory = new DirectoryInfo(Environment.CurrentDirectory); directory is not null; directory = directory.Parent)
+    {
+        var candidate = Path.Combine(directory.FullName, "docs", "database");
+        if (File.Exists(Path.Combine(directory.FullName, "Jellyfin.sln")) && Directory.Exists(candidate))
+        {
+            return candidate;
+        }
+    }
+
+    return null;
+}
+
+static int Fail(string message)
+{
+    Console.Error.WriteLine(message);
+    return 1;
+}
+
+internal sealed record Engine(string Id, string[] Tags, Dictionary<string, string> Values);
