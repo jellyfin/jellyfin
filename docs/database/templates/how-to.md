@@ -113,6 +113,10 @@ GRANT ALL PRIVILEGES ON jellyfin.* TO 'jellyfin'@'%';
 - **Session settings.** Nothing is required of the server configuration. On every connection Jellyfin sets
   `READ-COMMITTED` isolation, the SQL mode `STRICT_ALL_TABLES,NO_ENGINE_SUBSTITUTION,ERROR_FOR_DIVISION_BY_ZERO`
   and the time zone `+00:00`, and it starts every transaction at `READ COMMITTED`.
+- **Filtered indexes.** Neither MySQL nor MariaDB can create a partial index, so the four filtered indexes of
+  `BaseItems` (on `OwnerId`; `ExtraType` and `OwnerId`; `PrimaryVersionId`; and `TopParentId`, `Type` and
+  `IsVirtualItem`) are full indexes on {{engine}}. None of them is unique, so this changes their size and the query
+  plans that use them, not the results of a query.
 {{/if}}
 {{#if mysql}}
 - **Packet size.** Jellyfin sends a list of ids as one parameter per id, about 26 bytes each, and the largest lists

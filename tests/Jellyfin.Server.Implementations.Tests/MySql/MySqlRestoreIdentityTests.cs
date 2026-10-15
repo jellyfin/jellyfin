@@ -29,6 +29,11 @@ namespace Jellyfin.Server.Implementations.Tests.MySql;
 /// that a restored row has, and because the restore leaves the counters where they were, an id above every id the target
 /// handed out before.
 /// </summary>
+/// <remarks>
+/// The conformance kit holds the purge, the explicit ids of every identity table and the round trip of a backup to
+/// the same engine on every engine; these tests add an archive of SQLite, with gaps in its ids, and a target whose
+/// counters are already past them.
+/// </remarks>
 public sealed class MySqlRestoreIdentityTests : DatabaseTestFixture
 {
     private readonly string _testRoot = Path.Combine(AppContext.BaseDirectory, "jellyfin-mysql-restore-" + Guid.NewGuid().ToString("N"));
@@ -63,62 +68,6 @@ public sealed class MySqlRestoreIdentityTests : DatabaseTestFixture
 
         // The restore does not reset the counters, and the ids it inserts are below them, so they stay where they were.
         await AssertRestoredRowsAndFreeIdsAsync(highestPermissionId, highestScheduleId);
-    }
-
-    /// <summary>
-    /// A purge outside of a transaction resets the counters of the tables it deletes from, and only of those.
-    /// </summary>
-    /// <returns>A task that completes when the test has run.</returns>
-    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
-    public async Task PurgeDatabase_OutsideATransaction_StartsTheCountersOfThePurgedTablesAgainAtOne()
-    {
-        await using var context = CreateDbContext();
-        try
-        {
-            await RunTheCountersOfTheTargetPastTheArchiveAsync();
-            await context.Database.ExecuteSqlRawAsync(
-                "CREATE TABLE `Unrelated` (`Id` int NOT NULL AUTO_INCREMENT PRIMARY KEY)",
-                TestContext.Current.CancellationToken);
-            await context.Database.ExecuteSqlRawAsync("INSERT INTO `Unrelated` VALUES (), (), ()", TestContext.Current.CancellationToken);
-            await context.Database.ExecuteSqlRawAsync("DELETE FROM `Unrelated`", TestContext.Current.CancellationToken);
-            var tables = context.Model.GetEntityTypes().Select(e => e.GetTableName()!).Distinct().ToList();
-
-            await DatabaseProvider.PurgeDatabase(context, tables);
-
-            var user = new User("after the purge", "provider", "reset");
-            var permission = new Permission(PermissionKind.IsAdministrator, true);
-            user.Permissions.Add(permission);
-            context.Users.Add(user);
-            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
-            Assert.Equal(1, permission.Id);
-
-            // LAST_INSERT_ID belongs to a connection, so the insert and the read share the one of this context.
-            await context.Database.OpenConnectionAsync(TestContext.Current.CancellationToken);
-            await context.Database.ExecuteSqlRawAsync("INSERT INTO `Unrelated` VALUES ()", TestContext.Current.CancellationToken);
-            var next = await context.Database
-                .SqlQueryRaw<long>("SELECT CAST(LAST_INSERT_ID() AS SIGNED) AS `Value`")
-                .ToListAsync(TestContext.Current.CancellationToken);
-            Assert.Equal([4L], next);
-        }
-        finally
-        {
-            await context.Database.ExecuteSqlRawAsync("DROP TABLE IF EXISTS `Unrelated`", CancellationToken.None);
-        }
-    }
-
-    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
-    public async Task IdentityColumns_AreAutoIncrement_SoARestoreCanInsertTheirIds()
-    {
-        await using var context = CreateDbContext();
-
-        var columns = await context.Database
-            .SqlQueryRaw<string>(
-                "SELECT CONCAT(CAST(TABLE_NAME AS CHAR), '.', CAST(COLUMN_NAME AS CHAR)) AS `Value` FROM information_schema.COLUMNS "
-                + "WHERE TABLE_SCHEMA = DATABASE() AND EXTRA LIKE '%auto_increment%' AND TABLE_NAME IN ('Permissions', 'AccessSchedules', 'Devices') "
-                + "ORDER BY TABLE_NAME")
-            .ToListAsync(TestContext.Current.CancellationToken);
-
-        Assert.Equal(["AccessSchedules.Id", "Devices.Id", "Permissions.Id"], columns);
     }
 
     private async Task AssertRestoredRowsAndFreeIdsAsync(int highestPermissionIdOfTheTarget, int highestScheduleIdOfTheTarget)

@@ -29,6 +29,7 @@ public sealed class EngineTraits
             Provider = TestDbProvider.Sqlite,
             ProviderType = typeof(SqliteDatabaseProvider),
             IsEmbedded = true,
+            SupportsPartialIndexes = true,
             AssertUniqueViolation = ex => Assert.Equal(SqliteConstraintUnique, Assert.IsType<SqliteException>(ex).SqliteExtendedErrorCode),
             Pool = new PoolStatements
             {
@@ -47,6 +48,7 @@ public sealed class EngineTraits
             ProviderType = typeof(PostgresDatabaseProvider),
             CoversThroughSqliteMigration = PostgresMigrationBaseline.CoversThroughSqliteMigration,
             ServerMarker = "PostgreSQL",
+            SupportsPartialIndexes = true,
             AssertUniqueViolation = ex => Assert.Equal(PostgresErrorCodes.UniqueViolation, Assert.IsType<PostgresException>(ex).SqlState)
         },
         MySqlFamily(TestDbProvider.MySql, null),
@@ -93,6 +95,12 @@ public sealed class EngineTraits
     public string? ServerMarker { get; init; }
 
     /// <summary>
+    /// Gets a value indicating whether the engine can create a partial index, one over the rows that match a filter.
+    /// The provider of an engine that cannot creates a filtered index of the model over every row.
+    /// </summary>
+    public required bool SupportsPartialIndexes { get; init; }
+
+    /// <summary>
     /// Gets an assertion that an exception is the violation of a unique index or key on the engine: an exception of
     /// exactly the type that the client of the engine throws, with the code of such a violation.
     /// </summary>
@@ -129,6 +137,7 @@ public sealed class EngineTraits
         Provider = provider,
         ProviderType = typeof(MySqlDatabaseProvider),
         ServerMarker = serverMarker,
+        SupportsPartialIndexes = false,
         CoversThroughSqliteMigration = MySqlMigrationBaseline.CoversThroughSqliteMigration,
         AssertUniqueViolation = ex => Assert.Equal(MySqlErrorCode.DuplicateKeyEntry, Assert.IsType<MySqlException>(ex).ErrorCode),
         Pool = new PoolStatements

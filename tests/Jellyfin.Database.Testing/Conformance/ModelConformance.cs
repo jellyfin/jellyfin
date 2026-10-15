@@ -16,6 +16,12 @@ namespace Jellyfin.Database.Testing.Conformance;
 /// SQLite model, whatever conventions the provider adds; and every table of the schema the migrations build stores a
 /// row with a value in every column and gives it back unchanged.
 /// </summary>
+/// <remarks>
+/// An engine that cannot create a partial index (<see cref="EngineTraits.SupportsPartialIndexes"/>) may have a
+/// filtered index of the SQLite model as an index over every row, as long as the index is not unique and is the same
+/// otherwise: that changes how large the index is and how queries use it, never which rows the database accepts. A
+/// unique index without its filter, or any other difference, still fails the row.
+/// </remarks>
 public abstract class ModelConformance : ConformanceTestBase
 {
     [ConformanceFact]
@@ -28,11 +34,7 @@ public abstract class ModelConformance : ConformanceTestBase
             new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
         using var context = CreateDbContext();
 
-        var expected = Shape(reference.Model);
-        var actual = Shape(context.Model);
-
-        Assert.Equal(expected.Except(actual), actual.Except(expected));
-        Assert.Equal(expected, actual);
+        AssertNone(ShapeDifferences(reference.Model, context.Model, EngineTraits.For(DbProvider).SupportsPartialIndexes));
     }
 
     [ConformanceFact]
@@ -57,13 +59,91 @@ public abstract class ModelConformance : ConformanceTestBase
         AssertNone(wrong);
     }
 
+    /// <summary>
+    /// Compares the shape of a model with that of the reference model: its tables, columns, keys, relationships and
+    /// indexes.
+    /// </summary>
+    /// <param name="reference">The model whose shape is expected.</param>
+    /// <param name="actual">The model to compare.</param>
+    /// <param name="supportsPartialIndexes">
+    /// Whether the engine of <paramref name="actual"/> can create a partial index. When it cannot, a filtered index of
+    /// the reference that is not unique may be without its filter, and nothing else may differ; the reference must
+    /// then have such an index, so that the allowance is not one for nothing.
+    /// </param>
+    /// <returns>The differences, one line each; none when the shapes match.</returns>
+    public static IReadOnlyList<string> ShapeDifferences(IModel reference, IModel actual, bool supportsPartialIndexes)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        ArgumentNullException.ThrowIfNull(actual);
+
+        var expected = Shape(reference);
+        var found = Shape(actual);
+        var problems = new List<string>();
+        if (!supportsPartialIndexes)
+        {
+            var mayLoseTheirFilter = NonUniqueFilteredIndexes(reference);
+            if (mayLoseTheirFilter.Count == 0)
+            {
+                problems.Add("The engine cannot create a partial index, but the reference model has no filtered index that is not unique, so there is nothing for the allowance to allow.");
+            }
+
+            // The line of such an index is expected without its filter instead, where the actual model has it so.
+            expected = expected
+                .Select(line => mayLoseTheirFilter.TryGetValue(line, out var unfiltered) && !found.Contains(line) && found.Contains(unfiltered) ? unfiltered : line)
+                .Order(StringComparer.Ordinal)
+                .ToList();
+        }
+
+        problems.AddRange(Minus(expected, found).Select(line => $"missing: {line}"));
+        problems.AddRange(Minus(found, expected).Select(line => $"not in the reference: {line}"));
+        return problems;
+    }
+
+    private static Dictionary<string, string> NonUniqueFilteredIndexes(IModel model)
+    {
+        var lines = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var table in ModelRowFactory.Tables(model))
+        {
+            foreach (var index in table.GetIndexes().Where(index => !index.IsUnique && index.GetFilter() is not null))
+            {
+                lines[IndexLine(table, index, filtered: true)] = IndexLine(table, index, filtered: false);
+            }
+        }
+
+        return lines;
+    }
+
+    // The lines of the first list that the second does not have, as often as the first has them more.
+    private static List<string> Minus(IReadOnlyList<string> lines, IReadOnlyList<string> others)
+    {
+        var remaining = others.GroupBy(line => line, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
+        var result = new List<string>();
+        foreach (var line in lines)
+        {
+            if (remaining.TryGetValue(line, out var count) && count > 0)
+            {
+                remaining[line] = count - 1;
+            }
+            else
+            {
+                result.Add(line);
+            }
+        }
+
+        return result;
+    }
+
+    private static string Columns(IEnumerable<IProperty> properties) => string.Join(", ", properties.Select(property => property.GetColumnName()));
+
+    private static string IndexLine(IEntityType table, IIndex index, bool filtered)
+        => $"{table.GetTableName()} {(index.IsUnique ? "unique index" : "index")} ({Columns(index.Properties)}){(filtered ? ", filtered" : string.Empty)}";
+
     private static List<string> Shape(IModel model)
     {
         var lines = new List<string>();
         foreach (var table in ModelRowFactory.Tables(model))
         {
             var name = table.GetTableName();
-            string Columns(IEnumerable<IProperty> properties) => string.Join(", ", properties.Select(property => property.GetColumnName()));
 
             foreach (var property in table.GetProperties())
             {
@@ -78,7 +158,7 @@ public abstract class ModelConformance : ConformanceTestBase
 
             foreach (var index in table.GetIndexes())
             {
-                lines.Add($"{name} {(index.IsUnique ? "unique index" : "index")} ({Columns(index.Properties)}){(index.GetFilter() is null ? string.Empty : ", filtered")}");
+                lines.Add(IndexLine(table, index, filtered: index.GetFilter() is not null));
             }
         }
 

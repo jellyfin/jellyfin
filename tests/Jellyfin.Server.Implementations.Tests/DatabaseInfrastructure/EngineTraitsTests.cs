@@ -80,6 +80,16 @@ public class EngineTraitsTests
         Assert.Equal(marker, EngineTraits.For(provider).ServerMarker);
     }
 
+    [Theory]
+    [InlineData(TestDbProvider.Sqlite, true)]
+    [InlineData(TestDbProvider.Postgres, true)]
+    [InlineData(TestDbProvider.MySql, false)]
+    [InlineData(TestDbProvider.MariaDb, false)]
+    public void SupportsPartialIndexes_IsFalseOnlyOnTheEnginesWithoutThem(TestDbProvider provider, bool supported)
+    {
+        Assert.Equal(supported, EngineTraits.For(provider).SupportsPartialIndexes);
+    }
+
     [Fact]
     public void AssertUniqueViolation_AnotherErrorOrNone_FailsOnEveryEngine()
     {

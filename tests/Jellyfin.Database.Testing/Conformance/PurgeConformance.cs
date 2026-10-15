@@ -16,8 +16,9 @@ namespace Jellyfin.Database.Testing.Conformance;
 
 /// <summary>
 /// Kit row: the provider's purge, which a restore and the reset of a reused test database run, empties exactly the
-/// tables it is given and starts their identity columns again at 1; and a database the backend hands out, fresh or
-/// not, holds only the seed data, with every identity column starting at 1.
+/// tables it is given and starts their identity columns again at 1, and takes no missing list of tables for all of
+/// them; and a database the backend hands out, fresh or not, holds only the seed data, with every identity column
+/// starting at 1.
 /// </summary>
 public abstract class PurgeConformance : ConformanceTestBase
 {
@@ -70,19 +71,35 @@ public abstract class PurgeConformance : ConformanceTestBase
     {
         var activityLogs = Table<ActivityLog>();
         var apiKeys = Table<ApiKey>();
+        var deviceOptions = Table<DeviceOptions>();
         Rows.Save(activityLogs);
         Rows.Save(apiKeys);
         Rows.Save(apiKeys);
-        var keptRows = DescribeRows(apiKeys);
+        Rows.Save(deviceOptions);
+        var keptRows = DescribeRows(deviceOptions);
 
         await using (var context = CreateDbContext())
         {
+            // A table that is not purged keeps its counter, also when it is empty. The rows of ApiKeys are deleted
+            // first: while a table holds rows, a purge that started its counter again at 1 would not show, as an engine
+            // may move a counter that is set below the highest id back above it.
+            await context.ApiKeys.ExecuteDeleteAsync(CancellationToken);
             await DatabaseProvider.PurgeDatabase(context, [activityLogs.GetTableName()!]);
         }
 
         Assert.Empty(DescribeRows(activityLogs));
-        Assert.Equal(keptRows, DescribeRows(apiKeys));
+        Assert.Empty(DescribeRows(apiKeys));
+        Assert.Equal(keptRows, DescribeRows(deviceOptions));
         Assert.Equal(3, NextIdentity(apiKeys));
+        Assert.Equal(2, NextIdentity(deviceOptions));
+    }
+
+    [ConformanceFact]
+    public async Task PurgeDatabase_TableNamesNull_Throws()
+    {
+        await using var context = CreateDbContext();
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => DatabaseProvider.PurgeDatabase(context, null));
     }
 
     [ConformanceFact]
