@@ -78,25 +78,34 @@ GRANT ALL PRIVILEGES ON jellyfin.* TO 'jellyfin'@'%';
 ```
 
 - **Character set and collation.** Create the database with `utf8mb4` and `utf8mb4_0900_bin`, as the tests do.
-  What decides how Jellyfin's text compares is the collation of the columns, and the provider gives every text
-  column of the model `utf8mb4_0900_bin` explicitly, whatever the default of the database is. That collation
-  compares code points without padding and exists on both MySQL and MariaDB
-  ([ADR-0006](../adr/0006-string-collation-and-null-ordering.md) C4). Jellyfin's first migration sets only the
-  character set of the database, `utf8mb4`, and no collation (`AlterDatabase` in the baseline
-  `20200101000000_InitialCreate.cs:15`), so the default collation of the database is the server's default for
-  `utf8mb4`: {{server-default-collation}}.
-- **Known issue: one model column and the history table are not binary.**
-  - Exactly one column of the model lacks `utf8mb4_0900_bin`: `KeyframeData.KeyframeTicks` (baseline
-    `20200101000000_InitialCreate.cs:525`). The provider's collation convention covers string properties only, and
-    `KeyframeTicks` is a list of numbers that EF Core stores as text, so it takes the database default. It is not
-    indexed and not part of a key; it is stored as a serialised list and read back whole, so the collation does not
-    affect it.
-  - EF Core's history table `__EFMigrationsHistory`, which is outside the model, takes the database default too.
-    `MigrationId` is only compared as an exact ASCII id, so this is harmless.
-  - The fix is scheduled for step 27a of the [plan](../adr/pr-plan.md): it extends the collation convention to
-    value-converted and primitive-collection string columns, makes `AlterDatabase` set `utf8mb4_0900_bin`,
-    regenerates the MySQL baseline, and adds a test that every MySQL text column and the database default are
-    binary.
+  What decides how Jellyfin's text compares is the collation of the columns, and the provider gives every column
+  that the server stores as text `utf8mb4_0900_bin` explicitly, whatever the default of the database is. That
+  collation compares code points without padding and exists on both MySQL and MariaDB
+  ([ADR-0006](../adr/0006-string-collation-and-null-ordering.md) C4 and C8). Jellyfin's first migration also makes
+  `utf8mb4_0900_bin` the default collation of the database (`ALTER DATABASE COLLATE utf8mb4_0900_bin`), and every
+  table, EF Core's history table `__EFMigrationsHistory` included, names it as its default. So a database created
+  with the server's default for `utf8mb4`, {{server-default-collation}},
+  ends up binary as well, and a database that Jellyfin creates itself, because it does not exist yet, is created
+  with `utf8mb4_0900_bin`.
+- **Fixed: one model column, the history table and the defaults were not binary.** Before step 27a of the
+  [plan](../adr/pr-plan.md):
+  - one column of the model lacked `utf8mb4_0900_bin`, `KeyframeData.KeyframeTicks`. The provider's collation
+    convention covered string properties only, and `KeyframeTicks` is a list of numbers that EF Core stores as
+    text, so it took the default collation of `utf8mb4`. The convention now chooses a column by its type in the
+    database, so primitive collections and value-converted strings get the collation too;
+  - EF Core's history table `__EFMigrationsHistory`, and the default collation of the database and of every table,
+    were the server's default for `utf8mb4`. The first migration named only the character set of the database and
+    of each table, and that resets even a database created with `utf8mb4_0900_bin` to the server's default.
+
+  None of this affected how Jellyfin compares text, as every other text column named `utf8mb4_0900_bin` itself:
+  `KeyframeTicks` is read back whole, and `MigrationId` is only compared as an exact ASCII id. The MySQL baseline
+  was regenerated with the fix, as the provider has not been released. In local runs on MySQL 8.4.11 and MariaDB
+  11.4.13, a test migrates a new database that Jellyfin creates, one created with the server's defaults, and one
+  created as above, and reads from `information_schema` that the database, every table and every text column, the
+  history table included, use `utf8mb4_0900_bin`. A database created by an earlier build of the fork keeps the old
+  collations of those columns and defaults, as its first migration is recorded as applied and does not run again.
+  The fork is an unreleased development branch, so such a database is not upgraded: recreate it as in step 1 and let
+  Jellyfin create its tables again.
 - **Connection character set.** Jellyfin always connects with the character set `utf8mb4`, which the collation of
   the columns needs; a different character set in the connection string is replaced, with a warning in the log.
 - **Privileges.** The migrations create, alter and drop tables and indexes, and the scheduled maintenance runs
@@ -123,7 +132,8 @@ GRANT ALL PRIVILEGES ON jellyfin.* TO 'jellyfin'@'%';
   1020 as a write conflict ([ADR-0008](../adr/0008-concurrency-locking-and-retry.md) S5 and S6). In local runs of
   the affected integration tests on MariaDB 11.8.9 and 12.3.3, error 1020 no longer occurs: no failure in 10 runs on
   each, against 5 and 7 in 10 before the fix. MariaDB 11.4 is still the tested baseline, and 12.3 is still tested
-  only by the advisory job.
+  only by the advisory job. That advisory job, on MariaDB 12.3.3, passed at commit `399af59770`, which has the fix
+  (a CI result relayed to this page, not rerun for it).
 {{/if}}
 
 ## 2. Write `database.xml`
