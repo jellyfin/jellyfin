@@ -2,14 +2,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
-using System.Reflection;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.Serialization;
-using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.DbConfiguration;
-using Jellyfin.Database.Providers.MySql;
-using Jellyfin.Database.Providers.Postgres;
-using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Database.Testing;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
@@ -196,7 +191,7 @@ namespace Jellyfin.Server.Integration.Tests
         {
             var configuration = new DatabaseConfigurationOptions
             {
-                DatabaseType = GetProviderKey(TestDatabaseEnvironment.Provider),
+                DatabaseType = EngineTraits.Selected.ProviderKey,
                 CustomProviderOptions = new CustomDatabaseOptions
                 {
                     PluginName = string.Empty,
@@ -212,18 +207,6 @@ namespace Jellyfin.Server.Integration.Tests
         private static string GetDatabaseConfigurationPath(string configurationDirectory)
         {
             return Path.Combine(configurationDirectory, "database.xml");
-        }
-
-        private static string GetProviderKey(TestDbProvider provider)
-        {
-            var type = provider switch
-            {
-                TestDbProvider.Sqlite => typeof(SqliteDatabaseProvider),
-                TestDbProvider.Postgres => typeof(PostgresDatabaseProvider),
-                TestDbProvider.MySql or TestDbProvider.MariaDb => typeof(MySqlDatabaseProvider),
-                _ => throw new NotSupportedException($"The integration tests cannot run on {provider} yet.")
-            };
-            return type.GetCustomAttribute<JellyfinDatabaseProviderKeyAttribute>()!.DatabaseProviderKey;
         }
 
         private static FileStreamOptions GetPrivateFileOptions()
@@ -244,8 +227,8 @@ namespace Jellyfin.Server.Integration.Tests
         /// </summary>
         private void ProvisionDatabase(string configurationDirectory)
         {
-            var provider = TestDatabaseEnvironment.Provider;
-            var expectedKey = GetProviderKey(provider);
+            var traits = EngineTraits.Selected;
+            var expectedKey = traits.ProviderKey;
             var path = GetDatabaseConfigurationPath(configurationDirectory);
             if (File.Exists(path))
             {
@@ -258,7 +241,7 @@ namespace Jellyfin.Server.Integration.Tests
                 return;
             }
 
-            if (provider == TestDbProvider.Sqlite)
+            if (traits.IsEmbedded)
             {
                 return;
             }

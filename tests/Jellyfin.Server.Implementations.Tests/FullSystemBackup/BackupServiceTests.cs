@@ -18,7 +18,6 @@ using Jellyfin.Server.Implementations.FullSystemBackup;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.SystemBackupService;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -27,8 +26,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using MySqlConnector;
-using Npgsql;
 using Xunit;
 using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
 
@@ -45,7 +42,6 @@ public sealed class BackupServiceTests : DatabaseTestFixture
     private const string RoutineOnlyInTargetId = "20250101130000_RoutineOnlyInTarget";
     private const string ForeignSchemaMigrationId = "20250101140000_SchemaMigrationOfAnotherEngine";
     private const string RemovedRoutineId = "20250101150000_RoutineThisServerNoLongerHas";
-    private const int SqliteConstraintUnique = 2067;
 
     private static readonly Guid MovieId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid OtherMovieId = Guid.Parse("22222222-2222-2222-2222-222222222222");
@@ -294,24 +290,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
 
         var exception = await Assert.ThrowsAsync<DbUpdateException>(() => backupService.RestoreBackupAsync(manifest.Path)).ConfigureAwait(true);
 
-        switch (DbProvider)
-        {
-            case TestDbProvider.Sqlite:
-                var sqliteViolation = Assert.IsType<SqliteException>(exception.InnerException);
-                Assert.Equal(SqliteConstraintUnique, sqliteViolation.SqliteExtendedErrorCode);
-                break;
-            case TestDbProvider.Postgres:
-                var postgresViolation = Assert.IsType<PostgresException>(exception.InnerException);
-                Assert.Equal(PostgresErrorCodes.UniqueViolation, postgresViolation.SqlState);
-                break;
-            case TestDbProvider.MySql:
-            case TestDbProvider.MariaDb:
-                var mySqlViolation = Assert.IsType<MySqlException>(exception.InnerException);
-                Assert.Equal(MySqlErrorCode.DuplicateKeyEntry, mySqlViolation.ErrorCode);
-                break;
-            default:
-                throw new NotSupportedException($"No unique violation is known for {DbProvider}.");
-        }
+        EngineTraits.For(DbProvider).AssertUniqueViolation(exception.InnerException);
 
         Assert.Equal(1, _purgeCalls);
         Assert.Equal(before, await SnapshotAsync(cancellationToken).ConfigureAwait(true));

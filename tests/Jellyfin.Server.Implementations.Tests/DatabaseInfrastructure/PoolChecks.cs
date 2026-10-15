@@ -50,37 +50,20 @@ internal static class PoolChecks
 
     public static string GetSchemaChangeSql(TestDbProvider provider, SchemaChange change)
     {
-        return provider switch
+        var pool = PoolStatementsOf(provider);
+        return change switch
         {
-            TestDbProvider.Sqlite => change switch
-            {
-                SchemaChange.Table => "CREATE TABLE \"Scratch\" (\"Id\" INTEGER)",
-                SchemaChange.Index => "CREATE INDEX \"IX_Scratch\" ON \"ActivityLogs\" (\"Name\")",
-                SchemaChange.Trigger => "CREATE TRIGGER \"Scratch\" AFTER INSERT ON \"ActivityLogs\" BEGIN SELECT 1; END",
-                SchemaChange.Column => "ALTER TABLE \"ActivityLogs\" ADD COLUMN \"Scratch\" INTEGER",
-                _ => throw new ArgumentOutOfRangeException(nameof(change), change, null)
-            },
-            TestDbProvider.MySql or TestDbProvider.MariaDb => change switch
-            {
-                SchemaChange.Table => "CREATE TABLE `Scratch` (`Id` int)",
-                SchemaChange.Index => "CREATE INDEX `IX_Scratch` ON `ActivityLogs` (`LogSeverity`)",
-                SchemaChange.Trigger => "CREATE TRIGGER `Scratch` BEFORE INSERT ON `ActivityLogs` FOR EACH ROW SET NEW.`Name` = NEW.`Name`",
-                SchemaChange.Column => "ALTER TABLE `ActivityLogs` ADD COLUMN `Scratch` int NULL",
-                _ => throw new ArgumentOutOfRangeException(nameof(change), change, null)
-            },
-            _ => throw new NotSupportedException($"There is no statement that changes the schema of {provider}.")
+            SchemaChange.Table => pool.CreateTable,
+            SchemaChange.Index => pool.CreateIndex,
+            SchemaChange.Trigger => pool.CreateTrigger,
+            SchemaChange.Column => pool.AddColumn,
+            _ => throw new ArgumentOutOfRangeException(nameof(change), change, null)
         };
     }
 
     public static List<string> GetTableNames(JellyfinDbContext context, TestDbProvider provider)
     {
-        var sql = provider switch
-        {
-            TestDbProvider.Sqlite => "SELECT name AS Value FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
-            TestDbProvider.MySql or TestDbProvider.MariaDb => "SELECT TABLE_NAME AS Value FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE'",
-            _ => throw new NotSupportedException($"The tables of {provider} cannot be listed.")
-        };
-        return context.Database.SqlQueryRaw<string>(sql).ToList();
+        return context.Database.SqlQueryRaw<string>(PoolStatementsOf(provider).ListTables).ToList();
     }
 
     public static Dictionary<string, long> CountRows(TestDatabase database, TestDbProvider provider)
@@ -120,7 +103,7 @@ internal static class PoolChecks
         using (var database = backend.Create(source, []))
         {
             using var context = CreateContext(database);
-            ModelRows.Fill(context, 3);
+            ModelRows.Fill(context, backend.Provider, 3);
 
             var dirty = CountRows(database, backend.Provider);
             Assert.All(ModelRows.Tables(context), entityType => Assert.True(dirty[entityType.GetTableName()!] > 0, entityType.GetTableName()));
@@ -136,7 +119,7 @@ internal static class PoolChecks
         using (var database = backend.Create(source, []))
         {
             using var context = CreateContext(database);
-            ModelRows.Fill(context, 3);
+            ModelRows.Fill(context, backend.Provider, 3);
         }
 
         using var reused = backend.Create(source, []);
@@ -144,7 +127,7 @@ internal static class PoolChecks
         var withIdentity = ModelRows.TablesWithIdentity(reusedContext);
         Assert.NotEmpty(withIdentity);
 
-        var added = ModelRows.Fill(reusedContext, 1);
+        var added = ModelRows.Fill(reusedContext, backend.Provider, 1);
 
         Assert.All(
             added.Where(row => withIdentity.Contains(row.EntityType)),
@@ -189,20 +172,10 @@ internal static class PoolChecks
         Assert.NotEqual(changed, DatabaseOf(next));
         Assert.DoesNotContain("Scratch", GetTableNames(nextContext, backend.Provider));
         Assert.DoesNotContain(
-            nextContext.Database.SqlQueryRaw<string>(GetSchemaObjectNamesSql(backend.Provider)).ToList(),
+            nextContext.Database.SqlQueryRaw<string>(PoolStatementsOf(backend.Provider).ListSchemaObjectNames).ToList(),
             name => name.Contains("Scratch", StringComparison.Ordinal));
     }
 
-    private static string GetSchemaObjectNamesSql(TestDbProvider provider)
-    {
-        return provider switch
-        {
-            TestDbProvider.Sqlite => "SELECT name AS Value FROM sqlite_master",
-            TestDbProvider.MySql or TestDbProvider.MariaDb =>
-                "SELECT INDEX_NAME AS Value FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() "
-                + "UNION SELECT TRIGGER_NAME FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA = DATABASE() "
-                + "UNION SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE()",
-            _ => throw new NotSupportedException($"The schema objects of {provider} cannot be listed.")
-        };
-    }
+    private static PoolStatements PoolStatementsOf(TestDbProvider provider)
+        => EngineTraits.For(provider).Pool ?? throw new NotSupportedException($"No pool hands out the databases of {provider}.");
 }

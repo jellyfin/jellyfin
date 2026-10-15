@@ -2,9 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Jellyfin.Database.Providers.MySql;
-using Jellyfin.Database.Providers.Postgres;
-using Jellyfin.Database.Providers.Sqlite;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Jellyfin.Database.Testing;
@@ -56,13 +53,7 @@ internal static class ProviderRequirement
     /// <param name="provider">The provider.</param>
     /// <returns>The id of the migration, or <c>null</c> for the SQLite provider, which has no baseline.</returns>
     public static string? CoversThroughSqliteMigration(TestDbProvider provider)
-        => provider switch
-        {
-            TestDbProvider.Sqlite => null,
-            TestDbProvider.Postgres => PostgresMigrationBaseline.CoversThroughSqliteMigration,
-            TestDbProvider.MySql or TestDbProvider.MariaDb => MySqlMigrationBaseline.CoversThroughSqliteMigration,
-            _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, null)
-        };
+        => EngineTraits.For(provider).CoversThroughSqliteMigration;
 
     /// <summary>
     /// Lists the ids of the migrations of a provider, oldest first, without a server.
@@ -70,20 +61,10 @@ internal static class ProviderRequirement
     /// <param name="provider">The provider.</param>
     /// <returns>The ids of the migrations.</returns>
     public static IReadOnlyList<string> MigrationIds(TestDbProvider provider)
-    {
-        var assembly = provider switch
-        {
-            TestDbProvider.Sqlite => typeof(SqliteDatabaseProvider).Assembly,
-            TestDbProvider.Postgres => typeof(PostgresDatabaseProvider).Assembly,
-            TestDbProvider.MySql or TestDbProvider.MariaDb => typeof(MySqlDatabaseProvider).Assembly,
-            _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, null)
-        };
-
-        return [.. assembly.GetTypes()
+        => [.. EngineTraits.For(provider).MigrationsAssembly.GetTypes()
             .Select(type => type.GetCustomAttribute<MigrationAttribute>()?.Id)
             .OfType<string>()
             .Order(StringComparer.Ordinal)];
-    }
 
     public static IReadOnlyCollection<KeyValuePair<string, string>> Traits(IEnumerable<TestDbProvider> providers)
         => providers.Select(provider => new KeyValuePair<string, string>("Provider", provider.ToString())).ToArray();

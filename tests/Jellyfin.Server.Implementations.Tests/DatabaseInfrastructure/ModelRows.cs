@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -41,9 +42,10 @@ internal static class ModelRows
     /// Inserts one row into every table, and several into those that count their rows with an identity column.
     /// </summary>
     /// <param name="context">The context of the database.</param>
+    /// <param name="provider">The engine of the database.</param>
     /// <param name="identityRows">The number of rows for a table with an identity column.</param>
     /// <returns>The inserted entities, by the entity type they were made for.</returns>
-    public static IReadOnlyList<(IEntityType EntityType, EntityEntry Entry)> Fill(JellyfinDbContext context, int identityRows)
+    public static IReadOnlyList<(IEntityType EntityType, EntityEntry Entry)> Fill(JellyfinDbContext context, TestDbProvider provider, int identityRows)
     {
         var added = new List<(IEntityType, EntityEntry)>();
         foreach (var entityType in Tables(context))
@@ -68,19 +70,9 @@ internal static class ModelRows
 
         // The rows only have to exist, so they do not have to point at each other.
         context.Database.OpenConnection();
-        context.Database.ExecuteSqlRaw(GetDisableForeignKeysSql(context));
+        context.Database.ExecuteSqlRaw(EngineTraits.For(provider).Pool?.DisableForeignKeys ?? throw new NotSupportedException($"Foreign keys cannot be switched off for {provider}."));
         context.SaveChanges();
         return added;
-    }
-
-    private static string GetDisableForeignKeysSql(JellyfinDbContext context)
-    {
-        return context.Database.ProviderName switch
-        {
-            "Microsoft.EntityFrameworkCore.Sqlite" => "PRAGMA foreign_keys = OFF",
-            "Microting.EntityFrameworkCore.MySql" => "SET SESSION foreign_key_checks = 0",
-            var other => throw new NotSupportedException($"Foreign keys cannot be switched off for {other}.")
-        };
     }
 
     private static object? CreateValue(Type type)
