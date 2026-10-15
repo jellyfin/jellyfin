@@ -207,7 +207,9 @@ public class BackupService : IBackupService
                             }
 
                             var insertScript = historyRepository.GetDeleteScript(item.MigrationId);
+#pragma warning disable RS0030 // Do not use banned APIs: The script comes from the history repository of the provider in use, so it is the SQL of that engine.
                             await dbContext.Database.ExecuteSqlRawAsync(insertScript).ConfigureAwait(false);
+#pragma warning restore RS0030
                         }
 
                         foreach (var item in historyEntries)
@@ -218,7 +220,9 @@ public class BackupService : IBackupService
                             }
 
                             var insertScript = historyRepository.GetInsertScript(item);
+#pragma warning disable RS0030 // Do not use banned APIs: The script comes from the history repository of the provider in use, so it is the SQL of that engine.
                             await dbContext.Database.ExecuteSqlRawAsync(insertScript).ConfigureAwait(false);
+#pragma warning restore RS0030
                         }
 
                         var tableNames = entityTypes.Select(f => dbContext.Model.FindEntityType(f.Type.PropertyType.GetGenericArguments()[0])!.GetSchemaQualifiedTableName()!);

@@ -1,5 +1,3 @@
-#pragma warning disable RS0030 // Do not use banned APIs
-
 using System;
 using System.IO;
 using System.Threading;

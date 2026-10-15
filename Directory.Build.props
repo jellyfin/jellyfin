@@ -19,6 +19,11 @@
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)/stylecop.json" />
   </ItemGroup>
 
+  <!-- Raw SQL and checks for one database engine belong in the database providers, and tests may be about one engine -->
+  <ItemGroup Condition=" !$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)').StartsWith('$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'tests'))', StringComparison.OrdinalIgnoreCase)) AND !$(MSBuildProjectName.StartsWith('Jellyfin.Database.Providers.')) ">
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)/BannedSymbols.Database.txt" />
+  </ItemGroup>
+
   <!-- Custom Analyzers -->
   <ItemGroup Condition=" '$(MSBuildProjectName)' != 'Jellyfin.CodeAnalysis' AND '$(Configuration)' == 'Debug' ">
     <ProjectReference Include="$(MSBuildThisFileDirectory)src/Jellyfin.CodeAnalysis/Jellyfin.CodeAnalysis.csproj" OutputItemType="Analyzer" />
