@@ -1,0 +1,10 @@
+# Only the sources are needed to build the server.
+.git
+.vs
+.vscode
+.idea
+**/bin
+**/obj
+**/TestResults
+**/*.trx
+docs/database/compose/*/.env

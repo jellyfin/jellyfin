@@ -1,0 +1,126 @@
+# Jellyfin from this fork on {{engine}}, with the database in its own container. See docs/database/{{id}}.md.
+#
+#   cp env.example .env           then set the values in .env
+#   docker compose up -d --build
+#
+# Needs Docker Compose 2.23.1 or later, for the inline database.xml below. The Jellyfin image is built from this
+# checkout (docs/database/compose/Dockerfile); upstream Jellyfin images have no {{engine}} provider.
+{{#if mysql-family}}
+# The MySQL and MariaDB provider is experimental: back up the database and keep dumps.
+{{/if}}
+name: jellyfin-{{id}}
+
+services:
+  {{service}}:
+    image: {{image}}
+    restart: unless-stopped
+    environment:
+{{#if postgresql}}
+      POSTGRES_USER: jellyfin
+      POSTGRES_PASSWORD: ${JELLYFIN_DB_PASSWORD:?Set JELLYFIN_DB_PASSWORD in .env}
+      POSTGRES_DB: jellyfin
+      POSTGRES_INITDB_ARGS: --encoding=UTF8
+{{/if}}
+{{#if mysql}}
+      MYSQL_DATABASE: jellyfin
+      MYSQL_USER: jellyfin
+      MYSQL_PASSWORD: ${JELLYFIN_DB_PASSWORD:?Set JELLYFIN_DB_PASSWORD in .env}
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+{{/if}}
+{{#if mariadb}}
+      MARIADB_DATABASE: jellyfin
+      MARIADB_USER: jellyfin
+      MARIADB_PASSWORD: ${JELLYFIN_DB_PASSWORD:?Set JELLYFIN_DB_PASSWORD in .env}
+      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+      # Upgrades the system tables when a newer server starts on the data of an older one.
+      MARIADB_AUTO_UPGRADE: "1"
+{{/if}}
+{{#if mysql-family}}
+    # The database the image creates gets the character set and collation of step 1 of docs/database/{{id}}.md.
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_bin
+{{/if}}
+{{#if mariadb}}
+      # Long lists of ids must fit into one packet; the MariaDB default is 16M.
+      - --max-allowed-packet=64M
+{{/if}}
+    volumes:
+{{#if postgresql}}
+      # The data directory of the PostgreSQL 16 image. From PostgreSQL 18 on the image keeps its data under
+      # /var/lib/postgresql instead; move the volume when you upgrade.
+{{/if}}
+      - database:{{data-directory}}
+    healthcheck:
+      # Answers over TCP only once the server that the image starts after its setup is up.
+{{#if postgresql}}
+      test: ["CMD", "pg_isready", "--host=127.0.0.1", "--username=jellyfin", "--dbname=jellyfin"]
+{{/if}}
+{{#if mysql}}
+      test: ["CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--silent"]
+{{/if}}
+{{#if mariadb}}
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+{{/if}}
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 1m
+
+  jellyfin:
+    build:
+      context: ../../../..
+      dockerfile: docs/database/compose/Dockerfile
+    image: ${JELLYFIN_IMAGE:-jellyfin-multidb:local}
+    restart: unless-stopped
+    depends_on:
+      {{service}}:
+        condition: service_healthy
+    environment:
+      # The connection string, with the password, comes from the environment and is never written to
+      # database.xml (docs/database/{{id}}.md, step 2). Avoid ; and quotes in the password.
+      JELLYFIN_DATABASE__CONNECTIONSTRING: "{{compose-connection-string}}"
+    configs:
+      # Copied to /config/config/database.xml on the first start, see the Dockerfile.
+      - source: database-xml
+        target: /run/jellyfin/database.xml
+    ports:
+      - "${JELLYFIN_PORT:-8096}:8096"
+    volumes:
+      - config:/config
+      - cache:/cache
+      - ${JELLYFIN_MEDIA_DIR:?Set JELLYFIN_MEDIA_DIR in .env}:/media:ro
+    healthcheck:
+      # Jellyfin answers Degraded while it starts, and Healthy once it runs and its database answers.
+      test: ["CMD-SHELL", "curl --noproxy localhost -fsS http://localhost:8096/health | grep -qx Healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      # The first start creates the schema before the server answers.
+      start_period: 5m
+
+configs:
+  database-xml:
+    content: |
+      <?xml version="1.0" encoding="utf-8"?>
+      <DatabaseConfigurationOptions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        <DatabaseType>{{provider-key}}</DatabaseType>
+        <LockingBehavior>NoLock</LockingBehavior>
+{{#if mysql-family}}
+        <CustomProviderOptions>
+          <PluginName />
+          <PluginAssembly />
+          <Options>
+            <CustomDatabaseOption>
+              <Key>server-version</Key>
+              <Value>${JELLYFIN_DB_SERVER_VERSION:-}</Value>
+            </CustomDatabaseOption>
+          </Options>
+        </CustomProviderOptions>
+{{/if}}
+      </DatabaseConfigurationOptions>
+
+volumes:
+  database:
+  config:
+  cache:

@@ -25,7 +25,7 @@ job is a required check.
 | --- | --- |
 | Oldest supported version | {{engine}} {{floor}} |
 | Tested in CI | {{ci-jobs}} |
-| Image of the tests | `{{image}}` |
+| Image of the tests and of the Compose example | `{{image}}` |
 {{#if postgresql}}
 | Checked at startup | No. The provider generates SQL for PostgreSQL 16 and does not read the server version, so an older server is not refused, only untested. |
 {{/if}}
@@ -333,6 +333,70 @@ MySQL upgrades its own system tables when a newer server starts on the data dire
 CI runs MariaDB 12.3, the newest long-term release, as an advisory job. The MariaDB Docker image upgrades its
 system tables after a server upgrade only with `MARIADB_AUTO_UPGRADE=1`; otherwise run `mariadb-upgrade`.
 {{/if}}
+
+## Docker Compose
+
+[`compose/{{id}}/compose.yaml`](compose/{{id}}/compose.yaml) runs Jellyfin and {{engine}} (`{{image}}`) side by
+side. Upstream Jellyfin images have no {{engine}} provider, so the Compose file builds the Jellyfin image from this
+checkout with [`compose/Dockerfile`](compose/Dockerfile): an official Jellyfin image, for its web client and
+FFmpeg, with the server of this fork in place of its own.
+
+```sh
+cd docs/database/compose/{{id}}
+cp env.example .env               # then set JELLYFIN_DB_PASSWORD and JELLYFIN_MEDIA_DIR in .env
+docker compose up -d --build
+```
+
+It needs Docker Compose 2.23.1 or later. What it sets up:
+
+{{#if postgresql}}
+- **The database.** The image creates the user `jellyfin` and the database `jellyfin`, owned by it, with the
+  encoding `UTF8`, from `POSTGRES_USER`, `POSTGRES_PASSWORD` and `POSTGRES_DB`.
+{{/if}}
+{{#if mysql}}
+- **The database.** The image creates the database `jellyfin` and the user `jellyfin` with all privileges on it,
+  from `MYSQL_DATABASE`, `MYSQL_USER` and `MYSQL_PASSWORD`, and a random root password it does not show. The server
+  starts with `--character-set-server=utf8mb4 --collation-server=utf8mb4_0900_bin`, so the database gets the
+  character set and collation of step 1.
+{{/if}}
+{{#if mariadb}}
+- **The database.** The image creates the database `jellyfin` and the user `jellyfin` with all privileges on it,
+  from `MARIADB_DATABASE`, `MARIADB_USER` and `MARIADB_PASSWORD`, and a random root password it does not show. The
+  server starts with `--character-set-server=utf8mb4 --collation-server=utf8mb4_0900_bin --max-allowed-packet=64M`,
+  so the database gets the character set and collation of step 1, and long lists of ids fit into a packet.
+  `MARIADB_AUTO_UPGRADE=1` upgrades the system tables after a server upgrade.
+{{/if}}
+- **`database.xml`.** It is written inline in the Compose file and mounted at `/run/jellyfin/database.xml`. On the
+  first start the image copies it to `/config/config/database.xml`, where it stays an ordinary file, as a restore of
+  a backup archive rewrites it. To change it later, edit that copy in the `config` volume.
+{{#if mysql-family}}
+  Set `JELLYFIN_DB_SERVER_VERSION` in `.env` before the first start to fill in the `server-version` option; empty
+  asks the server.
+{{/if}}
+- **The connection string.** `JELLYFIN_DATABASE__CONNECTIONSTRING` carries it, with the password from `.env`, so
+  the password is in neither `database.xml` nor a backup archive.
+- **Health checks.** Jellyfin starts once the database answers over TCP; the image's own setup server does not.
+  Jellyfin is healthy once `/health` answers `Healthy`: while it starts it answers `Degraded`, and once it runs the
+  answer includes a check of the database.
+- **Volumes.** `database` holds the database, `config` and `cache` hold Jellyfin's directories (`/config` and
+  `/cache`); the media folder is mounted read-only at `/media`.
+
+Check that it runs on {{engine}}, and make a dump from the database container:
+
+```sh
+docker compose logs jellyfin | grep "connection string"
+curl -fsS http://localhost:8096/health
+{{#if postgresql}}
+docker compose exec -T postgres pg_dump --username=jellyfin --format=custom jellyfin > jellyfin.dump
+{{/if}}
+{{#if mysql-family}}
+docker compose exec -T {{service}} sh -c '{{dump-tool}} --user=jellyfin --password="${{password-variable}}" --single-transaction \
+  --hex-blob --no-tablespaces --default-character-set=utf8mb4 jellyfin' > jellyfin.sql
+{{/if}}
+```
+
+`-T` keeps a terminal out of the way of the dump. `docker compose down` removes the containers and keeps the
+volumes; `docker compose down -v` also deletes the volumes, and with them the database.
 
 ## Running the tests on {{engine}}
 

@@ -15,12 +15,21 @@ The tiers are those of [ADR-0011](../adr/0011-supported-database-targets.md). Su
 is a required check. Experimental means the engine can be selected and Jellyfin warns at every start that it is
 experimental; its CI jobs are not required, and it may be withdrawn.
 
-Each page covers the database and its user, `database.xml`, the first start, backups and restores, and upgrades.
+Each page covers the database and its user, `database.xml`, the first start, backups and restores, upgrades, and
+a Docker Compose example.
+
+## Docker Compose
+
+`compose/<engine>/compose.yaml` runs Jellyfin and the engine side by side, with health checks, volumes and the
+connection string from `.env`. Upstream Jellyfin images have no provider for these engines, so the examples build
+the Jellyfin image from this checkout with `compose/Dockerfile`. Copy `env.example` to `.env` next to the Compose
+file, set the values, and run `docker compose up -d --build`.
 
 ## Editing these pages
 
-The engine pages are rendered from one template, `templates/how-to.md`, by `docs/database/render`, so that they
-cannot drift apart. Edit the template, or the table of engines at the top of `render`, then run:
+The engine pages and the Compose examples are rendered from the templates in `templates/` by
+`docs/database/render`, so that they cannot drift apart. Edit a template, or the table of engines at the top of
+`render`, then run:
 
 ```sh
 docs/database/render              # Linux and macOS

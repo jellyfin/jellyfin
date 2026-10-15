@@ -21,7 +21,7 @@ differs only where the servers differ.
 | --- | --- |
 | Oldest supported version | MariaDB 11.4.7 |
 | Tested in CI | `run-tests-db / MariaDb` on MariaDB 11.4.13, not required, and `run-tests-db / MariaDb LTS newest` on MariaDB 12.3.3, advisory; both on every pull request, every night and on demand, where the nightly and manual runs start once the workflow is on the default branch |
-| Image of the tests | `mariadb:11.4.13` |
+| Image of the tests and of the Compose example | `mariadb:11.4.13` |
 | Checked at startup | Yes. Jellyfin refuses to start on an older server: "MariaDB 11.4.7 or later is required, but the server is version ...". |
 
 MariaDB 11.4.7 is the first 11.4 release with the `utf8mb4_0900_bin` collation that every Jellyfin text column
@@ -226,6 +226,51 @@ Any version from 11.4.7 on is supported. The provider builds its model for the s
 `server-version` option if you set it: update the option when you upgrade the server.
 CI runs MariaDB 12.3, the newest long-term release, as an advisory job. The MariaDB Docker image upgrades its
 system tables after a server upgrade only with `MARIADB_AUTO_UPGRADE=1`; otherwise run `mariadb-upgrade`.
+
+## Docker Compose
+
+[`compose/mariadb/compose.yaml`](compose/mariadb/compose.yaml) runs Jellyfin and MariaDB (`mariadb:11.4.13`) side by
+side. Upstream Jellyfin images have no MariaDB provider, so the Compose file builds the Jellyfin image from this
+checkout with [`compose/Dockerfile`](compose/Dockerfile): an official Jellyfin image, for its web client and
+FFmpeg, with the server of this fork in place of its own.
+
+```sh
+cd docs/database/compose/mariadb
+cp env.example .env               # then set JELLYFIN_DB_PASSWORD and JELLYFIN_MEDIA_DIR in .env
+docker compose up -d --build
+```
+
+It needs Docker Compose 2.23.1 or later. What it sets up:
+
+- **The database.** The image creates the database `jellyfin` and the user `jellyfin` with all privileges on it,
+  from `MARIADB_DATABASE`, `MARIADB_USER` and `MARIADB_PASSWORD`, and a random root password it does not show. The
+  server starts with `--character-set-server=utf8mb4 --collation-server=utf8mb4_0900_bin --max-allowed-packet=64M`,
+  so the database gets the character set and collation of step 1, and long lists of ids fit into a packet.
+  `MARIADB_AUTO_UPGRADE=1` upgrades the system tables after a server upgrade.
+- **`database.xml`.** It is written inline in the Compose file and mounted at `/run/jellyfin/database.xml`. On the
+  first start the image copies it to `/config/config/database.xml`, where it stays an ordinary file, as a restore of
+  a backup archive rewrites it. To change it later, edit that copy in the `config` volume.
+  Set `JELLYFIN_DB_SERVER_VERSION` in `.env` before the first start to fill in the `server-version` option; empty
+  asks the server.
+- **The connection string.** `JELLYFIN_DATABASE__CONNECTIONSTRING` carries it, with the password from `.env`, so
+  the password is in neither `database.xml` nor a backup archive.
+- **Health checks.** Jellyfin starts once the database answers over TCP; the image's own setup server does not.
+  Jellyfin is healthy once `/health` answers `Healthy`: while it starts it answers `Degraded`, and once it runs the
+  answer includes a check of the database.
+- **Volumes.** `database` holds the database, `config` and `cache` hold Jellyfin's directories (`/config` and
+  `/cache`); the media folder is mounted read-only at `/media`.
+
+Check that it runs on MariaDB, and make a dump from the database container:
+
+```sh
+docker compose logs jellyfin | grep "connection string"
+curl -fsS http://localhost:8096/health
+docker compose exec -T mariadb sh -c 'mariadb-dump --user=jellyfin --password="$MARIADB_PASSWORD" --single-transaction \
+  --hex-blob --no-tablespaces --default-character-set=utf8mb4 jellyfin' > jellyfin.sql
+```
+
+`-T` keeps a terminal out of the way of the dump. `docker compose down` removes the containers and keeps the
+volumes; `docker compose down -v` also deletes the volumes, and with them the database.
 
 ## Running the tests on MariaDB
 

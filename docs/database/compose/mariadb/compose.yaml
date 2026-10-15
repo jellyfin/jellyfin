@@ -1,0 +1,93 @@
+# Rendered from docs/database/templates/compose.yaml by docs/database/render. Edit the template, not this file.
+# Jellyfin from this fork on MariaDB, with the database in its own container. See docs/database/mariadb.md.
+#
+#   cp env.example .env           then set the values in .env
+#   docker compose up -d --build
+#
+# Needs Docker Compose 2.23.1 or later, for the inline database.xml below. The Jellyfin image is built from this
+# checkout (docs/database/compose/Dockerfile); upstream Jellyfin images have no MariaDB provider.
+# The MySQL and MariaDB provider is experimental: back up the database and keep dumps.
+name: jellyfin-mariadb
+
+services:
+  mariadb:
+    image: mariadb:11.4.13
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: jellyfin
+      MARIADB_USER: jellyfin
+      MARIADB_PASSWORD: ${JELLYFIN_DB_PASSWORD:?Set JELLYFIN_DB_PASSWORD in .env}
+      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+      # Upgrades the system tables when a newer server starts on the data of an older one.
+      MARIADB_AUTO_UPGRADE: "1"
+    # The database the image creates gets the character set and collation of step 1 of docs/database/mariadb.md.
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_bin
+      # Long lists of ids must fit into one packet; the MariaDB default is 16M.
+      - --max-allowed-packet=64M
+    volumes:
+      - database:/var/lib/mysql
+    healthcheck:
+      # Answers over TCP only once the server that the image starts after its setup is up.
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 1m
+
+  jellyfin:
+    build:
+      context: ../../../..
+      dockerfile: docs/database/compose/Dockerfile
+    image: ${JELLYFIN_IMAGE:-jellyfin-multidb:local}
+    restart: unless-stopped
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      # The connection string, with the password, comes from the environment and is never written to
+      # database.xml (docs/database/mariadb.md, step 2). Avoid ; and quotes in the password.
+      JELLYFIN_DATABASE__CONNECTIONSTRING: "Server=mariadb;Port=3306;Database=jellyfin;User ID=jellyfin;Password=${JELLYFIN_DB_PASSWORD:?Set JELLYFIN_DB_PASSWORD in .env}"
+    configs:
+      # Copied to /config/config/database.xml on the first start, see the Dockerfile.
+      - source: database-xml
+        target: /run/jellyfin/database.xml
+    ports:
+      - "${JELLYFIN_PORT:-8096}:8096"
+    volumes:
+      - config:/config
+      - cache:/cache
+      - ${JELLYFIN_MEDIA_DIR:?Set JELLYFIN_MEDIA_DIR in .env}:/media:ro
+    healthcheck:
+      # Jellyfin answers Degraded while it starts, and Healthy once it runs and its database answers.
+      test: ["CMD-SHELL", "curl --noproxy localhost -fsS http://localhost:8096/health | grep -qx Healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      # The first start creates the schema before the server answers.
+      start_period: 5m
+
+configs:
+  database-xml:
+    content: |
+      <?xml version="1.0" encoding="utf-8"?>
+      <DatabaseConfigurationOptions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        <DatabaseType>Jellyfin-MySQL</DatabaseType>
+        <LockingBehavior>NoLock</LockingBehavior>
+        <CustomProviderOptions>
+          <PluginName />
+          <PluginAssembly />
+          <Options>
+            <CustomDatabaseOption>
+              <Key>server-version</Key>
+              <Value>${JELLYFIN_DB_SERVER_VERSION:-}</Value>
+            </CustomDatabaseOption>
+          </Options>
+        </CustomProviderOptions>
+      </DatabaseConfigurationOptions>
+
+volumes:
+  database:
+  config:
+  cache:

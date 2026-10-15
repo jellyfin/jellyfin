@@ -21,7 +21,7 @@ differs only where the servers differ.
 | --- | --- |
 | Oldest supported version | MySQL 8.4 |
 | Tested in CI | `run-tests-db / MySql` on MySQL 8.4.11, not required, and `run-tests-db / MySql LTS newest` on MySQL 9.7.2, advisory; both on every pull request, every night and on demand, where the nightly and manual runs start once the workflow is on the default branch |
-| Image of the tests | `mysql:8.4.11` |
+| Image of the tests and of the Compose example | `mysql:8.4.11` |
 | Checked at startup | Yes. Jellyfin refuses to start on an older server: "MySQL 8.4 or later is required, but the server is version ...". |
 
 MySQL 8.4 is the oldest long-term release that is still maintained. MySQL 9.7, the newest long-term release, runs as
@@ -215,6 +215,50 @@ database.
 Any version from 8.4 on is supported. The provider builds its model for the server it finds, or for the
 `server-version` option if you set it: update the option when you upgrade the server.
 MySQL upgrades its own system tables when a newer server starts on the data directory of an older one.
+
+## Docker Compose
+
+[`compose/mysql/compose.yaml`](compose/mysql/compose.yaml) runs Jellyfin and MySQL (`mysql:8.4.11`) side by
+side. Upstream Jellyfin images have no MySQL provider, so the Compose file builds the Jellyfin image from this
+checkout with [`compose/Dockerfile`](compose/Dockerfile): an official Jellyfin image, for its web client and
+FFmpeg, with the server of this fork in place of its own.
+
+```sh
+cd docs/database/compose/mysql
+cp env.example .env               # then set JELLYFIN_DB_PASSWORD and JELLYFIN_MEDIA_DIR in .env
+docker compose up -d --build
+```
+
+It needs Docker Compose 2.23.1 or later. What it sets up:
+
+- **The database.** The image creates the database `jellyfin` and the user `jellyfin` with all privileges on it,
+  from `MYSQL_DATABASE`, `MYSQL_USER` and `MYSQL_PASSWORD`, and a random root password it does not show. The server
+  starts with `--character-set-server=utf8mb4 --collation-server=utf8mb4_0900_bin`, so the database gets the
+  character set and collation of step 1.
+- **`database.xml`.** It is written inline in the Compose file and mounted at `/run/jellyfin/database.xml`. On the
+  first start the image copies it to `/config/config/database.xml`, where it stays an ordinary file, as a restore of
+  a backup archive rewrites it. To change it later, edit that copy in the `config` volume.
+  Set `JELLYFIN_DB_SERVER_VERSION` in `.env` before the first start to fill in the `server-version` option; empty
+  asks the server.
+- **The connection string.** `JELLYFIN_DATABASE__CONNECTIONSTRING` carries it, with the password from `.env`, so
+  the password is in neither `database.xml` nor a backup archive.
+- **Health checks.** Jellyfin starts once the database answers over TCP; the image's own setup server does not.
+  Jellyfin is healthy once `/health` answers `Healthy`: while it starts it answers `Degraded`, and once it runs the
+  answer includes a check of the database.
+- **Volumes.** `database` holds the database, `config` and `cache` hold Jellyfin's directories (`/config` and
+  `/cache`); the media folder is mounted read-only at `/media`.
+
+Check that it runs on MySQL, and make a dump from the database container:
+
+```sh
+docker compose logs jellyfin | grep "connection string"
+curl -fsS http://localhost:8096/health
+docker compose exec -T mysql sh -c 'mysqldump --user=jellyfin --password="$MYSQL_PASSWORD" --single-transaction \
+  --hex-blob --no-tablespaces --default-character-set=utf8mb4 jellyfin' > jellyfin.sql
+```
+
+`-T` keeps a terminal out of the way of the dump. `docker compose down` removes the containers and keeps the
+volumes; `docker compose down -v` also deletes the volumes, and with them the database.
 
 ## Running the tests on MySQL
 

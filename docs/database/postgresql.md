@@ -14,7 +14,7 @@ job is a required check.
 | --- | --- |
 | Oldest supported version | PostgreSQL 16 |
 | Tested in CI | `run-tests-db / Postgres` on PostgreSQL 16.15, on every pull request, as a required check; `run-tests-db / Postgres newest` on PostgreSQL 18.6, every night |
-| Image of the tests | `postgres:16.15-trixie` |
+| Image of the tests and of the Compose example | `postgres:16.15-trixie` |
 | Checked at startup | No. The provider generates SQL for PostgreSQL 16 and does not read the server version, so an older server is not refused, only untested. |
 
 
@@ -169,6 +169,45 @@ To go back, restore the dump and start the previous version of Jellyfin.
 
 Upgrade PostgreSQL with `pg_upgrade`, or by a dump and a restore into the new version. Any version from 16 on is
 supported; CI also runs the newest release every night.
+
+## Docker Compose
+
+[`compose/postgresql/compose.yaml`](compose/postgresql/compose.yaml) runs Jellyfin and PostgreSQL (`postgres:16.15-trixie`) side by
+side. Upstream Jellyfin images have no PostgreSQL provider, so the Compose file builds the Jellyfin image from this
+checkout with [`compose/Dockerfile`](compose/Dockerfile): an official Jellyfin image, for its web client and
+FFmpeg, with the server of this fork in place of its own.
+
+```sh
+cd docs/database/compose/postgresql
+cp env.example .env               # then set JELLYFIN_DB_PASSWORD and JELLYFIN_MEDIA_DIR in .env
+docker compose up -d --build
+```
+
+It needs Docker Compose 2.23.1 or later. What it sets up:
+
+- **The database.** The image creates the user `jellyfin` and the database `jellyfin`, owned by it, with the
+  encoding `UTF8`, from `POSTGRES_USER`, `POSTGRES_PASSWORD` and `POSTGRES_DB`.
+- **`database.xml`.** It is written inline in the Compose file and mounted at `/run/jellyfin/database.xml`. On the
+  first start the image copies it to `/config/config/database.xml`, where it stays an ordinary file, as a restore of
+  a backup archive rewrites it. To change it later, edit that copy in the `config` volume.
+- **The connection string.** `JELLYFIN_DATABASE__CONNECTIONSTRING` carries it, with the password from `.env`, so
+  the password is in neither `database.xml` nor a backup archive.
+- **Health checks.** Jellyfin starts once the database answers over TCP; the image's own setup server does not.
+  Jellyfin is healthy once `/health` answers `Healthy`: while it starts it answers `Degraded`, and once it runs the
+  answer includes a check of the database.
+- **Volumes.** `database` holds the database, `config` and `cache` hold Jellyfin's directories (`/config` and
+  `/cache`); the media folder is mounted read-only at `/media`.
+
+Check that it runs on PostgreSQL, and make a dump from the database container:
+
+```sh
+docker compose logs jellyfin | grep "connection string"
+curl -fsS http://localhost:8096/health
+docker compose exec -T postgres pg_dump --username=jellyfin --format=custom jellyfin > jellyfin.dump
+```
+
+`-T` keeps a terminal out of the way of the dump. `docker compose down` removes the containers and keeps the
+volumes; `docker compose down -v` also deletes the volumes, and with them the database.
 
 ## Running the tests on PostgreSQL
 

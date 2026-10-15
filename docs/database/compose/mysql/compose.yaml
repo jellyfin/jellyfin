@@ -1,0 +1,89 @@
+# Rendered from docs/database/templates/compose.yaml by docs/database/render. Edit the template, not this file.
+# Jellyfin from this fork on MySQL, with the database in its own container. See docs/database/mysql.md.
+#
+#   cp env.example .env           then set the values in .env
+#   docker compose up -d --build
+#
+# Needs Docker Compose 2.23.1 or later, for the inline database.xml below. The Jellyfin image is built from this
+# checkout (docs/database/compose/Dockerfile); upstream Jellyfin images have no MySQL provider.
+# The MySQL and MariaDB provider is experimental: back up the database and keep dumps.
+name: jellyfin-mysql
+
+services:
+  mysql:
+    image: mysql:8.4.11
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: jellyfin
+      MYSQL_USER: jellyfin
+      MYSQL_PASSWORD: ${JELLYFIN_DB_PASSWORD:?Set JELLYFIN_DB_PASSWORD in .env}
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+    # The database the image creates gets the character set and collation of step 1 of docs/database/mysql.md.
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_bin
+    volumes:
+      - database:/var/lib/mysql
+    healthcheck:
+      # Answers over TCP only once the server that the image starts after its setup is up.
+      test: ["CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 1m
+
+  jellyfin:
+    build:
+      context: ../../../..
+      dockerfile: docs/database/compose/Dockerfile
+    image: ${JELLYFIN_IMAGE:-jellyfin-multidb:local}
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      # The connection string, with the password, comes from the environment and is never written to
+      # database.xml (docs/database/mysql.md, step 2). Avoid ; and quotes in the password.
+      JELLYFIN_DATABASE__CONNECTIONSTRING: "Server=mysql;Port=3306;Database=jellyfin;User ID=jellyfin;Password=${JELLYFIN_DB_PASSWORD:?Set JELLYFIN_DB_PASSWORD in .env}"
+    configs:
+      # Copied to /config/config/database.xml on the first start, see the Dockerfile.
+      - source: database-xml
+        target: /run/jellyfin/database.xml
+    ports:
+      - "${JELLYFIN_PORT:-8096}:8096"
+    volumes:
+      - config:/config
+      - cache:/cache
+      - ${JELLYFIN_MEDIA_DIR:?Set JELLYFIN_MEDIA_DIR in .env}:/media:ro
+    healthcheck:
+      # Jellyfin answers Degraded while it starts, and Healthy once it runs and its database answers.
+      test: ["CMD-SHELL", "curl --noproxy localhost -fsS http://localhost:8096/health | grep -qx Healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      # The first start creates the schema before the server answers.
+      start_period: 5m
+
+configs:
+  database-xml:
+    content: |
+      <?xml version="1.0" encoding="utf-8"?>
+      <DatabaseConfigurationOptions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        <DatabaseType>Jellyfin-MySQL</DatabaseType>
+        <LockingBehavior>NoLock</LockingBehavior>
+        <CustomProviderOptions>
+          <PluginName />
+          <PluginAssembly />
+          <Options>
+            <CustomDatabaseOption>
+              <Key>server-version</Key>
+              <Value>${JELLYFIN_DB_SERVER_VERSION:-}</Value>
+            </CustomDatabaseOption>
+          </Options>
+        </CustomProviderOptions>
+      </DatabaseConfigurationOptions>
+
+volumes:
+  database:
+  config:
+  cache:

@@ -1,5 +1,6 @@
 #!/usr/bin/env dotnet
-// Renders the operator page of each database engine from one template, so the pages cannot drift apart.
+// Renders the operator page and the Compose example of each database engine from one set of templates, so that
+// they cannot drift apart.
 //
 //   docs/database/render                    Linux and macOS
 //   dotnet run docs/database/render         every platform
@@ -34,6 +35,9 @@ Engine[] engines =
             ["client"] = "psql",
             ["dump-tool"] = "pg_dump",
             ["test-provider"] = "Postgres",
+            ["service"] = "postgres",
+            ["data-directory"] = "/var/lib/postgresql/data",
+            ["compose-connection-string"] = "Host=postgres;Port=5432;Database=jellyfin;Username=jellyfin;Password=${JELLYFIN_DB_PASSWORD:?Set JELLYFIN_DB_PASSWORD in .env}",
             ["run-settings"] = "postgres.runsettings",
             ["connection-string"] = "Host=db.example.com;Port=5432;Database=jellyfin;Username=jellyfin;Password=CHANGE-ME",
             ["connection-string-kind"] = "An [Npgsql connection string](https://www.npgsql.org/doc/connection-string-parameters.html).",
@@ -55,6 +59,10 @@ Engine[] engines =
             ["client"] = "mysql",
             ["dump-tool"] = "mysqldump",
             ["test-provider"] = "MySql",
+            ["service"] = "mysql",
+            ["data-directory"] = "/var/lib/mysql",
+            ["compose-connection-string"] = "Server=mysql;Port=3306;Database=jellyfin;User ID=jellyfin;Password=${JELLYFIN_DB_PASSWORD:?Set JELLYFIN_DB_PASSWORD in .env}",
+            ["password-variable"] = "MYSQL_PASSWORD",
             ["run-settings"] = "mysql.runsettings",
             ["connection-string"] = "Server=db.example.com;Port=3306;Database=jellyfin;User ID=jellyfin;Password=CHANGE-ME",
             ["connection-string-kind"] = "A [MySqlConnector connection string](https://mysqlconnector.net/connection-options/).",
@@ -81,6 +89,10 @@ Engine[] engines =
             ["client"] = "mariadb",
             ["dump-tool"] = "mariadb-dump",
             ["test-provider"] = "MariaDb",
+            ["service"] = "mariadb",
+            ["data-directory"] = "/var/lib/mysql",
+            ["compose-connection-string"] = "Server=mariadb;Port=3306;Database=jellyfin;User ID=jellyfin;Password=${JELLYFIN_DB_PASSWORD:?Set JELLYFIN_DB_PASSWORD in .env}",
+            ["password-variable"] = "MARIADB_PASSWORD",
             ["run-settings"] = "mariadb.runsettings",
             ["connection-string"] = "Server=db.example.com;Port=3306;Database=jellyfin;User ID=jellyfin;Password=CHANGE-ME",
             ["connection-string-kind"] = "A [MySqlConnector connection string](https://mysqlconnector.net/connection-options/).",
@@ -98,6 +110,8 @@ Engine[] engines =
 (string Template, Func<Engine, string> Output, string NoticeFormat)[] templates =
 [
     ("templates/how-to.md", e => $"{e.Id}.md", "<!-- {0} -->"),
+    ("templates/compose.yaml", e => $"compose/{e.Id}/compose.yaml", "# {0}"),
+    ("templates/env.example", e => $"compose/{e.Id}/env.example", "# {0}"),
 ];
 
 if (args.Length > 1 || (args.Length == 1 && args[0] != "--check"))

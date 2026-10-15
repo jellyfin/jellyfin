@@ -1,0 +1,76 @@
+# Rendered from docs/database/templates/compose.yaml by docs/database/render. Edit the template, not this file.
+# Jellyfin from this fork on PostgreSQL, with the database in its own container. See docs/database/postgresql.md.
+#
+#   cp env.example .env           then set the values in .env
+#   docker compose up -d --build
+#
+# Needs Docker Compose 2.23.1 or later, for the inline database.xml below. The Jellyfin image is built from this
+# checkout (docs/database/compose/Dockerfile); upstream Jellyfin images have no PostgreSQL provider.
+name: jellyfin-postgresql
+
+services:
+  postgres:
+    image: postgres:16.15-trixie
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: jellyfin
+      POSTGRES_PASSWORD: ${JELLYFIN_DB_PASSWORD:?Set JELLYFIN_DB_PASSWORD in .env}
+      POSTGRES_DB: jellyfin
+      POSTGRES_INITDB_ARGS: --encoding=UTF8
+    volumes:
+      # The data directory of the PostgreSQL 16 image. From PostgreSQL 18 on the image keeps its data under
+      # /var/lib/postgresql instead; move the volume when you upgrade.
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      # Answers over TCP only once the server that the image starts after its setup is up.
+      test: ["CMD", "pg_isready", "--host=127.0.0.1", "--username=jellyfin", "--dbname=jellyfin"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 1m
+
+  jellyfin:
+    build:
+      context: ../../../..
+      dockerfile: docs/database/compose/Dockerfile
+    image: ${JELLYFIN_IMAGE:-jellyfin-multidb:local}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # The connection string, with the password, comes from the environment and is never written to
+      # database.xml (docs/database/postgresql.md, step 2). Avoid ; and quotes in the password.
+      JELLYFIN_DATABASE__CONNECTIONSTRING: "Host=postgres;Port=5432;Database=jellyfin;Username=jellyfin;Password=${JELLYFIN_DB_PASSWORD:?Set JELLYFIN_DB_PASSWORD in .env}"
+    configs:
+      # Copied to /config/config/database.xml on the first start, see the Dockerfile.
+      - source: database-xml
+        target: /run/jellyfin/database.xml
+    ports:
+      - "${JELLYFIN_PORT:-8096}:8096"
+    volumes:
+      - config:/config
+      - cache:/cache
+      - ${JELLYFIN_MEDIA_DIR:?Set JELLYFIN_MEDIA_DIR in .env}:/media:ro
+    healthcheck:
+      # Jellyfin answers Degraded while it starts, and Healthy once it runs and its database answers.
+      test: ["CMD-SHELL", "curl --noproxy localhost -fsS http://localhost:8096/health | grep -qx Healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      # The first start creates the schema before the server answers.
+      start_period: 5m
+
+configs:
+  database-xml:
+    content: |
+      <?xml version="1.0" encoding="utf-8"?>
+      <DatabaseConfigurationOptions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        <DatabaseType>Jellyfin-PostgreSQL</DatabaseType>
+        <LockingBehavior>NoLock</LockingBehavior>
+      </DatabaseConfigurationOptions>
+
+volumes:
+  database:
+  config:
+  cache:
