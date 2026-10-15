@@ -1,0 +1,67 @@
+name: Database Tests (MySQL and MariaDB)
+on:
+  # The MySQL family is experimental, so its jobs are not required checks and do not block a merge. They run on
+  # every pull request, because a change anywhere can reach a query that MySQL or MariaDB translates differently.
+  pull_request:
+  # A scheduled run uses this workflow as it is on the default branch, and a manual run needs it there too.
+  schedule:
+    - cron: "47 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  # MySql and MariaDb are the oldest supported release of each server, the images of the test harness.
+  # MySql LTS newest and MariaDb LTS newest are the newest long-term release of each server. They are
+  # advisory, so their failure does not fail the run. The names match no required check. Release policy:
+  # - MySQL 9.7.x is the newest LTS line; Innovation releases such as 26.7 are not tested here.
+  #   https://dev.mysql.com/doc/refman/26.7/en/mysql-releases.html
+  #   https://blogs.oracle.com/mysql/mysql-9-7-0-lts-is-now-available-expanded-community-capabilities-and-dynamic-data-masking-for-enterprise
+  #   https://blogs.oracle.com/mysql/mysql-community-server-26-7-early-access-release
+  # - MariaDB 12.3 is a long-term release, maintained until June 2029.
+  #   https://mariadb.org/mariadb-server-12-3-lts-released/
+  #   https://mariadb.com/docs/release-notes/community-server/12.3/12.3.1
+  run-tests-db:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci-tests-db.yml
+    with:
+      matrix: |
+        [
+          {
+            "name": "MySql",
+            "provider": "MySql",
+            "version": "8.4",
+            "image": "mysql:8.4.11@sha256:24989179f58856db763f418010c1169fecc944e3ec1ea7e921572d83eb070f70",
+            "imageVariable": "JELLYFIN_TEST_MYSQL_IMAGE",
+            "settings": "mysql.runsettings",
+            "requiredTests": ""
+          },
+          {
+            "name": "MariaDb",
+            "provider": "MariaDb",
+            "version": "11.4",
+            "image": "mariadb:11.4.13@sha256:1292844148b311e4ed4300022a996d39083f415a963e970cf47cad1b3b18e3a6",
+            "imageVariable": "JELLYFIN_TEST_MARIADB_IMAGE",
+            "settings": "mariadb.runsettings",
+            "requiredTests": ""
+          },
+          {
+            "name": "MySql LTS newest",
+            "provider": "MySql",
+            "version": "9.7",
+            "image": "mysql:9.7.2@sha256:c7cb87a9822f499375287930cbff71d6d3b201e346b45108b1115b435ee2df13",
+            "imageVariable": "JELLYFIN_TEST_MYSQL_IMAGE",
+            "settings": "mysql.runsettings",
+            "requiredTests": "",
+            "advisory": true
+          },
+          {
+            "name": "MariaDb LTS newest",
+            "provider": "MariaDb",
+            "version": "12.3",
+            "image": "mariadb:12.3.3@sha256:2bdff1534a7e569fecaf4b10b66ad0d410806e382d9db29ba305448addda97c4",
+            "imageVariable": "JELLYFIN_TEST_MARIADB_IMAGE",
+            "settings": "mariadb.runsettings",
+            "requiredTests": "",
+            "advisory": true
+          }
+        ]

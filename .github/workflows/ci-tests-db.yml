@@ -8,7 +8,9 @@ on:
           object has name (the name of the job, which must not contain
           the version so that a required check survives an upgrade),
           provider (the name of the provider), version (the major
-          version of the server, which the tests must report), image
+          version of the server, or the major and minor version for a
+          server whose minor versions are separate release series, which
+          the tests must report), image
           (the pinned image), imageVariable (the environment variable
           through which the tests take the image, which must be
           JELLYFIN_TEST_, the provider in capitals and _IMAGE),
@@ -18,7 +20,8 @@ on:
           because it skips when the server tools are unavailable; the
           sentinel of every project is required without being listed)
           and optionally timeoutMinutes (the time the job may take, 30
-          by default).
+          by default) and advisory (true for a job whose failure does not
+          fail the workflow run, false by default).
         required: true
         type: string
 
@@ -38,6 +41,7 @@ jobs:
 
     runs-on: ubuntu-latest
     timeout-minutes: ${{ matrix.timeoutMinutes || 30 }}
+    continue-on-error: ${{ matrix.advisory == true }}
 
     env:
       JELLYFIN_TEST_EXPECTED_PROVIDER: ${{ matrix.provider }}
