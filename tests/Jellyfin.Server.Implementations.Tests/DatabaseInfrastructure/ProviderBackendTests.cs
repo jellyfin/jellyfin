@@ -18,7 +18,7 @@ public class ProviderBackendTests(ITestOutputHelper output)
 
         BackendLiveness.Verify(Environment.GetEnvironmentVariable(BackendLiveness.ExpectedProviderVariable), backend);
 
-        output.WriteLine($"Database backend: {backend.Provider} {backend.ServerVersion}");
+        output.WriteLine($"Database backend: {backend.Provider} {backend.ServerVersion} (reported as '{backend.ReportedServerVersion}')");
     }
 
     [Fact]

@@ -12,18 +12,22 @@ public abstract class MySqlFamilyTestBackend : ITestDatabaseBackend, IDisposable
 {
     private readonly LeasedDatabasePool _pool;
     private readonly Func<Version> _readServerVersion;
+    private readonly Func<string> _readReportedServerVersion;
 
     private protected MySqlFamilyTestBackend(TestDbProvider provider)
     {
         var server = new MySqlFamilyServer(provider);
         Provider = provider;
         _readServerVersion = () => server.ServerVersion;
+        _readReportedServerVersion = () => server.ReportedServerVersion;
         _pool = new LeasedDatabasePool(server);
     }
 
     public TestDbProvider Provider { get; }
 
     public Version ServerVersion => _readServerVersion();
+
+    public string ReportedServerVersion => _readReportedServerVersion();
 
     public TestDatabase Create(TestSchemaSource source, IInterceptor[] interceptors, bool fresh = false)
     {

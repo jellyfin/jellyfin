@@ -49,6 +49,11 @@ internal sealed class MySqlFamilyServer : IPooledDatabaseServer
 
     public Version ServerVersion => ReadServerVersion(_adminConnectionString.Value);
 
+    /// <summary>
+    /// Gets the version as the server reports it to <c>VERSION()</c>, which names MariaDB on a MariaDB server.
+    /// </summary>
+    public string ReportedServerVersion => ReadReportedServerVersion(_adminConnectionString.Value);
+
     public string CreateDatabase()
     {
         var name = $"jf_{Guid.NewGuid():N}";
@@ -165,6 +170,14 @@ internal sealed class MySqlFamilyServer : IPooledDatabaseServer
         connection.Open();
         using var command = new MySqlCommand(commandText, connection);
         command.ExecuteNonQuery();
+    }
+
+    private static string ReadReportedServerVersion(string connectionString)
+    {
+        using var connection = new MySqlConnection(connectionString);
+        connection.Open();
+        using var command = new MySqlCommand("SELECT VERSION()", connection);
+        return Convert.ToString(command.ExecuteScalar(), CultureInfo.InvariantCulture)!;
     }
 
     private static Version ReadServerVersion(string connectionString)

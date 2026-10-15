@@ -5,8 +5,8 @@ using Xunit;
 namespace Jellyfin.Server.Tests;
 
 /// <summary>
-/// The sentinel of a provider run of this project: it fails when the backend is not the one the job asked for, or
-/// cannot be reached, and prints the backend and its server version.
+/// The sentinel of a provider run of this project: it fails when the backend is not the one the job asked for, when
+/// its server is of another engine, or when it cannot be reached, and prints the backend and its server version.
 /// </summary>
 public class ProviderBackendTests(ITestOutputHelper output)
 {
@@ -17,6 +17,6 @@ public class ProviderBackendTests(ITestOutputHelper output)
 
         BackendLiveness.Verify(Environment.GetEnvironmentVariable(BackendLiveness.ExpectedProviderVariable), backend);
 
-        output.WriteLine($"Database backend: {backend.Provider} {backend.ServerVersion}");
+        output.WriteLine($"Database backend: {backend.Provider} {backend.ServerVersion} (reported as '{backend.ReportedServerVersion}')");
     }
 }

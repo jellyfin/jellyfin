@@ -46,10 +46,11 @@ public sealed class EngineTraits
             Provider = TestDbProvider.Postgres,
             ProviderType = typeof(PostgresDatabaseProvider),
             CoversThroughSqliteMigration = PostgresMigrationBaseline.CoversThroughSqliteMigration,
+            ServerMarker = "PostgreSQL",
             AssertUniqueViolation = ex => Assert.Equal(PostgresErrorCodes.UniqueViolation, Assert.IsType<PostgresException>(ex).SqlState)
         },
-        MySqlFamily(TestDbProvider.MySql),
-        MySqlFamily(TestDbProvider.MariaDb)
+        MySqlFamily(TestDbProvider.MySql, null),
+        MySqlFamily(TestDbProvider.MariaDb, "MariaDB")
     }.ToDictionary(traits => traits.Provider);
 
     private EngineTraits()
@@ -85,6 +86,13 @@ public sealed class EngineTraits
     public bool IsEmbedded { get; init; }
 
     /// <summary>
+    /// Gets a text that the version the server of the engine reports always holds, and the version that the server of
+    /// any other engine reports never does, compared without regard to case; or <see langword="null"/> when the version
+    /// of the engine holds no such text. It tells apart servers that speak the same protocol.
+    /// </summary>
+    public string? ServerMarker { get; init; }
+
+    /// <summary>
     /// Gets an assertion that an exception is the violation of a unique index or key on the engine: an exception of
     /// exactly the type that the client of the engine throws, with the code of such a violation.
     /// </summary>
@@ -116,10 +124,11 @@ public sealed class EngineTraits
             ? traits
             : throw new ArgumentOutOfRangeException(nameof(provider), provider, "The engine has no traits.");
 
-    private static EngineTraits MySqlFamily(TestDbProvider provider) => new()
+    private static EngineTraits MySqlFamily(TestDbProvider provider, string? serverMarker) => new()
     {
         Provider = provider,
         ProviderType = typeof(MySqlDatabaseProvider),
+        ServerMarker = serverMarker,
         CoversThroughSqliteMigration = MySqlMigrationBaseline.CoversThroughSqliteMigration,
         AssertUniqueViolation = ex => Assert.Equal(MySqlErrorCode.DuplicateKeyEntry, Assert.IsType<MySqlException>(ex).ErrorCode),
         Pool = new PoolStatements

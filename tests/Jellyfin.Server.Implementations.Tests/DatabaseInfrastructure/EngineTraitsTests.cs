@@ -70,6 +70,16 @@ public class EngineTraitsTests
         Assert.Equal(pooled, traits.Pool is not null);
     }
 
+    [Theory]
+    [InlineData(TestDbProvider.Sqlite, null)]
+    [InlineData(TestDbProvider.Postgres, "PostgreSQL")]
+    [InlineData(TestDbProvider.MySql, null)]
+    [InlineData(TestDbProvider.MariaDb, "MariaDB")]
+    public void ServerMarker_IsWhatTheVersionOfTheServerNames(TestDbProvider provider, string? marker)
+    {
+        Assert.Equal(marker, EngineTraits.For(provider).ServerMarker);
+    }
+
     [Fact]
     public void AssertUniqueViolation_AnotherErrorOrNone_FailsOnEveryEngine()
     {

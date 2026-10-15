@@ -35,7 +35,7 @@ public sealed class JellyfinApplicationFactoryTests
         using var client = factory.CreateClient();
 
         Assert.IsType(ProviderTypeOfTheRun(), factory.Services.GetRequiredService<IJellyfinDatabaseProvider>());
-        BackendLiveness.VerifyProvider(Environment.GetEnvironmentVariable(BackendLiveness.ExpectedProviderVariable), TestDatabaseEnvironment.Provider);
+        BackendLiveness.Verify(Environment.GetEnvironmentVariable(BackendLiveness.ExpectedProviderVariable), TestDatabaseEnvironment.Backend);
 
         var dbContextFactory = factory.Services.GetRequiredService<IDbContextFactory<JellyfinDbContext>>();
         await using var context = await dbContextFactory.CreateDbContextAsync(TestContext.Current.CancellationToken);

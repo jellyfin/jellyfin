@@ -10,6 +10,12 @@ public interface ITestDatabaseBackend
     Version ServerVersion { get; }
 
     /// <summary>
+    /// Gets the version as the server itself reports it, which names the server where several kinds of server speak
+    /// the same protocol, as MariaDB does next to MySQL.
+    /// </summary>
+    string ReportedServerVersion { get; }
+
+    /// <summary>
     /// Creates a database with the schema of <paramref name="source"/>. Nobody else uses it until it is disposed.
     /// </summary>
     /// <param name="source">Where the schema comes from.</param>

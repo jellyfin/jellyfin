@@ -49,6 +49,8 @@ public sealed class PostgresTestBackend : ITestDatabaseBackend
 
     public Version ServerVersion => ReadServerVersion(_adminConnectionString.Value);
 
+    public string ReportedServerVersion => ReadReportedServerVersion(_adminConnectionString.Value);
+
     /// <summary>
     /// Gets a value indicating whether the tools of the server, such as <c>pg_dump</c>, can be run. They are only
     /// available when the server is a container started by this backend.
@@ -169,6 +171,14 @@ public sealed class PostgresTestBackend : ITestDatabaseBackend
         connection.Open();
         using var command = new NpgsqlCommand(commandText, connection);
         command.ExecuteNonQuery();
+    }
+
+    private static string ReadReportedServerVersion(string connectionString)
+    {
+        using var connection = new NpgsqlConnection(connectionString);
+        connection.Open();
+        using var command = new NpgsqlCommand("SELECT version()", connection);
+        return Convert.ToString(command.ExecuteScalar(), CultureInfo.InvariantCulture)!;
     }
 
     private static Version ReadServerVersion(string connectionString)

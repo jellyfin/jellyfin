@@ -34,7 +34,9 @@ public sealed class SqliteTestBackend : ITestDatabaseBackend
 
     public TestDbProvider Provider => TestDbProvider.Sqlite;
 
-    public Version ServerVersion { get; } = ReadServerVersion();
+    public Version ServerVersion => Version.Parse(ReportedServerVersion);
+
+    public string ReportedServerVersion { get; } = ReadServerVersion();
 
     public TestDatabase Create(TestSchemaSource source, IInterceptor[] interceptors, bool fresh = false)
     {
@@ -114,10 +116,10 @@ public sealed class SqliteTestBackend : ITestDatabaseBackend
         return connection;
     }
 
-    private static Version ReadServerVersion()
+    private static string ReadServerVersion()
     {
         using var connection = new SqliteConnection("Data Source=:memory:");
         connection.Open();
-        return Version.Parse(connection.ServerVersion);
+        return connection.ServerVersion;
     }
 }

@@ -23,6 +23,8 @@ public sealed class SqliteFileTestBackend : ITestDatabaseBackend, IDisposable
 
     public Version ServerVersion => SqliteTestBackend.Instance.ServerVersion;
 
+    public string ReportedServerVersion => SqliteTestBackend.Instance.ReportedServerVersion;
+
     /// <summary>
     /// Gets the directory that holds the database files, which exists until this backend is disposed.
     /// </summary>
