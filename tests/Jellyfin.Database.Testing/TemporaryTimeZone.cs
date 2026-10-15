@@ -1,11 +1,12 @@
 using System;
 using Xunit;
 
-namespace Jellyfin.Server.Implementations.Tests.Data;
+namespace Jellyfin.Database.Testing;
 
 /// <summary>
 /// Makes <see cref="TimeZoneInfo.Local"/> the given zone for the lifetime of the instance, on Linux, where the
-/// local zone comes from the TZ environment variable. Tests that use it belong to <see cref="TimeZoneIsolation"/>.
+/// local zone comes from the TZ environment variable. The zone belongs to the whole process, so a test that uses it
+/// has to be in a collection that does not run in parallel with any other test.
 /// </summary>
 public sealed class TemporaryTimeZone : IDisposable
 {
