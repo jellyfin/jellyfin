@@ -2,6 +2,7 @@ using System;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.DbConfiguration;
 using Jellyfin.Database.Providers.Postgres;
+using Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Npgsql;

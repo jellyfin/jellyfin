@@ -8,7 +8,7 @@ using Jellyfin.Database.Implementations.DbConfiguration;
 using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Providers.MySql;
 using Jellyfin.Database.Testing;
-using Jellyfin.Server.Implementations.Tests.Postgres;
+using Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;

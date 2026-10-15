@@ -4,7 +4,7 @@ using System.Linq;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.ModelConfiguration;
 using Jellyfin.Database.Providers.MySql;
-using Jellyfin.Server.Implementations.Tests.Postgres;
+using Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;

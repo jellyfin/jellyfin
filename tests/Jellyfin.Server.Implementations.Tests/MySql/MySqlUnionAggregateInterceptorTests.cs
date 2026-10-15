@@ -7,7 +7,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Providers.MySql;
 using Jellyfin.Server.Implementations.Item;
-using Jellyfin.Server.Implementations.Tests.Postgres;
+using Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 using MediaBrowser.Controller.Entities;
 using Microsoft.EntityFrameworkCore;
 using Xunit;

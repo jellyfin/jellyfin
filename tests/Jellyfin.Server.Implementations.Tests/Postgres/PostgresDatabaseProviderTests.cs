@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Providers.Postgres;
 using Jellyfin.Database.Testing;
+using Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;

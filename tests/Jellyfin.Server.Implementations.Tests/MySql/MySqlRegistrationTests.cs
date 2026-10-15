@@ -9,7 +9,7 @@ using Jellyfin.Database.Implementations.DbConfiguration;
 using Jellyfin.Database.Providers.MySql;
 using Jellyfin.Server.Implementations.DatabaseConfiguration;
 using Jellyfin.Server.Implementations.Extensions;
-using Jellyfin.Server.Implementations.Tests.Postgres;
+using Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 using MediaBrowser.Common.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

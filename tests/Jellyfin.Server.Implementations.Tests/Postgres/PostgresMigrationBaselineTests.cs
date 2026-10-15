@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Jellyfin.Database.Providers.Postgres;
+using Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Xunit;

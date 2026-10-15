@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Implementations.Tests.Postgres;
+namespace Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 
 internal sealed class CollectingLogger<T> : ILogger<T>
 {

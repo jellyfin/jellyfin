@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
-namespace Jellyfin.Server.Implementations.Tests.Postgres;
+namespace Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 
 /// <summary>
 /// Contexts of the providers that are never connected, for checks of the model and the migrations assemblies.

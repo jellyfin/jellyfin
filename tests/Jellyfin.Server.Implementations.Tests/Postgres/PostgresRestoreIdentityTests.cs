@@ -11,6 +11,7 @@ using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Testing;
 using Jellyfin.Server.Implementations.FullSystemBackup;
+using Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.SystemBackupService;

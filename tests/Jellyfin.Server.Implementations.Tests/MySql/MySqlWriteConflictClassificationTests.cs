@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Providers.MySql;
-using Jellyfin.Server.Implementations.Tests.Postgres;
+using Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
 using Xunit;

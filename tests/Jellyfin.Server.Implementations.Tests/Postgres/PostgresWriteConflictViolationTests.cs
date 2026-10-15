@@ -6,6 +6,7 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Entities.Security;
 using Jellyfin.Database.Providers.Postgres;
 using Jellyfin.Database.Testing;
+using Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Xunit;

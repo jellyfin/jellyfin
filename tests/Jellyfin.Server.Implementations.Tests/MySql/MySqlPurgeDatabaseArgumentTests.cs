@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Providers.MySql;
-using Jellyfin.Server.Implementations.Tests.Postgres;
+using Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.MySql;
