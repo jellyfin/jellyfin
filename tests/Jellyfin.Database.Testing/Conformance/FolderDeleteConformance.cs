@@ -51,10 +51,17 @@ public abstract class FolderDeleteConformance : ConformanceTestBase
         var ancestors = Table<AncestorId>();
         var userData = Table<UserData>();
 
+        // Premise: a server that limits the depth of a cascade deletes the rows of one statement in the order of their key.
+        // The cascade of an item stops at the first item below it that is already gone, so with random ids the cascade
+        // ran the full depth of the chain only when the root happened to be deleted first. The ids rise from the root
+        // down instead: they share a random prefix and differ only in their last byte, which is last in the text of an
+        // id and in its bytes in either byte order.
+        var idBytes = Guid.NewGuid().ToByteArray();
         var chain = new List<Guid>();
         for (var depth = 0; depth <= Depth; depth++)
         {
-            var id = Guid.NewGuid();
+            idBytes[^1] = (byte)depth;
+            var id = new Guid(idBytes);
             Rows.Save(items, new Dictionary<string, object?>
             {
                 [nameof(BaseItemEntity.Id)] = id,
@@ -68,6 +75,12 @@ public abstract class FolderDeleteConformance : ConformanceTestBase
 
             Rows.Save(userData, new Dictionary<string, object?> { [nameof(UserData.ItemId)] = id });
             chain.Add(id);
+        }
+
+        // The server orders the keys the same way, so that its key order starts at the root on every engine.
+        using (var context = CreateDbContext())
+        {
+            Assert.Equal(chain, context.BaseItems.Where(e => chain.Contains(e.Id)).OrderBy(e => e.Id).Select(e => e.Id).ToList());
         }
 
         var other = Guid.NewGuid();
