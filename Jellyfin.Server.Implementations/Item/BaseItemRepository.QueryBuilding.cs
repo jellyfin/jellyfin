@@ -613,13 +613,14 @@ public sealed partial class BaseItemRepository
                 .Where(f => f.ItemValue.Type == ItemValueType.Tags && excludedTags.Contains(f.ItemValue.CleanValue))
                 .Select(f => f.ItemId);
             var blockedByAncestor = ItemsBelowTaggedAncestor(context, blockedTagItemIds);
+            var blockedExtras = ExtrasOfTaggedOwner(context, blockedTagItemIds, blockedByAncestor);
 
             baseQuery = baseQuery.Where(e =>
                 !blockedTagItemIds.Contains(e.Id)
                 && !(e.SeriesId.HasValue && blockedTagItemIds.Contains(e.SeriesId.Value))
                 && !blockedByAncestor.Contains(e.Id)
                 && !(e.TopParentId.HasValue && blockedTagItemIds.Contains(e.TopParentId.Value))
-                && !(e.ExtraType != null && e.OwnerId.HasValue && (blockedTagItemIds.Contains(e.OwnerId.Value) || blockedByAncestor.Contains(e.OwnerId.Value))));
+                && !blockedExtras.Contains(e.Id));
         }
 
         // Apply included tags filtering (allowed tags - item must have at least one).
@@ -632,13 +633,14 @@ public sealed partial class BaseItemRepository
                 .Select(f => f.ItemId);
 
             var allowedByAncestor = ItemsBelowTaggedAncestor(context, allowedTagItemIds);
+            var allowedExtras = ExtrasOfTaggedOwner(context, allowedTagItemIds, allowedByAncestor);
 
             baseQuery = baseQuery.Where(e =>
                 allowedTagItemIds.Contains(e.Id)
                 || (e.SeriesId.HasValue && allowedTagItemIds.Contains(e.SeriesId.Value))
                 || allowedByAncestor.Contains(e.Id)
                 || (e.TopParentId.HasValue && allowedTagItemIds.Contains(e.TopParentId.Value))
-                || (e.ExtraType != null && e.OwnerId.HasValue && (allowedTagItemIds.Contains(e.OwnerId.Value) || allowedByAncestor.Contains(e.OwnerId.Value)))
+                || allowedExtras.Contains(e.Id)
 
                 // People don't carry the tags of the media they appear in and would never match
                 || e.Type == personTypeName);
@@ -657,6 +659,20 @@ public sealed partial class BaseItemRepository
         => context.AncestorIds
             .Where(a => taggedItemIds.Contains(a.ParentItemId))
             .Select(a => a.ItemId);
+
+    /// <summary>
+    /// Reads back the extras whose owner carries the tag itself or below a tagged ancestor.
+    /// Extras have no parent and inherit the tags of their owner.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    /// <param name="taggedItemIds">The ids of the items carrying the tag.</param>
+    /// <param name="itemsBelowTaggedAncestor">The ids of the items inheriting the tag from an ancestor.</param>
+    /// <returns>The ids of the extras whose owner is tagged.</returns>
+    private static IQueryable<Guid> ExtrasOfTaggedOwner(JellyfinDbContext context, IQueryable<Guid> taggedItemIds, IQueryable<Guid> itemsBelowTaggedAncestor)
+        => context.BaseItems
+            .Where(e => e.ExtraType != null && e.OwnerId.HasValue)
+            .Where(e => taggedItemIds.Contains(e.OwnerId!.Value) || itemsBelowTaggedAncestor.Contains(e.OwnerId!.Value))
+            .Select(e => e.Id);
 
     /// <summary>
     /// Builds a filter expression for max parental rating that handles both rated items

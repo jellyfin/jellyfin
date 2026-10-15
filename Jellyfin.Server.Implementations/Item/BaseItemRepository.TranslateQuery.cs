@@ -1133,13 +1133,14 @@ public sealed partial class BaseItemRepository
                 .Where(f => f.ItemValue.Type == ItemValueType.Tags && excludedTags.Contains(f.ItemValue.CleanValue))
                 .Select(f => f.ItemId);
             var blockedByAncestor = ItemsBelowTaggedAncestor(context, blockedTagItemIds);
+            var blockedExtras = ExtrasOfTaggedOwner(context, blockedTagItemIds, blockedByAncestor);
 
             baseQuery = baseQuery.Where(e =>
                 !blockedTagItemIds.Contains(e.Id)
                 && !(e.SeriesId.HasValue && blockedTagItemIds.Contains(e.SeriesId.Value))
                 && !blockedByAncestor.Contains(e.Id)
                 && !(e.TopParentId.HasValue && blockedTagItemIds.Contains(e.TopParentId.Value))
-                && !(e.ExtraType != null && e.OwnerId.HasValue && (blockedTagItemIds.Contains(e.OwnerId.Value) || blockedByAncestor.Contains(e.OwnerId.Value))));
+                && !blockedExtras.Contains(e.Id));
         }
 
         if (filter.IncludeInheritedTags.Length > 0)
@@ -1151,15 +1152,14 @@ public sealed partial class BaseItemRepository
                 .Where(f => f.ItemValue.Type == ItemValueType.Tags && includeTags.Contains(f.ItemValue.CleanValue))
                 .Select(f => f.ItemId);
             var allowedByAncestor = ItemsBelowTaggedAncestor(context, allowedTagItemIds);
+            var allowedExtras = ExtrasOfTaggedOwner(context, allowedTagItemIds, allowedByAncestor);
 
             baseQuery = baseQuery.Where(e =>
                 allowedTagItemIds.Contains(e.Id)
                 || (e.SeriesId.HasValue && allowedTagItemIds.Contains(e.SeriesId.Value))
                 || allowedByAncestor.Contains(e.Id)
                 || (e.TopParentId.HasValue && allowedTagItemIds.Contains(e.TopParentId.Value))
-
-                // Extras have no parent and inherit the tags of their owner
-                || (e.ExtraType != null && e.OwnerId.HasValue && (allowedTagItemIds.Contains(e.OwnerId.Value) || allowedByAncestor.Contains(e.OwnerId.Value)))
+                || allowedExtras.Contains(e.Id)
 
                 // People don't carry the tags of the media they appear in and would never match
                 || e.Type == personTypeName
