@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
-using Jellyfin.Database.Providers.Postgres.Migrations;
+using Jellyfin.Database.Implementations.DesignTime;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace Jellyfin.Server.Implementations.Tests.Postgres;
+namespace Jellyfin.Server.Implementations.Tests.EfMigrations;
 
 public sealed partial class PairedMigrationsIdGeneratorTests : IDisposable
 {

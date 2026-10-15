@@ -5,7 +5,7 @@ using System.Threading;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Database.Providers.Postgres.Migrations;
+namespace Jellyfin.Database.Implementations.DesignTime;
 
 /// <summary>
 /// Generates the id of a new migration.
@@ -15,6 +15,10 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations;
 /// because that id will not line up with the one of the reference provider.
 /// A name that simply has no migration in the reference directory is not reported.
 /// </summary>
+/// <remarks>
+/// Every provider that mirrors the migrations of the SQLite provider registers this one generator through
+/// <see cref="PairedMigrationsDesignTimeServices"/>, so the providers cannot drift apart in how they pair their ids.
+/// </remarks>
 internal sealed class PairedMigrationsIdGenerator : IMigrationsIdGenerator
 {
     private const string TimestampFormat = "yyyyMMddHHmmss";
