@@ -19,7 +19,7 @@
     "provider": "MySQL 8.4",
     "operation": "AlterDatabase",
     "category": "EngineSpecific",
-    "reason": "Sets the character set of the MySQL or MariaDB database to utf8mb4, an annotation of the MySQL provider. PostgreSQL fixes the encoding when the database is created and has no such operation."
+    "reason": "Sets the default collation of the MySQL or MariaDB database to utf8mb4_0900_bin, and with it the character set utf8mb4, so that the database default is the binary collation of every text column. PostgreSQL fixes the encoding when the database is created and gives each text column its collation, and has no such operation."
   },
   {
     "migration": "20200101000000_InitialCreate",
@@ -76,6 +76,14 @@
     "operation": "Sql e68f10e2b9584b24 CREATE INDEX IF NOT EXISTS \"IX_Peoples_NameLower\" ON \"People...",
     "category": "BaselineCoverage",
     "reason": "The PostgreSQL baseline reproduces the schema through 20261002210711_MakeOwnerIdIndexesPartial, where people are looked up by an index on lower(\"Name\") that the model cannot express. Its own 20261013120000_AddNormalisedMatchColumns replaces it by the index on NameLower, which the MySQL baseline creates directly."
+  },
+  {
+    "migration": "20200101000000_InitialCreate",
+    "direction": "Down",
+    "provider": "MySQL 8.4",
+    "operation": "AlterDatabase",
+    "category": "EngineSpecific",
+    "reason": "Undoes the default collation that Up sets on the MySQL or MariaDB database: it sets the character set utf8mb4 again, which gives the database the server's default collation of utf8mb4. PostgreSQL has no such operation in Up to undo."
   },
   {
     "migration": "20200101000000_InitialCreate",

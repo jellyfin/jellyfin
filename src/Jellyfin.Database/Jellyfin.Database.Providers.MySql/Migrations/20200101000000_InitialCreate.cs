@@ -12,8 +12,10 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterDatabase()
-                .Annotation("MySql:CharSet", "utf8mb4");
+            migrationBuilder.AlterDatabase(
+                collation: "utf8mb4_0900_bin")
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .OldAnnotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "ActivityLogs",
@@ -40,7 +42,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                 {
                     table.PrimaryKey("PK_ActivityLogs", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "ApiKeys",
@@ -59,7 +62,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                 {
                     table.PrimaryKey("PK_ApiKeys", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "BaseItems",
@@ -188,7 +192,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "CustomItemDisplayPreferences",
@@ -209,7 +214,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                 {
                     table.PrimaryKey("PK_CustomItemDisplayPreferences", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "DeviceOptions",
@@ -226,7 +232,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                 {
                     table.PrimaryKey("PK_DeviceOptions", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "ItemValues",
@@ -243,7 +250,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                 {
                     table.PrimaryKey("PK_ItemValues", x => x.ItemValueId);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "MediaSegments",
@@ -261,7 +269,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                 {
                     table.PrimaryKey("PK_MediaSegments", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "Peoples",
@@ -279,7 +288,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                 {
                     table.PrimaryKey("PK_Peoples", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "TrickplayInfos",
@@ -298,7 +308,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                 {
                     table.PrimaryKey("PK_TrickplayInfos", x => new { x.ItemId, x.Width });
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "Users",
@@ -349,7 +360,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "AncestorIds",
@@ -374,7 +386,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "AttachmentStreamInfos",
@@ -403,7 +416,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "BaseItemImageInfos",
@@ -429,7 +443,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "BaseItemMetadataFields",
@@ -448,7 +463,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "BaseItemProviders",
@@ -470,7 +486,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "BaseItemTrailerTypes",
@@ -489,7 +506,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "Chapters",
@@ -514,7 +532,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "KeyframeData",
@@ -522,7 +541,7 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                 {
                     ItemId = table.Column<Guid>(type: "binary(16)", nullable: false),
                     TotalDuration = table.Column<long>(type: "bigint", nullable: false),
-                    KeyframeTicks = table.Column<string>(type: "longtext", nullable: true)
+                    KeyframeTicks = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_0900_bin")
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
@@ -535,7 +554,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "LinkedChildren",
@@ -560,7 +580,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalTable: "BaseItems",
                         principalColumn: "Id");
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "MediaStreamInfos",
@@ -642,7 +663,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "ItemValuesMap",
@@ -667,7 +689,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "ItemValueId",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "PeopleBaseItemMap",
@@ -696,7 +719,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "AccessSchedules",
@@ -719,7 +743,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "Devices",
@@ -753,7 +778,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "DisplayPreferences",
@@ -788,7 +814,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "ImageInfos",
@@ -811,7 +838,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "ItemDisplayPreferences",
@@ -841,7 +869,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "Permissions",
@@ -864,7 +893,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "Preferences",
@@ -888,7 +918,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "UserData",
@@ -925,7 +956,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.CreateTable(
                 name: "HomeSection",
@@ -947,7 +979,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_0900_bin");
 
             migrationBuilder.InsertData(
                 table: "BaseItems",
@@ -1403,6 +1436,11 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.AlterDatabase(
+                oldCollation: "utf8mb4_0900_bin")
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .OldAnnotation("MySql:CharSet", "utf8mb4");
         }
     }
 }

@@ -17,9 +17,11 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .UseCollation("utf8mb4_0900_bin")
                 .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
+            MySqlModelBuilderExtensions.HasCharSet(modelBuilder, "utf8mb4", DelegationModes.ApplyToAll);
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
@@ -879,7 +881,8 @@ namespace Jellyfin.Database.Providers.MySql.Migrations
                         .HasColumnType("binary(16)");
 
                     b.PrimitiveCollection<string>("KeyframeTicks")
-                        .HasColumnType("longtext");
+                        .HasColumnType("longtext")
+                        .UseCollation("utf8mb4_0900_bin");
 
                     b.Property<long>("TotalDuration")
                         .HasColumnType("bigint");

@@ -164,3 +164,16 @@ provider contains hand-written parts (the `jf_uuid_smaller` function and the
 If the baseline is ever regenerated, restore the call
 `CreateHandWrittenObjects(migrationBuilder);` at the end of `Up` and
 `DropHandWrittenObjects(migrationBuilder);` at the start of `Down`.
+
+## The baseline migration of MySQL and MariaDB
+
+The baseline migration `20200101000000_InitialCreate` of the MySQL provider
+starts by making `utf8mb4_0900_bin` the default collation of the database.
+EF Core leaves the collation of the database out of a migration that it
+generates without a model snapshot, so if the baseline is ever regenerated,
+first replace `Migrations/JellyfinDbModelSnapshot.cs` by a snapshot whose
+`BuildModel` is empty, then run `dotnet ef migrations add InitialCreate` for
+the provider. Rename the generated files and the id in the `Migration`
+attribute of the designer file to `20200101000000_InitialCreate`. The first
+operation of `Up` must then be `AlterDatabase(collation: "utf8mb4_0900_bin")`,
+which `MySqlCollationModelTests` checks.

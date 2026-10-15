@@ -12,6 +12,8 @@ using Jellyfin.Database.Implementations.DbConfiguration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microting.EntityFrameworkCore.MySql.Infrastructure;
 using Microting.EntityFrameworkCore.MySql.Storage.Internal;
@@ -135,6 +137,7 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
                     .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
                     .UseParameterizedCollectionMode(ParameterTranslationMode.MultipleParameters))
             .ReplaceService<IMySqlRelationalConnection, ReadCommittedConnection>()
+            .ReplaceService<IHistoryRepository, BinaryCollationHistoryRepository>()
             .AddInterceptors(
                 string.IsNullOrWhiteSpace(configuredServer) ? SessionSettingsInterceptor.Instance : SessionSettingsInterceptor.ForConfiguredServer,
                 CollectionParameterInterceptor.Instance);
@@ -156,16 +159,24 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // The collation is also the default of the database and of every table, so that the first migration sets it on
+        // a database that was created with another one, and a database that the provider creates gets it. The server
+        // does not pass the default of a table on to a column that names its character set, as the provider's text
+        // columns do, so a column needs the collation in its own definition. Delegated to the columns, the provider
+        // writes it there for a column that it maps as a string and that has no collation of its own;
+        // TextCollationConvention gives it to every property whose type in the database is text, so the model has it
+        // whatever the mapping. Without the character set of the model, the provider would name no character set at
+        // all, and the migrations would not set the default of the database.
+        modelBuilder
+            .HasCharSet(ConnectionCharacterSet, DelegationModes.ApplyToAll)
+            .UseCollation(Collation, DelegationModes.ApplyToAll);
+
         AsciiCaseInsensitiveLike.Register(modelBuilder);
     }
 
     /// <inheritdoc/>
     public void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
-        configurationBuilder
-            .Properties<string>()
-            .UseCollation(Collation);
-
         // The converter of the shared configuration is replaced, a property has only one.
         configurationBuilder
             .Properties<DateTime>()
@@ -175,6 +186,9 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
         configurationBuilder.Conventions.Add(_ => new IndexPrefixLengthConvention());
         configurationBuilder.Conventions.Add(_ => new UnindexedTextConvention());
         configurationBuilder.Conventions.Add(_ => new IndexFilterConvention());
+
+        // Last, as the conventions above can change the type of a column.
+        configurationBuilder.Conventions.Add(services => new TextCollationConvention(services.GetRequiredService<IRelationalTypeMappingSource>()));
     }
 
     /// <inheritdoc/>
