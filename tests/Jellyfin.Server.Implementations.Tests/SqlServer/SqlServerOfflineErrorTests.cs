@@ -34,6 +34,9 @@ public sealed class SqlServerOfflineErrorTests
     }
 
     [Theory]
+    [InlineData(new[] { 2627, StatementTerminated }, true, true)]
+    [InlineData(new[] { 547, StatementTerminated }, false, true)]
+    [InlineData(new[] { 1946, StatementTerminated }, false, true)]
     [InlineData(new[] { StatementTerminated, 1946 }, false, true)]
     [InlineData(new[] { StatementTerminated, 547 }, false, true)]
     [InlineData(new[] { StatementTerminated, 2627 }, true, true)]

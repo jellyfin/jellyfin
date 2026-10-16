@@ -396,9 +396,9 @@ public sealed class SqlServerDatabaseProvider : IJellyfinDatabaseProvider
         return builder.ContainsKey("Command Timeout") || builder.ContainsKey("CommandTimeout");
     }
 
-    // The numbers of every error of the first SqlException in the chain. The server can send several errors for one
-    // statement, and the one that says why is not always the first: a refused row comes with "The statement has been
-    // terminated." (3621).
+    // The numbers of every error of the first SqlException in the chain. The server sends the cause of a refused statement
+    // with "The statement has been terminated." (3621) after it, and a batch of several statements can carry several
+    // errors, so the cause need not be the first error; every one is looked at.
     private static List<int> ErrorNumbers(Exception exception)
     {
         for (var current = exception; current is not null; current = current.InnerException)
