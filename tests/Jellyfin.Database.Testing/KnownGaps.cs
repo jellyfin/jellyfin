@@ -12,6 +12,11 @@ namespace Jellyfin.Database.Testing;
 /// </summary>
 public static class KnownGaps
 {
+    /// <summary>
+    /// The message a test throws when the server orders text by UTF-16 code unit.
+    /// </summary>
+    public const string Utf16OrderMessage = "Ordered by UTF-16 code unit: z, U+1F600, U+E000, U+FFFD";
+
     private const string ActualPrefix = "Actual:";
 
     private const string SortNameGreaterOutcome = "\"Émile, Öland, émile, ölfass\"";
@@ -39,6 +44,22 @@ public static class KnownGaps
         "SQLSERVER-PATH-OVER-4000",
         "SQL Server refuses an item whose path is longer than the 4000 characters of its column",
         ex => HasSqlServerError(ex, 2628) && ex.ToString().Contains("BaseItems", StringComparison.Ordinal) && ex.ToString().Contains("'Path'", StringComparison.Ordinal));
+
+    // SQL Server compares strings with ANSI padding under every collation, so values that differ only by trailing spaces
+    // are equal and collide in the unique index of item values.
+    public static readonly KnownGapDefinition TrailingSpacesOnSqlServer = new(
+        TestDbProvider.SqlServer,
+        "SQLSERVER-TRAILING-SPACE",
+        "SQL Server compares strings that differ only by trailing spaces as equal",
+        ex => HasSqlServerError(ex, 2601) && ex.ToString().Contains("IX_ItemValues_Type_Value", StringComparison.Ordinal));
+
+    // SQL Server orders nvarchar by UTF-16 code unit under its binary collation, so a character outside the Basic
+    // Multilingual Plane sorts before U+E000 to U+FFFF. The test throws this message for exactly that order.
+    public static readonly KnownGapDefinition Utf16OrderOnSqlServer = new(
+        TestDbProvider.SqlServer,
+        "SQLSERVER-UTF16-ORDER",
+        "SQL Server orders text by UTF-16 code unit, not by code point",
+        ex => ex is InvalidOperationException && string.Equals(ex.Message, Utf16OrderMessage, StringComparison.Ordinal));
 
     public static readonly KnownGapDefinition ContainsOverManyValues = new(
         TestDbProvider.Sqlite,
