@@ -110,6 +110,35 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     }
 
     /// <inheritdoc/>
+    public async Task RefreshStatistics(CancellationToken cancellationToken)
+    {
+        if (DbContextFactory is null)
+        {
+            return;
+        }
+
+        var context = await DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            await context.Database.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                if (!await HasLibraryItemsAsync(context, cancellationToken).ConfigureAwait(false))
+                {
+                    return;
+                }
+
+                _logger.LogInformation("Analyzing jellyfin.db");
+                await AnalyzeAsync(context, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                await context.Database.CloseConnectionAsync().ConfigureAwait(false);
+            }
+        }
+    }
+
+    /// <inheritdoc/>
     public void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.SetDefaultDateTimeKind(DateTimeKind.Utc);
@@ -161,14 +190,11 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             try
             {
                 long? tempStore;
-                long? analysisLimit;
                 var pragmaCommand = context.Database.GetDbConnection().CreateCommand();
                 await using (pragmaCommand.ConfigureAwait(false))
                 {
                     pragmaCommand.CommandText = "PRAGMA temp_store";
                     tempStore = await ReadPragmaValueAsync(pragmaCommand, cancellationToken).ConfigureAwait(false);
-                    pragmaCommand.CommandText = "PRAGMA analysis_limit";
-                    analysisLimit = await ReadPragmaValueAsync(pragmaCommand, cancellationToken).ConfigureAwait(false);
                 }
 
                 await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
@@ -192,19 +218,15 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
                     }
                 }
 
-                await context.Database.ExecuteSqlRawAsync("PRAGMA analysis_limit=0", cancellationToken).ConfigureAwait(false);
-                try
+                // Statistics taken while the library is empty make the planner treat every table as one row and
+                // pick full scans once it fills up; no statistics at all plan far better until there is data.
+                if (await HasLibraryItemsAsync(context, cancellationToken).ConfigureAwait(false))
                 {
-                    await context.Database.ExecuteSqlRawAsync("ANALYZE", cancellationToken).ConfigureAwait(false);
+                    await AnalyzeAsync(context, cancellationToken).ConfigureAwait(false);
                 }
-                finally
+                else
                 {
-                    if (analysisLimit is not null)
-                    {
-                        await context.Database.ExecuteSqlRawAsync(
-                            FormattableString.Invariant($"PRAGMA analysis_limit={analysisLimit.Value}"),
-                            CancellationToken.None).ConfigureAwait(false);
-                    }
+                    _logger.LogInformation("Not analyzing jellyfin.db, the library holds no items yet");
                 }
 
                 await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
@@ -213,6 +235,39 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             finally
             {
                 await context.Database.CloseConnectionAsync().ConfigureAwait(false);
+            }
+        }
+    }
+
+    private static Task<bool> HasLibraryItemsAsync(JellyfinDbContext context, CancellationToken cancellationToken)
+    {
+        // Folders and the seeded placeholder exist before any library has been scanned.
+        return context.BaseItems.AnyAsync(e => !e.IsFolder && e.Type != "PLACEHOLDER", cancellationToken);
+    }
+
+    private static async Task AnalyzeAsync(JellyfinDbContext context, CancellationToken cancellationToken)
+    {
+        long? analysisLimit;
+        var pragmaCommand = context.Database.GetDbConnection().CreateCommand();
+        await using (pragmaCommand.ConfigureAwait(false))
+        {
+            pragmaCommand.CommandText = "PRAGMA analysis_limit";
+            analysisLimit = await ReadPragmaValueAsync(pragmaCommand, cancellationToken).ConfigureAwait(false);
+        }
+
+        await context.Database.ExecuteSqlRawAsync("PRAGMA analysis_limit=0", cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync("ANALYZE", cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            // The connection goes back to the pool, so hand it over the way it was handed to us.
+            if (analysisLimit is not null)
+            {
+                await context.Database.ExecuteSqlRawAsync(
+                    FormattableString.Invariant($"PRAGMA analysis_limit={analysisLimit.Value}"),
+                    CancellationToken.None).ConfigureAwait(false);
             }
         }
     }

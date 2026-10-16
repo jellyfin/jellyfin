@@ -261,6 +261,66 @@ public class EncodingHelperTests
         Assert.Contains("-ar 48000", args, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void GetProgressiveAudioFullCommandLine_StereoDownmix_AppliesDownMixAlgorithm()
+    {
+        // Issue #18194: -ac 2 alone drops the LFE channel, the configured downmix filter must be applied.
+        var state = BuildAudioState("aac", 48000);
+        state.AudioStream.Channels = 6;
+        state.AudioStream.ChannelLayout = "5.1";
+        state.OutputAudioChannels = 2;
+        var options = new EncodingOptions { DownMixStereoAlgorithm = DownMixStereoAlgorithms.Dave750, DownMixAudioBoost = 1 };
+        var args = CreateHelper().GetProgressiveAudioFullCommandLine(state, options, "/tmp/out");
+
+        Assert.Contains(
+            "-af \"" + DownMixAlgorithmsHelper.AlgorithmFilterStrings[(DownMixStereoAlgorithms.Dave750, "5.1")] + "\"",
+            args,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void GetProgressiveAudioFullCommandLine_NoDownmix_EmitsNoAudioFilter()
+    {
+        var state = BuildAudioState("aac", 48000);
+        state.AudioStream.Channels = 2;
+        state.OutputAudioChannels = 2;
+        var options = new EncodingOptions { DownMixStereoAlgorithm = DownMixStereoAlgorithms.Dave750 };
+        var args = CreateHelper().GetProgressiveAudioFullCommandLine(state, options, "/tmp/out");
+
+        Assert.DoesNotContain("-af", args, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(6)]
+    public void GetProgressiveVideoAudioArguments_NonStereoOutput_KeepsChannelCount(int outputChannels)
+    {
+        // The downmix filter only applies to stereo output, so -ac must not be dropped otherwise.
+        var state = BuildAudioState("aac", 48000);
+        state.AudioStream.Channels = 6;
+        state.AudioStream.ChannelLayout = "5.1";
+        state.OutputAudioChannels = outputChannels;
+        var options = new EncodingOptions { DownMixStereoAlgorithm = DownMixStereoAlgorithms.Dave750 };
+        var args = CreateHelper().GetProgressiveVideoAudioArguments(state, options);
+
+        Assert.Contains("-ac " + outputChannels, args, StringComparison.Ordinal);
+        Assert.DoesNotContain("pan=", args, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void GetProgressiveVideoAudioArguments_StereoDownmix_UsesFilterInsteadOfChannelCount()
+    {
+        var state = BuildAudioState("aac", 48000);
+        state.AudioStream.Channels = 6;
+        state.AudioStream.ChannelLayout = "5.1";
+        state.OutputAudioChannels = 2;
+        var options = new EncodingOptions { DownMixStereoAlgorithm = DownMixStereoAlgorithms.Dave750 };
+        var args = CreateHelper().GetProgressiveVideoAudioArguments(state, options);
+
+        Assert.DoesNotContain("-ac ", args, StringComparison.Ordinal);
+        Assert.Contains("pan=stereo", args, StringComparison.Ordinal);
+    }
+
     private static EncodingJobInfo BuildAudioState(string audioCodec, int requestedSampleRate, string? outputContainer = null)
     {
         var audio = new MediaStream { Index = 0, Type = MediaStreamType.Audio, Codec = "flac", SampleRate = 96000 };

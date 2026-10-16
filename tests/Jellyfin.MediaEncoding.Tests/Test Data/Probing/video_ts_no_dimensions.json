@@ -1,0 +1,81 @@
+{
+    "streams": [
+        {
+            "index": 0,
+            "codec_name": "mpeg2video",
+            "codec_long_name": "MPEG-2 video",
+            "profile": "Main",
+            "codec_type": "video",
+            "codec_tag_string": "[2][0][0][0]",
+            "codec_tag": "0x0002",
+            "pix_fmt": "yuv420p",
+            "level": 8,
+            "id": "0x259",
+            "r_frame_rate": "25/1",
+            "avg_frame_rate": "0/0",
+            "time_base": "1/90000",
+            "start_pts": 6181452600,
+            "start_time": "68682.806667",
+            "disposition": {
+                "default": 0,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0
+            }
+        },
+        {
+            "index": 1,
+            "codec_name": "mp2",
+            "codec_long_name": "MP2 (MPEG audio layer 2)",
+            "codec_type": "audio",
+            "codec_tag_string": "[3][0][0][0]",
+            "codec_tag": "0x0003",
+            "sample_fmt": "fltp",
+            "sample_rate": "48000",
+            "channels": 2,
+            "channel_layout": "stereo",
+            "bits_per_sample": 0,
+            "id": "0x25a",
+            "r_frame_rate": "0/0",
+            "avg_frame_rate": "0/0",
+            "time_base": "1/90000",
+            "start_pts": 6181460000,
+            "start_time": "68682.888889",
+            "bit_rate": "256000",
+            "disposition": {
+                "default": 0,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0
+            },
+            "tags": {
+                "language": "eng"
+            }
+        }
+    ],
+    "format": {
+        "filename": "http://192.168.1.19:5004/auto/v4",
+        "nb_streams": 2,
+        "nb_programs": 1,
+        "format_name": "mpegts",
+        "format_long_name": "MPEG-TS (MPEG-2 Transport Stream)",
+        "start_time": "68682.806667",
+        "probe_score": 50
+    }
+}
