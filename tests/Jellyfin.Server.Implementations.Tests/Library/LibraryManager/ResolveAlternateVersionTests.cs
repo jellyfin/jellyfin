@@ -131,6 +131,9 @@ public sealed class ResolveAlternateVersionTests : IDisposable
         _persistenceServiceMock.Verify(
             p => p.SaveItems(It.IsAny<IReadOnlyList<BaseItem>>(), It.IsAny<CancellationToken>()),
             Times.Never);
+        _persistenceServiceMock.Verify(
+            p => p.SaveItemsSkippingFailures(It.IsAny<IReadOnlyList<BaseItem>>(), It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
     [Fact]

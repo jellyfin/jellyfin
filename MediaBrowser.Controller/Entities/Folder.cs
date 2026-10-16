@@ -607,7 +607,22 @@ namespace MediaBrowser.Controller.Entities
 
                 if (newItems.Count > 0)
                 {
-                    LibraryManager.CreateItems(newItems, this, cancellationToken);
+                    var notSaved = LibraryManager.CreateItemsSkippingFailures(newItems, this, cancellationToken);
+                    if (notSaved is { Count: > 0 })
+                    {
+                        // An item the database refused does not exist, so nothing below may link to it, hand its
+                        // alternate versions to it, or descend into it. A primary it was to replace is kept as it is,
+                        // and is replaced on a later scan that saves the new one.
+                        validChildren.RemoveAll(child => notSaved.Contains(child.Id));
+                        accessibleChildren.RemoveAll(child => notSaved.Contains(child.Id));
+                        foreach (var (oldPrimary, _) in replacedPrimaries.Where(pair => notSaved.Contains(pair.NewPrimary.Id)))
+                        {
+                            actuallyRemoved.Remove(oldPrimary);
+                            oldPrimary.SetParent(this);
+                        }
+
+                        replacedPrimaries.RemoveAll(pair => notSaved.Contains(pair.NewPrimary.Id));
+                    }
                 }
 
                 // Process deferred replaced-primary deletions now that new primaries exist in DB/cache.

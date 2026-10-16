@@ -2445,6 +2445,12 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public void CreateItems(IReadOnlyList<BaseItem> items, BaseItem? parent, CancellationToken cancellationToken)
         {
+            CreateItemsSkippingFailures(items, parent, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyCollection<Guid> CreateItemsSkippingFailures(IReadOnlyList<BaseItem> items, BaseItem? parent, CancellationToken cancellationToken)
+        {
             // Resolve and add any local alternate version items that don't exist yet
             // This ensures they exist in the database when LinkedChildren are processed
             var allItems = new List<BaseItem>(items);
@@ -2488,11 +2494,16 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _persistenceService.SaveItems(allItems, cancellationToken);
+            // An item the database refused is left out, so that it does not cost the rest of the folder; it is neither
+            // cached nor announced, as it does not exist.
+            var notSaved = _persistenceService.SaveItemsSkippingFailures(allItems, cancellationToken);
 
             foreach (var item in allItems)
             {
-                RegisterItem(item);
+                if (!notSaved.Contains(item.Id))
+                {
+                    RegisterItem(item);
+                }
             }
 
             if (parent is Folder folder)
@@ -2505,6 +2516,11 @@ namespace Emby.Server.Implementations.Library
             {
                 foreach (var item in items)
                 {
+                    if (notSaved.Contains(item.Id))
+                    {
+                        continue;
+                    }
+
                     // With the live tv guide this just creates too much noise
                     if (item.SourceType != SourceType.Library)
                     {
@@ -2527,6 +2543,8 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
             }
+
+            return notSaved;
         }
 
         private bool ImageNeedsRefresh(ItemImageInfo image)
@@ -2713,11 +2731,13 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _persistenceService.SaveItems(allItems, cancellationToken);
+            // An item the database refused keeps its row as it was, while the instance keeps the changes, as it does when
+            // the whole save fails; it stays cached, so the next save of it tries the same changes again.
+            var notSaved = _persistenceService.SaveItemsSkippingFailures(allItems, cancellationToken);
 
             foreach (var item in allItems)
             {
-                if (!items.Contains(item))
+                if (!items.Contains(item) && !notSaved.Contains(item.Id))
                 {
                     RegisterItem(item);
                 }
@@ -2733,6 +2753,11 @@ namespace Emby.Server.Implementations.Library
             {
                 foreach (var item in items)
                 {
+                    if (notSaved.Contains(item.Id))
+                    {
+                        continue;
+                    }
+
                     // With the live tv guide this just creates too much noise
                     if (item.SourceType != SourceType.Library)
                     {

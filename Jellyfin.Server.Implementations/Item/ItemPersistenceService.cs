@@ -2,8 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Net.Sockets;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
@@ -29,7 +33,14 @@ namespace Jellyfin.Server.Implementations.Item;
 /// </summary>
 public class ItemPersistenceService : IItemPersistenceService
 {
+    /// <summary>
+    /// The number of items that, saved one at a time after their batch failed, must each fail in the same way before
+    /// the error is taken to concern the whole batch rather than single items.
+    /// </summary>
+    internal const int IdenticalFailuresBeforeGivingUp = 3;
+
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
+    private readonly IJellyfinDatabaseProvider _databaseProvider;
     private readonly IServerApplicationHost _appHost;
     private readonly ILogger<ItemPersistenceService> _logger;
     private readonly WriteConflictRetry _writeConflictRetry;
@@ -38,7 +49,7 @@ public class ItemPersistenceService : IItemPersistenceService
     /// Initializes a new instance of the <see cref="ItemPersistenceService"/> class.
     /// </summary>
     /// <param name="dbProvider">The database context factory.</param>
-    /// <param name="databaseProvider">The database provider, which classifies write conflicts.</param>
+    /// <param name="databaseProvider">The database provider, which classifies write conflicts and tells the data errors of a failed save apart.</param>
     /// <param name="appHost">The application host.</param>
     /// <param name="logger">The logger.</param>
     public ItemPersistenceService(
@@ -48,6 +59,7 @@ public class ItemPersistenceService : IItemPersistenceService
         ILogger<ItemPersistenceService> logger)
     {
         _dbProvider = dbProvider;
+        _databaseProvider = databaseProvider;
         _appHost = appHost;
         _logger = logger;
         _writeConflictRetry = new WriteConflictRetry(databaseProvider, logger);
@@ -189,7 +201,13 @@ public class ItemPersistenceService : IItemPersistenceService
     /// <inheritdoc />
     public void SaveItems(IReadOnlyList<BaseItemDto> items, CancellationToken cancellationToken)
     {
-        UpdateOrInsertItems(items, cancellationToken);
+        UpdateOrInsertItems(items, false, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyCollection<Guid> SaveItemsSkippingFailures(IReadOnlyList<BaseItemDto> items, CancellationToken cancellationToken)
+    {
+        return UpdateOrInsertItems(items, true, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -339,7 +357,7 @@ public class ItemPersistenceService : IItemPersistenceService
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    private void UpdateOrInsertItems(IReadOnlyList<BaseItemDto> items, CancellationToken cancellationToken)
+    private IReadOnlyCollection<Guid> UpdateOrInsertItems(IReadOnlyList<BaseItemDto> items, bool skipFailures, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(items);
         cancellationToken.ThrowIfCancellationRequested();
@@ -362,7 +380,16 @@ public class ItemPersistenceService : IItemPersistenceService
             tuples.Add((item, ancestorIds, topParent, userdataKey, inheritedTags));
         }
 
-        _writeConflictRetry.Execute(() => SaveItemTuples(tuples), cancellationToken);
+        try
+        {
+            _writeConflictRetry.Execute(() => SaveItemTuples(tuples), cancellationToken);
+        }
+        catch (DbUpdateException ex) when (skipFailures && tuples.Count > 1 && IsDataError(ex))
+        {
+            return SaveItemTuplesSkippingFailures(tuples, ex, cancellationToken);
+        }
+
+        return [];
     }
 
     private void SaveItemTuples(List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey, List<string> InheritedTags)> tuples)
@@ -824,6 +851,281 @@ public class ItemPersistenceService : IItemPersistenceService
 
         context.SaveChanges();
         transaction.Commit();
+    }
+
+    /// <summary>
+    /// Saves the items of a batch that failed on the data of its rows again, each with what depends on it in its own
+    /// transaction, so that the rows of one item the engine refuses cost that item and not the whole batch.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The items are saved in units: an item together with the items of the batch that refer to it by
+    /// <see cref="BaseItemDto.ParentId"/> or <see cref="BaseItemDto.OwnerId"/>, such as a video and the alternate
+    /// versions that follow it. A unit is saved as the batch was, so that the links between its items are resolved
+    /// against rows written in the same transaction. If a unit of several items fails, its items are saved one at a
+    /// time, and an item whose parent or owner in the batch was not saved is skipped. An item saved that way before
+    /// the items that belong to it cannot link to them yet, so once they are saved it is saved again, which links it
+    /// to the ones that were. Units and items keep the order of the batch; the items of a unit are not sorted by
+    /// what they refer to, as the callers already put an item before the items that belong to it.
+    /// </para>
+    /// <para>
+    /// When the first <see cref="IdenticalFailuresBeforeGivingUp"/> items saved fail in the same way, the error is
+    /// taken to concern the whole batch rather than single items, and the exception of the batch is thrown again. It
+    /// is thrown again as well when no item could be saved at all. A failure that is not a data error, or a
+    /// cancellation, ends the attempt at once with its own exception. Either way, the units saved before it stay
+    /// saved, while the caller, which only learns of the exception, neither caches nor announces them; a later scan
+    /// finds them in the database.
+    /// </para>
+    /// </remarks>
+    /// <param name="tuples">The items of the batch, in its order.</param>
+    /// <param name="batchException">The exception the batch failed with.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The ids of the items that were not saved.</returns>
+    private HashSet<Guid> SaveItemTuplesSkippingFailures(
+        List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey, List<string> InheritedTags)> tuples,
+        DbUpdateException batchException,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogWarning(
+            "Saving {Count} items together failed with {ExceptionType}, saving them one at a time",
+            tuples.Count,
+            GetInnermostDbException(batchException)?.GetType().FullName);
+
+        var notSaved = new HashSet<Guid>();
+        var savedCount = 0;
+        var countedSaves = 0;
+        string? firstFailure = null;
+        var failuresAlike = true;
+
+        foreach (var unitIndexes in GetSaveUnits(tuples.Select(t => t.Item).ToList()))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var unit = unitIndexes.Select(i => tuples[i]).ToList();
+
+            // A unit that is the whole batch has already failed as such.
+            if (unit.Count > 1 && unit.Count < tuples.Count && TrySave(unit, out _))
+            {
+                savedCount += unit.Count;
+                CountSave(null);
+                continue;
+            }
+
+            var savedInUnit = new List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey, List<string> InheritedTags)>();
+            foreach (var tuple in unit)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var item = tuple.Item;
+                var dependency = GetBatchDependencies(item).FirstOrDefault(notSaved.Contains);
+                if (!dependency.IsEmpty())
+                {
+                    notSaved.Add(item.Id);
+                    _logger.LogError(
+                        "Item {ItemId} ({ItemPath}) is not saved, because item {DependencyId} of the same batch, which it belongs to, could not be saved",
+                        item.Id,
+                        item.Path,
+                        dependency);
+                    continue;
+                }
+
+                if (TrySave([tuple], out var failure))
+                {
+                    savedCount++;
+                    savedInUnit.Add(tuple);
+                    CountSave(null);
+                    continue;
+                }
+
+                notSaved.Add(item.Id);
+                _logger.LogError(
+                    failure,
+                    "Item {ItemId} ({ItemPath}) could not be saved, and the other items of its batch are saved without it",
+                    item.Id,
+                    item.Path);
+                CountSave(failure);
+            }
+
+            // A video saved before its alternate versions could not link to them, so it is saved again now that the
+            // ones that could be saved exist.
+            foreach (var tuple in savedInUnit.Where(t => savedInUnit.Any(other => GetBatchDependencies(other.Item).Contains(t.Item.Id))))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (!TrySave([tuple], out var failure))
+                {
+                    _logger.LogWarning(
+                        failure,
+                        "Item {ItemId} ({ItemPath}) is saved, but saving it again to link it to the items of its batch that belong to it failed",
+                        tuple.Item.Id,
+                        tuple.Item.Path);
+                }
+            }
+        }
+
+        if (savedCount == 0)
+        {
+            _logger.LogError("None of the {Count} items of the batch could be saved", tuples.Count);
+            ExceptionDispatchInfo.Throw(batchException);
+        }
+
+        return notSaved;
+
+        bool TrySave(List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey, List<string> InheritedTags)> unit, out DbUpdateException? failure)
+        {
+            try
+            {
+                _writeConflictRetry.Execute(() => SaveItemTuples(unit), cancellationToken);
+                failure = null;
+                return true;
+            }
+            catch (DbUpdateException ex) when (IsDataError(ex))
+            {
+                failure = ex;
+                return false;
+            }
+        }
+
+        void CountSave(DbUpdateException? failure)
+        {
+            if (++countedSaves > IdenticalFailuresBeforeGivingUp)
+            {
+                return;
+            }
+
+            if (failure is null)
+            {
+                failuresAlike = false;
+                return;
+            }
+
+            // The failures are compared by the type of the exception and its SQLSTATE, not by the error codes of a
+            // provider. A client that reports no SQLSTATE leaves the type alone, so there any failures of the first
+            // items count as alike, which errs towards throwing the exception of the batch, as a failed batch did before.
+            var inner = GetInnermostDbException(failure);
+            var kind = inner?.GetType().FullName + "/" + inner?.SqlState;
+            firstFailure ??= kind;
+            failuresAlike &= string.Equals(kind, firstFailure, StringComparison.Ordinal);
+            if (failuresAlike && countedSaves == IdenticalFailuresBeforeGivingUp)
+            {
+                _logger.LogError(
+                    "The first {Count} items of the batch failed alike, so the error is taken to concern the whole batch",
+                    countedSaves);
+                ExceptionDispatchInfo.Throw(batchException);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Determines whether a failed save was refused for the data of its rows, as opposed to failing for the
+    /// connection, the storage, a time-out or a cancellation, which no item can be saved through either.
+    /// </summary>
+    /// <param name="exception">The exception the save failed with.</param>
+    /// <returns><c>true</c> if the engine refused the data of the rows; otherwise <c>false</c>.</returns>
+    private bool IsDataError(DbUpdateException exception)
+    {
+        for (Exception? current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is OperationCanceledException or TimeoutException or IOException or SocketException)
+            {
+                return false;
+            }
+        }
+
+        // A write conflict the retry policy gave up on stays the failure of the batch, as before: it says nothing about
+        // the data of a single item, even where the provider also counts it a data error.
+        return GetInnermostDbException(exception) is { IsTransient: false }
+            && !_databaseProvider.IsRetryableWriteConflict(exception)
+            && _databaseProvider.IsDataError(exception);
+    }
+
+    private static DbException? GetInnermostDbException(Exception exception)
+    {
+        DbException? innermost = null;
+        for (Exception? current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is DbException dbException)
+            {
+                innermost = dbException;
+            }
+        }
+
+        return innermost;
+    }
+
+    /// <summary>
+    /// Splits a batch into the units that are saved together when the batch fails: each item with the items of the
+    /// batch that it refers to, or that refer to it, by <see cref="BaseItemDto.ParentId"/> or
+    /// <see cref="BaseItemDto.OwnerId"/>, in the order of the batch.
+    /// </summary>
+    /// <param name="items">The items of the batch, which have distinct ids.</param>
+    /// <returns>
+    /// The units as the indexes of their items in the batch, ordered by their first item, each in the order of the batch.
+    /// </returns>
+    internal static List<List<int>> GetSaveUnits(IReadOnlyList<BaseItemDto> items)
+    {
+        var indexById = new Dictionary<Guid, int>();
+        for (var i = 0; i < items.Count; i++)
+        {
+            indexById[items[i].Id] = i;
+        }
+
+        // Each item points at the first item of its unit.
+        var first = Enumerable.Range(0, items.Count).ToArray();
+        int Find(int index)
+        {
+            while (first[index] != index)
+            {
+                first[index] = first[first[index]];
+                index = first[index];
+            }
+
+            return index;
+        }
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            foreach (var dependency in GetBatchDependencies(items[i]))
+            {
+                if (indexById.TryGetValue(dependency, out var j))
+                {
+                    var (a, b) = (Find(i), Find(j));
+                    first[Math.Max(a, b)] = Math.Min(a, b);
+                }
+            }
+        }
+
+        var units = new SortedDictionary<int, List<int>>();
+        for (var i = 0; i < items.Count; i++)
+        {
+            var key = Find(i);
+            if (!units.TryGetValue(key, out var unit))
+            {
+                units[key] = unit = [];
+            }
+
+            unit.Add(i);
+        }
+
+        return [.. units.Values];
+    }
+
+    /// <summary>
+    /// Gets the items an item refers to by a foreign key, which have to be saved before it.
+    /// </summary>
+    /// <param name="item">The item.</param>
+    /// <returns>Its parent and its owner, where it has them.</returns>
+    private static IEnumerable<Guid> GetBatchDependencies(BaseItemDto item)
+    {
+        if (!item.ParentId.IsEmpty())
+        {
+            yield return item.ParentId;
+        }
+
+        if (!item.OwnerId.IsEmpty())
+        {
+            yield return item.OwnerId;
+        }
     }
 
     /// <summary>

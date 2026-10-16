@@ -25,6 +25,23 @@ public interface IItemPersistenceService
     void SaveItems(IReadOnlyList<BaseItem> items, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Saves items to the database, leaving out the ones the database refuses. Unlike
+    /// <see cref="SaveItems(IReadOnlyList{BaseItem}, CancellationToken)"/>, which saves all of the items or none, a batch
+    /// that fails because the database refused the data of some of its items is saved again item by item, and only
+    /// those items, and the items that belong to them, are left out. Each item is saved whole or not at all. Errors
+    /// that do not come from the data of single items, such as a lost connection, are thrown as they are; when one
+    /// ends the save part way, the items saved before it stay saved.
+    /// </summary>
+    /// <param name="items">The items to save.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The ids of the items that were not saved, which is empty when all of them were.</returns>
+    IReadOnlyCollection<Guid> SaveItemsSkippingFailures(IReadOnlyList<BaseItem> items, CancellationToken cancellationToken)
+    {
+        SaveItems(items, cancellationToken);
+        return [];
+    }
+
+    /// <summary>
     /// Saves image info for an item.
     /// </summary>
     /// <param name="item">The item.</param>

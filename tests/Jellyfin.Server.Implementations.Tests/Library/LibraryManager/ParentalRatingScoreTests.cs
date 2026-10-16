@@ -37,8 +37,12 @@ public sealed class ParentalRatingScoreTests : IDisposable
         fixture.Freeze<Mock<IServerConfigurationManager>>()
             .Setup(c => c.ApplicationPaths.ProgramDataPath).Returns("/data");
         fixture.Freeze<Mock<IItemPersistenceService>>()
-            .Setup(p => p.SaveItems(It.IsAny<IReadOnlyList<BaseItem>>(), It.IsAny<CancellationToken>()))
-            .Callback<IReadOnlyList<BaseItem>, CancellationToken>((items, _) => _saved.AddRange(items));
+            .Setup(p => p.SaveItemsSkippingFailures(It.IsAny<IReadOnlyList<BaseItem>>(), It.IsAny<CancellationToken>()))
+            .Returns<IReadOnlyList<BaseItem>, CancellationToken>((items, _) =>
+            {
+                _saved.AddRange(items);
+                return [];
+            });
 
         _libraryManager = fixture.Build<Emby.Server.Implementations.Library.LibraryManager>()
             .Do(s => s.AddParts(

@@ -318,6 +318,20 @@ namespace MediaBrowser.Controller.Library
         void CreateItems(IReadOnlyList<BaseItem> items, BaseItem? parent, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Creates the items, leaving out the ones the database refuses, as <see cref="CreateItems"/> does, and tells
+        /// which items were left out. Those items do not exist: they are neither cached nor announced.
+        /// </summary>
+        /// <param name="items">Items to create.</param>
+        /// <param name="parent">Parent of new items.</param>
+        /// <param name="cancellationToken">CancellationToken to use for operation.</param>
+        /// <returns>The ids of the items that were not created, which is empty when all of them were.</returns>
+        IReadOnlyCollection<Guid> CreateItemsSkippingFailures(IReadOnlyList<BaseItem> items, BaseItem? parent, CancellationToken cancellationToken)
+        {
+            CreateItems(items, parent, cancellationToken);
+            return [];
+        }
+
+        /// <summary>
         /// Updates the item.
         /// </summary>
         /// <param name="items">Items to update.</param>
