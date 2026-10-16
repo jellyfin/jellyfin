@@ -9,7 +9,8 @@ public static class ServerVersionFloors
     {
         [TestDbProvider.Postgres] = new Version(16, 0),
         [TestDbProvider.MySql] = new Version(8, 4),
-        [TestDbProvider.MariaDb] = new Version(11, 4, 7)
+        [TestDbProvider.MariaDb] = new Version(11, 4, 7),
+        [TestDbProvider.SqlServer] = new Version(16, 0)
     };
 
     public static Version For(TestDbProvider provider) => _floors.GetValueOrDefault(provider, new Version(0, 0));

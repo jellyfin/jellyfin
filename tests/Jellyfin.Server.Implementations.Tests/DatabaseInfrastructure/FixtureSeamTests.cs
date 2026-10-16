@@ -57,7 +57,7 @@ public sealed class FixtureSeamTests : IDisposable
         Assert.Equal(pooled, next.ConnectionString);
     }
 
-    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     public void Fixture_FreshOnTheSelectedBackend_UsesADatabaseOutsideThePoolThatIsDroppedWithTheFixture()
     {
         var backend = TestDatabaseEnvironment.Backend;

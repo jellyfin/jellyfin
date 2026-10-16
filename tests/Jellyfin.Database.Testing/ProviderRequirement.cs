@@ -16,7 +16,20 @@ internal static class ProviderRequirement
     public static string? MigrationSkipReason(string migrationId)
     {
         var provider = TestDatabaseEnvironment.Provider;
-        return MigrationSkipReason(provider, migrationId, MigrationIds(provider), CoversThroughSqliteMigration(provider));
+        return SchemaMigrationsSkipReason() ?? MigrationSkipReason(provider, migrationId, MigrationIds(provider), CoversThroughSqliteMigration(provider));
+    }
+
+    /// <summary>
+    /// Decides whether a test that needs the migrations of the provider is skipped: only on an engine whose provider has
+    /// none yet, as its traits say. The reason says what lifts it.
+    /// </summary>
+    /// <returns>The reason to skip the test, or <c>null</c> to run it.</returns>
+    public static string? SchemaMigrationsSkipReason()
+    {
+        var traits = EngineTraits.Selected;
+        return traits.HasSchemaMigrations
+            ? null
+            : $"The provider of {traits.Provider} has no migrations until it is registered with its baseline, so this test of the migrations cannot run yet.";
     }
 
     /// <summary>

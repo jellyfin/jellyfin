@@ -67,6 +67,18 @@ internal static class PoolChecks
         return context.Database.SqlQueryRaw<string>(PoolStatementsOf(provider).ListTables).ToList();
     }
 
+    /// <summary>
+    /// Counts the foreign keys of a database that are switched off or not trusted, which a reset must leave none of.
+    /// </summary>
+    /// <param name="database">The database.</param>
+    /// <param name="provider">The engine.</param>
+    /// <returns>The number of such keys.</returns>
+    public static long CountDistrustedForeignKeys(TestDatabase database, TestDbProvider provider)
+    {
+        using var context = CreateContext(database);
+        return context.Database.SqlQueryRaw<long>(PoolStatementsOf(provider).CountDistrustedForeignKeys).AsEnumerable().Single();
+    }
+
     public static Dictionary<string, long> CountRows(TestDatabase database, TestDbProvider provider)
     {
         using var context = CreateContext(database);
@@ -75,7 +87,7 @@ internal static class PoolChecks
         foreach (var table in GetTableNames(context, provider))
         {
 #pragma warning disable EF1002, CA2100 // The table names come from the database.
-            counts[table] = context.Database.SqlQueryRaw<long>($"SELECT COUNT(*) AS Value FROM {helper.DelimitIdentifier(table)}").Single();
+            counts[table] = context.Database.SqlQueryRaw<long>(string.Format(CultureInfo.InvariantCulture, PoolStatementsOf(provider).CountRows, helper.DelimitIdentifier(table))).Single();
 #pragma warning restore EF1002, CA2100
         }
 
@@ -137,8 +149,10 @@ internal static class PoolChecks
         Assert.Equal(source == TestSchemaSource.Migrations, expected.ContainsKey(MigrationHistoryTable));
         Assert.All(expected.Where(table => table.Key == MigrationHistoryTable), table => Assert.True(table.Value > 0));
 
+        string dirtyDatabase;
         using (var database = backend.Create(source, []))
         {
+            dirtyDatabase = DatabaseOf(database);
             using var context = CreateContext(database);
             ModelRows.Fill(context, backend.Provider, 3);
 
@@ -148,18 +162,24 @@ internal static class PoolChecks
 
         using var reused = backend.Create(source, []);
 
+        // The reset ran on the database that was filled, rather than the pool handing out a new one.
+        Assert.Equal(dirtyDatabase, DatabaseOf(reused));
         Assert.Equal(expected, CountRows(reused, backend.Provider));
+        Assert.Equal(0, CountDistrustedForeignKeys(reused, backend.Provider));
     }
 
     public static void AssertIdentityRestartsAtOne(ITestDatabaseBackend backend, TestSchemaSource source)
     {
+        string dirtyDatabase;
         using (var database = backend.Create(source, []))
         {
+            dirtyDatabase = DatabaseOf(database);
             using var context = CreateContext(database);
             ModelRows.Fill(context, backend.Provider, 3);
         }
 
         using var reused = backend.Create(source, []);
+        Assert.Equal(dirtyDatabase, DatabaseOf(reused));
         using var reusedContext = CreateContext(reused);
         var withIdentity = ModelRows.TablesWithIdentity(reusedContext);
         Assert.NotEmpty(withIdentity);

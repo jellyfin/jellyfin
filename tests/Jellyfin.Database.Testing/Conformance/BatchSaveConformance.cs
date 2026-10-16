@@ -24,7 +24,9 @@ namespace Jellyfin.Database.Testing.Conformance;
 /// engine refuses the row of one item. <see cref="ItemPersistenceService.SaveItems"/> saves all of the items or none, so
 /// that one row costs the whole batch; <see cref="ItemPersistenceService.SaveItemsSkippingFailures"/> leaves out only
 /// that item. Every engine refuses an item whose parent does not exist, by its foreign key. A path longer than a btree
-/// index entry may be is saved on every engine: MySQL and MariaDB index a prefix of it, and PostgreSQL a hash of it.
+/// index entry may be is saved on every engine but SQL Server: MySQL and MariaDB index a prefix of it, and PostgreSQL a
+/// hash of it. SQL Server indexes the whole value, up to 1700 bytes, and stores at most 4000 characters: those are
+/// known gaps, so the rows fail once SQL Server saves such a path, and the gaps have to be removed.
 /// </summary>
 public abstract class BatchSaveConformance : ConformanceTestBase
 {
@@ -90,15 +92,19 @@ public abstract class BatchSaveConformance : ConformanceTestBase
         var stored = StoredIds(items);
         Assert.Equal(items.Where(i => !i.Id.Equals(longPath.Id)).Select(i => i.Id).Order(), stored.Where(id => !id.Equals(longPath.Id)).Order());
 
-        // The item with the long path is saved too. An error it was left out for is thrown again, so that the test
-        // fails with the engine's own message.
-        if (logger.Failures.Count > 0)
+        // The item with the long path is saved too, except where the engine refuses it. An error it was left out for is
+        // thrown again, so that the test fails with the engine's own message, and the gap is the only failure it is
+        // taken for.
+        KnownGap.On(KnownGaps.IndexKeyOverTheLimitOnSqlServer, () =>
         {
-            ExceptionDispatchInfo.Throw(Assert.Single(logger.Failures));
-        }
+            if (logger.Failures.Count > 0)
+            {
+                ExceptionDispatchInfo.Throw(Assert.Single(logger.Failures));
+            }
 
-        Assert.Empty(notSaved);
-        Assert.Contains(longPath.Id, stored);
+            Assert.Empty(notSaved);
+            Assert.Contains(longPath.Id, stored);
+        });
     }
 
     [ConformanceFact]
@@ -111,16 +117,19 @@ public abstract class BatchSaveConformance : ConformanceTestBase
         var path = longPath.Path;
         var paths = new List<string> { path, items[0].Path };
 
-        CreateService().SaveItems(items, CancellationToken.None);
+        KnownGap.On(KnownGaps.PathOverTheColumnOnSqlServer, () =>
+        {
+            CreateService().SaveItems(items, CancellationToken.None);
 
-        // The lookups by path the server makes: one path, and a list of them.
-        using var context = CreateDbContext();
-        Assert.Equal(items.Select(i => i.Id).Order(), StoredIds(items).Order());
-        Assert.Equal([longPath.Id], context.BaseItems.Where(e => e.Path == path).Select(e => e.Id).ToList());
-        Assert.Equal(
-            new[] { items[0].Id, longPath.Id }.Order(),
-            context.BaseItems.Where(e => e.Path != null && paths.Contains(e.Path)).Select(e => e.Id).ToList().Order());
-        Assert.Equal(path, context.BaseItems.Where(e => e.Id.Equals(longPath.Id)).Select(e => e.Path).Single());
+            // The lookups by path the server makes: one path, and a list of them.
+            using var context = CreateDbContext();
+            Assert.Equal(items.Select(i => i.Id).Order(), StoredIds(items).Order());
+            Assert.Equal([longPath.Id], context.BaseItems.Where(e => e.Path == path).Select(e => e.Id).ToList());
+            Assert.Equal(
+                new[] { items[0].Id, longPath.Id }.Order(),
+                context.BaseItems.Where(e => e.Path != null && paths.Contains(e.Path)).Select(e => e.Id).ToList().Order());
+            Assert.Equal(path, context.BaseItems.Where(e => e.Id.Equals(longPath.Id)).Select(e => e.Path).Single());
+        });
     }
 
     protected override void Dispose(bool disposing)

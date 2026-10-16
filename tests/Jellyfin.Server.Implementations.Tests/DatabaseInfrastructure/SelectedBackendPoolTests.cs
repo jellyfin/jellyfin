@@ -15,7 +15,7 @@ public class SelectedBackendPoolTests
 {
     private static ITestDatabaseBackend Backend => TestDatabaseEnvironment.Backend;
 
-    [ProviderTheory(TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderTheory(TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     [InlineData(TestSchemaSource.Model)]
     [InlineData(TestSchemaSource.Migrations)]
     public void Dispose_ReturnedLease_LeavesEveryTableAsInAFreshDatabase(TestSchemaSource source)
@@ -23,7 +23,7 @@ public class SelectedBackendPoolTests
         PoolChecks.AssertResetMatchesFreshDatabase(Backend, source);
     }
 
-    [ProviderTheory(TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderTheory(TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     [InlineData(TestSchemaSource.Model)]
     [InlineData(TestSchemaSource.Migrations)]
     public void Dispose_ReturnedLease_RestartsIdentityAtOneOnEveryTable(TestSchemaSource source)
@@ -31,13 +31,13 @@ public class SelectedBackendPoolTests
         PoolChecks.AssertIdentityRestartsAtOne(Backend, source);
     }
 
-    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     public void Dispose_ReturnedLease_RestoresSeedData()
     {
         PoolChecks.AssertSeedDataIsRestored(Backend);
     }
 
-    [ProviderTheory(TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderTheory(TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     [InlineData(SchemaChange.Table)]
     [InlineData(SchemaChange.Index)]
     [InlineData(SchemaChange.Trigger)]
@@ -47,19 +47,19 @@ public class SelectedBackendPoolTests
         PoolChecks.AssertChangedSchemaIsNotReused(Backend, change);
     }
 
-    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     public void Dispose_LeaseThatDeletedTheMigrationHistory_IsDroppedInsteadOfReused()
     {
         PoolChecks.AssertChangedMigrationHistoryIsNotReused(Backend, PoolChecks.DeleteMigrationHistory);
     }
 
-    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     public void Dispose_LeaseThatRecordedAnotherMigration_IsDroppedInsteadOfReused()
     {
         PoolChecks.AssertChangedMigrationHistoryIsNotReused(Backend, PoolChecks.RecordAnotherMigration);
     }
 
-    [ProviderTheory(TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderTheory(TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     [InlineData(TestSchemaSource.Model)]
     [InlineData(TestSchemaSource.Migrations)]
     public void Create_AfterLeaseWasReturned_ReusesTheDatabase(TestSchemaSource source)
@@ -67,7 +67,7 @@ public class SelectedBackendPoolTests
         PoolChecks.AssertReturnedDatabaseIsReused(Backend, source);
     }
 
-    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     public void Create_TwoLeasesAtTheSameTime_GetDifferentDatabases()
     {
         using var first = Backend.Create(TestSchemaSource.Model, []);
@@ -76,7 +76,7 @@ public class SelectedBackendPoolTests
         Assert.NotEqual(PoolChecks.DatabaseOf(first), PoolChecks.DatabaseOf(second));
     }
 
-    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     public async Task Create_ManyLeasesFromManyThreads_UseDifferentDatabases()
     {
         const int Leases = 6;
@@ -96,7 +96,7 @@ public class SelectedBackendPoolTests
         }
     }
 
-    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     public void CreateEmpty_HasNoSchemaAndIsDroppedWhenDisposed()
     {
         var database = Backend.CreateEmpty();
@@ -112,7 +112,7 @@ public class SelectedBackendPoolTests
         Assert.False(CanConnect(database));
     }
 
-    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     public void Create_Fresh_ReturnsANewDatabaseThatIsDroppedAfterwards()
     {
         string pooled;

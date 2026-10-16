@@ -9,14 +9,24 @@ namespace Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 public sealed class DefaultSchemaTests : DatabaseTestFixture
 {
     [Fact]
-    public void DefaultDatabase_HasEveryMigrationApplied()
+    public void DefaultDatabase_HasEveryMigrationApplied_OrTheSchemaOfTheModelWithoutMigrations()
     {
         using var context = CreateDbContext();
 
         var migrations = context.Database.GetMigrations().ToList();
 
-        Assert.NotEmpty(migrations);
-        Assert.Equal(migrations, context.Database.GetAppliedMigrations());
+        if (EngineTraits.Selected.HasSchemaMigrations)
+        {
+            Assert.NotEmpty(migrations);
+            Assert.Equal(migrations, context.Database.GetAppliedMigrations());
+        }
+        else
+        {
+            // A provider without migrations: the default database has the schema of the model, and no history.
+            Assert.Empty(migrations);
+            Assert.Equal(TestSchemaSource.Model, EngineTraits.Selected.DefaultSchemaSource);
+            Assert.Empty(context.Database.GetAppliedMigrations());
+        }
     }
 
     [ProviderFact(TestDbProvider.Sqlite)]

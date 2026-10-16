@@ -158,7 +158,7 @@ public sealed class BaseItemRepositorySortNameFilterTests : JellyfinDbTestFixtur
     {
         KnownGap.On(
             KnownGaps.SortNameRangeLowersNonAsciiOnMySql,
-            () => KnownGap.On(KnownGaps.SortNameRangeLowersNonAsciiOnMariaDb, body));
+            () => KnownGap.On(KnownGaps.SortNameRangeLowersNonAsciiOnMariaDb, () => KnownGap.On(KnownGaps.SortNameRangeLowersNonAsciiOnSqlServer, body)));
     }
 
     private string[] StartingWith(string prefix) => Names(new InternalItemsQuery(new User("test", "auth", "reset"))

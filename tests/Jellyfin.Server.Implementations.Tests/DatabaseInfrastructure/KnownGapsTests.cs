@@ -13,7 +13,8 @@ public class KnownGapsTests
     public static TheoryData<KnownGapDefinition> SortNameRangeGaps => new()
     {
         KnownGaps.SortNameRangeLowersNonAsciiOnMySql,
-        KnownGaps.SortNameRangeLowersNonAsciiOnMariaDb
+        KnownGaps.SortNameRangeLowersNonAsciiOnMariaDb,
+        KnownGaps.SortNameRangeLowersNonAsciiOnSqlServer
     };
 
     [Theory]

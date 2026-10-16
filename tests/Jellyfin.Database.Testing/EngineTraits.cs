@@ -6,6 +6,8 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Providers.MySql;
 using Jellyfin.Database.Providers.Postgres;
 using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Database.Providers.SqlServer;
+using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using MySqlConnector;
 using Npgsql;
@@ -22,6 +24,10 @@ public sealed class EngineTraits
     // The extended result code of SQLite for a violated unique constraint.
     private const int SqliteConstraintUnique = 2067;
 
+    // The numbers of SQL Server for a duplicate in a unique index, and in a unique constraint or primary key.
+    private const int SqlServerDuplicateInIndex = 2601;
+    private const int SqlServerDuplicateKey = 2627;
+
     // The filters of the indexes of the SQLite model, as the model configuration writes them.
     private const string OwnedFilter = "\"OwnerId\" IS NOT NULL";
     private const string ExtraTypeFilter = "\"ExtraType\" IS NOT NULL";
@@ -35,6 +41,9 @@ public sealed class EngineTraits
             Provider = TestDbProvider.Sqlite,
             ProviderType = typeof(SqliteDatabaseProvider),
             IsEmbedded = true,
+            IsRegistered = true,
+            HasSchemaMigrations = true,
+            BoundsIndexedStrings = false,
             UnexpressibleIndexFilters = [],
             NoActionCascades = [],
             NullFilteredUniqueIndexes = [],
@@ -43,8 +52,10 @@ public sealed class EngineTraits
             Pool = new PoolStatements
             {
                 ListTables = "SELECT name AS Value FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
+                CountRows = "SELECT COUNT(*) AS Value FROM {0}",
                 ListSchemaObjectNames = "SELECT name AS Value FROM sqlite_master",
                 DisableForeignKeys = "PRAGMA foreign_keys = OFF",
+                CountDistrustedForeignKeys = "SELECT 0 AS Value",
                 CreateTable = "CREATE TABLE \"Scratch\" (\"Id\" INTEGER)",
                 CreateIndex = "CREATE INDEX \"IX_Scratch\" ON \"ActivityLogs\" (\"Name\")",
                 CreateTrigger = "CREATE TRIGGER \"Scratch\" AFTER INSERT ON \"ActivityLogs\" BEGIN SELECT 1; END",
@@ -57,6 +68,9 @@ public sealed class EngineTraits
             ProviderType = typeof(PostgresDatabaseProvider),
             CoversThroughSqliteMigration = PostgresMigrationBaseline.CoversThroughSqliteMigration,
             ServerMarker = "PostgreSQL",
+            IsRegistered = true,
+            HasSchemaMigrations = true,
+            BoundsIndexedStrings = false,
             UnexpressibleIndexFilters = [],
             NoActionCascades = [],
             NullFilteredUniqueIndexes = [],
@@ -64,12 +78,57 @@ public sealed class EngineTraits
             AssertUniqueViolation = ex => Assert.Equal(PostgresErrorCodes.UniqueViolation, Assert.IsType<PostgresException>(ex).SqlState)
         },
         MySqlFamily(TestDbProvider.MySql, null),
-        MySqlFamily(TestDbProvider.MariaDb, "MariaDB")
+        MySqlFamily(TestDbProvider.MariaDb, "MariaDB"),
+        new EngineTraits
+        {
+            Provider = TestDbProvider.SqlServer,
+            ProviderType = typeof(SqlServerDatabaseProvider),
+            ServerMarker = "Microsoft SQL Server",
+
+            // The server cannot select the provider yet, and the provider has no migrations yet; both change when the
+            // provider is registered with its baseline migration.
+            IsRegistered = false,
+            HasSchemaMigrations = false,
+            BoundsIndexedStrings = true,
+
+            // A filtered index cannot have an OR, and the server refuses a cascade to the same table and a second cascade
+            // path to a table, so the provider drops that filter and creates the two keys without an action.
+            UnexpressibleIndexFilters = [PrimaryVersionFilter],
+            NoActionCascades = [("BaseItems", "ParentId"), ("AncestorIds", "ParentItemId")],
+
+            // A unique index of the server takes one NULL, so EF Core filters it to the rows with a value.
+            NullFilteredUniqueIndexes = [("ImageInfos", "UserId", "[UserId] IS NOT NULL")],
+            PurgeResetsIdentityInATransaction = true,
+            AssertUniqueViolation = ex => Assert.Contains(Assert.IsType<SqlException>(ex).Number, new[] { SqlServerDuplicateInIndex, SqlServerDuplicateKey }),
+            Pool = new PoolStatements
+            {
+                ListTables = "SELECT name AS [Value] FROM sys.tables WHERE is_ms_shipped = 0",
+                CountRows = "SELECT COUNT_BIG(*) AS [Value] FROM {0}",
+                ListSchemaObjectNames = "SELECT name AS [Value] FROM sys.objects WHERE is_ms_shipped = 0 "
+                    + "UNION SELECT i.name FROM sys.indexes i JOIN sys.tables t ON t.object_id = i.object_id WHERE i.name IS NOT NULL "
+                    + "UNION SELECT c.name FROM sys.columns c JOIN sys.tables t ON t.object_id = c.object_id",
+
+                // The server has no switch for a session: this stops the checks of every table of the database. The purge
+                // of the provider, which resets a returned database, checks every table again WITH CHECK, so that the keys
+                // trust their rows again, which the pool self-tests count.
+                DisableForeignKeys = "DECLARE @s nvarchar(max) = N''; SELECT @s += N'ALTER TABLE ' + QUOTENAME(name) + N' NOCHECK CONSTRAINT ALL; ' FROM sys.tables WHERE is_ms_shipped = 0; EXEC (@s)",
+                CountDistrustedForeignKeys = "SELECT COUNT_BIG(*) AS [Value] FROM sys.foreign_keys WHERE is_disabled = 1 OR is_not_trusted = 1",
+                CreateTable = "CREATE TABLE [Scratch] ([Id] int)",
+                CreateIndex = "CREATE INDEX [IX_Scratch] ON [ActivityLogs] ([LogSeverity])",
+                CreateTrigger = "CREATE TRIGGER [Scratch] ON [ActivityLogs] AFTER INSERT AS SET NOCOUNT ON",
+                AddColumn = "ALTER TABLE [ActivityLogs] ADD [Scratch] int NULL"
+            }
+        }
     }.ToDictionary(traits => traits.Provider);
 
     private EngineTraits()
     {
     }
+
+    /// <summary>
+    /// Gets the traits of every engine.
+    /// </summary>
+    public static IReadOnlyCollection<EngineTraits> All => _table.Values;
 
     /// <summary>
     /// Gets the traits of the engine selected for the test run.
@@ -92,6 +151,30 @@ public sealed class EngineTraits
     /// for an engine without a baseline.
     /// </summary>
     public string? CoversThroughSqliteMigration { get; init; }
+
+    /// <summary>
+    /// Gets a value indicating whether the server can select the provider of the engine, so that it can run on the engine.
+    /// The tests that start the server are skipped on an engine that it cannot select.
+    /// </summary>
+    public required bool IsRegistered { get; init; }
+
+    /// <summary>
+    /// Gets a value indicating whether the provider of the engine has migrations. Without them no schema can be built from
+    /// migrations, so the tests use the schema of the model, and a test that needs the migrations is skipped.
+    /// </summary>
+    public required bool HasSchemaMigrations { get; init; }
+
+    /// <summary>
+    /// Gets the schema the tests of the engine use unless they ask for one: that of the migrations, or that of the model
+    /// for an engine whose provider has no migrations.
+    /// </summary>
+    public TestSchemaSource DefaultSchemaSource => HasSchemaMigrations ? TestSchemaSource.Migrations : TestSchemaSource.Model;
+
+    /// <summary>
+    /// Gets a value indicating whether the engine stores an indexed string that has a maximum length in the model with that
+    /// length, so that it refuses a longer value. No row over the length can then be stored.
+    /// </summary>
+    public required bool BoundsIndexedStrings { get; init; }
 
     /// <summary>
     /// Gets a value indicating whether the database is a file that the server creates itself, rather than one on a
@@ -180,16 +263,21 @@ public sealed class EngineTraits
         UnexpressibleIndexFilters = [OwnedFilter, ExtraTypeFilter, AlternateVersionFilter, PrimaryVersionFilter],
         NoActionCascades = [],
         NullFilteredUniqueIndexes = [],
+        IsRegistered = true,
+        HasSchemaMigrations = true,
+        BoundsIndexedStrings = true,
         PurgeResetsIdentityInATransaction = false,
         CoversThroughSqliteMigration = MySqlMigrationBaseline.CoversThroughSqliteMigration,
         AssertUniqueViolation = ex => Assert.Equal(MySqlErrorCode.DuplicateKeyEntry, Assert.IsType<MySqlException>(ex).ErrorCode),
         Pool = new PoolStatements
         {
             ListTables = "SELECT TABLE_NAME AS Value FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE'",
+            CountRows = "SELECT COUNT(*) AS Value FROM {0}",
             ListSchemaObjectNames = "SELECT INDEX_NAME AS Value FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() "
                 + "UNION SELECT TRIGGER_NAME FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA = DATABASE() "
                 + "UNION SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE()",
             DisableForeignKeys = "SET SESSION foreign_key_checks = 0",
+            CountDistrustedForeignKeys = "SELECT 0 AS Value",
             CreateTable = "CREATE TABLE `Scratch` (`Id` int)",
             CreateIndex = "CREATE INDEX `IX_Scratch` ON `ActivityLogs` (`LogSeverity`)",
             CreateTrigger = "CREATE TRIGGER `Scratch` BEFORE INSERT ON `ActivityLogs` FOR EACH ROW SET NEW.`Name` = NEW.`Name`",

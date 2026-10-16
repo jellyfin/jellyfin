@@ -22,5 +22,5 @@ public static class ConformanceKit
     /// <summary>
     /// The engines the kit runs on.
     /// </summary>
-    public static readonly IReadOnlyList<TestDbProvider> Engines = [TestDbProvider.Sqlite, TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb];
+    public static readonly IReadOnlyList<TestDbProvider> Engines = [TestDbProvider.Sqlite, TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer];
 }

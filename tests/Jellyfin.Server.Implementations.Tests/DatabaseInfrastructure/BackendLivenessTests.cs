@@ -189,6 +189,7 @@ public class BackendLivenessTests
         {
             TestDbProvider.Postgres => $"PostgreSQL {ServerVersion}",
             TestDbProvider.MariaDb => $"{ServerVersion}-MariaDB",
+            TestDbProvider.SqlServer => $"Microsoft SQL Server 2022 (RTM-CU27-GDR) - {ServerVersion}",
             _ => ServerVersion.ToString()
         };
 

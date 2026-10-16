@@ -85,6 +85,7 @@
     <PackageVersion Include="System.Text.Json" Version="10.0.13" />
     <PackageVersion Include="TagLibSharp" Version="2.3.0" />
     <PackageVersion Include="Testcontainers.MariaDb" Version="4.16.0" />
+    <PackageVersion Include="Testcontainers.MsSql" Version="4.16.0" />
     <PackageVersion Include="Testcontainers.MySql" Version="4.16.0" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.16.0" />
     <PackageVersion Include="z440.atl.core" Version="7.18.0" />

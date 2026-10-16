@@ -102,7 +102,10 @@ public sealed class DisplayPreferencesManagerFailedWriteTests : JellyfinDbTestFi
 
         private static string Unquoted(DbCommand command)
         {
-            return command.CommandText.Replace("\"", string.Empty, StringComparison.Ordinal).Replace("`", string.Empty, StringComparison.Ordinal);
+            // The quotes of the engine, double quotes, back quotes or brackets, are taken out to match the statement, so an
+            // expected statement must not hold a bracket of its own.
+            return command.CommandText.Replace("\"", string.Empty, StringComparison.Ordinal).Replace("`", string.Empty, StringComparison.Ordinal)
+                .Replace("[", string.Empty, StringComparison.Ordinal).Replace("]", string.Empty, StringComparison.Ordinal);
         }
 
         private void FailInsert(DbCommand command)

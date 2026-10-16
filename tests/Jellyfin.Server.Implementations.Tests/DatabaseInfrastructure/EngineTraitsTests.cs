@@ -3,6 +3,7 @@ using System.Linq;
 using Jellyfin.Database.Providers.MySql;
 using Jellyfin.Database.Providers.Postgres;
 using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Database.Providers.SqlServer;
 using Jellyfin.Database.Testing;
 using Jellyfin.Database.Testing.Conformance;
 using Microsoft.Data.Sqlite;
@@ -39,6 +40,7 @@ public class EngineTraitsTests
     [InlineData(TestDbProvider.Postgres, typeof(PostgresDatabaseProvider), "Jellyfin-PostgreSQL")]
     [InlineData(TestDbProvider.MySql, typeof(MySqlDatabaseProvider), "Jellyfin-MySQL")]
     [InlineData(TestDbProvider.MariaDb, typeof(MySqlDatabaseProvider), "Jellyfin-MySQL")]
+    [InlineData(TestDbProvider.SqlServer, typeof(SqlServerDatabaseProvider), "Jellyfin-SqlServer")]
     public void ProviderTypeAndKey_AreThoseOfTheProviderOfTheEngine(TestDbProvider provider, Type providerType, string key)
     {
         var traits = EngineTraits.For(provider);
@@ -53,6 +55,7 @@ public class EngineTraitsTests
     [InlineData(TestDbProvider.Postgres, PostgresMigrationBaseline.CoversThroughSqliteMigration)]
     [InlineData(TestDbProvider.MySql, MySqlMigrationBaseline.CoversThroughSqliteMigration)]
     [InlineData(TestDbProvider.MariaDb, MySqlMigrationBaseline.CoversThroughSqliteMigration)]
+    [InlineData(TestDbProvider.SqlServer, null)]
     public void CoversThroughSqliteMigration_IsTheOneOfTheBaselineOfTheEngine(TestDbProvider provider, string? expected)
     {
         Assert.Equal(expected, EngineTraits.For(provider).CoversThroughSqliteMigration);
@@ -63,6 +66,7 @@ public class EngineTraitsTests
     [InlineData(TestDbProvider.Postgres, false, false)]
     [InlineData(TestDbProvider.MySql, false, true)]
     [InlineData(TestDbProvider.MariaDb, false, true)]
+    [InlineData(TestDbProvider.SqlServer, false, true)]
     public void EmbeddedAndPooled_AreTheEnginesThatAreSo(TestDbProvider provider, bool embedded, bool pooled)
     {
         var traits = EngineTraits.For(provider);
@@ -76,6 +80,7 @@ public class EngineTraitsTests
     [InlineData(TestDbProvider.Postgres, "PostgreSQL")]
     [InlineData(TestDbProvider.MySql, null)]
     [InlineData(TestDbProvider.MariaDb, "MariaDB")]
+    [InlineData(TestDbProvider.SqlServer, "Microsoft SQL Server")]
     public void ServerMarker_IsWhatTheVersionOfTheServerNames(TestDbProvider provider, string? marker)
     {
         Assert.Equal(marker, EngineTraits.For(provider).ServerMarker);
@@ -126,6 +131,16 @@ public class EngineTraitsTests
     }
 
     [Fact]
+    public void ModelAllowances_OfSqlServer_AreTheOrFilterTheTwoCascadePathsAndTheUniqueIndexOnANullableUser()
+    {
+        var traits = EngineTraits.For(TestDbProvider.SqlServer);
+
+        Assert.Equal(["\"PrimaryVersionId\" IS NULL AND (\"OwnerId\" IS NULL OR \"ExtraType\" IS NOT NULL)"], traits.UnexpressibleIndexFilters);
+        Assert.Equal([("AncestorIds", "ParentItemId"), ("BaseItems", "ParentId")], traits.NoActionCascades.Order());
+        Assert.Equal([("ImageInfos", "UserId", "[UserId] IS NOT NULL")], traits.NullFilteredUniqueIndexes);
+    }
+
+    [Fact]
     public void ModelAllowances_AreTheThreeSetsOfTheRow()
     {
         Assert.All(Enum.GetValues<TestDbProvider>().Select(EngineTraits.For), traits =>
@@ -150,6 +165,7 @@ public class EngineTraitsTests
     [InlineData(TestDbProvider.Postgres, true)]
     [InlineData(TestDbProvider.MySql, false)]
     [InlineData(TestDbProvider.MariaDb, false)]
+    [InlineData(TestDbProvider.SqlServer, true)]
     public void PurgeResetsIdentityInATransaction_IsFalseOnlyOnTheEnginesThatCommitToChangeACounter(TestDbProvider provider, bool resets)
     {
         Assert.Equal(resets, EngineTraits.For(provider).PurgeResetsIdentityInATransaction);
@@ -173,6 +189,40 @@ public class EngineTraitsTests
         EngineTraits.For(TestDbProvider.Sqlite).AssertUniqueViolation(violation);
         Assert.ThrowsAny<XunitException>(() => EngineTraits.For(TestDbProvider.Postgres).AssertUniqueViolation(violation));
         Assert.ThrowsAny<XunitException>(() => EngineTraits.For(TestDbProvider.MySql).AssertUniqueViolation(violation));
+        Assert.ThrowsAny<XunitException>(() => EngineTraits.For(TestDbProvider.SqlServer).AssertUniqueViolation(violation));
+    }
+
+    [Theory]
+    [InlineData(TestDbProvider.Sqlite, true, true, false)]
+    [InlineData(TestDbProvider.Postgres, true, true, false)]
+    [InlineData(TestDbProvider.MySql, true, true, true)]
+    [InlineData(TestDbProvider.MariaDb, true, true, true)]
+    [InlineData(TestDbProvider.SqlServer, false, false, true)]
+    public void RegistrationMigrationsAndBounds_AreThoseOfTheEngine(TestDbProvider provider, bool registered, bool migrations, bool bounds)
+    {
+        var traits = EngineTraits.For(provider);
+
+        Assert.Equal(registered, traits.IsRegistered);
+        Assert.Equal(migrations, traits.HasSchemaMigrations);
+        Assert.Equal(bounds, traits.BoundsIndexedStrings);
+        Assert.Equal(migrations ? TestSchemaSource.Migrations : TestSchemaSource.Model, traits.DefaultSchemaSource);
+    }
+
+    [Fact]
+    public void HasSchemaMigrations_IsWhetherTheMigrationsAssemblyHasMigrations()
+    {
+        // The trait of an engine whose provider gains its migrations fails here until it is changed.
+        Assert.All(
+            EngineTraits.All,
+            traits => Assert.True(
+                traits.HasSchemaMigrations == ProviderRequirement.MigrationIds(traits.Provider).Count > 0,
+                $"{traits.Provider}: HasSchemaMigrations is {traits.HasSchemaMigrations}, the assembly has {ProviderRequirement.MigrationIds(traits.Provider).Count} migrations"));
+    }
+
+    [Fact]
+    public void All_HasARowForEveryEngine()
+    {
+        Assert.Equal(Enum.GetValues<TestDbProvider>().Order(), EngineTraits.All.Select(traits => traits.Provider).Order());
     }
 
     [Fact]

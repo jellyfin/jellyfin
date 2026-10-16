@@ -31,11 +31,19 @@ public sealed class JellyfinApplicationFactoryTests
     [Fact]
     public async Task CreateClient_SelectedProvider_RunsTheServerOnThatProvider()
     {
+        BackendLiveness.Verify(Environment.GetEnvironmentVariable(BackendLiveness.ExpectedProviderVariable), TestDatabaseEnvironment.Backend);
+        if (!EngineTraits.Selected.IsRegistered)
+        {
+            // The run is on the engine, but the server cannot select its provider yet: it refuses a configuration that
+            // names it, on a database of the engine.
+            AssertTheServerRefusesTheProviderOfTheRun();
+            return;
+        }
+
         using var factory = new JellyfinApplicationFactory();
         using var client = factory.CreateClient();
 
         Assert.IsType(ProviderTypeOfTheRun(), factory.Services.GetRequiredService<IJellyfinDatabaseProvider>());
-        BackendLiveness.Verify(Environment.GetEnvironmentVariable(BackendLiveness.ExpectedProviderVariable), TestDatabaseEnvironment.Backend);
 
         var dbContextFactory = factory.Services.GetRequiredService<IDbContextFactory<JellyfinDbContext>>();
         await using var context = await dbContextFactory.CreateDbContextAsync(TestContext.Current.CancellationToken);
@@ -175,6 +183,28 @@ public sealed class JellyfinApplicationFactoryTests
             var refusal = exception as InvalidOperationException ?? exception.InnerException as InvalidOperationException;
             Assert.NotNull(refusal);
             Assert.Contains(key, refusal.Message, StringComparison.Ordinal);
+        }
+        finally
+        {
+            DeleteRoot(root);
+        }
+    }
+
+    private static void AssertTheServerRefusesTheProviderOfTheRun()
+    {
+        var key = EngineTraits.Selected.ProviderKey;
+        var root = CreateRoot();
+        try
+        {
+            using var database = TestDatabaseEnvironment.Backend.CreateEmpty();
+            JellyfinApplicationFactory.WriteDatabaseConfiguration(Path.Combine(root, "config"), database);
+            using var factory = new RootApplicationFactory(root);
+
+            var exception = Assert.ThrowsAny<Exception>(() => factory.CreateClient());
+
+            var refusal = exception as InvalidOperationException ?? exception.InnerException as InvalidOperationException;
+            Assert.NotNull(refusal);
+            Assert.Contains($"cannot find the database provider of type '{key}'", refusal.Message, StringComparison.Ordinal);
         }
         finally
         {

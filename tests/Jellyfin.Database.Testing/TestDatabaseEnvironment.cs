@@ -10,7 +10,8 @@ public static class TestDatabaseEnvironment
         [TestDbProvider.Sqlite] = () => SqliteTestBackend.Instance,
         [TestDbProvider.Postgres] = () => PostgresTestBackend.Instance,
         [TestDbProvider.MySql] = () => MySqlTestBackend.Instance,
-        [TestDbProvider.MariaDb] = () => MariaDbTestBackend.Instance
+        [TestDbProvider.MariaDb] = () => MariaDbTestBackend.Instance,
+        [TestDbProvider.SqlServer] = () => SqlServerTestBackend.Instance
     };
 
     public const string ProviderVariable = "JELLYFIN_TEST_DB_PROVIDER";

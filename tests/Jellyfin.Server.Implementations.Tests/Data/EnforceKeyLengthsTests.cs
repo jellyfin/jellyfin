@@ -372,7 +372,7 @@ public sealed class EnforceKeyLengthsTests : JellyfinDbTestFixture
     private static void SkipWhereIndexedTextIsBounded()
     {
         Assert.SkipWhen(
-            TestDatabaseEnvironment.Provider is TestDbProvider.MySql or TestDbProvider.MariaDb,
+            EngineTraits.Selected.BoundsIndexedStrings,
             "The column of an indexed string has its maximum length on this engine, so no row can be stored over it.");
     }
 

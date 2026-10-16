@@ -223,7 +223,8 @@ namespace Jellyfin.Server.Integration.Tests
         /// <summary>
         /// Points a new server at a database of its own. SQLite needs nothing, as the server creates its default database
         /// configuration itself. A server that is started again from a directory finds its <c>database.xml</c> and keeps its
-        /// database, which then belongs to whoever created it.
+        /// database, which then belongs to whoever created it. On an engine whose provider the server cannot select yet,
+        /// there is no server to start, so the test is skipped.
         /// </summary>
         private void ProvisionDatabase(string configurationDirectory)
         {
@@ -246,6 +247,7 @@ namespace Jellyfin.Server.Integration.Tests
                 return;
             }
 
+            Xunit.Assert.SkipUnless(traits.IsRegistered, $"The server cannot run on {traits.Provider} until its provider ({expectedKey}) is registered.");
             _database = TestDatabaseEnvironment.Backend.CreateEmpty();
             WriteDatabaseConfiguration(configurationDirectory, _database);
             _provisionedConfigurationPath = path;

@@ -3,6 +3,7 @@
   <ItemGroup>
     <PackageReference Include="Moq" />
     <PackageReference Include="Testcontainers.MariaDb" />
+    <PackageReference Include="Testcontainers.MsSql" />
     <PackageReference Include="Testcontainers.MySql" />
     <PackageReference Include="Testcontainers.PostgreSql" />
     <PackageReference Include="xunit.v3.assert" />
@@ -19,6 +20,7 @@
     <ProjectReference Include="../../src/Jellyfin.Database/Jellyfin.Database.Providers.Sqlite/Jellyfin.Database.Providers.Sqlite.csproj" />
     <ProjectReference Include="../../src/Jellyfin.Database/Jellyfin.Database.Providers.MySql/Jellyfin.Database.Providers.MySql.csproj" />
     <ProjectReference Include="../../src/Jellyfin.Database/Jellyfin.Database.Providers.Postgres/Jellyfin.Database.Providers.Postgres.csproj" />
+    <ProjectReference Include="../../src/Jellyfin.Database/Jellyfin.Database.Providers.SqlServer/Jellyfin.Database.Providers.SqlServer.csproj" />
   </ItemGroup>
 
 </Project>

@@ -4,6 +4,7 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Locking;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using Xunit;
 
 namespace Jellyfin.Database.Testing;
 
@@ -25,6 +26,9 @@ internal static class TestSchemaSourceExtensions
             case TestSchemaSource.Migrations:
                 if (!context.Database.GetMigrations().Any())
                 {
+                    // An engine whose provider has no migrations yet says so in its traits; for any other, it is a fault.
+                    var withoutMigrations = EngineTraits.All.FirstOrDefault(traits => traits.ProviderType == provider.GetType() && !traits.HasSchemaMigrations);
+                    Assert.SkipWhen(withoutMigrations is not null, $"The provider of {withoutMigrations?.Provider} has no migrations until it is registered with its baseline, so no schema can be built from them yet.");
                     throw new NotSupportedException($"The provider {context.Database.ProviderName} has no migrations to build a schema from.");
                 }
 

@@ -412,7 +412,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.Equal(before, await SnapshotAsync(cancellationToken).ConfigureAwait(true));
     }
 
-    [Fact]
+    [SchemaMigrationsFact]
     public async Task RestoreBackupAsync_WithHistoryFromAnotherSchema_LeavesNoPendingMigrations()
     {
         var (_, pending) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
@@ -420,7 +420,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.Empty(pending);
     }
 
-    [Fact]
+    [SchemaMigrationsFact]
     public async Task RestoreBackupAsync_KeepsTheSchemaMigrationRowsOfTheTarget()
     {
         var (history, _) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
@@ -431,7 +431,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.All(schemaMigrationIds, id => Assert.Contains(id, history));
     }
 
-    [Fact]
+    [SchemaMigrationsFact]
     public async Task RestoreBackupAsync_ReplacesCodeRoutinesWithThoseOfTheArchive()
     {
         var (history, _) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
@@ -440,7 +440,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.DoesNotContain(RoutineOnlyInTargetId, history);
     }
 
-    [Fact]
+    [SchemaMigrationsFact]
     public async Task RestoreBackupAsync_DoesNotTakeOverSchemaMigrationsOfAnotherEngine()
     {
         var (history, _) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
@@ -448,7 +448,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.DoesNotContain(ForeignSchemaMigrationId, history);
     }
 
-    [Fact]
+    [SchemaMigrationsFact]
     public async Task RestoreBackupAsync_DoesNotTakeOverRoutinesThisServerNoLongerHas()
     {
         var (history, _) = await RestoreWithRewrittenHistoryAsync().ConfigureAwait(true);
@@ -456,7 +456,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.DoesNotContain(RemovedRoutineId, history);
     }
 
-    [Fact]
+    [SchemaMigrationsFact]
     public async Task RestoreBackupAsync_WithArchiveOfTheSameSchema_RestoresTheHistoryAsItWas()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -722,7 +722,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.DoesNotContain(_logger.Entries, e => e.Message.Contains("Rock", StringComparison.Ordinal));
     }
 
-    [Fact]
+    [SchemaMigrationsFact]
     public async Task RestoreBackupAsync_IntoADatabaseThatWasOnlySeeded_CreatesTheSchemaAndRestoresTheRows()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -750,7 +750,7 @@ public sealed class BackupServiceTests : DatabaseTestFixture
         Assert.Equal(2, await restored.BaseItems.CountAsync(e => e.Type == "Movie", cancellationToken).ConfigureAwait(true));
     }
 
-    [Fact]
+    [SchemaMigrationsFact]
     public async Task RestoreBackupAsync_WhenMigrationsCannotBeUndoneAndSomeArePending_RefusesAndLeavesTheDatabaseAlone()
     {
         var cancellationToken = TestContext.Current.CancellationToken;

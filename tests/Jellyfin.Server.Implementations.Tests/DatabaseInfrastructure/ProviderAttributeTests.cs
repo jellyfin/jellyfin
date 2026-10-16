@@ -64,11 +64,31 @@ public class ProviderAttributeTests
     }
 
     [Fact]
-    public void MigrationFact_MigrationOfTheSelectedProvider_IsNotSkipped()
+    public void MigrationFact_MigrationOfTheSelectedProvider_IsSkippedOnlyWhenTheProviderHasNoMigrations()
     {
-        var attribute = new MigrationFactAttribute(ProviderRequirement.MigrationIds(TestDatabaseEnvironment.Provider)[0]);
+        var ids = ProviderRequirement.MigrationIds(TestDatabaseEnvironment.Provider);
+        var attribute = new MigrationFactAttribute(ids.Count > 0 ? ids[0] : "20200101000000_InitialCreate");
 
-        Assert.Null(attribute.Skip);
+        if (EngineTraits.Selected.HasSchemaMigrations)
+        {
+            Assert.Null(attribute.Skip);
+        }
+        else
+        {
+            Assert.Empty(ids);
+            Assert.Equal(ProviderRequirement.SchemaMigrationsSkipReason(), attribute.Skip);
+            Assert.Contains("until it is registered with its baseline", attribute.Skip, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void SchemaMigrationsFactAndTheory_AreSkippedOnlyWhenTheProviderHasNoMigrations()
+    {
+        var expected = EngineTraits.Selected.HasSchemaMigrations ? null : ProviderRequirement.SchemaMigrationsSkipReason();
+
+        Assert.Equal(expected, new SchemaMigrationsFactAttribute().Skip);
+        Assert.Equal(expected, new SchemaMigrationsTheoryAttribute().Skip);
+        Assert.Equal(EngineTraits.Selected.HasSchemaMigrations, expected is null);
     }
 
     [Theory]
@@ -129,7 +149,8 @@ public class ProviderAttributeTests
     {
         var attribute = new MigrationFactAttribute("29990101000000_NotAMigration");
 
-        Assert.Null(attribute.Skip);
+        // A provider without any migrations skips every test of a migration, saying that its baseline lifts the skip.
+        Assert.Equal(EngineTraits.Selected.HasSchemaMigrations ? null : ProviderRequirement.SchemaMigrationsSkipReason(), attribute.Skip);
     }
 
     [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]

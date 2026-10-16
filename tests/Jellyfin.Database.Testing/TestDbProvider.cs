@@ -5,5 +5,6 @@ public enum TestDbProvider
     Sqlite,
     Postgres,
     MySql,
-    MariaDb
+    MariaDb,
+    SqlServer
 }

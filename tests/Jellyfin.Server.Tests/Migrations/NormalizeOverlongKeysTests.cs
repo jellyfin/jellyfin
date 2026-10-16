@@ -304,7 +304,7 @@ public sealed class NormalizeOverlongKeysTests : DatabaseTestFixture
     private static void SkipWhenOverlongCannotBeStored(bool overlong)
     {
         Assert.SkipWhen(
-            overlong && TestDatabaseEnvironment.Provider is TestDbProvider.MySql or TestDbProvider.MariaDb,
+            overlong && EngineTraits.Selected.BoundsIndexedStrings,
             "The column of an indexed string has its maximum length on this engine, so no row can be stored over it.");
     }
 
