@@ -15,6 +15,19 @@ namespace Jellyfin.Database.Testing.Conformance;
 /// </summary>
 public abstract class WriteConflictConformance : ConformanceTestBase
 {
+    protected WriteConflictConformance()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WriteConflictConformance"/> class on a backend of the test's own.
+    /// </summary>
+    /// <param name="backend">The backend that creates the database.</param>
+    protected WriteConflictConformance(ITestDatabaseBackend backend)
+        : base(backend)
+    {
+    }
+
     [ConformanceFact]
     public void SaveChanges_SecondWriterOfTheSameKey_IsARetryableWriteConflict()
     {

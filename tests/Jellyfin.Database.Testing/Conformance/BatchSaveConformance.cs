@@ -38,6 +38,16 @@ public abstract class BatchSaveConformance : ConformanceTestBase
     private readonly IRecordingsManager? _previousRecordingsManager;
 
     protected BatchSaveConformance()
+        : this(TestDatabaseEnvironment.Backend)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BatchSaveConformance"/> class on a backend of the test's own.
+    /// </summary>
+    /// <param name="backend">The backend that creates the database.</param>
+    protected BatchSaveConformance(ITestDatabaseBackend backend)
+        : base(backend)
     {
         // BaseItem resolves these through process-wide statics; restored in Dispose.
         _previousLibraryManager = BaseItem.LibraryManager;

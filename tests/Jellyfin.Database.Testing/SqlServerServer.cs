@@ -29,12 +29,28 @@ internal sealed class SqlServerServer : IPooledDatabaseServer
 
     private static readonly TimeSpan _containerStopTimeout = TimeSpan.FromSeconds(30);
 
-    private readonly Lazy<string> _adminConnectionString;
-    private IAsyncDisposable? _container;
+    // One server for every pool of the process; it is stopped with the last of them.
+    private static readonly Lazy<string> _adminConnectionString = new(StartServer);
+    private static readonly object _gate = new();
+    private static IAsyncDisposable? _container;
+    private static int _servers;
 
-    public SqlServerServer()
+    private readonly bool _readCommittedSnapshot;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SqlServerServer"/> class.
+    /// </summary>
+    /// <param name="readCommittedSnapshot">
+    /// Whether the databases read from row versions, as the provider recommends, or with locks, as a database that an
+    /// operator creates does by default.
+    /// </param>
+    public SqlServerServer(bool readCommittedSnapshot = true)
     {
-        _adminConnectionString = new(StartServer);
+        _readCommittedSnapshot = readCommittedSnapshot;
+        lock (_gate)
+        {
+            _servers++;
+        }
     }
 
     public Version ServerVersion
@@ -53,7 +69,7 @@ internal sealed class SqlServerServer : IPooledDatabaseServer
     {
         var name = $"jf_{Guid.NewGuid():N}";
         Execute(_adminConnectionString.Value, $"CREATE DATABASE [{name}] COLLATE {SqlServerDatabaseProvider.Collation}");
-        Execute(_adminConnectionString.Value, $"ALTER DATABASE [{name}] SET READ_COMMITTED_SNAPSHOT ON");
+        Execute(_adminConnectionString.Value, $"ALTER DATABASE [{name}] SET READ_COMMITTED_SNAPSHOT {(_readCommittedSnapshot ? "ON" : "OFF")}");
         return name;
     }
 
@@ -135,14 +151,26 @@ internal sealed class SqlServerServer : IPooledDatabaseServer
 
     public void Dispose()
     {
-        if (_container is null)
+        IAsyncDisposable? container;
+        lock (_gate)
+        {
+            if (--_servers > 0)
+            {
+                return;
+            }
+
+            container = _container;
+            _container = null;
+        }
+
+        if (container is null)
         {
             return;
         }
 
         try
         {
-            if (!_container.DisposeAsync().AsTask().Wait(_containerStopTimeout))
+            if (!container.DisposeAsync().AsTask().Wait(_containerStopTimeout))
             {
                 Console.Error.WriteLine($"The test database container did not stop within {_containerStopTimeout.TotalSeconds:0} seconds.");
             }
@@ -171,12 +199,12 @@ internal sealed class SqlServerServer : IPooledDatabaseServer
         return command.ExecuteScalar();
     }
 
-    private string WithDatabase(string name)
+    private static string WithDatabase(string name)
     {
         return new SqlConnectionStringBuilder(_adminConnectionString.Value) { InitialCatalog = name }.ConnectionString;
     }
 
-    private string StartServer()
+    private static string StartServer()
     {
         var connectionString = TestDatabaseEnvironment.GetProviderSetting(TestDbProvider.SqlServer, "CONNECTIONSTRING");
         if (connectionString is not null)

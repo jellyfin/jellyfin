@@ -20,6 +20,17 @@ public abstract class ConformanceTestBase : DatabaseTestFixture
         Rows = new ModelRowFactory(CreateDbContext);
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConformanceTestBase"/> class on a backend of the test's own, for a
+    /// variant of the database of the selected engine.
+    /// </summary>
+    /// <param name="backend">The backend that creates the database.</param>
+    protected ConformanceTestBase(ITestDatabaseBackend backend)
+        : base(backend, EngineTraits.For(backend.Provider).DefaultSchemaSource, false)
+    {
+        Rows = new ModelRowFactory(CreateDbContext);
+    }
+
     protected static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
 
     protected ModelRowFactory Rows { get; }
