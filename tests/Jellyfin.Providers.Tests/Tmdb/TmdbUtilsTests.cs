@@ -22,6 +22,17 @@ namespace Jellyfin.Providers.Tests.Tmdb
         }
 
         [Theory]
+        [InlineData("es-419", null, "es,null,en")]
+        [InlineData("es-419", "MX", "es-MX,null,en")]
+        [InlineData("pt-BR", null, "pt-BR,null,en")]
+        [InlineData("en", null, "en,null")]
+        [InlineData("", null, "null,en")]
+        public static void GetImageLanguagesParam_Valid_Success(string language, string? countryCode, string expected)
+        {
+            Assert.Equal(expected, TmdbUtils.GetImageLanguagesParam(language, countryCode));
+        }
+
+        [Theory]
         [InlineData(null, null)]
         [InlineData("", "")]
         public static void NormalizeLanguage_Invalid_Equal(string? input, string? expected)
@@ -36,6 +47,11 @@ namespace Jellyfin.Providers.Tests.Tmdb
         [InlineData("en", "GB", "en-US", "en-GB")]
         [InlineData("en", "US", "en-US", "en-US")]
         [InlineData("en", null, "en-US", "en-US")]
+        // Regions TMDb does not have match the images it files under the countries they cover.
+        [InlineData("es", "MX", "es-419", "es-419")]
+        [InlineData("es", "AR", "es-419", "es-419")]
+        [InlineData("es", "ES", "es-419", "es-ES")]
+        [InlineData("de", "DE", "de-CH", "de-CH")]
         // TMDb files nearly every image under a region, which must not stop a plain request matching.
         [InlineData("en", "US", "en", "en")]
         [InlineData("pt", "PT", "pt", "pt")]

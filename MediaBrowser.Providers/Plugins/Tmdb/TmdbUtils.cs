@@ -408,6 +408,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             {
                 preferredLanguage = NormalizeLanguage(preferredLanguage, countryCode);
 
+                // TMDb matches no images for es-419, only for the bare language or a country variant
+                if (preferredLanguage.EndsWith("-419", StringComparison.Ordinal))
+                {
+                    preferredLanguage = preferredLanguage[..^4];
+                }
+
                 languages.Add(preferredLanguage);
             }
 
@@ -496,9 +502,22 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return imageLanguage;
             }
 
-            return string.IsNullOrEmpty(imageRegion) || string.Equals(imageRegion, requestParts[1], StringComparison.OrdinalIgnoreCase)
+            return string.IsNullOrEmpty(imageRegion) || IsRequestedRegion(imageRegion, requestParts[1])
                 ? requestLanguage
                 : imageLanguage + "-" + imageRegion.ToUpperInvariant();
+        }
+
+        private static bool IsRequestedRegion(string imageRegion, string requestRegion)
+        {
+            // TMDb has no Latin American (419) region, it files those images under the individual countries.
+            if (string.Equals(requestRegion, "419", StringComparison.Ordinal))
+            {
+                return !string.Equals(imageRegion, "ES", StringComparison.OrdinalIgnoreCase);
+            }
+
+            // TMDb has no Swiss variants either, NormalizeLanguage requests the bare language instead.
+            return string.Equals(requestRegion, "CH", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(imageRegion, requestRegion, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
