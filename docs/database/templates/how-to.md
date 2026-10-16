@@ -318,6 +318,10 @@ as its provider has nothing to snapshot", and on a database that already has mig
 Each migration runs in a transaction of its own. A migration that fails is rolled back, but the migrations of the
 same upgrade that ran before it stay applied. Jellyfin then logs which migration was the last to apply completely.
 To go back, restore the dump and start the previous version of Jellyfin.
+
+The migration `20261016043615_IndexItemPathByHash` rebuilds the index on the paths of the items as a hash index.
+It runs at startup, before Jellyfin accepts clients, and holds the items table for as long as the index takes to
+build: a few seconds per million items, more when the table is not in memory.
 {{/if}}
 {{#if mysql-family}}
 > Migrations on MySQL and MariaDB are applied one statement at a time and cannot be rolled back as a whole. Take a

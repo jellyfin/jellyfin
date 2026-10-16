@@ -165,6 +165,10 @@ Each migration runs in a transaction of its own. A migration that fails is rolle
 same upgrade that ran before it stay applied. Jellyfin then logs which migration was the last to apply completely.
 To go back, restore the dump and start the previous version of Jellyfin.
 
+The migration `20261016043615_IndexItemPathByHash` rebuilds the index on the paths of the items as a hash index.
+It runs at startup, before Jellyfin accepts clients, and holds the items table for as long as the index takes to
+build: a few seconds per million items, more when the table is not in memory.
+
 ### The database server
 
 Upgrade PostgreSQL with `pg_upgrade`, or by a dump and a restore into the new version. Any version from 16 on is
