@@ -4,6 +4,7 @@ using Jellyfin.Database.Providers.MySql;
 using Jellyfin.Database.Providers.Postgres;
 using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Database.Testing;
+using Jellyfin.Database.Testing.Conformance;
 using Microsoft.Data.Sqlite;
 using Xunit;
 using Xunit.Sdk;
@@ -81,13 +82,67 @@ public class EngineTraitsTests
     }
 
     [Theory]
-    [InlineData(TestDbProvider.Sqlite, true)]
-    [InlineData(TestDbProvider.Postgres, true)]
-    [InlineData(TestDbProvider.MySql, false)]
-    [InlineData(TestDbProvider.MariaDb, false)]
-    public void SupportsPartialIndexes_IsFalseOnlyOnTheEnginesWithoutThem(TestDbProvider provider, bool supported)
+    [InlineData(TestDbProvider.Sqlite)]
+    [InlineData(TestDbProvider.Postgres)]
+    public void UnexpressibleIndexFilters_AreNoneOnTheEnginesWithPartialIndexes(TestDbProvider provider)
     {
-        Assert.Equal(supported, EngineTraits.For(provider).SupportsPartialIndexes);
+        Assert.Empty(EngineTraits.For(provider).UnexpressibleIndexFilters);
+    }
+
+    [Theory]
+    [InlineData(TestDbProvider.MySql)]
+    [InlineData(TestDbProvider.MariaDb)]
+    public void UnexpressibleIndexFilters_AreEveryFilterOnTheEnginesWithoutPartialIndexes(TestDbProvider provider)
+    {
+        string[] every =
+        [
+            "\"OwnerId\" IS NOT NULL",
+            "\"ExtraType\" IS NOT NULL",
+            "\"PrimaryVersionId\" IS NOT NULL",
+            "\"PrimaryVersionId\" IS NULL AND (\"OwnerId\" IS NULL OR \"ExtraType\" IS NOT NULL)"
+        ];
+
+        Assert.Equal(every.Order(StringComparer.Ordinal), EngineTraits.For(provider).UnexpressibleIndexFilters.Order(StringComparer.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(TestDbProvider.Sqlite)]
+    [InlineData(TestDbProvider.Postgres)]
+    [InlineData(TestDbProvider.MySql)]
+    [InlineData(TestDbProvider.MariaDb)]
+    public void NoActionCascades_AreNoneOnTheEnginesThatCascadeEveryKey(TestDbProvider provider)
+    {
+        Assert.Empty(EngineTraits.For(provider).NoActionCascades);
+    }
+
+    [Theory]
+    [InlineData(TestDbProvider.Sqlite)]
+    [InlineData(TestDbProvider.Postgres)]
+    [InlineData(TestDbProvider.MySql)]
+    [InlineData(TestDbProvider.MariaDb)]
+    public void NullFilteredUniqueIndexes_AreNoneOnTheEnginesWhoseUniqueIndexesTakeManyNulls(TestDbProvider provider)
+    {
+        Assert.Empty(EngineTraits.For(provider).NullFilteredUniqueIndexes);
+    }
+
+    [Fact]
+    public void ModelAllowances_AreTheThreeSetsOfTheRow()
+    {
+        Assert.All(Enum.GetValues<TestDbProvider>().Select(EngineTraits.For), traits =>
+        {
+            Assert.Same(traits.UnexpressibleIndexFilters, traits.ModelAllowances.UnexpressibleIndexFilters);
+            Assert.Same(traits.NoActionCascades, traits.ModelAllowances.NoActionCascades);
+            Assert.Same(traits.NullFilteredUniqueIndexes, traits.ModelAllowances.NullFilteredUniqueIndexes);
+        });
+    }
+
+    [Fact]
+    public void NoActionCascades_OfEveryEngine_AreCoveredByTheFolderDeleteRowOfTheKit()
+    {
+        // The server deletes the rows of such a key itself, which only the folder delete row holds an engine to.
+        Assert.All(
+            Enum.GetValues<TestDbProvider>().Select(EngineTraits.For).Where(traits => traits.NoActionCascades.Count > 0),
+            traits => Assert.Contains(traits.Provider, ConformanceKit.Engines));
     }
 
     [Theory]

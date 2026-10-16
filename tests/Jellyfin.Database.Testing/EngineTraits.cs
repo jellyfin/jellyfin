@@ -22,6 +22,12 @@ public sealed class EngineTraits
     // The extended result code of SQLite for a violated unique constraint.
     private const int SqliteConstraintUnique = 2067;
 
+    // The filters of the indexes of the SQLite model, as the model configuration writes them.
+    private const string OwnedFilter = "\"OwnerId\" IS NOT NULL";
+    private const string ExtraTypeFilter = "\"ExtraType\" IS NOT NULL";
+    private const string AlternateVersionFilter = "\"PrimaryVersionId\" IS NOT NULL";
+    private const string PrimaryVersionFilter = "\"PrimaryVersionId\" IS NULL AND (\"OwnerId\" IS NULL OR \"ExtraType\" IS NOT NULL)";
+
     private static readonly Dictionary<TestDbProvider, EngineTraits> _table = new[]
     {
         new EngineTraits
@@ -29,7 +35,9 @@ public sealed class EngineTraits
             Provider = TestDbProvider.Sqlite,
             ProviderType = typeof(SqliteDatabaseProvider),
             IsEmbedded = true,
-            SupportsPartialIndexes = true,
+            UnexpressibleIndexFilters = [],
+            NoActionCascades = [],
+            NullFilteredUniqueIndexes = [],
             PurgeResetsIdentityInATransaction = true,
             AssertUniqueViolation = ex => Assert.Equal(SqliteConstraintUnique, Assert.IsType<SqliteException>(ex).SqliteExtendedErrorCode),
             Pool = new PoolStatements
@@ -49,7 +57,9 @@ public sealed class EngineTraits
             ProviderType = typeof(PostgresDatabaseProvider),
             CoversThroughSqliteMigration = PostgresMigrationBaseline.CoversThroughSqliteMigration,
             ServerMarker = "PostgreSQL",
-            SupportsPartialIndexes = true,
+            UnexpressibleIndexFilters = [],
+            NoActionCascades = [],
+            NullFilteredUniqueIndexes = [],
             PurgeResetsIdentityInATransaction = true,
             AssertUniqueViolation = ex => Assert.Equal(PostgresErrorCodes.UniqueViolation, Assert.IsType<PostgresException>(ex).SqlState)
         },
@@ -97,10 +107,29 @@ public sealed class EngineTraits
     public string? ServerMarker { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether the engine can create a partial index, one over the rows that match a filter.
-    /// The provider of an engine that cannot creates a filtered index of the model over every row.
+    /// Gets the filters of indexes of the SQLite model that the engine cannot express, each the exact text of the filter
+    /// of an index that is not unique. The provider of the engine creates such an index over every row.
     /// </summary>
-    public required bool SupportsPartialIndexes { get; init; }
+    public required IReadOnlyList<string> UnexpressibleIndexFilters { get; init; }
+
+    /// <summary>
+    /// Gets the foreign keys that delete in cascade in the SQLite model and that the engine cannot cascade, by table and
+    /// columns. The provider of the engine creates them without an action on delete, and Jellyfin deletes the rows that
+    /// point at a deleted row first.
+    /// </summary>
+    public required IReadOnlyList<(string Table, string Columns)> NoActionCascades { get; init; }
+
+    /// <summary>
+    /// Gets the unique indexes with a column that takes NULL, by table and columns, that the provider of the engine filters
+    /// to the rows where those columns have a value, with the exact filter. A unique index of such an engine takes one
+    /// NULL, and without the filter it would refuse rows that the unique index of the SQLite model takes.
+    /// </summary>
+    public required IReadOnlyList<(string Table, string Columns, string Filter)> NullFilteredUniqueIndexes { get; init; }
+
+    /// <summary>
+    /// Gets where the model of the engine may differ from the SQLite model.
+    /// </summary>
+    public ModelAllowances ModelAllowances => new(UnexpressibleIndexFilters, NoActionCascades, NullFilteredUniqueIndexes);
 
     /// <summary>
     /// Gets a value indicating whether the purge of the provider starts the identity columns of the purged tables again
@@ -146,7 +175,11 @@ public sealed class EngineTraits
         Provider = provider,
         ProviderType = typeof(MySqlDatabaseProvider),
         ServerMarker = serverMarker,
-        SupportsPartialIndexes = false,
+
+        // Neither server can create a partial index, so the provider removes every filter.
+        UnexpressibleIndexFilters = [OwnedFilter, ExtraTypeFilter, AlternateVersionFilter, PrimaryVersionFilter],
+        NoActionCascades = [],
+        NullFilteredUniqueIndexes = [],
         PurgeResetsIdentityInATransaction = false,
         CoversThroughSqliteMigration = MySqlMigrationBaseline.CoversThroughSqliteMigration,
         AssertUniqueViolation = ex => Assert.Equal(MySqlErrorCode.DuplicateKeyEntry, Assert.IsType<MySqlException>(ex).ErrorCode),
