@@ -1655,7 +1655,7 @@ namespace MediaBrowser.Model.Dlna
         private bool IsBitrateLimitExceeded(MediaSourceInfo item, long maxBitrate)
         {
             // Don't restrict bitrate if item is remote.
-            if (item.IsRemote)
+            if (item.IsRemote && maxBitrate <= 0)
             {
                 return false;
             }
