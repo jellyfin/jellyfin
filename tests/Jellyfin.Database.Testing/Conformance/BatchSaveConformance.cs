@@ -23,9 +23,8 @@ namespace Jellyfin.Database.Testing.Conformance;
 /// Kit row: the server saves a batch of new items, such as the new children a scan finds in a folder, in which the
 /// engine refuses the row of one item. <see cref="ItemPersistenceService.SaveItems"/> saves all of the items or none, so
 /// that one row costs the whole batch; <see cref="ItemPersistenceService.SaveItemsSkippingFailures"/> leaves out only
-/// that item. Every engine refuses an item whose parent does not exist, by its foreign key. A path longer than an
-/// index key may be is saved on every engine but PostgreSQL, which indexes the whole value: that is a known gap, so the
-/// row fails once PostgreSQL saves such a path, and the gap has to be removed.
+/// that item. Every engine refuses an item whose parent does not exist, by its foreign key. A path longer than a btree
+/// index entry may be is saved on every engine: MySQL and MariaDB index a prefix of it, and PostgreSQL a hash of it.
 /// </summary>
 public abstract class BatchSaveConformance : ConformanceTestBase
 {
@@ -91,18 +90,37 @@ public abstract class BatchSaveConformance : ConformanceTestBase
         var stored = StoredIds(items);
         Assert.Equal(items.Where(i => !i.Id.Equals(longPath.Id)).Select(i => i.Id).Order(), stored.Where(id => !id.Equals(longPath.Id)).Order());
 
-        // The item with the long path is saved too, except where the engine refuses it. The error it was left out
-        // for is thrown again, so that the gap is the only failure it is taken for.
-        KnownGap.On(KnownGaps.PathIndexKeyOnPostgres, () =>
+        // The item with the long path is saved too. An error it was left out for is thrown again, so that the test
+        // fails with the engine's own message.
+        if (logger.Failures.Count > 0)
         {
-            if (logger.Failures.Count > 0)
-            {
-                ExceptionDispatchInfo.Throw(Assert.Single(logger.Failures));
-            }
+            ExceptionDispatchInfo.Throw(Assert.Single(logger.Failures));
+        }
 
-            Assert.Empty(notSaved);
-            Assert.Contains(longPath.Id, stored);
-        });
+        Assert.Empty(notSaved);
+        Assert.Contains(longPath.Id, stored);
+    }
+
+    [ConformanceFact]
+    public void SaveItems_OneItemWithAPathOfTenThousandBytes_SavesTheBatchAndFindsTheItemByItsPath()
+    {
+        var random = new Random(11);
+        var items = CreateMovies();
+        var longPath = items[Refused];
+        longPath.Path = "/movies/" + new string(Enumerable.Range(0, 9992).Select(_ => (char)random.Next('a', 'z' + 1)).ToArray());
+        var path = longPath.Path;
+        var paths = new List<string> { path, items[0].Path };
+
+        CreateService().SaveItems(items, CancellationToken.None);
+
+        // The lookups by path the server makes: one path, and a list of them.
+        using var context = CreateDbContext();
+        Assert.Equal(items.Select(i => i.Id).Order(), StoredIds(items).Order());
+        Assert.Equal([longPath.Id], context.BaseItems.Where(e => e.Path == path).Select(e => e.Id).ToList());
+        Assert.Equal(
+            new[] { items[0].Id, longPath.Id }.Order(),
+            context.BaseItems.Where(e => e.Path != null && paths.Contains(e.Path)).Select(e => e.Id).ToList().Order());
+        Assert.Equal(path, context.BaseItems.Where(e => e.Id.Equals(longPath.Id)).Select(e => e.Path).Single());
     }
 
     protected override void Dispose(bool disposing)

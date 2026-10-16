@@ -55,6 +55,16 @@ public class NullsFirstIndexConventionTests
             index.GetNullSortOrder());
     }
 
+    [Fact]
+    public void IndexWithAnotherAccessMethod_GetsNoNullOrder()
+    {
+        var hash = BuildIndex(b => b.HasIndex(r => r.Name).HasMethod("hash"));
+        var btree = BuildIndex(b => b.HasIndex(r => r.Name).HasMethod("btree"));
+
+        Assert.Null(hash.GetNullSortOrder());
+        Assert.Equal([NullSortOrder.NullsFirst], btree.GetNullSortOrder());
+    }
+
     private static IIndex BuildIndex(System.Action<Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Row>> configure)
     {
         using var context = new DbContext(new DbContextOptionsBuilder().UseNpgsql("Host=localhost").Options);

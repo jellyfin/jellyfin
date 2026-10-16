@@ -44,26 +44,6 @@ public class KnownGapsTests
             () => KnownGap.On(gap, () => throw CreatePostgresException("42883", "function lower(integer) does not exist")));
     }
 
-    [Fact]
-    public void PathIndexKeyOnPostgres_IndexRowOverTheBtreeMaximumForThePathIndex_Matches()
-    {
-        var exception = new InvalidOperationException(
-            "save failed",
-            CreatePostgresException("54000", "index row size 3024 exceeds btree version 4 maximum 2704 for index \"IX_BaseItems_Path\""));
-
-        Assert.True(KnownGaps.PathIndexKeyOnPostgres.Matches(exception));
-    }
-
-    [Theory]
-    [InlineData("54000", "index row size 3024 exceeds btree version 4 maximum 2704 for index \"IX_BaseItems_Name\"")]
-    [InlineData("22001", "value too long for type character varying(255) in IX_BaseItems_Path")]
-    [InlineData("23503", "insert or update on table \"BaseItems\" violates foreign key constraint")]
-    public void PathIndexKeyOnPostgres_AnyOtherError_DoesNotMatch(string sqlState, string messageText)
-    {
-        Assert.False(KnownGaps.PathIndexKeyOnPostgres.Matches(CreatePostgresException(sqlState, messageText)));
-        Assert.False(KnownGaps.PathIndexKeyOnPostgres.Matches(new InvalidOperationException("boom")));
-    }
-
     [Theory]
     [MemberData(nameof(SortNameRangeGaps))]
     public void SortNameRangeGap_TheKnownLists_Match(KnownGapDefinition gap)

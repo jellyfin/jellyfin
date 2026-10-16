@@ -120,6 +120,7 @@ public sealed class MySqlBaselineSchemaTests
         var actual = await ReadPrefixesAsync(context);
 
         Assert.Contains(expected, entry => entry.Value is not null);
+        Assert.Equal(512, actual["BaseItems.IX_BaseItems_Path #1 Path"]);
         Assert.True(
             Describe(expected).SequenceEqual(Describe(actual)),
             $"The prefix lengths differ.{Environment.NewLine}Expected: {string.Join("; ", Describe(expected))}{Environment.NewLine}On the server: {string.Join("; ", Describe(actual))}");

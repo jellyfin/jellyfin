@@ -435,7 +435,7 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
 
                     b.HasIndex("Path");
 
-                    NpgsqlIndexBuilderExtensions.HasNullSortOrder(b.HasIndex("Path"), new[] { NullSortOrder.NullsFirst });
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Path"), "hash");
 
                     b.HasIndex("PresentationUniqueKey");
 

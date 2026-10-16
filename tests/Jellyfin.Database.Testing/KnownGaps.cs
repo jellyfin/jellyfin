@@ -23,13 +23,6 @@ public static class KnownGaps
         "PostgreSQL rejects a NUL character in any string parameter",
         ex => PostgresErrors.HasSqlState(ex, "22021"));
 
-    // The message names the index, which no translation of the server's messages changes.
-    public static readonly KnownGapDefinition PathIndexKeyOnPostgres = new(
-        TestDbProvider.Postgres,
-        "PG-PATH-INDEX-KEY",
-        "PostgreSQL refuses an item whose path makes a key of IX_BaseItems_Path over the btree maximum of 2704 bytes",
-        ex => PostgresErrors.HasSqlState(ex, "54000", "IX_BaseItems_Path"));
-
     public static readonly KnownGapDefinition ContainsOverManyValues = new(
         TestDbProvider.Sqlite,
         "SQLITE-CONTAINS-PARAMETER-LIMIT",

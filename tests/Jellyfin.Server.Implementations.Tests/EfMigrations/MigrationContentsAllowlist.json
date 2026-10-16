@@ -156,5 +156,37 @@
     "operation": "Sql ecdc525fb61ca746 DROP INDEX IF EXISTS \"IX_Peoples_NameLower\";",
     "category": "EquivalentSql",
     "reason": "Drops the index that PostgreSQL drops with DropIndex Peoples IX_Peoples_NameLower, written as SQL together with the column drops that follow it."
+  },
+  {
+    "migration": "20261016043615_IndexItemPathByHash",
+    "direction": "Up",
+    "provider": "PostgreSQL",
+    "operation": "DropIndex BaseItems IX_BaseItems_Path",
+    "category": "EngineSpecific",
+    "reason": "Drops the btree index on the path of an item, so that PostgreSQL can recreate it as a hash index. A btree index entry may hold at most 2704 bytes, so PostgreSQL refused an item whose path does not compress to that size. SQLite has no such limit and MySQL and MariaDB index a prefix of the path, so their index stays as it is and their migration has no operations."
+  },
+  {
+    "migration": "20261016043615_IndexItemPathByHash",
+    "direction": "Up",
+    "provider": "PostgreSQL",
+    "operation": "CreateIndex BaseItems (Path)",
+    "category": "EngineSpecific",
+    "reason": "Recreates the index on the path of an item as a hash index, which stores a hash of the value whatever its length and answers the lookups by path, equality and membership. Only PostgreSQL limits the size of an index entry this way; SQLite, MySQL and MariaDB keep their index, so their migration has no operations."
+  },
+  {
+    "migration": "20261016043615_IndexItemPathByHash",
+    "direction": "Down",
+    "provider": "PostgreSQL",
+    "operation": "DropIndex BaseItems IX_BaseItems_Path",
+    "category": "EngineSpecific",
+    "reason": "Drops the hash index on the path of an item, to recreate the btree index of the previous migration. Only PostgreSQL changed the index, so the other providers have nothing to undo."
+  },
+  {
+    "migration": "20261016043615_IndexItemPathByHash",
+    "direction": "Down",
+    "provider": "PostgreSQL",
+    "operation": "CreateIndex BaseItems (Path)",
+    "category": "EngineSpecific",
+    "reason": "Recreates the btree index of the previous migration on the path of an item, with nulls first. Only PostgreSQL changed the index, so the other providers have nothing to undo. It fails while an item has a path too long for a btree index entry."
   }
 ]

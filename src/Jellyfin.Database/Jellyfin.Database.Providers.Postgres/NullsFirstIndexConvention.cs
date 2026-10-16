@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +19,8 @@ namespace Jellyfin.Database.Providers.Postgres;
 /// default PostgreSQL index, so it is given nulls last to match what a descending query asks for. A column that cannot
 /// hold nulls keeps the default order, because the queries do not name a null placement for it and the index behind a
 /// key, which cannot name one either, has the default order as well. Npgsql only reads the sort order from an array,
-/// which is why the order is not stored as a list.
+/// which is why the order is not stored as a list. Only a btree index has an order, so an index with another access
+/// method, such as the hash index on the path of an item, is left as it is.
 /// </remarks>
 internal sealed class NullsFirstIndexConvention : IModelFinalizingConvention
 {
@@ -27,6 +29,11 @@ internal sealed class NullsFirstIndexConvention : IModelFinalizingConvention
     {
         foreach (var index in modelBuilder.Metadata.GetEntityTypes().SelectMany(e => e.GetDeclaredIndexes()))
         {
+            if (index.GetMethod() is { } method && !string.Equals(method, "btree", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
             // EF Core stores no list for an ascending index and an empty list when every column is descending.
             var descending = index.IsDescending;
             var order = index.Properties

@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.ModelConfiguration;
 using Jellyfin.Database.Providers.MySql;
 using Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
+using Jellyfin.Server.Implementations.Tests.EfMigrations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -15,6 +17,22 @@ namespace Jellyfin.Server.Implementations.Tests.MySql;
 
 public class MySqlModelTests
 {
+    public static TheoryData<string> MySqlFamilyRows => new(MigrationProvider.All.Where(p => p.ServerVersion is not null).Select(p => p.Name));
+
+    [Theory]
+    [MemberData(nameof(MySqlFamilyRows))]
+    public void PathIndex_IndexesAPrefixOf512Characters(string providerName)
+    {
+        using var context = MigrationProvider.Get(providerName).CreateContext();
+        var index = context.GetService<IDesignTimeModel>().Model
+            .FindEntityType(typeof(BaseItemEntity))!
+            .GetIndexes()
+            .Single(i => i.GetDatabaseName() == "IX_BaseItems_Path");
+
+        // MySQL and MariaDB index the first 512 characters of a path, so that a path of any length is saved.
+        Assert.Equal([512], index.PrefixLength());
+    }
+
     [Theory]
     [InlineData("8.4-mysql")]
     [InlineData("11.4.13-mariadb")]

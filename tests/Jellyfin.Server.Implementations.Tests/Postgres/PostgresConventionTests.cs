@@ -341,16 +341,19 @@ public sealed class PostgresConventionTests : DatabaseTestFixture
         await using var context = CreateDbContext();
 
         // Bit 0 of indoption is DESC and bit 1 is NULLS FIRST. A column that cannot be null needs the default order,
-        // which is also the one of the index behind a key, and one that can be null needs NULLS FIRST.
+        // which is also the one of the index behind a key, and one that can be null needs NULLS FIRST. Only a btree
+        // index has an order; PostgresPathIndexTests covers the one index that is not a btree.
         var deviating = await context.Database
             .SqlQueryRaw<string>(
                 """
                 SELECT c.relname || '.' || (o.ordinality - 1) AS "Value"
                 FROM pg_index i
                 JOIN pg_class c ON c.oid = i.indexrelid
+                JOIN pg_am m ON m.oid = c.relam
                 CROSS JOIN LATERAL unnest(i.indoption::int2[], i.indkey::int2[]) WITH ORDINALITY AS o(option, attnum, ordinality)
                 LEFT JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = o.attnum
                 WHERE c.relnamespace = current_schema()::regnamespace
+                  AND m.amname = 'btree'
                   AND o.ordinality <= i.indnkeyatts
                   AND (o.option & 3) <> CASE WHEN a.attnotnull IS TRUE THEN 0 ELSE 2 END
                 """)
