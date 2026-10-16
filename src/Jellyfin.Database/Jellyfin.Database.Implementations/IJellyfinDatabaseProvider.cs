@@ -144,6 +144,21 @@ public interface IJellyfinDatabaseProvider
     bool IsRetryableWriteConflict(Exception exception) => false;
 
     /// <summary>
+    /// Determines whether a write failed because the engine refused the values of the rows it wrote: a constraint or
+    /// a trigger rejected them, or they exceed a limit of the engine. Such a write fails each time it is repeated with
+    /// the same rows, while the other rows of the same unit of work can be written without them. Errors of the
+    /// connection, the transport or the storage, time-outs, cancellations, and errors about a busy or locked database
+    /// are not data errors, whatever the rows hold. The exception may be wrapped, for example in a
+    /// <see cref="DbUpdateException"/>.
+    /// </summary>
+    /// <param name="exception">The exception thrown by the failed write.</param>
+    /// <returns>
+    /// <c>true</c> if the engine refused the data of the rows; otherwise, and for an exception the provider does not
+    /// know, <c>false</c>.
+    /// </returns>
+    bool IsDataError(Exception exception) => false;
+
+    /// <summary>
     /// Prepares the database for inserting rows of <paramref name="entityType"/> with explicit values in its
     /// generated key columns, as a restore does. Engines that refuse such values by default can allow them here, for
     /// example SQL Server with <c>SET IDENTITY_INSERT</c>, which applies to a single table of a session at a time.

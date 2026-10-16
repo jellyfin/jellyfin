@@ -28,6 +28,9 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     // SQLITE_CONSTRAINT_PRIMARYKEY and SQLITE_CONSTRAINT_UNIQUE.
     private const int SqliteConstraintPrimaryKey = 1555;
     private const int SqliteConstraintUnique = 2067;
+    private const int SqliteTooBig = 18;
+    private const int SqliteConstraint = 19;
+    private const int SqliteMismatch = 20;
 
     private readonly IApplicationPaths _applicationPaths;
     private readonly ILogger<SqliteDatabaseProvider> _logger;
@@ -457,5 +460,26 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         """;
 
         await dbContext.Database.ExecuteSqlRawAsync(deleteAllQuery).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public bool IsDataError(Exception exception)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+
+        // The primary result codes for a violated constraint, which includes a trigger that raises an error, for a
+        // value over the length limit, and for a value of the wrong type. A busy or locked database, and the errors of
+        // the storage, have other codes. The low byte of a result code is its primary code, should an extended code
+        // ever be reported in its place.
+        for (var current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is SqliteException sqliteException
+                && (sqliteException.SqliteErrorCode & 0xFF) is SqliteTooBig or SqliteConstraint or SqliteMismatch)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
