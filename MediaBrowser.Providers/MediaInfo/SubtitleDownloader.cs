@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -14,6 +15,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.MediaInfo
@@ -22,11 +24,13 @@ namespace MediaBrowser.Providers.MediaInfo
     {
         private readonly ILogger _logger;
         private readonly ISubtitleManager _subtitleManager;
+        private readonly ILocalizationManager _localizationManager;
 
-        public SubtitleDownloader(ILogger logger, ISubtitleManager subtitleManager)
+        public SubtitleDownloader(ILogger logger, ISubtitleManager subtitleManager, ILocalizationManager localizationManager)
         {
             _logger = logger;
             _subtitleManager = subtitleManager;
+            _localizationManager = localizationManager;
         }
 
         public async Task<List<string>> DownloadSubtitles(
@@ -131,8 +135,11 @@ namespace MediaBrowser.Providers.MediaInfo
             bool isAutomated,
             CancellationToken cancellationToken)
         {
+            // A variant also matches its base code, ffprobe reports a pt-BR track as "por".
+            var languageCodes = _localizationManager.FindLanguageInfo(language)?.GetMediaStreamLanguageCodes() ?? [language];
+
             // There's already subtitles for this language
-            if (mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && i.IsTextSubtitleStream && string.Equals(i.Language, language, StringComparison.OrdinalIgnoreCase)))
+            if (mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && i.IsTextSubtitleStream && languageCodes.Contains(i.Language, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
@@ -148,14 +155,14 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // There's already a default audio stream for this language
             if (skipIfAudioTrackMatches &&
-                defaultAudioStreams.Any(i => string.Equals(i.Language, language, StringComparison.OrdinalIgnoreCase)))
+                defaultAudioStreams.Any(i => languageCodes.Contains(i.Language, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
 
             // There's an internal subtitle stream for this language
             if (skipIfEmbeddedSubtitlesPresent &&
-                mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && !i.IsExternal && string.Equals(i.Language, language, StringComparison.OrdinalIgnoreCase)))
+                mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && !i.IsExternal && languageCodes.Contains(i.Language, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }

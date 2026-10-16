@@ -70,6 +70,10 @@ public sealed partial class BaseItemRepository
     private static string NormalizeLanguage(string language)
         => string.Equals(language, "und", StringComparison.OrdinalIgnoreCase) ? "und" : language;
 
+    // A variant also matches its base code, a pt-br setting must see the "por" track ffprobe reports.
+    private IReadOnlyList<string> GetStreamLanguageCodes(string language)
+        => _localizationManager.FindLanguageInfo(language)?.GetMediaStreamLanguageCodes() ?? [NormalizeLanguage(language)];
+
     // The primary versions whose alternate version satisfies a dimension bound. Anchored on
     // PrimaryVersionId so the filtered index carries it rather than a scan of every item.
     private static IQueryable<Guid> VersionsMatchingDimension(JellyfinDbContext context, Expression<Func<BaseItemEntity, bool>> bound)
@@ -825,8 +829,8 @@ public sealed partial class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoAudioTrackWithLanguage))
         {
-            var lang = NormalizeLanguage(filter.HasNoAudioTrackWithLanguage);
-            var undetermined = string.Equals(lang, "und", StringComparison.Ordinal);
+            var lang = GetStreamLanguageCodes(filter.HasNoAudioTrackWithLanguage);
+            var undetermined = lang.Contains("und", StringComparer.Ordinal);
             var criteria = new HasMediaStreamType(MediaStreamTypeEntity.Audio, lang);
             // A track only an alternate version carries still belongs to the item a caller sees, so the
             // item's own streams alone do not decide this. Same for every stream filter below.
@@ -837,15 +841,15 @@ public sealed partial class BaseItemRepository
                 .Where(e =>
                     (!e.IsFolder
                         && !e.MediaStreams!.Any(ms => ms.StreamType == MediaStreamTypeEntity.Audio
-                            && (ms.Language == lang || (undetermined && string.IsNullOrEmpty(ms.Language))))
+                            && (lang.Contains(ms.Language) || (undetermined && string.IsNullOrEmpty(ms.Language))))
                         && !versionsWithAudio.Contains(e.Id))
                     || (e.IsFolder && !foldersWithAudio.Contains(e.Id)));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoInternalSubtitleTrackWithLanguage))
         {
-            var lang = NormalizeLanguage(filter.HasNoInternalSubtitleTrackWithLanguage);
-            var undetermined = string.Equals(lang, "und", StringComparison.Ordinal);
+            var lang = GetStreamLanguageCodes(filter.HasNoInternalSubtitleTrackWithLanguage);
+            var undetermined = lang.Contains("und", StringComparer.Ordinal);
             var criteria = new HasMediaStreamType(MediaStreamTypeEntity.Subtitle, lang, IsExternal: false);
             var versionsWithSubtitles = DescendantQueryHelper.GetPrimaryVersionIdsMatching(context, criteria);
             var foldersWithSubtitles = DescendantQueryHelper.GetFolderIdsMatching(context, criteria);
@@ -854,15 +858,15 @@ public sealed partial class BaseItemRepository
                 .Where(e =>
                     (!e.IsFolder
                         && !e.MediaStreams!.Any(ms => ms.StreamType == MediaStreamTypeEntity.Subtitle && !ms.IsExternal
-                            && (ms.Language == lang || (undetermined && string.IsNullOrEmpty(ms.Language))))
+                            && (lang.Contains(ms.Language) || (undetermined && string.IsNullOrEmpty(ms.Language))))
                         && !versionsWithSubtitles.Contains(e.Id))
                     || (e.IsFolder && !foldersWithSubtitles.Contains(e.Id)));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoExternalSubtitleTrackWithLanguage))
         {
-            var lang = NormalizeLanguage(filter.HasNoExternalSubtitleTrackWithLanguage);
-            var undetermined = string.Equals(lang, "und", StringComparison.Ordinal);
+            var lang = GetStreamLanguageCodes(filter.HasNoExternalSubtitleTrackWithLanguage);
+            var undetermined = lang.Contains("und", StringComparer.Ordinal);
             var criteria = new HasMediaStreamType(MediaStreamTypeEntity.Subtitle, lang, IsExternal: true);
             var versionsWithSubtitles = DescendantQueryHelper.GetPrimaryVersionIdsMatching(context, criteria);
             var foldersWithSubtitles = DescendantQueryHelper.GetFolderIdsMatching(context, criteria);
@@ -871,15 +875,15 @@ public sealed partial class BaseItemRepository
                 .Where(e =>
                     (!e.IsFolder
                         && !e.MediaStreams!.Any(ms => ms.StreamType == MediaStreamTypeEntity.Subtitle && ms.IsExternal
-                            && (ms.Language == lang || (undetermined && string.IsNullOrEmpty(ms.Language))))
+                            && (lang.Contains(ms.Language) || (undetermined && string.IsNullOrEmpty(ms.Language))))
                         && !versionsWithSubtitles.Contains(e.Id))
                     || (e.IsFolder && !foldersWithSubtitles.Contains(e.Id)));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoSubtitleTrackWithLanguage))
         {
-            var lang = NormalizeLanguage(filter.HasNoSubtitleTrackWithLanguage);
-            var undetermined = string.Equals(lang, "und", StringComparison.Ordinal);
+            var lang = GetStreamLanguageCodes(filter.HasNoSubtitleTrackWithLanguage);
+            var undetermined = lang.Contains("und", StringComparer.Ordinal);
             var criteria = new HasMediaStreamType(MediaStreamTypeEntity.Subtitle, lang);
             var versionsWithSubtitles = DescendantQueryHelper.GetPrimaryVersionIdsMatching(context, criteria);
             var foldersWithSubtitles = DescendantQueryHelper.GetFolderIdsMatching(context, criteria);
@@ -888,7 +892,7 @@ public sealed partial class BaseItemRepository
                 .Where(e =>
                     (!e.IsFolder
                         && !e.MediaStreams!.Any(ms => ms.StreamType == MediaStreamTypeEntity.Subtitle
-                            && (ms.Language == lang || (undetermined && string.IsNullOrEmpty(ms.Language))))
+                            && (lang.Contains(ms.Language) || (undetermined && string.IsNullOrEmpty(ms.Language))))
                         && !versionsWithSubtitles.Contains(e.Id))
                     || (e.IsFolder && !foldersWithSubtitles.Contains(e.Id)));
         }
