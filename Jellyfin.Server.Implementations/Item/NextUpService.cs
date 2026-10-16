@@ -358,6 +358,17 @@ public class NextUpService : INextUpService
             result[seriesKey] = batchResult;
         }
 
+        // Item queries no longer join the links, so the merged-version state every result carries has
+        // to be read for the whole batch at once.
+        _queryHelpers.LoadCollections(
+            context,
+            filter,
+            result.Values
+                .SelectMany<NextUpEpisodeBatchResult, BaseItemDto?>(e =>
+                    [e.LastWatched, e.NextUp, e.LastWatchedForRewatching, e.NextPlayedForRewatching, .. e.Specials ?? []])
+                .Where(e => e is not null)
+                .ToArray()!);
+
         return result;
     }
 }
