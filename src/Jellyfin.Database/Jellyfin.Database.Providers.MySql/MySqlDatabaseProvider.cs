@@ -50,6 +50,13 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
     // each of them is set up once. The warning is given once for each database in the process, so a start shows it once.
     private static readonly ConcurrentDictionary<string, bool> _databasesWarnedOf = new(StringComparer.Ordinal);
 
+    // The errors of the server for values it refuses: a column that takes no NULL (1048, 1263), a duplicate key (1062),
+    // a missing or referenced row of a foreign key (1216, 1217, 1451, 1452), a number out of range (1264, 1690), a value
+    // cut (1265, 1406), a value of the wrong form (1292, 1366), an error raised with SIGNAL, as a trigger does (1644),
+    // and a violated check constraint (3819 on MySQL, 4025 on MariaDB). The connection, time-outs, locks and the
+    // server's resources have numbers of their own.
+    private static readonly HashSet<int> _dataErrors = [1048, 1062, 1216, 1217, 1263, 1264, 1265, 1292, 1366, 1406, 1451, 1452, 1644, 1690, 3819, 4025];
+
     private readonly ILogger<MySqlDatabaseProvider> _logger;
 
     /// <summary>
@@ -201,6 +208,22 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
         for (var current = exception; current is not null; current = current.InnerException)
         {
             if (current is MySqlException { ErrorCode: MySqlErrorCode.DuplicateKeyEntry or MySqlErrorCode.LockDeadlock or MySqlErrorCode.LockWaitTimeout or MySqlErrorCode.CheckRead })
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <inheritdoc/>
+    public bool IsDataError(Exception exception)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+
+        for (var current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is MySqlException mySqlException && _dataErrors.Contains((int)mySqlException.ErrorCode))
             {
                 return true;
             }

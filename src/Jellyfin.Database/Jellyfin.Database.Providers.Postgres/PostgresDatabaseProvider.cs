@@ -151,6 +151,30 @@ public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
     }
 
     /// <inheritdoc/>
+    public bool IsDataError(Exception exception)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+
+        // Class 22 is a value the column or the function refuses, class 23 a violated constraint, and class 54 a limit
+        // of the server, such as an index row over the btree maximum. P0001 is an error raised with RAISE, as a
+        // trigger does. The connection, the server's resources, cancellations and conflicts with other transactions
+        // have classes of their own.
+        for (var current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is PostgresException { SqlState: var sqlState }
+                && (sqlState.StartsWith("22", StringComparison.Ordinal)
+                    || sqlState.StartsWith("23", StringComparison.Ordinal)
+                    || sqlState.StartsWith("54", StringComparison.Ordinal)
+                    || sqlState == PostgresErrorCodes.RaiseException))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <inheritdoc/>
     public async Task RunScheduledOptimisation(CancellationToken cancellationToken)
     {
         if (DbContextFactory is null)
