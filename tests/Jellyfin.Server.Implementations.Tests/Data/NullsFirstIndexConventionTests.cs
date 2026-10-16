@@ -67,7 +67,7 @@ public class NullsFirstIndexConventionTests
 
     private static IIndex BuildIndex(System.Action<Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Row>> configure)
     {
-        using var context = new DbContext(new DbContextOptionsBuilder().UseNpgsql("Host=localhost").Options);
+        using var context = new DbContext(new DbContextOptionsBuilder().UseNpgsql("Host=localhost").EnableServiceProviderCaching(false).Options);
         var conventions = context.GetService<IConventionSetBuilder>().CreateConventionSet();
         conventions.ModelFinalizingConventions.Add(new NullsFirstIndexConvention());
         var builder = new ModelBuilder(conventions);

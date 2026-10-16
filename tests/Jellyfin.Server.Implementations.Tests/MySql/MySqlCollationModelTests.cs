@@ -236,8 +236,10 @@ public partial class MySqlCollationModelTests
                     }
                 });
 
-            // Each server version builds a model of its own, rather than one that EF Core cached for the type.
-            optionsBuilder.ReplaceService<IModelCacheKeyFactory, ProbeModelCacheKeyFactory>();
+            // Each server version builds a model of its own, rather than one that EF Core cached for the type, and stays
+            // out of the cache of internal service providers of the process, as the contexts of the offline tests do.
+            optionsBuilder.ReplaceService<IModelCacheKeyFactory, ProbeModelCacheKeyFactory>()
+                .EnableServiceProviderCaching(false);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

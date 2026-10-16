@@ -125,8 +125,10 @@ public class ModelShapeTests
 #pragma warning restore RS0030
             }
 
-            // Every variant builds a model of its own, rather than the one EF Core cached for the type.
-            optionsBuilder.ReplaceService<IModelCacheKeyFactory, ProbeModelCacheKeyFactory>();
+            // Every variant builds a model of its own, rather than the one EF Core cached for the type, and stays out of the
+            // cache of internal service providers of the process, as the contexts of the offline tests do.
+            optionsBuilder.ReplaceService<IModelCacheKeyFactory, ProbeModelCacheKeyFactory>()
+                .EnableServiceProviderCaching(false);
         }
 
         protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)

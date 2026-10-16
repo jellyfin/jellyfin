@@ -508,6 +508,7 @@ public class IdentifierLengthConventionTests
     {
         var options = new DbContextOptionsBuilder<JellyfinDbContext>()
             .UseNpgsql("Host=localhost")
+            .EnableServiceProviderCaching(false)
             .Options;
         var provider = new PostgresDatabaseProvider(NullLogger<PostgresDatabaseProvider>.Instance);
         var locking = new NoLockBehavior(NullLogger<NoLockBehavior>.Instance);
@@ -551,7 +552,7 @@ public class IdentifierLengthConventionTests
 
     private static IModel BuildModel(int limit, Action<ModelBuilder> configure)
     {
-        using var context = new DbContext(new DbContextOptionsBuilder().UseNpgsql("Host=localhost").Options);
+        using var context = new DbContext(new DbContextOptionsBuilder().UseNpgsql("Host=localhost").EnableServiceProviderCaching(false).Options);
         var conventions = context.GetService<IConventionSetBuilder>().CreateConventionSet();
         conventions.ModelFinalizingConventions.Add(new IdentifierLengthConvention(limit));
         var builder = new ModelBuilder(conventions);
@@ -601,6 +602,7 @@ public class IdentifierLengthConventionTests
 #pragma warning disable RS0030 // Do not use banned APIs: The model is built without opening a database.
         var options = new DbContextOptionsBuilder<JellyfinDbContext>()
             .UseSqlite("Data Source=:memory:")
+            .EnableServiceProviderCaching(false)
             .Options;
 #pragma warning restore RS0030
         var provider = new SqliteDatabaseProvider(new Mock<IApplicationPaths>().Object, NullLogger<SqliteDatabaseProvider>.Instance);
