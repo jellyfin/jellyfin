@@ -36,6 +36,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.12" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.12" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.12" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.12" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.12" />
@@ -80,6 +81,7 @@
     <PackageVersion Include="Svg.Skia" Version="3.7.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="10.2.3" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.2.3" />
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
     <PackageVersion Include="System.Text.Json" Version="10.0.13" />
     <PackageVersion Include="TagLibSharp" Version="2.3.0" />
     <PackageVersion Include="Testcontainers.MariaDb" Version="4.16.0" />

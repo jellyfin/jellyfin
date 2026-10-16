@@ -5,3 +5,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Jellyfin.Database.Testing")]
 [assembly: InternalsVisibleTo("Jellyfin.Database.Providers.Postgres")]
 [assembly: InternalsVisibleTo("Jellyfin.Database.Providers.MySql")]
+[assembly: InternalsVisibleTo("Jellyfin.Database.Providers.SqlServer")]
