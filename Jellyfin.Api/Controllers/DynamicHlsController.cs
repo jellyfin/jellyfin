@@ -1417,7 +1417,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             state.RunTimeTicks ?? 0,
             state.Request.SegmentContainer ?? string.Empty,
             "hls1/main/",
-            Request.QueryString.ToString(),
+            // Segment positions are determined by their index and runtimeTicks, not the playlist start time.
+            QueryString.Create(Request.Query.Where(parameter => !parameter.Key.Equals("StartTimeTicks", StringComparison.OrdinalIgnoreCase))).ToString(),
             EncodingHelper.IsCopyCodec(state.OutputVideoCodec));
         var playlist = _dynamicHlsPlaylistGenerator.CreateMainPlaylist(request);
 
