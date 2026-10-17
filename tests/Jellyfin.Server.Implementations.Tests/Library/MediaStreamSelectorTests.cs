@@ -1,5 +1,6 @@
 using System;
 using Emby.Server.Implementations.Library;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Model.Entities;
 using Xunit;
 
@@ -7,6 +8,28 @@ namespace Jellyfin.Server.Implementations.Tests.Library;
 
 public class MediaStreamSelectorTests
 {
+    [Fact]
+    public void AlwaysSubtitle_MissingFullPreferredLanguage_ScoresOnlyForcedFallback()
+    {
+        var streams = new MediaStream[]
+        {
+            new() { Index = 0, Type = MediaStreamType.Subtitle, Language = "fra" },
+            new() { Index = 1, Type = MediaStreamType.Subtitle, Language = "und", IsForced = true },
+            new() { Index = 2, Type = MediaStreamType.Subtitle, Language = "fra", IsForced = true }
+        };
+        var preferredLanguages = new[] { "eng" };
+
+        Assert.Equal(1, MediaStreamSelector.GetDefaultSubtitleStreamIndex(
+            streams, preferredLanguages, SubtitlePlaybackMode.Always, "eng"));
+
+        MediaStreamSelector.SetSubtitleStreamScores(
+            streams, preferredLanguages, SubtitlePlaybackMode.Always, "eng");
+
+        Assert.Null(streams[0].Score);
+        Assert.True(streams[1].Score.HasValue);
+        Assert.Null(streams[2].Score);
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -50,6 +73,88 @@ public class MediaStreamSelectorTests
         };
 
         Assert.Equal(expectedIndex, MediaStreamSelector.GetDefaultAudioStreamIndex(streams, preferredLanguages, preferDefaultTrack));
+    }
+
+    [Theory]
+    [InlineData("eng", "fra", false, true, new[] { "eng" }, null)]
+    [InlineData("eng", "fra", true, true, new[] { "eng" }, null)]
+    [InlineData("eng", "fra", true, true, new[] { "fra" }, 2)]
+    [InlineData("fra", "fra", true, true, new[] { "eng" }, 2)]
+    [InlineData("eng", "und", true, true, new[] { "eng" }, 2)]
+    [InlineData("eng", "fra", true, false, new[] { "eng" }, 2)]
+    [InlineData("eng", "fra", false, false, new[] { "eng" }, null)]
+    public void DefaultSubtitle_ForcedLanguageMustFitPlayback(
+        string audioLanguage,
+        string subtitleLanguage,
+        bool isDefault,
+        bool isForced,
+        string[] preferredLanguages,
+        int? expectedIndex)
+    {
+        var subtitle = new MediaStream
+        {
+            Index = 2,
+            Type = MediaStreamType.Subtitle,
+            Language = subtitleLanguage,
+            IsDefault = isDefault,
+            IsForced = isForced
+        };
+
+        Assert.Equal(
+            expectedIndex,
+            MediaStreamSelector.GetDefaultSubtitleStreamIndex(
+                new[] { subtitle }, preferredLanguages, SubtitlePlaybackMode.Default, audioLanguage));
+
+        MediaStreamSelector.SetSubtitleStreamScores(
+            new[] { subtitle }, preferredLanguages, SubtitlePlaybackMode.Default, audioLanguage);
+        Assert.Equal(expectedIndex.HasValue, subtitle.Score.HasValue);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DefaultSubtitle_UntaggedAudioWithoutPreference_SelectsEnglishForced(bool isExternal)
+    {
+        var subtitle = new MediaStream
+        {
+            Index = 2,
+            Type = MediaStreamType.Subtitle,
+            Language = "eng",
+            IsForced = true,
+            IsExternal = isExternal
+        };
+
+        Assert.Equal(
+            2,
+            MediaStreamSelector.GetDefaultSubtitleStreamIndex(
+                new[] { subtitle }, Array.Empty<string>(), SubtitlePlaybackMode.Default, string.Empty));
+
+        MediaStreamSelector.SetSubtitleStreamScores(
+            new[] { subtitle }, Array.Empty<string>(), SubtitlePlaybackMode.Default, string.Empty);
+        Assert.True(subtitle.Score.HasValue);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DefaultSubtitle_TaggedEnglishAudio_ExcludesExternalFrenchForced(bool preferEnglish)
+    {
+        var preferredLanguages = preferEnglish ? new[] { "eng" } : Array.Empty<string>();
+        var subtitle = new MediaStream
+        {
+            Index = 0,
+            Type = MediaStreamType.Subtitle,
+            Language = "fra",
+            IsForced = true,
+            IsExternal = true
+        };
+
+        Assert.Null(MediaStreamSelector.GetDefaultSubtitleStreamIndex(
+            new[] { subtitle }, preferredLanguages, SubtitlePlaybackMode.Default, "eng"));
+
+        MediaStreamSelector.SetSubtitleStreamScores(
+            new[] { subtitle }, preferredLanguages, SubtitlePlaybackMode.Default, "eng");
+        Assert.False(subtitle.Score.HasValue);
     }
 
     public static TheoryData<MediaStream, int> GetStreamScore_MediaStream_TestData()
