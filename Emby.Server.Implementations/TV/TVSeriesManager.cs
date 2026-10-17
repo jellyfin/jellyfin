@@ -142,11 +142,10 @@ namespace Emby.Server.Implementations.TV
                     var (playedVersion, lastPlayedDate) = GetMostRecentlyPlayedVersion(result.LastWatched, user);
                     nextEpisode = GetPreferredVersion(nextEpisode, result.LastWatched, playedVersion);
 
-                    DateTime lastWatchedDate = DateTime.MinValue;
-                    if (result.LastWatched is not null)
-                    {
-                        lastWatchedDate = lastPlayedDate ?? DateTime.MinValue.AddDays(1);
-                    }
+                    var lastWatchedDate = result.LastPlayedDate
+                        ?? (result.LastWatched is null
+                            ? DateTime.MinValue
+                            : lastPlayedDate ?? DateTime.MinValue.AddDays(1));
 
                     nextUpList.Add((lastWatchedDate, nextEpisode));
                 }
