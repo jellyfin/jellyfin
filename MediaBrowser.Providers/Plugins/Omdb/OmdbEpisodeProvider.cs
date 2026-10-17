@@ -55,6 +55,15 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 return result;
             }
 
+            var isDefaultDisplayOrder = string.IsNullOrEmpty(info.SeriesDisplayOrder);
+            var episodeImdbId = info.GetProviderId(MetadataProvider.Imdb);
+
+            // If there is no IMDb id and display order is not default -> wrong data would be fetched
+            if (!isDefaultDisplayOrder && string.IsNullOrEmpty(episodeImdbId))
+            {
+                return result;
+            }
+
             if (info.SeriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out string? seriesImdbId)
                 && !string.IsNullOrEmpty(seriesImdbId)
                 && info.IndexNumber.HasValue)
@@ -62,6 +71,8 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 result.HasMetadata = await _omdbProvider.FetchEpisodeData(
                     result,
                     info.IndexNumber.Value,
+                    info.IndexNumberEnd,
+                    isDefaultDisplayOrder,
                     info.ParentIndexNumber ?? 1,
                     info.GetProviderId(MetadataProvider.Imdb),
                     seriesImdbId,
