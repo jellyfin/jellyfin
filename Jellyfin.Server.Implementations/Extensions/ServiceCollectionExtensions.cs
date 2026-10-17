@@ -134,6 +134,9 @@ public static class ServiceCollectionExtensions
             case DatabaseLockingBehaviorTypes.Optimistic:
                 serviceCollection.AddSingleton<IEntityFrameworkCoreLockingBehavior, OptimisticLockBehavior>();
                 break;
+            case DatabaseLockingBehaviorTypes.SerializedWrites:
+                serviceCollection.AddSingleton<IEntityFrameworkCoreLockingBehavior, SerializedWriteLockBehavior>();
+                break;
         }
 
         serviceCollection.AddPooledDbContextFactory<JellyfinDbContext>((serviceProvider, opt) =>
