@@ -461,6 +461,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return ApplePlatformHelper.HasAv1HardwareAccel(_logger);
         }
 
+        public bool CheckHardwareEncoder(string encoder, string deviceArgs, string filterArgs)
+        {
+            // The encoder being listed doesn't mean the GPU can run it, so do a short test encode
+            return GetProcessExitCode(_encoderPath, $"-loglevel quiet -hide_banner {deviceArgs} -f lavfi -i testsrc2=s=1280x720:d=1 {filterArgs} -c:v {encoder} -f null -");
+        }
+
         private IEnumerable<string> GetHwaccelTypes()
         {
             string? output = null;
