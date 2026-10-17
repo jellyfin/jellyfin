@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoFixture.Xunit3;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common.Net;
@@ -14,11 +17,12 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Users;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Nikse.SubtitleEdit.Core.Common;
 using Xunit;
 
 namespace Jellyfin.Api.Tests.Controllers;
@@ -58,6 +62,73 @@ public class UserControllerTests
             _mockLogger.Object,
             _mockQuickConnect.Object,
             _mockPlaylistManager.Object);
+    }
+
+    [Theory]
+    [AutoData]
+    public void GetUserById_NonAdminRequestsOtherUser_ReturnsForbidden(Guid requesterId, Guid otherUserId)
+    {
+        SetCurrentUser(requesterId, UserRoles.User);
+
+        var result = _subject.GetUserById(otherUserId);
+
+        var objectResult = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status403Forbidden, objectResult.StatusCode);
+        Assert.Equal("User is not allowed to view other users.", objectResult.Value);
+        _mockUserManager.Verify(m => m.GetUserById(It.IsAny<Guid>()), Times.Never);
+    }
+
+    [Theory]
+    [AutoData]
+    public void GetUserById_NonAdminRequestsSelf_ReturnsUser(Guid userId)
+    {
+        SetCurrentUser(userId, UserRoles.User);
+        var expected = SetupUserLookup(userId);
+
+        var result = _subject.GetUserById(userId);
+
+        Assert.Same(expected, result.Value);
+    }
+
+    [Theory]
+    [AutoData]
+    public void GetUserById_AdminRequestsOtherUser_ReturnsUser(Guid adminId, Guid otherUserId)
+    {
+        SetCurrentUser(adminId, UserRoles.Administrator);
+        var expected = SetupUserLookup(otherUserId);
+
+        var result = _subject.GetUserById(otherUserId);
+
+        Assert.Same(expected, result.Value);
+    }
+
+    [Theory]
+    [AutoData]
+    public void GetUserById_ApiKeyRequestsOtherUser_ReturnsUser(Guid otherUserId)
+    {
+        // API keys have Administrator role and no specific user ID (Guid.Empty)
+        SetCurrentUser(Guid.Empty, UserRoles.Administrator);
+        var expected = SetupUserLookup(otherUserId);
+
+        var result = _subject.GetUserById(otherUserId);
+
+        Assert.Same(expected, result.Value);
+    }
+
+    [Theory]
+    [AutoData]
+    public void GetUserById_AdminRequestsUnknownUser_ReturnsNotFound(Guid adminId, Guid unknownUserId)
+    {
+        SetCurrentUser(adminId, UserRoles.Administrator);
+        User? nullUser = null;
+        _mockUserManager
+            .Setup(m => m.GetUserById(unknownUserId))
+            .Returns(nullUser);
+
+        var result = _subject.GetUserById(unknownUserId);
+
+        var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
+        Assert.Equal("User not found", notFoundResult.Value);
     }
 
     [Theory]
@@ -116,5 +187,37 @@ public class UserControllerTests
         Validator.TryValidateObject(model, context, result, true);
 
         return result;
+    }
+
+    private void SetCurrentUser(Guid userId, string role)
+    {
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.Role, role),
+            new Claim(InternalClaimTypes.UserId, userId.ToString("N", CultureInfo.InvariantCulture))
+        };
+
+        _subject.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(claims))
+            }
+        };
+    }
+
+    private UserDto SetupUserLookup(Guid userId)
+    {
+        var user = new User("jellyfin", "AuthenticationProviderId", "PasswordResetProviderId");
+        var dto = new UserDto();
+
+        _mockUserManager
+            .Setup(m => m.GetUserById(userId))
+            .Returns(user);
+        _mockUserManager
+            .Setup(m => m.GetUserDto(user, It.IsAny<string?>()))
+            .Returns(dto);
+
+        return dto;
     }
 }
