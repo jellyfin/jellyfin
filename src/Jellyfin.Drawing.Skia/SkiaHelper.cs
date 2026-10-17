@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using SkiaSharp;
@@ -37,7 +38,15 @@ public static class SkiaHelper
                 continue;
             }
 
-            SKBitmap? bitmap = skiaEncoder.Decode(imagePath, false, null, out _);
+            SKBitmap? bitmap;
+            try
+            {
+                bitmap = skiaEncoder.Decode(imagePath, false, null, out _);
+            }
+            catch (ArgumentException)
+            {
+                continue;
+            }
 
             if (bitmap is not null)
             {
