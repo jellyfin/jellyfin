@@ -93,6 +93,28 @@ namespace Jellyfin.Server.Implementations.Tests.HttpServer
         }
 
         [Fact]
+        public async Task ReceiveAsync_ManySmallMessagesPastTheLimit_ProcessesAll()
+        {
+            var messages = new byte[200][];
+            Array.Fill(messages, Message(new string('a', 1024)));
+            var socket = new ScriptedWebSocket(messages);
+            var received = 0;
+            var con = new WebSocketConnection(new NullLogger<WebSocketConnection>(), socket, null!, null!)
+            {
+                OnReceive = _ =>
+                {
+                    received++;
+                    return Task.CompletedTask;
+                }
+            };
+
+            await con.ReceiveAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+            Assert.Equal(200, received);
+            Assert.Equal(WebSocketCloseStatus.NormalClosure, socket.CloseStatusSent);
+        }
+
+        [Fact]
         public async Task ReceiveAsync_NullMessage_KeepsProcessingLaterMessages()
         {
             var socket = new ScriptedWebSocket(Raw("null"), Message("payload"));
