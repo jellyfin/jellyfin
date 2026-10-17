@@ -101,7 +101,7 @@ public sealed class SqlServerDatabaseProvider : IJellyfinDatabaseProvider
         SqlConnectionStringBuilder connectionStringBuilder;
         try
         {
-            connectionStringBuilder = new SqlConnectionStringBuilder(customOptions.ConnectionString);
+            connectionStringBuilder = ParseConnectionString(customOptions.ConnectionString);
         }
         catch (Exception ex) when (ex is ArgumentException or FormatException or KeyNotFoundException)
         {
@@ -391,6 +391,23 @@ public sealed class SqlServerDatabaseProvider : IJellyfinDatabaseProvider
     {
         var value = options?.FirstOrDefault(e => e.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
         return value is null ? default : converter(value.Value);
+    }
+
+    // Encryption is mandatory unless the connection string names Encrypt. SqlClient 6 defaults to Mandatory as well, so
+    // nothing changes at runtime today: the provider states the setting, and the log shows it, instead of relying on the
+    // default of the driver. An Encrypt the operator wrote, such as Encrypt=False for a server on the same machine, is kept.
+    // CodeQL's cs/insecure-sql-connection still reports this builder. Its only accepted form is `Encrypt = true` as a bool
+    // literal in the initializer, which SqlConnectionEncryptOption cannot match and which would override the operator's
+    // choice, so the report is a false positive.
+    private static SqlConnectionStringBuilder ParseConnectionString(string connectionString)
+    {
+        var builder = new SqlConnectionStringBuilder(connectionString);
+        if (!builder.ShouldSerialize("Encrypt"))
+        {
+            builder.Encrypt = SqlConnectionEncryptOption.Mandatory;
+        }
+
+        return builder;
     }
 
     private static bool SpecifiesCommandTimeout(string connectionString)

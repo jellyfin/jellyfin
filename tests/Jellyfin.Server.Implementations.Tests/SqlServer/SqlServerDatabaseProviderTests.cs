@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -90,11 +91,13 @@ public sealed class SqlServerDatabaseProviderTests : IDisposable
         Assert.Equal(2, logger.Entries.Count(entry => entry.Level == LogLevel.Warning));
     }
 
-    [Fact]
-    public void Initialise_InvalidConnectionString_IsRefusedWithoutShowingIt()
+    [Theory]
+    [InlineData("Not A Keyword=1")]
+    [InlineData("Encrypt=maybe")]
+    public void Initialise_InvalidConnectionString_IsRefusedWithoutShowingIt(string invalidPart)
     {
         var configuration = CreateConfiguration();
-        configuration.CustomProviderOptions!.ConnectionString = $"Server=localhost;Password={Secret};Not A Keyword=1";
+        configuration.CustomProviderOptions!.ConnectionString = $"Server=localhost;Password={Secret};{invalidPart}";
 
         var refusal = Assert.Throws<InvalidOperationException>(
             () => new SqlServerDatabaseProvider(NullLogger<SqlServerDatabaseProvider>.Instance).Initialise(new DbContextOptionsBuilder<JellyfinDbContext>(), configuration));
@@ -130,6 +133,63 @@ public sealed class SqlServerDatabaseProviderTests : IDisposable
         var options = Initialise(configuration);
 
         Assert.Equal(expected, new SqlConnectionStringBuilder(RelationalOptionsExtension.Extract(options.Options).ConnectionString).CommandTimeout);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("Column Encryption Setting=Enabled")]
+    [InlineData("Application Name='Encrypt=False'")]
+    [InlineData("Encrypt=")]
+    public void Initialise_ConnectionStringWithoutEncrypt_StatesThatTheConnectionIsEncrypted(string? extra)
+    {
+        var configuration = CreateConfiguration();
+        if (extra is not null)
+        {
+            configuration.CustomProviderOptions!.ConnectionString += ";" + extra;
+        }
+
+        var options = Initialise(configuration);
+
+        // SqlClient encrypts by default, but the string has to say so, as the driver is not what states it.
+        var connectionString = RelationalOptionsExtension.Extract(options.Options).ConnectionString!;
+        Assert.Equal("True", NamedEncrypt(connectionString));
+        Assert.Equal(SqlConnectionEncryptOption.Mandatory, new SqlConnectionStringBuilder(connectionString).Encrypt);
+    }
+
+    [Theory]
+    [InlineData("Encrypt=True", "Mandatory")]
+    [InlineData("Encrypt=False", "Optional")]
+    [InlineData("encrypt = false", "Optional")]
+    [InlineData("Encrypt=Optional", "Optional")]
+    [InlineData("Encrypt=Mandatory", "Mandatory")]
+    [InlineData("Encrypt=Strict", "Strict")]
+    public void Initialise_ConnectionStringWithEncrypt_KeepsTheChoiceOfTheOperator(string inConnectionString, string expected)
+    {
+        var configuration = CreateConfiguration();
+        configuration.CustomProviderOptions!.ConnectionString += ";" + inConnectionString;
+
+        var options = Initialise(configuration);
+
+        var connectionString = RelationalOptionsExtension.Extract(options.Options).ConnectionString!;
+        Assert.NotNull(NamedEncrypt(connectionString));
+        Assert.Equal(SqlConnectionEncryptOption.Parse(expected), new SqlConnectionStringBuilder(connectionString).Encrypt);
+    }
+
+    [Theory]
+    [InlineData(null, "True")]
+    [InlineData("Encrypt=False", "False")]
+    [InlineData("Encrypt=Strict", "Strict")]
+    public void Initialise_LogsTheEncryptionOfTheConnectionStringWithoutThePassword(string? inConnectionString, string expected)
+    {
+        var configuration = CreateConfiguration();
+        configuration.CustomProviderOptions!.ConnectionString += inConnectionString is null ? string.Empty : ";" + inConnectionString;
+        var logger = new CollectingLogger<SqlServerDatabaseProvider>();
+
+        new SqlServerDatabaseProvider(logger).Initialise(new DbContextOptionsBuilder<JellyfinDbContext>(), configuration);
+
+        var logged = Assert.Single(logger.Entries, entry => entry.Message.Contains(_database, StringComparison.Ordinal)).Message;
+        Assert.Contains("Encrypt=" + expected, logged, StringComparison.Ordinal);
+        Assert.DoesNotContain(logger.Entries, entry => entry.Message.Contains(Secret, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -293,6 +353,13 @@ public sealed class SqlServerDatabaseProviderTests : IDisposable
             NullLogger<JellyfinDbContext>.Instance,
             new SqlServerDatabaseProvider(NullLogger<SqlServerDatabaseProvider>.Instance),
             new Jellyfin.Database.Implementations.Locking.NoLockBehavior(NullLogger<Jellyfin.Database.Implementations.Locking.NoLockBehavior>.Instance));
+
+    // The value the connection string names for Encrypt, or null when it names none.
+    private static string? NamedEncrypt(string connectionString)
+    {
+        var builder = new DbConnectionStringBuilder { ConnectionString = connectionString };
+        return builder.TryGetValue("Encrypt", out var value) ? Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) : null;
+    }
 
     private static DbContextOptionsBuilder<JellyfinDbContext> Initialise(DatabaseConfigurationOptions configuration)
     {
