@@ -288,4 +288,9 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// Gets or sets a value indicating whether old authorization methods are allowed.
     /// </summary>
     public bool EnableLegacyAuthorization { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether obsolete endpoints are allowed.
+    /// </summary>
+    public bool EnableObsoleteEndpoints { get; set; } = true;
 }
