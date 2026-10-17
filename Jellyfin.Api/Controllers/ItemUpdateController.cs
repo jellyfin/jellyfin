@@ -278,6 +278,11 @@ public class ItemUpdateController : BaseJellyfinApiController
             item.Studios = Array.ConvertAll(request.Studios, x => x.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         }
 
+        if (request.Networks is not null)
+        {
+            item.Networks = Array.ConvertAll(request.Networks, x => x.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        }
+
         if (request.DateCreated.HasValue)
         {
             item.DateCreated = NormalizeDateTime(request.DateCreated.Value);
