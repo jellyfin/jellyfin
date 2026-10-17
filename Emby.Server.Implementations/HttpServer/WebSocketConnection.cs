@@ -139,10 +139,15 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 try
                 {
-                    await _socket.CloseAsync(
-                        closeStatus,
-                        string.Empty,
-                        cancellationToken).ConfigureAwait(false);
+                    // A peer that overran the limit cannot be trusted to complete the close handshake.
+                    if (closeStatus == WebSocketCloseStatus.MessageTooBig)
+                    {
+                        await _socket.CloseOutputAsync(closeStatus, string.Empty, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await _socket.CloseAsync(closeStatus, string.Empty, cancellationToken).ConfigureAwait(false);
+                    }
                 }
                 catch (Exception ex) when (IsConnectionGone(ex))
                 {

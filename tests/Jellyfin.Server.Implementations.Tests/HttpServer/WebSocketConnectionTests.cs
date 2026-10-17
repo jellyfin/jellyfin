@@ -77,6 +77,22 @@ namespace Jellyfin.Server.Implementations.Tests.HttpServer
         }
 
         [Fact]
+        public async Task ReceiveAsync_OversizedMessage_DoesNotWaitForThePeerToClose()
+        {
+            var socket = new ScriptedWebSocket(Message(new string('a', 128 * 1024)))
+            {
+                PeerNeverCloses = true
+            };
+            var con = new WebSocketConnection(new NullLogger<WebSocketConnection>(), socket, null!, null!);
+
+            var receive = con.ReceiveAsync(TestContext.Current.CancellationToken);
+            var finished = await Task.WhenAny(receive, Task.Delay(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+            Assert.Same(receive, finished);
+            Assert.Equal(WebSocketCloseStatus.MessageTooBig, socket.CloseStatusSent);
+        }
+
+        [Fact]
         public async Task ReceiveAsync_NullMessage_KeepsProcessingLaterMessages()
         {
             var socket = new ScriptedWebSocket(Raw("null"), Message("payload"));
@@ -277,6 +293,8 @@ namespace Jellyfin.Server.Implementations.Tests.HttpServer
 
             public Exception? CloseOutputException { get; set; }
 
+            public bool PeerNeverCloses { get; set; }
+
             public bool IsDisposed { get; private set; }
 
             public WebSocketCloseStatus? CloseStatusSent { get; private set; }
@@ -294,6 +312,12 @@ namespace Jellyfin.Server.Implementations.Tests.HttpServer
             public override Task CloseAsync(WebSocketCloseStatus closeStatus, string? statusDescription, CancellationToken cancellationToken)
             {
                 CloseStatusSent = closeStatus;
+                if (PeerNeverCloses)
+                {
+                    _state = WebSocketState.CloseSent;
+                    return Task.Delay(Timeout.Infinite, cancellationToken);
+                }
+
                 _state = WebSocketState.Closed;
                 return Task.CompletedTask;
             }
