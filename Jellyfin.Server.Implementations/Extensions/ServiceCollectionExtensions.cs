@@ -121,8 +121,6 @@ public static class ServiceCollectionExtensions
             }
         }
 
-        serviceCollection.AddSingleton<IJellyfinDatabaseProvider>(providerFactory!);
-
         switch (efCoreConfiguration.LockingBehavior)
         {
             case DatabaseLockingBehaviorTypes.NoLock:
@@ -136,13 +134,32 @@ public static class ServiceCollectionExtensions
                 break;
         }
 
-        serviceCollection.AddPooledDbContextFactory<JellyfinDbContext>((serviceProvider, opt) =>
+        if (!serviceCollection.Any(d => d.ServiceType == typeof(IApplicationPaths)))
         {
-            var provider = serviceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
-            provider.Initialise(opt, efCoreConfiguration);
-            var lockingBehavior = serviceProvider.GetRequiredService<IEntityFrameworkCoreLockingBehavior>();
-            lockingBehavior.Initialise(opt);
-        });
+            serviceCollection.AddSingleton<IApplicationPaths>(configurationManager.ApplicationPaths);
+        }
+
+        using (var tempServiceProvider = serviceCollection.BuildServiceProvider())
+        {
+            var tempProvider = providerFactory!(tempServiceProvider);
+            tempProvider.RegisterProviderSpecificDbContextFactories(serviceCollection, efCoreConfiguration);
+        }
+
+        serviceCollection.AddSingleton<IJellyfinDatabaseProvider>(providerFactory!);
+
+        // A provider may have already registered IDbContextFactory<JellyfinDbContext> itself in
+        // RegisterProviderSpecificDbContextFactories (e.g. backed by its own JellyfinDbContext subclass).
+        // Only fall back to the generic registration if it didn't.
+        if (!serviceCollection.Any(d => d.ServiceType == typeof(IDbContextFactory<JellyfinDbContext>)))
+        {
+            serviceCollection.AddPooledDbContextFactory<JellyfinDbContext>((serviceProvider, opt) =>
+            {
+                var provider = serviceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
+                provider.Initialise(opt, efCoreConfiguration);
+                var lockingBehavior = serviceProvider.GetRequiredService<IEntityFrameworkCoreLockingBehavior>();
+                lockingBehavior.Initialise(opt);
+            });
+        }
 
         return serviceCollection;
     }
