@@ -188,7 +188,7 @@ namespace MediaBrowser.Providers.MediaInfo
             // To properly handle fallback values, we make a clone of those fields when valid.
             var trackTitle = (string.IsNullOrEmpty(track.Title) ? mediaInfo.Name : track.Title)?.Trim();
             var trackAlbum = (string.IsNullOrEmpty(track.Album) ? mediaInfo.Album : track.Album)?.Trim();
-            var trackYear = track.Year is null or 0 ? mediaInfo.ProductionYear : track.Year;
+            var trackYear = track.Year is null or 0 ? mediaInfo.ProductionYear ?? mediaInfo.ContainerCreationDate?.Year : track.Year;
             var trackTrackNumber = track.TrackNumber is null or 0 ? mediaInfo.IndexNumber : track.TrackNumber;
             var trackDiscNumber = track.DiscNumber is null or 0 ? mediaInfo.ParentIndexNumber : track.DiscNumber;
 
