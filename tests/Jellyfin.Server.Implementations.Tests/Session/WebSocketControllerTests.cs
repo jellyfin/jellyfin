@@ -127,17 +127,35 @@ public class WebSocketControllerTests
     }
 
     [Fact]
-    public async Task SendMessage_Cancelled_Throws()
+    public async Task SendMessage_SocketAbortedDuringSend_DoesNotThrow()
     {
+        // A send queued behind another one on a socket that gets aborted fails like this, with the caller's token untouched.
         var socket = OpenSocket();
         socket.Setup(s => s.SendAsync(It.IsAny<OutboundWebSocketMessage<string>>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new OperationCanceledException());
+            .ThrowsAsync(new OperationCanceledException("The operation was canceled.", new ObjectDisposedException(nameof(WebSocket))));
 
         var controller = CreateController();
         controller.AddWebSocket(socket.Object);
 
+        Assert.Null(await Record.ExceptionAsync(
+            () => controller.SendMessage(SessionMessageType.UserDataChanged, Guid.NewGuid(), "data", CancellationToken.None)));
+        socket.Verify(s => s.SendAsync(It.IsAny<OutboundWebSocketMessage<string>>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task SendMessage_Cancelled_Throws()
+    {
+        using var cts = new CancellationTokenSource();
+        var socket = OpenSocket();
+        socket.Setup(s => s.SendAsync(It.IsAny<OutboundWebSocketMessage<string>>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException(cts.Token));
+
+        var controller = CreateController();
+        controller.AddWebSocket(socket.Object);
+        await cts.CancelAsync();
+
         await Assert.ThrowsAsync<OperationCanceledException>(
-            () => controller.SendMessage(SessionMessageType.UserDataChanged, Guid.NewGuid(), "data", TestContext.Current.CancellationToken));
+            () => controller.SendMessage(SessionMessageType.UserDataChanged, Guid.NewGuid(), "data", cts.Token));
     }
 
     private static Mock<IWebSocketConnection> OpenSocket()
