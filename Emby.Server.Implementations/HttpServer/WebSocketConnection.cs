@@ -358,7 +358,7 @@ namespace Emby.Server.Implementations.HttpServer
                     await _socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "System Shutdown", CancellationToken.None).ConfigureAwait(false);
                 }
             }
-            catch (Exception ex) when (ex is WebSocketException or ObjectDisposedException or OperationCanceledException)
+            catch (Exception ex) when (IsConnectionGone(ex))
             {
                 _logger.LogWarning(ex, "WS {IP} error sending the close frame", RemoteEndPoint);
             }
