@@ -198,8 +198,7 @@ come from `database.xml`, and the variable is never written to it. Jellyfin logs
 taken from the configuration key database:ConnectionString instead of database.xml", and shows the variable as
 `[redacted]` where it logs its environment.
 
-Prefer the variable: it keeps the password out of `database.xml`, and so out of Jellyfin's backup archives, which
-contain every `.xml` file of the configuration directory.
+Prefer the variable: it keeps the password out of `database.xml` and off disk.
 
 ### What Jellyfin sets on the connection
 
@@ -292,10 +291,9 @@ engine. Know its limits:
   build has no sections, and a restore of it gives none back. The fork's CI at that change (`939887782c`), as
   relayed, passed every job, including the ABI difference check, which is consistent with the new public
   `DbSet<HomeSection>` being an addition only; PostgreSQL is CI's only database job there.
-- **The archive holds `database.xml`.** It contains every `.xml` file of the configuration directory, so a
-  connection string with a password in `database.xml` is in the archive. A restore also replaces `database.xml`
-  with the copy in the archive; if the archive comes from another server, check `database.xml` before the next
-  start.
+- **The archive leaves `database.xml` alone.** The archive no longer contains `database.xml`, and a restore never
+  changes it. To move a server, configure the target first, then restore. Archives made before this change still
+  hold `database.xml`, so treat them as secrets.
 {{#if mysql-family}}
 - **The database must be migrated first.** A restore refuses a database that has migrations still to apply (a new
   installation, or a server that was updated and not started since), because {{engine}} cannot undo a failed
