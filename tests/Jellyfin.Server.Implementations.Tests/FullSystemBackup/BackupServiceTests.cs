@@ -893,6 +893,36 @@ public sealed class BackupServiceTests : DatabaseTestFixture
     }
 
     [Fact]
+    public async Task CreateBackupAsync_LeavesTheDatabaseConfigurationOut()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await WriteConfigurationFileAsync("system.xml", "<system />", cancellationToken).ConfigureAwait(true);
+        await WriteConfigurationFileAsync("database.xml", ThisServerDatabaseConfiguration, cancellationToken).ConfigureAwait(true);
+
+        var manifest = await CreateBackupService().CreateBackupAsync(new BackupOptionsDto { Database = false }).ConfigureAwait(true);
+
+        using var archive = await ZipFile.OpenReadAsync(manifest.Path, cancellationToken).ConfigureAwait(true);
+        Assert.Null(archive.GetEntry("Config/database.xml"));
+        var entriesWithThePassword = new List<string>();
+        foreach (var entry in archive.Entries)
+        {
+            var stream = await entry.OpenAsync(cancellationToken).ConfigureAwait(true);
+            await using (stream.ConfigureAwait(true))
+            using (var reader = new StreamReader(stream))
+            {
+                var content = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(true);
+                if (content.Contains("Password=target", StringComparison.Ordinal))
+                {
+                    entriesWithThePassword.Add(entry.FullName);
+                }
+            }
+        }
+
+        Assert.Empty(entriesWithThePassword);
+        Assert.NotNull(archive.GetEntry("Config/system.xml"));
+    }
+
+    [Fact]
     public async Task RestoreBackupAsync_WithAnArchiveFromBeforeThisChange_DoesNotApplyItsDatabaseConfiguration()
     {
         var cancellationToken = TestContext.Current.CancellationToken;

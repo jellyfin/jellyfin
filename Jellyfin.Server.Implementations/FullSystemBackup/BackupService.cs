@@ -40,7 +40,7 @@ public class BackupService : IBackupService
 
     /// <summary>
     /// The file in the configuration directory that holds the database configuration of this server. It says which
-    /// database this server runs on, not what is in it, so a restore leaves it alone.
+    /// database this server runs on, not what is in it, so a restore leaves it alone and a backup does not carry it.
     /// </summary>
     private const string DatabaseConfigurationFileName = DatabaseConfigurationStore.StoreKey + ".xml";
 
@@ -627,6 +627,12 @@ public class BackupService : IBackupService
                 foreach (var item in Directory.EnumerateFiles(_applicationPaths.ConfigurationDirectoryPath, "*.xml", SearchOption.TopDirectoryOnly)
                              .Union(Directory.EnumerateFiles(_applicationPaths.ConfigurationDirectoryPath, "*.json", SearchOption.TopDirectoryOnly)))
                 {
+                    if (string.Equals(Path.GetFileName(item), DatabaseConfigurationFileName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Which database a server runs on belongs to that server, so it does not travel in a backup.
+                        continue;
+                    }
+
                     await zipArchive.CreateEntryFromFileAsync(item, NormalizePathSeparator(Path.Combine("Config", Path.GetFileName(item)))).ConfigureAwait(false);
                 }
 
