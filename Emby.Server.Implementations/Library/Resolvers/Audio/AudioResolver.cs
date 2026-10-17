@@ -186,14 +186,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
             foreach (var resolvedItem in resolverResult)
             {
-                if (resolvedItem.Files.Count > 1)
-                {
-                    // For now, until we sort out naming for multi-part books
-                    continue;
-                }
-
-                // Until multi-part books are handled letting files stack hides them from browsing in the client
-                if (resolvedItem.Files.Count == 0 || resolvedItem.Extras.Count > 0 || resolvedItem.AlternateVersions.Count > 0)
+                // Skip if there are no files
+                if (resolvedItem.Files.Count == 0)
                 {
                     continue;
                 }
@@ -208,8 +202,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                     Name = parseName ?
                         resolvedItem.Name :
                         Path.GetFileNameWithoutExtension(firstMedia.Path),
-                    // AdditionalParts = resolvedItem.Files.Skip(1).Select(i => i.Path).ToArray(),
-                    // LocalAlternateVersions = resolvedItem.AlternateVersions.Select(i => i.Path).ToArray()
+                    AdditionalParts = resolvedItem.Files.Skip(1).Select(i => i.Path).ToArray(),
+                    LocalAlternateVersions = resolvedItem.AlternateVersions.Select(i => i.Path).ToArray()
                 };
 
                 result.Items.Add(libraryItem);
