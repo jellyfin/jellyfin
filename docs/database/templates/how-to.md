@@ -174,7 +174,7 @@ file before the first start: a server that starts without it writes a SQLite con
 | Element | Value |
 | --- | --- |
 | `DatabaseType` | `{{provider-key}}`, compared without regard to case. An unknown name stops the server with the list of supported names. |
-| `LockingBehavior` | `NoLock`, the default. `Pessimistic` and `Optimistic` add locking in Jellyfin itself, which only SQLite needs. |
+| `LockingBehavior` | `NoLock`, the default, or `Optimistic`, which retries in Jellyfin itself and only SQLite needs. `Pessimistic` stops the server at startup: only SQLite supports it. |
 | `CustomProviderOptions/ConnectionString` | {{connection-string-kind}} It can instead come from the environment, see below. |
 | `CustomProviderOptions/PluginName`, `PluginAssembly` | Empty. They are only read for `PLUGIN_PROVIDER`, a provider loaded from a plugin. |
 | `CustomProviderOptions/Options` | Optional settings, each a `CustomDatabaseOption` with a `Key` and a `Value`. Keys are compared without regard to case. |
