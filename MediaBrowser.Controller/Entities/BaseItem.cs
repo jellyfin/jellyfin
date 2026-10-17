@@ -1945,6 +1945,12 @@ namespace MediaBrowser.Controller.Entities
                 list.AddRange(folder.Tags);
             }
 
+            // The owner of an extra is never an extra itself, which keeps this from recursing more than one level
+            if (ExtraType.HasValue && GetOwner() is { ExtraType: null } owner)
+            {
+                list.AddRange(owner.GetInheritedTags());
+            }
+
             return list.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         }
 
