@@ -19,6 +19,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Trickplay;
@@ -112,6 +113,7 @@ namespace Emby.Server.Implementations.Dto
             }
         }.ToFrozenDictionary();
 
+        private readonly IVirtualBlurayImageManager _virtualBlurayImages;
         private readonly ILogger<DtoService> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserDataManager _userDataRepository;
@@ -138,7 +140,8 @@ namespace Emby.Server.Implementations.Dto
             IMediaSourceManager mediaSourceManager,
             Lazy<ILiveTvManager> livetvManagerFactory,
             ITrickplayManager trickplayManager,
-            IChapterManager chapterManager)
+            IChapterManager chapterManager,
+            IVirtualBlurayImageManager virtualBlurayImages)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -151,6 +154,7 @@ namespace Emby.Server.Implementations.Dto
             _livetvManagerFactory = livetvManagerFactory;
             _trickplayManager = trickplayManager;
             _chapterManager = chapterManager;
+            _virtualBlurayImages = virtualBlurayImages;
         }
 
         private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
@@ -408,6 +412,11 @@ namespace Emby.Server.Implementations.Dto
                 && options.ContainsField(ItemFields.MediaSources))
             {
                 dto.MediaSources = _mediaSourceManager.GetStaticMediaSources(item, true, user).ToArray();
+
+                foreach (var source in dto.MediaSources)
+                {
+                    _virtualBlurayImages.ApplyTo(source);
+                }
 
                 NormalizeMediaSourceContainers(dto);
             }
