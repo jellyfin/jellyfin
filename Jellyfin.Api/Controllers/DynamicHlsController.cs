@@ -1788,6 +1788,21 @@ public class DynamicHlsController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// hvc1 is an MP4 sample entry. MPEG-TS HLS segments carry Annex B HEVC and must not be tagged hvc1.
+    /// </summary>
+    internal static bool UseHevcMp4Tag(string? segmentContainer)
+        => !string.Equals(segmentContainer, "ts", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// mp4toannexb applies to length-prefixed NALs. Live MPEG-TS is already Annex B, and a missing
+    /// NalLengthSize must not be treated as a reason to rewrite the bitstream.
+    /// </summary>
+    internal static bool UseAnnexBBitStreamFilter(string? nalLengthSize, bool isInfiniteStream)
+        => !isInfiniteStream
+           && int.TryParse(nalLengthSize, NumberStyles.Integer, CultureInfo.InvariantCulture, out var size)
+           && size > 0;
+
+    /// <summary>
     /// Gets the video arguments for transcoding.
     /// </summary>
     /// <param name="state">The <see cref="StreamState"/>.</param>
@@ -1837,9 +1852,9 @@ public class DynamicHlsController : BaseJellyfinApiController
                     args += " -tag:v:0 dav1 -strict -2";
                 }
             }
-            else if (isActualOutputVideoCodecHevc)
+            else if (isActualOutputVideoCodecHevc && UseHevcMp4Tag(segmentContainer))
             {
-                // Prefer hvc1 to hev1
+                // hvc1 is an MP4 sample entry. MPEG-TS segments are already Annex B.
                 args += " -tag:v:0 hvc1";
             }
         }
@@ -1852,8 +1867,10 @@ public class DynamicHlsController : BaseJellyfinApiController
         // See if we can save come cpu cycles by avoiding encoding.
         if (EncodingHelper.IsCopyCodec(codec))
         {
-            // If h264_mp4toannexb is ever added, do not use it for live tv.
-            if (state.VideoStream is not null && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
+            // mp4toannexb is for length-prefixed NALs. Live MPEG-TS is already Annex B, and a null
+            // NalLengthSize used to pass the old "not 0" check and corrupt the copied stream.
+            if (state.VideoStream is not null
+                && UseAnnexBBitStreamFilter(state.VideoStream.NalLengthSize, state.MediaSource?.IsInfiniteStream == true))
             {
                 string bitStreamArgs = _encodingHelper.GetBitStreamArgs(state, MediaStreamType.Video);
                 if (!string.IsNullOrEmpty(bitStreamArgs))
@@ -1862,7 +1879,12 @@ public class DynamicHlsController : BaseJellyfinApiController
                 }
             }
 
-            args += " -start_at_zero";
+            // The HLS command always copies timestamps. Shifting them to zero on a live stream
+            // collapses the first segment, so the player draws one frame and stops.
+            if (state.MediaSource?.IsInfiniteStream != true)
+            {
+                args += " -start_at_zero";
+            }
         }
         else
         {
