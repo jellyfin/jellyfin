@@ -52,6 +52,25 @@ public static class ServiceCollectionExtensions
         return items;
     }
 
+    /// <summary>
+    /// Refuses a locking behaviour that the database provider does not support. It is called when the provider is created
+    /// and not when it is registered, so that the check runs where the server starts and reads the capability of the
+    /// provider that was chosen.
+    /// </summary>
+    /// <param name="configuration">The database configuration.</param>
+    /// <param name="provider">The provider that was created for it.</param>
+    /// <exception cref="InvalidOperationException">The configuration asks for Pessimistic locking and the provider does not support it.</exception>
+    internal static void EnsureLockingBehaviorIsSupported(DatabaseConfigurationOptions configuration, IJellyfinDatabaseProvider provider)
+    {
+        if (configuration.LockingBehavior == DatabaseLockingBehaviorTypes.Pessimistic && !provider.SupportsPessimisticLocking)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(DatabaseConfigurationOptions.LockingBehavior)} in database.xml is {nameof(DatabaseLockingBehaviorTypes.Pessimistic)}, "
+                + $"which the database provider '{configuration.DatabaseType}' does not support. "
+                + $"Set {nameof(DatabaseConfigurationOptions.LockingBehavior)} to {nameof(DatabaseLockingBehaviorTypes.NoLock)}, the default, or {nameof(DatabaseLockingBehaviorTypes.Optimistic)}.");
+        }
+    }
+
     internal static DatabaseConfigurationOptions WithConnectionStringOverride(DatabaseConfigurationOptions source, string connectionString)
     {
         var customProviderOptions = source.CustomProviderOptions;
@@ -165,7 +184,9 @@ public static class ServiceCollectionExtensions
                     .LogInformation("The database connection string is taken from the configuration key {ConfigurationKey} instead of database.xml", ConnectionStringOverrideKey);
             }
 
-            return providerFactory!(services);
+            var provider = providerFactory!(services);
+            EnsureLockingBehaviorIsSupported(efCoreConfiguration, provider);
+            return provider;
         });
 
         switch (efCoreConfiguration.LockingBehavior)

@@ -19,7 +19,8 @@ public class DatabaseConfigurationOptions
 
     /// <summary>
     /// Gets or Sets the kind of locking behavior jellyfin should perform. Possible options are "NoLock", "Pessimistic", "Optimistic".
-    /// Defaults to "NoLock".
+    /// Defaults to "NoLock". "Pessimistic" is only supported by providers that report
+    /// <see cref="IJellyfinDatabaseProvider.SupportsPessimisticLocking"/>; the server refuses to start with it on any other.
     /// </summary>
     public DatabaseLockingBehaviorTypes LockingBehavior { get; set; }
 }

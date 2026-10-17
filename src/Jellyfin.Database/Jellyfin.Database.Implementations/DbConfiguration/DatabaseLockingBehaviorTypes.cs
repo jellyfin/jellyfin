@@ -11,7 +11,9 @@ public enum DatabaseLockingBehaviorTypes
     NoLock = 0,
 
     /// <summary>
-    /// Defines a behavior that always blocks all reads while any one write is done.
+    /// Defines a behavior that always blocks all reads while any one write is done. It is one lock for the whole process,
+    /// so only an engine with a single writer supports it: the server refuses to start with it on a provider whose
+    /// <see cref="IJellyfinDatabaseProvider.SupportsPessimisticLocking"/> is <see langword="false"/>.
     /// </summary>
     Pessimistic = 1,
 
