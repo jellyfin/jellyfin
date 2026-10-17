@@ -35,7 +35,9 @@ public static class LiveTvServiceCollectionExtensions
         services.AddSingleton<ITunerHostManager, TunerHostManager>();
         services.AddSingleton<IListingsManager, ListingsManager>();
         services.AddSingleton<IGuideManager, GuideManager>();
-        services.AddSingleton<IRecordingsManager, RecordingsManager>();
+        services.AddSingleton<RecordingsManager>();
+        services.AddSingleton<IRecordingsManager>(s => s.GetRequiredService<RecordingsManager>());
+        services.AddSingleton<IActiveRecordingUpdater>(s => s.GetRequiredService<RecordingsManager>());
 
         services.AddSingleton<ILiveTvService, DefaultLiveTvService>();
         services.AddSingleton<ITunerHost, HdHomerunHost>();
