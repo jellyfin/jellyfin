@@ -75,6 +75,9 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
     public bool SupportsTransactionalMigrations => false;
 
     /// <inheritdoc/>
+    public bool SupportsPessimisticLocking => false;
+
+    /// <inheritdoc/>
     public void Initialise(DbContextOptionsBuilder options, DatabaseConfigurationOptions databaseConfiguration)
     {
         var customOptions = databaseConfiguration.CustomProviderOptions;

@@ -786,6 +786,8 @@ public sealed class MigrationInProgressMarkerTests : IDisposable
 
         public bool SupportsTransactionalMigrations => _transactional;
 
+        public bool SupportsPessimisticLocking => _inner.SupportsPessimisticLocking;
+
         public void Initialise(DbContextOptionsBuilder options, DatabaseConfigurationOptions databaseConfiguration)
             => _inner.Initialise(options, databaseConfiguration);
 

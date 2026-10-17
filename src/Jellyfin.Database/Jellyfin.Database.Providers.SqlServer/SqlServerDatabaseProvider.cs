@@ -83,6 +83,9 @@ public sealed class SqlServerDatabaseProvider : IJellyfinDatabaseProvider
     public IDbContextFactory<JellyfinDbContext>? DbContextFactory { get; set; }
 
     /// <inheritdoc/>
+    public bool SupportsPessimisticLocking => false;
+
+    /// <inheritdoc/>
     public void Initialise(DbContextOptionsBuilder options, DatabaseConfigurationOptions databaseConfiguration)
     {
         ArgumentNullException.ThrowIfNull(options);

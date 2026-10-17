@@ -28,6 +28,15 @@ public interface IJellyfinDatabaseProvider
     bool SupportsTransactionalMigrations => true;
 
     /// <summary>
+    /// Gets a value indicating whether the engine can run with <see cref="DatabaseLockingBehaviorTypes.Pessimistic"/>
+    /// locking. That behaviour is one lock for the whole process, taken by a thread and held across asynchronous saves,
+    /// which only an engine with a single writer can do without deadlocking. An engine whose writers run concurrently
+    /// returns <see langword="false"/>. The default is <see langword="true"/>, so a provider that does not say otherwise
+    /// keeps the behaviour it has had.
+    /// </summary>
+    bool SupportsPessimisticLocking => true;
+
+    /// <summary>
     /// Initialises jellyfins EFCore database access.
     /// </summary>
     /// <param name="options">The EFCore database options.</param>

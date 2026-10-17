@@ -49,6 +49,9 @@ public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
     public IDbContextFactory<JellyfinDbContext>? DbContextFactory { get; set; }
 
     /// <inheritdoc/>
+    public bool SupportsPessimisticLocking => false;
+
+    /// <inheritdoc/>
     public void Initialise(DbContextOptionsBuilder options, DatabaseConfigurationOptions databaseConfiguration)
     {
         var customOptions = databaseConfiguration.CustomProviderOptions;
