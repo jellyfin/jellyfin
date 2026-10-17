@@ -139,7 +139,8 @@ namespace Emby.Server.Implementations.Session
                     },
                     cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex is WebSocketException or ObjectDisposedException)
+            catch (Exception ex) when (ex is WebSocketException or ObjectDisposedException
+                || (ex is OperationCanceledException && !cancellationToken.IsCancellationRequested))
             {
                 _logger.LogWarning(ex, "WS {IP} error sending data", socket.RemoteEndPoint);
             }
