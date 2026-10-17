@@ -732,11 +732,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.LocalizedDefault = _localization.GetLocalizedString("Default");
                 stream.LocalizedExternal = _localization.GetLocalizedString("External");
                 stream.LocalizedOriginal = _localization.GetLocalizedString("Original");
-                if (!string.IsNullOrEmpty(stream.Language))
-                {
-                    stream.LocalizedLanguage = _localization.GetLanguageDisplayName(stream.Language);
-                }
-
                 stream.Channels = streamInfo.Channels;
 
                 if (int.TryParse(streamInfo.SampleRate, CultureInfo.InvariantCulture, out var sampleRate))
@@ -780,10 +775,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.LocalizedForced = _localization.GetLocalizedString("Forced");
                 stream.LocalizedExternal = _localization.GetLocalizedString("External");
                 stream.LocalizedHearingImpaired = _localization.GetLocalizedString("HearingImpaired");
-                if (!string.IsNullOrEmpty(stream.Language))
-                {
-                    stream.LocalizedLanguage = _localization.GetLanguageDisplayName(stream.Language);
-                }
 
                 if (string.IsNullOrEmpty(stream.Title))
                 {
@@ -1058,6 +1049,12 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             NormalizeStreamTitle(stream);
+
+            // Done once the title is final, since the English name is kept when the title contains it
+            if (stream.Type is MediaStreamType.Audio or MediaStreamType.Subtitle && !string.IsNullOrEmpty(stream.Language))
+            {
+                stream.LocalizedLanguage = _localization.GetLanguageDisplayName(stream.Language, stream.Title);
+            }
 
             return stream;
         }
