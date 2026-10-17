@@ -337,5 +337,20 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
 
             Assert.Equal(7.5f, item.CommunityRating);
         }
+
+        [Fact]
+        public void Parse_Ratings_NotFinite_Ignored()
+        {
+            var result = new MetadataResult<Video>()
+            {
+                Item = new Movie()
+            };
+
+            _parser.Fetch(result, "Test Data/Ratings_NotFinite.nfo", CancellationToken.None);
+            var item = (Movie)result.Item;
+
+            Assert.Null(item.CommunityRating);
+            Assert.Null(item.CriticRating);
+        }
     }
 }
