@@ -20,9 +20,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         public ExternalIdMediaType? Type => ExternalIdMediaType.Series;
 
         /// <inheritdoc />
-        public bool Supports(IHasProviderIds item)
-        {
-            return item is Series;
-        }
+        public bool Supports(IHasProviderIds item) => item is Series;
     }
 }

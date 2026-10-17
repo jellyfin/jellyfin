@@ -34,7 +34,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    item.RemoteTrailers = [..item.RemoteTrailers, mediaUrl];
+                    item.RemoteTrailers = [.. item.RemoteTrailers, mediaUrl];
                 }
             }
         }

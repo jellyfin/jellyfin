@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Globalization;
 using System.IO;
@@ -10,6 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Devices
 {
+    /// <summary>
+    /// Provides the persistent unique identifier of this server installation.
+    /// </summary>
     public class DeviceId
     {
         private readonly IApplicationPaths _appPaths;
@@ -18,12 +19,20 @@ namespace Emby.Server.Implementations.Devices
 
         private string? _id;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceId"/> class.
+        /// </summary>
+        /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
+        /// <param name="logger">Instance of the <see cref="ILogger{DeviceId}"/> interface.</param>
         public DeviceId(IApplicationPaths appPaths, ILogger<DeviceId> logger)
         {
             _appPaths = appPaths;
             _logger = logger;
         }
 
+        /// <summary>
+        /// Gets the device id, loading it from disk or generating and persisting a new one if none exists.
+        /// </summary>
         public string Value => _id ??= GetDeviceId();
 
         private string CachePath => Path.Combine(_appPaths.DataPath, "device.txt");

@@ -1,10 +1,13 @@
 #pragma warning disable RS0030 // Do not use banned APIs
+#pragma warning disable CA1304 // Specify CultureInfo
+#pragma warning disable CA1311 // Specify a culture or use an invariant version
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -58,28 +61,50 @@ public class LinkedChildrenService : ILinkedChildrenService
     }
 
     /// <inheritdoc/>
+    public IReadOnlySet<Guid> GetItemIdsWithAlternateVersions(IReadOnlyList<Guid> itemIds)
+    {
+        if (itemIds.Count == 0)
+        {
+            return new HashSet<Guid>();
+        }
+
+        using var dbContext = _dbProvider.CreateDbContext();
+
+        return dbContext.LinkedChildren
+            .Where(lc => lc.ChildType == DbLinkedChildType.LocalAlternateVersion
+                || lc.ChildType == DbLinkedChildType.LinkedAlternateVersion)
+            .WhereOneOrMany(itemIds, lc => lc.ParentId)
+            .Select(lc => lc.ParentId)
+            .Distinct()
+            .ToHashSet();
+    }
+
+    /// <inheritdoc/>
     public IReadOnlyDictionary<string, MusicArtist[]> FindArtists(IReadOnlyList<string> artistNames)
     {
         using var dbContext = _dbProvider.CreateDbContext();
 
+        var cleanNames = artistNames.Select(n => (Original: n, Clean: n.GetCleanValue())).ToArray();
+        var cleanValues = cleanNames.Select(x => x.Clean).ToArray();
+
         var artists = dbContext.BaseItems
             .AsNoTracking()
             .Where(e => e.Type == _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]!)
-            .Where(e => artistNames.Contains(e.Name))
+            .Where(e => cleanValues.Contains(e.CleanName))
             .ToArray();
 
         var lookup = artists
-            .GroupBy(e => e.Name!)
+            .GroupBy(e => e.CleanName!)
             .ToDictionary(
                 g => g.Key,
                 g => g.Select(f => _queryHelpers.DeserializeBaseItem(f)).Where(dto => dto is not null).Cast<MusicArtist>().ToArray());
 
-        var result = new Dictionary<string, MusicArtist[]>(artistNames.Count);
-        foreach (var name in artistNames)
+        var result = new Dictionary<string, MusicArtist[]>(cleanNames.Length);
+        foreach (var (original, clean) in cleanNames)
         {
-            if (lookup.TryGetValue(name, out var artistArray))
+            if (lookup.TryGetValue(clean, out var artistArray))
             {
-                result[name] = artistArray;
+                result[original] = artistArray;
             }
         }
 
@@ -87,14 +112,25 @@ public class LinkedChildrenService : ILinkedChildrenService
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<Guid> GetManualLinkedParentIds(Guid childId)
+    public IReadOnlyList<Guid> GetManualLinkedParentIds(Guid childId, BaseItemKind? parentType = null)
     {
         using var context = _dbProvider.CreateDbContext();
-        return context.LinkedChildren
-            .Where(lc => lc.ChildId == childId && lc.ChildType == DbLinkedChildType.Manual)
-            .Select(lc => lc.ParentId)
-            .Distinct()
-            .ToList();
+
+        var query = context.LinkedChildren
+            .Where(lc => lc.ChildId == childId && lc.ChildType == DbLinkedChildType.Manual);
+
+        if (parentType.HasValue)
+        {
+            var parentTypeName = _itemTypeLookup.BaseItemKindNames[parentType.Value];
+            query = query.Join(
+                context.BaseItems
+                    .Where(item => item.Type == parentTypeName),
+                lc => lc.ParentId,
+                item => item.Id,
+                (lc, _) => lc);
+        }
+
+        return query.Select(lc => lc.ParentId).Distinct().ToList();
     }
 
     /// <inheritdoc/>
@@ -144,12 +180,16 @@ public class LinkedChildrenService : ILinkedChildrenService
 
         if (existingLink is null)
         {
+            var nextSortOrder = (context.LinkedChildren
+                .Where(lc => lc.ParentId == parentId)
+                .Max(lc => (int?)lc.SortOrder) ?? -1) + 1;
+
             context.LinkedChildren.Add(new Jellyfin.Database.Implementations.Entities.LinkedChildEntity
             {
                 ParentId = parentId,
                 ChildId = childId,
                 ChildType = dbChildType,
-                SortOrder = null
+                SortOrder = nextSortOrder
             });
         }
         else

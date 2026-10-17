@@ -77,5 +77,14 @@ namespace MediaBrowser.Controller.Net
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task ReceiveAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Applies the culture context captured when the connection was established
+        /// (from the upgrade request's <c>Accept-Language</c> header) to the current
+        /// async flow. Server-initiated message senders should call this before
+        /// localising any payload so that the response uses the client's preferred
+        /// language rather than the server default.
+        /// </summary>
+        void ApplyRequestCulture();
     }
 }

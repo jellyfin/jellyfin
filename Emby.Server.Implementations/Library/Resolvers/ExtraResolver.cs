@@ -32,8 +32,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
             : base(logger, namingOptions, directoryService)
         {
             _namingOptions = namingOptions;
-            _trailerResolvers = new IItemResolver[] { new GenericVideoResolver<Trailer>(logger, namingOptions, directoryService) };
-            _videoResolvers = new IItemResolver[] { this };
+            _trailerResolvers = [new GenericVideoResolver<Trailer>(logger, namingOptions, directoryService, parseName: true)];
+            _videoResolvers = [this];
         }
 
         protected override Video Resolve(ItemResolveArgs args)
@@ -54,12 +54,13 @@ namespace Emby.Server.Implementations.Library.Resolvers
             _ => _videoResolvers
         };
 
-        public bool TryGetExtraTypeForOwner(string path, VideoFileInfo ownerVideoFileInfo, [NotNullWhen(true)] out ExtraType? extraType, string? libraryRoot = "")
+        public bool TryGetExtraTypeForOwner(string path, VideoFileInfo ownerVideoFileInfo, [NotNullWhen(true)] out ExtraType? extraType, [NotNullWhen(true)] out ExtraRule? extraRule, string? libraryRoot = "")
         {
             var extraResult = GetExtraInfo(path, _namingOptions, libraryRoot);
-            if (extraResult.ExtraType is null)
+            if (extraResult.ExtraType is null || extraResult.Rule is null)
             {
                 extraType = null;
+                extraRule = null;
                 return false;
             }
 
@@ -88,6 +89,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
             }
 
             extraType = extraResult.ExtraType;
+            extraRule = extraResult.Rule;
             return isValid;
         }
 

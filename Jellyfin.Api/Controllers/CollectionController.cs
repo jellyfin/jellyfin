@@ -88,7 +88,7 @@ public class CollectionController : BaseJellyfinApiController
         [FromRoute, Required] Guid collectionId,
         [FromQuery, Required, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] ids)
     {
-        await _collectionManager.AddToCollectionAsync(collectionId, ids).ConfigureAwait(true);
+        await _collectionManager.AddToCollectionAsync(collectionId, ids).ConfigureAwait(false);
         return NoContent();
     }
 

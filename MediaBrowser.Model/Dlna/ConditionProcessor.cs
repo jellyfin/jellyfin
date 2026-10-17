@@ -33,6 +33,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="numAudioStreams">The number of audio streams.</param>
         /// <param name="videoCodecTag">The video codec tag.</param>
         /// <param name="isAvc">A value indicating whether the video is AVC.</param>
+        /// <param name="videoRotation">The video rotation angle, usually 0 or +-90/180.</param>
         /// <returns><b>True</b> if the condition is satisfied.</returns>
         public static bool IsVideoConditionSatisfied(
             ProfileCondition condition,
@@ -53,7 +54,8 @@ namespace MediaBrowser.Model.Dlna
             int? numVideoStreams,
             int? numAudioStreams,
             string? videoCodecTag,
-            bool? isAvc)
+            bool? isAvc,
+            int? videoRotation)
         {
             switch (condition.Property)
             {
@@ -93,6 +95,8 @@ namespace MediaBrowser.Model.Dlna
                     return IsConditionSatisfied(condition, numVideoStreams);
                 case ProfileConditionValue.VideoTimestamp:
                     return IsConditionSatisfied(condition, timestamp);
+                case ProfileConditionValue.VideoRotation:
+                    return IsConditionSatisfied(condition, videoRotation);
                 default:
                     return true;
             }

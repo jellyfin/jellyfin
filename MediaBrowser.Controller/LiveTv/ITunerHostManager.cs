@@ -38,6 +38,12 @@ public interface ITunerHostManager
     IAsyncEnumerable<TunerHostInfo> DiscoverTuners(bool newDevicesOnly);
 
     /// <summary>
+    /// Deletes a tuner host by id, cleans up associated caches, and triggers a guide refresh.
+    /// </summary>
+    /// <param name="id">The tuner host id to delete.</param>
+    void DeleteTunerHost(string? id);
+
+    /// <summary>
     /// Scans for tuner devices that have changed URLs.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to use.</param>

@@ -31,7 +31,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="namingOptions">The naming options.</param>
-        public SeriesResolver(ILogger<SeriesResolver> logger,  NamingOptions namingOptions)
+        public SeriesResolver(ILogger<SeriesResolver> logger, NamingOptions namingOptions)
         {
             _logger = logger;
             _namingOptions = namingOptions;
@@ -57,6 +57,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                     return null;
                 }
 
+                if (args.Parent is not null && args.Parent.IsRoot)
+                {
+                    return null;
+                }
+
                 var seriesInfo = Naming.TV.SeriesResolver.Resolve(_namingOptions, args.Path);
 
                 var collectionType = args.GetCollectionType();
@@ -69,7 +74,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                         return new Series
                         {
                             Path = args.Path,
-                            Name = seriesInfo.Name
+                            Name = seriesInfo.Name,
+                            ProductionYear = seriesInfo.Year
                         };
                     }
                 }

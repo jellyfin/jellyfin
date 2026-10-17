@@ -5,12 +5,13 @@ using System;
 using System.Collections.Generic;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.Plugins.Omdb
 {
-    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
+    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages, IHasEmbeddedImage
     {
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
             : base(applicationPaths, xmlSerializer)
@@ -28,6 +29,8 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         // TODO remove when plugin removed from server.
         public override string ConfigurationFileName => "Jellyfin.Plugin.Omdb.xml";
+
+        public string ImageResourceName => GetType().Namespace + ".jellyfin-plugin-omdb.png";
 
         public IEnumerable<PluginPageInfo> GetPages()
         {

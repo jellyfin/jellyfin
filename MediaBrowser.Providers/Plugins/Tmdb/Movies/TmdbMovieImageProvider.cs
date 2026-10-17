@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -61,7 +59,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             var language = item.GetPreferredMetadataLanguage();
             var countryCode = item.GetPreferredMetadataCountryCode();
 
-            var movieTmdbId = Convert.ToInt32(item.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
+            item.TryGetTmdbId(out var movieTmdbId);
             if (movieTmdbId <= 0)
             {
                 var movieImdbId = item.GetProviderId(MetadataProvider.Imdb);
@@ -95,7 +93,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             var posters = movie.Images.Posters;
             var backdrops = movie.Images.Backdrops;
             var logos = movie.Images.Logos;
-            var remoteImages = new List<RemoteImageInfo>(posters?.Count ?? 0 + backdrops?.Count ?? 0 + logos?.Count ?? 0);
+            var remoteImages = new List<RemoteImageInfo>((posters?.Count ?? 0) + (backdrops?.Count ?? 0) + (logos?.Count ?? 0));
 
             if (posters is not null)
             {

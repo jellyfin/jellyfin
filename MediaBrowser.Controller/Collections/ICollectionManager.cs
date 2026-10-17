@@ -58,6 +58,14 @@ namespace MediaBrowser.Controller.Collections
         IEnumerable<BaseItem> CollapseItemsWithinBoxSets(IEnumerable<BaseItem> items, User user);
 
         /// <summary>
+        /// Gets the collections accessible to the supplied user that contain the provided item.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="itemId">The item identifier.</param>
+        /// <returns>The collections containing the item.</returns>
+        IEnumerable<BoxSet> GetCollectionsContainingItem(User user, Guid itemId);
+
+        /// <summary>
         /// Gets the folder where collections are stored.
         /// </summary>
         /// <param name="createIfNeeded">Will create the collection folder on the storage if set to true.</param>

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.LiveTv.Configuration;
+using Jellyfin.LiveTv.Listings;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -37,6 +38,7 @@ public class GuideManager : IGuideManager
     private readonly ILiveTvManager _liveTvManager;
     private readonly ITunerHostManager _tunerHostManager;
     private readonly IRecordingsManager _recordingsManager;
+    private readonly ISchedulesDirectService _schedulesDirectService;
     private readonly LiveTvDtoService _tvDtoService;
 
     /// <summary>
@@ -55,6 +57,7 @@ public class GuideManager : IGuideManager
     /// <param name="liveTvManager">The <see cref="ILiveTvManager"/>.</param>
     /// <param name="tunerHostManager">The <see cref="ITunerHostManager"/>.</param>
     /// <param name="recordingsManager">The <see cref="IRecordingsManager"/>.</param>
+    /// <param name="schedulesDirectService">The <see cref="ISchedulesDirectService"/>.</param>
     /// <param name="tvDtoService">The <see cref="LiveTvDtoService"/>.</param>
     public GuideManager(
         ILogger<GuideManager> logger,
@@ -65,6 +68,7 @@ public class GuideManager : IGuideManager
         ILiveTvManager liveTvManager,
         ITunerHostManager tunerHostManager,
         IRecordingsManager recordingsManager,
+        ISchedulesDirectService schedulesDirectService,
         LiveTvDtoService tvDtoService)
     {
         _logger = logger;
@@ -75,6 +79,7 @@ public class GuideManager : IGuideManager
         _liveTvManager = liveTvManager;
         _tunerHostManager = tunerHostManager;
         _recordingsManager = recordingsManager;
+        _schedulesDirectService = schedulesDirectService;
         _tvDtoService = tvDtoService;
     }
 
@@ -120,12 +125,16 @@ public class GuideManager : IGuideManager
             {
                 var innerProgress = new Progress<double>(p => progress.Report(p * progressPerService));
 
-                var idList = await RefreshChannelsInternal(service, innerProgress, cancellationToken).ConfigureAwait(false);
+                var (channelIds, programIds, hasErrors) = await RefreshChannelsInternal(service, innerProgress, cancellationToken).ConfigureAwait(false);
 
-                newChannelIdList.AddRange(idList.Item1);
-                newProgramIdList.AddRange(idList.Item2);
+                newChannelIdList.AddRange(channelIds);
+                newProgramIdList.AddRange(programIds);
+
+                // The channels that failed did not report any programs, so cleaning the database
+                // would delete every program they provide instead of keeping the previous ones.
+                cleanDatabase &= !hasErrors;
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 throw;
             }
@@ -167,9 +176,11 @@ public class GuideManager : IGuideManager
             : 7;
     }
 
-    private async Task<Tuple<List<Guid>, List<Guid>>> RefreshChannelsInternal(ILiveTvService service, IProgress<double> progress, CancellationToken cancellationToken)
+    private async Task<(List<Guid> ChannelIds, List<Guid> ProgramIds, bool HasErrors)> RefreshChannelsInternal(ILiveTvService service, IProgress<double> progress, CancellationToken cancellationToken)
     {
         progress.Report(10);
+
+        var hasErrors = false;
 
         var allChannelsList = (await service.GetChannelsAsync(cancellationToken).ConfigureAwait(false))
             .Select(i => new Tuple<string, ChannelInfo>(service.Name, i))
@@ -190,12 +201,13 @@ public class GuideManager : IGuideManager
 
                 list.Add(item);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 throw;
             }
             catch (Exception ex)
             {
+                hasErrors = true;
                 _logger.LogError(ex, "Error getting channel information for {Name}", channelInfo.Item2.Name);
             }
 
@@ -309,12 +321,13 @@ public class GuideManager : IGuideManager
                     },
                     cancellationToken).ConfigureAwait(false);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 throw;
             }
             catch (Exception ex)
             {
+                hasErrors = true;
                 _logger.LogError(ex, "Error getting programs for channel {Name}", currentChannel.Name);
             }
 
@@ -325,7 +338,7 @@ public class GuideManager : IGuideManager
         }
 
         progress.Report(100);
-        return new Tuple<List<Guid>, List<Guid>>(channels, programIds);
+        return (channels, programIds, hasErrors);
     }
 
     private void CleanDatabase(Guid[] currentIdList, BaseItemKind[] validTypes, IProgress<double> progress, CancellationToken cancellationToken)
@@ -444,14 +457,19 @@ public class GuideManager : IGuideManager
 
         item.Name = channelInfo.Name;
 
-        if (!item.HasImage(ImageType.Primary))
+        var currentPrimary = item.GetImageInfo(ImageType.Primary, 0);
+        var imageUrlIsNull = string.IsNullOrWhiteSpace(channelInfo.ImageUrl);
+
+        // Update channel image if image URL has changed
+        if (currentPrimary is null
+            || (!imageUrlIsNull && !string.Equals(currentPrimary.Path, channelInfo.ImageUrl, StringComparison.Ordinal)))
         {
             if (!string.IsNullOrWhiteSpace(channelInfo.ImagePath))
             {
                 item.SetImagePath(ImageType.Primary, channelInfo.ImagePath);
                 forceUpdate = true;
             }
-            else if (!string.IsNullOrWhiteSpace(channelInfo.ImageUrl))
+            else if (!imageUrlIsNull)
             {
                 item.SetImagePath(ImageType.Primary, channelInfo.ImageUrl);
                 forceUpdate = true;
@@ -490,8 +508,13 @@ public class GuideManager : IGuideManager
                 DateCreated = DateTime.UtcNow,
                 DateModified = DateTime.UtcNow
             };
-
-            item.TrySetProviderId(EtagKey, info.Etag);
+        }
+        else if (XmlTvProgramEtag.MatchesStored(info.Etag, item.GetProviderId(EtagKey)))
+        {
+            // XMLTV ETags are generated from the final ProgramInfo fields Jellyfin consumes,
+            // so an exact match means nothing relevant changed. Other providers stay on the
+            // field-by-field update path.
+            return (item, false, false);
         }
 
         if (!string.Equals(info.ShowId, item.ShowId, StringComparison.OrdinalIgnoreCase))
@@ -617,13 +640,9 @@ public class GuideManager : IGuideManager
 
         forceUpdate |= UpdateImages(item, info);
 
-        if (isNew)
-        {
-            item.OnMetadataChanged();
-
-            return (item, true, false);
-        }
-
+        // Restore the etag wiped by `item.ProviderIds = info.ProviderIds` above and
+        // persist it on new items so they join the fast path on the next refresh
+        // instead of taking an extra full processing cycle.
         var isUpdated = forceUpdate;
         var etag = info.Etag;
         if (string.IsNullOrWhiteSpace(etag))
@@ -634,6 +653,13 @@ public class GuideManager : IGuideManager
         {
             item.SetProviderId(EtagKey, etag);
             isUpdated = true;
+        }
+
+        if (isNew)
+        {
+            item.OnMetadataChanged();
+
+            return (item, true, false);
         }
 
         if (isUpdated)
@@ -723,13 +749,25 @@ public class GuideManager : IGuideManager
 
     private async Task PreCacheImages(IReadOnlyList<BaseItem> programs, DateTime maxCacheDate)
     {
+        var sdLimitActive = _schedulesDirectService.IsImageDailyLimitActive();
+
         await Parallel.ForEachAsync(
             programs
                 .Where(p => p.EndDate.HasValue && p.EndDate.Value < maxCacheDate)
+                .Where(p => !sdLimitActive || !p.ImageInfos.All(
+                    img => img.IsLocalFile || img.Path.Contains("schedulesdirect", StringComparison.OrdinalIgnoreCase)))
                 .DistinctBy(p => p.Id),
             _cacheParallelOptions,
             async (program, cancellationToken) =>
             {
+                // Re-check: limit may have been set by a parallel task since the LINQ filter ran.
+                if (_schedulesDirectService.IsImageDailyLimitActive()
+                    && program.ImageInfos.All(
+                        img => img.IsLocalFile || img.Path.Contains("schedulesdirect", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return;
+                }
+
                 for (var i = 0; i < program.ImageInfos.Length; i++)
                 {
                     if (cancellationToken.IsCancellationRequested)
@@ -738,22 +776,31 @@ public class GuideManager : IGuideManager
                     }
 
                     var imageInfo = program.ImageInfos[i];
-                    if (!imageInfo.IsLocalFile)
+                    if (imageInfo.IsLocalFile)
                     {
-                        _logger.LogDebug("Caching image locally: {Url}", imageInfo.Path);
-                        try
-                        {
-                            program.ImageInfos[i] = await _libraryManager.ConvertImageToLocal(
-                                    program,
-                                    imageInfo,
-                                    imageIndex: 0,
-                                    removeOnFailure: false)
-                                .ConfigureAwait(false);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogWarning(ex, "Unable to pre-cache {Url}", imageInfo.Path);
-                        }
+                        continue;
+                    }
+
+                    // Skip SD downloads once the daily limit has been hit.
+                    if (imageInfo.Path.Contains("schedulesdirect", StringComparison.OrdinalIgnoreCase)
+                        && _schedulesDirectService.IsImageDailyLimitActive())
+                    {
+                        continue;
+                    }
+
+                    _logger.LogDebug("Caching image locally: {Url}", imageInfo.Path);
+                    try
+                    {
+                        program.ImageInfos[i] = await _libraryManager.ConvertImageToLocal(
+                                program,
+                                imageInfo,
+                                imageIndex: 0,
+                                removeOnFailure: false)
+                            .ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Unable to pre-cache {Url}", imageInfo.Path);
                     }
                 }
             }).ConfigureAwait(false);

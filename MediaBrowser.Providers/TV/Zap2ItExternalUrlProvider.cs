@@ -19,6 +19,6 @@ public class Zap2ItExternalUrlProvider : IExternalUrlProvider
         if (item.TryGetProviderId(MetadataProvider.Zap2It, out var externalId))
         {
             yield return $"http://tvlistings.zap2it.com/overview.html?programSeriesId={externalId}";
-         }
+        }
     }
 }

@@ -82,7 +82,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     writer.WriteElementString("title", album.Name);
                 }
 
-                if (album.ProductionYear.HasValue)
+                if (album.ProductionYear is not null)
                 {
                     writer.WriteElementString("year", album.ProductionYear.Value.ToString(CultureInfo.InvariantCulture));
                 }

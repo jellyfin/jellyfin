@@ -213,8 +213,10 @@ namespace Jellyfin.Server.Implementations.Devices
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                dbContext.Devices.Remove(device);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                await dbContext.Devices
+                    .Where(d => d.Id == device.Id)
+                    .ExecuteDeleteAsync()
+                    .ConfigureAwait(false);
             }
         }
 

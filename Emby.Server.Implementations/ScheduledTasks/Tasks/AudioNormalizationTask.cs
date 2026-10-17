@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -173,7 +174,7 @@ public partial class AudioNormalizationTask : IScheduledTask
                 if (!t.NormalizationGain.HasValue && !t.LUFS.HasValue && t.IsFileProtocol)
                 {
                     t.LUFS = await CalculateLUFSAsync(
-                        string.Format(CultureInfo.InvariantCulture, "-i \"{0}\"", t.Path.Replace("\"", "\\\"", StringComparison.Ordinal)),
+                        string.Format(CultureInfo.InvariantCulture, "-i \"{0}\"", t.Path.EscapeProcessArgument()),
                         false,
                         cancellationToken).ConfigureAwait(false);
                     toSaveDbItems.Add(t);
@@ -234,7 +235,7 @@ public partial class AudioNormalizationTask : IScheduledTask
             {
                 FileName = _mediaEncoder.EncoderPath,
                 Arguments = args,
-                RedirectStandardOutput = false,
+                StandardErrorEncoding = Encoding.UTF8,
                 RedirectStandardError = true
             },
         })

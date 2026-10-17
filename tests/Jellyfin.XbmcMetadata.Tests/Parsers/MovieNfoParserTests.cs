@@ -294,5 +294,48 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             // Verify that the lowercase "tmdbcol" is NOT in the provider IDs
             Assert.False(item.ProviderIds.ContainsKey("tmdbcol"));
         }
+
+        [Fact]
+        public void Parse_CommunityRating_ValidRating_Success()
+        {
+            var result = new MetadataResult<Video>()
+            {
+                Item = new Movie()
+            };
+
+            _parser.Fetch(result, "Test Data/CommunityRating.nfo", CancellationToken.None);
+            var item = (Movie)result.Item;
+
+            Assert.Equal(7.5f, item.CommunityRating);
+        }
+
+        [Fact]
+        public void Parse_CommunityRating_OutOfRange_Ignored()
+        {
+            var result = new MetadataResult<Video>()
+            {
+                Item = new Movie()
+            };
+
+            _parser.Fetch(result, "Test Data/CommunityRating_OutOfRange.nfo", CancellationToken.None);
+            var item = (Movie)result.Item;
+
+            // Rating should not be set if outside 0-10 range
+            Assert.Null(item.CommunityRating);
+        }
+
+        [Fact]
+        public void Parse_CommunityRating_Comma()
+        {
+            var result = new MetadataResult<Video>()
+            {
+                Item = new Movie()
+            };
+
+            _parser.Fetch(result, "Test Data/CommunityRating_Comma.nfo", CancellationToken.None);
+            var item = (Movie)result.Item;
+
+            Assert.Equal(7.5f, item.CommunityRating);
+        }
     }
 }

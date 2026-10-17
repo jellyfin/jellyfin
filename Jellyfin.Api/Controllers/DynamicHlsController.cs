@@ -20,7 +20,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
-using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
@@ -167,18 +166,18 @@ public class DynamicHlsController : BaseJellyfinApiController
     [ProducesPlaylistFile]
     public async Task<ActionResult> GetLiveHlsStream(
         [FromRoute, Required] Guid itemId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? container,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? container,
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -188,7 +187,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? audioChannels,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] string? profile,
-        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
+        [FromQuery][RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
         [FromQuery] float? framerate,
         [FromQuery] float? maxFramerate,
         [FromQuery] bool? copyTimestamps,
@@ -207,8 +206,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -413,12 +412,12 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery, Required] string mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -428,7 +427,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? audioChannels,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] string? profile,
-        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
+        [FromQuery][RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
         [FromQuery] float? framerate,
         [FromQuery] float? maxFramerate,
         [FromQuery] bool? copyTimestamps,
@@ -449,8 +448,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -586,12 +585,12 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery, Required] string mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -602,7 +601,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? audioChannels,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] string? profile,
-        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
+        [FromQuery][RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
         [FromQuery] float? framerate,
         [FromQuery] float? maxFramerate,
         [FromQuery] bool? copyTimestamps,
@@ -621,8 +620,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -753,12 +752,12 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -768,7 +767,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? audioChannels,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] string? profile,
-        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
+        [FromQuery][RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
         [FromQuery] float? framerate,
         [FromQuery] float? maxFramerate,
         [FromQuery] bool? copyTimestamps,
@@ -789,8 +788,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -922,12 +921,12 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -938,7 +937,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? audioChannels,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] string? profile,
-        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
+        [FromQuery][RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
         [FromQuery] float? framerate,
         [FromQuery] float? maxFramerate,
         [FromQuery] bool? copyTimestamps,
@@ -957,8 +956,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -1092,7 +1091,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] string playlistId,
         [FromRoute, Required] int segmentId,
-        [FromRoute, Required] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string container,
+        [FromRoute, Required][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string container,
         [FromQuery, Required] long runtimeTicks,
         [FromQuery, Required] long actualSegmentLengthTicks,
         [FromQuery] bool? @static,
@@ -1100,12 +1099,12 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -1115,7 +1114,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? audioChannels,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] string? profile,
-        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
+        [FromQuery][RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
         [FromQuery] float? framerate,
         [FromQuery] float? maxFramerate,
         [FromQuery] bool? copyTimestamps,
@@ -1136,8 +1135,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -1274,7 +1273,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] string playlistId,
         [FromRoute, Required] int segmentId,
-        [FromRoute, Required] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string container,
+        [FromRoute, Required][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string container,
         [FromQuery, Required] long runtimeTicks,
         [FromQuery, Required] long actualSegmentLengthTicks,
         [FromQuery] bool? @static,
@@ -1282,12 +1281,12 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -1298,7 +1297,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? audioChannels,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] string? profile,
-        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
+        [FromQuery][RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
         [FromQuery] float? framerate,
         [FromQuery] float? maxFramerate,
         [FromQuery] bool? copyTimestamps,
@@ -1317,8 +1316,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -1456,22 +1455,16 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         var segmentExtension = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer);
 
-        TranscodingJob? job;
-
-        if (System.IO.File.Exists(segmentPath))
-        {
-            job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
-            _logger.LogDebug("returning {0} [it exists, try 1]", segmentPath);
-            return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
-        }
-
+        // Keep segment selection and transcoding replacement under the same playlist lock.
+        // An out-of-order request must not replace a job while another request is using its output.
         using (await _transcodeManager.LockAsync(playlistPath, cancellationToken).ConfigureAwait(false))
         {
+            TranscodingJob? job;
             var startTranscoding = false;
             if (System.IO.File.Exists(segmentPath))
             {
                 job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
-                _logger.LogDebug("returning {0} [it exists, try 2]", segmentPath);
+                _logger.LogDebug("returning {0} [it exists]", segmentPath);
                 return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
             }
 
@@ -1505,6 +1498,9 @@ public class DynamicHlsController : BaseJellyfinApiController
                 // If the playlist doesn't already exist, startup ffmpeg
                 try
                 {
+                    var currentJob = _transcodeManager.GetTranscodingJob(playlistPath, TranscodingJobType);
+                    await WaitForActiveTranscodingRequests(currentJob, cancellationToken).ConfigureAwait(false);
+
                     await _transcodeManager.KillTranscodingJobs(streamingRequest.DeviceId, streamingRequest.PlaySessionId, p => false)
                         .ConfigureAwait(false);
 
@@ -1540,11 +1536,19 @@ public class DynamicHlsController : BaseJellyfinApiController
                     await job.TranscodingThrottler.UnpauseTranscoding().ConfigureAwait(false);
                 }
             }
-        }
 
-        _logger.LogDebug("returning {0} [general case]", segmentPath);
-        job ??= _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
-        return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
+            _logger.LogDebug("returning {0} [general case]", segmentPath);
+            job ??= _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
+            return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    internal static async Task WaitForActiveTranscodingRequests(TranscodingJob? job, CancellationToken cancellationToken)
+    {
+        while (job?.ActiveRequestCount > 0)
+        {
+            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private static double[] GetSegmentLengths(StreamState state)
@@ -1607,8 +1611,9 @@ public class DynamicHlsController : BaseJellyfinApiController
 
             if (state.VideoStream is not null && state.IsOutputVideo)
             {
-                // fMP4 needs this flag to write the audio packet DTS/PTS including the initial delay into MOOF::TRAF::TFDT
-                hlsArguments += $" {(useLegacySegmentOption ? "-hls_ts_options" : "-hls_segment_options")} movflags=+frag_discont";
+                // fMP4 needs frag_discont to write the audio packet DTS/PTS including the initial delay into MOOF::TRAF::TFDT
+                // HLS does not use SIDX, and skipping it avoids FFmpeg rewriting open-GOP boundary packet PTS
+                hlsArguments += $" {(useLegacySegmentOption ? "-hls_ts_options" : "-hls_segment_options")} movflags=+frag_discont+skip_sidx";
             }
 
             segmentFormat = "fmp4" + outputFmp4HeaderArg;
@@ -1646,9 +1651,9 @@ public class DynamicHlsController : BaseJellyfinApiController
             segmentFormat,
             startNumber.ToString(CultureInfo.InvariantCulture),
             baseUrlParam,
-            EncodingUtils.NormalizePath(outputTsArg),
+            outputTsArg.EscapeProcessArgument(),
             hlsArguments,
-            EncodingUtils.NormalizePath(outputPath)).Trim();
+            outputPath.EscapeProcessArgument()).Trim();
     }
 
     /// <summary>
@@ -1773,6 +1778,16 @@ public class DynamicHlsController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Selects the HEVC Dolby Vision sample entry tag.
+    /// </summary>
+    /// <param name="stream">The video stream.</param>
+    /// <returns>The MP4 sample entry tag.</returns>
+    internal static string GetDolbyVisionHevcCodecTag(MediaStream stream)
+    {
+        return stream.DvProfile == 8 ? "hvc1" : "dvh1";
+    }
+
+    /// <summary>
     /// Gets the video arguments for transcoding.
     /// </summary>
     /// <param name="state">The <see cref="StreamState"/>.</param>
@@ -1814,8 +1829,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             {
                 if (isActualOutputVideoCodecHevc)
                 {
-                    // Use hvc1 for 8.4. This is what Dolby uses for its official sample streams. Tagging with dvh1 would break some players with strict tag checking like Apple Safari.
-                    var codecTag = state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHLG ? "hvc1" : "dvh1";
+                    var codecTag = GetDolbyVisionHevcCodecTag(state.VideoStream);
                     args += $" -tag:v:0 {codecTag} -strict -2";
                 }
                 else if (isActualOutputVideoCodecAv1)
@@ -1923,7 +1937,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             {
                 // Transcoding job is over, so assume all existing files are ready
                 _logger.LogDebug("serving up {0} as transcode is over", segmentPath);
-                return GetSegmentResult(state, segmentPath, transcodingJob);
+                return GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob);
             }
 
             var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
@@ -1932,7 +1946,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             if (segmentIndex < currentTranscodingIndex)
             {
                 _logger.LogDebug("serving up {0} as transcode index {1} is past requested point {2}", segmentPath, currentTranscodingIndex, segmentIndex);
-                return GetSegmentResult(state, segmentPath, transcodingJob);
+                return GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob);
             }
         }
 
@@ -1948,7 +1962,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                     if (transcodingJob.HasExited || System.IO.File.Exists(nextSegmentPath))
                     {
                         _logger.LogDebug("Serving up {SegmentPath} as it deemed ready", segmentPath);
-                        return GetSegmentResult(state, segmentPath, transcodingJob);
+                        return GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob);
                     }
                 }
                 else
@@ -1979,10 +1993,10 @@ public class DynamicHlsController : BaseJellyfinApiController
             _logger.LogWarning("cannot serve {0} as it doesn't exist and no transcode is running", segmentPath);
         }
 
-        return GetSegmentResult(state, segmentPath, transcodingJob);
+        return GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob);
     }
 
-    private ActionResult GetSegmentResult(StreamState state, string segmentPath, TranscodingJob? transcodingJob)
+    private ActionResult GetSegmentResult(StreamState state, string segmentPath, int segmentIndex, TranscodingJob? transcodingJob)
     {
         var segmentEndingPositionTicks = state.Request.CurrentRuntimeTicks + state.Request.ActualSegmentLengthTicks;
 
@@ -1992,6 +2006,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             if (transcodingJob is not null)
             {
                 transcodingJob.DownloadPositionTicks = Math.Max(transcodingJob.DownloadPositionTicks ?? segmentEndingPositionTicks, segmentEndingPositionTicks);
+                transcodingJob.ReportSegmentDownloaded(segmentIndex, segmentEndingPositionTicks);
                 _transcodeManager.OnTranscodeEndRequest(transcodingJob);
             }
 

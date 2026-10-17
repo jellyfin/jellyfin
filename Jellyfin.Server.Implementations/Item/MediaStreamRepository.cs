@@ -55,6 +55,17 @@ public class MediaStreamRepository : IMediaStreamRepository
         return TranslateQuery(context.MediaStreamInfos.AsNoTracking(), filter).AsEnumerable().Select(Map).ToArray();
     }
 
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetMediaStreamLanguages(MediaStreamType mediaStreamType)
+    {
+        using var context = _dbProvider.CreateDbContext();
+        return context.MediaStreamInfos
+            .Where(e => e.StreamType == (MediaStreamTypeEntity)mediaStreamType)
+            .Select(s => string.IsNullOrEmpty(s.Language) ? "und" : s.Language) // und = undetermined
+            .Distinct()
+            .ToArray();
+    }
+
     private string? GetPathToSave(string? path)
     {
         if (path is null)
@@ -123,6 +134,7 @@ public class MediaStreamRepository : IMediaStreamRepository
         dto.IsDefault = entity.IsDefault;
         dto.IsForced = entity.IsForced;
         dto.IsExternal = entity.IsExternal;
+        dto.IsOriginal = entity.IsOriginal;
         dto.Height = entity.Height;
         dto.Width = entity.Width;
         dto.AverageFrameRate = entity.AverageFrameRate;
@@ -160,8 +172,12 @@ public class MediaStreamRepository : IMediaStreamRepository
 
             if (!string.IsNullOrEmpty(dto.Language))
             {
-                var culture = _localization.FindLanguageInfo(dto.Language);
-                dto.LocalizedLanguage = culture?.DisplayName;
+                dto.LocalizedLanguage = _localization.GetLanguageDisplayName(dto.Language);
+            }
+
+            if (dto.Type is MediaStreamType.Audio)
+            {
+                dto.LocalizedOriginal = _localization.GetLocalizedString("Original");
             }
 
             if (dto.Type is MediaStreamType.Subtitle)
@@ -198,6 +214,7 @@ public class MediaStreamRepository : IMediaStreamRepository
             IsDefault = dto.IsDefault,
             IsForced = dto.IsForced,
             IsExternal = dto.IsExternal,
+            IsOriginal = dto.IsOriginal,
             Height = dto.Height,
             Width = dto.Width,
             AverageFrameRate = dto.AverageFrameRate,

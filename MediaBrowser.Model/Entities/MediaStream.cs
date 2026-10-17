@@ -260,6 +260,8 @@ namespace MediaBrowser.Model.Entities
 
         public string LocalizedLanguage { get; set; }
 
+        public string LocalizedOriginal { get; set; }
+
         public string DisplayTitle
         {
             get
@@ -267,161 +269,166 @@ namespace MediaBrowser.Model.Entities
                 switch (Type)
                 {
                     case MediaStreamType.Audio:
-                    {
-                        var attributes = new List<string>();
+                        {
+                            var attributes = new List<string>();
 
-                        // Do not display the language code in display titles if unset or set to a special code. Show it in all other cases (possibly expanded).
-                        if (!string.IsNullOrEmpty(Language) && !_specialCodes.Contains(Language, StringComparison.OrdinalIgnoreCase))
-                        {
-                            // Use pre-resolved localized language name, falling back to raw language code.
-                            attributes.Add(StringHelper.FirstToUpper(LocalizedLanguage ?? Language));
-                        }
-
-                        if (!string.IsNullOrEmpty(Profile) && !string.Equals(Profile, "lc", StringComparison.OrdinalIgnoreCase))
-                        {
-                            attributes.Add(Profile);
-                        }
-                        else if (!string.IsNullOrEmpty(Codec))
-                        {
-                            attributes.Add(AudioCodec.GetFriendlyName(Codec));
-                        }
-
-                        if (!string.IsNullOrEmpty(ChannelLayout))
-                        {
-                            attributes.Add(StringHelper.FirstToUpper(ChannelLayout));
-                        }
-                        else if (Channels.HasValue)
-                        {
-                            attributes.Add(Channels.Value.ToString(CultureInfo.InvariantCulture) + " ch");
-                        }
-
-                        if (IsDefault)
-                        {
-                            attributes.Add(string.IsNullOrEmpty(LocalizedDefault) ? "Default" : LocalizedDefault);
-                        }
-
-                        if (IsExternal)
-                        {
-                            attributes.Add(string.IsNullOrEmpty(LocalizedExternal) ? "External" : LocalizedExternal);
-                        }
-
-                        if (!string.IsNullOrEmpty(Title))
-                        {
-                            var result = new StringBuilder(Title);
-                            foreach (var tag in attributes)
+                            // Do not display the language code in display titles if unset or set to a special code. Show it in all other cases (possibly expanded).
+                            if (!string.IsNullOrEmpty(Language) && !_specialCodes.Contains(Language, StringComparison.OrdinalIgnoreCase))
                             {
-                                // Keep Tags that are not already in Title.
-                                if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    result.Append(" - ").Append(tag);
-                                }
+                                // Use pre-resolved localized language name, falling back to raw language code.
+                                attributes.Add(StringHelper.FirstToUpper(LocalizedLanguage ?? Language));
                             }
 
-                            return result.ToString();
-                        }
+                            if (!string.IsNullOrEmpty(Profile) && !string.Equals(Profile, "lc", StringComparison.OrdinalIgnoreCase))
+                            {
+                                attributes.Add(Profile);
+                            }
+                            else if (!string.IsNullOrEmpty(Codec))
+                            {
+                                attributes.Add(AudioCodec.GetFriendlyName(Codec));
+                            }
 
-                        return string.Join(" - ", attributes);
-                    }
+                            if (!string.IsNullOrEmpty(ChannelLayout))
+                            {
+                                attributes.Add(StringHelper.FirstToUpper(ChannelLayout));
+                            }
+                            else if (Channels.HasValue)
+                            {
+                                attributes.Add(Channels.Value.ToString(CultureInfo.InvariantCulture) + " ch");
+                            }
+
+                            if (IsDefault)
+                            {
+                                attributes.Add(string.IsNullOrEmpty(LocalizedDefault) ? "Default" : LocalizedDefault);
+                            }
+
+                            if (IsExternal)
+                            {
+                                attributes.Add(string.IsNullOrEmpty(LocalizedExternal) ? "External" : LocalizedExternal);
+                            }
+
+                            if (IsOriginal)
+                            {
+                                attributes.Add(string.IsNullOrEmpty(LocalizedOriginal) ? "Original" : LocalizedOriginal);
+                            }
+
+                            if (!string.IsNullOrEmpty(Title))
+                            {
+                                var result = new StringBuilder(Title);
+                                foreach (var tag in attributes)
+                                {
+                                    // Keep Tags that are not already in Title.
+                                    if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        result.Append(" - ").Append(tag);
+                                    }
+                                }
+
+                                return result.ToString();
+                            }
+
+                            return string.Join(" - ", attributes);
+                        }
 
                     case MediaStreamType.Video:
-                    {
-                        var attributes = new List<string>();
-
-                        var resolutionText = GetResolutionText();
-
-                        if (!string.IsNullOrEmpty(resolutionText))
                         {
-                            attributes.Add(resolutionText);
-                        }
+                            var attributes = new List<string>();
 
-                        if (!string.IsNullOrEmpty(Codec))
-                        {
-                            attributes.Add(Codec.ToUpperInvariant());
-                        }
+                            var resolutionText = GetResolutionText();
 
-                        if (VideoDoViTitle is not null)
-                        {
-                            attributes.Add(VideoDoViTitle);
-                        }
-                        else if (VideoRange != VideoRange.Unknown)
-                        {
-                            attributes.Add(VideoRange.ToString());
-                        }
-
-                        if (!string.IsNullOrEmpty(Title))
-                        {
-                            var result = new StringBuilder(Title);
-                            foreach (var tag in attributes)
+                            if (!string.IsNullOrEmpty(resolutionText))
                             {
-                                // Keep Tags that are not already in Title.
-                                if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    result.Append(" - ").Append(tag);
-                                }
+                                attributes.Add(resolutionText);
                             }
 
-                            return result.ToString();
-                        }
+                            if (!string.IsNullOrEmpty(Codec))
+                            {
+                                attributes.Add(Codec.ToUpperInvariant());
+                            }
 
-                        return string.Join(' ', attributes);
-                    }
+                            if (VideoDoViTitle is not null)
+                            {
+                                attributes.Add(VideoDoViTitle);
+                            }
+                            else if (VideoRange != VideoRange.Unknown)
+                            {
+                                attributes.Add(VideoRange.ToString());
+                            }
+
+                            if (!string.IsNullOrEmpty(Title))
+                            {
+                                var result = new StringBuilder(Title);
+                                foreach (var tag in attributes)
+                                {
+                                    // Keep Tags that are not already in Title.
+                                    if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        result.Append(" - ").Append(tag);
+                                    }
+                                }
+
+                                return result.ToString();
+                            }
+
+                            return string.Join(' ', attributes);
+                        }
 
                     case MediaStreamType.Subtitle:
-                    {
-                        var attributes = new List<string>();
+                        {
+                            var attributes = new List<string>();
 
-                        if (!string.IsNullOrEmpty(Language))
-                        {
-                            // Use pre-resolved localized language name, falling back to raw language code.
-                            attributes.Add(StringHelper.FirstToUpper(LocalizedLanguage ?? Language));
-                        }
-                        else
-                        {
-                            attributes.Add(string.IsNullOrEmpty(LocalizedUndefined) ? "Und" : LocalizedUndefined);
-                        }
-
-                        if (IsHearingImpaired == true)
-                        {
-                            attributes.Add(string.IsNullOrEmpty(LocalizedHearingImpaired) ? "Hearing Impaired" : LocalizedHearingImpaired);
-                        }
-
-                        if (IsDefault)
-                        {
-                            attributes.Add(string.IsNullOrEmpty(LocalizedDefault) ? "Default" : LocalizedDefault);
-                        }
-
-                        if (IsForced)
-                        {
-                            attributes.Add(string.IsNullOrEmpty(LocalizedForced) ? "Forced" : LocalizedForced);
-                        }
-
-                        if (!string.IsNullOrEmpty(Codec))
-                        {
-                            attributes.Add(Codec.ToUpperInvariant());
-                        }
-
-                        if (IsExternal)
-                        {
-                            attributes.Add(string.IsNullOrEmpty(LocalizedExternal) ? "External" : LocalizedExternal);
-                        }
-
-                        if (!string.IsNullOrEmpty(Title))
-                        {
-                            var result = new StringBuilder(Title);
-                            foreach (var tag in attributes)
+                            if (!string.IsNullOrEmpty(Language))
                             {
-                                // Keep Tags that are not already in Title.
-                                if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    result.Append(" - ").Append(tag);
-                                }
+                                // Use pre-resolved localized language name, falling back to raw language code.
+                                attributes.Add(StringHelper.FirstToUpper(LocalizedLanguage ?? Language));
+                            }
+                            else
+                            {
+                                attributes.Add(string.IsNullOrEmpty(LocalizedUndefined) ? "Und" : LocalizedUndefined);
                             }
 
-                            return result.ToString();
-                        }
+                            if (IsHearingImpaired == true)
+                            {
+                                attributes.Add(string.IsNullOrEmpty(LocalizedHearingImpaired) ? "Hearing Impaired" : LocalizedHearingImpaired);
+                            }
 
-                        return string.Join(" - ", attributes);
-                    }
+                            if (IsDefault)
+                            {
+                                attributes.Add(string.IsNullOrEmpty(LocalizedDefault) ? "Default" : LocalizedDefault);
+                            }
+
+                            if (IsForced)
+                            {
+                                attributes.Add(string.IsNullOrEmpty(LocalizedForced) ? "Forced" : LocalizedForced);
+                            }
+
+                            if (!string.IsNullOrEmpty(Codec))
+                            {
+                                attributes.Add(Codec.ToUpperInvariant());
+                            }
+
+                            if (IsExternal)
+                            {
+                                attributes.Add(string.IsNullOrEmpty(LocalizedExternal) ? "External" : LocalizedExternal);
+                            }
+
+                            if (!string.IsNullOrEmpty(Title))
+                            {
+                                var result = new StringBuilder(Title);
+                                foreach (var tag in attributes)
+                                {
+                                    // Keep Tags that are not already in Title.
+                                    if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        result.Append(" - ").Append(tag);
+                                    }
+                                }
+
+                                return result.ToString();
+                            }
+
+                            return string.Join(" - ", attributes);
+                        }
 
                     default:
                         return null;
@@ -498,6 +505,12 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value><c>true</c> if this instance is for the hearing impaired; otherwise, <c>false</c>.</value>
         public bool IsHearingImpaired { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is original.
+        /// </summary>
+        /// <value><c>true</c> if this instance is original; otherwise, <c>false</c>.</value>
+        public bool IsOriginal { get; set; }
 
         /// <summary>
         /// Gets or sets the height.
@@ -631,13 +644,32 @@ namespace MediaBrowser.Model.Entities
             }
         }
 
+        [JsonIgnore]
+        public bool IsVobSubSubtitleStream
+        {
+            get
+            {
+                if (Type != MediaStreamType.Subtitle)
+                {
+                    return false;
+                }
+
+                if (string.IsNullOrEmpty(Codec) && !IsExternal)
+                {
+                    return false;
+                }
+
+                return IsVobSubFormat(Codec);
+            }
+        }
+
         /// <summary>
         /// Gets a value indicating whether this is a subtitle steam that is extractable by ffmpeg.
         /// All text-based and pgs subtitles can be extracted.
         /// </summary>
         /// <value><c>true</c> if this is a extractable subtitle steam otherwise, <c>false</c>.</value>
         [JsonIgnore]
-        public bool IsExtractableSubtitleStream => IsTextSubtitleStream || IsPgsSubtitleStream;
+        public bool IsExtractableSubtitleStream => IsTextSubtitleStream || IsPgsSubtitleStream || IsVobSubSubtitleStream;
 
         /// <summary>
         /// Gets or sets a value indicating whether [supports external stream].
@@ -715,6 +747,7 @@ namespace MediaBrowser.Model.Entities
             return codec.Contains("microdvd", StringComparison.OrdinalIgnoreCase)
                    || (!codec.Contains("pgs", StringComparison.OrdinalIgnoreCase)
                        && !codec.Contains("dvdsub", StringComparison.OrdinalIgnoreCase)
+                       && !codec.Contains("vobsub", StringComparison.OrdinalIgnoreCase)
                        && !codec.Contains("dvbsub", StringComparison.OrdinalIgnoreCase)
                        && !string.Equals(codec, "sup", StringComparison.OrdinalIgnoreCase)
                        && !string.Equals(codec, "sub", StringComparison.OrdinalIgnoreCase));
@@ -726,6 +759,14 @@ namespace MediaBrowser.Model.Entities
 
             return codec.Contains("pgs", StringComparison.OrdinalIgnoreCase)
                    || string.Equals(codec, "sup", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool IsVobSubFormat(string format)
+        {
+            string codec = format ?? string.Empty;
+
+            return codec.Contains("dvdsub", StringComparison.OrdinalIgnoreCase)
+                   || codec.Contains("vobsub", StringComparison.OrdinalIgnoreCase);
         }
 
         public bool SupportsSubtitleConversionTo(string toCodec)
@@ -769,6 +810,11 @@ namespace MediaBrowser.Model.Entities
                 return (VideoRange.Unknown, VideoRangeType.Unknown);
             }
 
+            var isPq = string.Equals(ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase);
+            var isHlg = string.Equals(ColorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase);
+            // Invalid DV only retains HDR when the base layer explicitly signals PQ or HLG.
+            var baseVideoRange = isPq || isHlg ? VideoRange.HDR : VideoRange.SDR;
+
             var codecTag = CodecTag;
             var dvProfile = DvProfile;
             var rpuPresentFlag = RpuPresentFlag == 1;
@@ -793,7 +839,7 @@ namespace MediaBrowser.Model.Entities
                         4 => (VideoRange.HDR, VideoRangeType.DOVIWithHLG),
                         2 => (VideoRange.SDR, VideoRangeType.DOVIWithSDR),
                         // Out of Dolby Spec files should be marked as invalid
-                        _ => (VideoRange.HDR, VideoRangeType.DOVIInvalid)
+                        _ => (baseVideoRange, VideoRangeType.DOVIInvalid)
                     },
                     7 => (VideoRange.HDR, VideoRangeType.DOVIWithEL),
                     10 => dvBlCompatId switch
@@ -803,10 +849,25 @@ namespace MediaBrowser.Model.Entities
                         2 => (VideoRange.SDR, VideoRangeType.DOVIWithSDR),
                         4 => (VideoRange.HDR, VideoRangeType.DOVIWithHLG),
                         // Out of Dolby Spec files should be marked as invalid
-                        _ => (VideoRange.HDR, VideoRangeType.DOVIInvalid)
+                        _ => (baseVideoRange, VideoRangeType.DOVIInvalid)
                     },
                     _ => (VideoRange.SDR, VideoRangeType.SDR)
                 };
+
+                var expectedTransfer = dvRangeSet.Item2 switch
+                {
+                    VideoRangeType.DOVIWithHDR10 or VideoRangeType.DOVIWithEL => "smpte2084",
+                    VideoRangeType.DOVIWithHLG => "arib-std-b67",
+                    _ => null
+                };
+
+                if (expectedTransfer is not null
+                    && (!string.Equals(ColorSpace, "bt2020nc", StringComparison.OrdinalIgnoreCase)
+                        || !string.Equals(ColorTransfer, expectedTransfer, StringComparison.OrdinalIgnoreCase)
+                        || !string.Equals(ColorPrimaries, "bt2020", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return (baseVideoRange, VideoRangeType.DOVIInvalid);
+                }
 
                 if (Hdr10PlusPresentFlag == true)
                 {
@@ -821,13 +882,11 @@ namespace MediaBrowser.Model.Entities
                 return dvRangeSet;
             }
 
-            var colorTransfer = ColorTransfer;
-
-            if (string.Equals(colorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase))
+            if (isPq)
             {
                 return Hdr10PlusPresentFlag == true ? (VideoRange.HDR, VideoRangeType.HDR10Plus) : (VideoRange.HDR, VideoRangeType.HDR10);
             }
-            else if (string.Equals(colorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
+            else if (isHlg)
             {
                 return (VideoRange.HDR, VideoRangeType.HLG);
             }

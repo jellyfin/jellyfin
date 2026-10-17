@@ -4,12 +4,16 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Collections;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -29,6 +33,7 @@ namespace Emby.Server.Implementations.Collections
         private readonly ILibraryMonitor _iLibraryMonitor;
         private readonly ILogger<CollectionManager> _logger;
         private readonly IProviderManager _providerManager;
+        private readonly ILinkedChildrenService _linkedChildrenService;
         private readonly ILocalizationManager _localizationManager;
         private readonly IApplicationPaths _appPaths;
 
@@ -42,6 +47,7 @@ namespace Emby.Server.Implementations.Collections
         /// <param name="iLibraryMonitor">The library monitor.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="providerManager">The provider manager.</param>
+        /// <param name="linkedChildrenService">The linked children service.</param>
         public CollectionManager(
             ILibraryManager libraryManager,
             IApplicationPaths appPaths,
@@ -49,13 +55,15 @@ namespace Emby.Server.Implementations.Collections
             IFileSystem fileSystem,
             ILibraryMonitor iLibraryMonitor,
             ILoggerFactory loggerFactory,
-            IProviderManager providerManager)
+            IProviderManager providerManager,
+            ILinkedChildrenService linkedChildrenService)
         {
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _iLibraryMonitor = iLibraryMonitor;
             _logger = loggerFactory.CreateLogger<CollectionManager>();
             _providerManager = providerManager;
+            _linkedChildrenService = linkedChildrenService;
             _localizationManager = localizationManager;
             _appPaths = appPaths;
         }
@@ -100,13 +108,14 @@ namespace Emby.Server.Implementations.Collections
                 SaveLocalMetadata = true
             };
 
-            var name = _localizationManager.GetLocalizedString("Collections");
+            // This names a library for the whole server, so ignore the requesting client's language.
+            var name = _localizationManager.GetServerLocalizedString("Collections");
 
             await _libraryManager.AddVirtualFolder(name, CollectionTypeOptions.boxsets, libraryOptions, true).ConfigureAwait(false);
 
             _libraryManager.RootFolder.Children = null;
 
-            return FindFolders(path).First();
+            return FindFolders(path).FirstOrDefault();
         }
 
         internal string GetCollectionsFolderPath()
@@ -118,6 +127,22 @@ namespace Emby.Server.Implementations.Collections
         public Task<Folder?> GetCollectionsFolder(bool createIfNeeded)
         {
             return EnsureLibraryFolder(GetCollectionsFolderPath(), createIfNeeded);
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<BoxSet> GetCollectionsContainingItem(User user, Guid itemId)
+        {
+            ArgumentNullException.ThrowIfNull(user);
+
+            if (itemId.IsEmpty())
+            {
+                return Enumerable.Empty<BoxSet>();
+            }
+
+            return _linkedChildrenService
+                .GetManualLinkedParentIds(itemId, BaseItemKind.BoxSet)
+                .Select(parentId => _libraryManager.GetItemById<BoxSet>(parentId, user))
+                .OfType<BoxSet>();
         }
 
         private IEnumerable<BoxSet> GetCollections(User user)
@@ -143,7 +168,7 @@ namespace Emby.Server.Implementations.Collections
 
             if (parentFolder is null)
             {
-                throw new ArgumentException(nameof(parentFolder));
+                throw new InvalidOperationException("Unable to resolve the collections library folder, so the collection cannot be created.");
             }
 
             var path = Path.Combine(parentFolder.Path, folderName);
@@ -211,7 +236,7 @@ namespace Emby.Server.Implementations.Collections
 
             List<BaseItem>? itemList = null;
 
-            var linkedChildrenList = collection.GetLinkedChildren();
+            var linkedChildrenList = collection.GetLinkedChildren(DtoOptions.StoredColumnsOnly);
             var currentLinkedChildrenIds = linkedChildrenList.Select(i => i.Id).ToList();
 
             foreach (var id in ids)

@@ -171,7 +171,7 @@ namespace Emby.Server.Implementations.Session
             {
                 await SendForceKeepAlive(webSocket).ConfigureAwait(false);
             }
-            catch (WebSocketException exception)
+            catch (Exception exception) when (exception is WebSocketException or ObjectDisposedException or OperationCanceledException)
             {
                 _logger.LogWarning(exception, "Cannot send ForceKeepAlive message to WebSocket {0}.", webSocket);
             }
@@ -223,7 +223,7 @@ namespace Emby.Server.Implementations.Session
 
             if (inactive.Count > 0)
             {
-                _logger.LogInformation("Sending ForceKeepAlive message to {0} inactive WebSockets.", inactive.Count);
+                _logger.LogDebug("Sending ForceKeepAlive message to {0} inactive WebSockets.", inactive.Count);
             }
 
             foreach (var webSocket in inactive)
@@ -232,7 +232,7 @@ namespace Emby.Server.Implementations.Session
                 {
                     await SendForceKeepAlive(webSocket).ConfigureAwait(false);
                 }
-                catch (WebSocketException exception)
+                catch (Exception exception) when (exception is WebSocketException or ObjectDisposedException or OperationCanceledException)
                 {
                     _logger.LogInformation(exception, "Error sending ForceKeepAlive message to WebSocket.");
                     lost.Add(webSocket);
@@ -246,8 +246,21 @@ namespace Emby.Server.Implementations.Session
                     _logger.LogInformation("Lost {0} WebSockets.", lost.Count);
                     foreach (var webSocket in lost)
                     {
-                        // TODO: handle session relative to the lost webSocket
                         RemoveWebSocket(webSocket);
+
+                        // The connection stopped answering keep-alives, so a close frame will
+                        // never arrive and the pending receive loop would hang forever, keeping
+                        // the session (and e.g. its SyncPlay group membership) alive. Disposing
+                        // the connection aborts the receive loop, which raises Closed and lets
+                        // the session end normally.
+                        try
+                        {
+                            webSocket.Dispose();
+                        }
+                        catch (Exception exception)
+                        {
+                            _logger.LogWarning(exception, "Error disposing lost WebSocket from {RemoteEndPoint}.", webSocket.RemoteEndPoint);
+                        }
                     }
                 }
             }

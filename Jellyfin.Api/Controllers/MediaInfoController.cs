@@ -84,7 +84,7 @@ public class MediaInfoController : BaseJellyfinApiController
             return NotFound();
         }
 
-        return await _mediaInfoHelper.GetPlaybackInfo(item, user).ConfigureAwait(false);
+        return await _mediaInfoHelper.GetPlaybackInfo(item, user, Request).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -177,6 +177,7 @@ public class MediaInfoController : BaseJellyfinApiController
         var info = await _mediaInfoHelper.GetPlaybackInfo(
                 item,
                 user,
+                Request,
                 mediaSourceId,
                 liveStreamId)
             .ConfigureAwait(false);
@@ -213,7 +214,7 @@ public class MediaInfoController : BaseJellyfinApiController
                     Request.HttpContext.GetNormalizedRemoteIP());
             }
 
-            _mediaInfoHelper.SortMediaSources(info, maxStreamingBitrate);
+            _mediaInfoHelper.SortMediaSources(info, maxStreamingBitrate, item.Id);
         }
 
         if (autoOpenLiveStream.Value)

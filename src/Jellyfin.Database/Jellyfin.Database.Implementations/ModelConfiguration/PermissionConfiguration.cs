@@ -14,10 +14,8 @@ namespace Jellyfin.Database.Implementations.ModelConfiguration
         {
             // Used to get a user's permissions or a specific permission for a user.
             // Also prevents multiple values being created for a user.
-            // Filtered over non-null user ids for when other entities (groups, API keys) get permissions
             builder
                 .HasIndex(p => new { p.UserId, p.Kind })
-                .HasFilter("[UserId] IS NOT NULL")
                 .IsUnique();
         }
     }

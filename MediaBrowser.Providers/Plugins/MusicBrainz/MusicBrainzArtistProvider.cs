@@ -8,10 +8,8 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Providers.Music;
-using MediaBrowser.Providers.Plugins.MusicBrainz.Configuration;
 using MetaBrainz.MusicBrainz;
 using MetaBrainz.MusicBrainz.Interfaces.Entities;
 using MetaBrainz.MusicBrainz.Interfaces.Searches;
@@ -22,10 +20,9 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz;
 /// <summary>
 /// MusicBrainz artist provider.
 /// </summary>
-public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>, IDisposable, IHasOrder
+public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>, IHasOrder
 {
     private readonly ILogger<MusicBrainzArtistProvider> _logger;
-    private Query _musicBrainzQuery;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MusicBrainzArtistProvider"/> class.
@@ -34,9 +31,6 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
     public MusicBrainzArtistProvider(ILogger<MusicBrainzArtistProvider> logger)
     {
         _logger = logger;
-        _musicBrainzQuery = new Query();
-        ReloadConfig(null, MusicBrainz.Plugin.Instance!.Configuration);
-        MusicBrainz.Plugin.Instance!.ConfigurationChanged += ReloadConfig;
     }
 
     /// <inheritdoc />
@@ -46,41 +40,27 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
     /// Runs first to populate the MusicBrainz artist ID used by downstream providers.
     public int Order => 0;
 
-    private void ReloadConfig(object? sender, BasePluginConfiguration e)
-    {
-        var configuration = (PluginConfiguration)e;
-        if (Uri.TryCreate(configuration.Server, UriKind.Absolute, out var server))
-        {
-            Query.DefaultServer = server.DnsSafeHost;
-            Query.DefaultPort = server.Port;
-            Query.DefaultUrlScheme = server.Scheme;
-        }
-        else
-        {
-            // Fallback to official server
-            _logger.LogWarning("Invalid MusicBrainz server specified, falling back to official server");
-            var defaultServer = new Uri(PluginConfiguration.DefaultServer);
-            Query.DefaultServer = defaultServer.Host;
-            Query.DefaultPort = defaultServer.Port;
-            Query.DefaultUrlScheme = defaultServer.Scheme;
-        }
-
-        Query.DelayBetweenRequests = configuration.RateLimit;
-        _musicBrainzQuery = new Query();
-    }
-
     /// <inheritdoc />
     public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
     {
-        var artistId = searchInfo.GetMusicBrainzArtistId();
+        var query = MusicBrainz.Plugin.Instance!.MusicBrainzQuery;
+        var artistId = MusicBrainzQueryExtensions.ParseMusicBrainzId(searchInfo.GetMusicBrainzArtistId(), "artist", _logger);
 
-        if (!string.IsNullOrWhiteSpace(artistId))
+        if (artistId is not null)
         {
-            var artistResult = await _musicBrainzQuery.LookupArtistAsync(new Guid(artistId), Include.Aliases, null, null, cancellationToken).ConfigureAwait(false);
-            return GetResultFromResponse(artistResult).SingleItemAsEnumerable();
+            var artistResult = await query.LookupArtistOrNullAsync(artistId.Value, Include.Aliases, _logger, cancellationToken).ConfigureAwait(false);
+            if (artistResult is not null)
+            {
+                return GetResultFromResponse(artistResult).SingleItemAsEnumerable();
+            }
         }
 
-        var artistSearchResults = await _musicBrainzQuery.FindArtistsAsync($"\"{searchInfo.Name}\"", null, null, false, cancellationToken)
+        if (string.IsNullOrWhiteSpace(searchInfo.Name))
+        {
+            return [];
+        }
+
+        var artistSearchResults = await query.FindArtistsWithRetryAsync($"\"{searchInfo.Name}\"", _logger, cancellationToken)
             .ConfigureAwait(false);
         if (artistSearchResults.Results.Count > 0)
         {
@@ -90,7 +70,7 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
         if (searchInfo.Name.HasDiacritics())
         {
             // Try again using the search with an accented characters query
-            var artistAccentsSearchResults = await _musicBrainzQuery.FindArtistsAsync($"artistaccent:\"{searchInfo.Name}\"", null, null, false, cancellationToken)
+            var artistAccentsSearchResults = await query.FindArtistsWithRetryAsync($"artistaccent:\"{searchInfo.Name}\"", _logger, cancellationToken)
                 .ConfigureAwait(false);
             if (artistAccentsSearchResults.Results.Count > 0)
             {
@@ -98,7 +78,7 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
             }
         }
 
-        return Enumerable.Empty<RemoteSearchResult>();
+        return [];
     }
 
     private IEnumerable<RemoteSearchResult> GetResultsFromResponse(IEnumerable<ISearchResult<IArtist>>? releaseSearchResults)
@@ -134,30 +114,69 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
     {
         var result = new MetadataResult<MusicArtist> { Item = new MusicArtist() };
 
-        var musicBrainzId = info.GetMusicBrainzArtistId();
+        var musicBrainzId = MusicBrainzQueryExtensions.ParseMusicBrainzId(info.GetMusicBrainzArtistId(), "artist", _logger);
 
-        if (string.IsNullOrWhiteSpace(musicBrainzId))
+        // If we don't have an id yet, resolve one by name so we can look the artist up.
+        if (musicBrainzId is null)
         {
             var searchResults = await GetSearchResults(info, cancellationToken).ConfigureAwait(false);
-
-            var singleResult = searchResults.FirstOrDefault();
-
-            if (singleResult is not null)
-            {
-                musicBrainzId = singleResult.GetProviderId(MetadataProvider.MusicBrainzArtist);
-                result.Item.Overview = singleResult.Overview;
-
-                if (Plugin.Instance!.Configuration.ReplaceArtistName)
-                {
-                    result.Item.Name = singleResult.Name;
-                }
-            }
+            musicBrainzId = MusicBrainzQueryExtensions.ParseMusicBrainzId(searchResults.FirstOrDefault()?.GetProviderId(MetadataProvider.MusicBrainzArtist), "artist", _logger);
         }
 
-        if (!string.IsNullOrWhiteSpace(musicBrainzId))
+        if (musicBrainzId is null)
         {
-            result.HasMetadata = true;
-            result.Item.SetProviderId(MetadataProvider.MusicBrainzArtist, musicBrainzId);
+            return result;
+        }
+
+        var query = Plugin.Instance!.MusicBrainzQuery;
+        var artist = await query.LookupArtistOrNullAsync(musicBrainzId.Value, Include.Genres | Include.Tags, _logger, cancellationToken).ConfigureAwait(false);
+
+        if (artist is null)
+        {
+            return result;
+        }
+
+        result.HasMetadata = true;
+        result.Item.SetProviderId(MetadataProvider.MusicBrainzArtist, artist.Id.ToString());
+
+        if (Plugin.Instance!.Configuration.ReplaceArtistName && !string.IsNullOrWhiteSpace(artist.Name))
+        {
+            result.Item.Name = artist.Name;
+        }
+
+        if (artist.LifeSpan?.Begin is not null)
+        {
+            result.Item.PremiereDate = artist.LifeSpan.Begin.NearestDate;
+            result.Item.ProductionYear = artist.LifeSpan.Begin.Year;
+        }
+
+        if (artist.LifeSpan?.End is not null)
+        {
+            result.Item.EndDate = artist.LifeSpan.End.NearestDate;
+        }
+
+        var location = string.IsNullOrWhiteSpace(artist.Area?.Name) ? artist.Country : artist.Area!.Name;
+        if (!string.IsNullOrWhiteSpace(location))
+        {
+            result.Item.ProductionLocations = [location];
+        }
+
+        if (artist.Genres is not null && artist.Genres.Count > 0)
+        {
+            result.Item.Genres = artist.Genres
+                .OrderByDescending(genre => genre.VoteCount)
+                .Select(genre => genre.Name)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .ToArray();
+        }
+
+        if (artist.Tags is not null && artist.Tags.Count > 0)
+        {
+            result.Item.Tags = artist.Tags
+                .OrderByDescending(tag => tag.VoteCount)
+                .Select(tag => tag.Name)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .ToArray();
         }
 
         return result;
@@ -167,24 +186,5 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
     public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
-    }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Dispose all resources.
-    /// </summary>
-    /// <param name="disposing">Whether to dispose.</param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _musicBrainzQuery.Dispose();
-        }
     }
 }

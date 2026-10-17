@@ -90,7 +90,7 @@ internal class JellyfinMigrationService
 
     private HashSet<MigrationStage> Migrations { get; set; }
 
-    public async Task CheckFirstTimeRunOrMigration(IApplicationPaths appPaths)
+    public async Task CheckFirstTimeRunOrMigration(IApplicationPaths appPaths, StartupOptions startupOptions)
     {
         var logger = _startupLogger.With(_loggerFactory.CreateLogger<JellyfinMigrationService>()).BeginGroup($"Migration Startup");
         logger.LogInformation("Initialise Migration service.");
@@ -98,9 +98,9 @@ internal class JellyfinMigrationService
         var serverConfig = File.Exists(appPaths.SystemConfigurationFilePath)
             ? (ServerConfiguration)xmlSerializer.DeserializeFromFile(typeof(ServerConfiguration), appPaths.SystemConfigurationFilePath)!
             : new ServerConfiguration();
-        if (!serverConfig.IsStartupWizardCompleted)
+        if (!serverConfig.IsStartupWizardCompleted || startupOptions.StartupMode is Configuration.StartupMode.SeedSystem)
         {
-            logger.LogInformation("System initialisation detected. Seed data.");
+            logger.LogInformation("System initialization detected. Seed data. Startup mode is: {StartupMode}", startupOptions.StartupMode ?? Configuration.StartupMode.MediaServer);
             var flatApplyMigrations = Migrations.SelectMany(e => e.Where(f => !f.Metadata.RunMigrationOnSetup)).ToArray();
 
             var dbContext = await _dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
@@ -132,6 +132,14 @@ internal class JellyfinMigrationService
         }
         else
         {
+            // Only a media server start is refused. A MigrateSystem run is left to the migrations, which another database
+            // provider may rely on to initialise its database, and a restore replaces the database later, in StartServer.
+            var startupMode = startupOptions.StartupMode ?? Configuration.StartupMode.MediaServer;
+            if (startupMode == Configuration.StartupMode.MediaServer && string.IsNullOrWhiteSpace(startupOptions.RestoreArchive))
+            {
+                await EnsureExistingDatabaseAsync(appPaths, logger).ConfigureAwait(false);
+            }
+
             // migrate any existing migration.xml files
             var migrationConfigPath = Path.Join(appPaths.ConfigurationDirectoryPath, "migrations.xml");
             var migrationOptions = File.Exists(migrationConfigPath)
@@ -183,7 +191,61 @@ internal class JellyfinMigrationService
         }
     }
 
-    public async Task MigrateStepAsync(JellyfinMigrationStageTypes stage, IServiceProvider? serviceProvider)
+    /// <summary>
+    /// Stops the startup of a server that has been set up before but whose database is missing or empty. Running the migrations
+    /// against such a database fails part way through, and seeding it would leave a server nobody can log in to.
+    /// </summary>
+    private async Task EnsureExistingDatabaseAsync(IApplicationPaths appPaths, ILogger logger)
+    {
+        string? problem = null;
+        var dbContext = await _dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
+        {
+            var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as IRelationalDatabaseCreator
+                ?? throw new InvalidOperationException("Jellyfin does only support relational databases.");
+
+            // Check existence first: opening a connection to a missing SQLite database creates an empty file.
+            if (!await databaseCreator.ExistsAsync().ConfigureAwait(false))
+            {
+                problem = "the database does not exist";
+            }
+            else
+            {
+                var historyRepository = dbContext.GetService<IHistoryRepository>();
+                if (!await historyRepository.ExistsAsync().ConfigureAwait(false))
+                {
+                    problem = "the database has no migration history";
+                }
+                else if ((await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false)).Count == 0)
+                {
+                    problem = "the migration history of the database is empty";
+                }
+            }
+        }
+
+        if (problem is null)
+        {
+            return;
+        }
+
+        var message = string.Format(
+            CultureInfo.InvariantCulture,
+            "This server has been set up before (IsStartupWizardCompleted is true in {0}), but {1}. Jellyfin will not start an existing server with an empty database. "
+            + "To continue, either restore the previous database; or start over and keep this server's settings by setting IsStartupWizardCompleted to false in {0} "
+            + "(users, watch history and everything else stored in the database will not come back); or set up a new server with empty configuration and data directories.",
+            appPaths.SystemConfigurationFilePath,
+            problem);
+        logger.LogCritical("{Message}", message);
+        throw new InvalidOperationException(message);
+    }
+
+    /// <summary>
+    /// Runs all pending migrations of the requested stage.
+    /// </summary>
+    /// <param name="stage">The stage to migrate.</param>
+    /// <param name="serviceProvider">The service provider handed to the migrations.</param>
+    /// <returns>A value indicating whether at least one migration has been applied.</returns>
+    public async Task<bool> MigrateStepAsync(JellyfinMigrationStageTypes stage, IServiceProvider serviceProvider)
     {
         var logger = _startupLogger.With(_loggerFactory.CreateLogger<JellyfinMigrationService>()).BeginGroup($"Migrate stage {stage}.");
         ICollection<CodeMigration> migrationStage = (Migrations.FirstOrDefault(e => e.Stage == stage) as ICollection<CodeMigration>) ?? [];
@@ -193,26 +255,50 @@ internal class JellyfinMigrationService
         {
             var historyRepository = dbContext.GetService<IHistoryRepository>();
             var migrationsAssembly = dbContext.GetService<IMigrationsAssembly>();
-            var appliedMigrations = await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false);
-            var pendingCodeMigrations = migrationStage
-                .Where(e => appliedMigrations.All(f => f.MigrationId != e.BuildCodeMigrationId()))
-                .Select(e => (Key: e.BuildCodeMigrationId(), Migration: new InternalCodeMigration(e, serviceProvider, dbContext)))
-                .ToArray();
+            var completedMigrations = 0;
+            string? lastMigrationKey = null;
 
-            (string Key, InternalDatabaseMigration Migration)[] pendingDatabaseMigrations = [];
-            if (stage is JellyfinMigrationStageTypes.CoreInitialisation)
+            while (true)
             {
-                pendingDatabaseMigrations = migrationsAssembly.Migrations.Where(f => appliedMigrations.All(e => e.MigrationId != f.Key))
-                   .Select(e => (Key: e.Key, Migration: new InternalDatabaseMigration(e, dbContext)))
-                   .ToArray();
-            }
+                // A single migration can change which migrations still apply: IMigrator.MigrateAsync treats its argument as the
+                // state to end up in, so it reverts everything applied after it, and a reverted migration can take code migrations
+                // with it (AddNormalizedUsername.Down drops the UpdateNormalizedUsername history row). Anything computed before
+                // that point is stale, so only ever run the next migration and then work out the pending set again.
+                var appliedMigrations = await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false);
+                var pendingCodeMigrations = migrationStage
+                    .Where(e => appliedMigrations.All(f => f.MigrationId != e.BuildCodeMigrationId()))
+                    .Select(e => (Key: e.BuildCodeMigrationId(), Migration: new InternalCodeMigration(e, serviceProvider, dbContext)))
+                    .ToArray();
 
-            (string Key, IInternalMigration Migration)[] pendingMigrations = [.. pendingCodeMigrations, .. pendingDatabaseMigrations];
-            logger.LogInformation("There are {Pending} migrations for stage {Stage}.", pendingCodeMigrations.Length, stage);
-            var migrations = pendingMigrations.OrderBy(e => e.Key).ToArray();
+                (string Key, InternalDatabaseMigration Migration)[] pendingDatabaseMigrations = [];
+                if (stage is JellyfinMigrationStageTypes.CoreInitialisation)
+                {
+                    pendingDatabaseMigrations = migrationsAssembly.Migrations.Where(f => appliedMigrations.All(e => e.MigrationId != f.Key))
+                       .Select(e => (Key: e.Key, Migration: new InternalDatabaseMigration(e, dbContext)))
+                       .ToArray();
+                }
 
-            foreach (var item in migrations)
-            {
+                (string Key, IInternalMigration Migration)[] pendingMigrations = [.. pendingCodeMigrations, .. pendingDatabaseMigrations];
+                if (pendingMigrations.Length == 0)
+                {
+                    break;
+                }
+
+                if (completedMigrations == 0)
+                {
+                    logger.LogInformation("There are {Pending} migrations for stage {Stage}.", pendingMigrations.Length, stage);
+                }
+
+                var item = pendingMigrations.OrderBy(e => e.Key, StringComparer.Ordinal).First();
+                if (string.Equals(item.Key, lastMigrationKey, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException($"Migration {item.Key} ran but did not record itself as applied and would repeat indefinitely.");
+                }
+
+                lastMigrationKey = item.Key;
+
+                // Surface generic "Running migration X of Y" progress in the always-visible startup UI header.
+                SetupServer.ReportActivity(StartupActivity.Migration(completedMigrations + 1, completedMigrations + pendingMigrations.Length));
                 var migrationLogger = logger.With(_loggerFactory.CreateLogger(item.Migration.GetType().Name)).BeginGroup($"{item.Key}");
                 try
                 {
@@ -270,7 +356,11 @@ internal class JellyfinMigrationService
 
                     throw;
                 }
+
+                completedMigrations++;
             }
+
+            return completedMigrations > 0;
         }
     }
 
@@ -419,10 +509,10 @@ internal class JellyfinMigrationService
     private class InternalCodeMigration : IInternalMigration
     {
         private readonly CodeMigration _codeMigration;
-        private readonly IServiceProvider? _serviceProvider;
+        private readonly IServiceProvider _serviceProvider;
         private JellyfinDbContext _dbContext;
 
-        public InternalCodeMigration(CodeMigration codeMigration, IServiceProvider? serviceProvider, JellyfinDbContext dbContext)
+        public InternalCodeMigration(CodeMigration codeMigration, IServiceProvider serviceProvider, JellyfinDbContext dbContext)
         {
             _codeMigration = codeMigration;
             _serviceProvider = serviceProvider;

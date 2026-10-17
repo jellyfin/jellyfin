@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.Sorting
                 return x.PremiereDate.Value;
             }
 
-            if (x.ProductionYear.HasValue)
+            if (x.ProductionYear is not null)
             {
                 try
                 {

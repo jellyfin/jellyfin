@@ -1,1 +1,27 @@
-{}
+{
+    "AppDeviceValues": "Aplicacion: {0}, Periferic: {1}",
+    "Books": "Libres",
+    "Artists": "Artistas",
+    "Collections": "Collecciones",
+    "ChapterNameValue": "Capitol {0}",
+    "External": "Extèrn",
+    "Folders": "Dorsièrs",
+    "Favorites": "Favorits",
+    "HeaderContinueWatching": "Contunhar de regardar",
+    "HeaderFavoriteEpisodes": "Episòdis Favorits",
+    "AuthenticationSucceededWithUserName": "{0} autentificat amb succès",
+    "HeaderFavoriteShows": "Serias Favoritas",
+    "HeaderLiveTV": "TV en dirècte",
+    "HeaderNextUp": "Seguent",
+    "HearingImpaired": "Amb de deficiéncias auditivas",
+    "Movies": "Filmes",
+    "Music": "Musica",
+    "Latest": "Darrièr",
+    "Forced": "Forçat",
+    "Default": "Defaut",
+    "Genres": "Genres",
+    "HomeVideos": "Vidèos d'Acuèlh",
+    "Inherit": "Eiretar",
+    "LabelIpAddressValue": "Adreça IP: {0}",
+    "LabelRunningTimeValue": "Temps d'execucion : {0}"
+}

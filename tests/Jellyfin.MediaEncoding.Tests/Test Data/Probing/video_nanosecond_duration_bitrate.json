@@ -1,0 +1,49 @@
+{
+    "streams": [
+        {
+            "index": 0,
+            "codec_name": "h264",
+            "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+            "profile": "High",
+            "codec_type": "video",
+            "codec_tag_string": "[0][0][0][0]",
+            "codec_tag": "0x0000",
+            "width": 1920,
+            "height": 1080,
+            "coded_width": 1920,
+            "coded_height": 1080,
+            "has_b_frames": 2,
+            "pix_fmt": "yuv420p",
+            "level": 40,
+            "r_frame_rate": "24/1",
+            "avg_frame_rate": "24/1",
+            "time_base": "1/1000",
+            "start_pts": 0,
+            "start_time": "0.000000",
+            "disposition": {
+                "default": 1
+            },
+            "tags": {
+                "language": "eng",
+                "BPS-eng": "",
+                "DURATION-eng": "00:01:40.000000000",
+                "NUMBER_OF_FRAMES-eng": "2400",
+                "NUMBER_OF_BYTES-eng": "10000000"
+            }
+        }
+    ],
+    "format": {
+        "filename": "video_nanosecond_duration_bitrate.mkv",
+        "nb_streams": 1,
+        "nb_programs": 0,
+        "format_name": "matroska,webm",
+        "format_long_name": "Matroska / WebM",
+        "start_time": "0.000000",
+        "duration": "100.000000",
+        "size": "10001000",
+        "probe_score": 100,
+        "tags": {
+            "encoder": "libebml v1.4.2 + libmatroska v1.6.4"
+        }
+    }
+}

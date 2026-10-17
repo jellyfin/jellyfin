@@ -10,18 +10,21 @@ namespace Emby.Naming.TV
     public static partial class SeriesResolver
     {
         /// <summary>
-        /// Regex that matches strings of at least 2 characters separated by a dot or underscore.
-        /// Used for removing separators between words, i.e turns "The_show" into "The show" while
-        /// preserving names like "S.H.O.W".
+        /// Regex that matches a run of dots or underscores that separates two words, where a word is
+        /// at least 2 characters long. Used for removing separators between words, i.e turns
+        /// "The_show" into "The show" while preserving acronyms like "S.H.O.W", whose single letters
+        /// are a word on neither side. Whitespace bounds a word too, so the dot in
+        /// "Marvel's Agents of S.H.I.E.L.D." is read against the "S" beside it rather than against
+        /// the whole run of words before it.
         /// </summary>
-        [GeneratedRegex(@"((?<a>[^\._]{2,})[\._]*)|([\._](?<b>[^\._]{2,}))")]
+        [GeneratedRegex(@"(?<=[^\s\._]{2})[\._]+|[\._]+(?=[^\s\._]{2})")]
         private static partial Regex SeriesNameRegex();
 
         /// <summary>
         /// Regex that matches titles with year in parentheses. Captures the title (which may be
         /// numeric) before the year, i.e. turns "1923 (2022)" into "1923".
         /// </summary>
-        [GeneratedRegex(@"(?<title>.+?)\s*\(\d{4}\)")]
+        [GeneratedRegex(@"(?<title>.+?)\s*\((?<year>[0-9]{4})\)")]
         private static partial Regex TitleWithYearRegex();
 
         /// <summary>
@@ -43,7 +46,8 @@ namespace Emby.Naming.TV
                     seriesName = titleWithYearMatch.Groups["title"].Value.Trim();
                     return new SeriesInfo(path)
                     {
-                        Name = seriesName
+                        Name = seriesName,
+                        Year = int.TryParse(titleWithYearMatch.Groups["year"].ValueSpan, out var year) ? year : null
                     };
                 }
             }
@@ -59,7 +63,7 @@ namespace Emby.Naming.TV
 
             if (!string.IsNullOrEmpty(seriesName))
             {
-                seriesName = SeriesNameRegex().Replace(seriesName, "${a} ${b}").Trim();
+                seriesName = SeriesNameRegex().Replace(seriesName, " ").Trim();
             }
 
             return new SeriesInfo(path)

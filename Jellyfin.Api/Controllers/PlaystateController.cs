@@ -72,6 +72,7 @@ public class PlaystateController : BaseJellyfinApiController
     [HttpPost("UserPlayedItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Tags("UserData")]
     public async Task<ActionResult<UserItemDataDto?>> MarkPlayedItem(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId,
@@ -138,6 +139,7 @@ public class PlaystateController : BaseJellyfinApiController
     [HttpDelete("UserPlayedItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Tags("UserData")]
     public async Task<ActionResult<UserItemDataDto?>> MarkUnplayedItem(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
