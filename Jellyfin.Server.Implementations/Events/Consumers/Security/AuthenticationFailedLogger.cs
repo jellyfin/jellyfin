@@ -32,11 +32,16 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Security
         /// <inheritdoc />
         public async Task OnEvent(AuthenticationRequestEventArgs eventArgs)
         {
-            await _activityManager.CreateAsync(new ActivityLog(
-                string.Format(
+            // Leave out a username that does not exist, so the activity log can't be filled with arbitrary text.
+            var name = eventArgs.IsUnknownUser
+                ? _localizationManager.GetServerLocalizedString("FailedLoginAttemptWithUnknownUser")
+                : string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetServerLocalizedString("FailedLoginAttemptWithUserName"),
-                    eventArgs.Username),
+                    eventArgs.Username);
+
+            await _activityManager.CreateAsync(new ActivityLog(
+                name,
                 "AuthenticationFailed",
                 Guid.Empty)
             {
