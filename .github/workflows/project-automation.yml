@@ -18,7 +18,7 @@ jobs:
     if: ${{ github.repository == 'jellyfin/jellyfin' && (github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository) }}
     steps:
       - name: Update project board
-        uses: jellyfin/jellyfin-packaging/.github/actions/project-automation@master
+        uses: jellyfin/jellyfin-packaging/.github/actions/project-automation@f06be4dcc87411dd04434490b45a9745703e8efb # master
         with:
           github-token: ${{ secrets.GH_PROJECTS_TOKEN }}
           repo: jellyfin
