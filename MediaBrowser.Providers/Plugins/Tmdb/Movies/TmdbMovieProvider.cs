@@ -77,7 +77,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
                     if (movie.ReleaseDate is not null)
                     {
-                        var releaseDate = movie.ReleaseDate.Value.ToUniversalTime();
+                        var releaseDate = movie.ReleaseDate.Value.ToUtcDate();
                         remoteResult.PremiereDate = releaseDate;
                         remoteResult.ProductionYear = releaseDate.Year;
                     }
@@ -137,7 +137,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     SearchProviderName = Name
                 };
 
-                var releaseDate = movieResult.ReleaseDate?.ToUniversalTime();
+                var releaseDate = movieResult.ReleaseDate?.ToUtcDate();
                 remoteSearchResult.PremiereDate = releaseDate;
                 remoteSearchResult.ProductionYear = releaseDate?.Year;
 
