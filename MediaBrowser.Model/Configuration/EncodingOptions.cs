@@ -25,6 +25,7 @@ public class EncodingOptions
         ThrottleDelaySeconds = 180;
         EnableSegmentDeletion = false;
         SegmentKeepSeconds = 720;
+        MaxTranscodingVideoBitrate = 0;
         EncodingThreadCount = -1;
         // This is a DRM device that is almost guaranteed to be there on every intel platform,
         // plus it's the default one in ffmpeg if you don't specify anything
@@ -124,6 +125,12 @@ public class EncodingOptions
     /// Gets or sets seconds for which segments should be kept before being deleted.
     /// </summary>
     public int SegmentKeepSeconds { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum bitrate, in bits per second, of video that is re-encoded.
+    /// Video that is stream copied is not affected. A value of 0 disables the limit.
+    /// </summary>
+    public int MaxTranscodingVideoBitrate { get; set; }
 
     /// <summary>
     /// Gets or sets the hardware acceleration type.
