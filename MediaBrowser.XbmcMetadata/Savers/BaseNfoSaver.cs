@@ -428,6 +428,33 @@ namespace MediaBrowser.XbmcMetadata.Savers
                                 case Video3DFormat.MVC:
                                     writer.WriteElementString("format3d", "MVC");
                                     break;
+                                case Video3DFormat.MVHEVC:
+                                    writer.WriteElementString("format3d", "MVHEVC");
+                                    break;
+                                case Video3DFormat.Equirectangular180SideBySide:
+                                    writer.WriteElementString("format3d", "180SBS");
+                                    break;
+                                case Video3DFormat.Equirectangular180TopAndBottom:
+                                    writer.WriteElementString("format3d", "180TAB");
+                                    break;
+                                case Video3DFormat.Equirectangular180Mono:
+                                    writer.WriteElementString("format3d", "180MONO");
+                                    break;
+                                case Video3DFormat.Equirectangular360SideBySide:
+                                    writer.WriteElementString("format3d", "360SBS");
+                                    break;
+                                case Video3DFormat.Equirectangular360TopAndBottom:
+                                    writer.WriteElementString("format3d", "360TAB");
+                                    break;
+                                case Video3DFormat.Equirectangular360Mono:
+                                    writer.WriteElementString("format3d", "360MONO");
+                                    break;
+                                case Video3DFormat.Fisheye180SideBySide:
+                                    writer.WriteElementString("format3d", "FISHEYE180SBS");
+                                    break;
+                                case Video3DFormat.Fisheye180Mono:
+                                    writer.WriteElementString("format3d", "FISHEYE180MONO");
+                                    break;
                             }
                         }
                     }
