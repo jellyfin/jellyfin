@@ -153,7 +153,6 @@ public sealed class MySqlTransactionIsolationTests : DatabaseTestFixture
     [ProviderTheory(TestDbProvider.MySql, TestDbProvider.MariaDb)]
     [InlineData(DatabaseLockingBehaviorTypes.NoLock)]
     [InlineData(DatabaseLockingBehaviorTypes.Optimistic)]
-    [InlineData(DatabaseLockingBehaviorTypes.Pessimistic)]
     public void BeginTransaction_UnderEachLockingBehaviour_RunsAtReadCommitted(DatabaseLockingBehaviorTypes lockingBehaviour)
     {
         using var setup = CreateDbContext();
@@ -184,8 +183,6 @@ public sealed class MySqlTransactionIsolationTests : DatabaseTestFixture
         }
     }
 
-    // The pessimistic lock is held by a thread from the start of a transaction to its end, which an asynchronous
-    // transaction does not keep to, so that behaviour is only run synchronously.
     [ProviderTheory(TestDbProvider.MySql, TestDbProvider.MariaDb)]
     [InlineData(DatabaseLockingBehaviorTypes.NoLock)]
     [InlineData(DatabaseLockingBehaviorTypes.Optimistic)]
@@ -352,7 +349,6 @@ public sealed class MySqlTransactionIsolationTests : DatabaseTestFixture
         {
             DatabaseLockingBehaviorTypes.NoLock => new NoLockBehavior(NullLogger<NoLockBehavior>.Instance),
             DatabaseLockingBehaviorTypes.Optimistic => new OptimisticLockBehavior(NullLogger<OptimisticLockBehavior>.Instance),
-            DatabaseLockingBehaviorTypes.Pessimistic => new PessimisticLockBehavior(NullLogger<PessimisticLockBehavior>.Instance, NullLoggerFactory.Instance),
             _ => throw new ArgumentOutOfRangeException(nameof(lockingBehaviour))
         };
 

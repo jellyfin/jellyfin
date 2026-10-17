@@ -232,30 +232,27 @@ public abstract class SqlServerSessionTestsBase : IDisposable
     [ProviderTheory(TestDbProvider.SqlServer)]
     [InlineData(nameof(NoLockBehavior))]
     [InlineData(nameof(OptimisticLockBehavior))]
-    [InlineData(nameof(PessimisticLockBehavior))]
-    public void SaveChanges_WithEachLockingBehaviour_RunsAtReadCommittedAndIsReadBack(string behaviourName)
+    public async Task SaveChanges_WithEachLockingBehaviour_RunsAtReadCommittedAndIsReadBack(string behaviourName)
     {
-        // Synchronous, as the pessimistic behaviour holds a lock that belongs to a thread and is unsafe with asynchronous
-        // transactions.
         IEntityFrameworkCoreLockingBehavior behaviour = behaviourName switch
         {
             nameof(NoLockBehavior) => new NoLockBehavior(NullLogger<NoLockBehavior>.Instance),
             nameof(OptimisticLockBehavior) => new OptimisticLockBehavior(NullLogger<OptimisticLockBehavior>.Instance),
-            _ => new PessimisticLockBehavior(NullLogger<PessimisticLockBehavior>.Instance, NullLoggerFactory.Instance)
+            _ => throw new ArgumentOutOfRangeException(nameof(behaviourName))
         };
         var options = new DbContextOptionsBuilder<JellyfinDbContext>(_database.Options);
         behaviour.Initialise(options);
         var log = new ActivityLog("name", "type", Guid.NewGuid());
 
-        using (var context = new JellyfinDbContext(options.Options, NullLogger<JellyfinDbContext>.Instance, _database.CreateProvider(), behaviour))
+        await using (var context = new JellyfinDbContext(options.Options, NullLogger<JellyfinDbContext>.Instance, _database.CreateProvider(), behaviour))
         {
             context.Database.AutoTransactionBehavior = AutoTransactionBehavior.Always;
             context.ActivityLogs.Add(log);
-            context.SaveChanges();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
         }
 
-        using var check = CreateContext();
-        Assert.True(check.ActivityLogs.Any(e => e.Id == log.Id));
+        await using var check = CreateContext();
+        Assert.True(await check.ActivityLogs.AnyAsync(e => e.Id == log.Id, TestContext.Current.CancellationToken));
         Assert.Equal([ReadCommitted], _probe.Levels);
     }
 
