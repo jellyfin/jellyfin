@@ -2067,6 +2067,17 @@ namespace Emby.Server.Implementations.Library
                 // it as well - the episodes of a Series added to a collection, for example.
                 query.DescendantOfId = folder.Id;
             }
+            else if (parents.Count == 1 && parents.First().SourceType == SourceType.Channel)
+            {
+                // A channel is a browsable folder tree, not a flat list of media, so a recursive listing of the
+                // channel - or of any of its nested folders, which share the channel's SourceType - should return
+                // its direct children. Falling through to SetAncestorIds instead surfaces every nested item and
+                // forces the slower ancestor join (channel items have no ancestor index), which a recursive listing
+                // of a large folder turns into a multi-second query. Return without clearing Parent so the query
+                // keeps filtering on the current folder id.
+                query.Recursive = false;
+                return;
+            }
             else
             {
                 SetAncestorIds(query, parents);
