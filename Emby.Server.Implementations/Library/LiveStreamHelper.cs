@@ -207,6 +207,8 @@ namespace Emby.Server.Implementations.Library
         /// audio header reports a sample rate of 0. Caching either result makes later playback copy
         /// a stream the player cannot start.
         /// </summary>
+        /// <param name="mediaInfo">The probed media information.</param>
+        /// <returns>Whether the probe is incomplete.</returns>
         internal static bool IsIncompleteLiveProbe(MediaInfo? mediaInfo)
         {
             var video = mediaInfo?.MediaStreams?.FirstOrDefault(stream => stream.Type == MediaStreamType.Video);

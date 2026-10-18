@@ -1790,6 +1790,8 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <summary>
     /// hvc1 is an MP4 sample entry. MPEG-TS HLS segments carry Annex B HEVC and must not be tagged hvc1.
     /// </summary>
+    /// <param name="segmentContainer">The segment container.</param>
+    /// <returns>Whether the hvc1 tag should be applied.</returns>
     internal static bool UseHevcMp4Tag(string? segmentContainer)
         => !string.Equals(segmentContainer, "ts", StringComparison.OrdinalIgnoreCase);
 
@@ -1797,6 +1799,9 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// mp4toannexb applies to length-prefixed NALs. Live MPEG-TS is already Annex B, and a missing
     /// NalLengthSize must not be treated as a reason to rewrite the bitstream.
     /// </summary>
+    /// <param name="nalLengthSize">The NAL length size.</param>
+    /// <param name="isInfiniteStream">Whether the stream is infinite.</param>
+    /// <returns>Whether hevc_mp4toannexb should be applied.</returns>
     internal static bool UseAnnexBBitStreamFilter(string? nalLengthSize, bool isInfiniteStream)
         => !isInfiniteStream
            && int.TryParse(nalLengthSize, NumberStyles.Integer, CultureInfo.InvariantCulture, out var size)
