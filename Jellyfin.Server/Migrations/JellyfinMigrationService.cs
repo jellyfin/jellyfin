@@ -476,8 +476,15 @@ internal class JellyfinMigrationService
         if (backupInstruction.JellyfinDb && _jellyfinDatabaseProvider is not null)
         {
             logger.LogInformation("A migration will attempt to modify the jellyfin.db, will attempt to backup the file now.");
-            _backupKey = (_backupKey.LibraryDb, await _jellyfinDatabaseProvider.MigrationBackupFast(CancellationToken.None).ConfigureAwait(false), _backupKey.FullBackup);
-            logger.LogInformation("Jellyfin database has been backed up as {BackupPath}", _backupKey.JellyfinDb);
+            try
+            {
+                _backupKey = (_backupKey.LibraryDb, await _jellyfinDatabaseProvider.MigrationBackupFast(CancellationToken.None).ConfigureAwait(false), _backupKey.FullBackup);
+                logger.LogInformation("Jellyfin database has been backed up as {BackupPath}", _backupKey.JellyfinDb);
+            }
+            catch (NotImplementedException ex)
+            {
+                logger.LogWarning(ex, "The database provider does not support backups, the migrations will run without a backup of the database.");
+            }
         }
 
         if (_backupService is not null && (backupInstruction.Metadata || backupInstruction.Subtitles || backupInstruction.Trickplay))
