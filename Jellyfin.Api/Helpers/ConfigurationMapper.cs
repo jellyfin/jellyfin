@@ -313,8 +313,9 @@ public static class ConfigurationMapper
             BaseUrl = dto.BaseUrl,
             EnableHttps = dto.EnableHttps,
             RequireHttps = dto.RequireHttps,
-            CertificatePath = dto.CertificatePath,
-            CertificatePassword = dto.CertificatePassword,
+            // The web client sends null for blank certificate fields.
+            CertificatePath = dto.CertificatePath!,
+            CertificatePassword = dto.CertificatePassword!,
             InternalHttpPort = dto.InternalHttpPort,
             InternalHttpsPort = dto.InternalHttpsPort,
             PublicHttpPort = dto.PublicHttpPort,

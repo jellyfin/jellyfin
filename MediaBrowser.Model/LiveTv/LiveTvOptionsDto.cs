@@ -1,7 +1,5 @@
 #pragma warning disable CA1819
 
-using System;
-
 namespace MediaBrowser.Model.LiveTv;
 
 /// <summary>
@@ -9,17 +7,6 @@ namespace MediaBrowser.Model.LiveTv;
 /// </summary>
 public class LiveTvOptionsDto
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LiveTvOptionsDto" /> class.
-    /// </summary>
-    public LiveTvOptionsDto()
-    {
-        TunerHosts = Array.Empty<TunerHostInfo>();
-        ListingProviders = Array.Empty<ListingsProviderInfo>();
-        MediaLocationsCreated = Array.Empty<string>();
-        RecordingPostProcessorArguments = "\"{path}\"";
-    }
-
     /// <summary>
     /// Gets or sets the guide days.
     /// </summary>
@@ -53,12 +40,12 @@ public class LiveTvOptionsDto
     /// <summary>
     /// Gets or sets the tuner hosts.
     /// </summary>
-    public TunerHostInfo[] TunerHosts { get; set; }
+    public TunerHostInfo[] TunerHosts { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the listing providers.
     /// </summary>
-    public ListingsProviderInfo[] ListingProviders { get; set; }
+    public ListingsProviderInfo[] ListingProviders { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the pre-padding seconds.
@@ -73,7 +60,7 @@ public class LiveTvOptionsDto
     /// <summary>
     /// Gets or sets the media locations created.
     /// </summary>
-    public string[] MediaLocationsCreated { get; set; }
+    public string[] MediaLocationsCreated { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the recording post processor.
@@ -83,15 +70,15 @@ public class LiveTvOptionsDto
     /// <summary>
     /// Gets or sets the recording post processor arguments.
     /// </summary>
-    public string RecordingPostProcessorArguments { get; set; }
+    public string RecordingPostProcessorArguments { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets a value indicating whether to save recording NFO.
     /// </summary>
-    public bool SaveRecordingNFO { get; set; } = true;
+    public bool SaveRecordingNFO { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to save recording images.
     /// </summary>
-    public bool SaveRecordingImages { get; set; } = true;
+    public bool SaveRecordingImages { get; set; }
 }

@@ -1,7 +1,6 @@
 #pragma warning disable CA1819
 
 #nullable disable
-using System.ComponentModel;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Configuration;
@@ -11,56 +10,6 @@ namespace MediaBrowser.Model.Configuration;
 /// </summary>
 public class EncodingOptionsDto
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EncodingOptionsDto" /> class.
-    /// </summary>
-    public EncodingOptionsDto()
-    {
-        EnableFallbackFont = false;
-        EnableAudioVbr = false;
-        DownMixAudioBoost = 2;
-        DownMixStereoAlgorithm = DownMixStereoAlgorithms.None;
-        MaxMuxingQueueSize = 2048;
-        EnableThrottling = false;
-        ThrottleDelaySeconds = 180;
-        EnableSegmentDeletion = false;
-        SegmentKeepSeconds = 720;
-        EncodingThreadCount = -1;
-        VaapiDevice = "/dev/dri/renderD128";
-        QsvDevice = string.Empty;
-        EnableTonemapping = false;
-        EnableVppTonemapping = false;
-        EnableVideoToolboxTonemapping = false;
-        TonemappingAlgorithm = TonemappingAlgorithm.bt2390;
-        TonemappingMode = TonemappingMode.auto;
-        TonemappingRange = TonemappingRange.auto;
-        TonemappingDesat = 0;
-        TonemappingPeak = 100;
-        TonemappingParam = 0;
-        VppTonemappingBrightness = 16;
-        VppTonemappingContrast = 1;
-        H264Crf = 23;
-        H265Crf = 28;
-        DeinterlaceDoubleRate = false;
-        DeinterlaceMethod = DeinterlaceMethod.yadif;
-        EnableDecodingColorDepth10Hevc = true;
-        EnableDecodingColorDepth10Vp9 = true;
-        EnableDecodingColorDepth10HevcRext = false;
-        EnableDecodingColorDepth12HevcRext = false;
-        EnableEnhancedNvdecDecoder = true;
-        PreferSystemNativeHwDecoder = true;
-        EnableIntelLowPowerH264HwEncoder = false;
-        EnableIntelLowPowerHevcHwEncoder = false;
-        EnableHardwareEncoding = true;
-        AllowHevcEncoding = false;
-        AllowAv1Encoding = false;
-        EnableSubtitleExtraction = true;
-        SubtitleExtractionTimeoutMinutes = 30;
-        AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = ["mkv"];
-        HardwareDecodingCodecs = ["h264", "vc1"];
-        HlsAudioSeekStrategy = HlsAudioSeekStrategy.DisableAccurateSeek;
-    }
-
     /// <summary>
     /// Gets or sets the thread count used for encoding.
     /// </summary>
@@ -214,7 +163,7 @@ public class EncodingOptionsDto
     /// <summary>
     /// Gets or sets the encoder preset.
     /// </summary>
-    public EncoderPreset? EncoderPreset { get; set; }
+    public EncoderPreset EncoderPreset { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the framerate is doubled when deinterlacing.
@@ -304,6 +253,5 @@ public class EncodingOptionsDto
     /// <summary>
     /// Gets or sets the method used for audio seeking in HLS.
     /// </summary>
-    [DefaultValue(HlsAudioSeekStrategy.DisableAccurateSeek)]
     public HlsAudioSeekStrategy HlsAudioSeekStrategy { get; set; }
 }

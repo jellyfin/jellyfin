@@ -1,7 +1,6 @@
 #pragma warning disable CS1591
 #pragma warning disable CA1819
 
-using System;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.System;
@@ -14,57 +13,6 @@ namespace MediaBrowser.Model.Configuration;
 /// </summary>
 public class ServerConfigurationDto
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ServerConfigurationDto" /> class.
-    /// </summary>
-    public ServerConfigurationDto()
-    {
-        LogFileRetentionDays = 3;
-        MetadataOptions = new[]
-        {
-            new MetadataOptions()
-            {
-                ItemType = "Book"
-            },
-            new MetadataOptions()
-            {
-                ItemType = "Movie"
-            },
-            new MetadataOptions
-            {
-                ItemType = "MusicVideo",
-                DisabledMetadataFetchers = new[] { "The Open Movie Database" },
-                DisabledImageFetchers = new[] { "The Open Movie Database" }
-            },
-            new MetadataOptions
-            {
-                ItemType = "Series",
-            },
-            new MetadataOptions
-            {
-                ItemType = "MusicAlbum",
-                DisabledMetadataFetchers = new[] { "TheAudioDB" }
-            },
-            new MetadataOptions
-            {
-                ItemType = "MusicArtist",
-                DisabledMetadataFetchers = new[] { "TheAudioDB" }
-            },
-            new MetadataOptions
-            {
-                ItemType = "BoxSet"
-            },
-            new MetadataOptions
-            {
-                ItemType = "Season",
-            },
-            new MetadataOptions
-            {
-                ItemType = "Episode",
-            }
-        };
-    }
-
     public int LogFileRetentionDays { get; set; }
 
     public bool IsStartupWizardCompleted { get; set; }
@@ -73,105 +21,105 @@ public class ServerConfigurationDto
 
     public string? PreviousVersionStr { get; set; }
 
-    public bool EnableMetrics { get; set; } = false;
+    public bool EnableMetrics { get; set; }
 
-    public bool EnableNormalizedItemByNameIds { get; set; } = true;
+    public bool EnableNormalizedItemByNameIds { get; set; }
 
     public bool IsPortAuthorized { get; set; }
 
-    public bool QuickConnectAvailable { get; set; } = true;
+    public bool QuickConnectAvailable { get; set; }
 
-    public bool EnableCaseSensitiveItemIds { get; set; } = true;
+    public bool EnableCaseSensitiveItemIds { get; set; }
 
-    public bool DisableLiveTvChannelUserDataName { get; set; } = true;
+    public bool DisableLiveTvChannelUserDataName { get; set; }
 
-    public string MetadataPath { get; set; } = string.Empty;
+    public string MetadataPath { get; set; } = null!;
 
-    public string PreferredMetadataLanguage { get; set; } = "en";
+    public string PreferredMetadataLanguage { get; set; } = null!;
 
-    public string MetadataCountryCode { get; set; } = "US";
+    public string MetadataCountryCode { get; set; } = null!;
 
-    public string[] SortReplaceCharacters { get; set; } = new[] { ".", "+", "%" };
+    public string[] SortReplaceCharacters { get; set; } = null!;
 
-    public string[] SortRemoveCharacters { get; set; } = new[] { ",", "&", "-", "{", "}", "'" };
+    public string[] SortRemoveCharacters { get; set; } = null!;
 
-    public string[] SortRemoveWords { get; set; } = new[] { "the", "a", "an" };
+    public string[] SortRemoveWords { get; set; } = null!;
 
-    public int MinResumePct { get; set; } = 5;
+    public int MinResumePct { get; set; }
 
-    public int MaxResumePct { get; set; } = 90;
+    public int MaxResumePct { get; set; }
 
-    public int MinResumeDurationSeconds { get; set; } = 300;
+    public int MinResumeDurationSeconds { get; set; }
 
-    public int MinAudiobookResume { get; set; } = 5;
+    public int MinAudiobookResume { get; set; }
 
-    public int MaxAudiobookResume { get; set; } = 5;
+    public int MaxAudiobookResume { get; set; }
 
     public int InactiveSessionThreshold { get; set; }
 
-    public int LibraryMonitorDelay { get; set; } = 60;
+    public int LibraryMonitorDelay { get; set; }
 
-    public int LibraryUpdateDuration { get; set; } = 30;
+    public int LibraryUpdateDuration { get; set; }
 
-    public int CacheSize { get; set; } = Environment.ProcessorCount * 100;
+    public int CacheSize { get; set; }
 
     public ImageSavingConvention ImageSavingConvention { get; set; }
 
-    public MetadataOptions[] MetadataOptions { get; set; }
+    public MetadataOptions[] MetadataOptions { get; set; } = null!;
 
-    public bool SkipDeserializationForBasicTypes { get; set; } = true;
+    public bool SkipDeserializationForBasicTypes { get; set; }
 
-    public string ServerName { get; set; } = string.Empty;
+    public string ServerName { get; set; } = null!;
 
-    public string UICulture { get; set; } = "en-US";
+    public string UICulture { get; set; } = null!;
 
-    public bool SaveMetadataHidden { get; set; } = false;
+    public bool SaveMetadataHidden { get; set; }
 
-    public NameValuePair[] ContentTypes { get; set; } = Array.Empty<NameValuePair>();
+    public NameValuePair[] ContentTypes { get; set; } = null!;
 
     public int RemoteClientBitrateLimit { get; set; }
 
-    public bool EnableFolderView { get; set; } = false;
+    public bool EnableFolderView { get; set; }
 
-    public bool EnableGroupingMoviesIntoCollections { get; set; } = false;
+    public bool EnableGroupingMoviesIntoCollections { get; set; }
 
-    public bool EnableGroupingShowsIntoCollections { get; set; } = false;
+    public bool EnableGroupingShowsIntoCollections { get; set; }
 
-    public bool DisplaySpecialsWithinSeasons { get; set; } = true;
+    public bool DisplaySpecialsWithinSeasons { get; set; }
 
-    public string[] CodecsUsed { get; set; } = Array.Empty<string>();
+    public string[] CodecsUsed { get; set; } = null!;
 
-    public RepositoryInfo[] PluginRepositories { get; set; } = Array.Empty<RepositoryInfo>();
+    public RepositoryInfo[] PluginRepositories { get; set; } = null!;
 
-    public bool EnableExternalContentInSuggestions { get; set; } = true;
+    public bool EnableExternalContentInSuggestions { get; set; }
 
     public int ImageExtractionTimeoutMs { get; set; }
 
-    public PathSubstitution[] PathSubstitutions { get; set; } = Array.Empty<PathSubstitution>();
+    public PathSubstitution[] PathSubstitutions { get; set; } = null!;
 
-    public bool EnableSlowResponseWarning { get; set; } = true;
+    public bool EnableSlowResponseWarning { get; set; }
 
-    public long SlowResponseThresholdMs { get; set; } = 500;
+    public long SlowResponseThresholdMs { get; set; }
 
-    public string[] CorsHosts { get; set; } = new[] { "*" };
+    public string[] CorsHosts { get; set; } = null!;
 
-    public int? ActivityLogRetentionDays { get; set; } = 30;
+    public int? ActivityLogRetentionDays { get; set; }
 
     public int LibraryScanFanoutConcurrency { get; set; }
 
     public int LibraryMetadataRefreshConcurrency { get; set; }
 
-    public bool AllowClientLogUpload { get; set; } = true;
+    public bool AllowClientLogUpload { get; set; }
 
     public int DummyChapterDuration { get; set; }
 
-    public ImageResolution ChapterImageResolution { get; set; } = ImageResolution.MatchSource;
+    public ImageResolution ChapterImageResolution { get; set; }
 
     public int ParallelImageEncodingLimit { get; set; }
 
-    public CastReceiverApplication[] CastReceiverApplications { get; set; } = Array.Empty<CastReceiverApplication>();
+    public CastReceiverApplication[] CastReceiverApplications { get; set; } = null!;
 
-    public TrickplayOptions TrickplayOptions { get; set; } = new TrickplayOptions();
+    public TrickplayOptions TrickplayOptions { get; set; } = null!;
 
     public bool EnableLegacyAuthorization { get; set; }
 }
