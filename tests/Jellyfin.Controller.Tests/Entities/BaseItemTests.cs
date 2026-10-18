@@ -574,6 +574,38 @@ public class BaseItemTests
     }
 
     [Fact]
+    public void GetMediaSources_SingleVersionVideo_QueriesLocalAlternateVersionsOnce()
+    {
+        var solo = new Video { Id = Guid.NewGuid(), Path = "/Movies/Solo/Solo.mkv" };
+
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        mediaSourceManager.Setup(x => x.GetPathProtocol(It.IsAny<string>())).Returns(MediaProtocol.File);
+        mediaSourceManager.Setup(x => x.GetMediaStreams(solo.Id)).Returns(new List<MediaStream>());
+        mediaSourceManager.Setup(x => x.GetMediaAttachments(solo.Id)).Returns(new List<MediaAttachment>());
+
+        var segmentManager = new Mock<IMediaSegmentManager>();
+        segmentManager.Setup(x => x.IsTypeSupported(It.IsAny<BaseItem>())).Returns(false);
+        BaseItem.MediaSegmentManager = segmentManager.Object;
+
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager.Setup(x => x.GetLinkedAlternateVersions(solo)).Returns(Array.Empty<Video>());
+        libraryManager.Setup(x => x.GetLocalAlternateVersionIds(solo)).Returns(Array.Empty<Guid>());
+
+        var recordingsManager = new Mock<IRecordingsManager>();
+        recordingsManager.Setup(x => x.GetActiveRecordingInfo(It.IsAny<string>())).Returns((ActiveRecordingInfo?)null);
+        Video.RecordingsManager = recordingsManager.Object;
+
+        BaseItem.MediaSourceManager = mediaSourceManager.Object;
+        BaseItem.LibraryManager = libraryManager.Object;
+
+        var sources = solo.GetMediaSources(false);
+
+        var source = Assert.Single(sources);
+        Assert.Equal("Solo", source.Name);
+        libraryManager.Verify(x => x.GetLocalAlternateVersionIds(solo), Times.Once);
+    }
+
+    [Fact]
     public void GetAllItemsForMediaSources_FromAnyVersion_HasNoDuplicates()
     {
         var (primary, alt1, alt2) = SetupVersionGroup();
