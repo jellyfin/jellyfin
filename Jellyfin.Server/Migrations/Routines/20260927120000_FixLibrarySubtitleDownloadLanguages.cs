@@ -84,7 +84,13 @@ internal class FixLibrarySubtitleDownloadLanguages : IAsyncMigrationRoutine
             foreach (var language in options.SubtitleDownloadLanguages)
             {
                 // Keep unresolvable values as they are, dropping them would silently discard a user setting.
-                var foundLanguage = _localizationManager.FindLanguageInfo(language)?.ThreeLetterISOLanguageName ?? language;
+                var culture = _localizationManager.FindLanguageInfo(language);
+                if (culture is null)
+                {
+                    _logger.LogWarning("Could not resolve language '{Language}' in library '{LibraryName}'. Keeping it unchanged.", language, virtualFolder.Name);
+                }
+
+                var foundLanguage = culture?.ThreeLetterISOLanguageName ?? language;
                 if (preferredLanguage?.ThreeLetterISOLanguageName is { } preferredCode
                     && !string.Equals(preferredCode, foundLanguage, StringComparison.OrdinalIgnoreCase)
                     && preferredLanguage.ThreeLetterISOLanguageNames.Contains(language, StringComparer.OrdinalIgnoreCase))

@@ -8,6 +8,7 @@ using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Server.Migrations.Routines;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -45,6 +46,7 @@ public sealed class MigrateRatingLevelsTests : IDisposable
     private readonly IApplicationPaths _applicationPaths;
     private readonly Mock<ILocalizationManager> _localizationManager;
     private readonly Mock<ILibraryManager> _libraryManager;
+    private readonly Mock<IServerApplicationHost> _appHost;
 
     public MigrateRatingLevelsTests()
     {
@@ -58,6 +60,10 @@ public sealed class MigrateRatingLevelsTests : IDisposable
 
         _libraryManager = new Mock<ILibraryManager>();
         _libraryManager.Setup(m => m.GetVirtualFolders(false)).Returns([]);
+
+        _appHost = new Mock<IServerApplicationHost>();
+        _appHost.Setup(m => m.ReverseVirtualPath(It.IsAny<string>()))
+            .Returns((string path) => path.Replace("/var/lib/jellyfin/data", "%AppDataPath%", StringComparison.Ordinal));
 
         // The connection owns the in-memory database, so it stays open for the whole test.
         _connection = new SqliteConnection("Data Source=:memory:");
@@ -148,6 +154,23 @@ public sealed class MigrateRatingLevelsTests : IDisposable
         AssertRating(context, _seasonId, 15, null);
     }
 
+    [Fact]
+    public void Perform_LibraryUnderTheDataPath_ScoresInheritedRatingsInThatCountry()
+    {
+        SeedSeries(seriesRating: "TV-14", seriesCustomRating: null, inherited: null);
+        SeedLibrary(folderCountryCode: null, optionsCountryCode: "DE", location: "/var/lib/jellyfin/data/shows");
+        using (var context = CreateDbContext())
+        {
+            context.BaseItems.Where(e => e.Id.Equals(_libraryId)).ExecuteUpdate(f => f.SetProperty(e => e.Path, "%AppDataPath%/shows"));
+        }
+
+        Perform();
+
+        using var assertContext = CreateDbContext();
+        AssertRating(assertContext, _seriesId, 16, null);
+        AssertRating(assertContext, _episodeId, 16, null);
+    }
+
     public void Dispose()
     {
         _connection.Dispose();
@@ -165,7 +188,7 @@ public sealed class MigrateRatingLevelsTests : IDisposable
         var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
         factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
 
-        new MigrateRatingLevels(factory.Object, new StartupLogger<MigrateRatingLevels>(NullLogger<MigrateRatingLevels>.Instance), _localizationManager.Object, _libraryManager.Object).Perform();
+        new MigrateRatingLevels(factory.Object, new StartupLogger<MigrateRatingLevels>(NullLogger<MigrateRatingLevels>.Instance), _localizationManager.Object, _libraryManager.Object, _appHost.Object).Perform();
     }
 
     private JellyfinDbContext CreateDbContext() => new(
@@ -174,7 +197,7 @@ public sealed class MigrateRatingLevelsTests : IDisposable
         new SqliteDatabaseProvider(_applicationPaths, NullLogger<SqliteDatabaseProvider>.Instance),
         new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
 
-    private void SeedLibrary(string? folderCountryCode, string? optionsCountryCode)
+    private void SeedLibrary(string? folderCountryCode, string? optionsCountryCode, string location = LibraryPath)
     {
         using (var context = CreateDbContext())
         {
@@ -197,7 +220,7 @@ public sealed class MigrateRatingLevelsTests : IDisposable
             {
                 Name = "Shows",
                 ItemId = _collectionFolderId.ToString("N", CultureInfo.InvariantCulture),
-                Locations = [LibraryPath],
+                Locations = [location],
                 LibraryOptions = new LibraryOptions { MetadataCountryCode = optionsCountryCode }
             }
         ]);

@@ -18,6 +18,7 @@ using Jellyfin.Extensions;
 using Jellyfin.Server.Implementations.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using Microsoft.EntityFrameworkCore;
 using BaseItemEntity = Jellyfin.Database.Implementations.Entities.BaseItemEntity;
 
@@ -70,9 +71,8 @@ public sealed partial class BaseItemRepository
     private static string NormalizeLanguage(string language)
         => string.Equals(language, "und", StringComparison.OrdinalIgnoreCase) ? "und" : language;
 
-    // A variant also matches its base code, a pt-br setting must see the "por" track ffprobe reports.
     private IReadOnlyList<string> GetStreamLanguageCodes(string language)
-        => _localizationManager.FindLanguageInfo(language)?.GetMediaStreamLanguageCodes() ?? [NormalizeLanguage(language)];
+        => _localizationManager.GetMediaStreamLanguageCodes(NormalizeLanguage(language));
 
     // The primary versions whose alternate version satisfies a dimension bound. Anchored on
     // PrimaryVersionId so the filtered index carries it rather than a scan of every item.

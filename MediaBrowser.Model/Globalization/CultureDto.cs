@@ -1,8 +1,6 @@
 #pragma warning disable CS1591
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace MediaBrowser.Model.Globalization
 {
@@ -56,20 +54,5 @@ namespace MediaBrowser.Model.Globalization
         }
 
         public IReadOnlyList<string> ThreeLetterISOLanguageNames { get; }
-
-        /// <summary>
-        /// Gets every code a media stream in this language can be tagged with, the most specific first.
-        /// </summary>
-        /// <remarks>A variant also matches its base code, ffprobe reports a pt-BR track as "por".</remarks>
-        /// <returns>The language codes.</returns>
-        public IReadOnlyList<string> GetMediaStreamLanguageCodes()
-        {
-            if (!Name.Contains('-', StringComparison.OrdinalIgnoreCase))
-            {
-                return ThreeLetterISOLanguageNames;
-            }
-
-            return [Name, .. ThreeLetterISOLanguageNames.Where(n => !string.Equals(n, Name, StringComparison.OrdinalIgnoreCase))];
-        }
     }
 }

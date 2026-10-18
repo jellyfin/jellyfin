@@ -135,8 +135,7 @@ namespace MediaBrowser.Providers.MediaInfo
             bool isAutomated,
             CancellationToken cancellationToken)
         {
-            // A variant also matches its base code, ffprobe reports a pt-BR track as "por".
-            var languageCodes = _localizationManager.FindLanguageInfo(language)?.GetMediaStreamLanguageCodes() ?? [language];
+            var languageCodes = _localizationManager.GetMediaStreamLanguageCodes(language);
 
             // There's already subtitles for this language
             if (mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && i.IsTextSubtitleStream && languageCodes.Contains(i.Language, StringComparison.OrdinalIgnoreCase)))

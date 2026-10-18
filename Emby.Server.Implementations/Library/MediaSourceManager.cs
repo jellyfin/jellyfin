@@ -481,7 +481,7 @@ namespace Emby.Server.Implementations.Library
                 return [];
             }
 
-            return _localizationManager.FindLanguageInfo(language)?.GetMediaStreamLanguageCodes() ?? [language];
+            return _localizationManager.GetMediaStreamLanguageCodes(language);
         }
 
         private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)

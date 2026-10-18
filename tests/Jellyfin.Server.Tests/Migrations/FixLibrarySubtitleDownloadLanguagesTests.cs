@@ -15,8 +15,10 @@ using Xunit;
 
 namespace Jellyfin.Server.Tests.Migrations;
 
-public class FixLibrarySubtitleDownloadLanguagesTests
+public sealed class FixLibrarySubtitleDownloadLanguagesTests : IDisposable
 {
+    private readonly IXmlSerializer _originalXmlSerializer = CollectionFolder.XmlSerializer;
+
     [Theory]
     // 12.0 stored every variant as its base code, the metadata language tells which one was picked.
     [InlineData("por", "pt-br", "en", "pt-br")]
@@ -67,5 +69,10 @@ public class FixLibrarySubtitleDownloadLanguagesTests
         await migration.PerformAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal([expected], options.SubtitleDownloadLanguages);
+    }
+
+    public void Dispose()
+    {
+        CollectionFolder.XmlSerializer = _originalXmlSerializer;
     }
 }

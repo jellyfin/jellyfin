@@ -191,7 +191,10 @@ public sealed class BaseItemRepositoryStreamFilterTests : SqliteDbTestFixture
         var localizationManager = new Mock<ILocalizationManager>();
         localizationManager
             .Setup(m => m.FindLanguageInfo("fr-ca"))
-            .Returns(new CultureDto("fr-ca", "French (Canada)", "fr-ca", ["frc", "fre"]));
+            .Returns(new CultureDto("fr-ca", "French (Canada)", "fr-ca", ["frc"]));
+        localizationManager
+            .Setup(m => m.FindLanguageInfo("fr"))
+            .Returns(new CultureDto("French", "French", "fr", ["fra", "fre"]));
         var repository = CreateBaseItemRepository(new ItemTypeLookup(), localizationManager.Object);
 
         Assert.DoesNotContain(_versionedMovie, repository.GetItemIdsList(new InternalItemsQuery { HasNoAudioTrackWithLanguage = "fr-ca" }));

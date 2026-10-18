@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Server.ServerSetupApp;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -29,16 +30,19 @@ internal class MigrateRatingLevels : IDatabaseMigrationRoutine
     private readonly IDbContextFactory<JellyfinDbContext> _provider;
     private readonly ILocalizationManager _localizationManager;
     private readonly ILibraryManager _libraryManager;
+    private readonly IServerApplicationHost _appHost;
 
     public MigrateRatingLevels(
         IDbContextFactory<JellyfinDbContext> provider,
         IStartupLogger<MigrateRatingLevels> logger,
         ILocalizationManager localizationManager,
-        ILibraryManager libraryManager)
+        ILibraryManager libraryManager,
+        IServerApplicationHost appHost)
     {
         _provider = provider;
         _localizationManager = localizationManager;
         _libraryManager = libraryManager;
+        _appHost = appHost;
         _logger = logger;
     }
 
@@ -67,6 +71,7 @@ internal class MigrateRatingLevels : IDatabaseMigrationRoutine
             .ToDictionary(e => e.Id);
 
         var libraries = GetLibraries(items);
+        var libraryCountryCodes = new Dictionary<Guid, string?>();
         var scores = new Dictionary<(string Rating, string? CountryCode), ParentalRatingScore?>();
         var changes = new Dictionary<(int? Score, int? SubScore), List<Guid>>();
         foreach (var item in items.Values)
@@ -79,7 +84,7 @@ internal class MigrateRatingLevels : IDatabaseMigrationRoutine
             ParentalRatingScore? ratingScore = null;
             if (rating is not null)
             {
-                var scoreKey = (Rating: rating, CountryCode: ResolveCountryCode(items, libraries, item));
+                var scoreKey = (Rating: rating, CountryCode: ResolveCountryCode(items, libraries, libraryCountryCodes, item));
                 if (!scores.TryGetValue(scoreKey, out ratingScore))
                 {
                     ratingScore = _localizationManager.GetRatingScore(scoreKey.Rating, scoreKey.CountryCode);
@@ -129,9 +134,10 @@ internal class MigrateRatingLevels : IDatabaseMigrationRoutine
                 items.TryGetValue(folderId, out folder);
             }
 
+            // The database stores paths under the data directory as %AppDataPath%, Locations holds them expanded.
             libraries.Add(new Library(
                 folder?.Path,
-                virtualFolder.Locations ?? [],
+                [.. (virtualFolder.Locations ?? []).Select(_appHost.ReverseVirtualPath)],
                 folder?.PreferredMetadataCountryCode,
                 virtualFolder.LibraryOptions?.MetadataCountryCode));
         }
@@ -140,7 +146,7 @@ internal class MigrateRatingLevels : IDatabaseMigrationRoutine
     }
 
     // Mirrors BaseItem.GetPreferredMetadataCountryCode; a null result falls back to the server's country.
-    private static string? ResolveCountryCode(Dictionary<Guid, RatingNode> items, List<Library> libraries, RatingNode item)
+    private static string? ResolveCountryCode(Dictionary<Guid, RatingNode> items, List<Library> libraries, Dictionary<Guid, string?> libraryCountryCodes, RatingNode item)
     {
         var visited = new HashSet<Guid>();
         for (RatingNode? current = item; current is not null && visited.Add(current.Id); current = GetItem(items, current.ParentId))
@@ -171,6 +177,11 @@ internal class MigrateRatingLevels : IDatabaseMigrationRoutine
             top = next;
         }
 
+        if (libraryCountryCodes.TryGetValue(top.Id, out var cached))
+        {
+            return cached;
+        }
+
         var matches = top.Path is null
             ? []
             : libraries.Where(l => string.Equals(l.Path, top.Path, StringComparison.OrdinalIgnoreCase)
@@ -179,7 +190,9 @@ internal class MigrateRatingLevels : IDatabaseMigrationRoutine
         var countryCode = matches.Select(l => l.PreferredMetadataCountryCode).FirstOrDefault(c => !string.IsNullOrEmpty(c))
             ?? matches.FirstOrDefault()?.MetadataCountryCode;
 
-        return string.IsNullOrEmpty(countryCode) ? null : countryCode;
+        countryCode = string.IsNullOrEmpty(countryCode) ? null : countryCode;
+        libraryCountryCodes[top.Id] = countryCode;
+        return countryCode;
     }
 
     private static RatingNode? GetItem(Dictionary<Guid, RatingNode> items, Guid? id)

@@ -6,6 +6,7 @@ using BitFaster.Caching;
 using Emby.Server.Implementations.Localization;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -137,7 +138,13 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [InlineData("por", new[] { "por" })]
         [InlineData("ger", new[] { "deu", "ger" })]
         [InlineData("zh-tw", new[] { "zh-tw", "zho", "chi" })]
-        [InlineData("fr-ca", new[] { "fr-ca", "frc" })]
+        [InlineData("fr-ca", new[] { "fr-ca", "frc", "fra", "fre" })]
+        // Streams scanned before 12.0 keep their legacy code until the item is refreshed.
+        [InlineData("pob", new[] { "pt-br", "por", "pob" })]
+        // A display name with a hyphen does not make a culture a variant.
+        [InlineData("ell", new[] { "ell", "gre" })]
+        [InlineData("UND", new[] { "und" })]
+        [InlineData("xyz", new[] { "xyz" })]
         public async Task GetMediaStreamLanguageCodes_Variant_IncludesBaseCode(string identifier, string[] expected)
         {
             var localizationManager = Setup(new ServerConfiguration
@@ -146,9 +153,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             });
             await localizationManager.LoadAll();
 
-            var culture = localizationManager.FindLanguageInfo(identifier);
-            Assert.NotNull(culture);
-            Assert.Equal(expected, culture.GetMediaStreamLanguageCodes());
+            Assert.Equal(expected, localizationManager.GetMediaStreamLanguageCodes(identifier));
         }
 
         [Fact]
