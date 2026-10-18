@@ -259,6 +259,15 @@ public class BaseItemTests
     [InlineData("Movie (2007) 1.0", "Movie (2007) 1.11", "1.0", "1.11")]
     // A dot followed by a non-digit is still a delimiter, even after a digit.
     [InlineData("Movie - Part 1.HDR", "Movie - Part 1.SDR", "HDR", "SDR")]
+    // Whole base name ending mid-label: retreat to the spaced delimiter so both labels are short.
+    [InlineData(
+        "Show (2015) - S01E01 - HD | Bluray",
+        "Show (2015) - S01E01 - HD | Bluray (Compressed)",
+        "HD | Bluray",
+        "HD | Bluray (Compressed)")]
+    [InlineData("Show - S02E01 - HD", "Show - S02E01 - HD | Bluray", "HD", "HD | Bluray")]
+    // No spaced delimiter: hyphenated title stays whole, base name unchanged.
+    [InlineData("Spider-Man (2002)", "Spider-Man (2002) 4K", "Spider-Man (2002)", "4K")]
     public void GetMediaSourceName_CommonPrefix_Valid(string primaryName, string altName, string expectedPrimary, string expectedAlt)
     {
         var primaryPath = "/Shows/Demo/Season 01/" + primaryName + ".mkv";

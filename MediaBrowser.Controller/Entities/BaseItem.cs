@@ -1444,7 +1444,20 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            if (!prefixIsWholeName)
+            if (prefixIsWholeName && !IsVersionBoundary(prefix.Length, fileNames))
+            {
+                // Whole name ends mid-label (e.g. "Show - S01E01 - HD" / "Show - S01E01 - HD (Compressed)"):
+                // retreat to last delimiter followed by space; keeps hyphenated words whole.
+                for (var i = prefix.Length - 2; i >= 0; i--)
+                {
+                    if (prefix[i + 1] == ' ' && Array.IndexOf(VersionDelimiters, prefix[i]) >= 0)
+                    {
+                        prefix = prefix[..(i + 1)];
+                        break;
+                    }
+                }
+            }
+            else if (!prefixIsWholeName)
             {
                 // Retreat to the last structural delimiter ('-', '_', '.'), skipping dots that are
                 // decimal points within a number rather than delimiters (see IsDecimalPoint).
@@ -1469,6 +1482,27 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return prefix;
+        }
+
+        private static bool IsVersionBoundary(int index, IReadOnlyList<string> fileNames)
+        {
+            // Each longer name must continue with delimiter or '[' (spaces skipped).
+            for (var i = 0; i < fileNames.Count; i++)
+            {
+                var name = fileNames[i];
+                var next = index;
+                while (next < name.Length && name[next] == ' ')
+                {
+                    next++;
+                }
+
+                if (next < name.Length && name[next] != '[' && Array.IndexOf(VersionDelimiters, name[next]) < 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static bool IsDecimalPoint(string prefix, int index, IReadOnlyList<string> fileNames)
