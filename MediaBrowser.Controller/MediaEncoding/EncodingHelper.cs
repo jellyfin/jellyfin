@@ -3411,8 +3411,23 @@ namespace MediaBrowser.Controller.MediaEncoding
             int? requestedWidth,
             int? requestedHeight,
             int? requestedMaxWidth,
+            int? requestedMaxHeight)
+        {
+            return GetHwScaleFilter(hwScalePrefix, hwScaleSuffix, videoFormat, swapOutputWandH, videoWidth, videoHeight, requestedWidth, requestedHeight, requestedMaxWidth, requestedMaxHeight, null);
+        }
+
+        public static string GetHwScaleFilter(
+            string hwScalePrefix,
+            string hwScaleSuffix,
+            string videoFormat,
+            bool swapOutputWandH,
+            int? videoWidth,
+            int? videoHeight,
+            int? requestedWidth,
+            int? requestedHeight,
+            int? requestedMaxWidth,
             int? requestedMaxHeight,
-            string cropArgs = null)
+            string cropArgs)
         {
             var (outWidth, outHeight) = GetFixedOutputSize(
                 videoWidth,
@@ -3541,6 +3556,23 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return string.Empty;
+        }
+
+        public static string GetSwScaleFilter(
+            EncodingJobInfo state,
+            EncodingOptions options,
+            string videoEncoder,
+            int? videoWidth,
+            int? videoHeight,
+            Video3DFormat? threedFormat,
+            int? requestedWidth,
+            int? requestedHeight,
+            int? requestedMaxWidth,
+            int? requestedMaxHeight)
+        {
+            var flattenFilter = GetVideo3DFilter(threedFormat);
+            var scaleFilter = GetSwScaleFilter(state, options, videoEncoder, videoWidth, videoHeight, requestedWidth, requestedHeight, requestedMaxWidth, requestedMaxHeight);
+            return string.Join(',', new[] { flattenFilter, scaleFilter }.Where(f => !string.IsNullOrEmpty(f)));
         }
 
         public static string GetSwScaleFilter(
