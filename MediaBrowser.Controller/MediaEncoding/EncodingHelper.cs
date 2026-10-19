@@ -3698,15 +3698,16 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <returns>The video 3d filter.</returns>
         public static string GetVideo3DFilter(Video3DFormat? threedFormat)
         {
-            // Keep the left eye and drop the other one. The half formats squeeze both eyes into a
+            // Keep the left/top view and drop the other one. The half formats squeeze both eyes into a
             // single frame, so the remaining eye has to be stretched back to the full frame size.
+            // Restore the source SAR after scaling and remove the obsolete stereo signalling.
             // Cropped dimensions are rounded down to a multiple of two for the encoders.
             return threedFormat switch
             {
-                Video3DFormat.FullSideBySide => "crop=trunc(iw/4)*2:ih:0:0",
-                Video3DFormat.HalfSideBySide => "crop=trunc(iw/4)*2:ih:0:0,scale=iw*2:ih,setsar=sar=1",
-                Video3DFormat.FullTopAndBottom => "crop=iw:trunc(ih/4)*2:0:0",
-                Video3DFormat.HalfTopAndBottom => "crop=iw:trunc(ih/4)*2:0:0,scale=iw:ih*2,setsar=sar=1",
+                Video3DFormat.FullSideBySide => "crop=trunc(iw/4)*2:ih:0:0,sidedata=mode=delete:type=STEREO3D",
+                Video3DFormat.HalfSideBySide => "crop=trunc(iw/4)*2:ih:0:0,scale=iw*2:ih,setsar=sar*2,sidedata=mode=delete:type=STEREO3D",
+                Video3DFormat.FullTopAndBottom => "crop=iw:trunc(ih/4)*2:0:0,sidedata=mode=delete:type=STEREO3D",
+                Video3DFormat.HalfTopAndBottom => "crop=iw:trunc(ih/4)*2:0:0,scale=iw:ih*2,setsar=sar/2,sidedata=mode=delete:type=STEREO3D",
                 // The base view of an MVC stream already is a plain 2D frame, the decoder drops the other view.
                 _ => string.Empty
             };
