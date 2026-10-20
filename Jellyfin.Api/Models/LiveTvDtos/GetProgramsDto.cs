@@ -27,6 +27,11 @@ public class GetProgramsDto
     public Guid? UserId { get; set; }
 
     /// <summary>
+    /// Gets or sets the selected Live TV view identifier.
+    /// </summary>
+    public Guid? ParentId { get; set; }
+
+    /// <summary>
     /// Gets or sets the minimum premiere start date.
     /// </summary>
     public DateTime? MinStartDate { get; set; }

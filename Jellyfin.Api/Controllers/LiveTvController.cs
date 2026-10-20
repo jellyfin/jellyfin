@@ -108,10 +108,22 @@ public class LiveTvController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Gets the configured named Live TV instances.
+    /// </summary>
+    /// <response code="200">Live TV instances returned.</response>
+    /// <returns>The configured Live TV instances.</returns>
+    [HttpGet("Instances")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    public ActionResult<IReadOnlyList<LiveTvInstanceInfo>> GetLiveTvInstances()
+        => _liveTvManager.GetLiveTvInstances().ToArray();
+
+    /// <summary>
     /// Gets available live tv channels.
     /// </summary>
     /// <param name="type">Optional. Filter by channel type.</param>
     /// <param name="userId">Optional. Filter by user and attach user data.</param>
+    /// <param name="parentId">Optional. Filter by the selected Live TV view.</param>
     /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
     /// <param name="isMovie">Optional. Filter for movies.</param>
     /// <param name="isSeries">Optional. Filter for series.</param>
@@ -141,6 +153,7 @@ public class LiveTvController : BaseJellyfinApiController
     public ActionResult<QueryResult<BaseItemDto>> GetLiveTvChannels(
         [FromQuery] ChannelType? type,
         [FromQuery] Guid? userId,
+        [FromQuery] Guid? parentId,
         [FromQuery] int? startIndex,
         [FromQuery] bool? isMovie,
         [FromQuery] bool? isSeries,
@@ -170,6 +183,7 @@ public class LiveTvController : BaseJellyfinApiController
             {
                 ChannelType = type,
                 UserId = userId.Value,
+                ParentId = parentId,
                 StartIndex = startIndex,
                 Limit = limit,
                 IsFavorite = isFavorite,
@@ -480,6 +494,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// </summary>
     /// <param name="channelId">Optional. Filter by channel id.</param>
     /// <param name="seriesTimerId">Optional. Filter by timers belonging to a series timer.</param>
+    /// <param name="parentId">Optional. Filter by the selected Live TV view.</param>
     /// <param name="isActive">Optional. Filter by timers that are active.</param>
     /// <param name="isScheduled">Optional. Filter by timers that are scheduled.</param>
     /// <returns>
@@ -491,6 +506,7 @@ public class LiveTvController : BaseJellyfinApiController
     public async Task<ActionResult<QueryResult<TimerInfoDto>>> GetTimers(
         [FromQuery] string? channelId,
         [FromQuery] string? seriesTimerId,
+        [FromQuery] Guid? parentId,
         [FromQuery] bool? isActive,
         [FromQuery] bool? isScheduled)
     {
@@ -499,6 +515,7 @@ public class LiveTvController : BaseJellyfinApiController
             {
                 ChannelId = channelId,
                 SeriesTimerId = seriesTimerId,
+                ParentId = parentId,
                 IsActive = isActive,
                 IsScheduled = isScheduled
             },
@@ -510,6 +527,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// </summary>
     /// <param name="channelIds">The channels to return guide information for.</param>
     /// <param name="userId">Optional. Filter by user id.</param>
+    /// <param name="parentId">Optional. Filter by the selected Live TV view.</param>
     /// <param name="minStartDate">Optional. The minimum premiere start date.</param>
     /// <param name="hasAired">Optional. Filter by programs that have completed airing, or not.</param>
     /// <param name="isAiring">Optional. Filter by programs that are currently airing, or not.</param>
@@ -545,6 +563,7 @@ public class LiveTvController : BaseJellyfinApiController
     public async Task<ActionResult<QueryResult<BaseItemDto>>> GetLiveTvPrograms(
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] channelIds,
         [FromQuery] Guid? userId,
+        [FromQuery] Guid? parentId,
         [FromQuery] DateTime? minStartDate,
         [FromQuery] bool? hasAired,
         [FromQuery] bool? isAiring,
@@ -578,6 +597,7 @@ public class LiveTvController : BaseJellyfinApiController
 
         var query = new InternalItemsQuery(user)
         {
+            ParentId = parentId ?? Guid.Empty,
             ChannelIds = channelIds,
             HasAired = hasAired,
             IsAiring = isAiring,
@@ -632,6 +652,7 @@ public class LiveTvController : BaseJellyfinApiController
 
         var query = new InternalItemsQuery(user)
         {
+            ParentId = body.ParentId ?? Guid.Empty,
             ChannelIds = body.ChannelIds ?? [],
             HasAired = body.HasAired,
             IsAiring = body.IsAiring,
@@ -673,6 +694,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// Gets recommended live tv epgs.
     /// </summary>
     /// <param name="userId">Optional. filter by user id.</param>
+    /// <param name="parentId">Optional. Filter by the selected Live TV view.</param>
     /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
     /// <param name="limit">Optional. The maximum number of records to return.</param>
     /// <param name="isAiring">Optional. Filter by programs that are currently airing, or not.</param>
@@ -696,6 +718,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<QueryResult<BaseItemDto>>> GetRecommendedPrograms(
         [FromQuery] Guid? userId,
+        [FromQuery] Guid? parentId,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery] bool? isAiring,
@@ -720,6 +743,7 @@ public class LiveTvController : BaseJellyfinApiController
 
         var query = new InternalItemsQuery(user)
         {
+            ParentId = parentId ?? Guid.Empty,
             IsAiring = isAiring,
             StartIndex = startIndex,
             Limit = limit,
@@ -868,18 +892,20 @@ public class LiveTvController : BaseJellyfinApiController
     /// </summary>
     /// <param name="sortBy">Optional. Sort by SortName or Priority.</param>
     /// <param name="sortOrder">Optional. Sort in Ascending or Descending order.</param>
+    /// <param name="parentId">Optional. Filter by the selected Live TV view.</param>
     /// <response code="200">Timers returned.</response>
     /// <returns>An <see cref="OkResult"/> of live tv series timers.</returns>
     [HttpGet("SeriesTimers")]
     [Authorize(Policy = Policies.LiveTvAccess)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<QueryResult<SeriesTimerInfoDto>>> GetSeriesTimers([FromQuery] string? sortBy, [FromQuery] SortOrder? sortOrder)
+    public async Task<ActionResult<QueryResult<SeriesTimerInfoDto>>> GetSeriesTimers([FromQuery] string? sortBy, [FromQuery] SortOrder? sortOrder, [FromQuery] Guid? parentId)
     {
         return await _liveTvManager.GetSeriesTimers(
             new SeriesTimerQuery
             {
                 SortOrder = sortOrder ?? SortOrder.Ascending,
-                SortBy = sortBy
+                SortBy = sortBy,
+                ParentId = parentId
             },
             CancellationToken.None).ConfigureAwait(false);
     }
@@ -965,6 +991,33 @@ public class LiveTvController : BaseJellyfinApiController
     public ActionResult DeleteTunerHost([FromQuery] string? id)
     {
         _tunerHostManager.DeleteTunerHost(id);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Creates or updates a named Live TV instance.
+    /// </summary>
+    /// <param name="instance">The instance to save.</param>
+    /// <response code="200">The saved instance.</response>
+    /// <returns>The created or updated instance information.</returns>
+    [HttpPost("Instances")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<LiveTvInstanceInfo> SaveLiveTvInstance([FromBody] LiveTvInstanceInfo instance)
+        => _liveTvManager.SaveLiveTvInstance(instance);
+
+    /// <summary>
+    /// Deletes a named Live TV instance.
+    /// </summary>
+    /// <param name="instanceId">The instance identifier.</param>
+    /// <response code="204">Instance deleted.</response>
+    /// <returns>No content.</returns>
+    [HttpDelete("Instances/{instanceId}")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public ActionResult DeleteLiveTvInstance([FromRoute, Required] Guid instanceId)
+    {
+        _liveTvManager.DeleteLiveTvInstance(instanceId);
         return NoContent();
     }
 

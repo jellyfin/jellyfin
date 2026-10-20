@@ -195,6 +195,40 @@ namespace MediaBrowser.Controller.LiveTv
         Folder GetInternalLiveTvFolder(CancellationToken cancellationToken);
 
         /// <summary>
+        /// Gets all configured Live TV view folders, including the default view.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Live TV view folders.</returns>
+        IReadOnlyList<Folder> GetInternalLiveTvFolders(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the Live TV view folder for a tuner host.
+        /// </summary>
+        /// <param name="tunerHostId">The tuner host identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The matching Live TV view folder, or the default view.</returns>
+        Folder GetInternalLiveTvFolder(string tunerHostId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the configured named Live TV instances.
+        /// </summary>
+        /// <returns>The configured instances.</returns>
+        IReadOnlyList<LiveTvInstanceInfo> GetLiveTvInstances();
+
+        /// <summary>
+        /// Saves a named Live TV instance.
+        /// </summary>
+        /// <param name="instance">The instance to save.</param>
+        /// <returns>The saved instance.</returns>
+        LiveTvInstanceInfo SaveLiveTvInstance(LiveTvInstanceInfo instance);
+
+        /// <summary>
+        /// Deletes a named Live TV instance.
+        /// </summary>
+        /// <param name="id">The instance identifier.</param>
+        void DeleteLiveTvInstance(Guid id);
+
+        /// <summary>
         /// Gets the enabled users.
         /// </summary>
         /// <returns>IEnumerable{User}.</returns>

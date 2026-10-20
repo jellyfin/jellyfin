@@ -55,6 +55,11 @@ namespace MediaBrowser.Model.LiveTv
         public Guid UserId { get; set; }
 
         /// <summary>
+        /// Gets or sets the parent Live TV view identifier. When omitted, channels from all views are returned.
+        /// </summary>
+        public Guid? ParentId { get; set; }
+
+        /// <summary>
         /// Gets or sets the start index. Used for paging.
         /// </summary>
         /// <value>The start index.</value>

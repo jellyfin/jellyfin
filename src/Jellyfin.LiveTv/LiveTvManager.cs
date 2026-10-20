@@ -14,6 +14,7 @@ using Jellyfin.Data.Events;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.LiveTv.Configuration;
+using Jellyfin.LiveTv.Guide;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -27,6 +28,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.LiveTv
@@ -46,6 +48,7 @@ namespace Jellyfin.LiveTv
         private readonly IChannelManager _channelManager;
         private readonly IRecordingsManager _recordingsManager;
         private readonly LiveTvDtoService _tvDtoService;
+        private readonly ITaskManager _taskManager;
         private readonly ILiveTvService[] _services;
 
         public LiveTvManager(
@@ -59,6 +62,7 @@ namespace Jellyfin.LiveTv
             IChannelManager channelManager,
             IRecordingsManager recordingsManager,
             LiveTvDtoService liveTvDtoService,
+            ITaskManager taskManager,
             IEnumerable<ILiveTvService> services)
         {
             _config = config;
@@ -71,6 +75,7 @@ namespace Jellyfin.LiveTv
             _channelManager = channelManager;
             _tvDtoService = liveTvDtoService;
             _recordingsManager = recordingsManager;
+            _taskManager = taskManager;
             _services = services.ToArray();
 
             var defaultService = _services.OfType<DefaultLiveTvService>().First();
@@ -116,7 +121,15 @@ namespace Jellyfin.LiveTv
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
-            var topFolder = GetInternalLiveTvFolder(cancellationToken);
+            var topFolders = GetInternalLiveTvFolders(cancellationToken);
+            if (query.ParentId.HasValue && !Guid.Empty.Equals(query.ParentId.Value))
+            {
+                topFolders = topFolders.Where(i => i.Id.Equals(query.ParentId.Value)).ToArray();
+                if (topFolders.Count == 0)
+                {
+                    return new QueryResult<BaseItem>();
+                }
+            }
 
             var internalQuery = new InternalItemsQuery(user)
             {
@@ -126,7 +139,7 @@ namespace Jellyfin.LiveTv
                 IsSports = query.IsSports,
                 IsSeries = query.IsSeries,
                 IncludeItemTypes = [BaseItemKind.LiveTvChannel],
-                TopParentIds = [topFolder.Id],
+                TopParentIds = topFolders.Select(i => i.Id).ToArray(),
                 IsFavorite = query.IsFavorite,
                 IsLiked = query.IsLiked,
                 StartIndex = query.StartIndex,
@@ -199,7 +212,15 @@ namespace Jellyfin.LiveTv
         {
             var user = query.User;
 
-            var topFolder = GetInternalLiveTvFolder(cancellationToken);
+            var topFolders = GetInternalLiveTvFolders(cancellationToken);
+            if (!Guid.Empty.Equals(query.ParentId))
+            {
+                topFolders = topFolders.Where(i => i.Id.Equals(query.ParentId)).ToArray();
+                if (topFolders.Count == 0)
+                {
+                    return new QueryResult<BaseItemDto>();
+                }
+            }
 
             if (query.OrderBy.Count == 0)
             {
@@ -231,7 +252,7 @@ namespace Jellyfin.LiveTv
                 Limit = query.Limit,
                 OrderBy = query.OrderBy,
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
-                TopParentIds = [topFolder.Id],
+                TopParentIds = topFolders.Select(i => i.Id).ToArray(),
                 Name = query.Name,
                 DtoOptions = options,
                 HasAired = query.HasAired,
@@ -240,7 +261,12 @@ namespace Jellyfin.LiveTv
 
             if (!string.IsNullOrWhiteSpace(query.SeriesTimerId))
             {
-                var seriesTimers = await GetSeriesTimersInternal(new SeriesTimerQuery(), cancellationToken).ConfigureAwait(false);
+                var seriesTimers = await GetSeriesTimersInternal(
+                    new SeriesTimerQuery
+                    {
+                        ParentId = Guid.Empty.Equals(query.ParentId) ? null : query.ParentId
+                    },
+                    cancellationToken).ConfigureAwait(false);
                 var seriesTimer = seriesTimers.Items.FirstOrDefault(i => string.Equals(_tvDtoService.GetInternalSeriesTimerId(i.Id).ToString("N", CultureInfo.InvariantCulture), query.SeriesTimerId, StringComparison.OrdinalIgnoreCase));
                 if (seriesTimer is not null)
                 {
@@ -273,7 +299,15 @@ namespace Jellyfin.LiveTv
         {
             var user = query.User;
 
-            var topFolder = GetInternalLiveTvFolder(cancellationToken);
+            var topFolders = GetInternalLiveTvFolders(cancellationToken);
+            if (!Guid.Empty.Equals(query.ParentId))
+            {
+                topFolders = topFolders.Where(i => i.Id.Equals(query.ParentId)).ToArray();
+                if (topFolders.Count == 0)
+                {
+                    return new QueryResult<BaseItem>();
+                }
+            }
 
             var internalQuery = new InternalItemsQuery(user)
             {
@@ -287,7 +321,7 @@ namespace Jellyfin.LiveTv
                 IsKids = query.IsKids,
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
                 OrderBy = [(ItemSortBy.StartDate, SortOrder.Ascending)],
-                TopParentIds = [topFolder.Id],
+                TopParentIds = topFolders.Select(i => i.Id).ToArray(),
                 DtoOptions = options,
                 GenreIds = query.GenreIds
             };
@@ -658,6 +692,54 @@ namespace Jellyfin.LiveTv
                 returnArray);
         }
 
+        private bool IsChannelInLiveTvView(string serviceName, string channelId, Guid viewId)
+        {
+            if (string.IsNullOrEmpty(channelId))
+            {
+                return false;
+            }
+
+            var channelIdGuid = _tvDtoService.GetInternalChannelId(serviceName, channelId);
+            return _libraryManager.GetItemById(channelIdGuid) is LiveTvChannel channel
+                && channel.ParentId.Equals(viewId);
+        }
+
+        private IEnumerable<Tuple<TimerInfo, ILiveTvService>> FilterTimersByView(
+            IEnumerable<Tuple<TimerInfo, ILiveTvService>> timers,
+            Guid? parentId)
+        {
+            if (!parentId.HasValue || Guid.Empty.Equals(parentId.Value))
+            {
+                return timers;
+            }
+
+            var viewId = parentId.Value;
+            if (!GetInternalLiveTvFolders(CancellationToken.None).Any(i => i.Id.Equals(viewId)))
+            {
+                return [];
+            }
+
+            return timers.Where(i => IsChannelInLiveTvView(i.Item2.Name, i.Item1.ChannelId, viewId));
+        }
+
+        private IEnumerable<Tuple<SeriesTimerInfo, ILiveTvService>> FilterSeriesTimersByView(
+            IEnumerable<Tuple<SeriesTimerInfo, ILiveTvService>> timers,
+            Guid? parentId)
+        {
+            if (!parentId.HasValue || Guid.Empty.Equals(parentId.Value))
+            {
+                return timers;
+            }
+
+            var viewId = parentId.Value;
+            if (!GetInternalLiveTvFolders(CancellationToken.None).Any(i => i.Id.Equals(viewId)))
+            {
+                return [];
+            }
+
+            return timers.Where(i => IsChannelInLiveTvView(i.Item2.Name, i.Item1.ChannelId, viewId));
+        }
+
         private async Task<QueryResult<TimerInfo>> GetTimersInternal(TimerQuery query, CancellationToken cancellationToken)
         {
             var tasks = _services.Select(async i =>
@@ -675,6 +757,7 @@ namespace Jellyfin.LiveTv
             });
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
             var timers = results.SelectMany(i => i.ToList());
+            timers = FilterTimersByView(timers, query.ParentId);
 
             if (query.IsActive.HasValue)
             {
@@ -745,6 +828,7 @@ namespace Jellyfin.LiveTv
             });
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
             var timers = results.SelectMany(i => i.ToList());
+            timers = FilterTimersByView(timers, query.ParentId);
 
             if (query.IsActive.HasValue)
             {
@@ -885,6 +969,7 @@ namespace Jellyfin.LiveTv
             });
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
             var timers = results.SelectMany(i => i.ToList());
+            timers = FilterSeriesTimersByView(timers, query.ParentId);
 
             if (string.Equals(query.SortBy, "Priority", StringComparison.OrdinalIgnoreCase))
             {
@@ -923,6 +1008,7 @@ namespace Jellyfin.LiveTv
             });
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
             var timers = results.SelectMany(i => i.ToList());
+            timers = FilterSeriesTimersByView(timers, query.ParentId);
 
             if (string.Equals(query.SortBy, "Priority", StringComparison.OrdinalIgnoreCase))
             {
@@ -970,7 +1056,7 @@ namespace Jellyfin.LiveTv
                 MinEndDate = now,
                 Limit = channelIds.Length,
                 OrderBy = [(ItemSortBy.StartDate, SortOrder.Ascending)],
-                TopParentIds = [GetInternalLiveTvFolder(CancellationToken.None).Id],
+                TopParentIds = GetInternalLiveTvFolders(CancellationToken.None).Select(i => i.Id).ToArray(),
                 DtoOptions = options
             }) : new List<BaseItem>();
 
@@ -1272,6 +1358,111 @@ namespace Jellyfin.LiveTv
         {
             var name = _localization.GetServerLocalizedString("HeaderLiveTV");
             return _libraryManager.GetNamedView(name, CollectionType.livetv, name);
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyList<Folder> GetInternalLiveTvFolders(CancellationToken cancellationToken)
+        {
+            var instances = _config.GetLiveTvConfiguration().Instances ?? Array.Empty<LiveTvInstanceInfo>();
+            var defaultFolder = GetInternalLiveTvFolder(cancellationToken);
+            var folders = new List<Folder>(instances.Length + 1);
+
+            if (instances.Length == 0 || _libraryManager.GetItemList(new InternalItemsQuery
+                {
+                    IncludeItemTypes = [BaseItemKind.LiveTvChannel],
+                    TopParentIds = [defaultFolder.Id],
+                    Limit = 1,
+                    DtoOptions = DtoOptions.StoredColumnsOnly
+                }).Count > 0)
+            {
+                folders.Add(defaultFolder);
+            }
+
+            folders.AddRange(instances.Select(GetInternalLiveTvFolder));
+            return folders;
+        }
+
+        /// <inheritdoc />
+        public Folder GetInternalLiveTvFolder(string tunerHostId, CancellationToken cancellationToken)
+            => (_config.GetLiveTvConfiguration().Instances ?? Array.Empty<LiveTvInstanceInfo>())
+                .FirstOrDefault(i => i.TunerHostIds.Contains(tunerHostId, StringComparer.OrdinalIgnoreCase)) is { } instance
+                    ? GetInternalLiveTvFolder(instance)
+                    : GetInternalLiveTvFolder(cancellationToken);
+
+        private Folder GetInternalLiveTvFolder(LiveTvInstanceInfo instance)
+            => _libraryManager.GetNamedView(
+                instance.Name,
+                Guid.Empty,
+                CollectionType.livetv,
+                instance.Name,
+                instance.Id.ToString("N", CultureInfo.InvariantCulture));
+
+        /// <inheritdoc />
+        public IReadOnlyList<LiveTvInstanceInfo> GetLiveTvInstances()
+            => _config.GetLiveTvConfiguration().Instances ?? Array.Empty<LiveTvInstanceInfo>();
+
+        /// <inheritdoc />
+        public LiveTvInstanceInfo SaveLiveTvInstance(LiveTvInstanceInfo instance)
+        {
+            ArgumentNullException.ThrowIfNull(instance);
+            ArgumentException.ThrowIfNullOrWhiteSpace(instance.Name);
+
+            var config = _config.GetLiveTvConfiguration();
+            config.Instances ??= Array.Empty<LiveTvInstanceInfo>();
+            var tunerHostIds = instance.TunerHostIds ?? Array.Empty<string>();
+            if (tunerHostIds.Any(string.IsNullOrWhiteSpace)
+                || tunerHostIds.Distinct(StringComparer.OrdinalIgnoreCase).Count() != tunerHostIds.Length)
+            {
+                throw new ArgumentException("Tuner host identifiers must be non-empty and unique.", nameof(instance));
+            }
+
+            var configuredTunerHostIds = config.TunerHosts.Select(i => i.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            if (tunerHostIds.Any(i => !configuredTunerHostIds.Contains(i)))
+            {
+                throw new ArgumentException("Every tuner host must be configured before it can be assigned to a Live TV instance.", nameof(instance));
+            }
+
+            if (config.Instances.Any(i => !i.Id.Equals(instance.Id) && string.Equals(i.Name, instance.Name.Trim(), StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException("A Live TV instance with this name already exists.", nameof(instance));
+            }
+
+            if (config.Instances.Any(i => !i.Id.Equals(instance.Id) && i.TunerHostIds.Intersect(tunerHostIds, StringComparer.OrdinalIgnoreCase).Any()))
+            {
+                throw new ArgumentException("A tuner host can only belong to one Live TV instance.", nameof(instance));
+            }
+
+            var savedInstance = new LiveTvInstanceInfo
+            {
+                Id = Guid.Empty.Equals(instance.Id) ? Guid.NewGuid() : instance.Id,
+                Name = instance.Name.Trim(),
+                TunerHostIds = tunerHostIds
+            };
+
+            var existingIndex = Array.FindIndex(config.Instances, i => i.Id.Equals(savedInstance.Id));
+            config.Instances = existingIndex < 0
+                ? [.. config.Instances, savedInstance]
+                : config.Instances.Select((item, index) => index == existingIndex ? savedInstance : item).ToArray();
+
+            _config.SaveConfiguration("livetv", config);
+            _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
+            return savedInstance;
+        }
+
+        /// <inheritdoc />
+        public void DeleteLiveTvInstance(Guid id)
+        {
+            var config = _config.GetLiveTvConfiguration();
+            config.Instances ??= Array.Empty<LiveTvInstanceInfo>();
+            var instances = config.Instances.Where(i => !i.Id.Equals(id)).ToArray();
+            if (instances.Length == config.Instances.Length)
+            {
+                throw new ResourceNotFoundException();
+            }
+
+            config.Instances = instances;
+            _config.SaveConfiguration("livetv", config);
+            _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
         }
 
         /// <inheritdoc />

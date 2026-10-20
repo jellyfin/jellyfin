@@ -189,14 +189,13 @@ public class GuideManager : IGuideManager
         var list = new List<LiveTvChannel>();
 
         var numComplete = 0;
-        var parentFolder = _liveTvManager.GetInternalLiveTvFolder(cancellationToken);
-
         foreach (var channelInfo in allChannelsList)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
+                var parentFolder = _liveTvManager.GetInternalLiveTvFolder(channelInfo.Item2.TunerHostId, cancellationToken);
                 var item = await GetChannel(channelInfo.Item2, channelInfo.Item1, parentFolder, cancellationToken).ConfigureAwait(false);
 
                 list.Add(item);

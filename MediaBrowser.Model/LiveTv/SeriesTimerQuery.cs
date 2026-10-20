@@ -1,11 +1,17 @@
 #pragma warning disable CS1591
 
+using System;
 using Jellyfin.Database.Implementations.Enums;
 
 namespace MediaBrowser.Model.LiveTv
 {
     public class SeriesTimerQuery
     {
+        /// <summary>
+        /// Gets or sets the selected Live TV view identifier.
+        /// </summary>
+        public Guid? ParentId { get; set; }
+
         /// <summary>
         /// Gets or sets the sort by - SortName, Priority.
         /// </summary>

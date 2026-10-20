@@ -1,6 +1,8 @@
 #nullable disable
 #pragma warning disable CS1591
 
+using System;
+
 namespace MediaBrowser.Model.LiveTv
 {
     public class TimerQuery
@@ -10,6 +12,11 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The channel identifier.</value>
         public string ChannelId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the selected Live TV view identifier.
+        /// </summary>
+        public Guid? ParentId { get; set; }
 
         public string Id { get; set; }
 

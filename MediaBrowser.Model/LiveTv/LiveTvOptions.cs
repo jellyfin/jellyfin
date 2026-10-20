@@ -11,6 +11,7 @@ namespace MediaBrowser.Model.LiveTv
         {
             TunerHosts = Array.Empty<TunerHostInfo>();
             ListingProviders = Array.Empty<ListingsProviderInfo>();
+            Instances = Array.Empty<LiveTvInstanceInfo>();
             MediaLocationsCreated = Array.Empty<string>();
             RecordingPostProcessorArguments = "\"{path}\"";
         }
@@ -30,6 +31,11 @@ namespace MediaBrowser.Model.LiveTv
         public TunerHostInfo[] TunerHosts { get; set; }
 
         public ListingsProviderInfo[] ListingProviders { get; set; }
+
+        /// <summary>
+        /// Gets or sets the named Live TV instances.
+        /// </summary>
+        public LiveTvInstanceInfo[] Instances { get; set; }
 
         public int PrePaddingSeconds { get; set; }
 

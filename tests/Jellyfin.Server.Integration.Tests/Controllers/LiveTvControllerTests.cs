@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using System.Net.Http.Json;
 using System.Net.Mime;
@@ -92,5 +93,42 @@ public sealed class LiveTvControllerTests : IClassFixture<JellyfinApplicationFac
         var response = await client.PostAsJsonAsync("/LiveTv/TunerHosts", body, _jsonOptions, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task LiveTvInstance_CanBeCreatedUpdatedAndDeleted()
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+
+        var name = "Live TV test " + Guid.NewGuid().ToString("N");
+        var instance = new LiveTvInstanceInfo
+        {
+            Name = name
+        };
+
+        var createResponse = await client.PostAsJsonAsync("/LiveTv/Instances", instance, _jsonOptions, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, createResponse.StatusCode);
+        var createdInstance = await createResponse.Content.ReadFromJsonAsync<LiveTvInstanceInfo>(_jsonOptions, TestContext.Current.CancellationToken);
+        Assert.NotNull(createdInstance);
+        Assert.NotEqual(Guid.Empty, createdInstance.Id);
+        Assert.Equal(name, createdInstance.Name);
+
+        var updateName = name + " updated";
+        createdInstance.Name = updateName;
+        var updateResponse = await client.PostAsJsonAsync("/LiveTv/Instances", createdInstance, _jsonOptions, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+        var instancesResponse = await client.GetFromJsonAsync<LiveTvInstanceInfo[]>("/LiveTv/Instances", _jsonOptions, TestContext.Current.CancellationToken);
+        Assert.NotNull(instancesResponse);
+        Assert.Contains(instancesResponse, i => i.Id.Equals(createdInstance.Id) && i.Name == updateName);
+
+        var deleteResponse = await client.DeleteAsync($"/LiveTv/Instances/{createdInstance.Id}", TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+        var remainingInstances = await client.GetFromJsonAsync<LiveTvInstanceInfo[]>("/LiveTv/Instances", _jsonOptions, TestContext.Current.CancellationToken);
+        Assert.NotNull(remainingInstances);
+        Assert.DoesNotContain(remainingInstances, i => i.Id.Equals(createdInstance.Id));
     }
 }
