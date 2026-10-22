@@ -283,7 +283,7 @@ public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
         }
 
         var truncateQuery = $"TRUNCATE TABLE {string.Join(", ", quotedTableNames)} RESTART IDENTITY CASCADE";
-        await dbContext.Database.ExecuteSqlRawAsync(truncateQuery).ConfigureAwait(false);
+        await dbContext.Database.ExecuteSqlRawAsync(truncateQuery).ConfigureAwait(false); // NOSONAR (S2077): SQL parameters cannot represent table identifiers, which QuoteTableName escapes.
     }
 
     /// <inheritdoc/>
@@ -313,7 +313,7 @@ public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
                 // An empty table starts again at 1, as nothing in it holds an id yet.
                 var quotedColumn = QuoteIdentifier(column);
                 var setvalQuery = $"SELECT setval(pg_get_serial_sequence({{0}}, {{1}}), COALESCE(MAX({quotedColumn}), 1), MAX({quotedColumn}) IS NOT NULL) FROM {qualifiedTableName}";
-                await dbContext.Database.ExecuteSqlRawAsync(setvalQuery, [qualifiedTableName, column], cancellationToken).ConfigureAwait(false);
+                await dbContext.Database.ExecuteSqlRawAsync(setvalQuery, [qualifiedTableName, column], cancellationToken).ConfigureAwait(false); // NOSONAR (S2077): Table and column identifiers come from EF metadata and are escaped; the values remain parameters.
             }
         }
     }

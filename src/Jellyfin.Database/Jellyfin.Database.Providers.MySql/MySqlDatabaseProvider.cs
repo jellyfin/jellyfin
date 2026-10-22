@@ -444,7 +444,7 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
                 .Select(QuoteIdentifier);
             _logger.LogInformation("Analyzing the database");
             var analyze = "ANALYZE TABLE " + string.Join(", ", tables);
-            await context.Database.ExecuteSqlRawAsync(analyze, cancellationToken).ConfigureAwait(false);
+            await context.Database.ExecuteSqlRawAsync(analyze, cancellationToken).ConfigureAwait(false); // NOSONAR (S2077): SQL parameters cannot represent the model-derived table identifiers, which QuoteIdentifier escapes.
         }
     }
 
@@ -456,7 +456,7 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
             foreach (var table in tables)
             {
                 var delete = $"DELETE FROM {QuoteIdentifier(table)}";
-                await dbContext.Database.ExecuteSqlRawAsync(delete).ConfigureAwait(false);
+                await dbContext.Database.ExecuteSqlRawAsync(delete).ConfigureAwait(false); // NOSONAR (S2077): SQL parameters cannot represent table identifiers, which QuoteIdentifier escapes.
             }
         }
         finally
@@ -489,7 +489,7 @@ public sealed class MySqlDatabaseProvider : IJellyfinDatabaseProvider
         foreach (var table in withCounter.Where(u => tables.Contains(u, StringComparer.OrdinalIgnoreCase)))
         {
             var alter = $"ALTER TABLE {QuoteIdentifier(table)} AUTO_INCREMENT = 1";
-            await dbContext.Database.ExecuteSqlRawAsync(alter).ConfigureAwait(false);
+            await dbContext.Database.ExecuteSqlRawAsync(alter).ConfigureAwait(false); // NOSONAR (S2077): SQL parameters cannot represent information-schema table identifiers, which QuoteIdentifier escapes.
         }
     }
 
