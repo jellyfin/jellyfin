@@ -56,11 +56,14 @@ public sealed class PairedMigrationsDesignTimeServicesTests : IDisposable
         Assert.True(string.CompareOrdinal(id, sqliteIds[^1]) > 0, id + " sorts before " + sqliteIds[^1]);
     }
 
-    [Fact]
-    public void FindSqliteMigrations_FromTheOutputDirectoryOfAProvider_FindsTheDirectory()
+    [Theory]
+    [InlineData("Jellyfin.Database.Providers.Postgres")]
+    [InlineData("Jellyfin.Database.Providers.MySql")]
+    [InlineData("Jellyfin.Database.Providers.SqlServer")]
+    public void FindSqliteMigrations_FromTheOutputDirectoryOfAProvider_FindsTheDirectory(string providerProject)
     {
         var expected = CreateSqliteMigrations();
-        var output = Directory.CreateDirectory(Path.Combine(_root, "src", "Jellyfin.Database", "Jellyfin.Database.Providers.Postgres", "bin", "Debug", "net10.0"));
+        var output = Directory.CreateDirectory(Path.Combine(_root, "src", "Jellyfin.Database", providerProject, "bin", "Debug", "net10.0"));
 
         Assert.Equal(expected, PairedMigrationsDesignTimeServices.FindSqliteMigrations(output.FullName));
     }
