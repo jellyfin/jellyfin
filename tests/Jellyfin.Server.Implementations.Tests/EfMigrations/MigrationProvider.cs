@@ -4,6 +4,7 @@ using System.Linq;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Providers.MySql;
 using Jellyfin.Database.Providers.Postgres;
+using Jellyfin.Database.Providers.SqlServer;
 using Jellyfin.Server.Implementations.Tests.DatabaseInfrastructure;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -45,7 +46,8 @@ internal sealed record MigrationProvider(
         // its model for the server it finds, so the model is checked against newer releases of each as well.
         MySqlFamily("MySQL 9.7", "9.7.0-mysql"),
         MySqlFamily("MariaDB 11.8", "11.8.0-mariadb"),
-        MySqlFamily("MariaDB 12.3", "12.3.0-mariadb")
+        MySqlFamily("MariaDB 12.3", "12.3.0-mariadb"),
+        new("SQL Server", OfflineContexts.SqlServer, SqlServerMigrationBaseline.MigrationId, SqlServerMigrationBaseline.CoversThroughSqliteMigration)
     ];
 
     /// <summary>
