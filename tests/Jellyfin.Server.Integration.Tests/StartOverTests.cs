@@ -14,6 +14,7 @@ using Jellyfin.Database.Testing;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
+using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -74,7 +75,7 @@ public sealed class StartOverTests : IDisposable
         Assert.Equal(systemConfiguration, await File.ReadAllBytesAsync(paths.SystemConfigurationFilePath, TestContext.Current.CancellationToken));
     }
 
-    [ProviderTheory(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderTheory(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     [InlineData(DatabaseLoss.Dropped)]
     [InlineData(DatabaseLoss.Emptied)]
     public async Task DeletedDatabase_OnDatabaseServer_WizardReset_StartsAsNewServer(DatabaseLoss loss)
@@ -94,7 +95,7 @@ public sealed class StartOverTests : IDisposable
         Assert.All(context.GetService<IMigrationsAssembly>().Migrations.Keys, id => Assert.Contains(id, applied));
     }
 
-    [ProviderTheory(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderTheory(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     [InlineData(DatabaseLoss.Dropped)]
     [InlineData(DatabaseLoss.Emptied)]
     public async Task DeletedDatabase_OnDatabaseServer_WizardStillCompleted_RefusesToStart(DatabaseLoss loss)
@@ -136,7 +137,7 @@ public sealed class StartOverTests : IDisposable
             return "the database does not exist";
         }
 
-        // Dropping every table on MySQL and MariaDB drops the history table as well.
+        // Dropping every table on MySQL, MariaDB, and SQL Server drops the history table as well.
         return TestDatabaseEnvironment.Provider == TestDbProvider.Postgres
             ? "the migration history of the database is empty"
             : "the database has no migration history";
@@ -147,6 +148,7 @@ public sealed class StartOverTests : IDisposable
         SqliteConnection.ClearAllPools();
         NpgsqlConnection.ClearAllPools();
         MySqlConnection.ClearAllPools();
+        SqlConnection.ClearAllPools();
     }
 
     private static void SetWizardCompleted(IApplicationPaths paths, bool completed)
@@ -189,12 +191,42 @@ public sealed class StartOverTests : IDisposable
             await using var command = new NpgsqlCommand("DROP SCHEMA public CASCADE; CREATE SCHEMA public;", connection);
             await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
         }
+        else if (TestDatabaseEnvironment.Provider == TestDbProvider.SqlServer)
+        {
+            await DropAllSqlServerTablesAsync();
+        }
         else
         {
             await DropAllMySqlTablesAsync();
         }
 
         return paths;
+    }
+
+    private async Task DropAllSqlServerTablesAsync()
+    {
+        await using var connection = new SqlConnection(GetSqlServerConnectionString());
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+
+        const string DropSql = """
+            DECLARE @sql NVARCHAR(MAX) = N'';
+            SELECT @sql += N'ALTER TABLE ' + QUOTENAME(s.name) + N'.' + QUOTENAME(t.name) + N' DROP CONSTRAINT ' + QUOTENAME(fk.name) + N';'
+            FROM sys.foreign_keys fk
+            JOIN sys.tables t ON fk.parent_object_id = t.object_id
+            JOIN sys.schemas s ON t.schema_id = s.schema_id
+            WHERE t.is_ms_shipped = 0;
+            IF LEN(@sql) > 0 EXEC sp_executesql @sql;
+
+            SET @sql = N'';
+            SELECT @sql += N'DROP TABLE ' + QUOTENAME(s.name) + N'.' + QUOTENAME(t.name) + N';'
+            FROM sys.tables t
+            JOIN sys.schemas s ON t.schema_id = s.schema_id
+            WHERE t.is_ms_shipped = 0;
+            IF LEN(@sql) > 0 EXEC sp_executesql @sql;
+            """;
+
+        await using var drop = new SqlCommand(DropSql, connection);
+        await drop.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
     }
 
     private async Task DropAllMySqlTablesAsync()
@@ -265,11 +297,38 @@ public sealed class StartOverTests : IDisposable
         return builder.ConnectionString;
     }
 
+    private string GetSqlServerConnectionString()
+    {
+        var builder = new SqlConnectionStringBuilder(RelationalOptionsExtension.Extract(_database!.Options).ConnectionString!)
+        {
+            Pooling = false
+        };
+        return builder.ConnectionString;
+    }
+
     private async Task<long?> CountTablesAsync()
     {
-        return TestDatabaseEnvironment.Provider == TestDbProvider.Postgres
-            ? await CountPostgresTablesAsync()
-            : await CountMySqlTablesAsync();
+        return TestDatabaseEnvironment.Provider switch
+        {
+            TestDbProvider.Postgres => await CountPostgresTablesAsync(),
+            TestDbProvider.SqlServer => await CountSqlServerTablesAsync(),
+            _ => await CountMySqlTablesAsync()
+        };
+    }
+
+    private async Task<long?> CountSqlServerTablesAsync()
+    {
+        try
+        {
+            await using var connection = new SqlConnection(GetSqlServerConnectionString());
+            await connection.OpenAsync(TestContext.Current.CancellationToken);
+            await using var command = new SqlCommand("SELECT COUNT(*) FROM sys.tables WHERE is_ms_shipped = 0", connection);
+            return Convert.ToInt64(await command.ExecuteScalarAsync(TestContext.Current.CancellationToken), CultureInfo.InvariantCulture);
+        }
+        catch (SqlException ex) when (ex.Number == 4060)
+        {
+            return null;
+        }
     }
 
     private async Task<long?> CountMySqlTablesAsync()

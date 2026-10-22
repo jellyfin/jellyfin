@@ -14,6 +14,7 @@ using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Database.Providers.SqlServer;
 using Jellyfin.Database.Testing;
 using MediaBrowser.Common.Configuration;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -64,7 +65,7 @@ public sealed class JellyfinApplicationFactoryTests
         Assert.Null(configuration.CustomProviderOptions);
     }
 
-    [ProviderFact(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderFact(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     public void CreateClient_DatabaseServer_StartsEveryFactoryOnADatabaseOfItsOwn()
     {
         using var first = new JellyfinApplicationFactory();
@@ -80,7 +81,7 @@ public sealed class JellyfinApplicationFactoryTests
         Assert.NotEqual(DatabaseName(firstConfiguration), DatabaseName(secondConfiguration));
     }
 
-    [ProviderFact(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderFact(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     public void Dispose_DatabaseServer_DropsTheDatabase()
     {
         string connectionString;
@@ -94,7 +95,7 @@ public sealed class JellyfinApplicationFactoryTests
         Assert.False(CanConnect(connectionString));
     }
 
-    [ProviderFact(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderFact(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     public async Task Services_DatabaseServer_AreBuiltByTheMigrationsOfTheServer()
     {
         using var factory = new JellyfinApplicationFactory();
@@ -112,7 +113,7 @@ public sealed class JellyfinApplicationFactoryTests
         Assert.All(migrations.Migrations.Keys, id => Assert.Contains(id, applied));
     }
 
-    [ProviderFact(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderFact(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     public void Dispose_DatabaseServer_RemovesTheDirectoryItCreated()
     {
         string root;
@@ -130,7 +131,7 @@ public sealed class JellyfinApplicationFactoryTests
         Assert.False(Directory.Exists(root));
     }
 
-    [ProviderFact(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderFact(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     public void Dispose_DatabaseServer_KeepsTheDirectoryItDidNotCreate()
     {
         var root = CreateRoot();
@@ -155,7 +156,7 @@ public sealed class JellyfinApplicationFactoryTests
         }
     }
 
-    [ProviderFact(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb)]
+    [ProviderFact(TestDbProvider.Postgres, TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
     [UnsupportedOSPlatform("windows")]
     public void CreateClient_DatabaseServer_KeepsTheDatabaseConfigurationPrivate()
     {
@@ -257,6 +258,7 @@ public sealed class JellyfinApplicationFactoryTests
         {
             TestDbProvider.Postgres => "Jellyfin-PostgreSQL",
             TestDbProvider.MySql or TestDbProvider.MariaDb => "Jellyfin-MySQL",
+            TestDbProvider.SqlServer => "Jellyfin-SqlServer",
             var other => throw new NotSupportedException($"{other} is not covered.")
         };
     }
@@ -264,16 +266,39 @@ public sealed class JellyfinApplicationFactoryTests
     private static string? DatabaseName(DatabaseConfigurationOptions configuration)
     {
         var connectionString = configuration.CustomProviderOptions!.ConnectionString;
-        return TestDatabaseEnvironment.Provider == TestDbProvider.Postgres
-            ? new NpgsqlConnectionStringBuilder(connectionString).Database
-            : new MySqlConnectionStringBuilder(connectionString).Database;
+        return TestDatabaseEnvironment.Provider switch
+        {
+            TestDbProvider.Postgres => new NpgsqlConnectionStringBuilder(connectionString).Database,
+            TestDbProvider.MySql or TestDbProvider.MariaDb => new MySqlConnectionStringBuilder(connectionString).Database,
+            TestDbProvider.SqlServer => new SqlConnectionStringBuilder(connectionString).InitialCatalog,
+            var other => throw new NotSupportedException($"{other} is not covered.")
+        };
     }
 
     private static bool CanConnect(string connectionString)
     {
-        return TestDatabaseEnvironment.Provider == TestDbProvider.Postgres
-            ? CanConnectToPostgres(connectionString)
-            : CanConnectToMySql(connectionString);
+        return TestDatabaseEnvironment.Provider switch
+        {
+            TestDbProvider.Postgres => CanConnectToPostgres(connectionString),
+            TestDbProvider.MySql or TestDbProvider.MariaDb => CanConnectToMySql(connectionString),
+            TestDbProvider.SqlServer => CanConnectToSqlServer(connectionString),
+            var other => throw new NotSupportedException($"{other} is not covered.")
+        };
+    }
+
+    private static bool CanConnectToSqlServer(string connectionString)
+    {
+        var builder = new SqlConnectionStringBuilder(connectionString) { Pooling = false };
+        try
+        {
+            using var connection = new SqlConnection(builder.ConnectionString);
+            connection.Open();
+            return true;
+        }
+        catch (SqlException ex) when (ex.Number == 4060)
+        {
+            return false;
+        }
     }
 
     private static bool CanConnectToMySql(string connectionString)
