@@ -111,6 +111,25 @@ public sealed class SqlServerIdentityTests
         Assert.Equal(8, await AddActivityLog(context));
     }
 
+    [ProviderFact(TestDbProvider.SqlServer)]
+    public async Task Purge_IdentifierContainingSqlSyntax_IsOneQuotedIdentifier()
+    {
+        const string table = "we]ird; DROP TABLE [ActivityLogs] --";
+        using var database = TestDatabaseEnvironment.Backend.Create(TestSchemaSource.Model, [], fresh: true);
+        await using var context = CreateContext(database);
+
+        await context.Database.ExecuteSqlRawAsync("CREATE TABLE [we]]ird; DROP TABLE [ActivityLogs]] --] ([Id] int IDENTITY(1, 1) PRIMARY KEY)");
+        await context.Database.ExecuteSqlRawAsync("INSERT INTO [we]]ird; DROP TABLE [ActivityLogs]] --] DEFAULT VALUES");
+        var activityLogId = await AddActivityLog(context);
+
+        await database.CreateProvider().PurgeDatabase(context, [table]);
+
+        Assert.Equal(0, await context.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS [Value] FROM [we]]ird; DROP TABLE [ActivityLogs]] --]").SingleAsync());
+        await context.Database.ExecuteSqlRawAsync("INSERT INTO [we]]ird; DROP TABLE [ActivityLogs]] --] DEFAULT VALUES");
+        Assert.Equal(1, await context.Database.SqlQueryRaw<int>("SELECT [Id] AS [Value] FROM [we]]ird; DROP TABLE [ActivityLogs]] --]").SingleAsync());
+        Assert.Equal([activityLogId], await context.ActivityLogs.Select(e => e.Id).ToListAsync());
+    }
+
     // The id of an activity log has no setter, so the explicit value is given through its entry.
     private static void AddWithId(JellyfinDbContext context, ActivityLog log, int id)
     {
