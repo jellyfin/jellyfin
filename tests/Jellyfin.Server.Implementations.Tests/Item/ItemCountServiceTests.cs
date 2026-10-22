@@ -69,6 +69,7 @@ public sealed class ItemCountServiceTests : IDisposable
         {
             [BaseItemKind.Movie] = "Movie",
             [BaseItemKind.Series] = "Series",
+            [BaseItemKind.Season] = "MediaBrowser.Controller.Entities.TV.Season",
             [BaseItemKind.Episode] = "Episode",
             [BaseItemKind.MusicAlbum] = "MusicAlbum",
             [BaseItemKind.MusicArtist] = "MusicArtist",
@@ -453,6 +454,64 @@ public sealed class ItemCountServiceTests : IDisposable
     }
 
     [Fact]
+    public void GetChildCountBatch_EpisodesInOwnSubfolders_CountsEachEpisodeOnce()
+    {
+        // "Season 1/<episode folder>/<episode file>": every episode sits inside a folder of
+        // its own under the season. Those folders are the episodes' containers, not children
+        // of the season themselves, so the season reports its episode count rather than
+        // folder count + episode count.
+        var (seriesId, seasonId) = SeedSeriesWithEpisodeFolders();
+
+        var result = _service.GetChildCountBatch([seriesId, seasonId], null);
+
+        Assert.Equal(2, result[seasonId]);
+
+        // The series holds the season alone; the episode folders must not surface here either.
+        Assert.Equal(1, result[seriesId]);
+    }
+
+    [Fact]
+    public void GetChildCountBatch_MergedSeasonWithEpisodeFolders_CountsDistinctEpisodes()
+    {
+        // Two copies of the same season on merged series folders, each filing its episodes in
+        // a folder of their own. The merged season reports the distinct episode set; the
+        // episode folders are containers and must not add to it.
+        var seasonA = Guid.NewGuid();
+        var seasonB = Guid.NewGuid();
+
+        using (var context = CreateDbContext())
+        {
+            foreach (var seasonItemId in new[] { seasonA, seasonB })
+            {
+                var season = CreateItem(seasonItemId);
+                season.Type = "MediaBrowser.Controller.Entities.TV.Season";
+                season.PresentationUniqueKey = "merged-season";
+                context.BaseItems.Add(season);
+
+                for (var i = 0; i < 2; i++)
+                {
+                    var episodeFolder = CreateItem(Guid.NewGuid(), seasonItemId);
+                    context.BaseItems.Add(episodeFolder);
+
+                    var episode = CreateItem(Guid.NewGuid(), episodeFolder.Id);
+                    episode.Type = "MediaBrowser.Controller.Entities.TV.Episode";
+                    episode.IsFolder = false;
+                    episode.SeasonId = seasonItemId;
+                    episode.PresentationUniqueKey = "merged-episode-" + i.ToString(CultureInfo.InvariantCulture);
+                    context.BaseItems.Add(episode);
+                }
+            }
+
+            context.SaveChanges();
+        }
+
+        var result = _service.GetChildCountBatch([seasonA, seasonB], null);
+
+        Assert.Equal(2, result[seasonA]);
+        Assert.Equal(2, result[seasonB]);
+    }
+
+    [Fact]
     public void GetChildCountBatch_MissingEpisodes_CountedUnlessTheUserHidesThem()
     {
         var (_, seasonId) = SeedSeries(flat: false, virtualEpisodes: true);
@@ -491,6 +550,39 @@ public sealed class ItemCountServiceTests : IDisposable
             episode.Type = "MediaBrowser.Controller.Entities.TV.Episode";
             episode.IsFolder = false;
             episode.IsVirtualItem = virtualEpisodes;
+            episode.SeasonId = seasonId;
+            context.BaseItems.Add(episode);
+        }
+
+        context.SaveChanges();
+
+        return (seriesId, seasonId);
+    }
+
+    /// <summary>
+    /// Seeds a series whose season files each of its episodes inside a folder of their own,
+    /// the "Season 1/&lt;episode folder&gt;/&lt;episode file&gt;" layout.
+    /// </summary>
+    private (Guid SeriesId, Guid SeasonId) SeedSeriesWithEpisodeFolders()
+    {
+        var seriesId = Guid.NewGuid();
+        var seasonId = Guid.NewGuid();
+
+        using var context = CreateDbContext();
+        context.BaseItems.Add(CreateItem(seriesId));
+
+        var season = CreateItem(seasonId, seriesId);
+        season.Type = "MediaBrowser.Controller.Entities.TV.Season";
+        context.BaseItems.Add(season);
+
+        for (var i = 0; i < 2; i++)
+        {
+            var episodeFolder = CreateItem(Guid.NewGuid(), seasonId);
+            context.BaseItems.Add(episodeFolder);
+
+            var episode = CreateItem(Guid.NewGuid(), episodeFolder.Id);
+            episode.Type = "MediaBrowser.Controller.Entities.TV.Episode";
+            episode.IsFolder = false;
             episode.SeasonId = seasonId;
             context.BaseItems.Add(episode);
         }

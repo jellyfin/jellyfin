@@ -512,6 +512,14 @@ public class ItemCountService : IItemCountService
             .Select(g => new { SeasonId = g.Key, Count = g.Count() })
             .ToDictionary(x => x.SeasonId, x => x.Count);
 
+        var seasonTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Season];
+        var seasonParentIds = dbContext.BaseItems
+            .AsNoTracking()
+            .WhereOneOrMany(parentIdsArray, b => b.Id)
+            .Where(b => b.Type == seasonTypeName)
+            .Select(b => b.Id)
+            .ToHashSet();
+
         // A linked child counts only when the item it points at is one the user may open.
         var linkedCounts = dbContext.LinkedChildren
             .WhereOneOrMany(parentIdsArray, lc => lc.ParentId)
@@ -520,7 +528,7 @@ public class ItemCountService : IItemCountService
             .Select(g => new { ParentId = g.Key, Count = g.Count() })
             .ToDictionary(x => x.ParentId, x => x.Count);
 
-        var mergedChildCounts = GetMergedChildCounts(dbContext, accessibleItems, parentIdsArray, includeVirtual);
+        var mergedChildCounts = GetMergedChildCounts(dbContext, accessibleItems, parentIdsArray, includeVirtual, seasonTypeName);
 
         var result = new Dictionary<Guid, int>();
         foreach (var parentId in parentIds)
@@ -528,6 +536,16 @@ public class ItemCountService : IItemCountService
             if (mergedChildCounts.TryGetValue(parentId, out var mergedCount))
             {
                 result[parentId] = mergedCount;
+                continue;
+            }
+
+            // A season's children are its episodes, and the SeasonId count covers them wherever
+            // they are filed: an episode kept inside a folder of its own makes that folder the
+            // episode's container, not a child of the season. Adding the hierarchical count
+            // would report such a folder on top of the episode it holds.
+            if (seasonParentIds.Contains(parentId))
+            {
+                result[parentId] = seasonCounts.GetValueOrDefault(parentId, 0);
                 continue;
             }
 
@@ -545,7 +563,8 @@ public class ItemCountService : IItemCountService
         JellyfinDbContext dbContext,
         IQueryable<BaseItemEntity> accessibleItems,
         IReadOnlyList<Guid> parentIds,
-        bool includeVirtual)
+        bool includeVirtual,
+        string seasonTypeName)
     {
         var mergedGroups = GetPresentationKeyGroups(dbContext, parentIds)
             .Where(group => group.Value.Count > 1)
@@ -558,9 +577,19 @@ public class ItemCountService : IItemCountService
 
         // Only merged folders.
         var memberIds = mergedGroups.SelectMany(group => group.Value).Distinct().ToArray();
+
+        // A merged season counts its episodes alone: the hierarchy only feeds members that are
+        // not seasons, since a folder under a season is an episode's container, not a child.
+        var nonSeasonMemberIds = dbContext.BaseItems
+            .AsNoTracking()
+            .WhereOneOrMany(memberIds, b => b.Id)
+            .Where(b => b.Type != seasonTypeName)
+            .Select(b => b.Id)
+            .ToArray();
+
         var children = accessibleItems
             .Where(b => b.ParentId.HasValue && !b.SeasonId.HasValue && (includeVirtual || !b.IsVirtualItem))
-            .WhereOneOrMany(memberIds, b => b.ParentId!.Value)
+            .WhereOneOrMany(nonSeasonMemberIds, b => b.ParentId!.Value)
             .Select(b => new { ParentId = b.ParentId!.Value, b.Id, b.PresentationUniqueKey })
             .ToArray()
             .Concat(accessibleItems
