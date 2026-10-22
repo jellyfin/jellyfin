@@ -796,7 +796,7 @@ namespace Emby.Server.Implementations.Session
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
             {
-                UpdateLiveStreamActiveSessionMappings(info.LiveStreamId, info.SessionId, info.PlaySessionId);
+                UpdateLiveStreamActiveSessionMappings(info.LiveStreamId, info.SessionId, info.PlaySessionId, true);
             }
 
             var eventArgs = new PlaybackStartEventArgs
@@ -868,8 +868,13 @@ namespace Emby.Server.Implementations.Session
             return OnPlaybackProgress(info, false);
         }
 
-        private void UpdateLiveStreamActiveSessionMappings(string liveStreamId, string sessionId, string playSessionId)
+        private void UpdateLiveStreamActiveSessionMappings(string liveStreamId, string sessionId, string playSessionId, bool allowAdd)
         {
+            if (!allowAdd && (!_activeLiveStreamSessions.TryGetValue(liveStreamId, out var existingMappings) || !existingMappings.ContainsKey(sessionId)))
+            {
+                return;
+            }
+
             var activeSessionMappings = _activeLiveStreamSessions.GetOrAdd(liveStreamId, _ => new ConcurrentDictionary<string, string>());
 
             if (!string.IsNullOrEmpty(playSessionId))
@@ -937,7 +942,7 @@ namespace Emby.Server.Implementations.Session
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
             {
-                UpdateLiveStreamActiveSessionMappings(info.LiveStreamId, info.SessionId, info.PlaySessionId);
+                UpdateLiveStreamActiveSessionMappings(info.LiveStreamId, info.SessionId, info.PlaySessionId, false);
             }
 
             var eventArgs = new PlaybackProgressEventArgs
