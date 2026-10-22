@@ -30,8 +30,7 @@ namespace Jellyfin.Server.Implementations.Tests.SqlServer;
 
 /// <summary>
 /// Holds the SQL Server provider, without a server, to how it sets EF Core up, what it logs, how it tells errors apart,
-/// and the SQL it writes for what the shared queries ask of it. The provider is not registered yet, so no database
-/// configuration selects it.
+/// and the SQL it writes for what the shared queries ask of it.
 /// </summary>
 public sealed class SqlServerDatabaseProviderTests : IDisposable
 {
@@ -51,18 +50,36 @@ public sealed class SqlServerDatabaseProviderTests : IDisposable
     }
 
     [Fact]
-    public void AddJellyfinDbContext_SqlServerConfigured_IsRefusedAsTheProviderIsNotRegistered()
+    public void AddJellyfinDbContext_SqlServerConfigured_CreatesTheSqlServerProviderAndWarnsOnce()
     {
-        var key = typeof(SqlServerDatabaseProvider).GetCustomAttributes(typeof(JellyfinDatabaseProviderKeyAttribute), false)
-            .Cast<JellyfinDatabaseProviderKeyAttribute>()
-            .Single()
-            .DatabaseProviderKey;
+        var logger = new CollectingLogger<SqlServerDatabaseProvider>();
+        using var serviceProvider = BuildServiceProvider(logger);
 
-        var refusal = Assert.Throws<InvalidOperationException>(() => BuildServiceProvider(CreateConfiguration()));
+        var first = serviceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
+        var second = serviceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
+        using var scope = serviceProvider.CreateScope();
+        _ = scope.ServiceProvider.GetRequiredService<IDbContextFactory<JellyfinDbContext>>().CreateDbContext();
 
-        Assert.Equal("Jellyfin-SqlServer", key);
-        Assert.Contains($"cannot find the database provider of type '{key}'", refusal.Message, StringComparison.Ordinal);
-        Assert.DoesNotContain(key, refusal.Message[(refusal.Message.IndexOf("Supported types are", StringComparison.Ordinal) + 1)..], StringComparison.OrdinalIgnoreCase);
+        Assert.IsType<SqlServerDatabaseProvider>(first);
+        Assert.Same(first, second);
+        Assert.Single(logger.Entries, entry => entry.Level == LogLevel.Warning);
+    }
+
+    [Fact]
+    public void AddJellyfinDbContext_RegisteredInTheMigrationContainerAndTheHostContainer_WarnsOnce()
+    {
+        // The server registers the database context twice: for the migrations that run before it starts, and for the host.
+        var logger = new CollectingLogger<SqlServerDatabaseProvider>();
+        using var migrationContainer = BuildServiceProvider(logger);
+        using var hostContainer = BuildServiceProvider(logger);
+
+        _ = migrationContainer.GetRequiredService<IDbContextFactory<JellyfinDbContext>>().CreateDbContext();
+        _ = hostContainer.GetRequiredService<IDbContextFactory<JellyfinDbContext>>().CreateDbContext();
+
+        Assert.NotSame(
+            migrationContainer.GetRequiredService<IJellyfinDatabaseProvider>(),
+            hostContainer.GetRequiredService<IJellyfinDatabaseProvider>());
+        Assert.Single(logger.Entries, entry => entry.Level == LogLevel.Warning);
     }
 
     [Fact]
@@ -380,7 +397,7 @@ public sealed class SqlServerDatabaseProviderTests : IDisposable
         }
     };
 
-    private ServiceProvider BuildServiceProvider(DatabaseConfigurationOptions configuration)
+    private ServiceProvider BuildServiceProvider(ILogger<SqlServerDatabaseProvider> logger)
     {
         var paths = new ServerApplicationPaths(
             Path.Combine(_root, "data"),
@@ -391,10 +408,11 @@ public sealed class SqlServerDatabaseProviderTests : IDisposable
         Directory.CreateDirectory(paths.ConfigurationDirectoryPath);
         var configurationManager = new ServerConfigurationManager(paths, NullLoggerFactory.Instance, new MyXmlSerializer());
         configurationManager.AddParts([new DatabaseConfigurationFactory()]);
-        configurationManager.SaveConfiguration("database", configuration);
+        configurationManager.SaveConfiguration("database", CreateConfiguration());
 
         return new ServiceCollection()
             .AddLogging()
+            .AddSingleton(logger)
             .AddSingleton<IApplicationPaths>(paths)
             .AddJellyfinDbContext(configurationManager, new ConfigurationBuilder().Build())
             .BuildServiceProvider();

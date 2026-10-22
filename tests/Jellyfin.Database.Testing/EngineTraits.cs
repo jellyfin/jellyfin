@@ -85,9 +85,7 @@ public sealed class EngineTraits
             ProviderType = typeof(SqlServerDatabaseProvider),
             CoversThroughSqliteMigration = SqlServerMigrationBaseline.CoversThroughSqliteMigration,
             ServerMarker = "Microsoft SQL Server",
-
-            // The server cannot select the provider yet; this changes when the provider is registered.
-            IsRegistered = false,
+            IsRegistered = true,
             HasSchemaMigrations = true,
             BoundsIndexedStrings = true,
 

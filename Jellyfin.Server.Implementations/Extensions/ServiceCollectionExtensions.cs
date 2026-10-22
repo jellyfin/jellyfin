@@ -10,6 +10,7 @@ using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Providers.MySql;
 using Jellyfin.Database.Providers.Postgres;
 using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Database.Providers.SqlServer;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +33,7 @@ public static class ServiceCollectionExtensions
         yield return typeof(SqliteDatabaseProvider);
         yield return typeof(PostgresDatabaseProvider);
         yield return typeof(MySqlDatabaseProvider);
+        yield return typeof(SqlServerDatabaseProvider);
     }
 
     private static IDictionary<string, JellyfinDbProviderFactory> GetSupportedDbProviders()

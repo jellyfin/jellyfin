@@ -11,6 +11,7 @@ using Jellyfin.Database.Implementations.DbConfiguration;
 using Jellyfin.Database.Providers.MySql;
 using Jellyfin.Database.Providers.Postgres;
 using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Database.Providers.SqlServer;
 using Jellyfin.Database.Testing;
 using MediaBrowser.Common.Configuration;
 using Microsoft.EntityFrameworkCore;
@@ -245,6 +246,7 @@ public sealed class JellyfinApplicationFactoryTests
             TestDbProvider.Sqlite => typeof(SqliteDatabaseProvider),
             TestDbProvider.Postgres => typeof(PostgresDatabaseProvider),
             TestDbProvider.MySql or TestDbProvider.MariaDb => typeof(MySqlDatabaseProvider),
+            TestDbProvider.SqlServer => typeof(SqlServerDatabaseProvider),
             var other => throw new NotSupportedException($"{other} is not covered.")
         };
     }

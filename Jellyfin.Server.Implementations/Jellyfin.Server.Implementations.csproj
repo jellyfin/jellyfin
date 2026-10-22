@@ -38,6 +38,7 @@
     <ProjectReference Include="..\src\Jellyfin.Database\Jellyfin.Database.Providers.MySql\Jellyfin.Database.Providers.MySql.csproj" />
     <ProjectReference Include="..\src\Jellyfin.Database\Jellyfin.Database.Providers.Postgres\Jellyfin.Database.Providers.Postgres.csproj" />
     <ProjectReference Include="..\src\Jellyfin.Database\Jellyfin.Database.Providers.Sqlite\Jellyfin.Database.Providers.Sqlite.csproj" />
+    <ProjectReference Include="..\src\Jellyfin.Database\Jellyfin.Database.Providers.SqlServer\Jellyfin.Database.Providers.SqlServer.csproj" />
   </ItemGroup>
 
 </Project>

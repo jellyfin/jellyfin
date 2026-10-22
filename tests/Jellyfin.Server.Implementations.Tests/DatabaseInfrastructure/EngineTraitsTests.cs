@@ -197,7 +197,7 @@ public class EngineTraitsTests
     [InlineData(TestDbProvider.Postgres, true, true, false)]
     [InlineData(TestDbProvider.MySql, true, true, true)]
     [InlineData(TestDbProvider.MariaDb, true, true, true)]
-    [InlineData(TestDbProvider.SqlServer, false, true, true)]
+    [InlineData(TestDbProvider.SqlServer, true, true, true)]
     public void RegistrationMigrationsAndBounds_AreThoseOfTheEngine(TestDbProvider provider, bool registered, bool migrations, bool bounds)
     {
         var traits = EngineTraits.For(provider);
