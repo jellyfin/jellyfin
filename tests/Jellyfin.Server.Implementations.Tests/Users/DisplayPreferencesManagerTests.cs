@@ -107,6 +107,25 @@ public sealed class DisplayPreferencesManagerTests : SqliteDbTestFixture
     }
 
     [Fact]
+    public void UpdateDisplayPreferences_SectionFromAnotherUser_RejectsAndPreservesBothUsers()
+    {
+        SaveSections(_userId, (0, HomeSectionType.Resume));
+        SaveSections(_otherUserId, (0, HomeSectionType.NextUp));
+
+        var preferences = _manager.GetDisplayPreferences(_userId, _itemId, Client);
+        var otherPreferences = _manager.GetDisplayPreferences(_otherUserId, _itemId, Client);
+        preferences.HomeSections.Clear();
+        preferences.HomeSections.Add(otherPreferences.HomeSections.Single());
+
+        Assert.Throws<InvalidOperationException>(() => _manager.UpdateDisplayPreferences(preferences));
+
+        var storedPreferences = _manager.GetDisplayPreferences(_userId, _itemId, Client);
+        var storedOtherPreferences = _manager.GetDisplayPreferences(_otherUserId, _itemId, Client);
+        Assert.Equal([HomeSectionType.Resume], storedPreferences.HomeSections.Select(section => section.Type));
+        Assert.Equal([HomeSectionType.NextUp], storedOtherPreferences.HomeSections.Select(section => section.Type));
+    }
+
+    [Fact]
     public void UpdateDisplayPreferences_ExistingPreferencesWithoutSections_StillWorks()
     {
         var preferences = _manager.GetDisplayPreferences(_userId, _itemId, Client);
@@ -114,6 +133,23 @@ public sealed class DisplayPreferencesManagerTests : SqliteDbTestFixture
 
         var stored = _manager.GetDisplayPreferences(_userId, _itemId, Client);
         Assert.Empty(stored.HomeSections);
+    }
+
+    [Fact]
+    public void UpdateDisplayPreferences_UnchangedSections_PreservesExistingRows()
+    {
+        SaveSections(_userId, (0, HomeSectionType.Resume), (1, HomeSectionType.NextUp));
+
+        var preferences = _manager.GetDisplayPreferences(_userId, _itemId, Client);
+        preferences.ShowSidebar = !preferences.ShowSidebar;
+        _manager.UpdateDisplayPreferences(preferences);
+
+        var stored = _manager.GetDisplayPreferences(_userId, _itemId, Client);
+        Assert.Equal(
+            [(0, HomeSectionType.Resume), (1, HomeSectionType.NextUp)],
+            stored.HomeSections
+                .OrderBy(section => section.Order)
+                .Select(section => (section.Order, section.Type)));
     }
 
     private void SaveSections(Guid userId, params (int Order, HomeSectionType Type)[] sections)
