@@ -218,7 +218,7 @@ public sealed class SqlServerDatabaseProvider : IJellyfinDatabaseProvider
         try
         {
             var on = "SET IDENTITY_INSERT " + QuoteIdentifier(table) + " ON";
-            await dbContext.Database.ExecuteSqlRawAsync(on, cancellationToken).ConfigureAwait(false); // NOSONAR (S3649): IDENTITY_INSERT requires an identifier; the EF Core model name is QuoteIdentifier-escaped.
+            await dbContext.Database.ExecuteSqlRawAsync(on, cancellationToken).ConfigureAwait(false); // NOSONAR (S2077): IDENTITY_INSERT requires an identifier; the EF Core model name is QuoteIdentifier-escaped.
         }
         catch
         {
@@ -226,9 +226,10 @@ public sealed class SqlServerDatabaseProvider : IJellyfinDatabaseProvider
             throw;
         }
 
+        // Reset the session even when the operation that enabled identity insert was canceled.
         var off = "SET IDENTITY_INSERT " + QuoteIdentifier(table) + " OFF";
         return new IdentityInsertScope(
-            async () => await dbContext.Database.ExecuteSqlRawAsync(off).ConfigureAwait(false), // NOSONAR (S3649): IDENTITY_INSERT requires an identifier; the EF Core model name is QuoteIdentifier-escaped.
+            async () => await dbContext.Database.ExecuteSqlRawAsync(off, CancellationToken.None).ConfigureAwait(false), // NOSONAR (S2077): IDENTITY_INSERT requires an identifier; the EF Core model name is QuoteIdentifier-escaped.
             async () => await dbContext.Database.CloseConnectionAsync().ConfigureAwait(false),
             table,
             _logger);
@@ -371,8 +372,8 @@ public sealed class SqlServerDatabaseProvider : IJellyfinDatabaseProvider
             {
                 _logger.LogWarning(
                     "The database {Database} has the default collation {Collation}. Jellyfin gives every column it creates the "
-                    + "collation {Expected}, but text that is not a column, and the names of tables and columns, compare under the "
-                    + "default. Create the database with COLLATE {Expected}.",
+                    + "collation {ExpectedColumnCollation}, but text that is not a column, and the names of tables and columns, compare under the "
+                    + "default. Create the database with COLLATE {ExpectedDatabaseCollation}.",
                     database,
                     collation,
                     Collation,
@@ -454,19 +455,19 @@ public sealed class SqlServerDatabaseProvider : IJellyfinDatabaseProvider
         foreach (var table in tables)
         {
             var noCheck = "ALTER TABLE " + QuoteIdentifier(table) + " NOCHECK CONSTRAINT ALL";
-            await dbContext.Database.ExecuteSqlRawAsync(noCheck).ConfigureAwait(false); // NOSONAR (S3649): ALTER TABLE requires an identifier, which QuoteIdentifier escapes.
+            await dbContext.Database.ExecuteSqlRawAsync(noCheck).ConfigureAwait(false); // NOSONAR (S2077): ALTER TABLE requires an identifier, which QuoteIdentifier escapes.
         }
 
         foreach (var table in tables)
         {
             var delete = "DELETE FROM " + QuoteIdentifier(table);
-            await dbContext.Database.ExecuteSqlRawAsync(delete).ConfigureAwait(false); // NOSONAR (S3649): DELETE requires an identifier, which QuoteIdentifier escapes.
+            await dbContext.Database.ExecuteSqlRawAsync(delete).ConfigureAwait(false); // NOSONAR (S2077): DELETE requires an identifier, which QuoteIdentifier escapes.
         }
 
         foreach (var table in tables)
         {
             var check = "ALTER TABLE " + QuoteIdentifier(table) + " WITH CHECK CHECK CONSTRAINT ALL";
-            await dbContext.Database.ExecuteSqlRawAsync(check).ConfigureAwait(false); // NOSONAR (S3649): ALTER TABLE requires an identifier, which QuoteIdentifier escapes.
+            await dbContext.Database.ExecuteSqlRawAsync(check).ConfigureAwait(false); // NOSONAR (S2077): ALTER TABLE requires an identifier, which QuoteIdentifier escapes.
         }
 
         var used = await dbContext.Database
@@ -476,7 +477,7 @@ public sealed class SqlServerDatabaseProvider : IJellyfinDatabaseProvider
         foreach (var table in used.Where(table => tables.Contains(table, StringComparer.OrdinalIgnoreCase)))
         {
             var reseed = "DBCC CHECKIDENT (" + QuoteString(QuoteIdentifier(table)) + ", RESEED, 0) WITH NO_INFOMSGS";
-            await dbContext.Database.ExecuteSqlRawAsync(reseed).ConfigureAwait(false); // NOSONAR (S3649): DBCC CHECKIDENT requires a quoted identifier string; QuoteString and QuoteIdentifier escape it.
+            await dbContext.Database.ExecuteSqlRawAsync(reseed).ConfigureAwait(false); // NOSONAR (S2077): DBCC CHECKIDENT requires a quoted identifier string; QuoteString and QuoteIdentifier escape it.
         }
     }
 
@@ -516,7 +517,7 @@ public sealed class SqlServerDatabaseProvider : IJellyfinDatabaseProvider
             foreach (var table in tables)
             {
                 var update = "UPDATE STATISTICS " + QuoteIdentifier(table);
-                await context.Database.ExecuteSqlRawAsync(update, cancellationToken).ConfigureAwait(false); // NOSONAR (S3649): UPDATE STATISTICS requires an EF Core model identifier, which QuoteIdentifier escapes.
+                await context.Database.ExecuteSqlRawAsync(update, cancellationToken).ConfigureAwait(false); // NOSONAR (S2077): UPDATE STATISTICS requires an EF Core model identifier, which QuoteIdentifier escapes.
             }
         }
     }
