@@ -134,8 +134,13 @@ public sealed class DisplayPreferencesManager : IDisplayPreferencesManager
     public void UpdateDisplayPreferences(DisplayPreferences displayPreferences)
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
+        using var transaction = dbContext.Database.BeginTransaction();
+        dbContext.Set<HomeSection>()
+            .Where(section => section.DisplayPreferencesId == displayPreferences.Id)
+            .ExecuteDelete();
         dbContext.DisplayPreferences.Attach(displayPreferences).State = EntityState.Modified;
         dbContext.SaveChanges();
+        transaction.Commit();
     }
 
     /// <inheritdoc/>
