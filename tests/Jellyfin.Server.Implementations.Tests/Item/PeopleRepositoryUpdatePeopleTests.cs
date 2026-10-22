@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Enums;
@@ -237,6 +239,16 @@ public sealed class PeopleRepositoryUpdatePeopleTests : JellyfinDbTestFixture
         Assert.Single(ctx.PeopleBaseItemMap);
     }
 
+    [Fact]
+    public void UpdatePeople_ReportedCountDoesNotControlAllocation()
+    {
+        _repository.UpdatePeople(_itemId, new ExaggeratedCountPeople([CreatePerson("Person A", PersonKind.Actor, "Hero")]));
+
+        using var ctx = CreateDbContext();
+        Assert.Equal("Person A", Assert.Single(ctx.Peoples).Name);
+        Assert.Single(ctx.PeopleBaseItemMap);
+    }
+
     [Theory]
     [InlineData("\0")]
     [InlineData("\0 \0")]
@@ -279,5 +291,16 @@ public sealed class PeopleRepositoryUpdatePeopleTests : JellyfinDbTestFixture
             Type = type,
             Role = role
         };
+    }
+
+    private sealed class ExaggeratedCountPeople(IReadOnlyList<PersonInfo> people) : IReadOnlyList<PersonInfo>
+    {
+        public int Count => int.MaxValue;
+
+        public PersonInfo this[int index] => people[index];
+
+        public IEnumerator<PersonInfo> GetEnumerator() => people.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

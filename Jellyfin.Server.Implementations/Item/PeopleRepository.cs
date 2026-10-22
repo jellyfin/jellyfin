@@ -111,7 +111,9 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     /// <inheritdoc />
     public void UpdatePeople(Guid itemId, IReadOnlyList<PersonInfo> people)
     {
-        var namedPeople = new List<PersonInfo>(people.Count);
+        // IReadOnlyList implementations can report a count that is much larger than the values they yield.
+        // Grow this list from the values instead of allocating from caller-controlled metadata.
+        var namedPeople = new List<PersonInfo>();
         foreach (var person in people)
         {
             var hadNul = person.Name.Contains('\0', StringComparison.Ordinal);

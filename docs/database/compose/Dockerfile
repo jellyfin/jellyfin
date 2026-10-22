@@ -25,6 +25,12 @@ FROM ${JELLYFIN_BASE}
 RUN find /jellyfin -mindepth 1 -maxdepth 1 ! -name jellyfin-web -exec rm -rf {} +
 COPY --from=build /out/ /jellyfin/
 
+# The upstream image makes its configuration and cache directories world-writable. The Compose examples use named
+# volumes for them, so the server and the setup wrapper can run without root while retaining access to their files.
+# Keep the unprivileged user's home in the persisted configuration volume so Data Protection keys remain persistent.
+ENV HOME=/config
+USER 65534:65534
+
 # Compose mounts database.xml at /run/jellyfin/database.xml. It is copied into the configuration directory on the
 # first start only, so that the copy stays an ordinary file: Jellyfin may rewrite it, and so does the restore of a
 # backup archive, which a read-only mount would break. To change the configuration later, edit the copy in the
