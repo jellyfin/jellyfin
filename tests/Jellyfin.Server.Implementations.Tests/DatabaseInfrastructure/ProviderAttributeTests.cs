@@ -95,6 +95,7 @@ public class ProviderAttributeTests
     [InlineData(TestDbProvider.Postgres)]
     [InlineData(TestDbProvider.MySql)]
     [InlineData(TestDbProvider.MariaDb)]
+    [InlineData(TestDbProvider.SqlServer)]
     public void MigrationSkipReason_MissingMigrationAtOrBeforeTheBaselineCoverage_IsSkippedWithAReasonThatNamesTheBaseline(TestDbProvider provider)
     {
         var covers = ProviderRequirement.CoversThroughSqliteMigration(provider)!;
@@ -116,6 +117,7 @@ public class ProviderAttributeTests
     [InlineData(TestDbProvider.Postgres)]
     [InlineData(TestDbProvider.MySql)]
     [InlineData(TestDbProvider.MariaDb)]
+    [InlineData(TestDbProvider.SqlServer)]
     public void MigrationSkipReason_MissingMigrationAfterTheBaselineCoverage_IsNotSkipped(TestDbProvider provider)
     {
         const string After = "29990101000000_NotAMigration";
@@ -153,8 +155,8 @@ public class ProviderAttributeTests
         Assert.Equal(EngineTraits.Selected.HasSchemaMigrations ? null : ProviderRequirement.SchemaMigrationsSkipReason(), attribute.Skip);
     }
 
-    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
-    public void MigrationFact_NormalisedMatchColumnsOnMySqlAndMariaDb_IsSkippedBecauseTheBaselineCoversIt()
+    [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb, TestDbProvider.SqlServer)]
+    public void MigrationFact_NormalisedMatchColumnsOnMySqlMariaDbAndSqlServer_IsSkippedBecauseTheBaselineCoversIt()
     {
         var attribute = new MigrationFactAttribute(NormalisedMatchColumns);
 

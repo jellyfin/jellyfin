@@ -55,7 +55,7 @@ public class EngineTraitsTests
     [InlineData(TestDbProvider.Postgres, PostgresMigrationBaseline.CoversThroughSqliteMigration)]
     [InlineData(TestDbProvider.MySql, MySqlMigrationBaseline.CoversThroughSqliteMigration)]
     [InlineData(TestDbProvider.MariaDb, MySqlMigrationBaseline.CoversThroughSqliteMigration)]
-    [InlineData(TestDbProvider.SqlServer, null)]
+    [InlineData(TestDbProvider.SqlServer, SqlServerMigrationBaseline.CoversThroughSqliteMigration)]
     public void CoversThroughSqliteMigration_IsTheOneOfTheBaselineOfTheEngine(TestDbProvider provider, string? expected)
     {
         Assert.Equal(expected, EngineTraits.For(provider).CoversThroughSqliteMigration);
@@ -197,7 +197,7 @@ public class EngineTraitsTests
     [InlineData(TestDbProvider.Postgres, true, true, false)]
     [InlineData(TestDbProvider.MySql, true, true, true)]
     [InlineData(TestDbProvider.MariaDb, true, true, true)]
-    [InlineData(TestDbProvider.SqlServer, false, false, true)]
+    [InlineData(TestDbProvider.SqlServer, false, true, true)]
     public void RegistrationMigrationsAndBounds_AreThoseOfTheEngine(TestDbProvider provider, bool registered, bool migrations, bool bounds)
     {
         var traits = EngineTraits.For(provider);

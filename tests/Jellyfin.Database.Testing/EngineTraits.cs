@@ -83,12 +83,12 @@ public sealed class EngineTraits
         {
             Provider = TestDbProvider.SqlServer,
             ProviderType = typeof(SqlServerDatabaseProvider),
+            CoversThroughSqliteMigration = SqlServerMigrationBaseline.CoversThroughSqliteMigration,
             ServerMarker = "Microsoft SQL Server",
 
-            // The server cannot select the provider yet, and the provider has no migrations yet; both change when the
-            // provider is registered with its baseline migration.
+            // The server cannot select the provider yet; this changes when the provider is registered.
             IsRegistered = false,
-            HasSchemaMigrations = false,
+            HasSchemaMigrations = true,
             BoundsIndexedStrings = true,
 
             // A filtered index cannot have an OR, and the server refuses a cascade to the same table and a second cascade
