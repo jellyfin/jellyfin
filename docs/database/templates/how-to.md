@@ -1,7 +1,7 @@
 # Running Jellyfin on {{engine}}
 
 This page belongs to the multi-database fork of Jellyfin (`feature/multi-db`). Upstream Jellyfin stores its
-data in SQLite only; the fork adds PostgreSQL, MySQL and MariaDB providers. The page covers a new installation.
+data in SQLite only; the fork adds PostgreSQL, MySQL, MariaDB and SQL Server providers. The page covers a new installation.
 Moving an existing library from SQLite to another engine is not covered or tested here.
 
 {{#if mysql-family}}
@@ -14,9 +14,17 @@ Moving an existing library from SQLite to another engine is not covered or teste
 
 One provider serves both MySQL and MariaDB. This page is about {{engine}}; the [{{other-engine}} page]({{other-id}}.md)
 differs only where the servers differ.
-{{else}}
+{{/if}}
+{{#if postgresql}}
 PostgreSQL is a **Supported** engine in this fork ([ADR-0011](../adr/0011-supported-database-targets.md)): its CI
 job is a required check.
+{{/if}}
+{{#if sqlserver}}
+> [!WARNING]
+> **The SQL Server database provider is experimental.** Its CI jobs are not required checks, and it may be
+> withdrawn ([ADR-0011](../adr/0011-supported-database-targets.md)). Jellyfin logs this at every start:
+> "The SQL Server database provider is experimental. Back up the data before using it with a library you cannot rebuild."
+> Use it only with a library you can rebuild, and keep backups of the database.
 {{/if}}
 
 ## Versions
@@ -35,6 +43,9 @@ job is a required check.
 {{#if mariadb}}
 | Checked at startup | Yes. Jellyfin refuses to start on an older server: "MariaDB 11.4.7 or later is required, but the server is version ...". |
 {{/if}}
+{{#if sqlserver}}
+| Checked at startup | Yes. When a connection opens, Jellyfin refuses a server below major version 16 ("SQL Server ... is not supported. Jellyfin needs SQL Server 2022 (16.0) or later.") and refuses Azure SQL Database, Azure SQL Managed Instance and Azure Synapse ("Azure SQL Database, Azure SQL Managed Instance and Azure Synapse are not supported: Jellyfin is not tested on them. Use SQL Server 2022 (16.0) or later."). |
+{{/if}}
 
 {{#if mysql}}
 MySQL 8.4 is the oldest long-term release that is still maintained. MySQL 9.7, the newest long-term release, runs as
@@ -45,6 +56,20 @@ MariaDB 11.4.7 is the first 11.4 release with the `utf8mb4_0900_bin` collation t
 uses, as a collation that compares without padding: 11.4.4 does not have it, and in 11.4.5 it is an alias of the
 padding `utf8mb4_bin`, under which `Rock` and `Rock ` collide ([ADR-0006](../adr/0006-string-collation-and-null-ordering.md) C4).
 Because an older server would give wrong results without an error, the provider refuses it.
+{{/if}}
+{{#if sqlserver}}
+SQL Server 2022 (`16.0`) is the oldest supported release (EF Core generates SQL for compatibility level 160); SQL
+Server 2025 (`17.0`), GA with mainstream support to 2031, runs as an advisory CI job.
+
+Azure SQL Database, Azure SQL Managed Instance and Azure Synapse are refused by engine edition
+(`SERVERPROPERTY('EngineEdition')` editions 5, 6, 8 and 11): none is a target of
+[ADR-0011](../adr/0011-supported-database-targets.md) or tested in CI, and version numbers alone would mislead
+because Azure SQL Database reports version 12 regardless of what it runs and Managed Instance's reported version
+depends on how it is updated ([ADR-0011](../adr/0011-supported-database-targets.md) F9).
+
+The container image runs Developer edition (`MSSQL_PID=Developer`) by default, which is free for development and
+testing only; production deployments need Express (`MSSQL_PID=Express`, capped at 10 GB per database on 2022 or
+50 GB on 2025) or a licensed edition ([ADR-0011](../adr/0011-supported-database-targets.md)).
 {{/if}}
 
 ## 1. Create the database and the user
@@ -139,6 +164,60 @@ GRANT ALL PRIVILEGES ON jellyfin.* TO 'jellyfin'@'%';
   only by the advisory job. That advisory job, on MariaDB 12.3.3, passed at commit `399af59770`, which has the fix
   (a CI result relayed to this page, not rerun for it).
 {{/if}}
+{{#if sqlserver}}
+```sql
+CREATE DATABASE jellyfin COLLATE Latin1_General_100_BIN2;
+ALTER DATABASE jellyfin SET READ_COMMITTED_SNAPSHOT ON;
+CREATE LOGIN jellyfin WITH PASSWORD = 'CHANGE-ME';
+USE jellyfin;
+CREATE USER jellyfin FOR LOGIN jellyfin;
+ALTER ROLE db_owner ADD MEMBER jellyfin;
+```
+
+- **Collation (`Latin1_General_100_BIN2`).** Every text column and `__EFMigrationsHistory`
+  (`BinaryCollationHistoryRepository`) are given `Latin1_General_100_BIN2` explicitly. Creating the database with
+  `COLLATE Latin1_General_100_BIN2` also sets the database default; if the database has another default collation
+  (such as `SQL_Latin1_General_CP1_CI_AS`), Jellyfin logs a warning at startup and continues.
+- **Row versioning (`READ_COMMITTED_SNAPSHOT ON`).** Without it, `READ COMMITTED` reads take shared locks and
+  wait behind the writes of a library scan. If `READ_COMMITTED_SNAPSHOT` is `OFF`, Jellyfin logs a warning at
+  startup naming `ALTER DATABASE [jellyfin] SET READ_COMMITTED_SNAPSHOT ON` (which needs exclusive access while
+  Jellyfin is stopped) and continues.
+- **Privileges (`db_owner`).** Migrations create, alter and drop tables and indexes, scheduled maintenance runs
+  `UPDATE STATISTICS`, and backup restore switches foreign keys off and on, enables `IDENTITY_INSERT`, and runs
+  `DBCC CHECKIDENT (..., RESEED, 0)` (which requires `db_owner` in `jellyfin` and nothing outside it).
+- **Session settings.** On every connection open Jellyfin runs `SET TRANSACTION ISOLATION LEVEL READ COMMITTED`,
+  so statements outside a transaction do not inherit a stricter isolation level left on a pooled connection;
+  SqlClient starts every unnamed transaction at `READ COMMITTED`
+  ([ADR-0008](../adr/0008-concurrency-locking-and-retry.md) S7).
+- **Index key limit (1700 bytes) and item paths over about 850 characters ([ADR-0012](../adr/0012-sqlserver-text-index-keys.md) decision 7).**
+  Text columns that participate in an index are `nvarchar(4000)`, and 18 nonclustered indexes in the baseline
+  migration have declared key widths above SQL Server's 1700-byte nonclustered index key limit (SQL Server emits
+  warning Msg 1945 when creating them, which is expected). At runtime, SQL Server refuses any row whose actual
+  index key exceeds 1700 bytes with error 1946 (`ADR-0009/G2`). Because `nvarchar` uses UTF-16 (2 bytes per code
+  unit, 4 bytes per supplementary character outside the Basic Multilingual Plane such as emoji), a single-column
+  index like `IX_BaseItems_Path` holds at most **850 characters** (or **425 supplementary characters such as emoji**),
+  and composite indexes over `SortName`, `PresentationUniqueKey`, `SeriesPresentationUniqueKey`, `CleanName`,
+  `CleanValue`, `ProviderValue` or `Language` leave 581 to 848 code units for the text column(s). **An item whose
+  path is longer than about 850 characters (or 425 characters outside the Basic Multilingual Plane) is not saved
+  on SQL Server** (and a path over 4000 characters is refused at the `nvarchar(4000)` column with error 2628).
+  Without per-item fallback (step X11), a folder scan saves all new children in one transaction, so one over-long
+  item rolls back the whole batch, stops the scan before the folder's subfolders are validated, and keeps the
+  folder from gaining items on later scans; with step X11 (`SaveItemsSkippingFailures`), Jellyfin retries the batch
+  one unit at a time, logs and skips only the over-long item, and saves the rest of the folder so its subfolders are
+  still scanned—except when a **folder's own path** exceeds the limit (or the first 3 per-item saves fail alike), in
+  which case that folder's subtree is lost while sibling folders are unaffected.
+- **Trailing spaces and UTF-16 order ([ADR-0006](../adr/0006-string-collation-and-null-ordering.md) G1 and G2).**
+  SQL Server ignores trailing spaces in `=` and `UNIQUE` index checks even under `Latin1_General_100_BIN2`
+  (`'Rock'` and `'Rock '` collide, `ADR-0006/G1`), and orders strings by 16-bit UTF-16 code units rather than
+  Unicode code points so supplementary characters (`U+10000` and above) sort before BMP characters at
+  `U+E000..U+FFFF` (`ADR-0006/G2`).
+- **Filtered indexes and cascade paths ([ADR-0001](../adr/0001-fork-owned-multi-provider-architecture.md) M3, M5, M6).**
+  `IX_BaseItems_PrimaryVersionId` is unfiltered because SQL Server rejects `OR` in a filtered index;
+  `IX_ImageInfos_UserId` is filtered to `[UserId] IS NOT NULL` so multiple rows may have a `NULL` user id; and the
+  self-referencing foreign keys `FK_BaseItems_BaseItems_ParentId` and `FK_AncestorIds_BaseItems_ParentItemId` use
+  `ON DELETE NO ACTION` to avoid error 1785 (multiple cascade paths), with Jellyfin clearing or deleting those
+  rows before deleting a folder.
+{{/if}}
 
 ## 2. Write `database.xml`
 
@@ -210,6 +289,13 @@ another.
 `Character Set=utf8mb4`, `GUID Format=Binary16` (ids are stored as 16 bytes) and `Allow User Variables=False`,
 always. `Default Command Timeout=60` unless the connection string or the `command-timeout` option sets another.
 {{/if}}
+{{#if sqlserver}}
+`Encrypt=True` (Mandatory) when the connection string does not name `Encrypt`; any `Encrypt` value you write
+(`False`/`Optional`, `True`/`Mandatory`, `Strict`) and `TrustServerCertificate` are kept as written
+([ADR-0011](../adr/0011-supported-database-targets.md) F10). For a container or a server with a self-signed
+certificate, add `TrustServerCertificate=True` (or `Encrypt=False` on the same machine). `Command Timeout=60`
+unless the connection string or the `command-timeout` option sets another.
+{{/if}}
 
 ## 3. First start
 
@@ -233,6 +319,12 @@ MySQL 8.4.11 connection string: Server=db.example.com;Port=3306;User ID=jellyfin
 ```text
 The MySQL and MariaDB database provider is experimental. Back up the data before using it with a library you cannot rebuild.
 MariaDB 11.4.13 connection string: Server=db.example.com;Port=3306;User ID=jellyfin;Password=;Database=jellyfin;Allow User Variables=False;Character Set=utf8mb4;Default Command Timeout=60;GUID Format=Binary16
+```
+{{/if}}
+{{#if sqlserver}}
+```text
+The SQL Server database provider is experimental. Back up the data before using it with a library you cannot rebuild.
+SQL Server connection string: Data Source=db.example.com,1433;Initial Catalog=jellyfin;User ID=jellyfin;Password=;Command Timeout=60;Encrypt=True
 ```
 {{/if}}
 
@@ -276,6 +368,19 @@ create an empty database as in step 1, then:
 {{client}} --host=db.example.com --user=jellyfin --password --default-character-set=utf8mb4 jellyfin < jellyfin.sql
 ```
 {{/if}}
+{{#if sqlserver}}
+```sh
+sqlcmd -S db.example.com,1433 -U jellyfin -C -b -Q \
+  "BACKUP DATABASE [jellyfin] TO DISK = N'/var/opt/mssql/data/jellyfin.bak' WITH FORMAT, INIT"
+```
+
+To restore (with Jellyfin stopped, using a login that may restore databases such as `sa`):
+
+```sh
+sqlcmd -S db.example.com,1433 -U sa -C -b -Q \
+  "ALTER DATABASE [jellyfin] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; RESTORE DATABASE [jellyfin] FROM DISK = N'/var/opt/mssql/data/jellyfin.bak' WITH REPLACE; ALTER DATABASE [jellyfin] SET MULTI_USER;"
+```
+{{/if}}
 
 Stop Jellyfin before you restore, and start the version of Jellyfin that wrote the dump.
 
@@ -298,6 +403,12 @@ engine. Know its limits:
 - **The database must be migrated first.** A restore refuses a database that has migrations still to apply (a new
   installation, or a server that was updated and not started since), because {{engine}} cannot undo a failed
   migration. Run Jellyfin once with `--mode MigrateSystem`, which migrates the database and exits, then restore.
+{{/if}}
+{{#if sqlserver}}
+- **A restore rolls back as a whole if a row exceeds SQL Server's limits.** Restoring an archive runs in one
+  transaction. If the archive contains a row that SQL Server refuses (such as an item from another engine whose
+  `Path` exceeds 850 characters, error 1946), the restore fails and rolls back completely, leaving the database
+  with the rows it held before ([ADR-0012](../adr/0012-sqlserver-text-index-keys.md) T7).
 {{/if}}
 - **It does not repair a schema.** After a failed upgrade, restore the dump instead.
 
@@ -333,6 +444,15 @@ every later start refuses to migrate and names the migration. To continue, resto
 upgrade, delete the file, and start Jellyfin again. Restoring a Jellyfin backup archive does not repair the
 database.
 {{/if}}
+{{#if sqlserver}}
+> No backup of the SQL Server database is taken before migrating. A migration that fails is rolled back with its
+> transaction, but back the database up with BACKUP DATABASE before upgrading, it is the only way to return to the
+> previous version.
+
+Each migration runs in a transaction of its own (DDL is transactional on SQL Server); a migration that fails is
+rolled back with its transaction while earlier migrations of the same upgrade stay applied, and Jellyfin logs the
+last migration that applied completely.
+{{/if}}
 
 ### The database server
 
@@ -350,6 +470,10 @@ MySQL upgrades its own system tables when a newer server starts on the data dire
 {{#if mariadb}}
 CI runs MariaDB 12.3, the newest long-term release, as an advisory job. The MariaDB Docker image upgrades its
 system tables after a server upgrade only with `MARIADB_AUTO_UPGRADE=1`; otherwise run `mariadb-upgrade`.
+{{/if}}
+{{#if sqlserver}}
+Any version from SQL Server 2022 (`16.0`) on is supported; upgrade in place or with `BACKUP DATABASE` and
+`RESTORE DATABASE`. CI also runs SQL Server 2025 (`17.0`) as an advisory job.
 {{/if}}
 
 ## Docker Compose
@@ -384,6 +508,14 @@ It needs Docker Compose 2.23.1 or later. What it sets up:
   so the database gets the character set and collation of step 1, and long lists of ids fit into a packet.
   `MARIADB_AUTO_UPGRADE=1` upgrades the system tables after a server upgrade.
 {{/if}}
+{{#if sqlserver}}
+- **The database.** The SQL Server image starts `sqlservr` with `ACCEPT_EULA=Y`, `MSSQL_PID` (`Developer` by default)
+  and `MSSQL_SA_PASSWORD` set from `JELLYFIN_DB_PASSWORD`. Unlike the PostgreSQL, MySQL and MariaDB images, the SQL
+  Server image does not create an application database or user by itself: the container's health check connects as
+  `sa` once `sqlservr` is up and, if the `jellyfin` login does not exist yet, creates the `jellyfin` database with
+  `COLLATE Latin1_General_100_BIN2` and `READ_COMMITTED_SNAPSHOT ON` and the `jellyfin` login and `db_owner` user
+  with `JELLYFIN_DB_PASSWORD`, before reporting healthy.
+{{/if}}
 - **`database.xml`.** It is written inline in the Compose file and mounted at `/run/jellyfin/database.xml`. On the
   first start the image copies it to `/config/config/database.xml`, where it stays an ordinary file, as a restore of
   a backup archive rewrites it. To change it later, edit that copy in the `config` volume.
@@ -410,6 +542,10 @@ docker compose exec -T postgres pg_dump --username=jellyfin --format=custom jell
 {{#if mysql-family}}
 docker compose exec -T {{service}} sh -c '{{dump-tool}} --user=jellyfin --password="${{password-variable}}" --single-transaction \
   --hex-blob --no-tablespaces --default-character-set=utf8mb4 jellyfin' > jellyfin.sql
+{{/if}}
+{{#if sqlserver}}
+docker compose exec -T sqlserver sh -c 'SQLCMDPASSWORD="$MSSQL_SA_PASSWORD" /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -U jellyfin -C -b -Q \
+  "BACKUP DATABASE [jellyfin] TO DISK = N'\''/var/opt/mssql/data/jellyfin.bak'\'' WITH FORMAT, INIT"'
 {{/if}}
 ```
 

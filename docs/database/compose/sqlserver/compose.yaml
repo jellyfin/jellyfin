@@ -1,0 +1,74 @@
+# Rendered from docs/database/templates/compose.yaml by docs/database/render. Edit the template, not this file.
+# Jellyfin from this fork on SQL Server, with the database in its own container. See docs/database/sqlserver.md.
+#
+#   cp env.example .env           then set the values in .env
+#   docker compose up -d --build
+#
+# Needs Docker Compose 2.23.1 or later, for the inline database.xml below. The Jellyfin image is built from this
+# checkout (docs/database/compose/Dockerfile); upstream Jellyfin images have no SQL Server provider.
+# The SQL Server provider is experimental: back up the database before upgrading.
+name: jellyfin-sqlserver
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-CU27-GDR1-ubuntu-22.04
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: ${MSSQL_PID:-Developer}
+      MSSQL_SA_PASSWORD: ${JELLYFIN_DB_PASSWORD:?Set JELLYFIN_DB_PASSWORD in .env}
+    volumes:
+      - database:/var/opt/mssql
+    healthcheck:
+      # Answers over TCP only once the server that the image starts after its setup is up.
+      test: ["CMD-SHELL", "SQLCMDPASSWORD=\"$$MSSQL_SA_PASSWORD\" /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -U sa -C -b -v JELLYFIN_DB_PASSWORD=\"$$MSSQL_SA_PASSWORD\" -Q \"IF SUSER_ID(N'jellyfin') IS NULL BEGIN CREATE DATABASE [jellyfin] COLLATE Latin1_General_100_BIN2; ALTER DATABASE [jellyfin] SET READ_COMMITTED_SNAPSHOT ON; CREATE LOGIN [jellyfin] WITH PASSWORD = '$$(JELLYFIN_DB_PASSWORD)'; EXEC(N'USE [jellyfin]; CREATE USER [jellyfin] FOR LOGIN [jellyfin]; ALTER ROLE [db_owner] ADD MEMBER [jellyfin];'); END\" && SQLCMDPASSWORD=\"$$MSSQL_SA_PASSWORD\" /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -U jellyfin -d jellyfin -C -b -Q \"SELECT 1\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 1m
+
+  jellyfin:
+    build:
+      context: ../../../..
+      dockerfile: docs/database/compose/Dockerfile
+    image: ${JELLYFIN_IMAGE:-jellyfin-multidb:local}
+    restart: unless-stopped
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      # The connection string, with the password, comes from the environment and is never written to
+      # database.xml (docs/database/sqlserver.md, step 2). Avoid ; and quotes in the password.
+      JELLYFIN_DATABASE__CONNECTIONSTRING: "Server=sqlserver,1433;Database=jellyfin;User ID=jellyfin;Password=${JELLYFIN_DB_PASSWORD:?Set JELLYFIN_DB_PASSWORD in .env};TrustServerCertificate=True"
+    configs:
+      # Copied to /config/config/database.xml on the first start, see the Dockerfile.
+      - source: database-xml
+        target: /run/jellyfin/database.xml
+    ports:
+      - "${JELLYFIN_PORT:-8096}:8096"
+    volumes:
+      - config:/config
+      - cache:/cache
+      - ${JELLYFIN_MEDIA_DIR:?Set JELLYFIN_MEDIA_DIR in .env}:/media:ro
+    healthcheck:
+      # Jellyfin answers Degraded while it starts, and Healthy once it runs and its database answers.
+      test: ["CMD-SHELL", "curl --noproxy localhost -fsS http://localhost:8096/health | grep -qx Healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      # The first start creates the schema before the server answers.
+      start_period: 5m
+
+configs:
+  database-xml:
+    content: |
+      <?xml version="1.0" encoding="utf-8"?>
+      <DatabaseConfigurationOptions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        <DatabaseType>Jellyfin-SqlServer</DatabaseType>
+        <LockingBehavior>NoLock</LockingBehavior>
+      </DatabaseConfigurationOptions>
+
+volumes:
+  database:
+  config:
+  cache:

@@ -8,6 +8,9 @@
 {{#if mysql-family}}
 # The MySQL and MariaDB provider is experimental: back up the database and keep dumps.
 {{/if}}
+{{#if sqlserver}}
+# The SQL Server provider is experimental: back up the database before upgrading.
+{{/if}}
 name: jellyfin-{{id}}
 
 services:
@@ -35,6 +38,11 @@ services:
       # Upgrades the system tables when a newer server starts on the data of an older one.
       MARIADB_AUTO_UPGRADE: "1"
 {{/if}}
+{{#if sqlserver}}
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: ${MSSQL_PID:-Developer}
+      MSSQL_SA_PASSWORD: ${JELLYFIN_DB_PASSWORD:?Set JELLYFIN_DB_PASSWORD in .env}
+{{/if}}
 {{#if mysql-family}}
     # The database the image creates gets the character set and collation of step 1 of docs/database/{{id}}.md.
     command:
@@ -61,6 +69,9 @@ services:
 {{/if}}
 {{#if mariadb}}
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+{{/if}}
+{{#if sqlserver}}
+      test: ["CMD-SHELL", "SQLCMDPASSWORD=\"$$MSSQL_SA_PASSWORD\" /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -U sa -C -b -v JELLYFIN_DB_PASSWORD=\"$$MSSQL_SA_PASSWORD\" -Q \"IF SUSER_ID(N'jellyfin') IS NULL BEGIN CREATE DATABASE [jellyfin] COLLATE Latin1_General_100_BIN2; ALTER DATABASE [jellyfin] SET READ_COMMITTED_SNAPSHOT ON; CREATE LOGIN [jellyfin] WITH PASSWORD = '$$(JELLYFIN_DB_PASSWORD)'; EXEC(N'USE [jellyfin]; CREATE USER [jellyfin] FOR LOGIN [jellyfin]; ALTER ROLE [db_owner] ADD MEMBER [jellyfin];'); END\" && SQLCMDPASSWORD=\"$$MSSQL_SA_PASSWORD\" /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -U jellyfin -d jellyfin -C -b -Q \"SELECT 1\""]
 {{/if}}
       interval: 10s
       timeout: 5s

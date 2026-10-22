@@ -1,7 +1,7 @@
 # Running Jellyfin on a database server
 
 These pages are for operators of the multi-database fork of Jellyfin (`feature/multi-db`). Upstream Jellyfin
-stores its data in SQLite only. The fork can also store it in PostgreSQL, MySQL or MariaDB, selected in
+stores its data in SQLite only. The fork can also store it in PostgreSQL, MySQL, MariaDB or SQL Server, selected in
 `database.xml`.
 
 | Engine | Page | Tier | Oldest version |
@@ -10,6 +10,7 @@ stores its data in SQLite only. The fork can also store it in PostgreSQL, MySQL 
 | PostgreSQL | [postgresql.md](postgresql.md) | Supported | 16 |
 | MySQL | [mysql.md](mysql.md) | Experimental | 8.4 |
 | MariaDB | [mariadb.md](mariadb.md) | Experimental | 11.4.7 |
+| SQL Server | [sqlserver.md](sqlserver.md) | Experimental | 2022 (16.0) |
 
 The tiers are those of [ADR-0011](../adr/0011-supported-database-targets.md). Supported means the engine's CI job
 is a required check. Experimental means the engine can be selected and Jellyfin warns at every start that it is

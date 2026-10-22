@@ -2,7 +2,7 @@
 # Running Jellyfin on MariaDB
 
 This page belongs to the multi-database fork of Jellyfin (`feature/multi-db`). Upstream Jellyfin stores its
-data in SQLite only; the fork adds PostgreSQL, MySQL and MariaDB providers. The page covers a new installation.
+data in SQLite only; the fork adds PostgreSQL, MySQL, MariaDB and SQL Server providers. The page covers a new installation.
 Moving an existing library from SQLite to another engine is not covered or tested here.
 
 > [!WARNING]

@@ -104,6 +104,31 @@ Engine[] engines =
                 + "on MariaDB 12.3.3, advisory; both on every pull request, every night and on demand, where the nightly "
                 + "and manual runs start once the workflow is on the default branch",
         }),
+    new(
+        "sqlserver",
+        ["sqlserver"],
+        new()
+        {
+            ["engine"] = "SQL Server",
+            ["provider-key"] = "Jellyfin-SqlServer",
+            ["provider-source"] = "src/Jellyfin.Database/Jellyfin.Database.Providers.SqlServer/SqlServerDatabaseProvider.cs",
+            ["tier"] = "Experimental",
+            ["floor"] = "2022 (16.0)",
+            ["image"] = "mcr.microsoft.com/mssql/server:2022-CU27-GDR1-ubuntu-22.04",
+            ["port"] = "1433",
+            ["client"] = "sqlcmd",
+            ["dump-tool"] = "BACKUP DATABASE",
+            ["test-provider"] = "SqlServer",
+            ["service"] = "sqlserver",
+            ["data-directory"] = "/var/opt/mssql",
+            ["compose-connection-string"] = "Server=sqlserver,1433;Database=jellyfin;User ID=jellyfin;Password=${JELLYFIN_DB_PASSWORD:?Set JELLYFIN_DB_PASSWORD in .env};TrustServerCertificate=True",
+            ["run-settings"] = "sqlserver.runsettings",
+            ["connection-string"] = "Server=db.example.com,1433;Database=jellyfin;User ID=jellyfin;Password=CHANGE-ME;Encrypt=True",
+            ["connection-string-kind"] = "A [Microsoft.Data.SqlClient connection string](https://learn.microsoft.com/en-us/dotnet/api/microsoft.data.sqlclient.sqlconnection.connectionstring).",
+            ["ci-jobs"] = "`run-tests-db / SqlServer` on SQL Server 2022 CU27 GDR1, not required, and `run-tests-db / SqlServer newest` on "
+                + "SQL Server 2025 CU9 GDR1, advisory; both on every pull request, every night and on demand, where the nightly and "
+                + "manual runs start once the workflow is on the default branch",
+        }),
 ];
 
 // Each template and where its output for an engine goes, relative to docs/database.
