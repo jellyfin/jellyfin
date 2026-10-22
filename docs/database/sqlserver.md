@@ -261,6 +261,12 @@ It needs Docker Compose 2.23.1 or later. What it sets up:
 - **Volumes.** `database` holds the database, `config` and `cache` hold Jellyfin's directories (`/config` and
   `/cache`); the media folder is mounted read-only at `/media`.
 
+The Jellyfin image runs as UID/GID `65534:65534`, with `HOME=/config` so its Data Protection keys persist.
+The `config` and `cache` volumes must be writable by that user, and the media folder must be readable by it.
+Fresh named volumes inherit the image's directory permissions. If you reuse files created by an earlier image
+running as root, adjust their ownership or access permissions before starting the new image. For host bind mounts,
+you can set the Jellyfin service's Compose `user` field to another unprivileged UID/GID with the required access.
+
 Check that it runs on SQL Server, and make a dump from the database container:
 
 ```sh
