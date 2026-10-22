@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Testing;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -8,6 +7,11 @@ namespace Jellyfin.Server.Implementations.Tests.MySql;
 
 public sealed class MySqlDatabaseProviderTests : DatabaseTestFixture
 {
+    public MySqlDatabaseProviderTests()
+        : base(EngineTraits.Selected.DefaultSchemaSource, fresh: true)
+    {
+    }
+
     [ProviderFact(TestDbProvider.MySql, TestDbProvider.MariaDb)]
     public async Task PurgeDatabase_IdentifierWithQuote_IsEscaped()
     {
