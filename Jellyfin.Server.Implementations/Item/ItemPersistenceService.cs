@@ -1313,7 +1313,12 @@ public class ItemPersistenceService : IItemPersistenceService
         var seen = new HashSet<string>(StringComparer.Ordinal);
         foreach (var value in values)
         {
-            var clean = value?.RemoveNullCharacters()!;
+            if (value is null)
+            {
+                continue;
+            }
+
+            var clean = value.RemoveNullCharacters();
             if ((!HasNulCharacter(value) || clean.Length > 0) && seen.Add(clean))
             {
                 cleaned.Add(clean);

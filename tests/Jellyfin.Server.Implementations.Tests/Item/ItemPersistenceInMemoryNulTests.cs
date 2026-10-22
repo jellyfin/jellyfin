@@ -235,6 +235,24 @@ public sealed class ItemPersistenceInMemoryNulTests : JellyfinDbTestFixture
     }
 
     [Fact]
+    public void SaveItems_GenresWithNul_SkipsNullAndNulOnlyEntriesButKeepsTheFirstEmptyValue()
+    {
+        var book = new Book
+        {
+            Id = Guid.NewGuid(),
+            Name = "Book",
+            Genres = ["Rock", null!, string.Empty, "\0", "Rock\0", string.Empty]
+        };
+
+        _service.SaveItems([book], CancellationToken.None);
+
+        using var context = CreateDbContext();
+        var entity = Assert.Single(context.BaseItems.Where(e => e.Id.Equals(book.Id)));
+        Assert.Equal(["Rock", string.Empty], book.Genres);
+        Assert.Equal(string.Join('|', book.Genres), entity.Genres);
+    }
+
+    [Fact]
     public void SaveItems_ProviderIdsWithNul_ItemHoldsTheSameValuesAsTheStoredRows()
     {
         var book = new Book { Id = Guid.NewGuid(), Name = "Book" };

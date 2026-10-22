@@ -196,19 +196,21 @@ public class BackupService : IBackupService
             if (manifest.Options.Database)
             {
                 _logger.LogInformation("Begin restoring Database");
-                var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+                // Restores run during startup through an interface with no cancellation token. ApplicationStopping also
+                // triggers the restart that starts a restore, so it must not interrupt this restore.
+                var dbContext = await _dbProvider.CreateDbContextAsync(CancellationToken.None).ConfigureAwait(false);
                 await using (dbContext.ConfigureAwait(false))
                 {
                     dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
                     var entityTypes = GetEntitySets(dbContext);
 
-                    await dbContext.Database.MigrateAsync().ConfigureAwait(false);
+                    await dbContext.Database.MigrateAsync(CancellationToken.None).ConfigureAwait(false);
 
                     // Creating a table commits the transaction it runs in on some servers, so the history exists before it begins.
                     var historyRepository = dbContext.GetService<IHistoryRepository>();
                     await historyRepository.CreateIfNotExistsAsync().ConfigureAwait(false);
 
-                    var transaction = await dbContext.Database.BeginTransactionAsync().ConfigureAwait(false);
+                    var transaction = await dbContext.Database.BeginTransactionAsync(CancellationToken.None).ConfigureAwait(false);
                     await using (transaction.ConfigureAwait(false))
                     {
                         // The tables keep the schema of this server, so its schema migrations stay as they are and the ones
@@ -296,7 +298,7 @@ public class BackupService : IBackupService
 
                         _logger.LogInformation("Finish restoring Database");
                         await _jellyfinDatabaseProvider.CompleteDatabaseRestoreAsync(dbContext, CancellationToken.None).ConfigureAwait(false);
-                        await transaction.CommitAsync().ConfigureAwait(false);
+                        await transaction.CommitAsync(CancellationToken.None).ConfigureAwait(false);
                     }
 
                     _logger.LogInformation("Restored database");
@@ -353,7 +355,7 @@ public class BackupService : IBackupService
                 throw new InvalidOperationException("Cannot restore backup that has no History data.");
         }
 
-        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        var dbContext = await _dbProvider.CreateDbContextAsync(CancellationToken.None).ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
             // A restore runs before the startup migrations. On a server that was never started the database holds no tables
@@ -361,7 +363,7 @@ public class BackupService : IBackupService
             // An engine that cannot undo a failed migration is migrated only by the startup, which records the migration it
             // is about to apply so that a failure is noticed. A restore has no such record and so does not migrate.
             if (!_jellyfinDatabaseProvider.SupportsTransactionalMigrations
-                && (await dbContext.Database.GetPendingMigrationsAsync().ConfigureAwait(false)).Any())
+                && (await dbContext.Database.GetPendingMigrationsAsync(CancellationToken.None).ConfigureAwait(false)).Any())
             {
                 var message = "The database has migrations that are not applied yet (a new installation, or a server that was updated and not started since) "
                     + "and this database engine cannot undo a failed migration, so a restore does not migrate it. "
