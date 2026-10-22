@@ -1,0 +1,44 @@
+name: Database Tests (SQL Server)
+on:
+  # SQL Server is experimental, so its jobs are not required checks and do not block a merge. They run on
+  # every pull request, because a change anywhere can reach a query that SQL Server translates differently.
+  pull_request:
+  # A scheduled run uses this workflow as it is on the default branch, and a manual run needs it there too.
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+jobs:
+  # SqlServer on SQL Server 2022 is the oldest supported release, the image of the test harness.
+  # SqlServer newest on SQL Server 2025 is the newest GA release with mainstream support to 2031;
+  # it is advisory, so its failure does not fail the run. The names match no required check.
+  # SQL Server startup is slower, so timeoutMinutes is 40 per ADR-0010 CI3.
+  run-tests-db:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci-tests-db.yml
+    with:
+      matrix: |
+        [
+          {
+            "name": "SqlServer",
+            "provider": "SqlServer",
+            "version": "16",
+            "image": "mcr.microsoft.com/mssql/server:2022-CU27-GDR1-ubuntu-22.04@sha256:cf8f0ab2ebe61feec2eed2629061a07d247f791c2a8ddda74a4ac9f06a291718",
+            "imageVariable": "JELLYFIN_TEST_SQLSERVER_IMAGE",
+            "settings": "sqlserver.runsettings",
+            "requiredTests": "",
+            "timeoutMinutes": 40
+          },
+          {
+            "name": "SqlServer newest",
+            "provider": "SqlServer",
+            "version": "17",
+            "image": "mcr.microsoft.com/mssql/server:2025-CU9-GDR1-ubuntu-24.04@sha256:742481d1b1186cccc81220a1eaacef244ca8d0f7d19c8e5c70df8ae541ffbab2",
+            "imageVariable": "JELLYFIN_TEST_SQLSERVER_IMAGE",
+            "settings": "sqlserver.runsettings",
+            "requiredTests": "",
+            "timeoutMinutes": 40,
+            "advisory": true
+          }
+        ]
