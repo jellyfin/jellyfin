@@ -13,7 +13,14 @@ using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
+using BaseItemEntity = Jellyfin.Database.Implementations.Entities.BaseItemEntity;
 using DbLinkedChildType = Jellyfin.Database.Implementations.Entities.LinkedChildType;
+using LinkedChildEntity = Jellyfin.Database.Implementations.Entities.LinkedChildEntity;
+using MediaSegment = Jellyfin.Database.Implementations.Entities.MediaSegment;
+using MediaSegmentType = Jellyfin.Database.Implementations.Enums.MediaSegmentType;
+using TrickplayInfo = Jellyfin.Database.Implementations.Entities.TrickplayInfo;
+using User = Jellyfin.Database.Implementations.Entities.User;
+using UserData = Jellyfin.Database.Implementations.Entities.UserData;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
@@ -181,6 +188,91 @@ public sealed class ItemPersistenceAlternateVersionTests : SqliteDbTestFixture
         Assert.Null(ctx.BaseItems.First(e => e.Id.Equals(oldPrimaryId)).PrimaryVersionId);
         Assert.Equal(oldPrimaryId, ctx.BaseItems.First(e => e.Id.Equals(promotedId)).PrimaryVersionId);
     }
+
+    [Fact]
+    public void SaveItems_OwnedVersionDisappeared_DeletesItThroughTheDeletePath()
+    {
+        var primaryId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var versionId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+        var userId = Guid.Parse("66666666-6666-6666-6666-666666666666");
+
+        SeedOwnedVersion(primaryId, versionId, userId);
+
+        // The rescan no longer finds the second file, so the version it owned is gone with it.
+        _service.SaveItems([CreateMovie(primaryId, PrimaryPath)], CancellationToken.None);
+
+        using var ctx = CreateDbContext();
+        Assert.Empty(ctx.BaseItems.Where(e => e.Id.Equals(versionId)));
+        Assert.Empty(ctx.TrickplayInfos.Where(e => e.ItemId.Equals(versionId)));
+        Assert.Empty(ctx.MediaSegments.Where(e => e.ItemId.Equals(versionId)));
+
+        // Dropping the row alone would take the play state with it; the delete path parks it on the
+        // placeholder instead, which is the difference between this and a plain RemoveRange.
+        var userData = Assert.Single(ctx.UserData.Where(e => e.UserId.Equals(userId)));
+        Assert.Equal(BaseItemRepository.PlaceholderId, userData.ItemId);
+        Assert.NotNull(userData.RetentionDate);
+    }
+
+    private void SeedOwnedVersion(Guid primaryId, Guid versionId, Guid userId)
+    {
+        using var context = CreateDbContext();
+
+        context.BaseItems.Add(NewItem(primaryId, PrimaryPath, null));
+        context.BaseItems.Add(NewItem(versionId, VersionPath, primaryId));
+        context.LinkedChildren.Add(new LinkedChildEntity
+        {
+            ParentId = primaryId,
+            ChildId = versionId,
+            ChildType = DbLinkedChildType.LocalAlternateVersion,
+            SortOrder = 0
+        });
+        context.TrickplayInfos.Add(new TrickplayInfo
+        {
+            ItemId = versionId,
+            Width = 320,
+            Height = 180,
+            TileWidth = 10,
+            TileHeight = 10,
+            ThumbnailCount = 1,
+            Interval = 10000,
+            Bandwidth = 1
+        });
+        context.MediaSegments.Add(new MediaSegment
+        {
+            Id = Guid.NewGuid(),
+            ItemId = versionId,
+            Type = MediaSegmentType.Intro,
+            StartTicks = 0,
+            EndTicks = 1000,
+            SegmentProviderId = "Test"
+        });
+        context.Users.Add(new User("version-watcher", "Default", "Default")
+        {
+            Id = userId
+        });
+        context.SaveChanges();
+
+        context.UserData.Add(new UserData
+        {
+            ItemId = versionId,
+            UserId = userId,
+            CustomDataKey = "key",
+            Played = true,
+            Item = null,
+            User = null
+        });
+        context.SaveChanges();
+    }
+
+    private static BaseItemEntity NewItem(Guid id, string? path, Guid? ownerId) => new()
+    {
+        Id = id,
+        Type = "MediaBrowser.Controller.Entities.Movies.Movie",
+        Name = "Movie",
+        Path = path,
+        OwnerId = ownerId,
+        PresentationUniqueKey = id.ToString("N", CultureInfo.InvariantCulture)
+    };
 
     private static Movie CreateMovie(Guid id, string path) => new()
     {

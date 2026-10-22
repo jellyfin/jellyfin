@@ -80,6 +80,11 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
     private string BuildCommandText()
     {
         var sb = new StringBuilder();
+
+        // SQLite enforces foreign keys per connection and its own default is off; ours are only enforced today
+        // because the bundled e_sqlite3 happens to be built with SQLITE_DEFAULT_FOREIGN_KEYS.
+        sb.AppendLine("PRAGMA foreign_keys=ON;");
+
         if (_cacheSize.HasValue)
         {
             sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA cache_size={_cacheSize.Value};");
