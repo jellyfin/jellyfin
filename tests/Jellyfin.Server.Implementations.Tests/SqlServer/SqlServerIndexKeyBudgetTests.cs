@@ -25,7 +25,7 @@ public sealed partial class SqlServerIndexKeyBudgetTests
 
     // The indexes over the limit, with their strings that are indexed without a bound of their own, and the room those
     // strings have, in UTF-16 code units, with the other columns of the key at their bound.
-    private static readonly Dictionary<string, (string[] TextColumns, int Room)> _overBudget = new(StringComparer.Ordinal)
+    internal static readonly Dictionary<string, (string[] TextColumns, int Room)> OverBudget = new(StringComparer.Ordinal)
     {
         ["IX_BaseItems_Path"] = (["Path"], 850),
         ["IX_BaseItems_Name"] = (["Name"], 850),
@@ -62,7 +62,7 @@ public sealed partial class SqlServerIndexKeyBudgetTests
             .Select(i => i.Name)
             .Order(StringComparer.Ordinal);
 
-        Assert.Equal(_overBudget.Keys.Order(StringComparer.Ordinal), over);
+        Assert.Equal(OverBudget.Keys.Order(StringComparer.Ordinal), over);
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public sealed partial class SqlServerIndexKeyBudgetTests
     {
         var indexes = _model.Value.Tables.SelectMany(t => t.Indexes).ToDictionary(i => i.Name, StringComparer.Ordinal);
 
-        Assert.All(_overBudget, entry =>
+        Assert.All(OverBudget, entry =>
         {
             var index = indexes[entry.Key];
             var text = index.Columns.Where(c => c.StoreType == IndexedTextConvention.ColumnType).ToList();
