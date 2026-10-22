@@ -152,6 +152,62 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         }
 
         [Theory]
+        [InlineData("ell", "gre")]
+        [InlineData("gre", "ell")]
+        [InlineData("el", "ell")]
+        [InlineData("pt-BR", "pt-br")]
+        [InlineData("grc", "grc")]
+        [InlineData("eng", "eng")]
+        [InlineData("xyz", "xyz")]
+        public void SetDefaultSubtitleStreamIndex_NormalizesLanguageCodes(string preferredLanguage, string streamLanguage)
+        {
+            SetupLanguageCultures();
+
+            var mediaInfo = new MediaSourceInfo
+            {
+                MediaStreams = new MediaStream[]
+                {
+                    new() { Index = 0, Type = MediaStreamType.Video, IsDefault = true },
+                    new() { Index = 1, Type = MediaStreamType.Audio, Language = "eng", IsDefault = true },
+                    new() { Index = 10, Type = MediaStreamType.Subtitle, Language = streamLanguage },
+                }
+            };
+
+            _user.AudioLanguagePreference = string.Empty;
+            _user.SubtitleLanguagePreference = preferredLanguage;
+            _user.SubtitleMode = SubtitlePlaybackMode.Always;
+
+            _mediaSourceManager.SetDefaultAudioAndSubtitleStreamIndices(_item, mediaInfo, _user);
+
+            Assert.Equal(10, mediaInfo.DefaultSubtitleStreamIndex);
+        }
+
+        [Fact]
+        public void SetDefaultAudioAndSubtitleStreamIndices_GreekPreference_SelectsMatchingStreams()
+        {
+            SetupLanguageCultures();
+
+            var mediaInfo = new MediaSourceInfo
+            {
+                MediaStreams = new MediaStream[]
+                {
+                    new() { Index = 0, Type = MediaStreamType.Video, IsDefault = true },
+                    new() { Index = 1, Type = MediaStreamType.Audio, Language = "eng", IsDefault = true },
+                    new() { Index = 10, Type = MediaStreamType.Subtitle, Language = "ell" },
+                }
+            };
+
+            _user.AudioLanguagePreference = "eng";
+            _user.SubtitleLanguagePreference = "ell";
+            _user.SubtitleMode = SubtitlePlaybackMode.Always;
+
+            _mediaSourceManager.SetDefaultAudioAndSubtitleStreamIndices(_item, mediaInfo, _user);
+
+            Assert.Equal(1, mediaInfo.DefaultAudioStreamIndex);
+            Assert.Equal(10, mediaInfo.DefaultSubtitleStreamIndex);
+        }
+
+        [Theory]
         // A remembered full track must not survive a switch to "only forced" (it falls through to
         // the forced track here); a remembered forced track and "off" still must.
         [InlineData(SubtitlePlaybackMode.OnlyForced, 2, 3)]
@@ -216,6 +272,24 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             _mediaSourceManager.SetDefaultAudioAndSubtitleStreamIndices(_item, mediaInfo, _user);
 
             Assert.Null(mediaInfo.DefaultSubtitleStreamIndex);
+        }
+
+        private void SetupLanguageCultures()
+        {
+            var greek = new CultureDto("Greek, Modern (1453-)", "Greek, Modern (1453-)", "el", new[] { "ell", "gre" });
+            var cultures = new Dictionary<string, CultureDto>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["ell"] = greek,
+                ["gre"] = greek,
+                ["el"] = greek,
+                ["pt-BR"] = new CultureDto("pt-br", "Portuguese (Brazil)", "pt-br", new[] { "por" }),
+                ["grc"] = new CultureDto("Greek, Ancient (to 1453)", "Greek, Ancient (to 1453)", string.Empty, new[] { "grc" }),
+                ["eng"] = new CultureDto("English", "English", "en", new[] { "eng" }),
+            };
+
+            _mockLocalizationManager
+                .Setup(m => m.FindLanguageInfo(It.IsAny<string>()))
+                .Returns((string language) => cultures.GetValueOrDefault(language));
         }
 
         [Fact]
