@@ -47,6 +47,7 @@ The providers and their migrations:
 | SQLite | `Jellyfin.Database.Providers.Sqlite` | SQLite | none, it is the reference whose ids the others reuse |
 | PostgreSQL | `Jellyfin.Database.Providers.Postgres` | PostgreSQL | `20200101000000_InitialCreate`, with hand-written parts |
 | MySQL and MariaDB | `Jellyfin.Database.Providers.MySql` | MySQL 8.4 and MariaDB 11.4.7 or later | `20200101000000_InitialCreate`, generated |
+| SQL Server | `Jellyfin.Database.Providers.SqlServer` | SQL Server 2022 or later | `20200101000000_InitialCreate`, generated |
 
 MySQL and MariaDB share one set of migrations. The command generates it for a
 fixed server version (MySQL 8.4) without connecting to a server, so the files

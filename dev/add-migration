@@ -19,6 +19,7 @@ const string Command = "dev/add-migration";
     ("SQLite", "Jellyfin.Database.Providers.Sqlite"),
     ("PostgreSQL", "Jellyfin.Database.Providers.Postgres"),
     ("MySQL", "Jellyfin.Database.Providers.MySql"),
+    ("SQL Server", "Jellyfin.Database.Providers.SqlServer"),
 ];
 
 if (args.Length == 0 || string.IsNullOrWhiteSpace(args[0]))
