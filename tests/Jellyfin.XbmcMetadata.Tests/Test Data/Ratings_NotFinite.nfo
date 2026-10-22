@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<movie>
+    <title>Test Movie</title>
+    <rating>NaN</rating>
+    <criticrating>Infinity</criticrating>
+</movie>
