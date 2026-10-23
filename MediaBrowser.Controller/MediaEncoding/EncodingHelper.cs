@@ -4038,8 +4038,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var rotation = state.VideoStream?.Rotation ?? 0;
             var swapWAndH = Math.Abs(rotation) == 90;
-            var swpInW = swapWAndH ? inH : inW;
-            var swpInH = swapWAndH ? inW : inH;
+            var (flatInW, flatInH) = GetVideo3DFlattenedSize(threeDFormat, inW, inH);
+            var swpInW = swapWAndH ? flatInH : flatInW;
+            var swpInH = swapWAndH ? flatInW : flatInH;
 
             /* Make main filters for video stream */
             var mainFilters = new List<string>();
