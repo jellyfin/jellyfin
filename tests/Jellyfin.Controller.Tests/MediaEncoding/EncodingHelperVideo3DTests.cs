@@ -18,6 +18,8 @@ namespace Jellyfin.Controller.Tests.MediaEncoding;
 
 public class EncodingHelperVideo3DTests
 {
+    private const string SwCropFullSideBySide = "crop=trunc(iw/4)*2:ih:0:0";
+
     [Theory]
     [InlineData(null, 3840, 806)]
     [InlineData(Video3DFormat.FullSideBySide, 1920, 806)]
@@ -69,6 +71,44 @@ public class EncodingHelperVideo3DTests
         {
             Assert.Contains($@"pad=max({canvasWidth}\,iw):max({canvasHeight}\,ih):(ow-iw)/2:(oh-ih)/2:black@0,crop={canvasWidth}:{canvasHeight}", args, StringComparison.Ordinal);
         }
+    }
+
+    [Theory]
+    [InlineData(HardwareAccelerationType.none, false, false, "libx264", null, false)]
+    [InlineData(HardwareAccelerationType.nvenc, false, false, "h264_nvenc", null, false)]
+    [InlineData(HardwareAccelerationType.amf, false, false, "h264_amf", null, false)]
+    [InlineData(HardwareAccelerationType.videotoolbox, false, false, "h264_videotoolbox", null, false)]
+    [InlineData(HardwareAccelerationType.rkmpp, false, false, "h264_rkmpp", null, false)]
+    [InlineData(HardwareAccelerationType.vaapi, false, false, "h264_vaapi", null, false)]
+    [InlineData(HardwareAccelerationType.qsv, false, true, "h264_qsv", null, true)]
+    [InlineData(HardwareAccelerationType.qsv, false, false, "h264_qsv", "vpp_qsv=w=1920:h=806:cw=1920:ch=806:cx=0:cy=0", true)]
+    [InlineData(HardwareAccelerationType.vaapi, true, false, "h264_vaapi", "crop_w=1920:crop_h=806:crop_x=0:crop_y=0:format=bgra:range=pc,setsar=sar*1920/3840", true)]
+    public void GetVideoProcessingFilterParam_FullSideBySide_FlattensOnceToOneView(
+        HardwareAccelerationType hardwareAcceleration,
+        bool isAmd,
+        bool preferSystemNativeDecoder,
+        string videoEncoder,
+        string? hwCrop,
+        bool linuxOnly)
+    {
+        Assert.SkipWhen(linuxOnly && !(OperatingSystem.IsLinux() && Environment.OSVersion.Version >= new Version(5, 15)), "The hardware route of this case is checked on Linux 5.15 or newer");
+
+        var state = CreateState(Video3DFormat.FullSideBySide, true);
+        var options = CreateOptions(hardwareAcceleration, preferSystemNativeDecoder);
+
+        var args = CreateHelper(isAmd).GetVideoProcessingFilterParam(state, options, videoEncoder);
+
+        if (hwCrop is null)
+        {
+            Assert.Equal(2, args.Split(SwCropFullSideBySide).Length);
+        }
+        else
+        {
+            Assert.Contains(hwCrop, args, StringComparison.Ordinal);
+            Assert.DoesNotContain(SwCropFullSideBySide, args, StringComparison.Ordinal);
+        }
+
+        Assert.Contains(@"pad=max(1920\,iw):max(806\,ih):(ow-iw)/2:(oh-ih)/2:black@0,crop=1920:806", args, StringComparison.Ordinal);
     }
 
     private static EncodingJobInfo CreateState(Video3DFormat? format, bool graphicalSubtitles)
