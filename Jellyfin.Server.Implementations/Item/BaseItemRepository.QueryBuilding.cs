@@ -114,8 +114,13 @@ public sealed partial class BaseItemRepository
             var groupedIds = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.Min(x => x.Id));
             dbQuery = context.BaseItems.AsNoTracking().Where(e => groupedIds.Contains(e.Id));
         }
-        else
+        else if (filter.CollapseBoxSetItems != true)
         {
+            // Not when collapsing box sets: the collapse only tests membership in this query's ids, and returns
+            // BaseItems by id, so duplicates can't reach the result. Distinct() here would make each of those
+            // membership tests a SELECT DISTINCT over every BaseItems column, which PostgreSQL can't flatten into
+            // a semi join: on a 342k-item library its planner then compared every box set link against the whole
+            // library, one row at a time (1.1 billion comparisons, 97 s per statement). SQLite pays for it too.
             dbQuery = dbQuery.Distinct();
         }
 
