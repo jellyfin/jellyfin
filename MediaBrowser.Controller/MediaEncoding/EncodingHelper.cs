@@ -3766,6 +3766,19 @@ namespace MediaBrowser.Controller.MediaEncoding
                 : null;
         }
 
+        private static string GetVideo3DLibplaceboSarFilter(Video3DFormat? threedFormat, int? videoWidth, int? videoHeight)
+        {
+            // libplacebo derives the output SAR from the uncropped frame, which stretches the view of a full
+            // format to the shape of the whole frame. Correct it by the share of the frame the view covers.
+            var (flatWidth, flatHeight) = GetVideo3DFlattenedSize(threedFormat, videoWidth, videoHeight);
+            return threedFormat switch
+            {
+                Video3DFormat.FullSideBySide => string.Format(CultureInfo.InvariantCulture, "setsar=sar*{0}/{1}", flatWidth, videoWidth),
+                Video3DFormat.FullTopAndBottom => string.Format(CultureInfo.InvariantCulture, "setsar=sar*{0}/{1}", videoHeight, flatHeight),
+                _ => null
+            };
+        }
+
         public static string GetSwDeinterlaceFilter(EncodingJobInfo state, EncodingOptions options)
         {
             var doubleRateDeint = options.DeinterlaceDoubleRate && state.VideoStream?.ReferenceFrameRate <= 30;
@@ -5652,6 +5665,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var libplaceboFormat = (doVkTonemap || hasSubs) ? "bgra" : "nv12";
                 var libplaceboFilter = GetLibplaceboFilter(options, libplaceboFormat, doVkTonemap, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH, isMjpegEncoder, crop3DArgs);
                 mainFilters.Add(libplaceboFilter);
+                if (doVk3DFlatten)
+                {
+                    mainFilters.Add(GetVideo3DLibplaceboSarFilter(threeDFormat, inW, inH));
+                }
+
                 mainFilters.Add("format=vulkan");
             }
 
