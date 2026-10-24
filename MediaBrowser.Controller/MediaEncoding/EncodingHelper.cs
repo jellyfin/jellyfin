@@ -3768,8 +3768,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         private static string GetVideo3DLibplaceboSarFilter(Video3DFormat? threedFormat, int? videoWidth, int? videoHeight)
         {
-            // libplacebo derives the output SAR from the uncropped frame, which stretches the view of a full
-            // format to the shape of the whole frame. Correct it by the share of the frame the view covers.
+            // libplacebo derives the output SAR from the uncropped frame. Pre-scale the input SAR by the share of
+            // the frame the view covers, ahead of libplacebo so an unset SAR still comes out as 1:1.
             var (flatWidth, flatHeight) = GetVideo3DFlattenedSize(threedFormat, videoWidth, videoHeight);
             return threedFormat switch
             {
@@ -5664,12 +5664,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // Only the tonemap and overlay paths need RGB, a plain 3D crop stays in nv12.
                 var libplaceboFormat = (doVkTonemap || hasSubs) ? "bgra" : "nv12";
                 var libplaceboFilter = GetLibplaceboFilter(options, libplaceboFormat, doVkTonemap, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH, isMjpegEncoder, crop3DArgs);
-                mainFilters.Add(libplaceboFilter);
                 if (doVk3DFlatten)
                 {
                     mainFilters.Add(GetVideo3DLibplaceboSarFilter(threeDFormat, inW, inH));
                 }
 
+                mainFilters.Add(libplaceboFilter);
                 mainFilters.Add("format=vulkan");
             }
 
