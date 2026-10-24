@@ -78,7 +78,7 @@ public class EpisodeVersionsPostScanTask : ILibraryPostScanTask
         // multiple series folders or contains multiple seasons with the same index.
         var candidates = seriesGroups
             .Where(g => g.Count() > 1
-                ? IsSameShow(g)
+                ? IsSameShow([.. g])
                 : seasonIndexesBySeriesKey.TryGetValue(g.Key, out var seasonIndexes)
                     && seasonIndexes.Where(i => i.HasValue).GroupBy(i => i!.Value).Any(d => d.Count() > 1))
             .ToList();
@@ -112,7 +112,7 @@ public class EpisodeVersionsPostScanTask : ILibraryPostScanTask
     /// Checks whether series folders grouped together hold the same show. Unidentified series are grouped
     /// by name alone, which also groups same-named shows; like unidentified movies, those need the year.
     /// </summary>
-    private static bool IsSameShow(IEnumerable<Series> series)
+    private static bool IsSameShow(IReadOnlyList<Series> series)
     {
         // Mirrors Series.CreatePresentationUniqueKey: only a provider id adds a key ahead of the item's own.
         if (series.All(s => s.GetUserDataKeys().Count > 1))
