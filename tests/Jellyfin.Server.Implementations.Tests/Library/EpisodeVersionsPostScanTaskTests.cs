@@ -41,7 +41,7 @@ public class EpisodeVersionsPostScanTaskTests
             .Setup(x => x.GetItemList(It.Is<InternalItemsQuery>(q => q.IncludeItemTypes.Contains(BaseItemKind.Season))))
             .Returns(() => _seasons.ToList<BaseItem>());
         _libraryManager
-            .Setup(x => x.GetItemList(It.Is<InternalItemsQuery>(q => q.IncludeItemTypes.Contains(BaseItemKind.Episode) && q.SeriesPresentationUniqueKey == SeriesKey)))
+            .Setup(x => x.GetItemList(It.Is<InternalItemsQuery>(q => q.IncludeItemTypes.Contains(BaseItemKind.Episode) && q.IncludeAlternateVersions && q.SeriesPresentationUniqueKey == SeriesKey)))
             .Returns(() => _episodes.ToList<BaseItem>());
 
         _linkedChildrenService

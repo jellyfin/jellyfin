@@ -33,7 +33,7 @@ public class MovieVersionsPostScanTaskTests
         _linkedChildrenService = new Mock<ILinkedChildrenService>();
 
         _libraryManager
-            .Setup(x => x.GetItemList(It.Is<InternalItemsQuery>(q => q.IncludeItemTypes.Contains(BaseItemKind.Movie))))
+            .Setup(x => x.GetItemList(It.Is<InternalItemsQuery>(q => q.IncludeItemTypes.Contains(BaseItemKind.Movie) && q.IncludeAlternateVersions)))
             .Returns(_movies.ToList<BaseItem>);
         _libraryManager
             .Setup(x => x.GetLibraryOptions(It.IsAny<BaseItem>()))

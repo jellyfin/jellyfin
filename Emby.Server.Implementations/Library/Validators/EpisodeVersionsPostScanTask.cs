@@ -114,7 +114,9 @@ public class EpisodeVersionsPostScanTask : ILibraryPostScanTask
             IncludeItemTypes = [BaseItemKind.Episode],
             SeriesPresentationUniqueKey = seriesKey,
             GroupByPresentationUniqueKey = false,
-            IsVirtualItem = false
+            IsVirtualItem = false,
+            // Versions already merged within one library root are hidden otherwise, which would unmerge them.
+            IncludeAlternateVersions = true
         })
             .OfType<Episode>()
             .Where(e => e.OwnerId.IsEmpty() && !string.IsNullOrEmpty(e.Path))
