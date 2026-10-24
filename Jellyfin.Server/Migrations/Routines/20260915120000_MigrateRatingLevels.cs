@@ -12,7 +12,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migrate rating levels.
 /// </summary>
-[JellyfinMigration("2026-03-02T09:00:00", nameof(MigrateRatingLevels))]
+[JellyfinMigration("2026-09-15T12:00:00", nameof(MigrateRatingLevels))]
 [JellyfinMigrationBackup(JellyfinDb = true)]
 internal class MigrateRatingLevels : IDatabaseMigrationRoutine
 {

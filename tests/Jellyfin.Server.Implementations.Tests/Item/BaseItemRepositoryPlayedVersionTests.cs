@@ -32,6 +32,8 @@ public sealed class BaseItemRepositoryPlayedVersionTests : SqliteDbTestFixture
 
     private readonly Guid _seriesPlayedViaAlternate = Guid.NewGuid();
     private readonly Guid _unplayedSeries = Guid.NewGuid();
+    private readonly Guid _seriesPlayedAcrossVersions = Guid.NewGuid();
+    private readonly Guid _partiallyPlayedSeries = Guid.NewGuid();
 
     public BaseItemRepositoryPlayedVersionTests()
     {
@@ -68,8 +70,29 @@ public sealed class BaseItemRepositoryPlayedVersionTests : SqliteDbTestFixture
     [Fact]
     public void IsPlayed_CountsASeriesWatchedThroughAnEpisodeAlternateVersion()
     {
-        Assert.Equal(new HashSet<Guid> { _seriesPlayedViaAlternate }, Ids(BaseItemKind.Series, isPlayed: true));
-        Assert.Equal(new HashSet<Guid> { _unplayedSeries }, Ids(BaseItemKind.Series, isPlayed: false));
+        Assert.Equal(
+            new HashSet<Guid> { _seriesPlayedViaAlternate, _seriesPlayedAcrossVersions },
+            Ids(BaseItemKind.Series, isPlayed: true));
+        Assert.Equal(
+            new HashSet<Guid> { _unplayedSeries, _partiallyPlayedSeries },
+            Ids(BaseItemKind.Series, isPlayed: false));
+    }
+
+    [Fact]
+    public void GetIsPlayed_CountsASeriesWatchedThroughAnEpisodeAlternateVersion()
+    {
+        Assert.True(_repository.GetIsPlayed(_user, _seriesPlayedViaAlternate, true));
+        Assert.False(_repository.GetIsPlayed(_user, _unplayedSeries, true));
+    }
+
+    [Fact]
+    public void IsResumable_DropsASeriesWhoseLastEpisodeWasPlayedThroughAnAlternateVersion()
+    {
+        var resumable = _repository.GetItemIdsList(new InternalItemsQuery(_user) { IsResumable = true });
+
+        // Nothing is left to watch, so the series is not half finished.
+        Assert.DoesNotContain(_seriesPlayedAcrossVersions, resumable);
+        Assert.Contains(_partiallyPlayedSeries, resumable);
     }
 
     private HashSet<Guid> Ids(BaseItemKind kind, bool isPlayed)
@@ -95,6 +118,9 @@ public sealed class BaseItemRepositoryPlayedVersionTests : SqliteDbTestFixture
         AddSeriesWithAlternateEpisode(context, _seriesPlayedViaAlternate, "E", playedAlternate: true);
         AddSeriesWithAlternateEpisode(context, _unplayedSeries, "F", playedAlternate: false);
 
+        AddSeriesWithTwoEpisodes(context, _seriesPlayedAcrossVersions, "G", secondPlayedViaAlternate: true);
+        AddSeriesWithTwoEpisodes(context, _partiallyPlayedSeries, "H", secondPlayedViaAlternate: false);
+
         context.SaveChanges();
     }
 
@@ -113,7 +139,33 @@ public sealed class BaseItemRepositoryPlayedVersionTests : SqliteDbTestFixture
     {
         var episodeId = Guid.NewGuid();
 
-        context.BaseItems.Add(new BaseItemEntity
+        AddSeriesFolder(context, seriesId, name);
+
+        AddItem(context, episodeId, EpisodeType, $"{name} 1");
+        context.AncestorIds.Add(new AncestorId { ItemId = episodeId, ParentItemId = seriesId, Item = null!, ParentItem = null! });
+
+        AddAlternateVersion(context, episodeId, EpisodeType, $"{name} 1 4K", playedAlternate);
+    }
+
+    // A watched first episode plus a second one that is either watched as its alternate version or not
+    // watched at all, which is what separates a finished series from a half watched one.
+    private void AddSeriesWithTwoEpisodes(JellyfinDbContext context, Guid seriesId, string name, bool secondPlayedViaAlternate)
+    {
+        AddSeriesFolder(context, seriesId, name);
+
+        var firstId = Guid.NewGuid();
+        AddItem(context, firstId, EpisodeType, $"{name} 1");
+        context.AncestorIds.Add(new AncestorId { ItemId = firstId, ParentItemId = seriesId, Item = null!, ParentItem = null! });
+        AddPlayedUserData(context, firstId);
+
+        var secondId = Guid.NewGuid();
+        AddItem(context, secondId, EpisodeType, $"{name} 2");
+        context.AncestorIds.Add(new AncestorId { ItemId = secondId, ParentItemId = seriesId, Item = null!, ParentItem = null! });
+        AddAlternateVersion(context, secondId, EpisodeType, $"{name} 2 4K", secondPlayedViaAlternate);
+    }
+
+    private void AddSeriesFolder(JellyfinDbContext context, Guid seriesId, string name)
+        => context.BaseItems.Add(new BaseItemEntity
         {
             Id = seriesId,
             Type = SeriesType,
@@ -122,12 +174,6 @@ public sealed class BaseItemRepositoryPlayedVersionTests : SqliteDbTestFixture
             PresentationUniqueKey = seriesId.ToString("N"),
             IsFolder = true
         });
-
-        AddItem(context, episodeId, EpisodeType, $"{name} 1");
-        context.AncestorIds.Add(new AncestorId { ItemId = episodeId, ParentItemId = seriesId, Item = null!, ParentItem = null! });
-
-        AddAlternateVersion(context, episodeId, EpisodeType, $"{name} 1 4K", playedAlternate);
-    }
 
     private void AddItem(JellyfinDbContext context, Guid id, string type, string name)
         => context.BaseItems.Add(new BaseItemEntity

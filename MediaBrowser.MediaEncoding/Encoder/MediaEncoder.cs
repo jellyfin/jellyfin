@@ -922,6 +922,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 inputArg = "-hwaccel_flags +low_priority " + inputArg;
             }
 
+            // Force the video stream, otherwise ffmpeg may pick a cover image.
+            var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, imageStream);
+            if (streamIndex < 0)
+            {
+                throw new InvalidOperationException($"Unable to locate requested stream {imageStream.Title}");
+            }
+
+            inputArg += " -map 0:" + streamIndex;
+
             var filterParam = encodingHelper.GetVideoProcessingFilterParam(jobState, options, vidEncoder).Trim();
             if (string.IsNullOrWhiteSpace(filterParam))
             {
