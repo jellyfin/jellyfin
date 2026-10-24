@@ -66,6 +66,13 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
+            if (mediaInfo is not null && IsIncompleteLiveProbe(mediaInfo))
+            {
+                _logger.LogInformation("Discarding cached live stream probe because video size or audio sample rate is missing");
+                mediaInfo = null;
+                TryDelete(cacheFilePath);
+            }
+
             if (mediaInfo is null)
             {
                 if (addProbeDelay)
@@ -87,7 +94,7 @@ namespace Emby.Server.Implementations.Library
                     },
                     cancellationToken).ConfigureAwait(false);
 
-                if (cacheFilePath is not null)
+                if (cacheFilePath is not null && !IsIncompleteLiveProbe(mediaInfo))
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath) ?? throw new InvalidOperationException("Path can't be a root directory."));
                     FileStream createStream = AsyncFile.OpenWrite(cacheFilePath);
@@ -175,6 +182,13 @@ namespace Emby.Server.Implementations.Library
 
                 // This is coming up false and preventing stream copy
                 videoStream.IsAVC = null;
+
+                if (videoStream.Width is not > 0 || videoStream.Height is not > 0)
+                {
+                    _logger.LogInformation("Live stream video size is unknown. Transcoding instead of copying the stream");
+                    mediaSource.SupportsDirectPlay = false;
+                    mediaSource.SupportsDirectStream = false;
+                }
             }
 
             mediaSource.AnalyzeDurationMs = 3000;
@@ -186,6 +200,41 @@ namespace Emby.Server.Implementations.Library
         public Task AddMediaInfoWithProbe(MediaSourceInfo mediaSource, bool isAudio, bool addProbeDelay, CancellationToken cancellationToken)
         {
             return AddMediaInfoWithProbe(mediaSource, isAudio, null, addProbeDelay, cancellationToken);
+        }
+
+        /// <summary>
+        /// A live probe that missed the video parameter sets reports 0×0, and one that missed the
+        /// audio header reports a sample rate of 0. Caching either result makes later playback copy
+        /// a stream the player cannot start.
+        /// </summary>
+        /// <param name="mediaInfo">The probed media information.</param>
+        /// <returns>Whether the probe is incomplete.</returns>
+        internal static bool IsIncompleteLiveProbe(MediaInfo? mediaInfo)
+        {
+            var video = mediaInfo?.MediaStreams?.FirstOrDefault(stream => stream.Type == MediaStreamType.Video);
+            if (video is not null && (video.Width is not > 0 || video.Height is not > 0))
+            {
+                return true;
+            }
+
+            var audio = mediaInfo?.MediaStreams?.FirstOrDefault(stream => stream.Type == MediaStreamType.Audio);
+            return audio?.SampleRate is 0;
+        }
+
+        private static void TryDelete(string? path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return;
+            }
+
+            try
+            {
+                File.Delete(path);
+            }
+            catch (IOException)
+            {
+            }
         }
     }
 }
