@@ -449,6 +449,17 @@ namespace MediaBrowser.Controller.Entities
             IUserDataManager userDataManager,
             ILibraryManager libraryManager)
         {
+            // Read the user data for the whole list up front, so the per-item checks below hit the cache
+            // instead of issuing one query per item that has no row for this user.
+            Dictionary<Guid, UserItemData> userDataById = null;
+            if (user is not null
+                && (query.IsPlayed.HasValue || query.IsLiked.HasValue || query.IsFavoriteOrLiked.HasValue || query.IsFavorite.HasValue || query.IsResumable.HasValue))
+            {
+                var allItems = items as IReadOnlyList<BaseItem> ?? items.ToList();
+                userDataById = userDataManager.GetUserDataBatch(allItems, user);
+                items = allItems;
+            }
+
             var filtered = items.Where(i => Filter(i, user, query, userDataManager, libraryManager));
 
             if (query.IsPlayed.HasValue && user is not null)
@@ -475,7 +486,7 @@ namespace MediaBrowser.Controller.Entities
                         return (itemCount.Played >= itemCount.Total) == isPlayedValue;
                     }
 
-                    var played = userDataManager.GetUserData(user, item)?.Played ?? false;
+                    var played = (userDataById.GetValueOrDefault(item.Id) ?? userDataManager.GetUserData(user, item))?.Played ?? false;
                     if (!played && resumeData is not null && resumeData.TryGetValue(item.Id, out var versionData))
                     {
                         played = versionData.UserData.Played;
