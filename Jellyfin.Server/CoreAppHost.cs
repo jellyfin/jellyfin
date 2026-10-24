@@ -28,6 +28,7 @@ using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Providers.Lyric;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -46,16 +47,19 @@ namespace Jellyfin.Server
         /// <param name="loggerFactory">The <see cref="ILoggerFactory" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="options">The <see cref="StartupOptions" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="startupConfig">The <see cref="IConfiguration" /> to be used by the <see cref="CoreAppHost" />.</param>
+        /// <param name="serverAddresses">The <see cref="IServerAddressesFeature" /> to be used by the <see cref="CoreAppHost" />.</param>
         public CoreAppHost(
             IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             IStartupOptions options,
-            IConfiguration startupConfig)
+            IConfiguration startupConfig,
+            IServerAddressesFeature serverAddresses)
             : base(
                 applicationPaths,
                 loggerFactory,
                 options,
-                startupConfig)
+                startupConfig,
+                serverAddresses)
         {
         }
 
