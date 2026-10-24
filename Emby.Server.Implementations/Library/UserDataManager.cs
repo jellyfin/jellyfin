@@ -366,6 +366,15 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
+        public void RefreshUserData(BaseItem item)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+
+            using var dbContext = _repository.CreateDbContext();
+            item.UserData = dbContext.UserData.Where(e => e.ItemId == item.Id).AsNoTracking().ToArray();
+        }
+
+        /// <inheritdoc />
         public UserItemData? GetUserData(User user, BaseItem item)
         {
             ArgumentNullException.ThrowIfNull(user);
