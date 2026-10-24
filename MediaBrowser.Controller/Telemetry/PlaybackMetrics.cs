@@ -79,7 +79,7 @@ public static class PlaybackMetrics
     private static readonly Histogram<double> _transcodeSpeed = JellyfinTelemetry.Meter.CreateHistogram<double>(
         TranscodeSpeedName,
         "1",
-        "Encoder framerate relative to the framerate of the source. Below 1 the job is slower than realtime and the client will eventually stall.");
+        "Encoding speed as a multiple of realtime, as reported by ffmpeg. Below 1 the job is slower than realtime and the client will eventually stall.");
 
     private static readonly Counter<long> _transcodeReasons = JellyfinTelemetry.Meter.CreateCounter<long>(
         "jellyfin.transcode.reason",
@@ -266,8 +266,8 @@ public static class PlaybackMetrics
     /// <param name="jobId">The transcoding job id.</param>
     /// <param name="framerate">The framerate the encoder is achieving.</param>
     /// <param name="bitrate">The output bitrate, in bits per second.</param>
-    /// <param name="sourceFramerate">The framerate of the source, used to put <paramref name="framerate"/> in context.</param>
-    public static void OnTranscodeProgress(string? jobId, float? framerate, int? bitrate, float? sourceFramerate)
+    /// <param name="speed">The encoding speed ffmpeg reports, as a multiple of realtime.</param>
+    public static void OnTranscodeProgress(string? jobId, float? framerate, int? bitrate, double? speed)
     {
         // Progress is reported once before ffmpeg has produced any numbers, and for jobs that started
         // before the metrics existed, so anything unknown is skipped rather than recorded as a zero.
@@ -283,7 +283,7 @@ public static class PlaybackMetrics
             _transcodes.TryUpdate(jobId, tracked with { Bitrate = bitrate.Value }, tracked);
         }
 
-        if (framerate is not > 0)
+        if (framerate is not > 0 && speed is not > 0)
         {
             return;
         }
@@ -294,11 +294,15 @@ public static class PlaybackMetrics
             { HardwareAccelerationTag, Describe(tracked.Acceleration) }
         };
 
-        _transcodeFramerate.Record(framerate.Value, tags);
-
-        if (sourceFramerate > 0)
+        if (framerate > 0)
         {
-            _transcodeSpeed.Record(framerate.Value / sourceFramerate.Value, tags);
+            _transcodeFramerate.Record(framerate.Value, tags);
+        }
+
+        // ffmpeg's own figure, so it holds when the output framerate differs from the source's.
+        if (speed > 0)
+        {
+            _transcodeSpeed.Record(speed.Value, tags);
         }
     }
 

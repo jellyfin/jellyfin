@@ -81,8 +81,8 @@ public class PlaybackMetricsTests
             "aac",
             TranscodeReason.ContainerNotSupported);
 
-        // Half of the source framerate, so the job produces one second of video every two seconds.
-        var progress = MeterCollector.Collect(() => PlaybackMetrics.OnTranscodeProgress(JobId, 12f, 3_000_000, 24f));
+        // The job produces one second of media every two seconds.
+        var progress = MeterCollector.Collect(() => PlaybackMetrics.OnTranscodeProgress(JobId, 12f, 3_000_000, 0.5));
 
         Assert.Equal(12, MeterCollector.Value(progress, "jellyfin.transcode.framerate", (HardwareAccelerationTag, HardwareAcceleration)));
         Assert.Equal(0.5, MeterCollector.Value(progress, PlaybackMetrics.TranscodeSpeedName, (HardwareAccelerationTag, HardwareAcceleration)));

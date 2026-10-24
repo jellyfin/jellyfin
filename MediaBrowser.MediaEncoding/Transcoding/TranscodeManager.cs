@@ -347,7 +347,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             job?.Id,
             framerate,
             bitRate ?? state.TotalOutputBitrate,
-            state.VideoStream?.RealFrameRate ?? state.VideoStream?.AverageFrameRate);
+            state.TranscodingSpeed);
 
         var deviceId = state.Request.DeviceId;
 

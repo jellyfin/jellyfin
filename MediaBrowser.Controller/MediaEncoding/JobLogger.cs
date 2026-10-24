@@ -66,6 +66,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             TimeSpan? transcodingPosition = null;
             long? bytesTranscoded = null;
             int? bitRate = null;
+            double? speed = null;
 
             var parts = line.Split(' ');
 
@@ -133,6 +134,21 @@ namespace MediaBrowser.Controller.MediaEncoding
                         }
                     }
                 }
+                else if (part.StartsWith("speed=", StringComparison.OrdinalIgnoreCase))
+                {
+                    // ffmpeg pads short values, e.g. "speed=   1x", so the value can be a later part.
+                    var value = part[6..];
+                    while (value.Length == 0 && i + 1 < parts.Length)
+                    {
+                        value = parts[++i];
+                    }
+
+                    if (value.EndsWith('x')
+                        && double.TryParse(value.AsSpan(0, value.Length - 1), NumberStyles.Float, CultureInfo.InvariantCulture, out var val))
+                    {
+                        speed = val;
+                    }
+                }
                 else if (part.StartsWith("bitrate=", StringComparison.OrdinalIgnoreCase))
                 {
                     var rate = part.Split('=', 2)[^1];
@@ -152,6 +168,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                         }
                     }
                 }
+            }
+
+            if (speed.HasValue)
+            {
+                state.TranscodingSpeed = speed;
             }
 
             if (framerate.HasValue || percent.HasValue)
