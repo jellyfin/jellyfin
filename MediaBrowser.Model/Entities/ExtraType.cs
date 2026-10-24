@@ -15,6 +15,7 @@ namespace MediaBrowser.Model.Entities
         ThemeSong = 8,
         ThemeVideo = 9,
         Featurette = 10,
-        Short = 11
+        Short = 11,
+        MotionArtwork = 12
     }
 }

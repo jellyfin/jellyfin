@@ -3013,6 +3013,14 @@ namespace MediaBrowser.Controller.Entities
             return LibraryManager.Sort(GetExtras(user).Where(e => e.ExtraType == Model.Entities.ExtraType.ThemeVideo), user, orderBy).ToArray();
         }
 
+        public IReadOnlyList<BaseItem> GetMotionArtwork(User user, MotionArtworkAspectRatio aspectRatio)
+        {
+            return GetExtras(user)
+            .Where(e => e.ExtraType == Model.Entities.ExtraType.MotionArtwork)
+            .Where(e => (e.Height > e.Width ? MotionArtworkAspectRatio.Tall : MotionArtworkAspectRatio.Square) == aspectRatio)
+            .ToArray();
+        }
+
         /// <summary>
         /// Gets the ids of the items whose owned extras belong to this item.
         /// </summary>
