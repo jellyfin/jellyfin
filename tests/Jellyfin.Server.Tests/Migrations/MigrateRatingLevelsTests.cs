@@ -32,6 +32,7 @@ public sealed class MigrateRatingLevelsTests : IDisposable
     private const string FolderType = "MediaBrowser.Controller.Entities.Folder";
     private const string CollectionFolderType = "MediaBrowser.Controller.Entities.CollectionFolder";
     private const string AggregateFolderType = "MediaBrowser.Controller.Entities.AggregateFolder";
+    private const string UserRootFolderType = "MediaBrowser.Controller.Entities.UserRootFolder";
     private const string LibraryPath = "/media/shows";
 
     private static readonly Guid _libraryId = Guid.Parse("11111111-1111-1111-1111-111111111111");
@@ -169,6 +170,43 @@ public sealed class MigrateRatingLevelsTests : IDisposable
         using var assertContext = CreateDbContext();
         AssertRating(assertContext, _seriesId, 16, null);
         AssertRating(assertContext, _episodeId, 16, null);
+    }
+
+    [Fact]
+    public void Perform_RatedCollectionFolder_UsesItsOwnLibraryCountryCode()
+    {
+        var userRootId = Guid.Parse("77777777-7777-7777-7777-777777777777");
+        using (var context = CreateDbContext())
+        {
+            context.BaseItems.Add(new BaseItemEntity { Id = _rootId, Type = AggregateFolderType, Name = "root" });
+            context.BaseItems.Add(new BaseItemEntity { Id = userRootId, Type = UserRootFolderType, Name = "default", Path = "/config/root/default" });
+            context.BaseItems.Add(new BaseItemEntity
+            {
+                Id = _collectionFolderId,
+                Type = CollectionFolderType,
+                Name = "Shows",
+                Path = "/config/root/default/Shows",
+                ParentId = userRootId,
+                CustomRating = "TV-14"
+            });
+            context.SaveChanges();
+        }
+
+        _libraryManager.Setup(m => m.GetVirtualFolders(false)).Returns(
+        [
+            new VirtualFolderInfo
+            {
+                Name = "Shows",
+                ItemId = _collectionFolderId.ToString("N", CultureInfo.InvariantCulture),
+                Locations = [LibraryPath],
+                LibraryOptions = new LibraryOptions { MetadataCountryCode = "DE" }
+            }
+        ]);
+
+        Perform();
+
+        using var assertContext = CreateDbContext();
+        AssertRating(assertContext, _collectionFolderId, 16, null);
     }
 
     public void Dispose()

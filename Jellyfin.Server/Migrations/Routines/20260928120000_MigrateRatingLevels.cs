@@ -24,6 +24,7 @@ internal class MigrateRatingLevels : IDatabaseMigrationRoutine
     private const string EpisodeType = "MediaBrowser.Controller.Entities.TV.Episode";
     private const string SeasonType = "MediaBrowser.Controller.Entities.TV.Season";
     private const string AggregateFolderType = "MediaBrowser.Controller.Entities.AggregateFolder";
+    private const string UserRootFolderType = "MediaBrowser.Controller.Entities.UserRootFolder";
     private const int UpdateBatchSize = 1000;
 
     private readonly IStartupLogger _logger;
@@ -158,12 +159,13 @@ internal class MigrateRatingLevels : IDatabaseMigrationRoutine
         }
 
         // Like LibraryManager.GetCollectionFolders: the item below the root decides which libraries it is in.
+        // A CollectionFolder sits below the UserRootFolder instead and is matched by its own path.
         visited.Clear();
         var top = item;
         while (visited.Add(top.Id))
         {
             var parent = GetItem(items, top.ParentId);
-            if (parent?.Type == AggregateFolderType)
+            if (parent?.Type is AggregateFolderType or UserRootFolderType)
             {
                 break;
             }
