@@ -51,6 +51,11 @@ public sealed partial class BaseItemRepository
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyAdjacencyFilter(context, dbQuery, filter);
 
+        if (HasSeededRandomSort(filter))
+        {
+            return GetSeededRandomItems(context, dbQuery, filter);
+        }
+
         if (filter.EnableTotalRecordCount)
         {
             result.TotalRecordCount = dbQuery.Count();
@@ -77,30 +82,78 @@ public sealed partial class BaseItemRepository
 
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyAdjacencyFilter(context, dbQuery, filter);
+
+        if (HasSeededRandomSort(filter))
+        {
+            return GetSeededRandomItems(context, dbQuery, filter).Items;
+        }
+
         dbQuery = ApplyQueryPaging(dbQuery, filter);
 
         var hasRandomSort = filter.OrderBy.Any(e => e.OrderBy == ItemSortBy.Random);
         if (hasRandomSort)
         {
             var orderedIds = dbQuery.AsNoTracking().Select(e => e.Id).ToList();
-            if (orderedIds.Count == 0)
-            {
-                return Array.Empty<BaseItemDto>();
-            }
-
-            var itemsById = ApplyNavigations(context.BaseItems.AsNoTracking().WhereOneOrMany(orderedIds, e => e.Id), filter)
-                .AsSplitQuery()
-                .AsEnumerable()
-                .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
-                .Where(dto => dto != null)
-                .ToDictionary(i => i!.Id);
-
-            return orderedIds.Where(itemsById.ContainsKey).Select(id => itemsById[id]).ToArray()!;
+            return LoadItemsInOrder(context, orderedIds, filter);
         }
 
         dbQuery = ApplyNavigations(dbQuery, filter);
 
         return dbQuery.AsEnumerable().Where(e => e != null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto != null).ToArray()!;
+    }
+
+    /// <summary>
+    /// Checks whether the query asks for a random order that repeats for the same seed.
+    /// </summary>
+    private static bool HasSeededRandomSort(InternalItemsQuery filter)
+    {
+        // Behind another sort key the random part only breaks ties, so the seed is only used when
+        // Random comes first.
+        var randomComesFirst = filter.OrderBy.Count > 0 && filter.OrderBy[0].OrderBy == ItemSortBy.Random;
+        return filter.RandomSeed.HasValue && randomComesFirst;
+    }
+
+    /// <summary>
+    /// Pages through the matching items in a random order that only depends on the query's seed.
+    /// </summary>
+    private QueryResult<BaseItemDto> GetSeededRandomItems(JellyfinDbContext context, IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
+    {
+        // The database can't give a repeatable random order, so the ids are ordered by a seeded hash
+        // here. Each id's place depends only on the id and the seed, so an item added or removed
+        // between two page requests leaves the others in the same order. HashCode changes between
+        // server runs, which paging doesn't mind. ThenBy only settles hash collisions.
+        var seed = filter.RandomSeed!.Value;
+        var ids = dbQuery.Select(e => e.Id).ToList()
+            .OrderBy(id => HashCode.Combine(seed, id))
+            .ThenBy(id => id)
+            .ToList();
+
+        var pageIds = ids.Skip(filter.StartIndex ?? 0).Take(filter.Limit ?? ids.Count).ToList();
+
+        return new QueryResult<BaseItemDto>(
+            filter.StartIndex ?? 0,
+            ids.Count,
+            LoadItemsInOrder(context, pageIds, filter));
+    }
+
+    /// <summary>
+    /// Loads the items with the given ids, in the order of the ids.
+    /// </summary>
+    private IReadOnlyList<BaseItemDto> LoadItemsInOrder(JellyfinDbContext context, List<Guid> orderedIds, InternalItemsQuery filter)
+    {
+        if (orderedIds.Count == 0)
+        {
+            return Array.Empty<BaseItemDto>();
+        }
+
+        var itemsById = ApplyNavigations(context.BaseItems.AsNoTracking().WhereOneOrMany(orderedIds, e => e.Id), filter)
+            .AsSplitQuery()
+            .AsEnumerable()
+            .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
+            .Where(dto => dto != null)
+            .ToDictionary(i => i!.Id);
+
+        return orderedIds.Where(itemsById.ContainsKey).Select(id => itemsById[id]).ToArray()!;
     }
 
     /// <inheritdoc/>
