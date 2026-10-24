@@ -84,7 +84,8 @@ public class LinkedChildrenService : ILinkedChildrenService
 
         return dbContext.LinkedChildren
             .Where(lc => lc.ChildType == DbLinkedChildType.LocalAlternateVersion
-                || lc.ChildType == DbLinkedChildType.LinkedAlternateVersion)
+                || lc.ChildType == DbLinkedChildType.LinkedAlternateVersion
+                || lc.ChildType == DbLinkedChildType.AutoLinkedAlternateVersion)
             .WhereOneOrMany(itemIds, lc => lc.ParentId)
             .Select(lc => lc.ParentId)
             .Distinct()
