@@ -32,6 +32,20 @@ public class ServerMetricsTests
     }
 
     [Fact]
+    public void SessionClosedTwice_IsCountedOnce()
+    {
+        const string Client = "ServerMetricsTests.Twice";
+        const string SessionId = "server-metrics-tests-twice-session";
+
+        SessionMetrics.OnSessionStarted(SessionId, Client);
+        SessionMetrics.OnSessionEnded(SessionId, Client);
+
+        var endedAgain = MeterCollector.Collect(() => SessionMetrics.OnSessionEnded(SessionId, Client));
+
+        Assert.DoesNotContain(endedAgain, m => m.Matches("jellyfin.sessions.ended", (ClientTag, Client)));
+    }
+
+    [Fact]
     public void AuthenticationAttempts_AreCountedByOutcome()
     {
         var measurements = MeterCollector.Collect(

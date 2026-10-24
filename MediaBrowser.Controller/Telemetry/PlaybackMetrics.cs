@@ -115,7 +115,7 @@ public static class PlaybackMetrics
     /// <summary>
     /// Records that a playback session started.
     /// </summary>
-    /// <param name="playSessionId">The play session id, falling back to <paramref name="sessionId"/> when absent.</param>
+    /// <param name="playSessionId">The play session id, used when <paramref name="sessionId"/> is absent.</param>
     /// <param name="sessionId">The session id.</param>
     /// <param name="playMethod">How the item is being delivered.</param>
     /// <param name="mediaType">The type of media being played.</param>
@@ -150,7 +150,7 @@ public static class PlaybackMetrics
     /// <summary>
     /// Refreshes the tracked state for an in-progress playback session.
     /// </summary>
-    /// <param name="playSessionId">The play session id, falling back to <paramref name="sessionId"/> when absent.</param>
+    /// <param name="playSessionId">The play session id, used when <paramref name="sessionId"/> is absent.</param>
     /// <param name="sessionId">The session id.</param>
     /// <param name="playMethod">How the item is currently being delivered.</param>
     /// <param name="mediaType">The type of media being played.</param>
@@ -178,7 +178,7 @@ public static class PlaybackMetrics
     /// <summary>
     /// Records that a playback session ended, and how long it ran.
     /// </summary>
-    /// <param name="playSessionId">The play session id, falling back to <paramref name="sessionId"/> when absent.</param>
+    /// <param name="playSessionId">The play session id, used when <paramref name="sessionId"/> is absent.</param>
     /// <param name="sessionId">The session id.</param>
     /// <param name="playedToCompletion">Whether the item was watched far enough to count as played.</param>
     /// <param name="failed">Whether playback failed.</param>
@@ -203,16 +203,19 @@ public static class PlaybackMetrics
             return;
         }
 
-        var tags = new TagList
-        {
-            { PlayMethodTag, Describe(tracked.PlayMethod) },
-            { MediaTypeTag, Describe(tracked.MediaType) },
-            { ClientTag, tracked.Client },
-            { OutcomeTag, outcome }
-        };
+        RecordStopped(tracked, outcome);
+    }
 
-        _playbackStopped.Add(1, tags);
-        _playbackDuration.Record(Stopwatch.GetElapsedTime(tracked.StartedTimestamp).TotalSeconds, tags);
+    /// <summary>
+    /// Ends the playback tracked for a session that went away without reporting a stop.
+    /// </summary>
+    /// <param name="sessionId">The session id.</param>
+    public static void OnSessionEnded(string? sessionId)
+    {
+        if (!string.IsNullOrEmpty(sessionId) && _playback.TryRemove(sessionId, out var tracked))
+        {
+            RecordStopped(tracked, OutcomeAbandoned);
+        }
     }
 
     /// <summary>
@@ -238,8 +241,8 @@ public static class PlaybackMetrics
             1,
             new KeyValuePair<string, object?>(TranscodeTypeTag, Describe(type)),
             new KeyValuePair<string, object?>(HardwareAccelerationTag, Describe(acceleration)),
-            new KeyValuePair<string, object?>(VideoCodecTag, Normalize(videoCodec)),
-            new KeyValuePair<string, object?>(AudioCodecTag, Normalize(audioCodec)));
+            new KeyValuePair<string, object?>(VideoCodecTag, TelemetryTags.Codec(videoCodec)),
+            new KeyValuePair<string, object?>(AudioCodecTag, TelemetryTags.Codec(audioCodec)));
 
         // TranscodeReason is a flags enum, so the combined value is high cardinality. Splitting it into one
         // increment per set flag keeps the label bounded and makes "why is this server transcoding" a sum.
@@ -316,10 +319,23 @@ public static class PlaybackMetrics
             new KeyValuePair<string, object?>(HardwareAccelerationTag, Describe(tracked.Acceleration)));
     }
 
+    // A session plays one item at a time, and not every stop carries the play session id (idle sessions don't).
     private static string? ResolveKey(string? playSessionId, string? sessionId)
-        => string.IsNullOrEmpty(playSessionId) ? (string.IsNullOrEmpty(sessionId) ? null : sessionId) : playSessionId;
+        => string.IsNullOrEmpty(sessionId) ? (string.IsNullOrEmpty(playSessionId) ? null : playSessionId) : sessionId;
 
-    private static string Normalize(string? value) => TelemetryTags.Normalize(value);
+    private static void RecordStopped(TrackedPlayback tracked, string outcome)
+    {
+        var tags = new TagList
+        {
+            { PlayMethodTag, Describe(tracked.PlayMethod) },
+            { MediaTypeTag, Describe(tracked.MediaType) },
+            { ClientTag, tracked.Client },
+            { OutcomeTag, outcome }
+        };
+
+        _playbackStopped.Add(1, tags);
+        _playbackDuration.Record(Stopwatch.GetElapsedTime(tracked.StartedTimestamp).TotalSeconds, tags);
+    }
 
     private static IEnumerable<Measurement<int>> ObserveActiveSessions()
     {

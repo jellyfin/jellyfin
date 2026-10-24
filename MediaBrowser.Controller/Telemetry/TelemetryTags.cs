@@ -41,6 +41,11 @@ internal static class TelemetryTags
     private static readonly BoundedTagValues _providers = new(64);
 
     /// <summary>
+    /// Codec names come from request parameters and are reported before ffmpeg validates them.
+    /// </summary>
+    private static readonly BoundedTagValues _codecs = new(32);
+
+    /// <summary>
     /// Returns <paramref name="value"/>, or <see cref="Unknown"/> when it is empty.
     /// </summary>
     /// <param name="value">The tag value.</param>
@@ -60,6 +65,13 @@ internal static class TelemetryTags
     /// <param name="provider">The name of the provider.</param>
     /// <returns>The value to report.</returns>
     internal static string Provider(string? provider) => _providers.Get(provider);
+
+    /// <summary>
+    /// Returns the value to report for a codec name, keeping the number of distinct names bounded.
+    /// </summary>
+    /// <param name="codec">The codec name as requested.</param>
+    /// <returns>The value to report.</returns>
+    internal static string Codec(string? codec) => _codecs.Get(codec);
 
     /// <summary>
     /// Maps arbitrary strings onto a bounded set of tag values, so that a caller supplying names

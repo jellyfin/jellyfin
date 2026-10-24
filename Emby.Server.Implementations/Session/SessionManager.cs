@@ -211,6 +211,7 @@ namespace Emby.Server.Implementations.Session
         private async ValueTask OnSessionEnded(SessionInfo info)
         {
             SessionMetrics.OnSessionEnded(info.Id, info.Client);
+            PlaybackMetrics.OnSessionEnded(info.Id);
 
             EventHelper.QueueEventIfNotNull(
                 SessionEnded,
@@ -2287,6 +2288,9 @@ namespace Emby.Server.Implementations.Session
 
             foreach (var session in _activeConnections.Values)
             {
+                // The metrics state is static and outlives an in-process restart.
+                SessionMetrics.OnSessionEnded(session.Id, session.Client);
+                PlaybackMetrics.OnSessionEnded(session.Id);
                 await session.DisposeAsync().ConfigureAwait(false);
             }
 
@@ -2325,6 +2329,9 @@ namespace Emby.Server.Implementations.Session
             // Close open websockets to allow Kestrel to shut down cleanly
             foreach (var session in _activeConnections.Values)
             {
+                // The metrics state is static and outlives an in-process restart.
+                SessionMetrics.OnSessionEnded(session.Id, session.Client);
+                PlaybackMetrics.OnSessionEnded(session.Id);
                 await session.DisposeAsync().ConfigureAwait(false);
             }
 

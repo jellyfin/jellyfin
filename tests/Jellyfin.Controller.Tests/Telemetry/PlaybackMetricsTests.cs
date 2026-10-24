@@ -39,6 +39,35 @@ public class PlaybackMetricsTests
     }
 
     [Fact]
+    public void PlaybackStoppedWithoutPlaySessionId_EndsTheSessionsPlayback()
+    {
+        const string Client = "PlaybackMetricsTests.Idle";
+        const string SessionId = "playback-metrics-tests-idle-session";
+
+        PlaybackMetrics.OnPlaybackStarted("playback-metrics-tests-idle-play-session", SessionId, PlayMethod.Transcode, MediaType.Video, Client, 2_000_000);
+
+        // The idle check stops playback with only the session id.
+        var stopped = MeterCollector.Collect(() => PlaybackMetrics.OnPlaybackStopped(null, SessionId, false, false));
+
+        Assert.Equal(0, MeterCollector.Value(stopped, "jellyfin.playback.sessions.active", (ClientTag, Client)));
+        Assert.Equal(1, MeterCollector.Value(stopped, "jellyfin.playback.stopped", (ClientTag, Client)));
+    }
+
+    [Fact]
+    public void SessionEndedWhilePlaying_EndsItsPlayback()
+    {
+        const string Client = "PlaybackMetricsTests.Ended";
+        const string SessionId = "playback-metrics-tests-ended-session";
+
+        PlaybackMetrics.OnPlaybackStarted(null, SessionId, PlayMethod.DirectPlay, MediaType.Audio, Client, 320_000);
+
+        var ended = MeterCollector.Collect(() => PlaybackMetrics.OnSessionEnded(SessionId));
+
+        Assert.Equal(0, MeterCollector.Value(ended, "jellyfin.playback.sessions.active", (ClientTag, Client)));
+        Assert.Equal(0, MeterCollector.Value(ended, "jellyfin.playback.bitrate", (ClientTag, Client)));
+    }
+
+    [Fact]
     public void TranscodeProgress_RecordsThroughputRelativeToTheSource()
     {
         const string JobId = "playback-metrics-tests-job";

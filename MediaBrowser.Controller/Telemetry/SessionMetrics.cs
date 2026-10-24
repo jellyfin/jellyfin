@@ -63,8 +63,14 @@ public static class SessionMetrics
     public static void OnSessionEnded(string? sessionId, string? client)
     {
         string? clientName = null;
-        if (!string.IsNullOrEmpty(sessionId) && _sessions.TryRemove(sessionId, out var tracked))
+        if (!string.IsNullOrEmpty(sessionId))
         {
+            // A session can be closed twice, e.g. by two of its websockets closing at once; count it once.
+            if (!_sessions.TryRemove(sessionId, out var tracked))
+            {
+                return;
+            }
+
             clientName = tracked;
         }
 
