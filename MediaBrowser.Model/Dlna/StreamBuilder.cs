@@ -962,6 +962,14 @@ namespace MediaBrowser.Model.Dlna
             {
                 playlistItem.TranscodeReasons |= TranscodeReason.VideoCodecNotSupported;
             }
+            else if (videoStream is not null)
+            {
+                // Narrow to the actual codec being copied, same as directAudioStream below.
+                // Without this, VideoCodecs can exceed the 40-char videoCodec regex
+                // (StreamInfo.ToUrl) and the generated URL 400s before ffmpeg starts.
+                videoCodecs = [videoStream.Codec];
+                playlistItem.VideoCodecs = videoCodecs;
+            }
 
             // Copy video codec options as a starting point, this applies to transcode and direct-stream
             playlistItem.MaxFramerate = videoStream?.ReferenceFrameRate;
