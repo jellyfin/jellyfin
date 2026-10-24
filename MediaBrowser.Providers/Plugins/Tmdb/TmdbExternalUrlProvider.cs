@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Providers.Plugins.Tmdb.TV;
 using TMDbLib.Objects.TvShows;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb;
@@ -26,6 +27,11 @@ public class TmdbExternalUrlProvider : IExternalUrlProvider
                 if (item.TryGetProviderId(MetadataProvider.Tmdb, out var externalId))
                 {
                     yield return TmdbUtils.BaseTmdbUrl + $"tv/{externalId}";
+
+                    if (item.TryGetProviderId(TmdbEpisodeGroupId.ProviderKey, out var episodeGroup))
+                    {
+                        yield return TmdbUtils.BaseTmdbUrl + $"tv/{externalId}/episode_group/{episodeGroup}";
+                    }
                 }
 
                 break;
@@ -46,6 +52,12 @@ public class TmdbExternalUrlProvider : IExternalUrlProvider
                         {
                             yield return TmdbUtils.BaseTmdbUrl + $"tv/{seriesExternalId}/season/{seasonNumber}";
                         }
+                    }
+
+                    if (season.Series?.TryGetProviderId(TmdbEpisodeGroupId.ProviderKey, out var episodeGroup) == true
+                        && season.TryGetProviderId(TmdbEpisodeGroupId.ProviderKey, out var group))
+                    {
+                        yield return TmdbUtils.BaseTmdbUrl + $"tv/{seriesExternalId}/episode_group/{episodeGroup}/group/{group}";
                     }
                 }
 

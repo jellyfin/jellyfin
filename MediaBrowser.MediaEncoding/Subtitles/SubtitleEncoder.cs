@@ -188,6 +188,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 _logger.LogDebug("charset {CharSet} detected for {Path}", detected.EncodingName, fileInfo.Path);
 
+                // If encoding is not supported by .NET (e.g., ISO-8859-16), return stream as-is
+                // The charset name will be passed to ffmpeg via -sub_charenc if needed
+                if (detected.Encoding is null)
+                {
+                    _logger.LogWarning("Encoding {Encoding} is not supported by .NET for {Path}, returning stream as-is", detected.EncodingName, fileInfo.Path);
+                    return stream;
+                }
+
                 await using (stream.ConfigureAwait(false))
                 {
                     using var reader = new StreamReader(stream, detected.Encoding);
@@ -649,7 +657,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             List<MediaStream> subtitleStreams,
             CancellationToken cancellationToken)
         {
-            var inputPath = _mediaEncoder.GetInputArgument(mediaSource.Path, mediaSource);
+            var inputPath = _mediaEncoder.GetInputPathArgument(mediaSource.Path, mediaSource);
             var outputPaths = new List<string>();
             var args = string.Format(
                 CultureInfo.InvariantCulture,
@@ -673,7 +681,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
                 // FFmpeg does not provide an .idx/.sub muxer, so VobSub streams must be written as MKS files.
                 var outputFormatOption = MediaStream.IsVobSubFormat(subtitleStream.Codec) ? " -f matroska" : string.Empty;
-                var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
+                var streamIndex = EncodingHelper.GetSubtitleStreamIndexForFfmpeg(mediaSource, subtitleStream);
 
                 if (streamIndex == -1)
                 {

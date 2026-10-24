@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.SyncPlay;
@@ -34,6 +35,13 @@ namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, SyncPlayAccessRequirement requirement)
         {
             var userId = context.User.GetUserId();
+            if (userId.IsEmpty())
+            {
+                // Unauthenticated requests and API keys carry no user, so there is nothing to
+                // check: leave the requirement unsatisfied and let the request be challenged.
+                return Task.CompletedTask;
+            }
+
             var user = _userManager.GetUserById(userId);
             if (user is null)
             {

@@ -4,8 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Server.ServerSetupApp;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations.Stages;
 
@@ -22,66 +20,45 @@ internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute meta
         return Metadata.Order.ToString("yyyyMMddHHmmsss", CultureInfo.InvariantCulture) + "_" + Metadata.Name!;
     }
 
-    private IServiceCollection MigrationServices(IServiceProvider serviceProvider, IStartupLogger logger)
+    public async Task Perform(IServiceProvider serviceProvider, IStartupLogger logger, CancellationToken cancellationToken)
     {
-        var childServiceCollection = new ServiceCollection()
-            .AddSingleton(serviceProvider)
-            .AddSingleton(logger)
-            .AddSingleton(typeof(IStartupLogger<>), typeof(NestedStartupLogger<>))
-            .AddSingleton<StartupLogTopic>(logger.Topic!);
-
-        foreach (ServiceDescriptor service in serviceProvider.GetRequiredService<IServiceCollection>())
-        {
-            if (service.Lifetime == ServiceLifetime.Singleton && !service.ServiceType.IsGenericTypeDefinition)
-            {
-                childServiceCollection.AddSingleton(service.ServiceType, _ => serviceProvider.GetService(service.ServiceType)!);
-                continue;
-            }
-
-            childServiceCollection.Add(service);
-        }
-
-        return childServiceCollection;
-    }
-
-    public async Task Perform(IServiceProvider? serviceProvider, IStartupLogger logger, CancellationToken cancellationToken)
-    {
-#pragma warning disable CS0618 // Type or member is obsolete
-        if (typeof(IMigrationRoutine).IsAssignableFrom(MigrationType))
-        {
-            if (serviceProvider is null)
-            {
-                ((IMigrationRoutine)Activator.CreateInstance(MigrationType)!).Perform();
-            }
-            else
-            {
-                using var migrationServices = MigrationServices(serviceProvider, logger).BuildServiceProvider();
-                ((IMigrationRoutine)ActivatorUtilities.CreateInstance(migrationServices, MigrationType)).Perform();
-#pragma warning restore CS0618 // Type or member is obsolete
-            }
-        }
-        else if (typeof(IAsyncMigrationRoutine).IsAssignableFrom(MigrationType))
-        {
-            if (serviceProvider is null)
-            {
-                await ((IAsyncMigrationRoutine)Activator.CreateInstance(MigrationType)!).PerformAsync(cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                using var migrationServices = MigrationServices(serviceProvider, logger).BuildServiceProvider();
-                await ((IAsyncMigrationRoutine)ActivatorUtilities.CreateInstance(migrationServices, MigrationType)).PerformAsync(cancellationToken).ConfigureAwait(false);
-            }
-        }
-        else
+        if (!IsMigrationRoutine(MigrationType))
         {
             throw new InvalidOperationException($"The type {MigrationType} does not implement either IMigrationRoutine or IAsyncMigrationRoutine and is not a valid migration type");
         }
-    }
 
-    private class NestedStartupLogger<TCategory> : StartupLogger<TCategory>
-    {
-        public NestedStartupLogger(ILogger logger, StartupLogTopic topic) : base(logger, topic)
+        // The routine runs against a scope of the applications own container. Copying the application service
+        // descriptors into a child container instead would make that child container the owner of every singleton it
+        // forwards, so disposing it after the migration would also dispose the applications own instance of services
+        // like the ProviderManager and leave the server broken until the next restart.
+        var scope = serviceProvider.CreateAsyncScope();
+        await using (scope.ConfigureAwait(false))
         {
+            // Nests everything the routine logs through an injected IStartupLogger under the migrations own topic.
+            using (StartupLogger.BeginAmbientTopic(logger.Topic))
+            {
+                await RunAsync(ActivatorUtilities.CreateInstance(scope.ServiceProvider, MigrationType), cancellationToken).ConfigureAwait(false);
+            }
         }
     }
+
+    // The obsolete IMigrationRoutine is still implemented by every routine that predates the async interface, so
+    // the members that have to touch it are grouped here behind a single suppression.
+#pragma warning disable CS0618 // Type or member is obsolete
+    private static bool IsMigrationRoutine(Type migrationType)
+    {
+        return typeof(IMigrationRoutine).IsAssignableFrom(migrationType) || typeof(IAsyncMigrationRoutine).IsAssignableFrom(migrationType);
+    }
+
+    private static async Task RunAsync(object routine, CancellationToken cancellationToken)
+    {
+        if (routine is IMigrationRoutine migrationRoutine)
+        {
+            migrationRoutine.Perform();
+            return;
+        }
+
+        await ((IAsyncMigrationRoutine)routine).PerformAsync(cancellationToken).ConfigureAwait(false);
+    }
+#pragma warning restore CS0618 // Type or member is obsolete
 }
