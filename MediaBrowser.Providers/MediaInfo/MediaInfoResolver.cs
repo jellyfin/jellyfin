@@ -74,6 +74,11 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         /// <summary>
+        /// Gets additional file extensions supplied by extensions.
+        /// </summary>
+        protected virtual IReadOnlyCollection<string> AdditionalFileExtensions => [];
+
+        /// <summary>
         /// Retrieves the external streams for the provided video.
         /// </summary>
         /// <param name="video">The <see cref="Video"/> object to search external streams for.</param>
@@ -187,6 +192,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     Type = MediaStreamType.Lyric,
                     Path = pathInfos[i].Path,
                     Language = pathInfos[i].Language,
+                    IsExternal = true,
                     Index = startIndex++
                 };
             }
@@ -310,7 +316,10 @@ namespace MediaBrowser.Providers.MediaInfo
                     && prefix.Equals(fileNameWithoutExtension[..prefix.Length], StringComparison.OrdinalIgnoreCase)
                     && (fileNameWithoutExtension.Length == prefix.Length || _namingOptions.MediaFlagDelimiters.Contains(fileNameWithoutExtension[prefix.Length])))
                 {
-                    var externalPathInfo = _externalPathParser.ParseFile(file, fileNameWithoutExtension[prefix.Length..].ToString());
+                    var externalPathInfo = _externalPathParser.ParseFile(
+                        file,
+                        fileNameWithoutExtension[prefix.Length..].ToString(),
+                        AdditionalFileExtensions);
 
                     if (externalPathInfo is not null)
                     {
