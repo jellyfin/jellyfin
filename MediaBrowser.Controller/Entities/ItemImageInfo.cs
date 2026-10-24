@@ -9,10 +9,6 @@ namespace MediaBrowser.Controller.Entities
     public class ItemImageInfo
     {
         /// <summary>
-        /// Gets or sets the path.
-        /// </summary>
-        /// <value>The path.</value>
-        /// <summary>
         /// Gets or sets the stored row's identity.
         /// </summary>
         /// <remarks>
@@ -21,6 +17,10 @@ namespace MediaBrowser.Controller.Entities
         /// </remarks>
         public Guid Id { get; set; }
 
+        /// <summary>
+        /// Gets or sets the path.
+        /// </summary>
+        /// <value>The path.</value>
         public required string Path { get; set; }
 
         /// <summary>
