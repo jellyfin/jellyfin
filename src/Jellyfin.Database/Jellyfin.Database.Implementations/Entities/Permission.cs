@@ -37,7 +37,7 @@ namespace Jellyfin.Database.Implementations.Entities
         /// <summary>
         /// Gets or sets the id of the associated user.
         /// </summary>
-        public Guid? UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets the type of this permission.

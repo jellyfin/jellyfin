@@ -58,7 +58,7 @@ public class TmdbMovieSimilarProvider : IRemoteSimilarItemsProvider<Movie>
         }
 
         var providerName = MetadataProvider.Tmdb.ToString();
-        var page = 0;
+        var page = 1;
         var totalPages = 1;
 
         while (page <= totalPages && !cancellationToken.IsCancellationRequested)
@@ -67,12 +67,12 @@ public class TmdbMovieSimilarProvider : IRemoteSimilarItemsProvider<Movie>
             try
             {
                 (pageResults, totalPages) = await _tmdbClientManager
-                    .GetMovieSimilarPageAsync(tmdbId, page, TmdbUtils.GetImageLanguagesParam(string.Empty), cancellationToken)
+                    .GetMovieRecommendationsPageAsync(tmdbId, page, TmdbUtils.GetImageLanguagesParam(string.Empty), cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to get similar movies from TMDb for {TmdbId} page {Page}", tmdbId, page);
+                _logger.LogWarning(ex, "Failed to get recommended movies from TMDb for {TmdbId} page {Page}", tmdbId, page);
                 yield break;
             }
 
@@ -81,12 +81,12 @@ public class TmdbMovieSimilarProvider : IRemoteSimilarItemsProvider<Movie>
                 yield break;
             }
 
-            foreach (var similar in pageResults)
+            foreach (var recommendation in pageResults)
             {
                 yield return new SimilarItemReference
                 {
                     ProviderName = providerName,
-                    ProviderId = similar.Id.ToString(CultureInfo.InvariantCulture)
+                    ProviderId = recommendation.Id.ToString(CultureInfo.InvariantCulture)
                 };
             }
 

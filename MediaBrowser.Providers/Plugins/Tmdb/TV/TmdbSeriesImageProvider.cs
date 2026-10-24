@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -57,9 +55,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var tmdbId = item.GetProviderId(MetadataProvider.Tmdb);
-
-            if (string.IsNullOrEmpty(tmdbId))
+            if (!item.TryGetTmdbId(out var tmdbId))
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }
@@ -68,7 +64,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
             var series = await _tmdbClientManager
-                .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), null, null, null, cancellationToken)
+                .GetSeriesAsync(tmdbId, null, null, null, cancellationToken)
                 .ConfigureAwait(false);
 
             if (series?.Images is null)

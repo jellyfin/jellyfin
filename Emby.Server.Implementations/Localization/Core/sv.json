@@ -116,5 +116,10 @@
     "NameExtraScene": "Scen",
     "NameExtraShort": "Kortfilm",
     "NameExtraThemeSong": "Signaturmelodi",
-    "NameExtraTrailer": "Trailer"
+    "NameExtraTrailer": "Trailer",
+    "NameExtraClip": "Klipp",
+    "NameExtraFeaturette": "Kortfilm",
+    "NameExtraSample": "Prov",
+    "NameExtraThemeVideo": "Signaturvideo",
+    "NameExtraUnknown": "Extra"
 }

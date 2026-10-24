@@ -810,6 +810,11 @@ namespace MediaBrowser.Model.Entities
                 return (VideoRange.Unknown, VideoRangeType.Unknown);
             }
 
+            var isPq = string.Equals(ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase);
+            var isHlg = string.Equals(ColorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase);
+            // Invalid DV only retains HDR when the base layer explicitly signals PQ or HLG.
+            var baseVideoRange = isPq || isHlg ? VideoRange.HDR : VideoRange.SDR;
+
             var codecTag = CodecTag;
             var dvProfile = DvProfile;
             var rpuPresentFlag = RpuPresentFlag == 1;
@@ -834,7 +839,7 @@ namespace MediaBrowser.Model.Entities
                         4 => (VideoRange.HDR, VideoRangeType.DOVIWithHLG),
                         2 => (VideoRange.SDR, VideoRangeType.DOVIWithSDR),
                         // Out of Dolby Spec files should be marked as invalid
-                        _ => (VideoRange.HDR, VideoRangeType.DOVIInvalid)
+                        _ => (baseVideoRange, VideoRangeType.DOVIInvalid)
                     },
                     7 => (VideoRange.HDR, VideoRangeType.DOVIWithEL),
                     10 => dvBlCompatId switch
@@ -844,10 +849,25 @@ namespace MediaBrowser.Model.Entities
                         2 => (VideoRange.SDR, VideoRangeType.DOVIWithSDR),
                         4 => (VideoRange.HDR, VideoRangeType.DOVIWithHLG),
                         // Out of Dolby Spec files should be marked as invalid
-                        _ => (VideoRange.HDR, VideoRangeType.DOVIInvalid)
+                        _ => (baseVideoRange, VideoRangeType.DOVIInvalid)
                     },
                     _ => (VideoRange.SDR, VideoRangeType.SDR)
                 };
+
+                var expectedTransfer = dvRangeSet.Item2 switch
+                {
+                    VideoRangeType.DOVIWithHDR10 or VideoRangeType.DOVIWithEL => "smpte2084",
+                    VideoRangeType.DOVIWithHLG => "arib-std-b67",
+                    _ => null
+                };
+
+                if (expectedTransfer is not null
+                    && (!string.Equals(ColorSpace, "bt2020nc", StringComparison.OrdinalIgnoreCase)
+                        || !string.Equals(ColorTransfer, expectedTransfer, StringComparison.OrdinalIgnoreCase)
+                        || !string.Equals(ColorPrimaries, "bt2020", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return (baseVideoRange, VideoRangeType.DOVIInvalid);
+                }
 
                 if (Hdr10PlusPresentFlag == true)
                 {
@@ -862,13 +882,11 @@ namespace MediaBrowser.Model.Entities
                 return dvRangeSet;
             }
 
-            var colorTransfer = ColorTransfer;
-
-            if (string.Equals(colorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase))
+            if (isPq)
             {
                 return Hdr10PlusPresentFlag == true ? (VideoRange.HDR, VideoRangeType.HDR10Plus) : (VideoRange.HDR, VideoRangeType.HDR10);
             }
-            else if (string.Equals(colorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
+            else if (isHlg)
             {
                 return (VideoRange.HDR, VideoRangeType.HLG);
             }

@@ -114,5 +114,12 @@
     "NameExtraScene": "Eszena",
     "NameExtraShort": "Laburra",
     "NameExtraThemeSong": "Gai-abestia",
-    "NameExtraThemeVideo": "Gai-bideoa"
+    "NameExtraThemeVideo": "Gai-bideoa",
+    "NameExtraBehindTheScenes": "Eszenen atzean",
+    "NameExtraClip": "Klipa",
+    "NameExtraDeletedScene": "Ezabatutako eszena",
+    "NameExtraFeaturette": "Erreportajea",
+    "NameExtraInterview": "Elkarrizketa",
+    "NameExtraTrailer": "Trailerra",
+    "NameExtraUnknown": "Extra"
 }

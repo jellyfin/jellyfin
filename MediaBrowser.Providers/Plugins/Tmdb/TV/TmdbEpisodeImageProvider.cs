@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -56,9 +54,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             var episode = (Controller.Entities.TV.Episode)item;
             var series = episode.Series;
 
-            var seriesTmdbId = Convert.ToInt32(series?.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
+            var seriesTmdbId = 0;
 
-            if (series is null || seriesTmdbId <= 0)
+            if (series?.TryGetTmdbId(out seriesTmdbId) != true)
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }
@@ -71,11 +69,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
+            var episodeGroup = series.GetProviderId(TmdbEpisodeGroupId.ProviderKey);
             var language = item.GetPreferredMetadataLanguage();
 
             // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
             var episodeResult = await _tmdbClientManager
-                .GetEpisodeAsync(seriesTmdbId, seasonNumber, episodeNumber.Value, series.DisplayOrder, null, null, null, cancellationToken)
+                .GetEpisodeAsync(seriesTmdbId, seasonNumber, episodeNumber.Value, episodeGroup, null, null, null, cancellationToken)
                 .ConfigureAwait(false);
 
             var stills = episodeResult?.Images?.Stills;

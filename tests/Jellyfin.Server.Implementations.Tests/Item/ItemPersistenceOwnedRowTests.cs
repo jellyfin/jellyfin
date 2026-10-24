@@ -2,53 +2,38 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
-using Jellyfin.Database.Implementations.Locking;
-using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Server.Implementations.Item;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
-public sealed class ItemPersistenceOwnedRowTests : IDisposable
+public sealed class ItemPersistenceOwnedRowTests : SqliteDbTestFixture
 {
-    private readonly SqliteConnection _connection;
-    private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly ItemPersistenceService _service;
-    private readonly IApplicationPaths _applicationPaths;
     private readonly ILibraryManager? _previousLibraryManager;
     private readonly IServerConfigurationManager? _previousConfigurationManager;
+    private readonly IRecordingsManager? _previousRecordingsManager;
+    private readonly Guid _userId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
     public ItemPersistenceOwnedRowTests()
     {
-        _applicationPaths = new Mock<IApplicationPaths>().Object;
-
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
-        _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-
-        using (var ctx = CreateDbContext())
-        {
-            ctx.Database.EnsureCreated();
-        }
-
         // BaseItem resolves these through process-wide statics; restored in Dispose.
         _previousLibraryManager = BaseItem.LibraryManager;
         _previousConfigurationManager = BaseItem.ConfigurationManager;
+        _previousRecordingsManager = Video.RecordingsManager;
 
         var libraryManager = new Mock<ILibraryManager>();
         libraryManager.Setup(l => l.GetCollectionFolders(It.IsAny<BaseItem>()))
@@ -59,20 +44,21 @@ public sealed class ItemPersistenceOwnedRowTests : IDisposable
         configurationManager.Setup(c => c.Configuration).Returns(new ServerConfiguration());
         BaseItem.ConfigurationManager = configurationManager.Object;
 
-        var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
-        factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
+        // Video.SourceType consults this before it can produce user data keys.
+        Video.RecordingsManager = new Mock<IRecordingsManager>().Object;
 
         _service = new ItemPersistenceService(
-            factory.Object,
+            CreateDbContextFactory(),
             new Mock<IServerApplicationHost>().Object,
             NullLogger<ItemPersistenceService>.Instance);
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
         BaseItem.LibraryManager = _previousLibraryManager!;
         BaseItem.ConfigurationManager = _previousConfigurationManager!;
-        _connection.Dispose();
+        Video.RecordingsManager = _previousRecordingsManager!;
+        base.Dispose(disposing);
     }
 
     [Fact]
@@ -127,6 +113,99 @@ public sealed class ItemPersistenceOwnedRowTests : IDisposable
         Assert.Equal("777", Assert.Single(ctx.BaseItemProviders.Where(e => e.ItemId.Equals(fresh))).ProviderValue);
     }
 
+    [Fact]
+    public async Task ReattachUserData_DetachedRowsFromDifferentEras_CollapsesToMostRecentPlay()
+    {
+        var movie = CreateMovie(Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd"));
+        var keys = movie.GetUserDataKeys();
+        SeedUserDataItem(movie);
+
+        using (var ctx = CreateDbContext())
+        {
+            // The guid-keyed row was detached by an older deletion than the provider-keyed ones.
+            ctx.UserData.AddRange(
+                CreateDetachedRow(keys[^1], new DateTime(2021, 12, 31, 0, 0, 0, DateTimeKind.Utc), playCount: 7, positionTicks: 490),
+                CreateDetachedRow(keys[0], new DateTime(2023, 8, 14, 0, 0, 0, DateTimeKind.Utc), playCount: 9, positionTicks: 0, played: true),
+                CreateDetachedRow(keys[1], new DateTime(2023, 8, 14, 0, 0, 0, DateTimeKind.Utc), playCount: 9, positionTicks: 0, played: true));
+            await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
+        }
+
+        await _service.ReattachUserDataAsync(movie, TestContext.Current.CancellationToken);
+
+        using (var ctx = CreateDbContext())
+        {
+            var rows = ctx.UserData.Where(e => e.ItemId.Equals(movie.Id)).ToList();
+
+            Assert.Equal(keys.Count, rows.Count);
+            Assert.Equal(keys.OrderBy(e => e, StringComparer.Ordinal), rows.Select(e => e.CustomDataKey).OrderBy(e => e, StringComparer.Ordinal));
+            Assert.All(rows, row =>
+            {
+                Assert.True(row.Played);
+                Assert.Equal(0, row.PlaybackPositionTicks);
+                Assert.Equal(9, row.PlayCount);
+                Assert.Null(row.RetentionDate);
+            });
+
+            Assert.Empty(ctx.UserData.Where(e => e.ItemId.Equals(BaseItemRepository.PlaceholderId)));
+        }
+    }
+
+    [Fact]
+    public async Task ReattachUserData_ExistingRowUnderUnreportedKey_IsKeptInAgreement()
+    {
+        var movie = CreateMovie(Guid.Parse("ffffffff-ffff-ffff-ffff-ffffffffffff"));
+        var keys = movie.GetUserDataKeys();
+        const string UnreportedKey = "tvdb-key-missing-mid-refresh";
+        SeedUserDataItem(movie);
+
+        using (var ctx = CreateDbContext())
+        {
+            ctx.UserData.AddRange(
+                CreateRow(movie.Id, UnreportedKey, new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), playCount: 1, positionTicks: 123),
+                CreateDetachedRow(keys[0], new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc), playCount: 2, positionTicks: 0, played: true));
+            await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
+        }
+
+        await _service.ReattachUserDataAsync(movie, TestContext.Current.CancellationToken);
+
+        using (var ctx = CreateDbContext())
+        {
+            var rows = ctx.UserData.Where(e => e.ItemId.Equals(movie.Id)).ToList();
+
+            Assert.Equal(
+                keys.Append(UnreportedKey).OrderBy(e => e, StringComparer.Ordinal),
+                rows.Select(e => e.CustomDataKey).OrderBy(e => e, StringComparer.Ordinal));
+            Assert.All(rows, row =>
+            {
+                Assert.True(row.Played);
+                Assert.Equal(2, row.PlayCount);
+                Assert.Equal(0, row.PlaybackPositionTicks);
+            });
+        }
+    }
+
+    [Fact]
+    public async Task ReattachUserData_NoDetachedRows_LeavesExistingRowsAlone()
+    {
+        var movie = CreateMovie(Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"));
+        var keys = movie.GetUserDataKeys();
+        SeedUserDataItem(movie);
+
+        using (var ctx = CreateDbContext())
+        {
+            ctx.UserData.Add(CreateRow(movie.Id, keys[0], new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), playCount: 1, positionTicks: 123));
+            await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
+        }
+
+        await _service.ReattachUserDataAsync(movie, TestContext.Current.CancellationToken);
+
+        using (var ctx = CreateDbContext())
+        {
+            var row = Assert.Single(ctx.UserData.Where(e => e.ItemId.Equals(movie.Id)));
+            Assert.Equal(123, row.PlaybackPositionTicks);
+        }
+    }
+
     private static Book CreateBook(Guid id, Dictionary<string, string> providerIds, MetadataField[] lockedFields)
     {
         var book = new Book
@@ -141,9 +220,58 @@ public sealed class ItemPersistenceOwnedRowTests : IDisposable
         return book;
     }
 
-    private JellyfinDbContext CreateDbContext() => new(
-        _dbOptions,
-        NullLogger<JellyfinDbContext>.Instance,
-        new SqliteDatabaseProvider(_applicationPaths, NullLogger<SqliteDatabaseProvider>.Instance),
-        new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
+    private static Movie CreateMovie(Guid id)
+    {
+        return new Movie
+        {
+            Id = id,
+            Name = "Black Widow",
+            ProviderIds = new Dictionary<string, string>
+            {
+                ["Tmdb"] = "497698",
+                ["Imdb"] = "tt3480822"
+            }
+        };
+    }
+
+    private void SeedUserDataItem(BaseItem item)
+    {
+        using var ctx = CreateDbContext();
+        if (!ctx.Users.Any(e => e.Id.Equals(_userId)))
+        {
+            ctx.Users.Add(new User("user", "auth-provider", "reset-provider") { Id = _userId });
+        }
+
+        if (!ctx.BaseItems.Any(e => e.Id.Equals(BaseItemRepository.PlaceholderId)))
+        {
+            ctx.BaseItems.Add(new BaseItemEntity { Id = BaseItemRepository.PlaceholderId, Type = typeof(Folder).FullName! });
+        }
+
+        ctx.BaseItems.Add(new BaseItemEntity { Id = item.Id, Type = item.GetType().FullName! });
+        ctx.SaveChanges();
+    }
+
+    private UserData CreateDetachedRow(string key, DateTime lastPlayed, int playCount, long positionTicks, bool played = false)
+    {
+        var row = CreateRow(BaseItemRepository.PlaceholderId, key, lastPlayed, playCount, positionTicks, played);
+        row.RetentionDate = new DateTime(2025, 6, 22, 0, 0, 0, DateTimeKind.Utc);
+
+        return row;
+    }
+
+    private UserData CreateRow(Guid itemId, string key, DateTime lastPlayed, int playCount, long positionTicks, bool played = false)
+    {
+        return new UserData
+        {
+            ItemId = itemId,
+            Item = null,
+            UserId = _userId,
+            User = null,
+            CustomDataKey = key,
+            LastPlayedDate = lastPlayed,
+            PlayCount = playCount,
+            PlaybackPositionTicks = positionTicks,
+            Played = played
+        };
+    }
 }
