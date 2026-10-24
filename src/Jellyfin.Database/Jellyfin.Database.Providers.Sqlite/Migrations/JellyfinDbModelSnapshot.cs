@@ -997,6 +997,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int?>("RpuPresentFlag")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("SampleAspectRatio")
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("SampleRate")
                         .HasColumnType("INTEGER");
 
