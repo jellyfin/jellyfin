@@ -484,6 +484,15 @@ namespace MediaBrowser.Controller.Library
             string uniqueId);
 
         /// <summary>
+        /// Gets the identifier of a named user view.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="parentId">The parent identifier.</param>
+        /// <param name="viewType">Type of the view.</param>
+        /// <returns>The named view identifier.</returns>
+        Guid GetNamedViewId(User user, Guid parentId, CollectionType? viewType);
+
+        /// <summary>
         /// Gets the shadow view.
         /// </summary>
         /// <param name="parent">The parent.</param>
@@ -494,6 +503,15 @@ namespace MediaBrowser.Controller.Library
             BaseItem parent,
             CollectionType? viewType,
             string sortName);
+
+        /// <summary>
+        /// Gets the identifier of a shadow view.
+        /// </summary>
+        /// <param name="name">The view name.</param>
+        /// <param name="parentId">The parent identifier.</param>
+        /// <param name="viewType">Type of the view.</param>
+        /// <returns>The shadow view identifier.</returns>
+        Guid GetShadowViewId(string name, Guid parentId, CollectionType? viewType);
 
         /// <summary>
         /// Gets the season number from path.
@@ -760,6 +778,18 @@ namespace MediaBrowser.Controller.Library
         ItemCounts GetItemCountsForNameItem(BaseItemKind kind, Guid id, BaseItemKind[] relatedItemKinds, User? user);
 
         /// <summary>
+        /// Gets item counts for several "by-name" items of the same kind. Kinds keyed by a cleaned
+        /// item value - artists, genres and studios - are answered in one set of queries for the
+        /// whole batch; the rest fall back to one query per item.
+        /// </summary>
+        /// <param name="kind">The kind of the name items.</param>
+        /// <param name="ids">The IDs of the name items.</param>
+        /// <param name="relatedItemKinds">The item kinds to count.</param>
+        /// <param name="user">The user for access filtering.</param>
+        /// <returns>The item counts of each requested id.</returns>
+        Dictionary<Guid, ItemCounts> GetItemCountsForNameItems(BaseItemKind kind, IReadOnlyList<Guid> ids, BaseItemKind[] relatedItemKinds, User? user);
+
+        /// <summary>
         /// Batch-fetches child counts for multiple parent folders.
         /// Returns the count of immediate children (non-recursive) for each parent.
         /// </summary>
@@ -819,6 +849,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="query">The query filter.</param>
         /// <returns>Aggregated filter values.</returns>
         QueryFiltersLegacy GetQueryFiltersLegacy(InternalItemsQuery query);
+
+        /// <summary>
+        /// Gets a list of all distinct tags of the matching items.
+        /// </summary>
+        /// <param name="query">The query filter.</param>
+        /// <returns>List of tags.</returns>
+        IReadOnlyList<string> GetTagNames(InternalItemsQuery query);
 
         /// <summary>
         /// Gets a list of all language codes of the provided stream type.

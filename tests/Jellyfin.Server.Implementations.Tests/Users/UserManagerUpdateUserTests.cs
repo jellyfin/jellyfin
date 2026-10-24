@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Providers.Sqlite;
@@ -17,6 +18,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Model.Cryptography;
+using MediaBrowser.Model.Users;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -117,6 +119,27 @@ public sealed class UserManagerUpdateUserTests : IDisposable
         await _userManager.UpdateUserAsync(user);
 
         Assert.Equal(before, await ReadChildRowsAsync());
+    }
+
+    [Fact]
+    public async Task UpdatePolicyAsync_RaisesOnUserUpdated()
+    {
+        var user = await _userManager.CreateUserAsync("policyeventuser");
+
+        User? updated = null;
+        _userManager.OnUserUpdated += (_, e) => updated = e.Argument;
+
+        await _userManager.UpdatePolicyAsync(
+            user.Id,
+            new UserPolicy
+            {
+                EnableAllDevices = false,
+                AuthenticationProviderId = user.AuthenticationProviderId,
+                PasswordResetProviderId = user.PasswordResetProviderId
+            });
+
+        Assert.NotNull(updated);
+        Assert.Equal(user.Id, updated.Id);
     }
 
     [Fact]
