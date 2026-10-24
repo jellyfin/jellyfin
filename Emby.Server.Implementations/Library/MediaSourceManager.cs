@@ -560,13 +560,13 @@ namespace Emby.Server.Implementations.Library
                     var mediaLanguageOriginal = source.MediaStreams[originalIndex].Language;
                     if (NormalizeLanguage(mediaLanguageOriginal).Contains(NormalizeLanguage(originalLanguage).FirstOrDefault()))
                     {
-                        source.DefaultAudioStreamIndex = originalIndex;
+                        source.DefaultAudioStreamIndex = source.MediaStreams[originalIndex].Index;
                         return;
                     }
                 }
                 else if (originalIndex != -1)
                 {
-                    source.DefaultAudioStreamIndex = originalIndex;
+                    source.DefaultAudioStreamIndex = source.MediaStreams[originalIndex].Index;
                     return;
                 }
             }
