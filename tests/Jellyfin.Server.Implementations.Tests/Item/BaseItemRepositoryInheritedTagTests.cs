@@ -7,6 +7,7 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Entities;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
@@ -22,6 +23,8 @@ public sealed class BaseItemRepositoryInheritedTagTests : SqliteDbTestFixture
     private const string SeriesType = "MediaBrowser.Controller.Entities.TV.Series";
     private const string SeasonType = "MediaBrowser.Controller.Entities.TV.Season";
     private const string EpisodeType = "MediaBrowser.Controller.Entities.TV.Episode";
+    private const string TrailerType = "MediaBrowser.Controller.Entities.Trailer";
+    private const string MovieType = "MediaBrowser.Controller.Entities.Movies.Movie";
 
     private const string Tag = "Adult";
 
@@ -46,6 +49,12 @@ public sealed class BaseItemRepositoryInheritedTagTests : SqliteDbTestFixture
     // Carries the tag nowhere, the control the assertions are read against.
     private readonly Guid _untaggedSeries = Guid.NewGuid();
     private readonly Guid _untaggedEpisode = Guid.NewGuid();
+    private readonly Guid _trailerOfTaggedSeries = Guid.NewGuid();
+    private readonly Guid _trailerOfEpisodeUnderTaggedSeason = Guid.NewGuid();
+    private readonly Guid _trailerOfUntaggedSeries = Guid.NewGuid();
+
+    // Owned by a tagged item but not an extra, so it does not inherit the owner's tags.
+    private readonly Guid _versionOwnedByTaggedSeries = Guid.NewGuid();
 
     public BaseItemRepositoryInheritedTagTests()
     {
@@ -64,7 +73,7 @@ public sealed class BaseItemRepositoryInheritedTagTests : SqliteDbTestFixture
 
         // The blocked library carries the tag itself, so it goes with everything under it.
         Assert.Equal(
-            new[] { _library, _untaggedSeries, _untaggedEpisode }.Order(),
+            new[] { _library, _untaggedSeries, _untaggedEpisode, _trailerOfUntaggedSeries }.Order(),
             ids.Order());
     }
 
@@ -74,8 +83,46 @@ public sealed class BaseItemRepositoryInheritedTagTests : SqliteDbTestFixture
         var ids = _repository.GetItemIdsList(new InternalItemsQuery { IncludeInheritedTags = [Tag] }).ToHashSet();
 
         Assert.Equal(
-            new[] { _otherLibrary, _taggedSeries, _episodeOfTaggedSeries, _taggedSeason, _episodeUnderTaggedSeason, _taggedLibrarySeries }.Order(),
+            new[]
+            {
+                _otherLibrary,
+                _taggedSeries,
+                _episodeOfTaggedSeries,
+                _taggedSeason,
+                _episodeUnderTaggedSeason,
+                _taggedLibrarySeries,
+                _trailerOfTaggedSeries,
+                _trailerOfEpisodeUnderTaggedSeason
+            }.Order(),
             ids.Order());
+    }
+
+    [Fact]
+    public void IncludeInheritedTags_KeepsTheExtrasOfAnAllowedOwner()
+    {
+        var ids = _repository.GetItemIdsList(new InternalItemsQuery
+        {
+            OwnerIds = [_taggedSeries, _episodeUnderTaggedSeason, _untaggedSeries],
+            ExtraTypes = [ExtraType.Trailer],
+            IncludeInheritedTags = [Tag]
+        });
+
+        Assert.Equal(
+            new[] { _trailerOfTaggedSeries, _trailerOfEpisodeUnderTaggedSeason }.Order(),
+            ids.Order());
+    }
+
+    [Fact]
+    public void IncludeInheritedTags_DoesNotApplyOwnerTagsToOwnedItemsThatAreNotExtras()
+    {
+        var ids = _repository.GetItemIdsList(new InternalItemsQuery
+        {
+            IncludeOwnedItems = true,
+            IncludeInheritedTags = [Tag]
+        });
+
+        Assert.DoesNotContain(_versionOwnedByTaggedSeries, ids);
+        Assert.Contains(_trailerOfTaggedSeries, ids);
     }
 
     [Fact]
@@ -95,7 +142,7 @@ public sealed class BaseItemRepositoryInheritedTagTests : SqliteDbTestFixture
     {
         var ids = _repository.GetItemIdsList(new InternalItemsQuery { ExcludeInheritedTags = ["Unused"] });
 
-        Assert.Equal(9, ids.Count);
+        Assert.Equal(12, ids.Count);
     }
 
     private void Seed(JellyfinDbContext context)
@@ -109,6 +156,16 @@ public sealed class BaseItemRepositoryInheritedTagTests : SqliteDbTestFixture
         AddItem(context, _taggedLibrarySeries, SeriesType, "Series in blocked library", true);
         AddItem(context, _untaggedSeries, SeriesType, "Untagged series", true);
         AddItem(context, _untaggedEpisode, EpisodeType, "Untagged episode", false, _untaggedSeries);
+        AddExtra(context, _trailerOfTaggedSeries, "Trailer of tagged series", _taggedSeries);
+        AddExtra(context, _trailerOfEpisodeUnderTaggedSeason, "Trailer of episode under tagged season", _episodeUnderTaggedSeason);
+        AddExtra(context, _trailerOfUntaggedSeries, "Trailer of untagged series", _untaggedSeries);
+        context.BaseItems.Add(new BaseItemEntity
+        {
+            Id = _versionOwnedByTaggedSeries,
+            Type = MovieType,
+            Name = "Version owned by tagged series",
+            OwnerId = _taggedSeries
+        });
 
         // AncestorIds is a closure: production writes one row per ancestor, not just the parent. The
         // episode of the tagged series deliberately has none, so the series branch is what has to catch it.
@@ -133,6 +190,18 @@ public sealed class BaseItemRepositoryInheritedTagTests : SqliteDbTestFixture
             Name = name,
             IsFolder = isFolder,
             SeriesId = seriesId
+        });
+    }
+
+    private void AddExtra(JellyfinDbContext context, Guid id, string name, Guid ownerId)
+    {
+        context.BaseItems.Add(new BaseItemEntity
+        {
+            Id = id,
+            Type = TrailerType,
+            Name = name,
+            OwnerId = ownerId,
+            ExtraType = BaseItemExtraType.Trailer
         });
     }
 
