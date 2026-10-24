@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -60,6 +61,36 @@ public class EpisodeVersionsPostScanTaskTests
             _videoVersionManager.Object,
             _linkedChildrenService.Object,
             NullLogger<EpisodeVersionsPostScanTask>.Instance);
+    }
+
+    [Fact]
+    public async Task Run_UnidentifiedSameNamedSeriesFromDifferentYears_DoesNothing()
+    {
+        AddSeries("/Shows/Spider Noir (1990)", identified: false, productionYear: 1990);
+        AddSeries("/Shows/Spider Noir (2025)", identified: false, productionYear: 2025);
+        AddEpisode("/Shows/Spider Noir (1990)/S01E01.mkv", 1, 1);
+        AddEpisode("/Shows/Spider Noir (2025)/S01E01.mkv", 1, 1);
+
+        await _task.Run(new Progress<double>(), CancellationToken.None);
+
+        _videoVersionManager.Verify(
+            x => x.MergeVersionsAsync(It.IsAny<IReadOnlyList<Video>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Run_UnidentifiedSeriesFoldersFromTheSameYear_MergesSameNumberedEpisodes()
+    {
+        AddSeries("/Shows/Spider Noir S01 (BW)", identified: false, productionYear: 2025);
+        AddSeries("/Shows/Spider Noir S01 (Color)", identified: false, productionYear: 2025);
+        var bw = AddEpisode("/Shows/Spider Noir S01 (BW)/S01E01.mkv", 1, 1);
+        var color = AddEpisode("/Shows/Spider Noir S01 (Color)/S01E01.mkv", 1, 1);
+
+        await _task.Run(new Progress<double>(), CancellationToken.None);
+
+        _videoVersionManager.Verify(
+            x => x.MergeVersionsAsync(It.Is<IReadOnlyList<Video>>(v => v.Count == 2 && v.Contains(bw) && v.Contains(color)), true, It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]
@@ -207,15 +238,21 @@ public class EpisodeVersionsPostScanTaskTests
         _videoVersionManager.Verify(x => x.RemoveVersionLinkAsync(primary, alternate.Id, It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    private Series AddSeries(string path)
+    private Series AddSeries(string path, bool identified = true, int? productionYear = null)
     {
         var series = new Series
         {
             Id = Guid.NewGuid(),
             Path = path,
             Name = "Spider Noir",
+            ProductionYear = productionYear,
             PresentationUniqueKey = SeriesKey
         };
+        if (identified)
+        {
+            series.SetProviderId(MetadataProvider.Tvdb, "12345");
+        }
+
         _series.Add(series);
         _libraryManager.Setup(x => x.GetItemById(series.Id)).Returns(series);
         return series;
