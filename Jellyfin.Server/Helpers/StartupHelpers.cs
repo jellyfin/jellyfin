@@ -27,10 +27,14 @@ public static class StartupHelpers
 {
     private static readonly string[] _relevantEnvVarPrefixes = { "JELLYFIN_", "DOTNET_", "ASPNETCORE_" };
 
+    // Initialized in this order: the second field adds the first to its collection.
+    private static readonly HostLoggerProviders _hostLoggerProviders = new HostLoggerProviders();
+    private static readonly LoggerProviderCollection _runtimeLoggerProviders = CreateRuntimeLoggerProviders();
+
     /// <summary>
-    /// Gets the <see cref="ILoggerProvider"/>s Serilog forwards log events to.
+    /// Gets the forwarder from Serilog to the <see cref="ILoggerProvider"/>s of the running host.
     /// </summary>
-    public static LoggerProviderCollection RuntimeLoggerProviders { get; } = new LoggerProviderCollection();
+    internal static HostLoggerProviders HostLoggerProviders => _hostLoggerProviders;
 
     /// <summary>
     /// Logs relevant environment variables and information about the host.
@@ -271,7 +275,7 @@ public static class StartupHelpers
                 .Enrich.FromLogContext()
                 .Enrich.WithThreadId()
                 .WriteTo.Providers(startupLogger)
-                .WriteTo.Providers(RuntimeLoggerProviders)
+                .WriteTo.Providers(_runtimeLoggerProviders)
                 .CreateLogger();
         }
         catch (Exception ex)
@@ -286,7 +290,7 @@ public static class StartupHelpers
                     outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message}{NewLine}{Exception}",
                     formatProvider: CultureInfo.InvariantCulture,
                     encoding: Encoding.UTF8))
-                .WriteTo.Providers(RuntimeLoggerProviders)
+                .WriteTo.Providers(_runtimeLoggerProviders)
                 .Enrich.FromLogContext()
                 .Enrich.WithThreadId()
                 .CreateLogger();
@@ -303,5 +307,12 @@ public static class StartupHelpers
         // Make sure we have all the code pages we can get
         // Ref: https://docs.microsoft.com/en-us/dotnet/api/system.text.codepagesencodingprovider.instance?view=netcore-3.0#remarks
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+    }
+
+    private static LoggerProviderCollection CreateRuntimeLoggerProviders()
+    {
+        var providers = new LoggerProviderCollection();
+        providers.AddProvider(_hostLoggerProviders);
+        return providers;
     }
 }

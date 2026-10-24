@@ -173,6 +173,7 @@ namespace Jellyfin.Server
                             options,
                             startupConfig);
             var configurationCompleted = false;
+            var hostLoggerProviders = StartupHelpers.HostLoggerProviders.Attach();
             try
             {
                 _jellyfinHost = Host.CreateDefaultBuilder()
@@ -189,7 +190,7 @@ namespace Jellyfin.Server
                         }
                     })
                     .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(options, appPaths, startupConfig))
-                    .UseSerilog(providers: StartupHelpers.RuntimeLoggerProviders)
+                    .UseSerilog(providers: hostLoggerProviders)
                     .ConfigureServices(e => e.RegisterStartupLogger())
                     .Build();
 
@@ -295,6 +296,7 @@ namespace Jellyfin.Server
                 }
 
                 _appHost = null;
+                StartupHelpers.HostLoggerProviders.Detach(hostLoggerProviders);
                 _jellyfinHost?.Dispose();
                 _jellyfinHost = null;
             }
