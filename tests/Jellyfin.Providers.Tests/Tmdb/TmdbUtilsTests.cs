@@ -219,6 +219,19 @@ namespace Jellyfin.Providers.Tests.Tmdb
                     [Movie(1, "Some Movie", "Some Movie", 2015), Movie(2, "Some Movie", "Some Movie", 2010)],
                     2
                 },
+                // M. Night Shyamalan's Split premiered at a festival in 2016 and was released in 2017, so the obscure
+                // 2016 film of the same name must not outrank it. Years one apart tie and TMDb's own ordering decides.
+                {
+                    "Split (2016)", "Split", 2016,
+                    [Movie(381288, "Split", "Split", 2017), Movie(358364, "Split", "Split", 2016)],
+                    381288
+                },
+                // Two years apart is a different film, so the tie only covers a year off by one.
+                {
+                    "Two years apart", "Some Movie", 2016,
+                    [Movie(1, "Some Movie", "Some Movie", 2018), Movie(2, "Some Movie", "Some Movie", 2016)],
+                    2
+                },
                 // Nothing matches the name, so TMDb's own ordering is kept.
                 {
                     "A Christmas No. 1 (2021)", "A Christmas No. 1", 2021,

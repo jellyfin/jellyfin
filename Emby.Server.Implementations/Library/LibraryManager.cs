@@ -2464,6 +2464,9 @@ namespace Emby.Server.Implementations.Library
             var parentCollectionType = parent is not null ? GetTopFolderContentType(parent) : null;
             foreach (var item in items)
             {
+                // Parental controls filter on the stored score, so it has to match the ratings being saved.
+                item.OnMetadataChanged();
+
                 if (item is Video video && video.LocalAlternateVersions.Length > 0)
                 {
                     var videoType = video.GetType();
@@ -2670,6 +2673,9 @@ namespace Emby.Server.Implementations.Library
         {
             foreach (var item in items)
             {
+                // Parental controls filter on the stored score, so it has to match the ratings being saved.
+                item.OnMetadataChanged();
+
                 item.DateLastSaved = DateTime.UtcNow;
                 await RunMetadataSavers(item, updateReason).ConfigureAwait(false);
 
@@ -3064,14 +3070,7 @@ namespace Emby.Server.Implementations.Library
             CollectionType? viewType,
             string sortName)
         {
-            var parentIdString = parentId.IsEmpty()
-                ? null
-                : parentId.ToString("N", CultureInfo.InvariantCulture);
-
-            // The name is either localized (grouped views) or the library folder's own name.
-            var idValues = "38_namedview_" + user.Id.ToString("N", CultureInfo.InvariantCulture) + (parentIdString ?? string.Empty) + (viewType?.ToString() ?? string.Empty);
-
-            var id = GetNewItemId(idValues, typeof(UserView));
+            var id = GetNamedViewId(user, parentId, viewType);
 
             var path = Path.Combine(_configurationManager.ApplicationPaths.InternalMetadataPath, "views", id.ToString("N", CultureInfo.InvariantCulture));
 
@@ -3129,6 +3128,18 @@ namespace Emby.Server.Implementations.Library
             return item;
         }
 
+        public Guid GetNamedViewId(User user, Guid parentId, CollectionType? viewType)
+        {
+            var parentIdString = parentId.IsEmpty()
+                ? null
+                : parentId.ToString("N", CultureInfo.InvariantCulture);
+
+            // The name is either localized (grouped views) or the library folder's own name.
+            var idValues = "38_namedview_" + user.Id.ToString("N", CultureInfo.InvariantCulture) + (parentIdString ?? string.Empty) + (viewType?.ToString() ?? string.Empty);
+
+            return GetNewItemId(idValues, typeof(UserView));
+        }
+
         public UserView GetShadowView(
             BaseItem parent,
             CollectionType? viewType,
@@ -3138,10 +3149,7 @@ namespace Emby.Server.Implementations.Library
 
             var name = parent.Name;
             var parentId = parent.Id;
-
-            var idValues = "38_namedview_" + name + parentId + (viewType?.ToString() ?? string.Empty);
-
-            var id = GetNewItemId(idValues, typeof(UserView));
+            var id = GetShadowViewId(name, parentId, viewType);
 
             var path = parent.Path;
 
@@ -3191,6 +3199,13 @@ namespace Emby.Server.Implementations.Library
             }
 
             return item;
+        }
+
+        public Guid GetShadowViewId(string name, Guid parentId, CollectionType? viewType)
+        {
+            var idValues = "38_namedview_" + name + parentId + (viewType?.ToString() ?? string.Empty);
+
+            return GetNewItemId(idValues, typeof(UserView));
         }
 
         public UserView GetNamedView(
