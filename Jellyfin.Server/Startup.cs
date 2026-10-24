@@ -18,6 +18,7 @@ using Jellyfin.Networking.HappyEyeballs;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.HealthChecks;
 using Jellyfin.Server.Implementations.Extensions;
+using Jellyfin.Server.Implementations.Users;
 using Jellyfin.Server.ServerSetupApp;
 using Jellyfin.Server.Telemetry;
 using MediaBrowser.Common.Net;
@@ -167,6 +168,7 @@ namespace Jellyfin.Server
             services.AddHostedService<LibraryChangedNotifier>();
             services.AddHostedService<UserDataChangeNotifier>();
             services.AddHostedService<RecordingNotifier>();
+            services.AddHostedService<DeviceAccessHost>();
         }
 
         /// <summary>

@@ -1229,6 +1229,14 @@ namespace Jellyfin.LiveTv
                 .Where(IsLiveTvEnabled);
         }
 
+        /// <inheritdoc />
+        public bool IsEnabledForUser(User user)
+        {
+            ArgumentNullException.ThrowIfNull(user);
+
+            return IsLiveTvEnabled(user);
+        }
+
         /// <summary>
         /// Resets the tuner.
         /// </summary>
