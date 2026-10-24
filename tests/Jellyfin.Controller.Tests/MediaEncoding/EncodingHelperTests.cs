@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
+using System.Linq;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.IO;
@@ -21,6 +23,40 @@ namespace Jellyfin.Controller.Tests.MediaEncoding;
 
 public class EncodingHelperTests
 {
+    [Theory]
+    [MemberData(nameof(ContainerValidationRegex_TestData))]
+    public void ContainerValidationRegex_ValidatesContainersAndCodecLists(string? value, bool valid)
+    {
+        var validator = new RegularExpressionAttribute(EncodingHelper.ContainerValidationRegexStr);
+        Assert.Equal(valid, validator.IsValid(value));
+        if (value is not null)
+        {
+            Assert.Equal(valid, EncodingHelper.ContainerValidationRegex().IsMatch(value));
+        }
+    }
+
+    public static TheoryData<string?, bool> ContainerValidationRegex_TestData()
+    {
+        var data = new TheoryData<string?, bool>
+        {
+            { null, true },
+            { string.Empty, true },
+            { "aac,ac3,alac,dts,eac3,flac,mp3,opus,truehd", true },
+            { "ABC012-._,|", true },
+            { "aac mp3", false },
+            { "aac;mp3", false },
+            { "aac\n", false },
+            { "aác", false }
+        };
+        foreach (var length in new[] { 40, 41, 256, 257 })
+        {
+            var value = string.Concat(Enumerable.Repeat("aac,", (length - 1) / 4)) + new string('a', ((length - 1) % 4) + 1);
+            data.Add(value, length <= 256);
+        }
+
+        return data;
+    }
+
     [Fact]
     public void GetMapArgs_NoSubtitle_ExcludesAllSubs()
     {
