@@ -26,8 +26,10 @@ public sealed class UserViewBuilderTests
 
         var userDataManager = new Mock<IUserDataManager>();
         userDataManager
-            .Setup(m => m.GetUserData(_user, It.IsAny<BaseItem>()))
-            .Returns((User _, BaseItem item) => new UserItemData { Key = item.Id.ToString("N"), Played = item.Id.Equals(watched.Id) });
+            .Setup(m => m.GetUserDataBatch(It.IsAny<IReadOnlyList<BaseItem>>(), _user))
+            .Returns((IReadOnlyList<BaseItem> list, User _) => list.ToDictionary(
+                i => i.Id,
+                i => new UserItemData { Key = i.Id.ToString("N"), Played = i.Id.Equals(watched.Id) }));
         userDataManager
             .Setup(m => m.GetResumeUserDataBatch(It.IsAny<IReadOnlyList<BaseItem>>(), _user))
             .Returns(new Dictionary<Guid, VersionResumeData>
