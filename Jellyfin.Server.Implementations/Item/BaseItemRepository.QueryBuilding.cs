@@ -163,15 +163,7 @@ public sealed partial class BaseItemRepository
 
         var collapsibleChildIds = categorized.Where(c => c.IsCollapsible).Select(c => c.Id);
 
-        // Single JOIN: manual links to BoxSet parents, restricted to currentIds children.
-        var manualBoxSetLinks = context.LinkedChildren
-            .Where(lc => lc.ChildType == Database.Implementations.Entities.LinkedChildType.Manual
-                && currentIds.Contains(lc.ChildId))
-            .Join(
-                context.BaseItems.Where(bs => bs.Type == boxSetTypeName),
-                lc => lc.ParentId,
-                bs => bs.Id,
-                (lc, bs) => new { lc.ChildId, lc.ParentId });
+        var manualBoxSetLinks = GetManualBoxSetLinks(context, currentIds, boxSetTypeName);
 
         var childrenInBoxSet = manualBoxSetLinks.Select(x => x.ChildId).Distinct();
 
@@ -199,15 +191,7 @@ public sealed partial class BaseItemRepository
         IQueryable<Guid> currentIds,
         string boxSetTypeName)
     {
-        // Single JOIN: manual links to BoxSet parents, restricted to currentIds children.
-        var manualBoxSetLinks = context.LinkedChildren
-            .Where(lc => lc.ChildType == Database.Implementations.Entities.LinkedChildType.Manual
-                && currentIds.Contains(lc.ChildId))
-            .Join(
-                context.BaseItems.Where(bs => bs.Type == boxSetTypeName),
-                lc => lc.ParentId,
-                bs => bs.Id,
-                (lc, bs) => new { lc.ChildId, lc.ParentId });
+        var manualBoxSetLinks = GetManualBoxSetLinks(context, currentIds, boxSetTypeName);
 
         var childrenInBoxSet = manualBoxSetLinks.Select(x => x.ChildId).Distinct();
         var boxSetIds = manualBoxSetLinks.Select(x => x.ParentId).Distinct();
@@ -221,6 +205,29 @@ public sealed partial class BaseItemRepository
 
         var collapsedIds = notInBoxSet.Union(boxSetIds);
         return context.BaseItems.AsNoTracking().Where(e => collapsedIds.Contains(e.Id));
+    }
+
+    // Manual links from BoxSets to the items in currentIds. A link to an alternate version counts as a link
+    // to its primary: the alternate is not listed itself, and merging versions leaves the BoxSet pointing at it.
+    private static IQueryable<ManualBoxSetLink> GetManualBoxSetLinks(
+        JellyfinDbContext context,
+        IQueryable<Guid> currentIds,
+        string boxSetTypeName)
+    {
+        var manualLinks = context.LinkedChildren
+            .Where(lc => lc.ChildType == Database.Implementations.Entities.LinkedChildType.Manual);
+        var boxSets = context.BaseItems.Where(bs => bs.Type == boxSetTypeName);
+
+        var directLinks = manualLinks
+            .Where(lc => currentIds.Contains(lc.ChildId))
+            .Join(boxSets, lc => lc.ParentId, bs => bs.Id, (lc, bs) => new ManualBoxSetLink { ChildId = lc.ChildId, ParentId = lc.ParentId });
+
+        var versionLinks = context.BaseItems
+            .Where(a => a.PrimaryVersionId != null && currentIds.Contains(a.PrimaryVersionId.Value))
+            .Join(manualLinks, a => a.Id, lc => lc.ChildId, (a, lc) => new { PrimaryId = a.PrimaryVersionId!.Value, lc.ParentId })
+            .Join(boxSets, x => x.ParentId, bs => bs.Id, (x, bs) => new ManualBoxSetLink { ChildId = x.PrimaryId, ParentId = x.ParentId });
+
+        return directLinks.Concat(versionLinks);
     }
 
     private static IQueryable<BaseItemEntity> ApplyNameFilters(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
@@ -718,5 +725,12 @@ public sealed partial class BaseItemRepository
             || context.LinkedChildren.Any(lc => lc.ParentId == e.Id
                 && (descendants.Any(d => d.Id == lc.ChildId)
                     || context.AncestorIds.Any(a => a.ParentItemId == lc.ChildId && descendants.Any(d => d.Id == a.ItemId))));
+    }
+
+    private sealed class ManualBoxSetLink
+    {
+        public Guid ChildId { get; init; }
+
+        public Guid ParentId { get; init; }
     }
 }

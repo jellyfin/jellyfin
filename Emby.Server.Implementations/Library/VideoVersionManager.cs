@@ -105,8 +105,12 @@ public class VideoVersionManager : IVideoVersionManager
 
             await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
 
-            // Re-route any playlist/collection references from this item to the primary
-            await _libraryManager.RerouteLinkedChildReferencesAsync(item.Id, primaryVersion.Id).ConfigureAwait(false);
+            // Re-route playlist/collection references to the primary when the user merges. An automatic
+            // merge can be undone by a later scan or a split, which could not restore the moved entries.
+            if (!autoGrouped)
+            {
+                await _libraryManager.RerouteLinkedChildReferencesAsync(item.Id, primaryVersion.Id).ConfigureAwait(false);
+            }
 
             if (!alternateVersionsOfPrimary.Any(i => i.ItemId.HasValue && i.ItemId.Value.Equals(item.Id)))
             {

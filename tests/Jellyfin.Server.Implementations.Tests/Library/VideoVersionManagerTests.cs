@@ -67,6 +67,19 @@ public class VideoVersionManagerTests
         Assert.Equal(expectedType, link.Type);
     }
 
+    [Theory]
+    [InlineData(true, 0)]
+    [InlineData(false, 1)]
+    public async Task MergeVersionsAsync_ReroutesPlaylistReferencesOnlyForManualMerges(bool autoGrouped, int expectedReroutes)
+    {
+        var videoA = CreateVideo("/Movies/Blade Runner (1982)/Blade Runner (1982).mkv");
+        var videoB = CreateVideo("/Movies 4K/Blade Runner (1982)/Blade Runner (1982).mkv");
+
+        await _manager.MergeVersionsAsync([videoA, videoB], autoGrouped, CancellationToken.None);
+
+        _libraryManager.Verify(x => x.RerouteLinkedChildReferencesAsync(It.IsAny<Guid>(), It.IsAny<Guid>()), Times.Exactly(expectedReroutes));
+    }
+
     [Fact]
     public async Task MergeVersionsAsync_FewerThanTwoVideos_DoesNothing()
     {
