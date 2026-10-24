@@ -22,6 +22,7 @@ using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.MediaInfo;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -741,22 +742,47 @@ public partial class TrickplayManager : ITrickplayManager
     public async Task<Dictionary<string, Dictionary<int, TrickplayInfo>>> GetTrickplayManifest(BaseItem item)
     {
         var trickplayManifest = new Dictionary<string, Dictionary<int, TrickplayInfo>>();
-        foreach (var mediaSource in item.GetMediaSources(false))
+        foreach (var mediaSourceId in GetTrickplaySourceIds(item))
         {
-            if (mediaSource.IsRemote || !Guid.TryParse(mediaSource.Id, out var mediaSourceId))
-            {
-                continue;
-            }
-
             var trickplayResolutions = await GetTrickplayResolutions(mediaSourceId).ConfigureAwait(false);
 
             if (trickplayResolutions.Count > 0)
             {
-                trickplayManifest[mediaSource.Id] = trickplayResolutions;
+                trickplayManifest[mediaSourceId.ToString("N", CultureInfo.InvariantCulture)] = trickplayResolutions;
             }
         }
 
         return trickplayManifest;
+    }
+
+    private static IEnumerable<Guid> GetTrickplaySourceIds(BaseItem item)
+    {
+        // Resolve version ids directly rather than through GetMediaSources, which loads streams,
+        // attachments and segment existence for every version only for the caller to discard them.
+        if (item is Video video && video.SourceType != SourceType.Channel)
+        {
+            foreach (var version in video.GetAllVersions())
+            {
+                if (version.IsShortcut
+                    && !string.IsNullOrEmpty(version.ShortcutPath)
+                    && BaseItem.MediaSourceManager.GetPathProtocol(version.ShortcutPath) != MediaProtocol.File)
+                {
+                    continue;
+                }
+
+                yield return version.Id;
+            }
+
+            yield break;
+        }
+
+        foreach (var mediaSource in item.GetMediaSources(false))
+        {
+            if (!mediaSource.IsRemote && Guid.TryParse(mediaSource.Id, out var mediaSourceId))
+            {
+                yield return mediaSourceId;
+            }
+        }
     }
 
     /// <inheritdoc />
