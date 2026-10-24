@@ -727,7 +727,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return null;
         }
 
-        public virtual void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
+        public virtual void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate, float? encodingSpeed)
         {
             Progress.Report(percentComplete.Value);
         }
