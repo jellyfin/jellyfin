@@ -1446,26 +1446,53 @@ namespace MediaBrowser.Controller.Entities
 
             if (!prefixIsWholeName)
             {
-                // Retreat to the last structural delimiter ('-', '_', '.'), skipping dots that are
-                // decimal points within a number rather than delimiters (see IsDecimalPoint).
-                var cut = prefix.Length;
-                while (cut > 0
-                    && (Array.IndexOf(VersionDelimiters, prefix[cut - 1]) < 0
-                        || IsDecimalPoint(prefix, cut - 1, fileNames)))
+                // When any version label starts with '[' immediately after the common prefix,
+                // the space before the bracket is the version separator. Strip trailing whitespace
+                // only — the full shared token (e.g. a UPC code) must be removed rather than
+                // retreating past it to an earlier structural delimiter in the prefix.
+                var hasBracketLabel = false;
+                for (var i = 0; i < fileNames.Count; i++)
                 {
-                    cut--;
-                }
-
-                if (cut == 0)
-                {
-                    cut = prefix.Length;
-                    while (cut > 0 && prefix[cut - 1] != ' ')
+                    if (fileNames[i].Length > prefix.Length && fileNames[i][prefix.Length] == '[')
                     {
-                        cut--;
+                        hasBracketLabel = true;
+                        break;
                     }
                 }
 
-                prefix = prefix[..cut];
+                if (hasBracketLabel)
+                {
+                    var cut = prefix.Length;
+                    while (cut > 0 && prefix[cut - 1] == ' ')
+                    {
+                        cut--;
+                    }
+
+                    prefix = prefix[..cut];
+                }
+                else
+                {
+                    // Retreat to the last structural delimiter ('-', '_', '.'), skipping dots that
+                    // are decimal points within a number rather than delimiters (see IsDecimalPoint).
+                    var cut = prefix.Length;
+                    while (cut > 0
+                        && (Array.IndexOf(VersionDelimiters, prefix[cut - 1]) < 0
+                            || IsDecimalPoint(prefix, cut - 1, fileNames)))
+                    {
+                        cut--;
+                    }
+
+                    if (cut == 0)
+                    {
+                        cut = prefix.Length;
+                        while (cut > 0 && prefix[cut - 1] != ' ')
+                        {
+                            cut--;
+                        }
+                    }
+
+                    prefix = prefix[..cut];
+                }
             }
 
             return prefix;
