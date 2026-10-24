@@ -825,7 +825,11 @@ namespace MediaBrowser.Providers.Manager
                                         continue;
                                     }
 
-                                    await ProviderManager.SaveImage(item, remoteImage.Url, remoteImage.Type, null, cancellationToken).ConfigureAwait(false);
+                                    int? imageIndex = item.AllowsMultipleImages(remoteImage.Type)
+                                        ? foundImageTypes.Count(x => x == remoteImage.Type)
+                                        : null;
+
+                                    await ProviderManager.SaveImage(item, remoteImage.Url, remoteImage.Type, imageIndex, cancellationToken).ConfigureAwait(false);
                                     refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
 
                                     // remember imagetype that has just been downloaded
