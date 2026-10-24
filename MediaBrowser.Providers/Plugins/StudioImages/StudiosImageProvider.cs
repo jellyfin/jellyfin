@@ -47,7 +47,7 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
         /// <inheritdoc />
         public bool Supports(BaseItem item)
         {
-            return item is Studio;
+            return item is Studio or Network;
         }
 
         /// <inheritdoc />

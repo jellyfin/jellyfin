@@ -76,6 +76,9 @@ namespace Emby.Server.Implementations
         /// <value>The studio path.</value>
         public string StudioPath => Path.Combine(InternalMetadataPath, "Studio");
 
+        /// <inheritdoc />
+        public string NetworkPath => Path.Combine(InternalMetadataPath, "Network");
+
         /// <summary>
         /// Gets the path to the Year directory.
         /// </summary>
