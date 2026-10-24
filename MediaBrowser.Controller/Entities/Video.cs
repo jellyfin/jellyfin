@@ -705,6 +705,11 @@ namespace MediaBrowser.Controller.Entities
         {
             await base.UpdateToRepositoryAsync(updateReason, cancellationToken).ConfigureAwait(false);
 
+            if (updateReason == ItemUpdateType.MediaInfo)
+            {
+                return;
+            }
+
             var localAlternates = LibraryManager.GetLocalAlternateVersionIds(this)
                 .Select(i => LibraryManager.GetItemById(i))
                 .Where(i => i is not null);

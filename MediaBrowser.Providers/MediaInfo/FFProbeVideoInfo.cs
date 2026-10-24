@@ -147,6 +147,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 cancellationToken.ThrowIfCancellationRequested();
             }
 
+            if (options.RefreshMediaInfoOnly && (mediaInfoResult is null
+                || !mediaInfoResult.MediaStreams.Any(stream => stream.Type == MediaStreamType.Video)))
+            {
+                return ItemUpdateType.None;
+            }
+
             await Fetch(item, cancellationToken, mediaInfoResult, blurayDiscInfo, options).ConfigureAwait(false);
 
             return ItemUpdateType.MetadataImport;
@@ -286,7 +292,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 var extractDuringScan = false;
                 if (libraryOptions is not null)
                 {
-                    extractDuringScan = libraryOptions.ExtractChapterImagesDuringLibraryScan;
+                    extractDuringScan = !options.RefreshMediaInfoOnly && libraryOptions.ExtractChapterImagesDuringLibraryScan;
                 }
 
                 await _chapterManager.RefreshChapterImages(video, options.DirectoryService, chapters, extractDuringScan, false, cancellationToken).ConfigureAwait(false);
@@ -388,6 +394,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
         internal void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions refreshOptions, LibraryOptions libraryOptions)
         {
+            if (refreshOptions.RefreshMediaInfoOnly)
+            {
+                return;
+            }
+
             var replaceData = refreshOptions.ReplaceAllMetadata;
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.OfficialRating))
@@ -500,6 +511,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private void FetchPeople(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions options)
         {
+            if (options.RefreshMediaInfoOnly)
+            {
+                return;
+            }
+
             if (video.IsLocked
                 || video.LockedFields.Contains(MetadataField.Cast)
                 || data.People.Length == 0)
@@ -544,8 +560,8 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var externalSubtitleStreams = await _subtitleResolver.GetExternalStreamsAsync(video, 0, options.DirectoryService, false, cancellationToken).ConfigureAwait(false);
 
-            var enableSubtitleDownloading = options.MetadataRefreshMode == MetadataRefreshMode.Default ||
-                                            options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
+            var enableSubtitleDownloading = !options.RefreshMediaInfoOnly
+                && (options.MetadataRefreshMode == MetadataRefreshMode.Default || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh);
 
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 

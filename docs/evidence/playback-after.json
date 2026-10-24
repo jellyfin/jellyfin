@@ -1,0 +1,137 @@
+{
+  "expect_overwrite": false,
+  "cases": [
+    {
+      "case": "Locked NFO",
+      "nfo_lockdata": true,
+      "before": {
+        "Name": "API title",
+        "Genres": [
+          "剧情"
+        ],
+        "ProductionLocations": [
+          "中国"
+        ],
+        "Overview": "API overview",
+        "LockedFields": [],
+        "LockData": false
+      },
+      "playbacks": [
+        {
+          "Name": "API title",
+          "Genres": [
+            "剧情"
+          ],
+          "ProductionLocations": [
+            "中国"
+          ],
+          "Overview": "API overview",
+          "LockedFields": [],
+          "LockData": false
+        },
+        {
+          "Name": "API title",
+          "Genres": [
+            "剧情"
+          ],
+          "ProductionLocations": [
+            "中国"
+          ],
+          "Overview": "API overview",
+          "LockedFields": [],
+          "LockData": false
+        }
+      ]
+    },
+    {
+      "case": "Unlocked NFO",
+      "nfo_lockdata": false,
+      "before": {
+        "Name": "API title",
+        "Genres": [
+          "剧情"
+        ],
+        "ProductionLocations": [
+          "中国"
+        ],
+        "Overview": "API overview",
+        "LockedFields": [],
+        "LockData": false
+      },
+      "playbacks": [
+        {
+          "Name": "API title",
+          "Genres": [
+            "剧情"
+          ],
+          "ProductionLocations": [
+            "中国"
+          ],
+          "Overview": "API overview",
+          "LockedFields": [],
+          "LockData": false
+        },
+        {
+          "Name": "API title",
+          "Genres": [
+            "剧情"
+          ],
+          "ProductionLocations": [
+            "中国"
+          ],
+          "Overview": "API overview",
+          "LockedFields": [],
+          "LockData": false
+        }
+      ]
+    },
+    {
+      "case": "Empty fields",
+      "nfo_lockdata": true,
+      "before": {
+        "Name": "API title",
+        "Genres": [],
+        "ProductionLocations": [],
+        "Overview": "",
+        "LockedFields": [],
+        "LockData": false
+      },
+      "playbacks": [
+        {
+          "Name": "API title",
+          "Genres": [],
+          "ProductionLocations": [],
+          "Overview": "",
+          "LockedFields": [],
+          "LockData": false
+        },
+        {
+          "Name": "API title",
+          "Genres": [],
+          "ProductionLocations": [],
+          "Overview": "",
+          "LockedFields": [],
+          "LockData": false
+        }
+      ]
+    }
+  ],
+  "server_version": "13.0.0",
+  "failed_probe_preserved_data": true,
+  "explicit_refresh": {
+    "Name": "Locked NFO",
+    "Genres": [
+      "Original genre"
+    ],
+    "ProductionLocations": [
+      "Original country"
+    ],
+    "Overview": "Original overview",
+    "LockedFields": [],
+    "LockData": true
+  },
+  "passed": true,
+  "base_commit": "08c2ba6e0b6499122822f1c5b18bc426104538b4",
+  "build_informational_version": "13.0.0-20261019233142",
+  "variant": "isolated core patch"
+}
