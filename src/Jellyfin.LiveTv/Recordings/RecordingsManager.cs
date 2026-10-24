@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
+using System.Text;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
 using Jellyfin.Data.Enums;
@@ -771,7 +772,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     private string EnsureFileUnique(string path, string timerId)
     {
         var parent = Path.GetDirectoryName(path)!;
-        var name = Path.GetFileNameWithoutExtension(path);
+        var baseName = Path.GetFileNameWithoutExtension(path);
         var extension = Path.GetExtension(path);
 
         var index = 1;
@@ -779,13 +780,41 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
                    => string.Equals(i.Value.Path, path, StringComparison.OrdinalIgnoreCase)
                       && !string.Equals(i.Value.Timer.Id, timerId, StringComparison.OrdinalIgnoreCase)))
         {
-            name += " - " + index.ToString(CultureInfo.InvariantCulture);
-
-            path = Path.ChangeExtension(Path.Combine(parent, name), extension);
+            path = BuildSuffixedPath(parent, baseName, extension, index);
             index++;
         }
 
         return path;
+    }
+
+    internal static string BuildSuffixedPath(string parent, string baseName, string extension, int index)
+    {
+        var suffix = " - " + index.ToString(CultureInfo.InvariantCulture) + extension;
+        // Ensure the resulting filename fits within the 255-byte filesystem limit.
+        // GetRecordingName caps at ~250 bytes; appending the suffix can push past the limit.
+        const int MaxFileNameBytes = 255;
+        if (Encoding.UTF8.GetByteCount(baseName + suffix) > MaxFileNameBytes)
+        {
+            // Find the longest prefix of baseName that fits in (255 - suffix) UTF-8 bytes.
+            var maxBaseBytes = MaxFileNameBytes - Encoding.UTF8.GetByteCount(suffix);
+            var byteCount = 0;
+            var safeLen = 0;
+            foreach (var ch in baseName)
+            {
+                var cb = Encoding.UTF8.GetByteCount(new[] { ch });
+                if (byteCount + cb > maxBaseBytes)
+                {
+                    break;
+                }
+
+                byteCount += cb;
+                safeLen++;
+            }
+
+            baseName = baseName[..safeLen].TrimEnd();
+        }
+
+        return Path.Combine(parent, baseName + suffix);
     }
 
     private IRecorder GetRecorder(MediaSourceInfo mediaSource)
