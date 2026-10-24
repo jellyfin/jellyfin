@@ -90,17 +90,30 @@ public sealed class AudioFileProberTests : IDisposable
         Assert.Equal(["Artist A"], audio.AlbumArtists);
     }
 
-    [Fact]
-    public async Task Probe_ArtistTagRemovedOnDisk_ClearsArtistsOnScan()
+    [Theory]
+    [InlineData(MetadataRefreshMode.Default, false)]
+    [InlineData(MetadataRefreshMode.FullRefresh, true)]
+    public async Task Probe_ArtistTagsMissingOnDisk_KeepsExistingValues(MetadataRefreshMode refreshMode, bool replaceAllMetadata)
     {
         var audio = await ProbeNewFile("Artist A feat. Artist B", "Artist A");
 
-        WriteArtistTags(audio.Path, string.Empty, "Artist A");
-        await _audioFileProber.Probe(audio, GetRefreshOptions(MetadataRefreshMode.Default), CancellationToken.None);
+        // Values entered in the metadata editor for a file that has no tags to offer
+        audio.Artists = ["Edited In Jellyfin"];
+        audio.AlbumArtists = ["Edited In Jellyfin"];
+        audio.Album = "Edited Album";
+        audio.IndexNumber = 7;
+        audio.Genres = ["Edited Genre"];
+        WriteArtistTags(audio.Path, string.Empty, string.Empty);
 
-        // Without an artist tag the album artist is all that is left to go by, as it would be on a first scan
-        Assert.Empty(audio.Artists);
-        Assert.Equal(["Artist A"], audio.AlbumArtists);
+        var options = GetRefreshOptions(refreshMode);
+        options.ReplaceAllMetadata = replaceAllMetadata;
+        await _audioFileProber.Probe(audio, options, CancellationToken.None);
+
+        Assert.Equal(["Edited In Jellyfin"], audio.Artists);
+        Assert.Equal(["Edited In Jellyfin"], audio.AlbumArtists);
+        Assert.Equal("Edited Album", audio.Album);
+        Assert.Equal(7, audio.IndexNumber);
+        Assert.Equal(["Edited Genre"], audio.Genres);
     }
 
     [Fact]
@@ -117,16 +130,21 @@ public sealed class AudioFileProberTests : IDisposable
     }
 
     [Theory]
-    [InlineData(MetadataRefreshMode.ValidationOnly)]
-    [InlineData(MetadataRefreshMode.FullRefresh)]
-    public async Task Probe_NotReplacingMetadata_KeepsExistingArtists(MetadataRefreshMode refreshMode)
+    [InlineData(MetadataRefreshMode.ValidationOnly, false)]
+    [InlineData(MetadataRefreshMode.ValidationOnly, true)]
+    [InlineData(MetadataRefreshMode.None, true)]
+    [InlineData(MetadataRefreshMode.FullRefresh, false)]
+    public async Task Probe_NotReplacingMetadata_KeepsExistingArtists(MetadataRefreshMode refreshMode, bool replaceAllMetadata)
     {
         var audio = await ProbeNewFile("Artist A feat. Artist B", "Artist A");
 
-        // Searching for missing metadata fills gaps, it does not overwrite what the item already has
+        // Searching for missing metadata fills gaps, it does not overwrite what the item already has.
+        // Validation never replaces, matching MetadataService.RefreshWithProviders
         audio.Artists = ["Edited In Jellyfin"];
         WriteArtistTags(audio.Path, "Artist A", "Artist A");
-        await _audioFileProber.Probe(audio, GetRefreshOptions(refreshMode), CancellationToken.None);
+        var options = GetRefreshOptions(refreshMode);
+        options.ReplaceAllMetadata = replaceAllMetadata;
+        await _audioFileProber.Probe(audio, options, CancellationToken.None);
 
         Assert.Equal(["Edited In Jellyfin"], audio.Artists);
     }

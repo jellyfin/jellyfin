@@ -341,7 +341,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 _libraryManager.UpdatePeople(audio, people);
 
-                if (replaceData || audio.Artists is null || audio.Artists.Count == 0)
+                if ((replaceData && performers.Length != 0) || audio.Artists is null || audio.Artists.Count == 0)
                 {
                     audio.Artists = performers;
                 }
@@ -352,7 +352,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     albumArtists = performers;
                 }
 
-                if (replaceData || audio.AlbumArtists is null || audio.AlbumArtists.Count == 0)
+                if ((replaceData && albumArtists.Length != 0) || audio.AlbumArtists is null || audio.AlbumArtists.Count == 0)
                 {
                     audio.AlbumArtists = albumArtists;
                 }
@@ -363,11 +363,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.Name = trackTitle;
             }
 
+            // A tag missing from the file never erases a value the item already has
             if (replaceData)
             {
-                audio.Album = trackAlbum;
-                audio.IndexNumber = trackTrackNumber;
-                audio.ParentIndexNumber = trackDiscNumber;
+                audio.Album = string.IsNullOrEmpty(trackAlbum) ? audio.Album : trackAlbum;
+                audio.IndexNumber = trackTrackNumber ?? audio.IndexNumber;
+                audio.ParentIndexNumber = trackDiscNumber ?? audio.ParentIndexNumber;
             }
             else
             {
@@ -411,7 +412,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 genres = genres.Trimmed().Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
 
-                if (replaceData || audio.Genres is null || audio.Genres.Length == 0 || audio.Genres.All(string.IsNullOrWhiteSpace))
+                if ((replaceData && genres.Length != 0) || audio.Genres is null || audio.Genres.Length == 0 || audio.Genres.All(string.IsNullOrWhiteSpace))
                 {
                     audio.Genres = genres;
                 }
