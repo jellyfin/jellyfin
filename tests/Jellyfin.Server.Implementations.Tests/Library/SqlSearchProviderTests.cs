@@ -36,12 +36,20 @@ public sealed class SqlSearchProviderTests : SqliteDbTestFixture
     private static readonly Guid _franchiseFolderId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
     private static readonly Guid _nestedMovieId = Guid.Parse("ffffffff-ffff-ffff-ffff-ffffffffffff");
 
+    private readonly QueryPlanRecorder _recorder;
     private readonly SqlSearchProvider _provider;
     private readonly Mock<ILibraryManager> _libraryManager = new();
     private readonly User _user = new("test", "auth-provider", "reset-provider");
 
     public SqlSearchProviderTests()
+        : this(new QueryPlanRecorder())
     {
+    }
+
+    private SqlSearchProviderTests(QueryPlanRecorder recorder)
+        : base(recorder)
+    {
+        _recorder = recorder;
         var itemTypeLookup = new ItemTypeLookup();
         var movieTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie]!;
         var folderTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Folder]!;
@@ -57,6 +65,7 @@ public sealed class SqlSearchProviderTests : SqliteDbTestFixture
             var nestedMovie = CreateMovie(_nestedMovieId, movieTypeName, _movieLibraryId, null);
             nestedMovie.Name = "Moana";
             nestedMovie.CleanName = "moana";
+            nestedMovie.SortName = "Moana";
             nestedMovie.ParentId = _franchiseFolderId;
             context.BaseItems.Add(nestedMovie);
             context.AncestorIds.Add(new AncestorId { ItemId = _nestedMovieId, ParentItemId = _franchiseFolderId, Item = null!, ParentItem = null! });
@@ -110,6 +119,21 @@ public sealed class SqlSearchProviderTests : SqliteDbTestFixture
         Assert.Empty(await SearchAsync("moana", _movie4KLibraryId).ConfigureAwait(true));
     }
 
+    [Fact]
+    public async Task SearchAsync_WithParent_SeeksDescendantsByParent()
+    {
+        RestrictUserTo(_movieLibraryId);
+        _recorder.Commands.Clear();
+
+        await SearchAsync("moana", _franchiseFolderId).ConfigureAwait(true);
+
+        var query = Assert.Single(_recorder.Commands, c => c.Sql.Contains("\"AncestorIds\"", StringComparison.Ordinal));
+        // The ParentId alternative keeps BaseItems as the driver; the descendants become a list built once, not a per-row probe.
+        var plan = Explain(query);
+        Assert.Contains(plan, line => line.Contains("COVERING INDEX IX_AncestorIds_ParentItemId_ItemId (ParentItemId=?)", StringComparison.Ordinal));
+        Assert.DoesNotContain(plan, line => line.Contains("sqlite_autoindex_AncestorIds_1", StringComparison.Ordinal));
+    }
+
     private void RestrictUserTo(params Guid[] libraryIds)
     {
         _libraryManager
@@ -153,4 +177,10 @@ public sealed class SqlSearchProviderTests : SqliteDbTestFixture
             PresentationUniqueKey = (primaryVersionId ?? id).ToString("N"),
             PrimaryVersionId = primaryVersionId
         };
+
+    private string[] Explain(RecordedCommand query)
+    {
+        using var context = CreateDbContext();
+        return QueryPlanRecorder.Explain(context, query);
+    }
 }

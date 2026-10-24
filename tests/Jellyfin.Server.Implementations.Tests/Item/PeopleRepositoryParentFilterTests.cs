@@ -17,6 +17,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// </summary>
 public sealed class PeopleRepositoryParentFilterTests : SqliteDbTestFixture
 {
+    private readonly QueryPlanRecorder _recorder;
     private readonly PeopleRepository _people;
 
     private readonly Guid _library = Guid.NewGuid();
@@ -28,7 +29,14 @@ public sealed class PeopleRepositoryParentFilterTests : SqliteDbTestFixture
     private readonly Guid _emptyFolder = Guid.NewGuid();
 
     public PeopleRepositoryParentFilterTests()
+        : this(new QueryPlanRecorder())
     {
+    }
+
+    private PeopleRepositoryParentFilterTests(QueryPlanRecorder recorder)
+        : base(recorder)
+    {
+        _recorder = recorder;
         var lookup = new ItemTypeLookup();
         using (var context = CreateDbContext())
         {
@@ -85,6 +93,20 @@ public sealed class PeopleRepositoryParentFilterTests : SqliteDbTestFixture
         Assert.Equal(0, result.TotalRecordCount);
     }
 
+    [Fact]
+    public void ParentId_SeeksCreditsByDescendant()
+    {
+        _recorder.Commands.Clear();
+
+        _people.GetPeople(new InternalPeopleQuery([], []) { ParentId = _series, Limit = 1 });
+
+        var query = Assert.Single(_recorder.Commands, c => c.Sql.Contains("\"AncestorIds\"", StringComparison.Ordinal) && c.Sql.Contains("ORDER BY", StringComparison.Ordinal));
+        var plan = Explain(query);
+        Assert.Contains(plan, line => line.Contains("COVERING INDEX IX_AncestorIds_ParentItemId_ItemId (ParentItemId=?)", StringComparison.Ordinal));
+        Assert.Contains(plan, line => line.StartsWith("SEARCH p USING INDEX sqlite_autoindex_Peoples_1 (Id=?)", StringComparison.Ordinal));
+        Assert.DoesNotContain(plan, line => line.StartsWith("SCAN p ", StringComparison.Ordinal) || line == "SCAN p");
+    }
+
     private static PersonInfo Actor(string name) => new() { Name = name, Type = PersonKind.Actor };
 
     private static void AddAncestors(JellyfinDbContext context, Guid itemId, params Guid[] ancestorIds)
@@ -99,5 +121,11 @@ public sealed class PeopleRepositoryParentFilterTests : SqliteDbTestFixture
                 ParentItem = null!
             });
         }
+    }
+
+    private string[] Explain(RecordedCommand query)
+    {
+        using var context = CreateDbContext();
+        return QueryPlanRecorder.Explain(context, query);
     }
 }

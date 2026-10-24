@@ -441,7 +441,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (filter.ParentId != null)
         {
-            // Seek the credits through IX_AncestorIds_ParentItemId; a correlated EXISTS walks every person.
+            // Seek the credits through IX_AncestorIds_ParentItemId_ItemId; a correlated EXISTS walks every person.
             var parentId = filter.ParentId.Value;
             var descendantIds = context.AncestorIds
                 .Where(a => a.ParentItemId == parentId)
