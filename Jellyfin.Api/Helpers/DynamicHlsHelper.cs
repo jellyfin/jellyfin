@@ -470,10 +470,57 @@ public class DynamicHlsHelper
             }
             else
             {
-                // Currently we only encode to SDR.
-                builder.Append(",VIDEO-RANGE=SDR");
+                // A transcode keeps the source's HDR when the client asked for an HDR range
+                // type; otherwise it is tone-mapped to SDR.
+                if (IsHdrOutput(state))
+                {
+                    builder.Append(videoRangeType is VideoRangeType.HLG or VideoRangeType.DOVIWithHLG
+                        ? ",VIDEO-RANGE=HLG"
+                        : ",VIDEO-RANGE=PQ");
+                }
+                else
+                {
+                    builder.Append(",VIDEO-RANGE=SDR");
+                }
             }
         }
+    }
+
+    /// <summary>
+    /// Whether the transcoded output keeps the source's HDR instead of being tone-mapped to SDR.
+    /// </summary>
+    /// <param name="state">StreamState of the current stream.</param>
+    /// <returns>True when HDR is passed through.</returns>
+    private bool IsHdrOutput(StreamState state)
+    {
+        if (state.VideoStream is null
+            || state.VideoStream.VideoRange != VideoRange.HDR
+            || !_serverConfigurationManager.GetEncodingOptions().EnableHdrTranscoding)
+        {
+            return false;
+        }
+
+        var request = state.VideoRequest;
+        if (request is null)
+        {
+            return false;
+        }
+
+        var rangeTypes = request.VideoRangeType;
+        if (string.IsNullOrEmpty(rangeTypes))
+        {
+            rangeTypes = request.GetOption(state.ActualOutputVideoCodec, "rangetype");
+        }
+
+        if (string.IsNullOrEmpty(rangeTypes))
+        {
+            return false;
+        }
+
+        return rangeTypes
+            .Split([',', '|'], StringSplitOptions.RemoveEmptyEntries)
+            .Any(rangeType => Enum.TryParse<VideoRangeType>(rangeType, true, out var requested)
+                && EncodingJobInfo.CanCarryHdr(requested, state.VideoStream.VideoRangeType));
     }
 
     /// <summary>
@@ -929,7 +976,11 @@ public class DynamicHlsHelper
         if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
             || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
         {
-            string profile = GetOutputVideoCodecProfile(state, "hevc");
+            // HDR is carried by Main10, so the manifest must say so; the requested profile
+            // only ever names the 8-bit Main profile.
+            string profile = IsHdrOutput(state)
+                ? "main10"
+                : GetOutputVideoCodecProfile(state, "hevc");
             return HlsCodecStringHelpers.GetH265String(profile, level);
         }
 
