@@ -211,9 +211,11 @@ internal class RepairPlaylistsAndCollections : IAsyncMigrationRoutine
         }
 
         // A playlist whose item is still there under a path that no longer matches its folder is not
-        // missing, and recreating it would collide with the row that already holds that id.
+        // missing, and recreating it would collide with the row that already holds that id. A folder
+        // without playlist.xml names no owner, and NAS tools keep their own folders here.
         var missing = Directory.EnumerateDirectories(playlistsPath)
-            .Where(dir => !idByPath.ContainsKey(dir)
+            .Where(dir => File.Exists(Path.Combine(dir, PlaylistFileName))
+                && !idByPath.ContainsKey(dir)
                 && !storedIds.Contains(_libraryManager.GetNewItemId(dir, typeof(Playlist))))
             .OrderBy(dir => dir, StringComparer.Ordinal)
             .ToList();
@@ -231,8 +233,7 @@ internal class RepairPlaylistsAndCollections : IAsyncMigrationRoutine
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var metadataPath = Path.Combine(dir, PlaylistFileName);
-            var metadata = File.Exists(metadataPath) ? ReadMetadata(metadataPath) : new PlaylistMetadata();
+            var metadata = ReadMetadata(Path.Combine(dir, PlaylistFileName));
             var playlist = new Playlist
             {
                 Path = dir,

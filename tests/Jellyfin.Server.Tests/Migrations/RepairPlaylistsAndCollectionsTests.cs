@@ -245,7 +245,16 @@ public sealed class RepairPlaylistsAndCollectionsTests : IDisposable
     [Fact]
     public async Task PerformAsync_MissingPlaylistWithoutLocalTitle_TakesFolderName()
     {
-        Directory.CreateDirectory(Path.Combine(_dataPath, "playlists", "Untitled"));
+        var dir = Path.Combine(_dataPath, "playlists", "Untitled");
+        Directory.CreateDirectory(dir);
+        await File.WriteAllTextAsync(
+            Path.Combine(dir, "playlist.xml"),
+            """
+            <?xml version="1.0" encoding="utf-8" standalone="yes"?>
+            <Item>
+            </Item>
+            """,
+            TestContext.Current.CancellationToken);
 
         var restored = await RestoreAsync();
 
@@ -253,15 +262,14 @@ public sealed class RepairPlaylistsAndCollectionsTests : IDisposable
     }
 
     [Fact]
-    public async Task PerformAsync_MissingPlaylistWithoutMetadata_IsOpenAccess()
+    public async Task PerformAsync_MissingPlaylistWithoutMetadata_IsNotRestored()
     {
         Directory.CreateDirectory(Path.Combine(_dataPath, "playlists", "Orphan"));
+        Directory.CreateDirectory(Path.Combine(_dataPath, "playlists", "@eaDir"));
 
         var restored = await RestoreAsync();
 
-        var playlist = Assert.Single(restored);
-        Assert.True(playlist.OwnerUserId.IsEmpty());
-        Assert.True(playlist.OpenAccess);
+        Assert.Empty(restored);
     }
 
     public void Dispose()
