@@ -62,7 +62,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                 if (series is not null)
                 {
-                    var remoteResult = MapTvShowToRemoteSearchResult(series);
+                    var remoteResult = MapTvShowToRemoteSearchResult(series, searchInfo);
 
                     return new[] { remoteResult };
                 }
@@ -126,7 +126,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             return remoteResults;
         }
 
-        private RemoteSearchResult MapTvShowToRemoteSearchResult(TvShow series)
+        private RemoteSearchResult MapTvShowToRemoteSearchResult(TvShow series, SeriesInfo search)
         {
             var remoteResult = new RemoteSearchResult
             {
@@ -143,6 +143,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                 remoteResult.TrySetProviderId(MetadataProvider.Tvdb, series.ExternalIds.TvdbId);
             }
+
+            WithDisplayOrder(series, remoteResult, search);
 
             remoteResult.PremiereDate = series.FirstAirDate?.ToUniversalTime();
             remoteResult.ProductionYear = series.FirstAirDate?.Year;
@@ -231,7 +233,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             result = new MetadataResult<Series>
             {
-                Item = MapTvShowToSeries(tvShow, info.MetadataCountryCode, info.DisplayOrder),
+                Item = MapTvShowToSeries(tvShow, info.MetadataCountryCode, info),
                 ResultLanguage = info.MetadataLanguage ?? tvShow.OriginalLanguage
             };
 
@@ -245,7 +247,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             return result;
         }
 
-        private static Series MapTvShowToSeries(TvShow seriesResult, string preferredCountryCode, string? displayOrder)
+        private static Series MapTvShowToSeries(TvShow seriesResult, string preferredCountryCode, SeriesInfo search)
         {
             var series = new Series
             {
@@ -254,14 +256,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             };
 
             series.SetProviderId(MetadataProvider.Tmdb, seriesResult.Id.ToString(CultureInfo.InvariantCulture));
-
-            // The seasons of a series ordered by an episode group belong to that group, not to the series itself.
-            var groupType = TmdbUtils.GetEpisodeGroupType(displayOrder);
-            if (groupType is not null)
-            {
-                var episodeGroup = seriesResult.EpisodeGroups?.Results?.Find(g => g.Type == groupType);
-                series.TrySetProviderId(TmdbUtils.EpisodeGroupProviderKey, episodeGroup?.Id);
-            }
 
             series.CommunityRating = Convert.ToSingle(seriesResult.VoteAverage);
 
@@ -367,6 +361,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 series.OriginalLanguage = seriesResult.OriginalLanguage;
             }
 
+            WithDisplayOrder(seriesResult, series, search);
+
             return series;
         }
 
@@ -458,6 +454,25 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
+        }
+
+        private static void WithDisplayOrder(TvShow searchResult, IHasProviderIds providerIds, SeriesInfo search)
+        {
+            if (!search.TryGetProviderId(TmdbEpisodeGroupId.ProviderKey, out var episodeGroupId)
+                && searchResult.EpisodeGroups?.Results is not null)
+            {
+                var tvGroupType = TmdbUtils.GetEpisodeGroupType(search.DisplayOrder);
+                if (tvGroupType is not null)
+                {
+                    var episodeGroup = searchResult.EpisodeGroups.Results.Find(g => g.Type == tvGroupType);
+                    if (episodeGroup is not null)
+                    {
+                        episodeGroupId = episodeGroup.Id;
+                    }
+                }
+            }
+
+            providerIds.TrySetProviderId(TmdbEpisodeGroupId.ProviderKey, episodeGroupId);
         }
     }
 }

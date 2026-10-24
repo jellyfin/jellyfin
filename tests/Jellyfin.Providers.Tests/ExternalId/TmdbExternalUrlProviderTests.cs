@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Providers.Plugins.Tmdb;
+using MediaBrowser.Providers.Plugins.Tmdb.TV;
 using Moq;
 using Xunit;
 
@@ -172,10 +173,10 @@ namespace Jellyfin.Providers.Tests.ExternalId
         {
             var series = new Series { Id = Guid.NewGuid(), DisplayOrder = displayOrder };
             series.SetProviderId(MetadataProvider.Tmdb, "46260");
-            series.SetProviderId(TmdbUtils.EpisodeGroupProviderKey, "5f24dcdc869e75003658360e");
+            series.SetProviderId(TmdbEpisodeGroupId.ProviderKey, "5f24dcdc869e75003658360e");
 
             var season = new Season { IndexNumber = 2, SeriesId = series.Id };
-            season.SetProviderId(TmdbUtils.EpisodeGroupProviderKey, "652da673024ec800aeccf025");
+            season.SetProviderId(TmdbEpisodeGroupId.ProviderKey, "652da673024ec800aeccf025");
             _libraryManagerMock.Setup(m => m.GetItemById(series.Id)).Returns(series);
 
             var urls = _provider.GetExternalUrls(season);
@@ -186,11 +187,12 @@ namespace Jellyfin.Providers.Tests.ExternalId
         }
 
         [Fact]
-        public void GetExternalUrls_SeasonInGroupOrderWithoutGroupIds_ReturnsNoUrl()
+        public void GetExternalUrls_SeasonInGroupOrderWithoutSeasonGroupId_ReturnsNoUrl()
         {
             // The season number belongs to the episode group, so it cannot be used against the series.
             var series = new Series { Id = Guid.NewGuid(), DisplayOrder = "tv" };
             series.SetProviderId(MetadataProvider.Tmdb, "46260");
+            series.SetProviderId(TmdbEpisodeGroupId.ProviderKey, "5f24dcdc869e75003658360e");
 
             var season = new Season { IndexNumber = 3, SeriesId = series.Id };
             season.SetProviderId(MetadataProvider.Tmdb, "3627");
@@ -202,16 +204,14 @@ namespace Jellyfin.Providers.Tests.ExternalId
         }
 
         [Fact]
-        public void GetExternalUrls_SeasonWithStaleGroupIdAfterSwitchingToAiredOrder_ReturnsSeasonUrl()
+        public void GetExternalUrls_SeasonInGroupOrderWithoutSeriesGroupId_ReturnsSeasonUrl()
         {
-            // Provider ids are only ever merged, so a group id from a previous order can outlive it.
-            var series = new Series { Id = Guid.NewGuid(), DisplayOrder = string.Empty };
+            // Without a group the episodes are looked up by their TMDb numbering, whatever the display order says.
+            var series = new Series { Id = Guid.NewGuid(), DisplayOrder = "tv" };
             series.SetProviderId(MetadataProvider.Tmdb, "46260");
-            series.SetProviderId(TmdbUtils.EpisodeGroupProviderKey, "5f24dcdc869e75003658360e");
 
-            var season = new Season { IndexNumber = 2, SeriesId = series.Id };
+            var season = new Season { IndexNumber = 3, SeriesId = series.Id };
             season.SetProviderId(MetadataProvider.Tmdb, "3627");
-            season.SetProviderId(TmdbUtils.EpisodeGroupProviderKey, "652da673024ec800aeccf025");
             _libraryManagerMock.Setup(m => m.GetItemById(series.Id)).Returns(series);
 
             var urls = _provider.GetExternalUrls(season);
@@ -220,11 +220,31 @@ namespace Jellyfin.Providers.Tests.ExternalId
         }
 
         [Fact]
+        public void GetExternalUrls_SeasonWithGroupIdInAiredOrder_ReturnsGroupUrl()
+        {
+            // The group id is kept when the display order changes, and the episodes are still looked up through it.
+            var series = new Series { Id = Guid.NewGuid(), DisplayOrder = string.Empty };
+            series.SetProviderId(MetadataProvider.Tmdb, "46260");
+            series.SetProviderId(TmdbEpisodeGroupId.ProviderKey, "5f24dcdc869e75003658360e");
+
+            var season = new Season { IndexNumber = 2, SeriesId = series.Id };
+            season.SetProviderId(MetadataProvider.Tmdb, "3627");
+            season.SetProviderId(TmdbEpisodeGroupId.ProviderKey, "652da673024ec800aeccf025");
+            _libraryManagerMock.Setup(m => m.GetItemById(series.Id)).Returns(series);
+
+            var urls = _provider.GetExternalUrls(season);
+
+            Assert.Equal(
+                [TmdbUtils.BaseTmdbUrl + "tv/46260/episode_group/5f24dcdc869e75003658360e/group/652da673024ec800aeccf025"],
+                urls);
+        }
+
+        [Fact]
         public void GetExternalUrls_SeriesInGroupOrder_ReturnsSeriesAndGroupUrl()
         {
             var series = new Series { Id = Guid.NewGuid(), DisplayOrder = "tv" };
             series.SetProviderId(MetadataProvider.Tmdb, "46260");
-            series.SetProviderId(TmdbUtils.EpisodeGroupProviderKey, "5f24dcdc869e75003658360e");
+            series.SetProviderId(TmdbEpisodeGroupId.ProviderKey, "5f24dcdc869e75003658360e");
 
             var urls = _provider.GetExternalUrls(series);
 
@@ -290,6 +310,7 @@ namespace Jellyfin.Providers.Tests.ExternalId
         {
             var series = new Series { Id = Guid.NewGuid(), DisplayOrder = displayOrder };
             series.SetProviderId(MetadataProvider.Tmdb, "46260");
+            series.SetProviderId(TmdbEpisodeGroupId.ProviderKey, "5f24dcdc869e75003658360e");
 
             var season = new Season { Id = Guid.NewGuid(), IndexNumber = 3, SeriesId = series.Id };
             var episode = new Episode { IndexNumber = 1, SeasonId = season.Id, SeriesId = series.Id };

@@ -271,7 +271,7 @@ public sealed partial class BaseItemRepository
 
         if (filter.DtoOptions.EnableImages)
         {
-            dbQuery = dbQuery.Include(e => e.Images);
+            dbQuery = dbQuery.Include(e => e.Images!.OrderBy(i => i.Id));
         }
 
         // Include LinkedChildEntities for container types and videos that use them (BoxSet, Playlist,
@@ -291,7 +291,7 @@ public sealed partial class BaseItemRepository
         };
         if (filter.IncludeItemTypes.Length == 0 || filter.IncludeItemTypes.Any(linkedChildTypes.Contains))
         {
-            dbQuery = dbQuery.Include(e => e.LinkedChildEntities);
+            dbQuery = dbQuery.Include(e => e.LinkedChildEntities!.OrderBy(l => l.SortOrder));
         }
 
         if (filter.IncludeExtras)
@@ -465,15 +465,22 @@ public sealed partial class BaseItemRepository
 
         baseQuery = ApplyParentalRestrictions(context, baseQuery, filter);
 
-        // Exclude alternate versions (have PrimaryVersionId set) and owned non-extra items.
-        // Extras (trailers, etc.) have OwnerId set but also have ExtraType set — keep those.
+        // Hide alternate versions behind the primary of their library, and exclude owned non-extra
+        // items. Extras (trailers, etc.) have OwnerId set but also have ExtraType set — keep those.
         if (!filter.IncludeOwnedItems)
         {
-            baseQuery = baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));
+            baseQuery = ApplyAlternateVersionFiltering(context, baseQuery)
+                .Where(e => e.OwnerId == null || e.ExtraType != null);
         }
 
         return baseQuery;
     }
+
+    private static IQueryable<BaseItemEntity> ApplyAlternateVersionFiltering(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> baseQuery)
+        => baseQuery.Where(e => e.PrimaryVersionId == null
+            || !context.BaseItems.Any(p => p.Id == e.PrimaryVersionId && p.TopParentId == e.TopParentId));
 
     /// <summary>
     /// Restricts a query to the libraries the user may open, exempting requested by-name items.
@@ -605,11 +612,12 @@ public sealed partial class BaseItemRepository
             var blockedTagItemIds = context.ItemValuesMap
                 .Where(f => f.ItemValue.Type == ItemValueType.Tags && excludedTags.Contains(f.ItemValue.CleanValue))
                 .Select(f => f.ItemId);
+            var blockedByAncestor = ItemsBelowTaggedAncestor(context, blockedTagItemIds);
 
             baseQuery = baseQuery.Where(e =>
                 !blockedTagItemIds.Contains(e.Id)
                 && !(e.SeriesId.HasValue && blockedTagItemIds.Contains(e.SeriesId.Value))
-                && !e.Parents!.Any(p => blockedTagItemIds.Contains(p.ParentItemId))
+                && !blockedByAncestor.Contains(e.Id)
                 && !(e.TopParentId.HasValue && blockedTagItemIds.Contains(e.TopParentId.Value)));
         }
 
@@ -622,10 +630,12 @@ public sealed partial class BaseItemRepository
                 .Where(f => f.ItemValue.Type == ItemValueType.Tags && includeTags.Contains(f.ItemValue.CleanValue))
                 .Select(f => f.ItemId);
 
+            var allowedByAncestor = ItemsBelowTaggedAncestor(context, allowedTagItemIds);
+
             baseQuery = baseQuery.Where(e =>
                 allowedTagItemIds.Contains(e.Id)
                 || (e.SeriesId.HasValue && allowedTagItemIds.Contains(e.SeriesId.Value))
-                || e.Parents!.Any(p => allowedTagItemIds.Contains(p.ParentItemId))
+                || allowedByAncestor.Contains(e.Id)
                 || (e.TopParentId.HasValue && allowedTagItemIds.Contains(e.TopParentId.Value))
 
                 // People don't carry the tags of the media they appear in and would never match
@@ -634,6 +644,17 @@ public sealed partial class BaseItemRepository
 
         return baseQuery;
     }
+
+    /// <summary>
+    /// Reads back the items that carry one of the tagged items as an ancestor.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    /// <param name="taggedItemIds">The ids of the items carrying the tag.</param>
+    /// <returns>The ids of the items below one of them.</returns>
+    private static IQueryable<Guid> ItemsBelowTaggedAncestor(JellyfinDbContext context, IQueryable<Guid> taggedItemIds)
+        => context.AncestorIds
+            .Where(a => taggedItemIds.Contains(a.ParentItemId))
+            .Select(a => a.ItemId);
 
     /// <summary>
     /// Builds a filter expression for max parental rating that handles both rated items
@@ -645,24 +666,26 @@ public sealed partial class BaseItemRepository
     {
         var maxScore = maxRating.Score;
         var maxSubScore = maxRating.SubScore ?? 0;
-        var linkedChildren = context.LinkedChildren;
+
+        // Only a manual link makes an item a container of other items.
+        var members = context.LinkedChildren
+            .Where(lc => lc.ChildType == Database.Implementations.Entities.LinkedChildType.Manual);
 
         return e =>
-            // Item has a rating: check against limit
-            (e.InheritedParentalRatingValue != null
-                && (e.InheritedParentalRatingValue < maxScore
-                    || (e.InheritedParentalRatingValue == maxScore && (e.InheritedParentalRatingSubValue ?? 0) <= maxSubScore)))
-            // Item has no rating
-            || (e.InheritedParentalRatingValue == null
-                && (
-                    // No linked children (not a BoxSet/Playlist): pass as unrated
-                    !linkedChildren.Any(lc => lc.ParentId == e.Id)
-                    // Has linked children: at least one child must be within limits
-                    || linkedChildren.Any(lc => lc.ParentId == e.Id
-                        && (lc.Child!.InheritedParentalRatingValue == null
-                            || lc.Child.InheritedParentalRatingValue < maxScore
-                            || (lc.Child.InheritedParentalRatingValue == maxScore
-                                && (lc.Child.InheritedParentalRatingSubValue ?? 0) <= maxSubScore)))));
+            // The item's own rating, where it has one, has to be within the limit. An unrated item
+            // passes here; blocking those is what BlockUnratedItems does.
+            (e.InheritedParentalRatingValue == null
+                || e.InheritedParentalRatingValue < maxScore
+                || (e.InheritedParentalRatingValue == maxScore && (e.InheritedParentalRatingSubValue ?? 0) <= maxSubScore))
+            // A container is only as visible as its members: a BoxSet or Playlist with nothing left
+            // in it for this user is hidden whatever rating it carries itself. BoxSet.IsVisible
+            // applies the same rule in memory, and a count has to agree with the listing it counts.
+            && (!members.Any(lc => lc.ParentId == e.Id)
+                || members.Any(lc => lc.ParentId == e.Id
+                    && (lc.Child!.InheritedParentalRatingValue == null
+                        || lc.Child.InheritedParentalRatingValue < maxScore
+                        || (lc.Child.InheritedParentalRatingValue == maxScore
+                            && (lc.Child.InheritedParentalRatingSubValue ?? 0) <= maxSubScore))));
     }
 
     /// <inheritdoc />

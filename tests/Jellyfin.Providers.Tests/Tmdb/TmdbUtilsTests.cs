@@ -31,14 +31,25 @@ namespace Jellyfin.Providers.Tests.Tmdb
         }
 
         [Theory]
-        [InlineData("en", "en-US", "en-US")]
-        [InlineData("fr-CA", "fr-BE", "fr-CA")]
-        [InlineData("fr-CA", "fr", "fr-CA")]
-        [InlineData("de", "en-US", "de")]
-        [InlineData("", "en-US", "")]
-        public static void AdjustImageLanguage_Valid_Success(string imageLanguage, string requestLanguage, string? expected)
+        // A regional request is only answered with a region when the image contradicts it.
+        [InlineData("pt", "BR", "pt-BR", "pt-BR")]
+        [InlineData("pt", "PT", "pt-BR", "pt-PT")]
+        [InlineData("en", "GB", "en-US", "en-GB")]
+        [InlineData("en", "US", "en-US", "en-US")]
+        [InlineData("en", null, "en-US", "en-US")]
+        // TMDb files nearly every image under a region, which must not stop a plain request matching.
+        [InlineData("en", "US", "en", "en")]
+        [InlineData("pt", "PT", "pt", "pt")]
+        // An image in another language keeps its bare code, so the English fallback still resolves.
+        [InlineData("en", "US", "pt-BR", "en")]
+        [InlineData("de", "DE", "en-US", "de")]
+        // TMDb returns xx rather than an empty string for an image with no text.
+        [InlineData("xx", "US", "en-US", "")]
+        [InlineData("", "US", "en-US", "")]
+        [InlineData(null, null, "en-US", "")]
+        public static void GetImageLanguage_Valid_Success(string? imageLanguage, string? imageRegion, string? requestLanguage, string expected)
         {
-            Assert.Equal(expected, TmdbUtils.AdjustImageLanguage(imageLanguage, requestLanguage));
+            Assert.Equal(expected, TmdbUtils.GetImageLanguage(imageLanguage, imageRegion, requestLanguage));
         }
 
         [Theory]
@@ -77,6 +88,29 @@ namespace Jellyfin.Providers.Tests.Tmdb
         }
 
         [Theory]
+        // The values the web client writes.
+        [InlineData("originalAirDate", TvGroupType.OriginalAirDate)]
+        [InlineData("absolute", TvGroupType.Absolute)]
+        [InlineData("dvd", TvGroupType.DVD)]
+        [InlineData("digital", TvGroupType.Digital)]
+        [InlineData("storyArc", TvGroupType.StoryArc)]
+        [InlineData("production", TvGroupType.Production)]
+        [InlineData("tv", TvGroupType.TV)]
+        // An NFO written by a third party tool can use any casing.
+        [InlineData("OriginalAirDate", TvGroupType.OriginalAirDate)]
+        [InlineData("DVD", TvGroupType.DVD)]
+        // Tvdb-only orders and the default have no TMDb episode group.
+        [InlineData("alternate", null)]
+        [InlineData("regional", null)]
+        [InlineData("altdvd", null)]
+        [InlineData("", null)]
+        [InlineData(null, null)]
+        public static void GetEpisodeGroupType_ReturnsMatchingGroupType(string? displayOrder, TvGroupType? expected)
+        {
+            Assert.Equal(expected, TmdbUtils.GetEpisodeGroupType(displayOrder));
+        }
+
+        [Theory]
         [InlineData("The Amityville Horror", "The Amityville Horror")]
         [InlineData("WALL-E", "WALL E")]
         // The interpunct is kept, it matches the TMDb title better than a space does.
@@ -103,6 +137,19 @@ namespace Jellyfin.Providers.Tests.Tmdb
         public static void NormalizeTitle_Valid_Success(string? title, string expected)
         {
             Assert.Equal(expected, TmdbUtils.NormalizeTitle(title));
+        }
+
+        [Theory]
+        // An unconfigured size fetches the original image, so it keeps the original resolution.
+        [InlineData(null, true)]
+        [InlineData("", true)]
+        [InlineData("original", true)]
+        [InlineData("Original", true)]
+        [InlineData("w500", false)]
+        [InlineData("original2", false)]
+        public static void IsOriginalImageSize_Valid_Success(string? size, bool expected)
+        {
+            Assert.Equal(expected, TmdbUtils.IsOriginalImageSize(size));
         }
 
         [Theory]
@@ -196,6 +243,19 @@ namespace Jellyfin.Providers.Tests.Tmdb
                     [Movie(1, "Some Movie", "Some Movie", 2015), Movie(2, "Some Movie", "Some Movie", 2010)],
                     2
                 },
+                // M. Night Shyamalan's Split premiered at a festival in 2016 and was released in 2017, so the obscure
+                // 2016 film of the same name must not outrank it. Years one apart tie and TMDb's own ordering decides.
+                {
+                    "Split (2016)", "Split", 2016,
+                    [Movie(381288, "Split", "Split", 2017), Movie(358364, "Split", "Split", 2016)],
+                    381288
+                },
+                // Two years apart is a different film, so the tie only covers a year off by one.
+                {
+                    "Two years apart", "Some Movie", 2016,
+                    [Movie(1, "Some Movie", "Some Movie", 2018), Movie(2, "Some Movie", "Some Movie", 2016)],
+                    2
+                },
                 // Nothing matches the name, so TMDb's own ordering is kept.
                 {
                     "A Christmas No. 1 (2021)", "A Christmas No. 1", 2021,
@@ -239,28 +299,5 @@ namespace Jellyfin.Providers.Tests.Tmdb
                 OriginalName = originalName,
                 FirstAirDate = new DateTime(year, 6, 1, 0, 0, 0, DateTimeKind.Utc)
             };
-
-        [Theory]
-        // The values the web client writes.
-        [InlineData("originalAirDate", TvGroupType.OriginalAirDate)]
-        [InlineData("absolute", TvGroupType.Absolute)]
-        [InlineData("dvd", TvGroupType.DVD)]
-        [InlineData("digital", TvGroupType.Digital)]
-        [InlineData("storyArc", TvGroupType.StoryArc)]
-        [InlineData("production", TvGroupType.Production)]
-        [InlineData("tv", TvGroupType.TV)]
-        // An NFO written by a third party tool can use any casing.
-        [InlineData("OriginalAirDate", TvGroupType.OriginalAirDate)]
-        [InlineData("DVD", TvGroupType.DVD)]
-        // Tvdb-only orders and the default have no TMDb episode group.
-        [InlineData("alternate", null)]
-        [InlineData("regional", null)]
-        [InlineData("altdvd", null)]
-        [InlineData("", null)]
-        [InlineData(null, null)]
-        public static void GetEpisodeGroupType_ReturnsMatchingGroupType(string? displayOrder, TvGroupType? expected)
-        {
-            Assert.Equal(expected, TmdbUtils.GetEpisodeGroupType(displayOrder));
-        }
     }
 }

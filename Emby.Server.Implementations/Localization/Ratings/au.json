@@ -52,7 +52,7 @@
             }
         },
         {
-            "ratingStrings": ["X", "X18", "X 18"],
+            "ratingStrings": ["X", "X18", "X 18", "X18+", "X 18+"],
             "ratingScore": {
                 "score": 1000,
                 "subScore": 0

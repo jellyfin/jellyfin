@@ -117,6 +117,35 @@ public sealed partial class BaseItemRepository
             .ToArray();
     }
 
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetTagNames(InternalItemsQuery filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        PrepareFilterQuery(filter);
+
+        using var context = _dbProvider.CreateDbContext();
+        var baseQuery = PrepareItemQuery(context, filter);
+        baseQuery = TranslateQuery(baseQuery, context, filter);
+
+        var matchingItemIds = baseQuery.Select(e => e.Id);
+
+        // Project the join before grouping. Grouping over the ItemValue navigation instead makes EF
+        // re-resolve the aggregate as a correlated subquery per group, which is orders of magnitude slower.
+        return context.ItemValuesMap
+            .AsNoTracking()
+            .Join(
+                context.ItemValues,
+                ivm => ivm.ItemValueId,
+                iv => iv.ItemValueId,
+                (ivm, iv) => new { ivm.ItemId, iv.Type, iv.CleanValue, iv.Value })
+            .Where(iv => iv.Type == ItemValueType.Tags)
+            .Where(iv => matchingItemIds.Contains(iv.ItemId))
+            .GroupBy(iv => iv.CleanValue)
+            .Select(g => g.Min(iv => iv.Value)!)
+            .OrderBy(t => t)
+            .ToArray();
+    }
+
     private string[] GetItemValueNames(IReadOnlyList<ItemValueType> itemValueTypes, IReadOnlyList<string> withItemTypes, IReadOnlyList<string> excludeItemTypes)
     {
         using var context = _dbProvider.CreateDbContext();
@@ -183,6 +212,7 @@ public sealed partial class BaseItemRepository
             IsFavoriteOrLiked = filter.IsFavoriteOrLiked,
             IsLiked = filter.IsLiked,
             IsLocked = filter.IsLocked,
+            ImageTypes = filter.ImageTypes,
             NameLessThan = filter.NameLessThan,
             NameStartsWith = filter.NameStartsWith,
             NameStartsWithOrGreater = filter.NameStartsWithOrGreater,
@@ -194,7 +224,12 @@ public sealed partial class BaseItemRepository
             Years = filter.Years,
             NameContains = filter.NameContains,
             SearchTerm = filter.SearchTerm,
-            ExcludeItemIds = filter.ExcludeItemIds
+            ExcludeItemIds = filter.ExcludeItemIds,
+
+            // A genre, studio or artist carries none of the tags of the media it describes, so an
+            // allow list can only ever hide all of them. Reachability is settled by innerQueryFilter
+            // instead: a value gets this far only when an item the user may see carries it.
+            IncludeInheritedTags = []
         };
 
         // Collapse rows that share a PresentationUniqueKey (e.g. alternate versions) into one

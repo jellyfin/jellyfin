@@ -56,18 +56,18 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return result;
             }
 
-            var seriesId = Convert.ToInt32(seriesTmdbId, CultureInfo.InvariantCulture);
-
             // When the series is ordered by an episode group, the season number counts groups rather than TMDb
             // seasons, so the group has to be resolved instead of fetching a season that holds unrelated episodes.
-            var groupCollection = await _tmdbClientManager
-                .GetSeriesGroupAsync(seriesId, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken)
-                .ConfigureAwait(false);
-
-            var group = groupCollection?.Groups?.Find(g => g.Order == seasonNumber.Value);
-            if (group is not null)
+            if (info.SeriesProviderIds.TryGetValue(TmdbEpisodeGroupId.ProviderKey, out var episodeGroup) && !string.IsNullOrWhiteSpace(episodeGroup))
             {
-                return MapGroupToSeason(group, seasonNumber.Value, config.ImportSeasonName);
+                var group = await _tmdbClientManager
+                    .GetSeriesGroupAsync(episodeGroup, seasonNumber.Value, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (group is not null)
+                {
+                    return MapGroupToSeason(group, seasonNumber.Value, config.ImportSeasonName);
+                }
             }
 
             var seasonResult = await _tmdbClientManager
@@ -201,7 +201,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 season.Name = group.Name;
             }
 
-            season.TrySetProviderId(TmdbUtils.EpisodeGroupProviderKey, group.Id);
+            season.TrySetProviderId(TmdbEpisodeGroupId.ProviderKey, group.Id);
 
             return new MetadataResult<Season>
             {

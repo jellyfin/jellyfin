@@ -66,13 +66,16 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             // The season number counts episode groups when the series is ordered by one, and TMDb has no artwork
             // for a group, so there is nothing to offer rather than the posters of an unrelated season.
-            var groupCollection = await _tmdbClientManager
-                .GetSeriesGroupAsync(seriesTmdbId, series?.DisplayOrder, null, null, null, cancellationToken)
-                .ConfigureAwait(false);
-
-            if (groupCollection?.Groups?.Exists(g => g.Order == season.IndexNumber.Value) == true)
+            if (series.TryGetProviderId(TmdbEpisodeGroupId.ProviderKey, out var episodeGroup))
             {
-                return [];
+                var group = await _tmdbClientManager
+                    .GetSeriesGroupAsync(episodeGroup, season.IndexNumber.Value, null, null, null, cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (group is not null)
+                {
+                    return [];
+                }
             }
 
             // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here

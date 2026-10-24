@@ -178,16 +178,35 @@ public class FilterController : BaseJellyfinApiController
             IsSeries = isSeries
         };
 
+        var tagQuery = new InternalItemsQuery(user)
+        {
+            IncludeItemTypes = includeItemTypes,
+            DtoOptions = new DtoOptions
+            {
+                Fields = Array.Empty<ItemFields>(),
+                EnableImages = false,
+                EnableUserData = false
+            },
+            IsAiring = isAiring,
+            IsMovie = isMovie,
+            IsSports = isSports,
+            IsKids = isKids,
+            IsNews = isNews,
+            IsSeries = isSeries
+        };
+
         if ((recursive ?? true) || parentItem is UserView || parentItem is ICollectionFolder)
         {
             var ancestorIds = parentItem is null ? Array.Empty<Guid>() : new[] { parentItem.Id };
             genreQuery.AncestorIds = ancestorIds;
             streamLanguageQuery.AncestorIds = ancestorIds;
+            tagQuery.AncestorIds = ancestorIds;
         }
         else
         {
             genreQuery.Parent = parentItem;
             streamLanguageQuery.Parent = parentItem;
+            tagQuery.Parent = parentItem;
         }
 
         if ((includeItemTypes.Contains(BaseItemKind.Series) || includeItemTypes.Contains(BaseItemKind.Season))
@@ -217,6 +236,8 @@ public class FilterController : BaseJellyfinApiController
                 Id = i.Item.Id
             }).ToArray();
         }
+
+        filters.Tags = _libraryManager.GetTagNames(tagQuery);
 
         if (includeItemTypes.Contains(BaseItemKind.Movie)
             || includeItemTypes.Contains(BaseItemKind.Series)

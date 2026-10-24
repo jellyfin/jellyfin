@@ -32,7 +32,7 @@ public static class TmdbSeasonProviderTests
         Assert.Equal(3, result.Item.IndexNumber);
         Assert.Equal(new DateTime(2004, 10, 27, 0, 0, 0, DateTimeKind.Utc), result.Item.PremiereDate);
         Assert.Equal(2004, result.Item.ProductionYear);
-        Assert.Equal("65356cb791f0ea00c422eb8e", result.Item.GetProviderId(TmdbUtils.EpisodeGroupProviderKey));
+        Assert.Equal("65356cb791f0ea00c422eb8e", result.Item.GetProviderId(TmdbEpisodeGroupId.ProviderKey));
     }
 
     [Fact]

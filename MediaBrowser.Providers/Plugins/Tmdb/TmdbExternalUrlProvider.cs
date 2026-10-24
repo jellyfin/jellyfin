@@ -1,10 +1,11 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using TMDbLib.Objects.TvShows;
+using MediaBrowser.Providers.Plugins.Tmdb.TV;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb;
 
@@ -26,8 +27,7 @@ public class TmdbExternalUrlProvider : IExternalUrlProvider
                 {
                     yield return TmdbUtils.BaseTmdbUrl + $"tv/{externalId}";
 
-                    if (!IsAirDateOrder(series.DisplayOrder)
-                        && series.TryGetProviderId(TmdbUtils.EpisodeGroupProviderKey, out var seriesGroupId))
+                    if (series.TryGetProviderId(TmdbEpisodeGroupId.ProviderKey, out var seriesGroupId))
                     {
                         yield return TmdbUtils.BaseTmdbUrl + $"tv/{externalId}/episode_group/{seriesGroupId}";
                     }
@@ -38,11 +38,11 @@ public class TmdbExternalUrlProvider : IExternalUrlProvider
                 var seasonSeries = season.Series;
 
                 // The season number counts episode groups rather than TMDb seasons when the series is ordered by one.
-                if (seasonSeries is not null && !IsAirDateOrder(seasonSeries.DisplayOrder))
+                if (IsOrderedByEpisodeGroup(seasonSeries))
                 {
                     if (seasonSeries.TryGetProviderId(MetadataProvider.Tmdb, out var groupSeriesId)
-                        && seasonSeries.TryGetProviderId(TmdbUtils.EpisodeGroupProviderKey, out var collectionId)
-                        && season.TryGetProviderId(TmdbUtils.EpisodeGroupProviderKey, out var groupId))
+                        && seasonSeries.TryGetProviderId(TmdbEpisodeGroupId.ProviderKey, out var collectionId)
+                        && season.TryGetProviderId(TmdbEpisodeGroupId.ProviderKey, out var groupId))
                     {
                         yield return TmdbUtils.BaseTmdbUrl + $"tv/{groupSeriesId}/episode_group/{collectionId}/group/{groupId}";
                     }
@@ -75,7 +75,7 @@ public class TmdbExternalUrlProvider : IExternalUrlProvider
                 if (episode.Series?.TryGetProviderId(MetadataProvider.Tmdb, out seriesExternalId) == true
                     && episode.Season?.IndexNumber is { } episodeSeasonNumber
                     && episode.IndexNumber is { } episodeNumber
-                    && IsAirDateOrder(episode.Series.DisplayOrder))
+                    && !IsOrderedByEpisodeGroup(episode.Series))
                 {
                     yield return TmdbUtils.BaseTmdbUrl + $"tv/{seriesExternalId}/season/{episodeSeasonNumber}/episode/{episodeNumber}";
                 }
@@ -105,8 +105,7 @@ public class TmdbExternalUrlProvider : IExternalUrlProvider
         }
     }
 
-    // Only air date ordering keeps the Jellyfin season and episode numbers in sync with the TMDb ones,
-    // every other episode group renumbers them.
-    private static bool IsAirDateOrder(string? displayOrder)
-        => string.IsNullOrEmpty(displayOrder) || TmdbUtils.GetEpisodeGroupType(displayOrder) == TvGroupType.OriginalAirDate;
+    // Episodes are looked up through the series' episode group whenever it has one, so its numbering replaces the TMDb one.
+    private static bool IsOrderedByEpisodeGroup([NotNullWhen(true)] Series? series)
+        => series?.TryGetProviderId(TmdbEpisodeGroupId.ProviderKey, out _) == true;
 }
