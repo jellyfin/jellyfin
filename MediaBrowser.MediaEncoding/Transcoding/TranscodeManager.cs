@@ -612,9 +612,9 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
     /// <inheritdoc />
     public void OnTranscodeEndRequest(TranscodingJob job)
     {
-        job.ActiveRequestCount--;
-        _logger.LogDebug("OnTranscodeEndRequest job.ActiveRequestCount={ActiveRequestCount}", job.ActiveRequestCount);
-        if (job.ActiveRequestCount <= 0)
+        var activeRequestCount = job.DecrementActiveRequestCount();
+        _logger.LogDebug("OnTranscodeEndRequest job.ActiveRequestCount={ActiveRequestCount}", activeRequestCount);
+        if (activeRequestCount <= 0)
         {
             PingTimer(job, false);
         }
@@ -697,7 +697,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
                 return null;
             }
 
-            job.ActiveRequestCount++;
+            job.IncrementActiveRequestCount();
             if (string.IsNullOrWhiteSpace(job.PlaySessionId) || job.Type == TranscodingJobType.Progressive)
             {
                 job.StopKillTimer();

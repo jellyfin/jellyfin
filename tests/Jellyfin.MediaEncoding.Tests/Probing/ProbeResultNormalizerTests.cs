@@ -242,6 +242,27 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.False(res.MediaStreams[0].IsAVC);
         }
 
+        [Theory]
+        [InlineData("Test Data/Probing/video_ts_no_dimensions.json", null)]
+        [InlineData("Test Data/Probing/video_ts_no_dimensions_zero_dar.json", "0:1")]
+        public void GetMediaInfo_TSWithoutDimensions_Success(string path, string? expectedAspectRatio)
+        {
+            var bytes = File.ReadAllBytes(path);
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "http://192.168.1.19:5004/auto/v4", MediaProtocol.Http);
+
+            Assert.Equal(2, res.MediaStreams.Count);
+
+            var video = res.MediaStreams[0];
+            Assert.Equal(MediaStreamType.Video, video.Type);
+            Assert.Equal("mpeg2video", video.Codec);
+            Assert.Null(video.Width);
+            Assert.Null(video.Height);
+            Assert.Equal(expectedAspectRatio, video.AspectRatio);
+            Assert.False(video.IsAnamorphic);
+        }
+
         [Fact]
         public void GetMediaInfo_WebM_Success()
         {

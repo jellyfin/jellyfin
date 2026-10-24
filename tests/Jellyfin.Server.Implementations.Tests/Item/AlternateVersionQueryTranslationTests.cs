@@ -4,11 +4,6 @@ using System;
 using System.Linq;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using Jellyfin.Database.Implementations.Locking;
-using Jellyfin.Database.Providers.Sqlite;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
@@ -18,22 +13,10 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// (BaseItemRepository.TranslateQuery) and the DatePlayed ordering (OrderMapper) translate
 /// and evaluate correctly on the SQLite provider.
 /// </summary>
-public sealed class AlternateVersionQueryTranslationTests : IDisposable
+public sealed class AlternateVersionQueryTranslationTests : SqliteDbTestFixture
 {
-    private readonly SqliteConnection _connection;
-    private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
-
     public AlternateVersionQueryTranslationTests()
     {
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
-        _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-
-        using var ctx = CreateDbContext();
-        ctx.Database.EnsureCreated();
     }
 
     [Fact]
@@ -219,19 +202,5 @@ public sealed class AlternateVersionQueryTranslationTests : IDisposable
 
         ctx.SaveChanges();
         return (user.Id, primary.Id, versionA.Id, versionB.Id);
-    }
-
-    private JellyfinDbContext CreateDbContext()
-    {
-        return new JellyfinDbContext(
-            _dbOptions,
-            NullLogger<JellyfinDbContext>.Instance,
-            new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
-            new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
-    }
-
-    public void Dispose()
-    {
-        _connection.Dispose();
     }
 }

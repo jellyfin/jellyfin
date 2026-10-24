@@ -48,6 +48,10 @@ namespace MediaBrowser.Controller.Entities
 
         public const string ThemeSongFileName = "theme";
 
+        // Well below the 255 byte limit of the common Linux filesystems and the 255 character limit
+        // of Windows, so the files inside the folder still fit within MAX_PATH.
+        private const int MaxItemByNameFolderNameBytes = 128;
+
         /// <summary>
         /// The supported image extensions.
         /// </summary>
@@ -771,6 +775,17 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         protected virtual bool SupportsOwnedItems => !ParentId.IsEmpty() && IsFileProtocol;
 
+        /// <summary>
+        /// Gets a value indicating whether this item searches the folder it lives in for its own extras.
+        /// </summary>
+        [JsonIgnore]
+        protected virtual bool SearchesContainingFolderForExtras =>
+            IsFileProtocol
+            && SupportsOwnedItems
+            && !IsInMixedFolder
+            && this is not (ICollectionFolder or UserRootFolder or AggregateFolder)
+            && GetType() != typeof(Folder);
+
         [JsonIgnore]
         public virtual bool SupportsPeople => false;
 
@@ -928,6 +943,43 @@ namespace MediaBrowser.Controller.Entities
         protected virtual string CreateSortName()
         {
             return GetSortName(Name, EnableAlphaNumericSorting, ConfigurationManager.Configuration);
+        }
+
+        /// <summary>
+        /// Turns an item-by-name entity's name into a folder name every supported filesystem accepts.
+        /// </summary>
+        /// <param name="name">The entity's name.</param>
+        /// <returns>The folder name.</returns>
+        public static string GetItemByNameFolderName(string name)
+        {
+            // Trim the period at the end because windows will have a hard time with that
+            var validName = FileSystem.GetValidFilename(name).Trim().TrimEnd('.');
+
+            // Most Linux filesystems cap a path component at 255 bytes, so a name past that cannot be
+            // turned into a folder at all - and an entity with no folder can never be created, which
+            // leaves the credit behind it stuck: not refreshable, not deletable, retried on every scan.
+            // Only broken provider data gets this long, but it still has to resolve to something, so
+            // keep a readable prefix and let a hash of the whole name tell two of them apart.
+            if (Encoding.UTF8.GetByteCount(validName) <= MaxItemByNameFolderNameBytes)
+            {
+                return validName;
+            }
+
+            var suffix = "-" + validName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            var budget = MaxItemByNameFolderNameBytes - suffix.Length;
+            var length = Math.Min(validName.Length, budget);
+            while (length > 0 && Encoding.UTF8.GetByteCount(validName.AsSpan(0, length)) > budget)
+            {
+                length--;
+            }
+
+            // Never cut a surrogate pair in half, the lone half is not a valid file name character.
+            if (length > 0 && char.IsHighSurrogate(validName[length - 1]))
+            {
+                length--;
+            }
+
+            return string.Concat(validName.AsSpan(0, length).TrimEnd().TrimEnd('.'), suffix);
         }
 
         /// <summary>
@@ -1359,7 +1411,8 @@ namespace MediaBrowser.Controller.Entities
         /// token shared by the descriptors but separated only by spaces (e.g. a common "2160p ") is
         /// kept in the label, falling back to a space only when no structural delimiter is shared. The
         /// separators mirror the version delimiters recognised by the naming layer (Emby.Naming
-        /// VideoFlagDelimiters).
+        /// VideoFlagDelimiters), except that a dot between digits is a decimal point rather than a
+        /// delimiter, so numeric version labels stay whole.
         /// </summary>
         /// <param name="fileNames">The version file names without extension; must contain at least one entry.</param>
         /// <returns>The shared prefix retreated to a separator boundary, or an empty string when none is shared.</returns>
@@ -1393,9 +1446,12 @@ namespace MediaBrowser.Controller.Entities
 
             if (!prefixIsWholeName)
             {
-                // Retreat to the last structural delimiter ('-', '_', '.').
+                // Retreat to the last structural delimiter ('-', '_', '.'), skipping dots that are
+                // decimal points within a number rather than delimiters (see IsDecimalPoint).
                 var cut = prefix.Length;
-                while (cut > 0 && Array.IndexOf(VersionDelimiters, prefix[cut - 1]) < 0)
+                while (cut > 0
+                    && (Array.IndexOf(VersionDelimiters, prefix[cut - 1]) < 0
+                        || IsDecimalPoint(prefix, cut - 1, fileNames)))
                 {
                     cut--;
                 }
@@ -1413,6 +1469,31 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return prefix;
+        }
+
+        private static bool IsDecimalPoint(string prefix, int index, IReadOnlyList<string> fileNames)
+        {
+            if (index == 0 || prefix[index] != '.' || !char.IsDigit(prefix[index - 1]))
+            {
+                return false;
+            }
+
+            if (index + 1 < prefix.Length)
+            {
+                return char.IsDigit(prefix[index + 1]);
+            }
+
+            // The dot ends the prefix, so the character after it is the first one that differs between
+            // the versions: only a decimal point when every version continues the number.
+            for (var i = 0; i < fileNames.Count; i++)
+            {
+                if (fileNames[i].Length <= index + 1 || !char.IsDigit(fileNames[i][index + 1]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public Task RefreshMetadata(CancellationToken cancellationToken)
@@ -1528,7 +1609,14 @@ namespace MediaBrowser.Controller.Entities
         /// <returns><c>true</c> if any items have changed, else <c>false</c>.</returns>
         protected virtual async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, IReadOnlyList<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
-            if (!IsFileProtocol || !SupportsOwnedItems || IsInMixedFolder || this is ICollectionFolder or UserRootFolder or AggregateFolder || this.GetType() == typeof(Folder))
+            if (!SearchesContainingFolderForExtras)
+            {
+                return false;
+            }
+
+            if (GetParent() is Folder container
+                && container.SearchesContainingFolderForExtras
+                && string.Equals(container.Path, ContainingFolderPath, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -2472,8 +2560,9 @@ namespace MediaBrowser.Controller.Entities
                     {
                         var newDateModified = FileSystem.GetLastWriteTimeUtc(newImage);
 
-                        // If date changed then we need to reset saved image dimensions
-                        if (existing.DateModified != newDateModified && (existing.Width > 0 || existing.Height > 0))
+                        // If date changed then we need to reset saved image dimensions. Stores such as PostgreSQL keep
+                        // only microseconds, so an exact comparison would treat every unchanged image as modified.
+                        if (Math.Abs((existing.DateModified - newDateModified).TotalSeconds) > 1 && (existing.Width > 0 || existing.Height > 0))
                         {
                             existing.Width = 0;
                             existing.Height = 0;

@@ -34,6 +34,8 @@ namespace Jellyfin.Api.Controllers;
 [Tags("Library")]
 public class UserLibraryController : BaseJellyfinApiController
 {
+    private static readonly TimeSpan RefreshOnDemandTimeout = TimeSpan.FromSeconds(3);
+
     private readonly IUserManager _userManager;
     private readonly IUserDataManager _userDataRepository;
     private readonly ILibraryManager _libraryManager;
@@ -79,7 +81,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the item.</returns>
     [HttpGet("Items/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<BaseItemDto> GetItem(
+    public async Task<ActionResult<BaseItemDto>> GetItem(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
     {
@@ -98,7 +100,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        QueueRefreshOnDemandIfNeeded(item);
+        await RefreshOnDemandIfNeeded(item).ConfigureAwait(false);
 
         var dtoOptions = new DtoOptions();
 
@@ -116,7 +118,7 @@ public class UserLibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public ActionResult<BaseItemDto> GetItemLegacy(
+    public Task<ActionResult<BaseItemDto>> GetItemLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId)
         => GetItem(userId, itemId);
@@ -643,7 +645,7 @@ public class UserLibraryController : BaseJellyfinApiController
             limit,
             groupItems);
 
-    private void QueueRefreshOnDemandIfNeeded(BaseItem item)
+    private async Task RefreshOnDemandIfNeeded(BaseItem item)
     {
         if (item is not Person)
         {
@@ -656,15 +658,24 @@ public class UserLibraryController : BaseJellyfinApiController
             return;
         }
 
-        _providerManager.QueueRefresh(
-            item.Id,
-            new MetadataRefreshOptions(new DirectoryService(_fileSystem))
-            {
-                MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
-                ImageRefreshMode = MetadataRefreshMode.FullRefresh,
-                ForceSave = true
-            },
-            RefreshPriority.High);
+        var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+        {
+            MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+            ImageRefreshMode = MetadataRefreshMode.FullRefresh,
+            ForceSave = true
+        };
+
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(HttpContext.RequestAborted);
+        timeout.CancelAfter(RefreshOnDemandTimeout);
+
+        try
+        {
+            await item.RefreshMetadata(options, timeout.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (!HttpContext.RequestAborted.IsCancellationRequested)
+        {
+            _providerManager.QueueRefresh(item.Id, options, RefreshPriority.High);
+        }
     }
 
     /// <summary>

@@ -29,7 +29,7 @@ internal class MigrateLibraryUserData : IAsyncMigrationRoutine
     private readonly IDbContextFactory<JellyfinDbContext> _provider;
 
     public MigrateLibraryUserData(
-            IStartupLogger<MigrateLibraryDb> startupLogger,
+            IStartupLogger<MigrateLibraryUserData> startupLogger,
             IDbContextFactory<JellyfinDbContext> provider,
             IServerApplicationPaths paths)
     {

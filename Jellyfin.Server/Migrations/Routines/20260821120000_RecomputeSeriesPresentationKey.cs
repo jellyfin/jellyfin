@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,9 +17,9 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.Routines;
 
 /// <summary>
-/// Recomputes the presentation unique key for every series so existing items adopt the folder-set-free key format.
+/// Recomputes the presentation unique key of every series and season so merged series are scoped to their own library.
 /// </summary>
-[JellyfinMigration("2026-07-23T12:00:00", nameof(RecomputeSeriesPresentationKey))]
+[JellyfinMigration("2026-08-21T12:00:00", nameof(RecomputeSeriesPresentationKey))]
 [JellyfinMigrationBackup(JellyfinDb = true)]
 internal class RecomputeSeriesPresentationKey : IAsyncMigrationRoutine
 {
@@ -53,6 +55,7 @@ internal class RecomputeSeriesPresentationKey : IAsyncMigrationRoutine
 
         const int ProgressInterval = 250;
         var sw = Stopwatch.StartNew();
+        var newSeriesKeys = new Dictionary<Guid, string>();
         var processed = 0;
         var updated = 0;
 
@@ -68,9 +71,10 @@ internal class RecomputeSeriesPresentationKey : IAsyncMigrationRoutine
                     _logger.LogInformation("Processed {Processed}/{Total} series - Updated: {Updated} - Time: {Elapsed}", processed, series.Length, updated, sw.Elapsed);
                 }
 
-                var oldKey = item.PresentationUniqueKey;
                 var newKey = item.CreatePresentationUniqueKey();
-                if (string.Equals(oldKey, newKey, StringComparison.Ordinal))
+                newSeriesKeys[item.Id] = newKey;
+
+                if (string.Equals(item.PresentationUniqueKey, newKey, StringComparison.Ordinal))
                 {
                     continue;
                 }
@@ -82,21 +86,66 @@ internal class RecomputeSeriesPresentationKey : IAsyncMigrationRoutine
                     .ExecuteUpdateAsync(e => e.SetProperty(f => f.PresentationUniqueKey, newKey), cancellationToken)
                     .ConfigureAwait(false);
 
-                // Seasons and episodes cache the series key in SeriesPresentationUniqueKey and are matched
-                // to the series by it. Re-point every child still carrying the old key in a single set-based
-                // update so they stay attached without waiting for the next scan.
-                if (!string.IsNullOrEmpty(oldKey))
-                {
-                    await dbContext.BaseItems
-                        .Where(e => e.SeriesPresentationUniqueKey == oldKey)
-                        .ExecuteUpdateAsync(e => e.SetProperty(f => f.SeriesPresentationUniqueKey, newKey), cancellationToken)
-                        .ConfigureAwait(false);
-                }
+                // Seasons and episodes are matched to their series by SeriesPresentationUniqueKey, so
+                // re-point them here instead of waiting for the next scan. Scoped by SeriesId rather than
+                // by the old key: that key can be shared by every library holding the series, so matching
+                // on it would drag the other libraries' children along.
+                await dbContext.BaseItems
+                    .Where(e => e.SeriesId.HasValue && e.SeriesId.Value.Equals(id))
+                    .ExecuteUpdateAsync(e => e.SetProperty(f => f.SeriesPresentationUniqueKey, newKey), cancellationToken)
+                    .ConfigureAwait(false);
 
                 updated++;
             }
+
+            var updatedSeasons = await RecomputeSeasonsAsync(dbContext, newSeriesKeys, cancellationToken).ConfigureAwait(false);
+
+            _logger.LogInformation(
+                "Recomputed presentation unique key for {Updated} of {Count} series and {UpdatedSeasons} seasons in {Elapsed}",
+                updated,
+                series.Length,
+                updatedSeasons,
+                sw.Elapsed);
+        }
+    }
+
+    private async Task<int> RecomputeSeasonsAsync(JellyfinDbContext dbContext, Dictionary<Guid, string> newSeriesKeys, CancellationToken cancellationToken)
+    {
+        // A season's own key embeds its series' key, so it goes stale with it.
+        var seasons = _libraryManager.GetItemList(new InternalItemsQuery
+        {
+            IncludeItemTypes = [BaseItemKind.Season]
+        }).OfType<Season>().ToArray();
+
+        var updated = 0;
+
+        foreach (var season in seasons)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Without an index number the season keeps the base key, which carries no series key at all.
+            if (!season.IndexNumber.HasValue
+                || !newSeriesKeys.TryGetValue(season.SeriesId, out var seriesKey))
+            {
+                continue;
+            }
+
+            // Mirrors Season.CreatePresentationUniqueKey.
+            var newKey = seriesKey + "-" + season.IndexNumber.Value.ToString("000", CultureInfo.InvariantCulture);
+            if (string.Equals(season.PresentationUniqueKey, newKey, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var id = season.Id;
+            await dbContext.BaseItems
+                .Where(e => e.Id.Equals(id))
+                .ExecuteUpdateAsync(e => e.SetProperty(f => f.PresentationUniqueKey, newKey), cancellationToken)
+                .ConfigureAwait(false);
+
+            updated++;
         }
 
-        _logger.LogInformation("Recomputed presentation unique key for {Updated} of {Count} series in {Elapsed}", updated, series.Length, sw.Elapsed);
+        return updated;
     }
 }

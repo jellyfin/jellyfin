@@ -106,5 +106,20 @@
     "TaskExtractMediaSegments": "மீடியா பிரிவு ஸ்கேன்",
     "TaskExtractMediaSegmentsDescription": "மீடியாசெக்மென்ட் இயக்கப்பட்ட செருகுநிரல்களிலிருந்து மீடியா பிரிவுகளைப் பிரித்தெடுக்கிறது அல்லது பெறுகிறது.",
     "CleanupUserDataTaskDescription": "குறைந்தது 90 நாட்களுக்கு இல்லாத மீடியாவிலிருந்து அனைத்து பயனர் தரவையும் (கண்காணிப்பு நிலை, பிடித்த நிலை போன்றவை) சுத்தம் செய்கிறது.",
-    "CleanupUserDataTask": "பயனர் தரவை சுத்தம் செய்யும் பணி"
+    "CleanupUserDataTask": "பயனர் தரவை சுத்தம் செய்யும் பணி",
+    "LyricDownloadFailureFromForItem": "{0} இலிருந்து {1} க்கு பாடல் வரிகளைப் பதிவிறக்க முடியவில்லை",
+    "NameExtraBehindTheScenes": "திரைக்குப் பின்னால்",
+    "NameExtraClip": "துண்டுக்காட்சி",
+    "NameExtraDeletedScene": "நீக்கப்பட்ட காட்சிகள்",
+    "NameExtraFeaturette": "திரைப்பின்னணித் தொகுப்பு",
+    "NameExtraInterview": "நேர்காணல்",
+    "NameExtraSample": "மாதிரி",
+    "NameExtraScene": "காட்சி",
+    "NameExtraShort": "குறுகிய",
+    "NameExtraThemeSong": "மையப் பாடல்",
+    "NameExtraThemeVideo": "மையக் காணொளி",
+    "NameExtraTrailer": "முன்னோட்டம்",
+    "NameExtraUnknown": "கூடுதல்",
+    "Original": "அசல்",
+    "NameExtraNumbered": "{0} {1}"
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Data;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
@@ -103,6 +104,7 @@ public class PersonsController : BaseJellyfinApiController
             personTypes,
             excludePersonTypes)
         {
+            AccessFilter = BuildAccessFilter(user),
             NameContains = searchTerm,
             NameStartsWith = nameStartsWith,
             NameLessThan = nameLessThan,
@@ -121,6 +123,20 @@ public class PersonsController : BaseJellyfinApiController
             peopleItems.Items
                 .Select(person => _dtoService.GetItemByNameDto(person, dtoOptions, null, user))
                 .ToArray());
+    }
+
+    // People are not owned by a library, so nothing in the Peoples table says which of them a user is
+    // allowed to see; that only follows from the items they are credited on.
+    private InternalItemsQuery? BuildAccessFilter(User? user)
+    {
+        if (user is null || !user.HasContentRestrictions())
+        {
+            return null;
+        }
+
+        var accessFilter = new InternalItemsQuery(user) { IncludeOwnedItems = true };
+        _libraryManager.ConfigureUserAccess(accessFilter, user);
+        return accessFilter;
     }
 
     /// <summary>

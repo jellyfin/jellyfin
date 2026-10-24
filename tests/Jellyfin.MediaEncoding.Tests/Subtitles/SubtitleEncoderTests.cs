@@ -269,6 +269,46 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
             }
         }
 
+        [Fact]
+        public async Task GetSubtitleStream_UnsupportedEncoding_DoesNotThrow()
+        {
+            // Regression test for issue #2200
+            // When the charset detector identifies an encoding not supported by .NET (e.g., ISO-8859-16),
+            // GetSubtitleStream should handle it gracefully instead of throwing ArgumentNullException
+            var cancellationToken = TestContext.Current.CancellationToken;
+            var srt = BuildGreekSrt();
+            var path = Path.GetTempFileName();
+            try
+            {
+                // Write as ISO-8859-7 (Greek) to create a non-UTF-8 file
+                await File.WriteAllTextAsync(path, srt, Encoding.GetEncoding("iso-8859-7"), cancellationToken);
+
+                var fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
+                var subtitleEncoder = fixture.Create<SubtitleEncoder>();
+
+                var fileInfo = new SubtitleEncoder.SubtitleInfo
+                {
+                    Path = path,
+                    Protocol = MediaProtocol.File,
+                    Format = "srt",
+                    IsExternal = true
+                };
+
+                // This should not throw even if the detected encoding was unsupported
+                using var stream = await subtitleEncoder.GetSubtitleStream(fileInfo, cancellationToken);
+                Assert.NotNull(stream);
+
+                // Verify we can read from the stream without error
+                using var reader = new StreamReader(stream);
+                var text = await reader.ReadToEndAsync(cancellationToken);
+                Assert.NotEmpty(text);
+            }
+            finally
+            {
+                File.Delete(path);
+            }
+        }
+
         private static SubtitleEncoder CreateEncoder()
         {
             var fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
