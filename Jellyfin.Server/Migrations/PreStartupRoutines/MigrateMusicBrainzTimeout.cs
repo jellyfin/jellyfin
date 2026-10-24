@@ -11,9 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 
 /// <inheritdoc />
-#pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-04-20T02:00:00", nameof(MigrateMusicBrainzTimeout), "A6DCACF4-C057-4Ef9-80D3-61CEF9DDB4F0", Stage = Stages.JellyfinMigrationStageTypes.PreInitialisation)]
-#pragma warning restore CS0618 // Type or member is obsolete
 public class MigrateMusicBrainzTimeout : IAsyncMigrationRoutine
 {
     private readonly ServerApplicationPaths _applicationPaths;

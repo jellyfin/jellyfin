@@ -16,9 +16,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// The migration routine for migrating the activity log database to EF Core.
     /// </summary>
-#pragma warning disable CS0618 // Type or member is obsolete
     [JellyfinMigration("2025-04-20T07:00:00", nameof(MigrateActivityLogDb), "3793eb59-bc8c-456c-8b9f-bd5a62a42978")]
-#pragma warning restore CS0618 // Type or member is obsolete
     public class MigrateActivityLogDb : IAsyncMigrationRoutine
     {
         private const string DbFilename = "activitylog.db";

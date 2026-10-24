@@ -18,9 +18,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// A migration that moves data from the authentication database into the new schema.
     /// </summary>
-#pragma warning disable CS0618 // Type or member is obsolete
     [JellyfinMigration("2025-04-20T14:00:00", nameof(MigrateAuthenticationDb), "5BD72F41-E6F3-4F60-90AA-09869ABE0E22")]
-#pragma warning restore CS0618 // Type or member is obsolete
     public class MigrateAuthenticationDb : IAsyncMigrationRoutine
     {
         private const string DbFilename = "authentication.db";

@@ -10,9 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 
 /// <inheritdoc />
-#pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-04-20T00:00:00", nameof(CreateNetworkConfiguration), "9B354818-94D5-4B68-AC49-E35CB85F9D84", Stage = Stages.JellyfinMigrationStageTypes.PreInitialisation)]
-#pragma warning restore CS0618 // Type or member is obsolete
 public class CreateNetworkConfiguration : IAsyncMigrationRoutine
 {
     private readonly ServerApplicationPaths _applicationPaths;

@@ -8,9 +8,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to update the default Jellyfin plugin repository.
 /// </summary>
-#pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-04-20T17:00:00", nameof(UpdateDefaultPluginRepository), "852816E0-2712-49A9-9240-C6FC5FCAD1A8", RunMigrationOnSetup = true)]
-#pragma warning restore CS0618 // Type or member is obsolete
 public class UpdateDefaultPluginRepository : IAsyncMigrationRoutine
 {
     private const string NewRepositoryUrl = "https://repo.jellyfin.org/files/plugin/manifest.json";

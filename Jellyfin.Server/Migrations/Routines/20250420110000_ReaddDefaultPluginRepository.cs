@@ -9,9 +9,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to initialize system configuration with the default plugin repository.
 /// </summary>
-#pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-04-20T11:00:00", nameof(ReaddDefaultPluginRepository), "5F86E7F6-D966-4C77-849D-7A7B40B68C4E", RunMigrationOnSetup = true)]
-#pragma warning restore CS0618 // Type or member is obsolete
 public class ReaddDefaultPluginRepository : IAsyncMigrationRoutine
 {
     private readonly IServerConfigurationManager _serverConfigurationManager;

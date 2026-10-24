@@ -10,9 +10,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Removes the old 'RemoveDownloadImagesInAdvance' from library options.
 /// </summary>
-#pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-04-20T13:00:00", nameof(RemoveDownloadImagesInAdvance), "A81F75E0-8F43-416F-A5E8-516CCAB4D8CC")]
-#pragma warning restore CS0618 // Type or member is obsolete
 internal class RemoveDownloadImagesInAdvance : IAsyncMigrationRoutine
 {
     private readonly ILogger<RemoveDownloadImagesInAdvance> _logger;
