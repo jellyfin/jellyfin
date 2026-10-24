@@ -103,6 +103,11 @@ namespace MediaBrowser.Model.Dlna
         public int? AudioTranscodingBitrate { get; set; }
 
         /// <summary>
+        /// Gets or sets an override for the video stream index.
+        /// </summary>
+        public int? VideoStreamIndex { get; set; }
+
+        /// <summary>
         /// Gets or sets an override for the audio stream index.
         /// </summary>
         public int? AudioStreamIndex { get; set; }

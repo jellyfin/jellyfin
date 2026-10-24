@@ -27,6 +27,8 @@ namespace MediaBrowser.Model.MediaInfo
 
         public long? StartTimeTicks { get; set; }
 
+        public int? VideoStreamIndex { get; set; }
+
         public int? AudioStreamIndex { get; set; }
 
         public int? SubtitleStreamIndex { get; set; }
