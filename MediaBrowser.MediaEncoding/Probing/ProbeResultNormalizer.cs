@@ -153,6 +153,11 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             FetchGenres(info, tags);
 
+            if (!isAudio)
+            {
+                FetchProviderIds(info, tags);
+            }
+
             info.Name = tags.GetFirstNotNullNorWhiteSpaceValue("title", "title-eng");
             info.ForcedSortName = tags.GetFirstNotNullNorWhiteSpaceValue("sort_name", "title-sort", "titlesort");
             info.Overview = tags.GetFirstNotNullNorWhiteSpaceValue("synopsis", "description", "desc", "comment");
@@ -289,6 +294,36 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             return info;
+        }
+
+        private static void FetchProviderIds(MediaInfo info, IReadOnlyDictionary<string, string> tags)
+        {
+            info.TrySetProviderId(
+                MetadataProvider.Imdb,
+                NormalizeProviderId(tags.GetFirstNotNullNorWhiteSpaceValue("imdb", "imdbid", "imdb_id")));
+
+            info.TrySetProviderId(
+                MetadataProvider.Tmdb,
+                NormalizeProviderId(tags.GetFirstNotNullNorWhiteSpaceValue("tmdb", "tmdbid", "tmdb_id")));
+
+            info.TrySetProviderId(
+                MetadataProvider.Tvdb,
+                NormalizeProviderId(tags.GetFirstNotNullNorWhiteSpaceValue("tvdb", "tvdbid", "tvdb_id")));
+        }
+
+        private static string NormalizeProviderId(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            value = value.Trim().TrimEnd('/');
+
+            var separatorIndex = value.LastIndexOf('/');
+            return separatorIndex >= 0
+                ? value[(separatorIndex + 1)..]
+                : value;
         }
 
         private string NormalizeFormat(string format, IReadOnlyList<MediaStream> mediaStreams)
