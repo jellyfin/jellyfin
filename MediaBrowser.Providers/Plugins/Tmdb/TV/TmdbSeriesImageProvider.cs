@@ -61,10 +61,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             }
 
             var language = item.GetPreferredMetadataLanguage();
+            var countryCode = item.GetPreferredMetadataCountryCode();
 
-            // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
             var series = await _tmdbClientManager
-                .GetSeriesAsync(tmdbId, null, null, null, cancellationToken)
+                .GetSeriesAsync(tmdbId, language, TmdbUtils.GetImageLanguagesParam(language, countryCode), countryCode, cancellationToken)
                 .ConfigureAwait(false);
 
             if (series?.Images is null)
