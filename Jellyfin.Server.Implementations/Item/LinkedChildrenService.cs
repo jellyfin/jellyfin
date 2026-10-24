@@ -61,12 +61,39 @@ public class LinkedChildrenService : ILinkedChildrenService
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<Guid> GetParentIdsWithChildType(LinkedChildType childType)
+    public IReadOnlyList<Guid> GetLinkedChildrenIds(Guid parentId, IReadOnlyList<LinkedChildType> childTypes)
+    {
+        ArgumentNullException.ThrowIfNull(childTypes);
+
+        using var dbContext = _dbProvider.CreateDbContext();
+
+        var dbChildTypes = childTypes.Select(t => (DbLinkedChildType)t).ToArray();
+        return dbContext.LinkedChildren
+            .Where(lc => lc.ParentId.Equals(parentId) && dbChildTypes.Contains(lc.ChildType))
+            .OrderBy(lc => lc.SortOrder)
+            .Select(lc => lc.ChildId)
+            .ToArray();
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<Guid> GetParentIdsWithChildType(LinkedChildType childType, BaseItemKind? parentType = null)
     {
         using var dbContext = _dbProvider.CreateDbContext();
 
-        return dbContext.LinkedChildren
-            .Where(lc => lc.ChildType == (DbLinkedChildType)childType)
+        var query = dbContext.LinkedChildren
+            .Where(lc => lc.ChildType == (DbLinkedChildType)childType);
+
+        if (parentType.HasValue)
+        {
+            var parentTypeName = _itemTypeLookup.BaseItemKindNames[parentType.Value];
+            query = query.Join(
+                dbContext.BaseItems.Where(item => item.Type == parentTypeName),
+                lc => lc.ParentId,
+                item => item.Id,
+                (lc, _) => lc);
+        }
+
+        return query
             .Select(lc => lc.ParentId)
             .Distinct()
             .ToArray();

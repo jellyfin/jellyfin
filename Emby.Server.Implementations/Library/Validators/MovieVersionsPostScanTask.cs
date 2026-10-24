@@ -6,11 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Validators;
@@ -60,6 +62,8 @@ public class MovieVersionsPostScanTask : ILibraryPostScanTask
             IncludeItemTypes = [BaseItemKind.Movie],
             GroupByPresentationUniqueKey = false,
             IsVirtualItem = false,
+            // Read only: every save goes through the video version manager, which reloads the item.
+            DtoOptions = StoredColumnsWithProviderIds(),
             // Versions already merged within one library root are hidden otherwise, which would unmerge them.
             IncludeAlternateVersions = true
         })
@@ -130,6 +134,13 @@ public class MovieVersionsPostScanTask : ILibraryPostScanTask
         return movie.ProductionYear.HasValue && !string.IsNullOrEmpty(movie.Name)
             ? "movie-" + movie.Name.ToLowerInvariant() + "-" + movie.ProductionYear.Value.ToString(CultureInfo.InvariantCulture)
             : null;
+    }
+
+    private static DtoOptions StoredColumnsWithProviderIds()
+    {
+        var options = DtoOptions.StoredColumnsOnly;
+        options.Fields = [ItemFields.ProviderIds];
+        return options;
     }
 
     private async Task ReconcileMovieGroup(
@@ -231,7 +242,7 @@ public class MovieVersionsPostScanTask : ILibraryPostScanTask
     /// </summary>
     private async Task CleanupOrphanedAutoLinks(HashSet<Guid> reconciledPrimaryIds, CancellationToken cancellationToken)
     {
-        var parentIds = _linkedChildrenService.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion);
+        var parentIds = _linkedChildrenService.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion, BaseItemKind.Movie);
         foreach (var parentId in parentIds)
         {
             cancellationToken.ThrowIfCancellationRequested();

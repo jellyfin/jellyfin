@@ -46,7 +46,7 @@ public class EpisodeVersionsPostScanTaskTests
             .Returns(() => _episodes.ToList<BaseItem>());
 
         _linkedChildrenService
-            .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion))
+            .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion, BaseItemKind.Episode))
             .Returns([]);
         _linkedChildrenService
             .Setup(x => x.GetAutoMergeExclusions())
@@ -166,7 +166,7 @@ public class EpisodeVersionsPostScanTaskTests
         Link(primary, alternate);
 
         _linkedChildrenService
-            .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion))
+            .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion, BaseItemKind.Episode))
             .Returns([primary.Id]);
 
         await _task.Run(new Progress<double>(), CancellationToken.None);
@@ -230,7 +230,7 @@ public class EpisodeVersionsPostScanTaskTests
         Link(primary, alternate);
 
         _linkedChildrenService
-            .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion))
+            .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion, BaseItemKind.Episode))
             .Returns([primary.Id]);
 
         await _task.Run(new Progress<double>(), CancellationToken.None);

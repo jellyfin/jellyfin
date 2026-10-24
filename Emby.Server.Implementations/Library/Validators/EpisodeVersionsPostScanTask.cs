@@ -5,10 +5,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Validators;
@@ -54,7 +56,8 @@ public class EpisodeVersionsPostScanTask : ILibraryPostScanTask
         var seriesGroups = _libraryManager.GetItemList(new InternalItemsQuery
         {
             IncludeItemTypes = [BaseItemKind.Series],
-            GroupByPresentationUniqueKey = false
+            GroupByPresentationUniqueKey = false,
+            DtoOptions = StoredColumnsWithProviderIds()
         })
             .OfType<Series>()
             .GroupBy(s => s.GetPresentationUniqueKey(), StringComparer.Ordinal)
@@ -63,7 +66,8 @@ public class EpisodeVersionsPostScanTask : ILibraryPostScanTask
         var seasonIndexesBySeriesKey = _libraryManager.GetItemList(new InternalItemsQuery
         {
             IncludeItemTypes = [BaseItemKind.Season],
-            GroupByPresentationUniqueKey = false
+            GroupByPresentationUniqueKey = false,
+            DtoOptions = DtoOptions.StoredColumnsOnly
         })
             .OfType<Season>()
             .Where(s => !string.IsNullOrEmpty(s.SeriesPresentationUniqueKey))
@@ -120,6 +124,13 @@ public class EpisodeVersionsPostScanTask : ILibraryPostScanTask
         return years is [not null];
     }
 
+    private static DtoOptions StoredColumnsWithProviderIds()
+    {
+        var options = DtoOptions.StoredColumnsOnly;
+        options.Fields = [ItemFields.ProviderIds];
+        return options;
+    }
+
     private async Task ReconcileSeriesGroup(
         string seriesKey,
         IReadOnlyDictionary<Guid, IReadOnlyList<Guid>> exclusions,
@@ -132,6 +143,8 @@ public class EpisodeVersionsPostScanTask : ILibraryPostScanTask
             SeriesPresentationUniqueKey = seriesKey,
             GroupByPresentationUniqueKey = false,
             IsVirtualItem = false,
+            // Read only: every save goes through the video version manager, which reloads the item.
+            DtoOptions = DtoOptions.StoredColumnsOnly,
             // Versions already merged within one library root are hidden otherwise, which would unmerge them.
             IncludeAlternateVersions = true
         })
@@ -274,7 +287,7 @@ public class EpisodeVersionsPostScanTask : ILibraryPostScanTask
     /// </summary>
     private async Task CleanupOrphanedAutoLinks(HashSet<Guid> reconciledPrimaryIds, CancellationToken cancellationToken)
     {
-        var parentIds = _linkedChildrenService.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion);
+        var parentIds = _linkedChildrenService.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion, BaseItemKind.Episode);
         foreach (var parentId in parentIds)
         {
             cancellationToken.ThrowIfCancellationRequested();

@@ -20,11 +20,20 @@ public interface ILinkedChildrenService
     IReadOnlyList<Guid> GetLinkedChildrenIds(Guid parentId, int? childType = null);
 
     /// <summary>
+    /// Gets the linked child IDs of any of the specified types for a parent item, in sort order.
+    /// </summary>
+    /// <param name="parentId">The parent item ID.</param>
+    /// <param name="childTypes">The child types to include.</param>
+    /// <returns>List of child item IDs.</returns>
+    IReadOnlyList<Guid> GetLinkedChildrenIds(Guid parentId, IReadOnlyList<LinkedChildType> childTypes);
+
+    /// <summary>
     /// Gets the distinct parent IDs that have linked children of the specified type.
     /// </summary>
     /// <param name="childType">The child type to filter by.</param>
+    /// <param name="parentType">Optional. Only return parents of this item kind.</param>
     /// <returns>List of distinct parent item IDs.</returns>
-    IReadOnlyList<Guid> GetParentIdsWithChildType(LinkedChildType childType);
+    IReadOnlyList<Guid> GetParentIdsWithChildType(LinkedChildType childType, BaseItemKind? parentType = null);
 
     /// <summary>
     /// Gets, in a single query, the subset of the supplied items that own at least one alternate

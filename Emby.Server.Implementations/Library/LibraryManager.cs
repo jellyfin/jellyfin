@@ -2308,9 +2308,9 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentNullException.ThrowIfNull(video);
 
-            var linkedIds = _linkedChildrenService.GetLinkedChildrenIds(video.Id, (int)MediaBrowser.Controller.Entities.LinkedChildType.LinkedAlternateVersion)
-                .Concat(_linkedChildrenService.GetLinkedChildrenIds(video.Id, (int)MediaBrowser.Controller.Entities.LinkedChildType.AutoLinkedAlternateVersion))
-                .ToList();
+            var linkedIds = _linkedChildrenService.GetLinkedChildrenIds(
+                video.Id,
+                [MediaBrowser.Controller.Entities.LinkedChildType.LinkedAlternateVersion, MediaBrowser.Controller.Entities.LinkedChildType.AutoLinkedAlternateVersion]);
             if (linkedIds.Count > 0)
             {
                 return linkedIds

@@ -11,6 +11,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -40,7 +41,7 @@ public class MovieVersionsPostScanTaskTests
             .Returns(new LibraryOptions { EnableAutomaticMovieVersionGrouping = true });
 
         _linkedChildrenService
-            .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion))
+            .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion, BaseItemKind.Movie))
             .Returns([]);
         _linkedChildrenService
             .Setup(x => x.GetAutoMergeExclusions())
@@ -185,7 +186,7 @@ public class MovieVersionsPostScanTaskTests
             .Returns(new LibraryOptions { EnableAutomaticMovieVersionGrouping = false });
 
         _linkedChildrenService
-            .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion))
+            .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion, BaseItemKind.Movie))
             .Returns([primary.Id]);
 
         await _task.Run(new Progress<double>(), CancellationToken.None);
@@ -256,7 +257,7 @@ public class MovieVersionsPostScanTaskTests
         ExcludePair(hd, uhd);
 
         _linkedChildrenService
-            .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion))
+            .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion, BaseItemKind.Movie))
             .Returns([hd.Id]);
 
         await _task.Run(new Progress<double>(), CancellationToken.None);
@@ -277,7 +278,7 @@ public class MovieVersionsPostScanTaskTests
         Link(primary, alternate);
 
         _linkedChildrenService
-            .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion))
+            .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion, BaseItemKind.Movie))
             .Returns([primary.Id]);
 
         await _task.Run(new Progress<double>(), CancellationToken.None);
@@ -288,6 +289,18 @@ public class MovieVersionsPostScanTaskTests
         _videoVersionManager.Verify(
             x => x.RemoveVersionLinkAsync(It.IsAny<Video>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never);
+    }
+
+    [Fact]
+    public async Task Run_LoadsMoviesWithoutImagesOrUserData()
+    {
+        await _task.Run(new Progress<double>(), CancellationToken.None);
+
+        _libraryManager.Verify(x => x.GetItemList(It.Is<InternalItemsQuery>(q =>
+            q.IncludeItemTypes.Contains(BaseItemKind.Movie)
+            && !q.DtoOptions.EnableImages
+            && !q.DtoOptions.EnableUserData
+            && q.DtoOptions.ContainsField(ItemFields.ProviderIds))));
     }
 
     [Fact]
@@ -317,7 +330,7 @@ public class MovieVersionsPostScanTaskTests
         Link(primary, alternate);
 
         _linkedChildrenService
-            .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion))
+            .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion, BaseItemKind.Movie))
             .Returns([primary.Id]);
 
         await _task.Run(new Progress<double>(), CancellationToken.None);
@@ -335,7 +348,7 @@ public class MovieVersionsPostScanTaskTests
         _libraryManager.Setup(x => x.GetItemById(episodePrimary.Id)).Returns(episodePrimary);
 
         _linkedChildrenService
-            .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion))
+            .Setup(x => x.GetParentIdsWithChildType(LinkedChildType.AutoLinkedAlternateVersion, BaseItemKind.Movie))
             .Returns([episodePrimary.Id]);
 
         await _task.Run(new Progress<double>(), CancellationToken.None);
