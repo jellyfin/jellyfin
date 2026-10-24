@@ -1,4 +1,5 @@
 using System.IO;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,15 +18,26 @@ public interface ISchedulesDirectService
     Task<Stream> GetAvailableCountries(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Gets a value indicating whether the Schedules Direct daily image download limit is currently active.
+    /// Gets a value indicating whether an image may be downloaded from the given url.
     /// </summary>
-    /// <returns><c>true</c> if the image limit has been hit and has not yet reset; otherwise <c>false</c>.</returns>
-    bool IsImageDailyLimitActive();
+    /// <param name="imageUrl">The image url.</param>
+    /// <returns><c>false</c> for a Schedules Direct url while the daily image limit is active; otherwise <c>true</c>.</returns>
+    bool CanDownloadImage(string imageUrl);
 
     /// <summary>
-    /// Gets a value indicating whether the Schedules Direct service is available.
-    /// Returns <c>false</c> if a permanent account error has occurred or a transient backoff is active.
+    /// Reports a successful image download, so that an unexplained failure streak is reset.
     /// </summary>
-    /// <returns><c>true</c> if the service can accept requests; otherwise <c>false</c>.</returns>
-    bool IsServiceAvailable();
+    /// <param name="imageUrl">The image url that was downloaded.</param>
+    void ReportImageDownloadSuccess(string imageUrl);
+
+    /// <summary>
+    /// Reports a failed image download. Schedules Direct answers an exhausted image quota with
+    /// an HTTP 200 JSON error body rather than a failure status, so the body is what decides
+    /// whether image acquisition has to stop.
+    /// </summary>
+    /// <param name="imageUrl">The image url that failed.</param>
+    /// <param name="statusCode">The HTTP status code of the failure, if any.</param>
+    /// <param name="responseBody">The body of the failed response, if it was readable.</param>
+    /// <returns>What the caller must do with the image.</returns>
+    ImageDownloadFailureAction ReportImageDownloadFailure(string imageUrl, HttpStatusCode? statusCode, string? responseBody);
 }
