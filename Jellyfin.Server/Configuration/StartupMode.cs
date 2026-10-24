@@ -20,5 +20,11 @@ public enum StartupMode
     /// <summary>
     /// Runs the Database seed function regardless of <see cref="BaseApplicationConfiguration.IsStartupWizardCompleted"/> state.
     /// </summary>
-    SeedSystem = 2
+    SeedSystem = 2,
+
+    /// <summary>
+    /// Provisions an unconfigured system from the file given by <see cref="StartupOptions.ProvisionFile"/>
+    /// then shuts down. Does nothing if the system is already configured.
+    /// </summary>
+    Provision = 3
 }
