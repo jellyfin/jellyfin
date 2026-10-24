@@ -43,6 +43,7 @@ namespace Jellyfin.Database.Implementations.Entities
             InvalidLoginAttemptCount = 0;
             EnableUserPreferenceAccess = true;
             MustUpdatePassword = false;
+            OriginalTitlePreference = false;
             DisplayMissingEpisodes = false;
             DisplayCollectionsView = false;
             HidePlayedInLatest = true;
@@ -184,6 +185,14 @@ namespace Jellyfin.Database.Implementations.Entities
         [MaxLength(255)]
         [StringLength(255)]
         public string? SubtitleLanguagePreference { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether original titles are prefered.
+        /// </summary>
+        /// <remarks>
+        /// Required.
+        /// </remarks>
+        public bool OriginalTitlePreference { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether missing episodes should be displayed.

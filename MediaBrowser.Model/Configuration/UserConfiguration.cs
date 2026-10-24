@@ -26,6 +26,11 @@ namespace MediaBrowser.Model.Configuration
             OrderedViews = Array.Empty<Guid>();
             MyMediaExcludes = Array.Empty<Guid>();
             GroupedFolders = Array.Empty<Guid>();
+
+            OriginalTitlePreference = false;
+            OriginalTitlePreferenceLibraryIncludes = Array.Empty<Guid>();
+            OriginalTitlePreferenceLanguageScriptIncludes = Array.Empty<string>();
+            OriginalTitlePreferenceLanguageScriptExcludes = Array.Empty<string>();
         }
 
         /// <summary>
@@ -74,5 +79,13 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the id of the selected cast receiver.
         /// </summary>
         public string? CastReceiverId { get; set; }
+
+        public bool OriginalTitlePreference { get; set; }
+
+        public Guid[] OriginalTitlePreferenceLibraryIncludes { get; set; }
+
+        public string[] OriginalTitlePreferenceLanguageScriptIncludes { get; set; }
+
+        public string[] OriginalTitlePreferenceLanguageScriptExcludes { get; set; }
     }
 }
