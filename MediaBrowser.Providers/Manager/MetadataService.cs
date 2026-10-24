@@ -192,9 +192,13 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            // Next run remote image providers, but only if local image providers didn't throw an exception
-            if (!localImagesFailed && refreshOptions.ImageRefreshMode > MetadataRefreshMode.ValidationOnly)
+            if (localImagesFailed)
             {
+                hasRefreshedImages = false;
+            }
+            else if (refreshOptions.ImageRefreshMode > MetadataRefreshMode.ValidationOnly)
+            {
+                // Next run remote image providers, now that local image providers didn't throw
                 var providers = GetNonLocalImageProviders(item, allImageProviders, refreshOptions).ToList();
 
                 if (providers.Count > 0)
@@ -937,6 +941,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
+                refreshResult.Failures++;
                 refreshResult.ErrorMessage = ex.Message;
                 Logger.LogError(ex, "Error in {Provider} for {Item}", provider.Name, logName);
             }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -15,7 +16,6 @@ using Emby.Naming.Common;
 using Emby.Naming.TV;
 using Emby.Naming.Video;
 using Emby.Server.Implementations.Library.Resolvers;
-using Emby.Server.Implementations.Library.Validators;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks.Tasks;
 using Emby.Server.Implementations.Sorting;
@@ -35,7 +35,6 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
@@ -75,7 +74,6 @@ namespace Emby.Server.Implementations.Library
         private readonly Lazy<IProviderManager> _providerManagerFactory;
         private readonly Lazy<IUserViewManager> _userViewManagerFactory;
         private readonly IServerApplicationHost _appHost;
-        private readonly IMediaEncoder _mediaEncoder;
         private readonly IFileSystem _fileSystem;
         private readonly IItemRepository _itemRepository;
         private readonly IItemPersistenceService _persistenceService;
@@ -123,7 +121,6 @@ namespace Emby.Server.Implementations.Library
         /// <param name="fileSystem">The file system.</param>
         /// <param name="providerManagerFactory">The provider manager.</param>
         /// <param name="userViewManagerFactory">The user view manager.</param>
-        /// <param name="mediaEncoder">The media encoder.</param>
         /// <param name="itemRepository">The item repository.</param>
         /// <param name="persistenceService">The item persistence service.</param>
         /// <param name="nextUpService">The next up service.</param>
@@ -149,7 +146,6 @@ namespace Emby.Server.Implementations.Library
             IFileSystem fileSystem,
             Lazy<IProviderManager> providerManagerFactory,
             Lazy<IUserViewManager> userViewManagerFactory,
-            IMediaEncoder mediaEncoder,
             IItemRepository itemRepository,
             IItemPersistenceService persistenceService,
             INextUpService nextUpService,
@@ -175,7 +171,6 @@ namespace Emby.Server.Implementations.Library
             _fileSystem = fileSystem;
             _providerManagerFactory = providerManagerFactory;
             _userViewManagerFactory = userViewManagerFactory;
-            _mediaEncoder = mediaEncoder;
             _itemRepository = itemRepository;
             _persistenceService = persistenceService;
             _nextUpService = nextUpService;
@@ -323,7 +318,7 @@ namespace Emby.Server.Implementations.Library
 
             if (wizardChanged)
             {
-                _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
+                QueueLibraryScan();
             }
         }
 
@@ -883,7 +878,18 @@ namespace Emby.Server.Implementations.Library
                         wrongTypeItem.GetType().Name,
                         expectedVideoType.Name,
                         path);
-                    DeleteItem(wrongTypeItem, new DeleteOptions { DeleteFileLocation = false });
+
+                    // A full DeleteItem would save the primary version, which resolves its
+                    // alternates again and re-enters here before this row is gone.
+                    DeleteItemsUnsafeFast([wrongTypeItem]);
+
+                    // The fast path skips the parent bookkeeping, and the stale item is listed
+                    // under its ParentId, so that folder's cached listing has to be dropped.
+                    if (wrongTypeItem.GetParent() is Folder staleParent)
+                    {
+                        staleParent.Children = null;
+                        staleParent.UserData = null;
+                    }
                 }
             }
 
@@ -1212,6 +1218,12 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
+        public Guid GetPersonId(string name)
+        {
+            return GetItemByNameId<Person>(Person.GetPath(name));
+        }
+
+        /// <inheritdoc />
         public Person? GetPerson(string name)
         {
             var path = Person.GetPath(name);
@@ -1222,6 +1234,33 @@ namespace Emby.Server.Implementations.Library
             }
 
             return null;
+        }
+
+        /// <inheritdoc />
+        public Person GetOrCreatePerson(string name)
+        {
+            var existing = GetPerson(name);
+            if (existing is not null)
+            {
+                return existing;
+            }
+
+            var path = Person.GetPath(name);
+            var info = Directory.CreateDirectory(path);
+            var item = new Person
+            {
+                Name = name,
+                Id = GetItemByNameId<Person>(path),
+                DateCreated = info.CreationTimeUtc,
+                DateModified = info.LastWriteTimeUtc,
+                Path = path
+            };
+
+            item.PresentationUniqueKey = item.CreatePresentationUniqueKey();
+
+            CreateItem(item, null);
+
+            return item;
         }
 
         /// <summary>
@@ -1315,7 +1354,6 @@ namespace Emby.Server.Implementations.Library
                 {
                     IncludeItemTypes = [BaseItemKind.MusicArtist],
                     Name = name,
-                    UseRawName = true,
                     DtoOptions = options
                 }).Cast<MusicArtist>()
                 .OrderBy(i => i.IsAccessedByName ? 1 : 0)
@@ -1354,15 +1392,6 @@ namespace Emby.Server.Implementations.Library
         {
             var forceCaseInsensitiveId = _configurationManager.Configuration.EnableNormalizedItemByNameIds;
             return GetNewItemIdInternal(path, typeof(T), forceCaseInsensitiveId);
-        }
-
-        /// <inheritdoc />
-        public Task ValidatePeopleAsync(IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            // Ensure the location is available.
-            Directory.CreateDirectory(_configurationManager.ApplicationPaths.PeoplePath);
-
-            return new PeopleValidator(this, _logger, _fileSystem).ValidatePeople(cancellationToken, progress);
         }
 
         /// <summary>
@@ -1491,6 +1520,10 @@ namespace Emby.Server.Implementations.Library
             var numComplete = 0;
             var numTasks = tasks.Count;
 
+            _logger.LogInformation("Running {TaskCount} post-scan task(s)", numTasks);
+
+            var phaseStart = Stopwatch.GetTimestamp();
+
             foreach (var task in tasks)
             {
                 // Prevent access to modified closure
@@ -1508,20 +1541,45 @@ namespace Emby.Server.Implementations.Library
                     progress.Report(innerPercent);
                 });
 
-                _logger.LogDebug("Running post-scan task {0}", task.GetType().Name);
+                var taskName = task.GetType().Name;
+                var taskStart = Stopwatch.GetTimestamp();
+
+                _logger.LogInformation(
+                    "Running post-scan task {TaskNumber}/{TaskCount}: {TaskName}",
+                    currentNumComplete + 1,
+                    numTasks,
+                    taskName);
 
                 try
                 {
                     await task.Run(innerProgress, cancellationToken).ConfigureAwait(false);
+
+                    var elapsed = Stopwatch.GetElapsedTime(taskStart);
+                    _logger.LogInformation(
+                        "Post-scan task {TaskName} completed after {Minutes} minute(s) and {Seconds} seconds",
+                        taskName,
+                        Math.Truncate(elapsed.TotalMinutes),
+                        elapsed.Seconds);
                 }
                 catch (OperationCanceledException)
                 {
-                    _logger.LogInformation("Post-scan task cancelled: {0}", task.GetType().Name);
+                    var elapsed = Stopwatch.GetElapsedTime(taskStart);
+                    _logger.LogInformation(
+                        "Post-scan task {TaskName} cancelled after {Minutes} minute(s) and {Seconds} seconds",
+                        taskName,
+                        Math.Truncate(elapsed.TotalMinutes),
+                        elapsed.Seconds);
                     throw;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error running post-scan task");
+                    var elapsed = Stopwatch.GetElapsedTime(taskStart);
+                    _logger.LogError(
+                        ex,
+                        "Post-scan task {TaskName} failed after {Minutes} minute(s) and {Seconds} seconds",
+                        taskName,
+                        Math.Truncate(elapsed.TotalMinutes),
+                        elapsed.Seconds);
                 }
 
                 numComplete++;
@@ -1529,6 +1587,12 @@ namespace Emby.Server.Implementations.Library
                 percent /= numTasks;
                 progress.Report(percent * 100);
             }
+
+            var phaseElapsed = Stopwatch.GetElapsedTime(phaseStart);
+            _logger.LogInformation(
+                "All post-scan tasks completed after {Minutes} minute(s) and {Seconds} seconds",
+                Math.Truncate(phaseElapsed.TotalMinutes),
+                phaseElapsed.Seconds);
 
             _persistenceService.UpdateInheritedValues();
 
@@ -1745,6 +1809,18 @@ namespace Emby.Server.Implementations.Library
             }
 
             return _countService.GetItemCountsForNameItem(kind, id, relatedItemKinds, query);
+        }
+
+        /// <inheritdoc/>
+        public Dictionary<Guid, ItemCounts> GetItemCountsForNameItems(BaseItemKind kind, IReadOnlyList<Guid> ids, BaseItemKind[] relatedItemKinds, User? user)
+        {
+            var query = new InternalItemsQuery(user);
+            if (user is not null)
+            {
+                AddUserToQuery(query, user);
+            }
+
+            return _countService.GetItemCountsForNameItems(kind, ids, relatedItemKinds, query);
         }
 
         public Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, User? user)
@@ -2376,6 +2452,9 @@ namespace Emby.Server.Implementations.Library
             var parentCollectionType = parent is not null ? GetTopFolderContentType(parent) : null;
             foreach (var item in items)
             {
+                // Parental controls filter on the stored score, so it has to match the ratings being saved.
+                item.OnMetadataChanged();
+
                 if (item is Video video && video.LocalAlternateVersions.Length > 0)
                 {
                     var videoType = video.GetType();
@@ -2582,6 +2661,9 @@ namespace Emby.Server.Implementations.Library
         {
             foreach (var item in items)
             {
+                // Parental controls filter on the stored score, so it has to match the ratings being saved.
+                item.OnMetadataChanged();
+
                 item.DateLastSaved = DateTime.UtcNow;
                 await RunMetadataSavers(item, updateReason).ConfigureAwait(false);
 
@@ -2976,14 +3058,7 @@ namespace Emby.Server.Implementations.Library
             CollectionType? viewType,
             string sortName)
         {
-            var parentIdString = parentId.IsEmpty()
-                ? null
-                : parentId.ToString("N", CultureInfo.InvariantCulture);
-
-            // The name is either localized (grouped views) or the library folder's own name.
-            var idValues = "38_namedview_" + user.Id.ToString("N", CultureInfo.InvariantCulture) + (parentIdString ?? string.Empty) + (viewType?.ToString() ?? string.Empty);
-
-            var id = GetNewItemId(idValues, typeof(UserView));
+            var id = GetNamedViewId(user, parentId, viewType);
 
             var path = Path.Combine(_configurationManager.ApplicationPaths.InternalMetadataPath, "views", id.ToString("N", CultureInfo.InvariantCulture));
 
@@ -3041,6 +3116,18 @@ namespace Emby.Server.Implementations.Library
             return item;
         }
 
+        public Guid GetNamedViewId(User user, Guid parentId, CollectionType? viewType)
+        {
+            var parentIdString = parentId.IsEmpty()
+                ? null
+                : parentId.ToString("N", CultureInfo.InvariantCulture);
+
+            // The name is either localized (grouped views) or the library folder's own name.
+            var idValues = "38_namedview_" + user.Id.ToString("N", CultureInfo.InvariantCulture) + (parentIdString ?? string.Empty) + (viewType?.ToString() ?? string.Empty);
+
+            return GetNewItemId(idValues, typeof(UserView));
+        }
+
         public UserView GetShadowView(
             BaseItem parent,
             CollectionType? viewType,
@@ -3050,10 +3137,7 @@ namespace Emby.Server.Implementations.Library
 
             var name = parent.Name;
             var parentId = parent.Id;
-
-            var idValues = "38_namedview_" + name + parentId + (viewType?.ToString() ?? string.Empty);
-
-            var id = GetNewItemId(idValues, typeof(UserView));
+            var id = GetShadowViewId(name, parentId, viewType);
 
             var path = parent.Path;
 
@@ -3103,6 +3187,13 @@ namespace Emby.Server.Implementations.Library
             }
 
             return item;
+        }
+
+        public Guid GetShadowViewId(string name, Guid parentId, CollectionType? viewType)
+        {
+            var idValues = "38_namedview_" + name + parentId + (viewType?.ToString() ?? string.Empty);
+
+            return GetNewItemId(idValues, typeof(UserView));
         }
 
         public UserView GetNamedView(
@@ -3390,6 +3481,7 @@ namespace Emby.Server.Implementations.Library
 
             var extras = new List<BaseItem>();
             var typeCounters = new Dictionary<ExtraType, int>();
+            var generatedNames = new Dictionary<ExtraType, HashSet<string>>();
 
             // Order by path so that the numbering handed out below does not depend on the
             // order the file system happened to list the folder in
@@ -3426,10 +3518,12 @@ namespace Emby.Server.Implementations.Library
                     extra = itemById;
                 }
 
-                // An extra is named after its file, so the file is the source of truth. Items created
-                // by older versions, or renamed by a metadata provider, are corrected here;
-                // RefreshExtras persists the change.
-                if (!string.IsNullOrEmpty(name) && extra.LockedFields?.Contains(MetadataField.Name) != true)
+                // The name derived from the file is only a default. A name that came from anywhere else,
+                // such as a local metadata file, is the user's and has to survive the scan, so only a
+                // name this method handed out itself is renewed; RefreshExtras persists the change.
+                if (!string.IsNullOrEmpty(name)
+                    && extra.LockedFields?.Contains(MetadataField.Name) != true
+                    && (itemById is null || IsGeneratedExtraName(extra.Name, candidate)))
                 {
                     extra.Name = name;
                 }
@@ -3450,6 +3544,31 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 return null;
+            }
+
+            bool IsGeneratedExtraName(string currentName, ExtraCandidate candidate)
+            {
+                // The file name is what an extra was called before it was given a name of its type
+                if (string.Equals(currentName, candidate.Extra.Name, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+
+                if (!generatedNames.TryGetValue(candidate.ExtraType, out var names))
+                {
+                    // Any of the numbers of this type may have been handed out, as the order the extras
+                    // of a type are numbered in shifts as files appear beside them or are taken away
+                    names = new HashSet<string>(StringComparer.Ordinal);
+                    var count = candidates.Count(c => c.ExtraType == candidate.ExtraType);
+                    for (var seen = 0; seen < count; seen++)
+                    {
+                        names.Add(GetNumberedExtraName(candidate.ExtraType, seen));
+                    }
+
+                    generatedNames[candidate.ExtraType] = names;
+                }
+
+                return names.Contains(currentName);
             }
         }
 
@@ -3477,7 +3596,18 @@ namespace Emby.Server.Implementations.Library
             typeCounters.TryGetValue(candidate.ExtraType, out var seen);
             typeCounters[candidate.ExtraType] = seen + 1;
 
-            var typeName = _localization.GetServerLocalizedString(GetExtraTypeNameKey(candidate.ExtraType));
+            return GetNumberedExtraName(candidate.ExtraType, seen);
+        }
+
+        /// <summary>
+        /// Gets the name given to the n-th extra of a type that is named after its type.
+        /// </summary>
+        /// <param name="extraType">The extra type.</param>
+        /// <param name="seen">Number of extras of the type named before this one.</param>
+        /// <returns>The name.</returns>
+        private string GetNumberedExtraName(ExtraType extraType, int seen)
+        {
+            var typeName = _localization.GetServerLocalizedString(GetExtraTypeNameKey(extraType));
 
             return seen == 0
                 ? typeName
@@ -3542,6 +3672,11 @@ namespace Emby.Server.Implementations.Library
 
         public QueryResult<BaseItem> GetPeopleItems(InternalPeopleQuery query)
         {
+            ArgumentNullException.ThrowIfNull(query);
+
+            // This hands back by-name items, so the people without one are not ours to report.
+            query.MustHaveItem = true;
+
             var queryResult = _peopleRepository.GetPeople(query);
             var baseItems = queryResult.Items.Select(i =>
                 {
@@ -3733,7 +3868,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (refreshLibrary)
                 {
-                    StartScanInBackground();
+                    _ = StartScanInBackground();
                 }
                 else
                 {
@@ -3752,27 +3887,14 @@ namespace Emby.Server.Implementations.Library
 
                 var itemUpdateType = ItemUpdateType.MetadataDownload;
                 var saveEntity = false;
-                var createEntity = false;
                 var personEntity = GetPerson(person.Name);
 
                 if (personEntity is null)
                 {
                     try
                     {
-                        var path = Person.GetPath(person.Name);
-                        var info = Directory.CreateDirectory(path);
-                        personEntity = new Person()
-                        {
-                            Name = person.Name,
-                            Id = GetItemByNameId<Person>(path),
-                            DateCreated = info.CreationTimeUtc,
-                            DateModified = info.LastWriteTimeUtc,
-                            Path = path
-                        };
-
-                        personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
+                        personEntity = GetOrCreatePerson(person.Name);
                         saveEntity = true;
-                        createEntity = true;
                     }
                     catch (Exception ex)
                     {
@@ -3806,11 +3928,6 @@ namespace Emby.Server.Implementations.Library
 
                 if (saveEntity)
                 {
-                    if (createEntity)
-                    {
-                        CreateItems([personEntity], null, CancellationToken.None);
-                    }
-
                     await RunMetadataSavers(personEntity, itemUpdateType).ConfigureAwait(false);
                     personEntity.DateLastSaved = DateTime.UtcNow;
 
@@ -3819,13 +3936,16 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private void StartScanInBackground()
+        internal Task StartScanInBackground()
         {
-            Task.Run(() =>
+            // An active scan already handles library structure changes, so this request can be dropped.
+            if (IsScanRunning)
             {
-                // No need to start if scanning the library because it will handle it
-                ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
-            });
+                return Task.CompletedTask;
+            }
+
+            // Queue instead of restarting so a scan that starts after the check is allowed to finish.
+            return Task.Run(QueueLibraryScan);
         }
 
         public void AddMediaPath(string virtualFolderName, MediaPathInfo mediaPath)
@@ -3936,7 +4056,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     await ValidateTopLibraryFolders(CancellationToken.None, true).ConfigureAwait(false);
 
-                    StartScanInBackground();
+                    _ = StartScanInBackground();
                 }
                 else
                 {
@@ -4077,6 +4197,18 @@ namespace Emby.Server.Implementations.Library
 
             SetTopParentOrAncestorIds(query);
             return _itemRepository.GetQueryFiltersLegacy(query);
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> GetTagNames(InternalItemsQuery query)
+        {
+            if (query.User is not null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return _itemRepository.GetTagNames(query);
         }
 
         /// <inheritdoc />

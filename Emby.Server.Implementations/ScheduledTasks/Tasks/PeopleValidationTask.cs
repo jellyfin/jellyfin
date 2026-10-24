@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.Library.Validators;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
@@ -29,6 +30,7 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<PeopleValidationTask> _logger;
+    private readonly ILogger<PeopleValidator> _validatorLogger;
     private readonly IItemTypeLookup _itemTypeLookup;
 
     /// <summary>
@@ -39,6 +41,7 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     /// <param name="dbContextFactory">Instance of the <see cref="IDbContextFactory{TContext}"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{PeopleValidationTask}"/> interface.</param>
+    /// <param name="validatorLogger">Instance of the <see cref="ILogger{PeopleValidator}"/> interface.</param>
     /// <param name="itemTypeLookup">Instance of the <see cref="IItemTypeLookup"/> interface.</param>
     public PeopleValidationTask(
         ILibraryManager libraryManager,
@@ -46,6 +49,7 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
         IDbContextFactory<JellyfinDbContext> dbContextFactory,
         IFileSystem fileSystem,
         ILogger<PeopleValidationTask> logger,
+        ILogger<PeopleValidator> validatorLogger,
         IItemTypeLookup itemTypeLookup)
     {
         _libraryManager = libraryManager;
@@ -53,6 +57,7 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
         _dbContextFactory = dbContextFactory;
         _fileSystem = fileSystem;
         _logger = logger;
+        _validatorLogger = validatorLogger;
         _itemTypeLookup = itemTypeLookup;
     }
 
@@ -165,7 +170,9 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
         // Phase 2: Validate people (33-66%). Runs after orphaned PeopleBaseItemMap entries are
         // cleaned up above, so dead people are removed in a single pass instead of requiring a second run.
         IProgress<double> validateProgress = new Progress<double>((val) => progress.Report((val / 3) + 33));
-        await _libraryManager.ValidatePeopleAsync(validateProgress, cancellationToken).ConfigureAwait(false);
+        await new PeopleValidator(_libraryManager, _validatorLogger)
+            .Run(validateProgress, cancellationToken)
+            .ConfigureAwait(false);
 
         // Phase 3: Refresh images for people missing them (66-100%)
         IProgress<double> refreshProgress = new Progress<double>((val) => progress.Report((val / 3) + 66));

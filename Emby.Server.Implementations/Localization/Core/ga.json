@@ -108,5 +108,17 @@
     "CleanupUserDataTask": "Tasc glantacháin sonraí úsáideora",
     "CleanupUserDataTaskDescription": "Glanann sé gach sonraí úsáideora (stádas faire, stádas is fearr leat srl.) ó mheáin nach bhfuil i láthair a thuilleadh ar feadh 90 lá ar a laghad.",
     "Original": "Bunaidh",
-    "LyricDownloadFailureFromForItem": "Theip ar liricí a íoslódáil ó {0} do {1}"
+    "LyricDownloadFailureFromForItem": "Theip ar liricí a íoslódáil ó {0} do {1}",
+    "NameExtraBehindTheScenes": "Taobh thiar de na Radhairc",
+    "NameExtraClip": "Gearrthóg",
+    "NameExtraDeletedScene": "Radharc Scriosta",
+    "NameExtraFeaturette": "Mionghné",
+    "NameExtraInterview": "Agallamh",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Sampla",
+    "NameExtraScene": "Radharc",
+    "NameExtraShort": "Gearr",
+    "NameExtraThemeSong": "Amhrán Téama",
+    "NameExtraThemeVideo": "Físeán Téama",
+    "NameExtraTrailer": "Leantóir"
 }
