@@ -15,12 +15,13 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// only return the people that have one, so the count it reports has to leave out the rest rather than
 /// describe a larger set than it can page through.
 /// </summary>
-public sealed class PeopleRepositoryMustHaveItemTests : SqliteDbTestFixture
+public abstract class PeopleRepositoryMustHaveItemTests : DbTestFixture
 {
     private readonly PeopleRepository _people;
     private readonly Guid _movie = Guid.NewGuid();
 
-    public PeopleRepositoryMustHaveItemTests()
+    protected PeopleRepositoryMustHaveItemTests(TestDatabase database)
+        : base(database)
     {
         var lookup = new ItemTypeLookup();
         using (var context = CreateDbContext())
@@ -82,4 +83,6 @@ public sealed class PeopleRepositoryMustHaveItemTests : SqliteDbTestFixture
 
         Assert.Equal(result.Items.Count, result.TotalRecordCount);
     }
+
+    public sealed class Sqlite() : PeopleRepositoryMustHaveItemTests(new SqliteTestDatabase());
 }
