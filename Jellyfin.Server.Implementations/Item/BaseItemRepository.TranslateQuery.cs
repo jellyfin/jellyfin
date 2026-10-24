@@ -1094,8 +1094,10 @@ public sealed partial class BaseItemRepository
 
         if (filter.AncestorIds.Length > 0)
         {
-            var ancestorFilter = filter.AncestorIds.OneOrManyExpressionBuilder<AncestorId, Guid>(f => f.ParentItemId);
-            baseQuery = baseQuery.Where(e => e.Parents!.AsQueryable().Any(ancestorFilter));
+            var descendantIds = context.AncestorIds
+                .WhereOneOrMany(filter.AncestorIds, a => a.ParentItemId)
+                .Select(a => a.ItemId);
+            baseQuery = baseQuery.Where(e => descendantIds.Contains(e.Id));
         }
 
         if (filter.DescendantOfId.HasValue)
@@ -1115,8 +1117,14 @@ public sealed partial class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.AncestorWithPresentationUniqueKey))
         {
-            baseQuery = baseQuery
-                .Where(e => context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId)).Where(f => f.PresentationUniqueKey == filter.AncestorWithPresentationUniqueKey).Any(f => f.Children!.Any(w => w.ItemId == e.Id)));
+            var ancestorKey = filter.AncestorWithPresentationUniqueKey;
+            var keyedAncestorIds = context.BaseItems
+                .Where(f => f.Id != EF.Constant(PlaceholderId) && f.PresentationUniqueKey == ancestorKey)
+                .Select(f => f.Id);
+            var descendantIds = context.AncestorIds
+                .Where(a => keyedAncestorIds.Contains(a.ParentItemId))
+                .Select(a => a.ItemId);
+            baseQuery = baseQuery.Where(e => descendantIds.Contains(e.Id));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.SeriesPresentationUniqueKey))
