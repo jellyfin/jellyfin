@@ -46,7 +46,17 @@ public class VideoVersionManager : IVideoVersionManager
             return null;
         }
 
-        var items = videos.OrderBy(i => i.Id).ToList();
+        // Work on the cached instances: a later save of a stale cached copy would rewrite the version links.
+        var items = videos
+            .Select(i => _libraryManager.GetItemById(i.Id) as Video ?? i)
+            .DistinctBy(i => i.Id)
+            .OrderBy(i => i.Id)
+            .ToList();
+        if (items.Count < 2)
+        {
+            return null;
+        }
+
         var linkType = autoGrouped ? LinkedChildType.AutoLinkedAlternateVersion : LinkedChildType.LinkedAlternateVersion;
 
         if (!autoGrouped)
@@ -150,6 +160,8 @@ public class VideoVersionManager : IVideoVersionManager
     {
         ArgumentNullException.ThrowIfNull(primary);
 
+        primary = _libraryManager.GetItemById(primary.Id) as Video ?? primary;
+
         if (_libraryManager.GetItemById(alternateId) is Video alternate
             && alternate.PrimaryVersionId.HasValue
             && alternate.PrimaryVersionId.Value.Equals(primary.Id))
@@ -233,8 +245,13 @@ public class VideoVersionManager : IVideoVersionManager
         await primary.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
 
         // Splitting is an explicit user decision, so remember it: the library scan would otherwise
-        // auto-merge the very same items again on its next run.
+        // auto-merge the very same items again on its next run. Every pair is recorded, otherwise two
+        // of the split alternates could still be merged with each other.
         _linkedChildrenService.AddAutoMergeExclusions(primary.Id, splitIds);
+        for (var i = 0; i < splitIds.Count - 1; i++)
+        {
+            _linkedChildrenService.AddAutoMergeExclusions(splitIds[i], splitIds[(i + 1)..]);
+        }
 
         return true;
     }

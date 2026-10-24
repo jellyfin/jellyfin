@@ -239,6 +239,26 @@ public class VideoVersionManagerTests
     }
 
     [Fact]
+    public async Task SplitVersionsAsync_ThreeVersions_RecordsExclusionsBetweenEveryPair()
+    {
+        var primary = CreateVideo("/Movies/Blade Runner (1982)/Blade Runner (1982).mkv");
+        var alternateB = CreateVideo("/Movies 4K/Blade Runner (1982)/Blade Runner (1982).mkv");
+        var alternateC = CreateVideo("/Movies Final Cut/Blade Runner (1982)/Blade Runner (1982).mkv");
+        alternateB.PrimaryVersionId = primary.Id;
+        alternateC.PrimaryVersionId = primary.Id;
+        _libraryManager.Setup(x => x.GetLinkedAlternateVersions(primary)).Returns([alternateB, alternateC]);
+
+        Assert.True(await _manager.SplitVersionsAsync(primary, CancellationToken.None));
+
+        _linkedChildrenService.Verify(
+            x => x.AddAutoMergeExclusions(primary.Id, It.Is<IReadOnlyList<Guid>>(ids => ids.Count == 2 && ids.Contains(alternateB.Id) && ids.Contains(alternateC.Id))),
+            Times.Once);
+        _linkedChildrenService.Verify(
+            x => x.AddAutoMergeExclusions(alternateB.Id, It.Is<IReadOnlyList<Guid>>(ids => ids.Count == 1 && ids[0].Equals(alternateC.Id))),
+            Times.Once);
+    }
+
+    [Fact]
     public async Task MergeVersionsAsync_ManualMerge_ClearsEarlierExclusion()
     {
         var videoA = CreateVideo("/Movies/Blade Runner (1982)/Blade Runner (1982).mkv");
