@@ -330,6 +330,42 @@ public class LibraryController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Get motion artwork for an album.
+    /// </summary>
+    /// <param name="itemId">The item id.</param>
+    /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
+    /// <param name="aspectRatio">Optional. Desired aspect ratio of motion artwork.</param>
+    /// <response code="200">Motion artwork returned.</response>
+    /// <response code="404">Item not found.</response>
+    /// <returns>The item motion artwork.</returns>
+    [HttpGet("Items/{itemId}/MotionArtwork")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<QueryResult<BaseItemDto>> GetMotionArtwork(
+        [FromRoute, Required] Guid itemId,
+        [FromQuery] Guid? userId,
+        [FromQuery] MotionArtworkAspectRatio aspectRatio = MotionArtworkAspectRatio.Square)
+    {
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.IsNullOrEmpty()
+            ? null
+            : _userManager.GetUserById(userId.Value);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        var dtoOptions = new DtoOptions();
+        var items = item.GetMotionArtwork(user, aspectRatio)
+        .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
+        .ToArray();
+
+        return new QueryResult<BaseItemDto>(items);
+    }
+
+    /// <summary>
     /// Starts a library scan.
     /// </summary>
     /// <response code="204">Library scan started.</response>
