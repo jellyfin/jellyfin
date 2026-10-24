@@ -301,6 +301,9 @@ public sealed class LibraryStructureControllerTests
 
         using var cleanup = await client.DeleteAsync($"Library/VirtualFolders?name={NewName}&refreshLibrary=false", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NoContent, cleanup.StatusCode);
+
+        // The server is shared with the other controller tests, which count the users.
+        await userManager.DeleteUserAsync(user.Id);
     }
 
     [Fact]
@@ -342,5 +345,8 @@ public sealed class LibraryStructureControllerTests
 
         using var cleanup = await client.DeleteAsync($"Library/VirtualFolders?name={Name.ToUpperInvariant()}&refreshLibrary=false", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NoContent, cleanup.StatusCode);
+
+        // The server is shared with the other controller tests, which count the users.
+        await userManager.DeleteUserAsync(user.Id);
     }
 }
