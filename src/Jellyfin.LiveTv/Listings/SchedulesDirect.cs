@@ -52,6 +52,9 @@ namespace Jellyfin.LiveTv.Listings
         // Stations that stopped being queried keep their cached schedules for this long.
         private const int ScheduleCacheMaxAgeDays = 30;
 
+        // Long enough to outlive any restart, short enough that the list cannot fill up for good.
+        private const int RejectedImageUriMaxAgeDays = 30;
+
         // The spec requires a client to stay away for an hour once the service reports Offline.
         private const int OfflineBackoffMinutes = 60;
 
@@ -71,6 +74,7 @@ namespace Jellyfin.LiveTv.Listings
         // Image uris Schedules Direct answered with IMAGE_NOT_FOUND. Requesting one of these
         // again is what trips MAX_IMAGE_INVALID_URI_ERRORS and gets the account blocked.
         private readonly ConcurrentDictionary<string, byte> _rejectedImageUris = new(StringComparer.Ordinal);
+        private readonly Lock _rejectedImageUrisFileLock = new();
 
         // Station/date pairs the server has queued for generation, with the retryTime it gave.
         private readonly ConcurrentDictionary<string, DateTime> _scheduleRetryTimes = new(StringComparer.Ordinal);
@@ -100,6 +104,7 @@ namespace Jellyfin.LiveTv.Listings
             _lineupCache = new SchedulesDirectLineupCache(logger, appPaths);
             _imageLimitHitDate = LoadDailyLimitDate(ImageLimitFilePath);
             _metadataLimitHitDate = LoadDailyLimitDate(MetadataLimitFilePath);
+            LoadRejectedImageUris();
         }
 
         /// <inheritdoc />
@@ -108,6 +113,8 @@ namespace Jellyfin.LiveTv.Listings
         private string ImageLimitFilePath => Path.Combine(_appPaths.CachePath, "sd-image-limit.txt");
 
         private string MetadataLimitFilePath => Path.Combine(_appPaths.CachePath, "sd-metadata-limit.txt");
+
+        private string RejectedImageUrisFilePath => Path.Combine(_appPaths.CachePath, "sd-rejected-images.txt");
 
         /// <inheritdoc />
         public string Type => nameof(SchedulesDirect);
@@ -191,24 +198,42 @@ namespace Jellyfin.LiveTv.Listings
                 dates.Count);
 
             var freshDays = await DownloadSchedules(info, channelId, datesToFetch, token, cancellationToken).ConfigureAwait(false);
+
+            // A day that is neither cached nor downloaded (queued, a per-day error, a pending retry)
+            // must not go missing: the guide refresh would delete its programs. The previous copy
+            // stands in for it, and without one the whole channel fails.
+            var coveredDates = cachedDays.Concat(freshDays)
+                .Select(d => d.Schedule?.Metadata?.StartDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
+                .ToHashSet(StringComparer.Ordinal);
+            foreach (var date in dates)
+            {
+                if (unavailableDates.Contains(date) || coveredDates.Contains(date))
+                {
+                    continue;
+                }
+
+                var stale = await _scheduleCache.GetLatestAsync(channelId, date, cancellationToken).ConfigureAwait(false);
+                if (stale?.Schedule is null)
+                {
+                    throw new InvalidOperationException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Could not get the schedule for station {0} on {1}",
+                            channelId,
+                            date));
+                }
+
+                _logger.LogDebug("Serving the previous schedule for {StationId} {Date} until a new one is available", channelId, date);
+                cachedDays.Add(stale);
+            }
+
             _scheduleCache.Prune(channelId, dates);
 
+            // Only reachable when the server reported every day as unavailable.
             var allDays = cachedDays.Select(c => c.Schedule!).Concat(freshDays.Select(f => f.Schedule!)).ToList();
             if (allDays.Count == 0)
             {
-                // Nothing came back. That is only genuinely "no programs" when the server said so
-                // for every day; anything else is a failure, and reporting it as an empty list
-                // would have the guide refresh delete the programs this channel already has.
-                if (unavailableDates.Count == dates.Count)
-                {
-                    return [];
-                }
-
-                throw new InvalidOperationException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "Could not get any schedule for station {0}",
-                        channelId));
+                return [];
             }
 
             var programDict = cachedDays.Concat(freshDays)
@@ -422,8 +447,12 @@ namespace Jellyfin.LiveTv.Listings
 
                 result.Add(cachedDay);
 
+                // A program that is still queued (6001) does not have to change the day's md5, so
+                // caching the day without it would leave that airing out until the md5 changes.
+                var isComplete = day.Programs.All(p => string.IsNullOrEmpty(p.ProgramId) || detailsById.ContainsKey(p.ProgramId));
+
                 var date = day.Metadata?.StartDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-                if (date is not null)
+                if (date is not null && isComplete)
                 {
                     // Must stay ahead of SetProgramImages: it stamps ephemeral uris and a token
                     // that expires daily onto these programs, and neither may reach the cache.
@@ -492,7 +521,7 @@ namespace Jellyfin.LiveTv.Listings
                 LogEntryErrors(batchResult.Where(p => p.Code.HasValue).Select(p => (p.Code!.Value, p.ProgramId, p.Message)), "program");
 
                 // Error entries carry no program data. A queued program (6001) is a soft failure,
-                // so it is simply left out and picked up once the day's md5 changes again.
+                // so it is left out, and its day is not cached so the next refresh asks again.
                 results.AddRange(batchResult.Where(p => !p.Code.HasValue && !string.IsNullOrEmpty(p.ProgramId)));
             }
 
@@ -987,6 +1016,14 @@ namespace Jellyfin.LiveTv.Listings
                 return null;
             }
 
+            // A login during the offline hour counts towards MAX_LOGIN_ATTEMPTS and cannot succeed.
+            if (IsOfflineBackoffActive())
+            {
+                _logger.LogWarning("Skipping Schedules Direct request, the service reported itself offline");
+
+                return null;
+            }
+
             if (!_tokens.TryGetValue(username, out NameValuePair savedToken))
             {
                 savedToken = new NameValuePair();
@@ -1033,7 +1070,7 @@ namespace Jellyfin.LiveTv.Listings
 
         private async Task<bool> IsSystemOnline(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
-            if (DateTime.UtcNow.Ticks < Interlocked.Read(ref _offlineUntilTicks))
+            if (IsOfflineBackoffActive())
             {
                 _logger.LogWarning("Skipping Schedules Direct request, the service reported itself offline");
                 return false;
@@ -1044,7 +1081,7 @@ namespace Jellyfin.LiveTv.Listings
             {
                 // A failed status check is not a reason to skip the refresh on its own, unless it
                 // failed with SERVICE_OFFLINE.
-                return DateTime.UtcNow.Ticks >= Interlocked.Read(ref _offlineUntilTicks);
+                return !IsOfflineBackoffActive();
             }
 
             // The spec does not define the order of the entries, so any of them can be the one
@@ -1222,9 +1259,10 @@ namespace Jellyfin.LiveTv.Listings
             }
             else if (enableRetry
                 && (int)response.StatusCode < 500
-                && (sdCode == SdErrorCode.TokenExpired || (response.StatusCode == HttpStatusCode.Forbidden && errorCode is null)))
+                && (sdCode is SdErrorCode.TokenExpired or SdErrorCode.TokenInvalid or SdErrorCode.TokenMissing
+                    || (response.StatusCode == HttpStatusCode.Forbidden && errorCode is null)))
             {
-                // Token expired — clear tokens and retry with a fresh token. Also retry on 403
+                // Token rejected — clear tokens and retry with a fresh token. Also retry on 403
                 // carrying no code at all; a code we simply do not know is not an auth failure.
                 _tokens.Clear();
                 using var retryMessage = new HttpRequestMessage(message.Method, message.RequestUri);
@@ -1488,9 +1526,63 @@ namespace Jellyfin.LiveTv.Listings
 
             // Stop learning rather than forgetting: clearing here would re-offer every known-bad
             // uri at once, which is the burst that trips MAX_IMAGE_INVALID_URI_ERRORS.
-            if (_rejectedImageUris.Count < MaxRejectedImageUris)
+            if (_rejectedImageUris.Count < MaxRejectedImageUris && _rejectedImageUris.TryAdd(key, 0))
             {
-                _rejectedImageUris.TryAdd(key, 0);
+                // Persisted, or a restart would offer every rejected uri again in one refresh.
+                var line = DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "\t" + key + Environment.NewLine;
+                try
+                {
+                    lock (_rejectedImageUrisFileLock)
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(RejectedImageUrisFilePath)!);
+                        File.AppendAllText(RejectedImageUrisFilePath, line);
+                    }
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    _logger.LogWarning(ex, "Failed to persist rejected SD image uri to {Path}", RejectedImageUrisFilePath);
+                }
+            }
+        }
+
+        private void LoadRejectedImageUris()
+        {
+            var path = RejectedImageUrisFilePath;
+            if (!File.Exists(path))
+            {
+                return;
+            }
+
+            try
+            {
+                var cutoff = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-RejectedImageUriMaxAgeDays));
+                var kept = new List<string>();
+                var lines = File.ReadAllLines(path);
+                foreach (var line in lines)
+                {
+                    var separator = line.IndexOf('\t', StringComparison.Ordinal);
+                    if (separator <= 0
+                        || !DateOnly.TryParseExact(line.AsSpan(0, separator), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
+                        || date < cutoff
+                        || _rejectedImageUris.Count >= MaxRejectedImageUris)
+                    {
+                        continue;
+                    }
+
+                    if (_rejectedImageUris.TryAdd(line[(separator + 1)..], 0))
+                    {
+                        kept.Add(line);
+                    }
+                }
+
+                if (kept.Count != lines.Length)
+                {
+                    File.WriteAllLines(path, kept);
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _logger.LogWarning(ex, "Failed to load rejected SD image uris from {Path}", path);
             }
         }
 
@@ -1523,8 +1615,24 @@ namespace Jellyfin.LiveTv.Listings
             return null;
         }
 
+        private bool IsOfflineBackoffActive()
+            => DateTime.UtcNow.Ticks < Interlocked.Read(ref _offlineUntilTicks);
+
         private void BackOffLogins(TimeSpan duration)
-            => Interlocked.Exchange(ref _loginBackoffUntilTicks, DateTime.UtcNow.Add(duration).Ticks);
+        {
+            // Keep the later deadline, so a generic 30 minute back-off cannot shorten the 24 hours of MAX_LOGIN_ATTEMPTS.
+            var until = DateTime.UtcNow.Add(duration).Ticks;
+            long current;
+            do
+            {
+                current = Interlocked.Read(ref _loginBackoffUntilTicks);
+                if (current >= until)
+                {
+                    return;
+                }
+            }
+            while (Interlocked.CompareExchange(ref _loginBackoffUntilTicks, until, current) != current);
+        }
 
         private static SdErrorCode? ToKnownErrorCode(int? code)
             => code.HasValue && Enum.IsDefined((SdErrorCode)code.Value) ? (SdErrorCode)code.Value : null;
@@ -1648,16 +1756,18 @@ namespace Jellyfin.LiveTv.Listings
                 return [];
             }
 
+            // An empty channel list maps no channel, which the guide refresh reads as "no programs"
+            // and deletes the stored ones, so a failure has to surface here as well.
             var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
             if (string.IsNullOrEmpty(token))
             {
-                return [];
+                throw new AuthenticationException("Could not authenticate with Schedules Direct");
             }
 
             if (!await IsSystemOnline(info, cancellationToken).ConfigureAwait(false))
             {
-                return [];
+                throw new InvalidOperationException("Schedules Direct reports that the service is offline.");
             }
 
             // Stations that have left every lineup would otherwise keep their schedules forever.

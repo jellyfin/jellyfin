@@ -367,6 +367,90 @@ public class SchedulesDirectTests : IDisposable
         Assert.All(second, p => Assert.Null(p.ImageUrl));
     }
 
+    [Fact]
+    public async Task GetProgramsAsync_OneDayQueuedNextToCachedDays_ServesThePreviousCopy()
+    {
+        var server = new FakeServer();
+        using var provider = CreateProvider(server);
+
+        var first = await provider.GetProgramsAsync(_info, "20454", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), TestContext.Current.CancellationToken);
+
+        // One day changed and is now queued; the others still match the cache. Leaving the queued
+        // day out would have the guide refresh delete its programs.
+        server.ChangedDate = server.RequestedDates[0];
+        server.ScheduleRetryTime = DateTime.UtcNow.AddMinutes(10);
+        var second = await provider.GetProgramsAsync(_info, "20454", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), TestContext.Current.CancellationToken);
+
+        Assert.Equal(2, server.Counts["/schedules"]);
+        Assert.Equal(first.Select(p => p.Id).Order(), second.Select(p => p.Id).Order());
+    }
+
+    [Fact]
+    public async Task GetProgramsAsync_ProgramQueued_DoesNotCacheTheIncompleteDay()
+    {
+        var server = new FakeServer { ProgramErrorCode = 6001 };
+        using var provider = CreateProvider(server);
+
+        Assert.Empty(await provider.GetProgramsAsync(_info, "20454", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), TestContext.Current.CancellationToken));
+
+        // The program finishing generation need not change the day's md5, so the day must be
+        // downloaded again rather than served from the cache without it.
+        server.ProgramErrorCode = 0;
+        var second = await provider.GetProgramsAsync(_info, "20454", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), TestContext.Current.CancellationToken);
+
+        Assert.NotEmpty(second);
+        Assert.Equal(2, server.Counts["/programs"]);
+    }
+
+    [Theory]
+    [InlineData(1004, "TOKEN_MISSING")]
+    [InlineData(1010, "INVALID_TOKEN")]
+    public async Task GetProgramsAsync_TokenRejected_LogsInAgain(int code, string response)
+    {
+        var server = new FakeServer { Md5RejectionBody = ErrorBody(code, response) };
+        using var provider = CreateProvider(server);
+
+        var programs = await provider.GetProgramsAsync(_info, "20454", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), TestContext.Current.CancellationToken);
+
+        Assert.NotEmpty(programs);
+        Assert.Equal(2, server.Counts["/token"]);
+    }
+
+    [Fact]
+    public async Task GetProgramsAsync_ServiceOffline_DoesNotLogInAgainDuringTheOfflineHour()
+    {
+        var server = new FakeServer { StatusCode = 3000 };
+        using var provider = CreateProvider(server);
+
+        for (var i = 0; i < 3; i++)
+        {
+            await Assert.ThrowsAnyAsync<Exception>(
+                () => provider.GetProgramsAsync(_info, "20454", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), TestContext.Current.CancellationToken));
+        }
+
+        // MAX_LOGIN_ATTEMPTS counts logins, so each channel of a refresh must not log in again.
+        Assert.Equal(1, server.Counts["/token"]);
+    }
+
+    [Fact]
+    public async Task GetProgramsAsync_AfterImageNotFoundAndRestart_StopsOfferingTheUri()
+    {
+        var server = new FakeServer { HasImageArtwork = true };
+
+        using (var provider = CreateProvider(server))
+        {
+            var first = await provider.GetProgramsAsync(_info, "20454", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), TestContext.Current.CancellationToken);
+            provider.ReportImageDownloadFailure(first.First().ImageUrl!, HttpStatusCode.NotFound, ErrorBody(5000, "IMAGE_NOT_FOUND"));
+        }
+
+        // A second provider over the same cache directory stands in for a restart.
+        using (var provider = CreateProvider(server))
+        {
+            var second = await provider.GetProgramsAsync(_info, "20454", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), TestContext.Current.CancellationToken);
+            Assert.All(second, p => Assert.Null(p.ImageUrl));
+        }
+    }
+
     [Theory]
     [InlineData(HttpStatusCode.Forbidden, 4009, "TOO_MANY_LOGINS")]
     [InlineData(HttpStatusCode.OK, 4009, "TOO_MANY_LOGINS")]
@@ -387,6 +471,30 @@ public class SchedulesDirectTests : IDisposable
         login.Status = HttpStatusCode.OK;
         login.Body = await GetTokenResponse();
         await Assert.ThrowsAnyAsync<Exception>(() => provider.GetLineups(_info, "USA", "90210"));
+    }
+
+    [Fact]
+    public async Task GetChannels_SystemOffline_ThrowsInsteadOfReportingNoChannels()
+    {
+        var server = new FakeServer { SystemStatus = "Offline" };
+        using var provider = CreateProvider(server);
+
+        // No channels means no channel is mapped, which the guide refresh reads as "no programs".
+        await Assert.ThrowsAnyAsync<Exception>(
+            () => provider.GetChannels(new ListingsProviderInfo { Username = "user", Password = "password", ListingsId = "USA-OTA-90210" }, TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task GetChannels_LoginBackedOff_ThrowsInsteadOfReportingNoChannels()
+    {
+        var login = new Response { Status = HttpStatusCode.Forbidden, Body = ErrorBody(4009, "TOO_MANY_LOGINS") };
+        using var provider = CreateProvider(login, await GetHeadendsResponse());
+        var info = new ListingsProviderInfo { Username = "user", Password = "password", ListingsId = "USA-OTA-90210" };
+
+        await Assert.ThrowsAnyAsync<Exception>(() => provider.GetChannels(info, TestContext.Current.CancellationToken));
+
+        // The second call never reaches /token, so this is the null-token path.
+        await Assert.ThrowsAnyAsync<Exception>(() => provider.GetChannels(info, TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -564,6 +672,23 @@ public class SchedulesDirectTests : IDisposable
 
         public bool HasImageArtwork { get; set; }
 
+        /// <summary>
+        /// Gets or sets a date whose schedule md5 differs from the one first reported.
+        /// </summary>
+        public string? ChangedDate { get; set; }
+
+        public List<string> RequestedDates { get; private set; } = [];
+
+        /// <summary>
+        /// Gets or sets a per-program error code for the programs endpoint, such as PROGRAMID_QUEUED.
+        /// </summary>
+        public int ProgramErrorCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a body the hash endpoint rejects the next request's token with, as HTTP 403.
+        /// </summary>
+        public string? Md5RejectionBody { get; set; }
+
         public string ImageUri { get; set; } = "assets/p1_b.jpg";
 
         public DateTime LineupModified { get; set; } = new(2026, 9, 14, 0, 0, 0, DateTimeKind.Utc);
@@ -587,7 +712,15 @@ public class SchedulesDirectTests : IDisposable
                     break;
 
                 case "/schedules/md5":
-                    body = BuildMd5Response(await ReadDates(message, cancellationToken).ConfigureAwait(false));
+                    if (Md5RejectionBody is not null)
+                    {
+                        var rejection = Md5RejectionBody;
+                        Md5RejectionBody = null;
+                        return new HttpResponseMessage(HttpStatusCode.Forbidden) { Content = new StringContent(rejection) };
+                    }
+
+                    RequestedDates = await ReadDates(message, cancellationToken).ConfigureAwait(false);
+                    body = BuildMd5Response(RequestedDates);
                     break;
 
                 case "/schedules":
@@ -595,6 +728,12 @@ public class SchedulesDirectTests : IDisposable
                     break;
 
                 case "/programs":
+                    if (ProgramErrorCode != 0)
+                    {
+                        body = "[{\"programID\":\"EP000000010001\",\"code\":" + ProgramErrorCode.ToString(CultureInfo.InvariantCulture) + ",\"message\":\"test\"}]";
+                        break;
+                    }
+
                     body = "[{\"programID\":\"EP000000010001\",\"titles\":[{\"title120\":\"Test\"}],\"hasImageArtwork\":"
                         + (HasImageArtwork ? "true" : "false") + "}]";
                     break;
@@ -651,11 +790,14 @@ public class SchedulesDirectTests : IDisposable
         private string BuildMd5Response(List<string> dates)
         {
             var days = dates.ConvertAll(d => Md5ErrorCode == 0
-                ? "\"" + d + "\":{\"code\":0,\"message\":\"OK\",\"lastModified\":\"2026-09-14T00:00:00Z\",\"md5\":\"" + Md5Salt + d + "\"}"
+                ? "\"" + d + "\":{\"code\":0,\"message\":\"OK\",\"lastModified\":\"2026-09-14T00:00:00Z\",\"md5\":\"" + GetMd5(d) + "\"}"
                 : "\"" + d + "\":{\"code\":" + Md5ErrorCode.ToString(CultureInfo.InvariantCulture) + ",\"message\":\"Date requested not within range.\"}");
 
             return "{\"20454\":{" + string.Join(',', days) + "}}";
         }
+
+        private string GetMd5(string date)
+            => (string.Equals(date, ChangedDate, StringComparison.Ordinal) ? "changed" : Md5Salt) + date;
 
         private string BuildSchedulesResponse(List<string> dates)
         {
@@ -668,7 +810,7 @@ public class SchedulesDirectTests : IDisposable
             var days = dates.ConvertAll(d =>
                 "{\"stationID\":\"20454\",\"programs\":[{\"programID\":\"EP000000010001\",\"airDateTime\":\"" + d
                 + "T12:00:00Z\",\"duration\":1800,\"md5\":\"x\"}],\"metadata\":{\"modified\":\"2026-09-14T00:00:00Z\",\"md5\":\""
-                + Md5Salt + d + "\",\"startDate\":\"" + d + "\"}}");
+                + GetMd5(d) + "\",\"startDate\":\"" + d + "\"}}");
 
             return "[" + string.Join(',', days) + "]";
         }

@@ -51,27 +51,20 @@ public class SchedulesDirectScheduleCache
             return null;
         }
 
-        var path = GetPath(stationId, date);
-        if (!File.Exists(path))
-        {
-            return null;
-        }
-
-        try
-        {
-            var stream = File.OpenRead(path);
-            await using (stream.ConfigureAwait(false))
-            {
-                var cached = await JsonSerializer.DeserializeAsync<SchedulesDirectCachedDay>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-                return string.Equals(cached?.Md5, md5, StringComparison.Ordinal) ? cached : null;
-            }
-        }
-        catch (Exception ex) when (ex is IOException or JsonException)
-        {
-            _logger.LogDebug(ex, "Discarding unreadable Schedules Direct cache entry {Path}", path);
-            return null;
-        }
+        var cached = await ReadAsync(stationId, date, cancellationToken).ConfigureAwait(false);
+        return string.Equals(cached?.Md5, md5, StringComparison.Ordinal) ? cached : null;
     }
+
+    /// <summary>
+    /// Reads the cached day whatever md5 it was stored under, to stand in for a day that could not
+    /// be downloaded.
+    /// </summary>
+    /// <param name="stationId">The station id.</param>
+    /// <param name="date">The date, formatted yyyy-MM-dd.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The cached entry, or <c>null</c> when there is none.</returns>
+    public Task<SchedulesDirectCachedDay?> GetLatestAsync(string stationId, string date, CancellationToken cancellationToken)
+        => ReadAsync(stationId, date, cancellationToken);
 
     /// <summary>
     /// Stores a freshly downloaded day.
@@ -100,7 +93,7 @@ public class SchedulesDirectScheduleCache
                 await JsonSerializer.SerializeAsync(stream, day, _jsonOptions, cancellationToken).ConfigureAwait(false);
             }
         }
-        catch (Exception ex) when (ex is IOException or JsonException)
+        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
         {
             _logger.LogWarning(ex, "Failed to cache Schedules Direct schedule {Path}", path);
         }
@@ -172,6 +165,29 @@ public class SchedulesDirectScheduleCache
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             _logger.LogDebug(ex, "Failed to prune stale Schedules Direct cache entries in {Directory}", _cacheRoot);
+        }
+    }
+
+    private async Task<SchedulesDirectCachedDay?> ReadAsync(string stationId, string date, CancellationToken cancellationToken)
+    {
+        var path = GetPath(stationId, date);
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        try
+        {
+            var stream = File.OpenRead(path);
+            await using (stream.ConfigureAwait(false))
+            {
+                return await JsonSerializer.DeserializeAsync<SchedulesDirectCachedDay>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
+        {
+            _logger.LogDebug(ex, "Discarding unreadable Schedules Direct cache entry {Path}", path);
+            return null;
         }
     }
 

@@ -146,18 +146,20 @@ public class ListingsManager : IListingsManager
                 provider.Name,
                 providerInfo.ListingsId ?? string.Empty);
 
-            var epgChannels = await GetEpgChannels(provider, providerInfo, true, cancellationToken).ConfigureAwait(false);
-
-            var epgChannel = GetEpgChannelFromTunerChannel(providerInfo.ChannelMappings, channel, epgChannels);
-            if (epgChannel is null)
-            {
-                _logger.LogDebug("EPG channel not found for tuner channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Name, providerInfo.ListingsId ?? string.Empty);
-                continue;
-            }
-
             List<ProgramInfo> programs;
             try
             {
+                // Listing the provider's channels can fail as well, and that must not stop the
+                // fallback to the next provider either.
+                var epgChannels = await GetEpgChannels(provider, providerInfo, true, cancellationToken).ConfigureAwait(false);
+
+                var epgChannel = GetEpgChannelFromTunerChannel(providerInfo.ChannelMappings, channel, epgChannels);
+                if (epgChannel is null)
+                {
+                    _logger.LogDebug("EPG channel not found for tuner channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Name, providerInfo.ListingsId ?? string.Empty);
+                    continue;
+                }
+
                 programs = (await provider
                     .GetProgramsAsync(providerInfo, epgChannel.Id, startDateUtc, endDateUtc, cancellationToken).ConfigureAwait(false))
                     .ToList();

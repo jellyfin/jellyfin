@@ -58,7 +58,7 @@ public class SchedulesDirectLineupCache
                 return await JsonSerializer.DeserializeAsync<ChannelDto>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
             }
         }
-        catch (Exception ex) when (ex is IOException or JsonException)
+        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
         {
             _logger.LogDebug(ex, "Discarding unreadable Schedules Direct lineup cache entry {Path}", path);
             return null;
