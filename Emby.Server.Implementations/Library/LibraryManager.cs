@@ -1678,7 +1678,14 @@ namespace Emby.Server.Implementations.Library
         // Reads the .mblink files directly; going through RootFolder.Children would re-enter the resolver.
         private IEnumerable<string> GetLibraryRootPaths()
         {
-            return _fileSystem.GetDirectoryPaths(_configurationManager.ApplicationPaths.DefaultUserViewsPath)
+            // root/default only exists once the user root folder or a library has been created
+            var userViewsPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
+            if (!_fileSystem.DirectoryExists(userViewsPath))
+            {
+                return [];
+            }
+
+            return _fileSystem.GetDirectoryPaths(userViewsPath)
                 .SelectMany(GetVirtualFolderLocations)
                 .ToList();
         }
