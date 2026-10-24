@@ -92,6 +92,27 @@ public class MovieResolverTests
     }
 
     [Fact]
+    public void ResolveMultiple_GivenNumberedSampleFiles_IgnoresSamples()
+    {
+        var movieResolver = new MovieResolver(Mock.Of<IImageProcessor>(), Mock.Of<ILogger<MovieResolver>>(), _namingOptions, Mock.Of<IDirectoryService>(), _videoListResolver);
+
+        var parent = new Folder { Path = "/movies/La Chimera (2023)" };
+        var files = new List<FileSystemMetadata>
+        {
+            new() { FullName = "/movies/La Chimera (2023)/La Chimera (2023).mkv", Name = "La Chimera (2023).mkv", IsDirectory = false },
+            new() { FullName = "/movies/La Chimera (2023)/Sample1.mkv", Name = "Sample1.mkv", IsDirectory = false },
+            new() { FullName = "/movies/La Chimera (2023)/Sample2.mkv", Name = "Sample2.mkv", IsDirectory = false }
+        };
+
+        var result = movieResolver.ResolveMultiple(parent, files, CollectionType.movies, Mock.Of<IDirectoryService>());
+
+        Assert.NotNull(result);
+        var movie = Assert.Single(result.Items);
+        Assert.IsType<Movie>(movie);
+        Assert.Equal(files[0].FullName, movie.Path);
+    }
+
+    [Fact]
     public void AllExtrasTypesFolderNames_ContainsSampleSingularAndPlural()
     {
         Assert.True(_namingOptions.AllExtrasTypesFolderNames.ContainsKey("sample"));
