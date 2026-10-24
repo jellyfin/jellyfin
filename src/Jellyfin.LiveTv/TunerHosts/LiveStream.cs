@@ -72,6 +72,8 @@ namespace Jellyfin.LiveTv.TunerHosts
 
         public string TunerHostId { get; }
 
+        public Guid ChannelId { get; set; }
+
         public DateTime DateOpened { get; protected set; }
 
         protected void SetTempFilePath(string extension)
