@@ -70,17 +70,7 @@ namespace Emby.Server.Implementations.Library
 
         public IReadOnlyList<BaseItem> GetInstantMixFromGenres(IEnumerable<string> genres, User? user, DtoOptions dtoOptions)
         {
-            var genreIds = genres.DistinctNames().Select(i =>
-            {
-                try
-                {
-                    return _libraryManager.GetMusicGenre(i)?.Id ?? Guid.Empty;
-                }
-                catch
-                {
-                    return Guid.Empty;
-                }
-            }).Where(i => !i.IsEmpty()).ToArray();
+            var genreIds = genres.DistinctNames().Select(_libraryManager.GetMusicGenreId).ToArray();
 
             return GetInstantMixFromGenreIds(genreIds, user, dtoOptions);
         }

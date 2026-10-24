@@ -182,17 +182,8 @@ public class ArtistsController : BaseJellyfinApiController
         // Studios
         if (studios.Length != 0)
         {
-            query.StudioIds = studios.Select(i =>
-            {
-                try
-                {
-                    return _libraryManager.GetStudio(i);
-                }
-                catch
-                {
-                    return null;
-                }
-            }).Where(i => i is not null).Select(i => i!.Id).ToArray();
+            // An unknown name keeps the filter, so it matches nothing instead of everything
+            query.StudioIds = studios.Select(_libraryManager.GetStudioId).ToArray();
         }
 
         query.ApplyFilters(filters);
@@ -336,17 +327,8 @@ public class ArtistsController : BaseJellyfinApiController
         // Studios
         if (studios.Length != 0)
         {
-            query.StudioIds = studios.Select(i =>
-            {
-                try
-                {
-                    return _libraryManager.GetStudio(i);
-                }
-                catch
-                {
-                    return null;
-                }
-            }).Where(i => i is not null).Select(i => i!.Id).ToArray();
+            // An unknown name keeps the filter, so it matches nothing instead of everything
+            query.StudioIds = studios.Select(_libraryManager.GetStudioId).ToArray();
         }
 
         query.ApplyFilters(filters);
