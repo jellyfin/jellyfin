@@ -24,7 +24,7 @@
             }
         },
         {
-            "ratingStrings": ["X", "XX", "XXX", "XXXX"],
+            "ratingStrings": ["X", "XX", "XXX", "XXXX", "P"],
             "ratingScore": {
                 "score": 1000,
                 "subScore": null

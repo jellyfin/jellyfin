@@ -198,10 +198,10 @@ namespace MediaBrowser.MediaEncoding.Probing
         public string? CodecTag { get; set; }
 
         /// <summary>
-        /// Gets or sets the codec_tag_string?.
+        /// Gets or sets the codec_tag_string.
         /// </summary>
-        /// <value>The codec_tag_string?.</value>
-        [JsonPropertyName("codec_tag_string?")]
+        /// <value>The codec_tag_string.</value>
+        [JsonPropertyName("codec_tag_string")]
         public string? CodecTagString { get; set; }
 
         /// <summary>

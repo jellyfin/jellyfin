@@ -45,6 +45,15 @@ public interface IJellyfinDatabaseProvider
     Task RunScheduledOptimisation(CancellationToken cancellationToken);
 
     /// <summary>
+    /// If supported this should refresh the query planner statistics, e.g. after a library scan changed the data.
+    /// Unlike <see cref="RunScheduledOptimisation(CancellationToken)"/> it should not reclaim space, so that it stays
+    /// cheap enough to run after every scan.
+    /// </summary>
+    /// <param name="cancellationToken">The token to abort the operation.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    Task RefreshStatistics(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    /// <summary>
     /// If supported this should perform any actions that are required on stopping the jellyfin server. This runs
     /// against a deadline imposed by the service manager, so unlike
     /// <see cref="RunScheduledOptimisation(CancellationToken)"/> it should only do work whose cost does not grow with

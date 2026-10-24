@@ -212,6 +212,7 @@ public sealed partial class BaseItemRepository
             IsFavoriteOrLiked = filter.IsFavoriteOrLiked,
             IsLiked = filter.IsLiked,
             IsLocked = filter.IsLocked,
+            ImageTypes = filter.ImageTypes,
             NameLessThan = filter.NameLessThan,
             NameStartsWith = filter.NameStartsWith,
             NameStartsWithOrGreater = filter.NameStartsWithOrGreater,
@@ -223,7 +224,12 @@ public sealed partial class BaseItemRepository
             Years = filter.Years,
             NameContains = filter.NameContains,
             SearchTerm = filter.SearchTerm,
-            ExcludeItemIds = filter.ExcludeItemIds
+            ExcludeItemIds = filter.ExcludeItemIds,
+
+            // A genre, studio or artist carries none of the tags of the media it describes, so an
+            // allow list can only ever hide all of them. Reachability is settled by innerQueryFilter
+            // instead: a value gets this far only when an item the user may see carries it.
+            IncludeInheritedTags = []
         };
 
         // Collapse rows that share a PresentationUniqueKey (e.g. alternate versions) into one
