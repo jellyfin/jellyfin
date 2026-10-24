@@ -2,6 +2,7 @@ using System.Linq;
 using Emby.Naming.Common;
 using Emby.Server.Implementations.Library.Resolvers.Audio;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
@@ -48,6 +49,49 @@ public class AudioResolverTests
     {
         var resolved = TestResolveChildren("/parent/book title", children);
         Assert.Null(resolved);
+    }
+
+    [Theory]
+    [InlineData(CollectionType.music)]
+    [InlineData(CollectionType.books)]
+    [InlineData(null)]
+    public void Resolve_M4bFile_ReturnsAudioBookInAllLibraryTypes(CollectionType? collectionType)
+    {
+        var resolver = new AudioResolver(_namingOptions);
+        var args = new ItemResolveArgs(null, Mock.Of<ILibraryManager>())
+        {
+            CollectionType = collectionType,
+            FileInfo = new FileSystemMetadata
+            {
+                FullName = "/audiobooks/Titan War/Titan War.m4b",
+                IsDirectory = false
+            }
+        };
+
+        var result = resolver.Resolve(args);
+
+        Assert.IsType<AudioBook>(result);
+    }
+
+    [Fact]
+    public void Resolve_Mp3InMusicLibrary_ReturnsPlainAudio()
+    {
+        var resolver = new AudioResolver(_namingOptions);
+        var args = new ItemResolveArgs(null, Mock.Of<ILibraryManager>())
+        {
+            CollectionType = CollectionType.music,
+            FileInfo = new FileSystemMetadata
+            {
+                FullName = "/music/artist/track.mp3",
+                IsDirectory = false
+            }
+        };
+
+        var result = resolver.Resolve(args);
+
+        Assert.NotNull(result);
+        Assert.IsNotType<AudioBook>(result);
+        Assert.IsType<Audio>(result);
     }
 
     private Audio? TestResolveChildren(string parent, string[] children)
