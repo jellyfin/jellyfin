@@ -321,6 +321,57 @@ public class EncodingHelperTests
         Assert.Contains("pan=stereo", args, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void FindIndex_HiddenSubtitleBefore_IsCounted()
+    {
+        var sub = new MediaStream { Index = 4, Type = MediaStreamType.Subtitle, Codec = "subrip" };
+        MediaStream[] streams =
+        [
+            new MediaStream { Index = 0, Type = MediaStreamType.Video, Codec = "hevc" },
+            new MediaStream { Index = 1, Type = MediaStreamType.Audio, Codec = "dts" },
+            new MediaStream { Index = 2, Type = MediaStreamType.Subtitle, Codec = "subrip" },
+            sub
+        ];
+
+        Assert.Equal(4, EncodingHelper.FindIndex(streams, sub));
+    }
+
+    [Fact]
+    public void FindIndex_ExternalSubtitleBefore_IsNotCounted()
+    {
+        var sub = new MediaStream { Index = 3, Type = MediaStreamType.Subtitle, Codec = "subrip" };
+        MediaStream[] streams =
+        [
+            new MediaStream
+            {
+                Index = 0,
+                Type = MediaStreamType.Subtitle,
+                Codec = "subrip",
+                IsExternal = true,
+                Path = "/media/movie.en.srt"
+            },
+            new MediaStream { Index = 1, Type = MediaStreamType.Video, Codec = "hevc" },
+            new MediaStream { Index = 2, Type = MediaStreamType.Audio, Codec = "dts" },
+            sub
+        ];
+
+        Assert.Equal(2, EncodingHelper.FindIndex(streams, sub));
+    }
+
+    [Fact]
+    public void FindIndex_UnknownIndex_UsesPosition()
+    {
+        var sub = new MediaStream { Index = -1, Type = MediaStreamType.Subtitle, Codec = "subrip" };
+        MediaStream[] streams =
+        [
+            new MediaStream { Index = -1, Type = MediaStreamType.Video, Codec = "h264" },
+            new MediaStream { Index = -1, Type = MediaStreamType.Audio, Codec = "aac" },
+            sub
+        ];
+
+        Assert.Equal(2, EncodingHelper.FindIndex(streams, sub));
+    }
+
     private static EncodingJobInfo BuildAudioState(string audioCodec, int requestedSampleRate, string? outputContainer = null)
     {
         var audio = new MediaStream { Index = 0, Type = MediaStreamType.Audio, Codec = "flac", SampleRate = 96000 };
