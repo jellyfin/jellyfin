@@ -21,15 +21,22 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace MediaBrowser.Providers.Plugins.Omdb
 {
     /// <summary>Provider for OMDB service.</summary>
-    public class OmdbProvider
+    public class OmdbProvider : IDisposable
     {
+        private const int CacheDurationInHours = 1;
+
+        // Sized in RootObject records.
+        private const int CacheSizeLimit = 100_000;
+
         /// <summary>Generational suffixes that OMDb separates from the name with a comma.</summary>
         private static readonly string[] NameSuffixes = ["Jr", "Jnr", "Sr", "Snr", "II", "III", "IV", "V"];
 
+        private readonly MemoryCache _memoryCache;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -41,6 +48,8 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         /// <param name="configurationManager">IServerConfigurationManager to use.</param>
         public OmdbProvider(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
         {
+            _memoryCache = new MemoryCache(new MemoryCacheOptions { SizeLimit = CacheSizeLimit });
+
             _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
@@ -249,22 +258,50 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         internal async Task<RootObject> GetRootObject(string imdbId, CancellationToken cancellationToken)
         {
+            var key = $"item-{imdbId.ToString(CultureInfo.InvariantCulture)}";
+            if (_memoryCache.TryGetValue(key, out RootObject result))
+            {
+                return result;
+            }
+
             var path = await EnsureItemInfo(imdbId, cancellationToken).ConfigureAwait(false);
             var stream = AsyncFile.OpenRead(path);
             await using (stream.ConfigureAwait(false))
             {
-                return await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                result = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
             }
+
+            var cacheEntryOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(CacheDurationInHours),
+                Size = 1,
+            };
+
+            return _memoryCache.Set(key, result, cacheEntryOptions);
         }
 
         internal async Task<SeasonRootObject> GetSeasonRootObject(string imdbId, int seasonId, CancellationToken cancellationToken)
         {
+            var key = $"season-{imdbId.ToString(CultureInfo.InvariantCulture)}-{seasonId.ToString(CultureInfo.InvariantCulture)}";
+            if (_memoryCache.TryGetValue(key, out SeasonRootObject result))
+            {
+                return result;
+            }
+
             var path = await EnsureSeasonInfo(imdbId, seasonId, cancellationToken).ConfigureAwait(false);
             var stream = AsyncFile.OpenRead(path);
             await using (stream.ConfigureAwait(false))
             {
-                return await JsonSerializer.DeserializeAsync<SeasonRootObject>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                result = await JsonSerializer.DeserializeAsync<SeasonRootObject>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
             }
+
+            var cacheEntryOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(CacheDurationInHours),
+                Size = 1 + result?.Episodes?.Length,
+            };
+
+            return _memoryCache.Set(key, result, cacheEntryOptions);
         }
 
         /// <summary>Gets OMDB URL.</summary>
@@ -539,6 +576,25 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             // The data isn't localized and so can only be used for English users
             return string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _memoryCache.Dispose();
+            }
         }
 
         internal class SeasonRootObject
