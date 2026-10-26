@@ -298,10 +298,18 @@ namespace Emby.Server.Implementations.SyncPlay
 
             if (sessionIsPlayingAnItem)
             {
+                var playingItemId = session.FullNowPlayingItem.Id;
                 var playlist = session.NowPlayingQueue.Select(item => item.Id).ToList();
+
+                // Clients may report no queue, or one without the playing item; start from that item alone.
+                if (!playlist.Contains(playingItemId))
+                {
+                    playlist = [playingItemId];
+                }
+
                 PlayQueue.Reset();
                 PlayQueue.SetPlaylist(playlist);
-                PlayQueue.SetPlayingItemById(session.FullNowPlayingItem.Id);
+                PlayQueue.SetPlayingItemById(playingItemId);
                 RunTimeTicks = session.FullNowPlayingItem.RunTimeTicks ?? 0;
                 PositionTicks = session.PlayState.PositionTicks ?? 0;
 
