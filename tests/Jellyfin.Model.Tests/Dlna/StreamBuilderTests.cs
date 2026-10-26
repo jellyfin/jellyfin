@@ -371,6 +371,45 @@ namespace Jellyfin.Model.Tests
             Assert.Equal(streamInfo?.SubtitleStreamIndex, options.SubtitleStreamIndex);
         }
 
+        [Theory]
+        [InlineData("pgssub", null)]
+        [InlineData("vobsub", "mks")]
+        public async Task BuildVideoItemWithSecondaryAudioAndExternalGraphicalSubtitleKeepsVideoCopy(string subtitleCodec, string? subtitleContainer)
+        {
+            var options = await GetMediaOptions("Chrome", "mp4-h264-ac3-aac-srt-2600k");
+            var subtitleStream = options.MediaSources[0].MediaStreams[^1];
+            subtitleStream.Codec = subtitleCodec;
+            subtitleStream.IsExternal = false;
+            subtitleStream.SupportsExternalStream = true;
+            subtitleStream.Path = null;
+
+            options.Profile.SubtitleProfiles =
+            [
+                new SubtitleProfile
+                {
+                    Format = subtitleCodec,
+                    Container = subtitleContainer,
+                    Method = SubtitleDeliveryMethod.External
+                }
+            ];
+            options.AudioStreamIndex = 2;
+            options.SubtitleStreamIndex = subtitleStream.Index;
+
+            var streamInfo = GetStreamBuilder(enableSubtitleExtraction: false).GetOptimalVideoStream(options);
+
+            Assert.NotNull(streamInfo);
+            Assert.Equal(PlayMethod.Transcode, streamInfo.PlayMethod);
+            Assert.Equal(TranscodeReason.SecondaryAudioNotSupported, streamInfo.TranscodeReasons);
+            Assert.Equal(SubtitleDeliveryMethod.External, streamInfo.SubtitleDeliveryMethod);
+            Assert.Contains("h264", streamInfo.VideoCodecs);
+            Assert.Contains("aac", streamInfo.AudioCodecs);
+
+            var queryString = streamInfo.ToUrl("media:", "ACCESSTOKEN", null).Split('?', 2).ElementAtOrDefault(1);
+            var query = System.Web.HttpUtility.ParseQueryString(queryString ?? string.Empty);
+            Assert.Null(query["SubtitleStreamIndex"]);
+            Assert.Null(query["SubtitleMethod"]);
+        }
+
         private StreamInfo? BuildVideoItemSimpleTest(MediaOptions options, PlayMethod? playMethod, TranscodeReason why, string transcodeMode, string transcodeProtocol)
         {
             if (string.IsNullOrEmpty(transcodeProtocol))
@@ -573,9 +612,10 @@ namespace Jellyfin.Model.Tests
             throw new SerializationException("Invalid test data: " + name);
         }
 
-        private StreamBuilder GetStreamBuilder()
+        private StreamBuilder GetStreamBuilder(bool enableSubtitleExtraction = false)
         {
             var transcodeSupport = new Mock<ITranscoderSupport>();
+            transcodeSupport.Setup(t => t.CanExtractSubtitles(It.IsAny<string>())).Returns(enableSubtitleExtraction);
             var logger = new NullLogger<StreamBuilderTests>();
 
             return new StreamBuilder(transcodeSupport.Object, logger);
@@ -625,7 +665,7 @@ namespace Jellyfin.Model.Tests
         // EnableSubtitleExtraction = false, internal subtitles
         [InlineData("srt", "srt", false, false, PlayMethod.Transcode, SubtitleDeliveryMethod.Encode)]
         [InlineData("srt", "srt", false, false, PlayMethod.DirectPlay, SubtitleDeliveryMethod.External)]
-        [InlineData("pgssub", "pgssub", false, false, PlayMethod.Transcode, SubtitleDeliveryMethod.Encode)]
+        [InlineData("pgssub", "pgssub", false, false, PlayMethod.Transcode, SubtitleDeliveryMethod.External)]
         [InlineData("pgssub", "pgssub", false, false, PlayMethod.DirectPlay, SubtitleDeliveryMethod.External)]
         [InlineData("pgssub", "srt", false, false, PlayMethod.Transcode, SubtitleDeliveryMethod.Encode)]
         // EnableSubtitleExtraction = false, external subtitles
@@ -678,7 +718,7 @@ namespace Jellyfin.Model.Tests
 
         [Theory]
         [InlineData(false, null, true, SubtitleDeliveryMethod.External)]
-        [InlineData(false, null, false, SubtitleDeliveryMethod.Encode)]
+        [InlineData(false, null, false, SubtitleDeliveryMethod.External)]
         [InlineData(true, "/media/sub.mks", true, SubtitleDeliveryMethod.External)]
         [InlineData(true, "/media/sub.idx", true, SubtitleDeliveryMethod.Encode)]
         [InlineData(true, "/media/sub.sub", true, SubtitleDeliveryMethod.Encode)]

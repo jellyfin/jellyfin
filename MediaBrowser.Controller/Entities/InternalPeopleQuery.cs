@@ -19,7 +19,15 @@ namespace MediaBrowser.Controller.Entities
         {
             PersonTypes = personTypes;
             ExcludePersonTypes = excludePersonTypes;
+            EnableTotalRecordCount = true;
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to count the matching people. Under an
+        /// <see cref="AccessFilter"/> the count is the expensive half of the query: the page walk stops
+        /// at the limit, the count has to check every person.
+        /// </summary>
+        public bool EnableTotalRecordCount { get; set; }
 
         public int? StartIndex { get; set; }
 
@@ -51,5 +59,18 @@ namespace MediaBrowser.Controller.Entities
         public User User { get; set; }
 
         public bool? IsFavorite { get; set; }
+
+        /// <summary>
+        /// Gets or sets the item query whose access settings (library access, parental rating, tags)
+        /// people must satisfy through at least one of the items they are credited on.
+        /// </summary>
+        public InternalItemsQuery AccessFilter { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to keep only people that have a by-name item behind
+        /// them. Set by callers that hand back items rather than credits, so the count they report
+        /// describes the same people they can return.
+        /// </summary>
+        public bool MustHaveItem { get; set; }
     }
 }

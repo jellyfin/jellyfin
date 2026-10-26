@@ -108,5 +108,18 @@
     "CleanupUserDataTaskDescription": "Neteja totes les dades d'usuari (estat de la visualització, estat dels preferits, etc.) del contingut multimèdia que no ha estat present durant almenys 90 dies.",
     "CleanupUserDataTask": "Tasca de neteja de dades d'usuari",
     "Original": "Original",
-    "LyricDownloadFailureFromForItem": "No s'han pogut descarregar les lletres des de {0} per a {1}"
+    "LyricDownloadFailureFromForItem": "No s'han pogut descarregar les lletres des de {0} per a {1}",
+    "NameExtraBehindTheScenes": "Rere les càmeres",
+    "NameExtraClip": "Tall",
+    "NameExtraDeletedScene": "Escena eliminada",
+    "NameExtraFeaturette": "Migmetratge",
+    "NameExtraInterview": "Entrevista",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Mostra",
+    "NameExtraScene": "Escena",
+    "NameExtraShort": "Curt",
+    "NameExtraThemeSong": "Tema musical",
+    "NameExtraThemeVideo": "Vídeo temàtic",
+    "NameExtraTrailer": "Tràiler",
+    "NameExtraUnknown": "Extra"
 }

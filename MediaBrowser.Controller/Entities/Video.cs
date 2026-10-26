@@ -527,7 +527,13 @@ namespace MediaBrowser.Controller.Entities
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, IReadOnlyList<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var hasChanges = await base.RefreshedOwnedItems(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
+            var hasChanges = false;
+
+            // The extras of a version group are maintained by its primary.
+            if (!PrimaryVersionId.HasValue)
+            {
+                hasChanges = await base.RefreshedOwnedItems(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
+            }
 
             // Clean up LocalAlternateVersions - remove paths that no longer exist
             if (LocalAlternateVersions.Length > 0)
@@ -588,8 +594,18 @@ namespace MediaBrowser.Controller.Entities
                 {
                     altVideo.OwnerId = Id;
                     altVideo.SetPrimaryVersionId(Id);
+                    altVideo.IsInMixedFolder = IsInMixedFolder;
                     LibraryManager.CreateItem(altVideo, GetParent());
                 }
+            }
+
+            // A version is resolved on its own, so it does not learn whether the folder it sits in
+            // holds other items. It has to share that with the version it belongs to, before the
+            // refresh below acts on it.
+            if (LibraryManager.GetItemById(id) is Video resolvedVersion && resolvedVersion.IsInMixedFolder != IsInMixedFolder)
+            {
+                resolvedVersion.IsInMixedFolder = IsInMixedFolder;
+                await resolvedVersion.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
             }
 
             await RefreshMetadataForOwnedVideo(options, copyTitleMetadata, path, cancellationToken).ConfigureAwait(false);
@@ -671,6 +687,7 @@ namespace MediaBrowser.Controller.Entities
 
                 video.Id = id;
                 video.OwnerId = Id;
+                video.IsInMixedFolder = IsInMixedFolder;
                 LibraryManager.CreateItem(video, parentFolder);
                 newOptions.ForceSave = true;
             }
@@ -749,6 +766,80 @@ namespace MediaBrowser.Controller.Entities
                 .Select(i => i.Item.Id)
                 .Distinct()
                 .ToArray();
+        }
+
+        /// <inheritdoc />
+        protected override Guid[] GetOwnedVersionIds()
+        {
+            // Only the versions that live beside this one in the folder this scan covers. Linked
+            // versions are items of their own and maintain their extras themselves.
+            return [Id, .. LibraryManager.GetLocalAlternateVersionIds(this)];
+        }
+
+        /// <inheritdoc />
+        protected override Guid GetOwnerIdForExtra(BaseItem extra)
+        {
+            if (string.IsNullOrEmpty(extra.Path))
+            {
+                return Id;
+            }
+
+            var extraDirectory = System.IO.Path.GetDirectoryName(extra.Path.AsSpan());
+            var extraFileName = System.IO.Path.GetFileNameWithoutExtension(extra.Path.AsSpan());
+
+            var ownerId = Id;
+            var matchedLength = MatchedVersionNameLength(Path, extraDirectory, extraFileName);
+
+            foreach (var versionId in LibraryManager.GetLocalAlternateVersionIds(this))
+            {
+                var version = LibraryManager.GetItemById(versionId);
+                if (version is null)
+                {
+                    continue;
+                }
+
+                // "Movie - [2160p]-trailer.mkv" belongs to "Movie - [2160p].mkv" rather than to the
+                // primary version, whose name it also starts with when the primary is plain "Movie.mkv"
+                var length = MatchedVersionNameLength(version.Path, extraDirectory, extraFileName);
+                if (length > matchedLength)
+                {
+                    matchedLength = length;
+                    ownerId = versionId;
+                }
+            }
+
+            return ownerId;
+        }
+
+        /// <summary>
+        /// Gets how much of an extra's file name is the name of the given version file, or 0 when the
+        /// extra is not named after it.
+        /// </summary>
+        /// <param name="versionPath">The path of the version.</param>
+        /// <param name="extraDirectory">The directory the extra lives in.</param>
+        /// <param name="extraFileName">The file name of the extra, without extension.</param>
+        /// <returns>The length of the match.</returns>
+        private static int MatchedVersionNameLength(string versionPath, ReadOnlySpan<char> extraDirectory, ReadOnlySpan<char> extraFileName)
+        {
+            if (string.IsNullOrEmpty(versionPath)
+                || !System.IO.Path.GetDirectoryName(versionPath.AsSpan()).Equals(extraDirectory, StringComparison.OrdinalIgnoreCase))
+            {
+                return 0;
+            }
+
+            var versionFileName = System.IO.Path.GetFileNameWithoutExtension(versionPath.AsSpan());
+            if (versionFileName.IsEmpty || !extraFileName.StartsWith(versionFileName, StringComparison.OrdinalIgnoreCase))
+            {
+                return 0;
+            }
+
+            // The version name has to end where the extra's own name begins, so that a version
+            // named "Movie - 4K" does not claim the extras of "Movie - 4Kish"
+            var remainder = extraFileName[versionFileName.Length..];
+
+            return !remainder.IsEmpty && (remainder[0] == ' ' || Array.IndexOf(VersionDelimiters, remainder[0]) >= 0)
+                ? versionFileName.Length
+                : 0;
         }
 
         protected override IEnumerable<(BaseItem Item, MediaSourceType MediaSourceType)> GetAllItemsForMediaSources()

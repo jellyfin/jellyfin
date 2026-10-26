@@ -17,6 +17,13 @@ namespace Jellyfin.Database.Implementations.Locking;
 /// <summary>
 /// A locking behavior that will always block any operation while a write is requested. Mimicks the old SqliteRepository behavior.
 /// </summary>
+/// <remarks>
+/// Unsafe with asynchronous transactions; because <see cref="ReaderWriterLockSlim"/> is
+/// thread-affine, holding it from <c>TransactionStarting</c> to <c>TransactionCommitted</c>
+/// works only while continuations resume inline. A genuinely-async continuation inside a
+/// transaction releases on another thread, throwing
+/// <see cref="SynchronizationLockException"/> or deadlocking a later write.
+/// </remarks>
 public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
 {
     private readonly ILogger<PessimisticLockBehavior> _logger;
@@ -47,7 +54,8 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
     /// <inheritdoc/>
     public void Initialise(DbContextOptionsBuilder optionsBuilder)
     {
-        _logger.LogInformation("The database locking mode has been set to: Pessimistic.");
+        _logger.LogWarning(
+                   "The database locking mode has been set to: Pessimistic. This mode is not safe with asynchronous transactions and can deadlock.");
         optionsBuilder.AddInterceptors(new CommandLockingInterceptor(_loggerFactory.CreateLogger<CommandLockingInterceptor>()));
         optionsBuilder.AddInterceptors(new TransactionLockingInterceptor(_loggerFactory.CreateLogger<TransactionLockingInterceptor>()));
     }

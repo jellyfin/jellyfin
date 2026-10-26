@@ -108,5 +108,18 @@
     "Original": "Upprunaleg",
     "TaskExtractMediaSegmentsDescription": "Sækir myndbúta úr viðbótum þar sem MediaSegment er virkt.",
     "TaskMoveTrickplayImages": "Flytja geymslustað fyrir Trickplay-myndir",
-    "TaskMoveTrickplayImagesDescription": "Flytur fyrirliggjandi Trickplay-skrár í samræmi við stillingar safnsins."
+    "TaskMoveTrickplayImagesDescription": "Flytur fyrirliggjandi Trickplay-skrár í samræmi við stillingar safnsins.",
+    "NameExtraBehindTheScenes": "Bak við tjöldin",
+    "NameExtraClip": "Brot",
+    "NameExtraDeletedScene": "Eydd atriði",
+    "NameExtraFeaturette": "Stutt heimildarmynd",
+    "NameExtraInterview": "Viðtal",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Sýnishorn",
+    "NameExtraScene": "Sena",
+    "NameExtraShort": "Stuttmynd",
+    "NameExtraThemeSong": "Þema lag",
+    "NameExtraThemeVideo": "Þema myndband",
+    "NameExtraTrailer": "Stikla",
+    "NameExtraUnknown": "Aukaefni"
 }

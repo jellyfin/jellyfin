@@ -13,6 +13,7 @@ using Jellyfin.Server.Migrations.Routines;
 using Jellyfin.Server.ServerSetupApp;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -31,7 +32,7 @@ public sealed class PopulateImageSortOrderTests : IDisposable
         _connection.Open();
 
         _dbOptions = new DbContextOptionsBuilder<JellyfinDbContext>()
-            .UseSqlite(_connection)
+            .UseSqlite(_connection, options => options.MigrationsAssembly(typeof(SqliteDatabaseProvider).Assembly))
             .Options;
 
         using var context = CreateDbContext();
@@ -109,12 +110,47 @@ public sealed class PopulateImageSortOrderTests : IDisposable
     }
 
     [Fact]
+    public async Task SchemaMigrationScript_BackfillsSortOrderWithinEachImageType()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var item = new BaseItemEntity
+        {
+            Id = Guid.NewGuid(),
+            Type = "MediaBrowser.Controller.Entities.Movies.Movie",
+            Path = "/media/Movie/Movie.mkv"
+        };
+
+        await using var context = CreateDbContext();
+        context.BaseItems.Add(item);
+        context.BaseItemImageInfos.AddRange(
+            CreateImage(item, "/media/Movie/fanart-b.jpg", ImageInfoImageType.Backdrop, 99),
+            CreateImage(item, "/media/Movie/fanart-a.jpg", ImageInfoImageType.Backdrop, 99),
+            CreateImage(item, "/media/Movie/poster.jpg", ImageInfoImageType.Primary, 99));
+        await context.SaveChangesAsync(cancellationToken);
+
+        await context.Database.ExecuteSqlRawAsync("DROP INDEX \"IX_BaseItemImageInfos_ItemId_ImageType_SortOrder\";", cancellationToken);
+        await context.Database.ExecuteSqlRawAsync("ALTER TABLE \"BaseItemImageInfos\" DROP COLUMN \"SortOrder\";", cancellationToken);
+        await context.Database.ExecuteSqlRawAsync("CREATE INDEX \"IX_BaseItemImageInfos_ItemId_ImageType\" ON \"BaseItemImageInfos\" (\"ItemId\", \"ImageType\");", cancellationToken);
+        await context.Database.ExecuteSqlRawAsync(context.GetService<IHistoryRepository>().GetCreateScript(), cancellationToken);
+
+        var efMigrationId = typeof(Database.Providers.Sqlite.Migrations.AddSortOrderToBaseItemImageInfo)
+            .GetCustomAttribute<MigrationAttribute>()?.Id;
+        var migrations = context.Database.GetMigrations().ToArray();
+        Assert.Equal(efMigrationId, migrations[^1]);
+
+        var script = context.GetService<IMigrator>().GenerateScript(migrations[^2], efMigrationId);
+        await context.Database.ExecuteSqlRawAsync(script, cancellationToken);
+        context.ChangeTracker.Clear();
+
+        var images = await context.BaseItemImageInfos
+            .OrderBy(i => i.Path)
+            .ToArrayAsync(cancellationToken);
+        Assert.Equal([0, 1, 0], images.Select(i => i.SortOrder));
+    }
+
+    [Fact]
     public void MigrationOrder_RoutineRunsAfterSortOrderSchemaMigration()
     {
-        // Regression guard: JellyfinMigrationService applies pending migrations ordered by ordinal key,
-        // mixing EF migration ids ("20260801054140_AddSortOrderToBaseItemImageInfo") with routine keys
-        // ("yyyyMMddHHmmsss" + "_" + name). This routine queries the SortOrder column, so its key must
-        // sort strictly after the EF migration that creates the column, or upgrades fail at boot.
         var routineAttribute = typeof(PopulateImageSortOrder).GetCustomAttribute<JellyfinMigrationAttribute>();
         Assert.NotNull(routineAttribute);
 

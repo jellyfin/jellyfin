@@ -108,5 +108,18 @@
     "CleanupUserDataTask": "Завдання очищення даних користувача",
     "CleanupUserDataTaskDescription": "Очищає всі дані користувача (стан перегляду, статус обраного тощо) з медіа, які перестали бути доступними щонайменше 90 днів тому.",
     "Original": "Оригінал",
-    "LyricDownloadFailureFromForItem": "Не вдалося завантажити текст пісні з {0} для {1}"
+    "LyricDownloadFailureFromForItem": "Не вдалося завантажити текст пісні з {0} для {1}",
+    "NameExtraBehindTheScenes": "За лаштунками",
+    "NameExtraClip": "Кліп",
+    "NameExtraDeletedScene": "Видалена сцена",
+    "NameExtraFeaturette": "Фічуретка",
+    "NameExtraInterview": "Інтерв’ю",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "Приклад",
+    "NameExtraScene": "Сцена",
+    "NameExtraShort": "Коротко",
+    "NameExtraThemeSong": "Тематична пісня",
+    "NameExtraThemeVideo": "Тематичне вiдео",
+    "NameExtraTrailer": "Трейлер",
+    "NameExtraUnknown": "Додатково"
 }

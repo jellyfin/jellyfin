@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Emby.Server.Implementations.Playlists;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
@@ -42,6 +43,19 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     {
                         Path = args.Path,
                         Name = filename.Replace("[playlist]", string.Empty, StringComparison.OrdinalIgnoreCase).Trim(),
+                        OpenAccess = true
+                    };
+                }
+
+                // Anything directly inside the internal playlists folder is a playlist, even when its
+                // playlist.xml is missing: failing to resolve here makes the library scan treat the
+                // playlist as deleted from disk and remove it, taking its items with it.
+                if (args.Parent is PlaylistsFolder)
+                {
+                    return new Playlist
+                    {
+                        Path = args.Path,
+                        Name = filename,
                         OpenAccess = true
                     };
                 }

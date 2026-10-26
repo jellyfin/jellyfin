@@ -25,7 +25,7 @@ public class LinkedChildEntity
     /// <summary>
     /// Gets or sets the sort order.
     /// </summary>
-    public int? SortOrder { get; set; }
+    public int SortOrder { get; set; }
 
     /// <summary>
     /// Gets or sets the parent item navigation property.

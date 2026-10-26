@@ -6,6 +6,7 @@ using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -492,6 +493,220 @@ namespace Jellyfin.Networking.Tests
             var interfaceToUse = nm.GetBindAddress(source, out _);
 
             Assert.Equal(result, interfaceToUse);
+        }
+
+        [Theory]
+        // Internal override with an explicit port.
+        [InlineData("192.168.1.1", "192.168.1.0/24=internal.jellyfin:8097", "internal.jellyfin", 8097)]
+        // External/all override with an explicit port.
+        [InlineData("8.8.8.8", "all=external.jellyfin:8097", "external.jellyfin", 8097)]
+        // Bracketed IPv6 override with an explicit port.
+        [InlineData("8.8.8.8", "all=[fd00:1234::1]:8097", "fd00:1234::1", 8097)]
+        // Bare IPv6 override without a port - must remain whole, not mangled by the extra colons.
+        [InlineData("8.8.8.8", "all=fd00:1234::1", "fd00:1234::1", null)]
+        // Full HTTPS URL override with an explicit port - the URL stays whole, port stays embedded.
+        [InlineData("8.8.8.8", "all=https://secure.jellyfin.org:8920", "https://secure.jellyfin.org:8920", null)]
+        // Hostname beginning with "http" is a hostname, not a URL scheme.
+        [InlineData("8.8.8.8", "all=http-proxy.lan:8097", "http-proxy.lan", 8097)]
+        // Literal "internal" keyword override (applies to every LAN subnet) with an explicit port.
+        [InlineData("192.168.1.1", "internal=myhost.internal:8097", "myhost.internal", 8097)]
+        // Literal "external" keyword override with an explicit port.
+        [InlineData("8.8.8.8", "external=myhost.external:9090", "myhost.external", 9090)]
+        public void GetBindAddress_PublishedServerOverride_ParsesHostAndPort(string source, string publishedServers, string expectedHost, int? expectedPort)
+        {
+            var conf = new NetworkConfiguration
+            {
+                LocalNetworkSubnets = new[] { "192.168.1.0/24" },
+                LocalNetworkAddresses = new[] { "eth16", "eth11" },
+                EnableIPv4 = true,
+                PublishedServerUriBySubnet = new[] { publishedServers }
+            };
+
+            NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11";
+            var startupConf = new Mock<IConfiguration>();
+            using var nm = new NetworkManager(NetworkParseTests.GetMockConfig(conf), startupConf.Object, new NullLogger<NetworkManager>());
+            NetworkManager.MockNetworkSettings = string.Empty;
+
+            var intf = nm.GetBindAddress(IPAddress.Parse(source), out int? port);
+
+            Assert.Equal(expectedHost, intf);
+            Assert.Equal(expectedPort, port);
+        }
+
+        /// <summary>
+        /// Regression coverage for <c>IServerApplicationHost.GetApiUrlForLocalAccess()</c>, which calls
+        /// <see cref="NetworkManager.GetBindAddress(IPAddress, out int?, bool)"/> with a null source address.
+        /// Published server URL overrides are only matched when a source address is supplied
+        /// (<c>MatchesPublishedServerUrl</c> requires it), so a null source must never come back as a published
+        /// CLI/dashboard URL - it must fall back to a plain local bind address.
+        /// </summary>
+        [Fact]
+        public void GetBindAddress_NullSource_DoesNotApplyPublishedServerOverride()
+        {
+            var conf = new NetworkConfiguration
+            {
+                LocalNetworkSubnets = new[] { "192.168.1.0/24" },
+                LocalNetworkAddresses = new[] { "eth16", "eth11" },
+                EnableIPv4 = true,
+                PublishedServerUriBySubnet = new[] { "all=http://published.example.com" }
+            };
+
+            NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11";
+            var startupConf = new Mock<IConfiguration>();
+            using var nm = new NetworkManager(NetworkParseTests.GetMockConfig(conf), startupConf.Object, new NullLogger<NetworkManager>());
+            NetworkManager.MockNetworkSettings = string.Empty;
+
+            var result = nm.GetBindAddress((IPAddress?)null, out var port);
+
+            Assert.Equal("192.168.1.208", result);
+            Assert.Null(port);
+        }
+
+        [Theory]
+        // Full-URL override with a different public path: warn about the Live TV fallback.
+        [InlineData("all=https://media.example.com", "/jellyfin", true)]
+        // Full-URL override that ends with the base URL (with and without a trailing slash): no warning.
+        [InlineData("all=https://media.example.com/jellyfin", "/jellyfin", false)]
+        [InlineData("all=https://media.example.com/jellyfin/", "/jellyfin", false)]
+        [InlineData("all=https://media.example.com/media/jellyfin", "/jellyfin", false)]
+        [InlineData("all=https://media.example.com/cool%20server", "/cool server", false)]
+        // A similar segment or a path following the base URL is a different public API base.
+        [InlineData("all=https://media.example.com/jellyfinx", "/jellyfin", true)]
+        [InlineData("all=https://media.example.com/jellyfin/media", "/jellyfin", true)]
+        // No base URL configured: there is no path to compare.
+        [InlineData("all=https://media.example.com", "", false)]
+        // Bare host overrides get the base URL appended when the API URL is built: no warning.
+        [InlineData("all=media.example.com", "/jellyfin", false)]
+        [InlineData("internal=http-proxy.lan:8097", "/jellyfin", false)]
+        // Keyword overrides go through the same check as "all".
+        [InlineData("internal=http://10.0.0.5:8096", "/jellyfin", true)]
+        public void InitializeOverrides_FullUrlPublicPathDiffersFromBaseUrl_LogsWarning(string publishedServers, string baseUrl, bool expectWarning)
+        {
+            var conf = new NetworkConfiguration
+            {
+                LocalNetworkSubnets = new[] { "192.168.1.0/24" },
+                LocalNetworkAddresses = new[] { "eth16" },
+                EnableIPv4 = true,
+                PublishedServerUriBySubnet = new[] { publishedServers },
+                BaseUrl = baseUrl
+            };
+
+            var logger = new Mock<ILogger<NetworkManager>>();
+            NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16";
+            var startupConf = new Mock<IConfiguration>();
+            using var nm = new NetworkManager(NetworkParseTests.GetMockConfig(conf), startupConf.Object, logger.Object);
+            NetworkManager.MockNetworkSettings = string.Empty;
+
+            VerifyBaseUrlWarning(logger, expectWarning ? Times.AtLeastOnce() : Times.Never());
+        }
+
+        /// <summary>
+        /// The JELLYFIN_PublishedServerUrl environment variable / --published-server-url option takes the
+        /// startup-configuration branch of <c>InitializeOverrides</c> and must funnel through the same
+        /// base URL check as the dashboard overrides.
+        /// </summary>
+        [Fact]
+        public void InitializeOverrides_StartupPublishedServerUrlPathDiffersFromBaseUrl_LogsWarningWithoutCredentials()
+        {
+            var conf = new NetworkConfiguration
+            {
+                LocalNetworkSubnets = new[] { "192.168.1.0/24" },
+                LocalNetworkAddresses = new[] { "eth16" },
+                EnableIPv4 = true,
+                BaseUrl = "/jellyfin"
+            };
+
+            var logger = new Mock<ILogger<NetworkManager>>();
+            var startupConf = new Mock<IConfiguration>();
+            startupConf.Setup(x => x[MediaBrowser.Controller.Extensions.ConfigurationExtensions.AddressOverrideKey]).Returns("https://user:password@media.example.com?access_token=secret#fragment");
+
+            NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16";
+            using var nm = new NetworkManager(NetworkParseTests.GetMockConfig(conf), startupConf.Object, logger.Object);
+            NetworkManager.MockNetworkSettings = string.Empty;
+
+            VerifyBaseUrlWarning(logger, Times.AtLeastOnce());
+            logger.Verify(
+                l => l.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains("user", StringComparison.Ordinal)
+                        || state.ToString()!.Contains("password", StringComparison.Ordinal)
+                        || state.ToString()!.Contains("access_token", StringComparison.Ordinal)
+                        || state.ToString()!.Contains("secret", StringComparison.Ordinal)
+                        || state.ToString()!.Contains("fragment", StringComparison.Ordinal)),
+                    It.IsAny<Exception?>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Never());
+        }
+
+        private static void VerifyBaseUrlWarning(Mock<ILogger<NetworkManager>> logger, Times times)
+        {
+            logger.Verify(
+                l => l.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains("Jellyfin will append this base URL when generating Live TV client URLs", StringComparison.Ordinal)),
+                    It.IsAny<Exception?>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                times);
+        }
+
+        /// <summary>
+        /// <see cref="NetworkManager.GetBindAddress(HttpRequest, out int?)"/> is the piece of request-host
+        /// normalization that a request-host-aware smart API URL policy relies on: it resolves the bind address
+        /// from the request's host and falls back to the request's own port when no override applies.
+        /// </summary>
+        [Fact]
+        public void GetBindAddress_HttpRequestOverload_FallsBackToRequestPortWhenNoOverride()
+        {
+            var conf = new NetworkConfiguration
+            {
+                LocalNetworkSubnets = new[] { "192.168.1.0/24" },
+                LocalNetworkAddresses = new[] { "eth16", "eth11" },
+                EnableIPv4 = true
+            };
+
+            NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11";
+            var startupConf = new Mock<IConfiguration>();
+            using var nm = new NetworkManager(NetworkParseTests.GetMockConfig(conf), startupConf.Object, new NullLogger<NetworkManager>());
+            NetworkManager.MockNetworkSettings = string.Empty;
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Host = new HostString("192.168.1.1", 34567);
+
+            var result = nm.GetBindAddress(httpContext.Request, out var port);
+
+            Assert.Equal("192.168.1.208", result);
+            Assert.Equal(34567, port);
+        }
+
+        /// <summary>
+        /// Ordering check: a dashboard published-server-URL override's explicit port takes precedence over the
+        /// request's own port, even though the request's host chose which override subnet matched.
+        /// </summary>
+        [Fact]
+        public void GetBindAddress_HttpRequestOverload_PublishedOverridePortWinsOverRequestPort()
+        {
+            var conf = new NetworkConfiguration
+            {
+                LocalNetworkSubnets = new[] { "192.168.1.0/24" },
+                LocalNetworkAddresses = new[] { "eth16", "eth11" },
+                EnableIPv4 = true,
+                PublishedServerUriBySubnet = new[] { "internal=myhost.internal:9000" }
+            };
+
+            NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11";
+            var startupConf = new Mock<IConfiguration>();
+            using var nm = new NetworkManager(NetworkParseTests.GetMockConfig(conf), startupConf.Object, new NullLogger<NetworkManager>());
+            NetworkManager.MockNetworkSettings = string.Empty;
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Host = new HostString("192.168.1.1", 34567);
+
+            var result = nm.GetBindAddress(httpContext.Request, out var port);
+
+            Assert.Equal("myhost.internal", result);
+            Assert.Equal(9000, port);
         }
     }
 }

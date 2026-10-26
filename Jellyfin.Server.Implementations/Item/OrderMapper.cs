@@ -68,7 +68,7 @@ public static class OrderMapper
             (ItemSortBy.DateCreated, _) => e => e.DateCreated,
             (ItemSortBy.PremiereDate, _) => e => e.PremiereDate ?? (e.ProductionYear.HasValue ? DateTime.MinValue.AddYears(e.ProductionYear.Value - 1) : null),
             (ItemSortBy.StartDate, _) => e => e.StartDate,
-            (ItemSortBy.Name, _) => e => e.SortName,
+            (ItemSortBy.Name, _) => e => e.CleanName,
             (ItemSortBy.CommunityRating, _) => e => e.CommunityRating,
             (ItemSortBy.ProductionYear, _) => e => e.ProductionYear,
             (ItemSortBy.CriticRating, _) => e => e.CriticRating,
