@@ -63,6 +63,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     result,
                     info.IndexNumber.Value,
                     info.ParentIndexNumber ?? 1,
+                    string.IsNullOrWhiteSpace(info.SeriesDisplayOrder),
                     info.GetProviderId(MetadataProvider.Imdb),
                     seriesImdbId,
                     info.MetadataLanguage,

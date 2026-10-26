@@ -134,6 +134,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         /// <param name="itemResult">Metadata about episode.</param>
         /// <param name="episodeNumber">Episode number.</param>
         /// <param name="seasonNumber">Season number.</param>
+        /// <param name="isDefaultDisplayOrder">Is display order default.</param>
         /// <param name="episodeImdbId">Episode ID.</param>
         /// <param name="seriesImdbId">Season ID.</param>
         /// <param name="language">Episode language.</param>
@@ -141,12 +142,17 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         /// <param name="cancellationToken">CancellationToken to use for operation.</param>
         /// <typeparam name="T">The first generic type parameter.</typeparam>
         /// <returns>Whether operation was successful.</returns>
-        public async Task<bool> FetchEpisodeData<T>(MetadataResult<T> itemResult, int episodeNumber, int seasonNumber, string episodeImdbId, string seriesImdbId, string language, string country, CancellationToken cancellationToken)
+        public async Task<bool> FetchEpisodeData<T>(MetadataResult<T> itemResult, int episodeNumber, int seasonNumber, bool isDefaultDisplayOrder, string episodeImdbId, string seriesImdbId, string language, string country, CancellationToken cancellationToken)
             where T : BaseItem
         {
             if (string.IsNullOrWhiteSpace(seriesImdbId))
             {
                 throw new ArgumentNullException(nameof(seriesImdbId));
+            }
+
+            if (string.IsNullOrWhiteSpace(episodeImdbId) && !isDefaultDisplayOrder)
+            {
+                return false;
             }
 
             var item = itemResult.Item;
@@ -175,7 +181,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             // finally, search by numbers
-            if (result is null)
+            if (result is null && isDefaultDisplayOrder)
             {
                 foreach (var episode in seasonResult.Episodes)
                 {
