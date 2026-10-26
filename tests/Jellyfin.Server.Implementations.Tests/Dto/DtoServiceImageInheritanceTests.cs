@@ -5,6 +5,7 @@ using Emby.Server.Implementations.Playlists;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Chapters;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -304,6 +305,7 @@ public class DtoServiceImageInheritanceTests
         var liveTvManager = new Mock<ILiveTvManager>();
         var trickplayManager = new Mock<ITrickplayManager>();
         var chapterManager = new Mock<IChapterManager>();
+        var config = new Mock<IServerConfigurationManager>();
         var logger = new Mock<Microsoft.Extensions.Logging.ILogger<DtoService>>();
 
         imageProcessor
@@ -325,6 +327,7 @@ public class DtoServiceImageInheritanceTests
             mediaSourceManager.Object,
             new Lazy<ILiveTvManager>(() => liveTvManager.Object),
             trickplayManager.Object,
-            chapterManager.Object);
+            chapterManager.Object,
+            config.Object);
     }
 }
