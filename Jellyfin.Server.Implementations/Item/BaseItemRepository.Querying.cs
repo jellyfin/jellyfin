@@ -284,23 +284,21 @@ public sealed partial class BaseItemRepository
         // Episodes added within this window are considered "recently added together"
         const double RecentAdditionWindowHours = 24.0;
 
-        // Step 1: Find the top N series with recently added content, ordered by most recent addition
-        var topSeriesWithDates = baseQuery
+        // The first episode of each series in date order carries its maximum date.
+        // Stop as soon as enough distinct series are found, without grouping the whole library.
+        var topSeriesData = baseQuery
             .Where(e => e.SeriesName != null)
-            .GroupBy(e => e.SeriesName)
-            .Select(g => new { SeriesName = g.Key!, MaxDate = g.Max(e => e.DateCreated) })
-            .OrderByDescending(g => g.MaxDate);
-
-        if (limit.HasValue)
+            .OrderByDescending(e => e.DateCreated)
+            .Select(e => new { SeriesName = e.SeriesName!, MaxDate = e.DateCreated })
+            .AsEnumerable()
+            .DistinctBy(e => e.SeriesName, StringComparer.Ordinal)
+            .Take(limit ?? int.MaxValue)
+            .ToList();
+        if (topSeriesData.Count == 0)
         {
-            topSeriesWithDates = topSeriesWithDates.Take(limit.Value).OrderByDescending(g => g.MaxDate);
+            return [];
         }
 
-        // Materialize series names and cutoff to avoid embedding the GroupBy+OrderBy
-        // expression tree as a subquery inside the episode query.
-        var topSeriesData = topSeriesWithDates
-            .Select(g => new { g.SeriesName, g.MaxDate })
-            .ToList();
         var topSeriesNames = topSeriesData.Select(g => g.SeriesName).ToList();
 
         // Compute a global date cutoff: the oldest series' max date minus the window.
