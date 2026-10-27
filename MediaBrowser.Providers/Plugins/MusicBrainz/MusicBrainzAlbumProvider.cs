@@ -290,7 +290,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         if (artistCredit is not null && artistCredit.Count > 0)
         {
             item.AlbumArtists = artistCredit
-                .Select(credit => credit.Name)
+                .Select(credit => credit.Artist?.Name ?? credit.Name)
                 .Where(name => !string.IsNullOrWhiteSpace(name))
                 .ToArray();
         }

@@ -41,8 +41,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
         private const int TitleExactScore = 8;
         private const int TitlePrefixScore = 4;
-        private const int YearExactScore = 2;
-        private const int YearAdjacentScore = 1;
+        private const int YearScore = 2;
 
         /// <summary>
         /// The crew types to keep.
@@ -251,13 +250,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return 0;
             }
 
-            return Math.Abs(candidateYear - year) switch
-            {
-                0 => YearExactScore,
-                // Regional release dates routinely straddle a new year.
-                1 => YearAdjacentScore,
-                _ => 0
-            };
+            // Regional and festival release dates routinely straddle a new year, so a year off by one is as good as an exact one.
+            return Math.Abs(candidateYear - year) <= 1 ? YearScore : 0;
         }
 
         /// <summary>

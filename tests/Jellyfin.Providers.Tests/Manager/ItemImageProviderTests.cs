@@ -177,6 +177,37 @@ namespace Jellyfin.Providers.Tests.Manager
         }
 
         [Theory]
+        [InlineData(ImageType.Primary, 1)]
+        [InlineData(ImageType.Backdrop, 2)]
+        public void MergeImages_StoredTimeTruncatedToMicroseconds_NoChange(ImageType imageType, int imageCount)
+        {
+            // Regression test for https://github.com/jellyfin/jellyfin/issues/18274
+            var fileTime = new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddTicks(1234567);
+            var storedTime = fileTime.AddTicks(-(fileTime.Ticks % 10));
+
+            var fileSystem = new Mock<IFileSystem>();
+            fileSystem.Setup(fs => fs.GetLastWriteTimeUtc(It.IsAny<FileSystemMetadata>()))
+                .Returns(fileTime);
+            BaseItem.FileSystem = fileSystem.Object;
+
+            var item = GetItemWithImages(imageType, imageCount, true);
+            foreach (var image in item.GetImages(imageType))
+            {
+                image.DateModified = storedTime;
+                image.Height = 1;
+                image.Width = 1;
+            }
+
+            var images = GetImages(imageType, imageCount, true);
+
+            var itemImageProvider = GetItemImageProvider(null, fileSystem);
+            var changed = itemImageProvider.MergeImages(item, images, new ImageRefreshOptions(Mock.Of<IDirectoryService>()));
+
+            Assert.False(changed);
+            Assert.All(item.GetImages(imageType), image => Assert.Equal(1, image.Width));
+        }
+
+        [Theory]
         [InlineData(ImageType.Primary, 0)]
         [InlineData(ImageType.Primary, 1)]
         [InlineData(ImageType.Backdrop, 2)]

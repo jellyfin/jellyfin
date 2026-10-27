@@ -10,6 +10,10 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LibraryStructureDto;
+using Jellyfin.Data;
+using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -36,6 +40,7 @@ public class LibraryStructureController : BaseJellyfinApiController
     private readonly ILibraryManager _libraryManager;
     private readonly ILibraryMonitor _libraryMonitor;
     private readonly IDirectoryService _directoryService;
+    private readonly IUserManager _userManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LibraryStructureController"/> class.
@@ -44,16 +49,19 @@ public class LibraryStructureController : BaseJellyfinApiController
     /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/> interface.</param>
     /// <param name="libraryMonitor">Instance of <see cref="ILibraryMonitor"/> interface.</param>
     /// <param name="directoryService">Instance of <see cref="IDirectoryService"/> interface.</param>
+    /// <param name="userManager">Instance of <see cref="IUserManager"/> interface.</param>
     public LibraryStructureController(
         IServerConfigurationManager serverConfigurationManager,
         ILibraryManager libraryManager,
         ILibraryMonitor libraryMonitor,
-        IDirectoryService directoryService)
+        IDirectoryService directoryService,
+        IUserManager userManager)
     {
         _appPaths = serverConfigurationManager.ApplicationPaths;
         _libraryManager = libraryManager;
         _libraryMonitor = libraryMonitor;
         _directoryService = directoryService;
+        _userManager = userManager;
     }
 
     /// <summary>
@@ -138,7 +146,7 @@ public class LibraryStructureController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public ActionResult RenameVirtualFolder(
+    public async Task<ActionResult> RenameVirtualFolder(
         [FromQuery] string? name,
         [FromQuery] string? newName,
         [FromQuery] bool refreshLibrary = false)
@@ -173,6 +181,12 @@ public class LibraryStructureController : BaseJellyfinApiController
             return Conflict($"The media library already exists at {newPath}.");
         }
 
+        var oldLibrary = FindLibrary(currentPath);
+        // Use the stored ID when possible. The case sensitivity setting may have changed since the library was created.
+        var oldLibraryId = oldLibrary?.Id ?? _libraryManager.GetNewItemId(currentPath, typeof(CollectionFolder));
+        var oldLibraryName = oldLibrary?.Name ?? Path.GetFileName(currentPath);
+        var newLibraryId = _libraryManager.GetNewItemId(newPath, typeof(CollectionFolder));
+
         _libraryMonitor.Stop();
 
         try
@@ -188,47 +202,155 @@ public class LibraryStructureController : BaseJellyfinApiController
             }
 
             _directoryService.Move(currentPath, newPath);
+
+            await ReplaceLibraryIdInUserPreferencesAsync(
+                oldLibraryId,
+                newLibraryId,
+                oldLibraryName,
+                Path.GetFileName(newPath),
+                oldLibrary?.CollectionType).ConfigureAwait(false);
         }
         finally
         {
             CollectionFolder.OnCollectionFolderChange();
 
-            Task.Run(async () =>
-            {
-                // No need to start if scanning the library because it will handle it
-                if (refreshLibrary)
-                {
-                    await _libraryManager.ValidateTopLibraryFolders(CancellationToken.None, true).ConfigureAwait(false);
-                    var newLib = _libraryManager.GetUserRootFolder().Children.FirstOrDefault(f => f.Path.Equals(newPath, StringComparison.OrdinalIgnoreCase));
-                    if (newLib is CollectionFolder folder)
-                    {
-                        _libraryManager.ClearIgnoreRuleCache();
-                        foreach (var child in folder.GetPhysicalFolders())
-                        {
-                            await child.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
-                            await child.ValidateChildren(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
-                        }
-                    }
-                    else
-                    {
-                        _libraryManager.ClearIgnoreRuleCache();
-                        // We don't know if this one can be validated individually, trigger a new validation
-                        _libraryManager.QueueLibraryScan();
-                    }
-
-                    _libraryManager.ClearIgnoreRuleCache();
-                }
-                else
-                {
-                    // Need to add a delay here or directory watchers may still pick up the changes
-                    // Have to block here to allow exceptions to bubble
-                    await Task.Delay(1000).ConfigureAwait(false);
-                    _libraryMonitor.Start();
-                }
-            });
+            _ = Task.Run(() => RefreshAfterRenameAsync(newPath, refreshLibrary));
         }
 
         return NoContent();
+    }
+
+    private async Task RefreshAfterRenameAsync(string newPath, bool refreshLibrary)
+    {
+        // No need to start if scanning the library because it will handle it
+        if (refreshLibrary)
+        {
+            await _libraryManager.ValidateTopLibraryFolders(CancellationToken.None, true).ConfigureAwait(false);
+            var newLib = _libraryManager.GetUserRootFolder().Children.FirstOrDefault(f => f.Path.Equals(newPath, StringComparison.OrdinalIgnoreCase));
+            if (newLib is CollectionFolder folder)
+            {
+                _libraryManager.ClearIgnoreRuleCache();
+                foreach (var child in folder.GetPhysicalFolders())
+                {
+                    await child.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
+                    await child.ValidateChildren(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                _libraryManager.ClearIgnoreRuleCache();
+                // We don't know if this one can be validated individually, trigger a new validation
+                _libraryManager.QueueLibraryScan();
+            }
+
+            _libraryManager.ClearIgnoreRuleCache();
+        }
+        else
+        {
+            // Need to add a delay here or directory watchers may still pick up the changes
+            // Have to block here to allow exceptions to bubble
+            await Task.Delay(1000).ConfigureAwait(false);
+            _libraryMonitor.Start();
+        }
+    }
+
+    private CollectionFolder? FindLibrary(string path)
+        => _libraryManager.GetUserRootFolder().Children
+            .OfType<CollectionFolder>()
+            .FirstOrDefault(f => string.Equals(f.Path, path, StringComparison.OrdinalIgnoreCase));
+
+    private async Task ReplaceLibraryIdInUserPreferencesAsync(
+        Guid oldId,
+        Guid newId,
+        string oldName,
+        string newName,
+        CollectionType? viewType)
+    {
+        var shadowView = (
+            Old: _libraryManager.GetShadowViewId(oldName, oldId, viewType),
+            New: _libraryManager.GetShadowViewId(newName, newId, viewType));
+
+        if (oldId.Equals(newId) && shadowView.Old.Equals(shadowView.New))
+        {
+            return;
+        }
+
+        PreferenceKind[] libraryPreferences =
+        [
+            PreferenceKind.EnabledFolders,
+            PreferenceKind.BlockedMediaFolders,
+            PreferenceKind.EnableContentDeletionFromFolders,
+            PreferenceKind.LatestItemExcludes,
+            PreferenceKind.MyMediaExcludes,
+            PreferenceKind.GroupedFolders,
+            PreferenceKind.OrderedViews
+        ];
+
+        // These lists hold what the "My Media" row shows, which includes the views built from a library.
+        PreferenceKind[] viewPreferences = [PreferenceKind.MyMediaExcludes, PreferenceKind.OrderedViews];
+
+        foreach (var user in _userManager.GetUsers())
+        {
+            var libraryMap = new Dictionary<Guid, Guid> { [oldId] = newId };
+            var viewMap = new Dictionary<Guid, Guid>(libraryMap)
+            {
+                [shadowView.Old] = shadowView.New,
+                [_libraryManager.GetNamedViewId(user, oldId, viewType)] = _libraryManager.GetNamedViewId(user, newId, viewType)
+            };
+
+            var changed = false;
+
+            foreach (var kind in libraryPreferences)
+            {
+                changed |= ReplaceIds(user, kind, viewPreferences.Contains(kind) ? viewMap : libraryMap);
+            }
+
+            if (changed)
+            {
+                await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
+            }
+        }
+    }
+
+    private static bool ReplaceIds(User user, PreferenceKind kind, Dictionary<Guid, Guid> map)
+    {
+        var values = user.GetPreference(kind);
+        var rewritten = new List<string>(values.Length);
+        var seen = new HashSet<Guid>();
+        var touched = false;
+
+        foreach (var value in values)
+        {
+            // Clients write these in both the dashed and the plain form, so compare them parsed.
+            if (!Guid.TryParse(value, out var parsed))
+            {
+                rewritten.Add(value);
+                continue;
+            }
+
+            var isReplaced = map.TryGetValue(parsed, out var replacement) && !replacement.Equals(parsed);
+            if (isReplaced)
+            {
+                parsed = replacement;
+                touched = true;
+            }
+
+            if (!seen.Add(parsed))
+            {
+                touched = true;
+                continue;
+            }
+
+            var format = value.Contains('-', StringComparison.Ordinal) ? "D" : "N";
+            rewritten.Add(isReplaced ? parsed.ToString(format, CultureInfo.InvariantCulture) : value);
+        }
+
+        if (touched)
+        {
+            user.SetPreference(kind, rewritten.ToArray());
+        }
+
+        return touched;
     }
 
     /// <summary>

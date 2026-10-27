@@ -99,6 +99,7 @@
  - [mitchfizz05](https://github.com/mitchfizz05)
  - [mohd-akram](https://github.com/mohd-akram)
  - [MrTimscampi](https://github.com/MrTimscampi)
+ - [myristate](https://github.com/myristate)
  - [n8225](https://github.com/n8225)
  - [Nalsai](https://github.com/Nalsai)
  - [Narfinger](https://github.com/Narfinger)
@@ -146,6 +147,7 @@
  - [Soumyadip Auddy](https://github.com/SoumyadipAuddy)
  - [st7105](https://github.com/st7105)
  - [sparky8251](https://github.com/sparky8251)
+ - [Speenah](https://github.com/Speenah)
  - [spookbits](https://github.com/spookbits)
  - [ssenart](https://github.com/ssenart)
  - [stanionascu](https://github.com/stanionascu)
@@ -231,6 +233,7 @@
  - [bjorntp](https://github.com/bjorntp)
  - [martenumberto](https://github.com/martenumberto)
  - [ZeusCraft10](https://github.com/ZeusCraft10)
+ - [AliveDevil](https://github.com/AliveDevil)
  - [MarcoCoreDuo](https://github.com/MarcoCoreDuo)
  - [LiHRaM](https://github.com/LiHRaM)
  - [MSalman5230](https://github.com/MSalman5230)
@@ -244,8 +247,12 @@
  - [Oggeb1](https://github.com/Oggeb1)
  - [scr4bble](https://github.com/scr4bble)
  - [Mateus Bandeira](https://github.com/mateusbandeiraa)
+ - [excelsior](https://github.com/excelsior-dev)
  - [TheDreadPirate](https://github.com/thedreaddpirate)
  - [SubramonianInian](https://github.com/SubramonianInian)
+ - [Daniel Aquino](https://github.com/chino)
+ - [klizas](https://github.com/klizas)
+ - [p27ZuH6CNAdzr](https://github.com/p27ZuH6CNAdzr)
 
 # Emby Contributors
 
