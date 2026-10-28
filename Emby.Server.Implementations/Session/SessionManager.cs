@@ -67,6 +67,9 @@ namespace Emby.Server.Implementations.Session
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> _activeLiveStreamSessions
             = new(StringComparer.OrdinalIgnoreCase);
 
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> _releasedLiveStreamSessions
+            = new(StringComparer.OrdinalIgnoreCase);
+
         private Timer _idleTimer;
         private Timer _inactiveTimer;
 
@@ -322,7 +325,10 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public async Task CloseLiveStreamIfNeededAsync(string liveStreamId, string sessionIdOrPlaySessionId)
+        public Task CloseLiveStreamIfNeededAsync(string liveStreamId, string sessionIdOrPlaySessionId)
+            => CloseLiveStreamIfNeededAsync(liveStreamId, sessionIdOrPlaySessionId, false);
+
+        private async Task CloseLiveStreamIfNeededAsync(string liveStreamId, string sessionIdOrPlaySessionId, bool isPlaybackStop)
         {
             bool liveStreamNeedsToBeClosed = false;
 
@@ -335,7 +341,12 @@ namespace Emby.Server.Implementations.Session
                         activeSessionMappings.TryRemove(correspondingId, out _);
                     }
 
+                    MarkLiveStreamSessionReleased(liveStreamId, sessionIdOrPlaySessionId, correspondingId);
                     liveStreamNeedsToBeClosed = true;
+                }
+                else if (isPlaybackStop)
+                {
+                    liveStreamNeedsToBeClosed = MarkLiveStreamSessionReleased(liveStreamId, sessionIdOrPlaySessionId, null);
                 }
 
                 if (activeSessionMappings.IsEmpty)
@@ -358,6 +369,37 @@ namespace Emby.Server.Implementations.Session
                 {
                     _logger.LogError(ex, "Error closing live stream");
                 }
+            }
+        }
+
+        private bool MarkLiveStreamSessionReleased(string liveStreamId, string sessionIdOrPlaySessionId, string correspondingId)
+        {
+            var releasedSessions = _releasedLiveStreamSessions.GetOrAdd(liveStreamId, _ => new ConcurrentDictionary<string, byte>());
+
+            if (!string.IsNullOrEmpty(correspondingId))
+            {
+                releasedSessions.TryAdd(correspondingId, 0);
+            }
+
+            return releasedSessions.TryAdd(sessionIdOrPlaySessionId, 0);
+        }
+
+        private void ForgetLiveStreamSessionRelease(string liveStreamId, string sessionId, string playSessionId)
+        {
+            if (!_releasedLiveStreamSessions.TryGetValue(liveStreamId, out var releasedSessions))
+            {
+                return;
+            }
+
+            releasedSessions.TryRemove(sessionId, out _);
+            if (!string.IsNullOrEmpty(playSessionId))
+            {
+                releasedSessions.TryRemove(playSessionId, out _);
+            }
+
+            if (releasedSessions.IsEmpty)
+            {
+                _releasedLiveStreamSessions.TryRemove(liveStreamId, out _);
             }
         }
 
@@ -875,6 +917,11 @@ namespace Emby.Server.Implementations.Session
                 return;
             }
 
+            if (allowAdd)
+            {
+                ForgetLiveStreamSessionRelease(liveStreamId, sessionId, playSessionId);
+            }
+
             var activeSessionMappings = _activeLiveStreamSessions.GetOrAdd(liveStreamId, _ => new ConcurrentDictionary<string, string>());
 
             if (!string.IsNullOrEmpty(playSessionId))
@@ -1082,7 +1129,7 @@ namespace Emby.Server.Implementations.Session
                 // resource leaks when stalled clients report a negative PositionTicks.
                 if (!string.IsNullOrEmpty(info.LiveStreamId))
                 {
-                    await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id).ConfigureAwait(false);
+                    await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id, true).ConfigureAwait(false);
                 }
 
                 throw new ArgumentOutOfRangeException(nameof(info), "The PlaybackStopInfo's PositionTicks was negative.");
@@ -1155,7 +1202,7 @@ namespace Emby.Server.Implementations.Session
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
             {
-                await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id).ConfigureAwait(false);
+                await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id, true).ConfigureAwait(false);
             }
 
             var eventArgs = new PlaybackStopEventArgs
@@ -2285,6 +2332,7 @@ namespace Emby.Server.Implementations.Session
 
             _activeConnections.Clear();
             _activeLiveStreamSessions.Clear();
+            _releasedLiveStreamSessions.Clear();
         }
     }
 }
