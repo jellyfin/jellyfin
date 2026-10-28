@@ -358,6 +358,66 @@ public class SessionManagerTests
         mediaSourceManager.Verify(m => m.CloseLiveStream(liveStreamId), Times.Exactly(3));
     }
 
+    [Fact]
+    public async Task KillTimerThenStop_ReleasesOnce_WhenNoSessionIsMapped()
+    {
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        var userA = new User("userA", "default", "default");
+        await using var sessionManager = CreateSessionManager(mediaSourceManager.Object, userA);
+
+        var sessionA = await sessionManager.LogSessionActivity("Jellyfin Web", "1.0.0", "device-A", "deviceA", "127.0.0.1", userA);
+
+        const string liveStreamId = "live-stream-1";
+        const string playSessionId = "play-1";
+
+        await sessionManager.CloseLiveStreamIfNeededAsync(liveStreamId, playSessionId);
+        mediaSourceManager.Verify(m => m.CloseLiveStream(liveStreamId), Times.Once);
+
+        await sessionManager.OnPlaybackStopped(new PlaybackStopInfo
+        {
+            SessionId = sessionA.Id,
+            PlaySessionId = playSessionId,
+            LiveStreamId = liveStreamId
+        });
+        mediaSourceManager.Verify(m => m.CloseLiveStream(liveStreamId), Times.Once);
+    }
+
+    [Fact]
+    public async Task StopBeforeStart_ReleasesAgain_ForANewTuneOfTheSameChannel()
+    {
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        var userA = new User("userA", "default", "default");
+        var userB = new User("userB", "default", "default");
+        await using var sessionManager = CreateSessionManager(mediaSourceManager.Object, userA, userB);
+
+        var sessionA = await sessionManager.LogSessionActivity("Jellyfin Web", "1.0.0", "device-A", "deviceA", "127.0.0.1", userA);
+        var sessionB = await sessionManager.LogSessionActivity("Jellyfin Web", "1.0.0", "device-B", "deviceB", "127.0.0.1", userB);
+
+        const string liveStreamId = "live-stream-1";
+
+        await sessionManager.OnPlaybackStart(new PlaybackStartInfo
+        {
+            SessionId = sessionA.Id,
+            LiveStreamId = liveStreamId
+        });
+
+        await sessionManager.OnPlaybackStopped(new PlaybackStopInfo
+        {
+            SessionId = sessionB.Id,
+            PlaySessionId = "play-1",
+            LiveStreamId = liveStreamId
+        });
+        mediaSourceManager.Verify(m => m.CloseLiveStream(liveStreamId), Times.Once);
+
+        await sessionManager.OnPlaybackStopped(new PlaybackStopInfo
+        {
+            SessionId = sessionB.Id,
+            PlaySessionId = "play-2",
+            LiveStreamId = liveStreamId
+        });
+        mediaSourceManager.Verify(m => m.CloseLiveStream(liveStreamId), Times.Exactly(2));
+    }
+
     private static Emby.Server.Implementations.Session.SessionManager CreateSessionManager(params User[] users)
         => CreateSessionManager(Mock.Of<IMediaSourceManager>(), users);
 
