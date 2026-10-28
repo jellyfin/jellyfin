@@ -1,0 +1,5 @@
+<Project>
+  <!-- A Clean of a referenced project that reaches a shared instance before the solution's Rebuild skips
+       NuGet contentFiles preprocessing, and the Build that follows would compile without those sources. -->
+  <Target Name="_ProduceContentAssetsSkippedByClean" BeforeTargets="CoreCompile" DependsOnTargets="RunProduceContentAssets" />
+</Project>
