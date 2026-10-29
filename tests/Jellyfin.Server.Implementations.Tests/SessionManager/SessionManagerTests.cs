@@ -383,6 +383,40 @@ public class SessionManagerTests
     }
 
     [Fact]
+    public async Task StopBeforeStart_ReleasesAgain_AfterTheChannelIsReopened()
+    {
+        string? openStreamInstance = "instance-1";
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        mediaSourceManager.Setup(m => m.GetLiveStreamInfo(It.IsAny<string>()))
+            .Returns(() => openStreamInstance is null ? null! : Mock.Of<ILiveStream>(s => s.UniqueId == openStreamInstance));
+        mediaSourceManager.Setup(m => m.CloseLiveStream(It.IsAny<string>()))
+            .Callback(() => openStreamInstance = null)
+            .Returns(Task.CompletedTask);
+        var userA = new User("userA", "default", "default");
+        await using var sessionManager = CreateSessionManager(mediaSourceManager.Object, userA);
+
+        var sessionA = await sessionManager.LogSessionActivity("Jellyfin Web", "1.0.0", "device-A", "deviceA", "127.0.0.1", userA);
+
+        const string liveStreamId = "live-stream-1";
+
+        await sessionManager.OnPlaybackStopped(new PlaybackStopInfo
+        {
+            SessionId = sessionA.Id,
+            LiveStreamId = liveStreamId
+        });
+        mediaSourceManager.Verify(m => m.CloseLiveStream(liveStreamId), Times.Once);
+
+        openStreamInstance = "instance-2";
+
+        await sessionManager.OnPlaybackStopped(new PlaybackStopInfo
+        {
+            SessionId = sessionA.Id,
+            LiveStreamId = liveStreamId
+        });
+        mediaSourceManager.Verify(m => m.CloseLiveStream(liveStreamId), Times.Exactly(2));
+    }
+
+    [Fact]
     public async Task StopBeforeStart_ReleasesAgain_ForANewTuneOfTheSameChannel()
     {
         var mediaSourceManager = new Mock<IMediaSourceManager>();
