@@ -383,6 +383,37 @@ public class SessionManagerTests
     }
 
     [Fact]
+    public async Task KillTimerThenStop_ReleasesOnce_WhenSessionIsMapped()
+    {
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        var userA = new User("userA", "default", "default");
+        await using var sessionManager = CreateSessionManager(mediaSourceManager.Object, userA);
+
+        var sessionA = await sessionManager.LogSessionActivity("Jellyfin Web", "1.0.0", "device-A", "deviceA", "127.0.0.1", userA);
+
+        const string liveStreamId = "live-stream-1";
+        const string playSessionId = "play-1";
+
+        await sessionManager.OnPlaybackStart(new PlaybackStartInfo
+        {
+            SessionId = sessionA.Id,
+            PlaySessionId = playSessionId,
+            LiveStreamId = liveStreamId
+        });
+
+        await sessionManager.CloseLiveStreamIfNeededAsync(liveStreamId, playSessionId);
+        mediaSourceManager.Verify(m => m.CloseLiveStream(liveStreamId), Times.Once);
+
+        await sessionManager.OnPlaybackStopped(new PlaybackStopInfo
+        {
+            SessionId = sessionA.Id,
+            PlaySessionId = playSessionId,
+            LiveStreamId = liveStreamId
+        });
+        mediaSourceManager.Verify(m => m.CloseLiveStream(liveStreamId), Times.Once);
+    }
+
+    [Fact]
     public async Task StopBeforeStart_ReleasesAgain_AfterTheChannelIsReopened()
     {
         string? openStreamInstance = "instance-1";
