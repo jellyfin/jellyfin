@@ -133,7 +133,7 @@ public class TmdbMissingEpisodeProviderTests
 
         Assert.NotNull(result);
         Assert.Equal(DateTimeKind.Utc, result!.Value.Kind);
-        Assert.Equal(DateTime.SpecifyKind(airDate, DateTimeKind.Local).ToUniversalTime(), result.Value);
+        Assert.Equal(new DateTime(2026, 7, 28, 0, 0, 0, DateTimeKind.Utc), result.Value);
     }
 
     [Fact]
@@ -172,7 +172,7 @@ public class TmdbMissingEpisodeProviderTests
     {
         var episode = new Episode { Name = "X", PremiereDate = new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc) };
         var newAirDate = new DateTime(2026, 8, 15);
-        var newPremiere = DateTime.SpecifyKind(newAirDate, DateTimeKind.Local).ToUniversalTime();
+        var newPremiere = new DateTime(2026, 8, 15, 0, 0, 0, DateTimeKind.Utc);
         var tmdbEpisode = new TvSeasonEpisode { Name = "X", AirDate = newAirDate };
 
         Assert.True(TmdbMissingEpisodeProvider.UpdateVirtualEpisode(episode, tmdbEpisode, newPremiere));
