@@ -44,6 +44,10 @@ namespace MediaBrowser.Controller.Dto
 
             Fields = allFields ? AllItemFields : [];
             ImageTypes = AllImageTypes;
+
+            OriginalTitlePreferenceLibraryIncludes = new HashSet<Guid>();
+            OriginalTitlePreferenceLanguageScriptIncludes = [];
+            OriginalTitlePreferenceLanguageScriptExcludes = [];
         }
 
         /// <summary>
@@ -94,6 +98,27 @@ namespace MediaBrowser.Controller.Dto
         /// Gets or sets a value indicating whether the currently airing program is populated.
         /// </summary>
         public bool AddCurrentProgram { get; set; }
+
+        /// <summary>
+        /// Gets or sets the library folder ids from which contain items where original title is prefered.
+        /// </summary>
+        public IReadOnlySet<Guid> OriginalTitlePreferenceLibraryIncludes { get; set; }
+
+        /// <summary>
+        /// Gets or sets language and script conditions when original title should be prefered.
+        /// String is comma delimited with a 2-letter language code (ISO 639-1), and 4-letter script code (ISO 15924).
+        /// Conditions are checked in order until first one is satisfied or to the end. Empty list means any language or script are included.
+        /// Example for English language with Latin script: "en-Latn".
+        /// Example for any language with Cyrillic script: "Cyrl".
+        /// Example for multiple values: "en,fr-Latn,Cyrl,ja-Kana".
+        /// </summary>
+        public IReadOnlyList<string> OriginalTitlePreferenceLanguageScriptIncludes { get; set; }
+
+        /// <summary>
+        /// Gets or sets language and script conditions when original title must not be prefered.
+        /// Empty list means none of languages or scripts are excluded. It has advantage over inclusion conditions.
+        /// </summary>
+        public IReadOnlyList<string> OriginalTitlePreferenceLanguageScriptExcludes { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether the specified field is populated.
