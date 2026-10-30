@@ -741,9 +741,9 @@ public partial class TrickplayManager : ITrickplayManager
     public async Task<Dictionary<string, Dictionary<int, TrickplayInfo>>> GetTrickplayManifest(BaseItem item)
     {
         var trickplayManifest = new Dictionary<string, Dictionary<int, TrickplayInfo>>();
-        foreach (var mediaSource in item.GetMediaSources(false))
+        foreach (var id in item.GetMediaSources(false).Select(mediaSource => mediaSource.Id))
         {
-            if (mediaSource.IsRemote || !Guid.TryParse(mediaSource.Id, out var mediaSourceId))
+            if (!Guid.TryParse(id, out var mediaSourceId))
             {
                 continue;
             }
@@ -752,7 +752,7 @@ public partial class TrickplayManager : ITrickplayManager
 
             if (trickplayResolutions.Count > 0)
             {
-                trickplayManifest[mediaSource.Id] = trickplayResolutions;
+                trickplayManifest[id] = trickplayResolutions;
             }
         }
 
