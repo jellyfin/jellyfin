@@ -14,6 +14,7 @@ namespace Emby.Naming.Video
         {
             Token = token;
             PrecedingToken = precedingToken;
+            Format3D = token;
         }
 
         /// <summary>
@@ -27,5 +28,11 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <value>The preceding token.</value>
         public string? PrecedingToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the 3D format reported when this rule matches. Defaults to <see cref="Token"/>.
+        /// </summary>
+        /// <value>The 3D format.</value>
+        public string Format3D { get; set; }
     }
 }

@@ -460,6 +460,24 @@ namespace MediaBrowser.LocalMetadata.Savers
                         writer.WriteElementStringAsync(null, "Format3D", null, "HTAB"),
                     Video3DFormat.MVC =>
                         writer.WriteElementStringAsync(null, "Format3D", null, "MVC"),
+                    Video3DFormat.MVHEVC =>
+                        writer.WriteElementStringAsync(null, "Format3D", null, "MVHEVC"),
+                    Video3DFormat.Equirectangular180SideBySide =>
+                        writer.WriteElementStringAsync(null, "Format3D", null, "180SBS"),
+                    Video3DFormat.Equirectangular180TopAndBottom =>
+                        writer.WriteElementStringAsync(null, "Format3D", null, "180TAB"),
+                    Video3DFormat.Equirectangular180Mono =>
+                        writer.WriteElementStringAsync(null, "Format3D", null, "180MONO"),
+                    Video3DFormat.Equirectangular360SideBySide =>
+                        writer.WriteElementStringAsync(null, "Format3D", null, "360SBS"),
+                    Video3DFormat.Equirectangular360TopAndBottom =>
+                        writer.WriteElementStringAsync(null, "Format3D", null, "360TAB"),
+                    Video3DFormat.Equirectangular360Mono =>
+                        writer.WriteElementStringAsync(null, "Format3D", null, "360MONO"),
+                    Video3DFormat.Fisheye180SideBySide =>
+                        writer.WriteElementStringAsync(null, "Format3D", null, "FISHEYE180SBS"),
+                    Video3DFormat.Fisheye180Mono =>
+                        writer.WriteElementStringAsync(null, "Format3D", null, "FISHEYE180MONO"),
                     _ => Task.CompletedTask
                 };
             }
