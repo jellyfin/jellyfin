@@ -302,6 +302,7 @@ public class PlaylistsController : BaseJellyfinApiController
         {
             Id = playlistId,
             UserId = userId,
+            PlaylistOwnerUserId = callingUserId,
             CanEdit = updatePlaylistUserRequest.CanEdit
         }).ConfigureAwait(false);
 
