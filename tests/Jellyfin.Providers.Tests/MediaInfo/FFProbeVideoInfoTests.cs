@@ -1,17 +1,33 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
+using Emby.Naming.Common;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Providers.MediaInfo;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
 namespace Jellyfin.Providers.Tests.MediaInfo;
 
+[Collection("BaseItemServiceLocators")]
 public class FFProbeVideoInfoTests
 {
     private readonly FFProbeVideoInfo _fFProbeVideoInfo;
@@ -121,6 +137,125 @@ public class FFProbeVideoInfoTests
 
         Assert.Null(video.ProductionYear);
         Assert.Null(video.PremiereDate);
+    }
+
+    [Fact]
+    public async Task ProbeVideo_ExternalSubtitle_SavesResolvedStream()
+    {
+        const string videoPath = MediaInfoResolverTests.VideoDirectoryPath + "/Movie.strm";
+        const string subtitlePath = MediaInfoResolverTests.VideoDirectoryPath + "/Movie.eng.srt";
+
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        mediaSourceManager.Setup(x => x.GetPathProtocol(It.IsAny<string>())).Returns(MediaProtocol.File);
+        mediaSourceManager.Setup(x => x.GetPathProtocol(It.IsRegex("^https://"))).Returns(MediaProtocol.Http);
+
+        var mediaEncoder = new Mock<IMediaEncoder>();
+        mediaEncoder
+            .Setup(x => x.GetMediaInfo(It.Is<MediaInfoRequest>(r => r.MediaType == DlnaProfileType.Video), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(
+                new MediaBrowser.Model.MediaInfo.MediaInfo
+                {
+                    MediaStreams = [new MediaStream { Type = MediaStreamType.Video }]
+                });
+        mediaEncoder
+            .Setup(x => x.GetMediaInfo(It.Is<MediaInfoRequest>(r => r.MediaType == DlnaProfileType.Subtitle), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(
+                new MediaBrowser.Model.MediaInfo.MediaInfo
+                {
+                    MediaStreams = [new MediaStream { Type = MediaStreamType.Subtitle, Codec = "subrip" }]
+                });
+
+        var fileSystem = new Mock<IFileSystem>();
+        fileSystem.Setup(x => x.DirectoryExists(It.IsAny<string>())).Returns(false);
+        fileSystem.Setup(x => x.DirectoryExists(MediaInfoResolverTests.VideoDirectoryPath)).Returns(true);
+
+        var localizationManager = Mock.Of<ILocalizationManager>();
+        var audioResolver = new AudioResolver(
+            Mock.Of<ILogger<AudioResolver>>(),
+            localizationManager,
+            mediaEncoder.Object,
+            fileSystem.Object,
+            new NamingOptions());
+        var subtitleResolver = new SubtitleResolver(
+            Mock.Of<ILogger<SubtitleResolver>>(),
+            localizationManager,
+            mediaEncoder.Object,
+            fileSystem.Object,
+            new NamingOptions());
+
+        IReadOnlyList<MediaStream>? savedStreams = null;
+        var streamRepository = new Mock<IMediaStreamRepository>();
+        streamRepository
+            .Setup(x => x.SaveMediaStreams(It.IsAny<Guid>(), It.IsAny<IReadOnlyList<MediaStream>>(), It.IsAny<CancellationToken>()))
+            .Callback<Guid, IReadOnlyList<MediaStream>, CancellationToken>((_, streams, _) => savedStreams = streams.ToArray());
+
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager.Setup(x => x.GetLibraryOptions(It.IsAny<BaseItem>())).Returns(new LibraryOptions());
+
+        var chapterManager = new Mock<IChapterManager>();
+        chapterManager
+            .Setup(x => x.RefreshChapterImages(
+                It.IsAny<Video>(),
+                It.IsAny<IDirectoryService>(),
+                It.IsAny<IReadOnlyList<ChapterInfo>>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var serverConfig = new Mock<IServerConfigurationManager>();
+        serverConfig.Setup(x => x.Configuration).Returns(new ServerConfiguration());
+
+        var probe = new FFProbeVideoInfo(
+            Mock.Of<ILogger<FFProbeVideoInfo>>(),
+            mediaSourceManager.Object,
+            mediaEncoder.Object,
+            Mock.Of<IBlurayExaminer>(),
+            localizationManager,
+            chapterManager.Object,
+            serverConfig.Object,
+            Mock.Of<MediaBrowser.Controller.Subtitles.ISubtitleManager>(),
+            libraryManager.Object,
+            audioResolver,
+            subtitleResolver,
+            Mock.Of<IMediaAttachmentRepository>(),
+            streamRepository.Object);
+
+        var video = new Mock<Video> { CallBase = true };
+        video.Setup(x => x.ContainingFolderPath).Returns(MediaInfoResolverTests.VideoDirectoryPath);
+        video.Setup(x => x.GetInternalMetadataPath()).Returns(MediaInfoResolverTests.MetadataDirectoryPath);
+        video.Object.Id = Guid.NewGuid();
+        video.Object.ParentId = Guid.Empty;
+        video.Object.Path = videoPath;
+        video.Object.IsShortcut = true;
+        video.Object.ShortcutPath = "https://example.com/Movie.mp4";
+
+        var directoryService = new Mock<IDirectoryService>();
+        directoryService.Setup(x => x.GetFilePaths(MediaInfoResolverTests.VideoDirectoryPath, false)).Returns([videoPath, subtitlePath]);
+
+        var previousMediaSourceManager = BaseItem.MediaSourceManager;
+        BaseItem.MediaSourceManager = mediaSourceManager.Object;
+        try
+        {
+            await probe.ProbeVideo(
+                video.Object,
+                new MetadataRefreshOptions(directoryService.Object)
+                {
+                    EnableRemoteContentProbe = true,
+                    MetadataRefreshMode = MetadataRefreshMode.FullRefresh
+                },
+                CancellationToken.None);
+        }
+        finally
+        {
+            BaseItem.MediaSourceManager = previousMediaSourceManager;
+        }
+
+        Assert.NotNull(savedStreams);
+        var subtitle = Assert.Single(savedStreams, x => x.Type == MediaStreamType.Subtitle);
+        Assert.True(subtitle.IsExternal);
+        Assert.Equal(subtitlePath, subtitle.Path);
+        Assert.Equal([subtitlePath], video.Object.SubtitleFiles);
     }
 
     private static MediaBrowser.Model.MediaInfo.MediaInfo CreateMediaInfoWithDates()
