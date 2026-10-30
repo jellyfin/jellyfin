@@ -42,7 +42,9 @@ public static class DescendantQueryHelper
     public static Expression<Func<BaseItemEntity, bool>> IsPlayedBy(Guid userId) =>
         b => b.UserData!.Any(u => u.UserId.Equals(userId) && u.Played)
             || b.LinkedChildEntities!.Any(lc =>
-                (lc.ChildType == LinkedChildType.LocalAlternateVersion || lc.ChildType == LinkedChildType.LinkedAlternateVersion)
+                (lc.ChildType == LinkedChildType.LocalAlternateVersion
+                    || lc.ChildType == LinkedChildType.LinkedAlternateVersion
+                    || lc.ChildType == LinkedChildType.AutoLinkedAlternateVersion)
                 && lc.Child!.UserData!.Any(u => u.UserId.Equals(userId) && u.Played));
 
     /// <summary>
@@ -328,7 +330,9 @@ public static class DescendantQueryHelper
         // and the list is bound into every statement the returned queryable is embedded in.
         var containerLinks = context.LinkedChildren
             .Where(e => e.ChildType != LinkedChildType.LocalAlternateVersion
-                && e.ChildType != LinkedChildType.LinkedAlternateVersion);
+                && e.ChildType != LinkedChildType.LinkedAlternateVersion
+                && e.ChildType != LinkedChildType.AutoLinkedAlternateVersion
+                && e.ChildType != LinkedChildType.ExcludedAlternateVersion);
 
         // A link sits above the closure and above another link alike, so the hop repeats until nothing
         // new turns up.
