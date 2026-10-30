@@ -67,6 +67,9 @@ namespace Emby.Server.Implementations.Session
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> _activeLiveStreamSessions
             = new(StringComparer.OrdinalIgnoreCase);
 
+        private readonly ConcurrentDictionary<string, ReleasedLiveStreamSessions> _releasedLiveStreamSessions
+            = new(StringComparer.OrdinalIgnoreCase);
+
         private Timer _idleTimer;
         private Timer _inactiveTimer;
 
@@ -322,8 +325,12 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public async Task CloseLiveStreamIfNeededAsync(string liveStreamId, string sessionIdOrPlaySessionId)
+        public Task CloseLiveStreamIfNeededAsync(string liveStreamId, string sessionIdOrPlaySessionId)
+            => CloseLiveStreamIfNeededAsync(liveStreamId, sessionIdOrPlaySessionId, null, false);
+
+        private async Task CloseLiveStreamIfNeededAsync(string liveStreamId, string sessionIdOrPlaySessionId, string playSessionId, bool isPlaybackStop)
         {
+            var releaseKey = string.IsNullOrEmpty(playSessionId) ? sessionIdOrPlaySessionId : playSessionId;
             bool liveStreamNeedsToBeClosed = false;
 
             if (_activeLiveStreamSessions.TryGetValue(liveStreamId, out var activeSessionMappings))
@@ -335,7 +342,11 @@ namespace Emby.Server.Implementations.Session
                         activeSessionMappings.TryRemove(correspondingId, out _);
                     }
 
-                    liveStreamNeedsToBeClosed = true;
+                    liveStreamNeedsToBeClosed = MarkLiveStreamSessionReleased(liveStreamId, sessionIdOrPlaySessionId, correspondingId);
+                }
+                else if (isPlaybackStop)
+                {
+                    liveStreamNeedsToBeClosed = MarkLiveStreamSessionReleased(liveStreamId, releaseKey, null);
                 }
 
                 if (activeSessionMappings.IsEmpty)
@@ -345,7 +356,7 @@ namespace Emby.Server.Implementations.Session
             }
             else
             {
-                liveStreamNeedsToBeClosed = true;
+                liveStreamNeedsToBeClosed = MarkLiveStreamSessionReleased(liveStreamId, releaseKey, null);
             }
 
             if (liveStreamNeedsToBeClosed)
@@ -353,12 +364,44 @@ namespace Emby.Server.Implementations.Session
                 try
                 {
                     await _mediaSourceManager.CloseLiveStream(liveStreamId).ConfigureAwait(false);
+                    ForgetReleasesOfClosedLiveStream(liveStreamId);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error closing live stream");
                 }
             }
+        }
+
+        private bool MarkLiveStreamSessionReleased(string liveStreamId, string sessionIdOrPlaySessionId, string correspondingId)
+        {
+            var streamInstanceId = _mediaSourceManager.GetLiveStreamInfo(liveStreamId)?.UniqueId;
+            var releasedSessions = _releasedLiveStreamSessions.AddOrUpdate(
+                liveStreamId,
+                _ => new ReleasedLiveStreamSessions(streamInstanceId),
+                (_, existing) => existing.IsFor(streamInstanceId) ? existing : new ReleasedLiveStreamSessions(streamInstanceId));
+
+            return releasedSessions.TryMarkReleased(sessionIdOrPlaySessionId, correspondingId);
+        }
+
+        private void ForgetLiveStreamSessionRelease(string liveStreamId, string sessionId, string playSessionId)
+        {
+            if (_releasedLiveStreamSessions.TryGetValue(liveStreamId, out var releasedSessions))
+            {
+                releasedSessions.Forget(sessionId, playSessionId);
+            }
+        }
+
+        private void ForgetReleasesOfClosedLiveStream(string liveStreamId)
+        {
+            if (!_releasedLiveStreamSessions.TryGetValue(liveStreamId, out var releasedSessions)
+                || releasedSessions.StreamInstanceId is null
+                || releasedSessions.IsFor(_mediaSourceManager.GetLiveStreamInfo(liveStreamId)?.UniqueId))
+            {
+                return;
+            }
+
+            _releasedLiveStreamSessions.TryRemove(new KeyValuePair<string, ReleasedLiveStreamSessions>(liveStreamId, releasedSessions));
         }
 
         /// <inheritdoc />
@@ -796,7 +839,7 @@ namespace Emby.Server.Implementations.Session
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
             {
-                UpdateLiveStreamActiveSessionMappings(info.LiveStreamId, info.SessionId, info.PlaySessionId);
+                UpdateLiveStreamActiveSessionMappings(info.LiveStreamId, info.SessionId, info.PlaySessionId, true);
             }
 
             var eventArgs = new PlaybackStartEventArgs
@@ -868,8 +911,18 @@ namespace Emby.Server.Implementations.Session
             return OnPlaybackProgress(info, false);
         }
 
-        private void UpdateLiveStreamActiveSessionMappings(string liveStreamId, string sessionId, string playSessionId)
+        private void UpdateLiveStreamActiveSessionMappings(string liveStreamId, string sessionId, string playSessionId, bool allowAdd)
         {
+            if (!allowAdd && (!_activeLiveStreamSessions.TryGetValue(liveStreamId, out var existingMappings) || !existingMappings.ContainsKey(sessionId)))
+            {
+                return;
+            }
+
+            if (allowAdd)
+            {
+                ForgetLiveStreamSessionRelease(liveStreamId, sessionId, playSessionId);
+            }
+
             var activeSessionMappings = _activeLiveStreamSessions.GetOrAdd(liveStreamId, _ => new ConcurrentDictionary<string, string>());
 
             if (!string.IsNullOrEmpty(playSessionId))
@@ -937,7 +990,7 @@ namespace Emby.Server.Implementations.Session
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
             {
-                UpdateLiveStreamActiveSessionMappings(info.LiveStreamId, info.SessionId, info.PlaySessionId);
+                UpdateLiveStreamActiveSessionMappings(info.LiveStreamId, info.SessionId, info.PlaySessionId, false);
             }
 
             var eventArgs = new PlaybackProgressEventArgs
@@ -1077,7 +1130,7 @@ namespace Emby.Server.Implementations.Session
                 // resource leaks when stalled clients report a negative PositionTicks.
                 if (!string.IsNullOrEmpty(info.LiveStreamId))
                 {
-                    await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id).ConfigureAwait(false);
+                    await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id, info.PlaySessionId, true).ConfigureAwait(false);
                 }
 
                 throw new ArgumentOutOfRangeException(nameof(info), "The PlaybackStopInfo's PositionTicks was negative.");
@@ -1150,7 +1203,7 @@ namespace Emby.Server.Implementations.Session
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
             {
-                await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id).ConfigureAwait(false);
+                await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id, info.PlaySessionId, true).ConfigureAwait(false);
             }
 
             var eventArgs = new PlaybackStopEventArgs
@@ -2280,6 +2333,55 @@ namespace Emby.Server.Implementations.Session
 
             _activeConnections.Clear();
             _activeLiveStreamSessions.Clear();
+            _releasedLiveStreamSessions.Clear();
+        }
+
+        private sealed class ReleasedLiveStreamSessions
+        {
+            private readonly HashSet<string> _releasedIds = new(StringComparer.OrdinalIgnoreCase);
+            private readonly Lock _lock = new();
+
+            public ReleasedLiveStreamSessions(string streamInstanceId)
+            {
+                StreamInstanceId = streamInstanceId;
+            }
+
+            public string StreamInstanceId { get; }
+
+            public bool IsFor(string streamInstanceId)
+                => string.Equals(StreamInstanceId, streamInstanceId, StringComparison.Ordinal);
+
+            public bool TryMarkReleased(string id, string correspondingId)
+            {
+                var hasCorrespondingId = !string.IsNullOrEmpty(correspondingId);
+                lock (_lock)
+                {
+                    if (_releasedIds.Contains(id) || (hasCorrespondingId && _releasedIds.Contains(correspondingId)))
+                    {
+                        return false;
+                    }
+
+                    _releasedIds.Add(id);
+                    if (hasCorrespondingId)
+                    {
+                        _releasedIds.Add(correspondingId);
+                    }
+
+                    return true;
+                }
+            }
+
+            public void Forget(string sessionId, string playSessionId)
+            {
+                lock (_lock)
+                {
+                    _releasedIds.Remove(sessionId);
+                    if (!string.IsNullOrEmpty(playSessionId))
+                    {
+                        _releasedIds.Remove(playSessionId);
+                    }
+                }
+            }
         }
     }
 }
