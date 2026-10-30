@@ -1732,11 +1732,19 @@ namespace Emby.Server.Implementations.Session
 
             if (enforcePassword)
             {
-                user = await _userManager.AuthenticateUser(
-                    request.Username,
-                    request.Password,
-                    request.RemoteEndPoint,
-                    true).ConfigureAwait(false);
+                try
+                {
+                    user = await _userManager.AuthenticateUser(
+                        request.Username,
+                        request.Password,
+                        request.RemoteEndPoint,
+                        true).ConfigureAwait(false);
+                }
+                catch (AuthenticationException)
+                {
+                    await _eventManager.PublishAsync(new AuthenticationRequestEventArgs(request)).ConfigureAwait(false);
+                    throw;
+                }
             }
 
             if (user is null)
