@@ -230,6 +230,28 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
         }
 
         [Fact]
+        public void GetMediaInfo_Mp4MetaData_LanguageDisplayNameUsesFinalTitle()
+        {
+            var bytes = File.ReadAllBytes("Test Data/Probing/video_mp4_metadata.json");
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+
+            // The titles of these streams come from the MP4 name and handler_name tags
+            var mockLocalization = new Mock<ILocalizationManager>();
+            mockLocalization.Setup(x => x.GetLanguageDisplayName(It.IsAny<string>(), It.IsAny<string?>()))
+                .Returns<string, string?>((language, title) => language + "|" + title);
+            ProbeResultNormalizer localizedProbeResultNormalizer = new ProbeResultNormalizer(new NullLogger<EncoderValidatorTests>(), mockLocalization.Object);
+
+            MediaInfo res = localizedProbeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_mp4_metadata.mkv", MediaProtocol.File);
+
+            Assert.Null(res.MediaStreams[0].LocalizedLanguage);
+            Assert.Equal("eng|Surround 6.1", res.MediaStreams[1].LocalizedLanguage);
+            Assert.Equal("eng|Commentary", res.MediaStreams[2].LocalizedLanguage);
+            Assert.Equal("spa|", res.MediaStreams[3].LocalizedLanguage);
+            Assert.Equal("eng|SDH", res.MediaStreams[4].LocalizedLanguage);
+            Assert.Equal("eng|Commentary", res.MediaStreams[5].LocalizedLanguage);
+        }
+
+        [Fact]
         public void GetMediaInfo_TS_Success()
         {
             var bytes = File.ReadAllBytes("Test Data/Probing/video_ts.json");
