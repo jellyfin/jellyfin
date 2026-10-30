@@ -460,7 +460,7 @@ namespace MediaBrowser.Controller.Entities
                 items = allItems;
             }
 
-            var filtered = items.Where(i => Filter(i, user, query, userDataManager, libraryManager));
+            var filtered = items.Where(i => Filter(i, user, query, userDataManager, libraryManager, userDataById?.GetValueOrDefault(i.Id)));
 
             if (query.IsPlayed.HasValue && user is not null)
             {
@@ -540,7 +540,8 @@ namespace MediaBrowser.Controller.Entities
             User user,
             InternalItemsQuery query,
             IUserDataManager userDataManager,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            UserItemData userData = null)
         {
             if (!string.IsNullOrEmpty(query.NameStartsWith) && !item.SortName.StartsWith(query.NameStartsWith, StringComparison.InvariantCultureIgnoreCase))
             {
@@ -584,11 +585,9 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            UserItemData userData = null;
-
             if (query.IsLiked.HasValue)
             {
-                userData = userDataManager.GetUserData(user, item);
+                userData ??= userDataManager.GetUserData(user, item);
                 if (!userData.Likes.HasValue || userData.Likes != query.IsLiked.Value)
                 {
                     return false;

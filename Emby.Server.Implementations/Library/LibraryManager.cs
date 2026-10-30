@@ -2375,11 +2375,12 @@ namespace Emby.Server.Implementations.Library
             IOrderedEnumerable<BaseItem>? orderedItems = null;
 
             // A user comparer reads user data on every comparison; read it for the whole list once
-            // so those calls hit the cache instead of querying per item.
+            // and hand it over, since the cache can be smaller than the list.
+            Dictionary<Guid, UserItemData>? userDataById = null;
             if (user is not null && orderBy.Any(o => Comparers.Any(c => c.Type == o.OrderBy && c is IUserBaseItemComparer)))
             {
                 var itemList = items as IReadOnlyList<BaseItem> ?? items.ToList();
-                _userDataManager.GetUserDataBatch(itemList, user);
+                userDataById = _userDataManager.GetUserDataBatch(itemList, user);
                 items = itemList;
             }
 
@@ -2389,6 +2390,11 @@ namespace Emby.Server.Implementations.Library
                 if (comparer is null)
                 {
                     continue;
+                }
+
+                if (comparer is IUserDataBatchComparer batchComparer)
+                {
+                    batchComparer.UserDataById = userDataById;
                 }
 
                 if (comparer is RandomComparer)
