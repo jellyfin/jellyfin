@@ -191,6 +191,42 @@ namespace Jellyfin.Providers.Tests.Manager
             Assert.Equal("12345", tmdbIdSeenBySecondProvider);
         }
 
+        [Fact]
+        public async Task RefreshWithProviders_ReplaceImages_NfoBackdropReplacesExistingSlot()
+        {
+            var item = new Movie { Name = "Test Movie" };
+            item.AddImage(new ItemImageInfo { Path = "https://example.com/old.jpg", Type = ImageType.Backdrop });
+
+            var local = new Mock<ILocalMetadataProvider<Movie>>(MockBehavior.Loose);
+            local.Setup(p => p.Name).Returns("Local");
+            local.Setup(p => p.GetMetadata(It.IsAny<ItemInfo>(), It.IsAny<IDirectoryService>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(() =>
+                {
+                    var result = new MetadataResult<Movie> { HasMetadata = true, Item = new Movie { Name = "Test Movie" } };
+                    result.RemoteImages.Add(("https://example.com/fanart1.jpg", ImageType.Backdrop));
+                    result.RemoteImages.Add(("https://example.com/poster.jpg", ImageType.Primary));
+                    result.RemoteImages.Add(("https://example.com/fanart2.jpg", ImageType.Backdrop));
+                    return result;
+                });
+
+            var providerManager = new Mock<IProviderManager>(MockBehavior.Loose);
+            var service = new TestMetadataService(providerManager.Object);
+            await service.RefreshWithProvidersInternal(
+                new MetadataResult<Movie> { Item = item },
+                new MovieInfo { Name = item.Name },
+                new MetadataRefreshOptions(Mock.Of<IDirectoryService>())
+                {
+                    MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                    ImageRefreshMode = MetadataRefreshMode.FullRefresh,
+                    ReplaceAllImages = true
+                },
+                [local.Object]).ConfigureAwait(true);
+
+            providerManager.Verify(p => p.SaveImage(item, "https://example.com/fanart1.jpg", ImageType.Backdrop, 0, It.IsAny<CancellationToken>()), Times.Once);
+            providerManager.Verify(p => p.SaveImage(item, "https://example.com/fanart2.jpg", ImageType.Backdrop, 1, It.IsAny<CancellationToken>()), Times.Once);
+            providerManager.Verify(p => p.SaveImage(item, "https://example.com/poster.jpg", ImageType.Primary, null, It.IsAny<CancellationToken>()), Times.Once);
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -469,11 +505,11 @@ namespace Jellyfin.Providers.Tests.Manager
 
         private sealed class TestMetadataService : MetadataService<Movie, MovieInfo>
         {
-            public TestMetadataService()
+            public TestMetadataService(IProviderManager? providerManager = null)
                 : base(
                     Mock.Of<IServerConfigurationManager>(),
                     NullLogger<MetadataService<Movie, MovieInfo>>.Instance,
-                    Mock.Of<IProviderManager>(),
+                    providerManager ?? Mock.Of<IProviderManager>(),
                     Mock.Of<IFileSystem>(),
                     Mock.Of<ILibraryManager>(),
                     Mock.Of<IExternalDataManager>(),
