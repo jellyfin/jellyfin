@@ -59,8 +59,7 @@ internal class JellyfinMigrationService
         _backupService = backupService;
         _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
         _applicationPaths = applicationPaths;
-#pragma warning disable CS0618 // Type or member is obsolete
-        Migrations = [.. typeof(IMigrationRoutine).Assembly.GetTypes().Where(e => typeof(IMigrationRoutine).IsAssignableFrom(e) || typeof(IAsyncMigrationRoutine).IsAssignableFrom(e))
+        Migrations = [.. typeof(IAsyncMigrationRoutine).Assembly.GetTypes().Where(e => typeof(IAsyncMigrationRoutine).IsAssignableFrom(e))
             .Select(e => (Type: e, Metadata: e.GetCustomAttribute<JellyfinMigrationAttribute>(), Backup: e.GetCustomAttributes<JellyfinMigrationBackupAttribute>()))
             .Where(e => e.Metadata is not null)
             .GroupBy(e => e.Metadata!.Stage)
@@ -80,7 +79,6 @@ internal class JellyfinMigrationService
 
                 return stage;
             })];
-#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     private interface IInternalMigration

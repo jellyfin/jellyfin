@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -22,23 +24,26 @@ internal class StripEmbeddedLinkedChildren : IDatabaseMigrationRoutine
     }
 
     /// <inheritdoc/>
-    public void Perform()
+    public async Task PerformAsync(CancellationToken cancellationToken)
     {
-        using var context = _dbProvider.CreateDbContext();
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            // json_valid guards the rare malformed blob: json_remove would abort the statement on it,
+            // and one bad row must not cost every other row the fix.
+            var updated = await context.Database.ExecuteSqlRawAsync(
+                """
+                UPDATE "BaseItems"
+                SET "Data" = json_remove("Data", '$.LinkedChildren', '$.ExtraIds', '$.SupportsExternalTransfer')
+                WHERE "Data" IS NOT NULL
+                  AND json_valid("Data") = 1
+                  AND ("Data" LIKE '%"LinkedChildren"%'
+                    OR "Data" LIKE '%"ExtraIds"%'
+                    OR "Data" LIKE '%"SupportsExternalTransfer"%')
+                """,
+                cancellationToken).ConfigureAwait(false);
 
-        // json_valid guards the rare malformed blob: json_remove would abort the statement on it,
-        // and one bad row must not cost every other row the fix.
-        var updated = context.Database.ExecuteSqlRaw(
-            """
-            UPDATE "BaseItems"
-            SET "Data" = json_remove("Data", '$.LinkedChildren', '$.ExtraIds', '$.SupportsExternalTransfer')
-            WHERE "Data" IS NOT NULL
-              AND json_valid("Data") = 1
-              AND ("Data" LIKE '%"LinkedChildren"%'
-                OR "Data" LIKE '%"ExtraIds"%'
-                OR "Data" LIKE '%"SupportsExternalTransfer"%')
-            """);
-
-        _logger.LogInformation("Dropped dead keys from the serialized data of {Count} items", updated);
+            _logger.LogInformation("Dropped dead keys from the serialized data of {Count} items", updated);
+        }
     }
 }

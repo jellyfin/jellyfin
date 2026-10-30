@@ -22,9 +22,9 @@ internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute meta
 
     public async Task Perform(IServiceProvider serviceProvider, IStartupLogger logger, CancellationToken cancellationToken)
     {
-        if (!IsMigrationRoutine(MigrationType))
+        if (!typeof(IAsyncMigrationRoutine).IsAssignableFrom(MigrationType))
         {
-            throw new InvalidOperationException($"The type {MigrationType} does not implement either IMigrationRoutine or IAsyncMigrationRoutine and is not a valid migration type");
+            throw new InvalidOperationException($"The type {MigrationType} does not implement IAsyncMigrationRoutine and is not a valid migration type");
         }
 
         // The routine runs against a scope of the applications own container. Copying the application service
@@ -37,28 +37,8 @@ internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute meta
             // Nests everything the routine logs through an injected IStartupLogger under the migrations own topic.
             using (StartupLogger.BeginAmbientTopic(logger.Topic))
             {
-                await RunAsync(ActivatorUtilities.CreateInstance(scope.ServiceProvider, MigrationType), cancellationToken).ConfigureAwait(false);
+                await ((IAsyncMigrationRoutine)ActivatorUtilities.CreateInstance(scope.ServiceProvider, MigrationType)).PerformAsync(cancellationToken).ConfigureAwait(false);
             }
         }
     }
-
-    // The obsolete IMigrationRoutine is still implemented by every routine that predates the async interface, so
-    // the members that have to touch it are grouped here behind a single suppression.
-#pragma warning disable CS0618 // Type or member is obsolete
-    private static bool IsMigrationRoutine(Type migrationType)
-    {
-        return typeof(IMigrationRoutine).IsAssignableFrom(migrationType) || typeof(IAsyncMigrationRoutine).IsAssignableFrom(migrationType);
-    }
-
-    private static async Task RunAsync(object routine, CancellationToken cancellationToken)
-    {
-        if (routine is IMigrationRoutine migrationRoutine)
-        {
-            migrationRoutine.Perform();
-            return;
-        }
-
-        await ((IAsyncMigrationRoutine)routine).PerformAsync(cancellationToken).ConfigureAwait(false);
-    }
-#pragma warning restore CS0618 // Type or member is obsolete
 }
