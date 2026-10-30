@@ -98,7 +98,8 @@ public class ItemUpdateController : BaseJellyfinApiController
                 {
                     Name = x.Name,
                     Role = x.Role,
-                    Type = x.Type
+                    Type = x.Type,
+                    PersonItemId = x.Id
                 }).ToList());
         }
 

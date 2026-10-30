@@ -3721,18 +3721,21 @@ namespace Emby.Server.Implementations.Library
             {
                 people = people.Where(e => e is not null).ToArray();
 
-                var personEntities = ResolvePeople(people);
+                var personEntities = ResolvePeople(item, people);
                 _peopleRepository.UpdatePeople(item.Id, people);
                 await SavePeopleMetadataAsync(personEntities, people, cancellationToken).ConfigureAwait(false);
             }
         }
 
-        private Dictionary<Guid, Person> ResolvePeople(IReadOnlyList<PersonInfo> people)
+        private Dictionary<Guid, Person> ResolvePeople(BaseItem item, IReadOnlyList<PersonInfo> people)
         {
             // The ids are part of the key, because one name can be two humans on the same release.
-            var byCredit = new Dictionary<(string CleanName, string Ids), Person>();
-            var attempted = new HashSet<(string CleanName, string Ids)>();
+            var byCredit = new Dictionary<(string CleanName, string Ids, Guid LinkedId), Person>();
+            var attempted = new HashSet<(string CleanName, string Ids, Guid LinkedId)>();
             var resolved = new Dictionary<Guid, Person>();
+            IReadOnlyList<PersonInfo>? existingCredits = null;
+            IReadOnlyList<PersonInfo> GetExistingCredits()
+                => existingCredits ??= _peopleRepository.GetPeopleByItems([item.Id]).GetValueOrDefault(item.Id) ?? [];
 
             foreach (var person in people)
             {
@@ -3741,11 +3744,15 @@ namespace Emby.Server.Implementations.Library
                     continue;
                 }
 
-                var key = (person.Name.GetCleanValue(), GetProviderIdSignature(person.ProviderIds));
+                var cleanName = person.Name.GetCleanValue();
+                var linkedId = GetLinkedPersonItemId(person, cleanName, GetExistingCredits);
+                var key = (cleanName, GetProviderIdSignature(person.ProviderIds), linkedId);
                 if (attempted.Add(key))
                 {
                     // The id identifies the human, the spelling only how this release wrote it down.
-                    var entity = FindPersonByProviderIds(person) ?? GetOrCreatePerson(person.Name, person.ProviderIds);
+                    var entity = (linkedId.IsEmpty() ? null : GetItemById(linkedId) as Person)
+                        ?? FindPersonByProviderIds(person)
+                        ?? GetOrCreatePerson(person.Name, person.ProviderIds);
                     if (entity is not null)
                     {
                         byCredit[key] = entity;
@@ -3760,6 +3767,36 @@ namespace Emby.Server.Implementations.Library
             }
 
             return resolved;
+        }
+
+        // The person this credit is already linked to, so a save that carries no provider ids (the
+        // metadata editor, an NFO) cannot move it off a person those ids resolved it to earlier.
+        private static Guid GetLinkedPersonItemId(PersonInfo person, string cleanName, Func<IReadOnlyList<PersonInfo>> getExistingCredits)
+        {
+            var hasProviderIds = person.ProviderIds.Values.Any(v => !string.IsNullOrWhiteSpace(v));
+            if (person.PersonItemId.IsEmpty() && hasProviderIds)
+            {
+                return Guid.Empty;
+            }
+
+            var sameName = getExistingCredits()
+                .Where(e => !e.PersonItemId.IsEmpty() && string.Equals(e.Name.GetCleanValue(), cleanName, StringComparison.Ordinal))
+                .ToList();
+
+            // A link the caller carries only counts while the name still matches, or a renamed cast entry keeps the old person.
+            if (!person.PersonItemId.IsEmpty())
+            {
+                return sameName.Any(e => e.PersonItemId.Equals(person.PersonItemId)) ? person.PersonItemId : Guid.Empty;
+            }
+
+            var candidates = sameName.Where(e => e.Type == person.Type).Select(e => e.PersonItemId).Distinct().ToList();
+            if (candidates.Count == 0)
+            {
+                candidates = sameName.Select(e => e.PersonItemId).Distinct().ToList();
+            }
+
+            // Two humans of one name with nothing to tell them apart is not ours to guess.
+            return candidates.Count == 1 ? candidates[0] : Guid.Empty;
         }
 
         private static string GetProviderIdSignature(IReadOnlyDictionary<string, string>? providerIds)
