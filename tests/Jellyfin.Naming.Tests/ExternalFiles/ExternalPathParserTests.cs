@@ -74,6 +74,7 @@ public class ExternalPathParserTests
     [InlineData("MyVideo.mks")]
     [InlineData("MyVideo.sami")]
     [InlineData("MyVideo.srt")]
+    [InlineData("MyVideo.ttml")]
     [InlineData("MyVideo.vtt")]
     public void ParseFile_SubtitleExtensionsMatched_ReturnsPath(string path)
     {
