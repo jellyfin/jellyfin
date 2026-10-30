@@ -1,5 +1,6 @@
 using System;
 using Emby.Server.Implementations.Library;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Model.Entities;
 using Xunit;
 
@@ -114,5 +115,19 @@ public class MediaStreamSelectorTests
         var languagePref = new[] { "eng", "fre" };
 
         Assert.Equal(expectedScore, MediaStreamSelector.GetStreamScore(stream, languagePref));
+    }
+
+    [Fact]
+    public void GetDefaultSubtitleStreamIndex_VariantPreference_PrefersVariantTrackOverBaseCodeTrack()
+    {
+        var streams = new MediaStream[]
+        {
+            new() { Index = 0, Type = MediaStreamType.Video },
+            new() { Index = 1, Type = MediaStreamType.Audio, Language = "eng", IsDefault = true },
+            new() { Index = 2, Type = MediaStreamType.Subtitle, Language = "por", IsExternal = true },
+            new() { Index = 3, Type = MediaStreamType.Subtitle, Language = "pt-br", IsExternal = true }
+        };
+
+        Assert.Equal(3, MediaStreamSelector.GetDefaultSubtitleStreamIndex(streams, ["pt-br", "por"], SubtitlePlaybackMode.Always, "eng"));
     }
 }
