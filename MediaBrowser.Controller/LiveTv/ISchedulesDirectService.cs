@@ -2,6 +2,7 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.LiveTv;
 
@@ -40,4 +41,14 @@ public interface ISchedulesDirectService
     /// <param name="responseBody">The body of the failed response, if it was readable.</param>
     /// <returns>What the caller must do with the image.</returns>
     ImageDownloadFailureAction ReportImageDownloadFailure(string imageUrl, HttpStatusCode? statusCode, string? responseBody);
+
+    /// <summary>
+    /// Downloads a remote image unless Schedules Direct has blocked it, and reports the outcome.
+    /// Schedules Direct counts every image request, so downloads outside the guide refresh go through here.
+    /// </summary>
+    /// <param name="item">The item the image belongs to.</param>
+    /// <param name="image">The remote image.</param>
+    /// <param name="imageIndex">The image index.</param>
+    /// <returns>The local image, or <c>null</c> when the download is blocked.</returns>
+    Task<ItemImageInfo?> ConvertImageToLocal(BaseItem item, ItemImageInfo image, int imageIndex);
 }

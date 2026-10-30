@@ -25,6 +25,8 @@ using Jellyfin.LiveTv.Listings.SchedulesDirectDtos;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -66,6 +68,7 @@ namespace Jellyfin.LiveTv.Listings
         private readonly ILogger<SchedulesDirect> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IApplicationPaths _appPaths;
+        private readonly ILibraryManager _libraryManager;
         private readonly AsyncNonKeyedLocker _tokenLock = new(1);
         private readonly AsyncNonKeyedLocker _statusLock = new(1);
         private readonly SchedulesDirectScheduleCache _scheduleCache;
@@ -95,11 +98,13 @@ namespace Jellyfin.LiveTv.Listings
         public SchedulesDirect(
             ILogger<SchedulesDirect> logger,
             IHttpClientFactory httpClientFactory,
-            IApplicationPaths appPaths)
+            IApplicationPaths appPaths,
+            ILibraryManager libraryManager)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
             _appPaths = appPaths;
+            _libraryManager = libraryManager;
             _scheduleCache = new SchedulesDirectScheduleCache(logger, appPaths);
             _lineupCache = new SchedulesDirectLineupCache(logger, appPaths);
             _imageLimitHitDate = LoadDailyLimitDate(ImageLimitFilePath);
@@ -196,6 +201,17 @@ namespace Jellyfin.LiveTv.Listings
                 channelId,
                 cachedDays.Count,
                 dates.Count);
+
+            if (datesToFetch.Count > 0)
+            {
+                // The hash check may have stopped us (offline, a login limit) or replaced the token,
+                // and its failure is swallowed, so the schedule request must not go out regardless.
+                token = await GetToken(info, cancellationToken).ConfigureAwait(false);
+                if (string.IsNullOrEmpty(token) || IsMetadataLimitActive())
+                {
+                    throw new InvalidOperationException("Schedules Direct stopped accepting requests while checking for schedule changes.");
+                }
+            }
 
             var freshDays = await DownloadSchedules(info, channelId, datesToFetch, token, cancellationToken).ConfigureAwait(false);
 
@@ -445,18 +461,40 @@ namespace Jellyfin.LiveTv.Listings
                     Programs = dayPrograms
                 };
 
-                result.Add(cachedDay);
-
-                // A program that is still queued (6001) does not have to change the day's md5, so
-                // caching the day without it would leave that airing out until the md5 changes.
-                var isComplete = day.Programs.All(p => string.IsNullOrEmpty(p.ProgramId) || detailsById.ContainsKey(p.ProgramId));
-
                 var date = day.Metadata?.StartDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-                if (date is not null && isComplete)
+                var missingIds = day.Programs
+                    .Select(p => p.ProgramId)
+                    .Where(id => !string.IsNullOrEmpty(id) && !detailsById.ContainsKey(id))
+                    .Distinct(StringComparer.Ordinal)
+                    .ToList();
+
+                if (missingIds.Count == 0)
                 {
-                    // Must stay ahead of SetProgramImages: it stamps ephemeral uris and a token
-                    // that expires daily onto these programs, and neither may reach the cache.
-                    await _scheduleCache.SetAsync(stationId, date, cachedDay, cancellationToken).ConfigureAwait(false);
+                    if (date is not null)
+                    {
+                        // Must stay ahead of SetProgramImages: it stamps ephemeral uris and a token
+                        // that expires daily onto these programs, and neither may reach the cache.
+                        await _scheduleCache.SetAsync(stationId, date, cachedDay, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    result.Add(cachedDay);
+                    continue;
+                }
+
+                // A queued program (6001) is not cached: finishing it need not change the day's md5.
+                // Dropping its airings would delete them, so the previous copy's details stand in;
+                // without those the day stays uncovered and GetProgramsAsync falls back or fails.
+                var stale = date is null
+                    ? null
+                    : await _scheduleCache.GetLatestAsync(stationId, date, cancellationToken).ConfigureAwait(false);
+                var staleById = stale?.Programs
+                    .Where(p => !string.IsNullOrEmpty(p.ProgramId))
+                    .DistinctBy(p => p.ProgramId, StringComparer.Ordinal)
+                    .ToDictionary(p => p.ProgramId, StringComparer.Ordinal);
+                if (staleById is not null && missingIds.TrueForAll(staleById.ContainsKey))
+                {
+                    cachedDay.Programs = [.. dayPrograms, .. missingIds.Select(id => staleById[id])];
+                    result.Add(cachedDay);
                 }
             }
 
@@ -1513,6 +1551,30 @@ namespace Jellyfin.LiveTv.Listings
 
                 default:
                     return ImageDownloadFailureAction.None;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<ItemImageInfo> ConvertImageToLocal(BaseItem item, ItemImageInfo image, int imageIndex)
+        {
+            ArgumentNullException.ThrowIfNull(image);
+
+            var remotePath = image.Path;
+            if (!CanDownloadImage(remotePath))
+            {
+                return null;
+            }
+
+            try
+            {
+                var localImage = await _libraryManager.ConvertImageToLocal(item, image, imageIndex).ConfigureAwait(false);
+                ReportImageDownloadSuccess(remotePath);
+                return localImage;
+            }
+            catch (Exception ex) when ((ex as HttpRequestException ?? ex.InnerException as HttpRequestException) is { } httpException)
+            {
+                ReportImageDownloadFailure(remotePath, httpException.StatusCode, (httpException as HttpResponseBodyException)?.ResponseBody);
+                throw;
             }
         }
 

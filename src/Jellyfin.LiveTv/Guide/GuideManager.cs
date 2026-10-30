@@ -749,13 +749,12 @@ public class GuideManager : IGuideManager
         return false;
     }
 
-    private async Task PreCacheImages(IReadOnlyList<BaseItem> programs, DateTime maxCacheDate)
+    internal async Task PreCacheImages(IReadOnlyList<BaseItem> programs, DateTime maxCacheDate)
     {
         await Parallel.ForEachAsync(
             programs
                 .Where(p => p.EndDate.HasValue && p.EndDate.Value < maxCacheDate)
-                .Where(p => p.ImageInfos.Any(
-                    img => !img.IsLocalFile && _schedulesDirectService.CanDownloadImage(img.Path)))
+                .Where(p => p.ImageInfos.Any(img => !img.IsLocalFile))
                 .DistinctBy(p => p.Id),
             _cacheParallelOptions,
             async (program, cancellationToken) =>
@@ -775,9 +774,12 @@ public class GuideManager : IGuideManager
                         continue;
                     }
 
-                    // Re-checked per image: the limit may have been hit by a parallel task.
+                    // Re-checked per image: the limit may have been hit by a parallel task. A blocked
+                    // url left on the program would still be fetched when a client asks for it.
                     if (!_schedulesDirectService.CanDownloadImage(imageInfo.Path))
                     {
+                        deadImages ??= [];
+                        deadImages.Add(imageInfo);
                         continue;
                     }
 

@@ -30,6 +30,7 @@ public class RecordingsMetadataManager
     private readonly ILogger<RecordingsMetadataManager> _logger;
     private readonly IConfigurationManager _config;
     private readonly ILibraryManager _libraryManager;
+    private readonly ISchedulesDirectService _schedulesDirectService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RecordingsMetadataManager"/> class.
@@ -37,14 +38,17 @@ public class RecordingsMetadataManager
     /// <param name="logger">The <see cref="ILogger"/>.</param>
     /// <param name="config">The <see cref="IConfigurationManager"/>.</param>
     /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
+    /// <param name="schedulesDirectService">The <see cref="ISchedulesDirectService"/>.</param>
     public RecordingsMetadataManager(
         ILogger<RecordingsMetadataManager> logger,
         IConfigurationManager config,
-        ILibraryManager libraryManager)
+        ILibraryManager libraryManager,
+        ISchedulesDirectService schedulesDirectService)
     {
         _logger = logger;
         _config = config;
         _libraryManager = libraryManager;
+        _schedulesDirectService = schedulesDirectService;
     }
 
     /// <summary>
@@ -469,7 +473,14 @@ public class RecordingsMetadataManager
     {
         if (!image.IsLocalFile)
         {
-            image = await _libraryManager.ConvertImageToLocal(program, image, 0).ConfigureAwait(false);
+            var localImage = await _schedulesDirectService.ConvertImageToLocal(program, image, 0).ConfigureAwait(false);
+            if (localImage is null)
+            {
+                _logger.LogDebug("Not saving recording image {Url}: Schedules Direct has blocked it", image.Path);
+                return;
+            }
+
+            image = localImage;
         }
 
         var imageSaveFilenameWithoutExtension = image.Type switch

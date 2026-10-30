@@ -21,6 +21,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Branding;
 using MediaBrowser.Model.Drawing;
@@ -50,6 +51,7 @@ public class ImageController : BaseJellyfinApiController
     private readonly ILogger<ImageController> _logger;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly IApplicationPaths _appPaths;
+    private readonly ISchedulesDirectService _schedulesDirectService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageController"/> class.
@@ -62,6 +64,7 @@ public class ImageController : BaseJellyfinApiController
     /// <param name="logger">Instance of the <see cref="ILogger{ImageController}"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
+    /// <param name="schedulesDirectService">Instance of the <see cref="ISchedulesDirectService"/> interface.</param>
     public ImageController(
         IUserManager userManager,
         ILibraryManager libraryManager,
@@ -70,7 +73,8 @@ public class ImageController : BaseJellyfinApiController
         IFileSystem fileSystem,
         ILogger<ImageController> logger,
         IServerConfigurationManager serverConfigurationManager,
-        IApplicationPaths appPaths)
+        IApplicationPaths appPaths,
+        ISchedulesDirectService schedulesDirectService)
     {
         _userManager = userManager;
         _libraryManager = libraryManager;
@@ -80,6 +84,7 @@ public class ImageController : BaseJellyfinApiController
         _logger = logger;
         _serverConfigurationManager = serverConfigurationManager;
         _appPaths = appPaths;
+        _schedulesDirectService = schedulesDirectService;
     }
 
     private static CryptoStream GetFromBase64Stream(Stream inputStream)
@@ -1893,7 +1898,13 @@ public class ImageController : BaseJellyfinApiController
 
         if (!imageInfo.IsLocalFile && item is not null)
         {
-            imageInfo = await _libraryManager.ConvertImageToLocal(item, imageInfo, imageIndex ?? 0).ConfigureAwait(false);
+            var localImage = await _schedulesDirectService.ConvertImageToLocal(item, imageInfo, imageIndex ?? 0).ConfigureAwait(false);
+            if (localImage is null)
+            {
+                return NotFound();
+            }
+
+            imageInfo = localImage;
         }
 
         var options = new ImageProcessingOptions

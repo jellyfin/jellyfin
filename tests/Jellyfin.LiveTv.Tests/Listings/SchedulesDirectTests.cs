@@ -9,7 +9,11 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -25,6 +29,8 @@ public class SchedulesDirectTests : IDisposable
     private const string ImageUrl = "https://json.schedulesdirect.org/20141201/image/assets/p1_b.jpg?token=abc";
 
     private static readonly ListingsProviderInfo _info = new() { Username = "user", Password = "password" };
+
+    private readonly Mock<ILibraryManager> _libraryManager = new();
 
     // The daily limit files live under CachePath, so every provider needs its own directory or
     // one test leaves a limit behind for the next.
@@ -190,6 +196,37 @@ public class SchedulesDirectTests : IDisposable
         Assert.Equal(ImageDownloadFailureAction.None, action);
         Assert.True(provider.CanDownloadImage(ImageUrl));
         Assert.True(provider.CanDownloadImage("https://example.com/image.jpg"));
+    }
+
+    [Fact]
+    public async Task ConvertImageToLocal_Blocked_DoesNotDownload()
+    {
+        using var provider = CreateProvider(await CreateSuccessfulLogin(), await GetHeadendsResponse());
+        provider.ReportImageDownloadFailure(ImageUrl, HttpStatusCode.NotFound, ErrorBody(5002, "MAX_IMAGE_DOWNLOADS"));
+
+        var image = await provider.ConvertImageToLocal(new LiveTvProgram(), new ItemImageInfo { Path = ImageUrl, Type = ImageType.Primary }, 0);
+
+        Assert.Null(image);
+        _libraryManager.Verify(
+            l => l.ConvertImageToLocal(It.IsAny<BaseItem>(), It.IsAny<ItemImageInfo>(), It.IsAny<int>(), It.IsAny<bool>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task ConvertImageToLocal_ImageNotFound_StopsOfferingTheUri()
+    {
+        using var provider = CreateProvider(await CreateSuccessfulLogin(), await GetHeadendsResponse());
+
+        // LibraryManager wraps the rejection, which is the only place the SD error body survives.
+        _libraryManager.Setup(l => l.ConvertImageToLocal(It.IsAny<BaseItem>(), It.IsAny<ItemImageInfo>(), 0, true))
+            .ThrowsAsync(new InvalidOperationException(
+                "test",
+                new HttpResponseBodyException("test", HttpStatusCode.NotFound, ErrorBody(5000, "IMAGE_NOT_FOUND"))));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => provider.ConvertImageToLocal(new LiveTvProgram(), new ItemImageInfo { Path = ImageUrl, Type = ImageType.Primary }, 0));
+
+        Assert.False(provider.CanDownloadImage(ImageUrl));
     }
 
     [Fact]
@@ -391,7 +428,10 @@ public class SchedulesDirectTests : IDisposable
         var server = new FakeServer { ProgramErrorCode = 6001 };
         using var provider = CreateProvider(server);
 
-        Assert.Empty(await provider.GetProgramsAsync(_info, "20454", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), TestContext.Current.CancellationToken));
+        // With no previous copy to stand in, a queued program fails the channel rather than
+        // dropping its airings, which the guide refresh would delete.
+        await Assert.ThrowsAnyAsync<Exception>(
+            () => provider.GetProgramsAsync(_info, "20454", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), TestContext.Current.CancellationToken));
 
         // The program finishing generation need not change the day's md5, so the day must be
         // downloaded again rather than served from the cache without it.
@@ -400,6 +440,40 @@ public class SchedulesDirectTests : IDisposable
 
         Assert.NotEmpty(second);
         Assert.Equal(2, server.Counts["/programs"]);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("EP000000020001")]
+    public async Task GetProgramsAsync_ProgramQueuedAfterGoodRefresh_KeepsItsAirings(string? queuedProgramId)
+    {
+        var server = new FakeServer { SecondProgram = true };
+        using var provider = CreateProvider(server);
+
+        var first = await provider.GetProgramsAsync(_info, "20454", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), TestContext.Current.CancellationToken);
+        Assert.Contains(first, p => p.Id!.Contains("EP000000020001", StringComparison.Ordinal));
+
+        // The day changed and one (or every) program on it is still being generated.
+        server.Md5Salt = "changed";
+        server.ProgramErrorCode = 6001;
+        server.QueuedProgramId = queuedProgramId;
+        var second = await provider.GetProgramsAsync(_info, "20454", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), TestContext.Current.CancellationToken);
+
+        Assert.Equal(first.Select(p => p.Id).Order(), second.Select(p => p.Id).Order());
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.OK, 3000, "SERVICE_OFFLINE")]
+    [InlineData(HttpStatusCode.Forbidden, 4009, "TOO_MANY_LOGINS")]
+    public async Task GetProgramsAsync_StopCodeOnMd5_DoesNotRequestSchedules(HttpStatusCode status, int code, string response)
+    {
+        var server = new FakeServer { Md5RejectionBody = ErrorBody(code, response), Md5RejectionStatus = status };
+        using var provider = CreateProvider(server);
+
+        await Assert.ThrowsAnyAsync<Exception>(
+            () => provider.GetProgramsAsync(_info, "20454", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), TestContext.Current.CancellationToken));
+
+        Assert.Equal(0, server.Counts.GetValueOrDefault("/schedules"));
     }
 
     [Theory]
@@ -620,7 +694,8 @@ public class SchedulesDirectTests : IDisposable
         return new SchedulesDirectProvider(
             NullLogger<SchedulesDirectProvider>.Instance,
             httpClientFactory.Object,
-            appPaths.Object);
+            appPaths.Object,
+            _libraryManager.Object);
     }
 
     private SchedulesDirectProvider CreateProvider(FakeServer server)
@@ -640,7 +715,8 @@ public class SchedulesDirectTests : IDisposable
         return new SchedulesDirectProvider(
             NullLogger<SchedulesDirectProvider>.Instance,
             httpClientFactory.Object,
-            appPaths.Object);
+            appPaths.Object,
+            _libraryManager.Object);
     }
 
     /// <summary>
@@ -689,6 +765,18 @@ public class SchedulesDirectTests : IDisposable
         /// </summary>
         public string? Md5RejectionBody { get; set; }
 
+        public HttpStatusCode Md5RejectionStatus { get; set; } = HttpStatusCode.Forbidden;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether each day airs a second program.
+        /// </summary>
+        public bool SecondProgram { get; set; }
+
+        /// <summary>
+        /// Gets or sets the only program <see cref="ProgramErrorCode"/> applies to; null means all of them.
+        /// </summary>
+        public string? QueuedProgramId { get; set; }
+
         public string ImageUri { get; set; } = "assets/p1_b.jpg";
 
         public DateTime LineupModified { get; set; } = new(2026, 9, 14, 0, 0, 0, DateTimeKind.Utc);
@@ -716,7 +804,7 @@ public class SchedulesDirectTests : IDisposable
                     {
                         var rejection = Md5RejectionBody;
                         Md5RejectionBody = null;
-                        return new HttpResponseMessage(HttpStatusCode.Forbidden) { Content = new StringContent(rejection) };
+                        return new HttpResponseMessage(Md5RejectionStatus) { Content = new StringContent(rejection) };
                     }
 
                     RequestedDates = await ReadDates(message, cancellationToken).ConfigureAwait(false);
@@ -728,14 +816,8 @@ public class SchedulesDirectTests : IDisposable
                     break;
 
                 case "/programs":
-                    if (ProgramErrorCode != 0)
-                    {
-                        body = "[{\"programID\":\"EP000000010001\",\"code\":" + ProgramErrorCode.ToString(CultureInfo.InvariantCulture) + ",\"message\":\"test\"}]";
-                        break;
-                    }
-
-                    body = "[{\"programID\":\"EP000000010001\",\"titles\":[{\"title120\":\"Test\"}],\"hasImageArtwork\":"
-                        + (HasImageArtwork ? "true" : "false") + "}]";
+                    var ids = JsonSerializer.Deserialize<List<string>>(await message.Content!.ReadAsStringAsync(cancellationToken).ConfigureAwait(false))!;
+                    body = "[" + string.Join(',', ids.Select(BuildProgramEntry)) + "]";
                     break;
 
                 case "/metadata/programs":
@@ -799,6 +881,12 @@ public class SchedulesDirectTests : IDisposable
         private string GetMd5(string date)
             => (string.Equals(date, ChangedDate, StringComparison.Ordinal) ? "changed" : Md5Salt) + date;
 
+        private string BuildProgramEntry(string id)
+            => ProgramErrorCode != 0 && (QueuedProgramId is null || string.Equals(id, QueuedProgramId, StringComparison.Ordinal))
+                ? "{\"programID\":\"" + id + "\",\"code\":" + ProgramErrorCode.ToString(CultureInfo.InvariantCulture) + ",\"message\":\"test\"}"
+                : "{\"programID\":\"" + id + "\",\"titles\":[{\"title120\":\"Test\"}],\"hasImageArtwork\":"
+                    + (HasImageArtwork ? "true" : "false") + "}";
+
         private string BuildSchedulesResponse(List<string> dates)
         {
             if (ScheduleRetryTime is { } retryTime)
@@ -809,7 +897,9 @@ public class SchedulesDirectTests : IDisposable
 
             var days = dates.ConvertAll(d =>
                 "{\"stationID\":\"20454\",\"programs\":[{\"programID\":\"EP000000010001\",\"airDateTime\":\"" + d
-                + "T12:00:00Z\",\"duration\":1800,\"md5\":\"x\"}],\"metadata\":{\"modified\":\"2026-09-14T00:00:00Z\",\"md5\":\""
+                + "T12:00:00Z\",\"duration\":1800,\"md5\":\"x\"}"
+                + (SecondProgram ? ",{\"programID\":\"EP000000020001\",\"airDateTime\":\"" + d + "T14:00:00Z\",\"duration\":1800,\"md5\":\"y\"}" : string.Empty)
+                + "],\"metadata\":{\"modified\":\"2026-09-14T00:00:00Z\",\"md5\":\""
                 + GetMd5(d) + "\",\"startDate\":\"" + d + "\"}}");
 
             return "[" + string.Join(',', days) + "]";
