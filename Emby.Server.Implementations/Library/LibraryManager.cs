@@ -2312,17 +2312,17 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentNullException.ThrowIfNull(video);
 
-            var linkedIds = _linkedChildrenService.GetLinkedChildrenIds(video.Id, (int)MediaBrowser.Controller.Entities.LinkedChildType.LinkedAlternateVersion);
-            if (linkedIds.Count > 0)
+            if (video.LinkedAlternateVersions.Length == 0)
             {
-                return linkedIds
-                    .Select(id => GetItemById(id))
-                    .Where(i => i is not null)
-                    .OfType<Video>()
-                    .OrderBy(i => i.SortName);
+                return [];
             }
 
-            return [];
+            return video.LinkedAlternateVersions
+                .Where(i => i.ItemId.HasValue && !i.ItemId.Value.IsEmpty())
+                .Select(i => GetItemById(i.ItemId!.Value))
+                .Where(i => i is not null)
+                .OfType<Video>()
+                .OrderBy(i => i.SortName);
         }
 
         /// <inheritdoc />

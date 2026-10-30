@@ -1192,7 +1192,8 @@ namespace MediaBrowser.Controller.Entities
 
             var list = GetAllItemsForMediaSources().ToList();
             var commonPrefix = GetCommonNamePrefix(list);
-            var result = list.Select(i => GetVersionInfo(enablePathSubstitution, i.Item, i.MediaSourceType, commonPrefix)).ToList();
+            var hasLocalAlternateVersions = list.Count > 1 ? (bool?)null : false;
+            var result = list.Select(i => GetVersionInfo(enablePathSubstitution, i.Item, i.MediaSourceType, commonPrefix, hasLocalAlternateVersions)).ToList();
 
             if (IsActiveRecording())
             {
@@ -1218,7 +1219,7 @@ namespace MediaBrowser.Controller.Entities
             return Enumerable.Empty<(BaseItem, MediaSourceType)>();
         }
 
-        private MediaSourceInfo GetVersionInfo(bool enablePathSubstitution, BaseItem item, MediaSourceType type, string commonPrefix = null)
+        private MediaSourceInfo GetVersionInfo(bool enablePathSubstitution, BaseItem item, MediaSourceType type, string commonPrefix = null, bool? hasLocalAlternateVersions = null)
         {
             ArgumentNullException.ThrowIfNull(item);
 
@@ -1231,7 +1232,7 @@ namespace MediaBrowser.Controller.Entities
                 Protocol = protocol ?? MediaProtocol.File,
                 MediaStreams = MediaSourceManager.GetMediaStreams(item.Id),
                 MediaAttachments = MediaSourceManager.GetMediaAttachments(item.Id),
-                Name = GetMediaSourceName(item, commonPrefix),
+                Name = GetMediaSourceName(item, commonPrefix, hasLocalAlternateVersions),
                 Path = enablePathSubstitution ? GetMappedPath(item, itemPath, protocol) : itemPath,
                 RunTimeTicks = item.RunTimeTicks,
                 Container = item.Container,
@@ -1310,7 +1311,7 @@ namespace MediaBrowser.Controller.Entities
             return info;
         }
 
-        internal string GetMediaSourceName(BaseItem item, string commonPrefix = null)
+        internal string GetMediaSourceName(BaseItem item, string commonPrefix = null, bool? hasLocalAlternateVersions = null)
         {
             var terms = new List<string>();
 
@@ -1337,7 +1338,7 @@ namespace MediaBrowser.Controller.Entities
 
                 // Fall back to the containing folder name (the common layout for movie versions, and
                 // the path taken when no common prefix could be derived).
-                if (terms.Count == 0 && HasLocalAlternateVersions)
+                if (terms.Count == 0 && (hasLocalAlternateVersions ?? HasLocalAlternateVersions))
                 {
                     var containingFolderName = System.IO.Path.GetFileName(ContainingFolderPath);
                     if (displayName.Length > containingFolderName.Length && displayName.StartsWith(containingFolderName, StringComparison.OrdinalIgnoreCase))
