@@ -527,17 +527,8 @@ public class ItemsController : BaseJellyfinApiController
         // Artists
         if (artists.Length != 0)
         {
-            query.ArtistIds = artists.Select(i =>
-            {
-                try
-                {
-                    return _libraryManager.GetArtist(i, new DtoOptions(false));
-                }
-                catch
-                {
-                    return null;
-                }
-            }).Where(i => i is not null).Select(i => i!.Id).ToArray();
+            // An unknown name keeps the filter, so it matches nothing instead of everything
+            query.ArtistIds = artists.Select(i => _libraryManager.GetArtist(i, new DtoOptions(false))?.Id ?? Guid.Empty).ToArray();
         }
 
         // ExcludeArtistIds
@@ -563,17 +554,8 @@ public class ItemsController : BaseJellyfinApiController
         // Studios
         if (studios.Length != 0)
         {
-            query.StudioIds = studios.Select(i =>
-            {
-                try
-                {
-                    return _libraryManager.GetStudio(i);
-                }
-                catch
-                {
-                    return null;
-                }
-            }).Where(i => i is not null).Select(i => i!.Id).ToArray();
+            // An unknown name keeps the filter, so it matches nothing instead of everything
+            query.StudioIds = studios.Select(_libraryManager.GetStudioId).ToArray();
         }
 
         // Apply default sorting if none requested
