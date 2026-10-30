@@ -35,6 +35,13 @@ public sealed class FixLibrarySubtitleDownloadLanguagesTests : IDisposable
     [InlineData("pt-pt", "pt-br", "en", "pt-pt")]
     [InlineData("ger", "de", "en", "deu")]
     [InlineData("xyz", "pt-br", "en", "xyz")]
+    // 10.10 stored por, pop and pob separately, a variant next to por means por was meant generically.
+    [InlineData("por,pob", "pt-br", "en", "por,pt-br")]
+    [InlineData("por,pop", "pt-br", "en", "por,pt-pt")]
+    [InlineData("por,pop", "pt-pt", "en", "por,pt-pt")]
+    [InlineData("por,pob", "en", "en", "por,pt-br")]
+    [InlineData("ger,pob", "pt-br", "en", "deu,pt-br")]
+    [InlineData("por,xyz", "pt-br", "en", "pt-br,xyz")]
     public async Task PerformAsync_InfersRegionalVariantFromMetadataLanguage(string stored, string? libraryLanguage, string serverLanguage, string expected)
     {
         var configurationManager = new Mock<IServerConfigurationManager>();
@@ -50,7 +57,7 @@ public sealed class FixLibrarySubtitleDownloadLanguagesTests : IDisposable
         var options = new LibraryOptions
         {
             PreferredMetadataLanguage = libraryLanguage,
-            SubtitleDownloadLanguages = [stored]
+            SubtitleDownloadLanguages = stored.Split(',')
         };
         var libraryManager = new Mock<ILibraryManager>();
         libraryManager.Setup(x => x.GetVirtualFolders(false)).Returns(
@@ -68,7 +75,7 @@ public sealed class FixLibrarySubtitleDownloadLanguagesTests : IDisposable
             NullLogger<FixLibrarySubtitleDownloadLanguages>.Instance);
         await migration.PerformAsync(TestContext.Current.CancellationToken);
 
-        Assert.Equal([expected], options.SubtitleDownloadLanguages);
+        Assert.Equal(expected.Split(','), options.SubtitleDownloadLanguages);
     }
 
     public void Dispose()

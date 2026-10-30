@@ -81,17 +81,29 @@ internal class FixLibrarySubtitleDownloadLanguages : IAsyncMigrationRoutine
                     ? _serverConfigurationManager.Configuration.PreferredMetadataLanguage
                     : options.PreferredMetadataLanguage);
 
-            foreach (var language in options.SubtitleDownloadLanguages)
+            var cultures = options.SubtitleDownloadLanguages
+                .Select(language => _localizationManager.FindLanguageInfo(language))
+                .ToArray();
+
+            for (var i = 0; i < options.SubtitleDownloadLanguages.Length; i++)
             {
+                var language = options.SubtitleDownloadLanguages[i];
+
                 // Keep unresolvable values as they are, dropping them would silently discard a user setting.
-                var culture = _localizationManager.FindLanguageInfo(language);
+                var culture = cultures[i];
                 if (culture is null)
                 {
                     _logger.LogWarning("Could not resolve language '{Language}' in library '{LibraryName}'. Keeping it unchanged.", language, virtualFolder.Name);
                 }
 
                 var foundLanguage = culture?.ThreeLetterISOLanguageName ?? language;
-                if (preferredLanguage?.ThreeLetterISOLanguageName is { } preferredCode
+
+                // A variant picked alongside the base code (10.10 stored por and pob separately) means the base code was meant generically.
+                var hasExplicitVariant = cultures.Any(other => other is not null
+                    && !string.Equals(other.ThreeLetterISOLanguageName, foundLanguage, StringComparison.OrdinalIgnoreCase)
+                    && other.ThreeLetterISOLanguageNames.Contains(language, StringComparer.OrdinalIgnoreCase));
+                if (!hasExplicitVariant
+                    && preferredLanguage?.ThreeLetterISOLanguageName is { } preferredCode
                     && !string.Equals(preferredCode, foundLanguage, StringComparison.OrdinalIgnoreCase)
                     && preferredLanguage.ThreeLetterISOLanguageNames.Contains(language, StringComparer.OrdinalIgnoreCase))
                 {
