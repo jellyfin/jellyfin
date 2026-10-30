@@ -272,6 +272,10 @@ internal class RepairPlaylistsAndCollections : IAsyncMigrationRoutine
 
             restoredEntries += entries.Count;
             _logger.LogInformation("Restored playlist {Name} with {Count} entries.", playlist.Name, entries.Count);
+            if (!playlist.OpenAccess)
+            {
+                _logger.LogWarning("Restored playlist {Name} as private; playlist.xml does not record whether it was public.", playlist.Name);
+            }
         }
 
         _logger.LogInformation(

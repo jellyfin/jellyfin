@@ -10,6 +10,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using LinkedChildType = Jellyfin.Database.Implementations.Entities.LinkedChildType;
@@ -34,19 +35,22 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
     private readonly ILibraryManager _libraryManager;
     private readonly IServerApplicationHost _appHost;
     private readonly IServerApplicationPaths _appPaths;
+    private readonly IFileSystem _fileSystem;
 
     public MigrateLinkedChildren(
         ILoggerFactory loggerFactory,
         IDbContextFactory<JellyfinDbContext> dbProvider,
         ILibraryManager libraryManager,
         IServerApplicationHost appHost,
-        IServerApplicationPaths appPaths)
+        IServerApplicationPaths appPaths,
+        IFileSystem fileSystem)
     {
         _logger = loggerFactory.CreateLogger<MigrateLinkedChildren>();
         _dbProvider = dbProvider;
         _libraryManager = libraryManager;
         _appHost = appHost;
         _appPaths = appPaths;
+        _fileSystem = fileSystem;
     }
 
     /// <inheritdoc/>
@@ -457,12 +461,11 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
             // Expand virtual path placeholders (%AppDataPath%, %MetadataPath%) to real paths
             var path = _appHost.ExpandVirtualPath(item.Path!);
 
-            // Skip items stored under internal metadata (images, subtitles, trickplay, etc.) and
-            // everything the server keeps in its own data directory (playlists, collections). None of
-            // those belong to a library, so the "outside every library location" rule below would
-            // delete them all.
+            // Skip items stored under internal metadata (images, subtitles, trickplay, etc.) and the
+            // playlists and collections the server keeps in its data directory. None of those belong
+            // to a library, so the "outside every library location" rule below would delete them all.
             if (path.StartsWith(internalMetadataPath, StringComparison.OrdinalIgnoreCase)
-                || path.StartsWith(_appPaths.DataPath, StringComparison.OrdinalIgnoreCase))
+                || IsInternalData(path))
             {
                 continue;
             }
@@ -547,12 +550,19 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
     /// <summary>
     /// Playlists and collections live in the server's own data directory rather than in a library.
     /// Every rule in this routine is about library media, and none of them can be applied to an item
-    /// no library owns without deleting user data that no rescan can bring back.
+    /// no library owns without deleting user data that no rescan can bring back. Live TV recordings
+    /// can also sit under the data directory, but they are library media and stay covered.
     /// </summary>
     private bool IsInternalData(string? path)
     {
-        return !string.IsNullOrEmpty(path)
-            && _appHost.ExpandVirtualPath(path).StartsWith(_appPaths.DataPath, StringComparison.OrdinalIgnoreCase);
+        if (string.IsNullOrEmpty(path))
+        {
+            return false;
+        }
+
+        path = _appHost.ExpandVirtualPath(path);
+        return _fileSystem.ContainsSubPath(Path.Combine(_appPaths.DataPath, "playlists"), path)
+            || _fileSystem.ContainsSubPath(Path.Combine(_appPaths.DataPath, "collections"), path);
     }
 
     // Items under a library whose definition folder is gone. Their locations cannot be resolved, so
