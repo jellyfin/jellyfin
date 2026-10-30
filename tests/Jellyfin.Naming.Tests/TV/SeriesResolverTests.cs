@@ -27,11 +27,32 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData("/some/path/Dawson's Creek", "Dawson's Creek")]
         [InlineData("/media/Bunker.S03.1080p.PULSAR.WEB-DL.DDP5.1.Atmos.H.264-showWEB", "Bunker")]
         [InlineData("/media/Outer.Colony.S01.1080p.NOVA.WEB-DL.DDP5.1.H.264.HUN.ENG-QUASAR", "Outer Colony")]
+        [InlineData("/media/The Show - The Complete Series (Season 1, 2, 3, 4, 5 & 6) + Extras", "The Show")]
+        [InlineData("/media/The Show Complete Series", "The Show")]
+        [InlineData("/media/The Show [Complete Series] 1080p", "The Show")]
+        [InlineData("/media/The Show Seasons 1-3", "The Show")]
+        [InlineData("/media/The Show (Seasons 01-29 & Movie)", "The Show")]
+        [InlineData("/media/The Show Season of Change", "The Show Season of Change")]
+        [InlineData("/media/Four Seasons", "Four Seasons")]
+        [InlineData("/media/The Complete Series", "The Complete Series")]
         public void SeriesResolverResolveTest(string path, string name)
         {
             var res = SeriesResolver.Resolve(_namingOptions, path);
 
             Assert.Equal(name, res.Name);
+        }
+
+        [Theory]
+        [InlineData("/some/path/1923 (2022)", "1923", 2022)]
+        [InlineData("/media/The Show (1989-2018) Seasons 01-29 & Movie [1080p] [x265]", "The Show", 1989)]
+        [InlineData("/media/The Show (2015 - 2017)", "The Show", 2015)]
+        [InlineData("/media/The Show (2015-)", "The Show", 2015)]
+        public void SeriesResolverResolveYearTest(string path, string name, int year)
+        {
+            var res = SeriesResolver.Resolve(_namingOptions, path);
+
+            Assert.Equal(name, res.Name);
+            Assert.Equal(year, res.Year);
         }
     }
 }
