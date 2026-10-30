@@ -1218,12 +1218,6 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public Guid GetPersonId(string name)
-        {
-            return GetItemByNameId<Person>(Person.GetPath(name));
-        }
-
-        /// <inheritdoc />
         public Person? GetPerson(string name)
         {
             var path = Person.GetPath(name);
@@ -1233,34 +1227,17 @@ namespace Emby.Server.Implementations.Library
                 return item;
             }
 
-            return null;
-        }
-
-        /// <inheritdoc />
-        public Person GetOrCreatePerson(string name)
-        {
-            var existing = GetPerson(name);
-            if (existing is not null)
+            // The id hashes the name as written, so a different spelling hashes elsewhere. Only the id
+            // is read here, and the full item is loaded by it.
+            var spellingId = GetItemIds(new InternalItemsQuery
             {
-                return existing;
-            }
-
-            var path = Person.GetPath(name);
-            var info = Directory.CreateDirectory(path);
-            var item = new Person
-            {
+                IncludeItemTypes = [BaseItemKind.Person],
                 Name = name,
-                Id = GetItemByNameId<Person>(path),
-                DateCreated = info.CreationTimeUtc,
-                DateModified = info.LastWriteTimeUtc,
-                Path = path
-            };
+                OrderBy = [(ItemSortBy.DateCreated, SortOrder.Ascending)],
+                Limit = 1
+            }).FirstOrDefault();
 
-            item.PresentationUniqueKey = item.CreatePresentationUniqueKey();
-
-            CreateItem(item, null);
-
-            return item;
+            return spellingId.IsEmpty() ? null : GetItemById(spellingId) as Person;
         }
 
         /// <summary>
@@ -1345,10 +1322,11 @@ namespace Emby.Server.Implementations.Library
             return CreateItemByName<MusicArtist>(MusicArtist.GetPath, name, options);
         }
 
-        private T CreateItemByName<T>(Func<string, string> getPathFn, string name, DtoOptions options)
+        private T CreateItemByName<T>(Func<string, string> getPathFn, string name, DtoOptions options, string? identitySuffix = null)
             where T : BaseItem, new()
         {
-            if (typeof(T) == typeof(MusicArtist))
+            // With a suffix every artist of this name belongs to somebody else, so none of them will do.
+            if (typeof(T) == typeof(MusicArtist) && identitySuffix is null)
             {
                 var existing = GetItemList(new InternalItemsQuery
                 {
@@ -1366,7 +1344,8 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var path = getPathFn(name);
+            // Into the path only: the name stays what the entity is called, and the id follows the folder.
+            var path = getPathFn(name + identitySuffix);
             var id = GetItemByNameId<T>(path);
             var item = GetItemById(id) as T;
             if (item is null)
@@ -1593,8 +1572,6 @@ namespace Emby.Server.Implementations.Library
                 "All post-scan tasks completed after {Minutes} minute(s) and {Seconds} seconds",
                 Math.Truncate(phaseElapsed.TotalMinutes),
                 phaseElapsed.Seconds);
-
-            _persistenceService.UpdateInheritedValues();
 
             progress.Report(100);
         }
@@ -3682,11 +3659,11 @@ namespace Emby.Server.Implementations.Library
                 {
                     try
                     {
-                        return GetPerson(i.Name);
+                        return i.PersonItemId.IsEmpty() ? null : GetItemById(i.PersonItemId) as Person;
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "error retrieving BaseItem for person: {0}", i.Name);
+                        _logger.LogError(ex, "Error retrieving the item for person {Name}", i.Name);
                         return null;
                     }
                 })
@@ -3742,10 +3719,195 @@ namespace Emby.Server.Implementations.Library
 
             if (people is not null)
             {
-                people = people.Where(e => e is not null).ToArray();
+                people = WithArtistCredits(item, people.Where(e => e is not null).ToList());
+
+                var personEntities = ResolvePeople(people);
                 _peopleRepository.UpdatePeople(item.Id, people);
-                await SavePeopleMetadataAsync(people, cancellationToken).ConfigureAwait(false);
+                await SavePeopleMetadataAsync(personEntities, people, cancellationToken).ConfigureAwait(false);
             }
+        }
+
+        // The artist lists are what the editor, the NFO readers, ffprobe and channels write, and the
+        // credits are all a query reads, so every name on them needs a credit of its own.
+        private static List<PersonInfo> WithArtistCredits(BaseItem item, List<PersonInfo> people)
+        {
+            AddArtistCredits(people, (item as IHasAlbumArtist)?.AlbumArtists, PersonKind.AlbumArtist);
+            AddArtistCredits(people, (item as IHasArtist)?.Artists, PersonKind.Artist);
+            return people;
+        }
+
+        private static void AddArtistCredits(List<PersonInfo> people, IReadOnlyList<string>? names, PersonKind kind)
+        {
+            if (names is null)
+            {
+                return;
+            }
+
+            foreach (var name in names)
+            {
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    continue;
+                }
+
+                // A credit the caller already has keeps its provider ids.
+                var cleanName = name.GetCleanValue();
+                if (!people.Any(p => p.Type == kind && string.Equals(p.Name.GetCleanValue(), cleanName, StringComparison.Ordinal)))
+                {
+                    people.Add(new PersonInfo { Name = name.Trim(), Type = kind });
+                }
+            }
+        }
+
+        private Dictionary<Guid, BaseItem> ResolvePeople(IReadOnlyList<PersonInfo> people)
+        {
+            // Keyed by kind as well as name: an Artist and a Composer credit resolve to different items.
+            // The ids are part of the key, because one name can be two humans on the same release.
+            var byCredit = new Dictionary<(string CleanName, bool IsArtist, string Ids), BaseItem>();
+            var attempted = new HashSet<(string CleanName, bool IsArtist, string Ids)>();
+            var resolved = new Dictionary<Guid, BaseItem>();
+
+            foreach (var person in people)
+            {
+                if (string.IsNullOrEmpty(person.Name))
+                {
+                    continue;
+                }
+
+                var isArtist = IsMusicArtistCredit(person.Type);
+
+                // Already linked: resolving again by name could pick another human of that name.
+                if (!person.PersonItemId.IsEmpty()
+                    && GetItemById(person.PersonItemId) is { } linked
+                    && (linked is MusicArtist) == isArtist
+                    && linked.FindConflictingProvider(person.ProviderIds) is null)
+                {
+                    resolved[linked.Id] = linked;
+                    continue;
+                }
+
+                var key = (person.Name.GetCleanValue(), isArtist, GetProviderIdSignature(person.ProviderIds));
+
+                if (attempted.Add(key))
+                {
+                    // The id identifies the human, the spelling only how this release wrote it down.
+                    var entity = FindByProviderIds(person, isArtist ? BaseItemKind.MusicArtist : BaseItemKind.Person)
+                        ?? GetOrCreateCreditItem(person.Name, person.Type, person.ProviderIds);
+                    if (entity is not null)
+                    {
+                        byCredit[key] = entity;
+                        resolved[entity.Id] = entity;
+                    }
+                }
+
+                if (byCredit.TryGetValue(key, out var creditEntity))
+                {
+                    person.PersonItemId = creditEntity.Id;
+                }
+            }
+
+            return resolved;
+        }
+
+        private static string GetProviderIdSignature(IReadOnlyDictionary<string, string>? providerIds)
+        {
+            if (providerIds is null || providerIds.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            return string.Join(
+                '|',
+                providerIds.OrderBy(e => e.Key, StringComparer.Ordinal).Select(e => e.Key + '=' + e.Value));
+        }
+
+        // What a second entity of one name is filed under; the by-name types read it back off the path.
+        internal static string GetIdentitySuffix(string provider, string value)
+        {
+            return " [" + provider + "-" + value + "]";
+        }
+
+        // All of them, oldest first, because the first may belong to another entity.
+        private IReadOnlyList<BaseItem> FindByCleanName(BaseItemKind kind, string name)
+        {
+            return GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = [kind],
+                Name = name,
+                OrderBy = [(ItemSortBy.DateCreated, SortOrder.Ascending)],
+                DtoOptions = new DtoOptions(true)
+            });
+        }
+
+        // Null unless every entity of this name belongs to somebody else.
+        private string? GetCreditIdentitySuffix(BaseItemKind kind, string name, IReadOnlyDictionary<string, string>? providerIds)
+        {
+            if (providerIds is null || providerIds.Count == 0)
+            {
+                return null;
+            }
+
+            var named = FindByCleanName(kind, name);
+            if (named.Count == 0 || named.Any(e => e.FindConflictingProvider(providerIds) is null))
+            {
+                return null;
+            }
+
+            var conflict = named[0].FindConflictingProvider(providerIds);
+            return conflict is null ? null : GetIdentitySuffix(conflict, providerIds[conflict]);
+        }
+
+        private static bool IsMusicArtistCredit(PersonKind kind)
+            => kind is PersonKind.Artist or PersonKind.AlbumArtist;
+
+        private MusicArtist? GetOrCreateArtist(string name, IReadOnlyDictionary<string, string>? providerIds)
+        {
+            try
+            {
+                return CreateItemByName<MusicArtist>(
+                    MusicArtist.GetPath,
+                    name,
+                    new DtoOptions(true),
+                    GetCreditIdentitySuffix(BaseItemKind.MusicArtist, name, providerIds));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to get or create artist {Name}", name);
+                return null;
+            }
+        }
+
+        private BaseItem? FindByProviderIds(PersonInfo person, BaseItemKind kind)
+        {
+            if (person.ProviderIds.Count == 0)
+            {
+                return null;
+            }
+
+            var providerIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var (provider, value) in person.ProviderIds)
+            {
+                if (!string.IsNullOrWhiteSpace(provider) && !string.IsNullOrWhiteSpace(value))
+                {
+                    providerIds[provider] = value;
+                }
+            }
+
+            if (providerIds.Count == 0)
+            {
+                return null;
+            }
+
+            // Scoped to the kind, because a provider key is not unique across types. Oldest first, so a
+            // library holding two entries for one human resolves to a stable one.
+            return GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = [kind],
+                HasAnyProviderId = providerIds,
+                OrderBy = [(ItemSortBy.DateCreated, SortOrder.Ascending)],
+                Limit = 1,
+                DtoOptions = new DtoOptions(true)
+            }).FirstOrDefault();
         }
 
         public async Task<ItemImageInfo> ConvertImageToLocal(BaseItem item, ItemImageInfo image, int imageIndex, bool removeOnFailure)
@@ -3879,51 +4041,124 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private async Task SavePeopleMetadataAsync(IEnumerable<PersonInfo> people, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public Person? GetOrCreatePerson(string name)
         {
-            foreach (var person in people)
+            return GetOrCreatePerson(name, null);
+        }
+
+        private Person? GetOrCreatePerson(string name, IReadOnlyDictionary<string, string>? providerIds)
+        {
+            var suffix = GetCreditIdentitySuffix(BaseItemKind.Person, name, providerIds);
+            var personEntity = suffix is null ? GetPerson(name) : null;
+            if (personEntity is not null)
+            {
+                return personEntity;
+            }
+
+            personEntity = CreatePerson(name, suffix);
+            if (personEntity is not null)
+            {
+                CreateItems([personEntity], null, CancellationToken.None);
+            }
+
+            return personEntity;
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyList<PersonInfo> GetUnlinkedCredits()
+        {
+            return _peopleRepository.GetUnlinkedCredits();
+        }
+
+        /// <inheritdoc />
+        public int LinkCreditsToItem(string name, PersonKind kind, Guid itemId)
+        {
+            return _peopleRepository.LinkCreditsToItem(name, kind, itemId);
+        }
+
+        /// <inheritdoc />
+        public BaseItem? GetOrCreateCreditItem(string name, PersonKind kind)
+        {
+            return GetOrCreateCreditItem(name, kind, null);
+        }
+
+        private BaseItem? GetOrCreateCreditItem(string name, PersonKind kind, IReadOnlyDictionary<string, string>? providerIds)
+        {
+            return IsMusicArtistCredit(kind)
+                ? GetOrCreateArtist(name, providerIds)
+                : GetOrCreatePerson(name, providerIds);
+        }
+
+        // Null when the person's folder cannot be created.
+        private Person? CreatePerson(string name, string? identitySuffix)
+        {
+            try
+            {
+                // Into the path only: the name stays what the entity is called, and the id follows the folder.
+                var path = Person.GetPath(name + identitySuffix);
+                var info = Directory.CreateDirectory(path);
+                var personEntity = new Person()
+                {
+                    Name = name,
+                    Id = GetItemByNameId<Person>(path),
+                    DateCreated = info.CreationTimeUtc,
+                    DateModified = info.LastWriteTimeUtc,
+                    Path = path
+                };
+
+                personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
+                return personEntity;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to create person {Name}", name);
+                return null;
+            }
+        }
+
+        private async Task SavePeopleMetadataAsync(
+            IReadOnlyDictionary<Guid, BaseItem> personEntities,
+            IReadOnlyList<PersonInfo> people,
+            CancellationToken cancellationToken)
+        {
+            // One person can hold several credits on the same item.
+            foreach (var credits in people.GroupBy(e => e.PersonItemId))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                if (!personEntities.TryGetValue(credits.Key, out var personEntity))
+                {
+                    continue;
+                }
+
                 var itemUpdateType = ItemUpdateType.MetadataDownload;
                 var saveEntity = false;
-                var personEntity = GetPerson(person.Name);
 
-                if (personEntity is null)
+                foreach (var person in credits)
                 {
-                    try
+                    foreach (var id in person.ProviderIds)
                     {
-                        personEntity = GetOrCreatePerson(person.Name);
-                        saveEntity = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Failed to create person {Name}", person.Name);
-                        continue;
-                    }
-                }
-
-                foreach (var id in person.ProviderIds)
-                {
-                    if (!string.Equals(personEntity.GetProviderId(id.Key), id.Value, StringComparison.OrdinalIgnoreCase))
-                    {
-                        personEntity.SetProviderId(id.Key, id.Value);
-                        saveEntity = true;
-                    }
-                }
-
-                if (!string.IsNullOrWhiteSpace(person.ImageUrl) && !personEntity.HasImage(ImageType.Primary))
-                {
-                    personEntity.SetImage(
-                        new ItemImageInfo
+                        if (!string.Equals(personEntity.GetProviderId(id.Key), id.Value, StringComparison.OrdinalIgnoreCase))
                         {
-                            Path = person.ImageUrl,
-                            Type = ImageType.Primary
-                        },
-                        0);
+                            personEntity.SetProviderId(id.Key, id.Value);
+                            saveEntity = true;
+                        }
+                    }
 
-                    saveEntity = true;
-                    itemUpdateType = ItemUpdateType.ImageUpdate;
+                    if (!string.IsNullOrWhiteSpace(person.ImageUrl) && !personEntity.HasImage(ImageType.Primary))
+                    {
+                        personEntity.SetImage(
+                            new ItemImageInfo
+                            {
+                                Path = person.ImageUrl,
+                                Type = ImageType.Primary
+                            },
+                            0);
+
+                        saveEntity = true;
+                        itemUpdateType = ItemUpdateType.ImageUpdate;
+                    }
                 }
 
                 if (saveEntity)
