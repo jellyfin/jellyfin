@@ -15,6 +15,6 @@ public class MediaSegmentConfiguration : IEntityTypeConfiguration<MediaSegment>
         builder.HasOne<BaseItemEntity>()
             .WithMany()
             .HasForeignKey(segment => segment.ItemId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

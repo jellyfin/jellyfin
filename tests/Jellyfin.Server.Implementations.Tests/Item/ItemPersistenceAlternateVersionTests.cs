@@ -206,7 +206,7 @@ public sealed class ItemPersistenceAlternateVersionTests : SqliteDbTestFixture
         Assert.Empty(ctx.TrickplayInfos.Where(e => e.ItemId.Equals(versionId)));
         Assert.Empty(ctx.MediaSegments.Where(e => e.ItemId.Equals(versionId)));
 
-        // Dropping the row alone would take the play state with it; the delete path parks it on the
+        // Dropping the row alone would take the play state with it; the delete path detaches it onto the
         // placeholder instead, which is the difference between this and a plain RemoveRange.
         var userData = Assert.Single(ctx.UserData.Where(e => e.UserId.Equals(userId)));
         Assert.Equal(BaseItemRepository.PlaceholderId, userData.ItemId);

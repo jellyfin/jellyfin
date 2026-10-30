@@ -13,7 +13,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Clears references that point at a row which no longer exists.
 /// </summary>
-[JellyfinMigration("2026-09-16T12:00:00", nameof(ClearDanglingItemReferences))]
+[JellyfinMigration("2026-09-16T12:00:00", nameof(ClearDanglingItemReferences), RunMigrationOnSetup = true)]
 [JellyfinMigrationBackup(JellyfinDb = true)]
 public class ClearDanglingItemReferences : IAsyncMigrationRoutine
 {
@@ -66,7 +66,7 @@ public class ClearDanglingItemReferences : IAsyncMigrationRoutine
                     .ExecuteUpdateAsync(s => s.SetProperty(e => e.OwnerId, (Guid?)null), cancellationToken)
                     .ConfigureAwait(false));
 
-            await ParkOrphanedUserDataAsync(context, Report, cancellationToken).ConfigureAwait(false);
+            await DetachOrphanedUserDataAsync(context, Report, cancellationToken).ConfigureAwait(false);
 
             Report(
                 "LinkedChildren.ParentId",
@@ -145,25 +145,16 @@ public class ClearDanglingItemReferences : IAsyncMigrationRoutine
                     .Where(e => !context.Peoples.Any(p => p.Id.Equals(e.PeopleId)))
                     .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false));
 
-            // TrickplayInfos and MediaSegments are constrained by the migration that runs before this one, which
-            // scrubs them on the way, so there is nothing left here for them to hold.
+            // Whatever AddForeignKeysToItemDerivedData set aside and MigrateLibraryDb did not claim has no item.
+            await context.Database.ExecuteSqlRawAsync("DROP TABLE IF EXISTS OrphanedTrickplayInfos;", cancellationToken).ConfigureAwait(false);
+            await context.Database.ExecuteSqlRawAsync("DROP TABLE IF EXISTS OrphanedMediaSegments;", cancellationToken).ConfigureAwait(false);
 
-            // CustomItemDisplayPreferences declares neither of its references. Its ItemId is always a real item -
-            // unlike ItemDisplayPreferences, where Guid.Empty means the view itself and is not an item at all.
-            Report(
-                "CustomItemDisplayPreferences.ItemId",
-                await context.CustomItemDisplayPreferences
-                    .Where(e => !context.BaseItems.Any(b => b.Id.Equals(e.ItemId)))
-                    .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false));
+            // The display preferences' ItemId is not a reference: non-Guid ids such as the web client's "usersettings"
+            // are stored under their MD5, so only the user is checked.
             Report(
                 "CustomItemDisplayPreferences.UserId",
                 await context.CustomItemDisplayPreferences
                     .Where(e => !context.Users.Any(u => u.Id.Equals(e.UserId)))
-                    .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false));
-            Report(
-                "ItemDisplayPreferences.ItemId",
-                await context.ItemDisplayPreferences
-                    .Where(e => !e.ItemId.Equals(Guid.Empty) && !context.BaseItems.Any(b => b.Id.Equals(e.ItemId)))
                     .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false));
 
             if (total == 0)
@@ -177,9 +168,9 @@ public class ClearDanglingItemReferences : IAsyncMigrationRoutine
         }
     }
 
-    private static async Task ParkOrphanedUserDataAsync(JellyfinDbContext context, Action<string, int> report, CancellationToken cancellationToken)
+    private static async Task DetachOrphanedUserDataAsync(JellyfinDbContext context, Action<string, int> report, CancellationToken cancellationToken)
     {
-        // Play state outlives its item on purpose: DeleteItem parks it on the placeholder so that re-adding the
+        // Play state outlives its item on purpose: DeleteItem detaches it onto the placeholder so that re-adding the
         // file restores what the user watched, and CleanupUserDataTask retires it later. Rows orphaned by a rebuild
         // never got that treatment, so give it to them now instead of deleting what the user did.
         var orphaned = context.UserData.Where(e => !context.BaseItems.Any(b => b.Id.Equals(e.ItemId)));
@@ -228,7 +219,7 @@ public class ClearDanglingItemReferences : IAsyncMigrationRoutine
         report("UserData.ItemId (replacing a stale placeholder row)", collisions);
 
         report(
-            "UserData.ItemId (parked on the placeholder)",
+            "UserData.ItemId (detached onto the placeholder)",
             await orphaned
                 .ExecuteUpdateAsync(
                     s => s.SetProperty(e => e.ItemId, placeholderId).SetProperty(e => e.RetentionDate, DateTime.UtcNow),
