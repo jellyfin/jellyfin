@@ -25,7 +25,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library;
 /// primary's genres, tags, studios and people, so they score like it and must not be offered as
 /// something similar - neither as another copy of a recommendation nor as a match for the source.
 /// </summary>
-public sealed class MovieSimilarItemsProviderTests : SqliteDbTestFixture
+public abstract class MovieSimilarItemsProviderTests : DbTestFixture
 {
     private static readonly Guid _movieLibraryId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid _movie4KLibraryId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
@@ -50,7 +50,8 @@ public sealed class MovieSimilarItemsProviderTests : SqliteDbTestFixture
     private readonly Guid _sameLibraryPrimary = Guid.NewGuid();
     private readonly Guid _sameLibraryVersion = Guid.NewGuid();
 
-    public MovieSimilarItemsProviderTests()
+    protected MovieSimilarItemsProviderTests(TestDatabase database)
+        : base(database)
     {
         var itemTypeLookup = new ItemTypeLookup();
         _movieTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie]!;
@@ -244,4 +245,6 @@ public sealed class MovieSimilarItemsProviderTests : SqliteDbTestFixture
             Item = item,
             ItemValue = itemValue
         };
+
+    public sealed class Sqlite() : MovieSimilarItemsProviderTests(new SqliteTestDatabase());
 }

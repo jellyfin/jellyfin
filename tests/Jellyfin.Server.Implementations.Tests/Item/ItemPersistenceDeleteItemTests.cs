@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// on BaseItems require, because FK_BaseItems_BaseItems_OwnerId is NO ACTION: anything left behind
 /// pointing at a deleted row fails the whole delete with SQLite error 19.
 /// </summary>
-public sealed class ItemPersistenceDeleteItemTests : SqliteDbTestFixture
+public abstract class ItemPersistenceDeleteItemTests : DbTestFixture
 {
     private static readonly Guid _owner = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001");
     private static readonly Guid _extra = Guid.Parse("eeeeeeee-0000-0000-0000-000000000001");
@@ -24,7 +24,8 @@ public sealed class ItemPersistenceDeleteItemTests : SqliteDbTestFixture
 
     private readonly ItemPersistenceService _service;
 
-    public ItemPersistenceDeleteItemTests()
+    protected ItemPersistenceDeleteItemTests(TestDatabase database)
+        : base(database)
     {
         _service = new ItemPersistenceService(
             CreateDbContextFactory(),
@@ -100,4 +101,6 @@ public sealed class ItemPersistenceDeleteItemTests : SqliteDbTestFixture
             context.SaveChanges();
         }
     }
+
+    public sealed class Sqlite() : ItemPersistenceDeleteItemTests(new SqliteTestDatabase());
 }
