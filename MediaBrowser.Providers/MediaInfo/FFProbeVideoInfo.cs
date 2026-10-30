@@ -141,7 +141,41 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
                 else
                 {
+                    var useBdInfoForIso = !item.IsShortcut
+                        && item.VideoType == VideoType.Iso
+                        && item.IsoType == IsoType.BluRay
+                        && (item.PathProtocol ?? MediaProtocol.File) == MediaProtocol.File;
+                    if (useBdInfoForIso)
+                    {
+                        // BDInfo reads stream languages from the ISO's playlist metadata,
+                        // which FFprobe does not expose through its bluray protocol.
+                        blurayDiscInfo = GetBDInfo(item.Path);
+                        if (blurayDiscInfo?.MediaStreams.Length is not > 0)
+                        {
+                            _logger.LogWarning("No stream metadata found in Blu-ray ISO image. Falling back to FFprobe stream metadata.");
+                            blurayDiscInfo = null;
+                        }
+                    }
+
+                    // Blu-ray ISO images are probed directly with FFprobe's bluray protocol.
+                    // Unlike a BDMV directory, this also keeps menus and multi-clip playlists playable.
                     mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
+
+                    if (useBdInfoForIso && blurayDiscInfo is not null)
+                    {
+                        if (AreStreamLayoutsCompatible(mediaInfoResult, blurayDiscInfo))
+                        {
+                            ApplyBdInfoLanguages(mediaInfoResult, blurayDiscInfo);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("BDInfo and FFprobe returned different stream layouts for Blu-ray ISO image. Falling back to FFprobe stream metadata.");
+                        }
+
+                        // The FFprobe result is retained as the authoritative ISO stream data.
+                        // BDInfo is only used to enrich missing language fields.
+                        blurayDiscInfo = null;
+                    }
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -312,6 +346,133 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
         }
+
+        internal static bool AreStreamLayoutsCompatible(Model.MediaInfo.MediaInfo mediaInfo, BlurayDiscInfo blurayInfo)
+        {
+            var ffprobeStreams = mediaInfo.MediaStreams;
+            var bdInfoStreams = blurayInfo.MediaStreams;
+
+            if (ffprobeStreams.Count == 0
+                || bdInfoStreams.Length == 0
+                || ffprobeStreams.Any(stream => stream.IsExternal))
+            {
+                return false;
+            }
+
+            // FFprobe may expose secondary or hidden audio streams which BDInfo omits from
+            // the selected playlist. Video and subtitle layouts must still match exactly;
+            // all BDInfo audio streams must be embeddable in the FFprobe audio sequence.
+            return ffprobeStreams.Count(stream => stream.Type == MediaStreamType.Video)
+                == bdInfoStreams.Count(stream => stream.Type == MediaStreamType.Video)
+                && ffprobeStreams.Count(stream => stream.Type == MediaStreamType.Subtitle)
+                == bdInfoStreams.Count(stream => stream.Type == MediaStreamType.Subtitle)
+                && TryGetAudioStreamMap(ffprobeStreams, bdInfoStreams, out _);
+        }
+
+        internal static void ApplyBdInfoLanguages(Model.MediaInfo.MediaInfo mediaInfo, BlurayDiscInfo blurayInfo)
+        {
+            var ffprobeSubtitleStreams = mediaInfo.MediaStreams
+                .Where(stream => stream.Type == MediaStreamType.Subtitle)
+                .ToList();
+            var bdInfoSubtitleStreams = blurayInfo.MediaStreams
+                .Where(stream => stream.Type == MediaStreamType.Subtitle)
+                .ToList();
+
+            if (ffprobeSubtitleStreams.Count == bdInfoSubtitleStreams.Count)
+            {
+                for (var i = 0; i < ffprobeSubtitleStreams.Count; i++)
+                {
+                    CopyMissingLanguage(ffprobeSubtitleStreams[i], bdInfoSubtitleStreams[i]);
+                }
+            }
+
+            if (TryGetAudioStreamMap(mediaInfo.MediaStreams, blurayInfo.MediaStreams, out var audioStreamMap))
+            {
+                foreach (var (ffprobeIndex, bdInfoIndex) in audioStreamMap)
+                {
+                    CopyMissingLanguage(mediaInfo.MediaStreams[ffprobeIndex], blurayInfo.MediaStreams[bdInfoIndex]);
+                }
+            }
+        }
+
+        private static void CopyMissingLanguage(MediaStream ffprobeStream, MediaStream bdInfoStream)
+        {
+            if (string.IsNullOrWhiteSpace(ffprobeStream.Language)
+                && !string.IsNullOrWhiteSpace(bdInfoStream.Language))
+            {
+                ffprobeStream.Language = bdInfoStream.Language;
+            }
+        }
+
+        private static bool TryGetAudioStreamMap(
+            IReadOnlyList<MediaStream> ffprobeStreams,
+            IReadOnlyList<MediaStream> bdInfoStreams,
+            out IReadOnlyDictionary<int, int> map)
+        {
+            var ffprobeAudioStreams = ffprobeStreams
+                .Select((stream, index) => (stream, index))
+                .Where(value => value.stream.Type == MediaStreamType.Audio)
+                .ToList();
+            var bdInfoAudioStreams = bdInfoStreams
+                .Select((stream, index) => (stream, index))
+                .Where(value => value.stream.Type == MediaStreamType.Audio)
+                .ToList();
+
+            // Assign each BDInfo audio stream to the earliest unused FFprobe audio
+            // stream with the same codec family, channel count, and sample rate.
+            // FFprobe can expose secondary or hidden tracks which BDInfo omits.
+            var mappings = new Dictionary<int, int>();
+            var ffprobePosition = 0;
+            foreach (var bdInfoAudioStream in bdInfoAudioStreams)
+            {
+                while (ffprobePosition < ffprobeAudioStreams.Count
+                    && !AreAudioStreamsSimilar(ffprobeAudioStreams[ffprobePosition].stream, bdInfoAudioStream.stream))
+                {
+                    ffprobePosition++;
+                }
+
+                if (ffprobePosition == ffprobeAudioStreams.Count)
+                {
+                    map = new Dictionary<int, int>();
+                    return false;
+                }
+
+                mappings[ffprobeAudioStreams[ffprobePosition].index] = bdInfoAudioStream.index;
+                ffprobePosition++;
+            }
+
+            map = mappings;
+            return true;
+        }
+
+        private static bool AreAudioStreamsSimilar(MediaStream ffprobeStream, MediaStream bdInfoStream)
+        {
+            if ((ffprobeStream.Channels.HasValue || bdInfoStream.Channels.HasValue)
+                && ffprobeStream.Channels != bdInfoStream.Channels)
+            {
+                return false;
+            }
+
+            if (ffprobeStream.SampleRate.GetValueOrDefault() > 0
+                && bdInfoStream.SampleRate.GetValueOrDefault() > 0
+                && ffprobeStream.SampleRate != bdInfoStream.SampleRate)
+            {
+                return false;
+            }
+
+            var ffprobeCodec = NormalizeAudioCodec(ffprobeStream.Codec);
+            var bdInfoCodec = NormalizeAudioCodec(bdInfoStream.Codec);
+            return string.IsNullOrEmpty(ffprobeCodec)
+                || string.IsNullOrEmpty(bdInfoCodec)
+                || string.Equals(ffprobeCodec, bdInfoCodec, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string NormalizeAudioCodec(string codec)
+            => codec?.ToLowerInvariant() switch
+            {
+                "atmos" => "truehd",
+                _ => codec?.ToLowerInvariant() ?? string.Empty
+            };
 
         private void FetchBdInfo(Video video, ref ChapterInfo[] chapters, List<MediaStream> mediaStreams, BlurayDiscInfo blurayInfo)
         {

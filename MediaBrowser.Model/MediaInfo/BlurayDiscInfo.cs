@@ -22,6 +22,12 @@ public class BlurayDiscInfo
     public long? RunTimeTicks { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the disc was read from an ISO image.
+    /// </summary>
+    /// <value><c>true</c> when the disc was read from an ISO image.</value>
+    public bool IsIso { get; set; }
+
+    /// <summary>
     /// Gets or sets the files.
     /// </summary>
     /// <value>The files.</value>

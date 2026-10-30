@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using BDInfo;
+using DiscUtils.Udf;
 using Jellyfin.Extensions;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -38,8 +40,33 @@ public class BdInfoExaminer : IBlurayExaminer
             throw new ArgumentNullException(nameof(path));
         }
 
-        var bdrom = new BDROM(BdInfoDirectoryInfo.FromFileSystemPath(_fileSystem, path));
+        var fileSystemInfo = _fileSystem.GetFileSystemInfo(path);
+        if (fileSystemInfo.Exists && !fileSystemInfo.IsDirectory)
+        {
+            return GetDiscInfoFromIso(path);
+        }
 
+        var bdrom = new BDROM(BdInfoDirectoryInfo.FromFileSystemPath(_fileSystem, path));
+        return GetDiscInfo(bdrom, includePlaylistFiles: true);
+    }
+
+    private static BlurayDiscInfo GetDiscInfoFromIso(string path)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using var udfReader = new UdfReader(stream);
+
+        var bdmvDirectory = udfReader.Root.GetDirectories()
+            .FirstOrDefault(directory => string.Equals(directory.Name, "BDMV", StringComparison.OrdinalIgnoreCase))
+            ?? throw new InvalidDataException("The ISO image does not contain a BDMV directory.");
+
+        var bdrom = new BDROM(new BdInfoUdfDirectoryInfo(bdmvDirectory));
+        var discInfo = GetDiscInfo(bdrom, includePlaylistFiles: false);
+        discInfo.IsIso = true;
+        return discInfo;
+    }
+
+    private static BlurayDiscInfo GetDiscInfo(BDROM bdrom, bool includePlaylistFiles)
+    {
         bdrom.Scan();
 
         // Get the longest playlist
@@ -47,6 +74,8 @@ public class BdInfoExaminer : IBlurayExaminer
 
         var outputStream = new BlurayDiscInfo
         {
+            Chapters = Array.Empty<double>(),
+            Files = Array.Empty<string>(),
             MediaStreams = Array.Empty<MediaStream>()
         };
 
@@ -84,10 +113,13 @@ public class BdInfoExaminer : IBlurayExaminer
 
         outputStream.PlaylistName = playlist.Name;
 
-        if (playlist.StreamClips is not null && playlist.StreamClips.Count > 0)
+        if (includePlaylistFiles && playlist.StreamClips is not null)
         {
             // Get the files in the playlist
-            outputStream.Files = playlist.StreamClips.Where(i => i.AngleIndex == 0).Select(i => i.StreamFile.FileInfo.FullName).ToArray();
+            outputStream.Files = playlist.StreamClips
+                .Where(i => i.AngleIndex == 0 && i.StreamFile is not null)
+                .Select(i => i.StreamFile.FileInfo.FullName)
+                .ToArray();
         }
 
         return outputStream;
@@ -99,7 +131,7 @@ public class BdInfoExaminer : IBlurayExaminer
     /// <param name="streams">The streams.</param>
     /// <param name="index">The stream index.</param>
     /// <param name="videoStream">The video stream.</param>
-    private void AddVideoStream(List<MediaStream> streams, int index, TSVideoStream videoStream)
+    private static void AddVideoStream(List<MediaStream> streams, int index, TSVideoStream videoStream)
     {
         var mediaStream = new MediaStream
         {
@@ -129,7 +161,7 @@ public class BdInfoExaminer : IBlurayExaminer
     /// <param name="streams">The streams.</param>
     /// <param name="index">The stream index.</param>
     /// <param name="audioStream">The audio stream.</param>
-    private void AddAudioStream(List<MediaStream> streams, int index, TSAudioStream audioStream)
+    private static void AddAudioStream(List<MediaStream> streams, int index, TSAudioStream audioStream)
     {
         var stream = new MediaStream
         {
@@ -158,7 +190,7 @@ public class BdInfoExaminer : IBlurayExaminer
     /// <param name="streams">The streams.</param>
     /// <param name="index">The stream index.</param>
     /// <param name="stream">The stream.</param>
-    private void AddSubtitleStream(List<MediaStream> streams, int index, TSStream stream)
+    private static void AddSubtitleStream(List<MediaStream> streams, int index, TSStream stream)
     {
         streams.Add(new MediaStream
         {
@@ -169,7 +201,7 @@ public class BdInfoExaminer : IBlurayExaminer
         });
     }
 
-    private string GetNormalizedCodec(TSStream stream)
+    private static string GetNormalizedCodec(TSStream stream)
         => stream.StreamType switch
         {
             TSStreamType.MPEG1_VIDEO => "mpeg1video",
