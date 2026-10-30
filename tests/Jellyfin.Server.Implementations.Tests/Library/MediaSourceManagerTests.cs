@@ -325,5 +325,55 @@ namespace Jellyfin.Server.Implementations.Tests.Library
 
             return (primary, alt1, alt2);
         }
+
+        [Fact]
+        public void SetDefaultSubtitleStreamIndex_GreekLanguageWithDashInDisplayName_SelectsCorrectSubtitle()
+        {
+            var greekCulture = new CultureDto("Greek, Modern (1453-)", "Greek, Modern (1453-)", "el", ["ell", "gre"]);
+            _mockLocalizationManager.Setup(m => m.FindLanguageInfo("ell")).Returns(greekCulture);
+
+            var mediaInfo = new MediaSourceInfo
+            {
+                MediaStreams =
+                [
+                    new() { Index = 0, Type = MediaStreamType.Video, IsDefault = true },
+                    new() { Index = 1, Type = MediaStreamType.Audio, Language = "eng", IsDefault = true },
+                    new() { Index = 2, Type = MediaStreamType.Subtitle, Language = "ell", IsDefault = false, IsForced = false }
+                ]
+            };
+
+            _user.SubtitleMode = SubtitlePlaybackMode.Always;
+            _user.SubtitleLanguagePreference = "ell";
+            _user.RememberSubtitleSelections = false;
+
+            _mediaSourceManager.SetDefaultAudioAndSubtitleStreamIndices(_item, mediaInfo, _user);
+
+            Assert.Equal(2, mediaInfo.DefaultSubtitleStreamIndex);
+        }
+
+        [Fact]
+        public void SetDefaultSubtitleStreamIndex_RegionalLanguageWithDashInTwoLetterCode_PreservesRegionalCode()
+        {
+            var ptBrCulture = new CultureDto("pt-br", "Portuguese (Brazil)", "pt-br", ["por"]);
+            _mockLocalizationManager.Setup(m => m.FindLanguageInfo("pt-br")).Returns(ptBrCulture);
+
+            var mediaInfo = new MediaSourceInfo
+            {
+                MediaStreams =
+                [
+                    new() { Index = 0, Type = MediaStreamType.Video, IsDefault = true },
+                    new() { Index = 1, Type = MediaStreamType.Audio, Language = "eng", IsDefault = true },
+                    new() { Index = 2, Type = MediaStreamType.Subtitle, Language = "pt-br", IsDefault = false, IsForced = false }
+                ]
+            };
+
+            _user.SubtitleMode = SubtitlePlaybackMode.Always;
+            _user.SubtitleLanguagePreference = "pt-br";
+            _user.RememberSubtitleSelections = false;
+
+            _mediaSourceManager.SetDefaultAudioAndSubtitleStreamIndices(_item, mediaInfo, _user);
+
+            Assert.Equal(2, mediaInfo.DefaultSubtitleStreamIndex);
+        }
     }
 }
