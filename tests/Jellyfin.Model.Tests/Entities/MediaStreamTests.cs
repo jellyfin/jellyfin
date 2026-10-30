@@ -246,5 +246,17 @@ namespace Jellyfin.Model.Tests.Entities
 
             Assert.Equal(expected, mediaStream.GetResolutionText());
         }
+
+        [Theory]
+        [InlineData("DVBTXT", true)]
+        [InlineData("dvbtxt", true)]
+        [InlineData("dvb_teletext", true)]
+        [InlineData("teletext", true)]
+        [InlineData("DVBSUB", false)]
+        [InlineData("subrip", false)]
+        public void IsTeletextFormat_DetectsTeletextCodecs(string codec, bool expected)
+        {
+            Assert.Equal(expected, MediaStream.IsTeletextFormat(codec));
+        }
     }
 }
