@@ -81,7 +81,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         {
             operation.JellyfinDbContext.AttachmentStreamInfos.ExecuteDelete();
             operation.JellyfinDbContext.BaseItems.ExecuteDelete();
-            operation.JellyfinDbContext.ItemValues.ExecuteDelete();
+            LegacyItemValues.DeleteAll(operation.JellyfinDbContext);
             operation.JellyfinDbContext.UserData.ExecuteDelete();
             operation.JellyfinDbContext.MediaStreamInfos.ExecuteDelete();
             operation.JellyfinDbContext.Peoples.ExecuteDelete();
@@ -179,8 +179,8 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                         WHERE Type <> 6 AND EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = ItemValues.ItemId)
             """;
 
-            // EFCores local lookup sucks. We cannot use context.ItemValues.Local here because its just super slow.
-            var localItems = new Dictionary<(int Type, string Value), (Database.Implementations.Entities.ItemValue ItemValue, List<Guid> ItemIds)>();
+            // Written by hand: nothing maps these rows any more. See LegacyItemValues.
+            var localItems = new Dictionary<(int Type, string Value), (Guid ItemValueId, string CleanValue, List<Guid> ItemIds)>();
             using (new TrackedMigrationStep("Loading ItemValues", _logger))
             {
                 foreach (SqliteDataReader dto in connection.Query(itemValueQuery))
@@ -191,32 +191,21 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                         continue;
                     }
 
-                    var entity = GetItemValue(dto);
-                    var key = ((int)entity.Type, entity.Value);
+                    var key = (dto.GetInt32(1), dto.GetString(2));
                     if (!localItems.TryGetValue(key, out var existing))
                     {
-                        localItems[key] = existing = (entity, []);
+                        localItems[key] = existing = (Guid.NewGuid(), dto.GetString(3), []);
                     }
 
                     existing.ItemIds.Add(itemId);
                 }
-
-                foreach (var item in localItems)
-                {
-                    operation.JellyfinDbContext.ItemValues.Add(item.Value.ItemValue);
-                    operation.JellyfinDbContext.ItemValuesMap.AddRange(item.Value.ItemIds.Distinct().Select(f => new ItemValueMap()
-                    {
-                        Item = null!,
-                        ItemValue = null!,
-                        ItemId = f,
-                        ItemValueId = item.Value.ItemValue.ItemValueId
-                    }));
-                }
             }
 
-            using (new TrackedMigrationStep($"Saving {operation.JellyfinDbContext.ItemValues.Local.Count} ItemValues entries", _logger))
+            using (new TrackedMigrationStep($"Saving {localItems.Count} ItemValues entries", _logger))
             {
-                operation.JellyfinDbContext.SaveChanges();
+                LegacyItemValues.Write(
+                    operation.JellyfinDbContext,
+                    [.. localItems.Select(e => (e.Value.ItemValueId, e.Key.Type, e.Key.Value, e.Value.CleanValue, (IReadOnlyList<Guid>)[.. e.Value.ItemIds.Distinct()]))]);
             }
         }
 
@@ -590,23 +579,14 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         return chapter;
     }
 
-    private ItemValue GetItemValue(SqliteDataReader reader)
-    {
-        return new ItemValue
-        {
-            ItemValueId = Guid.NewGuid(),
-            Type = (ItemValueType)reader.GetInt32(1),
-            Value = reader.GetString(2),
-            CleanValue = reader.GetString(3),
-        };
-    }
-
     private People GetPerson(SqliteDataReader reader)
     {
+        var name = reader.GetString(1);
         var item = new People
         {
             Id = Guid.NewGuid(),
-            Name = reader.GetString(1),
+            Name = name,
+            CleanName = name.GetCleanValue(),
         };
 
         if (reader.TryGetString(3, out var type))

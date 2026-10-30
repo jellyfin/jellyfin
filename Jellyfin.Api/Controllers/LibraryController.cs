@@ -195,9 +195,7 @@ public class LibraryController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions();
-        var items = themeItems
-            .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
-            .ToArray();
+        var items = _dtoService.GetBaseItemDtos(themeItems, dtoOptions, user, item, skipVisibilityCheck: true).ToArray();
 
         return new ThemeMediaResult
         {
@@ -247,13 +245,13 @@ public class LibraryController : BaseJellyfinApiController
         sortBy ??= [];
         var orderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder);
 
-        IEnumerable<BaseItem> themeItems;
+        IReadOnlyList<BaseItem> themeItems;
 
         while (true)
         {
             themeItems = item.GetThemeVideos(user, orderBy);
 
-            if (themeItems.Any() || !inheritFromParent)
+            if (themeItems.Count > 0 || !inheritFromParent)
             {
                 break;
             }
@@ -268,9 +266,7 @@ public class LibraryController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions();
-        var items = themeItems
-            .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
-            .ToArray();
+        var items = _dtoService.GetBaseItemDtos(themeItems, dtoOptions, user, item, skipVisibilityCheck: true).ToArray();
 
         return new ThemeMediaResult
         {
@@ -500,7 +496,7 @@ public class LibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var baseItemDtos = new List<BaseItemDto>();
+        var ancestors = new List<BaseItem>();
 
         var dtoOptions = new DtoOptions();
         BaseItem? parent = item.GetParent();
@@ -516,12 +512,12 @@ public class LibraryController : BaseJellyfinApiController
                 }
             }
 
-            baseItemDtos.Add(_dtoService.GetBaseItemDto(parent, dtoOptions, user));
+            ancestors.Add(parent);
 
             parent = parent.GetParent();
         }
 
-        return baseItemDtos;
+        return _dtoService.GetBaseItemDtos(ancestors, dtoOptions, user, skipVisibilityCheck: true).ToList();
     }
 
     /// <summary>

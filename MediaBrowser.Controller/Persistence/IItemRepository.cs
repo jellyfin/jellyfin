@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -103,22 +104,27 @@ public interface IItemRepository
     QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery filter);
 
     /// <summary>
-    /// Gets all music genre names.
+    /// Gets the genre and studio items the given items link to.
     /// </summary>
-    /// <returns>The list of music genre names.</returns>
-    IReadOnlyList<string> GetMusicGenreNames();
+    /// <param name="itemIds">The items to look up.</param>
+    /// <returns>The links, keyed by item id. Items with no links are absent.</returns>
+    IReadOnlyDictionary<Guid, ItemByNameLinks> GetItemByNameLinks(IReadOnlyList<Guid> itemIds);
 
     /// <summary>
-    /// Gets all studio names.
+    /// Renames a genre or studio item and carries that name onto every item linking to it.
     /// </summary>
-    /// <returns>The list of studio names.</returns>
-    IReadOnlyList<string> GetStudioNames();
-
-    /// <summary>
-    /// Gets all genre names.
-    /// </summary>
-    /// <returns>The list of genre names.</returns>
-    IReadOnlyList<string> GetGenreNames();
+    /// <remarks>
+    /// The name it is being renamed from is read here rather than passed in, so a caller cannot rewrite
+    /// the wrong one, and nothing happens when the stored name already matches. The by-name item and the
+    /// items naming it are written in one transaction: half a rename leaves the two disagreeing, and the
+    /// next save of an item left behind would resolve its old spelling to a second by-name item. A caller
+    /// that saves the renamed item afterwards writes the same name again, which changes nothing.
+    /// </remarks>
+    /// <param name="byNameItemId">The genre or studio item being renamed.</param>
+    /// <param name="kind">Which of the two it is.</param>
+    /// <param name="newName">The name it is being renamed to.</param>
+    /// <returns>The name that was replaced and the items it was replaced on.</returns>
+    ByNameRename RenameByNameLinks(Guid byNameItemId, BaseItemKind kind, string newName);
 
     /// <summary>
     /// Gets all language codes of the matching base items and the provided stream type.

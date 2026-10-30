@@ -21,6 +21,19 @@ public class People
     public required string Name { get; set; }
 
     /// <summary>
+    /// Gets or Sets the sanitized Name, the key a person is identified by.
+    /// </summary>
+    /// <remarks>
+    /// Matches BaseItemEntity.CleanName and BaseItemTag.CleanValue.
+    /// </remarks>
+    public required string CleanName { get; set; }
+
+    /// <summary>
+    /// Gets or Sets the id of the Person item this credit belongs to.
+    /// </summary>
+    public Guid ItemId { get; set; }
+
+    /// <summary>
     /// Gets or Sets the Type.
     /// </summary>
     public string? PersonType { get; set; }

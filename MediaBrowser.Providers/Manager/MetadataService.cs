@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -317,11 +318,19 @@ namespace MediaBrowser.Providers.Manager
                 await result.Item.ReattachUserDataAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            if (result.Item.SupportsPeople && result.People is not null)
+            var people = result.People;
+
+            // No provider touched the cast, but the artist lists may have changed and need their credits.
+            if (people is null && result.Item is IHasArtist or IHasAlbumArtist)
+            {
+                people = LibraryManager.GetPeople(result.Item);
+            }
+
+            if (result.Item.SupportsPeople && people is not null)
             {
                 var baseItem = result.Item;
 
-                await LibraryManager.UpdatePeopleAsync(baseItem, result.People, cancellationToken).ConfigureAwait(false);
+                await LibraryManager.UpdatePeopleAsync(baseItem, people, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -590,6 +599,10 @@ namespace MediaBrowser.Providers.Manager
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToArray();
 
+                item.GenreInfos = children.SelectMany(i => i.GenreInfos)
+                    .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
                 if (currentList.Length != item.Genres.Length || !currentList.Order().SequenceEqual(item.Genres.Order(), StringComparer.OrdinalIgnoreCase))
                 {
                     updateType |= ItemUpdateType.MetadataEdit;
@@ -609,6 +622,10 @@ namespace MediaBrowser.Providers.Manager
 
                 item.Studios = children.SelectMany(i => i.Studios)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+                item.StudioInfos = children.SelectMany(i => i.StudioInfos)
+                    .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
                     .ToArray();
 
                 if (currentList.Length != item.Studios.Length || !currentList.Order().SequenceEqual(item.Studios.Order(), StringComparer.OrdinalIgnoreCase))
@@ -960,6 +977,9 @@ namespace MediaBrowser.Providers.Manager
             var overviewIsFallback = false;
             var taglineIsFallback = false;
 
+            // A cast a local provider (an NFO) supplied is authoritative, so no remote one may add to it.
+            var hasLocalCast = temp.People is { Count: > 0 };
+
             if (id is not null)
             {
                 MergeNewData(temp.Item, id);
@@ -1001,6 +1021,13 @@ namespace MediaBrowser.Providers.Manager
                         LogInvalidProviderIds(result, providerName, logName);
 
                         MergeData(result, temp, [], replaceData, false);
+
+                        // A secondary provider regularly knows people the primary missed.
+                        if (!replaceData && !hasLocalCast)
+                        {
+                            temp.People = AddMissingPeople(result.People, temp.People);
+                        }
+
                         MergeNewData(temp.Item, id);
 
                         refreshResult.UpdateType |= ItemUpdateType.MetadataDownload;
@@ -1193,6 +1220,16 @@ namespace MediaBrowser.Providers.Manager
                 if (replaceData || target.Genres.Length == 0)
                 {
                     target.Genres = source.Genres;
+                    target.GenreInfos = source.GenreInfos;
+                }
+                else
+                {
+                    // The names the target keeps, but the ids the source knows them by are still worth
+                    // having: without them the genres resolve by name alone.
+                    target.GenreInfos = target.GenreInfos
+                        .Concat(source.GenreInfos)
+                        .DistinctBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
+                        .ToArray();
                 }
             }
 
@@ -1239,6 +1276,8 @@ namespace MediaBrowser.Providers.Manager
 
                 if (replaceData || targetResult.People is null || targetResult.People.Count == 0)
                 {
+                    // An empty list is how a provider states an item has no cast, and this is the only path
+                    // that can drop a credit.
                     targetResult.People = sourceResult.People;
                 }
                 else if (sourceResult.People is not null && sourceResult.People.Count > 0)
@@ -1273,10 +1312,16 @@ namespace MediaBrowser.Providers.Manager
                 if (replaceData || target.Studios.Length == 0)
                 {
                     target.Studios = source.Studios;
+                    target.StudioInfos = source.StudioInfos;
                 }
                 else
                 {
                     target.Studios = target.Studios.Concat(source.Studios).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+
+                    target.StudioInfos = target.StudioInfos
+                        .Concat(source.StudioInfos)
+                        .DistinctBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
+                        .ToArray();
                 }
             }
 
@@ -1426,10 +1471,12 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
+        // Only enriches what target already holds: it is about to become the item's cast, so adding
+        // here would make a removed credit immortal. AddMissingPeople unions two provider results.
         private static void MergePeople(IReadOnlyList<PersonInfo> source, IReadOnlyList<PersonInfo> target)
         {
-            var sourceByName = source.ToLookup(p => p.Name.RemoveDiacritics(), StringComparer.OrdinalIgnoreCase);
-            var targetByName = target.ToLookup(p => p.Name.RemoveDiacritics(), StringComparer.OrdinalIgnoreCase);
+            var sourceByName = source.ToLookup(p => p.Name.GetCleanValue(), StringComparer.Ordinal);
+            var targetByName = target.ToLookup(p => p.Name.GetCleanValue(), StringComparer.Ordinal);
 
             foreach (var name in targetByName.Select(g => g.Key))
             {
@@ -1441,10 +1488,43 @@ namespace MediaBrowser.Providers.Manager
                     continue;
                 }
 
+                // Paired on the ids rather than on position, taking each source once: the wrong pairing
+                // writes one human's data onto the other. Agreement first.
+                var matches = new PersonInfo[targetPeople.Length];
+                var taken = new bool[sourcePeople.Length];
+                for (var pass = 0; pass < 2; pass++)
+                {
+                    for (var i = 0; i < targetPeople.Length; i++)
+                    {
+                        if (matches[i] is not null)
+                        {
+                            continue;
+                        }
+
+                        for (var j = 0; j < sourcePeople.Length; j++)
+                        {
+                            if (taken[j]
+                                || targetPeople[i].FindConflictingProvider(sourcePeople[j].ProviderIds) is not null
+                                || (pass == 0 && !targetPeople[i].SharesProviderId(sourcePeople[j].ProviderIds)))
+                            {
+                                continue;
+                            }
+
+                            matches[i] = sourcePeople[j];
+                            taken[j] = true;
+                            break;
+                        }
+                    }
+                }
+
                 for (int i = 0; i < targetPeople.Length; i++)
                 {
                     var person = targetPeople[i];
-                    var personInSource = i < sourcePeople.Length ? sourcePeople[i] : sourcePeople[0];
+                    var personInSource = matches[i];
+                    if (personInSource is null)
+                    {
+                        continue;
+                    }
 
                     foreach (var providerId in personInSource.ProviderIds)
                     {
@@ -1468,6 +1548,44 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
         }
+
+        /// <summary>
+        /// Returns <paramref name="target"/> with the people it does not know at all appended, after its own ordering.
+        /// </summary>
+        /// <param name="source">The result to take the additional people from.</param>
+        /// <param name="target">The result to add them to.</param>
+        /// <returns><paramref name="target"/> itself when it already knows everyone, otherwise a new list.</returns>
+        internal static IReadOnlyList<PersonInfo> AddMissingPeople(IReadOnlyList<PersonInfo> source, IReadOnlyList<PersonInfo> target)
+        {
+            if (source is null || source.Count == 0 || target is null || target.Count == 0)
+            {
+                return target;
+            }
+
+            // The kind is part of the key: a director who also acted is two credits.
+            var known = target.Where(p => !string.IsNullOrEmpty(p.Name))
+                .ToLookup(p => (p.Name.GetCleanValue(), GetCreditKind(p.Type)));
+
+            List<PersonInfo> merged = null;
+            foreach (var person in source)
+            {
+                // A name the target already holds can still be another human, and only the ids say so.
+                if (string.IsNullOrEmpty(person.Name)
+                    || known[(person.Name.GetCleanValue(), GetCreditKind(person.Type))].Any(p => p.FindConflictingProvider(person.ProviderIds) is null))
+                {
+                    continue;
+                }
+
+                merged ??= target.ToList();
+                PeopleHelper.AddPerson(merged, person);
+            }
+
+            return merged ?? target;
+        }
+
+        // An actor and a guest star are one credit, as PeopleHelper treats them.
+        private static PersonKind GetCreditKind(PersonKind kind)
+            => kind == PersonKind.GuestStar ? PersonKind.Actor : kind;
 
         private static void MergeDisplayOrder(BaseItem source, BaseItem target, bool replaceData)
         {

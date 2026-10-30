@@ -96,23 +96,19 @@ public sealed class BaseItemRepositoryAllowedTagsByNameTests : SqliteDbTestFixtu
         var artistOnlyGenre = CreateItem(BaseItemKind.Genre, "Jazz");
         var blockedArtist = CreateItem(BaseItemKind.MusicArtist, "Mingus");
 
-        var tag = CreateItemValue(ItemValueType.Tags, AllowedTag);
-        var comedy = CreateItemValue(ItemValueType.Genre, "Comedy");
-        var horror = CreateItemValue(ItemValueType.Genre, "Horror");
-        var jazz = CreateItemValue(ItemValueType.Genre, "Jazz");
-        var pixar = CreateItemValue(ItemValueType.Studios, "Pixar");
-        var raffi = CreateItemValue(ItemValueType.Artist, "Raffi");
+        var raffi = new People { Id = Guid.NewGuid(), Name = "Raffi", CleanName = "raffi", PersonType = "Artist", ItemId = artist.Id };
 
         context.BaseItems.AddRange(movie, song, genre, studio, artist, blockedMovie, blockedGenre, artistOnlyGenre, blockedArtist);
-        context.ItemValues.AddRange(tag, comedy, horror, jazz, pixar, raffi);
-        context.ItemValuesMap.AddRange(
-            CreateMap(movie, tag),
-            CreateMap(movie, comedy),
-            CreateMap(movie, pixar),
-            CreateMap(song, tag),
-            CreateMap(song, raffi),
-            CreateMap(blockedMovie, horror),
-            CreateMap(blockedArtist, jazz));
+        context.BaseItemTags.AddRange(
+            new BaseItemTag { ItemId = movie.Id, Item = movie, Value = AllowedTag, CleanValue = AllowedTag },
+            new BaseItemTag { ItemId = song.Id, Item = song, Value = AllowedTag, CleanValue = AllowedTag });
+        context.Peoples.Add(raffi);
+        context.PeopleBaseItemMap.Add(new PeopleBaseItemMap { ItemId = song.Id, PeopleId = raffi.Id, Item = song, People = raffi, Role = string.Empty });
+        context.BaseItemGenres.AddRange(
+            new BaseItemGenre { ItemId = movie.Id, Item = movie, GenreItemId = genre.Id },
+            new BaseItemGenre { ItemId = blockedMovie.Id, Item = blockedMovie, GenreItemId = blockedGenre.Id },
+            new BaseItemGenre { ItemId = blockedArtist.Id, Item = blockedArtist, GenreItemId = artistOnlyGenre.Id });
+        context.BaseItemStudios.Add(new BaseItemStudio { ItemId = movie.Id, Item = movie, StudioItemId = studio.Id });
         context.SaveChanges();
     }
 
@@ -131,28 +127,6 @@ public sealed class BaseItemRepositoryAllowedTagsByNameTests : SqliteDbTestFixtu
             IsMovie = kind == BaseItemKind.Movie,
             IsFolder = false,
             IsVirtualItem = false
-        };
-    }
-
-    private static ItemValue CreateItemValue(ItemValueType type, string value)
-    {
-        return new ItemValue
-        {
-            ItemValueId = Guid.NewGuid(),
-            Type = type,
-            Value = value,
-            CleanValue = value.ToLowerInvariant()
-        };
-    }
-
-    private static ItemValueMap CreateMap(BaseItemEntity item, ItemValue itemValue)
-    {
-        return new ItemValueMap
-        {
-            ItemId = item.Id,
-            ItemValueId = itemValue.ItemValueId,
-            Item = item,
-            ItemValue = itemValue
         };
     }
 }

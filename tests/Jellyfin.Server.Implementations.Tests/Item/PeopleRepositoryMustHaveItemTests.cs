@@ -19,6 +19,7 @@ public sealed class PeopleRepositoryMustHaveItemTests : SqliteDbTestFixture
 {
     private readonly PeopleRepository _people;
     private readonly Guid _movie = Guid.NewGuid();
+    private readonly Guid _person = Guid.NewGuid();
 
     public PeopleRepositoryMustHaveItemTests()
     {
@@ -35,7 +36,7 @@ public sealed class PeopleRepositoryMustHaveItemTests : SqliteDbTestFixture
             // Only one of the two credits has a by-name item behind it.
             context.BaseItems.Add(new BaseItemEntity
             {
-                Id = Guid.NewGuid(),
+                Id = _person,
                 Name = "With Item",
                 Type = lookup.BaseItemKindNames[BaseItemKind.Person]
             });
@@ -45,7 +46,7 @@ public sealed class PeopleRepositoryMustHaveItemTests : SqliteDbTestFixture
 
         _people = new PeopleRepository(CreateDbContextFactory(), lookup, Mock.Of<IItemQueryHelpers>());
         _people.UpdatePeople(_movie, [
-            new PersonInfo { Name = "With Item", Type = PersonKind.Actor },
+            new PersonInfo { Name = "With Item", Type = PersonKind.Actor, PersonItemId = _person },
             new PersonInfo { Name = "Without Item", Type = PersonKind.Actor }
         ]);
     }
@@ -81,5 +82,27 @@ public sealed class PeopleRepositoryMustHaveItemTests : SqliteDbTestFixture
         var result = _people.GetPeople(new InternalPeopleQuery { MustHaveItem = true, Limit = 10 });
 
         Assert.Equal(result.Items.Count, result.TotalRecordCount);
+    }
+
+    [Fact]
+    public void MustHaveItem_KeepsACreditLinkedUnderAnotherSpelling()
+    {
+        var other = Guid.NewGuid();
+        using (var context = CreateDbContext())
+        {
+            context.BaseItems.Add(new BaseItemEntity
+            {
+                Id = other,
+                Name = "Other Movie",
+                Type = new ItemTypeLookup().BaseItemKindNames[BaseItemKind.Movie]
+            });
+            context.SaveChanges();
+        }
+
+        _people.UpdatePeople(other, [new PersonInfo { Name = "With-Item", Type = PersonKind.Director, PersonItemId = _person }]);
+
+        var result = _people.GetPeople(new InternalPeopleQuery { MustHaveItem = true, ItemId = other });
+
+        Assert.Equal("With-Item", Assert.Single(result.Items).Name);
     }
 }

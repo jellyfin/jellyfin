@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -298,11 +300,10 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         var genres = releaseGroup?.Genres ?? release?.Genres;
         if (genres is not null && genres.Count > 0)
         {
-            item.Genres = genres
+            item.SetGenres(genres
                 .OrderByDescending(genre => genre.VoteCount)
-                .Select(genre => genre.Name)
-                .Where(name => !string.IsNullOrWhiteSpace(name))
-                .ToArray();
+                .Where(genre => !string.IsNullOrWhiteSpace(genre.Name))
+                .Select(genre => ToItemByNameInfo(genre.Name!, genre.Id, MetadataProvider.MusicBrainzGenre)));
         }
 
         var tags = releaseGroup?.Tags ?? release?.Tags;
@@ -317,12 +318,21 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
 
         if (release?.LabelInfo is not null && release.LabelInfo.Count > 0)
         {
-            item.Studios = release.LabelInfo
+            item.SetStudios(release.LabelInfo
                 .Where(labelInfo => !string.IsNullOrWhiteSpace(labelInfo.Label?.Name))
-                .Select(labelInfo => labelInfo.Label!.Name!)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
+                .Select(labelInfo => ToItemByNameInfo(labelInfo.Label!.Name!, labelInfo.Label!.Id, MetadataProvider.MusicBrainzLabel)));
         }
+    }
+
+    private static ItemByNameInfo ToItemByNameInfo(string name, Guid mbid, MetadataProvider provider)
+    {
+        var info = new ItemByNameInfo(name.Trim());
+        if (!mbid.Equals(Guid.Empty))
+        {
+            info.SetProviderId(provider, mbid.ToString("D", CultureInfo.InvariantCulture));
+        }
+
+        return info;
     }
 
     /// <inheritdoc />
