@@ -3631,6 +3631,7 @@ namespace Emby.Server.Implementations.Library
             ExtraType.ThemeVideo => "NameExtraThemeVideo",
             ExtraType.Featurette => "NameExtraFeaturette",
             ExtraType.Short => "NameExtraShort",
+            ExtraType.MotionArtwork => "NameExtraMotionArtwork",
             _ => "NameExtraUnknown"
         };
 

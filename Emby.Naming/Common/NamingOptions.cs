@@ -507,6 +507,24 @@ namespace Emby.Naming.Common
                     MediaType.Video),
 
                 new ExtraRule(
+                    ExtraType.MotionArtwork,
+                    ExtraRuleType.DirectoryName,
+                    "motion-artwork",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.MotionArtwork,
+                    ExtraRuleType.DirectoryName,
+                    "album-artwork",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.MotionArtwork,
+                    ExtraRuleType.DirectoryName,
+                    "album-art",
+                    MediaType.Video),
+
+                new ExtraRule(
                     ExtraType.ThemeSong,
                     ExtraRuleType.DirectoryName,
                     "theme-music",
