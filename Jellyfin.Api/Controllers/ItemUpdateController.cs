@@ -8,6 +8,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -89,20 +90,38 @@ public class ItemUpdateController : BaseJellyfinApiController
             request.DisplayOrder ?? string.Empty,
             StringComparison.OrdinalIgnoreCase);
 
-        // Do this first so that metadata savers can pull the updates from the database.
-        if (request.People is not null)
+        await UpdateItem(request, item).ConfigureAwait(false);
+
+        // Before saving, so that metadata savers can pull the updates from the database. After the
+        // request is applied, because the artist lists edited there are what the artist credits follow.
+        var artistsEdited = item is IHasArtist && request.ArtistItems is not null;
+        var albumArtistsEdited = item is IHasAlbumArtist && request.AlbumArtists is not null;
+        if (request.People is not null || artistsEdited || albumArtistsEdited)
         {
-            _libraryManager.UpdatePeople(
-                item,
-                request.People.Select(x => new PersonInfo
+            var people = request.People is not null
+                ? request.People.Select(x => new PersonInfo
                 {
                     Name = x.Name,
                     Role = x.Role,
-                    Type = x.Type
-                }).ToList());
-        }
+                    Type = x.Type,
+                    PersonItemId = x.Id
+                }).ToList()
+                : _libraryManager.GetPeople(item).ToList();
 
-        await UpdateItem(request, item).ConfigureAwait(false);
+            if (artistsEdited)
+            {
+                var names = ((IHasArtist)item).Artists.Select(n => n.GetCleanValue()).ToHashSet(StringComparer.Ordinal);
+                people.RemoveAll(p => p.Type == PersonKind.Artist && !names.Contains(p.Name.GetCleanValue()));
+            }
+
+            if (albumArtistsEdited)
+            {
+                var names = ((IHasAlbumArtist)item).AlbumArtists.Select(n => n.GetCleanValue()).ToHashSet(StringComparer.Ordinal);
+                people.RemoveAll(p => p.Type == PersonKind.AlbumArtist && !names.Contains(p.Name.GetCleanValue()));
+            }
+
+            _libraryManager.UpdatePeople(item, people);
+        }
 
         item.OnMetadataChanged();
 

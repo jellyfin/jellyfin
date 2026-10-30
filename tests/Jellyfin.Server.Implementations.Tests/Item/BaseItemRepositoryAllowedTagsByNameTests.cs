@@ -101,16 +101,17 @@ public sealed class BaseItemRepositoryAllowedTagsByNameTests : SqliteDbTestFixtu
         var horror = CreateItemValue(ItemValueType.Genre, "Horror");
         var jazz = CreateItemValue(ItemValueType.Genre, "Jazz");
         var pixar = CreateItemValue(ItemValueType.Studios, "Pixar");
-        var raffi = CreateItemValue(ItemValueType.Artist, "Raffi");
+        var raffi = new People { Id = Guid.NewGuid(), Name = "Raffi", CleanName = "raffi", PersonType = "Artist", ItemId = artist.Id };
 
         context.BaseItems.AddRange(movie, song, genre, studio, artist, blockedMovie, blockedGenre, artistOnlyGenre, blockedArtist);
-        context.ItemValues.AddRange(tag, comedy, horror, jazz, pixar, raffi);
+        context.ItemValues.AddRange(tag, comedy, horror, jazz, pixar);
+        context.Peoples.Add(raffi);
+        context.PeopleBaseItemMap.Add(new PeopleBaseItemMap { ItemId = song.Id, PeopleId = raffi.Id, Item = song, People = raffi, Role = string.Empty });
         context.ItemValuesMap.AddRange(
             CreateMap(movie, tag),
             CreateMap(movie, comedy),
             CreateMap(movie, pixar),
             CreateMap(song, tag),
-            CreateMap(song, raffi),
             CreateMap(blockedMovie, horror),
             CreateMap(blockedArtist, jazz));
         context.SaveChanges();

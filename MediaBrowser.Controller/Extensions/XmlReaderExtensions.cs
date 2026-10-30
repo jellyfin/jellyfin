@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Extensions;
 
@@ -95,6 +96,8 @@ public static class XmlReaderExtensions
         var role = string.Empty;
         int? sortOrder = null;
         string? imageUrl = null;
+        // Kodi writes the provider's id alongside the name; it identifies the person, the spelling does not.
+        var providerIds = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
 
         using var subtree = reader.ReadSubtree();
         subtree.MoveToContent();
@@ -134,6 +137,15 @@ public static class XmlReaderExtensions
                 case "thumb":
                     imageUrl = subtree.ReadNormalizedString();
                     break;
+                case "tmdbid":
+                    providerIds[MetadataProvider.Tmdb.ToString()] = subtree.ReadNormalizedString();
+                    break;
+                case "imdbid":
+                    providerIds[MetadataProvider.Imdb.ToString()] = subtree.ReadNormalizedString();
+                    break;
+                case "tvdbid":
+                    providerIds[MetadataProvider.Tvdb.ToString()] = subtree.ReadNormalizedString();
+                    break;
                 default:
                     subtree.Skip();
                     break;
@@ -145,7 +157,7 @@ public static class XmlReaderExtensions
             return null;
         }
 
-        return new PersonInfo
+        var person = new PersonInfo
         {
             Name = name,
             Role = role,
@@ -153,6 +165,13 @@ public static class XmlReaderExtensions
             SortOrder = sortOrder,
             ImageUrl = imageUrl
         };
+
+        foreach (var (provider, value) in providerIds)
+        {
+            person.TrySetProviderId(provider, value);
+        }
+
+        return person;
     }
 
     /// <summary>
