@@ -195,6 +195,16 @@ namespace MediaBrowser.Providers.Subtitles
             LibraryOptions libraryOptions,
             SubtitleResponse response)
         {
+            if (response.Stream is null)
+            {
+                throw new InvalidOperationException("Subtitle provider returned a null stream.");
+            }
+
+            if (string.IsNullOrEmpty(response.Language))
+            {
+                throw new InvalidOperationException("Subtitle provider returned a response with no language code.");
+            }
+
             var saveInMediaFolder = libraryOptions.SaveSubtitlesWithMedia;
 
             var memoryStream = new MemoryStream();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Controllers;
@@ -14,6 +15,7 @@ using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -89,6 +91,78 @@ public class SubtitleControllerTests
         var result = await controller.GetSubtitle(_itemId, _itemId.ToString("N"), SubtitleIndex, "vtt", null, null, null, null, null);
 
         Assert.IsType<FileStreamResult>(result);
+    }
+
+    [Fact]
+    public async Task DownloadRemoteSubtitles_ItemNotFound_ReturnsNotFound()
+    {
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager.Setup(l => l.GetItemById<Video>(It.IsAny<Guid>(), It.IsAny<Guid>())).Returns((Video?)null);
+
+        var controller = CreateDownloadController(libraryManager, new Mock<ISubtitleManager>());
+
+        var result = await controller.DownloadRemoteSubtitles(_itemId, "sub-id");
+
+        Assert.IsType<NotFoundResult>(result);
+    }
+
+    [Fact]
+    public async Task DownloadRemoteSubtitles_DownloadSucceeds_ReturnsNoContent()
+    {
+        var video = new Movie { Id = _itemId, Path = "/media/test.mkv" };
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager.Setup(l => l.GetItemById<Video>(_itemId, It.IsAny<Guid>())).Returns(video);
+
+        var subtitleManager = new Mock<ISubtitleManager>();
+        subtitleManager
+            .Setup(s => s.DownloadSubtitles(video, "sub-id", It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var controller = CreateDownloadController(libraryManager, subtitleManager);
+
+        var result = await controller.DownloadRemoteSubtitles(_itemId, "sub-id");
+
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task DownloadRemoteSubtitles_DownloadFails_PropagatesException()
+    {
+        var video = new Movie { Id = _itemId, Path = "/media/test.mkv" };
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager.Setup(l => l.GetItemById<Video>(_itemId, It.IsAny<Guid>())).Returns(video);
+
+        var subtitleManager = new Mock<ISubtitleManager>();
+        subtitleManager
+            .Setup(s => s.DownloadSubtitles(video, "sub-id", It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Subtitle provider returned a null stream."));
+
+        var controller = CreateDownloadController(libraryManager, subtitleManager);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => controller.DownloadRemoteSubtitles(_itemId, "sub-id"));
+    }
+
+    private static SubtitleController CreateDownloadController(
+        Mock<ILibraryManager> libraryManager,
+        Mock<ISubtitleManager> subtitleManager)
+    {
+        var controller = new SubtitleController(
+            Mock.Of<IServerConfigurationManager>(),
+            libraryManager.Object,
+            subtitleManager.Object,
+            Mock.Of<ISubtitleEncoder>(),
+            Mock.Of<IMediaSourceManager>(),
+            Mock.Of<IProviderManager>(),
+            Mock.Of<IFileSystem>(),
+            NullLogger<SubtitleController>.Instance);
+
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal() }
+        };
+
+        return controller;
     }
 
     private static SubtitleController CreateController(
