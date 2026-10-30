@@ -12,7 +12,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// <summary>
 /// Records the reader commands EF Core sends, so a test can ask SQLite how it would run one.
 /// </summary>
-public sealed class QueryPlanRecorder : DbCommandInterceptor
+internal sealed class QueryPlanRecorder : DbCommandInterceptor
 {
     /// <summary>
     /// Gets the recorded commands, oldest first.
