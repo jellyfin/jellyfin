@@ -47,6 +47,17 @@ namespace MediaBrowser.Controller.Library
         UserItemData? GetUserData(User user, BaseItem item);
 
         /// <summary>
+        /// Reloads the item's user data from the database, replacing the copy held on this instance.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="GetUserData(User, BaseItem)"/> reads the copy on the instance, and a save through
+        /// another instance of the same item (e.g. marking a playing song a favorite) doesn't update it.
+        /// Call this before changing and saving user data on a long-lived instance.
+        /// </remarks>
+        /// <param name="item">The item to reload.</param>
+        void RefreshUserData(BaseItem item);
+
+        /// <summary>
         /// Gets the user data dto.
         /// </summary>
         /// <param name="item">Item to use.</param>
