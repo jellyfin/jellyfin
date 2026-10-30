@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data;
@@ -13,6 +15,8 @@ using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -217,7 +221,67 @@ public class SessionManagerTests
         Assert.Throws<SecurityException>(() => sessionManager.ReportCapabilities(attackerSession.Id, victimSession.Id, new ClientCapabilities()));
     }
 
+    [Fact]
+    public async Task CheckForInactiveSteams_PausedSessionWithoutPausedDate_DoesNotThrow()
+    {
+        var user = new User("test", "default", "default");
+        await using var sessionManager = CreateSessionManager(user);
+        var session = await LogSessionActivity(sessionManager, user);
+
+        session.NowPlayingItem = new BaseItemDto();
+        session.PlayState.IsPaused = true;
+        session.LastPausedDate = null;
+
+        Assert.Empty(CheckForInactiveSteams(sessionManager));
+    }
+
+    [Fact]
+    public async Task CheckForInactiveSteams_PausedPastThreshold_StopsPlayback()
+    {
+        var user = new User("test", "default", "default");
+        var config = new Mock<IServerConfigurationManager>();
+        config.Setup(i => i.Configuration).Returns(new ServerConfiguration { InactiveSessionThreshold = 10 });
+        await using var sessionManager = CreateSessionManager(config.Object, user);
+        var session = await LogSessionActivity(sessionManager, user);
+        var controller = new Mock<ISessionController>();
+        session.SessionControllers = [controller.Object];
+
+        session.NowPlayingItem = new BaseItemDto();
+        session.PlayState.IsPaused = true;
+        session.LastPausedDate = DateTime.UtcNow.AddMinutes(-11);
+
+        Assert.Empty(CheckForInactiveSteams(sessionManager));
+        controller.Verify(
+            i => i.SendMessage(SessionMessageType.Playstate, It.IsAny<Guid>(), It.Is<PlaystateRequest>(r => r.Command == PlaystateCommand.Stop), It.IsAny<CancellationToken>()),
+            Times.Once());
+    }
+
+    private static List<Exception> CheckForInactiveSteams(Emby.Server.Implementations.Session.SessionManager sessionManager)
+    {
+        var check = typeof(Emby.Server.Implementations.Session.SessionManager)
+            .GetMethod("CheckForInactiveSteams", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.NotNull(check);
+
+        // The callback is async void, so a throw reaches the synchronization context, not the caller.
+        var context = new CapturingSynchronizationContext();
+        var previous = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(context);
+        try
+        {
+            check.Invoke(sessionManager, new object?[] { null });
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+        }
+
+        return context.Exceptions;
+    }
+
     private static Emby.Server.Implementations.Session.SessionManager CreateSessionManager(params User[] users)
+        => CreateSessionManager(Mock.Of<IServerConfigurationManager>(), users);
+
+    private static Emby.Server.Implementations.Session.SessionManager CreateSessionManager(IServerConfigurationManager config, params User[] users)
     {
         var userManager = new Mock<IUserManager>();
         foreach (var user in users)
@@ -229,7 +293,7 @@ public class SessionManagerTests
             NullLogger<Emby.Server.Implementations.Session.SessionManager>.Instance,
             Mock.Of<IEventManager>(),
             Mock.Of<IUserDataManager>(),
-            Mock.Of<IServerConfigurationManager>(),
+            config,
             Mock.Of<ILibraryManager>(),
             userManager.Object,
             Mock.Of<IMusicManager>(),
@@ -245,4 +309,25 @@ public class SessionManagerTests
     // from the request headers and are not bound to the access token of the calling user.
     private static Task<SessionInfo> LogSessionActivity(ISessionManager sessionManager, User user)
         => sessionManager.LogSessionActivity("Jellyfin Web", "1.0.0", "victim-tv-01", "device_name", "127.0.0.1", user);
+
+    private sealed class CapturingSynchronizationContext : SynchronizationContext
+    {
+        public List<Exception> Exceptions { get; } = new List<Exception>();
+
+        public override void Post(SendOrPostCallback d, object? state) => Run(d, state);
+
+        public override void Send(SendOrPostCallback d, object? state) => Run(d, state);
+
+        private void Run(SendOrPostCallback d, object? state)
+        {
+            try
+            {
+                d(state);
+            }
+            catch (Exception ex)
+            {
+                Exceptions.Add(ex);
+            }
+        }
+    }
 }
