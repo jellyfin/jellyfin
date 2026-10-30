@@ -46,8 +46,14 @@ public class NextUpService : INextUpService
 
         using var context = _dbProvider.CreateDbContext();
 
+        // Restrict the join to dated user items so SQLite can seek episode IDs instead of scanning the library.
+        var recentlyPlayedItemIds = context.UserData
+            .Where(u => u.UserId == filter.User.Id && u.LastPlayedDate >= dateCutoff)
+            .Select(u => u.ItemId);
+
         var query = context.BaseItems
             .AsNoTracking()
+            .Where(i => recentlyPlayedItemIds.Contains(i.Id))
             .Where(i => filter.TopParentIds.Contains(i.TopParentId!.Value))
             .Where(i => i.Type == _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode])
             .Join(
