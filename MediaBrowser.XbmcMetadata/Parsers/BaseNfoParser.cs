@@ -442,6 +442,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                     break;
+                case "network":
+                    var network = reader.ReadNormalizedString();
+                    if (!string.IsNullOrEmpty(network))
+                    {
+                        item.AddNetwork(network);
+                    }
+
+                    break;
                 case "director":
                     foreach (var director in reader.GetPersonArray(PersonKind.Director))
                     {
