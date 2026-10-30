@@ -89,6 +89,11 @@ namespace MediaBrowser.Providers.Manager
         public virtual async Task<ItemUpdateType> RefreshMetadata(BaseItem item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
             var itemOfType = (TItemType)item;
+            if (refreshOptions.RefreshMediaInfoOnly)
+            {
+                return await RefreshMediaInfo(itemOfType, refreshOptions, cancellationToken).ConfigureAwait(false);
+            }
+
             var updateType = ItemUpdateType.None;
 
             var libraryOptions = LibraryManager.GetLibraryOptions(item);
@@ -266,6 +271,66 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 return updateType;
+            }
+        }
+
+        private async Task<ItemUpdateType> RefreshMediaInfo(TItemType item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        {
+            var before = item.CreateMetadataCopy();
+            try
+            {
+                var libraryOptions = LibraryManager.GetLibraryOptions(item);
+                var providers = ProviderManager.GetMetadataProviders<TItemType>(item, libraryOptions)
+                    .Where(provider => provider is IMediaInfoProvider)
+                    .OfType<ICustomMetadataProvider<TItemType>>();
+                var result = new RefreshResult { UpdateType = ItemUpdateType.None };
+
+                // Bypass descriptive metadata, images and refresh hooks, including for first-time or locked items.
+                // A playback probe must not postpone a scheduled metadata refresh by advancing DateLastRefreshed.
+                foreach (var provider in providers)
+                {
+                    await RunCustomProvider(provider, item, item.Path ?? item.Name, options, result, cancellationToken).ConfigureAwait(false);
+                }
+
+                if (result.Failures > 0 || result.UpdateType == ItemUpdateType.None)
+                {
+                    RestoreMediaInfo(before, item);
+                    return ItemUpdateType.None;
+                }
+
+                await item.UpdateToRepositoryAsync(ItemUpdateType.MediaInfo, cancellationToken).ConfigureAwait(false);
+                return ItemUpdateType.MediaInfo;
+            }
+            catch
+            {
+                RestoreMediaInfo(before, item);
+                throw;
+            }
+        }
+
+        private static void RestoreMediaInfo(BaseItem source, BaseItem target)
+        {
+            target.RunTimeTicks = source.RunTimeTicks;
+            target.TotalBitrate = source.TotalBitrate;
+            target.Container = source.Container;
+            target.Size = source.Size;
+            target.Width = source.Width;
+            target.Height = source.Height;
+            target.ShortcutPath = source.ShortcutPath;
+            if (source is Video oldVideo && target is Video video)
+            {
+                video.Timestamp = oldVideo.Timestamp;
+                video.Video3DFormat = oldVideo.Video3DFormat;
+                video.DefaultVideoStreamIndex = oldVideo.DefaultVideoStreamIndex;
+                video.HasSubtitles = oldVideo.HasSubtitles;
+                video.SubtitleFiles = oldVideo.SubtitleFiles;
+                video.AudioFiles = oldVideo.AudioFiles;
+            }
+
+            if (source is Audio oldAudio && target is Audio audio)
+            {
+                audio.HasLyrics = oldAudio.HasLyrics;
+                audio.LyricFiles = oldAudio.LyricFiles;
             }
         }
 
