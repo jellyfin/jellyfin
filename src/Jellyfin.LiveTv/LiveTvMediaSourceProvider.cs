@@ -296,6 +296,8 @@ namespace Jellyfin.LiveTv
                 _logger.LogInformation("Live stream opened after {0}ms", (endTime - startTime).TotalMilliseconds);
             }
 
+            liveStream.ChannelId = channel.Id;
+
             info.RequiresClosing = true;
 
             var idPrefix = service.GetType().FullName!.GetMD5().ToString("N", CultureInfo.InvariantCulture) + "_";
