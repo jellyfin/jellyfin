@@ -8013,7 +8013,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var currentMediaStream = mediaStreams[i];
                 if (currentMediaStream == streamToFind)
                 {
-                    return index;
+                    // Live TV streams have Index -1 when their index within the container is unknown
+                    if (streamToFind.IsExternal || streamToFind.Index < 0)
+                    {
+                        return index;
+                    }
+
+                    var externalStreamsBefore = mediaStreams.Count(s => s.IsExternal && s.Index < streamToFind.Index);
+                    return streamToFind.Index - externalStreamsBefore;
                 }
 
                 if (string.Equals(currentMediaStream.Path, streamToFind.Path, StringComparison.Ordinal))
