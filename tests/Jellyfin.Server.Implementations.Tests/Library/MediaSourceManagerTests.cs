@@ -152,6 +152,37 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         }
 
         [Theory]
+        [InlineData("eng", false)]
+        [InlineData(null, false)]
+        [InlineData("", false)]
+        [InlineData("eng", true)]
+        [InlineData(null, true)]
+        [InlineData("", true)]
+        public void SetDefaultAudioStreamIndex_OriginalLanguage_UsesStreamIndex(string? originalLanguage, bool reverseAudioOrder)
+        {
+            var dubbed = new MediaStream { Index = 2, Type = MediaStreamType.Audio, Language = "jpn", IsDefault = true };
+            var original = new MediaStream { Index = 5, Type = MediaStreamType.Audio, Language = "eng", IsOriginal = true };
+            var mediaInfo = new MediaSourceInfo
+            {
+                MediaStreams = new MediaStream[]
+                {
+                    new() { Index = 0, Type = MediaStreamType.Video },
+                    reverseAudioOrder ? original : dubbed,
+                    reverseAudioOrder ? dubbed : original
+                }
+            };
+            _user.AudioLanguagePreference = "OriginalLanguage";
+            _user.PlayDefaultAudioTrack = false;
+            _user.RememberAudioSelections = false;
+            _item.OriginalLanguage = originalLanguage;
+
+            _mediaSourceManager.SetDefaultAudioAndSubtitleStreamIndices(_item, mediaInfo, _user);
+
+            Assert.Equal(5, mediaInfo.DefaultAudioStreamIndex);
+            Assert.Same(original, mediaInfo.GetDefaultAudioStream(mediaInfo.DefaultAudioStreamIndex));
+        }
+
+        [Theory]
         // A remembered full track must not survive a switch to "only forced" (it falls through to
         // the forced track here); a remembered forced track and "off" still must.
         [InlineData(SubtitlePlaybackMode.OnlyForced, 2, 3)]
