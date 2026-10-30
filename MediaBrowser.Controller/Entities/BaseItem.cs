@@ -1252,6 +1252,20 @@ namespace MediaBrowser.Controller.Entities
                 info.ETag = item.DateModified.Ticks.ToString(CultureInfo.InvariantCulture).GetMD5().ToString("N", CultureInfo.InvariantCulture);
             }
 
+            if (item.IsShortcut && !string.IsNullOrEmpty(item.ShortcutPath))
+            {
+                var shortcutProtocol = MediaSourceManager.GetPathProtocol(item.ShortcutPath);
+
+                // Only allow remote shortcut paths — local file paths in .strm files
+                // could be used to read arbitrary files from the server.
+                if (shortcutProtocol != MediaProtocol.File)
+                {
+                    info.IsRemote = true;
+                    info.Path = item.ShortcutPath;
+                    info.Protocol = shortcutProtocol;
+                }
+            }
+
             var video = item as Video;
             if (video is not null)
             {
@@ -1259,20 +1273,6 @@ namespace MediaBrowser.Controller.Entities
                 info.VideoType = video.VideoType;
                 info.Video3DFormat = video.Video3DFormat;
                 info.Timestamp = video.Timestamp;
-
-                if (video.IsShortcut && !string.IsNullOrEmpty(video.ShortcutPath))
-                {
-                    var shortcutProtocol = MediaSourceManager.GetPathProtocol(video.ShortcutPath);
-
-                    // Only allow remote shortcut paths — local file paths in .strm files
-                    // could be used to read arbitrary files from the server.
-                    if (shortcutProtocol != MediaProtocol.File)
-                    {
-                        info.IsRemote = true;
-                        info.Path = video.ShortcutPath;
-                        info.Protocol = shortcutProtocol;
-                    }
-                }
 
                 if (string.IsNullOrEmpty(info.Container))
                 {
