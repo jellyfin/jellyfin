@@ -13,11 +13,13 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers;
@@ -33,6 +35,7 @@ public class MediaInfoController : BaseJellyfinApiController
     private readonly IDeviceManager _deviceManager;
     private readonly ILibraryManager _libraryManager;
     private readonly ILogger<MediaInfoController> _logger;
+    private readonly IMemoryCache _memoryCache;
     private readonly MediaInfoHelper _mediaInfoHelper;
     private readonly IUserManager _userManager;
 
@@ -43,13 +46,15 @@ public class MediaInfoController : BaseJellyfinApiController
     /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{MediaInfoController}"/> interface.</param>
+    /// <param name="memoryCache">Instance of the <see cref="IMemoryCache"/> interface.</param>
     /// <param name="mediaInfoHelper">Instance of the <see cref="MediaInfoHelper"/>.</param>
-    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface..</param>
+    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     public MediaInfoController(
         IMediaSourceManager mediaSourceManager,
         IDeviceManager deviceManager,
         ILibraryManager libraryManager,
         ILogger<MediaInfoController> logger,
+        IMemoryCache memoryCache,
         MediaInfoHelper mediaInfoHelper,
         IUserManager userManager)
     {
@@ -57,9 +62,19 @@ public class MediaInfoController : BaseJellyfinApiController
         _deviceManager = deviceManager;
         _libraryManager = libraryManager;
         _logger = logger;
+        _memoryCache = memoryCache;
         _mediaInfoHelper = mediaInfoHelper;
         _userManager = userManager;
     }
+
+    /// <summary>
+    /// Attempts to retrieve a previously issued PlaybackInfo request.
+    /// </summary>
+    /// <param name="playSessionId">Play session ID returned from a previous PlaybackInfo request.</param>
+    /// <returns>Returns <c>true</c> if a cached response was found.</returns>
+    [NonAction]
+    public (PlaybackInfoResponse PlaybackInfo, DeviceProfile DeviceProfile)? GetCachedPlaybackInfo(string playSessionId)
+        => _memoryCache.Get<(PlaybackInfoResponse, DeviceProfile)?>(playSessionId);
 
     /// <summary>
     /// Gets live playback media info for an item.
@@ -244,6 +259,11 @@ public class MediaInfoController : BaseJellyfinApiController
 
                 info.MediaSources = new[] { openStreamResult.MediaSource };
             }
+        }
+
+        if (info.PlaySessionId is not null && profile is not null)
+        {
+            _memoryCache.Set(info.PlaySessionId, (info, profile), TimeSpan.FromMinutes(20));
         }
 
         return info;

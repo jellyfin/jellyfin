@@ -3,15 +3,17 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Controller.Entities
 {
     [Common.RequiresSourceSerialisation]
-    public class Book : BaseItem, IHasLookupInfo<BookInfo>, IHasSeries
+    public class Book : BaseItem, IHasLookupInfo<BookInfo>, IHasSeries, IHasMediaSources
     {
         [JsonIgnore]
         public override MediaType MediaType => MediaType.Book;
@@ -79,5 +81,8 @@ namespace MediaBrowser.Controller.Entities
 
             return info;
         }
+
+        protected override IEnumerable<(BaseItem Item, MediaSourceType MediaSourceType)> GetAllItemsForMediaSources()
+            => new[] { ((BaseItem)this, MediaSourceType.Default) };
     }
 }
