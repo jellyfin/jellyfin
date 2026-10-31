@@ -166,20 +166,20 @@ internal static class SvgSecurityValidator
         var firstSeparator = header.IndexOf(';');
         var mediaType = (firstSeparator < 0 ? header : header[..firstSeparator]).Trim();
 
-        // Only "image/svg+xml" is re-parsed as SVG by the renderer; any other type is treated as raster data.
-        if (!mediaType.Contains('/') || !mediaType.Equals("image/svg+xml", StringComparison.OrdinalIgnoreCase))
+        if (!mediaType.Contains('/'))
         {
             return null;
         }
 
-        if (depth >= MaxDataUriDepth)
-        {
-            return "Nested data URIs exceed the allowed depth";
-        }
-
+        var isSvg = mediaType.Equals("image/svg+xml", StringComparison.OrdinalIgnoreCase);
         var lastSeparator = header.LastIndexOf(';');
         var isBase64 = lastSeparator >= 0
             && header[(lastSeparator + 1)..].Trim().Equals("base64", StringComparison.OrdinalIgnoreCase);
+
+        if (!isSvg && !isBase64)
+        {
+            return null;
+        }
 
         var payload = dataUri[(comma + 1)..].Trim();
         byte[]? buffer = null;
@@ -196,12 +196,23 @@ internal static class SvgSecurityValidator
             }
             else
             {
-                var unescaped = Uri.UnescapeDataString(payload.ToString());
-                buffer = ArrayPool<byte>.Shared.Rent(Encoding.UTF8.GetMaxByteCount(unescaped.Length));
-                length = Encoding.UTF8.GetBytes(unescaped, buffer);
+                // The renderer parses the payload as is, without percent-decoding it.
+                buffer = ArrayPool<byte>.Shared.Rent(Encoding.UTF8.GetMaxByteCount(payload.Length));
+                length = Encoding.UTF8.GetBytes(payload, buffer);
             }
 
-            if (length > 2 && buffer[0] == 0x1F && buffer[1] == 0x8B)
+            var isCompressed = length > 2 && buffer[0] == 0x1F && buffer[1] == 0x8B;
+            if (!isSvg && !isCompressed)
+            {
+                return null;
+            }
+
+            if (depth >= MaxDataUriDepth)
+            {
+                return "Nested data URIs exceed the allowed depth";
+            }
+
+            if (isCompressed)
             {
                 using var decompressed = Decompress(buffer, length);
                 return Validate(decompressed, depth + 1);
