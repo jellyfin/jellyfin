@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV;
 
@@ -17,17 +17,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV;
 public class TmdbSeriesSimilarProvider : IRemoteSimilarItemsProvider<Series>
 {
     private readonly TmdbClientManager _tmdbClientManager;
-    private readonly ILogger<TmdbSeriesSimilarProvider> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TmdbSeriesSimilarProvider"/> class.
     /// </summary>
     /// <param name="tmdbClientManager">The TMDb client manager.</param>
-    /// <param name="logger">The logger.</param>
-    public TmdbSeriesSimilarProvider(TmdbClientManager tmdbClientManager, ILogger<TmdbSeriesSimilarProvider> logger)
+    public TmdbSeriesSimilarProvider(TmdbClientManager tmdbClientManager)
     {
         _tmdbClientManager = tmdbClientManager;
-        _logger = logger;
     }
 
     /// <inheritdoc/>
@@ -58,39 +55,15 @@ public class TmdbSeriesSimilarProvider : IRemoteSimilarItemsProvider<Series>
         }
 
         var providerName = MetadataProvider.Tmdb.ToString();
-        var page = 1;
-        var totalPages = 1;
-
-        while (page <= totalPages && !cancellationToken.IsCancellationRequested)
+        await foreach (var recommendation in _tmdbClientManager
+            .GetSeriesRecommendationsAsync(tmdbId, TmdbUtils.GetImageLanguagesParam(string.Empty), cancellationToken)
+            .ConfigureAwait(false))
         {
-            IReadOnlyList<TMDbLib.Objects.Search.SearchTv> pageResults;
-            try
+            yield return new SimilarItemReference
             {
-                (pageResults, totalPages) = await _tmdbClientManager
-                    .GetSeriesRecommendationsPageAsync(tmdbId, page, TmdbUtils.GetImageLanguagesParam(string.Empty), cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to get recommended TV shows from TMDb for {TmdbId} page {Page}", tmdbId, page);
-                yield break;
-            }
-
-            if (pageResults.Count == 0)
-            {
-                yield break;
-            }
-
-            foreach (var recommendation in pageResults)
-            {
-                yield return new SimilarItemReference
-                {
-                    ProviderName = providerName,
-                    ProviderId = recommendation.Id.ToString(CultureInfo.InvariantCulture)
-                };
-            }
-
-            page++;
+                ProviderName = providerName,
+                ProviderId = recommendation.Id.ToString(CultureInfo.InvariantCulture)
+            };
         }
     }
 }
