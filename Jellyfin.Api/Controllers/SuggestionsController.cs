@@ -67,16 +67,10 @@ public class SuggestionsController : BaseJellyfinApiController
         [FromQuery] int? limit,
         [FromQuery] bool enableTotalRecordCount = false)
     {
-        User? user;
-        if (userId.IsNullOrEmpty())
-        {
-            user = null;
-        }
-        else
-        {
-            var requestUserId = RequestHelpers.GetUserId(User, userId);
-            user = _userManager.GetUserById(requestUserId);
-        }
+        var requestUserId = RequestHelpers.GetUserId(User, userId);
+        User? user = requestUserId.IsEmpty()
+            ? null
+            : _userManager.GetUserById(requestUserId);
 
         var dtoOptions = new DtoOptions();
         var result = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
