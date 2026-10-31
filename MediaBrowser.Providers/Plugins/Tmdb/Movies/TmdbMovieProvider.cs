@@ -17,6 +17,8 @@ using MediaBrowser.Model.Providers;
 using TMDbLib.Objects.Find;
 using TMDbLib.Objects.General;
 using TMDbLib.Objects.Search;
+using ReleaseDatesContainer = TMDbLib.Objects.Movies.ReleaseDatesContainer;
+using ReleaseDateType = TMDbLib.Objects.Movies.ReleaseDateType;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 {
@@ -223,22 +225,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             movie.CommunityRating = Convert.ToSingle(movieResult.VoteAverage);
 
-            if (movieResult.Releases?.Countries is not null)
+            if (movieResult.ReleaseDates?.Results is not null)
             {
-                var releases = movieResult.Releases.Countries.Where(i => !string.IsNullOrWhiteSpace(i.Certification)).ToList();
+                var ourCertification = GetCertification(movieResult.ReleaseDates.Results, info.MetadataCountryCode);
 
-                var ourRelease = releases.FirstOrDefault(c => string.Equals(c.Iso_3166_1, info.MetadataCountryCode, StringComparison.OrdinalIgnoreCase));
-
-                if (ourRelease?.Certification is not null)
+                if (ourCertification is not null)
                 {
-                    movie.OfficialRating = TmdbUtils.BuildParentalRating(info.MetadataCountryCode, ourRelease.Certification);
+                    movie.OfficialRating = TmdbUtils.BuildParentalRating(info.MetadataCountryCode, ourCertification);
                 }
                 else
                 {
-                    var usRelease = releases.FirstOrDefault(c => string.Equals(c.Iso_3166_1, "US", StringComparison.OrdinalIgnoreCase));
-                    if (usRelease?.Certification is not null)
+                    var usCertification = GetCertification(movieResult.ReleaseDates.Results, "US");
+                    if (usCertification is not null)
                     {
-                        movie.OfficialRating = usRelease.Certification;
+                        movie.OfficialRating = usCertification;
                     }
                 }
             }
@@ -390,6 +390,18 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             }
 
             return metadataResult;
+        }
+
+        private static string? GetCertification(IEnumerable<ReleaseDatesContainer> releases, string? countryCode)
+        {
+            var certified = releases
+                .FirstOrDefault(r => string.Equals(r.Iso_3166_1, countryCode, StringComparison.OrdinalIgnoreCase))?
+                .ReleaseDates?
+                .Where(r => !string.IsNullOrWhiteSpace(r.Certification))
+                .ToList();
+
+            // A country lists one entry per release type; the theatrical one carries the rating that applies.
+            return (certified?.Find(r => r.Type == ReleaseDateType.Theatrical) ?? certified?.FirstOrDefault())?.Certification;
         }
 
         /// <inheritdoc />

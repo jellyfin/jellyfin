@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
@@ -58,39 +59,33 @@ public class TmdbSeriesSimilarProvider : IRemoteSimilarItemsProvider<Series>
         }
 
         var providerName = MetadataProvider.Tmdb.ToString();
-        var page = 1;
-        var totalPages = 1;
+        var recommendations = _tmdbClientManager
+            .GetSeriesRecommendationsAsync(tmdbId, TmdbUtils.GetImageLanguagesParam(string.Empty), cancellationToken)
+            .GetAsyncEnumerator(cancellationToken);
 
-        while (page <= totalPages && !cancellationToken.IsCancellationRequested)
+        await using (recommendations.ConfigureAwait(false))
         {
-            IReadOnlyList<TMDbLib.Objects.Search.SearchTv> pageResults;
-            try
+            while (true)
             {
-                (pageResults, totalPages) = await _tmdbClientManager
-                    .GetSeriesRecommendationsPageAsync(tmdbId, page, TmdbUtils.GetImageLanguagesParam(string.Empty), cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to get recommended TV shows from TMDb for {TmdbId} page {Page}", tmdbId, page);
-                yield break;
-            }
+                try
+                {
+                    if (!await recommendations.MoveNextAsync().ConfigureAwait(false))
+                    {
+                        yield break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to get recommended TV shows from TMDb for {TmdbId}", tmdbId);
+                    yield break;
+                }
 
-            if (pageResults.Count == 0)
-            {
-                yield break;
-            }
-
-            foreach (var recommendation in pageResults)
-            {
                 yield return new SimilarItemReference
                 {
                     ProviderName = providerName,
-                    ProviderId = recommendation.Id.ToString(CultureInfo.InvariantCulture)
+                    ProviderId = recommendations.Current.Id.ToString(CultureInfo.InvariantCulture)
                 };
             }
-
-            page++;
         }
     }
 }

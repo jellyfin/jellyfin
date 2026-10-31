@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dto;
@@ -74,7 +75,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            var extraMethods = MovieMethods.Credits | MovieMethods.Releases | MovieMethods.Images | MovieMethods.Videos;
+            var extraMethods = MovieMethods.Credits | MovieMethods.ReleaseDates | MovieMethods.Images | MovieMethods.Videos;
             if (!(Plugin.Instance?.Configuration.ExcludeTagsMovies).GetValueOrDefault())
             {
                 extraMethods |= MovieMethods.Keywords;
@@ -251,7 +252,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="countryCode">The country code, ISO 3166-1.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb tv episode information or null if not found.</returns>
-        public async Task<TvEpisode?> GetEpisodeAsync(int tvShowId, int seasonNumber, long episodeNumber, string? episodeGroup, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
+        public async Task<TvEpisode?> GetEpisodeAsync(int tvShowId, int seasonNumber, int episodeNumber, string? episodeGroup, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
         {
             var key = $"episode-{tvShowId.ToString(CultureInfo.InvariantCulture)}-s{seasonNumber.ToString(CultureInfo.InvariantCulture)}e{episodeNumber.ToString(CultureInfo.InvariantCulture)}-{episodeGroup}-{language}";
             if (_memoryCache.TryGetValue(key, out TvEpisode? episode))
@@ -492,51 +493,37 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
-        /// Gets a single page of recommended movies for a movie from the TMDb API.
+        /// Gets the recommended movies for a movie from the TMDb API, fetching further pages as the sequence is consumed.
         /// </summary>
-        /// <param name="tmdbId">The TMDb id of the movie.</param>
-        /// <param name="page">The page number to fetch (1-based).</param>
+        /// /// <param name="tmdbId">The TMDb id of the movie.</param>
         /// <param name="language">The language for results.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A tuple containing the list of recommended movies and the total number of pages available.</returns>
-        public async Task<(IReadOnlyList<SearchMovie> Results, int TotalPages)> GetMovieRecommendationsPageAsync(int tmdbId, int page, string? language, CancellationToken cancellationToken)
+        /// <returns>The recommended movies.</returns>
+        public async IAsyncEnumerable<SearchMovie> GetMovieRecommendationsAsync(int tmdbId, string? language, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            var searchResults = await _tmDbClient
-                .GetMovieRecommendationsAsync(tmdbId, language, page, cancellationToken)
-                .ConfigureAwait(false);
-
-            if (searchResults?.Results is null || searchResults.Results.Count == 0)
+            await foreach (var movie in _tmDbClient.GetMovieRecommendationsAllAsync(tmdbId, language, cancellationToken).ConfigureAwait(false))
             {
-                return ([], 0);
+                yield return movie;
             }
-
-            return (searchResults.Results, searchResults.TotalPages);
         }
 
         /// <summary>
-        /// Gets a single page of recommended TV shows for a series from the TMDb API.
+        /// Gets the recommended TV shows for a series from the TMDb API, fetching further pages as the sequence is consumed.
         /// </summary>
         /// <param name="tmdbId">The TMDb id of the TV show.</param>
-        /// <param name="page">The page number to fetch (1-based).</param>
         /// <param name="language">The language for results.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A tuple containing the list of recommended TV shows and the total number of pages available.</returns>
-        public async Task<(IReadOnlyList<SearchTv> Results, int TotalPages)> GetSeriesRecommendationsPageAsync(int tmdbId, int page, string? language, CancellationToken cancellationToken)
+        /// <returns>The recommended TV shows.</returns>
+        public async IAsyncEnumerable<SearchTv> GetSeriesRecommendationsAsync(int tmdbId, string? language, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            var searchResults = await _tmDbClient
-                .GetTvShowRecommendationsAsync(tmdbId, language, page, cancellationToken)
-                .ConfigureAwait(false);
-
-            if (searchResults?.Results is null || searchResults.Results.Count == 0)
+            await foreach (var series in _tmDbClient.GetTvShowRecommendationsAllAsync(tmdbId, language, cancellationToken).ConfigureAwait(false))
             {
-                return ([], 0);
+                yield return series;
             }
-
-            return (searchResults.Results, searchResults.TotalPages);
         }
 
         /// <summary>
