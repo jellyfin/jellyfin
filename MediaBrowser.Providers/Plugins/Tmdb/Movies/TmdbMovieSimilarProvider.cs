@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
 using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.Movies;
@@ -18,17 +17,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies;
 public class TmdbMovieSimilarProvider : IRemoteSimilarItemsProvider<Movie>
 {
     private readonly TmdbClientManager _tmdbClientManager;
-    private readonly ILogger<TmdbMovieSimilarProvider> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TmdbMovieSimilarProvider"/> class.
     /// </summary>
     /// <param name="tmdbClientManager">The TMDb client manager.</param>
-    /// <param name="logger">The logger.</param>
-    public TmdbMovieSimilarProvider(TmdbClientManager tmdbClientManager, ILogger<TmdbMovieSimilarProvider> logger)
+    public TmdbMovieSimilarProvider(TmdbClientManager tmdbClientManager)
     {
         _tmdbClientManager = tmdbClientManager;
-        _logger = logger;
     }
 
     /// <inheritdoc/>
@@ -59,33 +55,15 @@ public class TmdbMovieSimilarProvider : IRemoteSimilarItemsProvider<Movie>
         }
 
         var providerName = MetadataProvider.Tmdb.ToString();
-        var recommendations = _tmdbClientManager
+        await foreach (var recommendation in _tmdbClientManager
             .GetMovieRecommendationsAsync(tmdbId, TmdbUtils.GetImageLanguagesParam(string.Empty), cancellationToken)
-            .GetAsyncEnumerator(cancellationToken);
-
-        await using (recommendations.ConfigureAwait(false))
+            .ConfigureAwait(false))
         {
-            while (true)
+            yield return new SimilarItemReference
             {
-                try
-                {
-                    if (!await recommendations.MoveNextAsync().ConfigureAwait(false))
-                    {
-                        yield break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to get recommended movies from TMDb for {TmdbId}", tmdbId);
-                    yield break;
-                }
-
-                yield return new SimilarItemReference
-                {
-                    ProviderName = providerName,
-                    ProviderId = recommendations.Current.Id.ToString(CultureInfo.InvariantCulture)
-                };
-            }
+                ProviderName = providerName,
+                ProviderId = recommendation.Id.ToString(CultureInfo.InvariantCulture)
+            };
         }
     }
 }

@@ -495,7 +495,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <summary>
         /// Gets the recommended movies for a movie from the TMDb API, fetching further pages as the sequence is consumed.
         /// </summary>
-        /// /// <param name="tmdbId">The TMDb id of the movie.</param>
+        /// <param name="tmdbId">The TMDb id of the movie.</param>
         /// <param name="language">The language for results.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The recommended movies.</returns>

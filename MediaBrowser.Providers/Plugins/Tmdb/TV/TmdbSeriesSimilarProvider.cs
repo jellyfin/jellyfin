@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV;
 
@@ -18,17 +17,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV;
 public class TmdbSeriesSimilarProvider : IRemoteSimilarItemsProvider<Series>
 {
     private readonly TmdbClientManager _tmdbClientManager;
-    private readonly ILogger<TmdbSeriesSimilarProvider> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TmdbSeriesSimilarProvider"/> class.
     /// </summary>
     /// <param name="tmdbClientManager">The TMDb client manager.</param>
-    /// <param name="logger">The logger.</param>
-    public TmdbSeriesSimilarProvider(TmdbClientManager tmdbClientManager, ILogger<TmdbSeriesSimilarProvider> logger)
+    public TmdbSeriesSimilarProvider(TmdbClientManager tmdbClientManager)
     {
         _tmdbClientManager = tmdbClientManager;
-        _logger = logger;
     }
 
     /// <inheritdoc/>
@@ -59,33 +55,15 @@ public class TmdbSeriesSimilarProvider : IRemoteSimilarItemsProvider<Series>
         }
 
         var providerName = MetadataProvider.Tmdb.ToString();
-        var recommendations = _tmdbClientManager
+        await foreach (var recommendation in _tmdbClientManager
             .GetSeriesRecommendationsAsync(tmdbId, TmdbUtils.GetImageLanguagesParam(string.Empty), cancellationToken)
-            .GetAsyncEnumerator(cancellationToken);
-
-        await using (recommendations.ConfigureAwait(false))
+            .ConfigureAwait(false))
         {
-            while (true)
+            yield return new SimilarItemReference
             {
-                try
-                {
-                    if (!await recommendations.MoveNextAsync().ConfigureAwait(false))
-                    {
-                        yield break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to get recommended TV shows from TMDb for {TmdbId}", tmdbId);
-                    yield break;
-                }
-
-                yield return new SimilarItemReference
-                {
-                    ProviderName = providerName,
-                    ProviderId = recommendations.Current.Id.ToString(CultureInfo.InvariantCulture)
-                };
-            }
+                ProviderName = providerName,
+                ProviderId = recommendation.Id.ToString(CultureInfo.InvariantCulture)
+            };
         }
     }
 }

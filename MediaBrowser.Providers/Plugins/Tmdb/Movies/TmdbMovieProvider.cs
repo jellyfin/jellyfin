@@ -398,10 +398,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 .FirstOrDefault(r => string.Equals(r.Iso_3166_1, countryCode, StringComparison.OrdinalIgnoreCase))?
                 .ReleaseDates?
                 .Where(r => !string.IsNullOrWhiteSpace(r.Certification))
-                .ToList();
+                .ToArray();
 
             // A country lists one entry per release type; the theatrical one carries the rating that applies.
-            return (certified?.Find(r => r.Type == ReleaseDateType.Theatrical) ?? certified?.FirstOrDefault())?.Certification;
+            return (certified?.FirstOrDefault(r => r.Type == ReleaseDateType.Theatrical) ?? certified?.FirstOrDefault())?.Certification;
         }
 
         /// <inheritdoc />
