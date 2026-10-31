@@ -1841,11 +1841,7 @@ namespace MediaBrowser.Controller.Entities
                     ItemIds = [.. idsToBatch],
                     DtoOptions = options ?? new DtoOptions()
                 });
-                byId = new Dictionary<Guid, BaseItem>(batched.Count);
-                foreach (var item in batched)
-                {
-                    byId[item.Id] = item;
-                }
+                byId = batched.ToDictionaryLastWins(i => i.Id);
             }
 
             foreach (var info in linkedChildren)

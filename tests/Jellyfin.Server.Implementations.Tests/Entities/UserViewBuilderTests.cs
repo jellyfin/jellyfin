@@ -26,8 +26,10 @@ public sealed class UserViewBuilderTests
 
         var userDataManager = new Mock<IUserDataManager>();
         userDataManager
-            .Setup(m => m.GetUserData(_user, It.IsAny<BaseItem>()))
-            .Returns((User _, BaseItem item) => new UserItemData { Key = item.Id.ToString("N"), Played = item.Id.Equals(watched.Id) });
+            .Setup(m => m.GetUserDataBatch(It.IsAny<IReadOnlyList<BaseItem>>(), _user))
+            .Returns((IReadOnlyList<BaseItem> list, User _) => list.ToDictionary(
+                i => i.Id,
+                i => new UserItemData { Key = i.Id.ToString("N"), Played = i.Id.Equals(watched.Id) }));
         userDataManager
             .Setup(m => m.GetResumeUserDataBatch(It.IsAny<IReadOnlyList<BaseItem>>(), _user))
             .Returns(new Dictionary<Guid, VersionResumeData>
@@ -54,5 +56,29 @@ public sealed class UserViewBuilderTests
         // The alternate's playback settles the movie, exactly as the item's own dto reports it.
         Assert.Equal([onlyWatchedOnAlternate.Id, watched.Id], played.Select(i => i.Id));
         Assert.Equal([unwatched.Id], unplayed.Select(i => i.Id));
+    }
+
+    [Fact]
+    public void Filter_IsFavorite_ReadsTheBatchInsteadOfQueryingPerItem()
+    {
+        var favorite = new Movie { Id = Guid.NewGuid(), Name = "Favorite" };
+        var other = new Movie { Id = Guid.NewGuid(), Name = "Other" };
+
+        // Strict: a per-item GetUserData call, which queries once the cache has evicted the item, fails the test.
+        var userDataManager = new Mock<IUserDataManager>(MockBehavior.Strict);
+        userDataManager
+            .Setup(m => m.GetUserDataBatch(It.IsAny<IReadOnlyList<BaseItem>>(), _user))
+            .Returns((IReadOnlyList<BaseItem> list, User _) => list.ToDictionary(
+                i => i.Id,
+                i => new UserItemData { Key = i.Id.ToString("N"), IsFavorite = i.Id.Equals(favorite.Id) }));
+
+        var result = UserViewBuilder.Filter(
+            new BaseItem[] { favorite, other },
+            _user,
+            new InternalItemsQuery(_user) { IsFavorite = true },
+            userDataManager.Object,
+            new Mock<ILibraryManager>().Object).ToList();
+
+        Assert.Equal([favorite.Id], result.Select(i => i.Id));
     }
 }
