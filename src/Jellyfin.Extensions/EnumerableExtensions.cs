@@ -58,6 +58,30 @@ public static class EnumerableExtensions
     }
 
     /// <summary>
+    /// Creates a dictionary from a collection, keeping the last element when two share a key.
+    /// </summary>
+    /// <param name="source">The collection to index.</param>
+    /// <param name="keySelector">Selects the key of an element.</param>
+    /// <typeparam name="TSource">The type of the elements.</typeparam>
+    /// <typeparam name="TKey">The type of the key.</typeparam>
+    /// <returns>The dictionary of elements by key.</returns>
+    /// <remarks>Unlike <see cref="Enumerable.ToDictionary{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>, duplicate keys don't throw.</remarks>
+    public static Dictionary<TKey, TSource> ToDictionaryLastWins<TSource, TKey>(this IReadOnlyCollection<TSource> source, Func<TSource, TKey> keySelector)
+        where TKey : notnull
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(keySelector);
+
+        var result = new Dictionary<TKey, TSource>(source.Count);
+        foreach (var element in source)
+        {
+            result[keySelector(element)] = element;
+        }
+
+        return result;
+    }
+
+    /// <summary>
     /// Gets an IEnumerable consisting of all flags of an enum.
     /// </summary>
     /// <param name="flags">The flags enum.</param>

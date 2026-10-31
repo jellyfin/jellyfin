@@ -270,12 +270,7 @@ public sealed partial class BaseItemRepository
             return items;
         }
 
-        var byId = new Dictionary<Guid, BaseItemDto>(items.Count);
-        foreach (var item in items)
-        {
-            byId[item.Id] = item;
-        }
-
+        var byId = items.ToDictionaryLastWins(i => i.Id);
         LoadLinkedChildren(context, byId);
 
         var dtoOptions = filter.DtoOptions;
