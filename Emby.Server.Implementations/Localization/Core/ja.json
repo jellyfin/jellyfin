@@ -49,7 +49,7 @@
     "PluginUpdatedWithName": "{0} を更新しました",
     "ScheduledTaskFailedWithName": "{0} が失敗しました",
     "Shows": "番組",
-    "StartupEmbyServerIsLoading": "Jellyfin Server は現在読み込み中です。しばらくしてからもう一度お試しください。",
+    "StartupEmbyServerIsLoading": "Jellyfin Server は現在読み込み中です。しばらくしてから、やり直してください。",
     "SubtitleDownloadFailureFromForItem": "{0} から {1}の字幕のダウンロードに失敗しました",
     "TvShows": "テレビ番組",
     "UserCreatedWithName": "ユーザー {0} を作成しました",
