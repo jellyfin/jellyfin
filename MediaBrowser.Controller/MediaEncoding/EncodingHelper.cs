@@ -6335,6 +6335,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             subFilters?.RemoveAll(string.IsNullOrEmpty);
             overlayFilters?.RemoveAll(string.IsNullOrEmpty);
 
+            // Software decoding can still produce hardware surfaces after VideoToolbox filtering.
+            var autoscaleArgs = options.HardwareAccelerationType == HardwareAccelerationType.videotoolbox
+                && outputVideoCodec.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase)
+                && mainFilters?.Contains("hwupload") == true
+                && string.IsNullOrEmpty(GetHardwareVideoDecoder(state, options))
+                    ? " -noautoscale"
+                    : string.Empty;
+
             var framerate = GetFramerateParam(state);
             if (mainFilters is not null && framerate.HasValue)
             {
@@ -6365,7 +6373,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (overlayFilters?.Count == 0)
             {
                 // -vf "scale..."
-                return string.IsNullOrEmpty(mainStr) ? string.Empty : " -vf \"" + mainStr + "\"";
+                return string.IsNullOrEmpty(mainStr) ? string.Empty : autoscaleArgs + " -vf \"" + mainStr + "\"";
             }
 
             if (overlayFilters?.Count > 0
@@ -6391,14 +6399,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     // -filter_complex "[0:s]scale=s[sub]..."
                     var filterStr = string.IsNullOrEmpty(mainStr)
-                        ? " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}][sub]{5}\""
-                        : " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}]{3}[main];[main][sub]{5}\"";
+                        ? "{6} -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}][sub]{5}\""
+                        : "{6} -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}]{3}[main];[main][sub]{5}\"";
 
                     if (hasTextSubs)
                     {
                         filterStr = string.IsNullOrEmpty(mainStr)
-                            ? " -filter_complex \"{4}[sub];[0:{2}][sub]{5}\""
-                            : " -filter_complex \"{4}[sub];[0:{2}]{3}[main];[main][sub]{5}\"";
+                            ? "{6} -filter_complex \"{4}[sub];[0:{2}][sub]{5}\""
+                            : "{6} -filter_complex \"{4}[sub];[0:{2}]{3}[main];[main][sub]{5}\"";
                     }
 
                     return string.Format(
@@ -6409,7 +6417,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                         videoStreamIndex,
                         mainStr,
                         subStr,
-                        overlayStr);
+                        overlayStr,
+                        autoscaleArgs);
                 }
             }
 
