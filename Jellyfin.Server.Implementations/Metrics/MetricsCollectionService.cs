@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Session;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -19,7 +20,9 @@ namespace Jellyfin.Server.Implementations.Metrics
     {
         private static readonly TimeSpan _collectionInterval = TimeSpan.FromSeconds(15);
 
+        private readonly ISessionManager _sessionManager;
         private readonly IUserManager _userManager;
+        private readonly SessionMetricsCollector _sessionMetricsCollector;
         private readonly ILogger<MetricsCollectionService> _logger;
         private Timer? _timer;
         private bool _disposed;
@@ -27,11 +30,19 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// <summary>
         /// Initializes a new instance of the <see cref="MetricsCollectionService"/> class.
         /// </summary>
+        /// <param name="sessionManager">The session manager.</param>
         /// <param name="userManager">The user manager.</param>
+        /// <param name="sessionMetricsCollector">The session metrics collector.</param>
         /// <param name="logger">The logger.</param>
-        public MetricsCollectionService(IUserManager userManager, ILogger<MetricsCollectionService> logger)
+        public MetricsCollectionService(
+            ISessionManager sessionManager,
+            IUserManager userManager,
+            SessionMetricsCollector sessionMetricsCollector,
+            ILogger<MetricsCollectionService> logger)
         {
+            _sessionManager = sessionManager;
             _userManager = userManager;
+            _sessionMetricsCollector = sessionMetricsCollector;
             _logger = logger;
         }
 
@@ -39,6 +50,8 @@ namespace Jellyfin.Server.Implementations.Metrics
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Starting Jellyfin metrics collection");
+
+            _sessionManager.PlaybackStopped += OnPlaybackStopped;
 
             // Refresh immediately so values are available without waiting for the first interval.
             RefreshGauges();
@@ -50,6 +63,7 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// <inheritdoc />
         public Task StopAsync(CancellationToken cancellationToken)
         {
+            _sessionManager.PlaybackStopped -= OnPlaybackStopped;
             _timer?.Change(Timeout.Infinite, Timeout.Infinite);
             return Task.CompletedTask;
         }
@@ -66,11 +80,24 @@ namespace Jellyfin.Server.Implementations.Metrics
             _disposed = true;
         }
 
+        private void OnPlaybackStopped(object? sender, PlaybackStopEventArgs eventArgs)
+        {
+            try
+            {
+                _sessionMetricsCollector.OnPlaybackStopped(eventArgs);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to record playback stop metrics");
+            }
+        }
+
         private void RefreshGauges()
         {
             try
             {
                 JellyfinMetrics.UserAccounts.Set(_userManager.GetUsers().Count());
+                _sessionMetricsCollector.RefreshGauges();
             }
             catch (Exception ex)
             {
