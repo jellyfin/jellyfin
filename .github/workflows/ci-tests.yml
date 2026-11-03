@@ -28,14 +28,14 @@ jobs:
 
       - name: Run DotNet CLI Tests
         run: >
-          dotnet test Jellyfin.sln
+          dotnet test Jellyfin.slnx
           --configuration Release
           --collect:"XPlat Code Coverage"
           --settings tests/coverletArgs.runsettings
           --verbosity minimal
 
       - name: Merge code coverage results
-        uses: danielpalme/ReportGenerator-GitHub-Action@d3ebf1f760f7d8ab92cc44d9bcfee7ad73722a31 # v5.5.11
+        uses: danielpalme/ReportGenerator-GitHub-Action@861674232075b2c6bd1405a04c4bb9b150653e81 # v5.5.12
         with:
           reports: "**/coverage.cobertura.xml"
           targetdir: "merged/"
