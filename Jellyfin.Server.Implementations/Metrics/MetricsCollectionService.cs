@@ -23,6 +23,7 @@ namespace Jellyfin.Server.Implementations.Metrics
         private readonly SessionMetricsCollector _sessionMetricsCollector;
         private readonly LibraryMetricsCollector _libraryMetricsCollector;
         private readonly UserMetricsCollector _userMetricsCollector;
+        private readonly AuthenticationMetricsCollector _authenticationMetricsCollector;
         private readonly ILogger<MetricsCollectionService> _logger;
         private Timer? _timer;
         private bool _disposed;
@@ -34,18 +35,21 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// <param name="sessionMetricsCollector">The session metrics collector.</param>
         /// <param name="libraryMetricsCollector">The library metrics collector.</param>
         /// <param name="userMetricsCollector">The user metrics collector.</param>
+        /// <param name="authenticationMetricsCollector">The authentication metrics collector.</param>
         /// <param name="logger">The logger.</param>
         public MetricsCollectionService(
             ISessionManager sessionManager,
             SessionMetricsCollector sessionMetricsCollector,
             LibraryMetricsCollector libraryMetricsCollector,
             UserMetricsCollector userMetricsCollector,
+            AuthenticationMetricsCollector authenticationMetricsCollector,
             ILogger<MetricsCollectionService> logger)
         {
             _sessionManager = sessionManager;
             _sessionMetricsCollector = sessionMetricsCollector;
             _libraryMetricsCollector = libraryMetricsCollector;
             _userMetricsCollector = userMetricsCollector;
+            _authenticationMetricsCollector = authenticationMetricsCollector;
             _logger = logger;
         }
 
@@ -102,6 +106,7 @@ namespace Jellyfin.Server.Implementations.Metrics
                 _sessionMetricsCollector.RefreshGauges();
                 _libraryMetricsCollector.RefreshGauges();
                 _userMetricsCollector.RefreshGauges();
+                _authenticationMetricsCollector.RefreshGauges();
             }
             catch (Exception ex)
             {

@@ -164,6 +164,7 @@ namespace Jellyfin.Server
                 services.AddSingleton<SessionMetricsCollector>();
                 services.AddSingleton<LibraryMetricsCollector>();
                 services.AddSingleton<UserMetricsCollector>();
+                services.AddSingleton<AuthenticationMetricsCollector>();
                 services.AddHostedService<MetricsCollectionService>();
             }
         }

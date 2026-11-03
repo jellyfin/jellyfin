@@ -102,5 +102,13 @@ namespace Jellyfin.Server.Implementations.Metrics
             "jellyfin_users_with_permission",
             "Number of users with a specific permission.",
             "permission");
+
+        /// <summary>
+        /// Gets the gauge that tracks the number of users authenticating via an external provider.
+        /// </summary>
+        public static Gauge UsersAuthenticatingExternal { get; } = Prometheus.Metrics.CreateGauge(
+            "jellyfin_users_authenticating_external",
+            "Number of users authenticating via an external authentication provider.",
+            "provider");
     }
 }
