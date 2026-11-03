@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Controller.Library;
-using Prometheus;
 
 namespace Jellyfin.Server.Implementations.Metrics
 {
@@ -12,8 +11,6 @@ namespace Jellyfin.Server.Implementations.Metrics
     /// </summary>
     public sealed class AuthenticationMetricsCollector
     {
-        private const char LabelSeparator = '\x1f';
-
         private readonly IUserManager _userManager;
         private readonly HashSet<string> _providerKeys = new();
 
@@ -50,32 +47,10 @@ namespace Jellyfin.Server.Implementations.Metrics
                 .Where(providerName =>
                     !string.Equals(defaultProviderId, providerName, StringComparison.OrdinalIgnoreCase)
                     && !string.Equals("Default", providerName, StringComparison.OrdinalIgnoreCase))
-                .GroupBy(providerName => Sanitize(providerName))
+                .GroupBy(MetricsSnapshot.Sanitize)
                 .ToDictionary(group => group.Key, group => (double)group.Count(), StringComparer.OrdinalIgnoreCase);
 
-            SetSnapshot(JellyfinMetrics.UsersAuthenticatingExternal, snapshot, _providerKeys);
+            MetricsSnapshot.SetSnapshot(JellyfinMetrics.UsersAuthenticatingExternal, snapshot, _providerKeys);
         }
-
-        private static void SetSnapshot(Gauge gauge, Dictionary<string, double> snapshot, HashSet<string> previousKeys)
-        {
-            foreach (var (key, value) in snapshot)
-            {
-                gauge.WithLabels(Split(key)).Set(value);
-            }
-
-            foreach (var key in previousKeys.Where(key => !snapshot.ContainsKey(key)))
-            {
-                gauge.WithLabels(Split(key)).Set(0);
-            }
-
-            previousKeys.Clear();
-            previousKeys.UnionWith(snapshot.Keys);
-        }
-
-        private static string Sanitize(string? value)
-            => string.IsNullOrEmpty(value) ? "unknown" : value.Replace(LabelSeparator, '_');
-
-        private static string[] Split(string key)
-            => key.Split(LabelSeparator);
     }
 }

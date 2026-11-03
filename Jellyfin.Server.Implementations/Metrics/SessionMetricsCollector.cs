@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
-using Prometheus;
 
 namespace Jellyfin.Server.Implementations.Metrics
 {
@@ -13,8 +12,6 @@ namespace Jellyfin.Server.Implementations.Metrics
     /// </summary>
     public sealed class SessionMetricsCollector
     {
-        private const char LabelSeparator = '\x1f';
-
         private readonly ISessionManager _sessionManager;
         private readonly HashSet<string> _activeSessionKeys = new();
         private readonly HashSet<string> _activeStreamKeys = new();
@@ -40,9 +37,9 @@ namespace Jellyfin.Server.Implementations.Metrics
 
             // Active sessions grouped by device type and client.
             var activeSessions = sessions
-                .GroupBy(s => Join(Sanitize(s.DeviceType), Sanitize(s.Client)))
+                .GroupBy(s => MetricsSnapshot.Join(MetricsSnapshot.Sanitize(s.DeviceType), MetricsSnapshot.Sanitize(s.Client)))
                 .ToDictionary(g => g.Key, g => (double)g.Count());
-            SetSnapshot(JellyfinMetrics.ActiveSessions, activeSessions, _activeSessionKeys);
+            MetricsSnapshot.SetSnapshot(JellyfinMetrics.ActiveSessions, activeSessions, _activeSessionKeys);
 
             // Active streams grouped by play method.
             var activeStreams = sessions
@@ -50,17 +47,17 @@ namespace Jellyfin.Server.Implementations.Metrics
                 .Where(playMethod => playMethod.HasValue)
                 .GroupBy(playMethod => playMethod.GetValueOrDefault().ToString())
                 .ToDictionary(g => g.Key, g => (double)g.Count());
-            SetSnapshot(JellyfinMetrics.ActiveStreams, activeStreams, _activeStreamKeys);
+            MetricsSnapshot.SetSnapshot(JellyfinMetrics.ActiveStreams, activeStreams, _activeStreamKeys);
 
             // Active transcodes grouped by acceleration method and codecs.
             var activeTranscodes = sessions
                 .Where(s => s.TranscodingInfo is not null)
-                .GroupBy(s => Join(
+                .GroupBy(s => MetricsSnapshot.Join(
                     Acceleration(s.TranscodingInfo.HardwareAccelerationType),
-                    Sanitize(s.TranscodingInfo.VideoCodec),
-                    Sanitize(s.TranscodingInfo.AudioCodec)))
+                    MetricsSnapshot.Sanitize(s.TranscodingInfo.VideoCodec),
+                    MetricsSnapshot.Sanitize(s.TranscodingInfo.AudioCodec)))
                 .ToDictionary(g => g.Key, g => (double)g.Count());
-            SetSnapshot(JellyfinMetrics.ActiveTranscodes, activeTranscodes, _activeTranscodeKeys);
+            MetricsSnapshot.SetSnapshot(JellyfinMetrics.ActiveTranscodes, activeTranscodes, _activeTranscodeKeys);
         }
 
         /// <summary>
@@ -89,36 +86,10 @@ namespace Jellyfin.Server.Implementations.Metrics
             }
         }
 
-        private static void SetSnapshot(Gauge gauge, Dictionary<string, double> snapshot, HashSet<string> previousKeys)
-        {
-            foreach (var (key, value) in snapshot)
-            {
-                gauge.WithLabels(Split(key)).Set(value);
-            }
-
-            // Zero out label combinations that disappeared since the last refresh.
-            foreach (var key in previousKeys.Where(key => !snapshot.ContainsKey(key)))
-            {
-                gauge.WithLabels(Split(key)).Set(0);
-            }
-
-            previousKeys.Clear();
-            previousKeys.UnionWith(snapshot.Keys);
-        }
-
         private static string Acceleration(HardwareAccelerationType? acceleration)
             => acceleration is null or HardwareAccelerationType.none ? "software" : acceleration.Value.ToString();
 
         private static string TranscodeReasonLabel(TranscodeReason reasons)
             => reasons == 0 ? "None" : reasons.ToString();
-
-        private static string Sanitize(string? value)
-            => string.IsNullOrEmpty(value) ? "unknown" : value.Replace(LabelSeparator, '_');
-
-        private static string Join(params string[] values)
-            => string.Join(LabelSeparator, values);
-
-        private static string[] Split(string key)
-            => key.Split(LabelSeparator);
     }
 }

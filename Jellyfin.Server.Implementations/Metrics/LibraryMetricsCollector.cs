@@ -7,7 +7,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using Microsoft.EntityFrameworkCore;
-using Prometheus;
 
 namespace Jellyfin.Server.Implementations.Metrics
 {
@@ -16,7 +15,6 @@ namespace Jellyfin.Server.Implementations.Metrics
     /// </summary>
     public sealed class LibraryMetricsCollector
     {
-        private const char LabelSeparator = '\x1f';
         private static readonly TimeSpan _codecRefreshInterval = TimeSpan.FromMinutes(5);
 
         private readonly ILibraryManager _libraryManager;
@@ -58,7 +56,7 @@ namespace Jellyfin.Server.Implementations.Metrics
             var libraries = _libraryManager.GetVirtualFolders()
                 .GroupBy(f => f.CollectionType?.ToString() ?? "unknown")
                 .ToDictionary(g => g.Key, g => (double)g.Count());
-            SetSnapshot(JellyfinMetrics.Libraries, libraries, _libraryKeys);
+            MetricsSnapshot.SetSnapshot(JellyfinMetrics.Libraries, libraries, _libraryKeys);
         }
 
         private void RefreshLibraryItems()
@@ -78,7 +76,7 @@ namespace Jellyfin.Server.Implementations.Metrics
                 ["trailer"] = counts.TrailerCount,
                 ["program"] = counts.ProgramCount,
             };
-            SetSnapshot(JellyfinMetrics.LibraryItems, items, _itemKeys);
+            MetricsSnapshot.SetSnapshot(JellyfinMetrics.LibraryItems, items, _itemKeys);
         }
 
         private void RefreshCodecs()
@@ -101,38 +99,12 @@ namespace Jellyfin.Server.Implementations.Metrics
             foreach (var row in codecCounts.Where(row => row.Codec is not null))
             {
                 var kind = ((MediaStreamType)row.StreamType).ToString().ToLowerInvariant();
-                var codec = Sanitize(row.Codec).ToLowerInvariant();
-                codecs[Join(kind, codec)] = row.Count;
+                var codec = MetricsSnapshot.Sanitize(row.Codec).ToLowerInvariant();
+                codecs[MetricsSnapshot.Join(kind, codec)] = row.Count;
             }
 
-            SetSnapshot(JellyfinMetrics.MediaStreams, codecs, _codecKeys);
+            MetricsSnapshot.SetSnapshot(JellyfinMetrics.MediaStreams, codecs, _codecKeys);
             _lastCodecRefresh = DateTime.UtcNow;
         }
-
-        private static void SetSnapshot(Gauge gauge, Dictionary<string, double> snapshot, HashSet<string> previousKeys)
-        {
-            foreach (var (key, value) in snapshot)
-            {
-                gauge.WithLabels(Split(key)).Set(value);
-            }
-
-            // Zero out label combinations that disappeared since the last refresh.
-            foreach (var key in previousKeys.Where(key => !snapshot.ContainsKey(key)))
-            {
-                gauge.WithLabels(Split(key)).Set(0);
-            }
-
-            previousKeys.Clear();
-            previousKeys.UnionWith(snapshot.Keys);
-        }
-
-        private static string Sanitize(string? value)
-            => string.IsNullOrEmpty(value) ? "unknown" : value.Replace(LabelSeparator, '_');
-
-        private static string Join(params string[] values)
-            => string.Join(LabelSeparator, values);
-
-        private static string[] Split(string key)
-            => key.Split(LabelSeparator);
     }
 }

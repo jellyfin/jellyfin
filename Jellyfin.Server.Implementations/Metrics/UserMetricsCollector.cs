@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Library;
-using Prometheus;
 
 namespace Jellyfin.Server.Implementations.Metrics
 {
@@ -11,8 +10,6 @@ namespace Jellyfin.Server.Implementations.Metrics
     /// </summary>
     public sealed class UserMetricsCollector
     {
-        private const char LabelSeparator = '\x1f';
-
         private static readonly (PermissionKind Kind, string Label)[] _trackedPermissions = new[]
         {
             (PermissionKind.IsAdministrator, "is_administrator"),
@@ -54,27 +51,7 @@ namespace Jellyfin.Server.Implementations.Metrics
                 snapshot[label] = users.Count(u => u.Permissions.Any(p => p.Kind == kind && p.Value));
             }
 
-            SetSnapshot(JellyfinMetrics.UsersWithPermission, snapshot, _permissionKeys);
+            MetricsSnapshot.SetSnapshot(JellyfinMetrics.UsersWithPermission, snapshot, _permissionKeys);
         }
-
-        private static void SetSnapshot(Gauge gauge, Dictionary<string, double> snapshot, HashSet<string> previousKeys)
-        {
-            foreach (var (key, value) in snapshot)
-            {
-                gauge.WithLabels(Split(key)).Set(value);
-            }
-
-            // Zero out label combinations that disappeared since the last refresh.
-            foreach (var key in previousKeys.Where(key => !snapshot.ContainsKey(key)))
-            {
-                gauge.WithLabels(Split(key)).Set(0);
-            }
-
-            previousKeys.Clear();
-            previousKeys.UnionWith(snapshot.Keys);
-        }
-
-        private static string[] Split(string key)
-            => key.Split(LabelSeparator);
     }
 }
