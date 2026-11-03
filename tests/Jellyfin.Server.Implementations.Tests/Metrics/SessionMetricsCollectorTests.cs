@@ -49,25 +49,38 @@ public class SessionMetricsCollectorTests
     }
 
     [Fact]
-    public void OnPlaybackStopped_IncrementsCounters()
+    public void OnPlaybackStarted_IncrementsCountersOnceForCombinedReasons()
     {
+        var reasons = TranscodeReason.AudioCodecNotSupported | TranscodeReason.VideoCodecNotSupported;
         var session = CreateSession("device-" + Guid.NewGuid(), "client-" + Guid.NewGuid(), PlayMethod.Transcode, new TranscodingInfo
         {
             HardwareAccelerationType = HardwareAccelerationType.none,
             VideoCodec = "h264",
             AudioCodec = "aac",
-            TranscodeReasons = TranscodeReason.AudioCodecNotSupported
+            TranscodeReasons = reasons
         });
 
         var playMethodLabel = PlayMethod.Transcode.ToString();
-        var reasonLabel = TranscodeReason.AudioCodecNotSupported.ToString();
+        var reasonLabel = "AudioCodecNotSupported|VideoCodecNotSupported";
 
         var beforePlayMethods = JellyfinMetrics.PlayMethodsTotal.WithLabels(playMethodLabel, reasonLabel).Value;
+        var beforeAudioReason = JellyfinMetrics.PlayMethodsTotal
+            .WithLabels(playMethodLabel, TranscodeReason.AudioCodecNotSupported.ToString())
+            .Value;
+        var beforeVideoReason = JellyfinMetrics.PlayMethodsTotal
+            .WithLabels(playMethodLabel, TranscodeReason.VideoCodecNotSupported.ToString())
+            .Value;
         var beforeTranscodes = JellyfinMetrics.TranscodesTotal.WithLabels("software").Value;
 
-        SessionMetricsCollector.OnPlaybackStopped(new PlaybackStopEventArgs { Session = session });
+        SessionMetricsCollector.OnPlaybackStarted(new PlaybackStartEventArgs { Session = session });
 
-        Assert.True(JellyfinMetrics.PlayMethodsTotal.WithLabels(playMethodLabel, reasonLabel).Value > beforePlayMethods);
+        Assert.Equal(beforePlayMethods + 1, JellyfinMetrics.PlayMethodsTotal.WithLabels(playMethodLabel, reasonLabel).Value);
+        Assert.Equal(beforeAudioReason, JellyfinMetrics.PlayMethodsTotal
+            .WithLabels(playMethodLabel, TranscodeReason.AudioCodecNotSupported.ToString())
+            .Value);
+        Assert.Equal(beforeVideoReason, JellyfinMetrics.PlayMethodsTotal
+            .WithLabels(playMethodLabel, TranscodeReason.VideoCodecNotSupported.ToString())
+            .Value);
         Assert.True(JellyfinMetrics.TranscodesTotal.WithLabels("software").Value > beforeTranscodes);
     }
 

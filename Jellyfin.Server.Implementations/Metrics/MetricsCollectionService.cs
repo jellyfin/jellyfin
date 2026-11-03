@@ -58,7 +58,7 @@ namespace Jellyfin.Server.Implementations.Metrics
         {
             _logger.LogInformation("Starting Jellyfin metrics collection");
 
-            _sessionManager.PlaybackStopped += OnPlaybackStopped;
+            _sessionManager.PlaybackStart += OnPlaybackStarted;
 
             // Refresh immediately so values are available without waiting for the first interval.
             RefreshGauges();
@@ -70,7 +70,7 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// <inheritdoc />
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _sessionManager.PlaybackStopped -= OnPlaybackStopped;
+            _sessionManager.PlaybackStart -= OnPlaybackStarted;
             _timer?.Change(Timeout.Infinite, Timeout.Infinite);
             return Task.CompletedTask;
         }
@@ -87,15 +87,15 @@ namespace Jellyfin.Server.Implementations.Metrics
             _disposed = true;
         }
 
-        private void OnPlaybackStopped(object? sender, PlaybackStopEventArgs eventArgs)
+        private void OnPlaybackStarted(object? sender, PlaybackProgressEventArgs eventArgs)
         {
             try
             {
-                SessionMetricsCollector.OnPlaybackStopped(eventArgs);
+                SessionMetricsCollector.OnPlaybackStarted(eventArgs);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to record playback stop metrics");
+                _logger.LogWarning(ex, "Failed to record playback start metrics");
             }
         }
 

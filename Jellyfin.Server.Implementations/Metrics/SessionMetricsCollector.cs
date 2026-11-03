@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Data.Queries;
@@ -66,10 +67,10 @@ namespace Jellyfin.Server.Implementations.Metrics
         }
 
         /// <summary>
-        /// Records counter metrics when a playback stops.
+        /// Records counter metrics when a playback starts.
         /// </summary>
-        /// <param name="eventArgs">The playback stop event arguments.</param>
-        public static void OnPlaybackStopped(PlaybackStopEventArgs eventArgs)
+        /// <param name="eventArgs">The playback start event arguments.</param>
+        public static void OnPlaybackStarted(PlaybackProgressEventArgs eventArgs)
         {
             var session = eventArgs.Session;
             if (session?.PlayState?.PlayMethod is null)
@@ -78,7 +79,7 @@ namespace Jellyfin.Server.Implementations.Metrics
             }
 
             var playMethod = session.PlayState.PlayMethod.Value;
-            var transcodeReason = session.TranscodingInfo is null
+            var transcodeReason = playMethod != PlayMethod.Transcode || session.TranscodingInfo is null
                 ? "None"
                 : TranscodeReasonLabel(session.TranscodingInfo.TranscodeReasons);
             JellyfinMetrics.PlayMethodsTotal.WithLabels(playMethod.ToString(), transcodeReason).Inc();
@@ -95,6 +96,8 @@ namespace Jellyfin.Server.Implementations.Metrics
             => acceleration is null or HardwareAccelerationType.none ? "software" : acceleration.Value.ToString();
 
         private static string TranscodeReasonLabel(TranscodeReason reasons)
-            => reasons == 0 ? "None" : reasons.ToString();
+            => reasons == 0
+                ? "None"
+                : string.Join("|", reasons.ToString().Split(", ", StringSplitOptions.RemoveEmptyEntries).Order(StringComparer.Ordinal));
     }
 }

@@ -54,20 +54,20 @@ namespace Jellyfin.Server.Implementations.Metrics
             "audio_codec");
 
         /// <summary>
-        /// Gets the counter that tracks playbacks by play method and transcode reason.
+        /// Gets the counter that tracks playback starts by play method and transcode reason.
         /// </summary>
         public static Counter PlayMethodsTotal { get; } = Prometheus.Metrics.CreateCounter(
             "jellyfin_play_methods_total",
-            "Total number of playbacks by play method and transcode reason.",
+            "Number of playback starts by play method and transcode reason. Combined transcode reasons are pipe-delimited.",
             "play_method",
             "transcode_reason");
 
         /// <summary>
-        /// Gets the counter that tracks transcodes by acceleration method.
+        /// Gets the counter that tracks transcoding playback starts by acceleration method.
         /// </summary>
         public static Counter TranscodesTotal { get; } = Prometheus.Metrics.CreateCounter(
             "jellyfin_transcodes_total",
-            "Total number of transcodes by acceleration method.",
+            "Number of transcoding playback starts by acceleration method.",
             "acceleration");
 
         /// <summary>
