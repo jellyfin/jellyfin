@@ -59,7 +59,7 @@ public class SessionMetricsCollectorTests
         var beforePlayMethods = JellyfinMetrics.PlayMethodsTotal.WithLabels(playMethodLabel, reasonLabel).Value;
         var beforeTranscodes = JellyfinMetrics.TranscodesTotal.WithLabels("software").Value;
 
-        collector.OnPlaybackStopped(new PlaybackStopEventArgs { Session = session });
+        SessionMetricsCollector.OnPlaybackStopped(new PlaybackStopEventArgs { Session = session });
 
         Assert.True(JellyfinMetrics.PlayMethodsTotal.WithLabels(playMethodLabel, reasonLabel).Value > beforePlayMethods);
         Assert.True(JellyfinMetrics.TranscodesTotal.WithLabels("software").Value > beforeTranscodes);

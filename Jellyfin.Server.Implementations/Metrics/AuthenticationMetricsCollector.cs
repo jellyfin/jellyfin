@@ -63,12 +63,9 @@ namespace Jellyfin.Server.Implementations.Metrics
                 gauge.WithLabels(Split(key)).Set(value);
             }
 
-            foreach (var key in previousKeys)
+            foreach (var key in previousKeys.Where(key => !snapshot.ContainsKey(key)))
             {
-                if (!snapshot.ContainsKey(key))
-                {
-                    gauge.WithLabels(Split(key)).Set(0);
-                }
+                gauge.WithLabels(Split(key)).Set(0);
             }
 
             previousKeys.Clear();

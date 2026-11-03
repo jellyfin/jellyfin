@@ -46,8 +46,9 @@ namespace Jellyfin.Server.Implementations.Metrics
 
             // Active streams grouped by play method.
             var activeStreams = sessions
-                .Where(s => s.PlayState?.PlayMethod is not null)
-                .GroupBy(s => s.PlayState!.PlayMethod!.Value.ToString())
+                .Select(s => s.PlayState?.PlayMethod)
+                .Where(playMethod => playMethod.HasValue)
+                .GroupBy(playMethod => playMethod.GetValueOrDefault().ToString())
                 .ToDictionary(g => g.Key, g => (double)g.Count());
             SetSnapshot(JellyfinMetrics.ActiveStreams, activeStreams, _activeStreamKeys);
 
@@ -55,7 +56,7 @@ namespace Jellyfin.Server.Implementations.Metrics
             var activeTranscodes = sessions
                 .Where(s => s.TranscodingInfo is not null)
                 .GroupBy(s => Join(
-                    Acceleration(s.TranscodingInfo!.HardwareAccelerationType),
+                    Acceleration(s.TranscodingInfo.HardwareAccelerationType),
                     Sanitize(s.TranscodingInfo.VideoCodec),
                     Sanitize(s.TranscodingInfo.AudioCodec)))
                 .ToDictionary(g => g.Key, g => (double)g.Count());
@@ -66,7 +67,7 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// Records counter metrics when a playback stops.
         /// </summary>
         /// <param name="eventArgs">The playback stop event arguments.</param>
-        public void OnPlaybackStopped(PlaybackStopEventArgs eventArgs)
+        public static void OnPlaybackStopped(PlaybackStopEventArgs eventArgs)
         {
             var session = eventArgs.Session;
             if (session?.PlayState?.PlayMethod is null)
@@ -96,12 +97,9 @@ namespace Jellyfin.Server.Implementations.Metrics
             }
 
             // Zero out label combinations that disappeared since the last refresh.
-            foreach (var key in previousKeys)
+            foreach (var key in previousKeys.Where(key => !snapshot.ContainsKey(key)))
             {
-                if (!snapshot.ContainsKey(key))
-                {
-                    gauge.WithLabels(Split(key)).Set(0);
-                }
+                gauge.WithLabels(Split(key)).Set(0);
             }
 
             previousKeys.Clear();

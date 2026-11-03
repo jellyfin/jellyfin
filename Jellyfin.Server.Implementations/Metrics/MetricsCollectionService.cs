@@ -91,7 +91,7 @@ namespace Jellyfin.Server.Implementations.Metrics
         {
             try
             {
-                _sessionMetricsCollector.OnPlaybackStopped(eventArgs);
+                SessionMetricsCollector.OnPlaybackStopped(eventArgs);
             }
             catch (Exception ex)
             {

@@ -94,11 +94,11 @@ namespace Jellyfin.Server.Implementations.Metrics
                 .AsNoTracking()
                 .Where(s => s.Codec != null)
                 .GroupBy(s => new { s.StreamType, s.Codec })
-                .Select(g => new { g.Key.StreamType, Codec = g.Key.Codec!, Count = g.Count() })
+                .Select(g => new { g.Key.StreamType, Codec = g.Key.Codec, Count = g.Count() })
                 .ToArray();
 
             var codecs = new Dictionary<string, double>();
-            foreach (var row in codecCounts)
+            foreach (var row in codecCounts.Where(row => row.Codec is not null))
             {
                 var kind = ((MediaStreamType)row.StreamType).ToString().ToLowerInvariant();
                 var codec = Sanitize(row.Codec).ToLowerInvariant();
@@ -117,12 +117,9 @@ namespace Jellyfin.Server.Implementations.Metrics
             }
 
             // Zero out label combinations that disappeared since the last refresh.
-            foreach (var key in previousKeys)
+            foreach (var key in previousKeys.Where(key => !snapshot.ContainsKey(key)))
             {
-                if (!snapshot.ContainsKey(key))
-                {
-                    gauge.WithLabels(Split(key)).Set(0);
-                }
+                gauge.WithLabels(Split(key)).Set(0);
             }
 
             previousKeys.Clear();
