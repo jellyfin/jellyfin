@@ -1,0 +1,81 @@
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Controller.Library;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+namespace Jellyfin.Server.Implementations.Metrics
+{
+    /// <summary>
+    /// Periodically refreshes Jellyfin-specific Prometheus gauges from live server state.
+    /// </summary>
+    /// <remarks>
+    /// Gauges are refreshed on a timer so that scraping the <c>/metrics</c> endpoint stays cheap and the
+    /// playback/session hot path is never blocked by metric collection.
+    /// </remarks>
+    public sealed class MetricsCollectionService : IHostedService, IDisposable
+    {
+        private static readonly TimeSpan _collectionInterval = TimeSpan.FromSeconds(15);
+
+        private readonly IUserManager _userManager;
+        private readonly ILogger<MetricsCollectionService> _logger;
+        private Timer? _timer;
+        private bool _disposed;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MetricsCollectionService"/> class.
+        /// </summary>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="logger">The logger.</param>
+        public MetricsCollectionService(IUserManager userManager, ILogger<MetricsCollectionService> logger)
+        {
+            _userManager = userManager;
+            _logger = logger;
+        }
+
+        /// <inheritdoc />
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Starting Jellyfin metrics collection");
+
+            // Refresh immediately so values are available without waiting for the first interval.
+            RefreshGauges();
+
+            _timer = new Timer(_ => RefreshGauges(), null, _collectionInterval, _collectionInterval);
+            return Task.CompletedTask;
+        }
+
+        /// <inheritdoc />
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            _timer?.Change(Timeout.Infinite, Timeout.Infinite);
+            return Task.CompletedTask;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _timer?.Dispose();
+            _disposed = true;
+        }
+
+        private void RefreshGauges()
+        {
+            try
+            {
+                JellyfinMetrics.UserAccounts.Set(_userManager.GetUsers().Count());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to refresh Jellyfin metrics");
+            }
+        }
+    }
+}
