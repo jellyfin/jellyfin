@@ -162,6 +162,8 @@ namespace Jellyfin.Server
             if (_serverConfigurationManager.Configuration.EnableMetrics)
             {
                 services.AddSingleton<SessionMetricsCollector>();
+                services.AddSingleton<LibraryMetricsCollector>();
+                services.AddSingleton<UserMetricsCollector>();
                 services.AddHostedService<MetricsCollectionService>();
             }
         }

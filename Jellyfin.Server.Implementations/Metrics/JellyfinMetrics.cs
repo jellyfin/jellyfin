@@ -69,5 +69,38 @@ namespace Jellyfin.Server.Implementations.Metrics
             "jellyfin_transcodes_total",
             "Total number of transcodes by acceleration method.",
             "acceleration");
+
+        /// <summary>
+        /// Gets the gauge that tracks the number of libraries by collection type.
+        /// </summary>
+        public static Gauge Libraries { get; } = Prometheus.Metrics.CreateGauge(
+            "jellyfin_libraries",
+            "Number of libraries by collection type.",
+            "type");
+
+        /// <summary>
+        /// Gets the gauge that tracks the number of library items by media type.
+        /// </summary>
+        public static Gauge LibraryItems { get; } = Prometheus.Metrics.CreateGauge(
+            "jellyfin_library_items",
+            "Number of library items by media type.",
+            "type");
+
+        /// <summary>
+        /// Gets the gauge that tracks the number of media streams by stream kind and codec.
+        /// </summary>
+        public static Gauge MediaStreams { get; } = Prometheus.Metrics.CreateGauge(
+            "jellyfin_media_streams",
+            "Number of media streams by stream kind and codec.",
+            "kind",
+            "codec");
+
+        /// <summary>
+        /// Gets the gauge that tracks the number of users with a specific permission.
+        /// </summary>
+        public static Gauge UsersWithPermission { get; } = Prometheus.Metrics.CreateGauge(
+            "jellyfin_users_with_permission",
+            "Number of users with a specific permission.",
+            "permission");
     }
 }

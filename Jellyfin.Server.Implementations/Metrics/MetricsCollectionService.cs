@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
@@ -21,8 +20,9 @@ namespace Jellyfin.Server.Implementations.Metrics
         private static readonly TimeSpan _collectionInterval = TimeSpan.FromSeconds(15);
 
         private readonly ISessionManager _sessionManager;
-        private readonly IUserManager _userManager;
         private readonly SessionMetricsCollector _sessionMetricsCollector;
+        private readonly LibraryMetricsCollector _libraryMetricsCollector;
+        private readonly UserMetricsCollector _userMetricsCollector;
         private readonly ILogger<MetricsCollectionService> _logger;
         private Timer? _timer;
         private bool _disposed;
@@ -31,18 +31,21 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// Initializes a new instance of the <see cref="MetricsCollectionService"/> class.
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
-        /// <param name="userManager">The user manager.</param>
         /// <param name="sessionMetricsCollector">The session metrics collector.</param>
+        /// <param name="libraryMetricsCollector">The library metrics collector.</param>
+        /// <param name="userMetricsCollector">The user metrics collector.</param>
         /// <param name="logger">The logger.</param>
         public MetricsCollectionService(
             ISessionManager sessionManager,
-            IUserManager userManager,
             SessionMetricsCollector sessionMetricsCollector,
+            LibraryMetricsCollector libraryMetricsCollector,
+            UserMetricsCollector userMetricsCollector,
             ILogger<MetricsCollectionService> logger)
         {
             _sessionManager = sessionManager;
-            _userManager = userManager;
             _sessionMetricsCollector = sessionMetricsCollector;
+            _libraryMetricsCollector = libraryMetricsCollector;
+            _userMetricsCollector = userMetricsCollector;
             _logger = logger;
         }
 
@@ -96,8 +99,9 @@ namespace Jellyfin.Server.Implementations.Metrics
         {
             try
             {
-                JellyfinMetrics.UserAccounts.Set(_userManager.GetUsers().Count());
                 _sessionMetricsCollector.RefreshGauges();
+                _libraryMetricsCollector.RefreshGauges();
+                _userMetricsCollector.RefreshGauges();
             }
             catch (Exception ex)
             {
