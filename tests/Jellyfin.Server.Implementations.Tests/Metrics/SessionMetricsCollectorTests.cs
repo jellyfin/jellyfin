@@ -13,6 +13,7 @@ using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Metrics;
 
+[Collection(MetricsTestCollection.Name)]
 public class SessionMetricsCollectorTests
 {
     [Fact]
@@ -24,7 +25,7 @@ public class SessionMetricsCollectorTests
         var deviceManager = new Mock<IDeviceManager>();
         deviceManager.Setup(x => x.GetDevices(It.IsAny<DeviceQuery>()))
             .Returns(new QueryResult<Jellyfin.Database.Implementations.Entities.Security.Device>(null, 8, []));
-        sessionManager.SetupGet(x => x.Sessions).Returns(
+        SessionInfo[] sessions =
         [
             CreateSession(deviceType, client, PlayMethod.DirectPlay, null),
             CreateSession(deviceType, client, PlayMethod.Transcode, new TranscodingInfo
@@ -35,7 +36,8 @@ public class SessionMetricsCollectorTests
             }),
             CreateSession("other-device", "other-client", PlayMethod.DirectStream, null),
             CreateIdleSession(deviceType, client)
-        ]);
+        ];
+        sessionManager.SetupGet(x => x.Sessions).Returns(() => sessions);
 
         var collector = new SessionMetricsCollector(sessionManager.Object, deviceManager.Object);
 
@@ -43,9 +45,16 @@ public class SessionMetricsCollectorTests
 
         Assert.Equal(3d, JellyfinMetrics.ConnectedSessions.WithLabels(deviceType, client).Value);
         Assert.Equal(8d, JellyfinMetrics.RegisteredDevices.Value);
-        Assert.Equal(1d, JellyfinMetrics.ActiveStreams.WithLabels(PlayMethod.DirectPlay.ToString()).Value);
-        Assert.Equal(1d, JellyfinMetrics.ActiveStreams.WithLabels(PlayMethod.Transcode.ToString()).Value);
+        Assert.Equal(1d, JellyfinMetrics.ActiveStreams.WithLabels("direct_play").Value);
+        Assert.Equal(1d, JellyfinMetrics.ActiveStreams.WithLabels("transcode").Value);
         Assert.Equal(1d, JellyfinMetrics.ActiveTranscodes.WithLabels("nvenc", "h264", "aac").Value);
+
+        sessions = [];
+        collector.RefreshGauges();
+
+        Assert.Equal(0d, JellyfinMetrics.ConnectedSessions.WithLabels(deviceType, client).Value);
+        Assert.Equal(0d, JellyfinMetrics.ActiveStreams.WithLabels("direct_play").Value);
+        Assert.Equal(0d, JellyfinMetrics.ActiveTranscodes.WithLabels("nvenc", "h264", "aac").Value);
     }
 
     [Fact]
@@ -60,15 +69,15 @@ public class SessionMetricsCollectorTests
             TranscodeReasons = reasons
         });
 
-        var playMethodLabel = PlayMethod.Transcode.ToString();
-        var reasonLabel = "AudioCodecNotSupported|VideoCodecNotSupported";
+        const string playMethodLabel = "transcode";
+        const string reasonLabel = "audio_codec_not_supported|video_codec_not_supported";
 
         var beforePlayMethods = JellyfinMetrics.PlayMethodsTotal.WithLabels(playMethodLabel, reasonLabel).Value;
         var beforeAudioReason = JellyfinMetrics.PlayMethodsTotal
-            .WithLabels(playMethodLabel, TranscodeReason.AudioCodecNotSupported.ToString())
+            .WithLabels(playMethodLabel, "audio_codec_not_supported")
             .Value;
         var beforeVideoReason = JellyfinMetrics.PlayMethodsTotal
-            .WithLabels(playMethodLabel, TranscodeReason.VideoCodecNotSupported.ToString())
+            .WithLabels(playMethodLabel, "video_codec_not_supported")
             .Value;
         var beforeTranscodes = JellyfinMetrics.TranscodesTotal.WithLabels("software").Value;
 
@@ -76,10 +85,10 @@ public class SessionMetricsCollectorTests
 
         Assert.Equal(beforePlayMethods + 1, JellyfinMetrics.PlayMethodsTotal.WithLabels(playMethodLabel, reasonLabel).Value);
         Assert.Equal(beforeAudioReason, JellyfinMetrics.PlayMethodsTotal
-            .WithLabels(playMethodLabel, TranscodeReason.AudioCodecNotSupported.ToString())
+            .WithLabels(playMethodLabel, "audio_codec_not_supported")
             .Value);
         Assert.Equal(beforeVideoReason, JellyfinMetrics.PlayMethodsTotal
-            .WithLabels(playMethodLabel, TranscodeReason.VideoCodecNotSupported.ToString())
+            .WithLabels(playMethodLabel, "video_codec_not_supported")
             .Value);
         Assert.True(JellyfinMetrics.TranscodesTotal.WithLabels("software").Value > beforeTranscodes);
     }

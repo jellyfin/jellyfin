@@ -30,24 +30,11 @@ namespace Jellyfin.Server.Implementations.Metrics
         {
             var users = _userManager.GetUsers().ToArray();
             var defaultProviderId = typeof(DefaultAuthenticationProvider).FullName ?? string.Empty;
-            var providerNames = _userManager.GetAuthenticationProviders()
-                .Where(p => !string.IsNullOrWhiteSpace(p.Id))
-                .ToDictionary(p => p.Id, p => p.Name, StringComparer.OrdinalIgnoreCase);
-
             var snapshot = users
                 .Where(u => !string.IsNullOrWhiteSpace(u.AuthenticationProviderId))
-                .Select(u =>
-                {
-                    var providerId = u.AuthenticationProviderId;
-                    var providerName = providerNames.TryGetValue(providerId, out var name) && !string.IsNullOrWhiteSpace(name)
-                        ? name
-                        : providerId;
-                    return providerName;
-                })
-                .Where(providerName =>
-                    !string.Equals(defaultProviderId, providerName, StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals("Default", providerName, StringComparison.OrdinalIgnoreCase))
-                .GroupBy(MetricsSnapshot.Sanitize)
+                .Select(u => u.AuthenticationProviderId)
+                .Where(providerId => !string.Equals(defaultProviderId, providerId, StringComparison.OrdinalIgnoreCase))
+                .GroupBy(providerId => MetricsSnapshot.Sanitize(providerId))
                 .ToDictionary(group => group.Key, group => (double)group.Count(), StringComparer.OrdinalIgnoreCase);
 
             MetricsSnapshot.SetSnapshot(JellyfinMetrics.UsersAuthenticatingExternal, snapshot, _providerKeys);

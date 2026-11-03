@@ -54,7 +54,7 @@ namespace Jellyfin.Server.Implementations.Metrics
         private void RefreshLibraries()
         {
             var libraries = _libraryManager.GetVirtualFolders()
-                .GroupBy(f => f.CollectionType?.ToString() ?? "unknown")
+                .GroupBy(f => MetricLabels.CollectionType(f.CollectionType))
                 .ToDictionary(g => g.Key, g => (double)g.Count());
             MetricsSnapshot.SetSnapshot(JellyfinMetrics.Libraries, libraries, _libraryKeys);
         }
@@ -98,7 +98,7 @@ namespace Jellyfin.Server.Implementations.Metrics
             var codecs = new Dictionary<string, double>();
             foreach (var row in codecCounts.Where(row => row.Codec is not null))
             {
-                var kind = ((MediaStreamType)row.StreamType).ToString().ToLowerInvariant();
+                var kind = MetricLabels.StreamKind(row.StreamType);
                 var codec = MetricsSnapshot.Sanitize(row.Codec).ToLowerInvariant();
                 codecs[MetricsSnapshot.Join(kind, codec)] = row.Count;
             }

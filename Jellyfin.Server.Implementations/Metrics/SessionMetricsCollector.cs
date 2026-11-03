@@ -5,7 +5,6 @@ using Jellyfin.Data.Queries;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
 
 namespace Jellyfin.Server.Implementations.Metrics
@@ -51,7 +50,7 @@ namespace Jellyfin.Server.Implementations.Metrics
             var activeStreams = sessions
                 .Select(s => s.PlayState?.PlayMethod)
                 .Where(playMethod => playMethod.HasValue)
-                .GroupBy(playMethod => playMethod.GetValueOrDefault().ToString())
+                .GroupBy(playMethod => MetricLabels.PlayMethod(playMethod.GetValueOrDefault()))
                 .ToDictionary(g => g.Key, g => (double)g.Count());
             MetricsSnapshot.SetSnapshot(JellyfinMetrics.ActiveStreams, activeStreams, _activeStreamKeys);
 
@@ -59,9 +58,9 @@ namespace Jellyfin.Server.Implementations.Metrics
             var activeTranscodes = sessions
                 .Where(s => s.TranscodingInfo is not null)
                 .GroupBy(s => MetricsSnapshot.Join(
-                    Acceleration(s.TranscodingInfo.HardwareAccelerationType),
-                    MetricsSnapshot.Sanitize(s.TranscodingInfo.VideoCodec),
-                    MetricsSnapshot.Sanitize(s.TranscodingInfo.AudioCodec)))
+                    MetricLabels.Acceleration(s.TranscodingInfo.HardwareAccelerationType),
+                    MetricsSnapshot.Sanitize(s.TranscodingInfo.VideoCodec).ToLowerInvariant(),
+                    MetricsSnapshot.Sanitize(s.TranscodingInfo.AudioCodec).ToLowerInvariant()))
                 .ToDictionary(g => g.Key, g => (double)g.Count());
             MetricsSnapshot.SetSnapshot(JellyfinMetrics.ActiveTranscodes, activeTranscodes, _activeTranscodeKeys);
         }
@@ -79,25 +78,19 @@ namespace Jellyfin.Server.Implementations.Metrics
             }
 
             var playMethod = session.PlayState.PlayMethod.Value;
-            var transcodeReason = playMethod != PlayMethod.Transcode || session.TranscodingInfo is null
-                ? "None"
-                : TranscodeReasonLabel(session.TranscodingInfo.TranscodeReasons);
-            JellyfinMetrics.PlayMethodsTotal.WithLabels(playMethod.ToString(), transcodeReason).Inc();
+            var transcodeReason = playMethod != PlayMethod.Transcode
+                ? "none"
+                : session.TranscodingInfo is null
+                    ? "unknown"
+                    : MetricLabels.TranscodeReasons(session.TranscodingInfo.TranscodeReasons);
+            JellyfinMetrics.PlayMethodsTotal.WithLabels(MetricLabels.PlayMethod(playMethod), transcodeReason).Inc();
 
             if (playMethod == PlayMethod.Transcode)
             {
                 JellyfinMetrics.TranscodesTotal
-                    .WithLabels(Acceleration(session.TranscodingInfo?.HardwareAccelerationType))
+                    .WithLabels(MetricLabels.Acceleration(session.TranscodingInfo?.HardwareAccelerationType))
                     .Inc();
             }
         }
-
-        private static string Acceleration(HardwareAccelerationType? acceleration)
-            => acceleration is null or HardwareAccelerationType.none ? "software" : acceleration.Value.ToString();
-
-        private static string TranscodeReasonLabel(TranscodeReason reasons)
-            => reasons == 0
-                ? "None"
-                : string.Join("|", reasons.ToString().Split(", ", StringSplitOptions.RemoveEmptyEntries).Order(StringComparer.Ordinal));
     }
 }
