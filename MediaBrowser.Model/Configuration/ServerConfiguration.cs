@@ -66,7 +66,7 @@ public class ServerConfiguration : BaseApplicationConfiguration
 
     /// <summary>
     /// Gets or sets a value indicating whether to enable prometheus metrics exporting.
-    /// </summary>    curl http://localhost:8096/metrics
+    /// </summary>
     public bool EnableMetrics { get; set; } = false;
 
     public bool EnableNormalizedItemByNameIds { get; set; } = true;

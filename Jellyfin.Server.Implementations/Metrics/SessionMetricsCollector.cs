@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Queries;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
@@ -13,7 +15,8 @@ namespace Jellyfin.Server.Implementations.Metrics
     public sealed class SessionMetricsCollector
     {
         private readonly ISessionManager _sessionManager;
-        private readonly HashSet<string> _activeSessionKeys = new();
+        private readonly IDeviceManager _deviceManager;
+        private readonly HashSet<string> _connectedSessionKeys = new();
         private readonly HashSet<string> _activeStreamKeys = new();
         private readonly HashSet<string> _activeTranscodeKeys = new();
 
@@ -21,25 +24,27 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// Initializes a new instance of the <see cref="SessionMetricsCollector"/> class.
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
-        public SessionMetricsCollector(ISessionManager sessionManager)
+        /// <param name="deviceManager">The device manager.</param>
+        public SessionMetricsCollector(ISessionManager sessionManager, IDeviceManager deviceManager)
         {
             _sessionManager = sessionManager;
+            _deviceManager = deviceManager;
         }
 
         /// <summary>
-        /// Refreshes session and stream gauges from the current sessions.
+        /// Refreshes connected session, registered device, and stream gauges.
         /// </summary>
         public void RefreshGauges()
         {
             var sessions = _sessionManager.Sessions.ToArray();
 
-            JellyfinMetrics.TotalSessions.Set(sessions.Length);
+            JellyfinMetrics.RegisteredDevices.Set(_deviceManager.GetDevices(new DeviceQuery()).TotalRecordCount);
 
-            // Active sessions grouped by device type and client.
-            var activeSessions = sessions
+            // SessionManager.Sessions contains currently connected client sessions, not only active playback.
+            var connectedSessions = sessions
                 .GroupBy(s => MetricsSnapshot.Join(MetricsSnapshot.Sanitize(s.DeviceType), MetricsSnapshot.Sanitize(s.Client)))
                 .ToDictionary(g => g.Key, g => (double)g.Count());
-            MetricsSnapshot.SetSnapshot(JellyfinMetrics.ActiveSessions, activeSessions, _activeSessionKeys);
+            MetricsSnapshot.SetSnapshot(JellyfinMetrics.ConnectedSessions, connectedSessions, _connectedSessionKeys);
 
             // Active streams grouped by play method.
             var activeStreams = sessions

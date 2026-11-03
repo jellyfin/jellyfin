@@ -20,20 +20,20 @@ namespace Jellyfin.Server.Implementations.Metrics
             "Number of Jellyfin user accounts.");
 
         /// <summary>
-        /// Gets the gauge that tracks the number of active sessions by device type and client.
+        /// Gets the gauge that tracks currently connected sessions by device type and client.
         /// </summary>
-        public static Gauge ActiveSessions { get; } = Prometheus.Metrics.CreateGauge(
-            "jellyfin_active_sessions",
-            "Number of active sessions.",
+        public static Gauge ConnectedSessions { get; } = Prometheus.Metrics.CreateGauge(
+            "jellyfin_connected_sessions",
+            "Number of client sessions currently connected to the server.",
             "device_type",
             "client");
 
         /// <summary>
-        /// Gets the gauge that tracks the total number of sessions.
+        /// Gets the gauge that tracks registered client device records, including devices not currently connected.
         /// </summary>
-        public static Gauge TotalSessions { get; } = Prometheus.Metrics.CreateGauge(
-            "jellyfin_total_sessions",
-            "Total number of sessions.");
+        public static Gauge RegisteredDevices { get; } = Prometheus.Metrics.CreateGauge(
+            "jellyfin_registered_devices",
+            "Number of registered client device records, including devices not currently connected.");
 
         /// <summary>
         /// Gets the gauge that tracks the number of active streams by play method.
