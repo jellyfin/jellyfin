@@ -120,5 +120,6 @@
     "NameExtraThemeSong": "lagu tema",
     "NameExtraThemeVideo": "Tema video",
     "NameExtraTrailer": "cuplikan",
-    "NameExtraUnknown": "tambahan"
+    "NameExtraUnknown": "tambahan",
+    "NameExtraNumbered": "{0} {1}"
 }
