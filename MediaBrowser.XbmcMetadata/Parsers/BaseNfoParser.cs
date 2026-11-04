@@ -825,26 +825,24 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 {
                     case "format3d":
                         var format = reader.ReadElementContentAsString();
-                        if (string.Equals("HSBS", format, StringComparison.OrdinalIgnoreCase))
+                        video.Video3DFormat = format.ToUpperInvariant() switch
                         {
-                            video.Video3DFormat = Video3DFormat.HalfSideBySide;
-                        }
-                        else if (string.Equals("HTAB", format, StringComparison.OrdinalIgnoreCase))
-                        {
-                            video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
-                        }
-                        else if (string.Equals("FTAB", format, StringComparison.OrdinalIgnoreCase))
-                        {
-                            video.Video3DFormat = Video3DFormat.FullTopAndBottom;
-                        }
-                        else if (string.Equals("FSBS", format, StringComparison.OrdinalIgnoreCase))
-                        {
-                            video.Video3DFormat = Video3DFormat.FullSideBySide;
-                        }
-                        else if (string.Equals("MVC", format, StringComparison.OrdinalIgnoreCase))
-                        {
-                            video.Video3DFormat = Video3DFormat.MVC;
-                        }
+                            "HSBS" => Video3DFormat.HalfSideBySide,
+                            "HTAB" => Video3DFormat.HalfTopAndBottom,
+                            "FTAB" => Video3DFormat.FullTopAndBottom,
+                            "FSBS" => Video3DFormat.FullSideBySide,
+                            "MVC" => Video3DFormat.MVC,
+                            "MVHEVC" => Video3DFormat.MVHEVC,
+                            "180SBS" => Video3DFormat.Equirectangular180SideBySide,
+                            "180TAB" => Video3DFormat.Equirectangular180TopAndBottom,
+                            "180MONO" => Video3DFormat.Equirectangular180Mono,
+                            "360SBS" => Video3DFormat.Equirectangular360SideBySide,
+                            "360TAB" => Video3DFormat.Equirectangular360TopAndBottom,
+                            "360MONO" => Video3DFormat.Equirectangular360Mono,
+                            "FISHEYE180SBS" => Video3DFormat.Fisheye180SideBySide,
+                            "FISHEYE180MONO" => Video3DFormat.Fisheye180Mono,
+                            _ => video.Video3DFormat
+                        };
 
                         break;
                     case "aspect":

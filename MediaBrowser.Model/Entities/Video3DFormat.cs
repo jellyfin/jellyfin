@@ -8,6 +8,15 @@ namespace MediaBrowser.Model.Entities
         FullSideBySide,
         FullTopAndBottom,
         HalfTopAndBottom,
-        MVC
+        MVC,
+        Equirectangular180SideBySide,
+        Equirectangular180TopAndBottom,
+        Equirectangular180Mono,
+        Equirectangular360SideBySide,
+        Equirectangular360TopAndBottom,
+        Equirectangular360Mono,
+        Fisheye180SideBySide,
+        Fisheye180Mono,
+        MVHEVC
     }
 }
