@@ -46,14 +46,15 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// </summary>
         public void RefreshGauges()
         {
-            RefreshLibraries();
+            var virtualFolders = _libraryManager.GetVirtualFolders();
+            RefreshLibraries(virtualFolders);
             RefreshLibraryItems();
-            RefreshCodecs();
+            RefreshCodecs(virtualFolders);
         }
 
-        private void RefreshLibraries()
+        private void RefreshLibraries(IReadOnlyCollection<VirtualFolderInfo> virtualFolders)
         {
-            var libraries = _libraryManager.GetVirtualFolders()
+            var libraries = virtualFolders
                 .GroupBy(f => MetricLabels.CollectionType(f.CollectionType))
                 .ToDictionary(g => g.Key, g => (double)g.Count());
             MetricsSnapshot.SetSnapshot(JellyfinMetrics.Libraries, libraries, _libraryKeys);
@@ -79,28 +80,46 @@ namespace Jellyfin.Server.Implementations.Metrics
             MetricsSnapshot.SetSnapshot(JellyfinMetrics.LibraryItems, items, _itemKeys);
         }
 
-        private void RefreshCodecs()
+        private void RefreshCodecs(IReadOnlyCollection<VirtualFolderInfo> virtualFolders)
         {
-            // Codec aggregation scans all media streams, so refresh it on a slower cadence.
+            // Media stream aggregation scans the library database, so refresh it less often.
             if (DateTime.UtcNow - _lastCodecRefresh < _codecRefreshInterval)
             {
                 return;
+            }
+
+            var librariesById = new Dictionary<Guid, string>();
+            foreach (var virtualFolder in virtualFolders)
+            {
+                if (Guid.TryParse(virtualFolder.ItemId, out var libraryId))
+                {
+                    librariesById.TryAdd(libraryId, MetricsSnapshot.Sanitize(virtualFolder.Name));
+                }
             }
 
             using var dbContext = _dbProvider.CreateDbContext();
             var codecCounts = dbContext.MediaStreamInfos
                 .AsNoTracking()
                 .Where(s => s.Codec != null)
-                .GroupBy(s => new { s.StreamType, s.Codec })
-                .Select(g => new { g.Key.StreamType, Codec = g.Key.Codec, Count = g.Count() })
+                .Join(
+                    dbContext.BaseItems.AsNoTracking(),
+                    stream => stream.ItemId,
+                    item => item.Id,
+                    (stream, item) => new { item.TopParentId, stream.StreamType, stream.Codec })
+                .GroupBy(s => new { s.TopParentId, s.StreamType, s.Codec })
+                .Select(g => new { g.Key.TopParentId, g.Key.StreamType, Codec = g.Key.Codec, Count = g.Count() })
                 .ToArray();
 
             var codecs = new Dictionary<string, double>();
             foreach (var row in codecCounts.Where(row => row.Codec is not null))
             {
+                var libraryId = row.TopParentId?.ToString("N") ?? "unknown";
+                var libraryName = row.TopParentId.HasValue && librariesById.TryGetValue(row.TopParentId.Value, out var name)
+                    ? name
+                    : "unknown";
                 var kind = MetricLabels.StreamKind(row.StreamType);
                 var codec = MetricsSnapshot.Sanitize(row.Codec).ToLowerInvariant();
-                codecs[MetricsSnapshot.Join(kind, codec)] = row.Count;
+                codecs[MetricsSnapshot.Join(libraryName, libraryId, kind, codec)] = row.Count;
             }
 
             MetricsSnapshot.SetSnapshot(JellyfinMetrics.MediaStreams, codecs, _codecKeys);

@@ -5,29 +5,6 @@ namespace Jellyfin.Server.Implementations.Metrics
     /// <summary>
     /// Central registry for Jellyfin-specific Prometheus metrics.
     /// </summary>
-    /// <remarks>
-    /// All Jellyfin metrics are declared here so that names, help texts and label sets are defined in one place.
-    /// When adding a metric, follow Prometheus naming conventions: snake_case, a <c>jellyfin_</c> prefix, and a
-    /// <c>_total</c> suffix for counters.
-    ///
-    /// Label values are stable lowercase snake_case for play methods (<c>direct_play</c>, <c>direct_stream</c>,
-    /// <c>transcode</c>, <c>unknown</c>), acceleration methods, stream kinds (<c>audio</c>, <c>video</c>,
-    /// <c>subtitle</c>, <c>embedded_image</c>, <c>data</c>, <c>lyric</c>, <c>unknown</c>), and collection types
-    /// (<c>movies</c>, <c>tvshows</c>, <c>music</c>, <c>musicvideos</c>, <c>homevideos</c>, <c>boxsets</c>,
-    /// <c>books</c>, <c>mixed</c>, <c>unknown</c>). Transcode reasons explain why a stream needs transcoding, not
-    /// why a hardware acceleration mode was selected; they use the explicit identifiers in <see cref="MetricLabels"/>.
-    /// Multiple reasons are pipe-delimited in ordinal order and unknown flag bits are represented as
-    /// <c>unknown_0x</c> followed by eight lowercase hexadecimal digits.
-    /// Client and device labels preserve the values reported by the client. Codec labels are sanitized and
-    /// lowercase; permission labels are <c>is_administrator</c>, <c>is_hidden</c>, <c>is_disabled</c>,
-    /// <c>enable_remote_access</c>, <c>enable_live_tv_access</c>, <c>enable_media_playback</c>,
-    /// <c>enable_content_deletion</c>, <c>enable_content_downloading</c>, <c>enable_public_sharing</c>, and
-    /// <c>enable_remote_control_of_other_users</c>. Authentication provider labels use provider IDs, not display
-    /// names. Acceleration labels are <c>software</c>, <c>amf</c>, <c>qsv</c>, <c>nvenc</c>, <c>v4l2m2m</c>,
-    /// <c>vaapi</c>, <c>videotoolbox</c>, <c>rkmpp</c>, or <c>unknown</c>. The acceleration label reflects the
-    /// configured mode reported by the transcode manager; Jellyfin does not currently record why an administrator
-    /// selected that mode or confirm that every part of a transcode used hardware acceleration.
-    /// </remarks>
     public static class JellyfinMetrics
     {
         /// <summary>
@@ -105,11 +82,13 @@ namespace Jellyfin.Server.Implementations.Metrics
             "type");
 
         /// <summary>
-        /// Gets the gauge that tracks the number of media streams by stream kind and codec.
+        /// Gets the gauge that tracks media streams by library, stream kind, and codec.
         /// </summary>
         public static Gauge MediaStreams { get; } = Prometheus.Metrics.CreateGauge(
             "jellyfin_media_streams",
-            "Number of indexed media streams by kind (audio, video, subtitle, embedded_image, data, lyric, or unknown) and lowercase codec.",
+            "Number of indexed media streams by library, kind, and lowercase codec. Library labels contain the configured name and stable item ID.",
+            "library",
+            "library_id",
             "kind",
             "codec");
 
@@ -118,7 +97,7 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// </summary>
         public static Gauge UsersWithPermission { get; } = Prometheus.Metrics.CreateGauge(
             "jellyfin_users_with_permission",
-            "Number of Jellyfin user accounts with each tracked permission enabled: is_administrator, is_hidden, is_disabled, enable_remote_access, enable_live_tv_access, enable_media_playback, enable_content_deletion, enable_content_downloading, enable_public_sharing, or enable_remote_control_of_other_users.",
+            "Number of Jellyfin user accounts with each supported permission enabled, labeled by permission.",
             "permission");
 
         /// <summary>

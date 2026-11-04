@@ -27,6 +27,7 @@ namespace Jellyfin.Server.Implementations.Metrics
         private readonly ILogger<MetricsCollectionService> _logger;
         private Timer? _timer;
         private bool _disposed;
+        private int _isRefreshing;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MetricsCollectionService"/> class.
@@ -68,11 +69,14 @@ namespace Jellyfin.Server.Implementations.Metrics
         }
 
         /// <inheritdoc />
-        public Task StopAsync(CancellationToken cancellationToken)
+        public async Task StopAsync(CancellationToken cancellationToken)
         {
             _sessionManager.PlaybackStart -= OnPlaybackStarted;
-            _timer?.Change(Timeout.Infinite, Timeout.Infinite);
-            return Task.CompletedTask;
+            var timer = Interlocked.Exchange(ref _timer, null);
+            if (timer is not null)
+            {
+                await timer.DisposeAsync().ConfigureAwait(false);
+            }
         }
 
         /// <inheritdoc />
@@ -83,7 +87,7 @@ namespace Jellyfin.Server.Implementations.Metrics
                 return;
             }
 
-            _timer?.Dispose();
+            Interlocked.Exchange(ref _timer, null)?.Dispose();
             _disposed = true;
         }
 
@@ -101,6 +105,11 @@ namespace Jellyfin.Server.Implementations.Metrics
 
         private void RefreshGauges()
         {
+            if (Interlocked.Exchange(ref _isRefreshing, 1) != 0)
+            {
+                return;
+            }
+
             try
             {
                 _sessionMetricsCollector.RefreshGauges();
@@ -111,6 +120,10 @@ namespace Jellyfin.Server.Implementations.Metrics
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed to refresh Jellyfin metrics");
+            }
+            finally
+            {
+                Volatile.Write(ref _isRefreshing, 0);
             }
         }
     }

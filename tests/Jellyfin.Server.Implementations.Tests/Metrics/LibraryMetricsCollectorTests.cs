@@ -23,13 +23,15 @@ public sealed class LibraryMetricsCollectorTests : SqliteDbTestFixture
     public void RefreshGauges_ReportsCountsAndZerosRemovedLabels()
     {
         var itemId = Guid.NewGuid();
+        var libraryId = Guid.NewGuid();
         using (var context = CreateDbContext())
         {
             context.BaseItems.Add(new BaseItemEntity
             {
                 Id = itemId,
                 Type = "MediaBrowser.Controller.Entities.Movies.Movie",
-                Name = "Metrics test movie"
+                Name = "Metrics test movie",
+                TopParentId = libraryId
             });
             context.MediaStreamInfos.Add(new MediaStreamInfo
             {
@@ -44,7 +46,12 @@ public sealed class LibraryMetricsCollectorTests : SqliteDbTestFixture
 
         var folders = new List<VirtualFolderInfo>
         {
-            new VirtualFolderInfo { CollectionType = CollectionTypeOptions.movies },
+            new VirtualFolderInfo
+            {
+                Name = "Movies",
+                ItemId = libraryId.ToString("N"),
+                CollectionType = CollectionTypeOptions.movies
+            },
             new VirtualFolderInfo { CollectionType = null }
         };
         var itemCounts = new ItemCounts { MovieCount = 7, SongCount = 3 };
@@ -63,7 +70,9 @@ public sealed class LibraryMetricsCollectorTests : SqliteDbTestFixture
         Assert.Equal(1d, JellyfinMetrics.Libraries.WithLabels("unknown").Value);
         Assert.Equal(7d, JellyfinMetrics.LibraryItems.WithLabels("movie").Value);
         Assert.Equal(3d, JellyfinMetrics.LibraryItems.WithLabels("song").Value);
-        Assert.Equal(1d, JellyfinMetrics.MediaStreams.WithLabels("video", "h264").Value);
+        Assert.Equal(1d, JellyfinMetrics.MediaStreams
+            .WithLabels("Movies", libraryId.ToString("N"), "video", "h264")
+            .Value);
 
         folders = [new VirtualFolderInfo { CollectionType = CollectionTypeOptions.music }];
         itemCounts = new ItemCounts { AlbumCount = 2 };
