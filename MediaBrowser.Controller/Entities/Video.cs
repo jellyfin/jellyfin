@@ -711,14 +711,22 @@ namespace MediaBrowser.Controller.Entities
 
             foreach (var item in localAlternates)
             {
-                item.ImageInfos = ImageInfos;
+                // Copying a collection this instance never read would replace the alternate's with a partial set.
+                if (OwnedRowsRead.HasFlag(OwnedItemRows.Images))
+                {
+                    item.ImageInfos = ImageInfos;
+                }
+
                 item.Overview = Overview;
                 item.ProductionYear = ProductionYear;
                 item.PremiereDate = PremiereDate;
                 item.CommunityRating = CommunityRating;
                 item.OfficialRating = OfficialRating;
                 item.Genres = Genres;
-                item.ProviderIds = ProviderIds;
+                if (OwnedRowsRead.HasFlag(OwnedItemRows.Providers))
+                {
+                    item.ProviderIds = ProviderIds;
+                }
 
                 await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataDownload, cancellationToken).ConfigureAwait(false);
             }

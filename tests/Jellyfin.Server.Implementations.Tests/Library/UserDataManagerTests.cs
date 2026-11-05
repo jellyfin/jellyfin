@@ -94,6 +94,17 @@ public sealed class UserDataManagerTests : IDisposable
         };
     }
 
+    private void StorePlayedRow(AudioBook item)
+    {
+        using var ctx = CreateDbContext();
+        ctx.Users.Add(_user);
+        ctx.BaseItems.Add(new BaseItemEntity { Id = item.Id, Type = typeof(AudioBook).FullName! });
+        var row = CreateUserDataRow(item, item.GetUserDataKeys()[0], 0);
+        row.Played = true;
+        ctx.UserData.Add(row);
+        ctx.SaveChanges();
+    }
+
     [Fact]
     public void GetUserData_RowsUnderCurrentAndRetiredKeys_PrefersCurrentKeyRow()
     {
@@ -181,6 +192,35 @@ public sealed class UserDataManagerTests : IDisposable
 
         Assert.NotNull(userData);
         Assert.Equal(222, userData.PlaybackPositionTicks);
+    }
+
+    [Fact]
+    public void GetUserData_ItemReadWithoutUserData_ReadsStoredRow()
+    {
+        var item = CreateAudioBook();
+        StorePlayedRow(item);
+        item.UserData = null!;
+
+        var userData = _userDataManager.GetUserData(_user, item);
+
+        Assert.NotNull(userData);
+        Assert.True(userData.Played);
+    }
+
+    [Fact]
+    public void GetUserData_ItemHoldsOnlyOtherUsersRows_ReadsStoredRow()
+    {
+        var item = CreateAudioBook();
+        StorePlayedRow(item);
+
+        var otherUserRow = CreateUserDataRow(item, item.GetUserDataKeys()[0], 999);
+        otherUserRow.UserId = Guid.NewGuid();
+        item.UserData = new List<UserData> { otherUserRow };
+
+        var userData = _userDataManager.GetUserData(_user, item);
+
+        Assert.NotNull(userData);
+        Assert.True(userData.Played);
     }
 
     [Fact]

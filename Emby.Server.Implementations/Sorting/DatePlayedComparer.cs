@@ -1,6 +1,7 @@
 #nullable disable
 
 using System;
+using System.Collections.Generic;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
@@ -13,13 +14,16 @@ namespace Emby.Server.Implementations.Sorting
     /// <summary>
     /// Class DatePlayedComparer.
     /// </summary>
-    public class DatePlayedComparer : IUserBaseItemComparer
+    public class DatePlayedComparer : IUserBaseItemComparer, IUserDataBatchComparer
     {
         /// <summary>
         /// Gets or sets the user.
         /// </summary>
         /// <value>The user.</value>
         public User User { get; set; }
+
+        /// <inheritdoc />
+        public IReadOnlyDictionary<Guid, UserItemData> UserDataById { get; set; }
 
         /// <summary>
         /// Gets or sets the user manager.
@@ -57,7 +61,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private DateTime GetDate(BaseItem x)
         {
-            var userdata = UserDataManager.GetUserData(User, x);
+            var userdata = UserDataById?.GetValueOrDefault(x.Id) ?? UserDataManager.GetUserData(User, x);
 
             if (userdata is not null && userdata.LastPlayedDate.HasValue)
             {

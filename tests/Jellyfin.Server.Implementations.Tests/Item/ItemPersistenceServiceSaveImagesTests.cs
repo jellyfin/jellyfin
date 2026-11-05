@@ -57,11 +57,17 @@ public class ItemPersistenceServiceSaveImagesTests : SqliteDbTestFixture
     }
 
     private static BaseItem CreateItem(Guid itemId, string imagePath)
-        => new Folder
+    {
+        var item = new Folder
         {
             Id = itemId,
             ImageInfos = [new ItemImageInfo { Path = imagePath, Type = ImageType.Primary }]
         };
+
+        // Stands in for an item read with its images, which is what may replace the stored ones.
+        item.MarkOwnedRowsRead(OwnedItemRows.Images);
+        return item;
+    }
 
     private void Seed(Guid itemId)
     {
