@@ -10,6 +10,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Data;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
@@ -82,6 +83,226 @@ public class VideosController : BaseJellyfinApiController
         _transcodeManager = transcodeManager;
         _httpClientFactory = httpClientFactory;
         _encodingHelper = encodingHelper;
+    }
+
+    /// <summary>
+    /// Downloads a bounded-quality H.264/AAC MP4 using the existing progressive pipeline.
+    /// </summary>
+    /// <param name="itemId">The video item id.</param>
+    /// <param name="quality">A whitelisted offline preset: 540p, 720p, or 1080p.</param>
+    /// <param name="audioStreamIndex">An audio stream index from the item's metadata, or the default.</param>
+    /// <param name="subtitleStreamIndex">A subtitle stream index from the item's metadata.</param>
+    /// <param name="subtitleMode">none, embed (switchable text), or burn (permanent).</param>
+    /// <returns>A transcoded attachment, not a persistent library copy.</returns>
+    [HttpGet("{itemId}/download.mp4")]
+    [Authorize(Policy = Policies.Download)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesVideoFile]
+    public async Task<ActionResult> DownloadTranscoded(
+        [FromRoute, Required] Guid itemId,
+        [FromQuery] string quality = "720p",
+        [FromQuery] int? audioStreamIndex = null,
+        [FromQuery] int? subtitleStreamIndex = null,
+        [FromQuery] string subtitleMode = "none")
+    {
+        var invalid = ValidateOfflineRequest(itemId, quality, audioStreamIndex, subtitleStreamIndex, subtitleMode, out var item);
+        if (invalid is not null)
+        {
+            return invalid;
+        }
+
+        var preset = OfflineDownloadProfiles.Get(quality)!;
+        var sessionId = HttpContext.Items.TryGetValue(OfflineDownloadContext.SessionKey, out var session) && session is string sessionValue
+            ? sessionValue
+            : Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+        var deviceId = "offline-download-" + sessionId;
+        Response.Headers["Cache-Control"] = "no-store";
+        Response.Headers["X-Content-Type-Options"] = "nosniff";
+        // The fixed offline preset must not inherit codec-specific StreamOptions from arbitrary query keys.
+        var originalQuery = Request.QueryString;
+        Request.QueryString = QueryString.Empty;
+        ActionResult result;
+        try
+        {
+            result = await GetVideoStream(
+                itemId: itemId,
+                container: "mp4",
+                @static: false,
+                @params: null,
+                tag: null,
+                deviceProfileId: null,
+                playSessionId: sessionId,
+                segmentContainer: null,
+                segmentLength: null,
+                minSegments: null,
+                mediaSourceId: null,
+                deviceId: deviceId,
+                audioCodec: "aac",
+                enableAutoStreamCopy: false,
+                allowVideoStreamCopy: false,
+                allowAudioStreamCopy: false,
+                audioSampleRate: 48_000,
+                maxAudioBitDepth: null,
+                audioBitRate: preset.AudioBitRate,
+                audioChannels: 2,
+                maxAudioChannels: 2,
+                profile: "main",
+                level: "41",
+                framerate: null,
+                maxFramerate: 30,
+                copyTimestamps: false,
+                startTimeTicks: 0,
+                width: null,
+                height: null,
+                maxWidth: preset.MaxWidth,
+                maxHeight: preset.MaxHeight,
+                videoBitRate: preset.VideoBitRate,
+                subtitleStreamIndex: subtitleMode == "none" ? -1 : subtitleStreamIndex,
+                subtitleMethod: subtitleMode == "embed" ? SubtitleDeliveryMethod.Embed : subtitleMode == "burn" ? SubtitleDeliveryMethod.Encode : SubtitleDeliveryMethod.Drop,
+                maxRefFrames: null,
+                maxVideoBitDepth: 8,
+                requireAvc: true,
+                deInterlace: false,
+                requireNonAnamorphic: true,
+                transcodingMaxAudioChannels: 2,
+                cpuCoreLimit: 2,
+                liveStreamId: null,
+                enableMpegtsM2TsMode: false,
+                videoCodec: "h264",
+                subtitleCodec: subtitleMode == "embed" ? "mov_text" : null,
+                transcodeReasons: "VideoBitrateNotSupported",
+                audioStreamIndex: audioStreamIndex,
+                videoStreamIndex: null,
+                context: EncodingContext.Streaming,
+                streamOptions: new Dictionary<string, string>(),
+                enableAudioVbrEncoding: true).ConfigureAwait(false);
+        }
+        finally
+        {
+            Request.QueryString = originalQuery;
+        }
+
+        if (result is FileStreamResult file)
+        {
+            file.FileDownloadName = OfflineDownloadProfiles.CreateFileName(item!.Path, quality);
+            file.FileStream = new OfflineDownloadStream(
+                file.FileStream,
+                () => _transcodeManager.KillTranscodingJobs(deviceId, sessionId, _ => true),
+                () =>
+                {
+                    var job = _transcodeManager.GetTranscodingJob(sessionId);
+                    if (job is null || !job.HasExited || job.ExitCode != 0)
+                    {
+                        throw new System.IO.IOException("Offline transcoding did not complete successfully.");
+                    }
+                });
+        }
+
+        return result;
+    }
+
+    internal ActionResult? ValidateOfflineRequest(Guid itemId, string quality, int? audioStreamIndex, int? subtitleStreamIndex, string subtitleMode, out BaseItem? item)
+    {
+        item = null;
+        var preset = OfflineDownloadProfiles.Get(quality);
+        if (preset is null)
+        {
+            return BadRequest("Unsupported offline download quality.");
+        }
+
+        var userId = User.GetUserId();
+        if (userId.IsEmpty())
+        {
+            return Unauthorized();
+        }
+
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return Unauthorized();
+        }
+
+        item = _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (!item.CanDownload(user)
+            || !user.HasPermission(Jellyfin.Database.Implementations.Enums.PermissionKind.EnableVideoPlaybackTranscoding)
+            || !user.HasPermission(Jellyfin.Database.Implementations.Enums.PermissionKind.EnableAudioPlaybackTranscoding))
+        {
+            return Forbid();
+        }
+
+        if (item is not Video || !item.IsFileProtocol)
+        {
+            return BadRequest("Offline transcoded downloads support local video files only.");
+        }
+
+        // The progressive encoder cannot apply a resolution ceiling without probed dimensions.
+        // Newly indexed items can be visible before the asynchronous metadata scan finishes.
+        if (!item.GetMediaStreams().Any(stream => stream.Type == MediaStreamType.Video && stream.Width > 0 && stream.Height > 0))
+        {
+            return BadRequest("Video metadata is not ready. Wait for the library scan or refresh this item's metadata before downloading.");
+        }
+
+        var streams = item.GetMediaStreams();
+        if (audioStreamIndex.HasValue && !streams.Any(stream => stream.Type == MediaStreamType.Audio && stream.Index == audioStreamIndex.Value))
+        {
+            return BadRequest("The selected audio track is not available.");
+        }
+
+        var trackError = OfflineDownloadTracks.Validate(streams, subtitleStreamIndex, subtitleMode);
+        if (trackError is not null)
+        {
+            return BadRequest(trackError);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Lists selectable offline audio and subtitle tracks without disclosing source paths.
+    /// </summary>
+    /// <param name="itemId">The visible, downloadable local video.</param>
+    /// <returns>The selectable stream metadata.</returns>
+    [HttpGet("{itemId}/OfflineDownloadOptions")]
+    [Authorize(Policy = Policies.Download)]
+    public ActionResult GetOfflineDownloadOptions([FromRoute] Guid itemId)
+    {
+        var invalid = ValidateOfflineRequest(itemId, "720p", null, null, "none", out var item);
+        if (invalid is not null)
+        {
+            return invalid;
+        }
+
+        Response.Headers["Cache-Control"] = "no-store";
+        var streams = item!.GetMediaStreams();
+        return new OkObjectResult(new
+        {
+            AudioTracks = streams.Where(stream => stream.Type == MediaStreamType.Audio).Select(stream => new
+            {
+                stream.Index,
+                stream.DisplayTitle,
+                stream.Language,
+                stream.Codec,
+                stream.IsDefault
+            }),
+            SubtitleTracks = streams.Where(stream => stream.Type == MediaStreamType.Subtitle).Select(stream => new
+            {
+                stream.Index,
+                stream.DisplayTitle,
+                stream.Language,
+                stream.Codec,
+                stream.IsDefault,
+                CanEmbed = OfflineDownloadTracks.CanEmbed(stream),
+                CanBurn = OfflineDownloadTracks.CanBurn(stream)
+            })
+        });
     }
 
     /// <summary>
@@ -369,8 +590,10 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] bool enableAudioVbrEncoding = true)
     {
         var isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
-        // CTS lifecycle is managed internally.
-        var cancellationTokenSource = new CancellationTokenSource();
+        // Offline preparation injects only its own job token. Ordinary playback retains the original lifecycle.
+        var cancellationTokenSource = HttpContext.Items.TryGetValue(OfflineDownloadContext.CancellationKey, out var offlineToken) && offlineToken is CancellationToken token
+            ? CancellationTokenSource.CreateLinkedTokenSource(token)
+            : new CancellationTokenSource();
         var streamingRequest = new VideoRequestDto
         {
             Id = itemId,
@@ -483,6 +706,18 @@ public class VideosController : BaseJellyfinApiController
         // Need to start ffmpeg (because media can't be returned directly)
         var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
         var ffmpegCommandLineArguments = _encodingHelper.GetProgressiveVideoFullCommandLine(state, encodingOptions, EncoderPreset.superfast);
+        if (HttpContext.Items.ContainsKey(OfflineDownloadContext.SessionKey))
+        {
+            // Fixed offline-only output guard. Keep room for the final mux packet; normal playback is unchanged.
+            var outputMarker = ffmpegCommandLineArguments.LastIndexOf(" -y \"", StringComparison.Ordinal);
+            if (outputMarker < 0)
+            {
+                throw new InvalidOperationException("Cannot safely bound the offline encoder output.");
+            }
+
+            ffmpegCommandLineArguments = ffmpegCommandLineArguments.Insert(outputMarker, " -fs " + OfflineDownloadJobs.EncoderFileLimit.ToString(CultureInfo.InvariantCulture));
+        }
+
         return await FileStreamResponseHelpers.GetTranscodedFile(
             state,
             isHeadRequest,
