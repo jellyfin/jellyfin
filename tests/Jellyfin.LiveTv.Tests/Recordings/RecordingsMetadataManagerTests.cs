@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -19,6 +20,8 @@ namespace Jellyfin.LiveTv.Tests.Recordings;
 
 public sealed class RecordingsMetadataManagerTests
 {
+    private const string ImageUrl = "https://json.schedulesdirect.org/20141201/image/assets/p1_b.jpg?token=abc";
+
     private readonly string _tempDir =
         Path.Combine(Path.GetTempPath(), "jellyfin-test-" + Guid.NewGuid());
 
@@ -43,7 +46,8 @@ public sealed class RecordingsMetadataManagerTests
         var manager = new RecordingsMetadataManager(
             NullLogger<RecordingsMetadataManager>.Instance,
             config.Object,
-            libraryManager.Object);
+            libraryManager.Object,
+            Mock.Of<ISchedulesDirectService>());
 
         var timer = new TimerInfo { Name = "Test Recording", ProgramId = null };
 
@@ -60,5 +64,48 @@ public sealed class RecordingsMetadataManagerTests
             CultureInfo.InvariantCulture);
 
         Assert.InRange(parsed, beforeUtc, afterUtc);
+    }
+
+    [Fact]
+    public async Task SaveRecordingMetadata_RemoteImage_GoesThroughSchedulesDirect()
+    {
+        // Schedules Direct counts every image request, so a recording must not fetch one behind its back.
+        var (manager, libraryManager, schedulesDirect, recordingPath) = CreateImageManager();
+
+        await manager.SaveRecordingMetadata(new TimerInfo { Name = "Test Recording", ProgramId = "p1" }, recordingPath, null);
+
+        schedulesDirect.Verify(s => s.ConvertImageToLocal(It.IsAny<BaseItem>(), It.Is<ItemImageInfo>(i => i.Path == ImageUrl), 0), Times.Once);
+        libraryManager.Verify(
+            l => l.ConvertImageToLocal(It.IsAny<BaseItem>(), It.IsAny<ItemImageInfo>(), It.IsAny<int>(), It.IsAny<bool>()),
+            Times.Never);
+    }
+
+    private (RecordingsMetadataManager Manager, Mock<ILibraryManager> LibraryManager, Mock<ISchedulesDirectService> SchedulesDirect, string RecordingPath) CreateImageManager()
+    {
+        Directory.CreateDirectory(_tempDir);
+        var recordingPath = Path.Combine(_tempDir, "test-recording.ts");
+
+        var config = new Mock<IConfigurationManager>();
+        config.Setup(c => c.GetConfiguration("livetv"))
+            .Returns(new LiveTvOptions { SaveRecordingNFO = false, SaveRecordingImages = true });
+
+        var program = new LiveTvProgram
+        {
+            Name = "Test",
+            ImageInfos = [new ItemImageInfo { Path = ImageUrl, Type = ImageType.Primary }]
+        };
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager
+            .Setup(l => l.GetItemList(It.IsAny<InternalItemsQuery>()))
+            .Returns([program]);
+
+        var schedulesDirect = new Mock<ISchedulesDirectService>();
+        var manager = new RecordingsMetadataManager(
+            NullLogger<RecordingsMetadataManager>.Instance,
+            config.Object,
+            libraryManager.Object,
+            schedulesDirect.Object);
+
+        return (manager, libraryManager, schedulesDirect, recordingPath);
     }
 }

@@ -2,10 +2,13 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Configuration;
@@ -17,12 +20,14 @@ using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using Moq.Protected;
 using Xunit;
 
 // Allow Moq to see internal class
@@ -488,6 +493,36 @@ namespace Jellyfin.Providers.Tests.Manager
             Assert.Equal(ItemCount - 1, processed.Count);
         }
 
+        [Theory]
+        [InlineData(HttpStatusCode.OK, "application/json", HttpStatusCode.NotFound)]
+        [InlineData(HttpStatusCode.Forbidden, "application/json", HttpStatusCode.Forbidden)]
+        public async Task SaveImage_ProviderRefusesWithBody_KeepsTheBody(HttpStatusCode status, string contentType, HttpStatusCode expectedStatus)
+        {
+            // Schedules Direct reports an exhausted image quota as HTTP 200 with a JSON body, and
+            // only the code in that body tells the guide refresh to stop requesting images.
+            const string Body = "{\"response\":\"MAX_IMAGE_DOWNLOADS\",\"code\":5002}";
+
+            var messageHandler = new Mock<HttpMessageHandler>();
+            messageHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(() => new HttpResponseMessage(status)
+                {
+                    Content = new StringContent(Body, Encoding.UTF8, contentType)
+                });
+
+            var httpClientFactory = new Mock<IHttpClientFactory>();
+            httpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>()))
+                .Returns(() => new HttpClient(messageHandler.Object));
+
+            using var providerManager = GetProviderManager(httpClientFactory: httpClientFactory.Object);
+
+            var ex = await Assert.ThrowsAsync<HttpResponseBodyException>(
+                () => providerManager.SaveImage(new Movie(), "https://json.schedulesdirect.org/20141201/image/a.jpg", ImageType.Primary, null, CancellationToken.None));
+
+            Assert.Equal(expectedStatus, ex.StatusCode);
+            Assert.Equal(Body, ex.ResponseBody);
+        }
+
         private static void GetMetadataProviders_CanRefreshMetadata_Tester(
             string providerType,
             bool expected,
@@ -666,7 +701,8 @@ namespace Jellyfin.Providers.Tests.Manager
             ServerConfiguration? serverConfiguration = null,
             LibraryOptions? libraryOptions = null,
             IBaseItemManager? baseItemManager = null,
-            ILibraryManager? libraryManager = null)
+            ILibraryManager? libraryManager = null,
+            IHttpClientFactory? httpClientFactory = null)
         {
             var serverConfigurationManager = new Mock<IServerConfigurationManager>(MockBehavior.Strict);
             serverConfigurationManager.Setup(i => i.Configuration)
@@ -683,7 +719,7 @@ namespace Jellyfin.Providers.Tests.Manager
             }
 
             var providerManager = new ProviderManager(
-                Mock.Of<IHttpClientFactory>(),
+                httpClientFactory ?? Mock.Of<IHttpClientFactory>(),
                 Mock.Of<ISubtitleManager>(),
                 serverConfigurationManager.Object,
                 Mock.Of<ILibraryMonitor>(),

@@ -212,7 +212,16 @@ namespace MediaBrowser.Providers.Manager
                 var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
                 using var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 
-                response.EnsureSuccessStatusCode();
+                if (!response.IsSuccessStatusCode)
+                {
+                    // Keep the body: providers report why they refused in it, and a caller that
+                    // only sees the status code cannot tell a missing image from an exhausted quota.
+                    var errorBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                    throw new HttpResponseBodyException(
+                        $"Response status code does not indicate success: {(int)response.StatusCode} ({response.ReasonPhrase}).",
+                        response.StatusCode,
+                        errorBody);
+                }
 
                 var contentType = response.Content.Headers.ContentType?.MediaType;
 
@@ -236,7 +245,17 @@ namespace MediaBrowser.Providers.Manager
 
                 if (!contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new HttpRequestException($"Request returned '{contentType}' instead of an image type", null, HttpStatusCode.NotFound);
+                    // A provider can answer 200 with a JSON error instead of the image; Schedules
+                    // Direct reports an exhausted image quota that way, so keep the body.
+                    var errorBody = contentType.Contains("json", StringComparison.OrdinalIgnoreCase)
+                        || contentType.StartsWith("text/", StringComparison.OrdinalIgnoreCase)
+                            ? await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false)
+                            : null;
+
+                    throw new HttpResponseBodyException(
+                        $"Request returned '{contentType}' instead of an image type",
+                        HttpStatusCode.NotFound,
+                        errorBody);
                 }
 
                 var responseBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
