@@ -58,6 +58,14 @@ public class ItemPersistenceService : IItemPersistenceService
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
 
+        DeleteItems(context, ids);
+
+        context.SaveChanges();
+        transaction.Commit();
+    }
+
+    private static void DeleteItems(JellyfinDbContext context, IReadOnlyList<Guid> ids)
+    {
         var date = (DateTime?)DateTime.UtcNow;
 
         var descendantIds = DescendantQueryHelper.GetOwnedDescendantIdsBatch(context, ids);
@@ -145,16 +153,15 @@ public class ItemPersistenceService : IItemPersistenceService
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ParentId).ExecuteDelete();
         context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ChildId).ExecuteDelete();
         var peopleIds = context.PeopleBaseItemMap.WhereOneOrMany(relatedItems, e => e.ItemId).Select(f => f.PeopleId).Distinct().ToArray();
+        // MediaSegments does not cascade, so it has to go before the item does.
+        context.MediaSegments.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.BaseItems.WhereOneOrMany(relatedItems, e => e.Id).ExecuteDelete();
         context.ItemValues.Where(e => !e.BaseItemsMap!.Any()).ExecuteDelete();
         context.KeyframeData.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.MediaSegments.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.MediaStreamInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.PeopleBaseItemMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.Peoples.WhereOneOrMany(peopleIds, e => e.Id).Where(e => !e.BaseItems!.Any()).ExecuteDelete();
         context.TrickplayInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.SaveChanges();
-        transaction.Commit();
     }
 
     /// <inheritdoc />
@@ -558,6 +565,8 @@ public class ItemPersistenceService : IItemPersistenceService
                 .ToHashSet()
             : [];
 
+        var orphanedVersionIds = new List<Guid>();
+
         foreach (var item in tuples)
         {
             if (item.Item is Folder { LinkedChildrenLoaded: true } folder && folder.LinkedChildren.Length > 0)
@@ -767,22 +776,31 @@ public class ItemPersistenceService : IItemPersistenceService
 
                     if (orphanedLocalVersionIds.Count > 0)
                     {
-                        var orphanedItems = context.BaseItems
+                        var orphanedItemIds = context.BaseItems
                             .Where(e => orphanedLocalVersionIds.Contains(e.Id) && e.OwnerId == video.Id)
+                            .Select(e => e.Id)
                             .ToList();
 
-                        if (orphanedItems.Count > 0)
+                        if (orphanedItemIds.Count > 0)
                         {
                             _logger.LogInformation(
                                 "Deleting {Count} orphaned LocalAlternateVersion items for video {VideoName} ({VideoId})",
-                                orphanedItems.Count,
+                                orphanedItemIds.Count,
                                 video.Name,
                                 video.Id);
-                            context.BaseItems.RemoveRange(orphanedItems);
+                            orphanedVersionIds.AddRange(orphanedItemIds);
                         }
                     }
                 }
             }
+        }
+
+        // An alternate version that disappeared is still an item: deleting only its BaseItems row would leave the
+        // rows nothing else sweeps behind and drop the play state that belongs on the placeholder. Collected over
+        // the whole batch so the by-name cleanup inside runs once, not once per video.
+        if (orphanedVersionIds.Count > 0)
+        {
+            DeleteItems(context, orphanedVersionIds);
         }
 
         context.SaveChanges();
