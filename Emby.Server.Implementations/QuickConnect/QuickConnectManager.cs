@@ -219,10 +219,10 @@ namespace Emby.Server.Implementations.QuickConnect
             {
                 if (expireAll || timestamp < minTime)
                 {
-                    _logger.LogDebug("Removing expired secret {Secret}", secret);
+                    _logger.LogDebug("Removing expired secret.");
                     if (!_authorizedSecrets.TryRemove(secret, out _))
                     {
-                        _logger.LogWarning("Secret {Secret} already expired", secret);
+                        _logger.LogWarning("Secret already expired".);
                     }
                 }
             }
