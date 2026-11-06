@@ -145,6 +145,7 @@ public class FFProbeVideoInfoTests
         Assert.Equal("tt0092099", video.GetProviderId(MetadataProvider.Imdb));
         Assert.Equal("123", video.GetProviderId(MetadataProvider.Tmdb));
         Assert.Equal("905", video.GetProviderId(MetadataProvider.Tvdb));
+    }
 
     [Theory]
     [InlineData(false)]
