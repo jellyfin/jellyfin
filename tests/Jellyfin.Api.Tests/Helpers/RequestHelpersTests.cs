@@ -134,6 +134,20 @@ namespace Jellyfin.Api.Tests.Helpers
                     (ItemSortBy.ProductionYear, SortOrder.Descending),
                 });
 
+            data.Add(
+                new[]
+                {
+                    ItemSortBy.UserRating
+                },
+                new[]
+                {
+                    SortOrder.Descending
+                },
+                new (ItemSortBy, SortOrder)[]
+                {
+                    (ItemSortBy.UserRating, SortOrder.Descending),
+                });
+
             return data;
         }
     }
