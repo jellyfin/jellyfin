@@ -54,8 +54,8 @@ namespace Emby.Server.Implementations.Library
 
             if (mode == SubtitlePlaybackMode.Default)
             {
-                // Load subtitles according to external, default and forced flags.
-                stream = sortedStreams.FirstOrDefault(x => x.IsExternal || x.IsDefault || x.IsForced);
+                // Load external and default subtitles; forced subtitles must fit the playback language.
+                stream = sortedStreams.FirstOrDefault(x => IsDefaultSubtitleEligible(x, preferredLanguages, audioTrackLanguage));
             }
             else if (mode == SubtitlePlaybackMode.Smart)
             {
@@ -112,8 +112,8 @@ namespace Emby.Server.Implementations.Library
             if (mode == SubtitlePlaybackMode.Default)
             {
                 // Prefer embedded metadata over smart logic
-                // Load subtitles according to external, default, and forced flags.
-                filteredStreams = sortedStreams.Where(s => s.IsExternal || s.IsDefault || s.IsForced)
+                // Load external and default subtitles; forced subtitles must fit the playback language.
+                filteredStreams = sortedStreams.Where(s => IsDefaultSubtitleEligible(s, preferredLanguages, audioTrackLanguage))
                     .ToList();
             }
             else if (mode == SubtitlePlaybackMode.Smart)
@@ -134,7 +134,11 @@ namespace Emby.Server.Implementations.Library
             {
                 // Always load (full/non-forced) subtitles of the user's preferred subtitle language if possible, otherwise OnlyForced behavior.
                 filteredStreams = sortedStreams.Where(s => !s.IsForced && MatchesPreferredLanguage(s.Language, preferredLanguages))
-                    .ToList() ?? BehaviorOnlyForced(sortedStreams, preferredLanguages);
+                    .ToList();
+                if (filteredStreams.Count == 0)
+                {
+                    filteredStreams = BehaviorOnlyForced(sortedStreams, preferredLanguages);
+                }
             }
             else if (mode == SubtitlePlaybackMode.OnlyForced)
             {
@@ -149,6 +153,19 @@ namespace Emby.Server.Implementations.Library
             {
                 stream.Score = GetStreamScore(stream, preferredLanguages);
             }
+        }
+
+        private static bool IsDefaultSubtitleEligible(MediaStream stream, IReadOnlyList<string> preferredLanguages, string audioTrackLanguage)
+        {
+            if (stream.IsForced)
+            {
+                return IsLanguageUndefined(stream.Language) ||
+                    (preferredLanguages.Count == 0 && IsLanguageUndefined(audioTrackLanguage)) ||
+                    string.Equals(stream.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase) ||
+                    (preferredLanguages.Count > 0 && MatchesPreferredLanguage(stream.Language, preferredLanguages));
+            }
+
+            return stream.IsExternal || stream.IsDefault;
         }
 
         private static bool MatchesPreferredLanguage(string language, IReadOnlyList<string> preferredLanguages)
