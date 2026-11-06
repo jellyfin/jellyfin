@@ -574,6 +574,12 @@ namespace MediaBrowser.Providers.Manager
 
             var filenames = images.Select(i => Path.GetFileNameWithoutExtension(i.Path)).ToList();
 
+            // The image at the index is the one being replaced, so its name stays free to reuse.
+            if (index is not null && index.Value < filenames.Count)
+            {
+                filenames.RemoveAt(index.Value);
+            }
+
             var current = 1;
             while (filenames.Contains(numberedIndexPrefix + current.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
             {
