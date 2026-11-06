@@ -646,7 +646,7 @@ namespace Jellyfin.Server.Implementations.Users
                         "Authentication request for {UserName} is not allowed at this time due parental restrictions (IP: {IP}).",
                         username,
                         remoteEndPoint);
-                    throw new SecurityException("User is not allowed access at this time.");
+                    throw new ParentalControlException("User is not allowed access at this time.");
                 }
 
                 // Update LastActivityDate and LastLoginDate, then save
