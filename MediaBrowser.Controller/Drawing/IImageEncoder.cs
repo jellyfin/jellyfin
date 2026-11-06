@@ -91,5 +91,18 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="imgHeight">Optional height of a single trickplay thumbnail, if it is known.</param>
         /// <returns>Height of single decoded trickplay thumbnail.</returns>
         int CreateTrickplayTile(ImageCollageOptions options, int quality, int imgWidth, int? imgHeight);
+
+        /// <summary>
+        /// Analyzes trickplay tile images to detect content boundaries by compositing
+        /// all thumbnails and detecting the non-black content region.
+        /// </summary>
+        /// <param name="tilePaths">Ordered list of tile image file paths.</param>
+        /// <param name="tileWidth">Number of thumbnails per row in each tile.</param>
+        /// <param name="tileHeight">Number of thumbnails per column in each tile.</param>
+        /// <param name="thumbWidth">Width of a single thumbnail in pixels.</param>
+        /// <param name="thumbHeight">Height of a single thumbnail in pixels.</param>
+        /// <param name="thumbnailCount">Total number of thumbnails across all tiles.</param>
+        /// <returns>The detected content aspect ratio as a decimal string, or null if detection failed.</returns>
+        string? DetectContentAspectRatio(IReadOnlyList<string> tilePaths, int tileWidth, int tileHeight, int thumbWidth, int thumbHeight, int thumbnailCount);
     }
 }

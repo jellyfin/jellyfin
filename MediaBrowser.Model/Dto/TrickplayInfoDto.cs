@@ -1,5 +1,7 @@
 using System;
+using System.Globalization;
 using Jellyfin.Database.Implementations.Entities;
+using MediaBrowser.Model.Drawing;
 
 namespace MediaBrowser.Model.Dto;
 
@@ -23,6 +25,18 @@ public record TrickplayInfoDto
         ThumbnailCount = info.ThumbnailCount;
         Interval = info.Interval;
         Bandwidth = info.Bandwidth;
+        DetectedAspectRatio = info.DetectedAspectRatio;
+
+        if (!string.IsNullOrEmpty(info.DetectedAspectRatio)
+            && double.TryParse(info.DetectedAspectRatio, NumberStyles.Float, CultureInfo.InvariantCulture, out var raw))
+        {
+            var snapped = AspectRatioLookup.SnapToStandard(raw);
+            if (snapped > 0)
+            {
+                DetectedAspectRatioSnapped = AspectRatioLookup.Format(snapped);
+                DetectedAspectRatioSnappedName = AspectRatioLookup.GetName(snapped);
+            }
+        }
     }
 
     /// <summary>
@@ -59,4 +73,19 @@ public record TrickplayInfoDto
     /// Gets the peak bandwidth usage in bits per second.
     /// </summary>
     public int Bandwidth { get; init; }
+
+    /// <summary>
+    /// Gets the raw aspect ratio detected by black bar analysis of trickplay thumbnails.
+    /// </summary>
+    public string? DetectedAspectRatio { get; init; }
+
+    /// <summary>
+    /// Gets the detected aspect ratio snapped to the nearest industry standard value.
+    /// </summary>
+    public string? DetectedAspectRatioSnapped { get; init; }
+
+    /// <summary>
+    /// Gets the industry name of the snapped aspect ratio (e.g. "Modern Anamorphic Scope").
+    /// </summary>
+    public string? DetectedAspectRatioSnappedName { get; init; }
 }
