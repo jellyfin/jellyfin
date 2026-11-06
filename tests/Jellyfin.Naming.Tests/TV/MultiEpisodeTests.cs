@@ -77,6 +77,11 @@ namespace Jellyfin.Naming.Tests.TV
         // Episode markers in the episode title must not be read as an episode range
         [InlineData("Season 03/Star Trek Enterprise (2001) - S03E21 - E2 (1080p BluRay x265).mkv", null)]
         [InlineData("Season 02/Series Name (2001) - S02E10 - E5 [WEBRip-1080p].mkv", null)]
+        // A span of years in the title is not an episode range
+        [InlineData("The Great War/The Great War 1914-1918 Part 3.mkv", null)]
+        [InlineData("Dark Decade 1964-1974/05 - Dark Decade 1964-1974 The Dark Room.mp4", null)]
+        [InlineData("Docs/Doc 1939-1945 ep01.mkv", null)]
+        [InlineData("Docs/Doc 1939 - 1945 ep01.mkv", null)]
         public void TestGetEndingEpisodeNumberFromFile(string filename, int? endingEpisodeNumber)
         {
             var result = _episodePathParser.Parse(filename, false);
