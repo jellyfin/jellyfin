@@ -19,6 +19,9 @@ namespace Emby.Server.Implementations.Images
         {
         }
 
+        // The cover is copied from a track rather than generated, so store it like any other album image.
+        protected override bool SaveWithMedia => true;
+
         protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
         {
             var items = base.GetItemsWithImages(item);
