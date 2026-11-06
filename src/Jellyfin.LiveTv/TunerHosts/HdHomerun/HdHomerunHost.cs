@@ -27,6 +27,8 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
@@ -37,7 +39,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
         private readonly IServerApplicationHost _appHost;
         private readonly ISocketFactory _socketFactory;
         private readonly IStreamHelper _streamHelper;
-
+        private readonly IServerAddressesFeature _serverAddresses;
         private readonly JsonSerializerOptions _jsonOptions;
 
         private readonly Dictionary<string, DiscoverResponse> _modelCache = new Dictionary<string, DiscoverResponse>();
@@ -49,14 +51,15 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             IHttpClientFactory httpClientFactory,
             IServerApplicationHost appHost,
             ISocketFactory socketFactory,
-            IStreamHelper streamHelper)
+            IStreamHelper streamHelper,
+            IServer server)
             : base(config, logger, fileSystem)
         {
             _httpClientFactory = httpClientFactory;
             _appHost = appHost;
             _socketFactory = socketFactory;
             _streamHelper = streamHelper;
-
+            _serverAddresses = server.Features.Get<IServerAddressesFeature>();
             _jsonOptions = new JsonSerializerOptions(JsonDefaults.Options);
             _jsonOptions.Converters.Add(new JsonBoolNumberConverter());
         }
@@ -426,7 +429,8 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
                     Logger,
                     Config,
                     _appHost,
-                    _streamHelper);
+                    _streamHelper,
+                    _serverAddresses);
             }
 
             mediaSource.Protocol = MediaProtocol.Http;
@@ -450,7 +454,8 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
                 Logger,
                 Config,
                 _appHost,
-                _streamHelper);
+                _streamHelper,
+                _serverAddresses);
         }
 
         public async Task Validate(TunerHostInfo info)
