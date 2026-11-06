@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -22,7 +23,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Playlists;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using PlaylistsNET.Content;
 using PlaylistsNET.Models;
@@ -39,8 +39,19 @@ namespace Emby.Server.Implementations.Playlists
         private readonly ILogger<PlaylistManager> _logger;
         private readonly IUserManager _userManager;
         private readonly IProviderManager _providerManager;
-        private readonly IConfiguration _appConfig;
+        private readonly IApplicationPaths _appPaths;
+        private readonly Lock _playlistsFolderSyncLock = new();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PlaylistManager"/> class.
+        /// </summary>
+        /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/>.</param>
+        /// <param name="fileSystem">Instance of <see cref="IFileSystem"/>.</param>
+        /// <param name="iLibraryMonitor">Instance of <see cref="ILibraryMonitor"/>.</param>
+        /// <param name="logger">Instance of <see cref="ILogger{PlaylistManager}"/>.</param>
+        /// <param name="userManager">Instance of <see cref="IUserManager"/>.</param>
+        /// <param name="providerManager">Instance of <see cref="IProviderManager"/>.</param>
+        /// <param name="appPaths">Instance of <see cref="IApplicationPaths"/>.</param>
         public PlaylistManager(
             ILibraryManager libraryManager,
             IFileSystem fileSystem,
@@ -48,7 +59,7 @@ namespace Emby.Server.Implementations.Playlists
             ILogger<PlaylistManager> logger,
             IUserManager userManager,
             IProviderManager providerManager,
-            IConfiguration appConfig)
+            IApplicationPaths appPaths)
         {
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
@@ -56,7 +67,7 @@ namespace Emby.Server.Implementations.Playlists
             _logger = logger;
             _userManager = userManager;
             _providerManager = providerManager;
-            _appConfig = appConfig;
+            _appPaths = appPaths;
         }
 
         public Playlist GetPlaylistForUser(Guid playlistId, Guid userId)
@@ -84,7 +95,7 @@ namespace Emby.Server.Implementations.Playlists
             var parentFolder = GetPlaylistsFolder(request.UserId);
             if (parentFolder is null)
             {
-                throw new ArgumentException(nameof(parentFolder));
+                throw new InvalidOperationException("Unable to resolve or create the playlists library folder.");
             }
 
             if (request.MediaType is null || request.MediaType == MediaType.Unknown)
@@ -565,10 +576,106 @@ namespace Emby.Server.Implementations.Playlists
         /// <inheritdoc />
         public Folder GetPlaylistsFolder(Guid userId)
         {
+            return FindPlaylistsFolder() ?? EnsurePlaylistsFolder();
+        }
+
+        private Folder FindPlaylistsFolder()
+        {
             const string TypeName = "PlaylistsFolder";
 
-            return _libraryManager.RootFolder.Children.OfType<Folder>().FirstOrDefault(i => string.Equals(i.GetType().Name, TypeName, StringComparison.Ordinal)) ??
-                _libraryManager.GetUserRootFolder().Children.OfType<Folder>().FirstOrDefault(i => string.Equals(i.GetType().Name, TypeName, StringComparison.Ordinal));
+            var rootFolder = _libraryManager.RootFolder;
+            if (rootFolder is not null)
+            {
+                var folder = rootFolder.Children?.OfType<Folder>().FirstOrDefault(i => string.Equals(i.GetType().Name, TypeName, StringComparison.Ordinal));
+                if (folder is not null)
+                {
+                    return folder;
+                }
+
+                folder = rootFolder.VirtualChildren?.OfType<Folder>().FirstOrDefault(i => string.Equals(i.GetType().Name, TypeName, StringComparison.Ordinal));
+                if (folder is not null)
+                {
+                    return folder;
+                }
+            }
+
+            var userRootFolder = _libraryManager.GetUserRootFolder();
+            if (userRootFolder is not null)
+            {
+                var folder = userRootFolder.Children?.OfType<Folder>().FirstOrDefault(i => string.Equals(i.GetType().Name, TypeName, StringComparison.Ordinal));
+                if (folder is not null)
+                {
+                    return folder;
+                }
+            }
+
+            return null;
+        }
+
+        private Folder EnsurePlaylistsFolder()
+        {
+            if (_appPaths is null || _libraryManager.RootFolder is null)
+            {
+                return null;
+            }
+
+            lock (_playlistsFolderSyncLock)
+            {
+                var folder = FindPlaylistsFolder();
+                if (folder is not null)
+                {
+                    return folder;
+                }
+
+                var path = Path.Combine(_appPaths.DataPath, "playlists");
+                DirectoryInfo info;
+                try
+                {
+                    info = Directory.CreateDirectory(path);
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException($"Failed to create playlists directory at '{path}'.", ex);
+                }
+
+                Folder playlistsFolder = new PlaylistsFolder
+                {
+                    Path = path,
+                    DateCreated = info.CreationTimeUtc,
+                    DateModified = info.LastWriteTimeUtc,
+                };
+
+                playlistsFolder.Id = _libraryManager.GetNewItemId(playlistsFolder.Path, playlistsFolder.GetType());
+
+                var dbItem = _libraryManager.GetItemById(playlistsFolder.Id) as BasePluginFolder;
+                if (dbItem is not null && string.Equals(dbItem.Path, playlistsFolder.Path, StringComparison.OrdinalIgnoreCase))
+                {
+                    playlistsFolder = dbItem;
+                }
+
+                var rootFolder = _libraryManager.RootFolder;
+                if (!playlistsFolder.ParentId.Equals(rootFolder.Id))
+                {
+                    playlistsFolder.ParentId = rootFolder.Id;
+                    if (BaseItem.ItemRepository is not null)
+                    {
+                        try
+                        {
+                            playlistsFolder.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, CancellationToken.None).GetAwaiter().GetResult();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to persist playlists folder to repository");
+                        }
+                    }
+                }
+
+                rootFolder.AddVirtualChild(playlistsFolder);
+
+                _libraryManager.RegisterItem(playlistsFolder);
+
+                return playlistsFolder;
+            }
         }
 
         /// <inheritdoc />
