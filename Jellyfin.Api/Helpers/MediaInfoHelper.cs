@@ -37,6 +37,7 @@ namespace Jellyfin.Api.Helpers;
 /// </summary>
 public class MediaInfoHelper
 {
+    private readonly IVirtualBlurayImageManager _virtualBlurayImages;
     private readonly IUserManager _userManager;
     private readonly ILibraryManager _libraryManager;
     private readonly IMediaSourceManager _mediaSourceManager;
@@ -59,6 +60,7 @@ public class MediaInfoHelper
     /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
     /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
     /// <param name="appHost">Instance of the <see cref="IServerApplicationHost"/> interface.</param>
+    /// <param name="virtualBlurayImages">The virtual Blu-ray image provider.</param>
     public MediaInfoHelper(
         IUserManager userManager,
         ILibraryManager libraryManager,
@@ -68,7 +70,8 @@ public class MediaInfoHelper
         ILogger<MediaInfoHelper> logger,
         INetworkManager networkManager,
         IDeviceManager deviceManager,
-        IServerApplicationHost appHost)
+        IServerApplicationHost appHost,
+        IVirtualBlurayImageManager virtualBlurayImages)
     {
         _userManager = userManager;
         _libraryManager = libraryManager;
@@ -79,6 +82,7 @@ public class MediaInfoHelper
         _networkManager = networkManager;
         _deviceManager = deviceManager;
         _appHost = appHost;
+        _virtualBlurayImages = virtualBlurayImages;
     }
 
     /// <summary>
@@ -89,13 +93,15 @@ public class MediaInfoHelper
     /// <param name="request">The current <see cref="HttpRequest"/>.</param>
     /// <param name="mediaSourceId">Media source id.</param>
     /// <param name="liveStreamId">Live stream id.</param>
+    /// <param name="profile">The optional client device profile.</param>
     /// <returns>A <see cref="Task"/> containing the <see cref="PlaybackInfoResponse"/>.</returns>
     public async Task<PlaybackInfoResponse> GetPlaybackInfo(
         BaseItem item,
         User? user,
         HttpRequest request,
         string? mediaSourceId = null,
-        string? liveStreamId = null)
+        string? liveStreamId = null,
+        DeviceProfile? profile = null)
     {
         var result = new PlaybackInfoResponse();
 
@@ -123,6 +129,7 @@ public class MediaInfoHelper
 
                 foreach (var mediaSource in mediaSourcesClone)
                 {
+                    ApplyVirtualBluraySource(mediaSource, profile);
                     RewritePublishedLiveStreamPath(mediaSource, request);
                 }
 
@@ -133,6 +140,33 @@ public class MediaInfoHelper
         }
 
         return result;
+    }
+
+    private void ApplyVirtualBluraySource(MediaSourceInfo source, DeviceProfile? profile)
+    {
+        if (source.VideoType != VideoType.BluRay)
+        {
+            return;
+        }
+
+        _virtualBlurayImages.ApplyTo(source);
+        if (source.VideoType != VideoType.Iso || profile is null)
+        {
+            return;
+        }
+
+        var explicitlySupportsIso = profile.DirectPlayProfiles.Any(directPlay =>
+            directPlay.Type == DlnaProfileType.Video
+            && !string.IsNullOrEmpty(directPlay.Container)
+            && !directPlay.Container.StartsWith('-')
+            && directPlay.SupportsContainer("iso"));
+        if (explicitlySupportsIso)
+        {
+            return;
+        }
+
+        source.SupportsDirectPlay = false;
+        source.SupportsDirectStream = false;
     }
 
     private async Task<MediaSourceInfo[]> ResolvePlaybackMediaSources(BaseItem item, User? user, string? mediaSourceId, string? liveStreamId)
