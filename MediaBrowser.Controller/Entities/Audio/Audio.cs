@@ -39,6 +39,24 @@ namespace MediaBrowser.Controller.Entities.Audio
         [JsonIgnore]
         public IReadOnlyList<string> AlbumArtists { get; set; }
 
+        /// <summary>
+        /// Gets or sets the sort name of the album, read from the embedded sort tag (e.g. ID3 TSOA / albumsort).
+        /// </summary>
+        [JsonIgnore]
+        public string SortAlbum { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sort name of the primary artist, read from the embedded sort tag (e.g. ID3 TSOP / artistsort).
+        /// </summary>
+        [JsonIgnore]
+        public string SortArtist { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sort name of the primary album artist, read from the embedded sort tag (e.g. ID3 TSO2 / albumartistsort).
+        /// </summary>
+        [JsonIgnore]
+        public string SortAlbumArtist { get; set; }
+
         [JsonIgnore]
         public override bool SupportsPlayedStatus => true;
 
