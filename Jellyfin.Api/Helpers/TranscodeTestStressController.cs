@@ -14,8 +14,11 @@ namespace Jellyfin.Api.Helpers;
 /// has kept up for <see cref="SettleSeconds"/> since any of them was last below the threshold, so brief dips at the
 /// limit delay the next stream without holding it back for good. A stream that stays below for
 /// <see cref="FailSeconds"/> ends the test.
+/// Only a stream that never reported a frame stalls; one that reported frames and then went quiet reads 0 fps, so it
+/// gets the same grace as any stream that falls behind.
 /// A stream started again at the end of the file is judged afresh: its time below the threshold starts over, and
-/// until its new process is measured it neither counts as below nor holds back the next stream.
+/// until its new process is measured it neither counts as below nor holds back the next stream. A stream near the end
+/// of its source is not judged either.
 /// The test also ends after <see cref="TimeLimitSeconds"/>, so streams that keep dipping briefly cannot hold it at
 /// full load for good.
 /// </remarks>
@@ -104,7 +107,7 @@ internal sealed class TranscodeTestStressController
             return new(TranscodeTestStressAction.TimeLimit, TranscodeTestStressPhase.Finished);
         }
 
-        var stalled = streams.FirstOrDefault(s => s.Fps is null && s.AgeSeconds > StartTimeoutSeconds);
+        var stalled = streams.FirstOrDefault(s => !s.ReportedFrames && s.Fps is null && s.AgeSeconds > StartTimeoutSeconds);
         if (stalled is not null)
         {
             return new(TranscodeTestStressAction.Stalled, TranscodeTestStressPhase.Finished, StreamId: stalled.Id);
@@ -121,6 +124,13 @@ internal sealed class TranscodeTestStressController
         var wasBelow = _below.Count > 0;
         foreach (var s in streams)
         {
+            if (s.NearEnd)
+            {
+                // ffmpeg drains and flushes at the end of the file; the stream restarts and is judged afresh.
+                _below.Remove(s.Id);
+                continue;
+            }
+
             if (s.Fps is not double fps)
             {
                 // A restarted stream was judged while its old process ran, so only a new stream holds back the next one.

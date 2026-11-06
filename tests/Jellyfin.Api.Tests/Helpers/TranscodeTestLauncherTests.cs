@@ -98,6 +98,12 @@ namespace Jellyfin.Api.Tests.Helpers
             Assert.False(abandoned);
         }
 
+        [Fact]
+        public void DescribeLaunchTimeout_NamesTheTimeoutAndTheLikelyCause()
+            => Assert.Equal(
+                "The system did not run ffmpeg within 30 s; check that the storage holding ffmpeg responds.",
+                TranscodeTestRules.DescribeLaunchTimeout(TranscodeTestManager.StartTimeoutSeconds));
+
         private Func<object> Hang(object result)
             => () =>
             {

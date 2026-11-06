@@ -21,6 +21,9 @@ internal sealed class TranscodeTestStressRun
     private int? _behindStreamId;
     private double? _endsAt;
     private double? _singleStreamFps;
+    private bool _couldNotStartStream;
+    private bool _waitingOnInput;
+    private bool _collapsed;
     private bool _timeLimitReached;
     private bool _stopped;
 
@@ -66,6 +69,12 @@ internal sealed class TranscodeTestStressRun
     /// Gets or sets the start of the names of all the files the streams write.
     /// </summary>
     public string? FilePrefix { get; set; }
+
+    /// <summary>
+    /// Gets the id of the most recently added stream. A stream restarted at the end of the file keeps its id and
+    /// does not change this.
+    /// </summary>
+    public int LastStreamId => _lastStreamId;
 
     public int NextStreamId() => ++_lastStreamId;
 
@@ -166,8 +175,10 @@ internal sealed class TranscodeTestStressRun
     /// <param name="streamId">The stream that fell behind or failed.</param>
     /// <param name="fps">The frame rate of the stream that fell behind.</param>
     /// <param name="error">The error, if any.</param>
+    /// <param name="couldNotStartStream">Whether the newest stream never started after others kept up.</param>
+    /// <param name="waitingOnInput">Whether the stream that stalled was waiting on reading the file.</param>
     /// <param name="timeLimitReached">Whether the test ran for its time limit.</param>
-    public void End(TranscodeTestEndReason reason, double now, int? streamId = null, double? fps = null, string? error = null, bool timeLimitReached = false)
+    public void End(TranscodeTestEndReason reason, double now, int? streamId = null, double? fps = null, string? error = null, bool couldNotStartStream = false, bool waitingOnInput = false, bool timeLimitReached = false)
     {
         lock (_lock)
         {
@@ -177,10 +188,13 @@ internal sealed class TranscodeTestStressRun
             }
 
             var running = Streams.Where(s => !s.HasExited).ToList();
-            foreach (var s in running)
+            var readings = running.Select(s => s.Fps(now)).ToList();
+            foreach (var (s, reading) in running.Zip(readings))
             {
-                s.FinalFps = s.Fps(now) is double f ? TranscodeTestRules.RoundFps(f, ThresholdFps) : null;
+                s.FinalFps = reading is double f ? TranscodeTestRules.RoundFps(f, ThresholdFps) : null;
             }
+
+            _collapsed = reason == TranscodeTestEndReason.LimitReached && TranscodeTestRules.IsCollapse(readings, ThresholdFps, PeakCombinedFps);
 
             _streamsAtEnd = running.Count;
 
@@ -193,6 +207,8 @@ internal sealed class TranscodeTestStressRun
             _failedStreamId = streamId;
             _failedStreamFps = fps.HasValue ? TranscodeTestRules.RoundFps(fps.Value, ThresholdFps) : null;
             _error = error;
+            _couldNotStartStream = couldNotStartStream;
+            _waitingOnInput = waitingOnInput;
             _timeLimitReached = timeLimitReached;
         }
     }
@@ -251,17 +267,21 @@ internal sealed class TranscodeTestStressRun
                 RampSeconds = TranscodeTestManager.RampSeconds,
                 SettleSeconds = TranscodeTestStream.WindowSeconds,
                 FailSeconds = TranscodeTestManager.FailSeconds,
+                StartTimeoutSeconds = TranscodeTestManager.StartTimeoutSeconds,
                 ThresholdFps = ThresholdFps,
                 FpsRatio = TranscodeTestManager.FpsRatio,
                 SourceFps = SourceFps,
                 SingleStreamFps = _singleStreamFps,
                 SingleStreamSpeed = _singleStreamFps.HasValue && SourceFps > 0 ? Math.Round(_singleStreamFps.Value / SourceFps, 2) : null,
                 SurveyFailureReason = TranscodeTestRules.SurveyFailureReason(EndReason),
+                CouldNotStartStream = _couldNotStartStream,
+                WaitingOnInput = _waitingOnInput,
                 FailedStreamId = _failedStreamId,
                 FailedStreamFps = _failedStreamFps,
                 StreamsAtEnd = _streamsAtEnd,
                 TimeLimitReached = _timeLimitReached,
                 PeakCombinedFps = Math.Round(PeakCombinedFps, 1),
+                Collapsed = _collapsed,
                 AverageOutputMbps = rates.Count > 0 ? Math.Round(rates.Average(), 2) : null,
                 Error = _error,
                 Input = Input,
@@ -274,9 +294,32 @@ internal sealed class TranscodeTestStressRun
                     FinalFps = s.FinalFps,
                     MedianFps = s.MedianFps,
                     OutputMbps = s.OutputMbps,
-                    Status = s.HasExited ? (s.Stopping || s.ExitCode == 0 ? TranscodeTestStreamStatus.Stopped : TranscodeTestStreamStatus.Failed) : TranscodeTestStreamStatus.Running
+                    Status = StreamStatus(s, finished)
                 }).ToArray()
             };
         }
+    }
+
+    /// <summary>
+    /// Gets a stream's status for the result.
+    /// </summary>
+    /// <param name="stream">The stream, as its newest process.</param>
+    /// <param name="finished">Whether the test has ended.</param>
+    /// <returns><see cref="TranscodeTestStreamStatus.Failed"/> when ffmpeg exited with an error;
+    /// <see cref="TranscodeTestStreamStatus.NotStarted"/> when it ended without ever producing a frame; otherwise
+    /// <see cref="TranscodeTestStreamStatus.Stopped"/> or <see cref="TranscodeTestStreamStatus.Running"/>.</returns>
+    internal static TranscodeTestStreamStatus StreamStatus(TranscodeTestStream stream, bool finished)
+    {
+        if (stream.HasExited && !stream.Stopping && stream.ExitCode != 0)
+        {
+            return TranscodeTestStreamStatus.Failed;
+        }
+
+        if (!stream.EverReportedFrames && (finished || stream.HasExited))
+        {
+            return TranscodeTestStreamStatus.NotStarted;
+        }
+
+        return stream.HasExited ? TranscodeTestStreamStatus.Stopped : TranscodeTestStreamStatus.Running;
     }
 }

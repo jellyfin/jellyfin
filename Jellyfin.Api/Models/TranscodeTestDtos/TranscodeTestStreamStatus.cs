@@ -18,5 +18,10 @@ public enum TranscodeTestStreamStatus
     /// <summary>
     /// ffmpeg exited with an error.
     /// </summary>
-    Failed
+    Failed,
+
+    /// <summary>
+    /// It ended without producing a frame.
+    /// </summary>
+    NotStarted
 }

@@ -31,7 +31,7 @@ public enum TranscodeTestEndReason
     StreamStalled,
 
     /// <summary>
-    /// NVIDIA's driver refused another encoding session. Consumer GPUs allow only a few at once; this is a
+    /// NVIDIA's driver refused another encoding session. Consumer GPUs allow a limited number at once; this is a
     /// driver limit, not the GPU's capacity.
     /// </summary>
     NvencSessionLimit,
@@ -44,5 +44,17 @@ public enum TranscodeTestEndReason
     /// <summary>
     /// It could not run.
     /// </summary>
-    Error
+    Error,
+
+    /// <summary>
+    /// The GPU ran out of memory after at least one stream kept up; the kept-up count is the result. Memory, not
+    /// encoding speed or a driver session limit, stopped one more stream.
+    /// </summary>
+    GpuMemoryFull,
+
+    /// <summary>
+    /// NVIDIA's encoder refused another session with "out of memory", at a stream count that is not a known driver
+    /// limit. That is either the driver's session limit or the GPU's memory; the kept-up count is the result.
+    /// </summary>
+    NvencSessionRefused
 }

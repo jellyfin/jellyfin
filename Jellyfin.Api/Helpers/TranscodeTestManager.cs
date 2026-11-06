@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -61,6 +62,12 @@ public sealed class TranscodeTestManager : IDisposable
     /// measurement.
     /// </summary>
     internal const double ShortSourceSeconds = 60;
+
+    /// <summary>
+    /// Arguments put before the stress test's playback command. The level tag tells errors from warnings, and without
+    /// the banner a stalled stream's last lines are ffmpeg's own output, not its build configuration.
+    /// </summary>
+    internal const string StressLogArguments = "-hide_banner -loglevel +level ";
 
     private const string FolderName = "transcode-test";
     private const int CheckFrames = 96;
@@ -894,6 +901,11 @@ public sealed class TranscodeTestManager : IDisposable
         try
         {
             var first = await StartStreamAsync(run, request, codec, folder, prefix, options, item.Name ?? string.Empty, cancellationToken).ConfigureAwait(false);
+            if (first is null)
+            {
+                return;
+            }
+
             run.SourceFps = first.SourceFps;
             run.ThresholdFps = Math.Round(first.SourceFps * FpsRatio, 3);
             Log(string.Create(CultureInfo.InvariantCulture, $"Each stream must keep {TranscodeTestRules.FormatFps(run.ThresholdFps)} fps ({FpsRatio * 100:0}% of the source's {first.SourceFps:0.###} fps). {TranscodeTestRules.DescribeRamp(RampSeconds, TranscodeTestStream.WindowSeconds)}"));
@@ -925,44 +937,51 @@ public sealed class TranscodeTestManager : IDisposable
             var now = _clock.Elapsed.TotalSeconds;
             StopIfAbandoned(now);
             run.Sample(now);
+            foreach (var started in run.Streams.Where(s => !s.FirstFrameLogged).ToList())
+            {
+                if (started.FirstFrameAt.HasValue && started.DescribeFirstFrame(TranscodeTestProcessIo.BytesRead(started.Process)) is string firstFrame)
+                {
+                    started.FirstFrameLogged = true;
+                    Log(firstFrame);
+                }
+            }
 
             foreach (var ended in run.Streams.Where(s => s.HasExited && !s.Stopping && !s.Handled).ToList())
             {
                 ended.Handled = true;
                 // The process can exit before its last lines are read; they may name the cause.
                 await ended.WaitForOutputAsync(_outputDrainTimeout).ConfigureAwait(false);
-                if (ended.ExitCode == 0)
+                var lived = now - ended.StartedAt;
+                if (TranscodeTestRules.CanRestart(ended.ExitCode, ended.ReportedFrames, lived, ended.AtEndOfFile, ended.Restarts))
                 {
                     // The file ended: start the stream again so the load stays the same.
                     Log($"Stream {ended.Id} reached the end of the file; starting it again.");
                     ended.CollectSegments(true);
                     var restarted = await StartStreamAsync(run, request, codec, folder, prefix, options, itemName, cancellationToken, ended.Id).ConfigureAwait(false);
+                    if (restarted is null)
+                    {
+                        return;
+                    }
+
                     // One stream to the viewer: keep its output and frame rate history, and judge the new process afresh.
                     restarted.CarryOver(ended);
+                    restarted.Restarts = ended.Restarts + 1;
                     controller.StreamRestarted(ended.Id);
                     continue;
                 }
 
-                Log($"Stream {ended.Id} failed (exit {ended.ExitCode}): {ended.LastError}");
-                if (TranscodeTestRules.IsNvencSessionLimit(run.Output?.Encoder, ended.LastError))
-                {
-                    Log($"NVIDIA's driver refused stream {ended.Id}. Consumer NVIDIA GPUs allow only a few encoding sessions at once (3, 5 or 8, depending on the driver). That is a driver limit, not what the GPU can do.");
-                    run.End(TranscodeTestEndReason.NvencSessionLimit, now, ended.Id, error: ended.LastError);
-                    return;
-                }
-
-                run.End(TranscodeTestEndReason.StreamFailed, now, ended.Id, error: ended.LastError);
+                EndStream(run, ended, TranscodeTestEndKind.Exited, controller.MaxStable, now, TranscodeTestRules.DescribeNoRestart(ended.ExitCode, ended.ReportedFrames, lived, ended.PositionSeconds, ended.SourceSeconds, ended.Restarts));
                 return;
             }
 
-            var readings = run.Streams.Where(s => !s.HasExited).Select(s => new TranscodeTestStreamReading(s.Id, s.Fps(now), now - s.StartedAt)).ToList();
+            var readings = run.Streams.Where(s => !s.HasExited).Select(s => new TranscodeTestStreamReading(s.Id, s.Fps(now), now - s.StartedAt, s.ReportedFrames, s.NearEnd)).ToList();
             var decision = controller.Tick(now, readings);
             run.MaxStable = controller.MaxStable;
             switch (decision.Action)
             {
                 case TranscodeTestStressAction.Stalled:
-                    Log($"Stream {decision.StreamId} produced no frames in {StartTimeoutSeconds:0} s.");
-                    run.End(TranscodeTestEndReason.StreamStalled, now, decision.StreamId);
+                    // The controller only judges running streams; Last picks the current one when a restart reused the id.
+                    EndStream(run, run.Streams.Last(s => s.Id == decision.StreamId!.Value && !s.HasExited), TranscodeTestEndKind.Stalled, controller.MaxStable, now);
                     return;
                 case TranscodeTestStressAction.LimitReached:
                     Log($"With {TranscodeTestRules.StreamCount(readings.Count)} running, stream {decision.StreamId} fell to {TranscodeTestRules.FormatFps(TranscodeTestRules.RoundFps(decision.Fps!.Value, run.ThresholdFps))} fps, under {TranscodeTestRules.FormatFps(run.ThresholdFps)} fps, for {FailSeconds:0} s.");
@@ -978,7 +997,11 @@ public sealed class TranscodeTestManager : IDisposable
                     return;
                 case TranscodeTestStressAction.AddStream:
                     run.RecordSingleStream(now);
-                    await StartStreamAsync(run, request, codec, folder, prefix, options, itemName, cancellationToken).ConfigureAwait(false);
+                    if (await StartStreamAsync(run, request, codec, folder, prefix, options, itemName, cancellationToken).ConfigureAwait(false) is null)
+                    {
+                        return;
+                    }
+
                     now = _clock.Elapsed.TotalSeconds;
                     controller.StreamAdded(now);
                     run.SetPhase(TranscodeTestStressPhase.WarmingUp, now + RampSeconds);
@@ -989,7 +1012,7 @@ public sealed class TranscodeTestManager : IDisposable
                         if (decision.DipStarted && decision.Fps is double dipFps)
                         {
                             // Once per dip: the next stream waits until all have kept up for the settle time.
-                            Log(TranscodeTestRules.DescribeDip(decision.StreamId!.Value, dipFps, run.ThresholdFps, TranscodeTestStream.WindowSeconds, readings.Count < request.MaxStreams ? run.Streams.Max(s => s.Id) + 1 : null));
+                            Log(TranscodeTestRules.DescribeDip(decision.StreamId!.Value, dipFps, run.ThresholdFps, TranscodeTestStream.WindowSeconds, readings.Count < request.MaxStreams ? run.LastStreamId + 1 : null));
                         }
 
                         run.SetFallingBehind(decision.StreamId!.Value, decision.EndsAt!.Value);
@@ -1004,7 +1027,7 @@ public sealed class TranscodeTestManager : IDisposable
         }
     }
 
-    private async Task<TranscodeTestStream> StartStreamAsync(TranscodeTestStressRun run, TranscodeTestRequestDto request, string codec, string folder, string prefix, EncodingOptions options, string itemName, CancellationToken cancellationToken, int? reuseId = null)
+    private async Task<TranscodeTestStream?> StartStreamAsync(TranscodeTestStressRun run, TranscodeTestRequestDto request, string codec, string folder, string prefix, EncodingOptions options, string itemName, CancellationToken cancellationToken, int? reuseId = null)
     {
         var id = reuseId ?? run.NextStreamId();
         var container = codec == "h264" ? "ts" : "mp4";
@@ -1044,7 +1067,9 @@ public sealed class TranscodeTestManager : IDisposable
 
         var streamPrefix = string.Create(CultureInfo.InvariantCulture, $"{prefix}-s{id}-{run.Streams.Count}_");
         var playlist = Path.Combine(folder, streamPrefix + ".m3u8");
-        var args = _hlsCommandBuilder.GetCommandLineArguments(playlist, state, options, false, 0);
+        // Playback's command, plus flags that tag each log line with its level so errors can be told from warnings, and
+        // hide the banner. They change only ffmpeg's log text, not the transcode.
+        var args = StressLogArguments + _hlsCommandBuilder.GetCommandLineArguments(playlist, state, options, false, 0);
         _logger.LogDebug("Transcoding test stream {Id}: {Ffmpeg} {Args}", id, _mediaEncoder.EncoderPath, args);
         var sourceFps = state.VideoStream?.ReferenceFrameRate ?? 24f;
         if (run.Input is null)
@@ -1052,18 +1077,33 @@ public sealed class TranscodeTestManager : IDisposable
             DescribeStream(run, state, options, args, itemName, sourceFps);
         }
 
-        var process = new Process
+        var startInfo = new ProcessStartInfo(_mediaEncoder.EncoderPath, args)
         {
-            StartInfo = new ProcessStartInfo(_mediaEncoder.EncoderPath, args)
-            {
-                RedirectStandardError = true,
-                RedirectStandardInput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            }
+            RedirectStandardError = true,
+            RedirectStandardInput = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
         };
-        process.Start();
-        var stream = new TranscodeTestStream(id, process, folder, streamPrefix, sourceFps, _clock.Elapsed.TotalSeconds, state.SegmentLength);
+        // Off the test's loop and with a time limit, so a launch that hangs does not stop the test from watching the
+        // other streams, the time limit and the idle stop for good.
+        var process = await TranscodeTestLauncher.StartAsync(
+                () => StartProcess(startInfo),
+                TimeSpan.FromSeconds(StartTimeoutSeconds),
+                late => AbandonProcess(late, id, _logger),
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (process is null)
+        {
+            EndLaunch(run, id, reuseId is not null);
+            return null;
+        }
+
+        var stream = new TranscodeTestStream(id, process, folder, streamPrefix, sourceFps, _clock.Elapsed.TotalSeconds, state.SegmentLength)
+        {
+            // A stream restarted at the end of the file is not news, as with its start below.
+            FirstFrameLogged = reuseId is not null,
+            SourceSeconds = state.RunTimeTicks is long ticks ? TimeSpan.FromTicks(ticks).TotalSeconds : null
+        };
         stream.StartReading(_clock);
         if (!run.Add(stream))
         {
@@ -1080,6 +1120,63 @@ public sealed class TranscodeTestManager : IDisposable
         }
 
         return stream;
+    }
+
+    private static Process StartProcess(ProcessStartInfo startInfo)
+    {
+        var process = new Process { StartInfo = startInfo };
+        try
+        {
+            process.Start();
+            return process;
+        }
+        catch
+        {
+            process.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Stops a process that started after the test stopped waiting for it, or after the test ended.
+    /// </summary>
+    private static void AbandonProcess(Process process, int streamId, ILogger logger)
+    {
+        logger.LogWarning("Transcoding test stream {Id} started too late; stopping it", streamId);
+        try
+        {
+            process.Kill(true);
+            process.WaitForExit(TimeSpan.FromSeconds(1));
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or Win32Exception or NotSupportedException)
+        {
+            // It exited meanwhile, or it cannot be stopped.
+        }
+        finally
+        {
+            process.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Ends a stress test because the system did not run a stream's ffmpeg within the start timeout. The stream has no
+    /// process to judge: it did not start.
+    /// </summary>
+    private void EndLaunch(TranscodeTestStressRun run, int streamId, bool restart)
+    {
+        var now = _clock.Elapsed.TotalSeconds;
+        var maxStable = run.MaxStable;
+        var error = TranscodeTestRules.DescribeLaunchTimeout(StartTimeoutSeconds);
+        Log($"Stream {streamId} could not start. {error}");
+        // As in EndStream: a stream restarted at the end of the file played before, so it is not one more stream that
+        // could not start.
+        var couldNotStart = !restart && maxStable >= 1;
+        if (couldNotStart)
+        {
+            Log(TranscodeTestRules.DescribeCouldNotStart(TranscodeTestEndKind.Exited, maxStable, streamId, StartTimeoutSeconds));
+        }
+
+        run.End(TranscodeTestEndReason.StreamFailed, now, streamId, error: error, couldNotStartStream: couldNotStart);
     }
 
     private void DescribeStream(TranscodeTestStressRun run, StreamState state, EncodingOptions options, string args, string itemName, float sourceFps)
@@ -1243,6 +1340,127 @@ public sealed class TranscodeTestManager : IDisposable
         lock (_lock)
         {
             _checks.Add(result);
+        }
+    }
+
+    /// <summary>
+    /// Ends a stress test because one stream exited with a non-zero code or produced no frames before the start
+    /// timeout, naming the cause ffmpeg gave.
+    /// </summary>
+    private void EndStream(TranscodeTestStressRun run, TranscodeTestStream stream, TranscodeTestEndKind kind, int maxStable, double now, string? noRestart = null)
+    {
+        var otherSessions = run.Streams.Count(s => s != stream && !s.HasExited);
+        // A stream restarted at the end of the file started long ago; only one that never produced a frame did not.
+        var outcome = TranscodeTestRules.EndOutcome(
+            kind,
+            run.Output?.Encoder,
+            stream.SessionLimitLine,
+            stream.GpuMemoryLine,
+            maxStable,
+            stream.Id == run.LastStreamId,
+            stream.EverReportedFrames,
+            otherSessions);
+        var error = TranscodeTestRules.EndEvidence(
+            kind,
+            outcome.EndReason,
+            outcome.CouldNotStartStream,
+            stream.SessionLimitLine,
+            stream.GpuMemoryLine,
+            stream.ErrorLines);
+        if (string.IsNullOrEmpty(error) && noRestart is not null)
+        {
+            // ffmpeg exited cleanly, so it printed no error: say why the stream was not started again.
+            error = noRestart;
+        }
+
+        var processorTime = ProcessorTime(stream.Process);
+        // ffmpeg had not opened the file and barely used the CPU: it was waiting on the storage, not the GPU.
+        var waitingOnInput = outcome.EndReason == TranscodeTestEndReason.StreamStalled
+            && TranscodeTestRules.IsWaitingOnInput(kind, stream.SawInput, processorTime);
+
+        // The result names only the cause when there is one; the log keeps all of ffmpeg's last error lines.
+        var logged = string.IsNullOrEmpty(error)
+            ? error
+            : TranscodeTestRules.WithCause(TranscodeTestRules.EndCause(outcome.EndReason, stream.SessionLimitLine, stream.GpuMemoryLine), stream.ErrorLines);
+        if (kind == TranscodeTestEndKind.Exited)
+        {
+            if (string.IsNullOrEmpty(logged) && noRestart is not null)
+            {
+                Log($"Stream {stream.Id} ended (exit {stream.ExitCode}): {noRestart}");
+            }
+            else if (string.IsNullOrEmpty(logged))
+            {
+                Log($"Stream {stream.Id} failed (exit {stream.ExitCode}). ffmpeg printed no error.");
+            }
+            else
+            {
+                Log($"Stream {stream.Id} failed (exit {stream.ExitCode}): {logged}");
+            }
+        }
+        else
+        {
+            // ffmpeg's last lines help diagnose a hang, but they are not its error, so they only go in the log. When it
+            // printed nothing, the diagnostics line says so.
+            var output = stream.StallEvidence;
+            if (!string.IsNullOrEmpty(logged))
+            {
+                Log($"Stream {stream.Id} produced no frames in {StartTimeoutSeconds:0} s. ffmpeg's error: {logged}");
+            }
+            else if (!string.IsNullOrEmpty(output))
+            {
+                Log($"Stream {stream.Id} produced no frames in {StartTimeoutSeconds:0} s. ffmpeg printed no error. Its last output: {output}");
+            }
+            else if (!stream.PrintedNothing)
+            {
+                Log($"Stream {stream.Id} produced no frames in {StartTimeoutSeconds:0} s. ffmpeg printed no error.");
+            }
+
+            // Read before the process is stopped.
+            Log(stream.StallDiagnostics(now, processorTime, TranscodeTestProcessIo.BytesRead(stream.Process)));
+        }
+
+        if (outcome.EndReason == TranscodeTestEndReason.NvencSessionLimit)
+        {
+            LogNvencRefusal(stream.Id);
+        }
+        else if (outcome.EndReason == TranscodeTestEndReason.NvencSessionRefused)
+        {
+            Log($"NVENC refused a new session for stream {stream.Id} (a driver session limit or GPU memory). {maxStable} stream(s) kept up with real time before that.");
+        }
+        else if (outcome.EndReason == TranscodeTestEndReason.GpuMemoryFull)
+        {
+            Log($"The GPU ran out of memory on stream {stream.Id}. {maxStable} stream(s) kept up with real time before that; memory, not speed, is the limit here.");
+        }
+        else if (waitingOnInput)
+        {
+            Log(TranscodeTestRules.DescribeWaitingOnInput(outcome.CouldNotStartStream ? maxStable : null, stream.Id, StartTimeoutSeconds, processorTime.GetValueOrDefault()));
+        }
+        else if (outcome.CouldNotStartStream)
+        {
+            Log(TranscodeTestRules.DescribeCouldNotStart(kind, maxStable, stream.Id, StartTimeoutSeconds));
+        }
+
+        run.End(
+            outcome.EndReason,
+            now,
+            stream.Id,
+            error: error,
+            couldNotStartStream: outcome.CouldNotStartStream,
+            waitingOnInput: waitingOnInput);
+    }
+
+    private void LogNvencRefusal(int streamId)
+        => Log($"NVIDIA's driver refused stream {streamId}. Consumer NVIDIA GPUs allow a limited number of encoding sessions at once (from 3 on older drivers to 12 on recent ones). That is a driver limit, not what the GPU can do.");
+
+    private static TimeSpan? ProcessorTime(Process process)
+    {
+        try
+        {
+            return process.TotalProcessorTime;
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or NotSupportedException)
+        {
+            return null;
         }
     }
 

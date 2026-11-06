@@ -69,6 +69,11 @@ public class TranscodeTestStressResult
     public double FailSeconds { get; set; }
 
     /// <summary>
+    /// Gets or sets how long a stream may take to report its first frame.
+    /// </summary>
+    public double StartTimeoutSeconds { get; set; }
+
+    /// <summary>
     /// Gets or sets the frame rate each stream must keep.
     /// </summary>
     public double ThresholdFps { get; set; }
@@ -100,6 +105,19 @@ public class TranscodeTestStressResult
     public TranscodeTestSurveyFailureReason? SurveyFailureReason { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the test ended because the newest stream, added after at least one
+    /// stream kept up, produced no frames, by stalling or by exiting before its first frame: the server could not
+    /// start one more stream.
+    /// </summary>
+    public bool CouldNotStartStream { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the stream that produced no frames had not opened the file and used
+    /// little CPU time, so it was probably waiting on reading the media rather than on the GPU.
+    /// </summary>
+    public bool WaitingOnInput { get; set; }
+
+    /// <summary>
     /// Gets or sets the stream that fell behind or failed.
     /// </summary>
     public int? FailedStreamId { get; set; }
@@ -126,12 +144,18 @@ public class TranscodeTestStressResult
     public double PeakCombinedFps { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether, when the limit was reached, the streams all slowed down sharply at once
+    /// rather than one falling a little behind, which points at the GPU's memory or driver rather than its speed.
+    /// </summary>
+    public bool Collapsed { get; set; }
+
+    /// <summary>
     /// Gets or sets the average output bitrate per stream, in megabits per second.
     /// </summary>
     public double? AverageOutputMbps { get; set; }
 
     /// <summary>
-    /// Gets or sets the error, when the test could not run or ffmpeg failed.
+    /// Gets or sets the error, when the test could not run or ffmpeg failed: ffmpeg's error lines, never its other output.
     /// </summary>
     public string? Error { get; set; }
 

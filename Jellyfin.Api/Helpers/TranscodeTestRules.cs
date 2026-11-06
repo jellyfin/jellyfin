@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -15,6 +16,18 @@ namespace Jellyfin.Api.Helpers;
 internal static partial class TranscodeTestRules
 {
     /// <summary>
+    /// CPU seconds under which a stalled stream that never opened its file is taken to have been waiting on reading
+    /// it. Decoding even one 4K frame takes longer; probing a file that reads quickly takes far less.
+    /// </summary>
+    internal const double WaitingOnInputCpuSeconds = 3;
+
+    /// <summary>
+    /// The fraction of the threshold, and of the peak combined frame rate, under which streams at the limit are taken
+    /// to have collapsed together rather than one falling a little behind.
+    /// </summary>
+    internal const double CollapseFraction = 0.25;
+
+    /// <summary>
     /// The shortest time limit of a stress test, in seconds. The limit grows with the stream limit, see
     /// <see cref="TimeLimitSeconds"/>.
     /// </summary>
@@ -26,10 +39,28 @@ internal static partial class TranscodeTestRules
     internal const double IdleStopSeconds = 10 * 60;
 
     /// <summary>
+    /// How often one stream may restart at the end of the file. Only a source far shorter than a minute gets close
+    /// within the time limit.
+    /// </summary>
+    internal const int MaxRestartsPerStream = 100;
+
+    /// <summary>
+    /// The share of the source's run time ffmpeg's last reported position must reach for a clean exit to be the end
+    /// of the file. A fast encoder can finish a short file in a second or two, so how long the process ran says
+    /// nothing; the position does. The rest allows for audio and video that end apart and for the last progress line.
+    /// </summary>
+    internal const double EndOfFileFraction = 0.9;
+
+    /// <summary>
     /// How many segments per stream the transcode folder must have room for: the ones kept, the one being written and
     /// a spare.
     /// </summary>
     internal const int SegmentsPerStreamOnDisk = 5;
+
+    /// <summary>
+    /// NVIDIA's limits on concurrent encoding sessions on consumer GPUs, across driver versions.
+    /// </summary>
+    internal static readonly int[] NvencSessionLimits = [3, 5, 8, 12];
 
     // How ffmpeg says the GPU ran out of memory: CUDA (NVDEC, cuvid, CUDA filters) through cuda_check.h; VAAPI through
     // libva's vaErrorStr for VA_STATUS_ERROR_ALLOCATION_FAILED; QSV MFX_ERR_MEMORY_ALLOC through ff_qsv_print_error;
@@ -488,7 +519,7 @@ internal static partial class TranscodeTestRules
     /// Gets whether a failed stream was refused by NVIDIA's limit on concurrent encoding sessions.
     /// </summary>
     /// <remarks>
-    /// Consumer GPUs allow a few sessions at once (3, 5 or 8, depending on the driver). The driver refuses the next
+    /// Consumer GPUs allow a limited number of sessions at once (from 3 on older drivers to 12 on recent ones). The driver refuses the next
     /// one when the session opens: "OpenEncodeSessionEx failed: out of memory (10)", or "incompatible client key (21)"
     /// on older drivers.
     /// </remarks>
@@ -496,11 +527,7 @@ internal static partial class TranscodeTestRules
     /// <param name="errors">ffmpeg's error lines.</param>
     /// <returns><c>true</c> for an NVENC encoder that failed with one of those errors.</returns>
     public static bool IsNvencSessionLimit(string? encoder, string? errors)
-        => encoder is not null
-            && encoder.Contains("nvenc", StringComparison.OrdinalIgnoreCase)
-            && errors is not null
-            && (errors.Contains("out of memory (10)", StringComparison.OrdinalIgnoreCase)
-                || errors.Contains("incompatible client key (21)", StringComparison.OrdinalIgnoreCase));
+        => IsNvencEncoder(encoder) && IsSessionLimitText(errors);
 
     /// <summary>
     /// Gets whether text holds NVIDIA's session refusal, whatever the encoder.
@@ -528,16 +555,203 @@ internal static partial class TranscodeTestRules
             && _gpuMemoryPatterns.Any(p => line.Contains(p, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
+    /// Concludes a stress-test stream that produced no frames before the start timeout.
+    /// </summary>
+    /// <remarks>
+    /// The same rules as <see cref="EndOutcome"/> for a stall, with the stream's evidence as the session text and no
+    /// GPU memory line.
+    /// </remarks>
+    /// <param name="encoder">The streams' video encoder.</param>
+    /// <param name="evidence">The stalled stream's last ffmpeg output.</param>
+    /// <param name="maxStable">The most streams that all kept up.</param>
+    /// <param name="isNewest">Whether the stalled stream is the most recently added one.</param>
+    /// <param name="otherSessions">How many other streams were running.</param>
+    /// <returns>Why the test ended, and whether the server could not start one more stream.</returns>
+    public static (TranscodeTestEndReason EndReason, bool CouldNotStartStream) StallOutcome(string? encoder, string? evidence, int maxStable, bool isNewest, int otherSessions)
+        => EndOutcome(TranscodeTestEndKind.Stalled, encoder, evidence, null, maxStable, isNewest, false, otherSessions);
+
+    /// <summary>
+    /// Concludes a stress-test stream that exited with a non-zero code or stalled.
+    /// </summary>
+    /// <remarks>
+    /// NVIDIA's session refusal is matched first, whatever came before or after it. It is the driver's session limit
+    /// only for "incompatible client key (21)", or when the other running sessions number one of the known limits;
+    /// "out of memory (10)" at any other count may as well be the GPU's memory, so it is reported as a refusal that
+    /// names neither. Then a GPU memory error after at
+    /// least one stream kept up means memory was the limit: the kept-up count is the result. Otherwise, the newest
+    /// stream ending before its first frame after at least one stream kept up means the server could not start one
+    /// more stream. A silent hang is never blamed on NVIDIA's session limit: drivers refuse a session with an error and
+    /// exit, and that refusal is matched first.
+    /// </remarks>
+    /// <param name="kind">How the stream ended.</param>
+    /// <param name="encoder">The streams' video encoder.</param>
+    /// <param name="sessionLimitLine">The stream's first line with NVIDIA's session refusal text, or null.</param>
+    /// <param name="gpuMemoryLine">The stream's first line saying the GPU ran out of memory, or null.</param>
+    /// <param name="maxStable">The most streams that all kept up.</param>
+    /// <param name="isNewest">Whether the stream is the most recently added one.</param>
+    /// <param name="reportedFrames">Whether the stream reported at least one encoded frame, in this process or in one
+    /// before it that reached the end of the file.</param>
+    /// <param name="otherSessions">How many other streams were running when it ended.</param>
+    /// <returns>Why the test ended, and whether the server could not start one more stream.</returns>
+    internal static (TranscodeTestEndReason EndReason, bool CouldNotStartStream) EndOutcome(
+        TranscodeTestEndKind kind,
+        string? encoder,
+        string? sessionLimitLine,
+        string? gpuMemoryLine,
+        int maxStable,
+        bool isNewest,
+        bool reportedFrames,
+        int otherSessions)
+    {
+        if (IsNvencSessionLimit(encoder, sessionLimitLine))
+        {
+            return (IsKnownSessionLimit(sessionLimitLine, otherSessions) ? TranscodeTestEndReason.NvencSessionLimit : TranscodeTestEndReason.NvencSessionRefused, false);
+        }
+
+        if (gpuMemoryLine is not null && maxStable >= 1)
+        {
+            return (TranscodeTestEndReason.GpuMemoryFull, false);
+        }
+
+        // Only a stream that never reported a frame never started, whether it then exited or stalled.
+        var neverStarted = !reportedFrames;
+        var couldNotStart = isNewest && maxStable >= 1 && neverStarted;
+        var reason = kind == TranscodeTestEndKind.Stalled ? TranscodeTestEndReason.StreamStalled : TranscodeTestEndReason.StreamFailed;
+        return (reason, couldNotStart);
+    }
+
+    /// <summary>
+    /// Gets whether NVIDIA's session refusal is the driver's session limit rather than possibly the GPU's memory.
+    /// </summary>
+    /// <param name="sessionLimitLine">The refusal line.</param>
+    /// <param name="otherSessions">How many other streams were running when the session was refused.</param>
+    /// <returns><c>true</c> for "incompatible client key (21)", which only the session limit gives, or when the other
+    /// sessions number one of <see cref="NvencSessionLimits"/>.</returns>
+    internal static bool IsKnownSessionLimit(string? sessionLimitLine, int otherSessions)
+        => (sessionLimitLine is not null && sessionLimitLine.Contains("incompatible client key (21)", StringComparison.OrdinalIgnoreCase))
+            || NvencSessionLimits.Contains(otherSessions);
+
+    /// <summary>
+    /// Describes the newest stream not starting after others kept up.
+    /// </summary>
+    /// <param name="kind">How the stream ended: an exit before its first frame, or no frames before the timeout.</param>
+    /// <param name="maxStable">The most streams that all kept up.</param>
+    /// <param name="streamId">The stream that did not start.</param>
+    /// <param name="startTimeoutSeconds">How long a stream may take to report its first frame.</param>
+    /// <returns>The sentence for the log.</returns>
+    internal static string DescribeCouldNotStart(TranscodeTestEndKind kind, int maxStable, int streamId, double startTimeoutSeconds)
+        => kind == TranscodeTestEndKind.Stalled
+            ? string.Create(CultureInfo.InvariantCulture, $"{maxStable} stream(s) kept up; stream {streamId} started but produced no frames in {startTimeoutSeconds:0} s.")
+            : string.Create(CultureInfo.InvariantCulture, $"{maxStable} stream(s) kept up; the server could not start stream {streamId}.");
+
+    /// <summary>
+    /// Describes a stream whose ffmpeg the system did not run within the start timeout.
+    /// </summary>
+    /// <param name="startTimeoutSeconds">How long the test waited for it.</param>
+    /// <returns>The reason, for the result and the log.</returns>
+    internal static string DescribeLaunchTimeout(double startTimeoutSeconds)
+        => string.Create(CultureInfo.InvariantCulture, $"The system did not run ffmpeg within {startTimeoutSeconds:0} s; check that the storage holding ffmpeg responds.");
+
+    /// <summary>
+    /// Gets whether a stream that produced no frames was waiting rather than working: ffmpeg had not opened the file,
+    /// so it was still probing it, and it used little CPU time, so it was waiting on reading the media.
+    /// </summary>
+    /// <param name="kind">How the stream ended.</param>
+    /// <param name="sawInput">Whether ffmpeg said it opened the file.</param>
+    /// <param name="processorTime">ffmpeg's CPU time, or null when it could not be read.</param>
+    /// <returns><c>true</c> for a stall before the file was opened, with less than
+    /// <see cref="WaitingOnInputCpuSeconds"/> of CPU time.</returns>
+    internal static bool IsWaitingOnInput(TranscodeTestEndKind kind, bool sawInput, TimeSpan? processorTime)
+        => kind == TranscodeTestEndKind.Stalled && !sawInput && processorTime is TimeSpan p && p.TotalSeconds < WaitingOnInputCpuSeconds;
+
+    /// <summary>
+    /// Describes a stream that did not start because ffmpeg was waiting on reading the file.
+    /// </summary>
+    /// <param name="maxStable">The most streams that all kept up, or null when the stream is not a capacity result.</param>
+    /// <param name="streamId">The stream that did not start.</param>
+    /// <param name="startTimeoutSeconds">How long a stream may take to report its first frame.</param>
+    /// <param name="processorTime">ffmpeg's CPU time.</param>
+    /// <returns>The sentence for the log.</returns>
+    internal static string DescribeWaitingOnInput(int? maxStable, int streamId, double startTimeoutSeconds, TimeSpan processorTime)
+    {
+        var text = string.Create(
+            CultureInfo.InvariantCulture,
+            $"Stream {streamId} did not start within {startTimeoutSeconds:0} s: ffmpeg had not opened the file yet and used {processorTime.TotalSeconds:0.0} s of CPU time, so it was waiting, probably on reading the media. Slow or shared storage, not the GPU, may be the limit.");
+        return maxStable is int kept ? string.Create(CultureInfo.InvariantCulture, $"{kept} stream(s) kept up. {text}") : text;
+    }
+
+    /// <summary>
+    /// Gets the line that names why a stress test ended, for the endings that have one.
+    /// </summary>
+    /// <param name="reason">Why the test ended.</param>
+    /// <param name="sessionLimitLine">The stream's first session refusal line, or null.</param>
+    /// <param name="gpuMemoryLine">The stream's first GPU memory line, or null.</param>
+    /// <returns>The session refusal for the driver limit, the memory line for full GPU memory, otherwise null.</returns>
+    internal static string? EndCause(TranscodeTestEndReason reason, string? sessionLimitLine, string? gpuMemoryLine) => reason switch
+    {
+        TranscodeTestEndReason.NvencSessionLimit or TranscodeTestEndReason.NvencSessionRefused => sessionLimitLine,
+        TranscodeTestEndReason.GpuMemoryFull => gpuMemoryLine,
+        _ => null
+    };
+
+    /// <summary>
+    /// Picks the error text for the stream that ended a stress test.
+    /// </summary>
+    /// <param name="kind">How the stream ended.</param>
+    /// <param name="reason">Why the test ended.</param>
+    /// <param name="couldNotStart">Whether the server could not start the stream.</param>
+    /// <param name="sessionLimitLine">The stream's first session refusal line, or null.</param>
+    /// <param name="gpuMemoryLine">The stream's first GPU memory line, or null.</param>
+    /// <param name="errorLines">The stream's last error lines.</param>
+    /// <returns>Only the matched line for the driver limit and full GPU memory; the other error lines stay in the
+    /// server log. Otherwise ffmpeg's error lines joined with " | ". Other output, such as warnings, is never returned
+    /// as the error. Empty for a plain failure without error lines, and null for a stream that never started without
+    /// them.</returns>
+    internal static string? EndEvidence(
+        TranscodeTestEndKind kind,
+        TranscodeTestEndReason reason,
+        bool couldNotStart,
+        string? sessionLimitLine,
+        string? gpuMemoryLine,
+        IReadOnlyList<string> errorLines)
+    {
+        var cause = EndCause(reason, sessionLimitLine, gpuMemoryLine);
+        if (!string.IsNullOrEmpty(cause))
+        {
+            return cause;
+        }
+
+        // A plain failure keeps its error lines even when empty, as before; a stream that never started has null.
+        var text = string.Join(" | ", errorLines);
+        return (kind == TranscodeTestEndKind.Exited && !couldNotStart) || !string.IsNullOrEmpty(text) ? text : null;
+    }
+
+    /// <summary>
+    /// Puts the line that names the cause before the kept lines, unless one of them is that line.
+    /// </summary>
+    /// <param name="cause">The matched line, or null.</param>
+    /// <param name="kept">The kept error lines.</param>
+    /// <returns>The lines joined with " | ", with the cause once.</returns>
+    internal static string WithCause(string? cause, IReadOnlyList<string> kept)
+        => string.IsNullOrEmpty(cause) || kept.Contains(cause, StringComparer.Ordinal)
+            ? string.Join(" | ", kept)
+            : string.Join(" | ", kept.Prepend(cause));
+
+    private static bool IsNvencEncoder(string? encoder)
+        => encoder is not null && encoder.Contains("nvenc", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
     /// Names why a stress test ended the way the Jellyfin hardware survey (hwa.jellyfin.org) does, so results can be
     /// compared with it.
     /// </summary>
     /// <param name="reason">Why the test ended.</param>
-    /// <returns>The survey's name; <c>null</c> for an ending the survey has no name for.</returns>
+    /// <returns>The survey's name; <c>null</c> for an ending the survey has no name for. The survey has one name for
+    /// every NVENC session refusal.</returns>
     public static TranscodeTestSurveyFailureReason? SurveyFailureReason(TranscodeTestEndReason reason) => reason switch
     {
         TranscodeTestEndReason.LimitReached => TranscodeTestSurveyFailureReason.Performance,
         TranscodeTestEndReason.StreamStalled => TranscodeTestSurveyFailureReason.FailedTimeout,
-        TranscodeTestEndReason.NvencSessionLimit => TranscodeTestSurveyFailureReason.FailedNvencLimit,
+        TranscodeTestEndReason.NvencSessionLimit or TranscodeTestEndReason.NvencSessionRefused => TranscodeTestSurveyFailureReason.FailedNvencLimit,
         _ => null
     };
 
@@ -576,6 +790,78 @@ internal static partial class TranscodeTestRules
     /// <param name="lastCheckedAt">When its status was last asked for, in seconds since the start.</param>
     /// <returns><c>true</c> after <see cref="IdleStopSeconds"/> without a status request.</returns>
     public static bool IsAbandoned(double now, double lastCheckedAt) => now - lastCheckedAt >= IdleStopSeconds;
+
+    /// <summary>
+    /// Gets whether ffmpeg's last reported position is at the end of the source: at least
+    /// <see cref="EndOfFileFraction"/> of its run time.
+    /// </summary>
+    /// <param name="positionSeconds">ffmpeg's last reported position in the source, or null before its first frame.</param>
+    /// <param name="sourceSeconds">The source's run time, or null when it is not known.</param>
+    /// <returns><c>true</c> or <c>false</c>, or null when either value is not known.</returns>
+    public static bool? IsAtEndOfFile(double? positionSeconds, double? sourceSeconds)
+    {
+        if (positionSeconds is not double position || sourceSeconds is not double length || length <= 0)
+        {
+            return null;
+        }
+
+        return position >= length * EndOfFileFraction;
+    }
+
+    /// <summary>
+    /// Gets whether a stream that exited on its own reached the end of the file and should start again. It must have
+    /// exited cleanly, produced frames itself and not have restarted too often. When its position and the source's
+    /// run time are known, the position must be at the end of the file, see <see cref="IsAtEndOfFile"/>; otherwise it
+    /// must have run a full measuring window, so a process that exits at once does not restart in a loop.
+    /// </summary>
+    /// <param name="exitCode">ffmpeg's exit code.</param>
+    /// <param name="reportedFrames">Whether this process reported at least one encoded frame.</param>
+    /// <param name="livedSeconds">How long the process ran.</param>
+    /// <param name="atEndOfFile">Whether the process's position was at the end of the file, or null when not known.</param>
+    /// <param name="restarts">How often the stream restarted before.</param>
+    /// <returns><c>true</c> to start it again.</returns>
+    public static bool CanRestart(int exitCode, bool reportedFrames, double livedSeconds, bool? atEndOfFile, int restarts)
+        => exitCode == 0
+            && reportedFrames
+            && (atEndOfFile ?? livedSeconds >= TranscodeTestStream.WindowSeconds)
+            && restarts < MaxRestartsPerStream;
+
+    /// <summary>
+    /// Describes why a stream that exited cleanly was not started again, for a failure that ffmpeg gave no error for.
+    /// </summary>
+    /// <param name="exitCode">ffmpeg's exit code.</param>
+    /// <param name="reportedFrames">Whether the process reported at least one encoded frame.</param>
+    /// <param name="livedSeconds">How long the process ran.</param>
+    /// <param name="positionSeconds">ffmpeg's last reported position in the source, or null before its first frame.</param>
+    /// <param name="sourceSeconds">The source's run time, or null when it is not known.</param>
+    /// <param name="restarts">How often the stream restarted before.</param>
+    /// <returns>The reason, or null for a non-zero exit, which ffmpeg's error lines explain.</returns>
+    public static string? DescribeNoRestart(int exitCode, bool reportedFrames, double livedSeconds, double? positionSeconds, double? sourceSeconds, int restarts)
+    {
+        if (exitCode != 0)
+        {
+            return null;
+        }
+
+        if (!reportedFrames)
+        {
+            return "ffmpeg exited without encoding a frame.";
+        }
+
+        if (restarts >= MaxRestartsPerStream)
+        {
+            return string.Create(CultureInfo.InvariantCulture, $"The stream reached the end of the file {restarts} times; use a longer file.");
+        }
+
+        if (IsAtEndOfFile(positionSeconds, sourceSeconds) == false)
+        {
+            return string.Create(
+                CultureInfo.InvariantCulture,
+                $"ffmpeg exited cleanly at {positionSeconds:0.0} s of the {sourceSeconds:0.0} s file ({positionSeconds / sourceSeconds:0%}), before the end of the file.");
+        }
+
+        return string.Create(CultureInfo.InvariantCulture, $"ffmpeg exited after {livedSeconds:0.0} s, too soon to be the end of the file.");
+    }
 
     /// <summary>
     /// Estimates the space a stress test needs in the transcode folder.
@@ -650,7 +936,39 @@ internal static partial class TranscodeTestRules
             text += " The test stopped at its time limit, not because a stream fell behind.";
         }
 
+        if (result.Collapsed)
+        {
+            text += string.Create(CultureInfo.InvariantCulture, $" All streams slowed down sharply at once, rather than one falling a little behind. That usually means the GPU ran out of memory or the driver stalled, not that it was slightly too slow; {StreamCount(result.MaxStableStreams)} is still the safe result.");
+        }
+
         return text;
+    }
+
+    /// <summary>
+    /// Gets whether the streams collapsed together when the limit was reached: all streams but at most one, and at
+    /// least two, are under <see cref="CollapseFraction"/> of the threshold, or their combined frame rate is under
+    /// that fraction of the peak. One stream falling behind or stalling while the others keep up is not a collapse.
+    /// </summary>
+    /// <param name="fps">The running streams' frame rates, <c>null</c> for a stream not measured yet.</param>
+    /// <param name="thresholdFps">The frame rate each stream must keep.</param>
+    /// <param name="peakCombinedFps">The highest combined frame rate seen in the run.</param>
+    /// <returns><c>true</c> for a collapse.</returns>
+    public static bool IsCollapse(IReadOnlyList<double?> fps, double thresholdFps, double peakCombinedFps)
+    {
+        var measured = fps.OfType<double>().ToList();
+        if (measured.Count < 2)
+        {
+            return false;
+        }
+
+        var low = measured.Count(f => f < thresholdFps * CollapseFraction);
+        if (low >= 2 && low >= measured.Count - 1)
+        {
+            return true;
+        }
+
+        // Only with all streams but at most one measured, so a stream just added does not make the sum look low.
+        return fps.Count - measured.Count <= 1 && peakCombinedFps > 0 && measured.Sum() < peakCombinedFps * CollapseFraction;
     }
 
     /// <summary>

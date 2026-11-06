@@ -13,7 +13,7 @@ namespace Jellyfin.Api.Tests.Helpers
             => new(Threshold, rampSeconds: 12, failSeconds: 5, startTimeoutSeconds: 30, maxStreams, now: 0, settleSeconds: 3);
 
         private static TranscodeTestStreamReading[] Streams(params double?[] fps)
-            => fps.Select((f, i) => new TranscodeTestStreamReading(i + 1, f, 20)).ToArray();
+            => fps.Select((f, i) => new TranscodeTestStreamReading(i + 1, f, 20, f is not null)).ToArray();
 
         [Fact]
         public void Tick_NewStreamNotMeasuredYet_WarmsUp()
@@ -259,10 +259,41 @@ namespace Jellyfin.Api.Tests.Helpers
         {
             var controller = Create();
 
-            var decision = controller.Tick(40, [new TranscodeTestStreamReading(1, 30, 40), new TranscodeTestStreamReading(2, null, 31)]);
+            var decision = controller.Tick(40, [new TranscodeTestStreamReading(1, 30, 40, true), new TranscodeTestStreamReading(2, null, 31, false)]);
 
             Assert.Equal(TranscodeTestStressAction.Stalled, decision.Action);
             Assert.Equal(2, decision.StreamId);
+        }
+
+        [Fact]
+        public void Tick_StartedThenSilent_FallsBehindInsteadOfStalling()
+        {
+            var controller = Create();
+            var stream = new TranscodeTestStream(2, new System.Diagnostics.Process(), "/tmp", "p_", 24f, 0, 6);
+            stream.OnLine("frame=   24 fps= 24", 1);
+            stream.OnLine("frame=   72 fps= 24", 3);
+
+            // ffmpeg went quiet at 3 s; 30 s later the stream has frames but no fresh rate.
+            TranscodeTestStreamReading Reading(double now) => new(2, stream.Fps(now), now, stream.ReportedFrames);
+
+            var behind = controller.Tick(34, [new TranscodeTestStreamReading(1, 30, 40, true), Reading(34)]);
+            var limit = controller.Tick(39, [new TranscodeTestStreamReading(1, 30, 45, true), Reading(39)]);
+
+            Assert.Equal(TranscodeTestStressPhase.FallingBehind, behind.Phase);
+            Assert.Equal(2, behind.StreamId);
+            Assert.Equal(TranscodeTestStressAction.LimitReached, limit.Action);
+            Assert.Equal(0, limit.Fps);
+        }
+
+        [Fact]
+        public void Tick_ReportedFramesNotMeasuredYet_IsNeitherStalledNorBehind()
+        {
+            var controller = Create();
+
+            var decision = controller.Tick(40, [new TranscodeTestStreamReading(1, 30, 40, true), new TranscodeTestStreamReading(2, null, 31, true)]);
+
+            Assert.Equal(TranscodeTestStressAction.Wait, decision.Action);
+            Assert.Equal(TranscodeTestStressPhase.WarmingUp, decision.Phase);
         }
     }
 }

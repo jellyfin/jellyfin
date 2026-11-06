@@ -16,6 +16,8 @@ namespace Jellyfin.Api.Tests.Helpers
     {
         // Lines from jellyfin-ffmpeg 8.1 at -v verbose: VideoToolbox decoding, and a fallback to the CPU.
         private const string VideoToolboxOutput = "[graph -1 input from stream 0:0 @ 0xb3302ca80] w:1920 h:1080 pixfmt:videotoolbox_vld tb:1/1000 fr:24/1 sar:1/1";
+        private const string Session = "[h264_nvenc @ 0x0] OpenEncodeSessionEx failed: incompatible client key (21): (no details)";
+        private const string Gpu = "[av1 @ 0x0] cuvidCreateDecoder(&ctx->cudecoder, &cuinfo) failed -> CUDA_ERROR_OUT_OF_MEMORY: out of memory";
         private const string SoftwareOutput = "[graph -1 input from stream 0:0 @ 0x9a50486c0] w:1280 h:720 pixfmt:yuv420p tb:1/1000 fr:24/1 sar:1/1 csp:bt470bg";
 
         // An RTX 3070, which has no AV1 encoder: ffmpeg 8.1 gave no "frames encoded" count.
@@ -290,9 +292,33 @@ namespace Jellyfin.Api.Tests.Helpers
             => Assert.Equal(expected, TranscodeTestRules.IsNvencSessionLimit(encoder, errors));
 
         [Theory]
+        // NVIDIA's refusal is the driver limit, whatever came before.
+        [InlineData("h264_nvenc", "OpenEncodeSessionEx failed: out of memory (10): (no details)", 0, true, TranscodeTestEndReason.NvencSessionLimit, false, 3)]
+        [InlineData("hevc_nvenc", "OpenEncodeSessionEx failed: incompatible client key (21)", 2, true, TranscodeTestEndReason.NvencSessionLimit, false, 2)]
+        [InlineData("av1_nvenc", "OpenEncodeSessionEx failed: out of memory (10)", 8, false, TranscodeTestEndReason.NvencSessionLimit, false, 8)]
+        // "out of memory (10)" at a count that is no known limit may be the GPU's memory: a refusal that names neither.
+        [InlineData("h264_nvenc", "OpenEncodeSessionEx failed: out of memory (10)", 6, true, TranscodeTestEndReason.NvencSessionRefused, false, 7)]
+        // The RTX 5080 report: K streams kept up, the next never started, ffmpeg said nothing useful. A hang is never
+        // blamed on NVIDIA's session limit.
+        [InlineData("h264_nvenc", "", 8, true, TranscodeTestEndReason.StreamStalled, true)]
+        [InlineData("h264_nvenc", "", 9, true, TranscodeTestEndReason.StreamStalled, true)]
+        [InlineData("h264_nvenc", "", 3, true, TranscodeTestEndReason.StreamStalled, true)]
+        [InlineData("h264_nvenc", "", 2, true, TranscodeTestEndReason.StreamStalled, true)]
+        // Other encoders: the same capacity wording, never NVIDIA's limit.
+        [InlineData("h264_videotoolbox", "OpenEncodeSessionEx failed: out of memory (10)", 8, true, TranscodeTestEndReason.StreamStalled, true)]
+        [InlineData("libx264", "", 8, true, TranscodeTestEndReason.StreamStalled, true)]
+        [InlineData(null, "", 4, true, TranscodeTestEndReason.StreamStalled, true)]
+        // A real failure: nothing kept up, or an older stream stalled.
+        [InlineData("h264_nvenc", "", 0, true, TranscodeTestEndReason.StreamStalled, false)]
+        [InlineData("h264_nvenc", "", 8, false, TranscodeTestEndReason.StreamStalled, false)]
+        public void StallOutcome_ReportsCapacityAndTheDriverLimitHonestly(string? encoder, string evidence, int maxStable, bool isNewest, TranscodeTestEndReason reason, bool couldNotStart, int otherSessions = 12)
+            => Assert.Equal((reason, couldNotStart), TranscodeTestRules.StallOutcome(encoder, evidence, maxStable, isNewest, otherSessions));
+
+        [Theory]
         [InlineData(TranscodeTestEndReason.LimitReached, TranscodeTestSurveyFailureReason.Performance)]
         [InlineData(TranscodeTestEndReason.StreamStalled, TranscodeTestSurveyFailureReason.FailedTimeout)]
         [InlineData(TranscodeTestEndReason.NvencSessionLimit, TranscodeTestSurveyFailureReason.FailedNvencLimit)]
+        [InlineData(TranscodeTestEndReason.NvencSessionRefused, TranscodeTestSurveyFailureReason.FailedNvencLimit)]
         [InlineData(TranscodeTestEndReason.MaxStreams, null)]
         [InlineData(TranscodeTestEndReason.StreamFailed, null)]
         [InlineData(TranscodeTestEndReason.Cancelled, null)]
@@ -307,6 +333,114 @@ namespace Jellyfin.Api.Tests.Helpers
         [InlineData(null, null, false, TranscodeTestOutcome.NotSupported, TranscodeTestAdvice.None)]
         public void Tonemap_ReportsWhereItRuns(string? filter, int? exitCode, bool enabled, TranscodeTestOutcome outcome, TranscodeTestAdvice advice)
             => Assert.Equal((outcome, advice), TranscodeTestRules.Tonemap(filter, exitCode, enabled));
+
+        [Theory]
+        [InlineData("[av1 @ 0x0] cuvidCreateDecoder(&ctx->cudecoder, &cuinfo) failed -> CUDA_ERROR_OUT_OF_MEMORY: out of memory", true)]
+        [InlineData("[AVHWDeviceContext @ 0x0] cuMemAlloc(&data, size) failed -> CUDA_ERROR_OUT_OF_MEMORY: out of memory", true)]
+        [InlineData("[hevc @ 0x0] Failed to create surface: 2 (resource allocation failed).", true)]
+        [InlineData("[h264_qsv @ 0x0] Error initializing the decoder: failed to allocate memory (-4)", true)]
+        [InlineData("[Parsed_libplacebo_0 @ 0x0] vkAllocateMemory failed: VK_ERROR_OUT_OF_DEVICE_MEMORY", true)]
+        [InlineData("[h264_nvenc @ 0x0] OpenEncodeSessionEx failed: out of memory (10): (no details)", false)]
+        [InlineData("[in#0 @ 0x0] Error opening input: Cannot allocate memory", false)]
+        [InlineData("[Parsed_libplacebo_0 @ 0x0] vkCreateDevice failed: VK_ERROR_OUT_OF_HOST_MEMORY", false)]
+        [InlineData("[h264_qsv @ 0x0] Error initializing the decoder: failed to allocate memory (-5)", false)]
+        [InlineData("Conversion failed!", false)]
+        [InlineData(null, false)]
+        public void IsGpuMemoryLine_MatchesOnlyDeviceMemoryErrors(string? line, bool expected)
+            => Assert.Equal(expected, TranscodeTestRules.IsGpuMemoryLine(line));
+
+        [Theory]
+        [InlineData("OpenEncodeSessionEx failed: out of memory (10)", true)]
+        [InlineData("OpenEncodeSessionEx failed: INCOMPATIBLE CLIENT KEY (21)", true)]
+        [InlineData("Conversion failed!", false)]
+        [InlineData(null, false)]
+        public void IsSessionLimitText_IsTheRefusalWhateverTheEncoder(string? text, bool expected)
+        {
+            Assert.Equal(expected, TranscodeTestRules.IsSessionLimitText(text));
+            Assert.Equal(expected, TranscodeTestRules.IsNvencSessionLimit("h264_nvenc", text));
+            Assert.False(TranscodeTestRules.IsNvencSessionLimit("h264_videotoolbox", text));
+        }
+
+        [Theory]
+        // The session refusal wins, for both kinds, whatever K, the stream or its frames.
+        [InlineData(true, "h264_nvenc", Session, Gpu, 0, false, true, TranscodeTestEndReason.NvencSessionLimit, false)]
+        [InlineData(false, "hevc_nvenc", Session, null, 12, true, false, TranscodeTestEndReason.NvencSessionLimit, false)]
+        // Session text without NVENC is not the driver limit; a GPU line then decides.
+        [InlineData(true, "h264_videotoolbox", Session, Gpu, 2, true, false, TranscodeTestEndReason.GpuMemoryFull, false)]
+        [InlineData(true, "h264_videotoolbox", Session, null, 2, true, false, TranscodeTestEndReason.StreamFailed, true)]
+        // GPU memory after K >= 1, for any stream; at K = 0 it stays a failure.
+        [InlineData(true, "av1_nvenc", null, Gpu, 15, true, false, TranscodeTestEndReason.GpuMemoryFull, false)]
+        [InlineData(false, "av1_nvenc", null, Gpu, 15, true, false, TranscodeTestEndReason.GpuMemoryFull, false)]
+        [InlineData(true, "hevc_vaapi", null, Gpu, 1, false, true, TranscodeTestEndReason.GpuMemoryFull, false)]
+        [InlineData(true, "av1_nvenc", null, Gpu, 0, true, false, TranscodeTestEndReason.StreamFailed, false)]
+        [InlineData(false, "av1_nvenc", null, Gpu, 0, true, false, TranscodeTestEndReason.StreamStalled, false)]
+        // The newest stream exiting before its first frame is a capacity result, with no NVIDIA hint.
+        [InlineData(true, "h264_nvenc", null, null, 22, true, false, TranscodeTestEndReason.StreamFailed, true)]
+        [InlineData(true, "h264_nvenc", null, null, 3, true, false, TranscodeTestEndReason.StreamFailed, true)]
+        [InlineData(true, "h264_nvenc", null, null, 2, true, false, TranscodeTestEndReason.StreamFailed, true)]
+        [InlineData(true, "h264_videotoolbox", null, null, 1, true, false, TranscodeTestEndReason.StreamFailed, true)]
+        // After frames, an older stream, or K = 0, an exit stays a red failure.
+        [InlineData(true, "h264_nvenc", null, null, 22, true, true, TranscodeTestEndReason.StreamFailed, false)]
+        [InlineData(true, "h264_nvenc", null, null, 22, false, false, TranscodeTestEndReason.StreamFailed, false)]
+        [InlineData(true, "h264_nvenc", null, null, 0, true, false, TranscodeTestEndReason.StreamFailed, false)]
+        // A stall of the newest stream after K >= 1 is a capacity result only before its first frame.
+        [InlineData(false, "h264_nvenc", null, null, 3, true, true, TranscodeTestEndReason.StreamStalled, false)]
+        [InlineData(false, "h264_nvenc", null, null, 3, true, false, TranscodeTestEndReason.StreamStalled, true)]
+        [InlineData(false, "h264_nvenc", null, null, 3, false, false, TranscodeTestEndReason.StreamStalled, false)]
+        [InlineData(false, "h264_videotoolbox", null, null, 15, true, false, TranscodeTestEndReason.StreamStalled, true)]
+        public void EndOutcome_NamesTheCauseForExitsAndStalls(bool exited, string? encoder, string? session, string? gpu, int maxStable, bool isNewest, bool frames, TranscodeTestEndReason reason, bool couldNotStart)
+        {
+            var kind = exited ? TranscodeTestEndKind.Exited : TranscodeTestEndKind.Stalled;
+            Assert.Equal((reason, couldNotStart), TranscodeTestRules.EndOutcome(kind, encoder, session, gpu, maxStable, isNewest, frames, 12));
+        }
+
+        [Fact]
+        public void DescribeCouldNotStart_SaysAStalledStreamStartedButProducedNoFrames()
+        {
+            Assert.Equal(
+                "3 stream(s) kept up; stream 4 started but produced no frames in 30 s.",
+                TranscodeTestRules.DescribeCouldNotStart(TranscodeTestEndKind.Stalled, 3, 4, 30));
+            Assert.Equal(
+                "3 stream(s) kept up; the server could not start stream 4.",
+                TranscodeTestRules.DescribeCouldNotStart(TranscodeTestEndKind.Exited, 3, 4, 30));
+        }
+
+        [Theory]
+        [InlineData(false, 1.0, true)]
+        [InlineData(true, 1.0, false)]
+        [InlineData(false, 12.5, false)]
+        [InlineData(false, null, false)]
+        public void IsWaitingOnInput_OnlyBeforeTheFileIsOpenedWithLittleCpuTime(bool sawInput, double? cpuSeconds, bool expected)
+        {
+            TimeSpan? cpu = cpuSeconds is double c ? TimeSpan.FromSeconds(c) : null;
+            Assert.Equal(expected, TranscodeTestRules.IsWaitingOnInput(TranscodeTestEndKind.Stalled, sawInput, cpu));
+        }
+
+        [Fact]
+        public void IsWaitingOnInput_NotForAStreamThatExited()
+            => Assert.False(TranscodeTestRules.IsWaitingOnInput(TranscodeTestEndKind.Exited, false, TimeSpan.FromSeconds(1)));
+
+        [Fact]
+        public void DescribeWaitingOnInput_PointsAtTheStorage()
+        {
+            Assert.Equal(
+                "4 stream(s) kept up. Stream 5 did not start within 30 s: ffmpeg had not opened the file yet and used 1.0 s of CPU time, so it was waiting, probably on reading the media. Slow or shared storage, not the GPU, may be the limit.",
+                TranscodeTestRules.DescribeWaitingOnInput(4, 5, 30, TimeSpan.FromSeconds(1)));
+            Assert.StartsWith(
+                "Stream 1 did not start within 30 s: ffmpeg had not opened the file yet and used 0.6 s",
+                TranscodeTestRules.DescribeWaitingOnInput(null, 1, 30, TimeSpan.FromSeconds(0.6)),
+                StringComparison.Ordinal);
+        }
+
+        [Theory]
+        [InlineData("cause", new[] { "a", "b" }, "cause | a | b")]
+        [InlineData("cause", new[] { "x", "cause", "y" }, "x | cause | y")]
+        [InlineData("cause", new string[0], "cause")]
+        [InlineData("cause", new[] { "a cause b" }, "cause | a cause b")] // Whole lines are compared, not text inside them.
+        [InlineData(null, new[] { "a" }, "a")]
+        [InlineData("", new[] { "a" }, "a")]
+        public void WithCause_PutsTheCauseFirstWhenItIsMissing(string? cause, string[] kept, string expected)
+            => Assert.Equal(expected, TranscodeTestRules.WithCause(cause, kept));
 
         [Theory]
         [InlineData(23.96, 23.976, "23.96")] // One decimal would read 24.0, above the threshold.
@@ -341,6 +475,59 @@ namespace Jellyfin.Api.Tests.Helpers
         }
 
         [Fact]
+        public void IsCollapse_Pes502Rtx3070_EveryStreamNearZeroAfterKeepingUp()
+        {
+            // Eight streams at about 61 fps (498.9 combined), then near 0 after stream 9 was added.
+            double?[] fps = [0, 0.4, 1.7, 0, 0.9, 1.2, 0, 0.3, 0.6];
+            Assert.True(TranscodeTestRules.IsCollapse(fps, 60, 498.9));
+        }
+
+        [Fact]
+        public void IsCollapse_GradualLimit_IsNot()
+        {
+            double?[] fps = [22.7, 24.1, 24.3, 24.0, 24.6, 24.2, 24.4, 24.1];
+            Assert.False(TranscodeTestRules.IsCollapse(fps, 23.976, 200));
+        }
+
+        [Fact]
+        public void IsCollapse_OneStreamStalledWhileTheOthersKeepUp_IsNot()
+        {
+            double?[] fps = [0, 61.2, 61.5, 61.0, 62.0, 61.8, 61.3, 61.4];
+            Assert.False(TranscodeTestRules.IsCollapse(fps, 60, 498.9));
+        }
+
+        [Fact]
+        public void IsCollapse_CombinedFpsFellUnderAQuarterOfThePeak()
+        {
+            // No stream is under a quarter of the threshold, but together they fell from 498.9 to 117 fps.
+            double?[] fps = [16, 15.5, 16.2, 15.8, 16, 15.9, 21.6];
+            Assert.True(TranscodeTestRules.IsCollapse(fps, 60, 498.9));
+
+            // Not when streams that are not measured yet would make the sum look low.
+            double?[] unmeasured = [16, 15.5, 16.2, 15.8, 16, null, null];
+            Assert.False(TranscodeTestRules.IsCollapse(unmeasured, 60, 498.9));
+        }
+
+        [Theory]
+        [InlineData(0.0)]
+        [InlineData(null)]
+        public void IsCollapse_NeedsAtLeastTwoMeasuredStreams(double? other)
+        {
+            double?[] fps = [0, other];
+            Assert.Equal(other.HasValue, TranscodeTestRules.IsCollapse(fps, 60, 380));
+            Assert.False(TranscodeTestRules.IsCollapse([0.0], 60, 380));
+        }
+
+        [Fact]
+        public void DescribeResult_SaysWhenTheStreamsCollapsedTogether()
+        {
+            var result = new TranscodeTestStressResult { EndReason = TranscodeTestEndReason.LimitReached, MaxStableStreams = 8, StreamsAtEnd = 9, FailedStreamId = 2, FailedStreamFps = 0, Collapsed = true };
+            Assert.Equal(
+                "Result: 8 stream(s) kept up with real time. With 9 streams running, stream 2 fell to 0.0 fps. All streams slowed down sharply at once, rather than one falling a little behind. That usually means the GPU ran out of memory or the driver stalled, not that it was slightly too slow; 8 streams is still the safe result.",
+                TranscodeTestRules.DescribeResult(result));
+        }
+
+        [Fact]
         public void DescribeDip_NamesTheNextStream()
         {
             Assert.Equal("Stream 3 dipped to 23.1 fps; stream 8 waits until every stream has kept up for 3 s.", TranscodeTestRules.DescribeDip(3, 23.14, 23.976, 3, 8));
@@ -371,6 +558,29 @@ namespace Jellyfin.Api.Tests.Helpers
             {
                 CultureInfo.CurrentCulture = culture;
             }
+        }
+
+        [Fact]
+        public void EndEvidence_IsTheCauseOrFfmpegsErrorLines()
+        {
+            const TranscodeTestEndKind Exited = TranscodeTestEndKind.Exited;
+            const TranscodeTestEndKind Stalled = TranscodeTestEndKind.Stalled;
+
+            // A plain failure keeps its error lines, even when empty.
+            Assert.Equal(string.Empty, TranscodeTestRules.EndEvidence(Exited, TranscodeTestEndReason.StreamFailed, false, null, null, []));
+            Assert.Equal("err | more", TranscodeTestRules.EndEvidence(Exited, TranscodeTestEndReason.StreamFailed, false, null, Gpu, ["err", "more"]));
+
+            // A stream that never started shows its error lines, or null; its other output is never the error.
+            Assert.Equal("err", TranscodeTestRules.EndEvidence(Exited, TranscodeTestEndReason.StreamFailed, true, null, null, ["err"]));
+            Assert.Null(TranscodeTestRules.EndEvidence(Exited, TranscodeTestEndReason.StreamFailed, true, null, null, []));
+            Assert.Null(TranscodeTestRules.EndEvidence(Stalled, TranscodeTestEndReason.StreamStalled, true, null, null, []));
+            Assert.Null(TranscodeTestRules.EndEvidence(Stalled, TranscodeTestEndReason.StreamStalled, false, null, null, []));
+
+            // The driver limit and full GPU memory show only the line that names them; the rest stays in the log.
+            Assert.Equal(Session, TranscodeTestRules.EndEvidence(Exited, TranscodeTestEndReason.NvencSessionLimit, false, Session, null, ["late"]));
+            Assert.Equal(Session, TranscodeTestRules.EndEvidence(Exited, TranscodeTestEndReason.NvencSessionLimit, false, Session, null, [Session, "late"]));
+            Assert.Equal(Gpu, TranscodeTestRules.EndEvidence(Stalled, TranscodeTestEndReason.GpuMemoryFull, false, null, Gpu, []));
+            Assert.Equal(Gpu, TranscodeTestRules.EndEvidence(Exited, TranscodeTestEndReason.GpuMemoryFull, false, null, Gpu, ["late", "later"]));
         }
     }
 }

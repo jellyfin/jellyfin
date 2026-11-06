@@ -37,7 +37,7 @@ namespace Jellyfin.Api.Tests.Helpers
         {
             // Stream 2 dips for a second every three: never long enough to end the test, always too recent to add one.
             static TranscodeTestStreamReading[] Readings(double now)
-                => [new(1, 30, now), new(2, now % 3 < 1 ? 20 : 30, now)];
+                => [new(1, 30, now, true), new(2, now % 3 < 1 ? 20 : 30, now, true)];
 
             var unlimited = new TranscodeTestStressController(Threshold, 12, 5, 30, 8, 0, 3);
             var limited = new TranscodeTestStressController(Threshold, 12, 5, 30, 8, 0, 3, timeLimitSeconds: 900);
@@ -100,13 +100,13 @@ namespace Jellyfin.Api.Tests.Helpers
             var result = new TranscodeTestStressResult
             {
                 SurveyFailureReason = TranscodeTestSurveyFailureReason.FailedNvencLimit,
-                Streams = [new TranscodeTestStreamResult { Id = 1, Status = TranscodeTestStreamStatus.Failed }]
+                Streams = [new TranscodeTestStreamResult { Id = 1, Status = TranscodeTestStreamStatus.NotStarted }]
             };
 
             var json = JsonSerializer.Serialize(result, JsonDefaults.Options);
 
             Assert.Contains("\"SurveyFailureReason\":\"FailedNvencLimit\"", json, StringComparison.Ordinal);
-            Assert.Contains("\"Status\":\"Failed\"", json, StringComparison.Ordinal);
+            Assert.Contains("\"Status\":\"NotStarted\"", json, StringComparison.Ordinal);
             Assert.Contains("\"TimeLimitReached\":false", json, StringComparison.Ordinal);
         }
     }
