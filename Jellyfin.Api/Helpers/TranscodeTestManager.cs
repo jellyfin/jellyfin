@@ -225,7 +225,7 @@ public sealed class TranscodeTestManager : IDisposable
         foreach (var clip in _clips)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var source = await GetClipAsync(clip, cancellationToken).ConfigureAwait(false);
+            var (source, error) = await GetClipAsync(clip, cancellationToken).ConfigureAwait(false);
             if (source is null)
             {
                 AddCheck(new TranscodeTestCheckResult
@@ -235,7 +235,8 @@ public sealed class TranscodeTestManager : IDisposable
                     BitDepth = clip.BitDepth,
                     Hdr = clip.Hdr,
                     Outcome = TranscodeTestOutcome.Skipped,
-                    Method = clip.Encoder
+                    Method = clip.Encoder,
+                    Error = error
                 });
                 continue;
             }
@@ -267,7 +268,11 @@ public sealed class TranscodeTestManager : IDisposable
         }
     }
 
-    private async Task<MediaSourceInfo?> GetClipAsync(ClipSpec clip, CancellationToken cancellationToken)
+    /// <summary>
+    /// Gets a test clip, creating it the first time.
+    /// </summary>
+    /// <returns>The clip, or null and how ffmpeg failed to create it.</returns>
+    private async Task<(MediaSourceInfo? Source, string? Error)> GetClipAsync(ClipSpec clip, CancellationToken cancellationToken)
     {
         var folder = Path.Combine(_configurationManager.ApplicationPaths.CachePath, FolderName);
         Directory.CreateDirectory(folder);
@@ -275,17 +280,20 @@ public sealed class TranscodeTestManager : IDisposable
         if (!File.Exists(path))
         {
             // Encoders are not in Jellyfin's capability list, so just try: a missing one makes ffmpeg fail.
-            var hdr = clip.Hdr ? "-vf setparams=color_primaries=bt2020:color_trc=smpte2084:colorspace=bt2020nc " : string.Empty;
-            var args = string.Create(
-                CultureInfo.InvariantCulture,
-                $"-hide_banner -v error -y -f lavfi -i testsrc2=size=1920x1080:rate=24 -t 4 {hdr}-c:v {clip.Encoder} -pix_fmt {clip.PixelFormat} {clip.ExtraArgs} \"{path}\"");
-            var result = await RunFfmpegAsync(args, null, null, cancellationToken).ConfigureAwait(false);
+            var result = await RunFfmpegAsync(TranscodeTestRules.ClipArguments(clip.Encoder, clip.PixelFormat, clip.ExtraArgs, clip.Hdr, path, false), null, null, cancellationToken).ConfigureAwait(false);
             if (result.ExitCode != 0 || !File.Exists(path))
             {
-                var reason = string.IsNullOrEmpty(result.Errors) ? "no error message" : result.Errors;
-                Log($"  Could not create the {clip.FileName} test clip ({clip.Encoder}, {TranscodeTestRules.DescribeExit(result.ExitCode)}): {reason}");
+                Log($"  Could not create the {clip.FileName} test clip ({clip.Encoder}, {TranscodeTestRules.DescribeExit(result.ExitCode)}): {DescribeErrors(result)}. Trying again at 640x360, which needs far less memory …");
                 File.Delete(path);
-                return null;
+                result = await RunFfmpegAsync(TranscodeTestRules.ClipArguments(clip.Encoder, clip.PixelFormat, clip.ExtraArgs, clip.Hdr, path, true), null, null, cancellationToken).ConfigureAwait(false);
+            }
+
+            if (result.ExitCode != 0 || !File.Exists(path))
+            {
+                var error = $"{TranscodeTestRules.DescribeExit(result.ExitCode)}: {DescribeErrors(result)}";
+                Log($"  Could not create the {clip.FileName} test clip at 640x360 either ({error})");
+                File.Delete(path);
+                return (null, error);
             }
         }
 
@@ -300,7 +308,7 @@ public sealed class TranscodeTestManager : IDisposable
         info.Protocol = MediaProtocol.File;
         info.VideoType = VideoType.VideoFile;
         info.Id = clip.FileName;
-        return info;
+        return (info, null);
     }
 
     private async Task CheckDecodeAsync(ClipSpec clip, MediaSourceInfo source, EncodingOptions saved, CancellationToken cancellationToken)
@@ -567,6 +575,8 @@ public sealed class TranscodeTestManager : IDisposable
             _checks.Add(result);
         }
     }
+
+    private static string DescribeErrors(FfmpegRun run) => string.IsNullOrEmpty(run.Errors) ? "no error message" : run.Errors;
 
     private sealed record ClipSpec(string Codec, int BitDepth, bool Hdr, string FileName, string Encoder, string PixelFormat, string ExtraArgs);
 

@@ -371,6 +371,31 @@ internal static partial class TranscodeTestRules
         => type == HardwareAccelerationType.vaapi && isLinux && !deviceIdentified;
 
     /// <summary>
+    /// Builds the ffmpeg arguments that make a test clip from ffmpeg's test pattern.
+    /// </summary>
+    /// <remarks>
+    /// The smaller form is a retry for small servers. At 1080p, libsvtav1 needs more than 512 MB, so a container with a
+    /// tight memory limit kills it, or it crashes. At 640x360 it fits in 256 MB, and the clip only has to exercise the
+    /// decoder. Thread options are left alone: "-threads 1" does not lower libsvtav1's memory, and its "lp=1"
+    /// parameter crashes the macOS build.
+    /// </remarks>
+    /// <param name="encoder">The software encoder.</param>
+    /// <param name="pixelFormat">The clip's pixel format.</param>
+    /// <param name="extraArgs">Encoder options.</param>
+    /// <param name="hdr">Whether to tag the clip as HDR10.</param>
+    /// <param name="path">Where to write the clip.</param>
+    /// <param name="smaller">Whether to make the 640x360 clip.</param>
+    /// <returns>The arguments.</returns>
+    public static string ClipArguments(string encoder, string pixelFormat, string extraArgs, bool hdr, string path, bool smaller)
+    {
+        var size = smaller ? "640x360" : "1920x1080";
+        var hdrArgs = hdr ? "-vf setparams=color_primaries=bt2020:color_trc=smpte2084:colorspace=bt2020nc " : string.Empty;
+        return string.Create(
+            CultureInfo.InvariantCulture,
+            $"-hide_banner -v error -y -f lavfi -i testsrc2=size={size}:rate=24 -t 4 {hdrArgs}-c:v {encoder} -pix_fmt {pixelFormat} {extraArgs} \"{path}\"");
+    }
+
+    /// <summary>
     /// Gets whether text holds NVIDIA's session refusal, whatever the encoder.
     /// </summary>
     /// <param name="text">ffmpeg output.</param>

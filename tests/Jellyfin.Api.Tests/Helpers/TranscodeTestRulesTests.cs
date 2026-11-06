@@ -215,6 +215,24 @@ namespace Jellyfin.Api.Tests.Helpers
         public void NeedsVaapiRestart_OnlyWhenTheVaapiDeviceIsUnidentifiedOnLinux(HardwareAccelerationType type, bool isLinux, bool identified, bool expected)
             => Assert.Equal(expected, TranscodeTestRules.NeedsVaapiRestart(type, isLinux, identified));
 
+        [Fact]
+        public void ClipArguments_MakesA1080pClip()
+            => Assert.Equal(
+                "-hide_banner -v error -y -f lavfi -i testsrc2=size=1920x1080:rate=24 -t 4 -c:v libsvtav1 -pix_fmt yuv420p10le -preset 10 \"/cache/av1.mkv\"",
+                TranscodeTestRules.ClipArguments("libsvtav1", "yuv420p10le", "-preset 10", false, "/cache/av1.mkv", false));
+
+        [Fact]
+        public void ClipArguments_SmallerClipIs640x360WithTheSameOptions()
+            => Assert.Equal(
+                "-hide_banner -v error -y -f lavfi -i testsrc2=size=640x360:rate=24 -t 4 -c:v libsvtav1 -pix_fmt yuv420p10le -preset 10 \"/cache/av1.mkv\"",
+                TranscodeTestRules.ClipArguments("libsvtav1", "yuv420p10le", "-preset 10", false, "/cache/av1.mkv", true));
+
+        [Fact]
+        public void ClipArguments_KeepsTheHdrTag()
+            => Assert.Equal(
+                "-hide_banner -v error -y -f lavfi -i testsrc2=size=640x360:rate=24 -t 4 -vf setparams=color_primaries=bt2020:color_trc=smpte2084:colorspace=bt2020nc -c:v libx265 -pix_fmt yuv420p10le -x265-params log-level=none:hdr10=1 \"/cache/hevc10-hdr10.mkv\"",
+                TranscodeTestRules.ClipArguments("libx265", "yuv420p10le", "-x265-params log-level=none:hdr10=1", true, "/cache/hevc10-hdr10.mkv", true));
+
         [Theory]
         [InlineData("tonemap_opencl=format=nv12", 0, false, TranscodeTestOutcome.Passed, TranscodeTestAdvice.TurnOn)]
         [InlineData("tonemapx=tonemap=bt2390", 0, true, TranscodeTestOutcome.Software, TranscodeTestAdvice.None)]
