@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Text.RegularExpressions;
 using Emby.Naming.Common;
@@ -22,10 +23,20 @@ namespace Emby.Naming.TV
 
         /// <summary>
         /// Regex that matches titles with year in parentheses. Captures the title (which may be
-        /// numeric) before the year, i.e. turns "1923 (2022)" into "1923".
+        /// numeric) before the year, i.e. turns "1923 (2022)" into "1923". A year range such as
+        /// "The Show (1989-2018)" or "The Show (2015-)" is accepted too, capturing the first year.
         /// </summary>
-        [GeneratedRegex(@"(?<title>.+?)\s*\((?<year>[0-9]{4})\)")]
+        [GeneratedRegex(@"(?<title>.+?)\s*\((?<year>[0-9]{4})(?:\s*[-–]\s*(?:[0-9]{4})?)?\)")]
         private static partial Regex TitleWithYearRegex();
+
+        /// <summary>
+        /// Regex that matches release folder names of season packs, i.e. turns
+        /// "The Show - The Complete Series (Season 1, 2 &amp; 3) + Extras" or "The Show Seasons 1-5"
+        /// into "The Show". "Season" must be followed by a number so titles like
+        /// "The Show Season of Change" are left alone.
+        /// </summary>
+        [GeneratedRegex(@"^(?<title>.+?)[\s._]*(?:[-–(\[][\s._]*)?(?:the[\s._]+)?(?:complete[\s._]+(?:series|collection|seasons?|box[\s._]*set)\b|seasons?[\s._]*[0-9]{1,3}\b).*$", RegexOptions.IgnoreCase)]
+        private static partial Regex SeasonPackRegex();
 
         /// <summary>
         /// Resolve information about series from path.
@@ -58,6 +69,17 @@ namespace Emby.Naming.TV
                 if (!string.IsNullOrEmpty(result.SeriesName))
                 {
                     seriesName = result.SeriesName;
+                }
+            }
+            else if (!string.IsNullOrEmpty(seriesName))
+            {
+                var seasonPackMatch = SeasonPackRegex().Match(seriesName);
+                var title = seasonPackMatch.Groups["title"].Value.TrimEnd(' ', '_', '.', '-', '–');
+
+                // Don't reduce a name like "The Complete Series" to just "The"
+                if (seasonPackMatch.Success && !title.Equals("the", StringComparison.OrdinalIgnoreCase))
+                {
+                    seriesName = title;
                 }
             }
 
