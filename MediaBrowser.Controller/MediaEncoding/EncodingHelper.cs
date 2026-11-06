@@ -34,12 +34,11 @@ namespace MediaBrowser.Controller.MediaEncoding
     public partial class EncodingHelper
     {
         /// <summary>
-        /// The codec validation regex string.
-        /// This regular expression matches strings that consist of alphanumeric characters, hyphens,
-        /// periods, underscores, commas, and vertical bars, with a length between 0 and 40 characters.
-        /// This should matches all common valid codecs.
+        /// The shared container and codec-list validation regex string.
+        /// Allows alphanumeric characters, hyphens, periods, underscores, commas, and vertical bars,
+        /// with a length between 0 and 256 characters.
         /// </summary>
-        public const string ContainerValidationRegexStr = @"^[a-zA-Z0-9\-\._,|]{0,40}$";
+        public const string ContainerValidationRegexStr = @"^[a-zA-Z0-9\-\._,|]{0,256}$";
 
         /// <summary>
         /// The level validation regex string.
@@ -183,12 +182,10 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// The codec validation regex.
-        /// This regular expression matches strings that consist of alphanumeric characters, hyphens,
-        /// periods, underscores, commas, and vertical bars, with a length between 0 and 40 characters.
-        /// This should matches all common valid codecs.
+        /// The shared container and codec-list validation regex, allowing up to 256 characters.
+        /// Requires a full match, like RegularExpressionAttribute, including rejecting a trailing newline.
         /// </summary>
-        [GeneratedRegex(ContainerValidationRegexStr)]
+        [GeneratedRegex(ContainerValidationRegexStr + @"\z")]
         public static partial Regex ContainerValidationRegex();
 
         /// <summary>
