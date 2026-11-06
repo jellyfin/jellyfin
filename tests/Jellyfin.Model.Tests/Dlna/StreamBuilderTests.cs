@@ -720,7 +720,7 @@ namespace Jellyfin.Model.Tests
         [InlineData(false, null, true, SubtitleDeliveryMethod.External)]
         [InlineData(false, null, false, SubtitleDeliveryMethod.External)]
         [InlineData(true, "/media/sub.mks", true, SubtitleDeliveryMethod.External)]
-        [InlineData(true, "/media/sub.idx", true, SubtitleDeliveryMethod.Encode)]
+        [InlineData(true, "/media/sub.idx", true, SubtitleDeliveryMethod.External)]
         [InlineData(true, "/media/sub.sub", true, SubtitleDeliveryMethod.Encode)]
         public void GetSubtitleProfile_MatchesVobSubMksProfileOnlyWhenDeliveredAsMks(
             bool isExternal,
