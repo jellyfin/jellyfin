@@ -389,6 +389,77 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this transcode keeps the source's HDR instead of
+        /// tone-mapping it to SDR: the client asked for an HDR range type, the source is 10-bit
+        /// HDR, and the output codec can carry it (HEVC Main10).
+        /// </summary>
+        public bool IsHdrTranscode
+        {
+            get
+            {
+                if (BaseRequest.Static || EncodingHelper.IsCopyCodec(OutputVideoCodec))
+                {
+                    return false;
+                }
+
+                var videoStream = VideoStream;
+                if (videoStream is null
+                    || videoStream.VideoRange != VideoRange.HDR
+                    || EncodingHelper.GetVideoColorBitDepth(this) < 10)
+                {
+                    return false;
+                }
+
+                // Only HEVC carries HDR here; H.264 has no practical 10-bit profile and is
+                // the SDR fallback.
+                var codec = ActualOutputVideoCodec;
+                if (!string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                var requestedRangeTypes = GetRequestedRangeTypes(codec);
+                if (requestedRangeTypes.Length == 0)
+                {
+                    return false;
+                }
+
+                var sourceRangeType = videoStream.VideoRangeType;
+                return requestedRangeTypes.Any(rangeType =>
+                    Enum.TryParse(rangeType, true, out VideoRangeType requested)
+                    && CanCarryHdr(requested, sourceRangeType));
+            }
+        }
+
+        /// <summary>
+        /// Whether an HDR range type the client asked for can hold the source's dynamic range
+        /// without tone-mapping. Dolby Vision RPU metadata is dropped; a profile with an HDR10
+        /// base layer is carried as HDR10.
+        /// </summary>
+        public static bool CanCarryHdr(VideoRangeType requested, VideoRangeType source)
+        {
+            if (requested == VideoRangeType.SDR)
+            {
+                return false;
+            }
+
+            return source switch
+            {
+                VideoRangeType.HDR10 or VideoRangeType.HDR10Plus =>
+                    requested is VideoRangeType.HDR10 or VideoRangeType.HDR10Plus,
+                VideoRangeType.HLG => requested is VideoRangeType.HLG,
+                // Only profiles with a compatible HDR10 base layer: plain DOVI (P5, P10/AV1) and
+                // DOVIWithSDR have no usable static metadata, so they stay on the SDR path.
+                VideoRangeType.DOVIWithHDR10 or VideoRangeType.DOVIWithEL
+                    or VideoRangeType.DOVIWithHDR10Plus or VideoRangeType.DOVIWithELHDR10Plus =>
+                    requested is VideoRangeType.HDR10 or VideoRangeType.HDR10Plus,
+                VideoRangeType.DOVIWithHLG => requested is VideoRangeType.HLG,
+                _ => false
+            };
+        }
+
         public string TargetVideoCodecTag
         {
             get
