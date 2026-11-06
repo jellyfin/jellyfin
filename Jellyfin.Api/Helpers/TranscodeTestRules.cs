@@ -485,6 +485,24 @@ internal static partial class TranscodeTestRules
     }
 
     /// <summary>
+    /// Gets whether a failed stream was refused by NVIDIA's limit on concurrent encoding sessions.
+    /// </summary>
+    /// <remarks>
+    /// Consumer GPUs allow a few sessions at once (3, 5 or 8, depending on the driver). The driver refuses the next
+    /// one when the session opens: "OpenEncodeSessionEx failed: out of memory (10)", or "incompatible client key (21)"
+    /// on older drivers.
+    /// </remarks>
+    /// <param name="encoder">The stream's video encoder.</param>
+    /// <param name="errors">ffmpeg's error lines.</param>
+    /// <returns><c>true</c> for an NVENC encoder that failed with one of those errors.</returns>
+    public static bool IsNvencSessionLimit(string? encoder, string? errors)
+        => encoder is not null
+            && encoder.Contains("nvenc", StringComparison.OrdinalIgnoreCase)
+            && errors is not null
+            && (errors.Contains("out of memory (10)", StringComparison.OrdinalIgnoreCase)
+                || errors.Contains("incompatible client key (21)", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
     /// Gets whether text holds NVIDIA's session refusal, whatever the encoder.
     /// </summary>
     /// <param name="text">ffmpeg output.</param>
@@ -508,6 +526,20 @@ internal static partial class TranscodeTestRules
         => line is not null
             && !IsSessionLimitText(line)
             && _gpuMemoryPatterns.Any(p => line.Contains(p, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Names why a stress test ended the way the Jellyfin hardware survey (hwa.jellyfin.org) does, so results can be
+    /// compared with it.
+    /// </summary>
+    /// <param name="reason">Why the test ended.</param>
+    /// <returns>The survey's name; <c>null</c> for an ending the survey has no name for.</returns>
+    public static TranscodeTestSurveyFailureReason? SurveyFailureReason(TranscodeTestEndReason reason) => reason switch
+    {
+        TranscodeTestEndReason.LimitReached => TranscodeTestSurveyFailureReason.Performance,
+        TranscodeTestEndReason.StreamStalled => TranscodeTestSurveyFailureReason.FailedTimeout,
+        TranscodeTestEndReason.NvencSessionLimit => TranscodeTestSurveyFailureReason.FailedNvencLimit,
+        _ => null
+    };
 
     /// <summary>
     /// Gets how long a stress test may run at most: long enough for every stream to be added, fall behind once and

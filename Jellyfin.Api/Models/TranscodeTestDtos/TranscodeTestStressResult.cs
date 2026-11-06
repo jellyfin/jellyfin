@@ -79,6 +79,27 @@ public class TranscodeTestStressResult
     public double FpsRatio { get; set; }
 
     /// <summary>
+    /// Gets or sets the source frame rate. A stream's speed is its frame rate divided by this; 1 is real time.
+    /// </summary>
+    public double SourceFps { get; set; }
+
+    /// <summary>
+    /// Gets or sets the median frame rate of the first stream while it ran alone.
+    /// </summary>
+    public double? SingleStreamFps { get; set; }
+
+    /// <summary>
+    /// Gets or sets <see cref="SingleStreamFps"/> as a multiple of real time.
+    /// </summary>
+    public double? SingleStreamSpeed { get; set; }
+
+    /// <summary>
+    /// Gets or sets why the test ended, as the Jellyfin hardware survey (hwa.jellyfin.org) names it. Null for an
+    /// ending the survey has no name for.
+    /// </summary>
+    public TranscodeTestSurveyFailureReason? SurveyFailureReason { get; set; }
+
+    /// <summary>
     /// Gets or sets the stream that fell behind or failed.
     /// </summary>
     public int? FailedStreamId { get; set; }

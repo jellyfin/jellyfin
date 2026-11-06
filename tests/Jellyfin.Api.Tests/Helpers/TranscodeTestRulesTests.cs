@@ -280,6 +280,27 @@ namespace Jellyfin.Api.Tests.Helpers
                 TranscodeTestRules.ClipArguments("libx265", "yuv420p10le", "-x265-params log-level=none:hdr10=1", true, "/cache/hevc10-hdr10.mkv", true));
 
         [Theory]
+        [InlineData("h264_nvenc", "[h264_nvenc @ 0x5581] OpenEncodeSessionEx failed: out of memory (10): (no details) | Conversion failed!", true)]
+        [InlineData("hevc_nvenc", "[hevc_nvenc @ 0x5581] OpenEncodeSessionEx failed: incompatible client key (21): (no details)", true)]
+        [InlineData("hevc_nvenc", "[hevc_nvenc @ 0x5581] Task finished with error code: -22 (Invalid argument)", false)]
+        [InlineData("h264_qsv", "Error: out of memory (10)", false)]
+        [InlineData("h264_nvenc", null, false)]
+        [InlineData(null, "OpenEncodeSessionEx failed: out of memory (10)", false)]
+        public void IsNvencSessionLimit_NeedsAnNvencEncoderAndTheDriversRefusal(string? encoder, string? errors, bool expected)
+            => Assert.Equal(expected, TranscodeTestRules.IsNvencSessionLimit(encoder, errors));
+
+        [Theory]
+        [InlineData(TranscodeTestEndReason.LimitReached, TranscodeTestSurveyFailureReason.Performance)]
+        [InlineData(TranscodeTestEndReason.StreamStalled, TranscodeTestSurveyFailureReason.FailedTimeout)]
+        [InlineData(TranscodeTestEndReason.NvencSessionLimit, TranscodeTestSurveyFailureReason.FailedNvencLimit)]
+        [InlineData(TranscodeTestEndReason.MaxStreams, null)]
+        [InlineData(TranscodeTestEndReason.StreamFailed, null)]
+        [InlineData(TranscodeTestEndReason.Cancelled, null)]
+        [InlineData(TranscodeTestEndReason.None, null)]
+        public void SurveyFailureReason_UsesTheHardwareSurveysNames(TranscodeTestEndReason reason, TranscodeTestSurveyFailureReason? expected)
+            => Assert.Equal(expected, TranscodeTestRules.SurveyFailureReason(reason));
+
+        [Theory]
         [InlineData("tonemap_opencl=format=nv12", 0, false, TranscodeTestOutcome.Passed, TranscodeTestAdvice.TurnOn)]
         [InlineData("tonemapx=tonemap=bt2390", 0, true, TranscodeTestOutcome.Software, TranscodeTestAdvice.None)]
         [InlineData("tonemap_cuda=format=yuv420p", 1, true, TranscodeTestOutcome.Failed, TranscodeTestAdvice.TurnOff)]

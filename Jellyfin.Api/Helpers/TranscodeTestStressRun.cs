@@ -20,6 +20,7 @@ internal sealed class TranscodeTestStressRun
     private string? _error;
     private int? _behindStreamId;
     private double? _endsAt;
+    private double? _singleStreamFps;
     private bool _timeLimitReached;
     private bool _stopped;
 
@@ -37,6 +38,8 @@ internal sealed class TranscodeTestStressRun
     public TranscodeTestEndReason EndReason { get; private set; } = TranscodeTestEndReason.None;
 
     public double ThresholdFps { get; set; }
+
+    public double SourceFps { get; set; }
 
     public int MaxStable { get; set; }
 
@@ -133,6 +136,29 @@ internal sealed class TranscodeTestStressRun
     }
 
     /// <summary>
+    /// Records how fast the first stream ran while it ran alone, once, before a second stream starts or the test ends.
+    /// </summary>
+    /// <param name="now">Seconds since the test started.</param>
+    public void RecordSingleStream(double now)
+    {
+        lock (_lock)
+        {
+            RecordSingleStreamLocked(now);
+        }
+    }
+
+    private void RecordSingleStreamLocked(double now)
+    {
+        if (_singleStreamFps.HasValue || Streams.Select(s => s.Id).Distinct().Count() != 1)
+        {
+            return;
+        }
+
+        var first = Streams[^1];
+        _singleStreamFps = (first.MedianFps ?? first.Fps(now)) is double f ? Math.Round(f, 1) : null;
+    }
+
+    /// <summary>
     /// Marks the test as ended, keeping the first reason given.
     /// </summary>
     /// <param name="reason">Why it ended.</param>
@@ -157,6 +183,8 @@ internal sealed class TranscodeTestStressRun
             }
 
             _streamsAtEnd = running.Count;
+
+            RecordSingleStreamLocked(now);
             EndReason = reason;
             Phase = TranscodeTestStressPhase.Finished;
             _nextStreamAt = null;
@@ -225,6 +253,10 @@ internal sealed class TranscodeTestStressRun
                 FailSeconds = TranscodeTestManager.FailSeconds,
                 ThresholdFps = ThresholdFps,
                 FpsRatio = TranscodeTestManager.FpsRatio,
+                SourceFps = SourceFps,
+                SingleStreamFps = _singleStreamFps,
+                SingleStreamSpeed = _singleStreamFps.HasValue && SourceFps > 0 ? Math.Round(_singleStreamFps.Value / SourceFps, 2) : null,
+                SurveyFailureReason = TranscodeTestRules.SurveyFailureReason(EndReason),
                 FailedStreamId = _failedStreamId,
                 FailedStreamFps = _failedStreamFps,
                 StreamsAtEnd = _streamsAtEnd,

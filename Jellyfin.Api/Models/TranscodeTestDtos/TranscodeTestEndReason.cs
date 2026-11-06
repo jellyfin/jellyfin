@@ -31,6 +31,12 @@ public enum TranscodeTestEndReason
     StreamStalled,
 
     /// <summary>
+    /// NVIDIA's driver refused another encoding session. Consumer GPUs allow only a few at once; this is a
+    /// driver limit, not the GPU's capacity.
+    /// </summary>
+    NvencSessionLimit,
+
+    /// <summary>
     /// It was stopped.
     /// </summary>
     Cancelled,

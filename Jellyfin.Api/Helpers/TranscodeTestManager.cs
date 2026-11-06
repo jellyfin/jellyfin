@@ -35,9 +35,10 @@ namespace Jellyfin.Api.Helpers;
 public sealed class TranscodeTestManager : IDisposable
 {
     /// <summary>
-    /// Each stream must keep this fraction of the source frame rate.
+    /// Each stream must keep this fraction of the source frame rate: real time. A stream below it falls further behind
+    /// the longer it plays, until the client runs out of buffer. Short dips are allowed by <see cref="FailSeconds"/>.
     /// </summary>
-    internal const double FpsRatio = 0.9;
+    internal const double FpsRatio = 1.0;
 
     /// <summary>
     /// Seconds every stream must keep up before another is added.
@@ -893,6 +894,7 @@ public sealed class TranscodeTestManager : IDisposable
         try
         {
             var first = await StartStreamAsync(run, request, codec, folder, prefix, options, item.Name ?? string.Empty, cancellationToken).ConfigureAwait(false);
+            run.SourceFps = first.SourceFps;
             run.ThresholdFps = Math.Round(first.SourceFps * FpsRatio, 3);
             Log(string.Create(CultureInfo.InvariantCulture, $"Each stream must keep {TranscodeTestRules.FormatFps(run.ThresholdFps)} fps ({FpsRatio * 100:0}% of the source's {first.SourceFps:0.###} fps). {TranscodeTestRules.DescribeRamp(RampSeconds, TranscodeTestStream.WindowSeconds)}"));
             await EscalateAsync(run, request, codec, folder, prefix, options, item.Name ?? string.Empty, cancellationToken).ConfigureAwait(false);
@@ -903,7 +905,13 @@ public sealed class TranscodeTestManager : IDisposable
             DeleteTestFiles(folder, prefix, _logger);
         }
 
-        Log(TranscodeTestRules.DescribeResult(run.Snapshot(_clock.Elapsed.TotalSeconds)));
+        var summary = run.Snapshot(_clock.Elapsed.TotalSeconds);
+        if (summary.SingleStreamFps is double single)
+        {
+            Log($"One stream alone ran at {single:0.0} fps ({summary.SingleStreamSpeed:0.00}× real time).");
+        }
+
+        Log(TranscodeTestRules.DescribeResult(summary));
     }
 
     private async Task EscalateAsync(TranscodeTestStressRun run, TranscodeTestRequestDto request, string codec, string folder, string prefix, EncodingOptions options, string itemName, CancellationToken cancellationToken)
@@ -936,6 +944,13 @@ public sealed class TranscodeTestManager : IDisposable
                 }
 
                 Log($"Stream {ended.Id} failed (exit {ended.ExitCode}): {ended.LastError}");
+                if (TranscodeTestRules.IsNvencSessionLimit(run.Output?.Encoder, ended.LastError))
+                {
+                    Log($"NVIDIA's driver refused stream {ended.Id}. Consumer NVIDIA GPUs allow only a few encoding sessions at once (3, 5 or 8, depending on the driver). That is a driver limit, not what the GPU can do.");
+                    run.End(TranscodeTestEndReason.NvencSessionLimit, now, ended.Id, error: ended.LastError);
+                    return;
+                }
+
                 run.End(TranscodeTestEndReason.StreamFailed, now, ended.Id, error: ended.LastError);
                 return;
             }
@@ -962,6 +977,7 @@ public sealed class TranscodeTestManager : IDisposable
                     run.End(TranscodeTestRules.TimeLimitEndReason(controller.MaxStable, request.MaxStreams), now, timeLimitReached: true);
                     return;
                 case TranscodeTestStressAction.AddStream:
+                    run.RecordSingleStream(now);
                     await StartStreamAsync(run, request, codec, folder, prefix, options, itemName, cancellationToken).ConfigureAwait(false);
                     now = _clock.Elapsed.TotalSeconds;
                     controller.StreamAdded(now);

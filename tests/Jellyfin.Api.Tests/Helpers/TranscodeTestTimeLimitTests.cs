@@ -95,15 +95,17 @@ namespace Jellyfin.Api.Tests.Helpers
         }
 
         [Fact]
-        public void Results_SendTheStatusAsEnumNames()
+        public void Results_SendTheStatusAndSurveyReasonAsEnumNames()
         {
             var result = new TranscodeTestStressResult
             {
+                SurveyFailureReason = TranscodeTestSurveyFailureReason.FailedNvencLimit,
                 Streams = [new TranscodeTestStreamResult { Id = 1, Status = TranscodeTestStreamStatus.Failed }]
             };
 
             var json = JsonSerializer.Serialize(result, JsonDefaults.Options);
 
+            Assert.Contains("\"SurveyFailureReason\":\"FailedNvencLimit\"", json, StringComparison.Ordinal);
             Assert.Contains("\"Status\":\"Failed\"", json, StringComparison.Ordinal);
             Assert.Contains("\"TimeLimitReached\":false", json, StringComparison.Ordinal);
         }
