@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using Jellyfin.Server.ServerSetupApp;
 using Microsoft.EntityFrameworkCore;
@@ -52,51 +54,95 @@ public class RefreshCleanNamesAndValues : IAsyncMigrationRoutine
         var records = context.BaseItems.Count(b => !string.IsNullOrEmpty(b.Name));
         _logger.LogInformation("Refreshing CleanName for {Count} library items", records);
 
-        var processedInPartition = 0;
+        // Fix for Issue #17849: Two-Tier ID-Driven Resilient Partitioning.
+        // EF Core SQLite crashes with System.FormatException if any DateTime TEXT column contains invalid data
+        // when materializing the full BaseItemEntity. Tier 1 executes fast batch reads for healthy partitions.
+        // If a batch read fails, Tier 2 falls back to scalar projection of IDs (immune to DateTime errors)
+        // and per-item lookups, isolating corrupt rows.
+        var query = context.BaseItems
+            .Where(b => !string.IsNullOrEmpty(b.Name))
+            .OrderBy(e => e.Id);
 
-        await foreach (var item in context.BaseItems
-                          .Where(b => !string.IsNullOrEmpty(b.Name))
-                          .OrderBy(e => e.Id)
-                          .WithPartitionProgress((partition) => _logger.LogInformation("Processed: {Offset}/{Total} - Updated: {UpdatedCount} - Time: {Elapsed}", partition * Limit, records, itemCount, sw.Elapsed))
-                          .PartitionEagerAsync(Limit, cancellationToken)
-                          .WithCancellation(cancellationToken)
-                          .ConfigureAwait(false))
+        for (int offset = 0; offset < records; offset += Limit)
         {
+            int partitionSize = Math.Min(Limit, records - offset);
+            _logger.LogInformation(
+                "Processed: {Offset}/{Total} - Updated: {UpdatedCount} - Time: {Elapsed}",
+                offset,
+                records,
+                itemCount,
+                sw.Elapsed);
+
+            // Tier 1: Fast Path (Batch Load via single query)
+            List<BaseItemEntity>? batch = null;
             try
             {
-                var newCleanName = string.IsNullOrWhiteSpace(item.Name) ? string.Empty : item.Name.GetCleanValue();
-                if (!string.Equals(newCleanName, item.CleanName, StringComparison.Ordinal))
+                batch = await query
+                    .Skip(offset)
+                    .Take(partitionSize)
+                    .ToListAsync(cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                context.ChangeTracker.Clear();
+                _logger.LogWarning(ex, "Batch read failed for partition at offset {Offset}. Falling back to resilient item-by-item processing", offset);
+            }
+
+            if (batch is not null)
+            {
+                foreach (var item in batch)
                 {
-                    _logger.LogDebug(
-                        "Updating CleanName for item {Id}: '{OldValue}' -> '{NewValue}'",
-                        item.Id,
-                        item.CleanName,
-                        newCleanName);
-                    item.CleanName = newCleanName;
-                    itemCount++;
+                    UpdateCleanName(item, ref itemCount);
+                }
+
+                await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                context.ChangeTracker.Clear();
+                continue;
+            }
+
+            // Tier 2: Resilient ID-Driven Fallback
+            // b.Id is a Guid containing zero DateTime properties; this projection query is 100% immune to date format exceptions.
+            var partitionIds = await query
+                .Skip(offset)
+                .Take(partitionSize)
+                .Select(b => b.Id)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            for (int j = 0; j < partitionIds.Count; j++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var itemId = partitionIds[j];
+                int globalIndex = offset + j;
+
+                try
+                {
+                    var item = await context.BaseItems
+                        .FirstOrDefaultAsync(b => b.Id.Equals(itemId), cancellationToken)
+                        .ConfigureAwait(false);
+
+                    if (item is not null)
+                    {
+                        if (UpdateCleanName(item, ref itemCount))
+                        {
+                            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                        }
+
+                        context.ChangeTracker.Clear();
+                    }
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    context.ChangeTracker.Clear();
+
+                    _logger.LogError(
+                        ex,
+                        "Skipping BaseItems row {ItemId} at index {Index}, it could not be read. Repair the row to include it",
+                        itemId,
+                        globalIndex);
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to update CleanName for item {Id} ({Name})", item.Id, item.Name);
-            }
-
-            processedInPartition++;
-
-            if (processedInPartition >= Limit)
-            {
-                await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                // Clear tracked entities to avoid memory growth across partitions
-                context.ChangeTracker.Clear();
-                processedInPartition = 0;
-            }
-        }
-
-        // Save any remaining changes after the loop
-        if (processedInPartition > 0)
-        {
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            context.ChangeTracker.Clear();
         }
 
         _logger.LogInformation(
@@ -104,6 +150,31 @@ public class RefreshCleanNamesAndValues : IAsyncMigrationRoutine
             itemCount,
             records,
             sw.Elapsed);
+    }
+
+    private bool UpdateCleanName(BaseItemEntity item, ref int itemCount)
+    {
+        try
+        {
+            var newCleanName = string.IsNullOrWhiteSpace(item.Name) ? string.Empty : item.Name.GetCleanValue();
+            if (!string.Equals(newCleanName, item.CleanName, StringComparison.Ordinal))
+            {
+                _logger.LogDebug(
+                    "Updating CleanName for item {Id}: '{OldValue}' -> '{NewValue}'",
+                    item.Id,
+                    item.CleanName,
+                    newCleanName);
+                item.CleanName = newCleanName;
+                itemCount++;
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to update CleanName for item {Id} ({Name})", item.Id, item.Name);
+        }
+
+        return false;
     }
 
     private async Task RefreshCleanValuesAsync(CancellationToken cancellationToken)
