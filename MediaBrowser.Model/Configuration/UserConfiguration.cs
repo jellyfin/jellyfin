@@ -44,6 +44,7 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the subtitle language preference.
         /// </summary>
         /// <value>The subtitle language preference.</value>
+        /// <remarks>Multiple language preferences can be separated by commas and are evaluated in order.</remarks>
         public string? SubtitleLanguagePreference { get; set; }
 
         public bool DisplayMissingEpisodes { get; set; }
