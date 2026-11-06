@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Events.Users;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Locking;
@@ -29,6 +31,7 @@ namespace Jellyfin.Server.Implementations.Tests.Users
         private readonly SqliteConnection _connection;
         private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
         private readonly UserManager _userManager;
+        private readonly RecordingEventManager _eventManager = new();
 
         public UserManagerProfileImageTests()
         {
@@ -66,7 +69,7 @@ namespace Jellyfin.Server.Implementations.Tests.Users
 
             _userManager = new UserManager(
                 factory.Object,
-                new NoopEventManager(),
+                _eventManager,
                 new Mock<INetworkManager>().Object,
                 appHost.Object,
                 new Mock<IImageProcessor>().Object,
@@ -127,16 +130,60 @@ namespace Jellyfin.Server.Implementations.Tests.Users
             Assert.Null(user.ProfileImage);
         }
 
-        private sealed class NoopEventManager : IEventManager
+        [Fact]
+        public async Task UpdateUserAsync_WhenProfileImageAdded_PublishesUserUpdated()
         {
+            var user = await _userManager.CreateUserAsync("imageaddeduser");
+            _eventManager.Events.Clear();
+
+            user.ProfileImage = new ImageInfo(Path.Combine(Path.GetTempPath(), "profile.png"));
+            await _userManager.UpdateUserAsync(user);
+
+            var published = Assert.Single(_eventManager.Events);
+            Assert.Equal(user.Id, Assert.IsType<UserUpdatedEventArgs>(published).Argument.Id);
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_WhenProfileImageUnchanged_DoesNotPublishUserUpdated()
+        {
+            var user = await _userManager.CreateUserAsync("imageunchangeduser");
+            user.ProfileImage = new ImageInfo(Path.Combine(Path.GetTempPath(), "profile.png"));
+            await _userManager.UpdateUserAsync(user);
+            _eventManager.Events.Clear();
+
+            await _userManager.UpdateUserAsync(user);
+
+            Assert.Empty(_eventManager.Events);
+        }
+
+        [Fact]
+        public async Task ClearProfileImageAsync_WhenProfileImageExists_PublishesUserUpdated()
+        {
+            var user = await _userManager.CreateUserAsync("imageclearedeventuser");
+            user.ProfileImage = new ImageInfo(Path.Combine(Path.GetTempPath(), "profile.png"));
+            await _userManager.UpdateUserAsync(user);
+            _eventManager.Events.Clear();
+
+            await _userManager.ClearProfileImageAsync(user);
+
+            var published = Assert.Single(_eventManager.Events);
+            Assert.Equal(user.Id, Assert.IsType<UserUpdatedEventArgs>(published).Argument.Id);
+        }
+
+        private sealed class RecordingEventManager : IEventManager
+        {
+            public List<EventArgs> Events { get; } = new();
+
             public void Publish<T>(T eventArgs)
                 where T : EventArgs
-            {
-            }
+                => Events.Add(eventArgs);
 
             public Task PublishAsync<T>(T eventArgs)
                 where T : EventArgs
-                => Task.CompletedTask;
+            {
+                Events.Add(eventArgs);
+                return Task.CompletedTask;
+            }
         }
     }
 }

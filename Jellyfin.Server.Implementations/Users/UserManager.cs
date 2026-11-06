@@ -204,14 +204,13 @@ namespace Jellyfin.Server.Implementations.Users
                 }
             }
 
-            var eventArgs = new UserUpdatedEventArgs(user);
-            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
-            OnUserUpdated?.Invoke(this, eventArgs);
+            await PublishUserUpdatedAsync(user).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public async Task UpdateUserAsync(User user)
         {
+            var profileImageChanged = false;
             using (await _userLock.LockAsync(user.Id).ConfigureAwait(false))
             {
                 var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
@@ -240,10 +239,12 @@ namespace Jellyfin.Server.Implementations.Users
                         {
                             dbContext.Remove(dbUser.ProfileImage);
                             dbUser.ProfileImage = null;
+                            profileImageChanged = true;
                         }
                     }
                     else if (dbUser.ProfileImage is null)
                     {
+                        profileImageChanged = true;
                         dbUser.ProfileImage = new Jellyfin.Database.Implementations.Entities.ImageInfo(user.ProfileImage.Path)
                         {
                             LastModified = user.ProfileImage.LastModified
@@ -251,12 +252,20 @@ namespace Jellyfin.Server.Implementations.Users
                     }
                     else
                     {
+                        profileImageChanged = dbUser.ProfileImage.Path != user.ProfileImage.Path
+                            || dbUser.ProfileImage.LastModified != user.ProfileImage.LastModified;
                         dbUser.ProfileImage.Path = user.ProfileImage.Path;
                         dbUser.ProfileImage.LastModified = user.ProfileImage.LastModified;
                     }
 
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
                 }
+            }
+
+            if (profileImageChanged)
+            {
+                // The profile image tag is part of the user DTO, so connected clients must be told it changed.
+                await PublishUserUpdatedAsync(user).ConfigureAwait(false);
             }
         }
 
@@ -922,9 +931,7 @@ namespace Jellyfin.Server.Implementations.Users
                 }
             }
 
-            var eventArgs = new UserUpdatedEventArgs(user);
-            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
-            OnUserUpdated?.Invoke(this, eventArgs);
+            await PublishUserUpdatedAsync(user).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -958,6 +965,8 @@ namespace Jellyfin.Server.Implementations.Users
 
                 user.ProfileImage = null;
             }
+
+            await PublishUserUpdatedAsync(user).ConfigureAwait(false);
         }
 
         internal static void ThrowIfInvalidUsername(string name)
@@ -968,6 +977,13 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)", nameof(name));
+        }
+
+        private async Task PublishUserUpdatedAsync(User user)
+        {
+            var eventArgs = new UserUpdatedEventArgs(user);
+            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            OnUserUpdated?.Invoke(this, eventArgs);
         }
 
         private IAuthenticationProvider GetAuthenticationProvider(User user)
