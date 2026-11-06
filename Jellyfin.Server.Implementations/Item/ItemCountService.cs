@@ -132,7 +132,6 @@ public class ItemCountService : IItemCountService
     private static ItemValueType[] GetItemValueTypes(BaseItemKind kind)
         => kind switch
         {
-            BaseItemKind.MusicArtist => [ItemValueType.Artist, ItemValueType.AlbumArtist],
             BaseItemKind.Genre or BaseItemKind.MusicGenre => [ItemValueType.Genre],
             BaseItemKind.Studio => [ItemValueType.Studios],
             _ => []
@@ -180,9 +179,9 @@ public class ItemCountService : IItemCountService
         {
             CountByItemValue(context, related, kind, relatedItemKinds, valueTypes, nameItems, result);
         }
-        else if (kind == BaseItemKind.Person)
+        else if (kind is BaseItemKind.Person or BaseItemKind.MusicArtist)
         {
-            CountByPersonName(context, related, nameItems, result);
+            CountByCreditedItem(context, related, nameItems, result);
         }
         else if (kind == BaseItemKind.Year)
         {
@@ -253,32 +252,26 @@ public class ItemCountService : IItemCountService
         }
     }
 
-    private void CountByPersonName(
+    private void CountByCreditedItem(
         JellyfinDbContext context,
         IQueryable<BaseItemEntity> related,
         NameItem[] nameItems,
         Dictionary<Guid, ItemCounts> result)
     {
-        var names = nameItems
-            .Select(n => n.Name)
-            .OfType<string>()
-            .Distinct(StringComparer.Ordinal)
-            .ToArray();
-
-        if (names.Length == 0)
-        {
-            return;
-        }
-
+        // A credit points at its item, and the id already says which kind that is.
+        var ids = nameItems.Select(n => n.Id).ToArray();
         var grouped = context.PeopleBaseItemMap.AsNoTracking()
-            .WhereOneOrMany(names, m => m.People.Name)
-            .Join(related, m => m.ItemId, e => e.Id, (m, e) => new { m.People.Name, e.Type, e.Id })
-            .GroupBy(x => new { x.Name, x.Type })
+            .WhereOneOrMany(ids, m => m.People.ItemId)
+            .Join(related, m => m.ItemId, e => e.Id, (m, e) => new { m.People.ItemId, e.Type, e.Id })
+            .GroupBy(x => new { x.ItemId, x.Type })
             // A person can be credited on one item more than once, in different roles.
-            .Select(g => new { g.Key.Name, g.Key.Type, Count = g.Select(x => x.Id).Distinct().Count() })
+            .Select(g => new { g.Key.ItemId, g.Key.Type, Count = g.Select(x => x.Id).Distinct().Count() })
             .ToArray();
 
-        ApplyGroupedCounts(nameItems, n => n.Name, grouped.Select(g => (g.Name, g.Type, g.Count)), result);
+        foreach (var group in grouped.GroupBy(g => g.ItemId))
+        {
+            result[group.Key] = ItemCountBuilder.Build(_itemTypeLookup, group.Select(x => (x.Type, x.Count)));
+        }
     }
 
     private void CountByProductionYear(
@@ -317,26 +310,6 @@ public class ItemCountService : IItemCountService
         {
             if (int.TryParse(nameItem.Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year)
                 && byYear.TryGetValue(year, out var counts))
-            {
-                result[nameItem.Id] = ItemCountBuilder.Build(_itemTypeLookup, counts);
-            }
-        }
-    }
-
-    private void ApplyGroupedCounts(
-        NameItem[] nameItems,
-        Func<NameItem, string?> keySelector,
-        IEnumerable<(string Key, string Type, int Count)> grouped,
-        Dictionary<Guid, ItemCounts> result)
-    {
-        var byKey = grouped
-            .GroupBy(g => g.Key, StringComparer.Ordinal)
-            .ToDictionary(g => g.Key, g => g.Select(x => (x.Type, x.Count)).ToArray(), StringComparer.Ordinal);
-
-        foreach (var nameItem in nameItems)
-        {
-            var key = keySelector(nameItem);
-            if (key is not null && byKey.TryGetValue(key, out var counts))
             {
                 result[nameItem.Id] = ItemCountBuilder.Build(_itemTypeLookup, counts);
             }

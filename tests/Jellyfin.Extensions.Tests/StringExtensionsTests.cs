@@ -25,6 +25,24 @@ namespace Jellyfin.Extensions.Tests
         }
 
         [Theory]
+        [InlineData("Indiana Jones", "indiana jones")]
+        [InlineData("Zoe Saldaña", "zoe saldana")] // Diacritics are stripped
+        [InlineData("Yûki Kaji", "yuki kaji")]
+        [InlineData("A.J. Cook", "a j cook")] // Punctuation becomes a separator
+        [InlineData("Brian O’Neill", "brian o neill")] // Typographic and ascii apostrophes alike
+        [InlineData("Anne-Marie", "anne marie")]
+        [InlineData("  Two   spaced\twords  ", "two spaced words")] // Whitespace runs collapse and trim
+        [InlineData("!!!", "")] // Nothing but punctuation cleans away entirely
+        [InlineData("Apollo 13", "apollo 13")] // Digits are kept
+        [InlineData("운명처럼 널 사랑해", "운명처럼 널 사랑해")] // Non-latin letters are kept as-is
+        [InlineData("", "")]
+        [InlineData("   ", "   ")] // Blank input is returned untouched
+        public void GetCleanValue_ValidInput_Corrects(string input, string expectedResult)
+        {
+            Assert.Equal(expectedResult, input.GetCleanValue());
+        }
+
+        [Theory]
         [InlineData("", false)] // Identity edge-case (no diacritics)
         [InlineData("Indiana Jones", false)] // Identity (no diacritics)
         [InlineData("a\ud800b", true)] // Invalid UTF-16 char stripping
