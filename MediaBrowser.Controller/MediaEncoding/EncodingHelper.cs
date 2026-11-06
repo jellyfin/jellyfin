@@ -2734,6 +2734,32 @@ namespace MediaBrowser.Controller.MediaEncoding
             return Convert.ToInt32(bitrate * factor);
         }
 
+        /// <summary>
+        /// Limits the bitrate of re-encoded video to <see cref="EncodingOptions.MaxTranscodingVideoBitrate"/>.
+        /// </summary>
+        /// <remarks>
+        /// Call this after <see cref="TryStreamCopy"/>, so that the limit never turns a stream copy into a re-encode.
+        /// The requested bitrate is lowered too, so that the output resolution is chosen for the limited bitrate.
+        /// </remarks>
+        /// <param name="state">The encoding job state.</param>
+        /// <param name="options">The encoding options.</param>
+        public void ApplyMaxTranscodingVideoBitrate(EncodingJobInfo state, EncodingOptions options)
+        {
+            var maxBitrate = options.MaxTranscodingVideoBitrate;
+            if (maxBitrate <= 0
+                || !state.IsVideoRequest
+                || IsCopyCodec(state.OutputVideoCodec)
+                || !state.OutputVideoBitrate.HasValue
+                || state.OutputVideoBitrate.Value <= maxBitrate)
+            {
+                return;
+            }
+
+            var request = state.BaseRequest;
+            request.VideoBitRate = Math.Min(request.VideoBitRate ?? maxBitrate, maxBitrate);
+            state.OutputVideoBitrate = GetVideoBitrateParamValue(request, state.VideoStream, state.OutputVideoCodec);
+        }
+
         public int GetVideoBitrateParamValue(BaseEncodingJobOptions request, MediaStream videoStream, string outputVideoCodec)
         {
             var bitrate = request.VideoBitRate;
