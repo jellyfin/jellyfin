@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Lyrics;
@@ -25,6 +26,9 @@ public class TxtLyricParser : ILyricParser
     public ResolverPriority Priority => ResolverPriority.Fifth;
 
     /// <inheritdoc />
+    public IReadOnlyList<string> SupportedExtensions => _supportedMediaTypes;
+
+    /// <inheritdoc />
     public LyricDto? ParseLyrics(LyricFile lyrics)
     {
         if (!_supportedMediaTypes.Contains(Path.GetExtension(lyrics.Name.AsSpan()), StringComparison.OrdinalIgnoreCase))
@@ -40,6 +44,16 @@ public class TxtLyricParser : ILyricParser
             lyricList[lyricLineIndex] = new LyricLine(lyricTextLines[lyricLineIndex].Trim());
         }
 
-        return new LyricDto { Lyrics = lyricList };
+        return new LyricDto
+        {
+            Tracks =
+            [
+                new LyricTrack
+                {
+                    Type = LyricTrackType.Main,
+                    Lines = lyricList
+                }
+            ]
+        };
     }
 }

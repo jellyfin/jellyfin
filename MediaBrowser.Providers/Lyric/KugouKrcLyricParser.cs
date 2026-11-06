@@ -1,0 +1,339 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using Jellyfin.Extensions;
+using MediaBrowser.Controller.Lyrics;
+using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.Lyrics;
+
+namespace MediaBrowser.Providers.Lyric;
+
+/// <summary>
+/// Parser for Kugou KRC lyrics.
+/// </summary>
+public partial class KugouKrcLyricParser : ILyricParser
+{
+    private static readonly string[] _supportedMediaTypes = [".krc"];
+
+    /// <inheritdoc />
+    public string Name => "KugouKrcLyricProvider";
+
+    /// <inheritdoc />
+    public ResolverPriority Priority => ResolverPriority.Fourth;
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> SupportedExtensions => _supportedMediaTypes;
+
+    /// <inheritdoc />
+    public LyricDto? ParseLyrics(LyricFile lyrics)
+    {
+        if (!_supportedMediaTypes.Contains(Path.GetExtension(lyrics.Name.AsSpan()), StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        try
+        {
+            var lines = TimedLyricParserHelpers.SplitLines(lyrics.Content, StringSplitOptions.None);
+            var metadata = ParseMetadata(lines.FirstOrDefault(i => i.TrimStart().StartsWith("[language:", StringComparison.Ordinal)));
+            var offset = TimedLyricParserHelpers.ParseOffset(lyrics.Content);
+            var mainLines = new List<LyricLine>();
+            var backgroundLines = new List<LyricLine>();
+            var lineIndex = 0;
+
+            foreach (var rawLine in lines)
+            {
+                var line = rawLine.Trim();
+                if (line.Length == 0 || line.StartsWith("[language:", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                if (line.StartsWith("[bg:", StringComparison.Ordinal))
+                {
+                    var background = ParseBackgroundLine(line, offset);
+                    if (background is not null)
+                    {
+                        backgroundLines.Add(background);
+                    }
+
+                    continue;
+                }
+
+                var match = KrcLineRegex().Match(line);
+                if (!match.Success)
+                {
+                    continue;
+                }
+
+                // Metadata indexes the source rows, including rows we cannot emit.
+                var sourceIndex = lineIndex++;
+                if (!TimedLyricParserHelpers.TryMilliseconds(match.Groups[1].Value, out var lineStart)
+                    || !TimedLyricParserHelpers.TryMilliseconds(match.Groups[2].Value, out var lineDuration)
+                    || !TimedLyricParserHelpers.TryApplyOffset(lineStart, offset, out lineStart)
+                    || !TimedLyricParserHelpers.TryAdd(lineStart, lineDuration, out var end))
+                {
+                    continue;
+                }
+
+                var syllables = ParseSyllables(match.Groups[3].Value, lineStart);
+                if (syllables.Count == 0)
+                {
+                    continue;
+                }
+
+                if (metadata.Phonetics.TryGetValue(sourceIndex, out var phonetics) && phonetics.Count == syllables.Count)
+                {
+                    for (var i = 0; i < syllables.Count; i++)
+                    {
+                        syllables[i].Phonetic = phonetics[i];
+                    }
+                }
+
+                syllables = MergeColonSyllables(syllables);
+                end = Math.Max(end, syllables.Max(i => i.End ?? end));
+                var text = string.Concat(syllables.Select(i => i.Text));
+                var mainLine = new LyricLine(text, lineStart)
+                {
+                    End = end,
+                    Syllables = syllables
+                };
+                mainLines.Add(mainLine);
+
+                if (metadata.Translations.TryGetValue(sourceIndex, out var translation))
+                {
+                    metadata.TranslationLines.Add(new LyricLine(translation, lineStart) { End = end });
+                }
+            }
+
+            if (mainLines.Count == 0)
+            {
+                return null;
+            }
+
+            var tracks = new List<LyricTrack>
+            {
+                new() { Type = LyricTrackType.Main, Lines = mainLines }
+            };
+            if (metadata.TranslationLines.Count > 0)
+            {
+                tracks.Add(new LyricTrack { Type = LyricTrackType.Translation, Lines = metadata.TranslationLines });
+            }
+
+            if (backgroundLines.Count > 0)
+            {
+                tracks.Add(new LyricTrack { Type = LyricTrackType.Background, Lines = backgroundLines });
+            }
+
+            return new LyricDto { Tracks = tracks };
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    private static LyricLine? ParseBackgroundLine(string line, long offset)
+    {
+        var match = BackgroundLineRegex().Match(line);
+        if (!match.Success)
+        {
+            return null;
+        }
+
+        if (!TimedLyricParserHelpers.TryApplyOffset(0, offset, out var baseStart))
+        {
+            return null;
+        }
+
+        var syllables = MergeColonSyllables(ParseSyllables(match.Groups[1].Value, baseStart));
+        if (syllables.Count == 0)
+        {
+            return null;
+        }
+
+        TimedLyricParserHelpers.StripBackgroundParentheses(syllables);
+        var text = string.Concat(syllables.Select(i => i.Text));
+        return new LyricLine(text, syllables[0].Start)
+        {
+            End = syllables.Max(i => i.End),
+            Syllables = syllables
+        };
+    }
+
+    private static List<LyricSyllable> ParseSyllables(string content, long baseStart)
+    {
+        var matches = SyllableRegex().Matches(content);
+        var result = new List<LyricSyllable>();
+        foreach (Match match in matches)
+        {
+            if (!TimedLyricParserHelpers.TryMilliseconds(match.Groups[1].Value, out var offset)
+                || !TimedLyricParserHelpers.TryMilliseconds(match.Groups[2].Value, out var duration))
+            {
+                continue;
+            }
+
+            var textStart = match.Index + match.Length;
+            var next = match.Index + match.Length < content.Length
+                ? SyllableRegex().Match(content, textStart)
+                : Match.Empty;
+            var textEnd = next.Success ? next.Index : content.Length;
+            var text = content[textStart..textEnd];
+            if (text.Length == 0)
+            {
+                continue;
+            }
+
+            if (!TimedLyricParserHelpers.TryAdd(baseStart, offset, out var start)
+                || !TimedLyricParserHelpers.TryAdd(start, duration, out var end))
+            {
+                continue;
+            }
+
+            result.Add(new LyricSyllable { Text = text, Start = start, End = end });
+        }
+
+        return result;
+    }
+
+    private static List<LyricSyllable> MergeColonSyllables(List<LyricSyllable> syllables)
+    {
+        var result = new List<LyricSyllable>(syllables.Count);
+        for (var i = 0; i < syllables.Count; i++)
+        {
+            var current = syllables[i];
+            if (i + 1 < syllables.Count && (syllables[i + 1].Text is ":" or "："))
+            {
+                var colon = syllables[++i];
+                current.Text += colon.Text;
+                current.End = Math.Max(current.End ?? current.Start, colon.End ?? colon.Start);
+                if (current.Phonetic is not null && colon.Phonetic is not null)
+                {
+                    current.Phonetic += colon.Phonetic;
+                }
+            }
+
+            result.Add(current);
+        }
+
+        return result;
+    }
+
+    private static KrcMetadata ParseMetadata(string? languageLine)
+    {
+        var metadata = new KrcMetadata();
+        if (languageLine is null)
+        {
+            return metadata;
+        }
+
+        try
+        {
+            var encoded = languageLine[(languageLine.IndexOf(':', StringComparison.Ordinal) + 1)..].Trim().TrimEnd(']');
+            var json = Encoding.UTF8.GetString(Convert.FromBase64String(encoded));
+            using var document = JsonDocument.Parse(json);
+            if (document.RootElement.ValueKind != JsonValueKind.Object
+                || !document.RootElement.TryGetProperty("content", out var content)
+                || content.ValueKind != JsonValueKind.Array)
+            {
+                return metadata;
+            }
+
+            foreach (var item in content.EnumerateArray())
+            {
+                if (item.ValueKind != JsonValueKind.Object
+                    || !item.TryGetProperty("type", out var typeValue)
+                    || typeValue.ValueKind != JsonValueKind.Number
+                    || !typeValue.TryGetInt32(out var type)
+                    || type is not (0 or 1)
+                    || !item.TryGetProperty("lyricContent", out var rows)
+                    || rows.ValueKind != JsonValueKind.Array)
+                {
+                    continue;
+                }
+
+                var rowIndex = 0;
+                foreach (var row in rows.EnumerateArray())
+                {
+                    var sourceIndex = rowIndex++;
+                    if (!TryReadMetadataRow(row, out var values))
+                    {
+                        continue;
+                    }
+
+                    if (type == 1)
+                    {
+                        metadata.Translations.TryAdd(sourceIndex, string.Concat(values));
+                    }
+                    else if (type == 0)
+                    {
+                        metadata.Phonetics.TryAdd(sourceIndex, values);
+                    }
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // Optional metadata must not invalidate the timed lyrics.
+        }
+
+        return metadata;
+    }
+
+    private static bool TryReadMetadataRow(JsonElement row, out IReadOnlyList<string> values)
+    {
+        var result = new List<string>();
+        values = result;
+        if (row.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        foreach (var item in row.EnumerateArray())
+        {
+            if (item.ValueKind == JsonValueKind.String)
+            {
+                result.Add(item.GetString() ?? string.Empty);
+            }
+            else if (item.ValueKind == JsonValueKind.Array)
+            {
+                // Also tolerate the nested variant used by some lyric exporters.
+                var parts = item.EnumerateArray().ToArray();
+                if (parts.Any(i => i.ValueKind != JsonValueKind.String))
+                {
+                    return false;
+                }
+
+                result.Add(string.Concat(parts.Select(i => i.GetString())));
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    [GeneratedRegex(@"^\[(\d+),(\d+)\](.*)$")]
+    private static partial Regex KrcLineRegex();
+
+    [GeneratedRegex(@"^\[bg:(.*)\](.*)$")]
+    private static partial Regex BackgroundLineRegex();
+
+    [GeneratedRegex(@"<([+-]?\d+),([+-]?\d+),\d+>")]
+    private static partial Regex SyllableRegex();
+
+    private sealed class KrcMetadata
+    {
+        public Dictionary<int, string> Translations { get; } = [];
+
+        public Dictionary<int, IReadOnlyList<string>> Phonetics { get; } = [];
+
+        public List<LyricLine> TranslationLines { get; } = [];
+    }
+}

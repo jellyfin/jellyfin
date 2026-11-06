@@ -11,6 +11,7 @@ namespace Jellyfin.Naming.Tests.ExternalFiles;
 public class ExternalPathParserTests
 {
     private readonly ExternalPathParser _audioPathParser;
+    private readonly ExternalPathParser _lyricPathParser;
     private readonly ExternalPathParser _subtitlePathParser;
 
     public ExternalPathParserTests()
@@ -28,6 +29,7 @@ public class ExternalPathParserTests
             .Returns(hindiCultureDto);
 
         _audioPathParser = new ExternalPathParser(new NamingOptions(), localizationManager.Object, DlnaProfileType.Audio);
+        _lyricPathParser = new ExternalPathParser(new NamingOptions(), localizationManager.Object, DlnaProfileType.Lyric);
         _subtitlePathParser = new ExternalPathParser(new NamingOptions(), localizationManager.Object, DlnaProfileType.Subtitle);
     }
 
@@ -78,6 +80,19 @@ public class ExternalPathParserTests
     public void ParseFile_SubtitleExtensionsMatched_ReturnsPath(string path)
     {
         var actual = _subtitlePathParser.ParseFile(path, string.Empty);
+        Assert.NotNull(actual);
+        Assert.Equal(path, actual!.Path);
+    }
+
+    [Fact]
+    public void ParseFile_AdditionalLyricExtension_ReturnsPath()
+    {
+        const string path = "MySong.krc";
+
+        Assert.Null(_lyricPathParser.ParseFile(path, string.Empty));
+
+        var actual = _lyricPathParser.ParseFile(path, string.Empty, new[] { ".krc" });
+
         Assert.NotNull(actual);
         Assert.Equal(path, actual!.Path);
     }

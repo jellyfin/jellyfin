@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Lyrics;
 
@@ -18,6 +19,11 @@ public interface ILyricParser
     /// </summary>
     /// <value>The priority.</value>
     ResolverPriority Priority { get; }
+
+    /// <summary>
+    /// Gets the file extensions handled by this parser, including the leading period.
+    /// </summary>
+    IReadOnlyList<string> SupportedExtensions { get; }
 
     /// <summary>
     /// Parses the raw lyrics into a response.

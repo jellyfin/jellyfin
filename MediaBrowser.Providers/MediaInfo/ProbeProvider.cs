@@ -68,6 +68,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="namingOptions">The <see cref="NamingOptions"/>.</param>
         /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
+        /// <param name="lyricParsers">The loaded lyric parsers.</param>
         /// <param name="mediaAttachmentRepository">Instance of the <see cref="IMediaAttachmentRepository"/> interface.</param>
         /// <param name="mediaStreamRepository">Instance of the <see cref="IMediaStreamRepository"/> interface.</param>
         public ProbeProvider(
@@ -83,13 +84,14 @@ namespace MediaBrowser.Providers.MediaInfo
             ILoggerFactory loggerFactory,
             NamingOptions namingOptions,
             ILyricManager lyricManager,
+            IEnumerable<ILyricParser> lyricParsers,
             IMediaAttachmentRepository mediaAttachmentRepository,
             IMediaStreamRepository mediaStreamRepository)
         {
             _logger = loggerFactory.CreateLogger<ProbeProvider>();
             _audioResolver = new AudioResolver(loggerFactory.CreateLogger<AudioResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
             _subtitleResolver = new SubtitleResolver(loggerFactory.CreateLogger<SubtitleResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
-            _lyricResolver = new LyricResolver(loggerFactory.CreateLogger<LyricResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
+            _lyricResolver = new LyricResolver(loggerFactory.CreateLogger<LyricResolver>(), localization, mediaEncoder, fileSystem, namingOptions, lyricParsers);
 
             _videoProber = new FFProbeVideoInfo(
                 loggerFactory.CreateLogger<FFProbeVideoInfo>(),
