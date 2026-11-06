@@ -197,6 +197,7 @@ public static class UserEntityExtensions
         entity.Permissions.Add(new Permission(PermissionKind.EnableMediaConversion, true));
         entity.Permissions.Add(new Permission(PermissionKind.EnableMediaPlayback, true));
         entity.Permissions.Add(new Permission(PermissionKind.EnablePlaybackRemuxing, true));
+        entity.Permissions.Add(new Permission(PermissionKind.ForcePlaybackRemuxing, false));
         entity.Permissions.Add(new Permission(PermissionKind.EnablePublicSharing, true));
         entity.Permissions.Add(new Permission(PermissionKind.EnableRemoteAccess, true));
         entity.Permissions.Add(new Permission(PermissionKind.EnableSyncTranscoding, true));

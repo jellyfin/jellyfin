@@ -124,4 +124,9 @@ public enum PermissionKind
     /// Whether the user can edit lyrics.
     /// </summary>
     EnableLyricManagement = 23,
+
+    /// <summary>
+    /// Whether playback should be remuxed even when direct play is possible.
+    /// </summary>
+    ForcePlaybackRemuxing = 24,
 }
