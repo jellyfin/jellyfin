@@ -4,6 +4,9 @@
             "Default": "Information",
             "Override": {
                 "Microsoft": "Warning",
+                "Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager": "Error",
+                "Microsoft.AspNetCore.DataProtection.Repositories.EphemeralXmlRepository": "Error",
+                "Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware": "Error",
                 "System": "Warning"
             }
         },

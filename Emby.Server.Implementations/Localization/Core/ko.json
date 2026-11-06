@@ -111,5 +111,15 @@
     "Original": "원본",
     "NameExtraClip": "클립",
     "NameExtraDeletedScene": "삭제된 장면",
-    "NameExtraInterview": "인터뷰"
+    "NameExtraInterview": "인터뷰",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "샘플",
+    "NameExtraScene": "장면",
+    "NameExtraTrailer": "예고편",
+    "NameExtraUnknown": "부가영상",
+    "NameExtraThemeSong": "주제가",
+    "NameExtraBehindTheScenes": "비하인드 영상",
+    "NameExtraFeaturette": "피처렛",
+    "NameExtraShort": "단편",
+    "NameExtraThemeVideo": "테마 영상"
 }
