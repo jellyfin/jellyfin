@@ -61,6 +61,8 @@ namespace MediaBrowser.Model.MediaInfo
 
         public DateTime? PremiereDate { get; set; }
 
+        public DateTime? ContainerCreationDate { get; set; }
+
         public BaseItemPerson[] People { get; set; }
 
         public Dictionary<string, string> ProviderIds { get; set; }
