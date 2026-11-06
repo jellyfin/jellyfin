@@ -82,6 +82,13 @@ public interface IItemRepository
     QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery filter);
 
     /// <summary>
+    /// Gets networks with item counts.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The networks and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetNetworks(InternalItemsQuery filter);
+
+    /// <summary>
     /// Gets artists with item counts.
     /// </summary>
     /// <param name="filter">The query filter.</param>
@@ -113,6 +120,12 @@ public interface IItemRepository
     /// </summary>
     /// <returns>The list of studio names.</returns>
     IReadOnlyList<string> GetStudioNames();
+
+    /// <summary>
+    /// Gets all network names.
+    /// </summary>
+    /// <returns>The list of network names.</returns>
+    IReadOnlyList<string> GetNetworkNames();
 
     /// <summary>
     /// Gets all genre names.
