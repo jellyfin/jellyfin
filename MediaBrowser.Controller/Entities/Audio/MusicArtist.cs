@@ -13,6 +13,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
@@ -175,6 +176,8 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             var validName = normalizeName ? GetItemByNameFolderName(name) : name;
 
+            validName = SafeNameHelper.EnsureSafeName(
+                ConfigurationManager.ApplicationPaths.ArtistsPath, validName);
             return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.ArtistsPath, validName);
         }
 
