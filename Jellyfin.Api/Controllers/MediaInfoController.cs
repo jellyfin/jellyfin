@@ -179,7 +179,8 @@ public class MediaInfoController : BaseJellyfinApiController
                 user,
                 Request,
                 mediaSourceId,
-                liveStreamId)
+                liveStreamId,
+                profile)
             .ConfigureAwait(false);
 
         if (info.ErrorCode is not null)
