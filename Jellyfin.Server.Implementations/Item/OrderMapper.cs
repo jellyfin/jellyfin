@@ -11,6 +11,7 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Server.Implementations.Item;
@@ -20,6 +21,8 @@ namespace Jellyfin.Server.Implementations.Item;
 /// </summary>
 public static class OrderMapper
 {
+    private static readonly string _episodeTypeName = typeof(Episode).FullName!;
+
     /// <summary>
     /// Creates Func to be executed later with a given BaseItemEntity input for sorting items on query.
     /// </summary>
@@ -46,6 +49,34 @@ public static class OrderMapper
                     .Where(w => w.Item!.PrimaryVersionId == e.Id)
                     .Select(w => w.LastPlayedDate))
                 .Max();
+        }
+
+        if (sortBy is ItemSortBy.SeriesRuntime or ItemSortBy.SeriesUnplayedRuntime)
+        {
+            // Normally handled by the pre-aggregated join in ApplySeriesRuntimeOrder. This
+            // correlated subquery fallback is only reached when combined with search.
+            // Virtual episodes are missing or not aired yet, so they carry no time to watch.
+            var episodes = jellyfinDbContext.BaseItems
+                .Where(w => w.Type == _episodeTypeName && !w.IsVirtualItem);
+
+            if (sortBy == ItemSortBy.SeriesRuntime)
+            {
+                return e => episodes
+                    .Where(w => w.SeriesPresentationUniqueKey == e.PresentationUniqueKey)
+                    .Sum(w => w.RunTimeTicks ?? 0L);
+            }
+
+            // An episode is left to watch while no played row exists for it, hence the absence test:
+            // an unwatched episode has no UserData row at all.
+            return query.User is null
+                ? e => episodes
+                    .Where(w => w.SeriesPresentationUniqueKey == e.PresentationUniqueKey
+                        && !w.UserData!.Any(ud => ud.Played))
+                    .Sum(w => w.RunTimeTicks ?? 0L)
+                : e => episodes
+                    .Where(w => w.SeriesPresentationUniqueKey == e.PresentationUniqueKey
+                        && !w.UserData!.Any(ud => ud.UserId == query.User.Id && ud.Played))
+                    .Sum(w => w.RunTimeTicks ?? 0L);
         }
 
         return (sortBy, query.User) switch
