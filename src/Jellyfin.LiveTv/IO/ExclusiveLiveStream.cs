@@ -32,6 +32,8 @@ namespace Jellyfin.LiveTv.IO
 
         public string TunerHostId => null;
 
+        public Guid ChannelId { get; set; }
+
         public bool EnableStreamSharing { get; set; }
 
         public MediaSourceInfo MediaSource { get; set; }

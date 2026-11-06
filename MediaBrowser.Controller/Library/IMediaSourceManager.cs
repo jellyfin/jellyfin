@@ -141,5 +141,12 @@ namespace MediaBrowser.Controller.Library
         void SetDefaultAudioAndSubtitleStreamIndices(BaseItem item, MediaSourceInfo source, User user);
 
         Task AddMediaInfoWithProbe(MediaSourceInfo mediaSource, bool isAudio, string cacheKey, bool addProbeDelay, bool isLiveStream, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the open streams for the provided channel.
+        /// </summary>
+        /// <param name="channelId">The channel id.</param>
+        /// <returns>The open streams held for the channel.</returns>
+        IReadOnlyList<ILiveStream> GetLiveStreams(Guid channelId);
     }
 }

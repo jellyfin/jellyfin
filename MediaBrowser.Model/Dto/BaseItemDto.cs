@@ -730,6 +730,12 @@ namespace MediaBrowser.Model.Dto
         public ChannelType? ChannelType { get; set; }
 
         /// <summary>
+        /// Gets or sets the number of streams currently open on the channel, including playback and active recordings.
+        /// </summary>
+        /// <value>The number of streams currently open on the channel.</value>
+        public int? ActiveStreamCount { get; set; }
+
+        /// <summary>
         /// Gets or sets the audio.
         /// </summary>
         /// <value>The audio.</value>
