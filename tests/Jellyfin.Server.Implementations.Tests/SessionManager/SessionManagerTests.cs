@@ -5,11 +5,13 @@ using Jellyfin.Data;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Events.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
@@ -112,6 +114,54 @@ public class SessionManagerTests
         };
 
         return data;
+    }
+
+    [Fact]
+    public async Task AuthenticateNewSessionInternal_Should_PublishAuthenticationFailedEvent_WhenUserIsUnknown()
+    {
+        var request = new AuthenticationRequest
+        {
+            App = "app_name",
+            DeviceId = "device_id",
+            DeviceName = "device_name",
+            AppVersion = "app_version",
+            Username = "no-such-user",
+            Password = "x",
+            RemoteEndPoint = "127.0.0.1"
+        };
+
+        var userManager = new Mock<IUserManager>();
+        userManager
+            .Setup(i => i.AuthenticateUser(request.Username!, request.Password!, request.RemoteEndPoint!, true))
+            .ThrowsAsync(new AuthenticationException("Invalid username or password entered."));
+
+        var eventManager = new Mock<IEventManager>();
+        eventManager
+            .Setup(i => i.PublishAsync(It.IsAny<AuthenticationRequestEventArgs>()))
+            .Returns(Task.CompletedTask);
+
+        await using var sessionManager = new Emby.Server.Implementations.Session.SessionManager(
+            NullLogger<Emby.Server.Implementations.Session.SessionManager>.Instance,
+            eventManager.Object,
+            Mock.Of<IUserDataManager>(),
+            Mock.Of<IServerConfigurationManager>(),
+            Mock.Of<ILibraryManager>(),
+            userManager.Object,
+            Mock.Of<IMusicManager>(),
+            Mock.Of<IDtoService>(),
+            Mock.Of<IImageProcessor>(),
+            Mock.Of<IServerApplicationHost>(),
+            Mock.Of<IDeviceManager>(),
+            Mock.Of<IMediaSourceManager>(),
+            Mock.Of<IHostApplicationLifetime>());
+
+        await Assert.ThrowsAsync<AuthenticationException>(
+            () => sessionManager.AuthenticateNewSessionInternal(request, true));
+
+        eventManager.Verify(
+            i => i.PublishAsync(It.Is<AuthenticationRequestEventArgs>(e =>
+                e.Username == request.Username && e.RemoteEndPoint == request.RemoteEndPoint)),
+            Times.Once);
     }
 
     [Fact]
