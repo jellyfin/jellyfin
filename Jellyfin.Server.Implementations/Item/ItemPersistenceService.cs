@@ -4,11 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -173,6 +176,57 @@ public class ItemPersistenceService : IItemPersistenceService
     public void SaveItems(IReadOnlyList<BaseItemDto> items, CancellationToken cancellationToken)
     {
         UpdateOrInsertItems(items, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task SaveMediaInfoAsync(BaseItem item, CancellationToken cancellationToken)
+    {
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+            await using (transaction.ConfigureAwait(false))
+            {
+                var entity = await context.BaseItems.SingleOrDefaultAsync(e => e.Id == item.Id, cancellationToken).ConfigureAwait(false);
+                if (entity is null || !string.Equals(entity.Path, _appHost.ReverseVirtualPath(item.Path), StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                // Some technical properties still live in the legacy JSON payload. Merge only these
+                // properties into the stored payload; a stale item must not restore old descriptions or links.
+                var stored = string.IsNullOrEmpty(entity.Data) ? new JsonObject() : JsonNode.Parse(entity.Data)!.AsObject();
+                var incoming = JsonSerializer.SerializeToNode(item, item.GetType(), JsonDefaults.Options)!.AsObject();
+                string[] technicalProperties =
+                [
+                    nameof(BaseItem.Container), nameof(BaseItem.ShortcutPath),
+                    nameof(Video.Timestamp), nameof(Video.Video3DFormat), nameof(Video.DefaultVideoStreamIndex),
+                    nameof(Video.HasSubtitles), nameof(Video.SubtitleFiles), nameof(Video.AudioFiles),
+                    nameof(Audio.HasLyrics), nameof(Audio.LyricFiles)
+                ];
+                foreach (var property in technicalProperties)
+                {
+                    var key = JsonDefaults.Options.PropertyNamingPolicy?.ConvertName(property) ?? property;
+                    if (incoming.TryGetPropertyValue(key, out var value))
+                    {
+                        stored[key] = value?.DeepClone();
+                    }
+                    else
+                    {
+                        stored.Remove(key);
+                    }
+                }
+
+                entity.Data = stored.ToJsonString(JsonDefaults.Options);
+                entity.RunTimeTicks = item.RunTimeTicks;
+                entity.TotalBitrate = item.TotalBitrate;
+                entity.Size = item.Size;
+                entity.Width = item.Width;
+                entity.Height = item.Height;
+                await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            }
+        }
     }
 
     /// <inheritdoc />

@@ -42,6 +42,7 @@ namespace MediaBrowser.Providers.MediaInfo
         ICustomMetadataProvider<Book>,
         IHasOrder,
         IForcedProvider,
+        IMediaInfoProvider,
         IPreRefreshProvider,
         IHasItemChangeMonitor
     {
