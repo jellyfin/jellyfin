@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Jellyfin.Api.ModelBinders;
+using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 using Moq;
@@ -225,6 +227,112 @@ namespace Jellyfin.Api.Tests.ModelBinders
             var listResult = (IReadOnlyList<TestType>?)bindingContextMock.Object.Result.Model;
             Assert.NotNull(listResult);
             Assert.Single(listResult);
+        }
+
+        [Fact]
+        public async Task BindModelAsync_ItemFieldsQuery_SkipsLegacyValues()
+        {
+            var bindingContextMock = CreateBindingContext(
+                "fields",
+                typeof(ItemFields[]),
+                new StringValues("PremiereDate,Overview,UserData,Genres,RunTimeTicks"));
+            var modelBinder = new CommaDelimitedCollectionModelBinder(new NullLogger<CommaDelimitedCollectionModelBinder>());
+
+            await modelBinder.BindModelAsync(bindingContextMock.Object);
+
+            Assert.Equal(
+                new[] { ItemFields.Overview, ItemFields.Genres },
+                (ItemFields[]?)bindingContextMock.Object.Result.Model);
+        }
+
+        [Fact]
+        public async Task BindModelAsync_ItemFieldsQuery_ReturnsEmptyForOnlyLegacyValues()
+        {
+            var bindingContextMock = CreateBindingContext(
+                "fields",
+                typeof(ItemFields[]),
+                new StringValues("PremiereDate,UserData,RunTimeTicks"));
+            var modelBinder = new CommaDelimitedCollectionModelBinder(new NullLogger<CommaDelimitedCollectionModelBinder>());
+
+            await modelBinder.BindModelAsync(bindingContextMock.Object);
+
+            Assert.Empty((ItemFields[]?)bindingContextMock.Object.Result.Model ?? Array.Empty<ItemFields>());
+        }
+
+        [Fact]
+        public async Task BindModelAsync_ItemFieldsQuery_BindsCaseInsensitiveValues()
+        {
+            var bindingContextMock = CreateBindingContext("fields", typeof(ItemFields[]), new StringValues("overview,GENRES"));
+            var modelBinder = new CommaDelimitedCollectionModelBinder(new NullLogger<CommaDelimitedCollectionModelBinder>());
+
+            await modelBinder.BindModelAsync(bindingContextMock.Object);
+
+            Assert.Equal(
+                new[] { ItemFields.Overview, ItemFields.Genres },
+                (ItemFields[]?)bindingContextMock.Object.Result.Model);
+        }
+
+        [Fact]
+        public async Task BindModelAsync_ItemFieldsQuery_BindsRepeatedQueryParameters()
+        {
+            var bindingContextMock = CreateBindingContext(
+                "fields",
+                typeof(ItemFields[]),
+                new StringValues(new[] { "Overview", "Genres" }));
+            var modelBinder = new CommaDelimitedCollectionModelBinder(new NullLogger<CommaDelimitedCollectionModelBinder>());
+
+            await modelBinder.BindModelAsync(bindingContextMock.Object);
+
+            Assert.Equal(
+                new[] { ItemFields.Overview, ItemFields.Genres },
+                (ItemFields[]?)bindingContextMock.Object.Result.Model);
+        }
+
+        [Fact]
+        public async Task BindModelAsync_EnumArrayQuery_PreservesNumericValues()
+        {
+            var bindingContextMock = CreateBindingContext("test", typeof(TestType[]), new StringValues("0,1"));
+            var modelBinder = new CommaDelimitedCollectionModelBinder(new NullLogger<CommaDelimitedCollectionModelBinder>());
+
+            await modelBinder.BindModelAsync(bindingContextMock.Object);
+
+            Assert.Equal(new[] { TestType.How, TestType.Much }, (TestType[]?)bindingContextMock.Object.Result.Model);
+        }
+
+        [Fact]
+        public async Task BindModelAsync_InvalidEnumValues_DoesNotLogExceptions()
+        {
+            var bindingContextMock = CreateBindingContext(
+                "fields",
+                typeof(ItemFields[]),
+                new StringValues("PremiereDate,UserData,RunTimeTicks"));
+            var loggerMock = new Mock<ILogger<CommaDelimitedCollectionModelBinder>>();
+            var modelBinder = new CommaDelimitedCollectionModelBinder(loggerMock.Object);
+
+            await modelBinder.BindModelAsync(bindingContextMock.Object);
+
+            loggerMock.Verify(
+                logger => logger.Log(
+                    It.IsAny<LogLevel>(),
+                    It.IsAny<EventId>(),
+                    It.IsAny<It.IsAnyType>(),
+                    It.IsAny<Exception?>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Never);
+        }
+
+        private static Mock<ModelBindingContext> CreateBindingContext(string modelName, Type modelType, StringValues values)
+        {
+            var valueProvider = new QueryStringValueProvider(
+                new BindingSource(string.Empty, string.Empty, false, false),
+                new QueryCollection(new Dictionary<string, StringValues> { { modelName, values } }),
+                CultureInfo.InvariantCulture);
+            var bindingContextMock = new Mock<ModelBindingContext>();
+            bindingContextMock.Setup(b => b.ValueProvider).Returns(valueProvider);
+            bindingContextMock.Setup(b => b.ModelName).Returns(modelName);
+            bindingContextMock.Setup(b => b.ModelType).Returns(modelType);
+            bindingContextMock.SetupProperty(b => b.Result);
+            return bindingContextMock;
         }
     }
 }

@@ -62,14 +62,26 @@ public class CommaDelimitedCollectionModelBinder : IModelBinder
         var convertedCount = 0;
         for (var i = 0; i < values.Count; i++)
         {
-            try
+            var value = values[i].Trim();
+            if (elementType.IsEnum)
             {
-                parsedValues[i] = converter.ConvertFromString(values[i].Trim());
-                convertedCount++;
+                if (Enum.TryParse(elementType, value, ignoreCase: true, out var parsedValue))
+                {
+                    parsedValues[i] = parsedValue;
+                    convertedCount++;
+                }
             }
-            catch (FormatException e)
+            else
             {
-                _logger.LogDebug(e, "Error converting value.");
+                try
+                {
+                    parsedValues[i] = converter.ConvertFromString(value);
+                    convertedCount++;
+                }
+                catch (FormatException e)
+                {
+                    _logger.LogDebug(e, "Error converting value.");
+                }
             }
         }
 
