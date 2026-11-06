@@ -79,6 +79,7 @@ public static class BaseItemMapper
     {
         dto.Id = entity.Id;
         dto.ParentId = entity.ParentId.GetValueOrDefault();
+        dto.TopParentId = entity.TopParentId.GetValueOrDefault();
         dto.Path = appHost?.ExpandVirtualPath(entity.Path) ?? entity.Path;
         dto.EndDate = entity.EndDate;
         dto.CommunityRating = entity.CommunityRating;

@@ -28,6 +28,10 @@ namespace MediaBrowser.Model.Dto
 
         public string OriginalTitle { get; set; }
 
+        public string PrimaryDisplayName { get; set; }
+
+        public string SecondaryDisplayName { get; set; }
+
         /// <summary>
         /// Gets or sets the server identifier.
         /// </summary>

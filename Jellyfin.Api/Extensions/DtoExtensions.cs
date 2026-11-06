@@ -1,5 +1,10 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.Entities;
 
@@ -79,5 +84,17 @@ public static class DtoExtensions
         }
 
         return dtoOptions;
+    }
+
+    /// <summary>
+    /// Gets physical folder ids which are direct descendants of collection folders. These folders are TopParents for other items.
+    /// </summary>
+    /// <param name="dtoOptions">DtoOptions object.</param>
+    /// <param name="user">User entity.</param>
+    public static void AddOriginalTitlePreferenceDtoOptions(this DtoOptions dtoOptions, User user)
+    {
+        dtoOptions.OriginalTitlePreferenceLibraryIncludes = user.GetPreferenceValues<Guid>(PreferenceKind.OriginalTitlePreferenceFolderIncludes).ToHashSet();
+        dtoOptions.OriginalTitlePreferenceLanguageScriptIncludes = user.GetPreferenceValues<string>(PreferenceKind.OriginalTitlePreferenceLanguageScriptIncludes);
+        dtoOptions.OriginalTitlePreferenceLanguageScriptExcludes = user.GetPreferenceValues<string>(PreferenceKind.OriginalTitlePreferenceLanguageScriptExcludes);
     }
 }

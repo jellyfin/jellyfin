@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Data;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
@@ -111,6 +112,16 @@ namespace Emby.Server.Implementations.Dto
                 ]
             }
         }.ToFrozenDictionary();
+
+        private static readonly FrozenSet<BaseItemKind> _eligibleForPreferOriginalTitle = new HashSet<BaseItemKind>
+        {
+            BaseItemKind.Book,
+            BaseItemKind.BoxSet,
+            BaseItemKind.Episode,
+            BaseItemKind.Movie,
+            BaseItemKind.Season,
+            BaseItemKind.Series,
+        }.ToFrozenSet();
 
         private readonly ILogger<DtoService> _logger;
         private readonly ILibraryManager _libraryManager;
@@ -269,6 +280,19 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
+            // Batch-fetch top physical folders which are descendants of collection folders included in PreferOriginalTitle filter.
+            // Items have these folders as top parents (TopParentId column), making it trivial to check if item is included.
+            IReadOnlySet<Guid> preferOriginalTitlesTopParentIds = FrozenSet<Guid>.Empty;
+            if (user is not null && user.OriginalTitlePreference)
+            {
+                // Add prefer original title user preferences to DtoOptions.
+                options.AddOriginalTitlePreferenceDtoOptions(user);
+
+                preferOriginalTitlesTopParentIds = allCollectionFolders is null
+                    ? PreferOriginalTitleHelper.GetPhysicalFolderIdsFromLibraryIds(_libraryManager, options.OriginalTitlePreferenceLibraryIncludes)
+                    : PreferOriginalTitleHelper.GetPhysicalFolderIdsFromFolders(allCollectionFolders, options.OriginalTitlePreferenceLibraryIncludes);
+            }
+
             for (int index = 0; index < accessibleItems.Count; index++)
             {
                 var item = accessibleItems[index];
@@ -284,7 +308,8 @@ namespace Emby.Server.Implementations.Dto
                     artistsBatch,
                     resumeDataBatch?.GetValueOrDefault(item.Id),
                     peopleBatch,
-                    alternateVersionItemIds);
+                    alternateVersionItemIds,
+                    preferOriginalTitlesTopParentIds);
 
                 if (item is LiveTvChannel tvChannel)
                 {
@@ -348,7 +373,8 @@ namespace Emby.Server.Implementations.Dto
             IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null,
             VersionResumeData? resumeData = null,
             IReadOnlyDictionary<Guid, IReadOnlyList<PersonInfo>>? peopleBatch = null,
-            IReadOnlySet<Guid>? alternateVersionItemIds = null)
+            IReadOnlySet<Guid>? alternateVersionItemIds = null,
+            IReadOnlySet<Guid>? preferOriginalTitlesTopParentIds = null)
         {
             var dto = new BaseItemDto
             {
@@ -418,6 +444,7 @@ namespace Emby.Server.Implementations.Dto
             }
 
             AttachBasicFields(dto, item, owner, options, artistsBatch, user, alternateVersionItemIds);
+            AttachDisplayNameFields(dto, item, options, user, preferOriginalTitlesTopParentIds);
 
             if (options.ContainsField(ItemFields.CanDelete))
             {
@@ -1680,6 +1707,69 @@ namespace Emby.Server.Implementations.Dto
                     dto.ChannelName = channel.Name;
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets display names property values on a BaseItemDto.
+        /// </summary>
+        /// <param name="dto">The dto.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="user">The user.</param>
+        /// /// <param name="preferOriginalTitlesTopParentIds">Optional pre-fetched topParentIds inclusion filter.</param>
+        private void AttachDisplayNameFields(
+            BaseItemDto dto,
+            BaseItem item,
+            DtoOptions options,
+            User? user,
+            IReadOnlySet<Guid>? preferOriginalTitlesTopParentIds = null)
+        {
+            if (user is not null && user.OriginalTitlePreference && _eligibleForPreferOriginalTitle.Contains(item.GetBaseItemKind()))
+            {
+                // If true we came from paths where these options weren't set.
+                if (preferOriginalTitlesTopParentIds is null)
+                {
+                    options.AddOriginalTitlePreferenceDtoOptions(user);
+                    preferOriginalTitlesTopParentIds =
+                        PreferOriginalTitleHelper.GetPhysicalFolderIdsFromLibraryIds(_libraryManager, options.OriginalTitlePreferenceLibraryIncludes);
+                }
+
+                if (preferOriginalTitlesTopParentIds.Contains(item.TopParentId))
+                {
+                    // Check if item's OriginalTitle satisfies all conditions.
+                    if (PreferOriginalTitleHelper.IsPrefered(
+                        item.OriginalTitle,
+                        item.OriginalLanguage,
+                        options.OriginalTitlePreferenceLanguageScriptIncludes,
+                        options.OriginalTitlePreferenceLanguageScriptExcludes))
+                    {
+                        dto.PrimaryDisplayName = item.OriginalTitle;
+                        dto.SecondaryDisplayName = item.Name;
+                    }
+
+                    // Fetch Series if item is episode or season.
+                    Series? series = item switch
+                    {
+                        Episode e => e.Series,
+                        Season s => s.Series,
+                        _ => null
+                    };
+
+                    // Set series OriginalTitle for episodes and seasons if it satisfies all conditions.
+                    if (series is not null
+                        && PreferOriginalTitleHelper.IsPrefered(
+                            series.OriginalTitle,
+                            series.OriginalLanguage,
+                            options.OriginalTitlePreferenceLanguageScriptIncludes,
+                            options.OriginalTitlePreferenceLanguageScriptExcludes))
+                    {
+                        dto.SeriesName = series.OriginalTitle;
+                    }
+                }
+            }
+
+            dto.PrimaryDisplayName ??= item.Name;
+            dto.SecondaryDisplayName ??= item.OriginalTitle;
         }
 
         private BaseItem? GetImageDisplayParent(BaseItem currentItem, BaseItem originalItem, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch)
