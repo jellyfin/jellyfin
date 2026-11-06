@@ -710,6 +710,22 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <inheritdoc />
+        public virtual bool CanEnumerateDirectory(string path)
+        {
+            try
+            {
+                using var entries = Directory.EnumerateFileSystemEntries(path).GetEnumerator();
+                entries.MoveNext();
+                return true;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SecurityException or ArgumentException)
+            {
+                _logger.LogWarning(ex, "Cannot enumerate library directory {Path}", path);
+                return false;
+            }
+        }
+
+        /// <inheritdoc />
         public virtual bool FileExists(string path)
         {
             return File.Exists(path);

@@ -271,6 +271,21 @@ namespace Emby.Server.Implementations.Library
 
         public bool IsScanRunning { get; private set; }
 
+        /// <inheritdoc />
+        public bool CanRemoveMissingItem(string? path, string? libraryRoot)
+        {
+            return !string.IsNullOrEmpty(path)
+                && !string.IsNullOrEmpty(libraryRoot)
+                && _fileSystem.ContainsSubPath(libraryRoot, path)
+                && IsLibraryRootAvailable(libraryRoot);
+        }
+
+        /// <inheritdoc />
+        public bool IsLibraryRootAvailable(string? libraryRoot)
+        {
+            return !string.IsNullOrEmpty(libraryRoot) && _fileSystem.CanEnumerateDirectory(libraryRoot);
+        }
+
         /// <summary>
         /// Adds the parts.
         /// </summary>
@@ -477,7 +492,19 @@ namespace Emby.Server.Implementations.Library
                 {
                     if (!string.IsNullOrEmpty(alt.Path) && !_fileSystem.FileExists(alt.Path))
                     {
-                        missingAlternates.Add(alt);
+                        if (!GetLibraryOptions(alt).RemoveMissingItemsAutomatically)
+                        {
+                            alternateVersions.Add(alt);
+                        }
+                        else if (CanRemoveMissingItem(alt.Path, alt.GetTopParent()?.Path))
+                        {
+                            missingAlternates.Add(alt);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Keeping missing alternate version {Path}: library root is unavailable", alt.Path);
+                            alternateVersions.Add(alt);
+                        }
                     }
                     else
                     {
