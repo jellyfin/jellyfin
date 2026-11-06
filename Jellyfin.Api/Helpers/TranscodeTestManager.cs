@@ -175,6 +175,12 @@ public sealed class TranscodeTestManager : IDisposable
         {
             var options = _configurationManager.GetEncodingOptions();
             Log($"ffmpeg {_mediaEncoder.EncoderVersion} · hardware acceleration: {options.HardwareAccelerationType}");
+            var vaapiIdentified = _mediaEncoder.IsVaapiDeviceAmd || _mediaEncoder.IsVaapiDeviceInteliHD || _mediaEncoder.IsVaapiDeviceInteli965;
+            if (TranscodeTestRules.NeedsVaapiRestart(options.HardwareAccelerationType, OperatingSystem.IsLinux(), vaapiIdentified))
+            {
+                Log("Note: Jellyfin has not identified the VAAPI device. It only does that at startup, so if you changed the hardware acceleration type or device, restart Jellyfin and run the test again.");
+            }
+
             var busy = _sessionManager.Sessions.Count(s => s.TranscodingInfo is not null);
             if (busy > 0)
             {
@@ -276,7 +282,8 @@ public sealed class TranscodeTestManager : IDisposable
             var result = await RunFfmpegAsync(args, null, null, cancellationToken).ConfigureAwait(false);
             if (result.ExitCode != 0 || !File.Exists(path))
             {
-                Log($"  Could not create the {clip.FileName} test clip ({clip.Encoder}): {result.Errors}");
+                var reason = string.IsNullOrEmpty(result.Errors) ? "no error message" : result.Errors;
+                Log($"  Could not create the {clip.FileName} test clip ({clip.Encoder}, {TranscodeTestRules.DescribeExit(result.ExitCode)}): {reason}");
                 File.Delete(path);
                 return null;
             }
@@ -419,8 +426,10 @@ public sealed class TranscodeTestManager : IDisposable
         options.HardwareDecodingCodecs = _allDecodeCodecs;
         options.EnableDecodingColorDepth10Hevc = true;
         options.EnableTonemapping = true;
-        options.EnableVppTonemapping = true;
-        options.EnableVideoToolboxTonemapping = true;
+
+        // Keep the saved VPP and VideoToolbox choices. Jellyfin's Intel pipelines prefer VPP over OpenCL when it is on,
+        // and on macOS the VideoToolbox option replaces the Metal filter (tonemap_videotoolbox) with the tone mapping
+        // built into scale_vt, so forcing either would test a tone mapping filter that playback does not use.
         var job = CreateJob(source, options, "h264", 1920);
         var filter = TonemapFilter(source, options);
         var result = new TranscodeTestCheckResult
@@ -466,9 +475,13 @@ public sealed class TranscodeTestManager : IDisposable
         var inputModifier = _encodingHelper.GetInputModifier(job, options, null);
         var input = _encodingHelper.GetInputArgument(job, options, null);
         var filters = _encodingHelper.GetVideoProcessingFilterParam(job, options, encoder);
+
+        // The encoder options playback uses (preset, profile, level, bitrate, Intel low-power mode, i915 workaround),
+        // so an encoder fails or passes here as it would during playback.
+        var quality = _encodingHelper.GetVideoQualityParam(job, encoder, options, EncoderPreset.veryfast);
         var args = string.Create(
             CultureInfo.InvariantCulture,
-            $"-hide_banner -v verbose {inputModifier} {input} -map 0:v:0 -an -sn -c:v {encoder} -b:v 4000000{filters} -frames:v {CheckFrames} -f null -");
+            $"-hide_banner -v verbose {inputModifier} {input} -map 0:v:0 -an -sn -c:v {encoder}{quality}{filters} -frames:v {CheckFrames} -f null -");
         return await RunFfmpegAsync(args, CheckFrames, encoder, cancellationToken).ConfigureAwait(false);
     }
 
@@ -508,10 +521,14 @@ public sealed class TranscodeTestManager : IDisposable
         var output = await stderr.ConfigureAwait(false);
         var elapsed = timer.Elapsed.TotalSeconds;
         var pixelFormat = TranscodeTestRules.DecodedPixelFormat(output);
-        var errors = output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Where(l => l.Contains("rror", StringComparison.Ordinal) || l.Contains("ailed", StringComparison.Ordinal))
-            .TakeLast(3);
-        return new FfmpegRun(process.ExitCode, frames.HasValue && elapsed > 0 ? Math.Round(frames.Value / elapsed, 1) : null, pixelFormat, string.Join(" | ", errors), TranscodeTestRules.FramesDecoded(output), encoder is null ? TranscodeTestRules.FramesEncoded(output) : TranscodeTestRules.EncodedFrames(output, encoder), TranscodeTestRules.ResourceLine(output));
+        return new FfmpegRun(
+            process.ExitCode,
+            frames.HasValue && elapsed > 0 ? Math.Round(frames.Value / elapsed, 1) : null,
+            pixelFormat,
+            TranscodeTestRules.ErrorLines(output),
+            TranscodeTestRules.FramesDecoded(output),
+            encoder is null ? TranscodeTestRules.FramesEncoded(output) : TranscodeTestRules.EncodedFrames(output, encoder),
+            TranscodeTestRules.ResourceLine(output));
     }
 
     // ---- shared -----------------------------------------------------------------------------

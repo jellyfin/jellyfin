@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Jellyfin.Api.Models.TranscodeTestDtos;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 
 namespace Jellyfin.Api.Helpers;
 
@@ -318,6 +319,56 @@ internal static partial class TranscodeTestRules
         var outcome = TonemapMode(filter) == TranscodeTestTonemapMode.Software ? TranscodeTestOutcome.Software : TranscodeTestOutcome.Passed;
         return (outcome, enabled ? TranscodeTestAdvice.None : TranscodeTestAdvice.TurnOn);
     }
+
+    /// <summary>
+    /// Picks the lines of ffmpeg's output that explain a failure.
+    /// </summary>
+    /// <param name="output">ffmpeg's standard error.</param>
+    /// <returns>Up to the last three error lines, joined with " | ".</returns>
+    public static string ErrorLines(string output)
+        => string.Join(
+            " | ",
+            output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(l => l.Contains("rror", StringComparison.Ordinal) || l.Contains("ailed", StringComparison.Ordinal))
+                // Encoder libraries print harmless warnings such as SVT-AV1's "Svt[warn]: Failed to set thread priority".
+                .Where(l => !l.Contains("[warn", StringComparison.OrdinalIgnoreCase))
+                .TakeLast(3));
+
+    /// <summary>
+    /// Describes how ffmpeg ended, for a failure that may have printed nothing.
+    /// </summary>
+    /// <param name="exitCode">ffmpeg's exit code.</param>
+    /// <returns>The exit code, and the signal when the process was killed by one, with what the common ones mean.</returns>
+    public static string DescribeExit(int exitCode)
+    {
+        if (exitCode is not (> 128 and < 160))
+        {
+            return string.Create(CultureInfo.InvariantCulture, $"exit code {exitCode}");
+        }
+
+        var signal = exitCode - 128;
+        var meaning = signal switch
+        {
+            4 => ", illegal instruction (the CPU may lack an instruction this encoder needs)",
+            9 => ", killed (often because it ran out of memory)",
+            _ => string.Empty
+        };
+        return string.Create(CultureInfo.InvariantCulture, $"exit code {exitCode}, ended by signal {signal}{meaning}");
+    }
+
+    /// <summary>
+    /// Gets whether to remind the administrator to restart Jellyfin before testing VAAPI.
+    /// </summary>
+    /// <remarks>
+    /// Jellyfin identifies the VAAPI device only at startup, and only when VAAPI is the saved acceleration type.
+    /// Until then it uses its generic VAAPI pipeline, so results differ from those after a restart.
+    /// </remarks>
+    /// <param name="type">The saved hardware acceleration type.</param>
+    /// <param name="isLinux">Whether the server runs on Linux, the only system where Jellyfin identifies the device.</param>
+    /// <param name="deviceIdentified">Whether Jellyfin identified the device as AMD or Intel.</param>
+    /// <returns><c>true</c> when the device was not identified.</returns>
+    public static bool NeedsVaapiRestart(HardwareAccelerationType type, bool isLinux, bool deviceIdentified)
+        => type == HardwareAccelerationType.vaapi && isLinux && !deviceIdentified;
 
     /// <summary>
     /// Gets whether text holds NVIDIA's session refusal, whatever the encoder.

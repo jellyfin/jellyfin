@@ -1,6 +1,7 @@
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.TranscodeTestDtos;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using Xunit;
 
 namespace Jellyfin.Api.Tests.Helpers
@@ -178,6 +179,41 @@ namespace Jellyfin.Api.Tests.Helpers
             Assert.Equal(outcome, TranscodeTestRules.FailedOutcome(referencePassed, true, TranscodeTestRules.EncodedFrames(output, "av1_nvenc")));
             Assert.Equal(TranscodeTestAdvice.TurnOff, advice);
         }
+
+        [Fact]
+        public void ErrorLines_SkipsEncoderLibraryWarnings()
+        {
+            // What libsvtav1 printed in a container on an Intel N5095: only a harmless warning.
+            const string Output = "Svt[info]: SVT [version]: SVT-AV1 Encoder Lib v3.0.0\nSvt[warn]: Failed to set thread priority: Invalid argument\n";
+
+            Assert.Equal(string.Empty, TranscodeTestRules.ErrorLines(Output));
+        }
+
+        [Fact]
+        public void ErrorLines_KeepsTheLastThreeErrors()
+        {
+            const string Output = "[a] Error 1\nfine\n[b] Error 2\nSvt[warn]: Failed to set thread priority\n[c] Task finished with error code: -22\nConversion failed!\n";
+
+            Assert.Equal("[b] Error 2 | [c] Task finished with error code: -22 | Conversion failed!", TranscodeTestRules.ErrorLines(Output));
+        }
+
+        [Theory]
+        [InlineData(1, "exit code 1")]
+        [InlineData(-1, "exit code -1")]
+        [InlineData(137, "exit code 137, ended by signal 9, killed (often because it ran out of memory)")]
+        [InlineData(132, "exit code 132, ended by signal 4, illegal instruction (the CPU may lack an instruction this encoder needs)")]
+        [InlineData(139, "exit code 139, ended by signal 11")]
+        [InlineData(234, "exit code 234")]
+        public void DescribeExit_NamesTheSignal(int exitCode, string expected)
+            => Assert.Equal(expected, TranscodeTestRules.DescribeExit(exitCode));
+
+        [Theory]
+        [InlineData(HardwareAccelerationType.vaapi, true, false, true)]
+        [InlineData(HardwareAccelerationType.vaapi, true, true, false)]
+        [InlineData(HardwareAccelerationType.vaapi, false, false, false)]
+        [InlineData(HardwareAccelerationType.qsv, true, false, false)]
+        public void NeedsVaapiRestart_OnlyWhenTheVaapiDeviceIsUnidentifiedOnLinux(HardwareAccelerationType type, bool isLinux, bool identified, bool expected)
+            => Assert.Equal(expected, TranscodeTestRules.NeedsVaapiRestart(type, isLinux, identified));
 
         [Theory]
         [InlineData("tonemap_opencl=format=nv12", 0, false, TranscodeTestOutcome.Passed, TranscodeTestAdvice.TurnOn)]
