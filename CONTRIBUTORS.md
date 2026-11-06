@@ -253,6 +253,7 @@
  - [klizas](https://github.com/klizas)
  - [p27ZuH6CNAdzr](https://github.com/p27ZuH6CNAdzr)
  - [Chris Voss](https://github.com/hatfarm)
+ - [mysticalsoap](https://github.com/mysticalsoap)
 
 # Emby Contributors
 

@@ -94,7 +94,7 @@
     "TaskCleanTranscodeDescription": "Выдаляе перакадзіраваныя файлы, старэйшыя за адзін дзень.",
     "TaskRefreshChannels": "Абнавіць каналы",
     "TaskDownloadMissingSubtitles": "Спампаваць адсутныя субцітры",
-    "TaskKeyframeExtractorDescription": "Выдае ключавыя кадры з відэафайлаў для стварэння больш дакладных плэй-лістоў HLS. Гэта задача можа выконвацца доўга.",
+    "TaskKeyframeExtractorDescription": "Выдае ключавыя кадры з відэафайлаў для стварэння больш дакладных плэйлістоў HLS. Гэта задача можа выконвацца доўга.",
     "TaskRefreshTrickplayImages": "Стварыць выявы Trickplay",
     "TaskRefreshTrickplayImagesDescription": "Стварае перадпрагляды відэаролікаў для Trickplay у падключаных бібліятэках.",
     "TaskAudioNormalizationDescription": "Скануе файлы на прадмет нармалізацыі гуку.",
@@ -118,5 +118,8 @@
     "NameExtraFeaturette": "Кароткаметражка",
     "NameExtraSample": "Прыклад",
     "NameExtraShort": "Кароткаметражка",
-    "NameExtraThemeSong": "Тэматычная песня"
+    "NameExtraThemeSong": "Тэматычная песня",
+    "NameExtraThemeVideo": "Тэматычнае відэа",
+    "Original": "Арыгінал",
+    "NameExtraUnknown": "Дадаткова"
 }

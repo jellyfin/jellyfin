@@ -103,5 +103,19 @@
     "TaskDownloadMissingLyrics": "ഇല്ലാത്ത വരികൾ ഡൗൺലോഡ് ചെയ്യുക",
     "TaskDownloadMissingLyricsDescription": "പാട്ടുകളുടെ വരികൾ ഡൗൺലോഡ് ചെയ്യുന്നു",
     "TaskExtractMediaSegments": "മീഡിയ സെഗ്‌മെന്റ് സ്‌കാൻ",
-    "TaskExtractMediaSegmentsDescription": "മീഡിയസെഗ്മെന്റ് പ്രാപ്തമാക്കിയ പ്ലഗിനുകളിൽ നിന്ന് മീഡിയ സെഗ്‌മെന്റുകൾ എക്‌സ്‌ട്രാക്റ്റുചെയ്യുന്നു അല്ലെങ്കിൽ നേടുന്നു."
+    "TaskExtractMediaSegmentsDescription": "മീഡിയസെഗ്മെന്റ് പ്രാപ്തമാക്കിയ പ്ലഗിനുകളിൽ നിന്ന് മീഡിയ സെഗ്‌മെന്റുകൾ എക്‌സ്‌ട്രാക്റ്റുചെയ്യുന്നു അല്ലെങ്കിൽ നേടുന്നു.",
+    "LyricDownloadFailureFromForItem": "{1}-ന് വേണ്ടിയുള്ള വരികൾ {0}-ൽ നിന്ന് ഡൗൺലോഡ് ചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു",
+    "NameExtraBehindTheScenes": "അണിയറയിൽ",
+    "NameExtraClip": "ക്ലിപ്പ്",
+    "NameExtraDeletedScene": "ഒഴിവാക്കിയ രംഗം",
+    "NameExtraFeaturette": "ലഘുചിത്രം",
+    "NameExtraInterview": "അഭിമുഖം",
+    "NameExtraNumbered": "{0} {1}",
+    "NameExtraSample": "മാതൃക",
+    "NameExtraScene": "രംഗം",
+    "NameExtraThemeSong": "പ്രതിപാദ്യ ഗാനം",
+    "NameExtraTrailer": "ട്രെയ്‌ലർ",
+    "CleanupUserDataTask": "ഉപയോക്തൃ ഡാറ്റ ശുദ്ധീകരണ ദൗത്യം",
+    "CleanupUserDataTaskDescription": "കുറഞ്ഞത് 90 ദിവസമായി ലഭ്യമല്ലാത്ത മീഡിയയിൽ നിന്നുള്ള എല്ലാ ഉപയോക്തൃ ഡാറ്റയും (കാണൽ നില, പ്രിയപ്പെട്ടവയായി അടയാളപ്പെടുത്തിയത് തുടങ്ങിയവ) നീക്കം ചെയ്യുന്നു.",
+    "NameExtraUnknown": "എക്സ്ട്ര"
 }
