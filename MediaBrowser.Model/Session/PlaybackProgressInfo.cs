@@ -11,6 +11,8 @@ namespace MediaBrowser.Model.Session
     /// </summary>
     public class PlaybackProgressInfo
     {
+        private float? _playbackSpeed = 1.0f;
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance can seek.
         /// </summary>
@@ -116,5 +118,15 @@ namespace MediaBrowser.Model.Session
         public QueueItem[] NowPlayingQueue { get; set; }
 
         public string PlaylistItemId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the playback speed.
+        /// </summary>
+        /// <value>The playback speed.</value>
+        public float? PlaybackSpeed
+        {
+            get => _playbackSpeed;
+            set => _playbackSpeed = value is null ? null : (float?)Math.Round(Math.Clamp(value.Value, 0.1f, 10.0f), 1);
+        }
     }
 }
