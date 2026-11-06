@@ -1099,16 +1099,25 @@ namespace MediaBrowser.MediaEncoding.Probing
             return input.AsSpan().LeftPart('(').ToString();
         }
 
-        private static string GetAspectRatio(MediaStreamInfo info)
+        internal static string GetAspectRatio(MediaStreamInfo info)
         {
             var original = info.DisplayAspectRatio;
 
             var parts = (original ?? string.Empty).Split(':');
-            if (!(parts.Length == 2
-                    && int.TryParse(parts[0], CultureInfo.InvariantCulture, out var width)
-                    && int.TryParse(parts[1], CultureInfo.InvariantCulture, out var height)
-                    && width > 0
-                    && height > 0))
+            var width = 0;
+            var height = 0;
+            if (parts.Length == 2
+                && int.TryParse(parts[0], CultureInfo.InvariantCulture, out width)
+                && int.TryParse(parts[1], CultureInfo.InvariantCulture, out height)
+                && width > 0
+                && height > 0)
+            {
+                // Use display aspect ratio from probe.
+            }
+            else if (info.Width.HasValue
+                     && info.Height.HasValue
+                     && info.Width.Value > 0
+                     && info.Height.Value > 0)
             {
                 // Live TV and other early probes can report neither a usable display aspect ratio nor the frame size
                 if (info.Width is not > 0 || info.Height is not > 0)
@@ -1118,6 +1127,10 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 width = info.Width.Value;
                 height = info.Height.Value;
+            }
+            else
+            {
+                return original;
             }
 
             if (width > 0 && height > 0)
