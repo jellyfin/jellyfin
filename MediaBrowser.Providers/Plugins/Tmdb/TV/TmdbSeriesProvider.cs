@@ -456,27 +456,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
 
-        private static TvGroupType? MapDisplayOrderToTvGroupType(string? displayOrder)
-        {
-            return displayOrder switch
-            {
-                "originalAirDate" => TvGroupType.OriginalAirDate,
-                "absolute" => TvGroupType.Absolute,
-                "dvd" => TvGroupType.DVD,
-                "digital" => TvGroupType.Digital,
-                "storyArc" => TvGroupType.StoryArc,
-                "production" => TvGroupType.Production,
-                "tv" => TvGroupType.TV,
-                _ => null,
-            };
-        }
-
         private static void WithDisplayOrder(TvShow searchResult, IHasProviderIds providerIds, SeriesInfo search)
         {
             if (!search.TryGetProviderId(TmdbEpisodeGroupId.ProviderKey, out var episodeGroupId)
                 && searchResult.EpisodeGroups?.Results is not null)
             {
-                var tvGroupType = MapDisplayOrderToTvGroupType(search.DisplayOrder);
+                var tvGroupType = TmdbUtils.GetEpisodeGroupType(search.DisplayOrder);
                 if (tvGroupType is not null)
                 {
                     var episodeGroup = searchResult.EpisodeGroups.Results.Find(g => g.Type == tvGroupType);
