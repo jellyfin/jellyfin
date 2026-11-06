@@ -658,6 +658,7 @@ namespace Emby.Server.Implementations.Session
                             ItemId = session.NowPlayingItem is null ? Guid.Empty : session.NowPlayingItem.Id,
                             SessionId = session.Id,
                             MediaSourceId = session.PlayState?.MediaSourceId,
+                            LiveStreamId = session.PlayState?.LiveStreamId,
                             PositionTicks = session.LastPlaybackCheckInPositionTicks
                         }).ConfigureAwait(false);
                     }
