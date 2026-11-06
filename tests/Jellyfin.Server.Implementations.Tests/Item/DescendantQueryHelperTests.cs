@@ -13,7 +13,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// Verifies the descendant traversals against the SQLite provider: the sets they resolve, and that
 /// they stay sub-selects instead of inlining every descendant id into the statement.
 /// </summary>
-public sealed class DescendantQueryHelperTests : SqliteDbTestFixture
+public abstract class DescendantQueryHelperTests : DbTestFixture
 {
     private const string FolderType = "MediaBrowser.Controller.Entities.Folder";
     private const string BoxSetType = "MediaBrowser.Controller.Entities.Movies.BoxSet";
@@ -21,7 +21,8 @@ public sealed class DescendantQueryHelperTests : SqliteDbTestFixture
 
     private readonly Dictionary<Guid, int> _linkCounters = new();
 
-    public DescendantQueryHelperTests()
+    protected DescendantQueryHelperTests(TestDatabase database)
+        : base(database)
     {
     }
 
@@ -523,4 +524,6 @@ public sealed class DescendantQueryHelperTests : SqliteDbTestFixture
             SortOrder = sortOrder
         });
     }
+
+    public sealed class Sqlite() : DescendantQueryHelperTests(new SqliteTestDatabase());
 }

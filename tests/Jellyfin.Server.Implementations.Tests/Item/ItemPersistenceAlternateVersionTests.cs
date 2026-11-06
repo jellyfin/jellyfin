@@ -22,7 +22,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// PrimaryVersionId the item queries hide it by, including when it was already a library
 /// item in its own right before it became a version.
 /// </summary>
-public sealed class ItemPersistenceAlternateVersionTests : SqliteDbTestFixture
+public abstract class ItemPersistenceAlternateVersionTests : DbTestFixture
 {
     private const string PrimaryPath = "/movies/Movie/Movie - 4K.mkv";
     private const string VersionPath = "/movies/Movie/Movie - 1080p.mkv";
@@ -32,7 +32,8 @@ public sealed class ItemPersistenceAlternateVersionTests : SqliteDbTestFixture
     private readonly IServerConfigurationManager? _previousConfigurationManager;
     private readonly IRecordingsManager? _previousRecordingsManager;
 
-    public ItemPersistenceAlternateVersionTests()
+    protected ItemPersistenceAlternateVersionTests(TestDatabase database)
+        : base(database)
     {
         // BaseItem resolves these through process-wide statics; restored in Dispose.
         _previousLibraryManager = BaseItem.LibraryManager;
@@ -188,4 +189,6 @@ public sealed class ItemPersistenceAlternateVersionTests : SqliteDbTestFixture
         Name = "Movie",
         Path = path
     };
+
+    public sealed class Sqlite() : ItemPersistenceAlternateVersionTests(new SqliteTestDatabase());
 }
