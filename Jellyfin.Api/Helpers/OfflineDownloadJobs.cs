@@ -16,6 +16,14 @@ internal sealed class OfflineDownloadJobs : IDisposable
 
     internal const long EncoderFileLimit = MaxFileBytes - (16 * 1024 * 1024);
 
+    internal const string StatusQueued = "Queued";
+
+    internal const string StatusPreparing = "Preparing";
+
+    internal const string StatusReady = "Ready";
+
+    internal const string StatusFailed = "Failed";
+
     internal static readonly TimeSpan Retention = TimeSpan.FromHours(24);
 
     private readonly object _sync = new();
@@ -51,18 +59,27 @@ internal sealed class OfflineDownloadJobs : IDisposable
 
     internal static bool CanAppend(long bytes, int count) => bytes >= 0 && count > 0 && bytes <= EncoderFileLimit - (1024 * 1024) - count;
 
-    internal OfflineDownloadJobInfo Create(Guid owner, Guid item, string fingerprint, string filename, string quality, int? audio, int? subtitle, string mode)
+    internal OfflineDownloadJobInfo Create(Guid owner, Guid item, string fingerprint, string filename, string quality, (int? Audio, int? Subtitle, string Mode) tracks)
     {
         lock (_sync)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             Sweep();
-            foreach (var failed in _entries.Values.Where(e => e.Data.Owner.Equals(owner) && e.Data.Status == "Failed").ToArray())
+            foreach (var failed in _entries.Values.Where(e => e.Data.Owner.Equals(owner) && e.Data.Status == StatusFailed).ToArray())
             {
                 DeleteEntry(failed);
             }
 
-            var existing = _entries.Values.FirstOrDefault(e => !e.Deleted && e.Data.Owner.Equals(owner) && e.Data.Item.Equals(item) && e.Data.Fingerprint == fingerprint && e.Data.Quality == quality && e.Data.AudioStreamIndex == audio && e.Data.SubtitleStreamIndex == subtitle && e.Data.SubtitleMode == mode && e.Data.Status != "Failed");
+            var existing = _entries.Values.FirstOrDefault(e =>
+                !e.Deleted
+                && e.Data.Owner.Equals(owner)
+                && e.Data.Item.Equals(item)
+                && e.Data.Fingerprint == fingerprint
+                && e.Data.Quality == quality
+                && e.Data.AudioStreamIndex == tracks.Audio
+                && e.Data.SubtitleStreamIndex == tracks.Subtitle
+                && e.Data.SubtitleMode == tracks.Mode
+                && e.Data.Status != StatusFailed);
             if (existing is not null)
             {
                 return Info(existing);
@@ -76,9 +93,17 @@ internal sealed class OfflineDownloadJobs : IDisposable
 
             var data = new OfflineDownloadRecord
             {
-                Id = Guid.NewGuid(), Owner = owner, Item = item, Fingerprint = fingerprint,
-                Filename = filename, Quality = quality, AudioStreamIndex = audio, SubtitleStreamIndex = subtitle,
-                SubtitleMode = mode, ExpiresAt = _clock().Add(Retention), Status = "Queued"
+                Id = Guid.NewGuid(),
+                Owner = owner,
+                Item = item,
+                Fingerprint = fingerprint,
+                Filename = filename,
+                Quality = quality,
+                AudioStreamIndex = tracks.Audio,
+                SubtitleStreamIndex = tracks.Subtitle,
+                SubtitleMode = tracks.Mode,
+                ExpiresAt = _clock().Add(Retention),
+                Status = StatusQueued
             };
             var entry = new Entry(data);
             Directory.CreateDirectory(DirectoryFor(data.Id));
@@ -137,23 +162,10 @@ internal sealed class OfflineDownloadJobs : IDisposable
     // Called by an awaited HTTP handler. A lost connection does not dispose its scope prematurely.
     internal async Task Prepare(Guid owner, Guid item, Guid id, Func<CancellationToken, Task<Stream>> open)
     {
-        Entry entry;
-        lock (_sync)
+        var entry = TryBeginPrepare(owner, item, id);
+        if (entry is null)
         {
-            entry = Find(owner, item, id) ?? throw new FileNotFoundException();
-            if (entry.Data.Status is "Ready" or "Preparing")
-            {
-                return;
-            }
-
-            if (entry.Data.Status != "Queued")
-            {
-                throw new InvalidOperationException("Discard the failed download before retrying.");
-            }
-
-            entry.Data.Status = "Preparing";
-            entry.Working = true;
-            entry.Cancellation.CancelAfter(TimeSpan.FromHours(2));
+            return;
         }
 
         var acquired = false;
@@ -161,99 +173,16 @@ internal sealed class OfflineDownloadJobs : IDisposable
         {
             await _encoder.WaitAsync(entry.Cancellation.Token).ConfigureAwait(false);
             acquired = true;
-            entry.Cancellation.Token.ThrowIfCancellationRequested();
-            if (_freeBytes() < 5L * 1024 * 1024 * 1024)
-            {
-                throw new IOException("Insufficient temporary disk space.");
-            }
-
-            await using (var input = await open(entry.Cancellation.Token).ConfigureAwait(false))
-            {
-                entry.Cancellation.Token.ThrowIfCancellationRequested();
-                await using var output = new FileStream(PartialFor(id), FileMode.CreateNew, FileAccess.Write, FileShare.None, 65536, FileOptions.Asynchronous);
-                PrivateFile(PartialFor(id));
-                var buffer = new byte[65536];
-                while (true)
-                {
-                    var count = await input.ReadAsync(buffer, entry.Cancellation.Token).ConfigureAwait(false);
-                    if (count == 0)
-                    {
-                        break;
-                    }
-
-                    if (!CanAppend(entry.Bytes, count))
-                    {
-                        throw new IOException("Offline output reached its safety size limit; choose a smaller preset.");
-                    }
-
-                    await output.WriteAsync(buffer.AsMemory(0, count), entry.Cancellation.Token).ConfigureAwait(false);
-                    entry.AddBytes(count);
-                }
-
-                await output.FlushAsync(entry.Cancellation.Token).ConfigureAwait(false);
-                await Task.Run(() => output.Flush(true), entry.Cancellation.Token).ConfigureAwait(false);
-            }
-
-            if (entry.Bytes == 0)
-            {
-                throw new IOException("Empty offline output.");
-            }
-
-            string hash;
-            await using (var file = File.OpenRead(PartialFor(id)))
-            {
-                hash = Convert.ToHexString(await SHA256.HashDataAsync(file, entry.Cancellation.Token).ConfigureAwait(false));
-            }
-
-            lock (_sync)
-            {
-                entry.Cancellation.Token.ThrowIfCancellationRequested();
-                if (entry.Deleted || entry.Data.ExpiresAt <= _clock())
-                {
-                    throw new OperationCanceledException();
-                }
-
-                File.Move(PartialFor(id), FileFor(id));
-                entry.Data.Size = entry.Bytes;
-                entry.Data.ETag = "\"" + hash + "\"";
-                entry.Data.Status = "Ready";
-                try
-                {
-                    Save(entry.Data);
-                }
-                catch
-                {
-                    entry.Data.Status = "Failed";
-                    throw;
-                }
-            }
+            var hash = await WriteAndHashPartialAsync(id, entry, open).ConfigureAwait(false);
+            CompletePreparation(id, entry, hash);
         }
         catch (Exception error)
         {
-            lock (_sync)
-            {
-                entry.Data.Status = "Failed";
-                entry.Data.Error = error is OperationCanceledException ? "Preparation was cancelled or expired." : "Preparation failed. Check source tracks, disk space and size limits; discard this job before retrying.";
-                File.Delete(PartialFor(id));
-                File.Delete(FileFor(id));
-            }
+            FailPreparation(id, entry, error);
         }
         finally
         {
-            if (acquired)
-            {
-                _encoder.Release();
-            }
-
-            lock (_sync)
-            {
-                entry.Cancellation.CancelAfter(Timeout.InfiniteTimeSpan);
-                entry.Working = false;
-                if (entry.Deleted)
-                {
-                    Remove(entry);
-                }
-            }
+            FinishPreparation(entry, acquired);
         }
     }
 
@@ -263,7 +192,7 @@ internal sealed class OfflineDownloadJobs : IDisposable
         {
             Sweep();
             var entry = Find(owner, item, id) ?? throw new FileNotFoundException();
-            if (entry.Data.Status != "Ready" || !ValidFile(entry.Data))
+            if (entry.Data.Status != StatusReady || !ValidFile(entry.Data))
             {
                 throw new InvalidOperationException("The offline file is not ready.");
             }
@@ -306,6 +235,129 @@ internal sealed class OfflineDownloadJobs : IDisposable
         }
     }
 
+    private Entry? TryBeginPrepare(Guid owner, Guid item, Guid id)
+    {
+        lock (_sync)
+        {
+            var entry = Find(owner, item, id) ?? throw new FileNotFoundException();
+            if (entry.Data.Status is StatusReady or StatusPreparing)
+            {
+                return null;
+            }
+
+            if (entry.Data.Status != StatusQueued)
+            {
+                throw new InvalidOperationException("Discard the failed download before retrying.");
+            }
+
+            entry.Data.Status = StatusPreparing;
+            entry.Working = true;
+            entry.Cancellation.CancelAfter(TimeSpan.FromHours(2));
+            return entry;
+        }
+    }
+
+    private async Task<string> WriteAndHashPartialAsync(Guid id, Entry entry, Func<CancellationToken, Task<Stream>> open)
+    {
+        entry.Cancellation.Token.ThrowIfCancellationRequested();
+        if (_freeBytes() < 5L * 1024 * 1024 * 1024)
+        {
+            throw new IOException("Insufficient temporary disk space.");
+        }
+
+        await using (var input = await open(entry.Cancellation.Token).ConfigureAwait(false))
+        {
+            entry.Cancellation.Token.ThrowIfCancellationRequested();
+            await using var output = new FileStream(PartialFor(id), FileMode.CreateNew, FileAccess.Write, FileShare.None, 65536, FileOptions.Asynchronous);
+            PrivateFile(PartialFor(id));
+            var buffer = new byte[65536];
+            while (true)
+            {
+                var count = await input.ReadAsync(buffer, entry.Cancellation.Token).ConfigureAwait(false);
+                if (count == 0)
+                {
+                    break;
+                }
+
+                if (!CanAppend(entry.Bytes, count))
+                {
+                    throw new IOException("Offline output reached its safety size limit; choose a smaller preset.");
+                }
+
+                await output.WriteAsync(buffer.AsMemory(0, count), entry.Cancellation.Token).ConfigureAwait(false);
+                entry.AddBytes(count);
+            }
+
+            await output.FlushAsync(entry.Cancellation.Token).ConfigureAwait(false);
+            await Task.Run(() => output.Flush(true), entry.Cancellation.Token).ConfigureAwait(false);
+        }
+
+        if (entry.Bytes == 0)
+        {
+            throw new IOException("Empty offline output.");
+        }
+
+        await using var file = File.OpenRead(PartialFor(id));
+        return Convert.ToHexString(await SHA256.HashDataAsync(file, entry.Cancellation.Token).ConfigureAwait(false));
+    }
+
+    private void CompletePreparation(Guid id, Entry entry, string hash)
+    {
+        lock (_sync)
+        {
+            entry.Cancellation.Token.ThrowIfCancellationRequested();
+            if (entry.Deleted || entry.Data.ExpiresAt <= _clock())
+            {
+                throw new OperationCanceledException();
+            }
+
+            File.Move(PartialFor(id), FileFor(id));
+            entry.Data.Size = entry.Bytes;
+            entry.Data.ETag = "\"" + hash + "\"";
+            entry.Data.Status = StatusReady;
+            try
+            {
+                Save(entry.Data);
+            }
+            catch
+            {
+                entry.Data.Status = StatusFailed;
+                throw;
+            }
+        }
+    }
+
+    private void FailPreparation(Guid id, Entry entry, Exception error)
+    {
+        lock (_sync)
+        {
+            entry.Data.Status = StatusFailed;
+            entry.Data.Error = error is OperationCanceledException
+                ? "Preparation was cancelled or expired."
+                : "Preparation failed. Check source tracks, disk space and size limits; discard this job before retrying.";
+            File.Delete(PartialFor(id));
+            File.Delete(FileFor(id));
+        }
+    }
+
+    private void FinishPreparation(Entry entry, bool acquired)
+    {
+        if (acquired)
+        {
+            _encoder.Release();
+        }
+
+        lock (_sync)
+        {
+            entry.Cancellation.CancelAfter(Timeout.InfiniteTimeSpan);
+            entry.Working = false;
+            if (entry.Deleted)
+            {
+                Remove(entry);
+            }
+        }
+    }
+
     private Entry? Find(Guid owner, Guid item, Guid id)
         => _entries.TryGetValue(id, out var entry) && !entry.Deleted && entry.Data.Owner.Equals(owner) && entry.Data.Item.Equals(item) ? entry : null;
 
@@ -338,7 +390,7 @@ internal sealed class OfflineDownloadJobs : IDisposable
     {
         foreach (var entry in _entries.Values.ToArray())
         {
-            if (entry.Data.ExpiresAt <= _clock() || (entry.Data.Status == "Ready" && !ValidFile(entry.Data)))
+            if (entry.Data.ExpiresAt <= _clock() || (entry.Data.Status == StatusReady && !ValidFile(entry.Data)))
             {
                 DeleteEntry(entry);
             }
@@ -397,7 +449,7 @@ internal sealed class OfflineDownloadJobs : IDisposable
                 RejectLink(manifest);
                 using var input = File.OpenRead(manifest);
                 var data = JsonSerializer.Deserialize<OfflineDownloadRecord>(input);
-                if (data is null || !data.Id.Equals(id) || data.Owner.Equals(Guid.Empty) || data.Item.Equals(Guid.Empty) || data.Status != "Ready" || data.ExpiresAt <= _clock() || data.ExpiresAt > _clock().Add(Retention) || data.Size <= 0 || data.Size >= EncoderFileLimit || _entries.Count >= 2 || OfflineDownloadProfiles.Get(data.Quality) is null || !ValidFile(data))
+                if (data is null || !data.Id.Equals(id) || data.Owner.Equals(Guid.Empty) || data.Item.Equals(Guid.Empty) || data.Status != StatusReady || data.ExpiresAt <= _clock() || data.ExpiresAt > _clock().Add(Retention) || data.Size <= 0 || data.Size >= EncoderFileLimit || _entries.Count >= 2 || OfflineDownloadProfiles.Get(data.Quality) is null || !ValidFile(data))
                 {
                     throw new InvalidDataException("metadata: null=" + (data is null) + ", id=" + data?.Id.Equals(id) + ", owner=" + data?.Owner.Equals(Guid.Empty) + ", item=" + data?.Item.Equals(Guid.Empty) + ", status=" + data?.Status + ", expired=" + (data?.ExpiresAt <= _clock()) + ", future=" + (data?.ExpiresAt > _clock().Add(Retention)) + ", size=" + data?.Size + ", slots=" + _entries.Count + ", file=" + (data is not null && ValidFile(data)));
                 }

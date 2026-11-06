@@ -37,7 +37,8 @@ public static class OfflineDownloadProfiles
             throw new ArgumentException("Unsupported offline download profile.", nameof(profile));
         }
 
-        var basename = sourcePath.Replace('\\', '/').Split('/').Last();
+        var segments = sourcePath.Replace('\\', '/').Split('/');
+        var basename = segments[^1];
         var stem = Path.GetFileNameWithoutExtension(basename);
         const string forbidden = "<>:\"/\\|?*";
         stem = string.Concat(stem.Select(c => char.IsControl(c) || forbidden.Contains(c, StringComparison.Ordinal) ? '_' : c));

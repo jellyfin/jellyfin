@@ -111,19 +111,16 @@ public sealed class OfflineDownloadStream : Stream
     {
         try
         {
-            if (disposing)
+            if (disposing && Interlocked.Exchange(ref _disposed, 1) == 0)
             {
-                if (Interlocked.Exchange(ref _disposed, 1) == 0)
+                try
                 {
-                    try
-                    {
-                        _inner.Dispose();
-                    }
-                    finally
-                    {
-                        // ASP.NET uses DisposeAsync; synchronous callers still receive deterministic cleanup.
-                        _cleanup().GetAwaiter().GetResult();
-                    }
+                    _inner.Dispose();
+                }
+                finally
+                {
+                    // ASP.NET uses DisposeAsync; synchronous callers still receive deterministic cleanup.
+                    _cleanup().GetAwaiter().GetResult();
                 }
             }
         }

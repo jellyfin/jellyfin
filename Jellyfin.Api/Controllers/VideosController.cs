@@ -114,13 +114,24 @@ public class VideosController : BaseJellyfinApiController
             return invalid;
         }
 
-        var preset = OfflineDownloadProfiles.Get(quality)!;
+        var preset = OfflineDownloadProfiles.Get(quality);
+        if (preset is null || item is null)
+        {
+            return BadRequest("Unsupported offline download quality.");
+        }
+
         var sessionId = HttpContext.Items.TryGetValue(OfflineDownloadContext.SessionKey, out var session) && session is string sessionValue
             ? sessionValue
             : Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
         var deviceId = "offline-download-" + sessionId;
         Response.Headers["Cache-Control"] = "no-store";
         Response.Headers["X-Content-Type-Options"] = "nosniff";
+        var deliveryMethod = subtitleMode switch
+        {
+            "embed" => SubtitleDeliveryMethod.Embed,
+            "burn" => SubtitleDeliveryMethod.Encode,
+            _ => SubtitleDeliveryMethod.Drop
+        };
         // The fixed offline preset must not inherit codec-specific StreamOptions from arbitrary query keys.
         var originalQuery = Request.QueryString;
         Request.QueryString = QueryString.Empty;
@@ -161,7 +172,7 @@ public class VideosController : BaseJellyfinApiController
                 maxHeight: preset.MaxHeight,
                 videoBitRate: preset.VideoBitRate,
                 subtitleStreamIndex: subtitleMode == "none" ? -1 : subtitleStreamIndex,
-                subtitleMethod: subtitleMode == "embed" ? SubtitleDeliveryMethod.Embed : subtitleMode == "burn" ? SubtitleDeliveryMethod.Encode : SubtitleDeliveryMethod.Drop,
+                subtitleMethod: deliveryMethod,
                 maxRefFrames: null,
                 maxVideoBitDepth: 8,
                 requireAvc: true,
@@ -187,7 +198,7 @@ public class VideosController : BaseJellyfinApiController
 
         if (result is FileStreamResult file)
         {
-            file.FileDownloadName = OfflineDownloadProfiles.CreateFileName(item!.Path, quality);
+            file.FileDownloadName = OfflineDownloadProfiles.CreateFileName(item.Path, quality);
             file.FileStream = new OfflineDownloadStream(
                 file.FileStream,
                 () => _transcodeManager.KillTranscodingJobs(deviceId, sessionId, _ => true),
@@ -280,8 +291,13 @@ public class VideosController : BaseJellyfinApiController
             return invalid;
         }
 
+        if (item is null)
+        {
+            return NotFound();
+        }
+
         Response.Headers["Cache-Control"] = "no-store";
-        var streams = item!.GetMediaStreams();
+        var streams = item.GetMediaStreams();
         return new OkObjectResult(new
         {
             AudioTracks = streams.Where(stream => stream.Type == MediaStreamType.Audio).Select(stream => new
@@ -590,10 +606,7 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] bool enableAudioVbrEncoding = true)
     {
         var isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
-        // Offline preparation injects only its own job token. Ordinary playback retains the original lifecycle.
-        var cancellationTokenSource = HttpContext.Items.TryGetValue(OfflineDownloadContext.CancellationKey, out var offlineToken) && offlineToken is CancellationToken token
-            ? CancellationTokenSource.CreateLinkedTokenSource(token)
-            : new CancellationTokenSource();
+        var cancellationTokenSource = CreateStreamCancellationTokenSource();
         var streamingRequest = new VideoRequestDto
         {
             Id = itemId,
@@ -705,18 +718,7 @@ public class VideosController : BaseJellyfinApiController
 
         // Need to start ffmpeg (because media can't be returned directly)
         var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
-        var ffmpegCommandLineArguments = _encodingHelper.GetProgressiveVideoFullCommandLine(state, encodingOptions, EncoderPreset.superfast);
-        if (HttpContext.Items.ContainsKey(OfflineDownloadContext.SessionKey))
-        {
-            // Fixed offline-only output guard. Keep room for the final mux packet; normal playback is unchanged.
-            var outputMarker = ffmpegCommandLineArguments.LastIndexOf(" -y \"", StringComparison.Ordinal);
-            if (outputMarker < 0)
-            {
-                throw new InvalidOperationException("Cannot safely bound the offline encoder output.");
-            }
-
-            ffmpegCommandLineArguments = ffmpegCommandLineArguments.Insert(outputMarker, " -fs " + OfflineDownloadJobs.EncoderFileLimit.ToString(CultureInfo.InvariantCulture));
-        }
+        var ffmpegCommandLineArguments = ApplyOfflineOutputLimit(_encodingHelper.GetProgressiveVideoFullCommandLine(state, encodingOptions, EncoderPreset.superfast));
 
         return await FileStreamResponseHelpers.GetTranscodedFile(
             state,
@@ -726,6 +728,27 @@ public class VideosController : BaseJellyfinApiController
             ffmpegCommandLineArguments,
             _transcodingJobType,
             cancellationTokenSource).ConfigureAwait(false);
+    }
+
+    private CancellationTokenSource CreateStreamCancellationTokenSource()
+        => HttpContext.Items.TryGetValue(OfflineDownloadContext.CancellationKey, out var offlineToken) && offlineToken is CancellationToken token
+            ? CancellationTokenSource.CreateLinkedTokenSource(token)
+            : new CancellationTokenSource();
+
+    private string ApplyOfflineOutputLimit(string ffmpegCommandLineArguments)
+    {
+        if (!HttpContext.Items.ContainsKey(OfflineDownloadContext.SessionKey))
+        {
+            return ffmpegCommandLineArguments;
+        }
+
+        var outputMarker = ffmpegCommandLineArguments.LastIndexOf(" -y \"", StringComparison.Ordinal);
+        if (outputMarker < 0)
+        {
+            throw new InvalidOperationException("Cannot safely bound the offline encoder output.");
+        }
+
+        return ffmpegCommandLineArguments.Insert(outputMarker, " -fs " + OfflineDownloadJobs.EncoderFileLimit.ToString(CultureInfo.InvariantCulture));
     }
 
     /// <summary>

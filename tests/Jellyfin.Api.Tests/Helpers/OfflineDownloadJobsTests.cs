@@ -22,7 +22,7 @@ public sealed class OfflineDownloadJobsTests : IDisposable
     private OfflineDownloadJobs NewJobs() => new(_root, () => _now, () => 10L * 1024 * 1024 * 1024);
 
     private OfflineDownloadJobInfo Create(string quality = "720p", string fingerprint = "source-1")
-        => Jobs.Create(_owner, _item, fingerprint, "video.mp4", quality, 1, null, "none");
+        => Jobs.Create(_owner, _item, fingerprint, "video.mp4", quality, (1, null, "none"));
 
     private Task Ready(Guid id) => Jobs.Prepare(_owner, _item, id, _ => Task.FromResult<Stream>(new MemoryStream(Encoding.UTF8.GetBytes("synthetic-completed-mp4-bytes"))));
 
@@ -82,10 +82,11 @@ public sealed class OfflineDownloadJobsTests : IDisposable
     {
         var job = Create();
         await Ready(job.Id);
-        var ready = Jobs.Get(_owner, _item, job.Id)!;
+        var ready = Assert.IsType<OfflineDownloadJobInfo>(Jobs.Get(_owner, _item, job.Id));
         Assert.Equal("Ready", ready.Status);
-        Assert.StartsWith("\"", ready.ETag, StringComparison.Ordinal);
-        Assert.Equal(66, ready.ETag!.Length);
+        var etag = Assert.IsType<string>(ready.ETag);
+        Assert.StartsWith("\"", etag, StringComparison.Ordinal);
+        Assert.Equal(66, etag.Length);
         await using var stream = Jobs.Open(_owner, _item, job.Id);
         Assert.True(stream.CanSeek);
         Assert.Equal(ready.Size, stream.Length);
@@ -93,7 +94,7 @@ public sealed class OfflineDownloadJobsTests : IDisposable
         var bytes = new byte[8];
         Assert.Equal(8, await stream.ReadAsync(bytes, TestContext.Current.CancellationToken));
         Assert.Equal("complete", Encoding.UTF8.GetString(bytes));
-        Assert.Equal(ready.ETag, Jobs.Get(_owner, _item, job.Id)!.ETag);
+        Assert.Equal(etag, Jobs.Get(_owner, _item, job.Id)?.ETag);
     }
 
     [Fact]
@@ -116,10 +117,11 @@ public sealed class OfflineDownloadJobsTests : IDisposable
     {
         var job = Create();
         await Ready(job.Id);
-        var etag = Jobs.Get(_owner, _item, job.Id)!.ETag;
+        var etag = Jobs.Get(_owner, _item, job.Id)?.ETag;
+        Assert.NotNull(etag);
         Jobs.Dispose();
         _jobs = NewJobs();
-        Assert.Equal(etag, Jobs.Get(_owner, _item, job.Id)!.ETag);
+        Assert.Equal(etag, Jobs.Get(_owner, _item, job.Id)?.ETag);
     }
 
     [Fact]
@@ -148,7 +150,7 @@ public sealed class OfflineDownloadJobsTests : IDisposable
     {
         var job = Create();
         await Jobs.Prepare(_owner, _item, job.Id, _ => throw new IOException("private path must not escape"));
-        var failed = Jobs.Get(_owner, _item, job.Id)!;
+        var failed = Assert.IsType<OfflineDownloadJobInfo>(Jobs.Get(_owner, _item, job.Id));
         Assert.Equal("Failed", failed.Status);
         Assert.DoesNotContain("private path", failed.Error, StringComparison.Ordinal);
         Assert.Throws<InvalidOperationException>(() => Jobs.Open(_owner, _item, job.Id));
@@ -180,7 +182,7 @@ public sealed class OfflineDownloadJobsTests : IDisposable
         release.SetResult();
         await Task.WhenAll(firstTask, secondTask);
         Assert.False(secondOpened);
-        Assert.Equal("Ready", Jobs.Get(_owner, _item, first.Id)!.Status);
+        Assert.Equal("Ready", Jobs.Get(_owner, _item, first.Id)?.Status);
         Assert.Null(Jobs.Get(_owner, _item, second.Id));
     }
 
@@ -190,14 +192,14 @@ public sealed class OfflineDownloadJobsTests : IDisposable
         var job = Create();
         await Ready(job.Id);
         await Jobs.Prepare(_owner, _item, job.Id, _ => throw new InvalidOperationException("must not reopen"));
-        Assert.Equal("Ready", Jobs.Get(_owner, _item, job.Id)!.Status);
+        Assert.Equal("Ready", Jobs.Get(_owner, _item, job.Id)?.Status);
     }
 
     [Fact]
     public void ExplicitTrackChoicesDoNotDeduplicateTogether()
     {
         var first = Create();
-        var alternate = Jobs.Create(_owner, _item, "source-1", "video.mp4", "720p", 2, 4, "embed");
+        var alternate = Jobs.Create(_owner, _item, "source-1", "video.mp4", "720p", (2, 4, "embed"));
         Assert.NotEqual(first.Id, alternate.Id);
     }
 

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Api;
@@ -51,6 +52,11 @@ public class OfflineDownloadsController : BaseJellyfinApiController
     /// <returns>A descriptor without filesystem paths or bearer credentials.</returns>
     [HttpPost]
     [Authorize(Policy = Policies.Download)]
+    [ProducesResponseType(typeof(OfflineDownloadJobInfo), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public ActionResult Create([FromRoute] Guid itemId, [FromQuery] string quality = "720p", [FromQuery] int? audioStreamIndex = null, [FromQuery] int? subtitleStreamIndex = null, [FromQuery] string subtitleMode = "none")
     {
         NoStore();
@@ -60,11 +66,16 @@ public class OfflineDownloadsController : BaseJellyfinApiController
             return invalid;
         }
 
+        if (item is null)
+        {
+            return NotFound();
+        }
+
         // Resolve "source default" once so later preference changes cannot silently change cached audio.
-        audioStreamIndex ??= item!.GetMediaStreams().Where(stream => stream.Type == MediaBrowser.Model.Entities.MediaStreamType.Audio).OrderByDescending(stream => stream.IsDefault).ThenBy(stream => stream.Index).FirstOrDefault()?.Index;
+        audioStreamIndex ??= item.GetMediaStreams().Where(stream => stream.Type == MediaBrowser.Model.Entities.MediaStreamType.Audio).OrderByDescending(stream => stream.IsDefault).ThenBy(stream => stream.Index).FirstOrDefault()?.Index;
         try
         {
-            return new OkObjectResult(_jobs.Create(User.GetUserId(), itemId, Fingerprint(item!), OfflineDownloadProfiles.CreateFileName(item!.Path, quality), quality, audioStreamIndex, subtitleStreamIndex, subtitleMode));
+            return new OkObjectResult(_jobs.Create(User.GetUserId(), itemId, Fingerprint(item), OfflineDownloadProfiles.CreateFileName(item.Path, quality), quality, (audioStreamIndex, subtitleStreamIndex, subtitleMode)));
         }
         catch (InvalidOperationException error)
         {
@@ -77,6 +88,10 @@ public class OfflineDownloadsController : BaseJellyfinApiController
     /// <returns>Owned, accessible jobs only.</returns>
     [HttpGet]
     [Authorize(Policy = Policies.Download)]
+    [ProducesResponseType(typeof(OfflineDownloadJobInfo[]), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult List([FromRoute] Guid itemId)
     {
         NoStore();
@@ -86,7 +101,12 @@ public class OfflineDownloadsController : BaseJellyfinApiController
             return invalid;
         }
 
-        var fingerprint = Fingerprint(item!);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        var fingerprint = Fingerprint(item);
         var jobs = _jobs.List(User.GetUserId(), itemId).Where(job => _jobs.Get(User.GetUserId(), itemId, job.Id, fingerprint) is not null).ToArray();
         return new OkObjectResult(jobs);
     }
@@ -97,6 +117,9 @@ public class OfflineDownloadsController : BaseJellyfinApiController
     /// <returns>The descriptor or an authorization/not-found response.</returns>
     [HttpGet("{jobId:guid}")]
     [Authorize(Policy = Policies.Download)]
+    [ProducesResponseType(typeof(OfflineDownloadJobInfo), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult Status([FromRoute] Guid itemId, [FromRoute] Guid jobId)
     {
         NoStore();
@@ -110,6 +133,9 @@ public class OfflineDownloadsController : BaseJellyfinApiController
     /// <returns>The final descriptor, or current status if another prepare already owns it.</returns>
     [HttpPost("{jobId:guid}/Prepare")]
     [Authorize(Policy = Policies.Download)]
+    [ProducesResponseType(typeof(OfflineDownloadJobInfo), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Prepare([FromRoute] Guid itemId, [FromRoute] Guid jobId)
     {
         NoStore();
@@ -119,19 +145,25 @@ public class OfflineDownloadsController : BaseJellyfinApiController
             return invalid;
         }
 
+        if (job is null)
+        {
+            return NotFound();
+        }
+
+        var validatedJob = job;
         await _jobs.Prepare(User.GetUserId(), itemId, jobId, async token =>
         {
             // Revalidate after waiting for the single encoder, not just when joining its queue.
             var videos = Videos();
-            var error = videos.ValidateOfflineRequest(itemId, job!.Quality, job.AudioStreamIndex, job.SubtitleStreamIndex, job.SubtitleMode, out var item);
-            if (error is not null || _jobs.Get(User.GetUserId(), itemId, jobId, Fingerprint(item!)) is null)
+            var error = videos.ValidateOfflineRequest(itemId, validatedJob.Quality, validatedJob.AudioStreamIndex, validatedJob.SubtitleStreamIndex, validatedJob.SubtitleMode, out var item);
+            if (error is not null || item is null || _jobs.Get(User.GetUserId(), itemId, jobId, Fingerprint(item)) is null)
             {
                 throw new InvalidOperationException("The source or permission changed before preparation.");
             }
 
             HttpContext.Items[OfflineDownloadContext.SessionKey] = jobId.ToString("N", CultureInfo.InvariantCulture);
             HttpContext.Items[OfflineDownloadContext.CancellationKey] = token;
-            var result = await videos.DownloadTranscoded(itemId, job.Quality, job.AudioStreamIndex, job.SubtitleStreamIndex, job.SubtitleMode).ConfigureAwait(false);
+            var result = await videos.DownloadTranscoded(itemId, validatedJob.Quality, validatedJob.AudioStreamIndex, validatedJob.SubtitleStreamIndex, validatedJob.SubtitleMode).ConfigureAwait(false);
             if (result is not FileStreamResult file)
             {
                 throw new InvalidOperationException("The selected source cannot be prepared.");
@@ -150,6 +182,12 @@ public class OfflineDownloadsController : BaseJellyfinApiController
     [HttpGet("{jobId:guid}/File")]
     [HttpHead("{jobId:guid}/File")]
     [Authorize(Policy = Policies.Download)]
+    [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status206PartialContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesVideoFile]
     public ActionResult Download([FromRoute] Guid itemId, [FromRoute] Guid jobId)
     {
         NoStore();
@@ -159,7 +197,7 @@ public class OfflineDownloadsController : BaseJellyfinApiController
             return invalid;
         }
 
-        if (job!.Status != "Ready")
+        if (job is null || job.Status != OfflineDownloadJobs.StatusReady || string.IsNullOrEmpty(job.ETag))
         {
             return new ObjectResult("The offline file is not ready.") { StatusCode = StatusCodes.Status409Conflict };
         }
@@ -170,7 +208,7 @@ public class OfflineDownloadsController : BaseJellyfinApiController
             {
                 FileDownloadName = job.Filename,
                 EnableRangeProcessing = true,
-                EntityTag = new EntityTagHeaderValue(job.ETag!)
+                EntityTag = new EntityTagHeaderValue(job.ETag)
             };
         }
         catch (IOException)
@@ -184,6 +222,8 @@ public class OfflineDownloadsController : BaseJellyfinApiController
     /// <param name="jobId">An owned temporary job.</param>
     /// <returns>No content, or not found without cross-user disclosure.</returns>
     [HttpDelete("{jobId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Delete([FromRoute] Guid itemId, [FromRoute] Guid jobId)
     {
         NoStore();
@@ -211,7 +251,12 @@ public class OfflineDownloadsController : BaseJellyfinApiController
             return invalid;
         }
 
-        job = _jobs.Get(User.GetUserId(), itemId, jobId, Fingerprint(item!));
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        job = _jobs.Get(User.GetUserId(), itemId, jobId, Fingerprint(item));
         return job is null ? NotFound() : null;
     }
 

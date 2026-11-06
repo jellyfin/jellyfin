@@ -45,6 +45,7 @@ public static class OfflineDownloadTracks
             return "The selected subtitle track is not available.";
         }
 
-        return (mode == "embed" ? CanEmbed(track) : CanBurn(track)) ? null : "This subtitle format does not support the selected mode.";
+        var isSupported = mode == "embed" ? CanEmbed(track) : CanBurn(track);
+        return isSupported ? null : "This subtitle format does not support the selected mode.";
     }
 }
