@@ -53,6 +53,7 @@
  - [flemse](https://github.com/flemse)
  - [Froghut](https://github.com/Froghut)
  - [fruhnow](https://github.com/fruhnow)
+ - [FuzzYetDeadly](https://github.com/fuzzyetdeadly)
  - [geilername](https://github.com/geilername)
  - [GermanCoding](https://github.com/GermanCoding)
  - [gnattu](https://github.com/gnattu)
