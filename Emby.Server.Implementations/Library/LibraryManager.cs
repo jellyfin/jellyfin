@@ -2680,33 +2680,57 @@ namespace Emby.Server.Implementations.Library
             var parentCollectionType = GetTopFolderContentType(parent);
             foreach (var item in items)
             {
-                if (item is Video video && video.LocalAlternateVersions.Length > 0)
+                if (item is Video video)
                 {
-                    var videoType = video.GetType();
-                    foreach (var path in video.LocalAlternateVersions)
+                    if (video.LocalAlternateVersions.Length > 0)
                     {
-                        if (string.IsNullOrEmpty(path))
+                        var videoType = video.GetType();
+                        foreach (var path in video.LocalAlternateVersions)
                         {
-                            continue;
-                        }
-
-                        // Use the primary video's type for ID calculation to ensure consistency
-                        var altId = GetNewItemId(path, videoType);
-                        if (GetItemById(altId) is null && !allItems.Any(i => i.Id.Equals(altId)))
-                        {
-                            // Alternate version doesn't exist, resolve and create it
-                            // ensuring it has the same type as the primary video
-                            var altVideo = ResolveAlternateVersion(path, videoType, parentFolder, parentCollectionType);
-                            if (altVideo is not null)
+                            if (string.IsNullOrEmpty(path))
                             {
-                                altVideo.OwnerId = video.Id;
-                                altVideo.SetPrimaryVersionId(video.Id);
-                                altVideo.IsInMixedFolder = video.IsInMixedFolder;
-                                // ResolveAlternateVersion only sees the alternate's primary file.
-                                // If the alternate is itself a stack (e.g. 1080p part1 + part2),
-                                // detect its parts from sibling files so its AdditionalParts persist.
-                                SetAdditionalPartsFromStack(altVideo, path);
-                                allItems.Add(altVideo);
+                                continue;
+                            }
+
+                            // Use the primary video's type for ID calculation to ensure consistency
+                            var altId = GetNewItemId(path, videoType);
+                            if (GetItemById(altId) is null && !allItems.Any(i => i.Id.Equals(altId)))
+                            {
+                                // Alternate version doesn't exist, resolve and create it
+                                // ensuring it has the same type as the primary video
+                                var altVideo = ResolveAlternateVersion(path, videoType, parentFolder, parentCollectionType);
+                                if (altVideo is not null)
+                                {
+                                    altVideo.OwnerId = video.Id;
+                                    altVideo.SetPrimaryVersionId(video.Id);
+                                    altVideo.IsInMixedFolder = video.IsInMixedFolder;
+                                    // ResolveAlternateVersion only sees the alternate's primary file.
+                                    // If the alternate is itself a stack (e.g. 1080p part1 + part2),
+                                    // detect its parts from sibling files so its AdditionalParts persist.
+                                    SetAdditionalPartsFromStack(altVideo, path);
+                                    allItems.Add(altVideo);
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (item is BoxSet collection)
+                {
+                    // Update linked children 'CollectionName' when updating collections
+                    if (!collection.LinkedChildrenLoaded || collection.LinkedChildren.Length > 0)
+                    {
+                        var allItemMovies = allItems.OfType<Movie>().ToArray();
+                        foreach (var movie in collection.GetLinkedChildren().OfType<Movie>())
+                        {
+                            var tmp = allItemMovies.FirstOrDefault(i => i.Id.Equals(movie.Id));
+                            if (tmp is null)
+                            {
+                                movie.CollectionName = collection.Name;
+                                allItems.Add(movie);
+                            }
+                            else
+                            {
+                                tmp.CollectionName = collection.Name;
                             }
                         }
                     }
