@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Validators;
@@ -18,22 +17,18 @@ public class StudiosPostScanTask : ILibraryPostScanTask
     private readonly ILibraryManager _libraryManager;
 
     private readonly ILogger<StudiosValidator> _logger;
-    private readonly IItemRepository _itemRepo;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StudiosPostScanTask" /> class.
     /// </summary>
     /// <param name="libraryManager">The library manager.</param>
     /// <param name="logger">The logger.</param>
-    /// <param name="itemRepo">The item repository.</param>
     public StudiosPostScanTask(
         ILibraryManager libraryManager,
-        ILogger<StudiosValidator> logger,
-        IItemRepository itemRepo)
+        ILogger<StudiosValidator> logger)
     {
         _libraryManager = libraryManager;
         _logger = logger;
-        _itemRepo = itemRepo;
     }
 
     /// <summary>
@@ -44,6 +39,6 @@ public class StudiosPostScanTask : ILibraryPostScanTask
     /// <returns>Task.</returns>
     public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        return new StudiosValidator(_libraryManager, _logger, _itemRepo).Run(progress, cancellationToken);
+        return new StudiosValidator(_libraryManager, _logger).Run(progress, cancellationToken);
     }
 }

@@ -84,7 +84,7 @@ public sealed class BaseItemRepositoryArtistLibraryScopeTests : SqliteDbTestFixt
     /// Seeds one by-name artist row and a track in the given library crediting it.
     /// </summary>
     /// <param name="name">The artist name.</param>
-    /// <param name="cleanName">The cleaned artist name, which is what links the two rows.</param>
+    /// <param name="cleanName">The cleaned artist name.</param>
     /// <param name="topParentId">The library the track belongs to.</param>
     /// <param name="hasImage">Whether the artist row carries a primary image.</param>
     private void Seed(string name, string cleanName, Guid topParentId, bool hasImage)
@@ -135,21 +135,23 @@ public sealed class BaseItemRepositoryArtistLibraryScopeTests : SqliteDbTestFixt
         };
         ctx.BaseItems.Add(track);
 
-        var itemValue = new ItemValue
+        var credit = new People
         {
-            ItemValueId = Guid.NewGuid(),
-            Type = ItemValueType.AlbumArtist,
-            Value = name,
-            CleanValue = cleanName
+            Id = Guid.NewGuid(),
+            Name = name,
+            CleanName = cleanName,
+            PersonType = "AlbumArtist",
+            ItemId = artistId
         };
 
-        ctx.ItemValues.Add(itemValue);
-        ctx.ItemValuesMap.Add(new ItemValueMap
+        ctx.Peoples.Add(credit);
+        ctx.PeopleBaseItemMap.Add(new PeopleBaseItemMap
         {
             ItemId = trackId,
-            ItemValueId = itemValue.ItemValueId,
+            PeopleId = credit.Id,
             Item = track,
-            ItemValue = itemValue
+            People = credit,
+            Role = string.Empty
         });
 
         ctx.SaveChanges();

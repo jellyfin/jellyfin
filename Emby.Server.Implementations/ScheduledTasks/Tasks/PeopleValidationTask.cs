@@ -111,10 +111,12 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
         await using (context.ConfigureAwait(false))
         {
             IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 3));
+            // The clean name is a person's identity, and the item is part of the key: rows pointing at
+            // different people are different humans.
             var dupQuery = context.Peoples
-                    .GroupBy(e => new { e.Name, e.PersonType })
+                    .GroupBy(e => new { e.CleanName, e.PersonType, e.ItemId })
                     .Where(e => e.Count() > 1)
-                    .OrderBy(e => e.Key.Name)
+                    .OrderBy(e => e.Key.CleanName)
                     .ThenBy(e => e.Key.PersonType)
                     .Select(e => e.Select(f => f.Id).ToArray());
 
@@ -143,9 +145,19 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
                         var item = buffer[i];
                         var reference = item[0];
                         var dups = item[1..];
-                        await context.PeopleBaseItemMap.WhereOneOrMany(dups, e => e.PeopleId)
-                            .ExecuteUpdateAsync(e => e.SetProperty(f => f.PeopleId, reference), cancellationToken)
-                            .ConfigureAwait(false);
+                        foreach (var dup in dups)
+                        {
+                            // The map key is (ItemId, PeopleId, Role); drop the credits the reference already holds.
+                            await context.PeopleBaseItemMap
+                                .Where(m => m.PeopleId.Equals(dup)
+                                    && context.PeopleBaseItemMap.Any(k => k.PeopleId.Equals(reference) && k.ItemId.Equals(m.ItemId) && k.Role == m.Role))
+                                .ExecuteDeleteAsync(cancellationToken)
+                                .ConfigureAwait(false);
+                            await context.PeopleBaseItemMap.Where(m => m.PeopleId.Equals(dup))
+                                .ExecuteUpdateAsync(e => e.SetProperty(f => f.PeopleId, reference), cancellationToken)
+                                .ConfigureAwait(false);
+                        }
+
                         await context.Peoples.Where(e => dups.Contains(e.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
                         subProgress.Report(100f / total * ((iterator * PartitionSize) + i));
                     }
