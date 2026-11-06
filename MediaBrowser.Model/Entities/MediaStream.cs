@@ -708,32 +708,35 @@ namespace MediaBrowser.Model.Entities
                 return null;
             }
 
-            return Width switch
+            var longerEdge = Math.Max(Width.Value, Height.Value);
+            var shorterEdge = Math.Min(Width.Value, Height.Value);
+
+            return longerEdge switch
             {
                 // 256x144 (16:9 square pixel format)
-                <= 256 when Height <= 144 => IsInterlaced ? "144i" : "144p",
+                <= 256 when shorterEdge <= 144 => IsInterlaced ? "144i" : "144p",
                 // 426x240 (16:9 square pixel format)
-                <= 426 when Height <= 240 => IsInterlaced ? "240i" : "240p",
+                <= 426 when shorterEdge <= 240 => IsInterlaced ? "240i" : "240p",
                 // 640x360 (16:9 square pixel format)
-                <= 640 when Height <= 360 => IsInterlaced ? "360i" : "360p",
+                <= 640 when shorterEdge <= 360 => IsInterlaced ? "360i" : "360p",
                 // 682x384 (16:9 square pixel format)
-                <= 682 when Height <= 384 => IsInterlaced ? "384i" : "384p",
+                <= 682 when shorterEdge <= 384 => IsInterlaced ? "384i" : "384p",
                 // 720x404 (16:9 square pixel format)
-                <= 720 when Height <= 404 => IsInterlaced ? "404i" : "404p",
+                <= 720 when shorterEdge <= 404 => IsInterlaced ? "404i" : "404p",
                 // 854x480 (16:9 square pixel format)
-                <= 854 when Height <= 480 => IsInterlaced ? "480i" : "480p",
+                <= 854 when shorterEdge <= 480 => IsInterlaced ? "480i" : "480p",
                 // 960x544 (16:9 square pixel format)
-                <= 960 when Height <= 544 => IsInterlaced ? "540i" : "540p",
+                <= 960 when shorterEdge <= 544 => IsInterlaced ? "540i" : "540p",
                 // 1024x576 (16:9 square pixel format)
-                <= 1024 when Height <= 576 => IsInterlaced ? "576i" : "576p",
+                <= 1024 when shorterEdge <= 576 => IsInterlaced ? "576i" : "576p",
                 // 1280x720
-                <= 1280 when Height <= 962 => IsInterlaced ? "720i" : "720p",
+                <= 1280 when shorterEdge <= 962 => IsInterlaced ? "720i" : "720p",
                 // 2560x1080 (FHD ultra wide 21:9) using 1440px width to accommodate WQHD
-                <= 2560 when Height <= 1440 => IsInterlaced ? "1080i" : "1080p",
+                <= 2560 when shorterEdge <= 1440 => IsInterlaced ? "1080i" : "1080p",
                 // 4K
-                <= 4096 when Height <= 3072 => "4K",
+                <= 4096 when shorterEdge <= 3072 => "4K",
                 // 8K
-                <= 8192 when Height <= 6144 => "8K",
+                <= 8192 when shorterEdge <= 6144 => "8K",
                 _ => null
             };
         }
