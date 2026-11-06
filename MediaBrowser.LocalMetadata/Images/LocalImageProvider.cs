@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Emby.Naming.Common;
+using Emby.Naming.Video;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -62,14 +64,17 @@ namespace MediaBrowser.LocalMetadata.Images
         };
 
         private readonly IFileSystem _fileSystem;
+        private readonly NamingOptions _namingOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalImageProvider"/> class.
         /// </summary>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        public LocalImageProvider(IFileSystem fileSystem)
+        /// <param name="namingOptions">The library naming rules.</param>
+        public LocalImageProvider(IFileSystem fileSystem, NamingOptions namingOptions)
         {
             _fileSystem = fileSystem;
+            _namingOptions = namingOptions;
         }
 
         /// <inheritdoc />
@@ -135,8 +140,50 @@ namespace MediaBrowser.LocalMetadata.Images
             var list = new List<LocalImageInfo>();
 
             PopulateImages(item, list, files, true, directoryService);
+            PopulateStackImages(item, list, files, directoryService);
 
             return list;
+        }
+
+        private void PopulateStackImages(BaseItem item, List<LocalImageInfo> images, List<FileSystemMetadata> files, IDirectoryService directoryService)
+        {
+            // Owned additional parts have no AdditionalParts themselves. Resolve the actual
+            // sibling files so both the main movie and its parts can use shared artwork.
+            if (item is not Video video || item is Episode || !item.IsFileProtocol
+                || video.VideoType is VideoType.Dvd or VideoType.BluRay || item.ExtraType is not null
+                || files.Count == 0
+                || !_namingOptions.VideoFileStackingRules.Any(rule => rule.Match(Path.GetFileName(item.Path), out _)))
+            {
+                return;
+            }
+
+            var needsPrimary = !images.Any(image => image.Type == ImageType.Primary);
+            var needsBackdrop = !images.Any(image => image.Type == ImageType.Backdrop);
+            if (!needsPrimary && !needsBackdrop)
+            {
+                return;
+            }
+
+            var stack = StackResolver.Resolve(directoryService.GetFileSystemEntries(item.ContainingFolderPath), _namingOptions)
+                .FirstOrDefault(candidate => candidate.ContainsFile(item.Path, false));
+            if (stack is null || string.IsNullOrWhiteSpace(stack.Name))
+            {
+                return;
+            }
+
+            var prefix = stack.Name + "-";
+            if (needsPrimary)
+            {
+                PopulatePrimaryImages(item, images, files, prefix, true);
+            }
+
+            if (needsBackdrop)
+            {
+                PopulateBackdrops(images, files, prefix, "fanart", "fanart-", true, ImageType.Backdrop);
+                PopulateBackdrops(images, files, prefix, "background", "background-", true, ImageType.Backdrop);
+                PopulateBackdrops(images, files, prefix, "art", "art-", true, ImageType.Backdrop);
+                PopulateBackdrops(images, files, prefix, "backdrop", "backdrop", true, ImageType.Backdrop);
+            }
         }
 
         /// <summary>
