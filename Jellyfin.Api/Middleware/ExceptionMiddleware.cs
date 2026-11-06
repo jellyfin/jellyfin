@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -70,7 +71,8 @@ public class ExceptionMiddleware
                 || ex is OperationCanceledException
                 || ex is SecurityException
                 || ex is AuthenticationException
-                || ex is FileNotFoundException;
+                || ex is FileNotFoundException
+                || ex is LiveTvConflictException;
 
             if (ignoreStackTrace)
             {
@@ -131,6 +133,7 @@ public class ExceptionMiddleware
             FileNotFoundException => StatusCodes.Status404NotFound,
             ResourceNotFoundException => StatusCodes.Status404NotFound,
             MethodNotAllowedException => StatusCodes.Status405MethodNotAllowed,
+            LiveTvConflictException => StatusCodes.Status409Conflict,
             _ => StatusCodes.Status500InternalServerError
         };
     }
