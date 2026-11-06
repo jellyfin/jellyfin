@@ -252,6 +252,7 @@
  - [Daniel Aquino](https://github.com/chino)
  - [klizas](https://github.com/klizas)
  - [p27ZuH6CNAdzr](https://github.com/p27ZuH6CNAdzr)
+ - [arcusbuilds](https://github.com/arcusbuilds)
 
 # Emby Contributors
 
