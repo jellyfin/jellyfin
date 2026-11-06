@@ -108,63 +108,8 @@ public class MergeDuplicateMusicArtists : IAsyncMigrationRoutine
 
                 foreach (var dup in stats.Where(s => s.Id != keeper.Id))
                 {
-                    var keeperId = keeper.Id;
-                    var dupId = dup.Id;
-
-                    await context.BaseItems
-                        .Where(b => b.ParentId == dupId)
-                        .ExecuteUpdateAsync(s => s.SetProperty(b => b.ParentId, keeperId), cancellationToken)
-                        .ConfigureAwait(false);
-
-                    await context.BaseItems
-                        .Where(b => b.OwnerId == dupId)
-                        .ExecuteUpdateAsync(s => s.SetProperty(b => b.OwnerId, keeperId), cancellationToken)
-                        .ConfigureAwait(false);
-
-                    // AncestorIds PK is (ItemId, ParentItemId); drop rows that would collide before redirecting.
-                    await context.AncestorIds
-                        .Where(a => a.ParentItemId == dupId
-                            && context.AncestorIds.Any(k => k.ParentItemId == keeperId && k.ItemId == a.ItemId))
-                        .ExecuteDeleteAsync(cancellationToken)
-                        .ConfigureAwait(false);
-                    await context.AncestorIds
-                        .Where(a => a.ParentItemId == dupId)
-                        .ExecuteUpdateAsync(s => s.SetProperty(a => a.ParentItemId, keeperId), cancellationToken)
-                        .ConfigureAwait(false);
-
-                    // LinkedChildren PK is (ParentId, ChildId); drop colliding rows in both directions.
-                    await context.LinkedChildren
-                        .Where(l => l.ParentId == dupId
-                            && context.LinkedChildren.Any(k => k.ParentId == keeperId && k.ChildId == l.ChildId))
-                        .ExecuteDeleteAsync(cancellationToken)
-                        .ConfigureAwait(false);
-                    await context.LinkedChildren
-                        .Where(l => l.ParentId == dupId)
-                        .ExecuteUpdateAsync(s => s.SetProperty(l => l.ParentId, keeperId), cancellationToken)
-                        .ConfigureAwait(false);
-                    await context.LinkedChildren
-                        .Where(l => l.ChildId == dupId
-                            && context.LinkedChildren.Any(k => k.ChildId == keeperId && k.ParentId == l.ParentId))
-                        .ExecuteDeleteAsync(cancellationToken)
-                        .ConfigureAwait(false);
-                    await context.LinkedChildren
-                        .Where(l => l.ChildId == dupId)
-                        .ExecuteUpdateAsync(s => s.SetProperty(l => l.ChildId, keeperId), cancellationToken)
-                        .ConfigureAwait(false);
-
-                    // UserData has UNIQUE(UserId, CustomDataKey); keep the dup's row only when the
-                    // keeper has no equivalent row, otherwise the keeper's value wins.
-                    await context.UserData
-                        .Where(u => u.ItemId == dupId
-                            && context.UserData.Any(k => k.ItemId == keeperId && k.UserId == u.UserId && k.CustomDataKey == u.CustomDataKey))
-                        .ExecuteDeleteAsync(cancellationToken)
-                        .ConfigureAwait(false);
-                    await context.UserData
-                        .Where(u => u.ItemId == dupId)
-                        .ExecuteUpdateAsync(s => s.SetProperty(u => u.ItemId, keeperId), cancellationToken)
-                        .ConfigureAwait(false);
-
-                    idsToDelete.Add(dupId);
+                    await DuplicateItemMerge.RedirectReferencesAsync(context, dup.Id, keeper.Id, cancellationToken).ConfigureAwait(false);
+                    idsToDelete.Add(dup.Id);
                 }
 
                 _logger.LogDebug(
@@ -174,43 +119,9 @@ public class MergeDuplicateMusicArtists : IAsyncMigrationRoutine
                     stats.Count - 1);
             }
 
-            if (idsToDelete.Count == 0)
-            {
-                return;
-            }
-
-            // Resolve via LibraryManager so DeleteItemsUnsafeFast can also remove the
-            // %MetadataPath%/artists/<Name> directories that the duplicate stubs left behind.
-            // Fall back to the persistence service for any items the LibraryManager can't resolve.
-            // Delete in batches so we never issue one massive delete transaction and progress stays visible.
-            _logger.LogInformation("Deleting {Count} duplicate MusicArtist records...", idsToDelete.Count);
-            const int deleteBatchSize = 500;
-            var deletedSoFar = 0;
-            for (var offset = 0; offset < idsToDelete.Count; offset += deleteBatchSize)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var batchIds = idsToDelete.GetRange(offset, Math.Min(deleteBatchSize, idsToDelete.Count - offset));
-
-                var itemsToDelete = batchIds
-                    .Select(id => _libraryManager.GetItemById(id))
-                    .Where(item => item is not null)
-                    .ToList();
-                if (itemsToDelete.Count > 0)
-                {
-                    _libraryManager.DeleteItemsUnsafeFast(itemsToDelete!);
-                }
-
-                var deletedIds = itemsToDelete.Select(i => i!.Id).ToHashSet();
-                var unresolvedIds = batchIds.Where(id => !deletedIds.Contains(id)).ToList();
-                if (unresolvedIds.Count > 0)
-                {
-                    _persistenceService.DeleteItem(unresolvedIds);
-                }
-
-                deletedSoFar += batchIds.Count;
-                _logger.LogInformation("Deleting duplicate MusicArtist records: {Deleted}/{Total}", deletedSoFar, idsToDelete.Count);
-            }
+            await DuplicateItemMerge
+                .DeleteMergedItemsAsync(idsToDelete, "MusicArtist records", _logger, _libraryManager, _persistenceService, cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 }

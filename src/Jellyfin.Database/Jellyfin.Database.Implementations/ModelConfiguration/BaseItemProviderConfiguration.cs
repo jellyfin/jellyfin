@@ -15,5 +15,7 @@ public class BaseItemProviderConfiguration : IEntityTypeConfiguration<BaseItemPr
         builder.HasKey(e => new { e.ItemId, e.ProviderId });
         builder.HasOne(e => e.Item);
         builder.HasIndex(e => new { e.ProviderId, e.ItemId, e.ProviderValue });
+        // The covering index above leads with the item id, so it cannot seek on the value.
+        builder.HasIndex(e => new { e.ProviderId, e.ProviderValue });
     }
 }
