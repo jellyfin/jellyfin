@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using MediaBrowser.Controller.Entities;
 
@@ -8,6 +9,11 @@ namespace MediaBrowser.Controller.Persistence;
 /// </summary>
 public sealed class NextUpEpisodeBatchResult
 {
+    /// <summary>
+    /// Gets or sets the latest episode playback date for the requesting user.
+    /// </summary>
+    public DateTime? LastPlayedDate { get; set; }
+
     /// <summary>
     /// Gets or sets the last watched episode (highest season/episode that is played).
     /// </summary>
