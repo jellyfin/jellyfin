@@ -167,6 +167,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="subtitleLanguages">Optional. If specified, results will be filtered based on subtitle language. This allows multiple, comma delimited values.</param>
     /// <param name="enableTotalRecordCount">Optional. Enable the total record count.</param>
     /// <param name="enableImages">Optional, include image information in output.</param>
+    /// <param name="randomSeed">Optional. The seed for sorting by Random. Requests with the same seed get the same order, so their pages don't overlap.</param>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
     [HttpGet("Items")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -258,7 +259,8 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] audioLanguages,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] subtitleLanguages,
         [FromQuery] bool enableTotalRecordCount = true,
-        [FromQuery] bool? enableImages = true)
+        [FromQuery] bool? enableImages = true,
+        [FromQuery] int? randomSeed = null)
     {
         var isApiKey = User.GetIsApiKey();
         // if api key is used (auth.IsApiKey == true), then `user` will be null throughout this method
@@ -386,6 +388,7 @@ public class ItemsController : BaseJellyfinApiController
             ExcludeItemTypes = excludeItemTypes,
             Recursive = recursive ?? false,
             OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder),
+            RandomSeed = randomSeed,
             IsFavorite = isFavorite,
             Limit = searchResultScores is null ? limit : null,
             StartIndex = searchResultScores is null ? startIndex : null,
@@ -717,6 +720,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="genreIds">Optional. If specified, results will be filtered based on genre id. This allows multiple, pipe delimited.</param>
     /// <param name="enableTotalRecordCount">Optional. Enable the total record count.</param>
     /// <param name="enableImages">Optional, include image information in output.</param>
+    /// <param name="randomSeed">Optional. The seed for sorting by Random. Requests with the same seed get the same order, so their pages don't overlap.</param>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
     [HttpGet("Users/{userId}/Items")]
     [Obsolete("Kept for backwards compatibility")]
@@ -807,7 +811,8 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] studioIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] genreIds,
         [FromQuery] bool enableTotalRecordCount = true,
-        [FromQuery] bool? enableImages = true)
+        [FromQuery] bool? enableImages = true,
+        [FromQuery] int? randomSeed = null)
         => await GetItems(
             userId,
             maxOfficialRating,
@@ -896,7 +901,8 @@ public class ItemsController : BaseJellyfinApiController
             [],
             [],
             enableTotalRecordCount,
-            enableImages).ConfigureAwait(false);
+            enableImages,
+            randomSeed).ConfigureAwait(false);
 
     /// <summary>
     /// Gets items based on a query.
