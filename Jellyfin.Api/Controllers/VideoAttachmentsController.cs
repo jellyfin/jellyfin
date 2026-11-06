@@ -10,6 +10,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +21,7 @@ namespace Jellyfin.Api.Controllers;
 /// </summary>
 [Route("Videos")]
 [Tags("Video")]
+[Authorize]
 public class VideoAttachmentsController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;
