@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -33,6 +34,16 @@ namespace MediaBrowser.MediaEncoding.Transcoding;
 /// <inheritdoc cref="ITranscodeManager"/>
 public sealed class TranscodeManager : ITranscodeManager, IDisposable
 {
+    /// <summary>
+    /// How long a measured output size stays valid before the segment directory is walked again.
+    /// </summary>
+    private static readonly TimeSpan TranscodedSizeInterval = TimeSpan.FromSeconds(5);
+
+    /// <summary>
+    /// How long the graph probe is given before it is killed.
+    /// </summary>
+    private static readonly TimeSpan GraphProbeTimeout = TimeSpan.FromSeconds(30);
+
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<TranscodeManager> _logger;
     private readonly IFileSystem _fileSystem;
@@ -45,14 +56,25 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IAttachmentExtractor _attachmentExtractor;
 
-    private readonly List<TranscodingJob> _activeTranscodingJobs = new();
+    private readonly List<TranscodingJob> _activeTranscodingJobs = [];
+
+    private readonly ConcurrentDictionary<string, TranscodingPipelineInfo> _pipelineGraphCache = new(StringComparer.OrdinalIgnoreCase);
+
+    // Cached output size per job, so the segment directory isn't walked on every progress report.
+    private readonly ConcurrentDictionary<string, TranscodedSize> _transcodedSizeCache = new(StringComparer.OrdinalIgnoreCase);
+
+    // The graph probe runs a second, short-lived ffmpeg that opens the same decoder, filters and
+    // encoder as the real transcode.
+    private readonly SemaphoreSlim _graphProbeLock = new(1, 1);
+
     private readonly AsyncKeyedLocker<string> _transcodingLocks = new(o =>
     {
         o.PoolSize = 20;
         o.PoolInitialFill = 1;
     });
 
-    private readonly Version _maxFFmpegCkeyPauseSupported = new Version(6, 1);
+    private readonly Version _maxFFmpegCkeyPauseSupported = new(6, 1);
+    private readonly Version _minFFmpegPrintGraphs = new(8, 0);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TranscodeManager"/> class.
@@ -225,6 +247,20 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         {
             _activeTranscodingJobs.Remove(job);
 
+            // Drop the cached pipeline graph once the last job for this play session is gone. The
+            // graph probe re-checks this list under the same lock before writing, so a probe that
+            // finishes after the job ended cannot resurrect the entry.
+            if (!string.IsNullOrEmpty(job.PlaySessionId)
+                && !_activeTranscodingJobs.Any(j => string.Equals(j.PlaySessionId, job.PlaySessionId, StringComparison.OrdinalIgnoreCase)))
+            {
+                _pipelineGraphCache.TryRemove(job.PlaySessionId, out _);
+            }
+
+            if (!string.IsNullOrEmpty(job.Id))
+            {
+                _transcodedSizeCache.TryRemove(job.Id, out _);
+            }
+
             if (job.CancellationTokenSource?.IsCancellationRequested == false)
             {
 #pragma warning disable CA1849 // Can't await in lock block
@@ -308,7 +344,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             }
             catch (IOException ex)
             {
-                (exs ??= new List<Exception>()).Add(ex);
+                (exs ??= []).Add(ex);
                 _logger.LogError(ex, "Error deleting HLS file {Path}", file);
             }
         }
@@ -327,7 +363,8 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         float? framerate,
         double? percentComplete,
         long? bytesTranscoded,
-        int? bitRate)
+        int? bitRate,
+        float? encodingSpeed)
     {
         var ticks = transcodingPosition?.Ticks;
 
@@ -346,15 +383,43 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         {
             var audioCodec = state.ActualOutputAudioCodec;
             var videoCodec = state.ActualOutputVideoCodec;
-            var hardwareAccelerationType = _serverConfigurationManager.GetEncodingOptions().HardwareAccelerationType;
+            // Report acceleration only when this job actually uses it. The configured type is a
+            // server-wide preference, not a statement about what is running: a remux, a software
+            // transcode and an audio-only transcode all touch no video hardware, and reporting the
+            // configured type for them claims an acceleration that isn't happening.
+            var usesVideoHardware = job?.Pipeline?.Stages?
+                .Any(s => s.IsHardware && string.Equals(s.MediaType, "Video", StringComparison.Ordinal)) == true;
+
+            var hardwareAccelerationType = usesVideoHardware
+                ? _serverConfigurationManager.GetEncodingOptions().HardwareAccelerationType
+                : HardwareAccelerationType.none;
+
+            // The transcoder buffer is how far the transcoder has run ahead of the playback head.
+            long? transcodeBufferTicks = null;
+            if (ticks.HasValue && job?.DownloadPositionTicks is { } playbackTicks)
+            {
+                transcodeBufferTicks = Math.Max(0, ticks.Value - playbackTicks);
+            }
 
             _sessionManager.ReportTranscodingInfo(deviceId, new TranscodingInfo
             {
                 Bitrate = bitRate ?? state.TotalOutputBitrate,
+                AudioBitrate = state.OutputAudioBitrate,
+                VideoBitrate = state.OutputVideoBitrate,
+                BytesTranscoded = (job is null ? null : GetTranscodedBytes(job)) ?? bytesTranscoded,
                 AudioCodec = audioCodec,
                 VideoCodec = videoCodec,
                 Container = state.OutputContainer,
+                SubtitleCodec = state.SubtitleStream?.Codec,
+                SubtitleDeliveryMethod = state.SubtitleStream is null ? null : state.SubtitleDeliveryMethod.ToString(),
+                TranscodeProtocol = job?.Type switch
+                {
+                    TranscodingJobType.Hls => "hls",
+                    TranscodingJobType.Dash => "dash",
+                    _ => "http"
+                },
                 Framerate = framerate,
+                Speed = encodingSpeed,
                 CompletionPercentage = percentComplete,
                 Width = state.OutputWidth,
                 Height = state.OutputHeight,
@@ -362,9 +427,96 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
                 IsAudioDirect = EncodingHelper.IsCopyCodec(state.OutputAudioCodec),
                 IsVideoDirect = EncodingHelper.IsCopyCodec(state.OutputVideoCodec),
                 HardwareAccelerationType = hardwareAccelerationType,
-                TranscodeReasons = state.TranscodeReasons
+                TranscodeReasons = state.TranscodeReasons,
+                TranscodePositionTicks = ticks,
+                TranscodeBufferTicks = transcodeBufferTicks,
+                IsThrottled = job?.TranscodingThrottler?.IsPaused ?? false,
+                Pipeline = job?.Pipeline
             });
         }
+    }
+
+    /// <summary>
+    /// Determines how many bytes the transcoder has written to disk so far.
+    /// ffmpeg reports <c>size=N/A</c> for segmented (HLS/DASH) output, so the size is
+    /// summed from the segment files that share the playlist's base name. Progressive
+    /// output is a single file whose length is read directly.
+    /// </summary>
+    /// <remarks>
+    /// The segmented path walks the transcode directory, which is shared by every concurrent job,
+    /// so the result is cached for <see cref="TranscodedSizeInterval"/> instead of being recomputed
+    /// on every progress report. The value is also kept monotonic: the segment cleaner deletes
+    /// already-played segments, and a counter of produced bytes must not go backwards.
+    /// </remarks>
+    private long? GetTranscodedBytes(TranscodingJob job)
+    {
+        var path = job.Path;
+        if (string.IsNullOrEmpty(path))
+        {
+            return null;
+        }
+
+        var cacheKey = job.Id;
+        var now = DateTime.UtcNow;
+
+        if (!string.IsNullOrEmpty(cacheKey)
+            && _transcodedSizeCache.TryGetValue(cacheKey, out var cached)
+            && now - cached.MeasuredAt < TranscodedSizeInterval)
+        {
+            return cached.Bytes;
+        }
+
+        long? measured;
+        try
+        {
+            if (job.Type == TranscodingJobType.Progressive)
+            {
+                var info = _fileSystem.GetFileInfo(path);
+                measured = info.Exists ? info.Length : null;
+            }
+            else
+            {
+                measured = SumSegmentBytes(path);
+            }
+        }
+        catch (IOException)
+        {
+            return string.IsNullOrEmpty(cacheKey) ? null : _transcodedSizeCache.GetValueOrDefault(cacheKey).Bytes;
+        }
+
+        if (string.IsNullOrEmpty(cacheKey))
+        {
+            return measured;
+        }
+
+        var previous = _transcodedSizeCache.GetValueOrDefault(cacheKey).Bytes;
+        var total = measured is null ? previous : Math.Max(measured.Value, previous ?? 0);
+        _transcodedSizeCache[cacheKey] = new TranscodedSize(total, now);
+
+        return total;
+    }
+
+    private long? SumSegmentBytes(string path)
+    {
+        var directory = Path.GetDirectoryName(path);
+        if (string.IsNullOrEmpty(directory))
+        {
+            return null;
+        }
+
+        // Segments are the playlist's base name with an index appended ("<name>1.ts").
+        var name = Path.GetFileNameWithoutExtension(path);
+
+        long total = 0;
+        foreach (var file in _fileSystem.GetFiles(directory, false))
+        {
+            if (file.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase))
+            {
+                total += file.Length;
+            }
+        }
+
+        return total > 0 ? total : null;
     }
 
     /// <inheritdoc />
@@ -435,6 +587,19 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             EnableRaisingEvents = true
         };
 
+        TranscodingPipelineInfo? pipeline = null;
+        try
+        {
+            pipeline = TranscodingPipelineBuilder.Build(state, commandLineArguments);
+        }
+        catch (Exception ex)
+        {
+            // The pipeline description is purely informational, never fail the transcode for it.
+            _logger.LogDebug(ex, "Failed to build transcoding pipeline description");
+        }
+
+        // Built before the job is registered: OnTranscodeBeginning reports the first progress
+        // update, and that report derives the reported hardware acceleration from the pipeline.
         var transcodingJob = OnTranscodeBeginning(
             outputPath,
             state.Request.PlaySessionId,
@@ -444,7 +609,8 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             process,
             state.Request.DeviceId,
             state,
-            cancellationTokenSource);
+            cancellationTokenSource,
+            pipeline);
 
         _logger.LogInformation("{Filename} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
@@ -529,6 +695,26 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         {
             StartThrottler(state, transcodingJob);
             StartSegmentCleaner(state, transcodingJob);
+
+            // ffmpeg 8.0+ can dump the negotiated filter graph, but only on exit - so run a short
+            // throwaway "-t 0" probe alongside the transcode to capture the real pipeline. Only a
+            // video encode has a filter graph worth dumping; a remux or an audio-only transcode
+            // would pay for a second ffmpeg and learn nothing.
+            var hasVideoEncode = transcodingJob.Pipeline?.Stages?
+                .Any(s => s.Type == TranscodeStageType.Encode && string.Equals(s.MediaType, "Video", StringComparison.Ordinal)) == true;
+
+            if (_mediaEncoder.EncoderVersion >= _minFFmpegPrintGraphs && hasVideoEncode)
+            {
+                var playSessionId = transcodingJob.PlaySessionId;
+                if (!string.IsNullOrEmpty(playSessionId) && _pipelineGraphCache.TryGetValue(playSessionId, out var cachedGraph))
+                {
+                    transcodingJob.Pipeline = cachedGraph;
+                }
+                else
+                {
+                    _ = RunGraphProbeAsync(state, transcodingJob, commandLineArguments, outputPath, cancellationTokenSource.Token);
+                }
+            }
         }
         else if (transcodingJob.ExitCode != 0)
         {
@@ -538,6 +724,132 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         _logger.LogDebug("StartFfMpeg() finished successfully");
 
         return transcodingJob;
+    }
+
+    private async Task RunGraphProbeAsync(StreamState state, TranscodingJob job, string commandLineArguments, string outputPath, CancellationToken cancellationToken)
+    {
+        var outputDirectory = Path.GetDirectoryName(outputPath);
+        if (string.IsNullOrEmpty(outputDirectory))
+        {
+            return;
+        }
+
+        var probeDirectory = Path.Combine(outputDirectory, "graphprobe-" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture));
+        var graphFilePath = Path.Combine(probeDirectory, "graph.json");
+        var probeStarted = false;
+
+        try
+        {
+            var probeArguments = TranscodingPipelineBuilder.BuildGraphProbeArguments(commandLineArguments, outputPath, probeDirectory, graphFilePath);
+            if (probeArguments is null)
+            {
+                return;
+            }
+
+            // Queue behind any probe already running. If the transcode is torn down while waiting
+            // (the user seeked or stopped), the token drops this probe instead of starting it.
+            await _graphProbeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            probeStarted = true;
+
+            Directory.CreateDirectory(probeDirectory);
+
+            using (var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
+                    FileName = _mediaEncoder.EncoderPath,
+                    Arguments = probeArguments,
+                    ErrorDialog = false
+                }
+            })
+            {
+                process.Start();
+
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeout.CancelAfter(GraphProbeTimeout);
+
+                // Drain stderr so the process can't block on a full pipe.
+                var drainStdErr = process.StandardError.ReadToEndAsync(CancellationToken.None);
+
+                try
+                {
+                    await process.WaitForExitAsync(timeout.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Disposing a Process does not terminate it - without this the probe would
+                    // outlive the server's interest in it and keep a hardware session open.
+                    _logger.LogDebug("FFmpeg filter graph probe timed out, killing it");
+                    process.Kill(true);
+                    throw;
+                }
+                finally
+                {
+                    await drainStdErr.ConfigureAwait(false);
+                }
+            }
+
+            if (!File.Exists(graphFilePath))
+            {
+                return;
+            }
+
+            var graphJson = await File.ReadAllTextAsync(graphFilePath, cancellationToken).ConfigureAwait(false);
+            var enriched = TranscodingPipelineBuilder.Build(state, commandLineArguments, graphJson);
+            if (enriched is null)
+            {
+                return;
+            }
+
+            job.Pipeline = enriched;
+
+            // Cache for the play session so subsequent transcodes (seeks/segments) reuse it. The
+            // active job list is checked under its own lock because the cleanup that drops this key
+            // runs there: without the check a probe finishing after the session ended would put
+            // back an entry that nothing removes again.
+            var playSessionId = job.PlaySessionId;
+            if (!string.IsNullOrEmpty(playSessionId))
+            {
+                lock (_activeTranscodingJobs)
+                {
+                    if (_activeTranscodingJobs.Any(j => string.Equals(j.PlaySessionId, playSessionId, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        _pipelineGraphCache[playSessionId] = enriched;
+                    }
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogDebug("FFmpeg filter graph probe cancelled");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "FFmpeg filter graph probe failed");
+        }
+        finally
+        {
+            if (probeStarted)
+            {
+                _graphProbeLock.Release();
+            }
+
+            try
+            {
+                if (Directory.Exists(probeDirectory))
+                {
+                    Directory.Delete(probeDirectory, true);
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _logger.LogDebug(ex, "Failed to remove filter graph probe directory {Path}", probeDirectory);
+            }
+        }
     }
 
     private void StartThrottler(StreamState state, TranscodingJob transcodingJob)
@@ -583,7 +895,8 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         Process process,
         string? deviceId,
         StreamState state,
-        CancellationTokenSource cancellationTokenSource)
+        CancellationTokenSource cancellationTokenSource,
+        TranscodingPipelineInfo? pipeline)
     {
         lock (_activeTranscodingJobs)
         {
@@ -598,12 +911,13 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
                 Id = transcodingJobId,
                 PlaySessionId = playSessionId,
                 LiveStreamId = liveStreamId,
-                MediaSource = state.MediaSource
+                MediaSource = state.MediaSource,
+                Pipeline = pipeline
             };
 
             _activeTranscodingJobs.Add(job);
 
-            ReportTranscodingProgress(job, state, null, null, null, null, null);
+            ReportTranscodingProgress(job, state, null, null, null, null, null, null);
 
             return job;
         }
@@ -643,7 +957,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         job.HasExited = true;
         job.ExitCode = process.ExitCode;
 
-        ReportTranscodingProgress(job, state, null, null, null, null, null);
+        ReportTranscodingProgress(job, state, null, null, null, null, null, null);
 
         _logger.LogDebug("Disposing stream resources");
         state.Dispose();
@@ -754,5 +1068,11 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         _sessionManager.PlaybackProgress -= OnPlaybackProgress;
         _sessionManager.PlaybackStart -= OnPlaybackProgress;
         _transcodingLocks.Dispose();
+        _graphProbeLock.Dispose();
     }
+
+    /// <summary>
+    /// A measured transcode output size and when it was taken.
+    /// </summary>
+    private readonly record struct TranscodedSize(long? Bytes, DateTime MeasuredAt);
 }

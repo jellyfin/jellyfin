@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.MediaEncoding;
@@ -137,6 +138,11 @@ public sealed class TranscodingJob : IDisposable
     /// Gets or sets download position ticks.
     /// </summary>
     public long? DownloadPositionTicks { get; set; }
+
+    /// <summary>
+    /// Gets or sets the transcoding pipeline, describing the decode/filter/encode stages.
+    /// </summary>
+    public TranscodingPipelineInfo? Pipeline { get; set; }
 
     /// <summary>
     /// Gets or sets transcoding throttler.
