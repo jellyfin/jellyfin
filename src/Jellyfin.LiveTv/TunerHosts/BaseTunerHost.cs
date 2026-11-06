@@ -178,31 +178,26 @@ namespace Jellyfin.LiveTv.TunerHosts
             }
 
             var hosts = GetTunerHosts();
+            var orderedHosts = OrderHostsForStream(hosts, streamId);
 
-            var hostsWithChannel = new List<Tuple<TunerHostInfo, ChannelInfo>>();
-
-            foreach (var host in hosts)
+            foreach (var host in orderedHosts)
             {
+                ChannelInfo channelInfo;
                 try
                 {
                     var channels = await GetChannels(host, true, cancellationToken).ConfigureAwait(false);
-                    var channelInfo = channels.FirstOrDefault(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
-
-                    if (channelInfo is not null)
-                    {
-                        hostsWithChannel.Add(new Tuple<TunerHostInfo, ChannelInfo>(host, channelInfo));
-                    }
+                    channelInfo = channels.FirstOrDefault(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
                 }
                 catch (Exception ex)
                 {
                     Logger.LogError(ex, "Error getting channels");
+                    continue;
                 }
-            }
 
-            foreach (var hostTuple in hostsWithChannel)
-            {
-                var host = hostTuple.Item1;
-                var channelInfo = hostTuple.Item2;
+                if (channelInfo is null)
+                {
+                    continue;
+                }
 
                 try
                 {
@@ -220,6 +215,50 @@ namespace Jellyfin.LiveTv.TunerHosts
             }
 
             throw new LiveTvConflictException("Unable to find host to play channel");
+        }
+
+        /// <summary>
+        /// Returns whether <paramref name="streamId"/> was built for <paramref name="host"/>.
+        /// The host that produced the media source is tried before the others.
+        /// </summary>
+        protected virtual bool IsStreamTarget(TunerHostInfo host, string streamId)
+        {
+            return false;
+        }
+
+        private List<TunerHostInfo> OrderHostsForStream(IList<TunerHostInfo> hosts, string streamId)
+        {
+            if (string.IsNullOrEmpty(streamId) || hosts.Count < 2)
+            {
+                return hosts as List<TunerHostInfo> ?? hosts.ToList();
+            }
+
+            var preferred = new List<TunerHostInfo>();
+            var rest = new List<TunerHostInfo>();
+            foreach (var host in hosts)
+            {
+                if (IsStreamTarget(host, streamId))
+                {
+                    preferred.Add(host);
+                }
+                else
+                {
+                    rest.Add(host);
+                }
+            }
+
+            if (preferred.Count == 0)
+            {
+                return hosts as List<TunerHostInfo> ?? hosts.ToList();
+            }
+
+            if (!ReferenceEquals(preferred[0], hosts[0]))
+            {
+                Logger.LogInformation("Trying tuner {Url} first because the media source targets it", preferred[0].Url);
+            }
+
+            preferred.AddRange(rest);
+            return preferred;
         }
 
         protected virtual bool IsValidChannelId(string channelId)
