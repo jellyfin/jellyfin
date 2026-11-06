@@ -26,6 +26,7 @@
     <PackageReference Include="SharpCompress" />
     <PackageReference Include="z440.atl.core" />
     <PackageReference Include="TMDbLib" />
+    <PackageReference Include="TtmlLyricParser" />
     <PackageReference Include="UTF.Unknown" />
   </ItemGroup>
 
