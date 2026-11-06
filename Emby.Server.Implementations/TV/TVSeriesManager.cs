@@ -124,7 +124,7 @@ namespace Emby.Server.Implementations.TV
 
             var batchResult = _libraryManager.GetNextUpEpisodesBatch(query, seriesKeys, includeSpecials, includeRewatching);
 
-            var nextUpList = new List<(DateTime LastWatchedDate, Episode Episode)>();
+            var nextUpList = new List<(DateTime LastWatchedDate, Episode Episode, BaseItem? LastWatched, Video? PlayedVersion)>();
 
             foreach (var seriesKey in seriesKeys)
             {
@@ -140,7 +140,6 @@ namespace Emby.Server.Implementations.TV
                     // The last played date and the version that was actually played live on the version item's user data
                     // The played state propagated to the sibling versions carries no date
                     var (playedVersion, lastPlayedDate) = GetMostRecentlyPlayedVersion(result.LastWatched, user);
-                    nextEpisode = GetPreferredVersion(nextEpisode, result.LastWatched, playedVersion);
 
                     DateTime lastWatchedDate = DateTime.MinValue;
                     if (result.LastWatched is not null)
@@ -148,7 +147,7 @@ namespace Emby.Server.Implementations.TV
                         lastWatchedDate = lastPlayedDate ?? DateTime.MinValue.AddDays(1);
                     }
 
-                    nextUpList.Add((lastWatchedDate, nextEpisode));
+                    nextUpList.Add((lastWatchedDate, nextEpisode, result.LastWatched, playedVersion));
                 }
 
                 if (includeRewatching)
@@ -158,7 +157,6 @@ namespace Emby.Server.Implementations.TV
                     if (nextPlayedEpisode is not null)
                     {
                         var (playedVersion, lastPlayedDate) = GetMostRecentlyPlayedVersion(result.LastWatchedForRewatching, user);
-                        nextPlayedEpisode = GetPreferredVersion(nextPlayedEpisode, result.LastWatchedForRewatching, playedVersion);
 
                         DateTime rewatchLastWatchedDate = DateTime.MinValue;
                         if (result.LastWatchedForRewatching is not null)
@@ -166,16 +164,15 @@ namespace Emby.Server.Implementations.TV
                             rewatchLastWatchedDate = lastPlayedDate ?? DateTime.MinValue.AddDays(1);
                         }
 
-                        nextUpList.Add((rewatchLastWatchedDate, nextPlayedEpisode));
+                        nextUpList.Add((rewatchLastWatchedDate, nextPlayedEpisode, result.LastWatchedForRewatching, playedVersion));
                     }
                 }
             }
 
             var sortedEpisodes = nextUpList
-                .OrderByDescending(x => x.LastWatchedDate)
-                .Select(x => (BaseItem)x.Episode);
+                .OrderByDescending(x => x.LastWatchedDate);
 
-            return GetResult(sortedEpisodes, request);
+            return GetResult(sortedEpisodes, request, x => GetPreferredVersion(x.Episode, x.LastWatched, x.PlayedVersion));
         }
 
         private Episode? DetermineNextEpisode(
@@ -320,7 +317,7 @@ namespace Emby.Server.Implementations.TV
             return series.GetPresentationUniqueKey();
         }
 
-        private static QueryResult<BaseItem> GetResult(IEnumerable<BaseItem> items, NextUpQuery query)
+        private static QueryResult<BaseItem> GetResult<T>(IEnumerable<T> items, NextUpQuery query, Func<T, BaseItem> selectItem)
         {
             int totalCount = 0;
 
@@ -344,7 +341,7 @@ namespace Emby.Server.Implementations.TV
             return new QueryResult<BaseItem>(
                 query.StartIndex,
                 totalCount,
-                items.ToArray());
+                items.Select(selectItem).ToArray());
         }
     }
 }

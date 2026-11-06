@@ -54,12 +54,10 @@ public sealed partial class BaseItemRepository
             .Select(ud => ud.ItemId);
 
         // The primaries of every version group holding a played row, whichever version carries it.
-        var playedGroupIds = context.BaseItems
-            .Where(v => v.PrimaryVersionId != null
-                && context.UserData.Any(ud => ud.UserId == userId
-                    && ud.Played
-                    && (ud.ItemId == v.Id || ud.ItemId == v.PrimaryVersionId)))
-            .Select(v => v.PrimaryVersionId!.Value);
+        var versions = context.BaseItems.Where(v => v.PrimaryVersionId != null);
+        var playedGroupIds = versions
+            .Join(playedItemIds, v => v.Id, id => id, (v, id) => v.PrimaryVersionId!.Value)
+            .Union(versions.Join(playedItemIds, v => v.PrimaryVersionId!.Value, id => id, (v, id) => v.PrimaryVersionId!.Value));
 
         return e => playedItemIds.Contains(e.Id)
             || playedGroupIds.Contains(e.Id)
