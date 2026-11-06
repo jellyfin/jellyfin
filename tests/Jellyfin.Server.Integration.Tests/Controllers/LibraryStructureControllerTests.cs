@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.LibraryStructureDto;
 using Jellyfin.Data;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller;
@@ -17,6 +19,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.v3.Priority;
@@ -304,6 +307,42 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     }
 
     [Fact]
+    [Priority(2)]
+    public async Task RenameLibrary_WithoutRefresh_RemovesTheOldLibraryItem()
+    {
+        const string Name = "rename-ghost-old";
+        const string NewName = "rename-ghost-new";
+
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+
+        var libraryManager = _factory.Services.GetRequiredService<ILibraryManager>();
+        var rootFolderPath = _factory.Services.GetRequiredService<IServerApplicationPaths>().DefaultUserViewsPath;
+
+        // This is what the setup wizard does: it creates and renames libraries with refreshLibrary=false
+        var body = new AddVirtualFolderDto() { LibraryOptions = new LibraryOptions() };
+        using var createResponse = await client.PostAsJsonAsync($"Library/VirtualFolders?name={Name}&collectionType=movies&refreshLibrary=false", body, _jsonOptions, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.NoContent, createResponse.StatusCode);
+
+        var oldId = libraryManager.GetNewItemId(Path.Combine(rootFolderPath, Name), typeof(CollectionFolder));
+        Assert.Contains(oldId, GetCollectionFolderIds(libraryManager));
+
+        using var renameResponse = await client.PostAsync(
+            $"Library/VirtualFolders/Name?name={Name}&newName={NewName}&refreshLibrary=false",
+            null,
+            TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.NoContent, renameResponse.StatusCode);
+
+        Assert.False(Directory.Exists(Path.Combine(rootFolderPath, Name)));
+
+        // The folder is gone but its database row must go as well, otherwise it keeps showing up as a ghost
+        Assert.DoesNotContain(oldId, GetCollectionFolderIds(libraryManager));
+
+        using var cleanup = await client.DeleteAsync($"Library/VirtualFolders?name={NewName}&refreshLibrary=true", TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.NoContent, cleanup.StatusCode);
+    }
+
+    [Fact]
     [Priority(1)]
     public async Task RenameLibrary_CapitalizationOnly_LeavesPreferencesAlone()
     {
@@ -343,4 +382,10 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
         using var cleanup = await client.DeleteAsync($"Library/VirtualFolders?name={Name.ToUpperInvariant()}&refreshLibrary=false", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NoContent, cleanup.StatusCode);
     }
+
+    private static IReadOnlyList<Guid> GetCollectionFolderIds(ILibraryManager libraryManager)
+        => libraryManager.GetItemList(new InternalItemsQuery
+        {
+            IncludeItemTypes = [BaseItemKind.CollectionFolder]
+        }).Select(i => i.Id).ToList();
 }
