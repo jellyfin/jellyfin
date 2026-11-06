@@ -74,7 +74,7 @@ namespace Jellyfin.Api.Tests.Helpers
         [Fact]
         public void Manager_DisposedInstanceRejectsStartsAndAllowsRepeatedCancelAndDispose()
         {
-            using var manager = new TranscodeTestManager(null!, null!, null!, null!, NullLogger<TranscodeTestManager>.Instance);
+            using var manager = new TranscodeTestManager(null!, null!, null!, null!, null!, null!, null!, null!, null!, NullLogger<TranscodeTestManager>.Instance);
             manager.Dispose();
             Assert.False(manager.TryStart(new() { Kind = Jellyfin.Api.Models.TranscodeTestDtos.TranscodeTestKind.Compatibility }));
             manager.Cancel();

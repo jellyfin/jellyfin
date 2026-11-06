@@ -9,13 +9,16 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.TranscodeTestDtos;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -26,21 +29,50 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Api.Helpers;
 
 /// <summary>
-/// Runs the dashboard's transcoding test: a compatibility check of hardware decoding, encoding and tone mapping with
-/// generated clips.
+/// Runs the dashboard's transcoding tests: a compatibility check of hardware decoding, encoding and tone mapping with
+/// generated clips, and a stress test that adds streams of the playback HLS command until one falls behind real time.
 /// </summary>
 public sealed class TranscodeTestManager : IDisposable
 {
     /// <summary>
-    /// Seconds a compatibility process may take to start, or a clip probe may take to complete.
+    /// Each stream must keep this fraction of the source frame rate.
+    /// </summary>
+    internal const double FpsRatio = 0.9;
+
+    /// <summary>
+    /// Seconds every stream must keep up before another is added.
+    /// </summary>
+    internal const double RampSeconds = 12;
+
+    /// <summary>
+    /// Seconds below the threshold that end the stress test.
+    /// </summary>
+    internal const double FailSeconds = 5;
+
+    /// <summary>
+    /// Seconds a test process may take to start, a stress test stream to report its first frame, or a clip probe to
+    /// complete.
     /// </summary>
     internal const double StartTimeoutSeconds = 30;
+
+    /// <summary>
+    /// Seconds a source should last at least. Each stream restarts at the end of the file, which briefly disturbs the
+    /// measurement.
+    /// </summary>
+    internal const double ShortSourceSeconds = 60;
 
     private const string FolderName = "transcode-test";
     private const int CheckFrames = 96;
     private const int MaxLogLines = 500;
 
+    /// <summary>
+    /// How long to wait for an exited stream's last output before judging it.
+    /// </summary>
     private static readonly TimeSpan _outputDrainTimeout = TimeSpan.FromSeconds(2);
+
+    /// <summary>
+    /// How long shutdown waits, in all, for the stress test's ffmpeg processes to exit after they were killed.
+    /// </summary>
     private static readonly TimeSpan _shutdownWaitTimeout = TimeSpan.FromSeconds(5);
 
     private static readonly string[] _allDecodeCodecs = ["h264", "hevc", "mpeg2video", "mpeg4", "vc1", "vp8", "vp9", "av1"];
@@ -62,6 +94,11 @@ public sealed class TranscodeTestManager : IDisposable
     private readonly IServerConfigurationManager _configurationManager;
     private readonly IMediaEncoder _mediaEncoder;
     private readonly EncodingHelper _encodingHelper;
+    private readonly HlsCommandBuilder _hlsCommandBuilder;
+    private readonly IMediaSourceManager _mediaSourceManager;
+    private readonly IUserManager _userManager;
+    private readonly ILibraryManager _libraryManager;
+    private readonly ITranscodeManager _transcodeManager;
     private readonly ISessionManager _sessionManager;
     private readonly ILogger<TranscodeTestManager> _logger;
     private readonly TranscodeTestProcessOwner _compatibilityProcesses = new();
@@ -73,8 +110,10 @@ public sealed class TranscodeTestManager : IDisposable
     private DateTime? _endedAt;
     private List<TranscodeTestLogLine> _log = [];
     private List<TranscodeTestCheckResult> _checks = [];
+    private TranscodeTestStressRun? _stress;
     private CancellationTokenSource? _cancellation;
     private Stopwatch _clock = new();
+    private double _lastCheckedAt;
     private bool _disposed;
 
     /// <summary>
@@ -83,18 +122,33 @@ public sealed class TranscodeTestManager : IDisposable
     /// <param name="configurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
+    /// <param name="hlsCommandBuilder">Instance of <see cref="HlsCommandBuilder"/>.</param>
+    /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
+    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{TranscodeTestManager}"/> interface.</param>
     public TranscodeTestManager(
         IServerConfigurationManager configurationManager,
         IMediaEncoder mediaEncoder,
         EncodingHelper encodingHelper,
+        HlsCommandBuilder hlsCommandBuilder,
+        IMediaSourceManager mediaSourceManager,
+        IUserManager userManager,
+        ILibraryManager libraryManager,
+        ITranscodeManager transcodeManager,
         ISessionManager sessionManager,
         ILogger<TranscodeTestManager> logger)
     {
         _configurationManager = configurationManager;
         _mediaEncoder = mediaEncoder;
         _encodingHelper = encodingHelper;
+        _hlsCommandBuilder = hlsCommandBuilder;
+        _mediaSourceManager = mediaSourceManager;
+        _userManager = userManager;
+        _libraryManager = libraryManager;
+        _transcodeManager = transcodeManager;
         _sessionManager = sessionManager;
         _logger = logger;
     }
@@ -125,7 +179,9 @@ public sealed class TranscodeTestManager : IDisposable
             _endedAt = null;
             _log = [];
             _checks = [];
+            _stress = request.Kind == TranscodeTestKind.StressTest ? new TranscodeTestStressRun(request.MaxStreams) : null;
             _clock = Stopwatch.StartNew();
+            _lastCheckedAt = 0;
         }
 
         _ = Task.Run(() => RunAsync(request, token), CancellationToken.None);
@@ -155,6 +211,7 @@ public sealed class TranscodeTestManager : IDisposable
             _endedAt = null;
             _log = [];
             _checks = [];
+            _stress = null;
         }
     }
 
@@ -166,6 +223,8 @@ public sealed class TranscodeTestManager : IDisposable
     {
         lock (_lock)
         {
+            // A stress test nobody checks on stops after a while, see TranscodeTestRules.IsAbandoned.
+            _lastCheckedAt = _clock.Elapsed.TotalSeconds;
             return new TranscodeTestStatusDto
             {
                 State = _state,
@@ -174,14 +233,19 @@ public sealed class TranscodeTestManager : IDisposable
                 StartedAt = _startedAt,
                 EndedAt = _endedAt,
                 Log = _log.ToArray(),
-                Checks = _checks.ToArray()
+                Checks = _checks.ToArray(),
+                Stress = _stress?.Snapshot(_clock.Elapsed.TotalSeconds)
             };
         }
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Stops a running test at once: the server is shutting down and will not wait for the test to end, so the
+    /// stress test's ffmpeg processes are killed here, waited for briefly, and their files removed.
+    /// </summary>
     public void Dispose()
     {
+        TranscodeTestStressRun? stress;
         lock (_lock)
         {
             if (_disposed)
@@ -190,12 +254,52 @@ public sealed class TranscodeTestManager : IDisposable
             }
 
             _disposed = true;
+            stress = _state == TranscodeTestState.Running ? _stress : null;
             _cancellation?.Cancel();
         }
 
+        if (stress is not null)
+        {
+            StopNow(stress, _shutdownWaitTimeout, _logger);
+        }
+
         _compatibilityProcesses.Dispose();
-        // The test only reads the token, which stays cancelled after the source is released.
+
+        // The test's task only reads the token, which stays cancelled after the source is released.
         _cancellation?.Dispose();
+    }
+
+    /// <summary>
+    /// Kills every stream of a stress test, waits for them to exit up to a total time, releases them and removes
+    /// their files. Safe to call while the test's own task stops them too.
+    /// </summary>
+    /// <param name="run">The stress test.</param>
+    /// <param name="wait">How long to wait, in all, for the processes to exit.</param>
+    /// <param name="logger">Where to report files that could not be removed.</param>
+    internal static void StopNow(TranscodeTestStressRun run, TimeSpan wait, ILogger logger)
+    {
+        var streams = run.Stop();
+        foreach (var s in streams)
+        {
+            s.Kill();
+        }
+
+        var deadline = Stopwatch.StartNew();
+        foreach (var s in streams)
+        {
+            var left = wait - deadline.Elapsed;
+            if (left > TimeSpan.Zero)
+            {
+                s.WaitForExit(left);
+            }
+        }
+
+        foreach (var s in streams)
+        {
+            s.DisposeProcess();
+        }
+
+        DeleteTestFiles(run.Folder, run.FilePrefix, logger);
     }
 
     private async Task RunAsync(TranscodeTestRequestDto request, CancellationToken cancellationToken)
@@ -217,19 +321,28 @@ public sealed class TranscodeTestManager : IDisposable
                 Log($"Warning: {busy} other transcode(s) are running; results will be lower than the server's full capacity.");
             }
 
-            await RunCompatibilityAsync(options, cancellationToken).ConfigureAwait(false);
+            if (request.Kind == TranscodeTestKind.Compatibility)
+            {
+                await RunCompatibilityAsync(options, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                await RunStressTestAsync(request, options, cancellationToken).ConfigureAwait(false);
+            }
 
             Log("Done.");
         }
         catch (OperationCanceledException)
         {
             state = TranscodeTestState.Cancelled;
+            _stress?.End(TranscodeTestEndReason.Cancelled, _clock.Elapsed.TotalSeconds);
             Log("Stopped.");
         }
         catch (Exception ex)
         {
             state = TranscodeTestState.Failed;
             _logger.LogError(ex, "Transcoding test failed");
+            _stress?.End(TranscodeTestEndReason.Error, _clock.Elapsed.TotalSeconds, error: ex.Message);
             Log("The test failed: " + ex.Message);
         }
 
@@ -755,6 +868,330 @@ public sealed class TranscodeTestManager : IDisposable
 
     private static async Task ObserveCompatibilityOutputAsync(Task output)
         => await output.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+
+    // ---- stress test ------------------------------------------------------------------------
+
+    private async Task RunStressTestAsync(TranscodeTestRequestDto request, EncodingOptions options, CancellationToken cancellationToken)
+    {
+        var run = _stress!;
+        var item = _libraryManager.GetItemById(request.ItemId!.Value) ?? throw new ArgumentException("The item was not found.");
+        var codec = request.VideoCodec is "hevc" or "av1" ? request.VideoCodec : "h264";
+        // Like playback, write into the transcode folder itself: the startup cleanup task removes empty sub-folders.
+        var folder = _configurationManager.GetTranscodePath();
+        var prefix = FolderName + "-" + DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
+        run.Folder = folder;
+        run.FilePrefix = prefix;
+        Log(string.Create(CultureInfo.InvariantCulture, $"Stress test: \"{item.Name}\" → {request.MaxWidth} px {codec} {request.VideoBitrate / 1e6:0.#} Mbps."));
+        CheckFreeSpace(folder, request);
+        var sourceSeconds = item.RunTimeTicks is long ticks ? TimeSpan.FromTicks(ticks).TotalSeconds : (double?)null;
+        run.ShortSource = TranscodeTestRules.IsShortSource(sourceSeconds);
+        if (TranscodeTestRules.DescribeShortSource(sourceSeconds) is string shortSource)
+        {
+            Log(shortSource);
+        }
+
+        try
+        {
+            var first = await StartStreamAsync(run, request, codec, folder, prefix, options, item.Name ?? string.Empty, cancellationToken).ConfigureAwait(false);
+            run.ThresholdFps = Math.Round(first.SourceFps * FpsRatio, 3);
+            Log(string.Create(CultureInfo.InvariantCulture, $"Each stream must keep {TranscodeTestRules.FormatFps(run.ThresholdFps)} fps ({FpsRatio * 100:0}% of the source's {first.SourceFps:0.###} fps). {TranscodeTestRules.DescribeRamp(RampSeconds, TranscodeTestStream.WindowSeconds)}"));
+            await EscalateAsync(run, request, codec, folder, prefix, options, item.Name ?? string.Empty, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            await StopAllAsync(run).ConfigureAwait(false);
+            DeleteTestFiles(folder, prefix, _logger);
+        }
+
+        Log(TranscodeTestRules.DescribeResult(run.Snapshot(_clock.Elapsed.TotalSeconds)));
+    }
+
+    private async Task EscalateAsync(TranscodeTestStressRun run, TranscodeTestRequestDto request, string codec, string folder, string prefix, EncodingOptions options, string itemName, CancellationToken cancellationToken)
+    {
+        var timeLimit = TranscodeTestRules.TimeLimitSeconds(request.MaxStreams);
+        var controller = new TranscodeTestStressController(run.ThresholdFps, RampSeconds, FailSeconds, StartTimeoutSeconds, request.MaxStreams, _clock.Elapsed.TotalSeconds, TranscodeTestStream.WindowSeconds, timeLimit);
+        run.SetPhase(TranscodeTestStressPhase.WarmingUp, _clock.Elapsed.TotalSeconds + RampSeconds);
+        while (true)
+        {
+            await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+            var now = _clock.Elapsed.TotalSeconds;
+            StopIfAbandoned(now);
+            run.Sample(now);
+
+            foreach (var ended in run.Streams.Where(s => s.HasExited && !s.Stopping && !s.Handled).ToList())
+            {
+                ended.Handled = true;
+                // The process can exit before its last lines are read; they may name the cause.
+                await ended.WaitForOutputAsync(_outputDrainTimeout).ConfigureAwait(false);
+                if (ended.ExitCode == 0)
+                {
+                    // The file ended: start the stream again so the load stays the same.
+                    Log($"Stream {ended.Id} reached the end of the file; starting it again.");
+                    ended.CollectSegments(true);
+                    var restarted = await StartStreamAsync(run, request, codec, folder, prefix, options, itemName, cancellationToken, ended.Id).ConfigureAwait(false);
+                    // One stream to the viewer: keep its output and frame rate history, and judge the new process afresh.
+                    restarted.CarryOver(ended);
+                    controller.StreamRestarted(ended.Id);
+                    continue;
+                }
+
+                Log($"Stream {ended.Id} failed (exit {ended.ExitCode}): {ended.LastError}");
+                run.End(TranscodeTestEndReason.StreamFailed, now, ended.Id, error: ended.LastError);
+                return;
+            }
+
+            var readings = run.Streams.Where(s => !s.HasExited).Select(s => new TranscodeTestStreamReading(s.Id, s.Fps(now), now - s.StartedAt)).ToList();
+            var decision = controller.Tick(now, readings);
+            run.MaxStable = controller.MaxStable;
+            switch (decision.Action)
+            {
+                case TranscodeTestStressAction.Stalled:
+                    Log($"Stream {decision.StreamId} produced no frames in {StartTimeoutSeconds:0} s.");
+                    run.End(TranscodeTestEndReason.StreamStalled, now, decision.StreamId);
+                    return;
+                case TranscodeTestStressAction.LimitReached:
+                    Log($"With {TranscodeTestRules.StreamCount(readings.Count)} running, stream {decision.StreamId} fell to {TranscodeTestRules.FormatFps(TranscodeTestRules.RoundFps(decision.Fps!.Value, run.ThresholdFps))} fps, under {TranscodeTestRules.FormatFps(run.ThresholdFps)} fps, for {FailSeconds:0} s.");
+                    run.End(TranscodeTestEndReason.LimitReached, now, decision.StreamId, decision.Fps);
+                    return;
+                case TranscodeTestStressAction.MaxStreams:
+                    Log($"All {request.MaxStreams} streams kept up; that is the limit you set.");
+                    run.End(TranscodeTestEndReason.MaxStreams, now);
+                    return;
+                case TranscodeTestStressAction.TimeLimit:
+                    Log(TranscodeTestRules.DescribeTimeLimit(timeLimit, controller.MaxStable));
+                    run.End(TranscodeTestRules.TimeLimitEndReason(controller.MaxStable, request.MaxStreams), now, timeLimitReached: true);
+                    return;
+                case TranscodeTestStressAction.AddStream:
+                    await StartStreamAsync(run, request, codec, folder, prefix, options, itemName, cancellationToken).ConfigureAwait(false);
+                    now = _clock.Elapsed.TotalSeconds;
+                    controller.StreamAdded(now);
+                    run.SetPhase(TranscodeTestStressPhase.WarmingUp, now + RampSeconds);
+                    break;
+                default:
+                    if (decision.Phase == TranscodeTestStressPhase.FallingBehind)
+                    {
+                        if (decision.DipStarted && decision.Fps is double dipFps)
+                        {
+                            // Once per dip: the next stream waits until all have kept up for the settle time.
+                            Log(TranscodeTestRules.DescribeDip(decision.StreamId!.Value, dipFps, run.ThresholdFps, TranscodeTestStream.WindowSeconds, readings.Count < request.MaxStreams ? run.Streams.Max(s => s.Id) + 1 : null));
+                        }
+
+                        run.SetFallingBehind(decision.StreamId!.Value, decision.EndsAt!.Value);
+                    }
+                    else
+                    {
+                        run.SetPhase(decision.Phase, decision.NextStreamAt);
+                    }
+
+                    break;
+            }
+        }
+    }
+
+    private async Task<TranscodeTestStream> StartStreamAsync(TranscodeTestStressRun run, TranscodeTestRequestDto request, string codec, string folder, string prefix, EncodingOptions options, string itemName, CancellationToken cancellationToken, int? reuseId = null)
+    {
+        var id = reuseId ?? run.NextStreamId();
+        var container = codec == "h264" ? "ts" : "mp4";
+        var streamingRequest = new VideoRequestDto
+        {
+            Id = request.ItemId!.Value,
+            MediaSourceId = request.MediaSourceId ?? request.ItemId.Value.ToString("N", CultureInfo.InvariantCulture),
+            DeviceId = "transcode-test",
+            PlaySessionId = "transcode-test-" + id.ToString(CultureInfo.InvariantCulture),
+            VideoCodec = codec,
+            AudioCodec = "aac",
+            AudioBitRate = 192_000,
+            MaxAudioChannels = 2,
+            TranscodingMaxAudioChannels = 2,
+            MaxWidth = request.MaxWidth,
+            VideoBitRate = request.VideoBitrate,
+            SegmentContainer = container,
+            SegmentLength = 6
+        };
+
+        using var state = await StreamingHelpers.GetStreamingState(
+                streamingRequest,
+                $"/Videos/{streamingRequest.Id:N}/hls1/main/0.{container}",
+                new Dictionary<string, string?>(),
+                "Jellyfin transcoding test",
+                Guid.Empty,
+                _mediaSourceManager,
+                _userManager,
+                _libraryManager,
+                _configurationManager,
+                _mediaEncoder,
+                _encodingHelper,
+                _transcodeManager,
+                TranscodingJobType.Hls,
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        var streamPrefix = string.Create(CultureInfo.InvariantCulture, $"{prefix}-s{id}-{run.Streams.Count}_");
+        var playlist = Path.Combine(folder, streamPrefix + ".m3u8");
+        var args = _hlsCommandBuilder.GetCommandLineArguments(playlist, state, options, false, 0);
+        _logger.LogDebug("Transcoding test stream {Id}: {Ffmpeg} {Args}", id, _mediaEncoder.EncoderPath, args);
+        var sourceFps = state.VideoStream?.ReferenceFrameRate ?? 24f;
+        if (run.Input is null)
+        {
+            DescribeStream(run, state, options, args, itemName, sourceFps);
+        }
+
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo(_mediaEncoder.EncoderPath, args)
+            {
+                RedirectStandardError = true,
+                RedirectStandardInput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+        process.Start();
+        var stream = new TranscodeTestStream(id, process, folder, streamPrefix, sourceFps, _clock.Elapsed.TotalSeconds, state.SegmentLength);
+        stream.StartReading(_clock);
+        if (!run.Add(stream))
+        {
+            // The server is shutting down and already stopped the other streams.
+            stream.Kill();
+            stream.WaitForExit(TimeSpan.FromSeconds(1));
+            stream.DisposeProcess();
+            throw new OperationCanceledException(cancellationToken);
+        }
+
+        if (reuseId is null)
+        {
+            Log($"Stream {id} started; {run.Streams.Count(s => !s.HasExited)} running.");
+        }
+
+        return stream;
+    }
+
+    private void DescribeStream(TranscodeTestStressRun run, StreamState state, EncodingOptions options, string args, string itemName, float sourceFps)
+    {
+        var video = state.VideoStream;
+        var tonemap = TranscodeTestRules.FindTonemapFilter(args);
+        var encoder = _encodingHelper.GetVideoEncoder(state, options);
+        run.Input = new TranscodeTestMediaInfo
+        {
+            Name = itemName,
+            Width = video?.Width,
+            Height = video?.Height,
+            Codec = video?.Codec,
+            BitDepth = video?.BitDepth,
+            VideoRangeType = video?.VideoRangeType.ToString(),
+            BitrateMbps = state.MediaSource.Bitrate.HasValue ? Math.Round(state.MediaSource.Bitrate.Value / 1e6, 1) : null,
+            Fps = Math.Round(sourceFps, 3)
+        };
+        run.Output = new TranscodeTestOutputInfo
+        {
+            Width = state.OutputWidth,
+            Height = state.OutputHeight,
+            Codec = state.ActualOutputVideoCodec ?? string.Empty,
+            BitrateMbps = Math.Round((state.OutputVideoBitrate ?? 0) / 1e6, 1),
+            AudioCodec = state.ActualOutputAudioCodec,
+            AudioChannels = state.OutputAudioChannels,
+            Encoder = encoder,
+            HardwareDecoding = TranscodeTestRules.UsesHardwareDecoder(args),
+            HardwareEncoding = !TranscodeTestRules.IsSoftwareEncoder(encoder),
+            Tonemap = TranscodeTestRules.TonemapMode(tonemap)
+        };
+    }
+
+    /// <summary>
+    /// Stops every stream. Safe to call more than once, also while <see cref="Dispose"/> stops them.
+    /// </summary>
+    private static async Task StopAllAsync(TranscodeTestStressRun run)
+    {
+        // The output is thrown away, so there is no need to let ffmpeg finish its files.
+        var streams = run.Stop();
+        var live = streams.Where(s => !s.HasExited).ToList();
+        foreach (var s in live)
+        {
+            s.Kill();
+        }
+
+        foreach (var s in live)
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            await s.WaitForExitAsync(timeout.Token).ConfigureAwait(false);
+        }
+
+        foreach (var s in streams)
+        {
+            s.DisposeProcess();
+        }
+    }
+
+    /// <summary>
+    /// Removes every file a stress test wrote.
+    /// </summary>
+    private static void DeleteTestFiles(string? folder, string? prefix, ILogger logger)
+    {
+        if (string.IsNullOrEmpty(folder) || string.IsNullOrEmpty(prefix))
+        {
+            return;
+        }
+
+        try
+        {
+            foreach (var file in Directory.EnumerateFiles(folder, prefix + "*"))
+            {
+                try
+                {
+                    File.Delete(file);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    logger.LogWarning(ex, "Could not remove {File}", file);
+                }
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            logger.LogWarning(ex, "Could not list {Folder}", folder);
+        }
+    }
+
+    /// <summary>
+    /// Stops a stress test that nobody has checked on for <see cref="TranscodeTestRules.IdleStopSeconds"/>, such as one
+    /// left running in a browser that was closed.
+    /// </summary>
+    private void StopIfAbandoned(double now)
+    {
+        double lastCheckedAt;
+        lock (_lock)
+        {
+            lastCheckedAt = _lastCheckedAt;
+        }
+
+        if (TranscodeTestRules.IsAbandoned(now, lastCheckedAt))
+        {
+            Log($"Nobody has checked on the test for {TranscodeTestRules.IdleStopSeconds / 60:0} min, so it stops.");
+            throw new OperationCanceledException();
+        }
+    }
+
+    /// <summary>
+    /// Ends the test before it starts when the transcode folder is too small for the segments the streams would keep.
+    /// </summary>
+    private void CheckFreeSpace(string folder, TranscodeTestRequestDto request)
+    {
+        long free;
+        try
+        {
+            free = new DriveInfo(folder).AvailableFreeSpace;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            return;
+        }
+
+        var needed = TranscodeTestRules.NeededSpace(request.MaxStreams, request.VideoBitrate, 6);
+        if (free < needed)
+        {
+            throw new InvalidOperationException(FormatLog($"The transcode folder has {free / 1e9:0.0} GB free, and {request.MaxStreams} streams at {request.VideoBitrate / 1e6:0.#} Mbps need about {needed / 1e9:0.0} GB. Free up space, or lower the bitrate or the number of streams."));
+        }
+    }
 
     // ---- shared -----------------------------------------------------------------------------
 

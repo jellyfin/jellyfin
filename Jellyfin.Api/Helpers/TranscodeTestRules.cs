@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Jellyfin.Api.Models.TranscodeTestDtos;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 
@@ -13,6 +14,23 @@ namespace Jellyfin.Api.Helpers;
 /// </summary>
 internal static partial class TranscodeTestRules
 {
+    /// <summary>
+    /// The shortest time limit of a stress test, in seconds. The limit grows with the stream limit, see
+    /// <see cref="TimeLimitSeconds"/>.
+    /// </summary>
+    internal const double MinTimeLimitSeconds = 15 * 60;
+
+    /// <summary>
+    /// Seconds after which a stress test that nobody checks on, such as one left running in a closed browser, stops.
+    /// </summary>
+    internal const double IdleStopSeconds = 10 * 60;
+
+    /// <summary>
+    /// How many segments per stream the transcode folder must have room for: the ones kept, the one being written and
+    /// a spare.
+    /// </summary>
+    internal const int SegmentsPerStreamOnDisk = 5;
+
     // How ffmpeg says the GPU ran out of memory: CUDA (NVDEC, cuvid, CUDA filters) through cuda_check.h; VAAPI through
     // libva's vaErrorStr for VA_STATUS_ERROR_ALLOCATION_FAILED; QSV MFX_ERR_MEMORY_ALLOC through ff_qsv_print_error;
     // Vulkan and libplacebo through ff_vk_ret2str.
@@ -283,6 +301,31 @@ internal static partial class TranscodeTestRules
             : string.IsNullOrEmpty(errors) ? cause : cause + " | " + errors;
 
     /// <summary>
+    /// Gets whether the stress test can play an item: any video, such as a movie, an episode, a music video or a home
+    /// video.
+    /// </summary>
+    /// <param name="item">The item, or <c>null</c> when it was not found.</param>
+    /// <returns><c>true</c> for a video.</returns>
+    public static bool IsStressTestItem(BaseItem? item) => item is Video;
+
+    /// <summary>
+    /// Describes a source short enough that the stress test restarts its streams often, for the log.
+    /// </summary>
+    /// <param name="seconds">The source's run time, or <c>null</c> when it is not known.</param>
+    /// <returns>The line for the log, or <c>null</c> when the source is long enough or its length is not known.</returns>
+    public static string? DescribeShortSource(double? seconds)
+        => IsShortSource(seconds)
+            ? string.Create(CultureInfo.InvariantCulture, $"This file is {seconds:0.#} s long. Each stream restarts at its end, which briefly disturbs the measurement; a file of at least a minute gives steadier results.")
+            : null;
+
+    /// <summary>
+    /// Gets whether a source is shorter than <see cref="TranscodeTestManager.ShortSourceSeconds"/>.
+    /// </summary>
+    /// <param name="seconds">The source's run time, or <c>null</c> when it is not known.</param>
+    /// <returns><c>true</c> for a known run time under the minimum.</returns>
+    public static bool IsShortSource(double? seconds) => seconds is double s && s > 0 && s < TranscodeTestManager.ShortSourceSeconds;
+
+    /// <summary>
     /// Gets whether the saved settings let Jellyfin pick an output codec. Jellyfin only prefers HEVC and AV1 when
     /// "Allow encoding in HEVC/AV1 format" is on, whatever the hardware can do.
     /// </summary>
@@ -467,11 +510,142 @@ internal static partial class TranscodeTestRules
             && _gpuMemoryPatterns.Any(p => line.Contains(p, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
+    /// Gets how long a stress test may run at most: long enough for every stream to be added, fall behind once and
+    /// take the longest start, and at least <see cref="MinTimeLimitSeconds"/>.
+    /// </summary>
+    /// <param name="maxStreams">The most streams the test may run.</param>
+    /// <returns>The limit in seconds.</returns>
+    public static double TimeLimitSeconds(int maxStreams)
+        => Math.Max(MinTimeLimitSeconds, maxStreams * (TranscodeTestManager.RampSeconds + TranscodeTestManager.FailSeconds + TranscodeTestManager.StartTimeoutSeconds));
+
+    /// <summary>
+    /// Gets why a stress test that ran for its time limit ended.
+    /// </summary>
+    /// <param name="maxStable">The most streams that all kept up.</param>
+    /// <param name="maxStreams">The most streams the test may run.</param>
+    /// <returns><see cref="TranscodeTestEndReason.MaxStreams"/> when every allowed stream kept up, otherwise
+    /// <see cref="TranscodeTestEndReason.LimitReached"/>: the kept-up count is the result.</returns>
+    public static TranscodeTestEndReason TimeLimitEndReason(int maxStable, int maxStreams)
+        => maxStable >= maxStreams ? TranscodeTestEndReason.MaxStreams : TranscodeTestEndReason.LimitReached;
+
+    /// <summary>
+    /// Describes a stress test that ran for its time limit, for the log.
+    /// </summary>
+    /// <param name="limitSeconds">The limit.</param>
+    /// <param name="maxStable">The most streams that all kept up.</param>
+    /// <returns>The sentence for the log.</returns>
+    public static string DescribeTimeLimit(double limitSeconds, int maxStable)
+        => string.Create(CultureInfo.InvariantCulture, $"The test reached its time limit of {limitSeconds / 60:0} min while the streams kept dipping below real time; {StreamCount(maxStable)} kept up before that, which is the result.");
+
+    /// <summary>
+    /// Gets whether a stress test was left alone too long and should stop.
+    /// </summary>
+    /// <param name="now">Seconds since the test started.</param>
+    /// <param name="lastCheckedAt">When its status was last asked for, in seconds since the start.</param>
+    /// <returns><c>true</c> after <see cref="IdleStopSeconds"/> without a status request.</returns>
+    public static bool IsAbandoned(double now, double lastCheckedAt) => now - lastCheckedAt >= IdleStopSeconds;
+
+    /// <summary>
+    /// Estimates the space a stress test needs in the transcode folder.
+    /// </summary>
+    /// <param name="maxStreams">The most streams.</param>
+    /// <param name="videoBitrate">The video bitrate, in bits per second.</param>
+    /// <param name="segmentSeconds">The segment length.</param>
+    /// <returns>The bytes needed, with audio and muxing overhead.</returns>
+    public static long NeededSpace(int maxStreams, int videoBitrate, int segmentSeconds)
+        => (long)(maxStreams * SegmentsPerStreamOnDisk * segmentSeconds * ((videoBitrate + 192_000) / 8.0) * 1.1);
+
+    /// <summary>
     /// Gets whether an ffmpeg encoder runs on the CPU.
     /// </summary>
     /// <param name="encoder">The encoder name.</param>
     /// <returns><c>true</c> for software encoders such as libx264.</returns>
     public static bool IsSoftwareEncoder(string encoder) => encoder.StartsWith("lib", StringComparison.Ordinal);
+
+    /// <summary>
+    /// Rounds a stress test frame rate reading to one decimal, or to two or three when fewer would move it onto or
+    /// across the threshold, so a reading under the threshold never looks equal to it or above it.
+    /// </summary>
+    /// <param name="fps">The reading.</param>
+    /// <param name="thresholdFps">The frame rate each stream must keep, at most three decimals.</param>
+    /// <returns>The rounded reading, on the same side of the threshold as <paramref name="fps"/>.</returns>
+    public static double RoundFps(double fps, double thresholdFps)
+    {
+        var side = Math.Sign(fps.CompareTo(thresholdFps));
+        for (var decimals = 1; decimals <= 3; decimals++)
+        {
+            var rounded = Math.Round(fps, decimals);
+            if (Math.Sign(rounded.CompareTo(thresholdFps)) == side)
+            {
+                return rounded;
+            }
+        }
+
+        // Within a thousandth of the threshold: round away from it.
+        return side < 0 ? Math.Floor(fps * 1000) / 1000 : Math.Ceiling(fps * 1000) / 1000;
+    }
+
+    /// <summary>
+    /// Formats a stress test frame rate with at least one and at most three decimals: 23.976, 24.0, 23.96.
+    /// </summary>
+    /// <param name="fps">The frame rate, already rounded with <see cref="RoundFps"/> or to the source's precision.</param>
+    /// <returns>The frame rate as text.</returns>
+    public static string FormatFps(double fps) => fps.ToString("0.0##", CultureInfo.InvariantCulture);
+
+    /// <summary>
+    /// Counts streams for the log: "1 stream", "5 streams".
+    /// </summary>
+    /// <param name="count">The number of streams.</param>
+    /// <returns>The count as text.</returns>
+    public static string StreamCount(int count)
+        => count == 1 ? "1 stream" : string.Create(CultureInfo.InvariantCulture, $"{count} streams");
+
+    /// <summary>
+    /// Describes how a stress test ended, for the log.
+    /// </summary>
+    /// <param name="result">The finished test.</param>
+    /// <returns>How many streams kept up and, when one fell behind, how many were running then.</returns>
+    public static string DescribeResult(TranscodeTestStressResult result)
+    {
+        var text = string.Create(CultureInfo.InvariantCulture, $"Result: {result.MaxStableStreams} stream(s) kept up with real time.");
+        if (result.EndReason == TranscodeTestEndReason.LimitReached && result.FailedStreamId is int id && result.FailedStreamFps is double fps)
+        {
+            text += string.Create(CultureInfo.InvariantCulture, $" With {StreamCount(result.StreamsAtEnd)} running, stream {id} fell to {FormatFps(fps)} fps.");
+        }
+
+        if (result.TimeLimitReached)
+        {
+            text += " The test stopped at its time limit, not because a stream fell behind.";
+        }
+
+        return text;
+    }
+
+    /// <summary>
+    /// Describes a stream dipping below the threshold, which holds back the next stream until every stream keeps up again.
+    /// </summary>
+    /// <param name="streamId">The stream that dipped.</param>
+    /// <param name="fps">Its frame rate.</param>
+    /// <param name="thresholdFps">The frame rate each stream must keep.</param>
+    /// <param name="settleSeconds">How long every stream must keep up after a dip before a stream is added.</param>
+    /// <param name="nextStreamId">The stream to add next, or null when the test is at its maximum.</param>
+    /// <returns>The line for the log.</returns>
+    public static string DescribeDip(int streamId, double fps, double thresholdFps, double settleSeconds, int? nextStreamId)
+    {
+        var reading = FormatFps(RoundFps(fps, thresholdFps));
+        return nextStreamId is int next
+            ? string.Create(CultureInfo.InvariantCulture, $"Stream {streamId} dipped to {reading} fps; stream {next} waits until every stream has kept up for {settleSeconds:0} s.")
+            : string.Create(CultureInfo.InvariantCulture, $"Stream {streamId} dipped to {reading} fps; the test ends once every stream has kept up for {settleSeconds:0} s.");
+    }
+
+    /// <summary>
+    /// Describes when the stress test adds a stream.
+    /// </summary>
+    /// <param name="rampSeconds">The least time between two added streams.</param>
+    /// <param name="windowSeconds">How long each stream's frame rate is measured over.</param>
+    /// <returns>The sentence for the log.</returns>
+    public static string DescribeRamp(double rampSeconds, double windowSeconds)
+        => string.Create(CultureInfo.InvariantCulture, $"A stream is added at most every {rampSeconds:0} s, once every running stream has kept up for {windowSeconds:0} s.");
 
     [GeneratedRegex(@"graph [-0-9]+ input from stream 0:0 @ [^\]]+\] .*?pixfmt:([a-z0-9_]+)")]
     private static partial Regex InputFormatRegex();

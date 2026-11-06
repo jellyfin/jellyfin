@@ -42,4 +42,9 @@ public class TranscodeTestStatusDto
     /// Gets or sets the compatibility check results.
     /// </summary>
     public IReadOnlyList<TranscodeTestCheckResult> Checks { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the stress test progress and result.
+    /// </summary>
+    public TranscodeTestStressResult? Stress { get; set; }
 }

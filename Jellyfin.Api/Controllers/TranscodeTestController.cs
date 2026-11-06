@@ -1,7 +1,9 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.TranscodeTestDtos;
 using MediaBrowser.Common.Api;
+using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -9,21 +11,25 @@ using Microsoft.AspNetCore.Mvc;
 namespace Jellyfin.Api.Controllers;
 
 /// <summary>
-/// Tests the server's transcoding settings.
+/// Tests the server's transcoding settings and measures how many streams it can transcode.
 /// </summary>
 [Route("Transcoding/Test")]
 [Authorize(Policy = Policies.RequiresElevation)]
 public class TranscodeTestController : BaseJellyfinApiController
 {
+    private static readonly string[] _videoCodecs = ["h264", "hevc", "av1"];
     private readonly TranscodeTestManager _transcodeTestManager;
+    private readonly ILibraryManager _libraryManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TranscodeTestController"/> class.
     /// </summary>
     /// <param name="transcodeTestManager">Instance of <see cref="TranscodeTestManager"/>.</param>
-    public TranscodeTestController(TranscodeTestManager transcodeTestManager)
+    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    public TranscodeTestController(TranscodeTestManager transcodeTestManager, ILibraryManager libraryManager)
     {
         _transcodeTestManager = transcodeTestManager;
+        _libraryManager = libraryManager;
     }
 
     /// <summary>
@@ -40,6 +46,21 @@ public class TranscodeTestController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public ActionResult<TranscodeTestStatusDto> StartTest([FromBody, Required] TranscodeTestRequestDto request)
     {
+        if (request.Kind == TranscodeTestKind.StressTest && !request.ItemId.HasValue)
+        {
+            return BadRequest("The stress test needs an item.");
+        }
+
+        if (request.Kind == TranscodeTestKind.StressTest && !TranscodeTestRules.IsStressTestItem(_libraryManager.GetItemById(request.ItemId!.Value)))
+        {
+            return BadRequest("The stress test needs a video item.");
+        }
+
+        if (Array.IndexOf(_videoCodecs, request.VideoCodec) < 0)
+        {
+            return BadRequest("The video codec must be h264, hevc or av1.");
+        }
+
         if (!_transcodeTestManager.TryStart(request))
         {
             return Conflict("A transcoding test is already running.");

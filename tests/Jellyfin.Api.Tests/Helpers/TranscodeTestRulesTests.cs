@@ -1,5 +1,11 @@
+using System;
+using System.Globalization;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.TranscodeTestDtos;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using Xunit;
@@ -183,6 +189,31 @@ namespace Jellyfin.Api.Tests.Helpers
         }
 
         [Fact]
+        public void IsStressTestItem_AcceptsAnyVideo()
+        {
+            Assert.True(TranscodeTestRules.IsStressTestItem(new Movie()));
+            Assert.True(TranscodeTestRules.IsStressTestItem(new Episode()));
+            Assert.True(TranscodeTestRules.IsStressTestItem(new MusicVideo()));
+            Assert.True(TranscodeTestRules.IsStressTestItem(new Video()));
+            Assert.False(TranscodeTestRules.IsStressTestItem(new Audio()));
+            Assert.False(TranscodeTestRules.IsStressTestItem(new Folder()));
+            Assert.False(TranscodeTestRules.IsStressTestItem(null));
+        }
+
+        [Theory]
+        [InlineData(30.0, "This file is 30 s long. Each stream restarts at its end, which briefly disturbs the measurement; a file of at least a minute gives steadier results.")]
+        [InlineData(59.5, "This file is 59.5 s long. Each stream restarts at its end, which briefly disturbs the measurement; a file of at least a minute gives steadier results.")]
+        [InlineData(60.0, null)]
+        [InlineData(5400.0, null)]
+        [InlineData(0.0, null)] // A run time of 0 is not known.
+        [InlineData(null, null)]
+        public void DescribeShortSource_WarnsForAFileUnderAMinute(double? seconds, string? expected)
+        {
+            Assert.Equal(expected, TranscodeTestRules.DescribeShortSource(seconds));
+            Assert.Equal(expected is not null, TranscodeTestRules.IsShortSource(seconds));
+        }
+
+        [Fact]
         public void ErrorLines_SkipsEncoderLibraryWarnings()
         {
             // What libsvtav1 printed in a container on an Intel N5095: only a harmless warning.
@@ -255,5 +286,70 @@ namespace Jellyfin.Api.Tests.Helpers
         [InlineData(null, null, false, TranscodeTestOutcome.NotSupported, TranscodeTestAdvice.None)]
         public void Tonemap_ReportsWhereItRuns(string? filter, int? exitCode, bool enabled, TranscodeTestOutcome outcome, TranscodeTestAdvice advice)
             => Assert.Equal((outcome, advice), TranscodeTestRules.Tonemap(filter, exitCode, enabled));
+
+        [Theory]
+        [InlineData(23.96, 23.976, "23.96")] // One decimal would read 24.0, above the threshold.
+        [InlineData(18.44, 23.976, "18.4")]
+        [InlineData(23.9759, 23.976, "23.975")] // Rounding to three decimals would land on the threshold.
+        [InlineData(24.03, 24.0, "24.03")] // Above the threshold stays above it.
+        [InlineData(23.98, 24.0, "23.98")]
+        [InlineData(24.0, 24.0, "24.0")]
+        [InlineData(123.6, 23.976, "123.6")]
+        public void RoundFps_KeepsAReadingOnItsSideOfTheThreshold(double fps, double threshold, string expected)
+        {
+            var rounded = TranscodeTestRules.RoundFps(fps, threshold);
+            Assert.Equal(expected, TranscodeTestRules.FormatFps(rounded));
+            Assert.Equal(Math.Sign(fps.CompareTo(threshold)), Math.Sign(rounded.CompareTo(threshold)));
+        }
+
+        [Theory]
+        [InlineData(23.976, "23.976")]
+        [InlineData(24.0, "24.0")]
+        [InlineData(29.97, "29.97")]
+        public void FormatFps_ShowsTheSourcesPrecision(double fps, string expected)
+            => Assert.Equal(expected, TranscodeTestRules.FormatFps(fps));
+
+        [Fact]
+        public void DescribeResult_SaysHowManyStreamsWereRunningWhenOneFellBehind()
+        {
+            var result = new TranscodeTestStressResult { EndReason = TranscodeTestEndReason.LimitReached, MaxStableStreams = 4, StreamsAtEnd = 5, FailedStreamId = 5, FailedStreamFps = 20.04 };
+            Assert.Equal("Result: 4 stream(s) kept up with real time. With 5 streams running, stream 5 fell to 20.04 fps.", TranscodeTestRules.DescribeResult(result));
+
+            result.EndReason = TranscodeTestEndReason.MaxStreams;
+            Assert.Equal("Result: 4 stream(s) kept up with real time.", TranscodeTestRules.DescribeResult(result));
+        }
+
+        [Fact]
+        public void DescribeDip_NamesTheNextStream()
+        {
+            Assert.Equal("Stream 3 dipped to 23.1 fps; stream 8 waits until every stream has kept up for 3 s.", TranscodeTestRules.DescribeDip(3, 23.14, 23.976, 3, 8));
+            Assert.Equal("Stream 1 dipped to 0.0 fps; the test ends once every stream has kept up for 3 s.", TranscodeTestRules.DescribeDip(1, 0, 24, 3, null));
+        }
+
+        [Fact]
+        public void DescribeRamp_SaysAStreamIsAddedAtMostEveryInterval()
+            => Assert.Equal(
+                "A stream is added at most every 12 s, once every running stream has kept up for 3 s.",
+                TranscodeTestRules.DescribeRamp(TranscodeTestManager.RampSeconds, TranscodeTestStream.WindowSeconds));
+
+        [Fact]
+        public void LogText_UsesADecimalPointInEveryCulture()
+        {
+            var culture = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+            try
+            {
+                double single = 61.25;
+                double speed = 2.554;
+                Assert.Equal("One stream alone ran at 61.3 fps (2.55× real time).", TranscodeTestManager.FormatLog($"One stream alone ran at {single:0.0} fps ({speed:0.00}× real time)."));
+                Assert.Equal("Stream 3 dipped to 23.1 fps; stream 8 waits until every stream has kept up for 3 s.", TranscodeTestRules.DescribeDip(3, 23.14, 23.976, 3, 8));
+                var result = new TranscodeTestStressResult { EndReason = TranscodeTestEndReason.LimitReached, MaxStableStreams = 4, StreamsAtEnd = 5, FailedStreamId = 5, FailedStreamFps = 20.5 };
+                Assert.EndsWith("stream 5 fell to 20.5 fps.", TranscodeTestRules.DescribeResult(result), StringComparison.Ordinal);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = culture;
+            }
+        }
     }
 }
