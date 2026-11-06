@@ -218,7 +218,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
                 if (parent is Series || parent.GetParents().OfType<Series>().Any())
                 {
-                    return null;
+                    return ResolveVideos<Episode>(parent, files, true, CollectionType.tvshows, true);
                 }
 
                 return ResolveVideos<Movie>(parent, files, false, collectionType, true);
