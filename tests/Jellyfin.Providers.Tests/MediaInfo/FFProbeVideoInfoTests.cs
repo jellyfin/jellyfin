@@ -126,6 +126,30 @@ public class FFProbeVideoInfoTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void FetchEmbeddedInfo_ProviderIds_AddsMissingWithoutReplacingExisting(bool replaceAllMetadata)
+    {
+        var video = new Video();
+        video.SetProviderId(MetadataProvider.Tmdb, "123");
+
+        var mediaInfo = new MediaBrowser.Model.MediaInfo.MediaInfo();
+        mediaInfo.SetProviderId(MetadataProvider.Imdb, "tt0092099");
+        mediaInfo.SetProviderId(MetadataProvider.Tmdb, "744");
+        mediaInfo.SetProviderId(MetadataProvider.Tvdb, "905");
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(
+            video,
+            mediaInfo,
+            CreateRefreshOptions(replaceAllMetadata),
+            new LibraryOptions());
+
+        Assert.Equal("tt0092099", video.GetProviderId(MetadataProvider.Imdb));
+        Assert.Equal("123", video.GetProviderId(MetadataProvider.Tmdb));
+        Assert.Equal("905", video.GetProviderId(MetadataProvider.Tvdb));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public void FetchEmbeddedInfo_NoYear_AppliesContainerCreationDate(bool replaceAllMetadata)
     {
         var video = new Video();

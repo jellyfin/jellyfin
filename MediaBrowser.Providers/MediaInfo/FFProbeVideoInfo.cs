@@ -390,6 +390,14 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var replaceData = refreshOptions.ReplaceAllMetadata;
 
+            foreach (var (provider, id) in data.ProviderIds)
+            {
+                if (!video.HasProviderId(provider))
+                {
+                    video.TrySetProviderId(provider, id);
+                }
+            }
+
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.OfficialRating))
             {
                 if (string.IsNullOrWhiteSpace(video.OfficialRating) || replaceData)
