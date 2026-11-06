@@ -2,10 +2,15 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
+using System.Text.RegularExpressions;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder;
@@ -17,6 +22,23 @@ namespace MediaBrowser.MediaEncoding.Encoder;
 public static partial class ApplePlatformHelper
 {
     private static readonly string[] _av1DecodeBlacklistedCpuClass = ["M1", "M2"];
+
+    // The first Intel model of each Mac line released in 2017 or later. Those support HEVC and hardware tone-mapping,
+    // except for the MacBook Air (13-inch, 2017), which shares MacBookAir7,2 with the 2015 model and is therefore not listed.
+    // See https://jellyfin.org/docs/general/post-install/transcoding/hardware-acceleration/apple
+    private static readonly Dictionary<string, int> _firstFullVideoToolboxIntelModels = new(StringComparer.Ordinal)
+    {
+        ["MacBook"] = 10,
+        ["MacBookAir"] = 8,
+        ["MacBookPro"] = 14,
+        ["iMac"] = 18,
+        ["iMacPro"] = 1,
+        ["Macmini"] = 8,
+        ["MacPro"] = 7
+    };
+
+    [GeneratedRegex(@"^(?<line>[A-Za-z]+)(?<major>\d+),\d+$")]
+    private static partial Regex ModelIdentifierRegex();
 
     internal static string GetSysctlValue(string name)
     {
@@ -78,6 +100,65 @@ public static partial class ApplePlatformHelper
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Applies the VideoToolbox settings the Jellyfin documentation recommends for this Mac.
+    /// </summary>
+    /// <param name="options">The encoding options to update.</param>
+    /// <param name="logger">The logger used for logging the applied settings.</param>
+    public static void ApplyRecommendedVideoToolboxOptions(EncodingOptions options, ILogger logger)
+    {
+        string model = string.Empty;
+        try
+        {
+            model = GetSysctlValue("hw.model");
+        }
+        catch (NotSupportedException e)
+        {
+            logger.LogError(e, "Error getting Mac model");
+        }
+
+        var isAppleSilicon = RuntimeInformation.OSArchitecture.Equals(Architecture.Arm64);
+        ApplyRecommendedVideoToolboxOptions(options, model, isAppleSilicon, isAppleSilicon && HasAv1HardwareAccel(logger));
+
+        logger.LogInformation(
+            "Recommending VideoToolbox hardware acceleration for {Model}, decoding {Codecs} in hardware, tone-mapping {Tonemapping}",
+            model,
+            options.HardwareDecodingCodecs,
+            options.EnableVideoToolboxTonemapping ? "enabled" : "disabled");
+    }
+
+    internal static void ApplyRecommendedVideoToolboxOptions(EncodingOptions options, string model, bool isAppleSilicon, bool hasAv1HardwareAccel)
+    {
+        options.HardwareAccelerationType = HardwareAccelerationType.videotoolbox;
+        options.EnableHardwareEncoding = true;
+
+        if (isAppleSilicon)
+        {
+            options.HardwareDecodingCodecs = hasAv1HardwareAccel ? ["h264", "hevc", "av1"] : ["h264", "hevc"];
+            options.EnableVideoToolboxTonemapping = true;
+        }
+        else if (IsFullVideoToolboxIntelModel(model))
+        {
+            options.HardwareDecodingCodecs = ["h264", "hevc"];
+            options.EnableVideoToolboxTonemapping = true;
+        }
+        else
+        {
+            // Any Mac with VideoToolbox can decode and encode H.264
+            options.HardwareDecodingCodecs = ["h264"];
+            options.EnableVideoToolboxTonemapping = false;
+        }
+    }
+
+    internal static bool IsFullVideoToolboxIntelModel(string model)
+    {
+        var match = ModelIdentifierRegex().Match(model);
+        return match.Success
+            && _firstFullVideoToolboxIntelModels.TryGetValue(match.Groups["line"].Value, out var firstMajor)
+            && int.TryParse(match.Groups["major"].ValueSpan, CultureInfo.InvariantCulture, out var major)
+            && major >= firstMajor;
     }
 
     [LibraryImport("libc", EntryPoint = "sysctlbyname", SetLastError = true)]
