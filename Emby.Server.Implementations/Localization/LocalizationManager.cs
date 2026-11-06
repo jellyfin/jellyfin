@@ -264,20 +264,42 @@ namespace Emby.Server.Implementations.Localization
 
         /// <inheritdoc />
         public string? GetLanguageDisplayName(string language)
+            => GetLanguageDisplayName(language, null);
+
+        /// <inheritdoc />
+        public string? GetLanguageDisplayName(string language, string? title)
         {
             if (string.IsNullOrEmpty(language))
             {
                 return null;
             }
 
-            var displayName = FindLanguageInfo(language)?.DisplayName;
-            if (displayName is null)
+            var culture = FindLanguageInfo(language);
+            if (culture is null)
             {
                 return null;
             }
 
             // Truncate at the first delimiter to avoid cluttered display names
-            return displayName.Split([';', ','], StringSplitOptions.None)[0].Trim();
+            var displayName = culture.DisplayName.Split([';', ','], StringSplitOptions.None)[0].Trim();
+
+            // Keep the English name when the title already contains it, such as "English SDH" with a Spanish UI,
+            // so the display title doesn't name the language twice ("English SDH - Inglés").
+            if (!string.IsNullOrEmpty(title) && title.Contains(displayName, StringComparison.OrdinalIgnoreCase))
+            {
+                return displayName;
+            }
+
+            // Use the name in the current UI culture, like the other localized stream labels,
+            // when .NET describes the same language (it calls zh-CN "Chinese (China)", for example).
+            if (!string.IsNullOrEmpty(culture.TwoLetterISOLanguageName)
+                && TryGetCultureInfo(culture.TwoLetterISOLanguageName, out var cultureInfo)
+                && string.Equals(cultureInfo.EnglishName, displayName, StringComparison.OrdinalIgnoreCase))
+            {
+                return cultureInfo.DisplayName;
+            }
+
+            return displayName;
         }
 
         /// <inheritdoc />

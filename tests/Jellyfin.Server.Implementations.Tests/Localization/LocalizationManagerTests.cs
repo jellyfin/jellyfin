@@ -134,8 +134,17 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             });
             await localizationManager.LoadAll();
 
-            var result = localizationManager.GetLanguageDisplayName(language);
-            Assert.Equal(expected, result);
+            var previousCulture = CultureInfo.CurrentUICulture;
+            try
+            {
+                CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
+                var result = localizationManager.GetLanguageDisplayName(language);
+                Assert.Equal(expected, result);
+            }
+            finally
+            {
+                CultureInfo.CurrentUICulture = previousCulture;
+            }
         }
 
         [Theory]
@@ -152,6 +161,64 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
 
             var result = localizationManager.GetLanguageDisplayName(language!);
             Assert.Null(result);
+        }
+
+        [Theory]
+        [InlineData("spa", "es", "español")]
+        [InlineData("eng", "es", "inglés")]
+        [InlineData("ger", "fr", "allemand")]
+        [InlineData("spa", "en-US", "Spanish")]
+        [InlineData("zh-CN", "es", "Chinese (Simplified)")] // .NET names zh-CN "Chinese (China)", keep the Jellyfin name
+        [InlineData("mul", "es", "Multiple languages")] // No .NET culture
+        public async Task GetLanguageDisplayName_UsesCurrentUICulture(string language, string uiCulture, string expected)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+            await localizationManager.LoadAll();
+
+            var previousCulture = CultureInfo.CurrentUICulture;
+            try
+            {
+                CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(uiCulture);
+                var result = localizationManager.GetLanguageDisplayName(language);
+                Assert.Equal(expected, result);
+            }
+            finally
+            {
+                CultureInfo.CurrentUICulture = previousCulture;
+            }
+        }
+
+        [Theory]
+        [InlineData("eng", "es", "English", "English")]
+        [InlineData("eng", "es", "English SDH", "English")]
+        [InlineData("ger", "de", "German", "German")]
+        [InlineData("spa", "es", "Spanish (Latin America)", "Spanish")] // Truncated "Spanish; Castilian"
+        [InlineData("eng", "en-US", "English SDH", "English")]
+        [InlineData("eng", "es", "Pista 1", "inglés")]
+        [InlineData("spa", "es", "Español Latino", "español")]
+        [InlineData("spa", "es", null, "español")]
+        public async Task GetLanguageDisplayName_WithTitle_KeepsEnglishNameFromTitle(string language, string uiCulture, string? title, string expected)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+            await localizationManager.LoadAll();
+
+            var previousCulture = CultureInfo.CurrentUICulture;
+            try
+            {
+                CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(uiCulture);
+                var result = localizationManager.GetLanguageDisplayName(language, title);
+                Assert.Equal(expected, result);
+            }
+            finally
+            {
+                CultureInfo.CurrentUICulture = previousCulture;
+            }
         }
 
         [Fact]
