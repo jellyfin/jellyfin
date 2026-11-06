@@ -308,8 +308,8 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
 
         var timer = recordingInfo.Timer;
         var remoteMetadata = await FetchInternetMetadata(timer, CancellationToken.None).ConfigureAwait(false);
-        var recordingPath = GetRecordingPath(timer, remoteMetadata, out var seriesPath);
-
+        var baseRecordingPath = GetRecordingPath(timer, remoteMetadata, out var seriesPath);
+        string? currentRecordingPath = null;
         string? liveStreamId = null;
         RecordingStatus recordingStatus;
         try
@@ -336,51 +336,50 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
 
             using var recorder = GetRecorder(mediaStreamInfo);
 
-            recordingPath = recorder.GetOutputPath(mediaStreamInfo, recordingPath);
-            recordingPath = EnsureFileUnique(recordingPath, timer.Id);
+            if (timer.RecordingPath == null)
+            {
+                timer.RecordingPath = recorder.GetOutputPath(mediaStreamInfo, baseRecordingPath);
+            }
 
-            _libraryMonitor.ReportFileSystemChangeBeginning(recordingPath);
-
+            currentRecordingPath = EnsureFileUnique(timer.RecordingPath, timer.Id);
+            _libraryMonitor.ReportFileSystemChangeBeginning(currentRecordingPath);
             var duration = recordingEndDate - DateTime.UtcNow;
-
             _logger.LogInformation("Beginning recording. Will record for {Duration} minutes.", duration.TotalMinutes);
-            _logger.LogInformation("Writing file to: {Path}", recordingPath);
+            _logger.LogInformation("Writing file to: {0}", currentRecordingPath);
 
             async void OnStarted()
             {
-                recordingInfo.Path = recordingPath;
+                recordingInfo.Path = currentRecordingPath;
                 _activeRecordings.TryAdd(timer.Id, recordingInfo);
-
                 timer.Status = RecordingStatus.InProgress;
+                timer.CurrentRecordingPath = currentRecordingPath;
                 _timerManager.AddOrUpdate(timer, false);
-
-                await _recordingsMetadataManager.SaveRecordingMetadata(timer, recordingPath, seriesPath).ConfigureAwait(false);
+                await _recordingsMetadataManager.SaveRecordingMetadata(timer, timer.RecordingPath, seriesPath).ConfigureAwait(false);
                 await CreateRecordingFolders().ConfigureAwait(false);
-
-                TriggerRefresh(recordingPath);
+                TriggerRefresh(currentRecordingPath);
                 await EnforceKeepUpTo(timer, seriesPath).ConfigureAwait(false);
             }
 
             await recorder.Record(
                 directStreamProvider,
                 mediaStreamInfo,
-                recordingPath,
+                currentRecordingPath,
                 duration,
                 OnStarted,
                 recordingInfo.CancellationTokenSource.Token).ConfigureAwait(false);
 
             recordingStatus = RecordingStatus.Completed;
-            _logger.LogInformation("Recording completed: {RecordPath}", recordingPath);
+            _logger.LogInformation("Recording completed: {CurrentRecordingPath}", currentRecordingPath);
         }
         catch (OperationCanceledException)
         {
-            _logger.LogInformation("Recording stopped: {RecordPath}", recordingPath);
-            recordingStatus = RecordingStatus.Completed;
+            _logger.LogInformation("Recording stopped currentRecordingPath: {CurrentRecordingPath}", currentRecordingPath);
+            recordingStatus = RecordingStatus.Cancelled;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error recording to {RecordPath}", recordingPath);
-            recordingStatus = RecordingStatus.Error;
+            _logger.LogError(ex, "Error recording to: currentRecordingPath: {CurrentRecordingPath}", currentRecordingPath);
+            recordingStatus = timer.Status == RecordingStatus.Cancelled ? RecordingStatus.Cancelled : RecordingStatus.Error;
         }
 
         if (!string.IsNullOrWhiteSpace(liveStreamId))
@@ -395,32 +394,53 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             }
         }
 
-        DeleteFileIfEmpty(recordingPath);
-        TriggerRefresh(recordingPath);
-        _libraryMonitor.ReportFileSystemChangeComplete(recordingPath, false);
         _activeRecordings.TryRemove(timer.Id, out _);
-
-        if (recordingStatus != RecordingStatus.Completed && DateTime.UtcNow < timer.EndDate && timer.RetryCount < 10)
+        DeleteFileIfEmpty(currentRecordingPath);
+        if (File.Exists(currentRecordingPath))
         {
-            const int RetryIntervalSeconds = 60;
-            _logger.LogInformation("Retrying recording in {0} seconds.", RetryIntervalSeconds);
+            _libraryMonitor.ReportFileSystemChangeComplete(currentRecordingPath, false);
+            timer.RecordingPartPaths = timer.RecordingPartPaths.Append(currentRecordingPath).ToArray();
+        }
+
+        if (recordingStatus == RecordingStatus.Error && DateTime.UtcNow < timer.EndDate && timer.FailedRetryCount < 20)
+        {
+            // For errors as long as we're getting data then we should try to keep on recording, so don't increment the retry count or timer
+            int retryIntervalSeconds = 0;
+            if (!File.Exists(currentRecordingPath))
+            {
+                retryIntervalSeconds = Math.Min(60, 1 << timer.FailedRetryCount);
+                timer.FailedRetryCount++;
+            }
+            else
+            {
+                timer.FailedRetryCount = 0;
+            }
+
+            _logger.LogInformation("Retrying recording in {0} seconds.", retryIntervalSeconds);
 
             timer.Status = RecordingStatus.New;
             timer.PrePaddingSeconds = 0;
-            timer.StartDate = DateTime.UtcNow.AddSeconds(RetryIntervalSeconds);
+            timer.StartDate = DateTime.UtcNow.AddSeconds(retryIntervalSeconds);
             timer.RetryCount++;
             _timerManager.AddOrUpdate(timer);
         }
-        else if (File.Exists(recordingPath))
-        {
-            timer.RecordingPath = recordingPath;
-            timer.Status = RecordingStatus.Completed;
-            _timerManager.AddOrUpdate(timer, false);
-            await PostProcessRecording(recordingPath).ConfigureAwait(false);
-        }
         else
         {
-            _timerManager.Delete(timer);
+            // For all other cases we want to update the timer and collect all files
+            timer.Status = recordingStatus;
+            if (timer.RecordingPartPaths.Length > 0)
+            {
+                await _mediaEncoder.ConcatenateMedia(timer.RecordingPartPaths, timer.RecordingPath, CancellationToken.None).ConfigureAwait(false);
+                timer.RecordingPartPaths = [timer.RecordingPath];
+                timer.CurrentRecordingPath = null;
+                TriggerRefresh(timer.RecordingPath);
+                _timerManager.AddOrUpdate(timer, false);
+                await PostProcessRecording(timer.RecordingPath).ConfigureAwait(false);
+            }
+            else
+            {
+                _timerManager.AddOrUpdate(timer, false);
+            }
         }
     }
 
@@ -584,8 +604,13 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         return Path.Combine(recordingPath, recordingFileName);
     }
 
-    private void DeleteFileIfEmpty(string path)
+    private void DeleteFileIfEmpty(string? path)
     {
+        if (path == null)
+        {
+            return;
+        }
+
         var file = _fileSystem.GetFileInfo(path);
 
         if (file.Exists && file.Length == 0)
@@ -773,18 +798,18 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         var parent = Path.GetDirectoryName(path)!;
         var name = Path.GetFileNameWithoutExtension(path);
         var extension = Path.GetExtension(path);
-
-        var index = 1;
-        while (File.Exists(path) || _activeRecordings.Any(i
-                   => string.Equals(i.Value.Path, path, StringComparison.OrdinalIgnoreCase)
-                      && !string.Equals(i.Value.Timer.Id, timerId, StringComparison.OrdinalIgnoreCase)))
+        string uniqueName;
+        var index = 0;
+        do
         {
-            name += " - " + index.ToString(CultureInfo.InvariantCulture);
-
-            path = Path.ChangeExtension(Path.Combine(parent, name), extension);
+            uniqueName = name + "_" + index.ToString(CultureInfo.InvariantCulture);
+            path = Path.ChangeExtension(Path.Combine(parent, uniqueName), extension);
             index++;
         }
-
+        while (File.Exists(path) || _activeRecordings.Any(i =>
+                string.Equals(i.Value.Path, path, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(i.Value.Timer.Id, timerId, StringComparison.OrdinalIgnoreCase))
+        );
         return path;
     }
 
