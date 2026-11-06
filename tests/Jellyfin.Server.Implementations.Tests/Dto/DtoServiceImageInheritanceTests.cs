@@ -171,6 +171,7 @@ public class DtoServiceImageInheritanceTests
         var albumTwo = MakeAlbum();
 
         var libraryManager = new Mock<ILibraryManager>();
+        var personItem = new Person { Id = Guid.NewGuid(), Name = "Some Actor" };
 
         // DtoService resolves people for every item in ONE batch (GetPeopleByItems) before the
         // per-item loop. A regression to the per-item path would call GetPeople(BaseItem) once per
@@ -179,14 +180,13 @@ public class DtoServiceImageInheritanceTests
             .Setup(x => x.GetPeopleByItems(It.IsAny<IReadOnlyList<Guid>>()))
             .Returns(new Dictionary<Guid, IReadOnlyList<PersonInfo>>
             {
-                [albumOne.Id] = [new PersonInfo { ItemId = albumOne.Id, Name = "Some Actor", Type = PersonKind.Actor }],
-                [albumTwo.Id] = [new PersonInfo { ItemId = albumTwo.Id, Name = "Some Actor", Type = PersonKind.Actor }]
+                [albumOne.Id] = [new PersonInfo { ItemId = albumOne.Id, PersonItemId = personItem.Id, Name = "Some Actor", Type = PersonKind.Actor }],
+                [albumTwo.Id] = [new PersonInfo { ItemId = albumTwo.Id, PersonItemId = personItem.Id, Name = "Some Actor", Type = PersonKind.Actor }]
             });
 
-        // AttachPeople still resolves each distinct name to its Person entity to attach images.
         libraryManager
-            .Setup(x => x.GetPerson("Some Actor"))
-            .Returns(new Person { Id = Guid.NewGuid(), Name = "Some Actor" });
+            .Setup(x => x.GetItemList(It.IsAny<InternalItemsQuery>()))
+            .Returns<InternalItemsQuery>(query => query.ItemIds.Contains(personItem.Id) ? [personItem] : []);
 
         var dtoService = BuildDtoService(libraryManager);
 
@@ -201,9 +201,11 @@ public class DtoServiceImageInheritanceTests
             Assert.Equal("Some Actor", dto.People[0].Name);
         }
 
-        // People are batched once for the whole set, never once per item.
+        // People and the items they resolve to are batched once for the whole set, never per item.
         libraryManager.Verify(x => x.GetPeopleByItems(It.IsAny<IReadOnlyList<Guid>>()), Times.Once);
         libraryManager.Verify(x => x.GetPeople(It.IsAny<BaseItem>()), Times.Never);
+        libraryManager.Verify(x => x.GetItemList(It.IsAny<InternalItemsQuery>()), Times.Once);
+        libraryManager.Verify(x => x.GetItemById(It.IsAny<Guid>()), Times.Never);
     }
 
     [Fact]

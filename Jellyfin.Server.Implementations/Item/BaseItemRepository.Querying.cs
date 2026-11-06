@@ -625,16 +625,10 @@ public sealed partial class BaseItemRepository
             .OrderBy(r => r)
             .ToArray();
 
-        var tags = context.ItemValuesMap
-            .Join(
-                context.ItemValues,
-                ivm => ivm.ItemValueId,
-                iv => iv.ItemValueId,
-                (ivm, iv) => new { ivm.ItemId, iv.Type, iv.CleanValue, iv.Value })
-            .Where(iv => iv.Type == ItemValueType.Tags)
-            .Where(iv => matchingItemIds.Contains(iv.ItemId))
-            .GroupBy(iv => iv.CleanValue)
-            .Select(g => g.Min(iv => iv.Value))
+        var tags = context.BaseItemTags
+            .Where(t => matchingItemIds.Contains(t.ItemId))
+            .GroupBy(t => t.CleanValue)
+            .Select(g => g.Min(t => t.Value))
             .OrderBy(t => t)
             .ToArray();
 

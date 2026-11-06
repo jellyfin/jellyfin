@@ -40,9 +40,6 @@ public sealed partial class BaseItemRepository
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly ILogger<BaseItemRepository> _logger;
 
-    private static readonly IReadOnlyList<ItemValueType> _getAllArtistsValueTypes = [ItemValueType.Artist, ItemValueType.AlbumArtist];
-    private static readonly IReadOnlyList<ItemValueType> _getArtistValueTypes = [ItemValueType.Artist];
-    private static readonly IReadOnlyList<ItemValueType> _getAlbumArtistValueTypes = [ItemValueType.AlbumArtist];
     private static readonly IReadOnlyList<ItemValueType> _getStudiosValueTypes = [ItemValueType.Studios];
     private static readonly IReadOnlyList<ItemValueType> _getGenreValueTypes = [ItemValueType.Genre];
 
@@ -55,11 +52,17 @@ public sealed partial class BaseItemRepository
         BaseItemKind.Studio
     ];
 
+    // The by-name kinds reached through credits rather than through the values an item carries.
+    private static readonly BaseItemKind[] _creditedByNameKinds =
+    [
+        BaseItemKind.Person,
+        BaseItemKind.MusicArtist
+    ];
+
     private static readonly (BaseItemKind Kind, IReadOnlyList<ItemValueType> ValueTypes)[] _itemByNameValueTypes =
     [
         (BaseItemKind.Genre, _getGenreValueTypes),
         (BaseItemKind.MusicGenre, _getGenreValueTypes),
-        (BaseItemKind.MusicArtist, _getAllArtistsValueTypes),
         (BaseItemKind.Studio, _getStudiosValueTypes)
     ];
 
