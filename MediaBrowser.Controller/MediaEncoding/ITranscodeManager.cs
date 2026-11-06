@@ -11,6 +11,11 @@ namespace MediaBrowser.Controller.MediaEncoding;
 public interface ITranscodeManager
 {
     /// <summary>
+    /// Deletes all cached transcoded media files from the configured transcode path.
+    /// </summary>
+    void DeleteEncodedMediaCache();
+
+    /// <summary>
     /// Get transcoding job.
     /// </summary>
     /// <param name="playSessionId">Playback session id.</param>
