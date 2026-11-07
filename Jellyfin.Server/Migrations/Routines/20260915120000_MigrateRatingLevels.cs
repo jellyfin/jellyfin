@@ -36,7 +36,7 @@ internal class MigrateRatingLevels : IDatabaseMigrationRoutine
         _logger.LogInformation("Recalculating parental rating levels based on rating string.");
         using var context = _provider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
-        var ratings = context.BaseItems.AsNoTracking().Select(e => e.OfficialRating).Distinct();
+        var ratings = context.BaseItems.AsNoTracking().Select(e => e.OfficialRating).Distinct().ToList();
         foreach (var rating in ratings)
         {
             if (string.IsNullOrEmpty(rating))
