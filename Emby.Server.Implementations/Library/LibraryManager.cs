@@ -189,6 +189,7 @@ namespace Emby.Server.Implementations.Library
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
+            _userDataManager.UserDataSaved += OnUserDataSaved;
 
             _mediaStreamRepository = mediaStreamRepository;
             _externalDataManagerFactory = externalDataManagerFactory;
@@ -319,6 +320,23 @@ namespace Emby.Server.Implementations.Library
             if (wizardChanged)
             {
                 QueueLibraryScan();
+            }
+        }
+
+        private void OnUserDataSaved(object? sender, UserDataSaveEventArgs e)
+        {
+            var item = e.Item;
+            if (item is null)
+            {
+                return;
+            }
+
+            // Saving reloads the user data rows on the instance that was saved. The instance held in the
+            // cache may be a different object (a series mark saves through freshly queried episodes), and
+            // it would otherwise keep serving, and on its next partial update write back, the old rows.
+            if (_cache.TryGet(item.Id, out var cached) && !ReferenceEquals(cached, item))
+            {
+                cached.UserData = item.UserData;
             }
         }
 
