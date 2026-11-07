@@ -243,6 +243,13 @@ namespace MediaBrowser.Providers.MediaInfo
                     performers = performers.SelectMany(p => SplitWithCustomDelimiter(p, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                 }
 
+                string[] composers = string.IsNullOrEmpty(trackComposer) ? [] : trackComposer.Split(InternalValueSeparator);
+
+                if (libraryOptions.UseCustomTagDelimiters)
+                {
+                    composers = composers.SelectMany(c => SplitWithCustomDelimiter(c, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
+                }
+
                 var isAudioBook = audio is AudioBook;
 
                 if (isAudioBook)
@@ -267,18 +274,15 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
 
                     // Composer tag = Narrator (Audiobookshelf and other tools use Composer for narrator)
-                    if (!string.IsNullOrWhiteSpace(trackComposer))
+                    foreach (var composer in composers)
                     {
-                        foreach (var composer in trackComposer.Split(InternalValueSeparator))
+                        if (!string.IsNullOrWhiteSpace(composer))
                         {
-                            if (!string.IsNullOrWhiteSpace(composer))
+                            PeopleHelper.AddPerson(people, new PersonInfo
                             {
-                                PeopleHelper.AddPerson(people, new PersonInfo
-                                {
-                                    Name = composer.Trim(),
-                                    Type = PersonKind.Narrator
-                                });
-                            }
+                                Name = composer.Trim(),
+                                Type = PersonKind.Narrator
+                            });
                         }
                     }
 
@@ -322,18 +326,15 @@ namespace MediaBrowser.Providers.MediaInfo
                         }
                     }
 
-                    if (!string.IsNullOrWhiteSpace(trackComposer))
+                    foreach (var composer in composers)
                     {
-                        foreach (var composer in trackComposer.Split(InternalValueSeparator))
+                        if (!string.IsNullOrWhiteSpace(composer))
                         {
-                            if (!string.IsNullOrWhiteSpace(composer))
+                            PeopleHelper.AddPerson(people, new PersonInfo
                             {
-                                PeopleHelper.AddPerson(people, new PersonInfo
-                                {
-                                    Name = composer,
-                                    Type = PersonKind.Composer
-                                });
-                            }
+                                Name = composer,
+                                Type = PersonKind.Composer
+                            });
                         }
                     }
                 }
