@@ -155,6 +155,113 @@ namespace Emby.Server.Implementations.Library
             SaveUserData(user, item, userData, reason, CancellationToken.None);
         }
 
+        /// <inheritdoc />
+        public void SaveUserData(User user, IReadOnlyList<(BaseItem Item, UserItemData UserData)> changes, UserDataSaveReason reason, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(user);
+            ArgumentNullException.ThrowIfNull(changes);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var pending = new List<(BaseItem Item, UserItemData UserData, List<string> Keys)>(changes.Count);
+            var seen = new HashSet<Guid>();
+            foreach (var (item, userData) in changes)
+            {
+                ArgumentNullException.ThrowIfNull(item);
+                ArgumentNullException.ThrowIfNull(userData);
+
+                if (seen.Add(item.Id))
+                {
+                    pending.Add((item, userData, item.GetUserDataKeys()));
+                }
+            }
+
+            if (pending.Count == 0)
+            {
+                return;
+            }
+
+            var itemIds = pending.Select(p => p.Item.Id).ToList();
+
+            using var dbContext = _repository.CreateDbContext();
+            using var transaction = dbContext.Database.BeginTransaction();
+
+            var rowsByItem = dbContext.UserData
+                .Where(e => e.UserId == user.Id)
+                .WhereOneOrMany(itemIds, e => e.ItemId)
+                .ToList()
+                .GroupBy(e => e.ItemId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            foreach (var (item, userData, keys) in pending)
+            {
+                var rows = rowsByItem.GetValueOrDefault(item.Id) ?? [];
+                foreach (var key in keys)
+                {
+                    userData.Key = key;
+                    var row = rows.Find(e => string.Equals(e.CustomDataKey, key, StringComparison.Ordinal));
+                    if (row is null)
+                    {
+                        dbContext.UserData.Add(Map(userData, user.Id, item.Id));
+                    }
+                    else
+                    {
+                        CopyTo(userData, row);
+                    }
+                }
+
+                // Rows under keys the item no longer reports are kept in agreement, as the single item save does.
+                foreach (var row in rows)
+                {
+                    if (!keys.Contains(row.CustomDataKey))
+                    {
+                        CopyTo(userData, row);
+                    }
+                }
+            }
+
+            dbContext.SaveChanges();
+            transaction.Commit();
+
+            var reloaded = dbContext.UserData
+                .AsNoTracking()
+                .WhereOneOrMany(itemIds, e => e.ItemId)
+                .ToArray()
+                .GroupBy(e => e.ItemId)
+                .ToDictionary(g => g.Key, g => g.ToArray());
+
+            foreach (var (item, userData, _) in pending)
+            {
+                _cache.AddOrUpdate(GetCacheKey(user.InternalId, item.Id), userData);
+                item.UserData = reloaded.GetValueOrDefault(item.Id) ?? [];
+            }
+
+            foreach (var (item, userData, keys) in pending)
+            {
+                UserDataSaved?.Invoke(this, new UserDataSaveEventArgs
+                {
+                    Keys = keys,
+                    UserData = userData,
+                    SaveReason = reason,
+                    UserId = user.Id,
+                    Item = item
+                });
+            }
+        }
+
+        private static void CopyTo(UserItemData source, UserData row)
+        {
+            row.AudioStreamIndex = source.AudioStreamIndex;
+            row.IsFavorite = source.IsFavorite;
+            row.LastPlayedDate = source.LastPlayedDate;
+            row.Likes = source.Likes;
+            row.PlaybackPositionTicks = source.PlaybackPositionTicks;
+            row.PlayCount = source.PlayCount;
+            row.Played = source.Played;
+            row.Rating = source.Rating;
+            row.SubtitleStreamIndex = source.SubtitleStreamIndex;
+        }
+
         private UserData Map(UserItemData dto, Guid userId, Guid itemId)
         {
             return new UserData()
