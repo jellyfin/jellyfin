@@ -242,7 +242,8 @@ public class ItemUpdateController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (item is not Video video)
+        // A .strm disc reference's title is fixed by its file, so it doesn't offer title selection.
+        if (item is not Video video || video.IsDiscReference)
         {
             return BadRequest(_localizationManager.GetLocalizedString("ItemNotDvdBluray"));
         }
@@ -261,7 +262,7 @@ public class ItemUpdateController : BaseJellyfinApiController
             {
                 if (_mediaEncoder.SupportsDvdVideo)
                 {
-                    var dvdTitles = _mediaEncoder.GetIsoTitles(video.Path, IsoType.Dvd);
+                    var dvdTitles = _mediaEncoder.GetIsoTitles(video.MediaPath, IsoType.Dvd);
                     if (dvdTitles.Count > 0)
                     {
                         return Ok(dvdTitles);
@@ -270,7 +271,7 @@ public class ItemUpdateController : BaseJellyfinApiController
 
                 if (_mediaEncoder.SupportsLibBluray)
                 {
-                    var blurayTitles = _mediaEncoder.GetIsoTitles(video.Path, IsoType.BluRay);
+                    var blurayTitles = _mediaEncoder.GetIsoTitles(video.MediaPath, IsoType.BluRay);
                     if (blurayTitles.Count > 0)
                     {
                         return Ok(blurayTitles);
@@ -281,7 +282,7 @@ public class ItemUpdateController : BaseJellyfinApiController
             return BadRequest(_localizationManager.GetLocalizedString("ItemNotDvdBluray"));
         }
 
-        var titles = _mediaEncoder.GetIsoTitles(video.Path, effectiveIsoType.Value);
+        var titles = _mediaEncoder.GetIsoTitles(video.MediaPath, effectiveIsoType.Value);
         return Ok(titles);
     }
 
@@ -595,11 +596,13 @@ public class ItemUpdateController : BaseJellyfinApiController
 
     /// <summary>
     /// Determines whether ISO/disc playback title selection applies to the given video item.
-    /// Supported for unpacked DVD/Blu-ray directories and ISO items with a known <see cref="IsoType"/>.
+    /// Supported for unpacked DVD/Blu-ray directories and ISO items with a known <see cref="IsoType"/>,
+    /// except for <c>.strm</c> disc references, whose file decides the title.
     /// </summary>
     private static bool IsIsoPlaybackTitleSupported(Video video)
-        => video.VideoType is MediaBrowser.Model.Entities.VideoType.Dvd or MediaBrowser.Model.Entities.VideoType.BluRay
-            || (video.VideoType == MediaBrowser.Model.Entities.VideoType.Iso && video.IsoType.HasValue);
+        => !video.IsDiscReference
+            && (video.VideoType is MediaBrowser.Model.Entities.VideoType.Dvd or MediaBrowser.Model.Entities.VideoType.BluRay
+                || (video.VideoType == MediaBrowser.Model.Entities.VideoType.Iso && video.IsoType.HasValue));
 
     private SeriesStatus? GetSeriesStatus(BaseItemDto item)
     {

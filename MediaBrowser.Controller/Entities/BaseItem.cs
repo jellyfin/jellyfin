@@ -1282,6 +1282,15 @@ namespace MediaBrowser.Controller.Entities
                 info.Timestamp = video.Timestamp;
                 info.IsoPlaybackTitle = video.IsoPlaybackTitle;
 
+                // A .strm disc reference plays the ISO image or disc folder it points to.
+                if (video.IsDiscReference && !string.IsNullOrEmpty(video.DiscReferenceSource))
+                {
+                    var discPath = video.DiscReferenceSource;
+                    info.Path = enablePathSubstitution ? GetMappedPath(item, discPath, MediaProtocol.File) : discPath;
+                    info.Protocol = MediaProtocol.File;
+                    info.IsoPlaybackTitle = video.DiscReferenceIndex ?? video.IsoPlaybackTitle;
+                }
+
                 if (video.IsShortcut && !string.IsNullOrEmpty(video.ShortcutPath))
                 {
                     var shortcutProtocol = MediaSourceManager.GetPathProtocol(video.ShortcutPath);
@@ -1302,7 +1311,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         if (protocol.HasValue && protocol.Value == MediaProtocol.File)
                         {
-                            info.Container = System.IO.Path.GetExtension(item.Path).TrimStart('.');
+                            info.Container = System.IO.Path.GetExtension(video.MediaPath).TrimStart('.');
                         }
                     }
                 }

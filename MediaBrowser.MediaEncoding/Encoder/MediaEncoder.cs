@@ -667,11 +667,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             var inputArgument = GetInputPathArgument(inputFile, mediaSource);
 
+            // Select the same DVD title / Blu-ray playlist that playback uses, so images match what is played.
+            var inputOptions = isAudio ? string.Empty : GetDiscTitleInputOptions(mediaSource);
+
             if (!isAudio)
             {
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, targetFormat, false, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, inputOptions, container, videoStream, imageStreamIndex, threedFormat, offset, true, targetFormat, false, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ArgumentException)
                 {
@@ -683,7 +686,37 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, targetFormat, isAudio, cancellationToken).ConfigureAwait(false);
+            return await ExtractImageInternal(inputArgument, inputOptions, container, videoStream, imageStreamIndex, threedFormat, offset, false, targetFormat, isAudio, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets the ffmpeg input options that select the source's DVD title or Blu-ray playlist,
+        /// matching the options used for playback.
+        /// </summary>
+        /// <param name="mediaSource">The media source.</param>
+        /// <returns>The input options followed by a space, or an empty string when no title applies.</returns>
+        private string GetDiscTitleInputOptions(MediaSourceInfo mediaSource)
+        {
+            if (mediaSource?.IsoPlaybackTitle is not int title)
+            {
+                return string.Empty;
+            }
+
+            var isDvd = mediaSource.VideoType == VideoType.Dvd
+                || (mediaSource.VideoType == VideoType.Iso && mediaSource.IsoType == IsoType.Dvd);
+            if (isDvd && _supportsDvdVideo)
+            {
+                return "-f dvdvideo -title " + title.ToString(CultureInfo.InvariantCulture) + " ";
+            }
+
+            var isBluRay = mediaSource.VideoType == VideoType.BluRay
+                || (mediaSource.VideoType == VideoType.Iso && mediaSource.IsoType == IsoType.BluRay);
+            if (isBluRay && _supportsLibBluray)
+            {
+                return "-playlist " + title.ToString(CultureInfo.InvariantCulture).PadLeft(5, '0') + " ";
+            }
+
+            return string.Empty;
         }
 
         private string GetImageResolutionParameter()
@@ -711,6 +744,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private async Task<string> ExtractImageInternal(
             string inputPath,
+            string inputOptions,
             string container,
             MediaStream videoStream,
             int? imageStreamIndex,
@@ -787,14 +821,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
             var args = string.Format(
                 CultureInfo.InvariantCulture,
-                "-i {0}{1} -threads {2} -v quiet -vframes 1 -vf {3}{4}{5} -f image2 \"{6}\"",
+                "{7}-i {0}{1} -threads {2} -v quiet -vframes 1 -vf {3}{4}{5} -f image2 \"{6}\"",
                 inputPath,
                 mapArg,
                 _threads,
                 vf,
                 isAudio ? string.Empty : GetImageResolutionParameter(),
                 EncodingHelper.GetVideoSyncOption("-1", EncoderVersion), // auto decide fps mode
-                tempExtractPath);
+                tempExtractPath,
+                inputOptions);
 
             if (offset.HasValue)
             {
@@ -809,7 +844,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 args = "-skip_frame nokey " + args;
             }
 
-            if (!string.IsNullOrWhiteSpace(container))
+            // Disc title options already choose the demuxer.
+            if (!string.IsNullOrWhiteSpace(container) && string.IsNullOrEmpty(inputOptions))
             {
                 var inputFormat = EncodingHelper.GetInputFormat(container);
                 if (!string.IsNullOrWhiteSpace(inputFormat))
