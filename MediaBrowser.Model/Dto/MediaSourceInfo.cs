@@ -92,6 +92,11 @@ namespace MediaBrowser.Model.Dto
 
         public IsoType? IsoType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the 1-based playback title number for DVD/Blu-ray ISO or directory.
+        /// </summary>
+        public int? IsoPlaybackTitle { get; set; }
+
         public Video3DFormat? Video3DFormat { get; set; }
 
         public IReadOnlyList<MediaStream> MediaStreams { get; set; }

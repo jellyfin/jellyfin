@@ -186,7 +186,7 @@ namespace MediaBrowser.Providers.MediaInfo
             };
 
             string extractedImagePath =
-                await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, imageStream, imageStream.Index, format, cancellationToken)
+                await _mediaEncoder.ExtractVideoImage(item.MediaPath, item.Container, mediaSource, imageStream, imageStream.Index, format, cancellationToken)
                     .ConfigureAwait(false);
 
             return new DynamicImageResponse
@@ -214,7 +214,7 @@ namespace MediaBrowser.Providers.MediaInfo
             };
 
             string extractedAttachmentPath =
-                await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, null, attachmentStream.Index, format, cancellationToken)
+                await _mediaEncoder.ExtractVideoImage(item.MediaPath, item.Container, mediaSource, null, attachmentStream.Index, format, cancellationToken)
                     .ConfigureAwait(false);
 
             return new DynamicImageResponse

@@ -138,6 +138,14 @@ namespace Emby.Server.Implementations.Library.Resolvers
 
         protected void SetVideoType(Video video, VideoFileInfo videoInfo)
         {
+            // A .strm file using the dvd:// or bluray:// scheme plays a disc instead of a remote stream.
+            if (DiscReference.IsStrmPath(video.Path)
+                && DiscReference.TryRead(video.Path, DiscReference.GetLibraryRoots(BaseItem.LibraryManager), _logger, out var discReference))
+            {
+                video.ApplyDiscReference(discReference);
+                return;
+            }
+
             var extension = Path.GetExtension(video.Path.AsSpan());
             video.VideoType = extension.Equals(".iso", StringComparison.OrdinalIgnoreCase)
                               || extension.Equals(".img", StringComparison.OrdinalIgnoreCase)
@@ -166,11 +174,14 @@ namespace Emby.Server.Implementations.Library.Resolvers
         {
             if (video.VideoType == VideoType.Iso)
             {
-                if (video.Path.Contains("dvd", StringComparison.OrdinalIgnoreCase))
+                // For a disc reference this is the referenced image, not the .strm file.
+                var mediaPath = video.MediaPath;
+
+                if (mediaPath.Contains("dvd", StringComparison.OrdinalIgnoreCase))
                 {
                     video.IsoType = IsoType.Dvd;
                 }
-                else if (video.Path.Contains("bluray", StringComparison.OrdinalIgnoreCase))
+                else if (mediaPath.Contains("bluray", StringComparison.OrdinalIgnoreCase))
                 {
                     video.IsoType = IsoType.BluRay;
                 }
@@ -179,7 +190,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     try
                     {
                         // use disc-utils, both DVDs and BDs use UDF filesystem
-                        using var videoFileStream = File.Open(video.Path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        using var videoFileStream = File.Open(mediaPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                         using UdfReader udfReader = new UdfReader(videoFileStream);
                         if (udfReader.DirectoryExists("VIDEO_TS"))
                         {
@@ -192,7 +203,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error opening UDF/ISO image: {Value}", video.Path ?? video.Name);
+                        _logger.LogError(ex, "Error opening UDF/ISO image: {Value}", mediaPath ?? video.Name);
                     }
                 }
             }
