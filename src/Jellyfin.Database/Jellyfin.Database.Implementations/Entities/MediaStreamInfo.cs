@@ -42,6 +42,8 @@ public class MediaStreamInfo
 
     public bool IsOriginal { get; set; }
 
+    public bool IsCommentary { get; set; }
+
     public int? Height { get; set; }
 
     public int? Width { get; set; }
