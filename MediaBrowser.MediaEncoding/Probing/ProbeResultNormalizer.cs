@@ -734,6 +734,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.LocalizedDefault = _localization.GetLocalizedString("Default");
                 stream.LocalizedExternal = _localization.GetLocalizedString("External");
                 stream.LocalizedOriginal = _localization.GetLocalizedString("Original");
+                stream.LocalizedCommentary = _localization.GetLocalizedString("Commentary");
                 if (!string.IsNullOrEmpty(stream.Language))
                 {
                     stream.LocalizedLanguage = _localization.GetLanguageDisplayName(stream.Language);
@@ -1056,6 +1057,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                 if (disposition.GetValueOrDefault("original") == 1)
                 {
                     stream.IsOriginal = true;
+                }
+
+                if (disposition.GetValueOrDefault("comment") == 1)
+                {
+                    stream.IsCommentary = true;
                 }
             }
 
