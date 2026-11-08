@@ -33,7 +33,7 @@ using Xunit;
 
 namespace Jellyfin.Api.Tests.Controllers;
 
-public class DynamicHlsSegmentTests : IAsyncLifetime
+public sealed class DynamicHlsSegmentTests : IAsyncLifetime
 {
     private readonly DirectoryInfo _directory = Directory.CreateTempSubdirectory("jellyfin-hls-segments-");
     private readonly IFixture _fixture = new Fixture().Customize(new AutoMoqCustomization());
@@ -279,9 +279,17 @@ public class DynamicHlsSegmentTests : IAsyncLifetime
         }
     }
 
+    // Deadlock guard only: tests assert ordering and ownership, not elapsed time.
     private static Task<ActionResult> AwaitResult(Task<ActionResult> task)
-        // Deadlock guard only: tests assert ordering and ownership, not elapsed time.
         => task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+
+    private static async Task CompleteAll(List<Func<Task>> completions)
+    {
+        foreach (var callback in completions)
+        {
+            await callback();
+        }
+    }
 
     private string SegmentPath(int segment) => _prefix + segment.ToString(CultureInfo.InvariantCulture) + ".mp4";
 
@@ -372,12 +380,6 @@ public class DynamicHlsSegmentTests : IAsyncLifetime
             context: null,
             streamOptions: new Dictionary<string, string>());
         _requests.Add(task);
-        return (task, async () =>
-        {
-            foreach (var callback in completions)
-            {
-                await callback();
-            }
-        });
+        return (task, () => CompleteAll(completions));
     }
 }
