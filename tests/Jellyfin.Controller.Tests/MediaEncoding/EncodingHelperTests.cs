@@ -321,6 +321,53 @@ public class EncodingHelperTests
         Assert.Contains("pan=stereo", args, StringComparison.Ordinal);
     }
 
+    [Theory]
+    // same aspect ratio: upload as is, the overlay scales it
+    [InlineData(1920, 1080, 1920, 1080, "")]
+    // 4K canvas gets capped at 1080 before upload
+    [InlineData(3840, 2160, 3840, 2160, "scale=1920:1080:fast_bilinear")]
+    // wider video: extend the sides
+    [InlineData(1920, 800, 1920, 1080, "pad=2592:1080:(ow-iw)/2:0:black@0")]
+    // narrower video: cut the sides
+    [InlineData(1440, 1080, 1920, 1080, "crop=1440:1080")]
+    // unknown canvas size: decided by ffmpeg at runtime
+    [InlineData(1920, 800, null, null, @"crop=w=min(iw\,ih*2.4):h=ih,pad=w=max(iw\,ih*2.4):h=ih:x=(ow-iw)/2:y=0:color=black@0")]
+    public void GetGraphicalSubHwScalePreProcessFilters_MatchesAspectWithoutScaling(int videoW, int videoH, int? subW, int? subH, string expected)
+    {
+        var filters = EncodingHelper.GetGraphicalSubHwScalePreProcessFilters(videoW, videoH, subW, subH, null, null, null, null, 1080);
+
+        Assert.Equal(expected, filters);
+    }
+
+    [Theory]
+    // option off: unknown size stays unknown, as before
+    [InlineData(false, false, 3840, 2160, null, null)]
+    // option on: take the size of another PGS stream in the file
+    [InlineData(true, true, 3840, 2160, 1920, 1080)]
+    // option on, no sibling: 1080p for UHD and cropped 1080p video
+    [InlineData(true, false, 3840, 2160, 1920, 1080)]
+    [InlineData(true, false, 1920, 800, 1920, 1080)]
+    // option on, small video: leave it to ffmpeg
+    [InlineData(true, false, 1280, 720, null, null)]
+    public void GetGraphicalSubCanvasDimensions_FallsBackForUnprobedPgs(bool enabled, bool withSibling, int videoW, int videoH, int? expectedW, int? expectedH)
+    {
+        var sub = new MediaStream { Index = 2, Type = MediaStreamType.Subtitle, Codec = "PGSSUB" };
+        var streams = new List<MediaStream> { sub };
+        if (withSibling)
+        {
+            streams.Add(new MediaStream { Index = 3, Type = MediaStreamType.Subtitle, Codec = "PGSSUB", Width = 1920, Height = 1080 });
+        }
+
+        var state = BuildState(sub, SubtitleDeliveryMethod.Encode, streams.ToArray());
+        state.VideoStream.Width = videoW;
+        state.VideoStream.Height = videoH;
+
+        var (width, height) = EncodingHelper.GetGraphicalSubCanvasDimensions(state, new EncodingOptions { EnableHardwareSubtitleScaling = enabled });
+
+        Assert.Equal(expectedW, width);
+        Assert.Equal(expectedH, height);
+    }
+
     private static EncodingJobInfo BuildAudioState(string audioCodec, int requestedSampleRate, string? outputContainer = null)
     {
         var audio = new MediaStream { Index = 0, Type = MediaStreamType.Audio, Codec = "flac", SampleRate = 96000 };
