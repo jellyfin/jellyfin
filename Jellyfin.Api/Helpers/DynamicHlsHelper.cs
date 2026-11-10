@@ -194,7 +194,7 @@ public class DynamicHlsHelper
             .Where(i => i.IsTextSubtitleStream)
             .ToList();
 
-        var subtitleGroup = subtitleStreams.Count > 0 && (state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Hls || state.VideoRequest!.EnableSubtitlesInManifest)
+        var subtitleGroup = subtitleStreams.Count > 0 && (state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Hls || (state.VideoRequest?.EnableSubtitlesInManifest ?? false))
             ? "subs"
             : null;
 
