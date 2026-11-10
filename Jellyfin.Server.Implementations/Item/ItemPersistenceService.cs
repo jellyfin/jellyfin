@@ -573,7 +573,7 @@ public class ItemPersistenceService : IItemPersistenceService
 
                 var pathToIdMap = pathsToResolve.Count > 0
                     ? context.BaseItems
-                        .Where(e => e.Path != null && pathsToResolve.Contains(e.Path))
+                        .WhereOneOrMany(pathsToResolve, e => e.Path!)
                         .Select(e => new { e.Path, e.Id })
                         .GroupBy(e => e.Path!)
                         .ToDictionary(g => g.Key, g => g.First().Id)

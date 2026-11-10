@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -133,6 +134,39 @@ public sealed class ItemPersistenceOwnedRowTests : SqliteDbTestFixture
         using var ctx = CreateDbContext();
         Assert.Equal(Count, ctx.BaseItems.Count(e => e.Type == "MediaBrowser.Controller.Entities.Movies.Movie"));
         Assert.Equal(Count, ctx.ItemValuesMap.Count());
+    }
+
+    [Fact]
+    public void SaveItems_PlaylistLinkedByPathBeyondSqliteVariableLimit_Saves()
+    {
+        var appHost = new Mock<IServerApplicationHost>();
+        appHost.Setup(h => h.ReverseVirtualPath(It.IsAny<string>())).Returns((string p) => p);
+        var service = new ItemPersistenceService(CreateDbContextFactory(), appHost.Object, NullLogger<ItemPersistenceService>.Instance);
+
+        const int Count = 33_000;
+        var movies = Enumerable.Range(0, Count)
+            .Select(i =>
+            {
+                var movie = CreateMovie(Guid.NewGuid());
+                movie.Path = $"/movies/{i}.mkv";
+                return movie;
+            })
+            .ToList();
+        service.SaveItems(movies, CancellationToken.None);
+
+        // Legacy links carry only a path, so the save resolves every one of them in a single lookup.
+#pragma warning disable CS0618 // Type or member is obsolete
+        var playlist = new Playlist
+        {
+            Id = Guid.NewGuid(),
+            Name = "Everything",
+            LinkedChildren = movies.Select(m => new LinkedChild { Path = m.Path, Type = MediaBrowser.Controller.Entities.LinkedChildType.Manual }).ToArray()
+        };
+#pragma warning restore CS0618
+        service.SaveItems([playlist], CancellationToken.None);
+
+        using var ctx = CreateDbContext();
+        Assert.Equal(Count, ctx.LinkedChildren.Count(e => e.ParentId.Equals(playlist.Id)));
     }
 
     [Fact]
