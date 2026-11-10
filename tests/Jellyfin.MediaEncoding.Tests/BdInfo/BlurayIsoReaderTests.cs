@@ -3,6 +3,8 @@ using System.Buffers.Binary;
 using System.Linq;
 using System.Text;
 using MediaBrowser.MediaEncoding.BdInfo;
+using MediaBrowser.MediaEncoding.Encoder;
+using MediaBrowser.Model.MediaInfo;
 using Xunit;
 
 namespace Jellyfin.MediaEncoding.Tests.BdInfo;
@@ -41,6 +43,25 @@ public class BlurayIsoReaderTests
         var extents = BlurayIsoReader.MergeExtents([(0, 10), (10, 20), (30, 40), (40, 50), (5, 6)]);
 
         Assert.Equal(new (long, long)[] { (0, 20), (30, 50), (5, 6) }, extents);
+    }
+
+    [Fact]
+    public void GetBlurayIsoClipInputs_SplitsLargeExtents()
+    {
+        const long GiB = 1024L * 1024 * 1024;
+        var clip = new BlurayIsoClip(10, [(100, 100 + (2 * GiB) + 5), (5 * GiB, (5 * GiB) + 7)]);
+
+        var inputs = MediaEncoder.GetBlurayIsoClipInputs("/m/a.iso", clip).ToArray();
+
+        Assert.Equal(
+            new[]
+            {
+                $"subfile,,start,100,end,{100 + GiB},,:file:/m/a.iso",
+                $"subfile,,start,{100 + GiB},end,{100 + (2 * GiB)},,:file:/m/a.iso",
+                $"subfile,,start,{100 + (2 * GiB)},end,{100 + (2 * GiB) + 5},,:file:/m/a.iso",
+                $"subfile,,start,{5 * GiB},end,{(5 * GiB) + 7},,:file:/m/a.iso"
+            },
+            inputs);
     }
 
     private static byte[] BuildPlaylist(params (string Clip, uint In, uint Out)[] items)
