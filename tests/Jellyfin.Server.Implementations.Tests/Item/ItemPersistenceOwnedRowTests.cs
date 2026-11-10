@@ -114,6 +114,28 @@ public sealed class ItemPersistenceOwnedRowTests : SqliteDbTestFixture
     }
 
     [Fact]
+    public void SaveItems_BatchLargerThanSqliteVariableLimit_Saves()
+    {
+        // SQLite caps bound variables at 32766; batch-wide lookups must not bind one per item.
+        const int Count = 33_000;
+        var movies = Enumerable.Range(0, Count)
+            .Select(i =>
+            {
+                var movie = CreateMovie(Guid.NewGuid());
+                movie.Genres = [$"Genre {i}"];
+                return movie;
+            })
+            .ToList();
+
+        _service.SaveItems(movies, CancellationToken.None);
+        _service.SaveItems(movies, CancellationToken.None);
+
+        using var ctx = CreateDbContext();
+        Assert.Equal(Count, ctx.BaseItems.Count(e => e.Type == "MediaBrowser.Controller.Entities.Movies.Movie"));
+        Assert.Equal(Count, ctx.ItemValuesMap.Count());
+    }
+
+    [Fact]
     public async Task ReattachUserData_DetachedRowsFromDifferentEras_CollapsesToMostRecentPlay()
     {
         var movie = CreateMovie(Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd"));
