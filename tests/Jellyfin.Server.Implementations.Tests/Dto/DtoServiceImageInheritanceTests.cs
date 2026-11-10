@@ -183,10 +183,15 @@ public class DtoServiceImageInheritanceTests
                 [albumTwo.Id] = [new PersonInfo { ItemId = albumTwo.Id, Name = "Some Actor", Type = PersonKind.Actor }]
             });
 
-        // AttachPeople still resolves each distinct name to its Person entity to attach images.
+        // AttachPeople resolves the names to their Person entities in one batch too (GetPersons).
+        // GetPerson is intentionally left unset: a regression to the per-name lookup would resolve
+        // no person and fail the assertions below.
         libraryManager
-            .Setup(x => x.GetPerson("Some Actor"))
-            .Returns(new Person { Id = Guid.NewGuid(), Name = "Some Actor" });
+            .Setup(x => x.GetPersons(It.IsAny<IReadOnlyCollection<string>>()))
+            .Returns(new Dictionary<string, Person>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Some Actor"] = new Person { Id = Guid.NewGuid(), Name = "Some Actor" }
+            });
 
         var dtoService = BuildDtoService(libraryManager);
 
@@ -201,9 +206,151 @@ public class DtoServiceImageInheritanceTests
             Assert.Equal("Some Actor", dto.People[0].Name);
         }
 
-        // People are batched once for the whole set, never once per item.
+        // People are batched once for the whole set, never once per item, and so are their Person entities.
         libraryManager.Verify(x => x.GetPeopleByItems(It.IsAny<IReadOnlyList<Guid>>()), Times.Once);
         libraryManager.Verify(x => x.GetPeople(It.IsAny<BaseItem>()), Times.Never);
+        libraryManager.Verify(x => x.GetPersons(It.IsAny<IReadOnlyCollection<string>>()), Times.Once);
+        libraryManager.Verify(x => x.GetPerson(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public void GetBaseItemDtos_People_ResolveEveryNameOnThePageInOneLookup()
+    {
+        var albumOne = new MusicAlbum { Id = Guid.NewGuid(), Name = "Album", ImageInfos = [] };
+        var albumTwo = new MusicAlbum { Id = Guid.NewGuid(), Name = "Album", ImageInfos = [] };
+
+        var actor = new Person
+        {
+            Id = Guid.NewGuid(),
+            Name = "Some Actor",
+            ImageInfos =
+            [
+                new ItemImageInfo
+                {
+                    Type = ImageType.Primary,
+                    Path = "/images/some-actor.jpg",
+                    DateModified = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                }
+            ]
+        };
+        var director = new Person { Id = Guid.NewGuid(), Name = "A Director", ImageInfos = [] };
+        var writer = new Person { Id = Guid.NewGuid(), Name = "A Writer", ImageInfos = [] };
+
+        var libraryManager = new Mock<ILibraryManager>();
+
+        // The same actor credited on both items, once in another case, beside a name each item has alone.
+        libraryManager
+            .Setup(x => x.GetPeopleByItems(It.IsAny<IReadOnlyList<Guid>>()))
+            .Returns(new Dictionary<Guid, IReadOnlyList<PersonInfo>>
+            {
+                [albumOne.Id] =
+                [
+                    new PersonInfo { ItemId = albumOne.Id, Name = "Some Actor", Type = PersonKind.Actor },
+                    new PersonInfo { ItemId = albumOne.Id, Name = "A Director", Type = PersonKind.Director }
+                ],
+                [albumTwo.Id] =
+                [
+                    new PersonInfo { ItemId = albumTwo.Id, Name = "some actor", Type = PersonKind.Actor },
+                    new PersonInfo { ItemId = albumTwo.Id, Name = "A Writer", Type = PersonKind.Writer }
+                ]
+            });
+
+        IReadOnlyCollection<string>? asked = null;
+        libraryManager
+            .Setup(x => x.GetPersons(It.IsAny<IReadOnlyCollection<string>>()))
+            .Callback<IReadOnlyCollection<string>>(names => asked = names)
+            .Returns(new Dictionary<string, Person>(StringComparer.OrdinalIgnoreCase)
+            {
+                [actor.Name] = actor,
+                [director.Name] = director,
+                [writer.Name] = writer
+            });
+
+        var dtoService = BuildDtoService(libraryManager);
+
+        var options = new DtoOptions(false) { Fields = [ItemFields.People] };
+        var dtos = dtoService.GetBaseItemDtos([albumOne, albumTwo], options);
+
+        // One lookup for the page, each distinct name in it once, whatever its case.
+        libraryManager.Verify(x => x.GetPersons(It.IsAny<IReadOnlyCollection<string>>()), Times.Once);
+        libraryManager.Verify(x => x.GetPerson(It.IsAny<string>()), Times.Never);
+        Assert.NotNull(asked);
+        Assert.Equal(3, asked.Count);
+        Assert.Equal(
+            new HashSet<string>(["Some Actor", "A Director", "A Writer"], StringComparer.OrdinalIgnoreCase),
+            new HashSet<string>(asked, StringComparer.OrdinalIgnoreCase));
+
+        // Each credit takes its id and picture from the entity the batch resolved its name to.
+        Assert.Equal(2, dtos.Count);
+        Assert.NotNull(dtos[0].People);
+        Assert.NotNull(dtos[1].People);
+        var firstActor = Assert.Single(dtos[0].People, p => p.Type == PersonKind.Actor);
+        var secondActor = Assert.Single(dtos[1].People, p => p.Type == PersonKind.Actor);
+        Assert.Equal(actor.Id, firstActor.Id);
+        Assert.Equal(actor.Id, secondActor.Id);
+        Assert.Equal("/images/some-actor.jpg", firstActor.PrimaryImageTag);
+        Assert.Equal(director.Id, Assert.Single(dtos[0].People, p => p.Type == PersonKind.Director).Id);
+        Assert.Equal(writer.Id, Assert.Single(dtos[1].People, p => p.Type == PersonKind.Writer).Id);
+    }
+
+    [Fact]
+    public void GetBaseItemDtos_People_NameTheBatchDidNotFind_IsLeftOut()
+    {
+        var album = new MusicAlbum { Id = Guid.NewGuid(), Name = "Album", ImageInfos = [] };
+
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager
+            .Setup(x => x.GetPeopleByItems(It.IsAny<IReadOnlyList<Guid>>()))
+            .Returns(new Dictionary<Guid, IReadOnlyList<PersonInfo>>
+            {
+                [album.Id] =
+                [
+                    new PersonInfo { ItemId = album.Id, Name = "Some Actor", Type = PersonKind.Actor },
+                    new PersonInfo { ItemId = album.Id, Name = "Nobody", Type = PersonKind.Actor }
+                ]
+            });
+
+        // "Nobody" has no Person entity, as GetPerson would answer null for it on the per-name path.
+        libraryManager
+            .Setup(x => x.GetPersons(It.IsAny<IReadOnlyCollection<string>>()))
+            .Returns(new Dictionary<string, Person>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Some Actor"] = new Person { Id = Guid.NewGuid(), Name = "Some Actor" }
+            });
+
+        var dtoService = BuildDtoService(libraryManager);
+
+        var options = new DtoOptions(false) { Fields = [ItemFields.People] };
+        var dto = Assert.Single(dtoService.GetBaseItemDtos([album], options));
+
+        Assert.NotNull(dto.People);
+        Assert.Equal("Some Actor", Assert.Single(dto.People).Name);
+        libraryManager.Verify(x => x.GetPerson(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public void GetBaseItemDto_SingleItem_ResolvesPeopleByName()
+    {
+        var album = new MusicAlbum { Id = Guid.NewGuid(), Name = "Album", ImageInfos = [] };
+        var actor = new Person { Id = Guid.NewGuid(), Name = "Some Actor" };
+
+        var libraryManager = new Mock<ILibraryManager>();
+
+        // A single item has no page to batch, so it keeps the per-item and per-name lookups.
+        libraryManager
+            .Setup(x => x.GetPeople(album))
+            .Returns([new PersonInfo { ItemId = album.Id, Name = "Some Actor", Type = PersonKind.Actor }]);
+        libraryManager
+            .Setup(x => x.GetPerson("Some Actor"))
+            .Returns(actor);
+
+        var dtoService = BuildDtoService(libraryManager);
+
+        var dto = dtoService.GetBaseItemDto(album, new DtoOptions(false) { Fields = [ItemFields.People] });
+
+        Assert.NotNull(dto.People);
+        Assert.Equal(actor.Id, Assert.Single(dto.People).Id);
+        libraryManager.Verify(x => x.GetPersons(It.IsAny<IReadOnlyCollection<string>>()), Times.Never);
     }
 
     [Fact]
