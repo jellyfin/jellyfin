@@ -206,7 +206,7 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
         }
 
         // No .ignore file found - cache null result for all directories
-        var nullEntry = new IgnoreFileCacheEntry((string?)null);
+        var nullEntry = new IgnoreFileCacheEntry(null);
         foreach (var dir in checkedDirs)
         {
             _directoryCache.AddOrUpdate(dir, nullEntry);

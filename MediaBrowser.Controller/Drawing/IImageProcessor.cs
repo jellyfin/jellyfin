@@ -70,9 +70,9 @@ namespace MediaBrowser.Controller.Drawing
         /// Gets the image cache tag.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="image">The image.</param>
+        /// <param name="chapter">The chapter.</param>
         /// <returns>Guid.</returns>
-        string? GetImageCacheTag(BaseItemDto item, ChapterInfo image);
+        string? GetImageCacheTag(BaseItemDto item, ChapterInfo chapter);
 
         /// <summary>
         /// Gets the image cache tag.

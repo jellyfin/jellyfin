@@ -15,7 +15,6 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
@@ -531,7 +530,7 @@ namespace Emby.Server.Implementations.Playlists
             ArgumentException.ThrowIfNullOrEmpty(folderPath);
             ArgumentException.ThrowIfNullOrEmpty(fileAbsolutePath);
 
-            if (!folderPath.EndsWith(Path.DirectorySeparatorChar))
+            if (!folderPath.EndsWith(Path.DirectorySeparatorChar, StringComparison.Ordinal))
             {
                 folderPath += Path.DirectorySeparatorChar;
             }

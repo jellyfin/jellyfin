@@ -11,7 +11,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.IO;
@@ -100,10 +99,11 @@ public sealed class ResolveAlternateVersionTests : IDisposable
 
         itemRepositoryMock
             .Setup(i => i.RetrieveItem(It.IsAny<Guid>()))
-            .Returns<Guid>(id => id.Equals(primary.Id) ? primary
-                : id.Equals(staleAlternate.Id) ? staleAlternate
-                : id.Equals(_staleParent.Id) ? _staleParent
-                : null!);
+            .Returns<Guid>(id =>
+                id.Equals(primary.Id) ? primary :
+                id.Equals(staleAlternate.Id) ? staleAlternate :
+                id.Equals(_staleParent.Id) ? _staleParent :
+                null!);
 
         StaleAlternateId = staleAlternate.Id;
     }

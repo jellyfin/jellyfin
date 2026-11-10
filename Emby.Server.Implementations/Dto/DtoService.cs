@@ -622,7 +622,9 @@ namespace Emby.Server.Implementations.Dto
                         // Use pre-fetched user data
                         dto.UserData = GetUserItemDataDto(userData, item.Id);
                         (int Played, int Total)? precomputed = playedCountBatch is not null
-                            && playedCountBatch.TryGetValue(item.Id, out var counts) ? counts : null;
+                            && playedCountBatch.TryGetValue(item.Id, out var counts)
+                                ? counts
+                                : null;
                         item.FillUserDataDtoValues(dto.UserData, userData, dto, user, options, precomputed);
                     }
                     else

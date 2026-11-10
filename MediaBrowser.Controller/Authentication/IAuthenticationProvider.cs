@@ -26,11 +26,4 @@ namespace MediaBrowser.Controller.Authentication
     {
         UserPolicy GetNewUserPolicy();
     }
-
-    public class ProviderAuthenticationResult
-    {
-        public required string Username { get; set; }
-
-        public string? DisplayName { get; set; }
-    }
 }

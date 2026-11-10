@@ -194,7 +194,7 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
 
     private void SetPeople(MusicAlbum item)
     {
-        if (item.AlbumArtists.Any() || item.Artists.Any())
+        if (item.AlbumArtists.Count > 0 || item.Artists.Count > 0)
         {
             var people = new List<PersonInfo>();
 

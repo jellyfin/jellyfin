@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Database.Implementations;
@@ -30,7 +29,7 @@ public class MediaAttachmentRepository(IDbContextFactory<JellyfinDbContext> dbPr
         // So when saving attachments is triggered by a library scan, we always unconditionally
         // clear the old ones, and then add the new ones if given.
         context.AttachmentStreamInfos.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
-        if (attachments.Any())
+        if (attachments.Count > 0)
         {
             context.AttachmentStreamInfos.AddRange(attachments.Select(e => Map(e, id)));
         }

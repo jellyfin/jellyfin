@@ -94,13 +94,13 @@ public class LegacyStreamInfo : StreamInfo
     {
         List<NameValuePair> list = [];
 
-        string audioCodecs = item.AudioCodecs.Count == 0 ?
-            string.Empty :
-            string.Join(',', item.AudioCodecs);
+        string audioCodecs = item.AudioCodecs.Count == 0
+            ? string.Empty
+            : string.Join(',', item.AudioCodecs);
 
-        string videoCodecs = item.VideoCodecs.Count == 0 ?
-            string.Empty :
-            string.Join(',', item.VideoCodecs);
+        string videoCodecs = item.VideoCodecs.Count == 0
+            ? string.Empty
+            : string.Join(',', item.VideoCodecs);
 
         list.Add(new NameValuePair("DeviceProfileId", item.DeviceProfileId ?? string.Empty));
         list.Add(new NameValuePair("DeviceId", item.DeviceId ?? string.Empty));

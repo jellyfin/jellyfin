@@ -129,12 +129,12 @@ public class MediaSegmentManager : IMediaSegmentManager
                         await existingSegments.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
                     }
 
-                    if (segments.Count == 0 && !requestItem.ExistingSegments.Any())
+                    if (segments.Count == 0 && requestItem.ExistingSegments.Count == 0)
                     {
                         _logger.LogDebug("Media Segment provider {ProviderName} did not find any segments for {MediaPath}", provider.Name, baseItem.Path);
                         continue;
                     }
-                    else if (segments.Count == 0 && requestItem.ExistingSegments.Any())
+                    else if (segments.Count == 0 && requestItem.ExistingSegments.Count > 0)
                     {
                         _logger.LogDebug("Media Segment provider {ProviderName} deleted all segments for {MediaPath}", provider.Name, baseItem.Path);
                         continue;

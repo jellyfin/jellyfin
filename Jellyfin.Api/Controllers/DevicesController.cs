@@ -1,11 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Helpers;
-using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Queries;
 using MediaBrowser.Common.Api;

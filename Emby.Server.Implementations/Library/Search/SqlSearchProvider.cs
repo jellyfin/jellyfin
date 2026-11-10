@@ -150,10 +150,10 @@ public class SqlSearchProvider : IInternalSearchProvider
             {
                 e.Id,
                 Score =
-                    (e.CleanName == cleanSearchTerm) ? ExactMatchScore
-                    : e.CleanName!.StartsWith(cleanSearchTerm) ? PrefixMatchScore
-                    : e.CleanName!.Contains(cleanPrefix) ? WordPrefixMatchScore
-                    : ContainsMatchScore
+                    (e.CleanName == cleanSearchTerm) ? ExactMatchScore :
+                    e.CleanName!.StartsWith(cleanSearchTerm) ? PrefixMatchScore :
+                    e.CleanName!.Contains(cleanPrefix) ? WordPrefixMatchScore :
+                    ContainsMatchScore
             });
 
             return await scored

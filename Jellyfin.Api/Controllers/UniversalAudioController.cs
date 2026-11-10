@@ -191,10 +191,14 @@ public class UniversalAudioController : BaseJellyfinApiController
             // fallback to mpegts if device reports some weird value unsupported by hls
             var requestedSegmentContainer = Array.Exists(
                 supportedHlsContainers,
-                element => string.Equals(element, transcodingContainer, StringComparison.OrdinalIgnoreCase)) ? transcodingContainer : "ts";
+                element => string.Equals(element, transcodingContainer, StringComparison.OrdinalIgnoreCase))
+                    ? transcodingContainer
+                    : "ts";
             var segmentContainer = Array.Exists(
                 supportedHlsContainers,
-                element => string.Equals(element, mediaSource.TranscodingContainer, StringComparison.OrdinalIgnoreCase)) ? mediaSource.TranscodingContainer : requestedSegmentContainer;
+                element => string.Equals(element, mediaSource.TranscodingContainer, StringComparison.OrdinalIgnoreCase))
+                    ? mediaSource.TranscodingContainer
+                    : requestedSegmentContainer;
             var dynamicHlsRequestDto = new HlsAudioRequestDto
             {
                 Id = itemId,

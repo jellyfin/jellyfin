@@ -3,13 +3,9 @@
 #pragma warning disable CA1819, CS1591
 
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.Entities
 {

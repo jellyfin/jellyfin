@@ -318,9 +318,9 @@ public class ItemPersistenceService : IItemPersistenceService
         var tuples = new List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey, List<string> InheritedTags)>();
         foreach (var item in items.GroupBy(e => e.Id).Select(e => e.Last()).Where(e => e.Id != BaseItemRepository.PlaceholderId))
         {
-            var ancestorIds = item.SupportsAncestors ?
-                item.GetAncestorIds().Distinct().ToList() :
-                null;
+            var ancestorIds = item.SupportsAncestors
+                ? item.GetAncestorIds().Distinct().ToList()
+                : null;
 
             var topParent = item.GetTopParent();
 

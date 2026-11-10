@@ -5,7 +5,6 @@ using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sorting;
-using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Sorting
 {

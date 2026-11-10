@@ -944,7 +944,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 if (fpsFilterIndex >= 0)
                 {
                     var inputFrameRate = (imageStream.ReferenceFrameRate.HasValue && imageStream.ReferenceFrameRate > 0)
-                        ? imageStream.ReferenceFrameRate.Value : 30;
+                        ? imageStream.ReferenceFrameRate.Value
+                        : 30;
 
                     var setPtsFilter = string.Create(CultureInfo.InvariantCulture, $"setpts=N/{inputFrameRate:F3}/TB,");
 

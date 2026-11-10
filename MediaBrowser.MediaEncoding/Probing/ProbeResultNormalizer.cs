@@ -1484,9 +1484,9 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             // Only use the comma as a delimiter if there are no slashes or pipes.
             // We want to be careful not to split names that have commas in them
-            return !allowCommaDelimiter || _nameDelimiters.Any(i => val.Contains(i, StringComparison.Ordinal)) ?
-                val.Split(_nameDelimiters, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) :
-                val.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            return !allowCommaDelimiter || _nameDelimiters.Any(i => val.Contains(i, StringComparison.Ordinal))
+                ? val.Split(_nameDelimiters, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                : val.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         }
 
         private IEnumerable<string> SplitDistinctArtists(string val, char[] delimiters, bool splitFeaturing)

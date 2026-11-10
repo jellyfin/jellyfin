@@ -231,8 +231,8 @@ public class ItemCountService : IItemCountService
         var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
         var episodeRollUp = RollsUpEpisodes(kind, relatedItemKinds)
                 && Array.Exists(grouped, g => string.Equals(g.Type, seriesTypeName, StringComparison.Ordinal))
-            ? CountEpisodesOfTaggedSeriesByCleanName(context, related, valueTypes, cleanNames)
-            : null;
+                    ? CountEpisodesOfTaggedSeriesByCleanName(context, related, valueTypes, cleanNames)
+                    : null;
 
         foreach (var nameItem in nameItems)
         {

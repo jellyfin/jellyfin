@@ -6,13 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 namespace MediaBrowser.Common
 {
     /// <summary>
-    /// Delegate used with GetExports{T}.
-    /// </summary>
-    /// <param name="type">Type to create.</param>
-    /// <returns>New instance of type <param>type</param>.</returns>
-    public delegate object? CreationDelegateFactory(Type type);
-
-    /// <summary>
     /// An interface to be implemented by the applications hosting a kernel.
     /// </summary>
     public interface IApplicationHost

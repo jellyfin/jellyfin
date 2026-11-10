@@ -2896,8 +2896,8 @@ namespace Emby.Server.Implementations.Library
             // List.Find is more performant than FirstOrDefault due to enumerator allocation
             return GetCollectionFolders(item)
                 .Find(folder => folder is CollectionFolder) is CollectionFolder collectionFolder2
-                ? collectionFolder2.GetLibraryOptions()
-                : new LibraryOptions();
+                    ? collectionFolder2.GetLibraryOptions()
+                    : new LibraryOptions();
         }
 
         public CollectionType? GetContentType(BaseItem item)

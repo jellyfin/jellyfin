@@ -30,7 +30,11 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentOutOfRangeException">Rating;A 0 to 10 rating is required for UserItemData.</exception>
         public double? Rating
         {
-            get => _rating;
+            get
+            {
+                return _rating;
+            }
+
             set
             {
                 if (value.HasValue)

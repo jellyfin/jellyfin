@@ -22,7 +22,7 @@ public static partial class ApplePlatformHelper
     {
         nuint length = 0;
         // Get length of the value
-        int osStatus = sysctlbyname(name, Span<byte>.Empty, ref length, IntPtr.Zero, 0);
+        int osStatus = sysctlbyname(name, Span<byte>.Empty, ref length, nint.Zero, 0);
         if (osStatus != 0 || length == 0)
         {
             throw new NotSupportedException($"Failed to get sysctl value for {name} with error {osStatus}");
@@ -31,7 +31,7 @@ public static partial class ApplePlatformHelper
         byte[] buffer = ArrayPool<byte>.Shared.Rent((int)length);
         try
         {
-            osStatus = sysctlbyname(name, buffer.AsSpan()[..(int)length], ref length, IntPtr.Zero, 0);
+            osStatus = sysctlbyname(name, buffer.AsSpan()[..(int)length], ref length, nint.Zero, 0);
             if (osStatus != 0)
             {
                 throw new NotSupportedException($"Failed to get sysctl value for {name} with error {osStatus}");

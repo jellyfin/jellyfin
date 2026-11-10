@@ -19,7 +19,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
-using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
 
 namespace Jellyfin.Server.Implementations.Tests.FullSystemBackup;
 
@@ -95,7 +94,7 @@ public sealed class BackupServiceTests : IDisposable
 
             // Simulate a corrupted database row: truncated JSON array for KeyframeTicks,
             // written directly via SQL to bypass EF's normal (well-formed) write path.
-            await ctx.Database.ExecuteSqlInterpolatedAsync(
+            await ctx.Database.ExecuteSqlAsync(
                 $"INSERT INTO KeyframeData (ItemId, TotalDuration, KeyframeTicks) VALUES ({corruptItemId.ToString()}, {5000L}, {"[1,2,3"})",
                 cancellationToken).ConfigureAwait(true);
         }

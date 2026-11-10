@@ -58,13 +58,15 @@ public class RecordingsMetadataManager
     {
         try
         {
-            var program = string.IsNullOrWhiteSpace(timer.ProgramId) ? null : _libraryManager.GetItemList(new InternalItemsQuery
-            {
-                IncludeItemTypes = [BaseItemKind.LiveTvProgram],
-                Limit = 1,
-                ExternalId = timer.ProgramId,
-                DtoOptions = new DtoOptions(true)
-            }).FirstOrDefault() as LiveTvProgram;
+            var program = string.IsNullOrWhiteSpace(timer.ProgramId)
+                ? null
+                : _libraryManager.GetItemList(new InternalItemsQuery
+                {
+                    IncludeItemTypes = [BaseItemKind.LiveTvProgram],
+                    Limit = 1,
+                    ExternalId = timer.ProgramId,
+                    DtoOptions = new DtoOptions(true)
+                }).FirstOrDefault() as LiveTvProgram;
 
             // dummy this up
             program ??= new LiveTvProgram
@@ -406,9 +408,9 @@ public class RecordingsMetadataManager
 
     private async Task SaveRecordingImages(string recordingPath, LiveTvProgram program)
     {
-        var image = program.IsSeries ?
-            (program.GetImageInfo(ImageType.Thumb, 0) ?? program.GetImageInfo(ImageType.Primary, 0)) :
-            (program.GetImageInfo(ImageType.Primary, 0) ?? program.GetImageInfo(ImageType.Thumb, 0));
+        var image = program.IsSeries
+            ? (program.GetImageInfo(ImageType.Thumb, 0) ?? program.GetImageInfo(ImageType.Primary, 0))
+            : (program.GetImageInfo(ImageType.Primary, 0) ?? program.GetImageInfo(ImageType.Thumb, 0));
 
         if (image is not null)
         {

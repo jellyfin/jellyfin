@@ -2,7 +2,6 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using BitFaster.Caching;
 using Emby.Server.Implementations.Localization;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;

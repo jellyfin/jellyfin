@@ -279,9 +279,9 @@ namespace Emby.Naming.Video
             if (videos.Count > 1)
             {
                 var groups = videos
-                    .Select(x => (filename: x.Files[0].FileNameWithoutExtension.ToString(), value: x))
-                    .Select(x => (x.filename, resolutionMatch: ResolutionRegex().Match(x.filename), x.value))
-                    .GroupBy(x => x.resolutionMatch.Success)
+                    .Select(x => (FileName: x.Files[0].FileNameWithoutExtension.ToString(), Value: x))
+                    .Select(x => (x.FileName, ResolutionMatch: ResolutionRegex().Match(x.FileName), x.Value))
+                    .GroupBy(x => x.ResolutionMatch.Success)
                     .ToList();
 
                 videos = [];
@@ -291,13 +291,13 @@ namespace Emby.Naming.Video
                     if (group.Key)
                     {
                         videos.InsertRange(0, group
-                            .OrderByDescending(x => x.resolutionMatch.Value, _numericOrdinalComparer)
-                            .ThenBy(x => x.filename, _numericOrdinalComparer)
-                            .Select(x => x.value));
+                            .OrderByDescending(x => x.ResolutionMatch.Value, _numericOrdinalComparer)
+                            .ThenBy(x => x.FileName, _numericOrdinalComparer)
+                            .Select(x => x.Value));
                     }
                     else
                     {
-                        videos.AddRange(group.OrderBy(x => x.filename, _numericOrdinalComparer).Select(x => x.value));
+                        videos.AddRange(group.OrderBy(x => x.FileName, _numericOrdinalComparer).Select(x => x.Value));
                     }
                 }
             }

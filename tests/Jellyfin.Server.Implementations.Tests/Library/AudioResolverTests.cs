@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Emby.Naming.Common;
 using Emby.Server.Implementations.Library.Resolvers.Audio;
@@ -55,7 +56,7 @@ public class AudioResolverTests
         var childrenMetadata = children.Select(name => new FileSystemMetadata
         {
             FullName = parent + "/" + name,
-            IsDirectory = name.EndsWith('/')
+            IsDirectory = name.EndsWith('/', StringComparison.Ordinal)
         }).ToArray();
 
         var resolver = new AudioResolver(_namingOptions);

@@ -140,12 +140,12 @@ namespace Jellyfin.Server.Implementations.Tests.HttpServer
 
         internal sealed class BufferSegment : ReadOnlySequenceSegment<byte>
         {
-            public BufferSegment(Memory<byte> memory)
+            public BufferSegment(ReadOnlyMemory<byte> memory)
             {
                 Memory = memory;
             }
 
-            public BufferSegment Append(Memory<byte> memory)
+            public BufferSegment Append(ReadOnlyMemory<byte> memory)
             {
                 var segment = new BufferSegment(memory)
                 {

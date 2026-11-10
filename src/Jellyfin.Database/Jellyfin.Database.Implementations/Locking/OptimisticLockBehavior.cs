@@ -2,7 +2,6 @@
 
 using System;
 using System.Data.Common;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;

@@ -1,4 +1,3 @@
-using System;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Updates;
 

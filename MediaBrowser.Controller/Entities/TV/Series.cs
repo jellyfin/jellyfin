@@ -414,9 +414,9 @@ namespace MediaBrowser.Controller.Entities.TV
             var queryFromSeries = ConfigurationManager.Configuration.DisplaySpecialsWithinSeasons;
 
             // add optimization when this setting is not enabled
-            var seriesKey = queryFromSeries ?
-                GetUniqueSeriesKey(this) :
-                GetUniqueSeriesKey(parentSeason);
+            var seriesKey = queryFromSeries
+                ? GetUniqueSeriesKey(this)
+                : GetUniqueSeriesKey(parentSeason);
 
             var query = new InternalItemsQuery(user)
             {

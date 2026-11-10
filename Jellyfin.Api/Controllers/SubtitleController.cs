@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.SubtitleDtos;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;

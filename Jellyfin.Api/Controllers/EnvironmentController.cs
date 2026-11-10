@@ -53,7 +53,7 @@ public class EnvironmentController : BaseJellyfinApiController
         [FromQuery] bool includeDirectories = false)
     {
         if (path.StartsWith(UncStartPrefix, StringComparison.OrdinalIgnoreCase)
-            && path.LastIndexOf(UncSeparator) == 1)
+            && path.LastIndexOf(UncSeparator, StringComparison.Ordinal) == 1)
         {
             return Array.Empty<FileSystemEntryInfo>();
         }
@@ -152,7 +152,7 @@ public class EnvironmentController : BaseJellyfinApiController
         if (string.IsNullOrEmpty(parent))
         {
             // Check if unc share
-            var index = path.LastIndexOf(UncSeparator);
+            var index = path.LastIndexOf(UncSeparator, StringComparison.Ordinal);
 
             if (index != -1 && path[0] == UncSeparator)
             {

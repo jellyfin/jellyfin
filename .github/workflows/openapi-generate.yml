@@ -30,7 +30,7 @@ jobs:
     - name: Configure .NET
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
-        dotnet-version: '10.0.x'
+        dotnet-version: '11.0.x'
 
     - name: Create File
       run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter Jellyfin.Server.Integration.Tests.OpenApiSpecTests
@@ -39,6 +39,6 @@ jobs:
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: ${{ inputs.artifact }}
-        path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net10.0/openapi.json
+        path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net11.0/openapi.json
         retention-days: 14
         if-no-files-found: error

@@ -14,7 +14,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.LiveTv
 {

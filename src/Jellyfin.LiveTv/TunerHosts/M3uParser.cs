@@ -91,7 +91,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                 {
                     extInf = trimmedLine.Substring(ExtInfPrefix.Length).Trim();
                 }
-                else if (!string.IsNullOrWhiteSpace(extInf) && !trimmedLine.StartsWith('#'))
+                else if (!string.IsNullOrWhiteSpace(extInf) && !trimmedLine.StartsWith('#', StringComparison.Ordinal))
                 {
                     if (!IsValidChannelUrl(trimmedLine))
                     {

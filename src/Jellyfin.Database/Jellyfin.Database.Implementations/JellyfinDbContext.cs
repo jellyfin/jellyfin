@@ -1,5 +1,4 @@
 using System;
-using System.Data.Common;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,7 +7,6 @@ using Jellyfin.Database.Implementations.Entities.Security;
 using Jellyfin.Database.Implementations.Interfaces;
 using Jellyfin.Database.Implementations.Locking;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Database.Implementations;

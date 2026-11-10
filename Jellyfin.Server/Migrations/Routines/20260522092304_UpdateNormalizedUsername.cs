@@ -1,8 +1,6 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
-using MediaBrowser.Controller.Configuration;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Server.Migrations.Routines;

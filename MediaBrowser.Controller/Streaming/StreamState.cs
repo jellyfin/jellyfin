@@ -37,7 +37,11 @@ public class StreamState : EncodingJobInfo, IDisposable
     /// </summary>
     public StreamingRequestDto Request
     {
-        get => (StreamingRequestDto)BaseRequest;
+        get
+        {
+            return (StreamingRequestDto)BaseRequest;
+        }
+
         set
         {
             BaseRequest = value;

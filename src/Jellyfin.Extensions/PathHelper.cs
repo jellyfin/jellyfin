@@ -68,7 +68,7 @@ public static class PathHelper
             return true;
         }
 
-        var rootWithSep = fullRoot.EndsWith(Path.DirectorySeparatorChar)
+        var rootWithSep = fullRoot.EndsWith(Path.DirectorySeparatorChar, StringComparison.Ordinal)
             ? fullRoot
             : fullRoot + Path.DirectorySeparatorChar;
 

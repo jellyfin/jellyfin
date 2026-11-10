@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Jellyfin.Database.Implementations.DbConfiguration;
 using MediaBrowser.Common.Configuration;
 

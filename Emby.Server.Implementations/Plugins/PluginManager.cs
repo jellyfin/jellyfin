@@ -759,7 +759,7 @@ namespace Emby.Server.Implementations.Plugins
             // No metafile, so lets see if the folder is versioned.
             // TODO: Phase this support out in future versions.
             metafile = dir.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)[^1];
-            int versionIndex = dir.LastIndexOf('_');
+            int versionIndex = dir.LastIndexOf('_', StringComparison.Ordinal);
             if (versionIndex != -1)
             {
                 // Get the version number from the filename if possible.

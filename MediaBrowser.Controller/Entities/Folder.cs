@@ -61,7 +61,11 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public LinkedChild[] LinkedChildren
         {
-            get => _linkedChildren;
+            get
+            {
+                return _linkedChildren;
+            }
+
             set
             {
                 _linkedChildren = value;

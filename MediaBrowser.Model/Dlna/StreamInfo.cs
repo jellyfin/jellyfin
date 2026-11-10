@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -619,9 +618,9 @@ public class StreamInfo
                 // Convert to seconds
                 totalSeconds /= 1000;
 
-                return totalBitrate.HasValue ?
-                    Convert.ToInt64(totalBitrate.Value * totalSeconds) :
-                    null;
+                return totalBitrate.HasValue
+                    ? Convert.ToInt64(totalBitrate.Value * totalSeconds)
+                    : null;
             }
 
             return null;

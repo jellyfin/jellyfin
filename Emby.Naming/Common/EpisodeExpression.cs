@@ -29,7 +29,11 @@ namespace Emby.Naming.Common
         /// </summary>
         public string Expression
         {
-            get => _expression;
+            get
+            {
+                return _expression;
+            }
+
             set
             {
                 _expression = value;

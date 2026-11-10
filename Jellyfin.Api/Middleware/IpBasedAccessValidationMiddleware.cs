@@ -1,4 +1,3 @@
-using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using MediaBrowser.Common.Extensions;

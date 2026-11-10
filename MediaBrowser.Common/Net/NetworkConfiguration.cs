@@ -26,7 +26,11 @@ public class NetworkConfiguration
     /// </summary>
     public string BaseUrl
     {
-        get => _baseUrl;
+        get
+        {
+            return _baseUrl;
+        }
+
         set
         {
             // Normalize the start of the string

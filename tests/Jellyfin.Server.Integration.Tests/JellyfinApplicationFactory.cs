@@ -17,7 +17,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Serilog;
-using Serilog.Core;
 using Serilog.Extensions.Logging;
 
 namespace Jellyfin.Server.Integration.Tests

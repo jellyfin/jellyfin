@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
-using Jellyfin.Api.Extensions;
 using MediaBrowser.Common.Configuration;
 using Microsoft.AspNetCore.Authorization;
 
