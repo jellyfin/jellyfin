@@ -981,7 +981,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 : " -filter_hw_device " + alias;
         }
 
-        public string GetGraphicalSubCanvasSize(EncodingJobInfo state, EncodingOptions options = null)
+        public string GetGraphicalSubCanvasSize(EncodingJobInfo state)
         {
             // DVBSUB uses the fixed canvas size 720x576
             if (state.SubtitleStream is not null
@@ -989,7 +989,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && !state.SubtitleStream.IsTextSubtitleStream
                 && !string.Equals(state.SubtitleStream.Codec, "DVBSUB", StringComparison.OrdinalIgnoreCase))
             {
-                var (subtitleWidth, subtitleHeight) = GetGraphicalSubCanvasDimensions(state, options);
+                var subtitleWidth = state.SubtitleStream?.Width;
+                var subtitleHeight = state.SubtitleStream?.Height;
 
                 if (subtitleWidth.HasValue
                     && subtitleHeight.HasValue
@@ -1005,49 +1006,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return string.Empty;
-        }
-
-        /// <summary>
-        /// Gets the canvas size of the graphical subtitle stream.
-        /// With hardware subtitle scaling enabled, a PGS stream without a probed size falls back to the size of
-        /// another PGS stream in the same file, or to 1920x1080 for 1080p and larger video. Otherwise ffmpeg
-        /// makes the canvas as large as the video, e.g. 3840x2160 on UHD discs whose PGS is authored at 1080p.
-        /// </summary>
-        /// <param name="state">Encoding state.</param>
-        /// <param name="options">Encoding options.</param>
-        /// <returns>The canvas width and height, or null if unknown.</returns>
-        public static (int? Width, int? Height) GetGraphicalSubCanvasDimensions(EncodingJobInfo state, EncodingOptions options)
-        {
-            var subtitleStream = state.SubtitleStream;
-            if (subtitleStream?.Width > 0 && subtitleStream.Height > 0)
-            {
-                return (subtitleStream.Width, subtitleStream.Height);
-            }
-
-            if (options?.EnableHardwareSubtitleScaling != true
-                || subtitleStream is null
-                || !string.Equals(subtitleStream.Codec, "PGSSUB", StringComparison.OrdinalIgnoreCase))
-            {
-                return (subtitleStream?.Width, subtitleStream?.Height);
-            }
-
-            var sibling = state.MediaSource?.MediaStreams?.FirstOrDefault(s =>
-                s.Type == MediaStreamType.Subtitle
-                && string.Equals(s.Codec, "PGSSUB", StringComparison.OrdinalIgnoreCase)
-                && s.Width > 0
-                && s.Height > 0);
-            if (sibling is not null)
-            {
-                return (sibling.Width, sibling.Height);
-            }
-
-            // also covers cropped 1080p encodes such as 1920x800, whose PGS is still authored at 1920x1080
-            if (state.VideoStream?.Width >= 1920 || state.VideoStream?.Height >= 1080)
-            {
-                return (1920, 1080);
-            }
-
-            return (subtitleStream.Width, subtitleStream.Height);
         }
 
         /// <summary>
@@ -1300,7 +1258,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 arg.Append(inputVidHwaccelArgs);
             }
 
-            var canvasArgs = GetGraphicalSubCanvasSize(state, options);
+            var canvasArgs = GetGraphicalSubCanvasSize(state);
             if (!string.IsNullOrEmpty(canvasArgs))
             {
                 arg.Append(canvasArgs);
@@ -3523,19 +3481,19 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         /// <summary>
         /// Gets the graphical subtitle pre-processing filters for hardware overlay filters that scale the
-        /// subtitle themselves (overlay_qsv, overlay_vaapi). Only the aspect ratio is matched here, at the
-        /// subtitle's own resolution: scaling packed RGBA in swscale is expensive, and sub2video can push a
-        /// subtitle frame for nearly every video frame once audio is transcoded as well.
+        /// subtitle themselves (overlay_qsv, overlay_vaapi). The subtitle keeps its probed resolution and only
+        /// the aspect ratio is matched, because scaling packed RGBA in swscale is expensive. The explicit scale
+        /// is a passthrough for frames that already have that size and keeps the hwupload frame size fixed.
+        /// Without a probed subtitle size this falls back to <see cref="GetGraphicalSubPreProcessFilters"/>.
         /// </summary>
         /// <param name="videoWidth">Video width.</param>
         /// <param name="videoHeight">Video height.</param>
-        /// <param name="subtitleWidth">Subtitle canvas width, if known.</param>
-        /// <param name="subtitleHeight">Subtitle canvas height, if known.</param>
+        /// <param name="subtitleWidth">Probed subtitle width.</param>
+        /// <param name="subtitleHeight">Probed subtitle height.</param>
         /// <param name="requestedWidth">Requested width.</param>
         /// <param name="requestedHeight">Requested height.</param>
         /// <param name="requestedMaxWidth">Requested max width.</param>
         /// <param name="requestedMaxHeight">Requested max height.</param>
-        /// <param name="maxSubtitleHeight">Subtitle canvases taller than this are scaled down before upload.</param>
         /// <returns>The filter string.</returns>
         public static string GetGraphicalSubHwScalePreProcessFilters(
             int? videoWidth,
@@ -3545,8 +3503,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             int? requestedWidth,
             int? requestedHeight,
             int? requestedMaxWidth,
-            int? requestedMaxHeight,
-            int maxSubtitleHeight)
+            int? requestedMaxHeight)
         {
             var (outWidth, outHeight) = GetFixedOutputSize(
                 videoWidth,
@@ -3559,47 +3516,39 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!outWidth.HasValue
                 || !outHeight.HasValue
                 || outWidth.Value <= 0
-                || outHeight.Value <= 0)
-            {
-                return string.Empty;
-            }
-
-            var videoDar = (double)outWidth.Value / outHeight.Value;
-
-            if (!subtitleWidth.HasValue
+                || outHeight.Value <= 0
+                || !subtitleWidth.HasValue
                 || !subtitleHeight.HasValue
                 || subtitleWidth.Value <= 0
                 || subtitleHeight.Value <= 0)
             {
-                // Canvas size unknown: crop or pad to the video aspect ratio at runtime, still without scaling.
-                return string.Format(
-                    CultureInfo.InvariantCulture,
-                    @"crop=w=min(iw\,ih*{0}):h=ih,pad=w=max(iw\,ih*{0}):h=ih:x=(ow-iw)/2:y=0:color=black@0",
-                    videoDar.ToString("0.######", CultureInfo.InvariantCulture));
+                return GetGraphicalSubPreProcessFilters(videoWidth, videoHeight, subtitleWidth, subtitleHeight, requestedWidth, requestedHeight, requestedMaxWidth, requestedMaxHeight);
             }
 
-            var filters = new List<string>();
+            // Larger canvases are still scaled down to limit the upload size
+            const int MaxSubtitleHeight = 1080;
             var subW = subtitleWidth.Value;
             var subH = subtitleHeight.Value;
-
-            if (subH > maxSubtitleHeight)
+            if (subH > MaxSubtitleHeight)
             {
-                subW = (int)Math.Round((double)subW * maxSubtitleHeight / subH);
-                subH = maxSubtitleHeight;
-                filters.Add(string.Format(CultureInfo.InvariantCulture, "scale={0}:{1}:fast_bilinear", subW, subH));
+                subW = (int)Math.Round((double)subW * MaxSubtitleHeight / subH);
+                subH = MaxSubtitleHeight;
             }
 
+            var filters = string.Format(CultureInfo.InvariantCulture, "scale={0}:{1}:fast_bilinear", subW, subH);
+
+            // Same result as the swscale path: keep the full subtitle height, center it and
+            // cut or extend the sides to the video aspect ratio.
+            var videoDar = (double)outWidth.Value / outHeight.Value;
             var targetW = (int)Math.Round(subH * videoDar);
             if (Math.Abs(((double)subW / subH) - videoDar) >= 0.01 && targetW != subW)
             {
-                // Same result as the swscale path: keep the full subtitle height, center it and
-                // cut or extend the sides to the video aspect ratio.
-                filters.Add(targetW < subW
-                    ? string.Format(CultureInfo.InvariantCulture, "crop={0}:{1}", targetW, subH)
-                    : string.Format(CultureInfo.InvariantCulture, "pad={0}:{1}:(ow-iw)/2:0:black@0", targetW, subH));
+                filters += targetW < subW
+                    ? string.Format(CultureInfo.InvariantCulture, ",crop={0}:{1}", targetW, subH)
+                    : string.Format(CultureInfo.InvariantCulture, ",pad={0}:{1}:(ow-iw)/2:0:black@0", targetW, subH);
             }
 
-            return string.Join(',', filters);
+            return filters;
         }
 
         public static string GetAlphaSrcFilter(
@@ -4668,7 +4617,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var hasAssSubs = hasSubs
                 && (string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase));
-            var (subW, subH) = GetGraphicalSubCanvasDimensions(state, options);
+            var subW = state.SubtitleStream?.Width;
+            var subH = state.SubtitleStream?.Height;
 
             var rotation = state.VideoStream?.Rotation ?? 0;
             var transposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
@@ -4881,7 +4831,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         // overlay_qsv can handle overlay scaling, setup a smaller height to reduce transfer overhead
                         var subPreProcFilters = options.EnableHardwareSubtitleScaling
-                            ? GetGraphicalSubHwScalePreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH, 1080)
+                            ? GetGraphicalSubHwScalePreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, 1080)
                             : GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, 1080);
                         subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=bgra");
@@ -4961,7 +4911,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var hasAssSubs = hasSubs
                 && (string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase));
-            var (subW, subH) = GetGraphicalSubCanvasDimensions(state, options);
+            var subW = state.SubtitleStream?.Width;
+            var subH = state.SubtitleStream?.Height;
 
             var rotation = state.VideoStream?.Rotation ?? 0;
             var transposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
@@ -5146,7 +5097,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         // overlay_qsv can handle overlay scaling, setup a smaller height to reduce transfer overhead
                         var subPreProcFilters = options.EnableHardwareSubtitleScaling
-                            ? GetGraphicalSubHwScalePreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH, 1080)
+                            ? GetGraphicalSubHwScalePreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, 1080)
                             : GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, 1080);
                         subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=bgra");
@@ -5291,7 +5242,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var hasAssSubs = hasSubs
                 && (string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase));
-            var (subW, subH) = GetGraphicalSubCanvasDimensions(state, options);
+            var subW = state.SubtitleStream?.Width;
+            var subH = state.SubtitleStream?.Height;
 
             var rotation = state.VideoStream?.Rotation ?? 0;
             var transposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
@@ -5448,7 +5400,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         // overlay_vaapi can handle overlay scaling, setup a smaller height to reduce transfer overhead
                         var subPreProcFilters = options.EnableHardwareSubtitleScaling
-                            ? GetGraphicalSubHwScalePreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH, 1080)
+                            ? GetGraphicalSubHwScalePreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, 1080)
                             : GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, 1080);
                         subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=bgra");
