@@ -306,27 +306,14 @@ public static class Mp4KeyframeExtractor
             return true;
         }
 
-        if (elst.End - elst.PayloadStart < 8)
-        {
-            return false;
-        }
-
-        Span<byte> buffer = stackalloc byte[20];
-        stream.Position = elst.PayloadStart;
-        stream.ReadExactly(buffer[..8]);
-        var isVersion1 = buffer[0] == 1;
-        var entryCount = BinaryPrimitives.ReadUInt32BigEndian(buffer[4..]);
-        var entrySize = isVersion1 ? 20 : 12;
-        if (entryCount * (long)entrySize > elst.End - elst.PayloadStart - 8)
+        if (!TryReadEditListHeader(stream, elst, out var isVersion1, out var entryCount))
         {
             return false;
         }
 
         for (var i = 0; i < entryCount; i++)
         {
-            stream.ReadExactly(buffer[..entrySize]);
-            var segmentDuration = isVersion1 ? BinaryPrimitives.ReadInt64BigEndian(buffer) : BinaryPrimitives.ReadUInt32BigEndian(buffer);
-            var entryMediaTime = isVersion1 ? BinaryPrimitives.ReadInt64BigEndian(buffer[8..]) : BinaryPrimitives.ReadInt32BigEndian(buffer[4..]);
+            ReadEdit(stream, isVersion1, out var segmentDuration, out var entryMediaTime);
 
             // Nothing may follow the edit that presents the media.
             if (hasMediaEdit || entryMediaTime < -1 || segmentDuration < 0)
@@ -348,6 +335,51 @@ public static class Mp4KeyframeExtractor
 
         // An edit list that never presents the media is not handled.
         return hasMediaEdit || entryCount == 0;
+    }
+
+    /// <summary>
+    /// Reads the version and the number of entries of an edit list, and leaves the stream at the first entry.
+    /// </summary>
+    private static bool TryReadEditListHeader(Stream stream, Box elst, out bool isVersion1, out uint entryCount)
+    {
+        isVersion1 = false;
+        entryCount = 0;
+
+        var payloadSize = elst.End - elst.PayloadStart;
+        if (payloadSize < 8)
+        {
+            return false;
+        }
+
+        Span<byte> buffer = stackalloc byte[8];
+        stream.Position = elst.PayloadStart;
+        stream.ReadExactly(buffer);
+        isVersion1 = buffer[0] == 1;
+        entryCount = BinaryPrimitives.ReadUInt32BigEndian(buffer[4..]);
+
+        // The durations and media times are 64 bit in version 1 and 32 bit otherwise, both are followed by a 32 bit rate.
+        var entrySize = isVersion1 ? 20 : 12;
+        return entryCount * (long)entrySize <= payloadSize - 8;
+    }
+
+    /// <summary>
+    /// Reads the duration and the media time of the next edit list entry.
+    /// </summary>
+    private static void ReadEdit(Stream stream, bool isVersion1, out long segmentDuration, out long mediaTime)
+    {
+        Span<byte> buffer = stackalloc byte[20];
+        if (isVersion1)
+        {
+            stream.ReadExactly(buffer);
+            segmentDuration = BinaryPrimitives.ReadInt64BigEndian(buffer);
+            mediaTime = BinaryPrimitives.ReadInt64BigEndian(buffer[8..]);
+        }
+        else
+        {
+            stream.ReadExactly(buffer[..12]);
+            segmentDuration = BinaryPrimitives.ReadUInt32BigEndian(buffer);
+            mediaTime = BinaryPrimitives.ReadInt32BigEndian(buffer[4..]);
+        }
     }
 
     private static bool HasRandomAccessGroups(Stream stream, Box stbl)
