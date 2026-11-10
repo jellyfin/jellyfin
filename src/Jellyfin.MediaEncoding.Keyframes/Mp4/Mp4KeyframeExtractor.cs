@@ -113,35 +113,17 @@ public static class Mp4KeyframeExtractor
         keyframes = [];
         isUnsupported = false;
 
-        if (!TryFindBox(stream, trak.PayloadStart, trak.End, BoxMdia, out var mdia)
-            || !TryFindBox(stream, mdia.PayloadStart, mdia.End, BoxHdlr, out var hdlr)
-            || hdlr.End - hdlr.PayloadStart < 12)
-        {
-            return false;
-        }
-
-        Span<byte> buffer = stackalloc byte[12];
-        stream.Position = hdlr.PayloadStart;
-        stream.ReadExactly(buffer);
-        if (BinaryPrimitives.ReadUInt32BigEndian(buffer[8..]) != HandlerVideo)
-        {
-            return false;
-        }
-
-        if (!TryFindBox(stream, mdia.PayloadStart, mdia.End, BoxMdhd, out var mdhd)
-            || !TryReadTimescaleAndDuration(stream, mdhd, out var mediaTimescale, out var mediaDuration)
-            || !TryFindBox(stream, mdia.PayloadStart, mdia.End, BoxMinf, out var minf)
-            || !TryFindBox(stream, minf.PayloadStart, minf.End, BoxStbl, out var stbl)
+        if (!TryFindVideoSampleTable(stream, trak, out var stbl, out var mediaTimescale, out var mediaDuration)
             || !TryFindBox(stream, stbl.PayloadStart, stbl.End, BoxStts, out var sttsBox)
-            || !TryReadTable(stream, sttsBox, 8, out var stts, out var sttsCount))
+            || !TryReadTable(stream, sttsBox, 8, out var stts))
         {
             return false;
         }
 
         long sampleCount = 0;
-        for (var i = 0; i < sttsCount; i++)
+        for (var i = 0; i < stts.Count; i++)
         {
-            sampleCount += BinaryPrimitives.ReadUInt32BigEndian(stts.AsSpan(i * 8));
+            sampleCount += BinaryPrimitives.ReadUInt32BigEndian(stts.Entries.AsSpan(i * 8));
         }
 
         // Cover art is stored as a video track with a single sample.
@@ -154,99 +136,32 @@ public static class Mp4KeyframeExtractor
         isUnsupported = true;
 
         // Partial sync samples and random access point groups add keyframes that are not listed in the sync sample table.
-        if (TryFindBox(stream, stbl.PayloadStart, stbl.End, BoxStps, out _) || HasRandomAccessGroups(stream, stbl))
-        {
-            return false;
-        }
-
-        if (!TryReadEditList(stream, trak, out var mediaTime, out var emptyDuration, out var hasMediaEdit))
-        {
-            return false;
-        }
-
-        byte[] ctts = [];
-        var cttsCount = 0;
-        if (TryFindBox(stream, stbl.PayloadStart, stbl.End, BoxCtts, out var cttsBox)
-            && !TryReadTable(stream, cttsBox, 8, out ctts, out cttsCount))
-        {
-            return false;
-        }
-
-        byte[] stss = [];
-        var stssCount = 0;
-        var hasSyncTable = TryFindBox(stream, stbl.PayloadStart, stbl.End, BoxStss, out var stssBox);
-        if (hasSyncTable && !TryReadTable(stream, stssBox, 4, out stss, out stssCount))
+        if (TryFindBox(stream, stbl.PayloadStart, stbl.End, BoxStps, out _)
+            || HasRandomAccessGroups(stream, stbl)
+            || !TryReadEditList(stream, trak, out var mediaTime, out var emptyDuration, out var hasMediaEdit)
+            || !TryReadOptionalTable(stream, stbl, BoxCtts, 8, out var ctts, out _)
+            || !TryReadOptionalTable(stream, stbl, BoxStss, 4, out var stss, out var hasSyncTable))
         {
             return false;
         }
 
         // With an edit list ffmpeg moves the first presented frame to the start of the edit,
         // even if the edit starts between two frames.
-        if (hasMediaEdit && !TryFindFirstPresentedTime(stts, sttsCount, ctts, cttsCount, mediaTime, out mediaTime))
+        if (hasMediaEdit && !TryFindFirstPresentedTime(stts, ctts, sampleCount, mediaTime, out mediaTime))
+        {
+            return false;
+        }
+
+        if (!TryReadKeyframeTimes(stts, ctts, stss, hasSyncTable, sampleCount, out var times))
         {
             return false;
         }
 
         var startOffsetTicks = ScaleToTicks(emptyDuration, movieTimescale);
-        var keyframeCount = hasSyncTable ? stssCount : sampleCount;
-
-        var sttsIndex = 0;
-        long sttsRunStart = 0;
-        long sttsRunDts = 0;
-        var cttsIndex = 0;
-        long cttsRunStart = 0;
-        long previousSample = -1;
-
-        for (long i = 0; i < keyframeCount; i++)
+        foreach (var time in times)
         {
-            // Sample numbers in the sync sample table are 1-based. Without a table every sample is a sync sample.
-            var sample = hasSyncTable ? BinaryPrimitives.ReadUInt32BigEndian(stss.AsSpan((int)i * 4)) - 1L : i;
-            if (sample <= previousSample)
-            {
-                return false;
-            }
-
-            previousSample = sample;
-
-            while (sttsIndex < sttsCount)
-            {
-                var runLength = BinaryPrimitives.ReadUInt32BigEndian(stts.AsSpan(sttsIndex * 8));
-                if (sample < sttsRunStart + runLength)
-                {
-                    break;
-                }
-
-                sttsRunDts += runLength * (long)BinaryPrimitives.ReadUInt32BigEndian(stts.AsSpan((sttsIndex * 8) + 4));
-                sttsRunStart += runLength;
-                sttsIndex++;
-            }
-
-            if (sttsIndex == sttsCount)
-            {
-                // The sync sample table refers to a sample that does not exist.
-                break;
-            }
-
-            var dts = sttsRunDts + ((sample - sttsRunStart) * BinaryPrimitives.ReadUInt32BigEndian(stts.AsSpan((sttsIndex * 8) + 4)));
-
-            while (cttsIndex < cttsCount)
-            {
-                var runLength = BinaryPrimitives.ReadUInt32BigEndian(ctts.AsSpan(cttsIndex * 8));
-                if (sample < cttsRunStart + runLength)
-                {
-                    break;
-                }
-
-                cttsRunStart += runLength;
-                cttsIndex++;
-            }
-
-            // Version 0 offsets are unsigned by specification, but writers store negative values in them, so they are read as signed like ffmpeg does.
-            long compositionOffset = cttsIndex < cttsCount
-                ? BinaryPrimitives.ReadInt32BigEndian(ctts.AsSpan((cttsIndex * 8) + 4))
-                : 0;
-
-            var ticks = ScaleToTicks(dts + compositionOffset - mediaTime, mediaTimescale) + startOffsetTicks;
+            // Keyframes before the start of the edit are not presented.
+            var ticks = ScaleToTicks(time - mediaTime, mediaTimescale) + startOffsetTicks;
             if (ticks >= 0)
             {
                 keyframes.Add(ticks);
@@ -260,45 +175,119 @@ public static class Mp4KeyframeExtractor
     }
 
     /// <summary>
+    /// Finds the sample table box of a track, if it is a video track.
+    /// </summary>
+    private static bool TryFindVideoSampleTable(Stream stream, Box trak, out Box stbl, out long mediaTimescale, out long mediaDuration)
+    {
+        stbl = default;
+        mediaTimescale = 0;
+        mediaDuration = 0;
+
+        if (!TryFindBox(stream, trak.PayloadStart, trak.End, BoxMdia, out var mdia)
+            || !TryFindBox(stream, mdia.PayloadStart, mdia.End, BoxHdlr, out var hdlr)
+            || hdlr.End - hdlr.PayloadStart < 12)
+        {
+            return false;
+        }
+
+        // The handler type follows the version, the flags and a reserved field.
+        Span<byte> buffer = stackalloc byte[12];
+        stream.Position = hdlr.PayloadStart;
+        stream.ReadExactly(buffer);
+        if (BinaryPrimitives.ReadUInt32BigEndian(buffer[8..]) != HandlerVideo)
+        {
+            return false;
+        }
+
+        return TryFindBox(stream, mdia.PayloadStart, mdia.End, BoxMdhd, out var mdhd)
+            && TryReadTimescaleAndDuration(stream, mdhd, out mediaTimescale, out mediaDuration)
+            && TryFindBox(stream, mdia.PayloadStart, mdia.End, BoxMinf, out var minf)
+            && TryFindBox(stream, minf.PayloadStart, minf.End, BoxStbl, out stbl);
+    }
+
+    /// <summary>
+    /// Gets the presentation time of every keyframe in units of the media timescale.
+    /// </summary>
+    private static bool TryReadKeyframeTimes(Table stts, Table ctts, Table stss, bool hasSyncTable, long sampleCount, out List<long> times)
+    {
+        times = [];
+
+        // Without a sync sample table every sample is a sync sample.
+        var keyframeCount = hasSyncTable ? stss.Count : sampleCount;
+        var decodingTimes = new RunCursor(stts);
+        var compositionOffsets = new RunCursor(ctts);
+        long previousSample = -1;
+
+        for (long i = 0; i < keyframeCount; i++)
+        {
+            // Sample numbers in the sync sample table are 1-based.
+            var sample = hasSyncTable ? BinaryPrimitives.ReadUInt32BigEndian(stss.Entries.AsSpan((int)i * 4)) - 1L : i;
+            if (sample <= previousSample)
+            {
+                return false;
+            }
+
+            previousSample = sample;
+
+            if (!TryGetPresentationTime(ref decodingTimes, ref compositionOffsets, sample, out var time))
+            {
+                // The sync sample table refers to a sample that does not exist.
+                break;
+            }
+
+            times.Add(time);
+        }
+
+        return true;
+    }
+
+    /// <summary>
     /// Finds the presentation time of the first frame that is presented at or after the given media time.
     /// </summary>
-    private static bool TryFindFirstPresentedTime(byte[] stts, int sttsCount, byte[] ctts, int cttsCount, long mediaTime, out long presentedTime)
+    private static bool TryFindFirstPresentedTime(Table stts, Table ctts, long sampleCount, long mediaTime, out long presentedTime)
     {
         presentedTime = long.MaxValue;
 
-        long dts = 0;
-        var cttsIndex = 0;
-        long cttsRemaining = cttsCount > 0 ? BinaryPrimitives.ReadUInt32BigEndian(ctts) : 0;
-        for (var i = 0; i < sttsCount; i++)
+        var decodingTimes = new RunCursor(stts);
+        var compositionOffsets = new RunCursor(ctts);
+
+        // Samples are stored in decoding order, so every sample has to be looked at.
+        for (long sample = 0; sample < sampleCount; sample++)
         {
-            var runLength = BinaryPrimitives.ReadUInt32BigEndian(stts.AsSpan(i * 8));
-            long delta = BinaryPrimitives.ReadUInt32BigEndian(stts.AsSpan((i * 8) + 4));
-            for (long j = 0; j < runLength; j++)
+            if (!TryGetPresentationTime(ref decodingTimes, ref compositionOffsets, sample, out var time))
             {
-                while (cttsRemaining == 0 && cttsIndex < cttsCount)
-                {
-                    cttsIndex++;
-                    cttsRemaining = cttsIndex < cttsCount ? BinaryPrimitives.ReadUInt32BigEndian(ctts.AsSpan(cttsIndex * 8)) : 0;
-                }
+                break;
+            }
 
-                long compositionOffset = 0;
-                if (cttsIndex < cttsCount)
-                {
-                    compositionOffset = BinaryPrimitives.ReadInt32BigEndian(ctts.AsSpan((cttsIndex * 8) + 4));
-                    cttsRemaining--;
-                }
-
-                var pts = dts + compositionOffset;
-                if (pts >= mediaTime && pts < presentedTime)
-                {
-                    presentedTime = pts;
-                }
-
-                dts += delta;
+            if (time >= mediaTime && time < presentedTime)
+            {
+                presentedTime = time;
             }
         }
 
         return presentedTime != long.MaxValue;
+    }
+
+    /// <summary>
+    /// Gets the presentation time of a sample in units of the media timescale.
+    /// Samples have to be requested in ascending order.
+    /// </summary>
+    private static bool TryGetPresentationTime(ref RunCursor decodingTimes, ref RunCursor compositionOffsets, long sample, out long time)
+    {
+        time = 0;
+        if (!decodingTimes.MoveTo(sample))
+        {
+            return false;
+        }
+
+        var decodingTime = decodingTimes.Total + ((sample - decodingTimes.RunStart) * decodingTimes.Value);
+
+        // Version 0 offsets are unsigned by specification, but writers store negative values in them, so they are read as signed like ffmpeg does.
+        // A sample without an entry in the table has no offset.
+        var compositionOffset = compositionOffsets.MoveTo(sample) ? unchecked((int)compositionOffsets.Value) : 0;
+
+        time = decodingTime + compositionOffset;
+        return true;
     }
 
     /// <summary>
@@ -325,9 +314,9 @@ public static class Mp4KeyframeExtractor
         Span<byte> buffer = stackalloc byte[20];
         stream.Position = elst.PayloadStart;
         stream.ReadExactly(buffer[..8]);
-        var version = buffer[0];
+        var isVersion1 = buffer[0] == 1;
         var entryCount = BinaryPrimitives.ReadUInt32BigEndian(buffer[4..]);
-        var entrySize = version == 1 ? 20 : 12;
+        var entrySize = isVersion1 ? 20 : 12;
         if (entryCount * (long)entrySize > elst.End - elst.PayloadStart - 8)
         {
             return false;
@@ -336,31 +325,19 @@ public static class Mp4KeyframeExtractor
         for (var i = 0; i < entryCount; i++)
         {
             stream.ReadExactly(buffer[..entrySize]);
-            long segmentDuration;
-            long entryMediaTime;
-            if (version == 1)
-            {
-                segmentDuration = BinaryPrimitives.ReadInt64BigEndian(buffer);
-                entryMediaTime = BinaryPrimitives.ReadInt64BigEndian(buffer[8..]);
-            }
-            else
-            {
-                segmentDuration = BinaryPrimitives.ReadUInt32BigEndian(buffer);
-                entryMediaTime = BinaryPrimitives.ReadInt32BigEndian(buffer[4..]);
-            }
+            var segmentDuration = isVersion1 ? BinaryPrimitives.ReadInt64BigEndian(buffer) : BinaryPrimitives.ReadUInt32BigEndian(buffer);
+            var entryMediaTime = isVersion1 ? BinaryPrimitives.ReadInt64BigEndian(buffer[8..]) : BinaryPrimitives.ReadInt32BigEndian(buffer[4..]);
 
-            if (entryMediaTime == -1)
-            {
-                if (hasMediaEdit || segmentDuration < 0)
-                {
-                    return false;
-                }
-
-                emptyDuration += segmentDuration;
-            }
-            else if (hasMediaEdit || entryMediaTime < 0)
+            // Nothing may follow the edit that presents the media.
+            if (hasMediaEdit || entryMediaTime < -1 || segmentDuration < 0)
             {
                 return false;
+            }
+
+            // A media time of -1 marks an empty edit, which delays the start of the track.
+            if (entryMediaTime == -1)
+            {
+                emptyDuration += segmentDuration;
             }
             else
             {
@@ -443,12 +420,21 @@ public static class Mp4KeyframeExtractor
     }
 
     /// <summary>
-    /// Reads the entries of a full box that consists of a version, flags, an entry count and fixed size entries.
+    /// Reads a table that may be missing. A missing table is read as an empty one.
     /// </summary>
-    private static bool TryReadTable(Stream stream, Box box, int entrySize, out byte[] entries, out int entryCount)
+    private static bool TryReadOptionalTable(Stream stream, Box container, uint type, int entrySize, out Table table, out bool exists)
     {
-        entries = [];
-        entryCount = 0;
+        table = new Table([], 0);
+        exists = TryFindBox(stream, container.PayloadStart, container.End, type, out var box);
+        return !exists || TryReadTable(stream, box, entrySize, out table);
+    }
+
+    /// <summary>
+    /// Reads the entries of a box that holds 4 bytes of version and flags, a 4 byte entry count and then entries of a fixed size.
+    /// </summary>
+    private static bool TryReadTable(Stream stream, Box box, int entrySize, out Table table)
+    {
+        table = new Table([], 0);
 
         var payloadSize = box.End - box.PayloadStart;
         if (payloadSize < 8)
@@ -465,9 +451,9 @@ public static class Mp4KeyframeExtractor
             return false;
         }
 
-        entries = new byte[size];
+        var entries = new byte[size];
         stream.ReadExactly(entries);
-        entryCount = (int)(size / entrySize);
+        table = new Table(entries, (int)(size / entrySize));
         return true;
     }
 
@@ -524,5 +510,62 @@ public static class Mp4KeyframeExtractor
         return (long)((Int128)value * TimeSpan.TicksPerSecond / timescale);
     }
 
+    /// <summary>
+    /// Walks a table in which every 8 byte entry holds a number of consecutive samples and the value they share.
+    /// </summary>
+    private struct RunCursor
+    {
+        private readonly Table _table;
+        private int _index;
+
+        public RunCursor(Table table)
+        {
+            _table = table;
+            _index = 0;
+            RunStart = 0;
+            Total = 0;
+        }
+
+        /// <summary>
+        /// Gets the number of the first sample in the current run.
+        /// </summary>
+        public long RunStart { get; private set; }
+
+        /// <summary>
+        /// Gets the sum of the values of all samples before the current run.
+        /// </summary>
+        public long Total { get; private set; }
+
+        /// <summary>
+        /// Gets the value shared by the samples in the current run.
+        /// </summary>
+        public readonly uint Value => BinaryPrimitives.ReadUInt32BigEndian(_table.Entries.AsSpan((_index * 8) + 4));
+
+        /// <summary>
+        /// Moves forward to the run that contains the sample.
+        /// </summary>
+        /// <param name="sample">The zero-based sample number, which must not be before the current run.</param>
+        /// <returns><c>true</c> if the table has a run for the sample.</returns>
+        public bool MoveTo(long sample)
+        {
+            while (_index < _table.Count)
+            {
+                long runLength = BinaryPrimitives.ReadUInt32BigEndian(_table.Entries.AsSpan(_index * 8));
+                if (sample < RunStart + runLength)
+                {
+                    return true;
+                }
+
+                Total += runLength * Value;
+                RunStart += runLength;
+                _index++;
+            }
+
+            return false;
+        }
+    }
+
     private readonly record struct Box(long PayloadStart, long End);
+
+    private readonly record struct Table(byte[] Entries, int Count);
 }
