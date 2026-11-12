@@ -36,17 +36,4 @@ namespace MediaBrowser.Controller.Resolvers
             CollectionType? collectionType,
             IDirectoryService directoryService);
     }
-
-    public class MultiItemResolverResult
-    {
-        public MultiItemResolverResult()
-        {
-            Items = new List<BaseItem>();
-            ExtraFiles = new List<FileSystemMetadata>();
-        }
-
-        public List<BaseItem> Items { get; set; }
-
-        public List<FileSystemMetadata> ExtraFiles { get; set; }
-    }
 }

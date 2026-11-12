@@ -4,7 +4,6 @@ using System.Linq;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Emby.Naming.Common;
-using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.Sorting;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Enums;

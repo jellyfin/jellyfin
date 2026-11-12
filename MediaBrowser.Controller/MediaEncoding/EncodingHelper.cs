@@ -4212,7 +4212,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                         subFilters.Add(subTextSubtitlesFilter);
 
                         alphaFormatOpt = _mediaEncoder.SupportsFilterWithOption(FilterOptionType.OverlayCudaAlphaFormat)
-                            ? ":alpha_format=premultiplied" : string.Empty;
+                            ? ":alpha_format=premultiplied"
+                            : string.Empty;
                     }
 
                     subFilters.Add("hwupload=derive_device=cuda");
@@ -4436,7 +4437,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                         subFilters.Add(subTextSubtitlesFilter);
 
                         alphaFormatOpt = _mediaEncoder.SupportsFilterWithOption(FilterOptionType.OverlayOpenclAlphaFormat)
-                            ? ":alpha_format=premultiplied" : string.Empty;
+                            ? ":alpha_format=premultiplied"
+                            : string.Empty;
                     }
 
                     subFilters.Add("hwupload=derive_device=opencl");

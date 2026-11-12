@@ -113,9 +113,9 @@ namespace MediaBrowser.Controller.Entities
 
             var path = ConfigurationManager.ApplicationPaths.PeoplePath;
 
-            return string.IsNullOrEmpty(subFolderPrefix) ?
-                System.IO.Path.Combine(path, validFilename) :
-                System.IO.Path.Combine(path, subFolderPrefix, validFilename);
+            return string.IsNullOrEmpty(subFolderPrefix)
+                ? System.IO.Path.Combine(path, validFilename)
+                : System.IO.Path.Combine(path, subFolderPrefix, validFilename);
         }
 
         private string GetRebasedPath()

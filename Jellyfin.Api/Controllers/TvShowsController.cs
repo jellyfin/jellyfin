@@ -252,8 +252,8 @@ public class TvShowsController : BaseJellyfinApiController
                 .GetSeasons(user, dtoOptions)
                 .FirstOrDefault(i => i.IndexNumber == season.Value);
 
-            episodes = seasonItem is null ?
-                new List<BaseItem>()
+            episodes = seasonItem is null
+                ? new List<BaseItem>()
                 : ((Season)seasonItem).GetEpisodes(user, dtoOptions, shouldIncludeMissingEpisodes);
         }
         else // No season number or season id was supplied. Returning all episodes.

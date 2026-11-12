@@ -1,5 +1,4 @@
 using System.IO;
-using Jellyfin.Extensions;
 using Xunit;
 
 namespace Jellyfin.Extensions.Tests

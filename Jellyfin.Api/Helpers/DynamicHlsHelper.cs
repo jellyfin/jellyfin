@@ -849,7 +849,8 @@ public class DynamicHlsHelper
         if (string.Equals(state.ActualOutputAudioCodec, "aac", StringComparison.OrdinalIgnoreCase))
         {
             string? profile = EncodingHelper.IsCopyCodec(state.OutputAudioCodec)
-                ? state.AudioStream?.Profile : state.GetRequestedProfiles("aac").FirstOrDefault();
+                ? state.AudioStream?.Profile
+                : state.GetRequestedProfiles("aac").FirstOrDefault();
 
             return HlsCodecStringHelpers.GetAACString(profile);
         }

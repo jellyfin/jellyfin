@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller.Entities;

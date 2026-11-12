@@ -50,7 +50,11 @@ namespace MediaBrowser.Model.Configuration
         /// <value>String value of PreviousVersion.</value>
         public string? PreviousVersionStr
         {
-            get => PreviousVersion?.ToString();
+            get
+            {
+                return PreviousVersion?.ToString();
+            }
+
             set
             {
                 if (Version.TryParse(value, out var version))

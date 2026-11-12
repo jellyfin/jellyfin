@@ -215,7 +215,11 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public virtual string Name
         {
-            get => _name;
+            get
+            {
+                return _name;
+            }
+
             set
             {
                 _name = value;
@@ -540,7 +544,11 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public string ForcedSortName
         {
-            get => _forcedSortName;
+            get
+            {
+                return _forcedSortName;
+            }
+
             set
             {
                 _forcedSortName = value;
@@ -573,7 +581,10 @@ namespace MediaBrowser.Controller.Entities
                 return _sortName;
             }
 
-            set => _sortName = value;
+            set
+            {
+                _sortName = value;
+            }
         }
 
         [JsonIgnore]

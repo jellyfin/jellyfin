@@ -141,8 +141,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
             var extension = Path.GetExtension(video.Path.AsSpan());
             video.VideoType = extension.Equals(".iso", StringComparison.OrdinalIgnoreCase)
                               || extension.Equals(".img", StringComparison.OrdinalIgnoreCase)
-                ? VideoType.Iso
-                : VideoType.VideoFile;
+                                  ? VideoType.Iso
+                                  : VideoType.VideoFile;
 
             video.IsShortcut = extension.Equals(".strm", StringComparison.OrdinalIgnoreCase);
             video.IsPlaceHolder = videoInfo.IsStub;

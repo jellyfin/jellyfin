@@ -130,8 +130,8 @@ namespace Jellyfin.Server.Migrations.Routines
 
                     var chromecastVersion = dto.CustomPrefs.TryGetValue("chromecastVersion", out var version)
                                             && !string.IsNullOrEmpty(version)
-                        ? chromecastDict[version]
-                        : ChromecastVersion.Stable;
+                                                ? chromecastDict[version]
+                                                : ChromecastVersion.Stable;
                     dto.CustomPrefs.Remove("chromecastVersion");
 
                     var displayPreferences = new DisplayPreferences(dtoUserId, itemId, client)

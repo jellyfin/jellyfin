@@ -145,8 +145,8 @@ public class DisplayPreferencesController : BaseJellyfinApiController
         existingDisplayPreferences.ScrollDirection = displayPreferences.ScrollDirection;
         existingDisplayPreferences.ChromecastVersion = displayPreferences.CustomPrefs.TryGetValue("chromecastVersion", out var chromecastVersion)
                                                        && !string.IsNullOrEmpty(chromecastVersion)
-            ? Enum.Parse<ChromecastVersion>(chromecastVersion, true)
-            : ChromecastVersion.Stable;
+                                                           ? Enum.Parse<ChromecastVersion>(chromecastVersion, true)
+                                                           : ChromecastVersion.Stable;
         displayPreferences.CustomPrefs.Remove("chromecastVersion");
 
         existingDisplayPreferences.EnableNextVideoInfoOverlay = !displayPreferences.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enableNextVideoInfoOverlay)
@@ -156,14 +156,14 @@ public class DisplayPreferencesController : BaseJellyfinApiController
 
         existingDisplayPreferences.SkipBackwardLength = displayPreferences.CustomPrefs.TryGetValue("skipBackLength", out var skipBackLength)
                                                         && !string.IsNullOrEmpty(skipBackLength)
-            ? int.Parse(skipBackLength, CultureInfo.InvariantCulture)
-            : 15000;
+                                                            ? int.Parse(skipBackLength, CultureInfo.InvariantCulture)
+                                                            : 15000;
         displayPreferences.CustomPrefs.Remove("skipBackLength");
 
         existingDisplayPreferences.SkipForwardLength = displayPreferences.CustomPrefs.TryGetValue("skipForwardLength", out var skipForwardLength)
                                                        && !string.IsNullOrEmpty(skipForwardLength)
-            ? int.Parse(skipForwardLength, CultureInfo.InvariantCulture)
-            : 15000;
+                                                           ? int.Parse(skipForwardLength, CultureInfo.InvariantCulture)
+                                                           : 15000;
         displayPreferences.CustomPrefs.Remove("skipForwardLength");
 
         existingDisplayPreferences.DashboardTheme = displayPreferences.CustomPrefs.TryGetValue("dashboardTheme", out var theme)

@@ -3,7 +3,6 @@ using System.Globalization;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Configuration;
 using Moq;

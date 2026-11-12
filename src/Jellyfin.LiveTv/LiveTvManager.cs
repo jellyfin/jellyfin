@@ -794,9 +794,9 @@ namespace Jellyfin.LiveTv
 
             foreach (var i in timers)
             {
-                var program = string.IsNullOrEmpty(i.Item1.ProgramId) ?
-                    null :
-                    _libraryManager.GetItemById(_tvDtoService.GetInternalProgramId(i.Item1.ProgramId)) as LiveTvProgram;
+                var program = string.IsNullOrEmpty(i.Item1.ProgramId)
+                    ? null
+                    : _libraryManager.GetItemById(_tvDtoService.GetInternalProgramId(i.Item1.ProgramId)) as LiveTvProgram;
 
                 var channel = string.IsNullOrEmpty(i.Item1.ChannelId) ? null : _libraryManager.GetItemById(_tvDtoService.GetInternalChannelId(i.Item2.Name, i.Item1.ChannelId));
 
@@ -888,15 +888,15 @@ namespace Jellyfin.LiveTv
 
             if (string.Equals(query.SortBy, "Priority", StringComparison.OrdinalIgnoreCase))
             {
-                timers = query.SortOrder == SortOrder.Descending ?
-                    timers.OrderBy(i => i.Item1.Priority).ThenByStringDescending(i => i.Item1.Name) :
-                    timers.OrderByDescending(i => i.Item1.Priority).ThenByString(i => i.Item1.Name);
+                timers = query.SortOrder == SortOrder.Descending
+                    ? timers.OrderBy(i => i.Item1.Priority).ThenByStringDescending(i => i.Item1.Name)
+                    : timers.OrderByDescending(i => i.Item1.Priority).ThenByString(i => i.Item1.Name);
             }
             else
             {
-                timers = query.SortOrder == SortOrder.Descending ?
-                    timers.OrderByStringDescending(i => i.Item1.Name) :
-                    timers.OrderByString(i => i.Item1.Name);
+                timers = query.SortOrder == SortOrder.Descending
+                    ? timers.OrderByStringDescending(i => i.Item1.Name)
+                    : timers.OrderByString(i => i.Item1.Name);
             }
 
             var returnArray = timers
@@ -926,15 +926,15 @@ namespace Jellyfin.LiveTv
 
             if (string.Equals(query.SortBy, "Priority", StringComparison.OrdinalIgnoreCase))
             {
-                timers = query.SortOrder == SortOrder.Descending ?
-                    timers.OrderBy(i => i.Item1.Priority).ThenByStringDescending(i => i.Item1.Name) :
-                    timers.OrderByDescending(i => i.Item1.Priority).ThenByString(i => i.Item1.Name);
+                timers = query.SortOrder == SortOrder.Descending
+                    ? timers.OrderBy(i => i.Item1.Priority).ThenByStringDescending(i => i.Item1.Name)
+                    : timers.OrderByDescending(i => i.Item1.Priority).ThenByString(i => i.Item1.Name);
             }
             else
             {
-                timers = query.SortOrder == SortOrder.Descending ?
-                    timers.OrderByStringDescending(i => i.Item1.Name) :
-                    timers.OrderByString(i => i.Item1.Name);
+                timers = query.SortOrder == SortOrder.Descending
+                    ? timers.OrderByStringDescending(i => i.Item1.Name)
+                    : timers.OrderByString(i => i.Item1.Name);
             }
 
             var returnArray = timers
@@ -962,17 +962,19 @@ namespace Jellyfin.LiveTv
 
             var channelIds = items.Select(i => i.Channel.Id).Distinct().ToArray();
 
-            var programs = options.AddCurrentProgram ? _libraryManager.GetItemList(new InternalItemsQuery(user)
-            {
-                IncludeItemTypes = [BaseItemKind.LiveTvProgram],
-                ChannelIds = channelIds,
-                MaxStartDate = now,
-                MinEndDate = now,
-                Limit = channelIds.Length,
-                OrderBy = [(ItemSortBy.StartDate, SortOrder.Ascending)],
-                TopParentIds = [GetInternalLiveTvFolder(CancellationToken.None).Id],
-                DtoOptions = options
-            }) : new List<BaseItem>();
+            var programs = options.AddCurrentProgram
+                ? _libraryManager.GetItemList(new InternalItemsQuery(user)
+                {
+                    IncludeItemTypes = [BaseItemKind.LiveTvProgram],
+                    ChannelIds = channelIds,
+                    MaxStartDate = now,
+                    MinEndDate = now,
+                    Limit = channelIds.Length,
+                    OrderBy = [(ItemSortBy.StartDate, SortOrder.Ascending)],
+                    TopParentIds = [GetInternalLiveTvFolder(CancellationToken.None).Id],
+                    DtoOptions = options
+                })
+                : new List<BaseItem>();
 
             RemoveFields(options);
 

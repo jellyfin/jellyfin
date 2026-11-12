@@ -161,7 +161,7 @@ public static class StartupHelpers
 
         // If $XDG_CACHE_HOME is either not set or a relative path,
         // a default equal to $HOME/.cache should be used.
-        if (cacheHome is null || !cacheHome.StartsWith('/'))
+        if (cacheHome is null || !cacheHome.StartsWith('/', StringComparison.Ordinal))
         {
             cacheHome = Path.Join(
                 Environment.GetFolderPath(Environment.SpecialFolder.UserProfile, Environment.SpecialFolderOption.DoNotVerify),

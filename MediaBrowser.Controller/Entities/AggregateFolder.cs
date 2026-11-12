@@ -60,7 +60,11 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override IEnumerable<BaseItem> Children
         {
-            get => base.Children;
+            get
+            {
+                return base.Children;
+            }
+
             set
             {
                 if (value is null)

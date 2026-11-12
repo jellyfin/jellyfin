@@ -611,7 +611,7 @@ public class SkiaEncoder : IImageEncoder
         var height = bitmap.Height;
         var stride = bitmap.RowBytes;
         var pixels = bitmap.GetPixels();
-        if (width == 0 || height == 0 || pixels == IntPtr.Zero)
+        if (width == 0 || height == 0 || pixels == nint.Zero)
         {
             return;
         }

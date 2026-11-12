@@ -1,4 +1,3 @@
-using System;
 using MediaBrowser.Common.Configuration;
 
 namespace MediaBrowser.Controller.SystemBackupService;

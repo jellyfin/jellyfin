@@ -14,7 +14,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Images
 {

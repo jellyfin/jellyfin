@@ -370,10 +370,12 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentNullException.ThrowIfNull(user);
             var row = ResolveUserDataRow(item, item.UserData?.Where(e => e.UserId.Equals(user.Id)));
-            return row is not null ? Map(row) : new UserItemData()
-            {
-                Key = item.GetUserDataKeys()[0],
-            };
+            return row is not null
+                ? Map(row)
+                : new UserItemData()
+                {
+                    Key = item.GetUserDataKeys()[0],
+                };
         }
 
         /// <summary>

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Model.MediaSegments;
 
 namespace MediaBrowser.Model;

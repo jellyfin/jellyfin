@@ -166,7 +166,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             // If closing tag exists, move to end of Tag
             if (index != -1)
             {
-                index = xml.IndexOf('>', index);
+                index = xml.IndexOf('>', index, StringComparison.Ordinal);
             }
 
             if (index != -1)

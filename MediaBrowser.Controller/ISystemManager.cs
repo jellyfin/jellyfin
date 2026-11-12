@@ -1,6 +1,5 @@
 using MediaBrowser.Model.System;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 
 namespace MediaBrowser.Controller;
 

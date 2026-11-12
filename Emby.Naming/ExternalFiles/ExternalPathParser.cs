@@ -73,7 +73,7 @@ namespace Emby.Naming.ExternalFiles
 
                 while (languageString.Length > 0)
                 {
-                    int lastSeparator = languageString.LastIndexOf(separator);
+                    int lastSeparator = languageString.LastIndexOf(separator, StringComparison.Ordinal);
 
                     if (lastSeparator == -1)
                     {

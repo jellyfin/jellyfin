@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Emby.Naming.Common;
-using Emby.Naming.Video;
 using Emby.Server.Implementations.Library;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;

@@ -14,7 +14,6 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -504,9 +503,9 @@ namespace MediaBrowser.Providers.Manager
                 item is MusicArtist ||
                 item is PhotoAlbum ||
                 item is Person ||
-                (saveLocally && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy) ?
-                "folder" :
-                "poster";
+                (saveLocally && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy)
+                    ? "folder"
+                    : "poster";
 
             switch (type)
             {

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.ComponentModel;
-using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
 

@@ -1,7 +1,5 @@
 #nullable disable
 
-using Jellyfin.Data.Enums;
-
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>

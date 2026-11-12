@@ -344,7 +344,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var shortcutPath = File.ReadAllLines(item.Path)
                 .Select(NormalizeStrmLine)
-                .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i) && !i.StartsWith('#'));
+                .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i) && !i.StartsWith('#', StringComparison.Ordinal));
 
             if (string.IsNullOrWhiteSpace(shortcutPath))
             {

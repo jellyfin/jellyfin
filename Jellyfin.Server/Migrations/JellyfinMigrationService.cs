@@ -60,26 +60,29 @@ internal class JellyfinMigrationService
         _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
         _applicationPaths = applicationPaths;
 #pragma warning disable CS0618 // Type or member is obsolete
-        Migrations = [.. typeof(IMigrationRoutine).Assembly.GetTypes().Where(e => typeof(IMigrationRoutine).IsAssignableFrom(e) || typeof(IAsyncMigrationRoutine).IsAssignableFrom(e))
-            .Select(e => (Type: e, Metadata: e.GetCustomAttribute<JellyfinMigrationAttribute>(), Backup: e.GetCustomAttributes<JellyfinMigrationBackupAttribute>()))
-            .Where(e => e.Metadata is not null)
-            .GroupBy(e => e.Metadata!.Stage)
-            .Select(f =>
-            {
-                var stage = new MigrationStage(f.Key);
-                foreach (var item in f)
+        Migrations =
+        [
+            .. typeof(IMigrationRoutine).Assembly.GetTypes().Where(e => typeof(IMigrationRoutine).IsAssignableFrom(e) || typeof(IAsyncMigrationRoutine).IsAssignableFrom(e))
+                .Select(e => (Type: e, Metadata: e.GetCustomAttribute<JellyfinMigrationAttribute>(), Backup: e.GetCustomAttributes<JellyfinMigrationBackupAttribute>()))
+                .Where(e => e.Metadata is not null)
+                .GroupBy(e => e.Metadata!.Stage)
+                .Select(f =>
                 {
-                    JellyfinMigrationBackupAttribute? backupMetadata = null;
-                    if (item.Backup?.Any() == true)
+                    var stage = new MigrationStage(f.Key);
+                    foreach (var item in f)
                     {
-                        backupMetadata = item.Backup.Aggregate(MergeBackupAttributes);
+                        JellyfinMigrationBackupAttribute? backupMetadata = null;
+                        if (item.Backup?.Any() == true)
+                        {
+                            backupMetadata = item.Backup.Aggregate(MergeBackupAttributes);
+                        }
+
+                        stage.Add(new(item.Type, item.Metadata!, backupMetadata));
                     }
 
-                    stage.Add(new(item.Type, item.Metadata!, backupMetadata));
-                }
-
-                return stage;
-            })];
+                    return stage;
+                })
+        ];
 #pragma warning restore CS0618 // Type or member is obsolete
     }
 

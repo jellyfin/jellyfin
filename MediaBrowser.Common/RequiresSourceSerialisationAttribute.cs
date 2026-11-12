@@ -1,5 +1,3 @@
-using System;
-
 namespace MediaBrowser.Common;
 
 /// <summary>

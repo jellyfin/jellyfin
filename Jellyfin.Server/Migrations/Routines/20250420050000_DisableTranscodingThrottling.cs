@@ -1,4 +1,3 @@
-using System;
 using MediaBrowser.Common.Configuration;
 using Microsoft.Extensions.Logging;
 

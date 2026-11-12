@@ -108,7 +108,8 @@ public static class OrderMapper
             // Prefix match with word boundary
             (e.CleanName!.StartsWith(searchPrefix) || (e.OriginalTitle != null && e.OriginalTitle.ToLower().StartsWith(originalSearchPrefix))) ? 1 :
             // Prefix match
-            (e.CleanName!.StartsWith(cleanSearchTerm) || (e.OriginalTitle != null && e.OriginalTitle.ToLower().StartsWith(originalSearchLower))) ? 2 : 3;
+            (e.CleanName!.StartsWith(cleanSearchTerm) || (e.OriginalTitle != null && e.OriginalTitle.ToLower().StartsWith(originalSearchLower))) ? 2 :
+            3;
     }
 
     private static string GetCleanValue(string value)

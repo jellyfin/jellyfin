@@ -13,7 +13,6 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Entities.Movies
 {

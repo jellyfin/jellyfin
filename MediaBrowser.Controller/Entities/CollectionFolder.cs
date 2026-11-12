@@ -90,7 +90,11 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override IEnumerable<BaseItem> Children
         {
-            get => GetActualChildren();
+            get
+            {
+                return GetActualChildren();
+            }
+
             set
             {
                 // The getter delegates to physical folders, so invalidate their caches.

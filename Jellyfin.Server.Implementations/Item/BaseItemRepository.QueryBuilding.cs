@@ -413,7 +413,7 @@ public sealed partial class BaseItemRepository
             seriesMaxDates,
             e => e.PresentationUniqueKey,
             s => s.SeriesKey,
-            (e, s) => new { Item = e, MaxDate = s != null ? s.MaxDate : (DateTime?)null });
+            (e, s) => new { Item = e, MaxDate = s != null ? s.MaxDate : null });
 
         var seriesSort = orderBy.First(o => o.OrderBy == ItemSortBy.SeriesDatePlayed);
 

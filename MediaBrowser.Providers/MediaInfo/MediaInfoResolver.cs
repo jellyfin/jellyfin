@@ -91,14 +91,14 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             if (!video.IsFileProtocol)
             {
-                return Array.Empty<MediaStream>();
+                return [];
             }
 
             var pathInfos = GetExternalFiles(video, directoryService, clearCache);
 
-            if (!pathInfos.Any())
+            if (pathInfos.Count == 0)
             {
-                return Array.Empty<MediaStream>();
+                return [];
             }
 
             var mediaStreams = new List<MediaStream>();
@@ -168,14 +168,14 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             if (!audio.IsFileProtocol)
             {
-                return Array.Empty<MediaStream>();
+                return [];
             }
 
             var pathInfos = GetExternalFiles(audio, directoryService, clearCache);
 
             if (pathInfos.Count == 0)
             {
-                return Array.Empty<MediaStream>();
+                return [];
             }
 
             var mediaStreams = new MediaStream[pathInfos.Count];
@@ -208,14 +208,14 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             if (!video.IsFileProtocol)
             {
-                return Array.Empty<ExternalPathParserResult>();
+                return [];
             }
 
             // Check if video folder exists
             string folder = video.ContainingFolderPath;
             if (!_fileSystem.DirectoryExists(folder))
             {
-                return Array.Empty<ExternalPathParserResult>();
+                return [];
             }
 
             var files = directoryService.GetFilePaths(folder, clearCache).ToList();
@@ -228,7 +228,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (files.Count == 0)
             {
-                return Array.Empty<ExternalPathParserResult>();
+                return [];
             }
 
             // VobSub .sub payloads only carry per-track language metadata when read via
@@ -284,7 +284,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             if (!audio.IsFileProtocol)
             {
-                return Array.Empty<ExternalPathParserResult>();
+                return [];
             }
 
             string folder = audio.ContainingFolderPath;
@@ -298,7 +298,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (files.Count == 0)
             {
-                return Array.Empty<ExternalPathParserResult>();
+                return [];
             }
 
             var externalPathInfos = new List<ExternalPathParserResult>();

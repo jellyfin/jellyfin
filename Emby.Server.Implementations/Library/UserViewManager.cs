@@ -365,14 +365,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Length == 0
-                ?
-                [
-                    BaseItemKind.Person,
-                    BaseItemKind.Studio,
-                    BaseItemKind.Year,
-                    BaseItemKind.MusicGenre,
-                    BaseItemKind.Genre
-                ]
+                ? [BaseItemKind.Person, BaseItemKind.Studio, BaseItemKind.Year, BaseItemKind.MusicGenre, BaseItemKind.Genre]
                 : Array.Empty<BaseItemKind>();
 
             var query = new InternalItemsQuery(user)

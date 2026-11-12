@@ -324,9 +324,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return InputTimestamp;
                 }
 
-                return string.Equals(OutputContainer, "m2ts", StringComparison.OrdinalIgnoreCase) ?
-                    TransportStreamTimestamp.Valid :
-                    TransportStreamTimestamp.None;
+                return string.Equals(OutputContainer, "m2ts", StringComparison.OrdinalIgnoreCase)
+                    ? TransportStreamTimestamp.Valid
+                    : TransportStreamTimestamp.None;
             }
         }
 

@@ -646,7 +646,6 @@ public class NetworkManager : INetworkManager, IDisposable
         ArgumentNullException.ThrowIfNull(configuration);
 
         var config = (NetworkConfiguration)configuration;
-        HappyEyeballs.HttpClientExtension.UseIPv6 = config.EnableIPv6;
 
         InitializeLan(config);
         InitializeRemote(config);
@@ -742,7 +741,7 @@ public class NetworkManager : INetworkManager, IDisposable
             return RemoteAccessPolicyResult.RejectDueToRemoteAccessDisabled;
         }
 
-        if (!_remoteAddressFilter.Any())
+        if (_remoteAddressFilter.Count == 0)
         {
             // No filter on remote addresses, allow any of them.
             return RemoteAccessPolicyResult.Allow;

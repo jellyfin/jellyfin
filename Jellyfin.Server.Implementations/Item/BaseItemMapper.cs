@@ -332,14 +332,16 @@ public static class BaseItemMapper
         entity.ProductionLocations = dto.ProductionLocations is not null ? string.Join('|', dto.ProductionLocations.Where(p => !string.IsNullOrWhiteSpace(p)).Distinct(StringComparer.OrdinalIgnoreCase)) : null;
         entity.Studios = dto.Studios is not null ? string.Join('|', dto.Studios.Distinct(StringComparer.OrdinalIgnoreCase)) : null;
         entity.Tags = dto.Tags is not null ? string.Join('|', dto.Tags.Distinct(StringComparer.OrdinalIgnoreCase)) : null;
-        entity.LockedFields = dto.LockedFields is not null ? dto.LockedFields
-            .Select(e => new BaseItemMetadataField()
-            {
-                Id = (int)e,
-                Item = entity,
-                ItemId = entity.Id
-            })
-            .ToArray() : null;
+        entity.LockedFields = dto.LockedFields is not null
+            ? dto.LockedFields
+                .Select(e => new BaseItemMetadataField()
+                {
+                    Id = (int)e,
+                    Item = entity,
+                    ItemId = entity.Id
+                })
+                .ToArray()
+            : null;
 
         if (dto is IHasProgramAttributes hasProgramAttributes)
         {

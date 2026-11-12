@@ -205,9 +205,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                     Path = firstMedia.Path,
                     IsInMixedFolder = isInMixedFolder,
                     ProductionYear = resolvedItem.Year,
-                    Name = parseName ?
-                        resolvedItem.Name :
-                        Path.GetFileNameWithoutExtension(firstMedia.Path),
+                    Name = parseName
+                        ? resolvedItem.Name
+                        : Path.GetFileNameWithoutExtension(firstMedia.Path),
                     // AdditionalParts = resolvedItem.Files.Skip(1).Select(i => i.Path).ToArray(),
                     // LocalAlternateVersions = resolvedItem.AlternateVersions.Select(i => i.Path).ToArray()
                 };

@@ -3,7 +3,6 @@ using System.Linq;
 using System.Net;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Server.Extensions;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;

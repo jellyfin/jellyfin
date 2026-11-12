@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using Emby.Naming.Common;
 using Emby.Naming.TV;
-using Emby.Server.Implementations.Library;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
@@ -95,9 +94,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 if (season.IndexNumber.HasValue && string.IsNullOrEmpty(season.Name))
                 {
                     var seasonNumber = season.IndexNumber.Value;
-                    season.Name = seasonNumber == 0 ?
-                        args.LibraryOptions.SeasonZeroDisplayName :
-                        string.Format(
+                    season.Name = seasonNumber == 0
+                        ? args.LibraryOptions.SeasonZeroDisplayName
+                        : string.Format(
                             CultureInfo.InvariantCulture,
                             _localization.GetServerLocalizedString("NameSeasonNumber"),
                             seasonNumber,

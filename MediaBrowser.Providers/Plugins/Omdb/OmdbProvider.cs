@@ -519,7 +519,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         private static bool IsNameSuffix(string value)
         {
-            var suffix = value.EndsWith('.') ? value[..^1] : value;
+            var suffix = value.EndsWith('.', StringComparison.Ordinal) ? value[..^1] : value;
 
             return NameSuffixes.Contains(suffix, StringComparer.OrdinalIgnoreCase);
         }

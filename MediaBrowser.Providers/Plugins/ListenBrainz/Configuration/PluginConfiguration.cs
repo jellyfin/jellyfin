@@ -39,7 +39,11 @@ public class PluginConfiguration : BasePluginConfiguration
     /// </summary>
     public double RateLimit
     {
-        get => _rateLimit;
+        get
+        {
+            return _rateLimit;
+        }
+
         set
         {
             if (value < DefaultRateLimit && _labsServer == DefaultLabsServer)

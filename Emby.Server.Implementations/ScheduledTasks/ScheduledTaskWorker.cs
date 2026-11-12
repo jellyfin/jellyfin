@@ -173,7 +173,11 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
     /// <value>The triggers.</value>
     private Tuple<TaskTriggerInfo, ITaskTrigger>[] InternalTriggers
     {
-        get => _triggers;
+        get
+        {
+            return _triggers;
+        }
+
         set
         {
             ArgumentNullException.ThrowIfNull(value);

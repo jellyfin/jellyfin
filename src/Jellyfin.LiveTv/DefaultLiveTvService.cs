@@ -214,9 +214,9 @@ namespace Jellyfin.LiveTv
 
         public Task<string> CreateTimer(TimerInfo info, CancellationToken cancellationToken)
         {
-            var existingTimer = string.IsNullOrWhiteSpace(info.ProgramId) ?
-                null :
-                _timerManager.GetTimerByProgramId(info.ProgramId);
+            var existingTimer = string.IsNullOrWhiteSpace(info.ProgramId)
+                ? null
+                : _timerManager.GetTimerByProgramId(info.ProgramId);
 
             if (existingTimer is not null)
             {
@@ -463,9 +463,9 @@ namespace Jellyfin.LiveTv
         {
             _logger.LogInformation("Streaming Channel {Id}", channelId);
 
-            var result = string.IsNullOrEmpty(streamId) ?
-                null :
-                currentLiveStreams.FirstOrDefault(i => string.Equals(i.OriginalStreamId, streamId, StringComparison.OrdinalIgnoreCase));
+            var result = string.IsNullOrEmpty(streamId)
+                ? null
+                : currentLiveStreams.FirstOrDefault(i => string.Equals(i.OriginalStreamId, streamId, StringComparison.OrdinalIgnoreCase));
 
             if (result is not null && result.EnableStreamSharing)
             {

@@ -115,7 +115,10 @@ namespace MediaBrowser.Common.Plugins
                 return _configuration;
             }
 
-            protected set => _configuration = value;
+            protected set
+            {
+                _configuration = value;
+            }
         }
 
         /// <summary>
