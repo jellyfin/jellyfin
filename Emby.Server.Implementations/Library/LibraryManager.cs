@@ -626,6 +626,17 @@ namespace Emby.Server.Implementations.Library
 
         private void DeleteItemPath(BaseItem item, bool isRequiredForDelete, FileSystemMetadata fileSystemInfo)
         {
+            if (IsProtectedMetadataDirectory(fileSystemInfo.FullName))
+            {
+                _logger.LogWarning(
+                    "Refusing to delete protected directory path, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
+                    item.GetType().Name,
+                    item.Name ?? "Unknown name",
+                    fileSystemInfo.FullName,
+                    item.Id);
+                return;
+            }
+
             if (Directory.Exists(fileSystemInfo.FullName) || File.Exists(fileSystemInfo.FullName))
             {
                 try
@@ -678,6 +689,84 @@ namespace Emby.Server.Implementations.Library
                         throw;
                     }
                 }
+            }
+        }
+
+        private bool IsProtectedMetadataDirectory(string? path)
+        {
+            var fullPath = NormalizeFullPath(path);
+            if (string.IsNullOrEmpty(fullPath))
+            {
+                return false;
+            }
+
+            var appPaths = _configurationManager.ApplicationPaths;
+            string?[] protectedRoots =
+            [
+                appPaths.PeoplePath,
+                appPaths.ArtistsPath,
+                appPaths.GenrePath,
+                appPaths.MusicGenrePath,
+                appPaths.StudioPath,
+                appPaths.YearPath,
+                appPaths.InternalMetadataPath,
+                appPaths.DefaultInternalMetadataPath,
+                appPaths.RootFolderPath,
+                appPaths.DefaultUserViewsPath,
+                appPaths.ProgramDataPath,
+                appPaths.DataPath,
+                appPaths.CachePath,
+                appPaths.ConfigurationDirectoryPath
+            ];
+
+            var comparison = OperatingSystem.IsWindows() || OperatingSystem.IsMacOS()
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal;
+            var prefix = Path.EndsInDirectorySeparator(fullPath)
+                ? fullPath
+                : fullPath + Path.DirectorySeparatorChar;
+
+            foreach (var root in protectedRoots)
+            {
+                var fullRoot = NormalizeFullPath(root);
+                if (string.IsNullOrEmpty(fullRoot))
+                {
+                    continue;
+                }
+
+                // Refuse deleting either the protected root itself or any ancestor containing it.
+                if (string.Equals(fullPath, fullRoot, comparison)
+                    || fullRoot.StartsWith(prefix, comparison))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static string? NormalizeFullPath(string? path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return null;
+            }
+
+            try
+            {
+                return Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+            catch (NotSupportedException)
+            {
+                return null;
+            }
+            catch (PathTooLongException)
+            {
+                return null;
             }
         }
 
