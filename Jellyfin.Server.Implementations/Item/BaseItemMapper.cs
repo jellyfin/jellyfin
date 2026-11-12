@@ -126,6 +126,7 @@ public static class BaseItemMapper
         if (entity.Provider is not null)
         {
             dto.ProviderIds = entity.Provider.ToDictionary(e => e.ProviderId, e => e.ProviderValue);
+            dto.MarkOwnedRowsRead(OwnedItemRows.Providers);
         }
 
         if (entity.ExtraType is not null)
@@ -136,6 +137,7 @@ public static class BaseItemMapper
         if (entity.LockedFields is not null)
         {
             dto.LockedFields = entity.LockedFields?.Select(e => (MetadataField)e.Id).ToArray() ?? [];
+            dto.MarkOwnedRowsRead(OwnedItemRows.LockedFields);
         }
 
         if (entity.Audio is not null)
@@ -216,6 +218,7 @@ public static class BaseItemMapper
         if (entity.Images is not null)
         {
             dto.ImageInfos = entity.Images.Select(e => MapImageFromEntity(e, appHost)).ToArray();
+            dto.MarkOwnedRowsRead(OwnedItemRows.Images);
         }
 
         if (dto is IHasStartDate hasStartDate)
@@ -432,6 +435,7 @@ public static class BaseItemMapper
     {
         return new ItemImageInfo()
         {
+            Id = e.Id,
             Path = appHost?.ExpandVirtualPath(e.Path) ?? e.Path,
             BlurHash = e.Blurhash is null ? null : Encoding.UTF8.GetString(e.Blurhash),
             DateModified = e.DateModified ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc),
@@ -452,7 +456,10 @@ public static class BaseItemMapper
         return new BaseItemImageInfo()
         {
             ItemId = baseItemId,
-            Id = Guid.NewGuid(),
+
+            // An image that came from the database keeps its row identity; only a new one gets a
+            // fresh id, so a save no longer renames every image it rewrites.
+            Id = e.Id.IsEmpty() ? Guid.NewGuid() : e.Id,
             Path = e.Path,
             Blurhash = e.BlurHash is null ? null : Encoding.UTF8.GetBytes(e.BlurHash),
             DateModified = e.DateModified,
