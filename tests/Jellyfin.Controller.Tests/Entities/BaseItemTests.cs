@@ -157,6 +157,37 @@ public class BaseItemTests
         Assert.Equal(BaseItem.GetItemByNameFolderName(name), BaseItem.GetItemByNameFolderName(name));
     }
 
+    [Theory]
+    [InlineData("??????")]
+    [InlineData("<>")]
+    [InlineData(" ? . ")]
+    public void GetItemByNameFolderName_NameWithoutValidCharacters_IsNotEmpty(string name)
+    {
+        SetupInvalidCharacterFileSystem();
+
+        var folderName = BaseItem.GetItemByNameFolderName(name);
+
+        Assert.False(string.IsNullOrWhiteSpace(folderName));
+        Assert.Equal(folderName, BaseItem.GetItemByNameFolderName(name));
+    }
+
+    [Fact]
+    public void GetItemByNameFolderName_NamesWithoutValidCharacters_StayApart()
+    {
+        SetupInvalidCharacterFileSystem();
+
+        Assert.NotEqual(BaseItem.GetItemByNameFolderName("??"), BaseItem.GetItemByNameFolderName("???"));
+    }
+
+    // Replaces the characters a file name can't hold with a space, like ManagedFileSystem.GetValidFilename.
+    private static void SetupInvalidCharacterFileSystem()
+    {
+        var fileSystem = new Mock<IFileSystem>();
+        fileSystem.Setup(x => x.GetValidFilename(It.IsAny<string>()))
+            .Returns((string name) => new string(name.Select(c => "\"<>|:*?\\/".Contains(c, StringComparison.Ordinal) ? ' ' : c).ToArray()));
+        BaseItem.FileSystem = fileSystem.Object;
+    }
+
     private static void SetupPassThroughFileSystem()
     {
         var fileSystem = new Mock<IFileSystem>();

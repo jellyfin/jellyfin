@@ -979,6 +979,14 @@ namespace MediaBrowser.Controller.Entities
             // Trim the period at the end because windows will have a hard time with that
             var validName = FileSystem.GetValidFilename(name).Trim().TrimEnd('.');
 
+            // A name made only of characters a file name can't hold would leave no folder name at all, and the
+            // item would get the root folder of its kind (the whole People folder) as its own path. Name it
+            // after a hash of the whole name instead, which also keeps two such names apart.
+            if (validName.Length == 0)
+            {
+                return name.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            }
+
             // Most Linux filesystems cap a path component at 255 bytes, so a name past that cannot be
             // turned into a folder at all - and an entity with no folder can never be created, which
             // leaves the credit behind it stuck: not refreshable, not deletable, retried on every scan.

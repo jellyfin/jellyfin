@@ -624,8 +624,35 @@ namespace Emby.Server.Implementations.Library
             ReportItemRemoved(item, parent);
         }
 
+        private bool IsItemsByNameRoot(string path)
+        {
+            var paths = _configurationManager.ApplicationPaths;
+            var normalized = Path.TrimEndingDirectorySeparator(path);
+            foreach (var root in (string[])[paths.PeoplePath, paths.GenrePath, paths.MusicGenrePath, paths.StudioPath, paths.YearPath, paths.ArtistsPath])
+            {
+                if (string.Equals(normalized, Path.TrimEndingDirectorySeparator(root), StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private void DeleteItemPath(BaseItem item, bool isRequiredForDelete, FileSystemMetadata fileSystemInfo)
         {
+            // An item stored with the root folder of its kind as its path, which a name without any valid file
+            // name character used to get, must not take every other item's folder with it.
+            if (IsItemsByNameRoot(fileSystemInfo.FullName))
+            {
+                _logger.LogWarning(
+                    "Not deleting the root folder {Path} of item {Name} ({Id}); only removing the item from the database",
+                    fileSystemInfo.FullName,
+                    item.Name ?? "Unknown name",
+                    item.Id);
+                return;
+            }
+
             if (Directory.Exists(fileSystemInfo.FullName) || File.Exists(fileSystemInfo.FullName))
             {
                 try
