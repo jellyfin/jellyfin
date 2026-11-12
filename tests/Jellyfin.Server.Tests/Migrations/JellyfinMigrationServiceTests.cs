@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.Configuration;
@@ -20,12 +21,14 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using Xunit;
 
 namespace Jellyfin.Server.Tests.Migrations;
 
 /// <summary>
-/// Covers how the migration service treats the database of a server that has been set up before.
+/// Covers how the migration service treats the database of a server that has been set up before, and how it backs up
+/// the database before migrating it.
 /// </summary>
 public sealed class JellyfinMigrationServiceTests : IDisposable
 {
@@ -132,6 +135,22 @@ public sealed class JellyfinMigrationServiceTests : IDisposable
         await CreateService().CheckFirstTimeRunOrMigration(_paths, new StartupOptions { RestoreArchive = Path.Combine(_root, "backup.zip") });
     }
 
+    [Fact]
+    public async Task PrepareSystemForMigration_ProviderWithoutBackups_RunsWithoutDatabaseBackup()
+    {
+        WriteServerConfiguration(wizardCompleted: false);
+        var databaseProvider = new Mock<IJellyfinDatabaseProvider>();
+        databaseProvider.Setup(p => p.MigrationBackupFast(It.IsAny<CancellationToken>())).Throws<NotImplementedException>();
+        var service = CreateService(databaseProvider.Object);
+        await service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+
+        await service.PrepareSystemForMigration(NullLogger.Instance);
+        await service.CleanupSystemAfterMigration(NullLogger.Instance);
+
+        databaseProvider.Verify(p => p.MigrationBackupFast(It.IsAny<CancellationToken>()), Times.Once);
+        databaseProvider.Verify(p => p.DeleteBackup(It.IsAny<string>()), Times.Never);
+    }
+
     public void Dispose()
     {
         foreach (var serviceProvider in _serviceProviders)
@@ -155,7 +174,7 @@ public sealed class JellyfinMigrationServiceTests : IDisposable
         new MyXmlSerializer().SerializeToFile(new ServerConfiguration { IsStartupWizardCompleted = wizardCompleted }, _paths.SystemConfigurationFilePath);
     }
 
-    private JellyfinMigrationService CreateService()
+    private JellyfinMigrationService CreateService(IJellyfinDatabaseProvider? databaseProvider = null)
     {
         var configurationManager = new ServerConfigurationManager(_paths, NullLoggerFactory.Instance, new MyXmlSerializer());
         configurationManager.AddParts([new DatabaseConfigurationFactory()]);
@@ -169,7 +188,9 @@ public sealed class JellyfinMigrationServiceTests : IDisposable
 
         var factory = serviceProvider.GetRequiredService<IDbContextFactory<JellyfinDbContext>>();
         serviceProvider.GetRequiredService<IJellyfinDatabaseProvider>().DbContextFactory = factory;
-        return ActivatorUtilities.CreateInstance<JellyfinMigrationService>(serviceProvider);
+        return databaseProvider is null
+            ? ActivatorUtilities.CreateInstance<JellyfinMigrationService>(serviceProvider)
+            : ActivatorUtilities.CreateInstance<JellyfinMigrationService>(serviceProvider, databaseProvider);
     }
 
     private async Task<JellyfinDbContext> CreateDbContextAsync()
