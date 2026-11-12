@@ -614,15 +614,26 @@ namespace Emby.Server.Implementations.Dto
             if (item.IsFolder)
             {
                 var folder = (Folder)item;
+                var visiblePlaylistItems = item is Playlist playlist
+                    ? playlist.GetManageableItems().Select(i => i.Item2).Where(i => i.IsVisibleStandalone(user)).ToList()
+                    : null;
 
                 if (options.EnableUserData)
                 {
+                    if (visiblePlaylistItems is not null)
+                    {
+                        userData ??= _userDataRepository.GetUserData(user, item);
+                    }
+
                     if (userData is not null)
                     {
                         // Use pre-fetched user data
                         dto.UserData = GetUserItemDataDto(userData, item.Id);
-                        (int Played, int Total)? precomputed = playedCountBatch is not null
-                            && playedCountBatch.TryGetValue(item.Id, out var counts) ? counts : null;
+                        (int Played, int Total)? precomputed = visiblePlaylistItems is not null
+                            && folder.SupportsUserDataFromChildren
+                            && (folder.SupportsPlayedStatus || options.ContainsField(ItemFields.RecursiveItemCount))
+                            ? GetPlayedAndTotalCount(visiblePlaylistItems, user)
+                            : playedCountBatch is not null && playedCountBatch.TryGetValue(item.Id, out var counts) ? counts : null;
                         item.FillUserDataDtoValues(dto.UserData, userData, dto, user, options, precomputed);
                     }
                     else
@@ -634,9 +645,13 @@ namespace Emby.Server.Implementations.Dto
 
                 if (!dto.ChildCount.HasValue && item.SourceType == SourceType.Library)
                 {
-                    // For these types we can try to optimize and assume these values will be equal
-                    if (item is MusicAlbum || item is Season || item is Playlist)
+                    if (visiblePlaylistItems is not null)
                     {
+                        dto.ChildCount = visiblePlaylistItems.Count;
+                    }
+                    else if (item is MusicAlbum || item is Season)
+                    {
+                        // For these types we can try to optimize and assume these values will be equal
                         if (dto.RecursiveItemCount > 0)
                         {
                             dto.ChildCount = dto.RecursiveItemCount;
@@ -807,6 +822,13 @@ namespace Emby.Server.Implementations.Dto
             return single is not null && single.TryGetValue(folder.Id, out var singleCount)
                 ? singleCount
                 : folder.GetChildCount(user);
+        }
+
+        private (int Played, int Total) GetPlayedAndTotalCount(IReadOnlyList<BaseItem> items, User user)
+        {
+            var userData = _userDataRepository.GetUserDataBatch(items, user);
+            var played = items.Count(i => userData.TryGetValue(i.Id, out var data) && data.Played);
+            return (played, items.Count);
         }
 
         private static void SetBookProperties(BaseItemDto dto, Book item)
