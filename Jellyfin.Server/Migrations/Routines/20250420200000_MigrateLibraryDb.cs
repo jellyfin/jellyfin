@@ -457,6 +457,11 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             }
         }
 
+        using (var operation = GetPreparedDbContext("Restoring TrickplayInfos and MediaSegments"))
+        {
+            RestoreOrphanedItemData(operation.JellyfinDbContext);
+        }
+
         connection.Close();
 
         _logger.LogInformation("Migration of the Library.db done.");
@@ -476,6 +481,30 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
         File.Move(libraryDbPath, libraryDbPath + ".old", true);
+    }
+
+    /// <summary>
+    /// Puts back the rows AddForeignKeysToItemDerivedData set aside because their items were still in library.db.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    internal static void RestoreOrphanedItemData(JellyfinDbContext context)
+    {
+        if (context.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM sqlite_master WHERE type = 'table' AND name = 'OrphanedTrickplayInfos'").AsEnumerable().First() == 0)
+        {
+            return;
+        }
+
+        context.Database.ExecuteSqlRaw(
+            """
+            INSERT OR IGNORE INTO TrickplayInfos (ItemId, Width, Height, TileWidth, TileHeight, ThumbnailCount, Interval, Bandwidth)
+            SELECT ItemId, Width, Height, TileWidth, TileHeight, ThumbnailCount, Interval, Bandwidth FROM OrphanedTrickplayInfos o
+            WHERE EXISTS (SELECT 1 FROM BaseItems b WHERE b.Id = o.ItemId);
+            DELETE FROM OrphanedTrickplayInfos WHERE EXISTS (SELECT 1 FROM BaseItems b WHERE b.Id = OrphanedTrickplayInfos.ItemId);
+            INSERT OR IGNORE INTO MediaSegments (Id, ItemId, Type, EndTicks, StartTicks, SegmentProviderId)
+            SELECT Id, ItemId, Type, EndTicks, StartTicks, SegmentProviderId FROM OrphanedMediaSegments o
+            WHERE EXISTS (SELECT 1 FROM BaseItems b WHERE b.Id = o.ItemId);
+            DELETE FROM OrphanedMediaSegments WHERE EXISTS (SELECT 1 FROM BaseItems b WHERE b.Id = OrphanedMediaSegments.ItemId);
+            """);
     }
 
     private DatabaseMigrationStep GetPreparedDbContext(string operationName)
