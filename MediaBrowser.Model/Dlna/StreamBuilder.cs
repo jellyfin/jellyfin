@@ -618,6 +618,7 @@ namespace MediaBrowser.Model.Dlna
             playlistItem.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
 
             playlistItem.EnableAudioVbrEncoding = transcodingProfile.EnableAudioVbrEncoding;
+            playlistItem.SeparateAudioRendition = transcodingProfile.SeparateAudioRendition;
 
             if (transcodingProfile.MinSegments > 0)
             {
