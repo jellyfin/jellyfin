@@ -102,7 +102,7 @@ public sealed class FixNullEncoderPresetTests : IDisposable
             _configurationDirectory);
 
         var migration = new MigrateEncodingOptions(applicationPaths, NullLoggerFactory.Instance);
-        migration.Perform();
+        await migration.PerformAsync(TestContext.Current.CancellationToken);
 
         var serializer = new XmlSerializer(typeof(EncodingOptions));
         using var reader = XmlReader.Create(_encodingConfigurationPath);

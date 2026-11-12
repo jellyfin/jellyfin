@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Controller.Entities;
@@ -16,10 +18,8 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to move trickplay files to the new directory.
 /// </summary>
-#pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-04-20T23:00:00", nameof(MoveTrickplayFiles), RunMigrationOnSetup = true)]
-public class MoveTrickplayFiles : IMigrationRoutine
-#pragma warning restore CS0618 // Type or member is obsolete
+public class MoveTrickplayFiles : IAsyncMigrationRoutine
 {
     private readonly ITrickplayManager _trickplayManager;
     private readonly IFileSystem _fileSystem;
@@ -46,7 +46,7 @@ public class MoveTrickplayFiles : IMigrationRoutine
     }
 
     /// <inheritdoc />
-    public void Perform()
+    public Task PerformAsync(CancellationToken cancellationToken)
     {
         const int Limit = 5000;
         int itemCount = 0, offset = 0, previousCount;
@@ -103,6 +103,8 @@ public class MoveTrickplayFiles : IMigrationRoutine
         } while (previousCount == Limit);
 
         _logger.LogInformation("Moved {Count} items in {Time}", itemCount, sw.Elapsed);
+
+        return Task.CompletedTask;
     }
 
     private string GetOldTrickplayDirectory(BaseItem item, int? width = null)
