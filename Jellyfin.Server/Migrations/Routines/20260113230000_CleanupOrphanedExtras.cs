@@ -56,8 +56,10 @@ public class CleanupOrphanedExtras : IAsyncMigrationRoutine
         {
             var placeholderOwner = Guid.Parse("00000000-0000-0000-0000-000000000001");
 #pragma warning disable RS0030 // Do not use banned APIs
+            // An extra is always a media file. A folder that ended up with a stale OwnerId is a
+            // playlist or a collection, and dropping one of those would destroy user data.
             var orphanedItemIds = await context.BaseItems
-                .Where(b => b.OwnerId.HasValue && b.OwnerId == placeholderOwner)
+                .Where(b => b.OwnerId.HasValue && b.OwnerId == placeholderOwner && !b.IsFolder)
                 .Select(b => new
                 {
                     b.Id,

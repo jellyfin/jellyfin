@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Emby.Server.Implementations.IO;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Locking;
@@ -14,6 +15,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -136,6 +138,32 @@ public sealed class MigrateLinkedChildrenStaleItemsTests : IDisposable
         Assert.Equal([itemId], deleted);
     }
 
+    [Fact]
+    public void Perform_PlaylistOutsideEveryLocation_IsKept()
+    {
+        var itemId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+        SeedMediaFile("anchor.flac");
+        SeedItem(itemId, Path.Combine(_root, "data", "playlists", "Mix"));
+
+        var deleted = Perform(libraryLocations: [Path.Combine(_root, "media")]);
+
+        Assert.Empty(deleted);
+    }
+
+    [Fact]
+    public void Perform_DefaultRecordingWithMissingFile_IsRemoved()
+    {
+        var itemId = Guid.Parse("66666666-6666-6666-6666-666666666666");
+        var recordings = Path.Combine(_root, "data", "livetv", "recordings");
+        Directory.CreateDirectory(recordings);
+        File.WriteAllBytes(Path.Combine(recordings, "anchor.ts"), [0]);
+        SeedItem(itemId, Path.Combine(recordings, "deleted.ts"));
+
+        var deleted = Perform(libraryLocations: [recordings]);
+
+        Assert.Equal([itemId], deleted);
+    }
+
     public void Dispose()
     {
         _connection.Dispose();
@@ -234,7 +262,8 @@ public sealed class MigrateLinkedChildrenStaleItemsTests : IDisposable
             factory.Object,
             libraryManager.Object,
             appHost.Object,
-            appPaths.Object)
+            appPaths.Object,
+            new ManagedFileSystem(NullLogger<ManagedFileSystem>.Instance, _applicationPaths, Array.Empty<IShortcutHandler>()))
             .Perform();
 
         return deleted;
