@@ -15,7 +15,7 @@
     "NotificationOptionPluginError": "Грешка на додаток",
     "NotificationOptionNewLibraryContent": "Додадена нова содржина",
     "NotificationOptionInstallationFailed": "Неуспешна Инсталација",
-    "NotificationOptionCameraImageUploaded": "Слика од камера поставена",
+    "NotificationOptionCameraImageUploaded": "Слика од камера прикачена",
     "NotificationOptionAudioPlaybackStopped": "Аудио стопирано",
     "NotificationOptionAudioPlayback": "Аудио стартувано",
     "NotificationOptionApplicationUpdateInstalled": "Надоградбата на Апликацијата е иснталирана",
@@ -105,5 +105,7 @@
     "TaskMoveTrickplayImages": "Мигрирај ја локацијата на сликата од Trickplay",
     "TaskMoveTrickplayImagesDescription": "Ги преместува постоечките датотеки за трикплеј според поставките на библиотеката.",
     "CleanupUserDataTask": "Задача за чистење на кориснички податоци",
-    "CleanupUserDataTaskDescription": "Ги чисти сите кориснички податоци (состојба на гледање, статус на омилени итн.) од медиуми што повеќе не се присутни најмалку 90 дена."
+    "CleanupUserDataTaskDescription": "Ги чисти сите кориснички податоци (состојба на гледање, статус на омилени итн.) од медиуми што повеќе не се присутни најмалку 90 дена.",
+    "NameExtraShort": "Кратко",
+    "NameExtraUnknown": "Дополнително"
 }
