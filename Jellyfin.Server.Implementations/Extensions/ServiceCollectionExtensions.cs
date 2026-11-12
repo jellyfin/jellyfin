@@ -7,8 +7,10 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.DbConfiguration;
 using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Providers.Sqlite;
+using Jellyfin.Server.Implementations.ShareLinks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.ShareLinks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -143,6 +145,10 @@ public static class ServiceCollectionExtensions
             var lockingBehavior = serviceProvider.GetRequiredService<IEntityFrameworkCoreLockingBehavior>();
             lockingBehavior.Initialise(opt);
         });
+
+        serviceCollection.AddSingleton<IShareLinkRepository, ShareLinkRepository>();
+        serviceCollection.AddSingleton<IShareLinkTokenService, ShareLinkTokenService>();
+        serviceCollection.AddSingleton(TimeProvider.System);
 
         return serviceCollection;
     }
