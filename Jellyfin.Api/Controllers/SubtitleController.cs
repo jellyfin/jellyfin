@@ -212,6 +212,8 @@ public class SubtitleController : BaseJellyfinApiController
     /// <param name="startPositionTicks">The start position of the subtitle in ticks.</param>
     /// <response code="200">File returned.</response>
     /// <returns>A <see cref="FileContentResult"/> with the subtitle file.</returns>
+    [ShareLinkAccess]
+    [Authorize(Policy = Policies.ShareLink)]
     [HttpGet("Videos/{routeItemId}/{routeMediaSourceId}/Subtitles/{routeIndex}/Stream.{routeFormat}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesFile("text/*")]
@@ -300,6 +302,8 @@ public class SubtitleController : BaseJellyfinApiController
     /// <param name="vttTimestampMapMpegts">Optional. The VTT timestamp map MPEGTS value.</param>
     /// <response code="200">File returned.</response>
     /// <returns>A <see cref="FileContentResult"/> with the subtitle file.</returns>
+    [ShareLinkAccess]
+    [Authorize(Policy = Policies.ShareLink)]
     [HttpGet("Videos/{routeItemId}/{routeMediaSourceId}/Subtitles/{routeIndex}/{routeStartPositionTicks}/Stream.{routeFormat}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesFile("text/*")]
@@ -346,8 +350,9 @@ public class SubtitleController : BaseJellyfinApiController
     /// <response code="200">Subtitle playlist retrieved.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="FileContentResult"/> with the HLS subtitle playlist.</returns>
+    [ShareLinkAccess]
+    [Authorize(Policy = Policies.ShareLink)]
     [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/subtitles.m3u8")]
-    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesPlaylistFile]
@@ -391,6 +396,7 @@ public class SubtitleController : BaseJellyfinApiController
 
         long positionTicks = 0;
 
+        var isShareLink = User.GetIsShareLink();
         var accessToken = User.GetToken();
 
         while (positionTicks < runtime)
@@ -405,7 +411,7 @@ public class SubtitleController : BaseJellyfinApiController
 
             var endPositionTicks = Math.Min(runtime, positionTicks + segmentLengthTicks);
 
-            var url = GetSubtitleSegmentUrl(positionTicks, endPositionTicks, accessToken, vttTimestampMapMpegts);
+            var url = GetSubtitleSegmentUrl(positionTicks, endPositionTicks, accessToken, vttTimestampMapMpegts, isShareLink);
 
             builder.AppendLine(url);
 
@@ -436,14 +442,18 @@ public class SubtitleController : BaseJellyfinApiController
     /// <param name="endPositionTicks">The segment end position, in ticks.</param>
     /// <param name="accessToken">The access token to include on the segment request.</param>
     /// <param name="vttTimestampMapMpegts">The MPEGTS offset to request for this segment.</param>
+    /// <param name="isShareLink">Whether the request is authenticated with a share link.</param>
     /// <returns>The relative stream.vtt segment URL.</returns>
-    internal static string GetSubtitleSegmentUrl(long positionTicks, long endPositionTicks, string? accessToken, long vttTimestampMapMpegts)
+    internal static string GetSubtitleSegmentUrl(long positionTicks, long endPositionTicks, string? accessToken, long vttTimestampMapMpegts, bool isShareLink = false)
     {
+        // Share links authenticate with the share_token query parameter; the normal path keeps using ApiKey.
+        var tokenParameter = isShareLink ? "share_token" : "ApiKey";
         return string.Format(
             CultureInfo.InvariantCulture,
-            "stream.vtt?CopyTimestamps=true&AddVttTimeMap=true&StartPositionTicks={0}&EndPositionTicks={1}&ApiKey={2}&VttTimestampMapMpegts={3}",
+            "stream.vtt?CopyTimestamps=true&AddVttTimeMap=true&StartPositionTicks={0}&EndPositionTicks={1}&{2}={3}&VttTimestampMapMpegts={4}",
             positionTicks.ToString(CultureInfo.InvariantCulture),
             endPositionTicks.ToString(CultureInfo.InvariantCulture),
+            tokenParameter,
             accessToken,
             vttTimestampMapMpegts.ToString(CultureInfo.InvariantCulture));
     }

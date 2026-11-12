@@ -52,7 +52,7 @@ public class ShareLinkRepository(IDbContextFactory<JellyfinDbContext> dbProvider
     {
         await using var dbContext = await dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         var updated = await dbContext.ShareLinks
-            .Where(e => e.Id == jti)
+            .Where(e => e.Id == jti && !e.IsRevoked)
             .ExecuteUpdateAsync(
                 setters => setters.SetProperty(e => e.IsRevoked, true),
                 cancellationToken)
@@ -103,7 +103,7 @@ public class ShareLinkRepository(IDbContextFactory<JellyfinDbContext> dbProvider
                 || (e.ExpiresAt != null && e.ExpiresAt < unixNow)
                 || (e.DurationSeconds != null
                     && e.FirstAccessedAt != null
-                    && e.FirstAccessedAt + e.DurationSeconds < unixNow))
+                    && e.FirstAccessedAt + e.DurationSeconds <= unixNow))
             .ExecuteDeleteAsync(cancellationToken)
             .ConfigureAwait(false);
     }

@@ -10,6 +10,7 @@ using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -89,6 +90,8 @@ public class UniversalAudioController : BaseJellyfinApiController
     /// <response code="302">Redirected to remote audio stream.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="Task"/> containing the audio file.</returns>
+    [ShareLinkAccess]
+    [Authorize(Policy = Policies.ShareLink)]
     [HttpGet("Audio/{itemId}/universal")]
     [HttpHead("Audio/{itemId}/universal", Name = "HeadUniversalAudioStream")]
     [Authorize]

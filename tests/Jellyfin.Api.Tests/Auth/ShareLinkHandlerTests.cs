@@ -46,12 +46,47 @@ namespace Jellyfin.Api.Tests.Auth
             Assert.False(context.HasSucceeded);
         }
 
-        private static async Task<AuthorizationHandlerContext> AuthorizeAsync(ClaimsPrincipal user, Guid? routeItemId)
+        [Fact]
+        public async Task ShareClaim_NoRouteItem_FailsClosed()
+        {
+            // A marked endpoint that binds no media item cannot be scoped to the token.
+            var context = await AuthorizeAsync(CreateSharePrincipal(Guid.NewGuid()), null);
+
+            Assert.False(context.HasSucceeded);
+        }
+
+        [Fact]
+        public async Task ShareClaim_RouteItemBoundUnderRouteItemIdKey_IsEnforced()
+        {
+            // Subtitle routes bind the item as "routeItemId"; a token for a different item
+            // must not be accepted just because the parameter name differs.
+            var tokenItemId = Guid.NewGuid();
+            var context = await AuthorizeAsync(
+                CreateSharePrincipal(tokenItemId),
+                Guid.NewGuid(),
+                routeKey: "routeItemId");
+
+            Assert.False(context.HasSucceeded);
+        }
+
+        [Fact]
+        public async Task ShareClaim_RouteItemUnderRouteItemIdKey_Matches_Succeeds()
+        {
+            var itemId = Guid.NewGuid();
+            var context = await AuthorizeAsync(CreateSharePrincipal(itemId), itemId, routeKey: "routeItemId");
+
+            Assert.True(context.HasSucceeded);
+        }
+
+        private static async Task<AuthorizationHandlerContext> AuthorizeAsync(
+            ClaimsPrincipal user,
+            Guid? routeItemId,
+            string routeKey = "itemId")
         {
             var httpContext = new DefaultHttpContext();
             if (routeItemId.HasValue)
             {
-                httpContext.Request.RouteValues["itemId"] = routeItemId.Value.ToString("N", CultureInfo.InvariantCulture);
+                httpContext.Request.RouteValues[routeKey] = routeItemId.Value.ToString("N", CultureInfo.InvariantCulture);
             }
 
             var httpContextAccessorMock = new Mock<IHttpContextAccessor>();

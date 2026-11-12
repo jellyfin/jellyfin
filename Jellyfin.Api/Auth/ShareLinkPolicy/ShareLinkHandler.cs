@@ -11,6 +11,11 @@ namespace Jellyfin.Api.Auth.ShareLinkPolicy;
 /// </summary>
 public class ShareLinkHandler : AuthorizationHandler<ShareLinkRequirement>
 {
+    /// <summary>
+    /// Route value names that bind a media item on endpoints a share token may reach.
+    /// </summary>
+    private static readonly string[] RouteItemIdKeys = ["itemId", "routeItemId"];
+
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     /// <summary>
@@ -37,7 +42,15 @@ public class ShareLinkHandler : AuthorizationHandler<ShareLinkRequirement>
         }
 
         var routeItemId = GetRouteItemId();
-        if (routeItemId is null || routeItemId.Value.Equals(context.User.GetShareItemId()))
+        if (routeItemId is null)
+        {
+            // Fail closed: a marked endpoint that binds no media item cannot be scoped to the
+            // token, so a share credential must never satisfy it.
+            context.Fail();
+            return Task.CompletedTask;
+        }
+
+        if (routeItemId.Value.Equals(context.User.GetShareItemId()))
         {
             context.Succeed(requirement);
         }
@@ -49,14 +62,29 @@ public class ShareLinkHandler : AuthorizationHandler<ShareLinkRequirement>
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Resolves the media item the current route operates on.
+    /// </summary>
+    /// <remarks>
+    /// Every route parameter name that binds an item is checked, so a route that uses a name
+    /// other than "itemId" is still scoped to the token.
+    /// </remarks>
+    /// <returns>The bound item id, or <c>null</c> when the route binds no item.</returns>
     private Guid? GetRouteItemId()
     {
         var routeValues = _httpContextAccessor.HttpContext?.Request.RouteValues;
-        if (routeValues is not null
-            && routeValues.TryGetValue("itemId", out var value)
-            && Guid.TryParse(value?.ToString(), out var itemId))
+        if (routeValues is null)
         {
-            return itemId;
+            return null;
+        }
+
+        foreach (var name in RouteItemIdKeys)
+        {
+            if (routeValues.TryGetValue(name, out var value)
+                && Guid.TryParse(value?.ToString(), out var itemId))
+            {
+                return itemId;
+            }
         }
 
         return null;

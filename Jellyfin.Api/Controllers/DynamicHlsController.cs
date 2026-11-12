@@ -15,6 +15,7 @@ using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.MediaEncoding.Hls.Playlist;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
@@ -161,6 +162,8 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Hls live stream retrieved.</response>
     /// <returns>A <see cref="FileResult"/> containing the hls file.</returns>
+    [ShareLinkAccess]
+    [Authorize(Policy = Policies.ShareLink)]
     [HttpGet("Videos/{itemId}/live.m3u8")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesPlaylistFile]
@@ -338,7 +341,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             _transcodeManager.OnTranscodeEndRequest(job);
         }
 
-        var playlistText = HlsHelpers.GetLivePlaylistText(playlistPath, state);
+        var playlistText = AddQueryStringToLivePlaylist(HlsHelpers.GetLivePlaylistText(playlistPath, state), Request.QueryString.ToString());
 
         return Content(playlistText, MimeTypes.GetMimeType("playlist.m3u8"));
     }
@@ -401,6 +404,8 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
+    [ShareLinkAccess]
+    [Authorize(Policy = Policies.ShareLink)]
     [HttpGet("Videos/{itemId}/master.m3u8")]
     [HttpHead("Videos/{itemId}/master.m3u8", Name = "HeadMasterHlsVideoPlaylist")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -742,6 +747,8 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
+    [ShareLinkAccess]
+    [Authorize(Policy = Policies.ShareLink)]
     [HttpGet("Videos/{itemId}/main.m3u8")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesPlaylistFile]
@@ -1083,6 +1090,8 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
+    [ShareLinkAccess]
+    [Authorize(Policy = Policies.ShareLink)]
     [HttpGet("Videos/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesVideoFile]
@@ -1616,6 +1625,62 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
 
         return segments;
+    }
+
+    /// <summary>
+    /// Appends the query string of the playlist request to the segment URIs of a live HLS playlist.
+    /// </summary>
+    /// <param name="playlist">The live HLS playlist text produced by ffmpeg.</param>
+    /// <param name="queryString">The query string of the playlist request.</param>
+    /// <returns>The playlist text with the query string appended to every segment URI.</returns>
+    private static string AddQueryStringToLivePlaylist(string playlist, string queryString)
+    {
+        if (string.IsNullOrEmpty(queryString))
+        {
+            return playlist;
+        }
+
+        var builder = new StringBuilder(playlist.Length + (queryString.Length * 8));
+        var firstLine = true;
+        using var reader = new StringReader(playlist);
+        string? line;
+        while ((line = reader.ReadLine()) is not null)
+        {
+            if (!firstLine)
+            {
+                builder.Append('\n');
+            }
+
+            firstLine = false;
+
+            if (line.StartsWith('#'))
+            {
+                const string UriMarker = "URI=\"";
+                var uriStart = line.IndexOf(UriMarker, StringComparison.Ordinal);
+                var uriEnd = uriStart < 0 ? -1 : line.IndexOf('"', uriStart + UriMarker.Length);
+                if (uriEnd > uriStart)
+                {
+                    builder.Append(line, 0, uriEnd)
+                        .Append(queryString)
+                        .Append(line, uriEnd, line.Length - uriEnd);
+                }
+                else
+                {
+                    builder.Append(line);
+                }
+            }
+            else
+            {
+                builder.Append(line).Append(queryString);
+            }
+        }
+
+        if (playlist.EndsWith('\n'))
+        {
+            builder.Append('\n');
+        }
+
+        return builder.ToString();
     }
 
     private string GetCommandLineArguments(string outputPath, StreamState state, bool isEventPlaylist, int startNumber)

@@ -689,12 +689,16 @@ public class DynamicHlsHelper
             var isDefault = selectedIndex.HasValue && selectedIndex.Value == stream.Index;
             var isForced = stream.IsForced;
 
+            // Share links authenticate through the share_token query parameter; never leak the
+            // (absent) ApiKey in that mode.
+            var tokenParameter = user.GetIsShareLink() ? "share_token" : "ApiKey";
             var url = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}&ApiKey={3}&VttTimestampMapMpegts={4}",
+                "{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}&{3}={4}&VttTimestampMapMpegts={5}",
                 state.Request.MediaSourceId,
                 stream.Index.ToString(CultureInfo.InvariantCulture),
                 30.ToString(CultureInfo.InvariantCulture),
+                tokenParameter,
                 user.GetToken(),
                 GetVttTimestampMapMpegts(state.Request.SegmentContainer).ToString(CultureInfo.InvariantCulture));
 

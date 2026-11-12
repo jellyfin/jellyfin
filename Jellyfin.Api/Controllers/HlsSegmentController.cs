@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Helpers;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
@@ -123,6 +124,8 @@ public class HlsSegmentController : BaseJellyfinApiController
     /// <returns>A <see cref="FileStreamResult"/> containing the video segment.</returns>
     // Can't require authentication just yet due to seeing some requests come from Chrome without full query string
     // [Authenticated]
+    [ShareLinkAccess]
+    [Authorize(Policy = Policies.ShareLink)]
     [HttpGet("Videos/{itemId}/hls/{playlistId}/{segmentId}.{segmentContainer}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

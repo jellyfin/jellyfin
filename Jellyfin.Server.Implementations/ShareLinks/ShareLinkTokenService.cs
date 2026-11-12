@@ -213,7 +213,7 @@ public sealed class ShareLinkTokenService : IShareLinkTokenService
                 }
             }
 
-            if (firstAccessedAt is { } firstAccess && now > firstAccess + duration)
+            if (firstAccessedAt is { } firstAccess && now >= firstAccess + duration)
             {
                 return Failure(ShareLinkErrorCode.LinkExpired);
             }
@@ -258,7 +258,7 @@ public sealed class ShareLinkTokenService : IShareLinkTokenService
 
             if (link.DurationSeconds is { } duration
                 && link.FirstAccessedAt is { } firstAccessedAt
-                && now > firstAccessedAt + duration)
+                && now >= firstAccessedAt + duration)
             {
                 continue;
             }

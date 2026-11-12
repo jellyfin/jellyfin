@@ -31,6 +31,11 @@ namespace Jellyfin.Api.Auth
         private readonly ILogger<CustomAuthenticationHandler> _logger;
 
         /// <summary>
+        /// Route value names that bind a media item on endpoints a share token may reach.
+        /// </summary>
+        private static readonly string[] RouteItemIdKeys = ["itemId", "routeItemId"];
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CustomAuthenticationHandler" /> class.
         /// </summary>
         /// <param name="authService">The jellyfin authentication service.</param>
@@ -163,12 +168,26 @@ namespace Jellyfin.Api.Auth
             return AuthenticateResult.Success(ticket);
         }
 
-        private Guid? GetRouteItemId()
+        /// <summary>
+        /// Resolves the media item a marked endpoint operates on.
+        /// </summary>
+        /// <remarks>
+        /// Endpoints bind the item under different route parameter names ("itemId" on most
+        /// controllers, "routeItemId" on the subtitle routes). Every name is inspected so a
+        /// share token cannot slip past item binding by hitting a route that happens to use a
+        /// different parameter name. Returns null when no bound item could be resolved, which
+        /// callers must treat as a denial.
+        /// </remarks>
+        /// <returns>The bound item id, or <c>null</c> if the route carries no item id.</returns>
+        internal Guid? GetRouteItemId()
         {
-            if (Request.RouteValues.TryGetValue("itemId", out var value)
-                && Guid.TryParse(value?.ToString(), out var itemId))
+            foreach (var name in RouteItemIdKeys)
             {
-                return itemId;
+                if (Request.RouteValues.TryGetValue(name, out var value)
+                    && Guid.TryParse(value?.ToString(), out var itemId))
+                {
+                    return itemId;
+                }
             }
 
             return null;

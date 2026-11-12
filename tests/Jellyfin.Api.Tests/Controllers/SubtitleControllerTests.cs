@@ -157,6 +157,17 @@ public class SubtitleControllerTests
         Assert.Equal(expected, SubtitleController.GetSubtitleSegmentUrl(positionTicks, endPositionTicks, accessToken, vttTimestampMapMpegts));
     }
 
+    [Fact]
+    public void GetSubtitleSegmentUrl_ShareLink_UsesShareTokenInsteadOfApiKey()
+    {
+        var url = SubtitleController.GetSubtitleSegmentUrl(0, 300000000, "abc123", 0, true);
+
+        Assert.DoesNotContain("ApiKey=", url, StringComparison.Ordinal);
+        Assert.Equal(
+            "stream.vtt?CopyTimestamps=true&AddVttTimeMap=true&StartPositionTicks=0&EndPositionTicks=300000000&share_token=abc123&VttTimestampMapMpegts=0",
+            url);
+    }
+
     public static TheoryData<long, long, string, long, string> GetSubtitleSegmentUrl_Success_TestData()
     {
         var data = new TheoryData<long, long, string, long, string>();
