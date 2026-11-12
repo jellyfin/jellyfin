@@ -17,6 +17,7 @@
     <Project Path="src/Jellyfin.MediaEncoding.Hls/Jellyfin.MediaEncoding.Hls.csproj" />
     <Project Path="src/Jellyfin.MediaEncoding.Keyframes/Jellyfin.MediaEncoding.Keyframes.csproj" />
     <Project Path="src/Jellyfin.Networking/Jellyfin.Networking.csproj" />
+    <Project Path="src/Jellyfin.Paseto/Jellyfin.Paseto.csproj" />
   </Folder>
   <Folder Name="/src/Jellyfin.Database/">
     <File Path="src/Jellyfin.Database/readme.md" />

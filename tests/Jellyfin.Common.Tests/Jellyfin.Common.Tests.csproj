@@ -20,6 +20,13 @@
   <ItemGroup>
     <ProjectReference Include="../../MediaBrowser.Common/MediaBrowser.Common.csproj" />
     <ProjectReference Include="../../MediaBrowser.Providers/MediaBrowser.Providers.csproj" />
+    <ProjectReference Include="../../src/Jellyfin.Paseto/Jellyfin.Paseto.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Paseto/paseto-v4-test-vectors.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
