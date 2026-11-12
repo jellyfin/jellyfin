@@ -288,4 +288,9 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// Gets or sets a value indicating whether old authorization methods are allowed.
     /// </summary>
     public bool EnableLegacyAuthorization { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether scoped share links are enabled.
+    /// </summary>
+    public bool ShareLinksEnabled { get; set; } = true;
 }

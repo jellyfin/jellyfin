@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using Jellyfin.Api.Constants;
@@ -73,6 +74,65 @@ public static class ClaimsPrincipalExtensions
         var claimValue = GetClaimValue(user, InternalClaimTypes.IsApiKey);
         return bool.TryParse(claimValue, out var parsedClaimValue)
                && parsedClaimValue;
+    }
+
+    /// <summary>
+    /// Gets a flag specifying whether the request is authenticated with a share link.
+    /// </summary>
+    /// <param name="user">Current claims principal.</param>
+    /// <returns>The flag specifying whether the request is authenticated with a share link.</returns>
+    public static bool GetIsShareLink(this ClaimsPrincipal user)
+    {
+        var claimValue = GetClaimValue(user, InternalClaimTypes.IsShareLink);
+        return bool.TryParse(claimValue, out var parsedClaimValue)
+               && parsedClaimValue;
+    }
+
+    /// <summary>
+    /// Get share link item id from claims.
+    /// </summary>
+    /// <param name="user">Current claims principal.</param>
+    /// <returns>The share link item id, or <see cref="Guid.Empty"/> when the claim is absent.</returns>
+    public static Guid GetShareItemId(this ClaimsPrincipal user)
+    {
+        var value = GetClaimValue(user, InternalClaimTypes.ShareItemId);
+        return string.IsNullOrEmpty(value)
+            ? default
+            : Guid.Parse(value);
+    }
+
+    /// <summary>
+    /// Get share link token id (jti) from claims.
+    /// </summary>
+    /// <param name="user">Current claims principal.</param>
+    /// <returns>The share link token id, or <c>null</c> when the claim is absent.</returns>
+    public static string? GetShareJti(this ClaimsPrincipal user)
+        => GetClaimValue(user, InternalClaimTypes.ShareJti);
+
+    /// <summary>
+    /// Get share link absolute expiration from claims.
+    /// </summary>
+    /// <param name="user">Current claims principal.</param>
+    /// <returns>The absolute expiration in unix seconds, or <c>null</c> when the claim is absent.</returns>
+    public static long? GetShareExpiresAt(this ClaimsPrincipal user)
+    {
+        var value = GetClaimValue(user, InternalClaimTypes.ShareExpiresAt);
+        return long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : null;
+    }
+
+    /// <summary>
+    /// Get share link duration from claims.
+    /// </summary>
+    /// <param name="user">Current claims principal.</param>
+    /// <returns>The duration in seconds, or <c>null</c> when the claim is absent.</returns>
+    public static int? GetShareDurationSeconds(this ClaimsPrincipal user)
+    {
+        var value = GetClaimValue(user, InternalClaimTypes.ShareDurationSeconds);
+        return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : null;
     }
 
     private static string? GetClaimValue(in ClaimsPrincipal user, string name)

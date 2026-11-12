@@ -12,6 +12,7 @@ using Jellyfin.Api.Auth.AnonymousLanAccessPolicy;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Auth.FirstTimeSetupPolicy;
 using Jellyfin.Api.Auth.LocalAccessOrRequiresElevationPolicy;
+using Jellyfin.Api.Auth.ShareLinkPolicy;
 using Jellyfin.Api.Auth.SyncPlayAccessPolicy;
 using Jellyfin.Api.Auth.UserPermissionPolicy;
 using Jellyfin.Api.Constants;
@@ -59,6 +60,7 @@ namespace Jellyfin.Server.Extensions
             serviceCollection.AddSingleton<IAuthorizationHandler, AnonymousLanAccessHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, SyncPlayAccessHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessOrRequiresElevationHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, ShareLinkHandler>();
 
             return serviceCollection.AddAuthorizationCore(options =>
             {
@@ -83,6 +85,7 @@ namespace Jellyfin.Server.Extensions
                 options.AddPolicy(Policies.SyncPlayIsInGroup, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.IsInGroup));
                 options.AddPolicy(Policies.SubtitleManagement, new UserPermissionRequirement(PermissionKind.EnableSubtitleManagement));
                 options.AddPolicy(Policies.LyricManagement, new UserPermissionRequirement(PermissionKind.EnableLyricManagement));
+                options.AddPolicy(Policies.ShareLink, new ShareLinkRequirement());
                 options.AddPolicy(
                     Policies.RequiresElevation,
                     policy => policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication)

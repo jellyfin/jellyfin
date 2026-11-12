@@ -39,4 +39,29 @@ public static class InternalClaimTypes
     /// Is Api Key.
     /// </summary>
     public const string IsApiKey = "Jellyfin-IsApiKey";
+
+    /// <summary>
+    /// Is Share Link.
+    /// </summary>
+    public const string IsShareLink = "Jellyfin-IsShareLink";
+
+    /// <summary>
+    /// Share Link item id.
+    /// </summary>
+    public const string ShareItemId = "Jellyfin-ShareItemId";
+
+    /// <summary>
+    /// Share Link token id (jti).
+    /// </summary>
+    public const string ShareJti = "Jellyfin-ShareJti";
+
+    /// <summary>
+    /// Share Link absolute expiration in unix seconds.
+    /// </summary>
+    public const string ShareExpiresAt = "Jellyfin-ShareExpiresAt";
+
+    /// <summary>
+    /// Share Link duration in seconds.
+    /// </summary>
+    public const string ShareDurationSeconds = "Jellyfin-ShareDurationSeconds";
 }
