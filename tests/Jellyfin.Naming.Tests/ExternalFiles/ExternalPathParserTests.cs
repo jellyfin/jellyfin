@@ -118,4 +118,23 @@ public class ExternalPathParserTests
         Assert.Equal(isForced, actual.IsForced);
         Assert.Equal(isHearingImpaired, actual.IsHearingImpaired);
     }
+
+    [Theory]
+    // LocalizationManager lists ze before the zho code it shares with Chinese.
+    [InlineData("ze", "Chinese (Bilingual)", new[] { "ze", "zho", "chi" }, "zho")]
+    // A hyphen in the display name does not make a culture a variant.
+    [InlineData("el", "Greek, Modern (1453-)", new[] { "ell", "gre" }, "ell")]
+    [InlineData("pt-br", "pt-br", new[] { "pt-br", "por" }, "pt-br")]
+    public void ParseFile_Culture_StoresItsLanguageCode(string tag, string name, string[] codes, string expected)
+    {
+        var localizationManager = new Mock<ILocalizationManager>();
+        localizationManager.Setup(lm => lm.FindLanguageInfo(tag))
+            .Returns(new CultureDto(name, name, tag, codes));
+        var parser = new ExternalPathParser(new NamingOptions(), localizationManager.Object, DlnaProfileType.Subtitle);
+
+        var actual = parser.ParseFile("My.Video." + tag + ".srt", "." + tag);
+
+        Assert.NotNull(actual);
+        Assert.Equal(expected, actual!.Language);
+    }
 }
