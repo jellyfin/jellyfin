@@ -87,7 +87,6 @@ public class ArtistsController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the artists.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Obsolete("Use GetPersons")]
     public ActionResult<QueryResult<BaseItemDto>> GetArtists(
         [FromQuery] double? minCommunityRating,
         [FromQuery] int? startIndex,
@@ -241,7 +240,6 @@ public class ArtistsController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the album artists.</returns>
     [HttpGet("AlbumArtists")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Obsolete("Use GetPersons")]
     public ActionResult<QueryResult<BaseItemDto>> GetAlbumArtists(
         [FromQuery] double? minCommunityRating,
         [FromQuery] int? startIndex,
@@ -365,7 +363,6 @@ public class ArtistsController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the artist.</returns>
     [HttpGet("{name}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Obsolete("Use GetPerson")]
     public ActionResult<BaseItemDto> GetArtistByName([FromRoute, Required] string name, [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
