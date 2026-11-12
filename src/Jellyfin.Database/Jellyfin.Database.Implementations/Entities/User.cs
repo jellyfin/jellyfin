@@ -53,6 +53,7 @@ namespace Jellyfin.Database.Implementations.Entities
             PlayDefaultAudioTrack = true;
             SubtitleMode = SubtitlePlaybackMode.Default;
             SyncPlayAccess = SyncPlayUserAccessType.CreateAndJoinGroups;
+            ShareLinkKey = ShareLinkKeyHelper.Generate();
         }
 
         /// <summary>
@@ -92,6 +93,17 @@ namespace Jellyfin.Database.Implementations.Entities
         [MaxLength(65535)]
         [StringLength(65535)]
         public string? Password { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user's share link key used to bind share links to this user's credentials.
+        /// </summary>
+        /// <remarks>
+        /// Required, Max length = 44. Rotated whenever the user's password is set or reset,
+        /// which invalidates every share link previously issued to this user.
+        /// </remarks>
+        [MaxLength(44)]
+        [StringLength(44)]
+        public string ShareLinkKey { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the user must update their password.

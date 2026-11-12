@@ -84,6 +84,11 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<User> Users => Set<User>();
 
     /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the share links.
+    /// </summary>
+    public DbSet<ShareLink> ShareLinks => Set<ShareLink>();
+
+    /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the trickplay metadata.
     /// </summary>
     public DbSet<TrickplayInfo> TrickplayInfos => Set<TrickplayInfo>();

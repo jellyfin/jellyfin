@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading.Tasks;
+using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Model.Cryptography;
@@ -84,7 +85,9 @@ namespace Jellyfin.Server.Implementations.Users
                 || int.Parse(readyHash.Parameters["iterations"], CultureInfo.InvariantCulture) != Constants.DefaultIterations)
             {
                 _logger.LogInformation("Migrating password hash of {User} to the latest default", username);
-                ChangePassword(resolvedUser, password);
+                // Rehash only: must NOT rotate the share link key, or a routine login would
+                // silently invalidate every share link the user has issued.
+                SetPassword(resolvedUser, password);
             }
 
             return Task.FromResult(new ProviderAuthenticationResult
@@ -95,6 +98,19 @@ namespace Jellyfin.Server.Implementations.Users
 
         /// <inheritdoc />
         public Task ChangePassword(User user, string newPassword)
+        {
+            // Rotating the share link key invalidates every share link previously issued to this user.
+            user.ShareLinkKey = ShareLinkKeyHelper.Generate();
+            return SetPassword(user, newPassword);
+        }
+
+        /// <summary>
+        /// Sets the password hash without rotating the share link key.
+        /// </summary>
+        /// <param name="user">The user whose password is being set.</param>
+        /// <param name="newPassword">The new clear-text password, or an empty value to clear it.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private Task SetPassword(User user, string newPassword)
         {
             if (string.IsNullOrEmpty(newPassword))
             {

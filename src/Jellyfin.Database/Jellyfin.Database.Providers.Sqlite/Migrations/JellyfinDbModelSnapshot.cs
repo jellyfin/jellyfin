@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
@@ -1245,6 +1245,42 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
 
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.ShareLink", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("CreatedAt")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("DurationSeconds")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long?>("ExpiresAt")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long?>("FirstAccessedAt")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ShareLinks");
+
+                    b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
+                });
+
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.TrickplayInfo", b =>
                 {
                     b.Property<Guid>("ItemId")
@@ -1374,6 +1410,11 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<uint>("RowVersion")
                         .IsConcurrencyToken()
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("ShareLinkKey")
+                        .IsRequired()
+                        .HasMaxLength(44)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("SubtitleLanguagePreference")
                         .HasMaxLength(255)
@@ -1717,6 +1758,15 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.ShareLink", b =>
+                {
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.UserData", b =>
