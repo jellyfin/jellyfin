@@ -4200,6 +4200,30 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
+        public IReadOnlyList<int> GetYears(InternalItemsQuery query)
+        {
+            if (query.User is not null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return _itemRepository.GetYears(query);
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> GetOfficialRatings(InternalItemsQuery query)
+        {
+            if (query.User is not null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return _itemRepository.GetOfficialRatings(query);
+        }
+
+        /// <inheritdoc />
         public IReadOnlyList<string> GetTagNames(InternalItemsQuery query)
         {
             if (query.User is not null)
