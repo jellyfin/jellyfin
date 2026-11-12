@@ -8,6 +8,7 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Chapters;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -16,6 +17,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Trickplay;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -28,6 +30,7 @@ public class DtoServiceTests
 {
     private readonly Mock<ILibraryManager> _libraryManagerMock;
     private readonly Mock<IUserDataManager> _userDataManagerMock;
+    private readonly ServerConfiguration _serverConfig = new();
     private readonly DtoService _dtoService;
 
     public DtoServiceTests()
@@ -47,6 +50,9 @@ public class DtoServiceTests
         // Video.SourceType probes the active-recording manager; provide one so it doesn't NRE.
         Video.RecordingsManager = new Mock<IRecordingsManager>().Object;
 
+        var configMock = new Mock<IServerConfigurationManager>();
+        configMock.Setup(x => x.Configuration).Returns(_serverConfig);
+
         _dtoService = new DtoService(
             NullLogger<DtoService>.Instance,
             _libraryManagerMock.Object,
@@ -58,7 +64,8 @@ public class DtoServiceTests
             new Mock<IMediaSourceManager>().Object,
             new Lazy<ILiveTvManager>(() => new Mock<ILiveTvManager>().Object),
             new Mock<ITrickplayManager>().Object,
-            new Mock<IChapterManager>().Object);
+            new Mock<IChapterManager>().Object,
+            configMock.Object);
 
         // Episode.Series / Episode.Season resolve through the static BaseItem.LibraryManager.
         BaseItem.LibraryManager = _libraryManagerMock.Object;
@@ -67,6 +74,7 @@ public class DtoServiceTests
     [Fact]
     public void GetBaseItemDto_Episode_AttachesSeasonPosterAsParentPrimaryImage()
     {
+        _serverConfig.DisplayLatestSeasons = true;
         var (episode, season, _) = BuildEpisode(seasonHasPoster: true);
         var options = new DtoOptions(false) { Fields = [ItemFields.PrimaryImageAspectRatio] };
 

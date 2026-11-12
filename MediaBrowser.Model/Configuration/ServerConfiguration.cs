@@ -210,6 +210,10 @@ public class ServerConfiguration : BaseApplicationConfiguration
 
     public bool DisplaySpecialsWithinSeasons { get; set; } = true;
 
+    public bool DisplayLatestSeasons { get; set; } = false;
+
+    public bool DisplayLatestEpisodes { get; set; } = false;
+
     public string[] CodecsUsed { get; set; } = Array.Empty<string>();
 
     public RepositoryInfo[] PluginRepositories { get; set; } = Array.Empty<RepositoryInfo>();

@@ -390,7 +390,9 @@ namespace Emby.Server.Implementations.Library
                 Limit = limit * 2,
                 IsPlayed = isPlayed,
                 DtoOptions = options,
-                MediaTypes = mediaTypes
+                MediaTypes = mediaTypes,
+                DisplayLatestSeasons = _config.Configuration.DisplayLatestSeasons,
+                DisplayLatestEpisodes = _config.Configuration.DisplayLatestEpisodes
             };
 
             if (request.GroupItems)

@@ -512,6 +512,10 @@ namespace MediaBrowser.Controller.Entities
 
         public bool IncludeExtras { get; set; }
 
+        public bool DisplayLatestSeasons { get; set; }
+
+        public bool DisplayLatestEpisodes { get; set; }
+
         public IReadOnlyList<string> AudioLanguages { get; set; }
 
         public IReadOnlyList<string> SubtitleLanguages { get; set; }
