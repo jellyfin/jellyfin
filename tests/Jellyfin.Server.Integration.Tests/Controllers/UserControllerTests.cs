@@ -6,8 +6,11 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.UserDtos;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Users;
 using Xunit;
 using Xunit.v3.Priority;
 
@@ -33,6 +36,9 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
         private Task<HttpResponseMessage> UpdateUserPassword(HttpClient httpClient, Guid userId, UpdateUserPassword request)
             => httpClient.PostAsJsonAsync("Users/" + userId.ToString("N", CultureInfo.InvariantCulture) + "/Password", request, _jsonOptions);
+
+        private Task<HttpResponseMessage> UpdateUserPolicy(HttpClient httpClient, Guid userId, UserPolicy policy)
+            => httpClient.PostAsJsonAsync("Users/" + userId.ToString("N", CultureInfo.InvariantCulture) + "/Policy", policy, _jsonOptions);
 
         [Fact]
         [Priority(-1)]
@@ -190,6 +196,44 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             // Sanity check, make sure we're testing something
             Assert.NotEqual(TestUsername, userDto.Name);
+        }
+
+        [Fact]
+        [Priority(3)]
+        public async Task AuthenticateUserByName_OutsideAccessSchedule_ReturnsParentalControlErrorCode()
+        {
+            var adminClient = _factory.CreateClient();
+            adminClient.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(adminClient));
+
+            const string Username = "parentalScheduleUser";
+            const string Password = "d0ntL3tM31n";
+
+            using var createResponse = await CreateUserByName(
+                adminClient,
+                new CreateUserByName { Name = Username, Password = Password });
+            Assert.Equal(HttpStatusCode.OK, createResponse.StatusCode);
+
+            var user = await createResponse.Content.ReadFromJsonAsync<UserDto>(_jsonOptions, TestContext.Current.CancellationToken);
+            Assert.NotNull(user);
+
+            // A schedule that only permits access tomorrow leaves the user blocked for the whole of today.
+            var tomorrow = (DynamicDayOfWeek)(((int)DateTime.Now.DayOfWeek + 1) % 7);
+            user.Policy.AccessSchedules = new[] { new AccessSchedule(tomorrow, 0, 24, user.Id) };
+
+            using var policyResponse = await UpdateUserPolicy(adminClient, user.Id, user.Policy);
+            Assert.Equal(HttpStatusCode.NoContent, policyResponse.StatusCode);
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.TryAddWithoutValidation(AuthHelper.AuthHeaderName, AuthHelper.DummyAuthHeader);
+
+            using var authResponse = await client.PostAsJsonAsync(
+                "Users/AuthenticateByName",
+                new AuthenticateUserByName { Username = Username, Pw = Password },
+                _jsonOptions,
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.Forbidden, authResponse.StatusCode);
+            Assert.Equal("ParentalControl", Assert.Single(authResponse.Headers.GetValues("X-Application-Error-Code")));
         }
     }
 }
