@@ -47,6 +47,7 @@ public class ConfigurationController : BaseJellyfinApiController
     /// <response code="200">Application configuration returned.</response>
     /// <returns>Application configuration.</returns>
     [HttpGet("Configuration")]
+    [Authorize(Policy = Policies.ElevateConfiguration)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<ServerConfiguration> GetConfiguration()
     {
@@ -75,6 +76,7 @@ public class ConfigurationController : BaseJellyfinApiController
     /// <response code="200">Configuration returned.</response>
     /// <returns>Configuration.</returns>
     [HttpGet("Configuration/{key}")]
+    [Authorize(Policy = Policies.ElevateConfiguration)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesFile(MediaTypeNames.Application.Json)]
     public ActionResult<object> GetNamedConfiguration([FromRoute, Required] string key)
