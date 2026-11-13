@@ -14,6 +14,7 @@ using Jellyfin.Data.Events;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.LiveTv.Configuration;
+using Jellyfin.LiveTv.Recordings;
 using Jellyfin.LiveTv.Timers;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
@@ -36,6 +37,7 @@ namespace Jellyfin.LiveTv
         private readonly ITunerHostManager _tunerHostManager;
         private readonly IListingsManager _listingsManager;
         private readonly IRecordingsManager _recordingsManager;
+        private readonly IActiveRecordingUpdater _activeRecordingUpdater;
         private readonly ILibraryManager _libraryManager;
         private readonly LiveTvDtoService _tvDtoService;
         private readonly TimerManager _timerManager;
@@ -47,6 +49,7 @@ namespace Jellyfin.LiveTv
             ITunerHostManager tunerHostManager,
             IListingsManager listingsManager,
             IRecordingsManager recordingsManager,
+            IActiveRecordingUpdater activeRecordingUpdater,
             ILibraryManager libraryManager,
             LiveTvDtoService tvDtoService,
             TimerManager timerManager,
@@ -58,6 +61,7 @@ namespace Jellyfin.LiveTv
             _tunerHostManager = tunerHostManager;
             _listingsManager = listingsManager;
             _recordingsManager = recordingsManager;
+            _activeRecordingUpdater = activeRecordingUpdater;
             _tvDtoService = tvDtoService;
             _timerManager = timerManager;
             _seriesTimerManager = seriesTimerManager;
@@ -252,6 +256,8 @@ namespace Jellyfin.LiveTv
                 CopyProgramInfoToTimerInfo(programInfo, info);
             }
 
+            info.PrePaddingSeconds = Math.Max(0, info.PrePaddingSeconds);
+            info.PostPaddingSeconds = Math.Max(0, info.PostPaddingSeconds);
             info.IsManual = true;
             _timerManager.Add(info);
 
@@ -263,6 +269,8 @@ namespace Jellyfin.LiveTv
         public async Task<string> CreateSeriesTimer(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
             info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+            info.PrePaddingSeconds = Math.Max(0, info.PrePaddingSeconds);
+            info.PostPaddingSeconds = Math.Max(0, info.PostPaddingSeconds);
 
             // populate info.seriesID
             var program = GetProgramInfoFromCache(info.ProgramId);
@@ -320,8 +328,8 @@ namespace Jellyfin.LiveTv
                 instance.EndDate = info.EndDate;
                 instance.IsPostPaddingRequired = info.IsPostPaddingRequired;
                 instance.IsPrePaddingRequired = info.IsPrePaddingRequired;
-                instance.PostPaddingSeconds = info.PostPaddingSeconds;
-                instance.PrePaddingSeconds = info.PrePaddingSeconds;
+                instance.PostPaddingSeconds = Math.Max(0, info.PostPaddingSeconds);
+                instance.PrePaddingSeconds = Math.Max(0, info.PrePaddingSeconds);
                 instance.Priority = info.Priority;
                 instance.RecordAnyChannel = info.RecordAnyChannel;
                 instance.RecordAnyTime = info.RecordAnyTime;
@@ -348,14 +356,19 @@ namespace Jellyfin.LiveTv
                 throw new ResourceNotFoundException();
             }
 
-            // Only update if not currently active
-            if (_recordingsManager.GetActiveRecordingPath(updatedTimer.Id) is null)
-            {
-                existingTimer.PrePaddingSeconds = updatedTimer.PrePaddingSeconds;
-                existingTimer.PostPaddingSeconds = updatedTimer.PostPaddingSeconds;
-                existingTimer.IsPostPaddingRequired = updatedTimer.IsPostPaddingRequired;
-                existingTimer.IsPrePaddingRequired = updatedTimer.IsPrePaddingRequired;
+            // Post-padding can be changed even while the recording is active.
+            existingTimer.PostPaddingSeconds = Math.Max(0, updatedTimer.PostPaddingSeconds);
+            existingTimer.IsPostPaddingRequired = updatedTimer.IsPostPaddingRequired;
 
+            if (_activeRecordingUpdater.TryUpdateTimer(existingTimer))
+            {
+                _timerManager.AddOrUpdate(existingTimer, false);
+            }
+            else
+            {
+                // Only non-active recordings can have their pre-padding changed.
+                existingTimer.PrePaddingSeconds = Math.Max(0, updatedTimer.PrePaddingSeconds);
+                existingTimer.IsPrePaddingRequired = updatedTimer.IsPrePaddingRequired;
                 _timerManager.Update(existingTimer);
             }
 
@@ -763,8 +776,8 @@ namespace Jellyfin.LiveTv
                         existingTimer.KeepUntil = seriesTimer.KeepUntil;
                         existingTimer.IsPostPaddingRequired = seriesTimer.IsPostPaddingRequired;
                         existingTimer.IsPrePaddingRequired = seriesTimer.IsPrePaddingRequired;
-                        existingTimer.PostPaddingSeconds = seriesTimer.PostPaddingSeconds;
-                        existingTimer.PrePaddingSeconds = seriesTimer.PrePaddingSeconds;
+                        existingTimer.PostPaddingSeconds = Math.Max(0, seriesTimer.PostPaddingSeconds);
+                        existingTimer.PrePaddingSeconds = Math.Max(0, seriesTimer.PrePaddingSeconds);
                         existingTimer.Priority = seriesTimer.Priority;
                         existingTimer.SeriesTimerId = seriesTimer.Id;
                     }
@@ -868,8 +881,8 @@ namespace Jellyfin.LiveTv
                 StartDate = parent.StartDate,
                 EndDate = parent.EndDate.Value,
                 ProgramId = parent.ExternalId,
-                PrePaddingSeconds = seriesTimer.PrePaddingSeconds,
-                PostPaddingSeconds = seriesTimer.PostPaddingSeconds,
+                PrePaddingSeconds = Math.Max(0, seriesTimer.PrePaddingSeconds),
+                PostPaddingSeconds = Math.Max(0, seriesTimer.PostPaddingSeconds),
                 IsPostPaddingRequired = seriesTimer.IsPostPaddingRequired,
                 IsPrePaddingRequired = seriesTimer.IsPrePaddingRequired,
                 KeepUntil = seriesTimer.KeepUntil,
