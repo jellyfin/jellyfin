@@ -135,6 +135,40 @@ namespace MediaBrowser.Controller.Entities
         public IsoType? IsoType { get; set; }
 
         /// <summary>
+        /// Gets or sets the 1-based playback title number to use when playing a DVD/Blu-ray ISO or directory.
+        /// When null, the default (longest) title is used.
+        /// </summary>
+        /// <value>The playback title number, or null for the default title.</value>
+        public int? IsoPlaybackTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the full path of the ISO image or disc folder that a disc reference points to.
+        /// Only used when <see cref="IsDiscReference"/> is <c>true</c>.
+        /// </summary>
+        /// <value>The referenced source path, or <c>null</c> if the reference is invalid.</value>
+        public string DiscReferenceSource { get; set; }
+
+        /// <summary>
+        /// Gets or sets the title/playlist number fixed by a disc reference.
+        /// When set it always wins over the automatically selected <see cref="IsoPlaybackTitle"/>.
+        /// </summary>
+        /// <value>The referenced title number, or <c>null</c> to use the longest title.</value>
+        public int? DiscReferenceIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this item is a disc reference: a <c>.strm</c> file whose entry
+        /// uses the <c>dvd://</c> or <c>bluray://</c> scheme. See <see cref="DiscReference"/>.
+        /// </summary>
+        public bool IsDiscReference { get; set; }
+
+        /// <summary>
+        /// Gets the path of the actual media: the referenced ISO image or disc folder for a disc
+        /// reference, otherwise <see cref="BaseItem.Path"/>.
+        /// </summary>
+        [JsonIgnore]
+        public string MediaPath => IsDiscReference && !string.IsNullOrEmpty(DiscReferenceSource) ? DiscReferenceSource : Path;
+
+        /// <summary>
         /// Gets or sets the video3 D format.
         /// </summary>
         /// <value>The video3 D format.</value>
@@ -207,7 +241,8 @@ namespace MediaBrowser.Controller.Entities
                     return System.IO.Path.GetDirectoryName(Path);
                 }
 
-                if (!IsPlaceHolder)
+                // A disc reference is a .strm file even when it points at a disc folder.
+                if (!IsPlaceHolder && !IsDiscReference)
                 {
                     if (VideoType == VideoType.BluRay || VideoType == VideoType.Dvd)
                     {
@@ -226,7 +261,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (IsFileProtocol)
                 {
-                    if (VideoType == VideoType.BluRay || VideoType == VideoType.Dvd)
+                    if ((VideoType == VideoType.BluRay || VideoType == VideoType.Dvd) && !IsDiscReference)
                     {
                         return System.IO.Path.GetFileName(Path);
                     }
@@ -443,7 +478,8 @@ namespace MediaBrowser.Controller.Entities
 
         public override bool CanDownload()
         {
-            if (VideoType == VideoType.Dvd || VideoType == VideoType.BluRay)
+            // Downloading a disc reference would only return the small .strm file.
+            if (VideoType == VideoType.Dvd || VideoType == VideoType.BluRay || IsDiscReference)
             {
                 return false;
             }
@@ -497,6 +533,75 @@ namespace MediaBrowser.Controller.Entities
                 .OrderBy(i => i.SortName);
         }
 
+        /// <summary>
+        /// Makes this <c>.strm</c> item a disc reference.
+        /// </summary>
+        /// <param name="reference">The parsed reference, or <c>null</c> if the reference is invalid,
+        /// in which case the item becomes a placeholder.</param>
+        /// <returns><c>true</c> if anything changed.</returns>
+        public bool ApplyDiscReference(DiscReference reference)
+        {
+            return reference is null
+                ? SetDiscReference(null, null, VideoType.VideoFile, null, true)
+                : SetDiscReference(reference.SourcePath, reference.Index, reference.VideoType, reference.IsoType, false);
+        }
+
+        /// <summary>
+        /// Turns a former disc reference back into an ordinary <c>.strm</c> item.
+        /// </summary>
+        /// <returns><c>true</c> if anything changed.</returns>
+        public bool ClearDiscReference()
+        {
+            if (!IsDiscReference)
+            {
+                return false;
+            }
+
+            IsDiscReference = false;
+            IsShortcut = true;
+            DiscReferenceSource = null;
+            DiscReferenceIndex = null;
+            VideoType = VideoType.VideoFile;
+            IsoType = null;
+            IsoPlaybackTitle = null;
+            IsPlaceHolder = false;
+            return true;
+        }
+
+        private bool SetDiscReference(string source, int? index, VideoType videoType, IsoType? isoType, bool isPlaceHolder)
+        {
+            var sourceChanged = !IsDiscReference || !string.Equals(DiscReferenceSource, source, StringComparison.Ordinal);
+
+            // Keep a previously detected disc type unless the source changed or the file now declares one.
+            IsoType? newIsoType = videoType == VideoType.Iso
+                ? isoType ?? (sourceChanged ? null : IsoType)
+                : null;
+
+            // A fixed index always wins. Without one, keep the automatically selected (longest) title unless
+            // the source changed or the index was just removed, so that probing picks the longest title again.
+            var newTitle = index ?? (sourceChanged || DiscReferenceIndex.HasValue ? null : IsoPlaybackTitle);
+
+            var changed = sourceChanged
+                || IsShortcut
+                || DiscReferenceIndex != index
+                || VideoType != videoType
+                || IsoType != newIsoType
+                || IsoPlaybackTitle != newTitle
+                || IsPlaceHolder != isPlaceHolder;
+
+            // The .strm file is played from the referenced disc, not treated as a remote stream.
+            IsDiscReference = true;
+            IsShortcut = false;
+            DiscReferenceSource = source;
+            DiscReferenceIndex = index;
+            VideoType = videoType;
+            IsoType = newIsoType;
+            IsoPlaybackTitle = newTitle;
+            IsPlaceHolder = isPlaceHolder;
+
+            return changed;
+        }
+
         internal override ItemUpdateType UpdateFromResolvedItem(BaseItem newItem)
         {
             var updateType = base.UpdateFromResolvedItem(newItem);
@@ -515,7 +620,21 @@ namespace MediaBrowser.Controller.Entities
                     updateType |= ItemUpdateType.MetadataImport;
                 }
 
-                if (VideoType != newVideo.VideoType)
+                if (newVideo.IsDiscReference)
+                {
+                    if (SetDiscReference(newVideo.DiscReferenceSource, newVideo.DiscReferenceIndex, newVideo.VideoType, newVideo.IsoType, newVideo.IsPlaceHolder))
+                    {
+                        updateType |= ItemUpdateType.MetadataImport;
+                    }
+                }
+                else if (ClearDiscReference())
+                {
+                    // The .strm file no longer holds a disc reference.
+                    IsShortcut = newVideo.IsShortcut;
+                    VideoType = newVideo.VideoType;
+                    updateType |= ItemUpdateType.MetadataImport;
+                }
+                else if (VideoType != newVideo.VideoType)
                 {
                     VideoType = newVideo.VideoType;
                     updateType |= ItemUpdateType.MetadataImport;

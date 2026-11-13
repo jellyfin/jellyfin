@@ -3,11 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using MediaBrowser.Common;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -84,12 +86,40 @@ namespace MediaBrowser.Providers.MediaInfo
 
             Model.MediaInfo.MediaInfo? mediaInfoResult = null;
 
+            if (item.VideoType == VideoType.Iso && !item.IsoType.HasValue)
+            {
+                item.IsoType = DetectIsoType(item);
+            }
+
+            // A .strm disc reference with a fixed index always plays that title/playlist.
+            if (item.IsDiscReference && item.DiscReferenceIndex.HasValue)
+            {
+                item.IsoPlaybackTitle = item.DiscReferenceIndex;
+            }
+
+            // Only pick the longest title automatically when nothing fixed the title.
+            var canSelectDefaultTitle = !item.DiscReferenceIndex.HasValue
+                && (!item.IsoPlaybackTitle.HasValue || options.ReplaceAllMetadata);
+
             if (!item.IsShortcut || options.EnableRemoteContentProbe)
             {
-                if (item.VideoType == VideoType.Dvd)
+                if (item.IsDiscReference && item.DiscReferenceIndex.HasValue && CanProbeTitle(item))
                 {
-                    // Get list of playable .vob files
-                    var vobs = _mediaEncoder.GetPrimaryPlaylistVobFiles(item.Path, null);
+                    // Probe only the referenced title/playlist so runtime, streams and chapters describe it
+                    // rather than the whole disc.
+                    mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
+                }
+                else if (item.VideoType == VideoType.Dvd)
+                {
+                    // Enumerate titles and select the longest on first scan or full metadata replace,
+                    // but only when the dvdvideo demuxer is available to actually play the selection back.
+                    if (_mediaEncoder.SupportsDvdVideo && canSelectDefaultTitle)
+                    {
+                        SetDefaultTitle(item, IsoType.Dvd);
+                    }
+
+                    // Get list of playable .vob files for metadata probing
+                    var vobs = _mediaEncoder.GetPrimaryPlaylistVobFiles(item.MediaPath, null);
 
                     // Return if no playable .vob files are found
                     if (vobs.Count == 0)
@@ -122,13 +152,20 @@ namespace MediaBrowser.Providers.MediaInfo
                 else if (item.VideoType == VideoType.BluRay)
                 {
                     // Get BD disc information
-                    blurayDiscInfo = GetBDInfo(item.Path);
+                    blurayDiscInfo = GetBDInfo(item.MediaPath);
 
                     // Return if no playable .m2ts files are found
                     if (blurayDiscInfo is null || blurayDiscInfo.Files.Length == 0)
                     {
                         _logger.LogError("No playable .m2ts files found in Blu-ray structure, skipping FFprobe.");
                         return ItemUpdateType.MetadataImport;
+                    }
+
+                    // Enumerate titles and select the longest one on first scan or full metadata replace,
+                    // but only when libbluray is available to actually play the selection back.
+                    if (_mediaEncoder.SupportsLibBluray && canSelectDefaultTitle)
+                    {
+                        SetDefaultTitle(item, IsoType.BluRay);
                     }
 
                     // Fetch metadata of first .m2ts file
@@ -138,6 +175,26 @@ namespace MediaBrowser.Providers.MediaInfo
                             Path = blurayDiscInfo.Files[0]
                         },
                         cancellationToken).ConfigureAwait(false);
+                }
+                else if (item.VideoType == VideoType.Iso
+                    && item.IsoType is IsoType.Dvd or IsoType.BluRay)
+                {
+                    // For DVD/Blu-ray ISO files, enumerate available titles and set the default (longest) one.
+                    // Only do this on first scan (IsoPlaybackTitle not yet set) or on a full metadata replace,
+                    // and only when the required ffmpeg feature is present.
+                    if (canSelectDefaultTitle)
+                    {
+                        bool featureAvailable = item.IsoType == IsoType.Dvd
+                            ? _mediaEncoder.SupportsDvdVideo
+                            : _mediaEncoder.SupportsLibBluray;
+
+                        if (featureAvailable)
+                        {
+                            SetDefaultTitle(item, item.IsoType.Value);
+                        }
+                    }
+
+                    mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
@@ -152,13 +209,107 @@ namespace MediaBrowser.Providers.MediaInfo
             return ItemUpdateType.MetadataImport;
         }
 
+        internal IsoType? DetectIsoType(Video item)
+        {
+            var path = item.MediaPath;
+            if (item.VideoType != VideoType.Iso || string.IsNullOrWhiteSpace(path))
+            {
+                return null;
+            }
+
+            return TryDetectIsoType(path, IsoType.Dvd, _mediaEncoder.SupportsDvdVideo)
+                ?? TryDetectIsoType(path, IsoType.BluRay, _mediaEncoder.SupportsLibBluray);
+        }
+
+        /// <summary>
+        /// Determines whether ffmpeg can open a single title/playlist of the item's disc.
+        /// </summary>
+        /// <param name="item">The disc item.</param>
+        /// <returns><c>true</c> if the required ffmpeg feature is available.</returns>
+        private bool CanProbeTitle(Video item)
+        {
+            return item.VideoType switch
+            {
+                VideoType.Dvd => _mediaEncoder.SupportsDvdVideo,
+                VideoType.BluRay => _mediaEncoder.SupportsLibBluray,
+                VideoType.Iso => item.IsoType switch
+                {
+                    IsoType.Dvd => _mediaEncoder.SupportsDvdVideo,
+                    IsoType.BluRay => _mediaEncoder.SupportsLibBluray,
+                    _ => false
+                },
+                _ => false
+            };
+        }
+
+        private IsoType? TryDetectIsoType(string path, IsoType isoType, bool featureSupported)
+        {
+            if (!featureSupported)
+            {
+                return null;
+            }
+
+            try
+            {
+                if (_mediaEncoder.GetIsoTitles(path, isoType).Count > 0)
+                {
+                    return isoType;
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or FfmpegException)
+            {
+                _logger.LogDebug(ex, "Failed to probe ISO as {IsoType}: {Path}", isoType, path);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Enumerates all available titles and sets <see cref="Video.IsoPlaybackTitle"/>
+        /// to the longest one. Called during probing when a title hasn't been selected yet.
+        /// Works for both ISO files (DVD/Blu-ray) and unpacked Blu-ray directories.
+        /// </summary>
+        private void SetDefaultTitle(Video item, IsoType isoType)
+        {
+            try
+            {
+                var titles = _mediaEncoder.GetIsoTitles(item.MediaPath, isoType);
+                if (titles.Count == 0)
+                {
+                    return;
+                }
+
+                // Select the title with the longest duration. When durations are unavailable, fall back to
+                // the highest title number (typically the main feature on DVDs).
+                var longest = titles
+                    .OrderByDescending(t => t.DurationTicks ?? 0)
+                    .ThenByDescending(t => t.TitleNumber)
+                    .First();
+
+                _logger.LogInformation(
+                    "{Path}: found {Count} title(s); defaulting to title {TitleNumber} (duration {Duration})",
+                    item.Path,
+                    titles.Count,
+                    longest.TitleNumber,
+                    longest.DurationTicks.HasValue
+                        ? TimeSpan.FromTicks(longest.DurationTicks.Value).ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture)
+                        : "unknown");
+
+                item.IsoPlaybackTitle = longest.TitleNumber;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to enumerate titles for {Path}", item.Path);
+            }
+        }
+
         private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(
             Video item,
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var path = item.Path;
+            var path = item.MediaPath;
             var protocol = item.PathProtocol ?? MediaProtocol.File;
 
             if (item.IsShortcut)
@@ -177,7 +328,8 @@ namespace MediaBrowser.Providers.MediaInfo
                         Path = path,
                         Protocol = protocol,
                         VideoType = item.VideoType,
-                        IsoType = item.IsoType
+                        IsoType = item.IsoType,
+                        IsoPlaybackTitle = item.IsoPlaybackTitle
                     }
                 },
                 cancellationToken);
@@ -205,7 +357,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 video.RunTimeTicks = mediaInfo.RunTimeTicks;
                 video.Container = mediaInfo.Container;
                 var videoType = video.VideoType;
-                if (videoType == VideoType.BluRay || videoType == VideoType.Dvd)
+                if (videoType == VideoType.BluRay || videoType == VideoType.Dvd || video.IsDiscReference)
                 {
                     video.Size = mediaInfo.Size;
                 }
