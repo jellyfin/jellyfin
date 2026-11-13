@@ -865,7 +865,7 @@ namespace MediaBrowser.Controller.Library
         IReadOnlyList<string> GetMediaStreamLanguages(MediaStreamType mediaStreamType);
 
         /// <summary>
-        /// Gets a list of all language codes for the matching items and the the provided stream type.
+        /// Gets a list of all language codes for the matching items and the provided stream type.
         /// </summary>
         /// <param name="mediaStreamType">The stream type.</param>
         /// <param name="query">The query filter.</param>
