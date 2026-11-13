@@ -122,14 +122,21 @@ public class UserController : BaseJellyfinApiController
     /// </summary>
     /// <param name="userId">The user id.</param>
     /// <response code="200">User returned.</response>
+    /// <response code="403">User is not allowed to view other users.</response>
     /// <response code="404">User not found.</response>
-    /// <returns>An <see cref="UserDto"/> with information about the user or a <see cref="NotFoundResult"/> if the user was not found.</returns>
+    /// <returns>An <see cref="UserDto"/> with information about the user, a <see cref="ForbidResult"/> if the user is not allowed to view other users, or a <see cref="NotFoundResult"/> if the user was not found.</returns>
     [HttpGet("{userId}")]
     [Authorize(Policy = Policies.IgnoreParentalControl)]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<UserDto> GetUserById([FromRoute, Required] Guid userId)
     {
+        if (!User.IsInRole(UserRoles.Administrator) && !User.GetUserId().Equals(userId))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to view other users.");
+        }
+
         var user = _userManager.GetUserById(userId);
 
         if (user is null)
