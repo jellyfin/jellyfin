@@ -184,6 +184,7 @@ namespace Emby.Server.Implementations.Library
             _peopleRepository = peopleRepository;
             _pathManager = pathManager;
             _dotIgnoreIgnoreRule = dotIgnoreIgnoreRule;
+            _dotIgnoreIgnoreRule.SetLibraryRootsProvider(GetLibraryRootPaths);
             _localization = localization;
             _directoryService = directoryService;
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
@@ -1627,23 +1628,7 @@ namespace Emby.Server.Implementations.Library
             {
                 Name = Path.GetFileName(dir),
 
-                Locations = _fileSystem.GetFilePaths(dir, false)
-                .Where(i => Path.GetExtension(i.AsSpan()).Equals(ShortcutFileExtension, StringComparison.OrdinalIgnoreCase))
-                    .Select(i =>
-                    {
-                        try
-                        {
-                            return _appHost.ExpandVirtualPath(_fileSystem.ResolveShortcut(i));
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error resolving shortcut file {File}", i);
-                            return null;
-                        }
-                    })
-                    .Where(i => i is not null)
-                    .Order()
-                    .ToArray(),
+                Locations = GetVirtualFolderLocations(dir).Order().ToArray(),
 
                 CollectionType = GetCollectionType(dir)
             };
@@ -1669,6 +1654,40 @@ namespace Emby.Server.Implementations.Library
             }
 
             return info;
+        }
+
+        private IEnumerable<string> GetVirtualFolderLocations(string dir)
+        {
+            return _fileSystem.GetFilePaths(dir, false)
+                .Where(i => Path.GetExtension(i.AsSpan()).Equals(ShortcutFileExtension, StringComparison.OrdinalIgnoreCase))
+                .Select(i =>
+                {
+                    try
+                    {
+                        return _appHost.ExpandVirtualPath(_fileSystem.ResolveShortcut(i));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error resolving shortcut file {File}", i);
+                        return null;
+                    }
+                })
+                .OfType<string>();
+        }
+
+        // Reads the .mblink files directly; going through RootFolder.Children would re-enter the resolver.
+        private IEnumerable<string> GetLibraryRootPaths()
+        {
+            // root/default only exists once the user root folder or a library has been created
+            var userViewsPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
+            if (!_fileSystem.DirectoryExists(userViewsPath))
+            {
+                return [];
+            }
+
+            return _fileSystem.GetDirectoryPaths(userViewsPath)
+                .SelectMany(GetVirtualFolderLocations)
+                .ToList();
         }
 
         private CollectionTypeOptions? GetCollectionType(string path)
