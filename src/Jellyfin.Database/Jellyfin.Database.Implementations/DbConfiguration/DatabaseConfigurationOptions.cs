@@ -18,7 +18,7 @@ public class DatabaseConfigurationOptions
     public CustomDatabaseOptions? CustomProviderOptions { get; set; }
 
     /// <summary>
-    /// Gets or Sets the kind of locking behavior jellyfin should perform. Possible options are "NoLock", "Pessimistic", "Optimistic".
+    /// Gets or Sets the kind of locking behavior jellyfin should perform. Possible options are "NoLock", "Pessimistic", "Optimistic", "SerializedWrites".
     /// Defaults to "NoLock".
     /// </summary>
     public DatabaseLockingBehaviorTypes LockingBehavior { get; set; }

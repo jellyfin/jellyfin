@@ -18,5 +18,11 @@ public enum DatabaseLockingBehaviorTypes
     /// <summary>
     /// Defines that all writes should be attempted and when fail should be retried.
     /// </summary>
-    Optimistic = 2
+    Optimistic = 2,
+
+    /// <summary>
+    /// Defines a behavior that queues writers so only one runs at a time, while leaving reads
+    /// unsynchronized.
+    /// </summary>
+    SerializedWrites = 3
 }
