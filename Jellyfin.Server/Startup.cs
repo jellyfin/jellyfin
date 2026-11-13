@@ -150,6 +150,7 @@ namespace Jellyfin.Server
                 options.FallBackToParentUICultures = true;
             });
 
+            services.AddHostedService<TranscodeCacheCleaner>();
             services.AddHostedService<RecordingsHost>();
             services.AddHostedService<AutoDiscoveryHost>();
             services.AddHostedService<NfoUserDataSaver>();
