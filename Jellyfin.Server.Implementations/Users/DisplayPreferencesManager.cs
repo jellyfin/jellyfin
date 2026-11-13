@@ -134,8 +134,51 @@ public sealed class DisplayPreferencesManager : IDisplayPreferencesManager
     public void UpdateDisplayPreferences(DisplayPreferences displayPreferences)
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
-        dbContext.DisplayPreferences.Attach(displayPreferences).State = EntityState.Modified;
+        using var transaction = dbContext.Database.BeginTransaction();
+        var storedDisplayPreferences = dbContext.DisplayPreferences
+            .Include(preferences => preferences.HomeSections)
+            .Single(preferences => preferences.Id == displayPreferences.Id);
+        dbContext.Entry(storedDisplayPreferences).CurrentValues.SetValues(displayPreferences);
+
+        var incomingSections = displayPreferences.HomeSections.ToList();
+        var incomingSectionIds = incomingSections
+            .Where(section => section.Id != 0)
+            .Select(section => section.Id)
+            .ToHashSet();
+
+        foreach (var section in storedDisplayPreferences.HomeSections.Where(section => !incomingSectionIds.Contains(section.Id)).ToList())
+        {
+            dbContext.Set<HomeSection>().Remove(section);
+        }
+
+        foreach (var incomingSection in incomingSections)
+        {
+            if (incomingSection.Id == 0)
+            {
+                storedDisplayPreferences.HomeSections.Add(new HomeSection
+                {
+                    Order = incomingSection.Order,
+                    Type = incomingSection.Type
+                });
+
+                continue;
+            }
+
+            var storedSection = storedDisplayPreferences.HomeSections
+                .FirstOrDefault(section => section.Id == incomingSection.Id);
+
+            if (storedSection is null)
+            {
+                throw new InvalidOperationException(
+                    "Home section does not belong to these display preferences.");
+            }
+
+            storedSection.Order = incomingSection.Order;
+            storedSection.Type = incomingSection.Type;
+        }
+
         dbContext.SaveChanges();
+        transaction.Commit();
     }
 
     /// <inheritdoc/>
