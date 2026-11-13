@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
@@ -35,20 +36,23 @@ namespace MediaBrowser.Controller.Entities
                 person.Type = PersonKind.Writer;
             }
 
+            var cleanName = person.Name.GetCleanValue();
+
             // Check for dupes based on the combination of Name, Type and Role.
-            var existing = people.FirstOrDefault(p => IsSameCredit(p, person)
-                && string.Equals(p.Role ?? string.Empty, person.Role ?? string.Empty, StringComparison.OrdinalIgnoreCase));
+            // One pass, so every collected credit's name is cleaned once rather than per lookup.
+            var sameCredits = people.Where(p => IsSameCredit(p, person, cleanName)).ToList();
+            var existing = sameCredits.FirstOrDefault(p => string.Equals(p.Role ?? string.Empty, person.Role ?? string.Empty, StringComparison.OrdinalIgnoreCase));
 
             if (existing is null)
             {
                 if (string.IsNullOrEmpty(person.Role))
                 {
-                    existing = people.FirstOrDefault(p => IsSameCredit(p, person));
+                    existing = sameCredits.FirstOrDefault();
                 }
                 else
                 {
                     // If the person already exists without a role and we have one, fill it in
-                    existing = people.FirstOrDefault(p => IsSameCredit(p, person) && string.IsNullOrEmpty(p.Role));
+                    existing = sameCredits.FirstOrDefault(p => string.IsNullOrEmpty(p.Role));
                     if (existing is not null)
                     {
                         existing.Role = person.Role;
@@ -71,20 +75,23 @@ namespace MediaBrowser.Controller.Entities
             MergeExisting(existing, person);
         }
 
-        private static bool IsSameCredit(PersonInfo existing, PersonInfo person)
+        private static bool IsSameCredit(PersonInfo existing, PersonInfo person, string cleanName)
         {
-            if (!string.Equals(existing.Name, person.Name, StringComparison.OrdinalIgnoreCase))
+            // Actor and GuestStar describe the same credit, a guest star is just a promoted actor.
+            if (existing.Type != person.Type && !(IsCastKind(existing.Type) && IsCastKind(person.Type)))
             {
                 return false;
             }
 
-            // Actor and GuestStar describe the same credit, a guest star is just a promoted actor.
-            if (IsCastKind(existing.Type) && IsCastKind(person.Type))
+            // The clean value is lower case, so names equal but for case need no cleaning.
+            if (!string.Equals(existing.Name, person.Name, StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(existing.Name.GetCleanValue(), cleanName, StringComparison.Ordinal))
             {
-                return true;
+                return false;
             }
 
-            return existing.Type == person.Type;
+            // One cast can hold two humans of one name, and only the ids say so.
+            return existing.FindConflictingProvider(person.ProviderIds) is null;
         }
 
         private static bool IsCastKind(PersonKind kind)

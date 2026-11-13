@@ -4,6 +4,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Logging;
@@ -35,5 +36,25 @@ public class PersonMetadataService : MetadataService<Person, PersonLookupInfo>
         IItemRepository itemRepository)
         : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, externalDataManager, itemRepository)
     {
+    }
+
+    /// <inheritdoc />
+    protected override void MergeData(
+        MetadataResult<Person> source,
+        MetadataResult<Person> target,
+        MetadataField[] lockedFields,
+        bool replaceData,
+        bool mergeMetadataSettings)
+    {
+        // A provider matches a person by a fuzzy name search, so the name it returns can be another
+        // spelling or another person entirely.
+        var name = target.Item.Name;
+
+        base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+
+        if (!string.IsNullOrEmpty(name))
+        {
+            target.Item.Name = name;
+        }
     }
 }
