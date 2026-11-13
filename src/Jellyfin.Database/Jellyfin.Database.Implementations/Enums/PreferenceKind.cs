@@ -68,5 +68,20 @@ public enum PreferenceKind
     /// <summary>
     /// A list of allowed tags.
     /// </summary>
-    AllowedTags = 12
+    AllowedTags = 12,
+
+    /// <summary>
+    /// A list of allowed top parent folder ids where original title is prefered.
+    /// </summary>
+    OriginalTitlePreferenceFolderIncludes = 13,
+
+    /// <summary>
+    /// A list of allowed languages and scripts where original title is prefered.
+    /// </summary>
+    OriginalTitlePreferenceLanguageScriptIncludes = 14,
+
+    /// <summary>
+    /// A list of forbidden languages and scripts where original title is prefered.
+    /// </summary>
+    OriginalTitlePreferenceLanguageScriptExcludes = 15
 }

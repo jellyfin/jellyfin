@@ -26,6 +26,15 @@ namespace MediaBrowser.Controller.Entities
             null
         };
 
+        private static readonly CollectionType?[] _viewTypesEligibleForOriginalTitlePreference =
+        {
+            Jellyfin.Data.Enums.CollectionType.movies,
+            Jellyfin.Data.Enums.CollectionType.tvshows,
+            Jellyfin.Data.Enums.CollectionType.boxsets,
+            Jellyfin.Data.Enums.CollectionType.books,
+            null
+        };
+
         private static readonly CollectionType?[] _originalFolderViewTypes =
         {
             Jellyfin.Data.Enums.CollectionType.books,
@@ -177,6 +186,17 @@ namespace MediaBrowser.Controller.Entities
         public static bool IsEligibleForGrouping(CollectionType? viewType)
         {
             return _viewTypesEligibleForGrouping.Contains(viewType);
+        }
+
+        public static bool IsEligibleForOriginalTitlePreference(Folder folder)
+        {
+            return folder is ICollectionFolder collectionFolder
+                    && IsEligibleForOriginalTitlePreference(collectionFolder.CollectionType);
+        }
+
+        public static bool IsEligibleForOriginalTitlePreference(CollectionType? viewType)
+        {
+            return _viewTypesEligibleForOriginalTitlePreference.Contains(viewType);
         }
 
         public static bool EnableOriginalFolder(CollectionType? viewType)
