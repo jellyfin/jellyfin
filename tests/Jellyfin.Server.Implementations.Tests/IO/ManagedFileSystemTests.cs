@@ -22,6 +22,33 @@ public partial class ManagedFileSystemTests
     }
 
     [Fact]
+    public void CanEnumerateDirectory_EmptyRootIsAvailable()
+    {
+        var directory = Directory.CreateTempSubdirectory();
+        try
+        {
+            Assert.True(_sut.CanEnumerateDirectory(directory.FullName));
+        }
+        finally
+        {
+            directory.Delete();
+        }
+    }
+
+    [Fact]
+    public void CanEnumerateDirectory_MissingRootIsUnavailable()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Assert.False(_sut.CanEnumerateDirectory(path));
+    }
+
+    [Fact]
+    public void CanEnumerateDirectory_InvalidPathExceptionIsUnavailable()
+    {
+        Assert.False(_sut.CanEnumerateDirectory("\0"));
+    }
+
+    [Fact]
     public void MoveDirectory_SameFileSystem_Correct()
         => MoveDirectoryInternal();
 
