@@ -49,6 +49,8 @@ namespace MediaBrowser.Model.LiveTv
 
         public NameValuePair[] ChannelMappings { get; set; }
 
+        public bool UseGuideChannelNames { get; set; }
+
         public string MoviePrefix { get; set; }
 
         public string PreferredLanguage { get; set; }

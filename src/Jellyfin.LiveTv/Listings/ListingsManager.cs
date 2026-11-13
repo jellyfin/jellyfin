@@ -304,7 +304,34 @@ public class ListingsManager : IListingsManager
             {
                 tunerChannel.ImageUrl = epgChannel.ImageUrl;
             }
+
+            if (info.UseGuideChannelNames
+                && TryGetExplicitMappedChannelId(info.ChannelMappings, tunerChannel.Id, out var mappedChannelId)
+                && string.Equals(epgChannel.Id, mappedChannelId, StringComparison.OrdinalIgnoreCase)
+                && !string.IsNullOrWhiteSpace(epgChannel.Name))
+            {
+                tunerChannel.Name = epgChannel.Name;
+            }
         }
+    }
+
+    private static bool TryGetExplicitMappedChannelId(NameValuePair[] mappings, string tunerChannelId, out string mappedChannelId)
+    {
+        if (!string.IsNullOrWhiteSpace(tunerChannelId))
+        {
+            foreach (NameValuePair mapping in mappings)
+            {
+                if (string.Equals(mapping.Name, tunerChannelId, StringComparison.OrdinalIgnoreCase)
+                    && !string.IsNullOrWhiteSpace(mapping.Value))
+                {
+                    mappedChannelId = mapping.Value;
+                    return true;
+                }
+            }
+        }
+
+        mappedChannelId = string.Empty;
+        return false;
     }
 
     private static bool IsListingProviderEnabledForTuner(ListingsProviderInfo info, string tunerHostId)
