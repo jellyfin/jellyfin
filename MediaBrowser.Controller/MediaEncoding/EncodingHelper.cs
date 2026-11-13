@@ -1264,12 +1264,26 @@ namespace MediaBrowser.Controller.MediaEncoding
                 arg.Append(canvasArgs);
             }
 
-            if (state.MediaSource.VideoType == VideoType.Dvd || state.MediaSource.VideoType == VideoType.BluRay)
+            var isBluRayIso = state.MediaSource.VideoType == VideoType.Iso && state.MediaSource.IsoType == IsoType.BluRay;
+            var useConcat = state.MediaSource.VideoType == VideoType.Dvd || state.MediaSource.VideoType == VideoType.BluRay || isBluRayIso;
+            string concatFilePath = null;
+            if (useConcat)
             {
-                var concatFilePath = Path.Join(_configurationManager.CommonApplicationPaths.CachePath, "concat", state.MediaSource.Id + ".concat");
+                concatFilePath = Path.Join(_configurationManager.CommonApplicationPaths.CachePath, "concat", state.MediaSource.Id + ".concat");
                 if (!File.Exists(concatFilePath))
                 {
                     _mediaEncoder.GenerateConcatConfig(state.MediaSource, concatFilePath);
+                }
+
+                // An ISO image without a config is played through FFmpeg's bluray protocol instead
+                useConcat = !isBluRayIso || File.Exists(concatFilePath);
+            }
+
+            if (useConcat)
+            {
+                if (isBluRayIso)
+                {
+                    arg.Append(" -protocol_whitelist file,concat,concatf,subfile");
                 }
 
                 arg.Append(" -f concat -safe 0 -i \"")
