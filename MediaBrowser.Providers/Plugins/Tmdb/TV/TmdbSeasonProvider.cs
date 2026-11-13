@@ -56,6 +56,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return result;
             }
 
+            // When the series is ordered by an episode group, the season number counts groups rather than TMDb
+            // seasons, so the group has to be resolved instead of fetching a season that holds unrelated episodes.
+            if (info.SeriesProviderIds.TryGetValue(TmdbEpisodeGroupId.ProviderKey, out var episodeGroup) && !string.IsNullOrWhiteSpace(episodeGroup))
+            {
+                var group = await _tmdbClientManager
+                    .GetSeriesGroupAsync(episodeGroup, seasonNumber.Value, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (group is not null)
+                {
+                    return MapGroupToSeason(group, seasonNumber.Value, config.ImportSeasonName);
+                }
+            }
+
             var seasonResult = await _tmdbClientManager
                 .GetSeasonAsync(seriesId, seasonNumber.Value, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken)
                 .ConfigureAwait(false);
@@ -63,12 +77,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             if (seasonResult is null)
             {
                 return result;
-            }
-
-            TvGroup? groupResult = null;
-            if (info.SeriesProviderIds.TryGetValue(TmdbEpisodeGroupId.ProviderKey, out var episodeGroup) && !string.IsNullOrWhiteSpace(episodeGroup))
-            {
-                groupResult = await _tmdbClientManager.GetSeriesGroupAsync(episodeGroup, seasonNumber.Value, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
             }
 
             result.HasMetadata = true;
@@ -87,11 +95,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             result.Item.TrySetProviderId(MetadataProvider.Tmdb, seasonResult.Id?.ToString(CultureInfo.InvariantCulture));
             result.Item.TrySetProviderId(MetadataProvider.Tvdb, seasonResult.ExternalIds?.TvdbId);
-
-            if (groupResult is not null && !string.IsNullOrWhiteSpace(groupResult.Id))
-            {
-                result.Item.TrySetProviderId(TmdbEpisodeGroupId.ProviderKey, groupResult.Id);
-            }
 
             var credits = seasonResult.Credits;
             if (credits?.Cast is not null)
@@ -167,6 +170,44 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Maps an episode group to a season.
+        /// </summary>
+        /// <remarks>
+        /// A group spans whatever TMDb seasons its episodes come from, so only the group's own name and the air date
+        /// of its first episode describe it. TMDb has neither an overview, artwork nor credits for a group.
+        /// </remarks>
+        /// <param name="group">The episode group the season maps to.</param>
+        /// <param name="seasonNumber">The season number.</param>
+        /// <param name="importSeasonName">Whether the season name should be imported.</param>
+        /// <returns>The season metadata.</returns>
+        internal static MetadataResult<Season> MapGroupToSeason(TvGroup group, int seasonNumber, bool importSeasonName)
+        {
+            var airDate = group.Episodes?
+                .Where(e => e.AirDate.HasValue)
+                .Min(e => e.AirDate);
+
+            var season = new Season
+            {
+                IndexNumber = seasonNumber,
+                PremiereDate = airDate,
+                ProductionYear = airDate?.Year
+            };
+
+            if (importSeasonName)
+            {
+                season.Name = group.Name;
+            }
+
+            season.TrySetProviderId(TmdbEpisodeGroupId.ProviderKey, group.Id);
+
+            return new MetadataResult<Season>
+            {
+                HasMetadata = true,
+                Item = season
+            };
         }
 
         /// <inheritdoc />

@@ -116,6 +116,28 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
+        /// Maps a series display order to the matching TMDb episode group type.
+        /// </summary>
+        /// <param name="displayOrder">The series display order.</param>
+        /// <returns>The matching <see cref="TvGroupType"/>, or <c>null</c> if the order has no TMDb counterpart.</returns>
+        public static TvGroupType? GetEpisodeGroupType(string? displayOrder)
+        {
+            // Lowercased because the order can also come from an NFO written by a third party tool.
+            // The Tvdb-only orders (alternate, regional, altdvd) intentionally have no TMDb counterpart.
+            return displayOrder?.ToLowerInvariant() switch
+            {
+                "originalairdate" => TvGroupType.OriginalAirDate,
+                "absolute" => TvGroupType.Absolute,
+                "dvd" => TvGroupType.DVD,
+                "digital" => TvGroupType.Digital,
+                "storyarc" => TvGroupType.StoryArc,
+                "production" => TvGroupType.Production,
+                "tv" => TvGroupType.TV,
+                _ => null
+            };
+        }
+
+        /// <summary>
         /// Cleans the name according to TMDb requirements.
         /// </summary>
         /// <param name="name">The name of the entity.</param>
