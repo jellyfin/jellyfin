@@ -6,10 +6,10 @@ using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers
 {
-    public sealed class MediaInfoControllerTests : IClassFixture<JellyfinApplicationFactory>
+    [Collection("Controller collection")]
+    public sealed class MediaInfoControllerTests
     {
         private readonly JellyfinApplicationFactory _factory;
-        private static string? _accessToken;
 
         public MediaInfoControllerTests(JellyfinApplicationFactory factory)
         {
@@ -20,7 +20,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task BitrateTest_Default_Ok()
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+            client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
             var response = await client.GetAsync("Playback/BitrateTest", TestContext.Current.CancellationToken);
 
@@ -34,7 +34,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task BitrateTest_WithValidParam_Ok(int size)
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+            client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
             var response = await client.GetAsync("Playback/BitrateTest?size=" + size.ToString(CultureInfo.InvariantCulture), TestContext.Current.CancellationToken);
 
@@ -51,7 +51,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task BitrateTest_InvalidValue_BadRequest(int size)
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+            client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
             var response = await client.GetAsync("Playback/BitrateTest?size=" + size.ToString(CultureInfo.InvariantCulture), TestContext.Current.CancellationToken);
 
