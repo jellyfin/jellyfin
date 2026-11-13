@@ -123,7 +123,7 @@ public class MediaInfoHelper
 
                 foreach (var mediaSource in mediaSourcesClone)
                 {
-                    RewritePublishedLiveStreamPath(mediaSource, request);
+                    RewritePublishedLiveStreamPath(mediaSource, request, item.Id);
                 }
 
                 result.MediaSources = mediaSourcesClone;
@@ -427,7 +427,7 @@ public class MediaInfoHelper
     {
         var result = await _mediaSourceManager.OpenLiveStream(request, CancellationToken.None).ConfigureAwait(false);
 
-        RewritePublishedLiveStreamPath(result.MediaSource, httpContext.Request);
+        RewritePublishedLiveStreamPath(result.MediaSource, httpContext.Request, request.ItemId);
 
         var profile = request.DeviceProfile;
         if (profile is null)
@@ -542,12 +542,14 @@ public class MediaInfoHelper
     /// <summary>
     /// Rewrites a Live TV media source's <see cref="MediaSourceInfo.Path"/> to the request-appropriate published
     /// URL when it points at a Jellyfin-hosted live stream buffer, so response copies never leak server-local
-    /// addresses. Only opened live streams are eligible. The shared instance held by
+    /// addresses. Any other opened HTTP live stream is rewritten to the server's static stream endpoint, which
+    /// relays it to the client unmodified. Only opened live streams are eligible. The shared instance held by
     /// <see cref="IMediaSourceManager"/> is never touched by this method.
     /// </summary>
     /// <param name="mediaSource">The media source clone to rewrite in place.</param>
     /// <param name="request">The current <see cref="HttpRequest"/>.</param>
-    private void RewritePublishedLiveStreamPath(MediaSourceInfo mediaSource, HttpRequest request)
+    /// <param name="itemId">The id of the item the media source belongs to, or <see cref="Guid.Empty"/> if unknown.</param>
+    private void RewritePublishedLiveStreamPath(MediaSourceInfo mediaSource, HttpRequest request, Guid itemId)
     {
         // Opened live streams always carry a LiveStreamId; this excludes pre-open and plugin/remote sources.
         if (string.IsNullOrEmpty(mediaSource.LiveStreamId))
@@ -556,7 +558,8 @@ public class MediaInfoHelper
         }
 
         var baseUrl = _serverConfigurationManager.GetNetworkConfiguration().BaseUrl;
-        var publishedPath = GetPublishedLiveStreamPath(_appHost.GetSmartApiUrl(request), mediaSource.Path, mediaSource.Protocol, baseUrl);
+        var smartApiUrl = _appHost.GetSmartApiUrl(request);
+        var publishedPath = GetPublishedLiveStreamPath(smartApiUrl, mediaSource.Path, mediaSource.Protocol, baseUrl);
 
         if (publishedPath is not null)
         {
@@ -567,6 +570,17 @@ public class MediaInfoHelper
         if (mediaSource.Path is not null && mediaSource.Path.Contains("/LiveTv/LiveStreamFiles/", StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogDebug("Not rewriting live stream path for media source {MediaSourceId}: the local path did not resolve under the request's smart API URL/BaseUrl", mediaSource.Id);
+            return;
+        }
+
+        // Any other HTTP live stream (e.g. an M3U channel that isn't buffered by the server) still points at the
+        // upstream URL, which only the server is guaranteed to reach: it can be a loopback or otherwise private
+        // address, or need the tuner's RequiredHttpHeaders. Hand the client the server's static stream endpoint
+        // instead, which relays the opened stream unmodified (no ffmpeg) and applies those headers itself.
+        if (mediaSource.Protocol == MediaProtocol.Http && !itemId.IsEmpty())
+        {
+            mediaSource.Path = GetLiveStreamRelayPath(smartApiUrl, baseUrl, itemId, mediaSource);
+            mediaSource.RequiredHttpHeaders = [];
         }
     }
 
@@ -608,6 +622,38 @@ public class MediaInfoHelper
             return null;
         }
 
+        return GetPublishedUrlPrefix(smartApiUrl, baseUrl) + relativePath;
+    }
+
+    /// <summary>
+    /// Builds the URL through which the server relays an opened HTTP live stream to the client unmodified.
+    /// </summary>
+    /// <param name="smartApiUrl">The request-appropriate base URL, as returned by <see cref="IServerApplicationHost.GetSmartApiUrl(HttpRequest)"/>.</param>
+    /// <param name="baseUrl">The server's configured BaseUrl, if any.</param>
+    /// <param name="itemId">The id of the item the live stream was opened for.</param>
+    /// <param name="mediaSource">The opened live stream's media source.</param>
+    /// <returns>The relay URL.</returns>
+    internal static string GetLiveStreamRelayPath(
+        string smartApiUrl,
+        string baseUrl,
+        Guid itemId,
+        MediaSourceInfo mediaSource)
+    {
+        var streamInfo = new StreamInfo
+        {
+            ItemId = itemId,
+            MediaType = DlnaProfileType.Video,
+            PlayMethod = PlayMethod.DirectStream,
+            MediaSource = mediaSource,
+            // Required, but ToUrl doesn't use it
+            DeviceProfile = new DeviceProfile()
+        };
+
+        return streamInfo.ToUrl(GetPublishedUrlPrefix(smartApiUrl, baseUrl), null, null);
+    }
+
+    private static string GetPublishedUrlPrefix(string smartApiUrl, string baseUrl)
+    {
         var prefix = smartApiUrl.TrimEnd('/');
         if (!string.IsNullOrEmpty(baseUrl))
         {
@@ -622,6 +668,6 @@ public class MediaInfoHelper
             }
         }
 
-        return prefix + relativePath;
+        return prefix;
     }
 }
