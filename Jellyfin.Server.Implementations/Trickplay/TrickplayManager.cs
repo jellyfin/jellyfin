@@ -514,6 +514,28 @@ public partial class TrickplayManager : ITrickplayManager
                     .OrderBy(i => i)
                     .ToList();
 
+                // A clean ffmpeg run can still produce nothing: a stills gallery holds each frame for many seconds,
+                // and for those videos PTS normalisation squeezes those few frames into less than one interval.
+                if (images.Count == 0)
+                {
+                    _logger.LogInformation(
+                        "Skipping trickplay for {Path} [ID: {ItemId}] as no images were extracted. The video may have too few frames, such as a stills gallery",
+                        mediaPath,
+                        video.Id);
+
+                    // Remove files created earlier since no trickplay images generated
+                    if (saveWithMedia)
+                    {
+                        File.Delete(Path.Combine(outputDir.FullName, ".jellyfin-trickplay"));
+                        if (!outputDir.EnumerateFileSystemInfos().Any())
+                        {
+                            outputDir.Delete();
+                        }
+                    }
+
+                    return;
+                }
+
                 // Create tiles
                 var trickplayInfo = CreateTiles(images, actualWidth, options, outputDir.FullName);
 
