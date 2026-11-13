@@ -500,6 +500,117 @@ namespace Jellyfin.Api.Tests.Helpers
             Assert.Equal(expected, result);
         }
 
+        [Fact]
+        public async Task OpenMediaSource_OpenedUpstreamHttpStream_RelaysThroughServer()
+        {
+            // An unbuffered M3U channel: the opened source still points at the upstream URL, which here is a
+            // loopback address that only the server can reach, and needs the tuner's User-Agent.
+            const string UpstreamPath = "http://127.0.0.1:9191/proxy/ts/stream/1";
+            var itemId = Guid.NewGuid();
+
+            var upstreamSource = new MediaSourceInfo
+            {
+                Id = "abc",
+                Protocol = MediaProtocol.Http,
+                Path = UpstreamPath,
+                LiveStreamId = "livestream-1",
+                RequiredHttpHeaders = new() { ["User-Agent"] = "tuner-agent" }
+            };
+
+            var mediaSourceManager = new Mock<IMediaSourceManager>();
+            mediaSourceManager
+                .Setup(x => x.OpenLiveStream(It.IsAny<LiveStreamRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(() => new LiveStreamResponse(
+                    JsonSerializer.Deserialize<MediaSourceInfo>(JsonSerializer.SerializeToUtf8Bytes(upstreamSource))!));
+
+            var appHost = new Mock<IServerApplicationHost>();
+            appHost.Setup(x => x.GetSmartApiUrl(It.IsAny<HttpRequest>())).Returns("https://media.example.com");
+
+            var helper = CreateHelper(mediaSourceManager: mediaSourceManager.Object, appHost: appHost.Object);
+
+            var response = await helper.OpenMediaSource(new DefaultHttpContext(), new LiveStreamRequest { ItemId = itemId }).ConfigureAwait(true);
+
+            Assert.Equal(
+                "https://media.example.com/videos/" + itemId + "/stream?MediaSourceId=abc&Static=true&LiveStreamId=livestream-1",
+                response.MediaSource.Path);
+
+            // The server applies the tuner's headers when it relays; the client must not be asked to send them.
+            Assert.Empty(response.MediaSource.RequiredHttpHeaders);
+
+            // The instance the server keeps still points at the upstream, which is what the relay reads from.
+            Assert.Equal(UpstreamPath, upstreamSource.Path);
+            Assert.Equal("tuner-agent", upstreamSource.RequiredHttpHeaders["User-Agent"]);
+        }
+
+        [Fact]
+        public async Task GetPlaybackInfo_ExistingUpstreamHttpLiveStream_RelaysThroughServer()
+        {
+            var item = new Movie { Id = Guid.NewGuid() };
+
+            var mediaSourceManager = new Mock<IMediaSourceManager>();
+            mediaSourceManager
+                .Setup(x => x.GetLiveStream(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new MediaSourceInfo
+                {
+                    Id = "abc",
+                    Protocol = MediaProtocol.Http,
+                    Path = "http://10.0.0.5:8080/live/channel1",
+                    LiveStreamId = "livestream-1"
+                });
+
+            var appHost = new Mock<IServerApplicationHost>();
+            appHost.Setup(x => x.GetSmartApiUrl(It.IsAny<HttpRequest>())).Returns("https://media.example.com");
+
+            var helper = CreateHelper(mediaSourceManager: mediaSourceManager.Object, appHost: appHost.Object);
+
+            var result = await helper.GetPlaybackInfo(item, null, Mock.Of<HttpRequest>(), liveStreamId: "livestream-1").ConfigureAwait(true);
+
+            Assert.Equal(
+                "https://media.example.com/videos/" + item.Id + "/stream?MediaSourceId=abc&Static=true&LiveStreamId=livestream-1",
+                result.MediaSources[0].Path);
+        }
+
+        [Fact]
+        public async Task OpenMediaSource_UpstreamHttpStreamWithoutItemId_PathUnchanged()
+        {
+            // The relay endpoint is addressed by item id; without one the source is left as it was.
+            const string UpstreamPath = "http://127.0.0.1:9191/proxy/ts/stream/1";
+
+            var mediaSource = new MediaSourceInfo
+            {
+                Id = "abc",
+                Protocol = MediaProtocol.Http,
+                Path = UpstreamPath,
+                LiveStreamId = "livestream-1"
+            };
+
+            var helper = CreateOpenMediaSourceHelper(mediaSource, "https://media.example.com");
+
+            var response = await helper.OpenMediaSource(new DefaultHttpContext(), new LiveStreamRequest()).ConfigureAwait(true);
+
+            Assert.Equal(UpstreamPath, response.MediaSource.Path);
+        }
+
+        [Theory]
+        [InlineData("https://media.example.com", "", "abc", "https://media.example.com/videos/{0}/stream?MediaSourceId=abc&Static=true&LiveStreamId=live1")]
+        [InlineData("https://media.example.com/", "", null, "https://media.example.com/videos/{0}/stream?Static=true&LiveStreamId=live1")]
+        [InlineData("https://jellyfin", "/jellyfin", "abc", "https://jellyfin/jellyfin/videos/{0}/stream?MediaSourceId=abc&Static=true&LiveStreamId=live1")]
+        [InlineData("https://media.example.com/jellyfin/", "/jellyfin", "abc", "https://media.example.com/jellyfin/videos/{0}/stream?MediaSourceId=abc&Static=true&LiveStreamId=live1")]
+        public void GetLiveStreamRelayPath_VariousInputs_ReturnsExpected(string smartApiUrl, string baseUrl, string? mediaSourceId, string expectedFormat)
+        {
+            var itemId = Guid.NewGuid();
+            var mediaSource = new MediaSourceInfo
+            {
+                Id = mediaSourceId,
+                Protocol = MediaProtocol.Http,
+                LiveStreamId = "live1"
+            };
+
+            var result = MediaInfoHelper.GetLiveStreamRelayPath(smartApiUrl, baseUrl, itemId, mediaSource);
+
+            Assert.Equal(string.Format(CultureInfo.InvariantCulture, expectedFormat, itemId), result);
+        }
+
         private static MediaInfoHelper CreateOpenMediaSourceHelper(MediaSourceInfo mediaSource, string smartApiUrl, string baseUrl = "")
         {
             var mediaSourceManager = new Mock<IMediaSourceManager>();
