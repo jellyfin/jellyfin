@@ -115,6 +115,12 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 cancellationToken.ThrowIfCancellationRequested();
 
+                if (options.RefreshMediaInfoOnly && (result is null
+                    || !result.MediaStreams.Any(stream => stream.Type == MediaStreamType.Audio)))
+                {
+                    return ItemUpdateType.None;
+                }
+
                 await FetchAsync(item, result, options, cancellationToken).ConfigureAwait(false);
             }
 
@@ -145,7 +151,7 @@ namespace MediaBrowser.Providers.MediaInfo
             AddExternalLyrics(audio, mediaStreams, options);
             var tryExtractEmbeddedLyrics = mediaStreams.All(s => s.Type != MediaStreamType.Lyric);
 
-            if (!audio.IsLocked)
+            if (!audio.IsLocked && !options.RefreshMediaInfoOnly)
             {
                 await FetchDataFromTags(audio, mediaInfo, options, tryExtractEmbeddedLyrics).ConfigureAwait(false);
                 if (tryExtractEmbeddedLyrics)

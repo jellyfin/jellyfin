@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Castle.Components.DictionaryAdapter;
@@ -13,6 +15,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaSegments;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -280,6 +283,40 @@ namespace Jellyfin.Server.Implementations.Tests.Library
 
             Assert.Equal(primary.Id.ToString("N"), sources[0].Id);
             _mockUserDataManager.Verify(x => x.GetUserDataBatch(It.IsAny<IReadOnlyList<BaseItem>>(), It.IsAny<User>()), Times.Never);
+        }
+
+        [Theory]
+        [InlineData("/media/movie.strm", true, true, true)]
+        [InlineData("/media/movie.mp4", false, true, true)]
+        [InlineData("/media/movie.mp4", true, true, false)]
+        [InlineData("/media/movie.strm", false, false, false)]
+        public async Task GetPlaybackMediaSources_ProbeUsesTechnicalScope(string path, bool hasStream, bool allowProbe, bool expectedProbe)
+        {
+            var oldProviders = BaseItem.ProviderManager;
+            try
+            {
+                var source = new MediaSourceInfo
+                {
+                    Id = Guid.NewGuid().ToString("N"), Path = path, Protocol = MediaProtocol.File,
+                    MediaStreams = hasStream ? [new MediaStream { Type = MediaStreamType.Video }] : []
+                };
+                var video = new Mock<Video> { CallBase = true };
+                video.Object.Id = Guid.Parse(source.Id);
+                video.Object.Path = path;
+                video.Setup(v => v.GetMediaSources(It.IsAny<bool>())).Returns([source]);
+                var providers = new Mock<IProviderManager>(MockBehavior.Strict);
+                providers.Setup(p => p.RefreshSingleItem(video.Object, It.Is<MetadataRefreshOptions>(o => o.RefreshMediaInfoOnly && o.EnableRemoteContentProbe && o.ImageRefreshMode == MetadataRefreshMode.None), It.IsAny<CancellationToken>()))
+                    .Callback(() => source.MediaStreams = [new MediaStream { Type = MediaStreamType.Video }])
+                    .ReturnsAsync(ItemUpdateType.MediaInfo);
+                BaseItem.ProviderManager = providers.Object;
+                _mediaSourceManager.AddParts([]);
+                await _mediaSourceManager.GetPlaybackMediaSources(video.Object, null, allowProbe, false, TestContext.Current.CancellationToken);
+                providers.Verify(p => p.RefreshSingleItem(video.Object, It.IsAny<MetadataRefreshOptions>(), It.IsAny<CancellationToken>()), expectedProbe ? Times.Once() : Times.Never());
+            }
+            finally
+            {
+                BaseItem.ProviderManager = oldProviders;
+            }
         }
 
         private void SetupUserDataBatch(Dictionary<Guid, UserItemData> userData)

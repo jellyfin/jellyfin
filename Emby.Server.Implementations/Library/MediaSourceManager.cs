@@ -189,6 +189,8 @@ namespace Emby.Server.Implementations.Library
                     new MetadataRefreshOptions(_directoryService)
                     {
                         EnableRemoteContentProbe = true,
+                        RefreshMediaInfoOnly = true,
+                        ImageRefreshMode = MetadataRefreshMode.None,
                         MetadataRefreshMode = MetadataRefreshMode.FullRefresh
                     },
                     cancellationToken).ConfigureAwait(false);
