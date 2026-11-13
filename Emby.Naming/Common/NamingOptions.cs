@@ -374,9 +374,15 @@ namespace Emby.Naming.Common
                     SupportsAbsoluteEpisodeNumbers = true
                 },
 
-                // Not a Kodi rule as well, but below rule also causes false positives for triple-digit episode names
-                // [bar] Foo - 1 [baz] special case of below expression to prevent false positives with digits in the series name
+                // Not a Kodi rule as well, but rule two below also causes false positives for triple-digit episode names
+                // [bar] Foo - 1 [baz] special case of two below expression to prevent false positives with digits in the series name
                 new EpisodeExpression(@".*[\\\/]?.*?(\[.*?\])+.*?(?<seriesname>[-\w\s]+?)[\s_]*-[\s_]*(?<epnumber>[0-9]+).*$")
+                {
+                    IsNamed = true
+                },
+
+                // Not a Kodi rule but rule below causes incorrect match for /SeriesName/Season 1/01 - EpTitleWithANumber
+                new EpisodeExpression(@"(?:[\\\/](?<seriesname>[^\\\/]*))?[\\\/]?[Ss](?:eason)?\s*(?<seasonnumber>[0-9]+)[\\\/](?<epnumber>[0-9]+).*$")
                 {
                     IsNamed = true
                 },
