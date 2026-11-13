@@ -27,6 +27,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LibraryTaskScheduler;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
@@ -1978,7 +1979,8 @@ namespace MediaBrowser.Controller.Entities
 
             var itemsResult = GetItemList(query);
 
-            // Sweep through recursively and update status
+            // Sweep through recursively and collect the new status
+            var changes = new List<(BaseItem Item, UserItemData UserData)>(itemsResult.Count);
             foreach (var item in itemsResult)
             {
                 if (item.IsVirtualItem)
@@ -1991,7 +1993,15 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
 
-                item.MarkPlayed(user, datePlayed, resetPosition);
+                changes.Add((item, item.GetPlayedUserData(user, datePlayed, resetPosition)));
+            }
+
+            // One transaction for the whole folder rather than one per item
+            UserDataManager.SaveUserData(user, changes, UserDataSaveReason.TogglePlayed, CancellationToken.None);
+
+            foreach (var (item, _) in changes)
+            {
+                (item as Video)?.PropagatePlayedState(user, true, resetPosition);
             }
         }
 
@@ -2009,10 +2019,19 @@ namespace MediaBrowser.Controller.Entities
                 EnableTotalRecordCount = false
             });
 
-            // Sweep through recursively and update status
+            // Sweep through recursively and collect the new status
+            var changes = new List<(BaseItem Item, UserItemData UserData)>(itemsResult.Count);
             foreach (var item in itemsResult)
             {
-                item.MarkUnplayed(user);
+                changes.Add((item, item.GetUnplayedUserData(user)));
+            }
+
+            UserDataManager.SaveUserData(user, changes, UserDataSaveReason.TogglePlayed, CancellationToken.None);
+
+            foreach (var (item, _) in changes)
+            {
+                // MarkUnplayed always clears the position, so reset the versions too.
+                (item as Video)?.PropagatePlayedState(user, false, true);
             }
         }
 

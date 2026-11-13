@@ -39,6 +39,19 @@ namespace MediaBrowser.Controller.Library
         void SaveUserData(User user, BaseItem item, UpdateUserItemDataDto userDataDto, UserDataSaveReason reason);
 
         /// <summary>
+        /// Saves user data for several items in a single transaction.
+        /// </summary>
+        /// <remarks>
+        /// Each item's rows are written as <see cref="SaveUserData(User, BaseItem, UserItemData, UserDataSaveReason, CancellationToken)"/>
+        /// would write them, and <see cref="UserDataSaved"/> is raised once per item after the transaction commits.
+        /// </remarks>
+        /// <param name="user">The user.</param>
+        /// <param name="changes">The items and the user data to save for each of them. An item should appear at most once.</param>
+        /// <param name="reason">The reason.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        void SaveUserData(User user, IReadOnlyList<(BaseItem Item, UserItemData UserData)> changes, UserDataSaveReason reason, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Gets the user data.
         /// </summary>
         /// <param name="user">User to use.</param>
