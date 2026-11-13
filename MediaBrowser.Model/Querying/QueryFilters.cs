@@ -15,6 +15,8 @@ namespace MediaBrowser.Model.Querying
             Genres = Array.Empty<NameGuidPair>();
             AudioLanguages = Array.Empty<NameValuePair>();
             SubtitleLanguages = Array.Empty<NameValuePair>();
+            Years = Array.Empty<int>();
+            OfficialRatings = Array.Empty<string>();
         }
 
         public IReadOnlyList<NameGuidPair> Genres { get; set; }
@@ -24,5 +26,9 @@ namespace MediaBrowser.Model.Querying
         public IReadOnlyList<NameValuePair> AudioLanguages { get; set; }
 
         public IReadOnlyList<NameValuePair> SubtitleLanguages { get; set; }
+
+        public IReadOnlyList<int> Years { get; set; }
+
+        public IReadOnlyList<string> OfficialRatings { get; set; }
     }
 }

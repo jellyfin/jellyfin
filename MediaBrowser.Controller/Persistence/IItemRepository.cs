@@ -149,6 +149,20 @@ public interface IItemRepository
     QueryFiltersLegacy GetQueryFiltersLegacy(InternalItemsQuery filter);
 
     /// <summary>
+    /// Gets the distinct, sorted production years of the matching items.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The production years.</returns>
+    IReadOnlyList<int> GetYears(InternalItemsQuery filter);
+
+    /// <summary>
+    /// Gets the distinct, sorted official ratings of the matching items.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The official ratings.</returns>
+    IReadOnlyList<string> GetOfficialRatings(InternalItemsQuery filter);
+
+    /// <summary>
     /// Gets whether all children of the requested item have been played.
     /// </summary>
     /// <param name="user">The user to check against.</param>

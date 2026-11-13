@@ -82,7 +82,8 @@ public class FilterController : BaseJellyfinApiController
             IncludeItemTypes = includeItemTypes,
             Recursive = true,
             EnableTotalRecordCount = false,
-            AncestorIds = [folder.Id],
+            // Let LibraryManager scope virtual roots to the user's accessible libraries.
+            AncestorIds = folder is UserRootFolder or AggregateFolder ? [] : [folder.Id],
             DtoOptions = new DtoOptions
             {
                 Fields = [],
@@ -160,8 +161,7 @@ public class FilterController : BaseJellyfinApiController
 
         var streamLanguageQuery = new InternalItemsQuery(user)
         {
-            // It's possible that different langauges are only available on alternative versions.
-            // To fetch them all, owned items are included.
+            // Include alternate versions that may have additional languages.
             IncludeOwnedItems = true,
             IncludeItemTypes = includeItemTypes,
             DtoOptions = new DtoOptions
@@ -178,7 +178,7 @@ public class FilterController : BaseJellyfinApiController
             IsSeries = isSeries
         };
 
-        var tagQuery = new InternalItemsQuery(user)
+        var itemQuery = new InternalItemsQuery(user)
         {
             IncludeItemTypes = includeItemTypes,
             DtoOptions = new DtoOptions
@@ -197,22 +197,23 @@ public class FilterController : BaseJellyfinApiController
 
         if ((recursive ?? true) || parentItem is UserView || parentItem is ICollectionFolder)
         {
-            var ancestorIds = parentItem is null ? Array.Empty<Guid>() : new[] { parentItem.Id };
+            // Let LibraryManager scope virtual roots to the user's accessible libraries.
+            Guid[] ancestorIds = parentItem is null or UserRootFolder or AggregateFolder ? [] : [parentItem.Id];
             genreQuery.AncestorIds = ancestorIds;
             streamLanguageQuery.AncestorIds = ancestorIds;
-            tagQuery.AncestorIds = ancestorIds;
+            itemQuery.AncestorIds = ancestorIds;
         }
         else
         {
             genreQuery.Parent = parentItem;
             streamLanguageQuery.Parent = parentItem;
-            tagQuery.Parent = parentItem;
+            itemQuery.Parent = parentItem;
         }
 
         if ((includeItemTypes.Contains(BaseItemKind.Series) || includeItemTypes.Contains(BaseItemKind.Season))
             && !includeItemTypes.Contains(BaseItemKind.Episode))
         {
-            // streams are joined on epsiodes not shows or seasons
+            // Series and season languages come from their episodes.
             streamLanguageQuery.IncludeItemTypes = [.. includeItemTypes, BaseItemKind.Episode];
         }
 
@@ -237,7 +238,9 @@ public class FilterController : BaseJellyfinApiController
             }).ToArray();
         }
 
-        filters.Tags = _libraryManager.GetTagNames(tagQuery);
+        filters.Tags = _libraryManager.GetTagNames(itemQuery);
+        filters.Years = _libraryManager.GetYears(itemQuery);
+        filters.OfficialRatings = _libraryManager.GetOfficialRatings(itemQuery);
 
         if (includeItemTypes.Contains(BaseItemKind.Movie)
             || includeItemTypes.Contains(BaseItemKind.Series)
