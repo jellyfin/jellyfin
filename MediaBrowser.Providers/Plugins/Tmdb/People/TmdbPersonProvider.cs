@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
@@ -124,8 +125,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                     Name = info.Name,
                     HomePageUrl = person.Homepage,
                     Overview = person.Biography,
-                    PremiereDate = person.Birthday?.ToUniversalTime(),
-                    EndDate = person.Deathday?.ToUniversalTime()
+                    PremiereDate = person.Birthday?.ToUtcDate(),
+                    EndDate = person.Deathday?.ToUtcDate()
                 };
 
                 if (!string.IsNullOrWhiteSpace(person.PlaceOfBirth))
