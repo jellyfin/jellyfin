@@ -3479,6 +3479,78 @@ namespace MediaBrowser.Controller.MediaEncoding
                 outHeight.Value);
         }
 
+        /// <summary>
+        /// Gets the graphical subtitle pre-processing filters for hardware overlay filters that scale the
+        /// subtitle themselves (overlay_qsv, overlay_vaapi). The subtitle keeps its probed resolution and only
+        /// the aspect ratio is matched, because scaling packed RGBA in swscale is expensive. The explicit scale
+        /// is a passthrough for frames that already have that size and keeps the hwupload frame size fixed.
+        /// Without a probed subtitle size this falls back to <see cref="GetGraphicalSubPreProcessFilters"/>.
+        /// </summary>
+        /// <param name="videoWidth">Video width.</param>
+        /// <param name="videoHeight">Video height.</param>
+        /// <param name="subtitleWidth">Probed subtitle width.</param>
+        /// <param name="subtitleHeight">Probed subtitle height.</param>
+        /// <param name="requestedWidth">Requested width.</param>
+        /// <param name="requestedHeight">Requested height.</param>
+        /// <param name="requestedMaxWidth">Requested max width.</param>
+        /// <param name="requestedMaxHeight">Requested max height.</param>
+        /// <returns>The filter string.</returns>
+        public static string GetGraphicalSubHwScalePreProcessFilters(
+            int? videoWidth,
+            int? videoHeight,
+            int? subtitleWidth,
+            int? subtitleHeight,
+            int? requestedWidth,
+            int? requestedHeight,
+            int? requestedMaxWidth,
+            int? requestedMaxHeight)
+        {
+            var (outWidth, outHeight) = GetFixedOutputSize(
+                videoWidth,
+                videoHeight,
+                requestedWidth,
+                requestedHeight,
+                requestedMaxWidth,
+                requestedMaxHeight);
+
+            if (!outWidth.HasValue
+                || !outHeight.HasValue
+                || outWidth.Value <= 0
+                || outHeight.Value <= 0
+                || !subtitleWidth.HasValue
+                || !subtitleHeight.HasValue
+                || subtitleWidth.Value <= 0
+                || subtitleHeight.Value <= 0)
+            {
+                return GetGraphicalSubPreProcessFilters(videoWidth, videoHeight, subtitleWidth, subtitleHeight, requestedWidth, requestedHeight, requestedMaxWidth, requestedMaxHeight);
+            }
+
+            // Larger canvases are still scaled down to limit the upload size
+            const int MaxSubtitleHeight = 1080;
+            var subW = subtitleWidth.Value;
+            var subH = subtitleHeight.Value;
+            if (subH > MaxSubtitleHeight)
+            {
+                subW = (int)Math.Round((double)subW * MaxSubtitleHeight / subH);
+                subH = MaxSubtitleHeight;
+            }
+
+            var filters = string.Format(CultureInfo.InvariantCulture, "scale={0}:{1}:fast_bilinear", subW, subH);
+
+            // Same result as the swscale path: keep the full subtitle height, center it and
+            // cut or extend the sides to the video aspect ratio.
+            var videoDar = (double)outWidth.Value / outHeight.Value;
+            var targetW = (int)Math.Round(subH * videoDar);
+            if (Math.Abs(((double)subW / subH) - videoDar) >= 0.01 && targetW != subW)
+            {
+                filters += targetW < subW
+                    ? string.Format(CultureInfo.InvariantCulture, ",crop={0}:{1}", targetW, subH)
+                    : string.Format(CultureInfo.InvariantCulture, ",pad={0}:{1}:(ow-iw)/2:0:black@0", targetW, subH);
+            }
+
+            return filters;
+        }
+
         public static string GetAlphaSrcFilter(
             EncodingJobInfo state,
             int? videoWidth,
@@ -4758,7 +4830,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                     if (hasGraphicalSubs)
                     {
                         // overlay_qsv can handle overlay scaling, setup a smaller height to reduce transfer overhead
-                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, 1080);
+                        var subPreProcFilters = options.EnableHardwareSubtitleScaling
+                            ? GetGraphicalSubHwScalePreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, 1080)
+                            : GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, 1080);
                         subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=bgra");
                     }
@@ -5022,7 +5096,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                     if (hasGraphicalSubs)
                     {
                         // overlay_qsv can handle overlay scaling, setup a smaller height to reduce transfer overhead
-                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, 1080);
+                        var subPreProcFilters = options.EnableHardwareSubtitleScaling
+                            ? GetGraphicalSubHwScalePreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, 1080)
+                            : GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, 1080);
                         subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=bgra");
                     }
@@ -5323,7 +5399,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                     if (hasGraphicalSubs)
                     {
                         // overlay_vaapi can handle overlay scaling, setup a smaller height to reduce transfer overhead
-                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, 1080);
+                        var subPreProcFilters = options.EnableHardwareSubtitleScaling
+                            ? GetGraphicalSubHwScalePreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, 1080)
+                            : GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, 1080);
                         subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=bgra");
                     }
