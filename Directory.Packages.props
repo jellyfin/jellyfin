@@ -15,7 +15,6 @@
     <PackageVersion Include="CommandLineParser" Version="2.9.1" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <PackageVersion Include="Diacritics" Version="4.1.8" />
-    <PackageVersion Include="DiscUtils.Udf" Version="0.16.13" />
     <PackageVersion Include="DotNet.Glob" Version="3.1.3" />
     <PackageVersion Include="FsCheck.Xunit.v3" Version="3.3.4" />
     <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="8.3.1.5" />
@@ -25,6 +24,7 @@
     <PackageVersion Include="Jellyfin.XmlTv" Version="10.12.0-pre1" />
     <PackageVersion Include="libse" Version="4.0.12" />
     <PackageVersion Include="LrcParser" Version="2025.623.0" />
+    <PackageVersion Include="LTRData.DiscUtils.Udf" Version="1.0.90" />
     <PackageVersion Include="MetaBrainz.MusicBrainz" Version="8.0.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="10.0.14" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.14" />
