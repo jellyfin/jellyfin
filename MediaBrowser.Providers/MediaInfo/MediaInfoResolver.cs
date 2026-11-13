@@ -16,6 +16,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Providers.Lyric;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.MediaInfo
@@ -309,6 +310,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var externalPathInfos = new List<ExternalPathParserResult>();
             ReadOnlySpan<char> prefix = audio.FileNameWithoutExtension;
+            var lyricMatches = _type == DlnaProfileType.Lyric
+                ? LyricSourcePaths.Find(audio.Path, directoryService.GetFiles(folder), _namingOptions.LyricFileExtensions.Concat(AdditionalFileExtensions).ToArray()).ToHashSet(StringComparer.Ordinal)
+                : [];
             foreach (var file in files)
             {
                 var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file.AsSpan());
@@ -325,6 +329,11 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         externalPathInfos.Add(externalPathInfo);
                     }
+                }
+                else if (lyricMatches.Contains(file))
+                {
+                    var externalPathInfo = _externalPathParser.ParseFile(file, string.Empty, AdditionalFileExtensions);
+                    if (externalPathInfo is not null) externalPathInfos.Add(externalPathInfo);
                 }
             }
 

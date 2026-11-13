@@ -62,6 +62,18 @@ public partial class LrcLyricParser : ILyricParser
             }
 
             List<LyricLine> lyricList = [];
+            var nextDistinct = new int[sortedLyricData.Count];
+            var nextIndex = -1;
+            for (var i = sortedLyricData.Count - 1; i >= 0; i--)
+            {
+                if (i + 1 < sortedLyricData.Count && sortedLyricData[i + 1].StartTime > sortedLyricData[i].StartTime)
+                {
+                    nextIndex = i + 1;
+                }
+
+                nextDistinct[i] = nextIndex;
+            }
+
             for (var lineIndex = 0; lineIndex < sortedLyricData.Count; lineIndex++)
             {
                 var lyric = sortedLyricData[lineIndex];
@@ -73,9 +85,9 @@ public partial class LrcLyricParser : ILyricParser
                 }
 
                 long? lyricEndTicks = null;
-                if (lineIndex + 1 < sortedLyricData.Count)
+                if (nextDistinct[lineIndex] >= 0)
                 {
-                    if (!TimedLyricParserHelpers.TryMilliseconds(sortedLyricData[lineIndex + 1].StartTime, out var nextLineStartTicks)
+                    if (!TimedLyricParserHelpers.TryMilliseconds(sortedLyricData[nextDistinct[lineIndex]].StartTime, out var nextLineStartTicks)
                         || !TimedLyricParserHelpers.TryApplyOffset(nextLineStartTicks, offset, out nextLineStartTicks))
                     {
                         return null;

@@ -185,6 +185,7 @@ public partial class TtmlLyricParser : ILyricParser
             tracks.Add(new LyricTrack
             {
                 Type = LyricTrackType.Main,
+                Language = root.Attribute(XNamespace.Xml + "lang")?.Value,
                 Lines = mainLines.OrderBy(i => i.Start).ToArray()
             });
         }
