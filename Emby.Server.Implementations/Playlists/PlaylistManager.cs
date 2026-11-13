@@ -640,7 +640,8 @@ namespace Emby.Server.Implementations.Playlists
         public async Task AddUserToShares(PlaylistUserUpdateRequest request)
         {
             var userId = request.UserId;
-            var playlist = GetPlaylistForUser(request.Id, userId);
+            var playlistOwnerUserId = request.PlaylistOwnerUserId;
+            var playlist = GetPlaylistForUser(request.Id, playlistOwnerUserId);
             var shares = playlist.Shares.ToList();
             var existingUserShare = shares.FirstOrDefault(s => s.UserId.Equals(userId));
             if (existingUserShare is not null)
