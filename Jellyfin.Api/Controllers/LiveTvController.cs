@@ -1098,12 +1098,24 @@ public class LiveTvController : BaseJellyfinApiController
     /// <param name="newDevicesOnly">Only discover new tuners.</param>
     /// <response code="200">Tuners returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the tuners.</returns>
-    [HttpGet("Tuners/Discvover", Name = "DiscvoverTuners")]
     [HttpGet("Tuners/Discover")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public IAsyncEnumerable<TunerHostInfo> DiscoverTuners([FromQuery] bool newDevicesOnly = false)
         => _tunerHostManager.DiscoverTuners(newDevicesOnly);
+
+    /// <summary>
+    /// Discover tuners.
+    /// </summary>
+    /// <param name="newDevicesOnly">Only discover new tuners.</param>
+    /// <response code="200">Tuners returned.</response>
+    /// <returns>An <see cref="OkResult"/> containing the tuners.</returns>
+    [HttpGet("Tuners/Discvover")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [ProducesResponseType(StatusCodes.Status308PermanentRedirect)]
+    [Obsolete("Use DiscoverTuners")]
+    public IAsyncEnumerable<TunerHostInfo> DiscvoverTuners([FromQuery] bool newDevicesOnly = false)
+        => DiscoverTuners(newDevicesOnly);
 
     /// <summary>
     /// Gets a live tv recording stream.
