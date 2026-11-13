@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -22,6 +23,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Querying;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -69,6 +71,46 @@ public class BaseItemTests
         {
             BaseItem.LibraryManager = previousLibrary;
             BaseItem.ItemRepository = previousRepository;
+            BaseItem.Logger = previousLogger;
+            BaseItem.MediaSourceManager = previousMediaSourceManager;
+        }
+    }
+
+    [Theory]
+    [InlineData(CollectionType.playlists, LogLevel.Debug)]
+    [InlineData(null, LogLevel.Warning)]
+    public async Task ValidateChildren_EmptyTopLevelFolder_SkipsAndLogsAtExpectedLevel(CollectionType? collectionType, LogLevel expectedLevel)
+    {
+        var previousLogger = BaseItem.Logger;
+        var previousMediaSourceManager = BaseItem.MediaSourceManager;
+        var logger = new Mock<ILogger<BaseItem>>();
+        var directory = new Mock<IDirectoryService>();
+        directory.Setup(d => d.IsAccessible(It.IsAny<string>())).Returns(false);
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        mediaSourceManager.Setup(x => x.GetPathProtocol(It.IsAny<string>())).Returns(MediaProtocol.File);
+        try
+        {
+            BaseItem.Logger = logger.Object;
+            BaseItem.MediaSourceManager = mediaSourceManager.Object;
+            var folder = new TestPluginFolder(collectionType)
+            {
+                Id = Guid.NewGuid(),
+                Path = "/config/data/playlists"
+            };
+            await folder.ValidateChildren(new Progress<double>(), new MetadataRefreshOptions(directory.Object), recursive: false, cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+            Assert.False(folder.EnumerationAttempted);
+            logger.Verify(
+                x => x.Log(
+                    expectedLevel,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, _) => v.ToString()!.Contains("is inaccessible or empty", StringComparison.Ordinal)),
+                    null,
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
+        }
+        finally
+        {
             BaseItem.Logger = previousLogger;
             BaseItem.MediaSourceManager = previousMediaSourceManager;
         }
@@ -777,6 +819,19 @@ public class BaseItemTests
             }
 
             throw new IOException("Simulated directory read failure");
+        }
+    }
+
+    private sealed class TestPluginFolder(CollectionType? collectionType) : BasePluginFolder
+    {
+        public bool EnumerationAttempted { get; private set; }
+
+        public override CollectionType? CollectionType => collectionType;
+
+        protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
+        {
+            EnumerationAttempted = true;
+            return [];
         }
     }
 }
