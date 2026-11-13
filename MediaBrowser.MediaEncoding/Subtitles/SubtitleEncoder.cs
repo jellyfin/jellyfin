@@ -609,7 +609,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 foreach (var subtitleStream in subtitleStreams)
                 {
-                    if (!subtitleStream.Path.Equals(mksFile, StringComparison.OrdinalIgnoreCase))
+                    if (!string.Equals(subtitleStream.Path, mksFile, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
