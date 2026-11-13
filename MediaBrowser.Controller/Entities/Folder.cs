@@ -763,7 +763,9 @@ namespace MediaBrowser.Controller.Entities
 
                 if (validChildrenNeedGeneration)
                 {
-                    validChildren = Children.ToList();
+                    // A folder with no filesystem path skips the resolver step that fills
+                    // accessibleChildren, so every stored child counts as accessible.
+                    accessibleChildren = Children.ToList();
                     validChildrenNeedGeneration = false;
                 }
 
@@ -803,7 +805,7 @@ namespace MediaBrowser.Controller.Entities
                     if (validChildrenNeedGeneration)
                     {
                         Children = null; // invalidate cached children.
-                        validChildren = Children.ToList();
+                        accessibleChildren = Children.ToList();
                     }
 
                     await RefreshMetadataRecursive(accessibleChildren, refreshOptions, recursive, innerProgress, cancellationToken).ConfigureAwait(false);
