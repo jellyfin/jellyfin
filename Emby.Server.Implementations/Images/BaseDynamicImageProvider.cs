@@ -296,7 +296,10 @@ namespace Emby.Server.Implementations.Images
             if (!string.IsNullOrEmpty(path))
             {
                 var modificationDate = FileSystem.GetLastWriteTimeUtc(path);
-                return image.DateModified != modificationDate;
+
+                // Stores such as PostgreSQL keep only microseconds, so an exact comparison would treat every
+                // unchanged image as modified.
+                return Math.Abs((image.DateModified - modificationDate).TotalSeconds) > 1;
             }
 
             return false;
