@@ -31,6 +31,7 @@ public class EncodingOptions
         VaapiDevice = "/dev/dri/renderD128";
         QsvDevice = string.Empty;
         EnableTonemapping = false;
+        EnableHdrTranscoding = false;
         EnableVppTonemapping = false;
         EnableVideoToolboxTonemapping = false;
         TonemappingAlgorithm = TonemappingAlgorithm.bt2390;
@@ -154,6 +155,13 @@ public class EncodingOptions
     /// Gets or sets a value indicating whether tonemapping is enabled.
     /// </summary>
     public bool EnableTonemapping { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether an HDR source keeps its HDR when it has to be
+    /// transcoded (HEVC Main10, 10-bit BT.2020/PQ) instead of being tone-mapped to SDR.
+    /// Only applies when the client says it can display HDR; off means every transcode is SDR.
+    /// </summary>
+    public bool EnableHdrTranscoding { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether VPP tonemapping is enabled.
