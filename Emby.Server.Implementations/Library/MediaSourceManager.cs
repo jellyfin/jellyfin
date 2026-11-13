@@ -972,6 +972,14 @@ namespace Emby.Server.Implementations.Library
             return _openStreams.Values.FirstOrDefault(stream => string.Equals(uniqueId, stream?.UniqueId, StringComparison.OrdinalIgnoreCase));
         }
 
+        /// <inheritdoc />
+        public IReadOnlyList<ILiveStream> GetLiveStreams(Guid channelId)
+        {
+            return _openStreams.Values
+                .Where(stream => stream.ChannelId.Equals(channelId))
+                .ToList();
+        }
+
         public async Task<MediaSourceInfo> GetLiveStream(string id, CancellationToken cancellationToken)
         {
             var result = await GetLiveStreamWithDirectStreamProvider(id, cancellationToken).ConfigureAwait(false);
