@@ -463,15 +463,16 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
         return season;
     }
 
-    private string GetValidSeasonNameForSeries(Series series, string? seasonName, int? seasonNumber)
+    internal string GetValidSeasonNameForSeries(Series series, string? seasonName, int? seasonNumber)
     {
         if (string.IsNullOrEmpty(seasonName))
         {
+            // The name is stored, so it must use the server language rather than that of the request that triggered the refresh.
             seasonName = seasonNumber switch
             {
-                null => _localizationManager.GetLocalizedString("NameSeasonUnknown"),
+                null => _localizationManager.GetServerLocalizedString("NameSeasonUnknown"),
                 0 => LibraryManager.GetLibraryOptions(series).SeasonZeroDisplayName,
-                _ => string.Format(CultureInfo.InvariantCulture, _localizationManager.GetLocalizedString("NameSeasonNumber"), seasonNumber.Value)
+                _ => string.Format(CultureInfo.InvariantCulture, _localizationManager.GetServerLocalizedString("NameSeasonNumber"), seasonNumber.Value)
             };
         }
 
