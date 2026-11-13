@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using J2N.Collections.Generic.Extensions;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -954,6 +955,18 @@ namespace MediaBrowser.Providers.Manager
 
         private async Task<RefreshResult> ExecuteRemoteProviders(MetadataResult<TItemType> temp, string logName, bool replaceData, TIdType id, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, CancellationToken cancellationToken)
         {
+            if (id is not EpisodeInfo)
+            {
+                return await ExecuteRemoteProvidersSinglePart(temp, logName, replaceData, id, providers, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                return await ExecuteRemoteProvidersMultiPart(temp, logName, replaceData, id, providers, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private async Task<RefreshResult> ExecuteRemoteProvidersSinglePart(MetadataResult<TItemType> temp, string logName, bool replaceData, TIdType id, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, CancellationToken cancellationToken)
+        {
             var refreshResult = new RefreshResult();
             var preferredLanguage = id?.MetadataLanguage;
 
@@ -1020,6 +1033,110 @@ namespace MediaBrowser.Providers.Manager
                     refreshResult.ErrorMessage = ex.Message;
                     Logger.LogError(ex, "Error in {Provider} for {Item}", provider.Name, logName);
                 }
+            }
+
+            return refreshResult;
+        }
+
+        private async Task<RefreshResult> ExecuteRemoteProvidersMultiPart(MetadataResult<TItemType> temp, string logName, bool replaceData, TIdType id, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, CancellationToken cancellationToken)
+        {
+            var refreshResult = await ExecuteRemoteProvidersSinglePart(temp, logName, replaceData, id, providers, cancellationToken).ConfigureAwait(false);
+
+            if (id is not EpisodeInfo episodeInfo
+                || !episodeInfo.IndexNumber.HasValue
+                || !episodeInfo.IndexNumberEnd.HasValue
+                || episodeInfo.IndexNumber.Value >= episodeInfo.IndexNumberEnd.Value
+                || refreshResult.Failures > 0)
+            {
+                return refreshResult;
+            }
+
+            int episodeNum = episodeInfo.IndexNumberEnd.Value - episodeInfo.IndexNumber.Value + 1;
+
+            string[] names = new string[episodeNum];
+            names[0] = temp.Item.Name;
+
+            string[] originalTitles = new string[episodeNum];
+            originalTitles[0] = temp.Item.OriginalTitle;
+
+            string[] overviews = new string[episodeNum];
+            overviews[0] = temp.Item.Overview;
+
+            var provodersArray = providers.ToArray();
+
+            var tempItem = CreateNew();
+            var tempMetadataResult = new MetadataResult<TItemType>()
+            {
+                Item = tempItem,
+            };
+
+            var tempEpId = new EpisodeInfo
+            {
+                IndexNumber = episodeInfo.IndexNumber,
+                IndexNumberEnd = null,
+                IsAutomated = episodeInfo.IsAutomated,
+                IsMissingEpisode = episodeInfo.IsMissingEpisode,
+                MetadataCountryCode = episodeInfo.MetadataCountryCode,
+                MetadataLanguage = episodeInfo.MetadataLanguage,
+                Name = null,
+                OriginalTitle = null,
+                ParentIndexNumber = episodeInfo.ParentIndexNumber,
+                Path = null,
+                PremiereDate = null,
+                SeasonProviderIds = episodeInfo.SeasonProviderIds,
+                SeriesProviderIds = episodeInfo.SeriesProviderIds,
+                SeriesDisplayOrder = episodeInfo.SeriesDisplayOrder,
+                Year = null,
+            };
+            var tempId = tempEpId as TIdType;
+
+            for (int i = 1; i < episodeNum; i++)
+            {
+                tempItem.Name = null;
+                tempItem.OriginalTitle = null;
+                tempItem.Overview = null;
+
+                tempId.ProviderIds = [];
+                tempId.IndexNumber++;
+
+                var tmpRefreshResult = await ExecuteRemoteProvidersSinglePart(tempMetadataResult, logName, replaceData, tempId, provodersArray, cancellationToken).ConfigureAwait(false);
+
+                if (tmpRefreshResult.Failures > 0)
+                {
+                    refreshResult.Failures = tmpRefreshResult.Failures;
+                    refreshResult.ErrorMessage = tmpRefreshResult.ErrorMessage;
+                    break;
+                }
+
+                names[i] = tempItem.Name;
+                originalTitles[i] = tempItem.OriginalTitle;
+                overviews[i] = tempItem.Overview;
+            }
+
+            var item = temp.Item;
+            if (names.Any(s => !string.IsNullOrWhiteSpace(s)))
+            {
+                item.Name = string.Join(" / ", names);
+            }
+
+            if (originalTitles.Any(s => !string.IsNullOrWhiteSpace(s)))
+            {
+                item.OriginalTitle = string.Join(" / ", originalTitles);
+            }
+
+            if (overviews.Any(s => !string.IsNullOrWhiteSpace(s)))
+            {
+                item.Overview = string.Join(" / ", overviews);
+            }
+
+            foreach (var genre in tempItem.Genres)
+            {
+                item.AddGenre(genre);
+            }
+
+            foreach (var person in tempMetadataResult.People)
+            {
+                temp.AddPerson(person);
             }
 
             return refreshResult;
