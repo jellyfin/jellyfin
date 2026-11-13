@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -21,13 +22,13 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Helpers;
@@ -44,6 +45,7 @@ public class MediaInfoHelper
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly ILogger<MediaInfoHelper> _logger;
     private readonly INetworkManager _networkManager;
+    private readonly IEnumerable<IStreamProvider> _streamProviders;
     private readonly IDeviceManager _deviceManager;
     private readonly IServerApplicationHost _appHost;
 
@@ -57,6 +59,7 @@ public class MediaInfoHelper
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{MediaInfoHelper}"/> interface.</param>
     /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
+    /// <param name="streamProviders">Instance of the <see cref="IEnumerable{IStreamProvider}"/> interface.</param>
     /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
     /// <param name="appHost">Instance of the <see cref="IServerApplicationHost"/> interface.</param>
     public MediaInfoHelper(
@@ -67,6 +70,7 @@ public class MediaInfoHelper
         IServerConfigurationManager serverConfigurationManager,
         ILogger<MediaInfoHelper> logger,
         INetworkManager networkManager,
+        IEnumerable<IStreamProvider> streamProviders,
         IDeviceManager deviceManager,
         IServerApplicationHost appHost)
     {
@@ -77,6 +81,7 @@ public class MediaInfoHelper
         _serverConfigurationManager = serverConfigurationManager;
         _logger = logger;
         _networkManager = networkManager;
+        _streamProviders = streamProviders;
         _deviceManager = deviceManager;
         _appHost = appHost;
     }
@@ -200,6 +205,12 @@ public class MediaInfoHelper
         bool alwaysBurnInSubtitleWhenTranscoding,
         IPAddress ipAddress)
     {
+        if (item.MediaType == MediaType.Book)
+        {
+            SetBookPlaybackData(item, mediaSource, profile, claimsPrincipal, playSessionId);
+            return;
+        }
+
         var streamBuilder = new StreamBuilder(_mediaEncoder, _logger);
 
         var options = new MediaOptions
@@ -356,6 +367,43 @@ public class MediaInfoHelper
                 mediaSource.Id,
                 attachment.Index);
         }
+    }
+
+    /// <summary>
+    /// Determines the playback method for a book media source and returns a progressive stream.
+    /// </summary>
+    /// <param name="item">The book item.</param>
+    /// <param name="mediaSource">Media source information.</param>
+    /// <param name="deviceProfile">Device profile.</param>
+    /// <param name="claimsPrincipal">Current claims principal.</param>
+    /// <param name="playSessionId">Play session ID.</param>
+    private void SetBookPlaybackData(
+        BaseItem item,
+        MediaSourceInfo mediaSource,
+        DeviceProfile deviceProfile,
+        ClaimsPrincipal claimsPrincipal,
+        string playSessionId)
+    {
+        var provider = _streamProviders.FirstOrDefault(p => p.StreamProtocol == MediaStreamProtocol.http && p.Supports(item, deviceProfile));
+        if (provider is not null)
+        {
+            mediaSource.SupportsTranscoding = true;
+            mediaSource.TranscodingUrl = GetProgressiveStreamUrl(playSessionId, claimsPrincipal.GetToken());
+            mediaSource.TranscodingContainer = provider.StreamContainer;
+        }
+    }
+
+    // TODO merge with MediaBrowser.Model.Dlna.StreamInfo.ToUrl
+    private static string GetProgressiveStreamUrl(string playSessionId, string? accessToken)
+    {
+        var url = $"Stream/Progressive?playSessionId={Uri.EscapeDataString(playSessionId)}";
+
+        if (!string.IsNullOrEmpty(accessToken))
+        {
+            url += $"&ApiKey={Uri.EscapeDataString(accessToken)}";
+        }
+
+        return url;
     }
 
     /// <summary>
