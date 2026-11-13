@@ -15,6 +15,7 @@ using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -203,45 +204,18 @@ namespace MediaBrowser.Providers.MediaInfo
             if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
             {
                 var people = new List<PersonInfo>();
-                string[]? albumArtists = null;
+                string? albumArtistsTagString = null;
+                string? artistsTagString = null;
                 if (libraryOptions.PreferNonstandardArtistsTag)
                 {
-                    TryGetSanitizedAdditionalFields(track, "ALBUMARTISTS", out var albumArtistsTagString);
-                    if (albumArtistsTagString is not null)
-                    {
-                        albumArtists = albumArtistsTagString.Split(InternalValueSeparator);
-                    }
+                    TryGetSanitizedAdditionalFields(track, "ALBUMARTISTS", out albumArtistsTagString);
+                    TryGetSanitizedAdditionalFields(track, "ARTISTS", out artistsTagString);
                 }
 
-                if (albumArtists is null || albumArtists.Length == 0)
-                {
-                    albumArtists = string.IsNullOrEmpty(trackAlbumArtist) ? [] : trackAlbumArtist.Split(InternalValueSeparator);
-                }
+                var albumArtists = SplitTagValuesWithFallback(albumArtistsTagString, trackAlbumArtist, libraryOptions);
+                var performers = SplitTagValuesWithFallback(artistsTagString, trackArist, libraryOptions);
 
-                if (libraryOptions.UseCustomTagDelimiters)
-                {
-                    albumArtists = albumArtists.SelectMany(a => SplitWithCustomDelimiter(a, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
-                }
-
-                string[]? performers = null;
-                if (libraryOptions.PreferNonstandardArtistsTag)
-                {
-                    TryGetSanitizedAdditionalFields(track, "ARTISTS", out var artistsTagString);
-                    if (artistsTagString is not null)
-                    {
-                        performers = artistsTagString.Split(InternalValueSeparator);
-                    }
-                }
-
-                if (performers is null || performers.Length == 0)
-                {
-                    performers = string.IsNullOrEmpty(trackArist) ? [] : trackArist.Split(InternalValueSeparator);
-                }
-
-                if (libraryOptions.UseCustomTagDelimiters)
-                {
-                    performers = performers.SelectMany(p => SplitWithCustomDelimiter(p, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
-                }
+                var composers = SplitTagValues(trackComposer, libraryOptions);
 
                 var isAudioBook = audio is AudioBook;
 
@@ -269,7 +243,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     // Composer tag = Narrator (Audiobookshelf and other tools use Composer for narrator)
                     if (!string.IsNullOrWhiteSpace(trackComposer))
                     {
-                        foreach (var composer in trackComposer.Split(InternalValueSeparator))
+                        foreach (var composer in composers)
                         {
                             if (!string.IsNullOrWhiteSpace(composer))
                             {
@@ -324,7 +298,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                     if (!string.IsNullOrWhiteSpace(trackComposer))
                     {
-                        foreach (var composer in trackComposer.Split(InternalValueSeparator))
+                        foreach (var composer in composers)
                         {
                             if (!string.IsNullOrWhiteSpace(composer))
                             {
@@ -588,7 +562,38 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private List<string> SplitWithCustomDelimiter(string val, char[] tagDelimiters, string[] whitelist)
+        /// <summary>
+        /// Splits a tag value into its individual values, using the library's custom tag delimiters when enabled.
+        /// </summary>
+        /// <param name="value">The tag value.</param>
+        /// <param name="libraryOptions">The library options.</param>
+        /// <returns>The individual values.</returns>
+        internal static string[] SplitTagValues(string? value, LibraryOptions libraryOptions)
+        {
+            var values = string.IsNullOrEmpty(value) ? [] : value.Split(InternalValueSeparator);
+
+            if (libraryOptions.UseCustomTagDelimiters)
+            {
+                values = values.SelectMany(v => SplitWithCustomDelimiter(v, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
+            }
+
+            return values;
+        }
+
+        /// <summary>
+        /// Splits the preferred tag value, falling back to another tag when the preferred one yields no values.
+        /// </summary>
+        /// <param name="preferredValue">The preferred tag value, e.g. the non-standard ARTISTS tag.</param>
+        /// <param name="fallbackValue">The tag value to use when the preferred one is missing or empty.</param>
+        /// <param name="libraryOptions">The library options.</param>
+        /// <returns>The individual values.</returns>
+        internal static string[] SplitTagValuesWithFallback(string? preferredValue, string? fallbackValue, LibraryOptions libraryOptions)
+        {
+            var values = SplitTagValues(preferredValue, libraryOptions);
+            return values.Length > 0 ? values : SplitTagValues(fallbackValue, libraryOptions);
+        }
+
+        private static List<string> SplitWithCustomDelimiter(string val, char[] tagDelimiters, string[] whitelist)
         {
             var items = new List<string>();
             var temp = val;
