@@ -68,7 +68,7 @@ public sealed class ArtistNameLookupTests : SqliteDbTestFixture
         var manager = CreateLibraryManager(lookup);
         _recorder.Commands.Clear();
 
-        Assert.Equal(artistId, manager.GetArtist(requestedName).Id);
+        Assert.Equal<Guid?>(artistId, manager.GetArtist(requestedName)?.Id);
         var query = Assert.Single(_recorder.Commands, c => c.Sql.Contains("\"CleanName\" =", StringComparison.Ordinal));
         Assert.Contains(Explain(query), line => line.Contains("IX_BaseItems_Type_CleanName (Type=? AND CleanName=?)", StringComparison.Ordinal));
         Assert.Equal(artistId, Assert.Single(manager.GetArtists([requestedName])[requestedName]).Id);
@@ -107,7 +107,7 @@ public sealed class ArtistNameLookupTests : SqliteDbTestFixture
             context.SaveChanges();
         }
 
-        Assert.Equal(artistId, CreateLibraryManager(lookup).GetArtist("Bjork").Id);
+        Assert.Equal<Guid?>(artistId, CreateLibraryManager(lookup).GetArtist("Bjork")?.Id);
     }
 
     private ServerLibraryManager CreateLibraryManager(ItemTypeLookup lookup)

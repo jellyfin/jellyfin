@@ -182,17 +182,8 @@ public class ArtistsController : BaseJellyfinApiController
         // Studios
         if (studios.Length != 0)
         {
-            query.StudioIds = studios.Select(i =>
-            {
-                try
-                {
-                    return _libraryManager.GetStudio(i);
-                }
-                catch
-                {
-                    return null;
-                }
-            }).Where(i => i is not null).Select(i => i!.Id).ToArray();
+            // An unknown name keeps the filter, so it matches nothing instead of everything
+            query.StudioIds = studios.Select(_libraryManager.GetStudioId).ToArray();
         }
 
         query.ApplyFilters(filters);
@@ -336,17 +327,8 @@ public class ArtistsController : BaseJellyfinApiController
         // Studios
         if (studios.Length != 0)
         {
-            query.StudioIds = studios.Select(i =>
-            {
-                try
-                {
-                    return _libraryManager.GetStudio(i);
-                }
-                catch
-                {
-                    return null;
-                }
-            }).Where(i => i is not null).Select(i => i!.Id).ToArray();
+            // An unknown name keeps the filter, so it matches nothing instead of everything
+            query.StudioIds = studios.Select(_libraryManager.GetStudioId).ToArray();
         }
 
         query.ApplyFilters(filters);
@@ -362,9 +344,12 @@ public class ArtistsController : BaseJellyfinApiController
     /// <param name="name">Studio name.</param>
     /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
     /// <response code="200">Artist returned.</response>
-    /// <returns>An <see cref="OkResult"/> containing the artist.</returns>
+    /// <response code="404">Artist not found.</response>
+    /// <returns>An <see cref="OkResult"/> containing the artist on success,
+    /// or a <see cref="NotFoundResult"/> if the artist was not found.</returns>
     [HttpGet("{name}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Obsolete("Use GetPerson")]
     public ActionResult<BaseItemDto> GetArtistByName([FromRoute, Required] string name, [FromQuery] Guid? userId)
     {
@@ -372,6 +357,10 @@ public class ArtistsController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions();
 
         var item = _libraryManager.GetArtist(name, dtoOptions);
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         if (!userId.IsNullOrEmpty())
         {
