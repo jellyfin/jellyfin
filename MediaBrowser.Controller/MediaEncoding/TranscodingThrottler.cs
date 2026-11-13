@@ -19,7 +19,9 @@ public class TranscodingThrottler : IDisposable
     private readonly IFileSystem _fileSystem;
     private readonly IMediaEncoder _mediaEncoder;
     private Timer? _timer;
-    private bool _isPaused;
+
+    // Written from the throttler's timer callback, read from the progress reporting thread.
+    private volatile bool _isPaused;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TranscodingThrottler"/> class.
@@ -37,6 +39,11 @@ public class TranscodingThrottler : IDisposable
         _fileSystem = fileSystem;
         _mediaEncoder = mediaEncoder;
     }
+
+    /// <summary>
+    /// Gets a value indicating whether the transcode is currently paused (throttled).
+    /// </summary>
+    public bool IsPaused => _isPaused;
 
     /// <summary>
     /// Start timer.
