@@ -62,9 +62,6 @@ public class ArtistsValidator
         var count = names.Count;
         var refreshed = 0;
 
-        var liveIds = new HashSet<Guid>();
-        var unresolved = 0;
-
         foreach (var name in names)
         {
             try
@@ -78,11 +75,8 @@ public class ArtistsValidator
                 // Fall back to GetArtist if not found (creates new item if needed)
                 item ??= _libraryManager.GetArtist(name);
 
-                // A name with no item is nothing to refresh, and nothing to keep alive either.
                 if (item is not null)
                 {
-                    liveIds.Add(item.Id);
-
                     var isNew = !existingArtistIds.Contains(item.Id);
                     var neverRefreshed = item.DateLastRefreshed == default;
 
@@ -99,7 +93,6 @@ public class ArtistsValidator
             }
             catch (Exception ex)
             {
-                unresolved++;
                 _logger.LogError(ex, "Error refreshing {ArtistName}", name);
             }
 
@@ -113,26 +106,15 @@ public class ArtistsValidator
 
         _logger.LogInformation("Refreshed metadata for {RefreshedCount} new artists out of {TotalCount} total", refreshed, count);
 
-        // Every name that threw is a name whose artist is missing from the live set, and deleting against
-        // a live set with holes in it deletes artists the library still refers to. Leave the sweep to a
-        // run that got a clean read of them.
-        if (unresolved > 0)
-        {
-            _logger.LogWarning(
-                "Not removing dead artists: {Count} of {TotalCount} names could not be resolved this run",
-                unresolved,
-                count);
-
-            progress.Report(100);
-            return;
-        }
-
+        // Keyed on the credits rather than on the names above: two artists can share a name, and
+        // the one a name lookup does not return is still credited.
         var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
         {
             IncludeItemTypes = [BaseItemKind.MusicArtist],
+            IsDeadArtist = true,
             IsLocked = false
         }).OfType<MusicArtist>()
-        .Where(item => item.IsAccessedByName && !liveIds.Contains(item.Id))
+        .Where(item => item.IsAccessedByName)
         .ToList();
 
         foreach (var item in deadEntities)
