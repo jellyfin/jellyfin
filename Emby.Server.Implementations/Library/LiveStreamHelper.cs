@@ -1,7 +1,6 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -101,21 +100,6 @@ namespace Emby.Server.Implementations.Library
             }
 
             var mediaStreams = mediaInfo.MediaStreams;
-
-            if (!string.IsNullOrEmpty(cacheKey))
-            {
-                var newList = new List<MediaStream>();
-                newList.AddRange(mediaStreams.Where(i => i.Type == MediaStreamType.Video).Take(1));
-                newList.AddRange(mediaStreams.Where(i => i.Type == MediaStreamType.Audio).Take(1));
-
-                foreach (var stream in newList)
-                {
-                    stream.Index = -1;
-                    stream.Language = null;
-                }
-
-                mediaStreams = newList;
-            }
 
             _logger.LogInformation("Live tv media info probe took {0} seconds", (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture));
 
