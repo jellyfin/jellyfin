@@ -214,6 +214,11 @@ public class LibraryStructureController : BaseJellyfinApiController
         {
             CollectionFolder.OnCollectionFolderChange();
 
+            // The old folder is gone, so its item has to go with it before anything reads the library
+            // list again. refreshLibrary only says whether a scan should follow, so a rename that does
+            // not want one (the setup wizard renames with refreshLibrary=false) still has to clean up
+            await _libraryManager.ValidateTopLibraryFolders(CancellationToken.None, true).ConfigureAwait(false);
+
             _ = Task.Run(() => RefreshAfterRenameAsync(newPath, refreshLibrary));
         }
 
