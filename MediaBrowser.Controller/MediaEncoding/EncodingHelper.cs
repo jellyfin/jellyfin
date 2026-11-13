@@ -3081,6 +3081,31 @@ namespace MediaBrowser.Controller.MediaEncoding
             videoRequest.MaxWidth = videoRequest.MaxWidth ?? videoRequest.Width;
             videoRequest.MaxHeight = videoRequest.MaxHeight ?? videoRequest.Height;
 
+            var inW = state.VideoStream?.Width;
+            var inH = state.VideoStream?.Height;
+            if (inW > 0 && inH > 0)
+            {
+                // check if video is rotated
+                var rotation = state.VideoStream?.Rotation ?? 0;
+                var swapWAndH = Math.Abs(rotation) is 90 or 270;
+                var swpInW = swapWAndH ? inH : inW;
+                var swpInH = swapWAndH ? inW : inH;
+
+                // for portrait video, also limit height if only MaxWidth is set
+                if (swpInH > swpInW && videoRequest.MaxWidth.HasValue)
+                {
+                    if (!videoRequest.MaxHeight.HasValue)
+                    {
+                        videoRequest.MaxHeight = videoRequest.MaxWidth;
+                    }
+                    else if (videoRequest.MaxWidth.Value > videoRequest.MaxHeight.Value)
+                    {
+                        // swap max width and height for portrait
+                        (videoRequest.MaxWidth, videoRequest.MaxHeight) = (videoRequest.MaxHeight, videoRequest.MaxWidth);
+                    }
+                }
+            }
+
             videoRequest.Width = null;
             videoRequest.Height = null;
         }

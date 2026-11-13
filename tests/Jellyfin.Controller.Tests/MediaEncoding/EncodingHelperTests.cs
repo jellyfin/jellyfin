@@ -321,6 +321,22 @@ public class EncodingHelperTests
         Assert.Contains("pan=stereo", args, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData(2160, 3840, 0)]
+    [InlineData(3840, 2160, 90)]
+    public void EnforceResolutionLimit_PortraitVideoWithMaxWidthOnly_SetsMaxHeight(int width, int height, int rotation)
+    {
+        var state = BuildState(subtitle: null, deliveryMethod: null);
+        state.VideoStream.Width = width;
+        state.VideoStream.Height = height;
+        state.VideoStream.Rotation = rotation;
+        state.BaseRequest.MaxWidth = 1920;
+
+        CreateHelper().EnforceResolutionLimit(state);
+
+        Assert.Equal(1920, state.BaseRequest.MaxHeight);
+    }
+
     private static EncodingJobInfo BuildAudioState(string audioCodec, int requestedSampleRate, string? outputContainer = null)
     {
         var audio = new MediaStream { Index = 0, Type = MediaStreamType.Audio, Codec = "flac", SampleRate = 96000 };
