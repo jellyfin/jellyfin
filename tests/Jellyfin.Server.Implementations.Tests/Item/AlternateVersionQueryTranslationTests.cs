@@ -13,9 +13,10 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// (BaseItemRepository.TranslateQuery) and the DatePlayed ordering (OrderMapper) translate
 /// and evaluate correctly on the SQLite provider.
 /// </summary>
-public sealed class AlternateVersionQueryTranslationTests : SqliteDbTestFixture
+public abstract class AlternateVersionQueryTranslationTests : DbTestFixture
 {
-    public AlternateVersionQueryTranslationTests()
+    protected AlternateVersionQueryTranslationTests(TestDatabase database)
+        : base(database)
     {
     }
 
@@ -203,4 +204,6 @@ public sealed class AlternateVersionQueryTranslationTests : SqliteDbTestFixture
         ctx.SaveChanges();
         return (user.Id, primary.Id, versionA.Id, versionB.Id);
     }
+
+    public sealed class Sqlite() : AlternateVersionQueryTranslationTests(new SqliteTestDatabase());
 }

@@ -25,7 +25,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library;
 /// libraries: the primary represents the group wherever it is visible, and the version stands in
 /// for it for a user who cannot open the library the primary lives in.
 /// </summary>
-public sealed class SqlSearchProviderTests : SqliteDbTestFixture
+public abstract class SqlSearchProviderTests : DbTestFixture
 {
     private static readonly Guid _movieLibraryId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid _movie4KLibraryId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
@@ -36,7 +36,8 @@ public sealed class SqlSearchProviderTests : SqliteDbTestFixture
     private readonly Mock<ILibraryManager> _libraryManager = new();
     private readonly User _user = new("test", "auth-provider", "reset-provider");
 
-    public SqlSearchProviderTests()
+    protected SqlSearchProviderTests(TestDatabase database)
+        : base(database)
     {
         var itemTypeLookup = new ItemTypeLookup();
         var movieTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie]!;
@@ -131,4 +132,6 @@ public sealed class SqlSearchProviderTests : SqliteDbTestFixture
             PresentationUniqueKey = (primaryVersionId ?? id).ToString("N"),
             PrimaryVersionId = primaryVersionId
         };
+
+    public sealed class Sqlite() : SqlSearchProviderTests(new SqliteTestDatabase());
 }

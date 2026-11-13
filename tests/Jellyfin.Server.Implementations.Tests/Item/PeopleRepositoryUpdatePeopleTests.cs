@@ -13,13 +13,14 @@ using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
-public sealed class PeopleRepositoryUpdatePeopleTests : SqliteDbTestFixture
+public abstract class PeopleRepositoryUpdatePeopleTests : DbTestFixture
 {
     private static readonly Guid _itemId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 
     private readonly PeopleRepository _repository;
 
-    public PeopleRepositoryUpdatePeopleTests()
+    protected PeopleRepositoryUpdatePeopleTests(TestDatabase database)
+        : base(database)
     {
         var itemTypeLookup = new ItemTypeLookup();
 
@@ -224,4 +225,6 @@ public sealed class PeopleRepositoryUpdatePeopleTests : SqliteDbTestFixture
             Role = role
         };
     }
+
+    public sealed class Sqlite() : PeopleRepositoryUpdatePeopleTests(new SqliteTestDatabase());
 }
