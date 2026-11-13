@@ -29,6 +29,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
+        private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioImageProvider"/> class.
@@ -37,12 +38,14 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="mediaEncoder">The media encoder for extracting embedded images.</param>
         /// <param name="config">The server configuration manager for getting image paths.</param>
         /// <param name="fileSystem">The filesystem.</param>
-        public AudioImageProvider(IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, IServerConfigurationManager config, IFileSystem fileSystem)
+        /// <param name="libraryManager">The library manager for getting library options.</param>
+        public AudioImageProvider(IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, IServerConfigurationManager config, IFileSystem fileSystem, ILibraryManager libraryManager)
         {
             _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
             _config = config;
             _fileSystem = fileSystem;
+            _libraryManager = libraryManager;
         }
 
         private string AudioImagesPath => Path.Combine(_config.ApplicationPaths.CachePath, "extracted-audio-images");
@@ -113,7 +116,12 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (item.GetType() == typeof(Audio))
             {
-                if (item.AlbumArtists.Count > 0
+                if (_libraryManager.GetLibraryOptions(item).EnableAlbumSpecificImageExtraction)
+                {
+                    var album = item.AlbumEntity;
+                    filename = (album?.Id ?? item.Id).ToString("N", CultureInfo.InvariantCulture);
+                }
+                else if (item.AlbumArtists.Count > 0
                     && !string.IsNullOrWhiteSpace(item.Album)
                     && !string.IsNullOrWhiteSpace(item.AlbumArtists[0]))
                 {
