@@ -16,9 +16,23 @@ namespace Jellyfin.Providers.Tests.Tmdb
         [InlineData("de-de", "de-DE")]
         [InlineData("en-US", "en-US")]
         [InlineData("de-CH", "de")]
+        [InlineData("es-419", "es-MX")]
         public static void NormalizeLanguage_Valid_Success(string input, string expected)
         {
             Assert.Equal(expected, TmdbUtils.NormalizeLanguage(input));
+        }
+
+        [Theory]
+        [InlineData("es-419", null, "es-MX")]
+        [InlineData("es-419", "", "es-MX")]
+        [InlineData("es-419", "AR", "es-AR")]
+        [InlineData("es-419", "ar", "es-AR")]
+        [InlineData("es-419", "MX", "es-MX")]
+        [InlineData("es-419", "mx", "es-MX")]
+        [InlineData("es-419", "CO", "es-MX")]
+        public static void NormalizeLanguage_WithCountryCode_Success(string input, string? countryCode, string expected)
+        {
+            Assert.Equal(expected, TmdbUtils.NormalizeLanguage(input, countryCode));
         }
 
         [Theory]
@@ -30,12 +44,32 @@ namespace Jellyfin.Providers.Tests.Tmdb
         }
 
         [Theory]
+        [InlineData("es-419", null, "es-MX,null,en")]
+        [InlineData("es-419", "AR", "es-AR,null,en")]
+        [InlineData("en", "US", "en,null")]
+        [InlineData("en-US", "US", "en-US,null,en")]
+        [InlineData("de", "DE", "de,null,en")]
+        [InlineData("de-DE", "DE", "de-DE,null,en")]
+        [InlineData("", null, "null,en")]
+        [InlineData(null, null, "null,en")]
+        public static void GetImageLanguagesParam_Valid_Success(string? preferredLanguage, string? countryCode, string expected)
+        {
+            Assert.Equal(expected, TmdbUtils.GetImageLanguagesParam(preferredLanguage!, countryCode));
+        }
+
+        [Theory]
         // A regional request is only answered with a region when the image contradicts it.
         [InlineData("pt", "BR", "pt-BR", "pt-BR")]
         [InlineData("pt", "PT", "pt-BR", "pt-PT")]
         [InlineData("en", "GB", "en-US", "en-GB")]
         [InlineData("en", "US", "en-US", "en-US")]
         [InlineData("en", null, "en-US", "en-US")]
+        // Latin American Spanish (es-419) considers any non-European Spanish image as matching.
+        [InlineData("es", "MX", "es-419", "es-419")]
+        [InlineData("es", "AR", "es-419", "es-419")]
+        [InlineData("es", null, "es-419", "es-419")]
+        [InlineData("es", "ES", "es-419", "es-ES")]
+        [InlineData("en", "US", "es-419", "en")]
         // TMDb files nearly every image under a region, which must not stop a plain request matching.
         [InlineData("en", "US", "en", "en")]
         [InlineData("pt", "PT", "pt", "pt")]
@@ -44,6 +78,7 @@ namespace Jellyfin.Providers.Tests.Tmdb
         [InlineData("de", "DE", "en-US", "de")]
         // TMDb returns xx rather than an empty string for an image with no text.
         [InlineData("xx", "US", "en-US", "")]
+        [InlineData("xx", "MX", "es-419", "")]
         [InlineData("", "US", "en-US", "")]
         [InlineData(null, null, "en-US", "")]
         public static void GetImageLanguage_Valid_Success(string? imageLanguage, string? imageRegion, string? requestLanguage, string expected)
