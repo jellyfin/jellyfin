@@ -222,7 +222,7 @@ namespace Emby.Server.Implementations.QuickConnect
                     _logger.LogDebug("Removing expired secret.");
                     if (!_authorizedSecrets.TryRemove(secret, out _))
                     {
-                        _logger.LogWarning("Secret already expired".);
+                        _logger.LogWarning("Secret already expired.");
                     }
                 }
             }
