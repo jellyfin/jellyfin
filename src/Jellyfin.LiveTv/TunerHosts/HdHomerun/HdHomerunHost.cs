@@ -67,6 +67,27 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
 
         protected override string ChannelIdPrefix => "hdhr_";
 
+        protected override bool IsStreamTarget(TunerHostInfo host, string streamId)
+        {
+            if (string.IsNullOrEmpty(streamId) || string.IsNullOrWhiteSpace(host?.Url))
+            {
+                return false;
+            }
+
+            string url;
+            try
+            {
+                url = GetApiUrl(host);
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+
+            var urlHash = url.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            return streamId.EndsWith(urlHash, StringComparison.OrdinalIgnoreCase);
+        }
+
         private string GetChannelId(Channels i)
             => ChannelIdPrefix + i.GuideNumber;
 
