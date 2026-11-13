@@ -55,8 +55,9 @@ namespace Jellyfin.Api.Auth.DefaultAuthorizationPolicy
                 return Task.CompletedTask;
             }
 
-            var isInLocalNetwork = _httpContextAccessor.HttpContext is not null
-                                   && _networkManager.IsInLocalNetwork(_httpContextAccessor.HttpContext.GetNormalizedRemoteIP());
+            var httpContext = _httpContextAccessor.HttpContext;
+            var isInLocalNetwork = httpContext is not null
+                                   && _networkManager.IsInLocalNetwork(httpContext.GetNormalizedRemoteIP());
             var user = _userManager.GetUserById(userId);
             if (user is null)
             {
@@ -80,6 +81,11 @@ namespace Jellyfin.Api.Auth.DefaultAuthorizationPolicy
             // It's not great to have this check, but parental schedule must usually be honored except in a few rare cases
             if (requirement.ValidateParentalSchedule && !user.IsParentalScheduleAllowed())
             {
+                if (httpContext is not null)
+                {
+                    httpContext.Response.Headers["X-Application-Error-Code"] = "ParentalControl";
+                }
+
                 context.Fail();
                 return Task.CompletedTask;
             }
