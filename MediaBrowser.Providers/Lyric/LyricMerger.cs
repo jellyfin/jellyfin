@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -335,7 +336,7 @@ internal static partial class LyricMerger
         var result = new StringBuilder(normalized.Length);
         foreach (var rune in normalized.EnumerateRunes())
         {
-            if (Rune.IsLetterOrDigit(rune))
+            if (Rune.IsLetterOrDigit(rune) || Rune.GetUnicodeCategory(rune) is UnicodeCategory.NonSpacingMark or UnicodeCategory.SpacingCombiningMark or UnicodeCategory.EnclosingMark)
             {
                 result.Append(Rune.ToLowerInvariant(rune));
             }

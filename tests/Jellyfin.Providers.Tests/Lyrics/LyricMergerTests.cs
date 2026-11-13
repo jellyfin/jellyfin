@@ -206,4 +206,13 @@ public class LyricMergerTests
         var files = new List<FileSystemMetadata> { new() { FullName = "1. Song.m4a" }, new() { FullName = "2. Song.m4a" }, new() { FullName = "Song.ttml" } };
         Assert.Empty(LyricSourcePaths.Find("1. Song.m4a", files, [".ttml"]));
     }
+
+    [Theory]
+    [InlineData("कल", "कला")]
+    [InlineData("की", "कि")]
+    [InlineData("कु", "कू")]
+    public void KeepsMeaningfulCombiningMarksWhenMatchingOriginalText(string first, string second)
+    {
+        Assert.NotEqual(LyricMerger.Normalize(first), LyricMerger.Normalize(second));
+    }
 }
