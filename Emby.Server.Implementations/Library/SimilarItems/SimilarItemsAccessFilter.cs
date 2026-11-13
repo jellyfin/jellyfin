@@ -16,7 +16,8 @@ internal static class SimilarItemsAccessFilter
         BaseItemKind.Genre,
         BaseItemKind.MusicGenre,
         BaseItemKind.MusicArtist,
-        BaseItemKind.Studio
+        BaseItemKind.Studio,
+        BaseItemKind.Network
     ];
 
     /// <summary>

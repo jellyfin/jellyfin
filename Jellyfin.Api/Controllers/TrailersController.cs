@@ -114,6 +114,7 @@ public class TrailersController : BaseJellyfinApiController
     /// <param name="nameStartsWith">Optional filter by items whose name is sorted equally than a given input string.</param>
     /// <param name="nameLessThan">Optional filter by items whose name is equally or lesser than a given input string.</param>
     /// <param name="studioIds">Optional. If specified, results will be filtered based on studio id. This allows multiple, pipe delimited.</param>
+    /// <param name="networkIds">Optional. If specified, results will be filtered based on network id. This allows multiple, pipe delimited.</param>
     /// <param name="genreIds">Optional. If specified, results will be filtered based on genre id. This allows multiple, pipe delimited.</param>
     /// <param name="audioLanguages">Optional. If specified, results will be filtered based on audio language. This allows multiple, comma delimited values.</param>
     /// <param name="subtitleLanguages">Optional. If specified, results will be filtered based on subtitale language. This allows multiple, comma delimited values.</param>
@@ -205,6 +206,7 @@ public class TrailersController : BaseJellyfinApiController
         [FromQuery] string? nameStartsWith,
         [FromQuery] string? nameLessThan,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] studioIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] networkIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] genreIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] audioLanguages,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] subtitleLanguages,
@@ -298,6 +300,7 @@ public class TrailersController : BaseJellyfinApiController
                 nameStartsWith,
                 nameLessThan,
                 studioIds,
+                networkIds,
                 genreIds,
                 audioLanguages,
                 subtitleLanguages,

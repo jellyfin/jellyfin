@@ -35,4 +35,9 @@ public enum ItemValueType
     /// InheritedTags.
     /// </summary>
     InheritedTags = 6,
+
+    /// <summary>
+    /// Networks.
+    /// </summary>
+    Networks = 7,
 }
