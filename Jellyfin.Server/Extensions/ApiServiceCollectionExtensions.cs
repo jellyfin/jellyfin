@@ -86,6 +86,7 @@ namespace Jellyfin.Server.Extensions
                 options.AddPolicy(
                     Policies.RequiresElevation,
                     policy => policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication)
+                        .AddRequirements(new DefaultAuthorizationRequirement())
                         .RequireClaim(ClaimTypes.Role, UserRoles.Administrator));
             });
         }
