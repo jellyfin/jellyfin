@@ -147,14 +147,32 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public int? TotalOutputBitrate => (OutputAudioBitrate ?? 0) + (OutputVideoBitrate ?? 0);
 
+        private ImageDimensions? DecodedVideoSize
+        {
+            get
+            {
+                if (VideoStream?.Width is not int width || VideoStream.Height is not int height)
+                {
+                    return null;
+                }
+
+                // Frame packed 3D gets flattened down to a single view, unless the stream is passed through untouched.
+                if (!BaseRequest.Static && !EncodingHelper.IsCopyCodec(OutputVideoCodec))
+                {
+                    var (flatWidth, flatHeight) = EncodingHelper.GetVideo3DFlattenedSize(MediaSource?.Video3DFormat, width, height);
+                    return new ImageDimensions(flatWidth.Value, flatHeight.Value);
+                }
+
+                return new ImageDimensions(width, height);
+            }
+        }
+
         public int? OutputWidth
         {
             get
             {
-                if (VideoStream is not null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
+                if (DecodedVideoSize is ImageDimensions size)
                 {
-                    var size = new ImageDimensions(VideoStream.Width.Value, VideoStream.Height.Value);
-
                     var newSize = DrawingUtils.Resize(
                         size,
                         BaseRequest.Width ?? 0,
@@ -178,10 +196,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (VideoStream is not null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
+                if (DecodedVideoSize is ImageDimensions size)
                 {
-                    var size = new ImageDimensions(VideoStream.Width.Value, VideoStream.Height.Value);
-
                     var newSize = DrawingUtils.Resize(
                         size,
                         BaseRequest.Width ?? 0,
