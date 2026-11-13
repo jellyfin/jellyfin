@@ -84,14 +84,9 @@ public class SearchManager : ISearchManager
 
         var searchTerm = query.SearchTerm.Trim().RemoveDiacritics();
 
-        var externalTask = CollectFromProvidersAsync(_externalProviders, query, searchTerm, cancellationToken);
-        var internalTask = _internalProviders.Length > 0
-            ? CollectFromProvidersAsync(_internalProviders, query, searchTerm, cancellationToken)
-            : Task.FromResult<IReadOnlyList<SearchResult>>([]);
-
-        await Task.WhenAll(externalTask, internalTask).ConfigureAwait(false);
-
-        var externalResults = await externalTask.ConfigureAwait(false);
+        // The internal providers only run when the external ones find nothing: their results would be
+        // discarded otherwise, and their database search can take seconds on large libraries.
+        var externalResults = await CollectFromProvidersAsync(_externalProviders, query, searchTerm, cancellationToken).ConfigureAwait(false);
 
         // Internal providers apply user-access filtering inline in their queries. External
         // providers don't know about user permissions, so they may return IDs from hidden
@@ -112,12 +107,13 @@ public class SearchManager : ISearchManager
             return externalResults;
         }
 
-        if (_internalProviders.Length > 0)
+        if (_internalProviders.Length == 0)
         {
-            _logger.LogDebug("No results from external providers, using internal provider results");
+            return [];
         }
 
-        return await internalTask.ConfigureAwait(false);
+        _logger.LogDebug("No results from external providers, using internal provider results");
+        return await CollectFromProvidersAsync(_internalProviders, query, searchTerm, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<IReadOnlyList<SearchResult>> FilterByUserAccessAsync(
