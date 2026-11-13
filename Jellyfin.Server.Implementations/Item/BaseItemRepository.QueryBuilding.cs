@@ -95,18 +95,17 @@ public sealed partial class BaseItemRepository
         // Collapse duplicates sharing a presentation key (e.g. alternate versions), preferring the
         // primary version (PrimaryVersionId is null) so detail pages and actions target it instead
         // of an arbitrary alternate. Keep the grouped ids as an IQueryable sub-select; materializing
-        // to a List would inline one bound parameter per id and hit SQLite's variable cap.
+        // to a List would inline one bound parameter per id and hit SQLite's variable cap. The key is
+        // grouped as an expression so SQLite can't walk IX_BaseItems_PresentationUniqueKey, which reads every row.
         var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
         if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
         {
-            var groupedIds = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey })
-                .Select(g => g.Where(e => e.PrimaryVersionId == null).Min(e => (Guid?)e.Id) ?? g.Min(e => (Guid?)e.Id));
+            var groupedIds = GetGroupedIdsByPresentationAndSeriesKey(dbQuery);
             dbQuery = context.BaseItems.AsNoTracking().Where(e => groupedIds.Contains(e.Id));
         }
         else if (enableGroupByPresentationUniqueKey)
         {
-            var groupedIds = dbQuery.GroupBy(e => e.PresentationUniqueKey)
-                .Select(g => g.Where(e => e.PrimaryVersionId == null).Min(e => (Guid?)e.Id) ?? g.Min(e => (Guid?)e.Id));
+            var groupedIds = GetGroupedIdsByPresentationKey(dbQuery);
             dbQuery = context.BaseItems.AsNoTracking().Where(e => groupedIds.Contains(e.Id));
         }
         else if (filter.GroupBySeriesPresentationUniqueKey)
@@ -130,6 +129,29 @@ public sealed partial class BaseItemRepository
         dbQuery = ApplyOrder(dbQuery, filter, context);
 
         return dbQuery;
+    }
+
+    /// <summary>
+    /// Gets the id of one item per presentation key, preferring the primary version.
+    /// </summary>
+    /// <param name="dbQuery">The filtered items.</param>
+    /// <returns>The ids of the items to keep, as a sub-select.</returns>
+    internal static IQueryable<Guid?> GetGroupedIdsByPresentationKey(IQueryable<BaseItemEntity> dbQuery)
+    {
+        return dbQuery.GroupBy(e => e.PresentationUniqueKey + string.Empty)
+            .Select(g => g.Where(e => e.PrimaryVersionId == null).Min(e => (Guid?)e.Id) ?? g.Min(e => (Guid?)e.Id));
+    }
+
+    /// <summary>
+    /// Gets the id of one item per presentation and series presentation key, preferring the primary version.
+    /// </summary>
+    /// <param name="dbQuery">The filtered items.</param>
+    /// <returns>The ids of the items to keep, as a sub-select.</returns>
+    internal static IQueryable<Guid?> GetGroupedIdsByPresentationAndSeriesKey(IQueryable<BaseItemEntity> dbQuery)
+    {
+        return dbQuery
+            .GroupBy(e => new { PresentationUniqueKey = e.PresentationUniqueKey + string.Empty, e.SeriesPresentationUniqueKey })
+            .Select(g => g.Where(e => e.PrimaryVersionId == null).Min(e => (Guid?)e.Id) ?? g.Min(e => (Guid?)e.Id));
     }
 
     private IQueryable<BaseItemEntity> ApplyBoxSetCollapsing(
