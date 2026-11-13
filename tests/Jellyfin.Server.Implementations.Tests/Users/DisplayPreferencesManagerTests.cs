@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Server.Implementations.Tests.Item;
 using Jellyfin.Server.Implementations.Users;
 using Xunit;
@@ -49,5 +51,39 @@ public sealed class DisplayPreferencesManagerTests : SqliteDbTestFixture
 
         using var context = CreateDbContext();
         Assert.Single(context.ItemDisplayPreferences);
+    }
+
+    [Fact]
+    public void UpdateDisplayPreferences_ReplacesTheStoredHomeSections()
+    {
+        var preferences = _manager.GetDisplayPreferences(_userId, _itemId, Client);
+        preferences.HomeSections.Add(new HomeSection { Order = 0, Type = HomeSectionType.SmallLibraryTiles });
+        preferences.HomeSections.Add(new HomeSection { Order = 1, Type = HomeSectionType.Resume });
+        _manager.UpdateDisplayPreferences(preferences);
+
+        var updated = _manager.GetDisplayPreferences(_userId, _itemId, Client);
+        updated.HomeSections.Clear();
+        updated.HomeSections.Add(new HomeSection { Order = 0, Type = HomeSectionType.NextUp });
+        _manager.UpdateDisplayPreferences(updated);
+
+        using var context = CreateDbContext();
+        var section = Assert.Single(context.Set<HomeSection>());
+        Assert.Equal(0, section.Order);
+        Assert.Equal(HomeSectionType.NextUp, section.Type);
+    }
+
+    [Fact]
+    public void UpdateDisplayPreferences_AllHomeSectionsRemoved_DeletesTheStoredHomeSections()
+    {
+        var preferences = _manager.GetDisplayPreferences(_userId, _itemId, Client);
+        preferences.HomeSections.Add(new HomeSection { Order = 0, Type = HomeSectionType.SmallLibraryTiles });
+        _manager.UpdateDisplayPreferences(preferences);
+
+        var updated = _manager.GetDisplayPreferences(_userId, _itemId, Client);
+        updated.HomeSections.Clear();
+        _manager.UpdateDisplayPreferences(updated);
+
+        using var context = CreateDbContext();
+        Assert.Empty(context.Set<HomeSection>());
     }
 }
