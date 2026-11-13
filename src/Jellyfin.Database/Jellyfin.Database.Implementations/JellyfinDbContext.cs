@@ -89,6 +89,11 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<TrickplayInfo> TrickplayInfos => Set<TrickplayInfo>();
 
     /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the smart collections.
+    /// </summary>
+    public DbSet<SmartCollections> SmartCollections => Set<SmartCollections>();
+
+    /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the media segments.
     /// </summary>
     public DbSet<MediaSegment> MediaSegments => Set<MediaSegment>();
