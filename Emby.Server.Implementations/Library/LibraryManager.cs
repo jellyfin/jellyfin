@@ -1237,6 +1237,27 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
+        public IReadOnlyDictionary<string, Person> GetPersons(IReadOnlyCollection<string> names)
+        {
+            if (names.Count == 0)
+            {
+                return new Dictionary<string, Person>(StringComparer.OrdinalIgnoreCase);
+            }
+
+            // A person's id is derived from its name, so every id is known without a lookup and
+            // the items come back in one query, their images with them for the picture tags.
+            return GetItemList(new InternalItemsQuery
+                {
+                    ItemIds = names.Select(GetPersonId).Distinct().ToArray(),
+                    IncludeItemTypes = [BaseItemKind.Person],
+                    DtoOptions = new DtoOptions(false) { EnableImages = true, EnableUserData = false }
+                })
+                .OfType<Person>()
+                .DistinctBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(p => p.Name, StringComparer.OrdinalIgnoreCase);
+        }
+
+        /// <inheritdoc />
         public Person GetOrCreatePerson(string name)
         {
             var existing = GetPerson(name);
