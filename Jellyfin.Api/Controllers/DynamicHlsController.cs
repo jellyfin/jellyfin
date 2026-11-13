@@ -43,6 +43,8 @@ public class DynamicHlsController : BaseJellyfinApiController
     private const EncoderPreset DefaultVodEncoderPreset = EncoderPreset.veryfast;
     private const EncoderPreset DefaultEventEncoderPreset = EncoderPreset.superfast;
     private const TranscodingJobType TranscodingJobType = MediaBrowser.Controller.MediaEncoding.TranscodingJobType.Hls;
+    private const string VideoVariantName = "video";
+    private const string AudioVariantName = "audio";
 
     private readonly Version _minFFmpegFlacInMp4 = new Version(6, 0);
     private readonly Version _minFFmpegX265BframeInFmp4 = new Version(7, 0, 1);
@@ -399,6 +401,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="enableTrickplay">Enable trickplay image playlists being added to master playlist.</param>
     /// <param name="enableAudioVbrEncoding">Whether to enable Audio Encoding.</param>
     /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
+    /// <param name="separateAudioRendition">Optional. Whether to serve fMP4 audio as a separate HLS rendition instead of muxing it into the video segments.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
     [HttpGet("Videos/{itemId}/master.m3u8")]
@@ -458,7 +461,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool enableAdaptiveBitrateStreaming = false,
         [FromQuery] bool enableTrickplay = true,
         [FromQuery] bool enableAudioVbrEncoding = true,
-        [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
+        [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false,
+        [FromQuery] bool separateAudioRendition = false)
     {
         var streamingRequest = new HlsVideoRequestDto
         {
@@ -513,7 +517,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming,
             EnableTrickplay = enableTrickplay,
             EnableAudioVbrEncoding = enableAudioVbrEncoding,
-            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
+            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding,
+            SeparateAudioRendition = separateAudioRendition
         };
 
         return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
@@ -740,10 +745,15 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
+    /// <param name="separateAudioRendition">Optional. Whether to serve fMP4 audio as a separate HLS rendition instead of muxing it into the video segments.</param>
     /// <response code="200">Video stream returned.</response>
-    /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
+    /// <response code="400">The audio rendition playlist was requested, but separate audio rendition is not enabled for this stream.</response>
+    /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
+    /// <remarks>Also serves the audio rendition playlist (audio.m3u8) of a separate audio rendition.</remarks>
     [HttpGet("Videos/{itemId}/main.m3u8")]
+    [HttpGet("Videos/{itemId}/audio.m3u8", Name = "GetVariantHlsVideoAudioRenditionPlaylist")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesPlaylistFile]
     public async Task<ActionResult> GetVariantHlsVideoPlaylist(
         [FromRoute, Required] Guid itemId,
@@ -796,7 +806,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
         [FromQuery] bool enableAudioVbrEncoding = true,
-        [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
+        [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false,
+        [FromQuery] bool separateAudioRendition = false)
     {
         using var cancellationTokenSource = new CancellationTokenSource();
         var streamingRequest = new VideoRequestDto
@@ -850,10 +861,12 @@ public class DynamicHlsController : BaseJellyfinApiController
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
             EnableAudioVbrEncoding = enableAudioVbrEncoding,
-            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
+            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding,
+            SeparateAudioRendition = separateAudioRendition
         };
 
-        return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource)
+        var isAudioRendition = Request.Path.Value?.EndsWith("/audio.m3u8", StringComparison.OrdinalIgnoreCase) ?? false;
+        return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource, isAudioRendition)
             .ConfigureAwait(false);
     }
 
@@ -1081,12 +1094,12 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
+    /// <param name="separateAudioRendition">Optional. Whether to serve fMP4 audio as a separate HLS rendition instead of muxing it into the video segments.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("Videos/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesVideoFile]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "playlistId", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> GetHlsVideoSegment(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] string playlistId,
@@ -1143,7 +1156,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
         [FromQuery] bool enableAudioVbrEncoding = true,
-        [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
+        [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false,
+        [FromQuery] bool separateAudioRendition = false)
     {
         var streamingRequest = new VideoRequestDto
         {
@@ -1199,10 +1213,11 @@ public class DynamicHlsController : BaseJellyfinApiController
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
             EnableAudioVbrEncoding = enableAudioVbrEncoding,
-            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
+            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding,
+            SeparateAudioRendition = separateAudioRendition
         };
 
-        return await GetDynamicSegment(streamingRequest, segmentId)
+        return await GetDynamicSegment(streamingRequest, segmentId, playlistId)
             .ConfigureAwait(false);
     }
 
@@ -1384,7 +1399,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             .ConfigureAwait(false);
     }
 
-    private async Task<ActionResult> GetVariantPlaylistInternal(StreamingRequestDto streamingRequest, CancellationTokenSource cancellationTokenSource)
+    private async Task<ActionResult> GetVariantPlaylistInternal(StreamingRequestDto streamingRequest, CancellationTokenSource cancellationTokenSource, bool isAudioRendition = false)
     {
         using var state = await StreamingHelpers.GetStreamingState(
                 streamingRequest,
@@ -1399,6 +1414,12 @@ public class DynamicHlsController : BaseJellyfinApiController
                 TranscodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
+
+        if (isAudioRendition && !state.EnableSeparateAudioRendition)
+        {
+            return BadRequest("Separate audio rendition is not enabled for this stream.");
+        }
+
         var mediaSourceId = state.BaseRequest.MediaSourceId;
         double fps = state.TargetFramerate ?? 0.0f;
         int segmentLength = state.SegmentLength * 1000;
@@ -1416,15 +1437,16 @@ public class DynamicHlsController : BaseJellyfinApiController
             segmentLength,
             state.RunTimeTicks ?? 0,
             state.Request.SegmentContainer ?? string.Empty,
-            "hls1/main/",
+            isAudioRendition ? "hls1/audio/" : "hls1/main/",
             Request.QueryString.ToString(),
-            EncodingHelper.IsCopyCodec(state.OutputVideoCodec));
+            // ffmpeg cuts the audio rendition at fixed intervals, not at video keyframes
+            !isAudioRendition && EncodingHelper.IsCopyCodec(state.OutputVideoCodec));
         var playlist = _dynamicHlsPlaylistGenerator.CreateMainPlaylist(request);
 
         return new FileContentResult(Encoding.UTF8.GetBytes(playlist), MimeTypes.GetMimeType("playlist.m3u8"));
     }
 
-    private async Task<ActionResult> GetDynamicSegment(StreamingRequestDto streamingRequest, int segmentId)
+    private async Task<ActionResult> GetDynamicSegment(StreamingRequestDto streamingRequest, int segmentId, string? playlistId = null)
     {
         if ((streamingRequest.StartTimeTicks ?? 0) > 0)
         {
@@ -1449,7 +1471,15 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         var playlistPath = Path.ChangeExtension(state.OutputFilePath, ".m3u8");
 
-        var segmentPath = GetSegmentPath(state, playlistPath, segmentId);
+        // With a separate audio rendition, one ffmpeg process writes a video and an audio variant playlist next to playlistPath.
+        var variantPlaylistPaths = state.EnableSeparateAudioRendition
+            ? new[] { GetVariantPlaylistPath(playlistPath, VideoVariantName), GetVariantPlaylistPath(playlistPath, AudioVariantName) }
+            : new[] { playlistPath };
+        var segmentPlaylistPath = state.EnableSeparateAudioRendition && string.Equals(playlistId, AudioVariantName, StringComparison.OrdinalIgnoreCase)
+            ? variantPlaylistPaths[1]
+            : variantPlaylistPaths[0];
+
+        var segmentPath = GetSegmentPath(state, segmentPlaylistPath, segmentId);
 
         var segmentExtension = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer);
 
@@ -1474,7 +1504,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                         break;
                     }
 
-                    var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
+                    var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentPlaylistPath, segmentExtension);
                     var segmentGapRequiringTranscodingChange = 24 / state.SegmentLength;
 
                     if (segmentId == -1)
@@ -1513,7 +1543,10 @@ public class DynamicHlsController : BaseJellyfinApiController
 
                             if (currentTranscodingIndex.HasValue)
                             {
-                                await DeleteLastFile(playlistPath, segmentExtension, 0).ConfigureAwait(false);
+                                foreach (var variantPlaylistPath in variantPlaylistPaths)
+                                {
+                                    await DeleteLastFile(variantPlaylistPath, segmentExtension, 0).ConfigureAwait(false);
+                                }
                             }
 
                             // Preserve the init request's identity until replacement is actually selected.
@@ -1565,7 +1598,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                 }
             }
 
-            return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
+            return await GetSegmentResult(state, playlistPath, segmentPlaylistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
         }
         catch
         {
@@ -1626,7 +1659,9 @@ public class DynamicHlsController : BaseJellyfinApiController
         var mapArgs = state.IsOutputVideo ? _encodingHelper.GetMapArgs(state) : string.Empty;
 
         var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
+        (outputPath, var varStreamMapArg) = GetVariantStreamOutput(outputPath, state);
         var outputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(outputPath);
+
         var outputPrefix = Path.Combine(directory, outputFileNameWithoutExtension);
         var outputExtension = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer);
         var outputTsArg = outputPrefix + "%d" + outputExtension;
@@ -1682,7 +1717,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         return string.Format(
             CultureInfo.InvariantCulture,
-            "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -hls_segment_type {8} -start_number {9}{10} -hls_segment_filename \"{11}\" {12} -y \"{13}\"",
+            "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -hls_segment_type {8} -start_number {9}{10} -hls_segment_filename \"{11}\"{12} {13} -y \"{14}\"",
             inputModifier,
             _encodingHelper.GetInputArgument(state, _encodingOptions, segmentContainer),
             threads,
@@ -1695,6 +1730,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             startNumber.ToString(CultureInfo.InvariantCulture),
             baseUrlParam,
             outputTsArg.EscapeProcessArgument(),
+            varStreamMapArg,
             hlsArguments,
             outputPath.EscapeProcessArgument()).Trim();
     }
@@ -1956,6 +1992,24 @@ public class DynamicHlsController : BaseJellyfinApiController
         return args;
     }
 
+    private static (string OutputPath, string VarStreamMapArg) GetVariantStreamOutput(string outputPath, StreamState state)
+    {
+        if (!state.EnableSeparateAudioRendition)
+        {
+            return (outputPath, string.Empty);
+        }
+
+        // Write the video and the audio to separate variant playlists, segments and init files ({name}_video*, {name}_audio*)
+        return (
+            GetVariantPlaylistPath(outputPath, "%v"),
+            $" -var_stream_map \"v:0,name:{VideoVariantName} a:0,name:{AudioVariantName}\"");
+    }
+
+    internal static string GetVariantPlaylistPath(string playlistPath, string variantName)
+        => Path.Combine(
+            Path.GetDirectoryName(playlistPath) ?? throw new ArgumentException($"Provided path ({playlistPath}) is not valid.", nameof(playlistPath)),
+            Path.GetFileNameWithoutExtension(playlistPath) + "_" + variantName + Path.GetExtension(playlistPath));
+
     private string GetSegmentPath(StreamState state, string playlist, int index)
     {
         var folder = Path.GetDirectoryName(playlist) ?? throw new ArgumentException($"Provided path ({playlist}) is not valid.", nameof(playlist));
@@ -1967,6 +2021,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     private async Task<ActionResult> GetSegmentResult(
         StreamState state,
         string playlistPath,
+        string segmentPlaylistPath,
         string segmentPath,
         string segmentExtension,
         int segmentIndex,
@@ -1984,7 +2039,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                 return GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob);
             }
 
-            var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
+            var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentPlaylistPath, segmentExtension);
 
             // If requested segment is less than transcoding position, we can't transcode backwards, so assume it's ready
             if (segmentIndex < currentTranscodingIndex)
@@ -1994,7 +2049,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             }
         }
 
-        var nextSegmentPath = GetSegmentPath(state, playlistPath, segmentIndex + 1);
+        var nextSegmentPath = GetSegmentPath(state, segmentPlaylistPath, segmentIndex + 1);
         if (transcodingJob is not null)
         {
             while (!cancellationToken.IsCancellationRequested && !transcodingJob.HasExited)
@@ -2061,7 +2116,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         return result;
     }
 
-    private int? GetCurrentTranscodingIndex(string playlist, string segmentExtension)
+    private int? GetCurrentTranscodingIndex(string playlist, string segmentPlaylist, string segmentExtension)
     {
         var job = _transcodeManager.GetTranscodingJob(playlist, TranscodingJobType);
 
@@ -2070,30 +2125,35 @@ public class DynamicHlsController : BaseJellyfinApiController
             return null;
         }
 
-        var file = GetLastTranscodingFile(playlist, segmentExtension, _fileSystem);
+        var file = GetLastTranscodingFile(segmentPlaylist, segmentExtension, _fileSystem);
 
         if (file is null)
         {
             return null;
         }
 
-        var playlistFilename = Path.GetFileNameWithoutExtension(playlist.AsSpan());
+        return TryGetSegmentIndex(segmentPlaylist, file.Name, out var index) ? index : null;
+    }
 
-        var indexString = Path.GetFileNameWithoutExtension(file.Name.AsSpan()).Slice(playlistFilename.Length);
+    internal static bool TryGetSegmentIndex(string playlist, string segmentFileName, out int index)
+    {
+        var filePrefix = Path.GetFileNameWithoutExtension(playlist.AsSpan());
+        var fileName = Path.GetFileNameWithoutExtension(segmentFileName.AsSpan());
 
-        return int.Parse(indexString, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        index = 0;
+        return fileName.StartsWith(filePrefix, StringComparison.OrdinalIgnoreCase)
+            && int.TryParse(fileName[filePrefix.Length..], NumberStyles.Integer, CultureInfo.InvariantCulture, out index);
     }
 
     private static FileSystemMetadata? GetLastTranscodingFile(string playlist, string segmentExtension, IFileSystem fileSystem)
     {
         var folder = Path.GetDirectoryName(playlist) ?? throw new ArgumentException("Path can't be a root directory.", nameof(playlist));
 
-        var filePrefix = Path.GetFileNameWithoutExtension(playlist);
-
         try
         {
+            // Only match {prefix}{index} so that the {prefix}_audio/{prefix}_video files of a separate audio rendition are kept apart.
             return fileSystem.GetFiles(folder, new[] { segmentExtension }, true, false)
-                .Where(i => Path.GetFileNameWithoutExtension(i.Name).StartsWith(filePrefix, StringComparison.OrdinalIgnoreCase))
+                .Where(i => TryGetSegmentIndex(playlist, i.Name, out _))
                 .MaxBy(fileSystem.GetLastWriteTimeUtc);
         }
         catch (IOException)

@@ -20,6 +20,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -2682,6 +2683,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 reasons |= TranscodeReason.AudioCodecNotSupported;
             }
 
+            if (IsMp3CopyIntoHlsFmp4(state, audioStream))
+            {
+                reasons |= TranscodeReason.AudioCodecNotSupported;
+            }
+
             // Channels must fall within requested value
             var channels = state.GetRequestedAudioChannels(audioStream.Codec);
             if (channels.HasValue
@@ -2711,6 +2717,27 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return reasons;
         }
+
+        /// <summary>
+        /// Determines whether the audio stream is MP3 that would be stream-copied into HLS fMP4 segments.
+        /// </summary>
+        /// <remarks>
+        /// Workaround for https://code.ffmpeg.org/FFmpeg/FFmpeg/issues/26006: ffmpeg's mov muxer
+        /// (<c>mov_write_esds_tag</c>) writes any codec extradata into the <c>esds</c> box as a DecoderSpecificInfo,
+        /// even for MP3, which must not have one. MP3 from AVI carries <c>MPEGLAYER3WAVEFORMAT</c> extradata, so a
+        /// stream-copied init segment advertises a bogus DecoderSpecificInfo and strict players reject it (Roku fails
+        /// with "Unsupported AAC stream"). The media info doesn't expose whether the source has extradata, so MP3 is
+        /// always re-encoded for fMP4, which is cheap. Re-encoded MP3 has no extradata and is unaffected.
+        /// Remove this check once Jellyfin's minimum supported ffmpeg version contains the fix for that issue.
+        /// </remarks>
+        /// <param name="state">The encoding job state.</param>
+        /// <param name="audioStream">The source audio stream.</param>
+        /// <returns><c>true</c> if MP3 would be copied into HLS fMP4 segments; otherwise, <c>false</c>.</returns>
+        private static bool IsMp3CopyIntoHlsFmp4(EncodingJobInfo state, MediaStream audioStream)
+            => state.TranscodingType is TranscodingJobType.Hls
+                && state.BaseRequest is StreamingRequestDto { SegmentContainer: var segmentContainer }
+                && string.Equals(segmentContainer, "mp4", StringComparison.OrdinalIgnoreCase)
+                && string.Equals(audioStream.Codec, "mp3", StringComparison.OrdinalIgnoreCase);
 
         private static int GetBitDepthCompensatedBitrate(int bitrate, MediaStream videoStream, int targetBitDepth)
         {

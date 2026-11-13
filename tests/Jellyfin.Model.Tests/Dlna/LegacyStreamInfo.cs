@@ -134,6 +134,11 @@ public class LegacyStreamInfo : StreamInfo
             {
                 list.Add(new NameValuePair("MinSegments", item.MinSegments.Value.ToString(CultureInfo.InvariantCulture)));
             }
+
+            if (item.SeparateAudioRendition)
+            {
+                list.Add(new NameValuePair("SeparateAudioRendition", "true"));
+            }
         }
         else
         {

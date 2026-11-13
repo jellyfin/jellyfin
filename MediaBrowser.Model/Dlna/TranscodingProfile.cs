@@ -43,6 +43,7 @@ public class TranscodingProfile
         SegmentLength = other.SegmentLength;
         Conditions = other.Conditions;
         EnableAudioVbrEncoding = other.EnableAudioVbrEncoding;
+        SeparateAudioRendition = other.SeparateAudioRendition;
     }
 
     /// <summary>
@@ -157,4 +158,12 @@ public class TranscodingProfile
     [DefaultValue(true)]
     [XmlAttribute("enableAudioVbrEncoding")]
     public bool EnableAudioVbrEncoding { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether HLS fMP4 output should serve the audio as a separate rendition
+    /// instead of muxing it into the video segments.
+    /// </summary>
+    [DefaultValue(false)]
+    [XmlAttribute("separateAudioRendition")]
+    public bool SeparateAudioRendition { get; set; }
 }

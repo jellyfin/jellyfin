@@ -87,6 +87,11 @@ public class StreamInfo
     public int? MinSegments { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether HLS fMP4 output should serve the audio as a separate rendition.
+    /// </summary>
+    public bool SeparateAudioRendition { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the stream requires AVC.
     /// </summary>
     public bool RequireAvc { get; set; }
@@ -1012,6 +1017,11 @@ public class StreamInfo
             {
                 sb.Append("&MinSegments=");
                 sb.Append(MinSegments.Value.ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (SeparateAudioRendition)
+            {
+                sb.Append("&SeparateAudioRendition=true");
             }
         }
         else

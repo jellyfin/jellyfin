@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Dlna;
 using Xunit;
 
@@ -237,5 +238,25 @@ public class StreamInfoTests
 
             Assert.Equal(legacyUrl, newUrl, ignoreCase: true);
         }
+    }
+
+    [InlineData(true)]
+    [InlineData(false)]
+    [Theory]
+    public void ToUrl_SeparateAudioRendition_OnlyAddedWhenEnabled(bool separateAudioRendition)
+    {
+        var streamInfo = new StreamInfo
+        {
+            ItemId = Guid.Empty,
+            MediaType = DlnaProfileType.Video,
+            DeviceProfile = new DeviceProfile(),
+            SubProtocol = MediaStreamProtocol.hls,
+            Container = "mp4",
+            SeparateAudioRendition = separateAudioRendition
+        };
+
+        var url = streamInfo.ToUrl(BaseUrl, "123", null);
+
+        Assert.Equal(separateAudioRendition, url.Contains("&SeparateAudioRendition=true", StringComparison.Ordinal));
     }
 }
