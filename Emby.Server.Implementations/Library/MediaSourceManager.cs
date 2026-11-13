@@ -690,19 +690,19 @@ namespace Emby.Server.Implementations.Library
                 AddMediaInfo(mediaSource);
             }
 
-            // TODO: @bond Fix
-            var json = JsonSerializer.SerializeToUtf8Bytes(mediaSource, _jsonOptions);
-            _logger.LogInformation("Live stream opened: {@MediaSource}", mediaSource);
-            var clone = JsonSerializer.Deserialize<MediaSourceInfo>(json, _jsonOptions);
-
             if (!request.UserId.IsEmpty())
             {
                 var user = _userManager.GetUserById(request.UserId);
                 var item = request.ItemId.IsEmpty()
                     ? null
                     : _libraryManager.GetItemById(request.ItemId);
-                SetDefaultAudioAndSubtitleStreamIndices(item, clone, user);
+                SetDefaultAudioAndSubtitleStreamIndices(item, mediaSource, user);
             }
+
+            // TODO: @bond Fix
+            var json = JsonSerializer.SerializeToUtf8Bytes(mediaSource, _jsonOptions);
+            _logger.LogInformation("Live stream opened: {@MediaSource}", mediaSource);
+            var clone = JsonSerializer.Deserialize<MediaSourceInfo>(json, _jsonOptions);
 
             return new Tuple<LiveStreamResponse, IDirectStreamProvider>(new LiveStreamResponse(clone), liveStream as IDirectStreamProvider);
         }
@@ -856,17 +856,7 @@ namespace Emby.Server.Implementations.Library
 
             if (isLiveStream && !string.IsNullOrEmpty(cacheKey))
             {
-                var newList = new List<MediaStream>();
-                newList.AddRange(mediaStreams.Where(i => i.Type == MediaStreamType.Video).Take(1));
-                newList.AddRange(mediaStreams.Where(i => i.Type == MediaStreamType.Audio).Take(1));
-
-                foreach (var stream in newList)
-                {
-                    stream.Index = -1;
-                    stream.Language = null;
-                }
-
-                mediaStreams = newList;
+                mediaStreams = LiveStreamMediaStreamFilter.FilterProbedStreams(mediaStreams).ToList();
             }
 
             _logger.LogInformation("Live tv media info probe took {0} seconds", (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture));

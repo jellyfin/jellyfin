@@ -141,6 +141,11 @@ public class MediaInfoHelper
         {
             var mediaSource = await _mediaSourceManager.GetLiveStream(liveStreamId, CancellationToken.None).ConfigureAwait(false);
 
+            if (user is not null)
+            {
+                _mediaSourceManager.SetDefaultAudioAndSubtitleStreamIndices(item, mediaSource, user);
+            }
+
             return new[] { mediaSource };
         }
 
