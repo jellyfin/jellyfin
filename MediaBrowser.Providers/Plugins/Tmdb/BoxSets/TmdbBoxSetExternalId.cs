@@ -1,4 +1,3 @@
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -15,7 +14,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
         public string ProviderName => TmdbUtils.ProviderName;
 
         /// <inheritdoc />
-        public string Key => MetadataProvider.TmdbCollection.ToString();
+        public string Key => MetadataProvider.Tmdb.ToString();
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.BoxSet;
@@ -23,7 +22,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item)
         {
-            return item is Movie || item is MusicVideo || item is Trailer;
+            return item is BoxSet;
         }
     }
 }
