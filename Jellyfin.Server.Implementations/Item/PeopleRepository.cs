@@ -479,7 +479,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
         {
-            query = query.Where(e => e.Name.StartsWith(filter.NameStartsWith.ToLowerInvariant()));
+            query = query.Where(e => e.Name.ToLower().StartsWith(filter.NameStartsWith.ToLowerInvariant()));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameLessThan))
