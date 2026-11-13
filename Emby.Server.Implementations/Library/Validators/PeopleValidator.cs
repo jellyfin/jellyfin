@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -53,33 +52,28 @@ public class PeopleValidator
             _logger.LogInformation("Deleted {Amount} credits no item maps to", numOrphaned);
         }
 
-        var names = _libraryManager.GetPeopleNames(new InternalPeopleQuery());
-        var existingPersonIds = _libraryManager.GetItemIds(new InternalItemsQuery
-        {
-            IncludeItemTypes = [BaseItemKind.Person]
-        }).ToHashSet();
+        // Only credits with no live item: one already linked may be credited under another name than
+        // its item's, and getting its item by name would create a phantom the sweep then deletes.
+        // Every kind: an Artist credit belongs to a MusicArtist, not a Person.
+        var unlinked = _libraryManager.GetUnlinkedCredits();
+        var numLinked = 0;
 
-        var (newNames, deadIds) = PartitionCreditsByPersonId(names, _libraryManager.GetPersonId, existingPersonIds);
-
-        var numComplete = 0;
-        var count = names.Count;
-        var refreshed = 0;
-
-        foreach (var name in names)
+        IProgress<double> linkProgress = new Progress<double>(val => progress.Report(val / 2));
+        for (var i = 0; i < unlinked.Count; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            var credit = unlinked[i];
             try
             {
-                var item = _libraryManager.GetOrCreatePerson(name);
-                var isNew = !existingPersonIds.Contains(item.Id);
-                var neverRefreshed = item.DateLastRefreshed == default;
-
-                if (isNew || neverRefreshed)
+                var item = _libraryManager.GetOrCreateCreditItem(credit.Name, credit.Type);
+                if (item is null)
                 {
-                    await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
-                    refreshed++;
+                    _logger.LogWarning("Failed to get or create the item for {Kind} credit {Name}", credit.Type, credit.Name);
+                    continue;
                 }
+
+                numLinked += _libraryManager.LinkCreditsToItem(credit.Name, credit.Type, item.Id);
             }
             catch (OperationCanceledException)
             {
@@ -88,29 +82,19 @@ public class PeopleValidator
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error refreshing {PersonName}", name);
+                _logger.LogError(ex, "Error linking {Kind} credit {Name}", credit.Type, credit.Name);
             }
 
-            numComplete++;
-            double percent = numComplete;
-            percent /= count;
-            percent *= 100;
-
-            progress.Report(percent);
+            linkProgress.Report(100d * (i + 1) / unlinked.Count);
         }
 
-        _logger.LogInformation(
-            "Refreshed metadata for {RefreshedCount} people out of {TotalCount} total, {NewCount} of which had no item yet",
-            refreshed,
-            count,
-            newNames.Count);
-
         // A person somebody locked is theirs, not ours, however little the library still credits them.
-        var deadEntities = deadIds
-            .Select(_libraryManager.GetItemById)
-            .OfType<Person>()
-            .Where(item => !item.IsLocked)
-            .ToList();
+        var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
+        {
+            IncludeItemTypes = [BaseItemKind.Person],
+            IsDeadPerson = true,
+            IsLocked = false
+        });
 
         foreach (var item in deadEntities)
         {
@@ -119,41 +103,45 @@ public class PeopleValidator
 
         _libraryManager.DeleteItemsUnsafeFast(deadEntities, deleteSourceFiles: true);
 
-        progress.Report(100);
-    }
-
-    /// <summary>
-    /// Splits the person items into the ones a credit still calls for and the ones nothing does.
-    /// </summary>
-    /// <param name="creditNames">Every name credited on an item, from the people table.</param>
-    /// <param name="getPersonId">Maps a credit name to the id its person item has.</param>
-    /// <param name="existingPersonIds">The ids of the person items that exist.</param>
-    /// <returns>The credits needing an item, and the ids of the items nothing credits.</returns>
-    internal static (List<string> NewNames, List<Guid> DeadIds) PartitionCreditsByPersonId(
-        IReadOnlyList<string> creditNames,
-        Func<string, Guid> getPersonId,
-        IReadOnlySet<Guid> existingPersonIds)
-    {
-        ArgumentNullException.ThrowIfNull(creditNames);
-        ArgumentNullException.ThrowIfNull(getPersonId);
-        ArgumentNullException.ThrowIfNull(existingPersonIds);
-
-        var newNames = new List<string>();
-        var liveIds = new HashSet<Guid>();
-
-        foreach (var name in creditNames)
+        // Created while saving an item's cast, a person never had a refresh of its own.
+        var personIds = _libraryManager.GetItemIds(new InternalItemsQuery
         {
-            var personId = getPersonId(name);
+            IncludeItemTypes = [BaseItemKind.Person]
+        });
 
-            // Distinct credit names can normalize onto one id; only the first of them needs an item.
-            if (liveIds.Add(personId) && !existingPersonIds.Contains(personId))
+        IProgress<double> refreshProgress = new Progress<double>(val => progress.Report(50 + (val / 2)));
+        var refreshed = 0;
+        for (var i = 0; i < personIds.Count; i++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
             {
-                newNames.Add(name);
+                if (_libraryManager.GetItemById(personIds[i]) is Person item && item.DateLastRefreshed == default)
+                {
+                    await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                    refreshed++;
+                }
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error refreshing person {PersonId}", personIds[i]);
+            }
+
+            refreshProgress.Report(100d * (i + 1) / personIds.Count);
         }
 
-        var deadIds = existingPersonIds.Where(id => !liveIds.Contains(id)).ToList();
+        _logger.LogInformation(
+            "Linked {Linked} credits, deleted {Dead} dead people and refreshed {Refreshed} out of {Total}",
+            numLinked,
+            deadEntities.Count,
+            refreshed,
+            personIds.Count);
 
-        return (newNames, deadIds);
+        progress.Report(100);
     }
 }

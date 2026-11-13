@@ -21,7 +21,7 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         // builder.HasOne(e => e.Series).WithMany(e => e.SeriesEpisodes).HasForeignKey(e => e.SeriesId);
         builder.HasMany(e => e.Peoples);
         builder.HasMany(e => e.UserData);
-        builder.HasMany(e => e.ItemValues);
+        builder.HasMany(e => e.ItemTags);
         builder.HasMany(e => e.MediaStreams);
         builder.HasMany(e => e.Chapters);
         builder.HasMany(e => e.Provider);

@@ -1,11 +1,10 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Validators;
@@ -24,19 +23,16 @@ public class MusicGenresValidator
     /// The logger.
     /// </summary>
     private readonly ILogger<MusicGenresValidator> _logger;
-    private readonly IItemRepository _itemRepo;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MusicGenresValidator" /> class.
     /// </summary>
     /// <param name="libraryManager">The library manager.</param>
     /// <param name="logger">The logger.</param>
-    /// <param name="itemRepo">The item repository.</param>
-    public MusicGenresValidator(ILibraryManager libraryManager, ILogger<MusicGenresValidator> logger, IItemRepository itemRepo)
+    public MusicGenresValidator(ILibraryManager libraryManager, ILogger<MusicGenresValidator> logger)
     {
         _libraryManager = libraryManager;
         _logger = logger;
-        _itemRepo = itemRepo;
     }
 
     /// <summary>
@@ -47,22 +43,23 @@ public class MusicGenresValidator
     /// <returns>Task.</returns>
     public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        var names = _itemRepo.GetMusicGenreNames();
-        var existingMusicGenreIds = _libraryManager.GetItemIds(new InternalItemsQuery
+        // The dead ones are deleted by GenresValidator, which covers both kinds.
+        var musicGenres = _libraryManager.GetItemList(new InternalItemsQuery
         {
             IncludeItemTypes = [BaseItemKind.MusicGenre]
-        }).ToHashSet();
+        });
 
         var numComplete = 0;
-        var count = names.Count;
+        var count = musicGenres.Count;
         var refreshed = 0;
 
-        foreach (var name in names)
+        foreach (var item in musicGenres)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                var item = _libraryManager.GetMusicGenre(name);
-                if (!existingMusicGenreIds.Contains(item.Id))
+                if (item.DateLastRefreshed == default)
                 {
                     await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                     refreshed++;
@@ -75,7 +72,7 @@ public class MusicGenresValidator
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error refreshing {GenreName}", name);
+                _logger.LogError(ex, "Error refreshing {GenreName}", item.Name);
             }
 
             numComplete++;

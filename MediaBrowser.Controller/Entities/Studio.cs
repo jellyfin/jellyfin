@@ -37,7 +37,8 @@ namespace MediaBrowser.Controller.Entities
         {
             var list = base.GetUserDataKeys();
 
-            list.Insert(0, GetType().Name + "-" + (Name ?? string.Empty).RemoveDiacritics());
+            // With the suffix, so a deleted entity's user data is not adopted by a same-named one.
+            list.Insert(0, GetType().Name + "-" + (Name ?? string.Empty).RemoveDiacritics() + GetIdentitySuffix());
             return list;
         }
 
