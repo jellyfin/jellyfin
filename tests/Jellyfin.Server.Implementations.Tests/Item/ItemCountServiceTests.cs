@@ -868,7 +868,7 @@ public sealed class ItemCountServiceTests : IDisposable
             person.CleanName = personName;
             context.BaseItems.Add(person);
 
-            var people = new People { Id = Guid.NewGuid(), Name = personName };
+            var people = new People { Id = Guid.NewGuid(), Name = personName, CleanName = personName };
             context.Peoples.Add(people);
 
             var year = 2000 + i;

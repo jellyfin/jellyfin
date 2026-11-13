@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Extensions;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
@@ -23,9 +24,9 @@ public sealed class PeopleRepositoryNameRangeTests : SqliteDbTestFixture
     {
         using (var context = CreateDbContext())
         {
-            foreach (var name in new[] { "50 Cent", "alpha centauri", "Brad Pitt", "bob dylan", "Zoe Saldana" })
+            foreach (var name in new[] { "50 Cent", "alpha centauri", "Brad Pitt", "bob dylan", "P!nk", "Zoe Saldana" })
             {
-                context.Peoples.Add(new People { Id = Guid.NewGuid(), Name = name, PersonType = "Actor" });
+                context.Peoples.Add(new People { Id = Guid.NewGuid(), Name = name, CleanName = name.GetCleanValue(), PersonType = "Actor" });
             }
 
             context.SaveChanges();
@@ -49,5 +50,13 @@ public sealed class PeopleRepositoryNameRangeTests : SqliteDbTestFixture
 
         Assert.Equal(expected, result.Items.Select(p => p.Name));
         Assert.Equal(expected.Length, result.TotalRecordCount);
+    }
+
+    [Fact]
+    public void GetPeople_NameContainsOnlyPunctuation_MatchesTheNameAsWritten()
+    {
+        var result = _repository.GetPeople(new InternalPeopleQuery { NameContains = "!" });
+
+        Assert.Equal(["P!nk"], result.Items.Select(p => p.Name));
     }
 }
