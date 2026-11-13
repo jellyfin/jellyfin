@@ -523,7 +523,7 @@ public class SubtitleController : BaseJellyfinApiController
         }
 
         // Only a raw PGS payload or an extracted .mks can be handed over untouched. Anything else the
-        // encoder resolved to (e.g. a VobSub .idx/.sub pair, which it converts) is not a passthrough.
+        // encoder resolved to (e.g. a VobSub .sub without its .idx, which it converts) is not a passthrough.
         var extension = Path.GetExtension(path.AsSpan()).TrimStart('.').ToString();
         if (!MediaStream.IsPgsFormat(extension)
             && !string.Equals(extension, "mks", StringComparison.OrdinalIgnoreCase))

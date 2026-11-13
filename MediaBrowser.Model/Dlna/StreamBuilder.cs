@@ -1649,7 +1649,9 @@ namespace MediaBrowser.Model.Dlna
             // FFmpeg cannot mux VobSub back into an .idx/.sub pair, so extracted VobSub streams are exposed as .mks.
             return IsVobSubMksDeliveryProfile(profile)
                 && subtitleStream.IsVobSubSubtitleStream
-                && (!subtitleStream.IsExternal || subtitleStream.Path?.EndsWith(".mks", StringComparison.OrdinalIgnoreCase) == true);
+                && (!subtitleStream.IsExternal
+                    || subtitleStream.Path?.EndsWith(".mks", StringComparison.OrdinalIgnoreCase) == true
+                    || subtitleStream.Path?.EndsWith(".idx", StringComparison.OrdinalIgnoreCase) == true);
         }
 
         private bool IsBitrateLimitExceeded(MediaSourceInfo item, long maxBitrate)
