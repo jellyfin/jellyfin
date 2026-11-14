@@ -5,7 +5,7 @@ namespace Emby.Naming.AudioBook
     /// <summary>
     /// Represents a single video file.
     /// </summary>
-    public class AudioBookFileInfo : IComparable<AudioBookFileInfo>, IEquatable<AudioBookFileInfo>
+    public sealed class AudioBookFileInfo : IComparable<AudioBookFileInfo>, IEquatable<AudioBookFileInfo>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioBookFileInfo"/> class.
