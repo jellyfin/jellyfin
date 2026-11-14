@@ -369,13 +369,17 @@ public class ItemsController : BaseJellyfinApiController
             };
 
             var searchResults = await _searchManager.GetSearchResultsAsync(searchProviderQuery, HttpContext.RequestAborted).ConfigureAwait(false);
-            if (searchResults.Count > 0)
+
+            // The database provider has already searched, so nothing found means nothing matches.
+            if (searchResults.Count == 0)
             {
-                searchResultScores = searchResults.ToDictionary(r => r.ItemId, r => r.Score);
-                itemIds = ids.Length > 0
-                    ? ids.Concat(searchResultScores.Keys).Distinct().ToArray()
-                    : searchResultScores.Keys.ToArray();
+                return new QueryResult<BaseItemDto>(startIndex, 0, []);
             }
+
+            searchResultScores = searchResults.ToDictionary(r => r.ItemId, r => r.Score);
+            itemIds = ids.Length > 0
+                ? ids.Concat(searchResultScores.Keys).Distinct().ToArray()
+                : searchResultScores.Keys.ToArray();
         }
 
         var query = new InternalItemsQuery(user)
