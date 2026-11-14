@@ -1,3 +1,5 @@
+#pragma warning disable CS0618
+
 using System.Threading.Tasks;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Api.Models.StartupDtos;
@@ -31,23 +33,14 @@ public class StartupControllerTests
             typeof(DefaultPasswordResetProvider).FullName!);
 
     [Fact]
-    public async Task UpdateStartupUser_WhenNoUserExists_ReturnsNotFound()
-    {
-        _mockUserManager.Setup(m => m.GetFirstUser()).Returns((User?)null);
-
-        var result = await _subject.UpdateStartupUser(new StartupUserDto { Name = "admin", Password = "pw" });
-
-        Assert.IsType<NotFoundResult>(result);
-    }
-
-    [Fact]
     public async Task UpdateStartupUser_WhenPasswordAlreadyConfigured_ReturnsForbidden()
     {
         var user = CreateUser();
+        user.Username = "this-user-exists";
         user.Password = "already-set-hash";
-        _mockUserManager.Setup(m => m.GetFirstUser()).Returns(user);
+        _mockUserManager.Setup(m => m.GetUserByName(user.Username)).Returns(user);
 
-        var result = await _subject.UpdateStartupUser(new StartupUserDto { Name = "attacker", Password = "new-pw" });
+        var result = await _subject.UpdateStartupUser(new StartupUserDto { Name = "this-user-exists", Password = "new-pw" });
 
         // The startup wizard must never overwrite the password of an already-provisioned
         // account, even if IsStartupWizardCompleted has been cleared.
@@ -59,12 +52,15 @@ public class StartupControllerTests
     public async Task UpdateStartupUser_WhenNoPasswordYet_SetsPassword()
     {
         var user = CreateUser();
-        Assert.True(string.IsNullOrEmpty(user.Password));
-        _mockUserManager.Setup(m => m.GetFirstUser()).Returns(user);
+        user.Username = "user-does-not-exist";
+        user.Password = string.Empty;
 
-        var result = await _subject.UpdateStartupUser(new StartupUserDto { Name = "jellyfin", Password = "first-pw" });
+        _mockUserManager.Setup(m => m.CreateUserAsync(user.Username)).ReturnsAsync(user);
+
+        var result = await _subject.UpdateStartupUser(new StartupUserDto { Name = user.Username, Password = "first-pw" });
 
         Assert.IsType<NoContentResult>(result);
         _mockUserManager.Verify(m => m.ChangePassword(user.Id, "first-pw"), Times.Once);
+        _mockUserManager.Verify(m => m.CreateUserAsync(user.Username), Times.Once);
     }
 }

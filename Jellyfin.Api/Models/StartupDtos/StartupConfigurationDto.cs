@@ -1,8 +1,11 @@
+using System;
+
 namespace Jellyfin.Api.Models.StartupDtos;
 
 /// <summary>
 /// The startup configuration DTO.
 /// </summary>
+[Obsolete("Use ServerConfiguration")]
 public class StartupConfigurationDto
 {
     /// <summary>

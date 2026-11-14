@@ -259,6 +259,42 @@ public class UserController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Registers the initial user account for an empty server. This endpoint is only available before the server has been initialized.
+    /// </summary>
+    /// <param name="registerUserDto">Request body containing a username and password.</param>
+    /// <response code="204">Successfully registered the user account.</response>
+    /// <response code="403">An account with that username already exists.</response>
+    /// <returns>
+    /// A <see cref="Task" /> that represents asynchronous user registration. It contains a <see cref="NoContentResult"/> to indicate success.
+    /// </returns>
+    [HttpPost("Register")]
+    [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult> UpdateStartupUser([FromBody] RegisterUserDto registerUserDto)
+    {
+        var user = _userManager.GetUserByName(registerUserDto.Username);
+        if (user is not null)
+        {
+            return Forbid();
+        }
+
+        user = await _userManager.CreateUserAsync(registerUserDto.Username).ConfigureAwait(false);
+
+        user.SetPermission(PermissionKind.EnableContentDeletion, true);
+        user.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, true);
+        user.SetPermission(PermissionKind.IsAdministrator, true);
+
+        await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
+        await _userManager.ChangePassword(user.Id, registerUserDto.Password).ConfigureAwait(false);
+
+        _config.Configuration.IsStartupWizardCompleted = true;
+        _config.SaveConfiguration();
+
+        return NoContent();
+    }
+
+    /// <summary>
     /// Updates a user's password.
     /// </summary>
     /// <param name="userId">The user id.</param>
