@@ -287,6 +287,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc />
     public async Task<string> MigrationBackupFast(CancellationToken cancellationToken)
     {
+        var dbContextFactory = DbContextFactory ?? throw new InvalidOperationException("The database provider has not been initialized.");
         var path = GetDatabasePath();
         if (!File.Exists(path))
         {
@@ -308,7 +309,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         // jellyfin.db silently drops the locks held by every open SQLite connection. Other processes then think
         // the database is unused and may delete the write-ahead log from under us. SQLite's online backup reads
         // through its own connection, and includes whatever still sits in the write-ahead log.
-        var context = await DbContextFactory!.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        var context = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
             await context.Database.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
