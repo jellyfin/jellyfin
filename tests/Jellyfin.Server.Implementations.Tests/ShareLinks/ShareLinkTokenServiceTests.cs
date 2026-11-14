@@ -8,8 +8,10 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Server.Implementations.ShareLinks;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.ShareLinks;
+using MediaBrowser.Model.Configuration;
 using Moq;
 using Xunit;
 
@@ -28,6 +30,7 @@ public sealed class ShareLinkTokenServiceTests
     private readonly InMemoryShareLinkRepository _repository = new InMemoryShareLinkRepository();
     private readonly FakeTimeProvider _timeProvider = new FakeTimeProvider(_start);
     private readonly Mock<IUserManager> _userManager = new Mock<IUserManager>();
+    private readonly Mock<IServerConfigurationManager> _configurationManager = new Mock<IServerConfigurationManager>();
     private readonly User _user;
     private readonly ShareLinkTokenService _service;
 
@@ -48,7 +51,15 @@ public sealed class ShareLinkTokenServiceTests
             .Setup(m => m.UpdateUserAsync(It.IsAny<User>()))
             .Returns(Task.CompletedTask);
 
-        _service = new ShareLinkTokenService(_userManager.Object, _repository, _timeProvider);
+        _configurationManager
+            .Setup(c => c.Configuration)
+            .Returns(new ServerConfiguration { MediaSharingPolicy = MediaSharingPolicy.Enabled });
+
+        _service = new ShareLinkTokenService(
+            _userManager.Object,
+            _repository,
+            new ShareLinkPolicyService(_configurationManager.Object),
+            _timeProvider);
     }
 
     [Fact]
@@ -179,6 +190,92 @@ public sealed class ShareLinkTokenServiceTests
         var validated = await _service.ValidateAsync(created.Token!, _itemId, TestContext.Current.CancellationToken);
 
         Assert.Equal(ShareLinkErrorCode.LinkStateMissing, validated.ErrorCode);
+    }
+
+    [Fact]
+    public async Task Create_ServerSharingDisabled_ReturnsSharingDisabled()
+    {
+        SetServerMediaSharingPolicy(MediaSharingPolicy.Disabled);
+
+        var result = await _service.CreateAsync(
+            _userId,
+            _itemId,
+            null,
+            3600,
+            TestContext.Current.CancellationToken);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(ShareLinkCreateErrorCode.SharingDisabled, result.ErrorCode);
+    }
+
+    [Fact]
+    public async Task Validate_ServerSharingSwitchedOff_ReturnsSharingDisabled()
+    {
+        var created = await _service.CreateAsync(
+            _userId,
+            _itemId,
+            null,
+            3600,
+            TestContext.Current.CancellationToken);
+        Assert.True(created.Succeeded);
+        Assert.NotNull(created.Token);
+
+        SetServerMediaSharingPolicy(MediaSharingPolicy.Disabled);
+
+        var validation = await _service.ValidateAsync(
+            created.Token,
+            _itemId,
+            TestContext.Current.CancellationToken);
+
+        Assert.False(validation.IsValid);
+        Assert.Equal(ShareLinkErrorCode.SharingDisabled, validation.ErrorCode);
+    }
+
+    [Fact]
+    public async Task Create_PerUserDefaultNo_RequiresExplicitUserEnable()
+    {
+        SetServerMediaSharingPolicy(MediaSharingPolicy.PerUserDefaultNo);
+
+        _user.MediaSharingPolicy = UserMediaSharingPolicy.Default;
+        var defaultsToDisabled = await _service.CreateAsync(
+            _userId,
+            _itemId,
+            null,
+            3600,
+            TestContext.Current.CancellationToken);
+        Assert.Equal(ShareLinkCreateErrorCode.SharingDisabled, defaultsToDisabled.ErrorCode);
+
+        _user.MediaSharingPolicy = UserMediaSharingPolicy.Enabled;
+        var explicitlyEnabled = await _service.CreateAsync(
+            _userId,
+            _itemId,
+            null,
+            3600,
+            TestContext.Current.CancellationToken);
+        Assert.True(explicitlyEnabled.Succeeded);
+    }
+
+    [Fact]
+    public async Task Create_HardServerEnable_IgnoresPerUserDisable()
+    {
+        SetServerMediaSharingPolicy(MediaSharingPolicy.Enabled);
+        _user.MediaSharingPolicy = UserMediaSharingPolicy.Disabled;
+
+        var result = await _service.CreateAsync(
+            _userId,
+            _itemId,
+            null,
+            3600,
+            TestContext.Current.CancellationToken);
+
+        Assert.True(result.Succeeded);
+    }
+
+    private void SetServerMediaSharingPolicy(MediaSharingPolicy policy)
+    {
+        _configurationManager
+            .Setup(c => c.Configuration)
+            .Returns(new ServerConfiguration { MediaSharingPolicy = policy });
     }
 
     private sealed class FakeTimeProvider : TimeProvider

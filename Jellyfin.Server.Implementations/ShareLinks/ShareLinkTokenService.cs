@@ -34,6 +34,7 @@ public sealed class ShareLinkTokenService : IShareLinkTokenService
 
     private readonly IUserManager _userManager;
     private readonly IShareLinkRepository _shareLinkRepository;
+    private readonly IShareLinkPolicyService _shareLinkPolicyService;
     private readonly TimeProvider _timeProvider;
 
     /// <summary>
@@ -41,11 +42,17 @@ public sealed class ShareLinkTokenService : IShareLinkTokenService
     /// </summary>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="shareLinkRepository">Instance of the <see cref="IShareLinkRepository"/> interface.</param>
+    /// <param name="shareLinkPolicyService">Instance of the <see cref="IShareLinkPolicyService"/> interface.</param>
     /// <param name="timeProvider">The clock used for issuance, expiration and first-access timestamps.</param>
-    public ShareLinkTokenService(IUserManager userManager, IShareLinkRepository shareLinkRepository, TimeProvider timeProvider)
+    public ShareLinkTokenService(
+        IUserManager userManager,
+        IShareLinkRepository shareLinkRepository,
+        IShareLinkPolicyService shareLinkPolicyService,
+        TimeProvider timeProvider)
     {
         _userManager = userManager;
         _shareLinkRepository = shareLinkRepository;
+        _shareLinkPolicyService = shareLinkPolicyService;
         _timeProvider = timeProvider;
     }
 
@@ -78,6 +85,13 @@ public sealed class ShareLinkTokenService : IShareLinkTokenService
         if (user is null || user.HasPermission(PermissionKind.IsDisabled))
         {
             return new ShareLinkCreationResult(null, null, ShareLinkCreateErrorCode.UserDisabled);
+        }
+
+        // Enforced here as well as in the controller so that the decision cannot be bypassed
+        // by any other caller of the token service.
+        if (!_shareLinkPolicyService.IsSharingAllowed(user))
+        {
+            return new ShareLinkCreationResult(null, null, ShareLinkCreateErrorCode.SharingDisabled);
         }
 
         var existingLinks = await _shareLinkRepository.ListByUserAsync(userId, cancellationToken).ConfigureAwait(false);
@@ -142,6 +156,13 @@ public sealed class ShareLinkTokenService : IShareLinkTokenService
         if (user is null || user.HasPermission(PermissionKind.IsDisabled))
         {
             return Failure(ShareLinkErrorCode.UserDisabled);
+        }
+
+        // An administrator turning media sharing down (globally, or for this user) must also
+        // stop links that were already handed out.
+        if (!_shareLinkPolicyService.IsSharingAllowed(user))
+        {
+            return Failure(ShareLinkErrorCode.SharingDisabled);
         }
 
         if (!ShareLinkKeyHelper.TryDecode(user.ShareLinkKey, out byte[]? keyBytes))

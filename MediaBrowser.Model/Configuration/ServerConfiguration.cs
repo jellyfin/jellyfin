@@ -290,7 +290,24 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public bool EnableLegacyAuthorization { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether scoped share links are enabled.
+    /// Gets or sets the server-wide policy for creating scoped media share links.
     /// </summary>
-    public bool ShareLinksEnabled { get; set; } = true;
+    /// <remarks>
+    /// <para>
+    /// Defaults to <see cref="MediaSharingPolicy.Disabled"/>: sharing stays off until an
+    /// administrator explicitly turns it on.
+    /// </para>
+    /// <para>
+    /// <b>Bearer token risk:</b> a share link is a bearer credential. Anyone who obtains the
+    /// URL can stream the scoped item without logging in, until the link expires or is
+    /// revoked. Links travel in query strings, so they can leak through browser history,
+    /// chat logs, server access logs, screenshots and <c>Referer</c> headers. Only enable
+    /// media sharing on servers whose users understand this, and encourage short
+    /// expirations. Revoking a link, disabling the creator's account, or changing the
+    /// creator's password (which rotates their share key) invalidates it immediately.
+    /// Switching this setting back to <see cref="MediaSharingPolicy.Disabled"/> also stops
+    /// every existing link from validating.
+    /// </para>
+    /// </remarks>
+    public MediaSharingPolicy MediaSharingPolicy { get; set; } = MediaSharingPolicy.Disabled;
 }

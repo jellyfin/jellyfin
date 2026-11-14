@@ -28,5 +28,10 @@ public enum ShareLinkCreateErrorCode
     /// <summary>
     /// The creating user already has the maximum number of active share links.
     /// </summary>
-    ActiveLinkLimitReached
+    ActiveLinkLimitReached,
+
+    /// <summary>
+    /// Media sharing is disabled for this user or for the whole server.
+    /// </summary>
+    SharingDisabled
 }

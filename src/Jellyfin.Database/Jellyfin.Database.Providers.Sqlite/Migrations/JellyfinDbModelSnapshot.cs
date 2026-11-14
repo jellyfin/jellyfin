@@ -1378,6 +1378,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int?>("MaxParentalRatingSubScore")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("MediaSharingPolicy")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("MustUpdatePassword")
                         .HasColumnType("INTEGER");
 

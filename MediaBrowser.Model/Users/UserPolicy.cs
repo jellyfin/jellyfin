@@ -64,6 +64,7 @@ namespace MediaBrowser.Model.Users
             EnableContentDownloading = true;
             EnablePublicSharing = true;
             EnableRemoteAccess = true;
+            MediaSharingPolicy = UserMediaSharingPolicy.Default;
             SyncPlayAccess = SyncPlayUserAccessType.CreateAndJoinGroups;
         }
 
@@ -176,6 +177,16 @@ namespace MediaBrowser.Model.Users
         public int MaxActiveSessions { get; set; }
 
         public bool EnablePublicSharing { get; set; }
+
+        /// <summary>
+        /// Gets or sets this user's preference for creating scoped media share links.
+        /// </summary>
+        /// <remarks>
+        /// Only meaningful while the server-wide <see cref="MediaSharingPolicy"/> is one of the
+        /// per-user policies; a hard server-wide yes or no overrides it. The default,
+        /// <see cref="UserMediaSharingPolicy.Default"/>, means the user has not chosen.
+        /// </remarks>
+        public UserMediaSharingPolicy MediaSharingPolicy { get; set; }
 
         public Guid[] BlockedMediaFolders { get; set; }
 

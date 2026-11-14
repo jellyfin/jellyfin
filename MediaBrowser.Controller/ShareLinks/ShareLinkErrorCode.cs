@@ -34,5 +34,11 @@ public enum ShareLinkErrorCode
     /// <summary>
     /// The share link backing the token no longer exists.
     /// </summary>
-    LinkStateMissing
+    LinkStateMissing,
+
+    /// <summary>
+    /// Media sharing is disabled for this user or for the whole server, so the link is not
+    /// usable even though it is otherwise valid.
+    /// </summary>
+    SharingDisabled
 }

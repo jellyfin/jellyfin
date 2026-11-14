@@ -7,6 +7,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.ShareLinks;
 using Jellyfin.Data;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Configuration;
@@ -31,7 +32,7 @@ public class ShareLinksController : BaseJellyfinApiController
     private readonly IShareLinkRepository _shareLinkRepository;
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IShareLinkPolicyService _shareLinkPolicyService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ShareLinksController"/> class.
@@ -40,19 +41,19 @@ public class ShareLinksController : BaseJellyfinApiController
     /// <param name="shareLinkRepository">Instance of the <see cref="IShareLinkRepository"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="shareLinkPolicyService">Instance of the <see cref="IShareLinkPolicyService"/> interface.</param>
     public ShareLinksController(
         IShareLinkTokenService shareLinkTokenService,
         IShareLinkRepository shareLinkRepository,
         ILibraryManager libraryManager,
         IUserManager userManager,
-        IServerConfigurationManager serverConfigurationManager)
+        IShareLinkPolicyService shareLinkPolicyService)
     {
         _shareLinkTokenService = shareLinkTokenService;
         _shareLinkRepository = shareLinkRepository;
         _libraryManager = libraryManager;
         _userManager = userManager;
-        _serverConfigurationManager = serverConfigurationManager;
+        _shareLinkPolicyService = shareLinkPolicyService;
     }
 
     /// <summary>
@@ -76,16 +77,19 @@ public class ShareLinksController : BaseJellyfinApiController
         [FromRoute] Guid itemId,
         [FromBody] CreateShareLinkRequestDto request)
     {
-        if (!_serverConfigurationManager.Configuration.ShareLinksEnabled)
-        {
-            return StatusCode(StatusCodes.Status403Forbidden);
-        }
-
         var userId = User.GetUserId();
         var user = _userManager.GetUserById(userId);
         if (user is null)
         {
             return Unauthorized();
+        }
+
+        // Effective policy: hard server-wide yes/no, otherwise the user's own choice with
+        // the server-wide default as fallback.
+        if (!_shareLinkPolicyService.IsSharingAllowed(user))
+        {
+            Response.Headers[ShareLinkErrorHeader] = ShareLinkCreateErrorCode.SharingDisabled.ToString();
+            return StatusCode(StatusCodes.Status403Forbidden);
         }
 
         var item = _libraryManager.GetItemById(itemId);
@@ -246,7 +250,14 @@ public class ShareLinksController : BaseJellyfinApiController
     {
         // TODO: prefer the configured WanAddress (or public URL) instead of the incoming request host.
         var baseUrl = $"{Request.Scheme}://{Request.Host.ToUriComponent()}";
-        var streamUrl = $"{baseUrl}/Videos/{itemId.ToString("N", CultureInfo.InvariantCulture)}/stream";
+
+        // Route to the endpoint that can actually serve the item: audio items have no video
+        // stream, so pointing them at /Videos would hand back an unusable link.
+        var item = _libraryManager.GetItemById(itemId);
+        var resource = item?.MediaType == MediaType.Audio
+            ? "Audio"
+            : "Videos";
+        var streamUrl = $"{baseUrl}/{resource}/{itemId.ToString("N", CultureInfo.InvariantCulture)}/stream";
 
         // The raw token is never persisted, so list responses cannot replay it and fall back
         // to the bare stream URL. Only the create response carries the token.

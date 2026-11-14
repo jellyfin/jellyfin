@@ -148,6 +148,7 @@ public static class ServiceCollectionExtensions
 
         serviceCollection.AddSingleton<IShareLinkRepository, ShareLinkRepository>();
         serviceCollection.AddSingleton<IShareLinkTokenService, ShareLinkTokenService>();
+        serviceCollection.AddSingleton<IShareLinkPolicyService, ShareLinkPolicyService>();
         serviceCollection.AddSingleton(TimeProvider.System);
 
         return serviceCollection;

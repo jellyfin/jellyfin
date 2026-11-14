@@ -9,6 +9,8 @@ using Jellyfin.Api.Controllers;
 using Jellyfin.Api.Models.ShareLinks;
 using Jellyfin.Data;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Server.Implementations.ShareLinks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -82,7 +84,7 @@ namespace Jellyfin.Api.Tests.Controllers
         [Fact]
         public async Task CreateShareLink_WhenDisabled_ReturnsForbidden()
         {
-            var controller = CreateController(shareLinksEnabled: false);
+            var controller = CreateController(mediaSharingPolicy: MediaSharingPolicy.Disabled);
 
             var result = await controller.CreateShareLink(
                 _itemId,
@@ -139,16 +141,93 @@ namespace Jellyfin.Api.Tests.Controllers
             Assert.IsType<NotFoundResult>(result);
         }
 
+        [Fact]
+        public async Task CreateShareLink_WhenDisabled_ReturnsForbiddenAndErrorCode()
+        {
+            var controller = CreateController(mediaSharingPolicy: MediaSharingPolicy.Disabled);
+
+            var result = await controller.CreateShareLink(
+                _itemId,
+                new CreateShareLinkRequestDto { DurationSeconds = 3600 });
+
+            var statusResult = Assert.IsType<StatusCodeResult>(result.Result);
+            Assert.Equal(StatusCodes.Status403Forbidden, statusResult.StatusCode);
+            Assert.Equal(
+                ShareLinkCreateErrorCode.SharingDisabled.ToString(),
+                controller.Response.Headers["X-ShareLink-Error"].ToString());
+        }
+
+        [Fact]
+        public async Task CreateShareLink_PerUserDefaultNo_UnsetUser_ReturnsForbidden()
+        {
+            var controller = CreateController(
+                mediaSharingPolicy: MediaSharingPolicy.PerUserDefaultNo,
+                userMediaSharingPolicy: UserMediaSharingPolicy.Default);
+
+            var result = await controller.CreateShareLink(
+                _itemId,
+                new CreateShareLinkRequestDto { DurationSeconds = 3600 });
+
+            Assert.Equal(StatusCodes.Status403Forbidden, Assert.IsType<StatusCodeResult>(result.Result).StatusCode);
+        }
+
+        [Fact]
+        public async Task CreateShareLink_PerUserDefaultNo_ExplicitlyEnabledUser_Creates()
+        {
+            _tokenService
+                .Setup(s => s.CreateAsync(_userId, _itemId, (long?)null, 3600, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ShareLinkCreationResult(
+                    "token-abc",
+                    new ShareLink("jti-1", _userId, _itemId, 1700000000) { DurationSeconds = 3600 },
+                    null));
+
+            var controller = CreateController(
+                mediaSharingPolicy: MediaSharingPolicy.PerUserDefaultNo,
+                userMediaSharingPolicy: UserMediaSharingPolicy.Enabled);
+
+            var result = await controller.CreateShareLink(
+                _itemId,
+                new CreateShareLinkRequestDto { DurationSeconds = 3600 });
+
+            Assert.Equal(StatusCodes.Status201Created, Assert.IsType<ObjectResult>(result.Result).StatusCode);
+        }
+
+        [Fact]
+        public async Task CreateShareLink_HardServerEnable_IgnoresUserDisable()
+        {
+            _tokenService
+                .Setup(s => s.CreateAsync(_userId, _itemId, (long?)null, 3600, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ShareLinkCreationResult(
+                    "token-abc",
+                    new ShareLink("jti-1", _userId, _itemId, 1700000000) { DurationSeconds = 3600 },
+                    null));
+
+            var controller = CreateController(
+                mediaSharingPolicy: MediaSharingPolicy.Enabled,
+                userMediaSharingPolicy: UserMediaSharingPolicy.Disabled);
+
+            var result = await controller.CreateShareLink(
+                _itemId,
+                new CreateShareLinkRequestDto { DurationSeconds = 3600 });
+
+            Assert.Equal(StatusCodes.Status201Created, Assert.IsType<ObjectResult>(result.Result).StatusCode);
+        }
+
         private ShareLinksController CreateController(
-            bool shareLinksEnabled = true,
+            MediaSharingPolicy mediaSharingPolicy = MediaSharingPolicy.Enabled,
+            UserMediaSharingPolicy userMediaSharingPolicy = UserMediaSharingPolicy.Default,
             bool itemExists = true,
             bool itemVisible = true)
         {
             _configurationManager
                 .Setup(c => c.Configuration)
-                .Returns(new ServerConfiguration { ShareLinksEnabled = shareLinksEnabled });
+                .Returns(new ServerConfiguration { MediaSharingPolicy = mediaSharingPolicy });
 
-            var user = new User("test", "test", "test") { Id = _userId };
+            var user = new User("test", "test", "test")
+            {
+                Id = _userId,
+                MediaSharingPolicy = userMediaSharingPolicy
+            };
             user.AddDefaultPermissions();
             _userManager.Setup(m => m.GetUserById(_userId)).Returns(user);
 
@@ -168,7 +247,7 @@ namespace Jellyfin.Api.Tests.Controllers
                 _repository.Object,
                 _libraryManager.Object,
                 _userManager.Object,
-                _configurationManager.Object);
+                new ShareLinkPolicyService(_configurationManager.Object));
 
             var httpContext = new DefaultHttpContext
             {

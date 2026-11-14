@@ -515,6 +515,7 @@ namespace Jellyfin.Server.Implementations.Users
                     EnablePlaybackRemuxing = user.HasPermission(PermissionKind.EnablePlaybackRemuxing),
                     ForceRemoteSourceTranscoding = user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding),
                     EnablePublicSharing = user.HasPermission(PermissionKind.EnablePublicSharing),
+                    MediaSharingPolicy = user.MediaSharingPolicy,
                     EnableCollectionManagement = user.HasPermission(PermissionKind.EnableCollectionManagement),
                     EnableSubtitleManagement = user.HasPermission(PermissionKind.EnableSubtitleManagement),
                     AccessSchedules = user.AccessSchedules.ToArray(),
@@ -901,6 +902,7 @@ namespace Jellyfin.Server.Implementations.Users
                     user.SetPermission(PermissionKind.EnableLyricManagement, policy.EnableLyricManagement);
                     user.SetPermission(PermissionKind.ForceRemoteSourceTranscoding, policy.ForceRemoteSourceTranscoding);
                     user.SetPermission(PermissionKind.EnablePublicSharing, policy.EnablePublicSharing);
+                    user.MediaSharingPolicy = policy.MediaSharingPolicy;
 
                     user.AccessSchedules.Clear();
                     foreach (var policyAccessSchedule in policy.AccessSchedules)

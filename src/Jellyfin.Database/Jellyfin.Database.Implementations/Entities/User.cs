@@ -106,6 +106,17 @@ namespace Jellyfin.Database.Implementations.Entities
         public string ShareLinkKey { get; set; }
 
         /// <summary>
+        /// Gets or sets this user's preference for creating scoped media share links.
+        /// </summary>
+        /// <remarks>
+        /// Required, defaults to <see cref="UserMediaSharingPolicy.Default"/> ("not explicitly
+        /// set"). Only consulted when the server-wide media sharing policy allows per-user
+        /// choice. Adding this column is a pure additive migration: older rows read as
+        /// <see cref="UserMediaSharingPolicy.Default"/> and older servers ignore it.
+        /// </remarks>
+        public UserMediaSharingPolicy MediaSharingPolicy { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the user must update their password.
         /// </summary>
         /// <remarks>
