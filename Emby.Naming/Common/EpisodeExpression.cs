@@ -1,3 +1,5 @@
+#pragma warning disable CA1819 // DateTimeFormats is part of the public Jellyfin.Naming API; changing its type would break downstream consumers
+
 using System;
 using System.Text.RegularExpressions;
 
