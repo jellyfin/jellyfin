@@ -164,6 +164,25 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         }
 
+        [Theory]
+        [InlineData("")]
+        [InlineData("/etc/passwd")]
+        [InlineData("two words")]
+        [Priority(-2)]
+        public async Task User_RegisterUser_Fail(string username)
+        {
+            var client = _factory.CreateClient();
+
+            var user = new RegisterUserDto()
+            {
+                Username = username,
+                Password = "NewPassword"
+            };
+
+            var response = await client.PostAsJsonAsync("/Users/Register", user, _jsonOptions, TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
         [Fact]
         [Priority(2)]
         public async Task UpdateUser_UsernameCaseDifference_Success()

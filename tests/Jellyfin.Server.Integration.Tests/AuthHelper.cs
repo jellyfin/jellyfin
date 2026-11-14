@@ -3,9 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Threading.Tasks;
-using Jellyfin.Api.Models.StartupDtos;
 using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
@@ -22,10 +20,13 @@ namespace Jellyfin.Server.Integration.Tests
         public static async Task<string> CompleteStartupAsync(HttpClient client)
         {
             var jsonOptions = JsonDefaults.Options;
-            var userResponse = await client.GetByteArrayAsync("/Startup/User");
-            var user = JsonSerializer.Deserialize<StartupUserDto>(userResponse, jsonOptions);
+            var user = new RegisterUserDto
+            {
+                Username = "NewUsername",
+                Password = "NewPassword"
+            };
 
-            using var completeResponse = await client.PostAsync("/Startup/Complete", new ByteArrayContent(Array.Empty<byte>()));
+            using var completeResponse = await client.PostAsJsonAsync("/Users/Register", user, jsonOptions, TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.NoContent, completeResponse.StatusCode);
 
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/Users/AuthenticateByName");
@@ -33,8 +34,8 @@ namespace Jellyfin.Server.Integration.Tests
             httpRequest.Content = JsonContent.Create(
                 new AuthenticateUserByName()
                 {
-                    Username = user!.Name,
-                    Pw = user.Password,
+                    Username = user.Username,
+                    Pw = user.Password
                 },
                 options: jsonOptions);
 
