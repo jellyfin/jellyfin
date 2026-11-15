@@ -7,7 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.MediaEncoding.Encoder;
+using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
@@ -33,11 +36,10 @@ public sealed class MediaInfoCancellationTests : IDisposable
     [Fact]
     public async Task GetMediaInfo_CancelledWhileCopyingOutput_StopsTheProbe()
     {
-        Assert.SkipWhen(OperatingSystem.IsWindows(), "The fake probe fixture uses a Unix shell executable.");
         using var encoder = CreateEncoder();
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
-        var probe = ProbeAsync(encoder, "echo $$ > \"$1\"; exec sleep 60", cancellation.Token);
-        using var process = await StartedProbeAsync();
+        var probe = ProbeAsync(encoder, "cancel", cancellation.Token);
+        using var process = await StartedProbeAsync(probe);
         try
         {
             await cancellation.CancelAsync();
@@ -52,13 +54,22 @@ public sealed class MediaInfoCancellationTests : IDisposable
     }
 
     [Fact]
+    public Task GetMediaInfo_InvalidJsonResult_ThrowsTheProbeFailure()
+        => AssertInvalidProbeAsync(null);
+
+    [Fact]
     public async Task GetMediaInfo_InvalidResultWithAStillRunningProbe_StopsTheProbe()
     {
-        Assert.SkipWhen(OperatingSystem.IsWindows(), "The fake probe fixture uses a Unix shell executable.");
-        using var encoder = CreateEncoder();
+        Assert.SkipWhen(OperatingSystem.IsWindows(), "A still-running probe closing stdout uses a Unix shell fixture; cancellation and invalid JSON are tested on every OS.");
+        await AssertInvalidProbeAsync(await CreateUnixProbeAsync());
+    }
+
+    private async Task AssertInvalidProbeAsync(string? probePath)
+    {
+        using var encoder = CreateEncoder(probePath);
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
-        var probe = ProbeAsync(encoder, "echo $$ > \"$1\"; while [ ! -f \"$2\" ]; do sleep 0.02; done; printf '{}'; exec 1>&-; exec sleep 60", cancellation.Token);
-        using var process = await StartedProbeAsync();
+        var probe = ProbeAsync(encoder, "invalid", cancellation.Token);
+        using var process = await StartedProbeAsync(probe);
         try
         {
             await File.WriteAllTextAsync(Path.Combine(_folder, "release"), "continue", TestContext.Current.CancellationToken);
@@ -73,7 +84,7 @@ public sealed class MediaInfoCancellationTests : IDisposable
         }
     }
 
-    private static MediaEncoder CreateEncoder()
+    private static MediaEncoder CreateEncoder(string? probePath = null)
     {
         var encoder = new MediaEncoder(
             NullLogger<MediaEncoder>.Instance,
@@ -83,25 +94,66 @@ public sealed class MediaInfoCancellationTests : IDisposable
             Mock.Of<ILocalizationManager>(),
             new ConfigurationBuilder().Build(),
             Mock.Of<IServerConfigurationManager>());
-        typeof(MediaEncoder).GetField("_ffprobePath", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(encoder, "/bin/sh");
+        // Inject only the executable path, avoiding startup capability discovery. The operation under test is
+        // the public GetMediaInfo API, not a reflected private method.
+        var executable = OperatingSystem.IsWindows() ? "ffprobe.exe" : "ffprobe";
+        typeof(MediaEncoder).GetField("_ffprobePath", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(
+            encoder,
+            probePath ?? Path.Combine(AppContext.BaseDirectory, "FakeProbe", executable));
         return encoder;
     }
 
-    private Task<MediaInfo> ProbeAsync(MediaEncoder encoder, string script, CancellationToken token)
+    private async Task<string> CreateUnixProbeAsync()
     {
-        var probeArguments = "-c \"" + script.Replace("\"", "\\\"", StringComparison.Ordinal)
-            + "\" probe \"" + Path.Combine(_folder, "pid") + "\" \"" + Path.Combine(_folder, "release") + "\"";
-        return (Task<MediaInfo>)typeof(MediaEncoder).GetMethod("GetMediaInfoInternal", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(
-            encoder,
-            [string.Empty, string.Empty, MediaProtocol.File, false, probeArguments, false, VideoType.VideoFile, token])!;
+        if (OperatingSystem.IsWindows())
+        {
+            throw new PlatformNotSupportedException();
+        }
+
+        var path = Path.Combine(_folder, "ffprobe");
+        await File.WriteAllTextAsync(
+            path,
+            """
+            #!/bin/sh
+            input="${2#file:}"
+            folder="${input%/*}"
+            echo $$ > "$folder/pid"
+            while [ ! -f "$folder/release" ]; do sleep 0.02; done
+            printf '{}'
+            exec 1>&-
+            exec sleep 60
+
+            """,
+            TestContext.Current.CancellationToken);
+        File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        return path;
     }
 
-    private async Task<Process> StartedProbeAsync()
+    private Task<MediaInfo> ProbeAsync(MediaEncoder encoder, string behavior, CancellationToken token)
+        => encoder.GetMediaInfo(
+            new MediaInfoRequest
+            {
+                MediaSource = new MediaSourceInfo
+                {
+                    Path = Path.Combine(_folder, behavior),
+                    Protocol = MediaProtocol.File,
+                    VideoType = VideoType.VideoFile
+                },
+                MediaType = DlnaProfileType.Video
+            },
+            token);
+
+    private async Task<Process> StartedProbeAsync(Task probe)
     {
         var path = Path.Combine(_folder, "pid");
         var wait = Stopwatch.StartNew();
         while (!File.Exists(path) || new FileInfo(path).Length == 0)
         {
+            if (probe.IsCompleted)
+            {
+                await probe;
+            }
+
             Assert.True(wait.Elapsed < TimeSpan.FromSeconds(10), "The fake probe did not start.");
             await Task.Delay(20, TestContext.Current.CancellationToken);
         }

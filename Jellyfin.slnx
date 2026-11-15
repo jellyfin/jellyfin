@@ -32,6 +32,7 @@
     <Project Path="tests/Jellyfin.LiveTv.Tests/Jellyfin.LiveTv.Tests.csproj" />
     <Project Path="tests/Jellyfin.MediaEncoding.Hls.Tests/Jellyfin.MediaEncoding.Hls.Tests.csproj" />
     <Project Path="tests/Jellyfin.MediaEncoding.Keyframes.Tests/Jellyfin.MediaEncoding.Keyframes.Tests.csproj" />
+    <Project Path="tests/Jellyfin.MediaEncoding.TestHelper/Jellyfin.MediaEncoding.TestHelper.csproj" />
     <Project Path="tests/Jellyfin.MediaEncoding.Tests/Jellyfin.MediaEncoding.Tests.csproj" />
     <Project Path="tests/Jellyfin.Model.Tests/Jellyfin.Model.Tests.csproj" />
     <Project Path="tests/Jellyfin.Naming.Tests/Jellyfin.Naming.Tests.csproj" />
