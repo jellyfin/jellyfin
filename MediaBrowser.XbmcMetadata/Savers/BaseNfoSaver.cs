@@ -925,17 +925,25 @@ namespace MediaBrowser.XbmcMetadata.Savers
             writer.WriteEndElement();
         }
 
+        /// <summary>
+        /// Gets the people to write as &lt;actor&gt; elements, in the order they should be saved.
+        /// </summary>
+        /// <param name="people">The people, in their stored (list) order.</param>
+        /// <returns>The actors ordered by <see cref="PersonInfo.SortOrder"/>; people with the same or no sort order keep their original relative order.</returns>
+        internal static IEnumerable<PersonInfo> GetActorsInSaveOrder(IReadOnlyList<PersonInfo> people)
+        {
+            // OrderBy is a stable sort, so ties (including providers such as AniList/AniDB
+            // that don't set SortOrder) keep the incoming list order instead of being
+            // re-sorted alphabetically, which would otherwise be read back as the new cast order.
+            return people
+                .Where(person => !person.IsType(PersonKind.Director) && !person.IsType(PersonKind.Writer))
+                .OrderBy(person => person.SortOrder ?? 0);
+        }
+
         private void AddActors(IReadOnlyList<PersonInfo> people, XmlWriter writer, ILibraryManager libraryManager, bool saveImagePath)
         {
-            foreach (var person in people
-                .OrderBy(person => person.SortOrder ?? 0)
-                .ThenBy(person => person.Name?.Trim()))
+            foreach (var person in GetActorsInSaveOrder(people))
             {
-                if (person.IsType(PersonKind.Director) || person.IsType(PersonKind.Writer))
-                {
-                    continue;
-                }
-
                 writer.WriteStartElement("actor");
 
                 if (!string.IsNullOrWhiteSpace(person.Name))
