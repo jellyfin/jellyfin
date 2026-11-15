@@ -44,6 +44,16 @@ public class LyricLine
     public IReadOnlyList<string> ArtistIds { get; set; } = [];
 
     /// <summary>
+    /// Gets or sets the source vocal-line key. Translation/phonetic captions retain their target's key.
+    /// </summary>
+    public string? SourceKey { get; set; }
+
+    /// <summary>
+    /// Gets or sets the parent main vocal key for a background line or its auxiliary captions.
+    /// </summary>
+    public string? ParentKey { get; set; }
+
+    /// <summary>
     /// Gets or sets the syllable-level timing for this lyric line.
     /// </summary>
     public IReadOnlyList<LyricSyllable> Syllables { get; set; } = [];

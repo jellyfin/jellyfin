@@ -13,8 +13,6 @@ namespace MediaBrowser.Providers.Lyric;
 /// </summary>
 internal static partial class LyricMerger
 {
-    private sealed record Source(LyricDto Data, LyricDto Original, Dictionary<LyricLine, LyricLine>? Pairs);
-
     internal static LyricDto? Merge(IEnumerable<LyricDto> sources)
     {
         var candidates = Prepare(sources.Where(s => Main(s).Count > 0))
@@ -35,7 +33,7 @@ internal static partial class LyricMerger
         {
             var source = entry.Data;
             var otherMain = Main(source);
-            var alignment = Align(main, otherMain);
+            var alignment = AlignGroups(main, otherMain);
             foreach (var otherTrack in source.Tracks.Where(t => t.Type is LyricTrackType.Translation or LyricTrackType.Phonetic))
             {
                 var target = tracks.FirstOrDefault(t => t.Type == otherTrack.Type && SameLanguage(t.Language, otherTrack.Language));
@@ -47,8 +45,12 @@ internal static partial class LyricMerger
                     var texts = otherTrack.Lines.Select(l => Normalize(l.Text)).Where(t => t.Length >= 7).ToHashSet();
                     var matching = texts.Count < 2 ? [] : tracks.Where(t => t.Type == otherTrack.Type
                         && t.Lines.Count(l => texts.Contains(Normalize(l.Text))) >= 2).ToArray();
-                    if (matching.Length == 1) target = matching[0];
+                    if (matching.Length == 1)
+                    {
+                        target = matching[0];
+                    }
                 }
+
                 if (target is null)
                 {
                     target = new LyricTrack { Type = otherTrack.Type, Language = otherTrack.Language };
@@ -59,22 +61,39 @@ internal static partial class LyricMerger
                 var positions = target.Lines.Select((line, i) => (line, index: FindLine(main, line, target.Lines.Count == main.Count ? i : -1)))
                     .ToDictionary(pair => pair.line, pair => pair.index);
                 var covered = positions.Values.Where(i => i >= 0).ToHashSet();
+                var additions = new Dictionary<int, (int End, List<string> Text)>();
                 for (var i = 0; i < otherTrack.Lines.Count; i++)
                 {
                     var line = otherTrack.Lines[i];
                     var sourceIndex = entry.Pairs is not null && entry.Pairs.TryGetValue(line, out var original)
                         ? IndexOf(otherMain, original)
                         : FindLine(otherMain, line, otherTrack.Lines.Count == otherMain.Count ? i : -1);
-                    if (sourceIndex < 0 || !alignment.TryGetValue(sourceIndex, out var mainIndex) || !covered.Add(mainIndex))
+                    if (sourceIndex < 0 || !alignment.TryGetValue(sourceIndex, out var span) || covered.Contains(span.Start))
                     {
                         continue;
                     }
 
-                    var anchor = main[mainIndex];
-                    var added = new LyricLine(line.Text, anchor.Start)
+                    if (!additions.TryGetValue(span.Start, out var addition))
                     {
-                        End = anchor.End,
-                        ArtistIds = anchor.ArtistIds
+                        addition = (span.End, []);
+                    }
+
+                    if (!addition.Text.Any(text => Normalize(text) == Normalize(line.Text)))
+                    {
+                        addition.Text.Add(line.Text);
+                    }
+
+                    additions[span.Start] = (Math.Max(addition.End, span.End), addition.Text);
+                }
+
+                foreach (var (mainIndex, addition) in additions)
+                {
+                    var anchor = main[mainIndex];
+                    var added = new LyricLine(string.Join('\n', addition.Text), anchor.Start)
+                    {
+                        End = main[addition.End].End,
+                        ArtistIds = anchor.ArtistIds,
+                        SourceKey = anchor.SourceKey
                     };
                     lines.Add(added);
                     positions[added] = mainIndex;
@@ -92,16 +111,27 @@ internal static partial class LyricMerger
     {
         var entries = sources.Select(source =>
         {
-            if (source.Tracks.Any(t => t.Type != LyricTrackType.Main)) return new Source(source, source, null);
+            if (source.Tracks.Any(t => t.Type != LyricTrackType.Main))
+            {
+                return new Source(source, source, null);
+            }
+
             var split = SplitBilingual(Main(source));
-            if (split.Count == 1) return new Source(source, source, null);
+            if (split.Count == 1)
+            {
+                return new Source(source, source, null);
+            }
+
             split[0].Language = source.Tracks.First(t => t.Type == LyricTrackType.Main).Language;
             var raw = Main(source).Where(l => !string.IsNullOrWhiteSpace(l.Text)).ToArray();
             var pairs = new Dictionary<LyricLine, LyricLine>();
             foreach (var translated in split[1].Lines)
             {
                 var index = Array.IndexOf(raw, translated);
-                if (index > 0) pairs[translated] = raw[index - 1];
+                if (index > 0)
+                {
+                    pairs[translated] = raw[index - 1];
+                }
             }
 
             return new Source(new LyricDto { Metadata = source.Metadata, Tracks = split }, source, pairs);
@@ -109,7 +139,11 @@ internal static partial class LyricMerger
         var anchors = entries.Where(e => e.Pairs is null).ToArray();
         return entries.Select(entry =>
         {
-            if (entry.Pairs is null) return entry;
+            if (entry.Pairs is null)
+            {
+                return entry;
+            }
+
             var first = Main(entry.Data);
             var second = entry.Data.Tracks[1].Lines;
             var forward = anchors.Select(a => Align(Main(a.Data), first).Count).DefaultIfEmpty().Max();
@@ -118,7 +152,8 @@ internal static partial class LyricMerger
             {
                 var originals = entry.Pairs.Values.ToHashSet();
                 var raw = Main(entry.Original).Where(l => !string.IsNullOrWhiteSpace(l.Text)).ToArray();
-                return new Source(new LyricDto
+                return new Source(
+                    new LyricDto
                 {
                     Metadata = entry.Data.Metadata,
                     Tracks =
@@ -126,7 +161,9 @@ internal static partial class LyricMerger
                         new LyricTrack { Type = LyricTrackType.Main, Lines = raw.Where(l => !originals.Contains(l)).ToArray() },
                         new LyricTrack { Type = LyricTrackType.Translation, Lines = raw.Where(originals.Contains).ToArray() }
                     ]
-                }, entry.Original, entry.Pairs.ToDictionary(p => p.Value, p => p.Key));
+                },
+                    entry.Original,
+                    entry.Pairs.ToDictionary(p => p.Value, p => p.Key));
             }
 
             // Alternating plain text by itself is ambiguous. Require matching
@@ -140,7 +177,10 @@ internal static partial class LyricMerger
     {
         for (var i = 0; i < lines.Count; i++)
         {
-            if (ReferenceEquals(lines[i], value)) return i;
+            if (ReferenceEquals(lines[i], value))
+            {
+                return i;
+            }
         }
 
         return -1;
@@ -199,29 +239,154 @@ internal static partial class LyricMerger
 
     private static int FindLine(IReadOnlyList<LyricLine> main, LyricLine line, int fallback)
     {
+        // A background caption must never cover or be aligned to a main vocal slot.
+        if (line.ParentKey is not null)
+        {
+            return -1;
+        }
+
+        if (line.SourceKey is not null)
+        {
+            var keyed = Enumerable.Range(0, main.Count).Where(i => main[i].SourceKey == line.SourceKey).ToArray();
+            // Keys are local to a source. An unresolved/duplicate explicit reference
+            // must not silently become a different caption just because its time matches.
+            return keyed.Length == 1 ? keyed[0] : -1;
+        }
+
         if (line.Start.HasValue)
         {
-            for (var i = 0; i < main.Count; i++)
+            var matches = Enumerable.Range(0, main.Count).Where(i => main[i].Start == line.Start).ToArray();
+            if (line.ArtistIds.Count > 0)
             {
-                if (main[i].Start == line.Start)
-                {
-                    return i;
-                }
+                matches = matches.Where(i => main[i].ArtistIds.ToHashSet().SetEquals(line.ArtistIds)).ToArray();
             }
 
-            for (var i = 0; i < main.Count; i++)
+            if (line.End.HasValue && matches.Any(i => main[i].End == line.End))
             {
-                if (main[i].Start <= line.Start && main[i].End > line.Start)
-                {
-                    return i;
-                }
+                matches = matches.Where(i => main[i].End == line.End).ToArray();
             }
+
+            if (matches.Length > 0)
+            {
+                return matches.Length == 1 ? matches[0] : matches.Contains(fallback) ? fallback : -1;
+            }
+
+            var overlapping = Enumerable.Range(0, main.Count)
+                .Where(i => main[i].Start <= line.Start && main[i].End > line.Start
+                    && (line.ArtistIds.Count == 0 || main[i].ArtistIds.ToHashSet().SetEquals(line.ArtistIds)))
+                .ToArray();
+            return overlapping.Length == 1 ? overlapping[0] : -1;
         }
 
         return fallback;
     }
 
     internal static Dictionary<int, int> Align(IReadOnlyList<LyricLine> primary, IReadOnlyList<LyricLine> secondary)
+        => AlignGroups(primary, secondary).ToDictionary(pair => pair.Key, pair => pair.Value.Start);
+
+    private static Dictionary<int, LineSpan> AlignGroups(IReadOnlyList<LyricLine> primary, IReadOnlyList<LyricLine> secondary)
+    {
+        if ((long)primary.Count * secondary.Count > 100_000)
+        {
+            return AlignSingles(primary, secondary).ToDictionary(pair => pair.Key, pair => new LineSpan(pair.Value, pair.Value));
+        }
+
+        var a = primary.Select(l => Normalize(l.Text)).ToArray();
+        var b = secondary.Select(l => Normalize(l.Text)).ToArray();
+        var scores = new double[a.Length + 1, b.Length + 1];
+        var choices = new (int A, int B)[a.Length + 1, b.Length + 1];
+        var similarities = new Dictionary<(string, string), double>();
+        for (var i = 1; i <= a.Length; i++)
+        {
+            for (var j = 1; j <= b.Length; j++)
+            {
+                scores[i, j] = Math.Max(scores[i - 1, j], scores[i, j - 1]);
+                choices[i, j] = scores[i - 1, j] >= scores[i, j - 1] ? (1, 0) : (0, 1);
+                for (var p = 1; p <= Math.Min(3, i); p++)
+                {
+                    for (var s = 1; s <= Math.Min(3, j); s++)
+                    {
+                        var left = string.Concat(a.AsSpan(i - p, p));
+                        var right = string.Concat(b.AsSpan(j - s, s));
+                        if (!similarities.TryGetValue((left, right), out var similarity))
+                        {
+                            similarity = Similarity(left, right);
+                            similarities[(left, right)] = similarity;
+                        }
+
+                        if (similarity == 0)
+                        {
+                            continue;
+                        }
+
+                        var score = scores[i - p, j - s] + (similarity * (p + s) / 2) - (0.05 * (p + s - 2));
+                        if (score > scores[i, j])
+                        {
+                            scores[i, j] = score;
+                            choices[i, j] = (p, s);
+                        }
+                    }
+                }
+            }
+        }
+
+        var result = new Dictionary<int, LineSpan>();
+        for (int i = a.Length, j = b.Length; i > 0 && j > 0;)
+        {
+            var (p, s) = choices[i, j];
+            if (p > 0 && s > 0)
+            {
+                for (var k = j - s; k < j; k++)
+                {
+                    result[k] = new LineSpan(i - p, i - 1);
+                }
+            }
+
+            i -= p;
+            j -= s;
+        }
+
+        // Consistently aligned clocks can recover differently transcribed originals.
+        // Require several textual anchors and a unique nearby slot between neighbors.
+        var offsets = result.Where(pair => pair.Value.Start == pair.Value.End
+                && primary[pair.Value.Start].Start.HasValue && secondary[pair.Key].Start.HasValue)
+            .Select(pair => primary[pair.Value.Start].Start!.Value - secondary[pair.Key].Start!.Value).Order().ToArray();
+        if (offsets.Length >= 3)
+        {
+            var median = offsets[offsets.Length / 2];
+            var deviations = offsets.Select(value => Math.Abs(value - median)).Order().ToArray();
+            var deviation = deviations[deviations.Length / 2];
+            if (deviation <= TimeSpan.TicksPerMillisecond * 250)
+            {
+                var tolerance = (TimeSpan.TicksPerMillisecond * 200) + (2 * deviation);
+                var occupied = result.Values.SelectMany(span => Enumerable.Range(span.Start, span.End - span.Start + 1)).ToHashSet();
+                for (var j = 0; j < secondary.Count; j++)
+                {
+                    if (result.ContainsKey(j) || !secondary[j].Start.HasValue)
+                    {
+                        continue;
+                    }
+
+                    var before = result.Where(pair => pair.Key < j).OrderByDescending(pair => pair.Key).FirstOrDefault();
+                    var after = result.Where(pair => pair.Key > j).OrderBy(pair => pair.Key).FirstOrDefault();
+                    var lower = before.Equals(default(KeyValuePair<int, LineSpan>)) ? -1 : before.Value.End;
+                    var upper = after.Equals(default(KeyValuePair<int, LineSpan>)) ? primary.Count : after.Value.Start;
+                    var matches = Enumerable.Range(lower + 1, Math.Max(0, upper - lower - 1))
+                        .Where(i => !occupied.Contains(i) && primary[i].Start.HasValue
+                            && Math.Abs(primary[i].Start!.Value - secondary[j].Start!.Value - median) <= tolerance).ToArray();
+                    if (matches.Length == 1)
+                    {
+                        result[j] = new LineSpan(matches[0], matches[0]);
+                        occupied.Add(matches[0]);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private static Dictionary<int, int> AlignSingles(IReadOnlyList<LyricLine> primary, IReadOnlyList<LyricLine> secondary)
     {
         var a = primary.Select(l => Normalize(l.Text)).ToArray();
         var b = secondary.Select(l => Normalize(l.Text)).ToArray();
@@ -360,4 +525,8 @@ internal static partial class LyricMerger
 
     [GeneratedRegex(@"\s*[\(\[]feat\.?\s+[^\)\]]+[\)\]]", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex FeaturedArtistRegex();
+
+    private readonly record struct LineSpan(int Start, int End);
+
+    private sealed record Source(LyricDto Data, LyricDto Original, Dictionary<LyricLine, LyricLine>? Pairs);
 }

@@ -676,4 +676,43 @@ public static class TtmlLyricParserTests
               <body>{body}</body>
             </tt>
             """;
+
+    [Fact]
+    public static void ParseTtml_MetadataBackgroundCaptionKeepsItsOwnTargetAtIdenticalTimes()
+    {
+        const string Ttml = """
+            <tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xmlns:i="http://music.apple.com/lyric-ttml-internal">
+              <head><metadata><i:iTunesMetadata><i:translations><i:translation xml:lang="fr">
+                <i:text for="L1">Voix principale <span ttm:role="x-bg">（Réponse）</span></i:text>
+              </i:translation></i:translations></i:iTunesMetadata></metadata></head>
+              <body><div><p begin="00:01.000" end="00:03.000" i:key="L1">
+                <span begin="00:01.000" end="00:03.000">Lead</span>
+                <span ttm:role="x-bg" begin="00:01.000" end="00:03.000"><span begin="00:01.000" end="00:02.000">(An</span><span begin="00:02.000" end="00:03.000">swer)</span></span>
+              </p></div></body>
+            </tt>
+            """;
+        var parsed = new TtmlLyricParser().ParseLyrics(new LyricFile("sample.ttml", Ttml));
+        Assert.NotNull(parsed);
+        var main = Assert.Single(parsed.Tracks.Single(t => t.Type == LyricTrackType.Main).Lines);
+        var background = Assert.Single(parsed.Tracks.Single(t => t.Type == LyricTrackType.Background).Lines);
+        var captions = parsed.Tracks.Single(t => t.Type == LyricTrackType.Translation).Lines;
+        Assert.Equal("Answer", background.Text);
+        Assert.Equal(new[] { "An", "swer" }, background.Syllables.Select(s => s.Text));
+        Assert.Equal(main.SourceKey, background.ParentKey);
+        Assert.NotEqual(main.SourceKey, background.SourceKey);
+        Assert.Equal("Voix principale", Assert.Single(captions, l => l.SourceKey == main.SourceKey).Text);
+        Assert.Equal("Réponse", Assert.Single(captions, l => l.SourceKey == background.SourceKey).Text);
+        Assert.Equal(background.ParentKey, captions.Single(l => l.SourceKey == background.SourceKey).ParentKey);
+    }
+
+    [Fact]
+    public static void MetadataParagraphsAreNotParsedAsMainVocals()
+    {
+        const string Text = """
+            <tt xmlns="http://www.w3.org/ns/ttml"><head><metadata><p begin="0.0" end="1.0">Metadata</p></metadata></head><body><div><p begin="1.0" end="2.0">Original</p></div></body></tt>
+            """;
+        var parsed = new TtmlLyricParser().ParseLyrics(new LyricFile("sample.ttml", Text));
+        Assert.NotNull(parsed);
+        Assert.Equal("Original", Assert.Single(parsed.Tracks.Single(t => t.Type == LyricTrackType.Main).Lines).Text);
+    }
 }

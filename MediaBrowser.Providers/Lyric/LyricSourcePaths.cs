@@ -18,7 +18,11 @@ internal static class LyricSourcePaths
             && LyricMerger.FileKey(Path.GetFileNameWithoutExtension(f.FullName)) == key) == 1;
         foreach (var file in files)
         {
-            if (!lyricExtensions.Contains(Path.GetExtension(file.FullName), StringComparer.OrdinalIgnoreCase)) continue;
+            if (!lyricExtensions.Contains(Path.GetExtension(file.FullName), StringComparer.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
             var lyricStem = Path.GetFileNameWithoutExtension(file.FullName);
             if (lyricStem.Equals(stem, StringComparison.OrdinalIgnoreCase)
                 || (unambiguous && key.Length > 0 && LyricMerger.FileKey(lyricStem) == key))

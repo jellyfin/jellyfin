@@ -99,15 +99,19 @@ public partial class TtmlLyricParser : ILyricParser
         var phoneticLines = new Dictionary<string, List<LyricLine>>(StringComparer.OrdinalIgnoreCase);
         var backgroundLines = new List<LyricLine>();
 
+        // Metadata can contain timed paragraphs too; only body paragraphs are vocals.
+        var lyricScope = body ?? root.Elements().FirstOrDefault(i => i.Name.LocalName == "body") ?? root;
         var paragraphs = StrictValidation
-            ? document.Descendants(_ttmlNamespace + "p")
-            : document.Descendants().Where(i => i.Name.LocalName == "p");
+            ? lyricScope.Descendants(_ttmlNamespace + "p")
+            : lyricScope.Descendants().Where(i => i.Name.LocalName == "p");
 
+        var paragraphIndex = 0;
         foreach (var p in paragraphs)
         {
             ReadTiming(p, out var start, out var end);
             var artistIds = GetLineArtistIds(p, StrictValidation);
             var key = GetAttributeValue(p, "key");
+            var sourceKey = key ?? $"ttml-line-{paragraphIndex++}";
             var syllables = ParseSyllablesFromChildren(p, StrictValidation);
             var text = syllables.Count > 0
                 ? string.Concat(syllables.Select(i => i.Text))
@@ -127,36 +131,47 @@ public partial class TtmlLyricParser : ILyricParser
                 {
                     End = end,
                     ArtistIds = artistIds,
-                    Syllables = syllables
+                    Syllables = syllables,
+                    SourceKey = sourceKey
                 });
 
-                AddInlineTrackLine(p, "x-translation", translationLines, start, end, artistIds, StrictValidation);
+                AddInlineTrackLine(p, "x-translation", translationLines, start, end, artistIds, StrictValidation, sourceKey);
                 if (key is not null && translations.TryGetValue(key, out var externalTranslations))
                 {
                     foreach (var externalTranslation in externalTranslations)
                     {
                         foreach (var translationText in externalTranslation.Value)
                         {
-                            AddTrackLine(translationLines, externalTranslation.Key, new LyricLine(translationText, start)
+                            var mainCaption = NormalizeXmlTextContent(translationText, ExtractLineText(translationText, StrictValidation));
+                            if (mainCaption.Length > 0)
                             {
-                                End = end,
-                                ArtistIds = artistIds
-                            });
+                                AddTrackLine(translationLines, externalTranslation.Key, new LyricLine(mainCaption, start)
+                                {
+                                    End = end,
+                                    ArtistIds = artistIds,
+                                    SourceKey = sourceKey
+                                });
+                            }
                         }
                     }
                 }
 
-                AddInlineTrackLine(p, "x-roman", phoneticLines, start, end, artistIds, StrictValidation);
+                AddInlineTrackLine(p, "x-roman", phoneticLines, start, end, artistIds, StrictValidation, sourceKey);
             }
 
-            foreach (var backgroundSpan in FindRoleSpans(p, "x-bg", StrictValidation))
+            var backgroundSpans = FindRoleSpans(p, "x-bg", StrictValidation).ToArray();
+            for (var backgroundIndex = 0; backgroundIndex < backgroundSpans.Length; backgroundIndex++)
             {
+                var backgroundSpan = backgroundSpans[backgroundIndex];
+                var suppliedBackgroundKey = GetAttributeValue(backgroundSpan, "key");
+                var backgroundKey = suppliedBackgroundKey is not null && suppliedBackgroundKey != sourceKey ? suppliedBackgroundKey : $"{sourceKey}/bg/{backgroundIndex}";
                 ReadInheritedTiming(backgroundSpan, p, start, end, out var backgroundStart, out var backgroundEnd);
                 var backgroundArtistIds = GetLineArtistIds(backgroundSpan, StrictValidation);
                 var backgroundSyllables = ParseSyllablesFromChildren(backgroundSpan, StrictValidation);
+                StripBackgroundMarkers(backgroundSyllables);
                 var backgroundText = backgroundSyllables.Count > 0
                     ? string.Concat(backgroundSyllables.Select(i => i.Text))
-                    : NormalizeXmlTextContent(backgroundSpan, ExtractLineText(backgroundSpan, StrictValidation));
+                    : StripBackgroundMarkers(NormalizeXmlTextContent(backgroundSpan, ExtractLineText(backgroundSpan, StrictValidation)));
                 if (backgroundText.Length == 0)
                 {
                     continue;
@@ -166,11 +181,48 @@ public partial class TtmlLyricParser : ILyricParser
                 {
                     End = backgroundEnd,
                     ArtistIds = backgroundArtistIds,
-                    Syllables = backgroundSyllables
+                    Syllables = backgroundSyllables,
+                    SourceKey = backgroundKey,
+                    ParentKey = sourceKey
                 });
 
-                AddInlineTrackLine(backgroundSpan, "x-translation", translationLines, backgroundStart, backgroundEnd, backgroundArtistIds, StrictValidation);
-                AddInlineTrackLine(backgroundSpan, "x-roman", phoneticLines, backgroundStart, backgroundEnd, backgroundArtistIds, StrictValidation);
+                AddInlineTrackLine(backgroundSpan, "x-translation", translationLines, backgroundStart, backgroundEnd, backgroundArtistIds, StrictValidation, backgroundKey, sourceKey);
+                AddInlineTrackLine(backgroundSpan, "x-roman", phoneticLines, backgroundStart, backgroundEnd, backgroundArtistIds, StrictValidation, backgroundKey, sourceKey);
+                // Metadata x-bg captions are separate from the main text, even when both clocks coincide.
+                var hasOwnMetadata = translations.TryGetValue(backgroundKey, out var backgroundTranslations);
+                if (!hasOwnMetadata && key is not null)
+                {
+                    translations.TryGetValue(key, out backgroundTranslations);
+                }
+
+                if (backgroundTranslations is not null)
+                {
+                    foreach (var (language, captions) in backgroundTranslations)
+                    {
+                        foreach (var caption in captions)
+                        {
+                            var candidates = hasOwnMetadata
+                                ? new[] { caption }
+                                : FindRoleSpans(caption, "x-bg", StrictValidation).ToArray();
+                            var selected = hasOwnMetadata ? candidates : candidates.Where((candidate, index) =>
+                                GetAttributeValue(candidate, "for") is string target ? target == backgroundKey : index == backgroundIndex);
+                            foreach (var candidate in selected)
+                            {
+                                var captionText = StripBackgroundMarkers(NormalizeXmlTextContent(candidate, ExtractLineText(candidate, StrictValidation)));
+                                if (captionText.Length > 0)
+                                {
+                                    AddTrackLine(translationLines, language, new LyricLine(captionText, backgroundStart)
+                                    {
+                                        End = backgroundEnd,
+                                        ArtistIds = backgroundArtistIds,
+                                        SourceKey = backgroundKey,
+                                        ParentKey = sourceKey
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -500,9 +552,9 @@ public partial class TtmlLyricParser : ILyricParser
             .ToArray();
     }
 
-    private static Dictionary<string, Dictionary<string, List<string>>> ParseITunesTextMap(XDocument document, string containerName, bool strictValidation)
+    private static Dictionary<string, Dictionary<string, List<XElement>>> ParseITunesTextMap(XDocument document, string containerName, bool strictValidation)
     {
-        var result = new Dictionary<string, Dictionary<string, List<string>>>(StringComparer.Ordinal);
+        var result = new Dictionary<string, Dictionary<string, List<XElement>>>(StringComparer.Ordinal);
         foreach (var container in document.Descendants().Where(i => strictValidation
             ? i.Name == _itunesNamespace + containerName
             : i.Name.LocalName.Equals(containerName, StringComparison.OrdinalIgnoreCase)))
@@ -516,7 +568,7 @@ public partial class TtmlLyricParser : ILyricParser
                 {
                     if (!result.TryGetValue(key, out var translationsByLanguage))
                     {
-                        translationsByLanguage = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+                        translationsByLanguage = new Dictionary<string, List<XElement>>(StringComparer.OrdinalIgnoreCase);
                         result[key] = translationsByLanguage;
                     }
 
@@ -527,11 +579,10 @@ public partial class TtmlLyricParser : ILyricParser
                         translationsByLanguage[language] = translationTexts;
                     }
 
-                    var translationText = text.Value.Trim(_xmlWhitespaceCharacters);
-                    if (!translationTexts.Contains(translationText, StringComparer.Ordinal))
+                    if (!translationTexts.Any(existing => XNode.DeepEquals(existing, text)))
                     {
                         // Conflicting duplicate references must not silently overwrite text.
-                        translationTexts.Add(translationText);
+                        translationTexts.Add(text);
                     }
                 }
             }
@@ -575,7 +626,9 @@ public partial class TtmlLyricParser : ILyricParser
         long? start,
         long? end,
         IReadOnlyList<string> artistIds,
-        bool strictValidation)
+        bool strictValidation,
+        string sourceKey,
+        string? parentKey = null)
     {
         foreach (var span in FindRoleSpans(parent, role, strictValidation))
         {
@@ -585,14 +638,98 @@ public partial class TtmlLyricParser : ILyricParser
                 continue;
             }
 
+            if (parentKey is not null)
+            {
+                text = StripBackgroundMarkers(text);
+            }
+
             var language = GetInheritedLanguage(span);
             ReadInheritedTiming(span, parent, start, end, out var spanStart, out var spanEnd);
             var spanArtistIds = GetLineArtistIds(span, strictValidation);
             AddTrackLine(linesByLanguage, language, new LyricLine(text, spanStart)
             {
                 End = spanEnd,
-                ArtistIds = spanArtistIds.Count > 0 ? spanArtistIds : artistIds
+                ArtistIds = spanArtistIds.Count > 0 ? spanArtistIds : artistIds,
+                SourceKey = sourceKey,
+                ParentKey = parentKey
             });
+        }
+    }
+
+    private static (int Open, int Close)? BackgroundWrapper(string text)
+    {
+        var open = 0;
+        var close = text.Length - 1;
+        while (open <= close && char.IsWhiteSpace(text[open]))
+        {
+            open++;
+        }
+
+        while (close >= open && char.IsWhiteSpace(text[close]))
+        {
+            close--;
+        }
+
+        if (open >= close || text[open] is not ('(' or '（') || text[close] is not (')' or '）'))
+        {
+            return null;
+        }
+
+        var depth = 0;
+        for (var i = open; i <= close; i++)
+        {
+            if (text[i] is '(' or '（')
+            {
+                depth++;
+            }
+            else if (text[i] is ')' or '）')
+            {
+                depth--;
+                if (depth == 0)
+                {
+                    return i == close ? (open, close) : null;
+                }
+
+                if (depth < 0)
+                {
+                    return null;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static string StripBackgroundMarkers(string text)
+    {
+        while (BackgroundWrapper(text) is { } wrapper)
+        {
+            text = text.Remove(wrapper.Close, 1).Remove(wrapper.Open, 1);
+        }
+
+        return text;
+    }
+
+    private static void StripBackgroundMarkers(List<LyricSyllable> syllables)
+    {
+        while (BackgroundWrapper(string.Concat(syllables.Select(syllable => syllable.Text))) is { } wrapper)
+        {
+            var offset = 0;
+            foreach (var syllable in syllables)
+            {
+                var text = syllable.Text;
+                var content = new StringBuilder(text.Length);
+                for (var i = 0; i < text.Length; i++)
+                {
+                    if (offset + i != wrapper.Open && offset + i != wrapper.Close)
+                    {
+                        content.Append(text[i]);
+                    }
+                }
+
+                offset += text.Length;
+                syllable.Text = content.ToString();
+            }
         }
     }
 

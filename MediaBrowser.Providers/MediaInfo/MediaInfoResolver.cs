@@ -333,7 +333,10 @@ namespace MediaBrowser.Providers.MediaInfo
                 else if (lyricMatches.Contains(file))
                 {
                     var externalPathInfo = _externalPathParser.ParseFile(file, string.Empty, AdditionalFileExtensions);
-                    if (externalPathInfo is not null) externalPathInfos.Add(externalPathInfo);
+                    if (externalPathInfo is not null)
+                    {
+                        externalPathInfos.Add(externalPathInfo);
+                    }
                 }
             }
 

@@ -8,6 +8,19 @@ namespace Jellyfin.Providers.Tests.Lyrics;
 
 public static class LrcLyricParserTests
 {
+    [Fact]
+    public static void ElrcVoicePrefixIsAnArtistNotATimedWord()
+    {
+        var parsed = new LrcLyricParser().ParseLyrics(new LyricFile("voices.lrc", "[00:03.432]v2: <00:03.432>Ooh, <00:04.769>ooh<00:06.045>"));
+        Assert.NotNull(parsed);
+        var line = Assert.Single(parsed.Lyrics);
+        Assert.Equal("Ooh, ooh", line.Text);
+        Assert.Equal(["v2"], line.ArtistIds);
+        Assert.Equal(2, line.Syllables.Count);
+        Assert.Equal("Ooh, ", line.Syllables[0].Text);
+        Assert.Equal(60_450_000, line.Syllables[1].End);
+    }
+
     [Theory]
     [InlineData("[00:00.00]text[999999999999:99.99]")]
     [InlineData("[00:00.00]<999999999999999999:00.00>text")]

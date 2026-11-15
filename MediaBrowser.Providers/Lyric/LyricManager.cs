@@ -305,7 +305,10 @@ public class LyricManager : ILyricManager
                         var language = embedded.LanguageCode?.Trim();
                         if (!string.IsNullOrWhiteSpace(language) && !language.Equals("XXX", StringComparison.OrdinalIgnoreCase))
                         {
-                            foreach (var track in parsed.Tracks.Where(t => t.Type == LyricTrackType.Main && t.Language is null)) track.Language = language;
+                            foreach (var track in parsed.Tracks.Where(t => t.Type == LyricTrackType.Main && t.Language is null))
+                            {
+                                track.Language = language;
+                            }
                         }
 
                         parsedSources.Add(parsed);

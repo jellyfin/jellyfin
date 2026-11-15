@@ -148,10 +148,31 @@ public partial class LrcLyricParser : ILyricParser
                     }
                 }
 
-                lyricList.Add(new LyricLine(lyric.Text, lyricStartTicks)
+                var text = lyric.Text;
+                var voice = VoicePrefixRegex().Match(text);
+                if (voice.Success)
+                {
+                    text = text[voice.Length..];
+                    var remaining = voice.Length;
+                    foreach (var syllable in syllables)
+                    {
+                        var remove = Math.Min(remaining, syllable.Text.Length);
+                        syllable.Text = syllable.Text[remove..];
+                        remaining -= remove;
+                        if (remaining == 0)
+                        {
+                            break;
+                        }
+                    }
+
+                    syllables.RemoveAll(s => string.IsNullOrWhiteSpace(s.Text));
+                }
+
+                lyricList.Add(new LyricLine(text, lyricStartTicks)
                 {
                     End = lyricEndTicks,
-                    Syllables = syllables
+                    Syllables = syllables,
+                    ArtistIds = voice.Success ? [voice.Groups[1].Value.ToLowerInvariant()] : []
                 });
             }
 
@@ -173,4 +194,7 @@ public partial class LrcLyricParser : ILyricParser
             return null;
         }
     }
+
+    [GeneratedRegex(@"^\s*(v\d+)\s*:\s*", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex VoicePrefixRegex();
 }

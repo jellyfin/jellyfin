@@ -10,6 +10,42 @@ namespace Jellyfin.Providers.Tests.Lyrics;
 
 public class LyricMergerTests
 {
+    [Fact]
+    public void TranslationCanCoverTwoOriginalLinesWithoutBeingDuplicated()
+    {
+        var primary = Source(Line("First half", 1, true), Line("and the second half", 3, true));
+        var secondary = WithTranslation(Source(Line("First half and the second half", 100)), "ja", Line("ひとつの完全な訳文", 100));
+        var result = LyricMerger.Merge([primary, secondary, secondary]);
+        Assert.NotNull(result);
+        var caption = Assert.Single(Assert.Single(result.Tracks, t => t.Type == LyricTrackType.Translation).Lines);
+        Assert.Equal("ひとつの完全な訳文", caption.Text);
+        Assert.Equal(primary.Lyrics[0].Start, caption.Start);
+        Assert.Equal(primary.Lyrics[1].End, caption.End);
+    }
+
+    [Fact]
+    public void TwoTranslatedFragmentsAreRetainedForOneOriginalLine()
+    {
+        var primary = Source(Line("First half and the second half", 1, true));
+        var secondary = WithTranslation(Source(Line("First half", 100), Line("and the second half", 103)), "fr", Line("Première partie", 100), Line("Deuxième partie", 103));
+        var result = LyricMerger.Merge([primary, secondary]);
+        Assert.NotNull(result);
+        var caption = Assert.Single(Assert.Single(result.Tracks, t => t.Type == LyricTrackType.Translation).Lines);
+        Assert.Equal("Première partie\nDeuxième partie", caption.Text);
+    }
+
+    [Fact]
+    public void ConsistentClocksRecoverTranscriptionDifferencesBetweenTextAnchors()
+    {
+        var primary = Source(Line("First exact sentence", 1, true), Line("Completely different transcription", 3, true), Line("Second exact sentence", 5, true), Line("Third exact sentence", 7, true));
+        var secondary = WithTranslation(Source(Line("First exact sentence", 101), Line("Misheard words in this version", 103), Line("Second exact sentence", 105), Line("Third exact sentence", 107)), "es", Line("Uno", 101), Line("Dos", 103), Line("Tres", 105), Line("Cuatro", 107));
+        var result = LyricMerger.Merge([primary, secondary]);
+        Assert.NotNull(result);
+        var captions = Assert.Single(result.Tracks, t => t.Type == LyricTrackType.Translation).Lines;
+        Assert.Equal(["Uno", "Dos", "Tres", "Cuatro"], captions.Select(l => l.Text));
+        Assert.Equal(primary.Lyrics[1].Start, captions[1].Start);
+    }
+
     private static LyricLine Line(string text, int? seconds, bool karaoke = false)
         => new(text, seconds * TimeSpan.TicksPerSecond)
         {
@@ -214,5 +250,46 @@ public class LyricMergerTests
     public void KeepsMeaningfulCombiningMarksWhenMatchingOriginalText(string first, string second)
     {
         Assert.NotEqual(LyricMerger.Normalize(first), LyricMerger.Normalize(second));
+    }
+
+    [Fact]
+    public void BackgroundCaptionDoesNotCoverMainTranslationSlot()
+    {
+        var main = Line("original", 1, true);
+        main.SourceKey = "L1";
+        var background = Line("answer", 1, true);
+        background.SourceKey = "L1/bg/0";
+        background.ParentKey = "L1";
+        var caption = Line("réponse", 1);
+        caption.SourceKey = background.SourceKey;
+        caption.ParentKey = background.ParentKey;
+        var primary = new LyricDto
+        {
+            Tracks =
+            [
+                new LyricTrack { Type = LyricTrackType.Main, Lines = [main] },
+                new LyricTrack { Type = LyricTrackType.Background, Lines = [background] },
+                new LyricTrack { Type = LyricTrackType.Translation, Language = "fr", Lines = [caption] }
+            ]
+        };
+        var fallback = WithTranslation(Source(Line("original", 1)), "fr", Line("principal", 1));
+        var merged = LyricMerger.Merge([primary, fallback]);
+        Assert.NotNull(merged);
+        var captions = merged.Tracks.Single(t => t.Type == LyricTrackType.Translation).Lines;
+        Assert.Equal("principal", Assert.Single(captions, l => l.SourceKey == main.SourceKey).Text);
+        Assert.Equal("réponse", Assert.Single(captions, l => l.SourceKey == background.SourceKey).Text);
+    }
+
+    [Fact]
+    public void UnresolvedExplicitCaptionReferenceCannotFallBackToAnotherVocalAtSameTime()
+    {
+        var primary = Source(Line("Original", 1, true));
+        var sourceLine = Line("Original", 1);
+        sourceLine.SourceKey = "correct";
+        var caption = Line("Traduction", 1);
+        caption.SourceKey = "missing";
+        var merged = LyricMerger.Merge([primary, WithTranslation(Source(sourceLine), "fr", caption)]);
+        Assert.NotNull(merged);
+        Assert.DoesNotContain(merged.Tracks, t => t.Type == LyricTrackType.Translation);
     }
 }
