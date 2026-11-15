@@ -17,7 +17,8 @@ public enum TranscodeTestSurveyFailureReason
     FailedTimeout,
 
     /// <summary>
-    /// NVIDIA's driver refused another encoding session: the survey's <c>failed_nvenc_limit</c>.
+    /// NVENC refused a session: the survey's <c>failed_nvenc_limit</c>. The name is the survey's; a refusal does not
+    /// prove a session-count limit.
     /// </summary>
     FailedNvencLimit
 }

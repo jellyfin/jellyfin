@@ -350,12 +350,23 @@ namespace Jellyfin.Api.Tests.Helpers
             var k = maxStable % 33;
             var (reason, couldNotStart) = TranscodeTestRules.StallOutcome(enc, ev, k, isNewest, 12);
 
-            var nvencLimit = TranscodeTestRules.IsNvencSessionLimit(enc, ev);
-            var capacityStall = isNewest && k >= 1;
+            // Independent fixture oracle: entry 1 is allocation failure, entry 2 is a license restriction.
+            // Neither, even at twelve other streams, proves a numerical driver session cap.
+            var isNvenc = enc is "h264_nvenc" or "hevc_nvenc" or "av1_nvenc";
+            var expectedReason = (isNvenc, evidence % _evidence.Length) switch
+            {
+                (true, 1) => TranscodeTestEndReason.NvencSessionRefused,
+                (true, 2) => TranscodeTestEndReason.NvencSessionRefused,
+                _ => TranscodeTestEndReason.StreamStalled
+            };
+            var expectedCouldNotStart = expectedReason == TranscodeTestEndReason.StreamStalled && isNewest && k >= 1;
+            var expectedSurvey = expectedReason == TranscodeTestEndReason.StreamStalled
+                ? TranscodeTestSurveyFailureReason.FailedTimeout
+                : TranscodeTestSurveyFailureReason.FailedNvencLimit;
 
-            return (reason == (nvencLimit ? TranscodeTestEndReason.NvencSessionLimit : TranscodeTestEndReason.StreamStalled)).Label("reason")
-                .And(couldNotStart == (!nvencLimit && capacityStall)).Label("could not start")
-                .And(TranscodeTestRules.SurveyFailureReason(reason) is TranscodeTestSurveyFailureReason.FailedTimeout or TranscodeTestSurveyFailureReason.FailedNvencLimit).Label("survey name");
+            return (reason == expectedReason).Label("reason")
+                .And(couldNotStart == expectedCouldNotStart).Label("could not start")
+                .And(TranscodeTestRules.SurveyFailureReason(reason) == expectedSurvey).Label("survey name");
         }
 
         private static TranscodeTestStream NewStream()

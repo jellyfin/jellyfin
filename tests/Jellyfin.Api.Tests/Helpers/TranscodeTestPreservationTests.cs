@@ -59,7 +59,6 @@ namespace Jellyfin.Api.Tests.Helpers
                 [TranscodeTestEndReason.MaxStreams] = null,
                 [TranscodeTestEndReason.StreamFailed] = null,
                 [TranscodeTestEndReason.StreamStalled] = TranscodeTestSurveyFailureReason.FailedTimeout,
-                [TranscodeTestEndReason.NvencSessionLimit] = TranscodeTestSurveyFailureReason.FailedNvencLimit,
                 [TranscodeTestEndReason.Cancelled] = null,
                 [TranscodeTestEndReason.Error] = null,
                 [TranscodeTestEndReason.GpuMemoryFull] = null,

@@ -220,7 +220,7 @@ internal sealed class TranscodeTestStressRun
                 s.FinalFps = reading is double f ? TranscodeTestRules.RoundFps(f, ThresholdFps) : null;
             }
 
-            _collapsed = reason == TranscodeTestEndReason.LimitReached && TranscodeTestRules.IsCollapse(readings, ThresholdFps, PeakCombinedFps);
+            _collapsed = reason == TranscodeTestEndReason.LimitReached && TranscodeTestRules.IsCollapse(readings, ThresholdFps);
 
             _streamsAtEnd = running.Count;
 

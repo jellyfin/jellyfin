@@ -22,8 +22,7 @@ internal static partial class TranscodeTestRules
     internal const double WaitingOnInputCpuSeconds = 3;
 
     /// <summary>
-    /// The fraction of the threshold, and of the peak combined frame rate, under which streams at the limit are taken
-    /// to have collapsed together rather than one falling a little behind.
+    /// The fraction of the target frame rate under which streams at the limit are taken to have collapsed together.
     /// </summary>
     internal const double CollapseFraction = 0.25;
 
@@ -45,6 +44,11 @@ internal static partial class TranscodeTestRules
     internal const int MaxRestartsPerStream = 100;
 
     /// <summary>
+    /// What NVENC's code 21 usually means, hedged: it names a license restriction, not a count.
+    /// </summary>
+    internal const string NvencCode21Hint = "Code 21 is NVIDIA's license restriction; on GeForce cards it is commonly the limit on concurrent encoding sessions, and sessions outside this test count too.";
+
+    /// <summary>
     /// The smallest gap, in seconds, between the source duration and the final encoded position accepted as the end
     /// of the file. Audio often runs a little past the video, and the container duration covers both.
     /// </summary>
@@ -62,11 +66,6 @@ internal static partial class TranscodeTestRules
     /// </summary>
     internal const int SegmentsPerStreamOnDisk = 5;
 
-    /// <summary>
-    /// NVIDIA's limits on concurrent encoding sessions on consumer GPUs, across driver versions.
-    /// </summary>
-    internal static readonly int[] NvencSessionLimits = [3, 5, 8, 12];
-
     // How ffmpeg says the GPU ran out of memory: CUDA (NVDEC, cuvid, CUDA filters) through cuda_check.h; VAAPI through
     // libva's vaErrorStr for VA_STATUS_ERROR_ALLOCATION_FAILED; QSV MFX_ERR_MEMORY_ALLOC through ff_qsv_print_error;
     // Vulkan and libplacebo through ff_vk_ret2str.
@@ -79,6 +78,7 @@ internal static partial class TranscodeTestRules
     ];
 
     private static readonly string[] _hardwareFrameFormats = ["videotoolbox_vld", "cuda", "qsv", "vaapi", "d3d11", "dxva2_vld", "drm_prime", "vulkan", "opencl"];
+    private static readonly string[] _hardwareEncoderSuffixes = ["_amf", "_nvenc", "_qsv", "_vaapi", "_videotoolbox", "_v4l2m2m", "_rkmpp"];
 
     /// <summary>
     /// Gets whether ffmpeg arguments ask for a hardware decoder.
@@ -521,18 +521,33 @@ internal static partial class TranscodeTestRules
     }
 
     /// <summary>
-    /// Gets whether a failed stream was refused by NVIDIA's limit on concurrent encoding sessions.
+    /// Gets whether an NVENC stream reported a session refusal, without identifying its cause.
     /// </summary>
     /// <remarks>
-    /// Consumer GPUs allow a limited number of sessions at once (from 3 on older drivers to 12 on recent ones). The driver refuses the next
-    /// one when the session opens: "OpenEncodeSessionEx failed: out of memory (10)", or "incompatible client key (21)"
-    /// on older drivers.
+    /// Codes 10 and 21 identify resource or licensing restrictions, not a numerical session cap. They are kept as
+    /// refusal diagnostics without claiming which limit caused this run to fail.
     /// </remarks>
     /// <param name="encoder">The stream's video encoder.</param>
     /// <param name="errors">ffmpeg's error lines.</param>
     /// <returns><c>true</c> for an NVENC encoder that failed with one of those errors.</returns>
     public static bool IsNvencSessionLimit(string? encoder, string? errors)
         => IsNvencEncoder(encoder) && IsSessionLimitText(errors);
+
+    /// <summary>
+    /// Describes NVENC refusing a stream's session, for the log. The refusal does not prove a session-count limit;
+    /// code 21 adds a hedged hint.
+    /// </summary>
+    /// <param name="streamId">The refused stream.</param>
+    /// <param name="maxStable">The most streams that all kept up.</param>
+    /// <param name="sessionLine">ffmpeg's refusal line, or null.</param>
+    /// <returns>The line for the log.</returns>
+    public static string DescribeNvencRefusal(int streamId, int maxStable, string? sessionLine)
+    {
+        var text = string.Create(CultureInfo.InvariantCulture, $"NVENC refused a new session for stream {streamId}; this does not identify the cause, see ffmpeg's diagnostic above. {StreamCount(maxStable)} kept up with real time before that.");
+        return sessionLine?.Contains("(21)", StringComparison.Ordinal) == true
+            ? text + " " + NvencCode21Hint
+            : text;
+    }
 
     /// <summary>
     /// Gets whether text holds NVIDIA's session refusal, whatever the encoder.
@@ -579,10 +594,10 @@ internal static partial class TranscodeTestRules
     /// Concludes a stress-test stream that exited with a non-zero code or stalled.
     /// </summary>
     /// <remarks>
-    /// NVIDIA's session refusal is matched first, whatever came before or after it. It is the driver's session limit
-    /// only for "incompatible client key (21)", or when the other running sessions number one of the known limits;
-    /// "out of memory (10)" at any other count may as well be the GPU's memory, so it is reported as a refusal that
-    /// names neither. Then a GPU memory error after at
+    /// NVIDIA's session refusal is matched first, whatever came before or after it. Neither code 10 nor code 21
+    /// proves a numerical driver session cap: NVIDIA defines them as allocation failure and unavailable licensed
+    /// functionality, respectively. Counts, including historical limits and external playback, cannot prove a cap.
+    /// Then a GPU memory error after at
     /// least one stream kept up means memory was the limit: the kept-up count is the result. Otherwise, the newest
     /// stream ending before its first frame after at least one stream kept up means the server could not start one
     /// more stream. A silent hang is never blamed on NVIDIA's session limit: drivers refuse a session with an error and
@@ -610,7 +625,7 @@ internal static partial class TranscodeTestRules
     {
         if (IsNvencSessionLimit(encoder, sessionLimitLine))
         {
-            return (IsKnownSessionLimit(sessionLimitLine, otherSessions) ? TranscodeTestEndReason.NvencSessionLimit : TranscodeTestEndReason.NvencSessionRefused, false);
+            return (TranscodeTestEndReason.NvencSessionRefused, false);
         }
 
         if (gpuMemoryLine is not null && maxStable >= 1)
@@ -624,17 +639,6 @@ internal static partial class TranscodeTestRules
         var reason = kind == TranscodeTestEndKind.Stalled ? TranscodeTestEndReason.StreamStalled : TranscodeTestEndReason.StreamFailed;
         return (reason, couldNotStart);
     }
-
-    /// <summary>
-    /// Gets whether NVIDIA's session refusal is the driver's session limit rather than possibly the GPU's memory.
-    /// </summary>
-    /// <param name="sessionLimitLine">The refusal line.</param>
-    /// <param name="otherSessions">How many other streams were running when the session was refused.</param>
-    /// <returns><c>true</c> for "incompatible client key (21)", which only the session limit gives, or when the other
-    /// sessions number one of <see cref="NvencSessionLimits"/>.</returns>
-    internal static bool IsKnownSessionLimit(string? sessionLimitLine, int otherSessions)
-        => (sessionLimitLine is not null && sessionLimitLine.Contains("incompatible client key (21)", StringComparison.OrdinalIgnoreCase))
-            || NvencSessionLimits.Contains(otherSessions);
 
     /// <summary>
     /// Describes the newest stream not starting after others kept up.
@@ -694,7 +698,7 @@ internal static partial class TranscodeTestRules
     /// <returns>The session refusal for the driver limit, the memory line for full GPU memory, otherwise null.</returns>
     internal static string? EndCause(TranscodeTestEndReason reason, string? sessionLimitLine, string? gpuMemoryLine) => reason switch
     {
-        TranscodeTestEndReason.NvencSessionLimit or TranscodeTestEndReason.NvencSessionRefused => sessionLimitLine,
+        TranscodeTestEndReason.NvencSessionRefused => sessionLimitLine,
         TranscodeTestEndReason.GpuMemoryFull => gpuMemoryLine,
         _ => null
     };
@@ -756,7 +760,7 @@ internal static partial class TranscodeTestRules
     {
         TranscodeTestEndReason.LimitReached => TranscodeTestSurveyFailureReason.Performance,
         TranscodeTestEndReason.StreamStalled => TranscodeTestSurveyFailureReason.FailedTimeout,
-        TranscodeTestEndReason.NvencSessionLimit or TranscodeTestEndReason.NvencSessionRefused => TranscodeTestSurveyFailureReason.FailedNvencLimit,
+        TranscodeTestEndReason.NvencSessionRefused => TranscodeTestSurveyFailureReason.FailedNvencLimit,
         _ => null
     };
 
@@ -912,6 +916,17 @@ internal static partial class TranscodeTestRules
     public static bool IsSoftwareEncoder(string encoder) => encoder.StartsWith("lib", StringComparison.Ordinal);
 
     /// <summary>
+    /// Gets whether the encoder selected by Jellyfin is a hardware encoder, not stream copy or a software encoder.
+    /// </summary>
+    /// <param name="encoder">The selected encoder name, or null when it is not known.</param>
+    /// <returns><c>true</c> for Jellyfin's hardware encoder backends.</returns>
+    public static bool IsHardwareEncoder(string? encoder)
+        => encoder is not null && _hardwareEncoderSuffixes.Any(suffix =>
+            encoder.Equals("h264" + suffix, StringComparison.OrdinalIgnoreCase)
+            || encoder.Equals("hevc" + suffix, StringComparison.OrdinalIgnoreCase)
+            || encoder.Equals("av1" + suffix, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
     /// Rounds a stress test frame rate reading to one decimal, or to two or three when fewer would move it onto or
     /// across the threshold, so a reading under the threshold never looks equal to it or above it.
     /// </summary>
@@ -969,7 +984,7 @@ internal static partial class TranscodeTestRules
 
         if (result.Collapsed)
         {
-            text += string.Create(CultureInfo.InvariantCulture, $" All streams slowed down sharply at once, rather than one falling a little behind. That usually means the GPU ran out of memory or the driver stalled, not that it was slightly too slow; {StreamCount(result.MaxStableStreams)} is still the safe result.");
+            text += " All streams slowed down sharply at once, rather than one falling a little behind. This does not identify the cause; check GPU memory, drivers, CPU load and storage.";
         }
 
         return text;
@@ -977,29 +992,21 @@ internal static partial class TranscodeTestRules
 
     /// <summary>
     /// Gets whether the streams collapsed together when the limit was reached: all streams but at most one, and at
-    /// least two, are under <see cref="CollapseFraction"/> of the threshold, or their combined frame rate is under
-    /// that fraction of the peak. One stream falling behind or stalling while the others keep up is not a collapse.
+    /// least two, are under <see cref="CollapseFraction"/> of the current target. A historical aggregate peak at a
+    /// different stream count is not comparable. One stream falling behind while the others keep up is not a collapse.
     /// </summary>
     /// <param name="fps">The running streams' frame rates, <c>null</c> for a stream not measured yet.</param>
     /// <param name="thresholdFps">The frame rate each stream must keep.</param>
-    /// <param name="peakCombinedFps">The highest combined frame rate seen in the run.</param>
     /// <returns><c>true</c> for a collapse.</returns>
-    public static bool IsCollapse(IReadOnlyList<double?> fps, double thresholdFps, double peakCombinedFps)
+    public static bool IsCollapse(IReadOnlyList<double?> fps, double thresholdFps)
     {
-        var measured = fps.OfType<double>().ToList();
-        if (measured.Count < 2)
+        if (!double.IsFinite(thresholdFps) || thresholdFps <= 0)
         {
             return false;
         }
 
-        var low = measured.Count(f => f < thresholdFps * CollapseFraction);
-        if (low >= 2 && low >= measured.Count - 1)
-        {
-            return true;
-        }
-
-        // Only with all streams but at most one measured, so a stream just added does not make the sum look low.
-        return fps.Count - measured.Count <= 1 && peakCombinedFps > 0 && measured.Sum() < peakCombinedFps * CollapseFraction;
+        var low = fps.Count(f => f is double measured && double.IsFinite(measured) && measured >= 0 && measured < thresholdFps * CollapseFraction);
+        return low >= 2 && low >= fps.Count - 1;
     }
 
     /// <summary>

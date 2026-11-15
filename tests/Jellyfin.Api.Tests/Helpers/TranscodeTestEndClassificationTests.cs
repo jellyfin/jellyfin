@@ -21,7 +21,8 @@ namespace Jellyfin.Api.Tests.Helpers
         internal const string CudaLine = "[av1 @ 0x0] cuvidCreateDecoder(&ctx->cudecoder, &cuinfo) failed -> CUDA_ERROR_OUT_OF_MEMORY: out of memory";
 
         /// <summary>
-        /// The 13th h264_nvenc session on a 12-session driver, verbatim from Gauvino's report on jellyfin-meta #163.
+        /// The refused 13th h264_nvenc session, verbatim from Gauvino's report on jellyfin-meta #163.
+        /// The observed count does not establish the cause of the code 21 licensing diagnostic.
         /// </summary>
         internal static readonly string[] GauvinoStderr =
         [
@@ -67,10 +68,10 @@ namespace Jellyfin.Api.Tests.Helpers
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void Gauvino_EndsAsTheDriverLimit(bool exited)
+        public void Gauvino_EndsAsANeutralRefusal_NotADefiniteCap(bool exited)
         {
             var (reason, couldNotStart, error) = Classify(exited, "h264_nvenc", GauvinoStderr, 12, true);
-            Assert.Equal(TranscodeTestEndReason.NvencSessionLimit, reason);
+            Assert.Equal(TranscodeTestEndReason.NvencSessionRefused, reason);
             Assert.Equal(TranscodeTestSurveyFailureReason.FailedNvencLimit, TranscodeTestRules.SurveyFailureReason(reason));
             Assert.False(couldNotStart);
             Assert.Equal(GauvinoRefusal, error);
@@ -122,36 +123,36 @@ namespace Jellyfin.Api.Tests.Helpers
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void GauvinoTagged_EndsAsTheDriverLimitWithTheUntaggedRefusal(bool exited)
+        public void GauvinoTagged_EndsAsANeutralRefusalWithTheUntaggedEvidence(bool exited)
         {
             // The same output as printed with "-loglevel +level": every line tagged, the refusal at error level.
             var tagged = GauvinoStderr.Select(l => l.Contains("rror", StringComparison.Ordinal) || l.Contains("ailed", StringComparison.Ordinal) || l.Contains("No capable", StringComparison.Ordinal)
                 ? Tag(l, "error")
                 : Tag(l, "info")).ToArray();
             var (reason, _, error) = Classify(exited, "h264_nvenc", tagged, 12, true);
-            Assert.Equal(TranscodeTestEndReason.NvencSessionLimit, reason);
+            Assert.Equal(TranscodeTestEndReason.NvencSessionRefused, reason);
             Assert.Equal(GauvinoRefusal, Feed(tagged).SessionLimitLine);
             Assert.StartsWith(GauvinoRefusal, error, StringComparison.Ordinal);
             Assert.DoesNotContain("[error]", error, StringComparison.Ordinal);
         }
 
         [Fact]
-        public void DriverLimit_ErrorIsOnlyTheRefusal()
+        public void NeutralCode10_ErrorIsOnlyTheRefusal()
         {
             string[] lines = ["[h264_nvenc @ 0x0] OpenEncodeSessionEx failed: out of memory (10): (no details)", "Conversion failed!"];
             var (reason, _, error) = Classify(true, "h264_nvenc", lines, 4, true);
-            Assert.Equal(TranscodeTestEndReason.NvencSessionLimit, reason);
+            Assert.Equal(TranscodeTestEndReason.NvencSessionRefused, reason);
             Assert.Equal(lines[0], error);
         }
 
         [Property]
-        public Property RefusalFollowedByLongErrors_IsTheDriverLimit(byte count, byte maxStable, bool exited, bool isNewest)
+        public Property LicenseRefusalFollowedByLongErrors_NeverProvesADefiniteCap(byte count, byte maxStable, bool exited, bool isNewest)
         {
             var lines = new[] { GauvinoRefusal }.Concat(LongErrors(5 + (count % 16))).ToArray();
             var stream = Feed(lines);
             var (reason, _, error) = Classify(exited, "hevc_nvenc", lines, maxStable % 33, isNewest);
             return (stream.SessionLimitLine == GauvinoRefusal).Label("the refusal is kept")
-                .And(reason == TranscodeTestEndReason.NvencSessionLimit).Label("reason")
+                .And(reason == TranscodeTestEndReason.NvencSessionRefused).Label("reason")
                 .And(error == GauvinoRefusal).Label("the error is the refusal");
         }
 
@@ -170,7 +171,7 @@ namespace Jellyfin.Api.Tests.Helpers
             if (TranscodeTestEndPreservationTests.IsSessionLimit(enc, lines))
             {
                 var first = lines.First(TranscodeTestEndPreservationTests.SessionText).Trim();
-                return (reason == TranscodeTestEndReason.NvencSessionLimit && !couldNotStart).Label("driver limit")
+                return (reason == TranscodeTestEndReason.NvencSessionRefused && !couldNotStart).Label("neutral refusal classification")
                     .And(survey == TranscodeTestSurveyFailureReason.FailedNvencLimit).Label("survey")
                     .And(error == first).Label("the error is the refusal");
             }
@@ -258,7 +259,7 @@ namespace Jellyfin.Api.Tests.Helpers
         /// <param name="maxStable">The most streams that all kept up.</param>
         /// <param name="isNewest">Whether the stream is the newest.</param>
         /// <param name="reportFrames">Whether to report one frame before the lines.</param>
-        /// <param name="otherSessions">How many other streams ran; by default a known NVENC session limit.</param>
+        /// <param name="otherSessions">How many other streams ran; no count alone proves an NVENC session limit.</param>
         /// <returns>The end reason, the could-not-start flag and the error text.</returns>
         internal static (TranscodeTestEndReason Reason, bool CouldNotStart, string? Error) Classify(
             bool exited, string? encoder, string[] lines, int maxStable, bool isNewest, bool reportFrames = false, int otherSessions = 12)

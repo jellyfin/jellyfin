@@ -1144,6 +1144,7 @@ public sealed class TranscodeTestManager : IDisposable
                 DeviceId = "transcode-test",
                 PlaySessionId = "transcode-test-" + id.ToString(CultureInfo.InvariantCulture),
                 VideoCodec = codec,
+                AllowVideoStreamCopy = false,
                 AudioCodec = "aac",
                 AudioBitRate = 192_000,
                 MaxAudioChannels = 2,
@@ -1191,6 +1192,12 @@ public sealed class TranscodeTestManager : IDisposable
             // hide the banner. They change only ffmpeg's log text, not the transcode.
             var args = StressLogArguments + _hlsCommandBuilder.GetCommandLineArguments(playlist, state, options, false, 0);
             _logger.LogDebug("Transcoding test stream {Id}: {Ffmpeg} {Args}", id, _mediaEncoder.EncoderPath, args);
+            var encoder = _encodingHelper.GetVideoEncoder(state, options);
+            if (string.IsNullOrWhiteSpace(encoder) || string.Equals(encoder, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("The stress test requires a video encoder, not video stream-copy.");
+            }
+
             var preferredFps = state.VideoStream?.ReferenceFrameRate;
             if (preferredFps is null && state.VideoStream?.AverageFrameRate is not null)
             {
@@ -1413,7 +1420,7 @@ public sealed class TranscodeTestManager : IDisposable
             AudioChannels = state.OutputAudioChannels,
             Encoder = encoder,
             HardwareDecoding = TranscodeTestRules.UsesHardwareDecoder(args),
-            HardwareEncoding = !TranscodeTestRules.IsSoftwareEncoder(encoder),
+            HardwareEncoding = TranscodeTestRules.IsHardwareEncoder(encoder),
             Tonemap = TranscodeTestRules.TonemapMode(tonemap)
         };
     }
@@ -1627,13 +1634,9 @@ public sealed class TranscodeTestManager : IDisposable
             Log(stream.StallDiagnostics(now, processorTime, TranscodeTestProcessIo.BytesRead(stream.Process)));
         }
 
-        if (outcome.EndReason == TranscodeTestEndReason.NvencSessionLimit)
+        if (outcome.EndReason == TranscodeTestEndReason.NvencSessionRefused)
         {
-            LogNvencRefusal(stream.Id);
-        }
-        else if (outcome.EndReason == TranscodeTestEndReason.NvencSessionRefused)
-        {
-            Log($"NVENC refused a new session for stream {stream.Id} (a driver session limit or GPU memory). {maxStable} stream(s) kept up with real time before that.");
+            Log(TranscodeTestRules.DescribeNvencRefusal(stream.Id, maxStable, stream.SessionLimitLine));
         }
         else if (outcome.EndReason == TranscodeTestEndReason.GpuMemoryFull)
         {
@@ -1656,9 +1659,6 @@ public sealed class TranscodeTestManager : IDisposable
             couldNotStartStream: outcome.CouldNotStartStream,
             waitingOnInput: waitingOnInput);
     }
-
-    private void LogNvencRefusal(int streamId)
-        => Log($"NVIDIA's driver refused stream {streamId}. Consumer NVIDIA GPUs allow a limited number of encoding sessions at once (from 3 on older drivers to 12 on recent ones). That is a driver limit, not what the GPU can do.");
 
     private static TimeSpan? ProcessorTime(Process process)
     {

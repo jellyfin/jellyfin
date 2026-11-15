@@ -65,7 +65,7 @@ namespace Jellyfin.Api.Tests.Helpers
             var (reason, _, _) = TranscodeTestEndClassificationTests.Classify(exited, enc, lines, k, isNewest);
             var survey = TranscodeTestRules.SurveyFailureReason(reason);
             return (survey is null or TranscodeTestSurveyFailureReason.Performance or TranscodeTestSurveyFailureReason.FailedTimeout or TranscodeTestSurveyFailureReason.FailedNvencLimit).Label("survey name")
-                .And(IsNvenc(enc) || reason != TranscodeTestEndReason.NvencSessionLimit).Label("no NVENC result without NVENC");
+                .And(IsNvenc(enc) || reason != TranscodeTestEndReason.NvencSessionRefused).Label("no NVENC result without NVENC");
         }
 
         internal static (string? Encoder, string[] Lines, int MaxStable) Input(byte[] picks, byte encoder, byte maxStable)
@@ -105,13 +105,13 @@ namespace Jellyfin.Api.Tests.Helpers
             if (exited)
             {
                 var limit = IsNvenc(encoder) && SessionText(stream.LastError);
-                return (limit ? TranscodeTestEndReason.NvencSessionLimit : TranscodeTestEndReason.StreamFailed, false, stream.LastError);
+                return (limit ? TranscodeTestEndReason.NvencSessionRefused : TranscodeTestEndReason.StreamFailed, false, stream.LastError);
             }
 
             var error = string.IsNullOrEmpty(stream.LastError) ? null : stream.LastError;
             if (IsNvenc(encoder) && SessionText(stream.StallEvidence))
             {
-                return (TranscodeTestEndReason.NvencSessionLimit, false, error);
+                return (TranscodeTestEndReason.NvencSessionRefused, false, error);
             }
 
             return (TranscodeTestEndReason.StreamStalled, isNewest && maxStable >= 1 && !ReportedFrames(lines), error);

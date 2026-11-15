@@ -31,12 +31,6 @@ public enum TranscodeTestEndReason
     StreamStalled,
 
     /// <summary>
-    /// NVIDIA's driver refused another encoding session. Consumer GPUs allow a limited number at once; this is a
-    /// driver limit, not the GPU's capacity.
-    /// </summary>
-    NvencSessionLimit,
-
-    /// <summary>
     /// It was stopped.
     /// </summary>
     Cancelled,
@@ -53,8 +47,8 @@ public enum TranscodeTestEndReason
     GpuMemoryFull,
 
     /// <summary>
-    /// NVIDIA's encoder refused another session with "out of memory", at a stream count that is not a known driver
-    /// limit. That is either the driver's session limit or the GPU's memory; the kept-up count is the result.
+    /// NVIDIA's encoder refused another session. The diagnostic may reflect resource exhaustion, session
+    /// restrictions or licensing; it does not prove a numerical driver session cap. The kept-up count is the result.
     /// </summary>
     NvencSessionRefused
 }
