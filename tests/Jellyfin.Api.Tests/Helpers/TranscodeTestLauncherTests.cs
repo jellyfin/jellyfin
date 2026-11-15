@@ -1,8 +1,11 @@
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Helpers;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Jellyfin.Api.Tests.Helpers
@@ -103,6 +106,53 @@ namespace Jellyfin.Api.Tests.Helpers
             => Assert.Equal(
                 "The system did not run ffmpeg within 30 s; check that the storage holding ffmpeg responds.",
                 TranscodeTestRules.DescribeLaunchTimeout(TranscodeTestManager.StartTimeoutSeconds));
+
+        [Fact]
+        public async Task StartAsync_LateStressLaunchRemovesFilesCreatedAfterRunCleanup()
+        {
+            var folder = Path.Combine(Path.GetTempPath(), "transcode-test-late-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(folder);
+            const string prefix = "owned_";
+            var abandoned = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            try
+            {
+                await File.WriteAllTextAsync(Path.Combine(folder, "unrelated.ts"), "keep", TestContext.Current.CancellationToken);
+                var result = await TranscodeTestLauncher.StartAsync(
+                    () =>
+                    {
+                        _release.Wait(_wait);
+                        // These appear only after the main run has already performed its final cleanup.
+                        File.WriteAllText(Path.Combine(folder, prefix + ".m3u8"), "playlist");
+                        File.WriteAllText(Path.Combine(folder, prefix + "0.mp4"), "segment");
+                        File.WriteAllText(Path.Combine(folder, prefix + "-1.mp4"), "init");
+                        return new Process();
+                    },
+                    TimeSpan.FromMilliseconds(100),
+                    process =>
+                    {
+                        TranscodeTestManager.AbandonProcess(process, 1, folder, prefix, NullLogger.Instance);
+                        abandoned.SetResult();
+                    },
+                    TestContext.Current.CancellationToken);
+
+                Assert.Null(result);
+                _release.Set();
+                await abandoned.Task.WaitAsync(_wait, TestContext.Current.CancellationToken);
+                Assert.Equal(["unrelated.ts"], Directory.GetFiles(folder).Select(Path.GetFileName));
+            }
+            finally
+            {
+                _release.Set();
+                try
+                {
+                    await abandoned.Task.WaitAsync(_wait, TestContext.Current.CancellationToken);
+                }
+                finally
+                {
+                    Directory.Delete(folder, true);
+                }
+            }
+        }
 
         private Func<object> Hang(object result)
             => () =>

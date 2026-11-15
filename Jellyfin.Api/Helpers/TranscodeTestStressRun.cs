@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Jellyfin.Api.Models.TranscodeTestDtos;
 
@@ -71,12 +72,29 @@ internal sealed class TranscodeTestStressRun
     public string? FilePrefix { get; set; }
 
     /// <summary>
+    /// Gets or sets the aggregate on-disk budget, including currently written segments and auxiliary files.
+    /// </summary>
+    public long MaxOutputBytes { get; set; }
+
+    /// <summary>
     /// Gets the id of the most recently added stream. A stream restarted at the end of the file keeps its id and
     /// does not change this.
     /// </summary>
     public int LastStreamId => _lastStreamId;
 
     public int NextStreamId() => ++_lastStreamId;
+
+    /// <summary>
+    /// Gets the streams without exposing a list being changed by a pending launch.
+    /// </summary>
+    /// <returns>The latest process for each logical stream.</returns>
+    public IReadOnlyList<TranscodeTestStream> GetStreams()
+    {
+        lock (_lock)
+        {
+            return Streams.ToArray();
+        }
+    }
 
     /// <summary>
     /// Adds a stream.
@@ -92,6 +110,13 @@ internal sealed class TranscodeTestStressRun
                 return false;
             }
 
+            if (Streams.Any(s => s.Id == stream.Id && !s.HasExited))
+            {
+                throw new InvalidOperationException("A logical stream cannot replace a process that is still running.");
+            }
+
+            // History was carried over before registration. Retired processes must not accumulate across restarts.
+            Streams.RemoveAll(s => s.Id == stream.Id);
             Streams.Add(stream);
             PeakStreams = Math.Max(PeakStreams, Streams.Count(s => !s.HasExited));
             return true;
@@ -163,8 +188,9 @@ internal sealed class TranscodeTestStressRun
             return;
         }
 
+        // An exited process has no current rate: without samples there is no measurement to report.
         var first = Streams[^1];
-        _singleStreamFps = (first.MedianFps ?? first.Fps(now)) is double f ? Math.Round(f, 1) : null;
+        _singleStreamFps = (first.MedianFps ?? (first.HasExited ? null : first.Fps(now))) is double f && f > 0 ? Math.Round(f, 1) : null;
     }
 
     /// <summary>
@@ -223,7 +249,7 @@ internal sealed class TranscodeTestStressRun
         if (now >= _nextSample)
         {
             _nextSample = now + 1;
-            var live = Streams.Where(s => !s.HasExited).ToList();
+            var live = GetStreams().Where(s => !s.HasExited).ToList();
             foreach (var s in live)
             {
                 s.Sample(now);
@@ -233,9 +259,30 @@ internal sealed class TranscodeTestStressRun
             PeakCombinedFps = Math.Max(PeakCombinedFps, combined);
         }
 
-        foreach (var s in Streams.Where(s => !s.HasExited))
+        foreach (var s in GetStreams().Where(s => !s.HasExited))
         {
             s.CollectSegments();
+        }
+
+        if (MaxOutputBytes > 0 && Folder is not null && FilePrefix is not null)
+        {
+            long bytes = 0;
+            foreach (var file in Directory.EnumerateFiles(Folder, FilePrefix + "*"))
+            {
+                try
+                {
+                    bytes = checked(bytes + new FileInfo(file).Length);
+                }
+                catch (FileNotFoundException)
+                {
+                    // A concurrent retirement deleted its own files.
+                }
+            }
+
+            if (bytes > MaxOutputBytes)
+            {
+                throw new InvalidOperationException("The transcoding test exceeded its output-file budget. Lower the bitrate or the number of streams.");
+            }
         }
     }
 
@@ -251,7 +298,7 @@ internal sealed class TranscodeTestStressRun
             var finished = Phase == TranscodeTestStressPhase.Finished;
             // A stream started again at the end of the file is shown as its newest process, which carries the output
             // of the ones before it, so the average is taken over the shown streams.
-            var shown = Streams.GroupBy(s => s.Id).Select(g => g.Last()).ToList();
+            var shown = Streams.OrderBy(s => s.Id).ToList();
             var rates = shown.Select(s => s.OutputMbps).Where(r => r.HasValue).Select(r => r!.Value).ToList();
             return new TranscodeTestStressResult
             {

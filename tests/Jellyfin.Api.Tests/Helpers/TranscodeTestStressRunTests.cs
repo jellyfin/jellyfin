@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.TranscodeTestDtos;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Jellyfin.Api.Tests.Helpers
@@ -54,6 +55,69 @@ namespace Jellyfin.Api.Tests.Helpers
         }
 
         [Fact]
+        public void RetireStream_RepeatedEofReleasesEveryOwnedFileAndKeepsOnlyLogicalHistory()
+        {
+            var run = new TranscodeTestStressRun(8) { Folder = _folder, FilePrefix = "retired-" };
+            File.WriteAllBytes(Path.Combine(_folder, "other.ts"), new byte[10]);
+            TranscodeTestStream? previous = null;
+            for (var restart = 0; restart < 5; restart++)
+            {
+                var prefix = "retired-" + restart + "_";
+                WriteSegments(prefix, 5, 750_000);
+                File.WriteAllText(Path.Combine(_folder, prefix + ".m3u8"), "playlist");
+                File.WriteAllBytes(Path.Combine(_folder, prefix + "-1.mp4"), new byte[10]);
+                var stream = new TranscodeTestStream(1, new Process(), _folder, prefix, 24f, 0, 6);
+                if (previous is not null)
+                {
+                    stream.CarryOver(previous);
+                }
+
+                Assert.True(run.Add(stream));
+                TranscodeTestManager.RetireStream(stream, NullLogger.Instance);
+                Assert.True(stream.HasExited);
+                Assert.Single(run.GetStreams());
+                Assert.Equal(["other.ts"], Directory.GetFiles(_folder).Select(Path.GetFileName));
+                Assert.Equal(1.0, run.Snapshot(20).Streams[0].OutputMbps);
+                previous = stream;
+            }
+        }
+
+        [Fact]
+        public void Add_ReplacementCannotLoseOwnershipOfARunningProcess()
+        {
+            var run = new TranscodeTestStressRun(8);
+            var original = Stream(1, "original_", 0, 0);
+            var replacement = Stream(1, "replacement_", 0, 0);
+            try
+            {
+                run.Add(original);
+
+                Assert.Throws<InvalidOperationException>(() => run.Add(replacement));
+                Assert.Same(original, Assert.Single(run.GetStreams()));
+            }
+            finally
+            {
+                // These are handles to this test process, not child processes to kill.
+                original.DisposeProcess(false);
+                replacement.DisposeProcess(false);
+            }
+        }
+
+        [Fact]
+        public void Sample_AggregateBudgetIncludesActiveSegmentsPlaylistsAndInitFiles()
+        {
+            var run = new TranscodeTestStressRun(8) { Folder = _folder, FilePrefix = "budget-", MaxOutputBytes = 12 };
+            File.WriteAllBytes(Path.Combine(_folder, "budget-0.ts"), new byte[8]);
+            File.WriteAllBytes(Path.Combine(_folder, "budget-.m3u8"), new byte[3]);
+            File.WriteAllBytes(Path.Combine(_folder, "budget--1.mp4"), new byte[2]);
+            File.WriteAllBytes(Path.Combine(_folder, "other.ts"), new byte[100]);
+
+            Assert.Throws<InvalidOperationException>(() => run.Sample(1));
+            run.MaxOutputBytes = 13;
+            run.Sample(2);
+        }
+
+        [Fact]
         public void Snapshot_AverageOutputMbps_UsesTheShownStreams()
         {
             var run = new TranscodeTestStressRun(8);
@@ -64,6 +128,7 @@ namespace Jellyfin.Api.Tests.Helpers
             var second = Stream(2, "c_", 3, 1_500_000);
             second.CollectSegments(true);
             run.Add(ended);
+            ended.DisposeProcess(false);
             run.Add(restarted);
             run.Add(second);
 
@@ -103,6 +168,7 @@ namespace Jellyfin.Api.Tests.Helpers
             var restarted = Stream(1, "b_", 0, 0);
             restarted.CarryOver(ended);
             run.Add(ended);
+            ended.DisposeProcess(false);
             run.Add(restarted);
 
             // The new process has no reading of its own yet.
@@ -111,6 +177,25 @@ namespace Jellyfin.Api.Tests.Helpers
 
             Assert.Equal(30, run.Snapshot(11).SingleStreamFps);
             Assert.Equal(30, run.Snapshot(11).Streams[0].MedianFps);
+        }
+
+        [Fact]
+        public void SingleStream_ExitedProcessWithoutSamples_IsNotMeasured()
+        {
+            // The process ran alone and exited at the end of a short file before any full-window sample.
+            var run = new TranscodeTestStressRun(8);
+            var exited = new TranscodeTestStream(1, new Process(), _folder, "a_", 24f, 0, 6);
+            for (var t = 1.0; t <= 3; t += 0.5)
+            {
+                exited.OnLine(FormattableString.Invariant($"frame= {(int)(t * 160)} fps= 160"), t);
+            }
+
+            run.Add(exited);
+            run.End(TranscodeTestEndReason.LimitReached, 20);
+
+            Assert.True(exited.HasExited);
+            Assert.Null(run.Snapshot(20).SingleStreamFps);
+            Assert.Null(run.Snapshot(20).SingleStreamSpeed);
         }
 
         [Fact]
@@ -161,6 +246,7 @@ namespace Jellyfin.Api.Tests.Helpers
             var restarted = Stream(1, "b_", 0, 0);
             restarted.CarryOver(ended);
             run.Add(ended);
+            ended.DisposeProcess(false);
             run.Add(restarted);
 
             run.End(TranscodeTestEndReason.Cancelled, 10);

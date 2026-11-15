@@ -64,6 +64,20 @@ internal sealed partial class TranscodeTestStream
         SegmentLength = segmentLength;
     }
 
+    /// <summary>
+    /// Gets a value indicating whether the output reader finished, without blocking the supervisor.
+    /// </summary>
+    public bool OutputCompleted
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _reader.IsCompleted;
+            }
+        }
+    }
+
     public int Id { get; }
 
     public Process Process { get; }
@@ -500,7 +514,8 @@ internal sealed partial class TranscodeTestStream
     /// Releases the process, keeping its exit code. Its output reader is given a moment to finish first. Safe to
     /// call more than once and from any thread.
     /// </summary>
-    public void DisposeProcess()
+    /// <param name="waitForOutput">Whether to wait briefly for the reader; false after the supervisor already drained it.</param>
+    public void DisposeProcess(bool waitForOutput = true)
     {
         Task reader;
         lock (_lock)
@@ -513,7 +528,7 @@ internal sealed partial class TranscodeTestStream
             reader = _reader;
         }
 
-        if (HasExited)
+        if (waitForOutput && HasExited)
         {
             // The output closes with the process, so this returns quickly; it is bounded in case a child kept it open.
             reader.Wait(TimeSpan.FromSeconds(1));

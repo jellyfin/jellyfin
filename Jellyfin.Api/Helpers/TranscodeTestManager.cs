@@ -249,7 +249,7 @@ public sealed class TranscodeTestManager : IDisposable
 
     /// <summary>
     /// Stops a running test at once: the server is shutting down and will not wait for the test to end, so the
-    /// stress test's ffmpeg processes are killed here, waited for briefly, and their files removed.
+    /// test's ffmpeg processes are killed here, waited for briefly, and stress-test files removed.
     /// </summary>
     public void Dispose()
     {
@@ -889,6 +889,8 @@ public sealed class TranscodeTestManager : IDisposable
         var prefix = FolderName + "-" + DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
         run.Folder = folder;
         run.FilePrefix = prefix;
+        run.MaxOutputBytes = TranscodeTestRules.NeededSpace(request.MaxStreams, request.VideoBitrate, 6);
+        var deadline = _clock.Elapsed.TotalSeconds + TranscodeTestRules.TimeLimitSeconds(request.MaxStreams);
         Log(string.Create(CultureInfo.InvariantCulture, $"Stress test: \"{item.Name}\" → {request.MaxWidth} px {codec} {request.VideoBitrate / 1e6:0.#} Mbps."));
         CheckFreeSpace(folder, request);
         var sourceSeconds = item.RunTimeTicks is long ticks ? TimeSpan.FromTicks(ticks).TotalSeconds : (double?)null;
@@ -900,7 +902,32 @@ public sealed class TranscodeTestManager : IDisposable
 
         try
         {
-            var first = await StartStreamAsync(run, request, codec, folder, prefix, options, item.Name ?? string.Empty, cancellationToken).ConfigureAwait(false);
+            using var firstCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var firstLaunch = StartStreamAsync(run, request, codec, folder, prefix, options, item.Name ?? string.Empty, firstCancellation.Token);
+            TranscodeTestStream? first;
+            try
+            {
+                while (!firstLaunch.IsCompleted)
+                {
+                    await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+                    var now = _clock.Elapsed.TotalSeconds;
+                    StopIfAbandoned(now);
+                    run.Sample(now);
+                    if (now >= deadline)
+                    {
+                        run.End(TranscodeTestRules.TimeLimitEndReason(0, request.MaxStreams), now, timeLimitReached: true);
+                        return;
+                    }
+                }
+
+                first = await firstLaunch.ConfigureAwait(false);
+            }
+            finally
+            {
+                await firstCancellation.CancelAsync().ConfigureAwait(false);
+                await ObservePendingLaunchAsync(firstLaunch).ConfigureAwait(false);
+            }
+
             if (first is null)
             {
                 return;
@@ -909,7 +936,7 @@ public sealed class TranscodeTestManager : IDisposable
             run.SourceFps = first.SourceFps;
             run.ThresholdFps = Math.Round(first.SourceFps * FpsRatio, 3);
             Log(string.Create(CultureInfo.InvariantCulture, $"Each stream must keep {TranscodeTestRules.FormatFps(run.ThresholdFps)} fps ({FpsRatio * 100:0}% of the source's {first.SourceFps:0.###} fps). {TranscodeTestRules.DescribeRamp(RampSeconds, TranscodeTestStream.WindowSeconds)}"));
-            await EscalateAsync(run, request, codec, folder, prefix, options, item.Name ?? string.Empty, cancellationToken).ConfigureAwait(false);
+            await EscalateAsync(run, request, codec, folder, prefix, options, item.Name ?? string.Empty, deadline, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -926,200 +953,329 @@ public sealed class TranscodeTestManager : IDisposable
         Log(TranscodeTestRules.DescribeResult(summary));
     }
 
-    private async Task EscalateAsync(TranscodeTestStressRun run, TranscodeTestRequestDto request, string codec, string folder, string prefix, EncodingOptions options, string itemName, CancellationToken cancellationToken)
+    private async Task EscalateAsync(TranscodeTestStressRun run, TranscodeTestRequestDto request, string codec, string folder, string prefix, EncodingOptions options, string itemName, double deadline, CancellationToken cancellationToken)
     {
         var timeLimit = TranscodeTestRules.TimeLimitSeconds(request.MaxStreams);
-        var controller = new TranscodeTestStressController(run.ThresholdFps, RampSeconds, FailSeconds, StartTimeoutSeconds, request.MaxStreams, _clock.Elapsed.TotalSeconds, TranscodeTestStream.WindowSeconds, timeLimit);
+        var controller = new TranscodeTestStressController(run.ThresholdFps, RampSeconds, FailSeconds, StartTimeoutSeconds, request.MaxStreams, 0, TranscodeTestStream.WindowSeconds, deadline);
+        controller.StreamAdded(_clock.Elapsed.TotalSeconds);
+        using var launches = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        Task<TranscodeTestStream?>? pending = null;
+        var pendingRestart = false;
+        var waitingForRestart = new Queue<TranscodeTestStream>();
+        var pendingIds = new HashSet<int>();
+        var exitedAt = new Dictionary<TranscodeTestStream, double>();
         run.SetPhase(TranscodeTestStressPhase.WarmingUp, _clock.Elapsed.TotalSeconds + RampSeconds);
-        while (true)
+        try
         {
-            await Task.Delay(500, cancellationToken).ConfigureAwait(false);
-            var now = _clock.Elapsed.TotalSeconds;
-            StopIfAbandoned(now);
-            run.Sample(now);
-            foreach (var started in run.Streams.Where(s => !s.FirstFrameLogged).ToList())
+            while (true)
             {
-                if (started.FirstFrameAt.HasValue && started.DescribeFirstFrame(TranscodeTestProcessIo.BytesRead(started.Process)) is string firstFrame)
+                await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+                var now = _clock.Elapsed.TotalSeconds;
+                StopIfAbandoned(now);
+                run.Sample(now);
+                if (now >= deadline)
                 {
-                    started.FirstFrameLogged = true;
-                    Log(firstFrame);
-                }
-            }
-
-            foreach (var ended in run.Streams.Where(s => s.HasExited && !s.Stopping && !s.Handled).ToList())
-            {
-                ended.Handled = true;
-                // The process can exit before its last lines are read; they may name the cause.
-                await ended.WaitForOutputAsync(_outputDrainTimeout).ConfigureAwait(false);
-                var lived = now - ended.StartedAt;
-                if (TranscodeTestRules.CanRestart(ended.ExitCode, ended.ReportedFrames, lived, ended.AtEndOfFile, ended.Restarts))
-                {
-                    // The file ended: start the stream again so the load stays the same.
-                    Log($"Stream {ended.Id} reached the end of the file; starting it again.");
-                    ended.CollectSegments(true);
-                    var restarted = await StartStreamAsync(run, request, codec, folder, prefix, options, itemName, cancellationToken, ended.Id).ConfigureAwait(false);
-                    if (restarted is null)
-                    {
-                        return;
-                    }
-
-                    // One stream to the viewer: keep its output and frame rate history, and judge the new process afresh.
-                    restarted.CarryOver(ended);
-                    restarted.Restarts = ended.Restarts + 1;
-                    controller.StreamRestarted(ended.Id);
-                    continue;
-                }
-
-                EndStream(run, ended, TranscodeTestEndKind.Exited, controller.MaxStable, now, TranscodeTestRules.DescribeNoRestart(ended.ExitCode, ended.ReportedFrames, lived, ended.PositionSeconds, ended.SourceSeconds, ended.Restarts));
-                return;
-            }
-
-            var readings = run.Streams.Where(s => !s.HasExited).Select(s => new TranscodeTestStreamReading(s.Id, s.Fps(now), now - s.StartedAt, s.ReportedFrames, s.NearEnd)).ToList();
-            var decision = controller.Tick(now, readings);
-            run.MaxStable = controller.MaxStable;
-            switch (decision.Action)
-            {
-                case TranscodeTestStressAction.Stalled:
-                    // The controller only judges running streams; Last picks the current one when a restart reused the id.
-                    EndStream(run, run.Streams.Last(s => s.Id == decision.StreamId!.Value && !s.HasExited), TranscodeTestEndKind.Stalled, controller.MaxStable, now);
-                    return;
-                case TranscodeTestStressAction.LimitReached:
-                    Log($"With {TranscodeTestRules.StreamCount(readings.Count)} running, stream {decision.StreamId} fell to {TranscodeTestRules.FormatFps(TranscodeTestRules.RoundFps(decision.Fps!.Value, run.ThresholdFps))} fps, under {TranscodeTestRules.FormatFps(run.ThresholdFps)} fps, for {FailSeconds:0} s.");
-                    run.End(TranscodeTestEndReason.LimitReached, now, decision.StreamId, decision.Fps);
-                    return;
-                case TranscodeTestStressAction.MaxStreams:
-                    Log($"All {request.MaxStreams} streams kept up; that is the limit you set.");
-                    run.End(TranscodeTestEndReason.MaxStreams, now);
-                    return;
-                case TranscodeTestStressAction.TimeLimit:
                     Log(TranscodeTestRules.DescribeTimeLimit(timeLimit, controller.MaxStable));
                     run.End(TranscodeTestRules.TimeLimitEndReason(controller.MaxStable, request.MaxStreams), now, timeLimitReached: true);
                     return;
-                case TranscodeTestStressAction.AddStream:
-                    run.RecordSingleStream(now);
-                    if (await StartStreamAsync(run, request, codec, folder, prefix, options, itemName, cancellationToken).ConfigureAwait(false) is null)
+                }
+
+                if (pending?.IsCompleted == true)
+                {
+                    var started = await pending.ConfigureAwait(false);
+                    pending = null;
+                    if (started is null)
                     {
                         return;
                     }
 
-                    now = _clock.Elapsed.TotalSeconds;
-                    controller.StreamAdded(now);
-                    run.SetPhase(TranscodeTestStressPhase.WarmingUp, now + RampSeconds);
-                    break;
-                default:
-                    if (decision.Phase == TranscodeTestStressPhase.FallingBehind)
+                    pendingIds.Remove(started.Id);
+                    if (!pendingRestart)
                     {
-                        if (decision.DipStarted && decision.Fps is double dipFps)
+                        controller.StreamAdded(now);
+                    }
+                }
+
+                foreach (var started in run.GetStreams().Where(s => !s.FirstFrameLogged))
+                {
+                    if (started.FirstFrameAt.HasValue && started.DescribeFirstFrame(TranscodeTestProcessIo.BytesRead(started.Process)) is string firstFrame)
+                    {
+                        started.FirstFrameLogged = true;
+                        Log(firstFrame);
+                    }
+                }
+
+                foreach (var ended in run.GetStreams().Where(s => s.HasExited && !s.Stopping && !s.Handled))
+                {
+                    pendingIds.Add(ended.Id);
+                    // The process can exit before its last lines are read; they may name the cause.
+                    if (!ended.OutputCompleted)
+                    {
+                        if (!exitedAt.TryGetValue(ended, out var observed))
                         {
-                            // Once per dip: the next stream waits until all have kept up for the settle time.
-                            Log(TranscodeTestRules.DescribeDip(decision.StreamId!.Value, dipFps, run.ThresholdFps, TranscodeTestStream.WindowSeconds, readings.Count < request.MaxStreams ? run.LastStreamId + 1 : null));
+                            exitedAt[ended] = now;
+                            continue;
                         }
 
-                        run.SetFallingBehind(decision.StreamId!.Value, decision.EndsAt!.Value);
-                    }
-                    else
-                    {
-                        run.SetPhase(decision.Phase, decision.NextStreamAt);
+                        if (now - observed < _outputDrainTimeout.TotalSeconds)
+                        {
+                            continue;
+                        }
                     }
 
-                    break;
+                    ended.Handled = true;
+                    exitedAt.Remove(ended);
+                    var lived = now - ended.StartedAt;
+                    if (TranscodeTestRules.CanRestart(ended.ExitCode, ended.ReportedFrames, lived, ended.AtEndOfFile, ended.Restarts))
+                    {
+                        // The file ended: start the stream again so the load stays the same.
+                        Log($"Stream {ended.Id} reached the end of the file; starting it again.");
+                        RetireStream(ended, _logger);
+                        waitingForRestart.Enqueue(ended);
+                        pendingIds.Add(ended.Id);
+                        controller.StreamRestarted(ended.Id);
+                        continue;
+                    }
+
+                    EndStream(run, ended, TranscodeTestEndKind.Exited, controller.MaxStable, now, TranscodeTestRules.DescribeNoRestart(ended.ExitCode, ended.ReportedFrames, lived, ended.PositionSeconds, ended.SourceSeconds, ended.Restarts));
+                    return;
+                }
+
+                if (pending is null && waitingForRestart.TryDequeue(out var previous))
+                {
+                    pendingRestart = true;
+                    pending = StartStreamAsync(run, request, codec, folder, prefix, options, itemName, launches.Token, previous);
+                }
+
+                var readings = run.GetStreams().Where(s => !s.HasExited).Select(s => new TranscodeTestStreamReading(s.Id, s.Fps(now), now - s.StartedAt, s.ReportedFrames, s.NearEnd)).ToList();
+                // A pending launch remains a logical stream, but no rate has yet been observed under the intended load.
+                readings.AddRange(pendingIds.Where(id => readings.All(s => s.Id != id)).Select(id => new TranscodeTestStreamReading(id, null, 0, true)));
+                var decision = controller.Tick(now, readings);
+                run.MaxStable = controller.MaxStable;
+                switch (decision.Action)
+                {
+                    case TranscodeTestStressAction.Stalled:
+                        // The controller only judges running streams; Last picks the current one when a restart reused the id.
+                        EndStream(run, run.GetStreams().Last(s => s.Id == decision.StreamId!.Value && !s.HasExited), TranscodeTestEndKind.Stalled, controller.MaxStable, now);
+                        return;
+                    case TranscodeTestStressAction.LimitReached:
+                        Log($"With {TranscodeTestRules.StreamCount(readings.Count)} running, stream {decision.StreamId} fell to {TranscodeTestRules.FormatFps(TranscodeTestRules.RoundFps(decision.Fps!.Value, run.ThresholdFps))} fps, under {TranscodeTestRules.FormatFps(run.ThresholdFps)} fps, for {FailSeconds:0} s.");
+                        run.End(TranscodeTestEndReason.LimitReached, now, decision.StreamId, decision.Fps);
+                        return;
+                    case TranscodeTestStressAction.MaxStreams:
+                        Log($"All {request.MaxStreams} streams kept up; that is the limit you set.");
+                        run.End(TranscodeTestEndReason.MaxStreams, now);
+                        return;
+                    case TranscodeTestStressAction.TimeLimit:
+                        Log(TranscodeTestRules.DescribeTimeLimit(timeLimit, controller.MaxStable));
+                        run.End(TranscodeTestRules.TimeLimitEndReason(controller.MaxStable, request.MaxStreams), now, timeLimitReached: true);
+                        return;
+                    case TranscodeTestStressAction.AddStream:
+                        run.RecordSingleStream(now);
+                        pendingRestart = false;
+                        pending = StartStreamAsync(run, request, codec, folder, prefix, options, itemName, launches.Token);
+                        pendingIds.Add(run.LastStreamId);
+                        run.SetPhase(TranscodeTestStressPhase.WarmingUp, now + RampSeconds);
+                        break;
+                    default:
+                        if (decision.Phase == TranscodeTestStressPhase.FallingBehind)
+                        {
+                            if (decision.DipStarted && decision.Fps is double dipFps)
+                            {
+                                // Once per dip: the next stream waits until all have kept up for the settle time.
+                                Log(TranscodeTestRules.DescribeDip(decision.StreamId!.Value, dipFps, run.ThresholdFps, TranscodeTestStream.WindowSeconds, readings.Count < request.MaxStreams ? run.LastStreamId + 1 : null));
+                            }
+
+                            run.SetFallingBehind(decision.StreamId!.Value, decision.EndsAt!.Value);
+                        }
+                        else
+                        {
+                            run.SetPhase(decision.Phase, decision.NextStreamAt);
+                        }
+
+                        break;
+                }
+            }
+        }
+        finally
+        {
+            await launches.CancelAsync().ConfigureAwait(false);
+            if (pending is not null)
+            {
+                await ObservePendingLaunchAsync(pending).ConfigureAwait(false);
             }
         }
     }
 
-    private async Task<TranscodeTestStream?> StartStreamAsync(TranscodeTestStressRun run, TranscodeTestRequestDto request, string codec, string folder, string prefix, EncodingOptions options, string itemName, CancellationToken cancellationToken, int? reuseId = null)
+    private static async Task ObservePendingLaunchAsync(Task<TranscodeTestStream?> pending)
     {
-        var id = reuseId ?? run.NextStreamId();
-        var container = codec == "h264" ? "ts" : "mp4";
-        var streamingRequest = new VideoRequestDto
+        try
         {
-            Id = request.ItemId!.Value,
-            MediaSourceId = request.MediaSourceId ?? request.ItemId.Value.ToString("N", CultureInfo.InvariantCulture),
-            DeviceId = "transcode-test",
-            PlaySessionId = "transcode-test-" + id.ToString(CultureInfo.InvariantCulture),
-            VideoCodec = codec,
-            AudioCodec = "aac",
-            AudioBitRate = 192_000,
-            MaxAudioChannels = 2,
-            TranscodingMaxAudioChannels = 2,
-            MaxWidth = request.MaxWidth,
-            VideoBitRate = request.VideoBitrate,
-            SegmentContainer = container,
-            SegmentLength = 6
-        };
-
-        using var state = await StreamingHelpers.GetStreamingState(
-                streamingRequest,
-                $"/Videos/{streamingRequest.Id:N}/hls1/main/0.{container}",
-                new Dictionary<string, string?>(),
-                "Jellyfin transcoding test",
-                Guid.Empty,
-                _mediaSourceManager,
-                _userManager,
-                _libraryManager,
-                _configurationManager,
-                _mediaEncoder,
-                _encodingHelper,
-                _transcodeManager,
-                TranscodingJobType.Hls,
-                cancellationToken)
-            .ConfigureAwait(false);
-
-        var streamPrefix = string.Create(CultureInfo.InvariantCulture, $"{prefix}-s{id}-{run.Streams.Count}_");
-        var playlist = Path.Combine(folder, streamPrefix + ".m3u8");
-        // Playback's command, plus flags that tag each log line with its level so errors can be told from warnings, and
-        // hide the banner. They change only ffmpeg's log text, not the transcode.
-        var args = StressLogArguments + _hlsCommandBuilder.GetCommandLineArguments(playlist, state, options, false, 0);
-        _logger.LogDebug("Transcoding test stream {Id}: {Ffmpeg} {Args}", id, _mediaEncoder.EncoderPath, args);
-        var sourceFps = state.VideoStream?.ReferenceFrameRate ?? 24f;
-        if (run.Input is null)
-        {
-            DescribeStream(run, state, options, args, itemName, sourceFps);
+            await pending.ConfigureAwait(false);
         }
+        catch (Exception)
+        {
+            // The supervisor reports a completed launch's failure; cancellation or an earlier terminal reason wins.
+        }
+    }
 
-        var startInfo = new ProcessStartInfo(_mediaEncoder.EncoderPath, args)
+    private async Task<TranscodeTestStream?> StartStreamAsync(TranscodeTestStressRun run, TranscodeTestRequestDto request, string codec, string folder, string prefix, EncodingOptions options, string itemName, CancellationToken cancellationToken, TranscodeTestStream? previous = null)
+    {
+        var id = previous?.Id ?? run.NextStreamId();
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(StartTimeoutSeconds));
+        var launchToken = timeout.Token;
+        var launchClock = Stopwatch.StartNew();
+        try
         {
-            RedirectStandardError = true,
-            RedirectStandardInput = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-        // Off the test's loop and with a time limit, so a launch that hangs does not stop the test from watching the
-        // other streams, the time limit and the idle stop for good.
-        var process = await TranscodeTestLauncher.StartAsync(
-                () => StartProcess(startInfo),
-                TimeSpan.FromSeconds(StartTimeoutSeconds),
-                late => AbandonProcess(late, id, _logger),
-                cancellationToken)
-            .ConfigureAwait(false);
-        if (process is null)
+            var container = codec == "h264" ? "ts" : "mp4";
+            var streamingRequest = new VideoRequestDto
+            {
+                Id = request.ItemId!.Value,
+                MediaSourceId = request.MediaSourceId ?? request.ItemId.Value.ToString("N", CultureInfo.InvariantCulture),
+                DeviceId = "transcode-test",
+                PlaySessionId = "transcode-test-" + id.ToString(CultureInfo.InvariantCulture),
+                VideoCodec = codec,
+                AudioCodec = "aac",
+                AudioBitRate = 192_000,
+                MaxAudioChannels = 2,
+                TranscodingMaxAudioChannels = 2,
+                MaxWidth = request.MaxWidth,
+                VideoBitRate = request.VideoBitrate,
+                SegmentContainer = container,
+                SegmentLength = 6
+            };
+
+            var stateTask = Task.Run(
+                async () => await StreamingHelpers.GetStreamingState(
+                        streamingRequest,
+                        $"/Videos/{streamingRequest.Id:N}/hls1/main/0.{container}",
+                        new Dictionary<string, string?>(),
+                        "Jellyfin transcoding test",
+                        Guid.Empty,
+                        _mediaSourceManager,
+                        _userManager,
+                        _libraryManager,
+                        _configurationManager,
+                        _mediaEncoder,
+                        _encodingHelper,
+                        _transcodeManager,
+                        TranscodingJobType.Hls,
+                        launchToken)
+                    .ConfigureAwait(false),
+                launchToken);
+            StreamState state;
+            try
+            {
+                state = await stateTask.WaitAsync(launchToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                _ = DisposeLateStreamingStateAsync(stateTask);
+                throw;
+            }
+
+            using var stateLifetime = state;
+            launchToken.ThrowIfCancellationRequested();
+            var streamPrefix = string.Create(CultureInfo.InvariantCulture, $"{prefix}-s{id}-{Guid.NewGuid():N}_");
+            var playlist = Path.Combine(folder, streamPrefix + ".m3u8");
+            // Playback's command, plus flags that tag each log line with its level so errors can be told from warnings, and
+            // hide the banner. They change only ffmpeg's log text, not the transcode.
+            var args = StressLogArguments + _hlsCommandBuilder.GetCommandLineArguments(playlist, state, options, false, 0);
+            _logger.LogDebug("Transcoding test stream {Id}: {Ffmpeg} {Args}", id, _mediaEncoder.EncoderPath, args);
+            var sourceFps = state.VideoStream?.ReferenceFrameRate ?? 24f;
+            if (run.Input is null)
+            {
+                DescribeStream(run, state, options, args, itemName, sourceFps);
+            }
+
+            var startInfo = new ProcessStartInfo(_mediaEncoder.EncoderPath, args)
+            {
+                RedirectStandardError = true,
+                RedirectStandardInput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            // Off the test's loop and with a time limit, so a launch that hangs does not stop the test from watching the
+            // other streams, the time limit and the idle stop for good.
+            var process = await TranscodeTestLauncher.StartAsync(
+                    () => StartProcess(startInfo),
+                    TimeSpan.FromSeconds(Math.Max(0, StartTimeoutSeconds - launchClock.Elapsed.TotalSeconds)),
+                    late => AbandonProcess(late, id, folder, streamPrefix, _logger),
+                    launchToken)
+                .ConfigureAwait(false);
+            if (process is null)
+            {
+                EndLaunch(run, id, previous is not null);
+                return null;
+            }
+
+            var stream = new TranscodeTestStream(id, process, folder, streamPrefix, sourceFps, _clock.Elapsed.TotalSeconds, state.SegmentLength)
+            {
+                // A stream restarted at the end of the file is not news, as with its start below.
+                FirstFrameLogged = previous is not null,
+                SourceSeconds = state.RunTimeTicks is long ticks ? TimeSpan.FromTicks(ticks).TotalSeconds : null
+            };
+            if (previous is not null)
+            {
+                stream.CarryOver(previous);
+                stream.Restarts = previous.Restarts + 1;
+            }
+
+            try
+            {
+                stream.StartReading(_clock);
+                if (!run.Add(stream))
+                {
+                    // The server is shutting down and already stopped the other streams.
+                    throw new OperationCanceledException(cancellationToken);
+                }
+            }
+            catch
+            {
+                stream.Kill();
+                stream.WaitForExit(TimeSpan.FromSeconds(1));
+                stream.DisposeProcess();
+                DeleteTestFiles(folder, streamPrefix, _logger);
+                throw;
+            }
+
+            if (previous is null)
+            {
+                Log($"Stream {id} started; {run.GetStreams().Count(s => !s.HasExited)} running.");
+            }
+
+            return stream;
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            EndLaunch(run, id, reuseId is not null);
+            EndLaunch(run, id, previous is not null);
             return null;
         }
+    }
 
-        var stream = new TranscodeTestStream(id, process, folder, streamPrefix, sourceFps, _clock.Elapsed.TotalSeconds, state.SegmentLength)
+    /// <summary>
+    /// Collects the final output statistics, releases an exited process and removes its entire owned prefix.
+    /// </summary>
+    /// <param name="stream">The exited stream.</param>
+    /// <param name="logger">The cleanup logger.</param>
+    internal static void RetireStream(TranscodeTestStream stream, ILogger logger)
+    {
+        stream.CollectSegments(true);
+        stream.DisposeProcess(false);
+        DeleteTestFiles(stream.Folder, stream.FilePrefix, logger);
+    }
+
+    private static async Task DisposeLateStreamingStateAsync(Task<StreamState> pending)
+    {
+        try
         {
-            // A stream restarted at the end of the file is not news, as with its start below.
-            FirstFrameLogged = reuseId is not null,
-            SourceSeconds = state.RunTimeTicks is long ticks ? TimeSpan.FromTicks(ticks).TotalSeconds : null
-        };
-        stream.StartReading(_clock);
-        if (!run.Add(stream))
-        {
-            // The server is shutting down and already stopped the other streams.
-            stream.Kill();
-            stream.WaitForExit(TimeSpan.FromSeconds(1));
-            stream.DisposeProcess();
-            throw new OperationCanceledException(cancellationToken);
+            (await pending.ConfigureAwait(false)).Dispose();
         }
-
-        if (reuseId is null)
+        catch (Exception)
         {
-            Log($"Stream {id} started; {run.Streams.Count(s => !s.HasExited)} running.");
+            // Observe a late setup error after its launch was cancelled.
         }
-
-        return stream;
     }
 
     private static Process StartProcess(ProcessStartInfo startInfo)
@@ -1140,7 +1296,12 @@ public sealed class TranscodeTestManager : IDisposable
     /// <summary>
     /// Stops a process that started after the test stopped waiting for it, or after the test ended.
     /// </summary>
-    private static void AbandonProcess(Process process, int streamId, ILogger logger)
+    /// <param name="process">The late process.</param>
+    /// <param name="streamId">The logical stream number.</param>
+    /// <param name="folder">The output folder.</param>
+    /// <param name="prefix">The prefix exclusively owned by this launch.</param>
+    /// <param name="logger">The cleanup logger.</param>
+    internal static void AbandonProcess(Process process, int streamId, string folder, string prefix, ILogger logger)
     {
         logger.LogWarning("Transcoding test stream {Id} started too late; stopping it", streamId);
         try
@@ -1155,6 +1316,7 @@ public sealed class TranscodeTestManager : IDisposable
         finally
         {
             process.Dispose();
+            DeleteTestFiles(folder, prefix, logger);
         }
     }
 
@@ -1223,9 +1385,9 @@ public sealed class TranscodeTestManager : IDisposable
             s.Kill();
         }
 
+        using var timeout = new CancellationTokenSource(_shutdownWaitTimeout);
         foreach (var s in live)
         {
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             await s.WaitForExitAsync(timeout.Token).ConfigureAwait(false);
         }
 
@@ -1349,7 +1511,7 @@ public sealed class TranscodeTestManager : IDisposable
     /// </summary>
     private void EndStream(TranscodeTestStressRun run, TranscodeTestStream stream, TranscodeTestEndKind kind, int maxStable, double now, string? noRestart = null)
     {
-        var otherSessions = run.Streams.Count(s => s != stream && !s.HasExited);
+        var otherSessions = run.GetStreams().Count(s => s != stream && !s.HasExited);
         // A stream restarted at the end of the file started long ago; only one that never produced a frame did not.
         var outcome = TranscodeTestRules.EndOutcome(
             kind,
