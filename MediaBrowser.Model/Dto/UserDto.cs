@@ -107,6 +107,20 @@ namespace MediaBrowser.Model.Dto
         /// <value>The primary image aspect ratio.</value>
         public double? PrimaryImageAspectRatio { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this user may currently create scoped
+        /// media share links, after the server-wide policy and the user's own preference
+        /// have both been applied.
+        /// </summary>
+        /// <remarks>
+        /// This is a read-only effective value so clients can hide share and copy-stream
+        /// affordances instead of offering an action the server would reject with 403.
+        /// It does not grant anything: <c>POST /Items/{itemId}/ShareLinks</c> re-evaluates
+        /// the policy on every request and remains the authority.
+        /// </remarks>
+        /// <value><c>true</c> when sharing is allowed for this user; otherwise <c>false</c>.</value>
+        public bool CanShareMedia { get; set; }
+
         /// <inheritdoc />
         public override string ToString()
         {

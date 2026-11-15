@@ -25,5 +25,27 @@ namespace Jellyfin.Api.Tests.Controllers
 
             Assert.DoesNotContain("ShareLinkKey", json, StringComparison.OrdinalIgnoreCase);
         }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void UserDto_ExposesEffectiveCanShareMediaFlag(bool canShareMedia)
+        {
+            var user = new UserDto
+            {
+                Name = "test",
+                Id = Guid.NewGuid(),
+                CanShareMedia = canShareMedia
+            };
+
+            var json = JsonSerializer.Serialize(user);
+
+            // The effective flag is a UI hint only; it must be serialized so clients can
+            // hide share / copy-stream actions instead of hitting a 403.
+            Assert.Contains("\"CanShareMedia\":" + (canShareMedia ? "true" : "false"), json, StringComparison.Ordinal);
+
+            // It must never carry the key material itself.
+            Assert.DoesNotContain("ShareLinkKey", json, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

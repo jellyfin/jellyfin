@@ -16,6 +16,7 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
+using Jellyfin.Server.Implementations.ShareLinks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -529,7 +530,12 @@ namespace Jellyfin.Server.Implementations.Users
                     BlockedChannels = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedChannels),
                     BlockedMediaFolders = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedMediaFolders),
                     BlockUnratedItems = user.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems)
-                }
+                },
+                // Effective value so clients can hide share / copy-stream affordances
+                // instead of offering an action the server would reject with 403.
+                CanShareMedia = ShareLinkPolicyEvaluator.IsSharingAllowed(
+                    _serverConfigurationManager.Configuration.MediaSharingPolicy,
+                    user.MediaSharingPolicy)
             };
         }
 
