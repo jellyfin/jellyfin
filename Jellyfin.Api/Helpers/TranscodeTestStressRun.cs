@@ -57,9 +57,19 @@ internal sealed class TranscodeTestStressRun
 
     /// <summary>
     /// Gets or sets a value indicating whether the source is shorter than <see cref="TranscodeTestManager.ShortSourceSeconds"/>,
-    /// so streams restart often.
+    /// so each stream loops or restarts often.
     /// </summary>
     public bool ShortSource { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the input is not a local file, so the result includes its delivery speed.
+    /// </summary>
+    public bool RemoteSource { get; set; }
+
+    /// <summary>
+    /// Gets or sets the local media file the streams read, or <c>null</c> when the input is not a local file.
+    /// </summary>
+    public string? SourcePath { get; set; }
 
     /// <summary>
     /// Gets or sets the folder the streams write to.
@@ -334,6 +344,7 @@ internal sealed class TranscodeTestStressRun
                 Input = Input,
                 Output = Output,
                 ShortSource = ShortSource,
+                RemoteSource = RemoteSource,
                 Streams = shown.Select(s => new TranscodeTestStreamResult
                 {
                     Id = s.Id,

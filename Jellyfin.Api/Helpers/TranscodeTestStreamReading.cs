@@ -8,4 +8,6 @@ namespace Jellyfin.Api.Helpers;
 /// <param name="AgeSeconds">Seconds since the stream started.</param>
 /// <param name="ReportedFrames">Whether ffmpeg reported at least one encoded frame.</param>
 /// <param name="NearEnd">Whether the stream is so close to the end of its source that it is not judged.</param>
-internal sealed record TranscodeTestStreamReading(int Id, double? Fps, double AgeSeconds, bool ReportedFrames, bool NearEnd = false);
+/// <param name="IsRunning">Whether the physical process is present, rather than awaiting a launch or restart.</param>
+/// <param name="ProcessStartedAt">The physical process's start time, distinguishing replacements of the same id.</param>
+internal sealed record TranscodeTestStreamReading(int Id, double? Fps, double AgeSeconds, bool ReportedFrames, bool NearEnd = false, bool IsRunning = true, double? ProcessStartedAt = null);

@@ -51,9 +51,18 @@ public class TranscodeTestController : BaseJellyfinApiController
             return BadRequest("The stress test needs an item.");
         }
 
-        if (request.Kind == TranscodeTestKind.StressTest && !TranscodeTestRules.IsStressTestItem(_libraryManager.GetItemById(request.ItemId!.Value)))
+        if (request.Kind == TranscodeTestKind.StressTest)
         {
-            return BadRequest("The stress test needs a video item.");
+            var item = _libraryManager.GetItemById(request.ItemId!.Value);
+            if (!TranscodeTestRules.IsStressTestItem(item))
+            {
+                return BadRequest("The stress test needs a video item.");
+            }
+
+            if (TranscodeTestRules.DescribeTooShortSource(item!.RunTimeTicks) is string tooShort)
+            {
+                return BadRequest(tooShort);
+            }
         }
 
         if (Array.IndexOf(_videoCodecs, request.VideoCodec) < 0)
@@ -88,6 +97,8 @@ public class TranscodeTestController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult StopTest()
     {
+        // There is one test per server, and this stops or clears it whichever administrator started it. A client that
+        // must act only on the run it showed compares StartedAt in a fresh status before sending this.
         _transcodeTestManager.Cancel();
         return NoContent();
     }

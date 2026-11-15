@@ -50,5 +50,11 @@ public enum TranscodeTestEndReason
     /// NVIDIA's encoder refused another session. The diagnostic may reflect resource exhaustion, session
     /// restrictions or licensing; it does not prove a numerical driver session cap. The kept-up count is the result.
     /// </summary>
-    NvencSessionRefused
+    NvencSessionRefused,
+
+    /// <summary>
+    /// The test stopped without establishing a capacity limit. Any kept-up count is a measured lower bound,
+    /// not the server's maximum; for example, a short file exhausted the restart budget.
+    /// </summary>
+    Inconclusive
 }

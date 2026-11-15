@@ -63,6 +63,7 @@ namespace Jellyfin.Api.Tests.Helpers
                 [TranscodeTestEndReason.Error] = null,
                 [TranscodeTestEndReason.GpuMemoryFull] = null,
                 [TranscodeTestEndReason.NvencSessionRefused] = TranscodeTestSurveyFailureReason.FailedNvencLimit,
+                [TranscodeTestEndReason.Inconclusive] = null,
             };
 
             foreach (var reason in Enum.GetValues<TranscodeTestEndReason>())

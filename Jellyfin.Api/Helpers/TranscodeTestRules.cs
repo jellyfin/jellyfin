@@ -345,13 +345,13 @@ internal static partial class TranscodeTestRules
     public static bool IsStressTestItem(BaseItem? item) => item is Video;
 
     /// <summary>
-    /// Describes a source short enough that the stress test restarts its streams often, for the log.
+    /// Describes a short source, and the distinction between continuous local loops and fallback restarts.
     /// </summary>
     /// <param name="seconds">The source's run time, or <c>null</c> when it is not known.</param>
     /// <returns>The line for the log, or <c>null</c> when the source is long enough or its length is not known.</returns>
     public static string? DescribeShortSource(double? seconds)
         => IsShortSource(seconds)
-            ? string.Create(CultureInfo.InvariantCulture, $"This file is {seconds:0.#} s long. Each stream restarts at its end, which briefly disturbs the measurement; a file of at least a minute gives steadier results.")
+            ? string.Create(CultureInfo.InvariantCulture, $"This file is {seconds:0.#} s long. Finite local inputs loop within each process, and every pass resets the decoder and repeats a few frames, which can raise the result slightly; other inputs may restart at EOF, which interrupts measurement. A file of at least a minute gives steadier results.")
             : null;
 
     /// <summary>
@@ -360,6 +360,17 @@ internal static partial class TranscodeTestRules
     /// <param name="seconds">The source's run time, or <c>null</c> when it is not known.</param>
     /// <returns><c>true</c> for a known run time under the minimum.</returns>
     public static bool IsShortSource(double? seconds) => seconds is double s && s > 0 && s < TranscodeTestManager.ShortSourceSeconds;
+
+    /// <summary>
+    /// Describes why the stress test refuses a source shorter than <see cref="TranscodeTestManager.MinimumSourceSeconds"/>.
+    /// A source whose length is not known, such as a remote stream, is allowed.
+    /// </summary>
+    /// <param name="runTimeTicks">The source's run time, or <c>null</c> when it is not known.</param>
+    /// <returns>The reason, or <c>null</c> when the source is long enough or its length is not known.</returns>
+    public static string? DescribeTooShortSource(long? runTimeTicks)
+        => runTimeTicks is long ticks && ticks > 0 && TimeSpan.FromTicks(ticks).TotalSeconds < TranscodeTestManager.MinimumSourceSeconds
+            ? string.Create(CultureInfo.InvariantCulture, $"The stress test needs a video of at least {TranscodeTestManager.MinimumSourceSeconds:0} seconds; this one is {TimeSpan.FromTicks(ticks).TotalSeconds:0.0##} s. Choose a longer video.")
+            : null;
 
     /// <summary>
     /// Gets whether the saved settings let Jellyfin pick an output codec. Jellyfin only prefers HEVC and AV1 when
@@ -779,9 +790,9 @@ internal static partial class TranscodeTestRules
     /// <param name="maxStable">The most streams that all kept up.</param>
     /// <param name="maxStreams">The most streams the test may run.</param>
     /// <returns><see cref="TranscodeTestEndReason.MaxStreams"/> when every allowed stream kept up, otherwise
-    /// <see cref="TranscodeTestEndReason.LimitReached"/>: the kept-up count is the result.</returns>
+    /// <see cref="TranscodeTestEndReason.Inconclusive"/> otherwise: the kept-up count is only a lower bound.</returns>
     public static TranscodeTestEndReason TimeLimitEndReason(int maxStable, int maxStreams)
-        => maxStable >= maxStreams ? TranscodeTestEndReason.MaxStreams : TranscodeTestEndReason.LimitReached;
+        => maxStable >= maxStreams ? TranscodeTestEndReason.MaxStreams : TranscodeTestEndReason.Inconclusive;
 
     /// <summary>
     /// Describes a stress test that ran for its time limit, for the log.
@@ -790,7 +801,9 @@ internal static partial class TranscodeTestRules
     /// <param name="maxStable">The most streams that all kept up.</param>
     /// <returns>The sentence for the log.</returns>
     public static string DescribeTimeLimit(double limitSeconds, int maxStable)
-        => string.Create(CultureInfo.InvariantCulture, $"The test reached its time limit of {limitSeconds / 60:0} min while the streams kept dipping below real time; {StreamCount(maxStable)} kept up before that, which is the result.");
+        => maxStable == 0
+            ? string.Create(CultureInfo.InvariantCulture, $"The test reached its time limit of {limitSeconds / 60:0} min without measuring a kept-up stream. The result is inconclusive; no performance limit was established.")
+            : string.Create(CultureInfo.InvariantCulture, $"The test reached its time limit of {limitSeconds / 60:0} min; at least {StreamCount(maxStable)} kept up, but no performance limit was established.");
 
     /// <summary>
     /// Gets whether a stress test was left alone too long and should stop.
@@ -859,7 +872,38 @@ internal static partial class TranscodeTestRules
     /// <param name="maxStable">The most streams that all kept up.</param>
     /// <returns>The sentence for the log.</returns>
     public static string DescribeRestartLimit(int streamId, int restarts, int maxStable)
-        => string.Create(CultureInfo.InvariantCulture, $"Stream {streamId} reached the end of the file {restarts} times, so the test stops; {StreamCount(maxStable)} kept up before that, which is the result. A longer file gives steadier results.");
+        => maxStable == 0
+            ? string.Create(CultureInfo.InvariantCulture, $"Stream {streamId} restarted {restarts} times, so the test stops without measuring capacity. The result is inconclusive; use a longer file.")
+            : string.Create(CultureInfo.InvariantCulture, $"Stream {streamId} restarted {restarts} times, so the test stops; at least {StreamCount(maxStable)} kept up, but no performance limit was established. Use a longer file.");
+
+    /// <summary>
+    /// Gets whether ffmpeg affirmatively reported an incomplete input, even when its exit code was zero.
+    /// </summary>
+    /// <param name="line">One ffmpeg diagnostic line.</param>
+    /// <returns>Whether the line names premature or partial input.</returns>
+    internal static bool IsPrematureEndLine(string line)
+        => PrematureEndRegex().IsMatch(line.Trim());
+
+    /// <summary>
+    /// Gets whether ffmpeg could no longer read its input: a storage outage, a vanished or unreadable file, or a
+    /// source that stopped delivering. That is a failure of the input, not a measure of the server's capacity.
+    /// </summary>
+    /// <param name="line">The diagnostic after its level tag has been removed.</param>
+    /// <returns>Whether the line reports an input read failure.</returns>
+    /// <remarks>
+    /// End of file is not one: ffmpeg prints "EOF while reading input" on every pass of a looped input, and the
+    /// position check already tells a non-looped input's real end from an early one.
+    /// </remarks>
+    internal static bool IsInputFailureLine(string line)
+        => InputFailureRegex().IsMatch(line.Trim());
+
+    /// <summary>
+    /// Gets whether the selected input video's decoder affirmatively finished, rather than only its audio stream.
+    /// </summary>
+    /// <param name="line">The diagnostic after its level tag has been removed.</param>
+    /// <returns>Whether ffmpeg reported normal video-decoder EOF.</returns>
+    internal static bool IsVideoEndOfFileLine(string line)
+        => VideoEndOfFileRegex().IsMatch(line);
 
     /// <summary>
     /// Describes why a stream that exited cleanly was not started again, for a failure that ffmpeg gave no error for.
@@ -885,7 +929,7 @@ internal static partial class TranscodeTestRules
 
         if (restarts >= MaxRestartsPerStream)
         {
-            return string.Create(CultureInfo.InvariantCulture, $"The stream reached the end of the file {restarts} times; use a longer file.");
+            return string.Create(CultureInfo.InvariantCulture, $"The stream restarted {restarts} times; use a longer file.");
         }
 
         if (IsAtEndOfFile(positionSeconds, sourceSeconds) == false)
@@ -971,6 +1015,13 @@ internal static partial class TranscodeTestRules
     /// <returns>How many streams kept up and, when one fell behind, how many were running then.</returns>
     public static string DescribeResult(TranscodeTestStressResult result)
     {
+        if (result.EndReason == TranscodeTestEndReason.Inconclusive)
+        {
+            return result.MaxStableStreams == 0
+                ? "Result: inconclusive. No concurrent capacity was measured; no performance limit was established."
+                : string.Create(CultureInfo.InvariantCulture, $"Result: inconclusive. At least {result.MaxStableStreams} stream(s) kept up with real time, but no performance limit was established.");
+        }
+
         var text = string.Create(CultureInfo.InvariantCulture, $"Result: {result.MaxStableStreams} stream(s) kept up with real time.");
         if (result.EndReason == TranscodeTestEndReason.LimitReached && result.FailedStreamId is int id && result.FailedStreamFps is double fps)
         {
@@ -1037,6 +1088,19 @@ internal static partial class TranscodeTestRules
 
     [GeneratedRegex(@"graph [-0-9]+ input from stream 0:0 @ [^\]]+\] .*?pixfmt:([a-z0-9_]+)")]
     private static partial Regex InputFormatRegex();
+
+    [GeneratedRegex(@"^\[vist#0:\d+/[^\]]+\] (?:\[dec:[^\]]+\] )?Decoder returned EOF, finishing$")]
+    private static partial Regex VideoEndOfFileRegex();
+
+    [GeneratedRegex(@"^(?:\[[^\]\r\n]+\]\s*)*(?:File ended prematurely|(?:stream \d+, offset 0x[0-9a-f]+: )?partial file)\.?$", RegexOptions.IgnoreCase)]
+    private static partial Regex PrematureEndRegex();
+
+    // Read failures as ffmpeg prints them, anchored to the diagnostic so input paths and titles cannot match:
+    // "[in#0/matroska,webm @ 0x1] Read error at pos. 190103455 (0xb54c99f)",
+    // "[in#0/matroska,webm @ 0x1] Error during demuxing: Input/output error" and
+    // "[in#0 @ 0x1] Error opening input: No such file or directory".
+    [GeneratedRegex(@"^(?:\[[^\]\r\n]+\]\s*)*(?:Error during demuxing: (?!End of file\b).+|Read error at pos\. \d+.*|Error opening input(?: files?)?: (?:Input/output error|No such file or directory|Stale file handle|Permission denied|Operation not permitted|Device not configured)|\[[^\]\r\n]+ @ 0x[0-9a-f]+\]\s*(?:Error (?:reading|seeking)[^:]*|Seek[^:]*|Read[^:]*): (?:Input/output error|Stale file handle))\.?$", RegexOptions.IgnoreCase)]
+    private static partial Regex InputFailureRegex();
 
     // ffmpeg's final statistics: "Input stream #0:0 (video): 96 packets read (123 bytes); 96 frames decoded; ...".
     [GeneratedRegex(@"\b(\d+) frames decoded")]

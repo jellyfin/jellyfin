@@ -26,8 +26,8 @@ namespace Jellyfin.Api.Tests.Helpers
             => Assert.Equal(expected, TranscodeTestRules.TimeLimitSeconds(maxStreams));
 
         [Theory]
-        [InlineData(3, 8, TranscodeTestEndReason.LimitReached)]
-        [InlineData(0, 8, TranscodeTestEndReason.LimitReached)]
+        [InlineData(3, 8, TranscodeTestEndReason.Inconclusive)]
+        [InlineData(0, 8, TranscodeTestEndReason.Inconclusive)]
         [InlineData(8, 8, TranscodeTestEndReason.MaxStreams)]
         public void TimeLimitEndReason_KeepsTheKeptUpCount(int maxStable, int maxStreams, TranscodeTestEndReason expected)
             => Assert.Equal(expected, TranscodeTestRules.TimeLimitEndReason(maxStable, maxStreams));
@@ -70,6 +70,27 @@ namespace Jellyfin.Api.Tests.Helpers
 
             Assert.StartsWith("Result: 3 stream(s) kept up with real time.", text, StringComparison.Ordinal);
             Assert.Contains("time limit", text, StringComparison.Ordinal);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(3)]
+        public void Inconclusive_DoesNotClaimAFoundPerformanceLimit(int keptUp)
+        {
+            var result = new TranscodeTestStressResult { EndReason = TranscodeTestEndReason.Inconclusive, MaxStableStreams = keptUp };
+            var text = TranscodeTestRules.DescribeResult(result);
+
+            Assert.Contains("inconclusive", text, StringComparison.Ordinal);
+            Assert.Contains("no performance limit was established", text, StringComparison.Ordinal);
+            Assert.Null(TranscodeTestRules.SurveyFailureReason(result.EndReason));
+            Assert.Contains("\"EndReason\":\"Inconclusive\"", JsonSerializer.Serialize(result, JsonDefaults.Options), StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void TimeLimit_WithoutAQualifiedMeasurement_IsExplicitlyInconclusive()
+        {
+            Assert.Equal(TranscodeTestEndReason.Inconclusive, TranscodeTestRules.TimeLimitEndReason(0, 8));
+            Assert.Contains("without measuring a kept-up stream", TranscodeTestRules.DescribeTimeLimit(900, 0), StringComparison.Ordinal);
         }
 
         [Theory]

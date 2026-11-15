@@ -310,10 +310,10 @@ namespace Jellyfin.Api.Tests.Helpers
         }
 
         [Fact]
-        public void StressLogArguments_HideTheBannerAndTagTheLevel()
+        public void StressLogArguments_HideTheBannerAndExposeTaggedVideoEofDiagnostics()
         {
             Assert.StartsWith("-hide_banner ", TranscodeTestManager.StressLogArguments, StringComparison.Ordinal);
-            Assert.Contains("-loglevel +level", TranscodeTestManager.StressLogArguments, StringComparison.Ordinal);
+            Assert.Contains("-loglevel level+verbose", TranscodeTestManager.StressLogArguments, StringComparison.Ordinal);
         }
 
         [Fact]

@@ -47,6 +47,35 @@ namespace Jellyfin.Api.Tests.Helpers
         }
 
         [Fact]
+        public void StopNow_DoesNotWaitPerStreamForAnInheritedOutputPipe()
+        {
+            var run = new TranscodeTestStressRun(3);
+            var reader = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            try
+            {
+                for (var id = 1; id <= 3; id++)
+                {
+                    var stream = Stream(id, Exiting(0));
+                    Assert.True(stream.WaitForExit(TimeSpan.FromSeconds(15)));
+                    // Models a reader whose pipe stays open after the actual process has exited.
+                    stream.StartReading(() => reader.Task);
+                    Assert.True(run.Add(stream));
+                }
+
+                var elapsed = Stopwatch.StartNew();
+                TranscodeTestManager.StopNow(run, TimeSpan.FromMilliseconds(100), NullLogger.Instance);
+
+                Assert.True(elapsed.Elapsed < TimeSpan.FromSeconds(1), $"Shutdown added per-reader waits: {elapsed.Elapsed}.");
+                Assert.All(run.GetStreams(), stream => Assert.True(stream.HasExited));
+            }
+            finally
+            {
+                reader.TrySetResult();
+                TranscodeTestManager.StopNow(run, TimeSpan.Zero, NullLogger.Instance);
+            }
+        }
+
+        [Fact]
         public async Task StopNow_IsSafeTwiceAndWhileTheTestStopsTheStreamsToo()
         {
             var run = new TranscodeTestStressRun(8) { Folder = _folder, FilePrefix = "transcode-test-2" };
@@ -109,6 +138,32 @@ namespace Jellyfin.Api.Tests.Helpers
             Assert.Equal(1, stream.ExitCode);
         }
 
+        [Theory]
+        [InlineData("[matroska,webm @ 0x0] [warning] File ended prematurely", 120, false, true)]
+        [InlineData("[vist#0:0/h264] [verbose] Decoder returned EOF, finishing", 72, true, false)]
+        public async Task OutputReader_ReadsTheFinalDiagnosticWithoutANewline(string diagnostic, int frames, bool expectedEof, bool incompleteInput)
+        {
+            var stream = new TranscodeTestStream(1, PrintingWithoutNewline(diagnostic), _folder, "transcode-test-final_", 24f, 0, 6)
+            {
+                SourceSeconds = 5
+            };
+            try
+            {
+                stream.OnLine("frame=" + frames + " fps=24", 0);
+                stream.StartReading(Stopwatch.StartNew());
+                Assert.True(stream.WaitForExit(TimeSpan.FromSeconds(15)));
+                await stream.WaitForOutputAsync(TimeSpan.FromSeconds(10));
+
+                Assert.True(stream.OutputSucceeded);
+                Assert.Equal(expectedEof, stream.AtEndOfFile);
+                Assert.Equal(incompleteInput, stream.PrematureEndLine is not null);
+            }
+            finally
+            {
+                stream.DisposeProcess(false);
+            }
+        }
+
         [Fact]
         public async Task DisposeProcess_WhileTheOutputIsRead_EndsTheReaderQuietly()
         {
@@ -133,6 +188,9 @@ namespace Jellyfin.Api.Tests.Helpers
 
         private static Process Printing(string line, int code)
             => Start(OperatingSystem.IsWindows() ? "cmd.exe" : "/bin/sh", OperatingSystem.IsWindows() ? "/c echo " + line + " 1>&2 & exit " + code : "-c \"echo '" + line + "' >&2; exit " + code + "\"");
+
+        private static Process PrintingWithoutNewline(string line)
+            => Start(OperatingSystem.IsWindows() ? "cmd.exe" : "/bin/sh", OperatingSystem.IsWindows() ? "/c <nul set /p \"=" + line + "\" 1>&2 & exit 0" : "-c \"printf '%s' '" + line + "' >&2; exit 0\"");
 
         private static Process Start(string file, string arguments)
         {

@@ -13,11 +13,9 @@ namespace Jellyfin.Api.Helpers;
 /// until its first measurement. A stream that stays below the threshold for <see cref="FailSeconds"/> ends the test.
 /// A stream is added at most every <see cref="RampSeconds"/>, once every stream has kept up for a full
 /// <see cref="SettleSeconds"/> at the current load and none is below the threshold, and not before
-/// <see cref="SettleSeconds"/> after the last dip. Each stream earns this on its own: a measured interval at or above
-/// the threshold, or a whole process that reached the end of the file at or above it. A stream that already kept up
-/// at this load and is now unmeasured, because it drains at the end of the file or is starting again, neither holds
-/// back the next stream nor counts as below. A stream that has not kept up at this load yet holds it back, so a stream
-/// that is never measured cannot certify capacity.
+/// <see cref="SettleSeconds"/> after the last dip. Certification requires a simultaneously measured interval with
+/// the same physical processes present throughout. Pending launches, drains and replacements invalidate that
+/// interval. A completed process's average rate can establish a slowdown, but never concurrent capacity.
 /// Only a stream that never reported a frame stalls; one that reported frames and then went quiet reads 0 fps, so it
 /// gets the same grace as any stream that falls behind.
 /// The test also ends after <see cref="TimeLimitSeconds"/>, so streams that keep dipping briefly cannot hold it at
@@ -26,10 +24,12 @@ namespace Jellyfin.Api.Helpers;
 internal sealed class TranscodeTestStressController
 {
     private readonly Dictionary<int, double> _below = [];
-    private readonly Dictionary<int, double> _keptUpSince = [];
-    private readonly HashSet<int> _keptUp = [];
+    private readonly Dictionary<int, double?> _cohort = [];
     private readonly double _startedAt;
     private double _addedAt;
+    private double _physicalSince;
+    private double? _healthySince;
+    private bool _physicalChanged;
     private double? _belowAt;
     private (int Id, double Fps, double Seconds)? _slowRun;
 
@@ -60,6 +60,7 @@ internal sealed class TranscodeTestStressController
         StartTimeoutSeconds = startTimeoutSeconds;
         MaxStreams = maxStreams;
         _addedAt = now;
+        _physicalSince = now;
     }
 
     public double ThresholdFps { get; }
@@ -91,14 +92,16 @@ internal sealed class TranscodeTestStressController
     public void StreamAdded(double now)
     {
         _addedAt = now;
-        _keptUp.Clear();
-        _keptUpSince.Clear();
+        _physicalSince = now;
+        _healthySince = null;
+        _cohort.Clear();
+        _physicalChanged = false;
     }
 
     /// <summary>
     /// Records that a stream reached the end of the file and was started again with the same id. Its time below the
-    /// threshold belonged to the old process, so it is forgotten. The old process's rate over its whole run counts
-    /// as a measurement when the whole run was at the current load.
+    /// threshold belonged to the old process, so it is forgotten. The old rate can prove a slowdown, but a past
+    /// healthy rate cannot stand in for an absent physical process.
     /// </summary>
     /// <param name="id">The stream number.</param>
     /// <param name="run">The old process's rate from its first frame to its last progress line, with the times of
@@ -106,22 +109,21 @@ internal sealed class TranscodeTestStressController
     public void StreamRestarted(int id, TranscodeTestRunRate? run = null)
     {
         _below.Remove(id);
-        _keptUpSince.Remove(id);
-        if (run is null || !double.IsFinite(run.Fps) || run.From < _addedAt)
+        _healthySince = null;
+        _physicalChanged = true;
+        if (run is null || !double.IsFinite(run.Fps) || !double.IsFinite(run.From) || !double.IsFinite(run.To)
+            || run.To <= run.From || run.From < _addedAt || run.Fps >= ThresholdFps)
         {
-            return;
-        }
-
-        if (run.Fps >= ThresholdFps)
-        {
-            _keptUp.Add(id);
             return;
         }
 
         // A whole pass of the file below real time: the stream was behind for that long.
-        _keptUp.Remove(id);
         _belowAt = Math.Max(_belowAt ?? run.To, run.To);
-        _slowRun ??= (id, run.Fps, run.To - run.From);
+        var seconds = run.To - run.From;
+        if (_slowRun is null || seconds > _slowRun.Value.Seconds)
+        {
+            _slowRun = (id, run.Fps, seconds);
+        }
     }
 
     /// <summary>
@@ -138,7 +140,7 @@ internal sealed class TranscodeTestStressController
             return new(TranscodeTestStressAction.TimeLimit, TranscodeTestStressPhase.Finished);
         }
 
-        var stalled = streams.FirstOrDefault(s => !s.ReportedFrames && s.Fps is null && s.AgeSeconds > StartTimeoutSeconds);
+        var stalled = streams.FirstOrDefault(s => s.IsRunning && !s.ReportedFrames && s.Fps is null && s.AgeSeconds > StartTimeoutSeconds);
         if (stalled is not null)
         {
             return new(TranscodeTestStressAction.Stalled, TranscodeTestStressPhase.Finished, StreamId: stalled.Id);
@@ -150,6 +152,26 @@ internal sealed class TranscodeTestStressController
         }
 
         _slowRun = null;
+        var running = streams.Where(s => s.IsRunning).ToList();
+        var changed = _physicalChanged || running.Count != _cohort.Count
+            || running.Any(s => !_cohort.TryGetValue(s.Id, out var startedAt) || startedAt != s.ProcessStartedAt);
+        if (changed)
+        {
+            // On first observation use the known start times. A replacement or a missing peer begins a new,
+            // conservative epoch when observed, so a rolling rate spanning the old load cannot certify this one.
+            _physicalSince = _physicalChanged || _cohort.Count > 0
+                ? now
+                : Math.Max(_physicalSince, running.Select(s => s.ProcessStartedAt ?? _addedAt).DefaultIfEmpty(_addedAt).Max());
+            _healthySince = null;
+            _cohort.Clear();
+            foreach (var s in running)
+            {
+                _cohort[s.Id] = s.ProcessStartedAt;
+            }
+
+            _physicalChanged = false;
+        }
+
         foreach (var gone in _below.Keys.Where(id => streams.All(s => s.Id != id)).ToList())
         {
             _below.Remove(gone);
@@ -160,24 +182,18 @@ internal sealed class TranscodeTestStressController
         var nextStreamAt = _addedAt + RampSeconds;
         foreach (var s in streams)
         {
-            if (s.NearEnd || s.Fps is not double fps || !double.IsFinite(fps))
+            if (!s.IsRunning || s.NearEnd || s.Fps is not double fps || !double.IsFinite(fps))
             {
-                // Draining at the end of the file, starting again, or not measured yet: only a stream that has not
-                // kept up at this load yet holds back the next one.
-                if (s.NearEnd)
-                {
-                    _below.Remove(s.Id);
-                }
-
-                _keptUpSince.Remove(s.Id);
-                unmeasured |= !_keptUp.Contains(s.Id);
+                // An absent or unmeasured peer is not evidence of the intended concurrent workload.
+                // A missing measurement also breaks a sustained slowdown interval. Time with no evidence must
+                // not turn two separate short dips into one measured performance failure.
+                _below.Remove(s.Id);
+                unmeasured = true;
                 continue;
             }
 
             if (fps < ThresholdFps)
             {
-                _keptUp.Remove(s.Id);
-                _keptUpSince.Remove(s.Id);
                 var since = _below.TryGetValue(s.Id, out var t) ? t : _below[s.Id] = now;
                 if (now - since >= FailSeconds)
                 {
@@ -188,19 +204,11 @@ internal sealed class TranscodeTestStressController
             }
 
             _below.Remove(s.Id);
-            var keptUpSince = _keptUpSince.TryGetValue(s.Id, out var k) ? k : _keptUpSince[s.Id] = now;
-            if (now - keptUpSince >= SettleSeconds)
-            {
-                _keptUp.Add(s.Id);
-            }
-            else if (!_keptUp.Contains(s.Id))
-            {
-                nextStreamAt = Math.Max(nextStreamAt, keptUpSince + SettleSeconds);
-            }
         }
 
         if (_below.Count > 0)
         {
+            _healthySince = null;
             // Someone is behind: say so now; the next stream waits until all have kept up for the settle time.
             var (behindId, since) = _below.MinBy(b => b.Value);
             _belowAt = now;
@@ -220,10 +228,20 @@ internal sealed class TranscodeTestStressController
 
         if (unmeasured)
         {
+            _healthySince = null;
             return new(TranscodeTestStressAction.Wait, TranscodeTestStressPhase.WarmingUp, NextStreamAt: nextStreamAt);
         }
 
-        if (now < nextStreamAt || streams.Any(s => !_keptUp.Contains(s.Id)))
+        if (now - _physicalSince < TranscodeTestStream.WindowSeconds)
+        {
+            _healthySince = null;
+            nextStreamAt = Math.Max(nextStreamAt, _physicalSince + TranscodeTestStream.WindowSeconds + SettleSeconds);
+            return new(TranscodeTestStressAction.Wait, TranscodeTestStressPhase.KeepingUp, NextStreamAt: nextStreamAt);
+        }
+
+        _healthySince ??= now;
+        nextStreamAt = Math.Max(nextStreamAt, _healthySince.Value + SettleSeconds);
+        if (now < nextStreamAt)
         {
             return new(TranscodeTestStressAction.Wait, TranscodeTestStressPhase.KeepingUp, NextStreamAt: nextStreamAt);
         }

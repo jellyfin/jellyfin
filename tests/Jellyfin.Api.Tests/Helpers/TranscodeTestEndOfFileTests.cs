@@ -78,7 +78,7 @@ namespace Jellyfin.Api.Tests.Helpers
             Assert.Equal("ffmpeg exited without encoding a frame.", TranscodeTestRules.DescribeNoRestart(0, false, 0.4, null, 13.5, 0));
             Assert.Equal("ffmpeg exited cleanly, but its final position or the source duration is unknown, so the end of the file could not be verified.", TranscodeTestRules.DescribeNoRestart(0, true, 1.5, 1, null, 0));
             Assert.Equal("ffmpeg exited cleanly at 6.8 s of the 13.5 s file (50%), before the end of the file.", TranscodeTestRules.DescribeNoRestart(0, true, 2, 6.75, 13.5, 0));
-            Assert.Equal("The stream reached the end of the file 100 times; use a longer file.", TranscodeTestRules.DescribeNoRestart(0, true, 40, 13.5, 13.5, 100));
+            Assert.Equal("The stream restarted 100 times; use a longer file.", TranscodeTestRules.DescribeNoRestart(0, true, 40, 13.5, 13.5, 100));
         }
 
         [Theory]
@@ -283,6 +283,95 @@ namespace Jellyfin.Api.Tests.Helpers
         }
 
         [Fact]
+        public void TruncatedInput_ZeroExitCannotTurnPrematureDiagnosticsIntoHealthyEof()
+        {
+            var stream = NewStream(4);
+            stream.OnLine("frame=24 fps=24 time=00:00:01.00", 1);
+            stream.OnLine("frame=81 fps=24 time=00:00:03.37", 3);
+            Assert.True(stream.AtEndOfFile);
+            Assert.NotNull(stream.RunRate);
+
+            // Actual Matroska truncation evidence: ffmpeg can still exit zero after reporting this.
+            stream.OnLine("[warning] [matroska,webm @ 0x0] File ended prematurely", 3.1);
+            for (var i = 0; i < 20; i++)
+            {
+                stream.OnLine("[info] normal output after the warning", 3.2 + i);
+            }
+
+            Assert.False(stream.AtEndOfFile);
+            Assert.Null(stream.RunRate);
+            Assert.Null(stream.Fps(3.2));
+            Assert.False(stream.NearEndAt(4));
+            Assert.Contains("File ended prematurely", stream.PrematureEndLine, StringComparison.Ordinal);
+            Assert.False(TranscodeTestRules.CanRestart(0, true, 4, stream.AtEndOfFile, 0));
+            Assert.False(TranscodeTestRules.IsRestartLimit(0, true, stream.AtEndOfFile, 100));
+        }
+
+        [Theory]
+        [InlineData("[warning] [matroska,webm @ 0x0] File ended prematurely", true)]
+        [InlineData("[error] [mov,mp4 @ 0x0] stream 0, offset 0x100: partial file", true)]
+        [InlineData("[info] Input file #0: 96 frames decoded", false)]
+        [InlineData("[error] Cannot allocate memory", false)]
+        [InlineData("[info] Input #0, matroska,webm, from 'File ended prematurely.mkv':", false)]
+        [InlineData("[hls @ 0x0] Opening '/tmp/partial file.ts' for writing", false)]
+        [InlineData("[info] title: [example] File ended prematurely", false)]
+        [InlineData("[info] comment: [example] partial file", false)]
+        public void IsPrematureEndLine_OnlyAffirmativeSourceEvidence(string line, bool expected)
+            => Assert.Equal(expected, TranscodeTestRules.IsPrematureEndLine(line));
+
+        [Fact]
+        public void VideoEof_CompleteThreeSecondVideoWithFiveSecondAudio_CanRestart()
+        {
+            var stream = NewStream(5);
+            stream.OnLine("[info] frame=72 fps=24 time=00:00:03.00", 3);
+            Assert.False(stream.AtEndOfFile);
+
+            // Actual verbose decoder completion is about the video, not the longer AAC/container duration.
+            stream.OnLine("[vist#0:0/h264 @ 0x0] [dec:h264 @ 0x1] [verbose] Decoder returned EOF, finishing", 3.1);
+
+            Assert.True(stream.AtEndOfFile);
+            Assert.True(TranscodeTestRules.CanRestart(0, true, 3.2, stream.AtEndOfFile, 0));
+            Assert.False(TranscodeTestRules.CanRestart(1, true, 3.2, stream.AtEndOfFile, 0));
+        }
+
+        [Fact]
+        public void AudioEof_DoesNotProveThatTheVideoEnded()
+        {
+            var stream = NewStream(5);
+            stream.OnLine("[info] frame=72 fps=24 time=00:00:03.00", 3);
+            stream.OnLine("[aist#0:1/aac @ 0x0] [dec:aac @ 0x1] [verbose] Decoder returned EOF, finishing", 3.1);
+
+            Assert.False(stream.AtEndOfFile);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void VideoEof_PrematureInputVetoWinsInEitherDiagnosticOrder(bool prematureFirst)
+        {
+            var stream = NewStream(4);
+            stream.OnLine("[info] frame=81 fps=24 time=00:00:03.37", 3);
+            const string videoEnd = "[vist#0:0/h264 @ 0x0] [dec:h264 @ 0x1] [verbose] Decoder returned EOF, finishing";
+            const string premature = "[matroska,webm @ 0x0] [warning] File ended prematurely";
+            stream.OnLine(prematureFirst ? premature : videoEnd, 3.1);
+            stream.OnLine(prematureFirst ? videoEnd : premature, 3.2);
+
+            Assert.False(stream.AtEndOfFile);
+            Assert.Null(stream.RunRate);
+        }
+
+        [Fact]
+        public void LoopedInput_NoFiniteDurationDoesNotGetAnEofOrDrainExemption()
+        {
+            var stream = NewStream(null);
+            stream.OnLine("[info] frame=240 fps=24 time=00:00:10.00", 10);
+            stream.OnLine("[vist#0:0/h264 @ 0x0] [dec:h264 @ 0x1] [verbose] Decoder returned EOF, finishing", 10.1);
+
+            Assert.Null(stream.AtEndOfFile);
+            Assert.False(stream.NearEndAt(10.2));
+        }
+
+        [Fact]
         public void IsRestartLimit_OnlyACleanEndOfFileAtTheLimit()
         {
             Assert.True(TranscodeTestRules.IsRestartLimit(0, true, true, TranscodeTestRules.MaxRestartsPerStream));
@@ -292,7 +381,7 @@ namespace Jellyfin.Api.Tests.Helpers
             Assert.False(TranscodeTestRules.IsRestartLimit(1, true, true, TranscodeTestRules.MaxRestartsPerStream));
             Assert.False(TranscodeTestRules.IsRestartLimit(0, false, true, TranscodeTestRules.MaxRestartsPerStream));
             Assert.Equal(
-                "Stream 2 reached the end of the file 100 times, so the test stops; 3 streams kept up before that, which is the result. A longer file gives steadier results.",
+                "Stream 2 restarted 100 times, so the test stops; at least 3 streams kept up, but no performance limit was established. Use a longer file.",
                 TranscodeTestRules.DescribeRestartLimit(2, 100, 3));
         }
 

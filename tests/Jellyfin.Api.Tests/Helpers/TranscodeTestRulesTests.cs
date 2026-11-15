@@ -222,8 +222,8 @@ namespace Jellyfin.Api.Tests.Helpers
         }
 
         [Theory]
-        [InlineData(30.0, "This file is 30 s long. Each stream restarts at its end, which briefly disturbs the measurement; a file of at least a minute gives steadier results.")]
-        [InlineData(59.5, "This file is 59.5 s long. Each stream restarts at its end, which briefly disturbs the measurement; a file of at least a minute gives steadier results.")]
+        [InlineData(30.0, "This file is 30 s long. Finite local inputs loop within each process, and every pass resets the decoder and repeats a few frames, which can raise the result slightly; other inputs may restart at EOF, which interrupts measurement. A file of at least a minute gives steadier results.")]
+        [InlineData(59.5, "This file is 59.5 s long. Finite local inputs loop within each process, and every pass resets the decoder and repeats a few frames, which can raise the result slightly; other inputs may restart at EOF, which interrupts measurement. A file of at least a minute gives steadier results.")]
         [InlineData(60.0, null)]
         [InlineData(5400.0, null)]
         [InlineData(0.0, null)] // A run time of 0 is not known.

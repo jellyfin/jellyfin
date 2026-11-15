@@ -58,16 +58,28 @@ public sealed class TranscodeTestManager : IDisposable
     internal const double StartTimeoutSeconds = 30;
 
     /// <summary>
-    /// Seconds a source should last at least. Each stream restarts at the end of the file, which briefly disturbs the
-    /// measurement.
+    /// Seconds a source should last at least. Each pass of a looped input seeks back, resets the decoder at the first
+    /// keyframe and repeats a few frames where audio and video lengths differ (about 1% of the output on a 14 s clip),
+    /// so short looped sources read slightly high; non-loopable inputs restart at EOF, which disturbs measurement.
     /// </summary>
     internal const double ShortSourceSeconds = 60;
 
     /// <summary>
-    /// Arguments put before the stress test's playback command. The level tag tells errors from warnings, and without
-    /// the banner a stalled stream's last lines are ffmpeg's own output, not its build configuration.
+    /// Seconds a source must last for the stress test. Below this the per-pass reset dominates what is measured.
     /// </summary>
-    internal const string StressLogArguments = "-hide_banner -loglevel +level ";
+    internal const double MinimumSourceSeconds = 5;
+
+    /// <summary>
+    /// Seconds the check of the media file may take when every stream slowed down or stalled at once.
+    /// </summary>
+    internal const double SourceCheckSeconds = 5;
+
+    /// <summary>
+    /// Arguments put before the stress test's playback command. The level tag tells errors from warnings, and without
+    /// the banner a stalled stream's last lines are ffmpeg's own output, not its build configuration. Verbose output
+    /// also provides affirmative per-video decoder EOF evidence for non-loopable inputs.
+    /// </summary>
+    internal const string StressLogArguments = "-hide_banner -loglevel level+verbose ";
 
     private const string FolderName = "transcode-test";
     private const int CheckFrames = 96;
@@ -304,7 +316,8 @@ public sealed class TranscodeTestManager : IDisposable
 
         foreach (var s in streams)
         {
-            s.DisposeProcess();
+            // Shutdown discards stderr; an inherited pipe must not add a wait for every stream.
+            s.DisposeProcess(false);
         }
 
         DeleteTestFiles(run.Folder, run.FilePrefix, logger);
@@ -964,6 +977,7 @@ public sealed class TranscodeTestManager : IDisposable
         var waitingForRestart = new Queue<TranscodeTestStream>();
         var pendingIds = new HashSet<int>();
         var exitedAt = new Dictionary<TranscodeTestStream, double>();
+        TranscodeTestStream? restartLimit = null;
         run.SetPhase(TranscodeTestStressPhase.WarmingUp, _clock.Elapsed.TotalSeconds + RampSeconds);
         try
         {
@@ -973,6 +987,25 @@ public sealed class TranscodeTestManager : IDisposable
                 var now = _clock.Elapsed.TotalSeconds;
                 StopIfAbandoned(now);
                 run.Sample(now);
+                var incomplete = run.GetStreams().FirstOrDefault(s => !s.Stopping && s.PrematureEndLine is not null);
+                if (incomplete is not null)
+                {
+                    var error = "ffmpeg reported an incomplete input: " + incomplete.PrematureEndLine;
+                    Log($"Stream {incomplete.Id} cannot measure this input: {error}");
+                    run.End(TranscodeTestEndReason.StreamFailed, now, incomplete.Id, error: error);
+                    return;
+                }
+
+                // A read error is a storage or source failure, not a capacity limit, even when every stream slows down.
+                var unreadable = run.GetStreams().FirstOrDefault(s => !s.Stopping && s.InputFailureLine is not null);
+                if (unreadable is not null)
+                {
+                    var error = "The input stopped: " + unreadable.InputFailureLine;
+                    Log($"Stream {unreadable.Id} cannot read its input: {error}");
+                    run.End(TranscodeTestEndReason.StreamFailed, now, unreadable.Id, error: error);
+                    return;
+                }
+
                 if (now >= deadline)
                 {
                     Log(TranscodeTestRules.DescribeTimeLimit(timeLimit, controller.MaxStable));
@@ -1005,6 +1038,7 @@ public sealed class TranscodeTestManager : IDisposable
                     }
                 }
 
+                var drained = new List<TranscodeTestStream>();
                 foreach (var ended in run.GetStreams().Where(s => s.HasExited && !s.Stopping && !s.Handled))
                 {
                     pendingIds.Add(ended.Id);
@@ -1025,8 +1059,15 @@ public sealed class TranscodeTestManager : IDisposable
 
                     ended.Handled = true;
                     exitedAt.Remove(ended);
+                    drained.Add(ended);
+                }
+
+                // A source/restart budget is not a failure: inspect every real failure in this tick first.
+                foreach (var ended in OrderExitedStreams(drained))
+                {
                     var lived = now - ended.StartedAt;
-                    if (TranscodeTestRules.CanRestart(ended.ExitCode, ended.ReportedFrames, lived, ended.AtEndOfFile, ended.Restarts))
+                    var disposition = ExitDisposition(ended);
+                    if (disposition == TranscodeTestExitDisposition.Restart)
                     {
                         // The file ended: start the stream again so the load stays the same.
                         Log($"Stream {ended.Id} reached the end of the file; starting it again.");
@@ -1037,29 +1078,54 @@ public sealed class TranscodeTestManager : IDisposable
                         continue;
                     }
 
-                    if (TranscodeTestRules.IsRestartLimit(ended.ExitCode, ended.ReportedFrames, ended.AtEndOfFile, ended.Restarts))
+                    if (disposition == TranscodeTestExitDisposition.RestartLimit)
                     {
-                        // A file this short ends the test, not the stream: the kept-up count is still the result.
-                        Log(TranscodeTestRules.DescribeRestartLimit(ended.Id, ended.Restarts, controller.MaxStable));
-                        run.End(TranscodeTestRules.TimeLimitEndReason(controller.MaxStable, request.MaxStreams), now);
-                        return;
+                        // Keep the budget stop pending until this tick's exits and performance evidence are judged.
+                        restartLimit ??= ended;
+                        controller.StreamRestarted(ended.Id, ended.RunRate);
+                        continue;
                     }
 
-                    EndStream(run, ended, TranscodeTestEndKind.Exited, controller.MaxStable, now, TranscodeTestRules.DescribeNoRestart(ended.ExitCode, ended.ReportedFrames, lived, ended.PositionSeconds, ended.SourceSeconds, ended.Restarts));
+                    var noRestart = !ended.OutputCompleted
+                        ? "ffmpeg exited, but its output did not close within the drain timeout; the end of the input could not be verified."
+                        : !ended.OutputSucceeded
+                            ? "ffmpeg exited, but its output could not be read completely; the final diagnostics and end of the input could not be verified."
+                            : ended.PrematureEndLine is string premature
+                                ? "ffmpeg reported an incomplete input: " + premature
+                                : ended.InputFailureLine is string unread
+                                ? "The input stopped: " + unread
+                                : TranscodeTestRules.DescribeNoRestart(ended.ExitCode, ended.ReportedFrames, lived, ended.PositionSeconds, ended.SourceSeconds, ended.Restarts);
+                    EndStream(run, ended, TranscodeTestEndKind.Exited, controller.MaxStable, now, noRestart);
                     return;
                 }
 
-                if (pending is null && waitingForRestart.TryDequeue(out var previous))
+                if (pending is null && restartLimit is null && waitingForRestart.TryDequeue(out var previous))
                 {
                     pendingRestart = true;
                     pending = StartStreamAsync(run, request, codec, folder, prefix, options, itemName, launches.Token, previous);
                 }
 
-                var readings = run.GetStreams().Where(s => !s.HasExited).Select(s => new TranscodeTestStreamReading(s.Id, s.Fps(now), now - s.StartedAt, s.ReportedFrames, s.NearEndAt(now))).ToList();
+                var readings = run.GetStreams().Where(s => !s.HasExited).Select(s => new TranscodeTestStreamReading(s.Id, s.Fps(now), now - s.StartedAt, s.ReportedFrames, s.NearEndAt(now), IsRunning: true, ProcessStartedAt: s.StartedAt)).ToList();
                 // A pending launch remains a logical stream, but no rate has yet been observed under the intended load.
-                readings.AddRange(pendingIds.Where(id => readings.All(s => s.Id != id)).Select(id => new TranscodeTestStreamReading(id, null, 0, true)));
+                readings.AddRange(pendingIds.Where(id => readings.All(s => s.Id != id)).Select(id => new TranscodeTestStreamReading(id, null, 0, true, IsRunning: false)));
                 var decision = controller.Tick(now, readings);
                 run.MaxStable = controller.MaxStable;
+                if (restartLimit is not null && exitedAt.Count == 0
+                    && decision.Action is not TranscodeTestStressAction.Stalled and not TranscodeTestStressAction.LimitReached)
+                {
+                    Log(TranscodeTestRules.DescribeRestartLimit(restartLimit.Id, restartLimit.Restarts, controller.MaxStable));
+                    run.End(TranscodeTestEndReason.Inconclusive, now, error: "The input exhausted the restart budget; use a longer or loopable local file.");
+                    return;
+                }
+
+                if (decision.Action is TranscodeTestStressAction.Stalled or TranscodeTestStressAction.LimitReached
+                    && await DescribeUnavailableSourceAsync(run.SourcePath, TimeSpan.FromSeconds(SourceCheckSeconds)).ConfigureAwait(false) is string unavailable)
+                {
+                    Log(unavailable);
+                    run.End(TranscodeTestEndReason.StreamFailed, _clock.Elapsed.TotalSeconds, decision.StreamId, error: unavailable);
+                    return;
+                }
+
                 switch (decision.Action)
                 {
                     case TranscodeTestStressAction.Stalled:
@@ -1067,7 +1133,7 @@ public sealed class TranscodeTestManager : IDisposable
                         EndStream(run, run.GetStreams().Last(s => s.Id == decision.StreamId!.Value && !s.HasExited), TranscodeTestEndKind.Stalled, controller.MaxStable, now);
                         return;
                     case TranscodeTestStressAction.LimitReached:
-                        Log($"With {TranscodeTestRules.StreamCount(readings.Count)} running, stream {decision.StreamId} fell to {TranscodeTestRules.FormatFps(TranscodeTestRules.RoundFps(decision.Fps!.Value, run.ThresholdFps))} fps, under {TranscodeTestRules.FormatFps(run.ThresholdFps)} fps, for {FailSeconds:0} s.");
+                        Log($"Stream {decision.StreamId} measured {TranscodeTestRules.FormatFps(TranscodeTestRules.RoundFps(decision.Fps!.Value, run.ThresholdFps))} fps, under {TranscodeTestRules.FormatFps(run.ThresholdFps)} fps, for at least {FailSeconds:0} s. {TranscodeTestRules.StreamCount(readings.Count(s => s.IsRunning))} currently running.");
                         run.End(TranscodeTestEndReason.LimitReached, now, decision.StreamId, decision.Fps);
                         return;
                     case TranscodeTestStressAction.MaxStreams:
@@ -1079,6 +1145,12 @@ public sealed class TranscodeTestManager : IDisposable
                         run.End(TranscodeTestRules.TimeLimitEndReason(controller.MaxStable, request.MaxStreams), now, timeLimitReached: true);
                         return;
                     case TranscodeTestStressAction.AddStream:
+                        if (!CanAddStressStream(pending is not null, waitingForRestart.Count, exitedAt.Count, restartLimit is not null))
+                        {
+                            run.SetPhase(TranscodeTestStressPhase.WarmingUp, null);
+                            break;
+                        }
+
                         run.RecordSingleStream(now);
                         pendingRestart = false;
                         pending = StartStreamAsync(run, request, codec, folder, prefix, options, itemName, launches.Token);
@@ -1114,6 +1186,47 @@ public sealed class TranscodeTestManager : IDisposable
             }
         }
     }
+
+    /// <summary>
+    /// Gets how an exited process should be handled, after its output's bounded drain.
+    /// </summary>
+    /// <param name="stream">The process whose exit and complete diagnostics were observed.</param>
+    /// <returns>A real failure, healthy restart, or source restart budget.</returns>
+    internal static TranscodeTestExitDisposition ExitDisposition(TranscodeTestStream stream)
+    {
+        if (!stream.OutputSucceeded || stream.InputFailureLine is not null)
+        {
+            return TranscodeTestExitDisposition.Failure;
+        }
+
+        if (TranscodeTestRules.CanRestart(stream.ExitCode, stream.ReportedFrames, 0, stream.AtEndOfFile, stream.Restarts))
+        {
+            return TranscodeTestExitDisposition.Restart;
+        }
+
+        return TranscodeTestRules.IsRestartLimit(stream.ExitCode, stream.ReportedFrames, stream.AtEndOfFile, stream.Restarts)
+            ? TranscodeTestExitDisposition.RestartLimit
+            : TranscodeTestExitDisposition.Failure;
+    }
+
+    /// <summary>
+    /// Keeps same-tick real failures ahead of restart budgets, independently of stream insertion order.
+    /// </summary>
+    /// <param name="streams">The exited processes whose diagnostics finished draining or timed out.</param>
+    /// <returns>The ordered batch; a cap cannot hide a peer's real failure.</returns>
+    internal static IReadOnlyList<TranscodeTestStream> OrderExitedStreams(IEnumerable<TranscodeTestStream> streams)
+        => streams.OrderBy(ExitDisposition).ToArray();
+
+    /// <summary>
+    /// Gets whether a new logical stream may be launched without replacing an outstanding task or reduced load.
+    /// </summary>
+    /// <param name="pendingLaunch">Whether a launch is still owned by the supervisor.</param>
+    /// <param name="queuedRestarts">The EOF processes waiting to be replaced.</param>
+    /// <param name="drainingExits">The exited processes whose final diagnostics are not yet known.</param>
+    /// <param name="restartLimit">Whether the source exhausted its restart budget.</param>
+    /// <returns>Whether there is no unresolved launch, restart, exit or budget stop.</returns>
+    internal static bool CanAddStressStream(bool pendingLaunch, int queuedRestarts, int drainingExits, bool restartLimit = false)
+        => !pendingLaunch && queuedRestarts == 0 && drainingExits == 0 && !restartLimit;
 
     private static async Task ObservePendingLaunchAsync(Task<TranscodeTestStream?> pending)
     {
@@ -1188,9 +1301,11 @@ public sealed class TranscodeTestManager : IDisposable
             launchToken.ThrowIfCancellationRequested();
             var streamPrefix = string.Create(CultureInfo.InvariantCulture, $"{prefix}-s{id}-{Guid.NewGuid():N}_");
             var playlist = Path.Combine(folder, streamPrefix + ".m3u8");
-            // Playback's command, plus flags that tag each log line with its level so errors can be told from warnings, and
-            // hide the banner. They change only ffmpeg's log text, not the transcode.
-            var args = StressLogArguments + _hlsCommandBuilder.GetCommandLineArguments(playlist, state, options, false, 0);
+            // Keep finite local inputs in the same process, so short clips cannot replace concurrent encoding load
+            // with separate non-overlapping passes. Encoding, filters, stream mapping and output stay playback's.
+            var playbackArgs = _hlsCommandBuilder.GetCommandLineArguments(playlist, state, options, false, 0);
+            var loopInput = LoopsInput(state.MediaSource, state.VideoType, state.RunTimeTicks, playbackArgs);
+            var args = StressArguments(playbackArgs, loopInput);
             _logger.LogDebug("Transcoding test stream {Id}: {Ffmpeg} {Args}", id, _mediaEncoder.EncoderPath, args);
             var encoder = _encodingHelper.GetVideoEncoder(state, options);
             if (string.IsNullOrWhiteSpace(encoder) || string.Equals(encoder, "copy", StringComparison.OrdinalIgnoreCase))
@@ -1214,6 +1329,25 @@ public sealed class TranscodeTestManager : IDisposable
                 }
 
                 DescribeStream(run, state, options, args, itemName, sourceFps);
+                run.RemoteSource = !IsLocalFile(state.MediaSource);
+                run.SourcePath = run.RemoteSource ? null : state.MediaSource.Path;
+                if (run.RemoteSource)
+                {
+                    Log("The input is not a local file, so the result also includes how fast its source delivers it.");
+                }
+
+                if (loopInput)
+                {
+                    Log(string.Create(CultureInfo.InvariantCulture, $"The finite local input ({TimeSpan.FromTicks(state.RunTimeTicks!.Value).TotalSeconds:0.#} s) is looped within each ffmpeg process, keeping the encoding load continuous."));
+                }
+                else if (CanLoopInput(state.MediaSource, state.VideoType, state.RunTimeTicks))
+                {
+                    Log($"Playback reads {CountInputs(playbackArgs)} inputs (external audio or subtitle files). ffmpeg would loop only the first, so each stream starts again at the end of the file instead.");
+                }
+                else if (state.MediaSource.RequiresLooping)
+                {
+                    Log("Playback already loops the selected input; finite EOF and drain exemptions are disabled.");
+                }
             }
 
             var startInfo = new ProcessStartInfo(_mediaEncoder.EncoderPath, args)
@@ -1241,7 +1375,7 @@ public sealed class TranscodeTestManager : IDisposable
             {
                 // A stream restarted at the end of the file is not news, as with its start below.
                 FirstFrameLogged = previous is not null,
-                SourceSeconds = state.RunTimeTicks is long ticks ? TimeSpan.FromTicks(ticks).TotalSeconds : null
+                SourceSeconds = !loopInput && !state.MediaSource.RequiresLooping && state.RunTimeTicks is long ticks ? TimeSpan.FromTicks(ticks).TotalSeconds : null
             };
             if (previous is not null)
             {
@@ -1280,6 +1414,137 @@ public sealed class TranscodeTestManager : IDisposable
             return null;
         }
     }
+
+    /// <summary>
+    /// Gets whether ffmpeg may repeatedly seek a finite local video file without restarting the process.
+    /// </summary>
+    /// <param name="source">The actual media source selected by playback.</param>
+    /// <param name="videoType">The playback input's video type.</param>
+    /// <param name="runTimeTicks">The known finite source duration.</param>
+    /// <returns>Whether to loop the input; live, remote, disc and unknown-duration inputs are not looped.</returns>
+    internal static bool CanLoopInput(MediaSourceInfo source, VideoType videoType, long? runTimeTicks)
+        => source.Protocol == MediaProtocol.File
+            && (source.EncoderProtocol is null || source.EncoderProtocol == MediaProtocol.File)
+            && videoType == VideoType.VideoFile
+            && !source.IsInfiniteStream
+            && !source.RequiresLooping
+            && string.IsNullOrEmpty(source.LiveStreamId)
+            && runTimeTicks is > 0;
+
+    /// <summary>
+    /// Gets whether to loop playback's input inside each process. <c>-stream_loop</c> applies only to the input after
+    /// it, so with external audio or subtitle files the other inputs would end after one pass and the workload would
+    /// shrink; such commands restart at the end of the file instead.
+    /// </summary>
+    /// <param name="source">The actual media source selected by playback.</param>
+    /// <param name="videoType">The playback input's video type.</param>
+    /// <param name="runTimeTicks">The known finite source duration.</param>
+    /// <param name="playbackArguments">The exact playback command arguments.</param>
+    /// <returns>Whether to loop the input.</returns>
+    internal static bool LoopsInput(MediaSourceInfo source, VideoType videoType, long? runTimeTicks, string playbackArguments)
+        => CanLoopInput(source, videoType, runTimeTicks) && CountInputs(playbackArguments) == 1;
+
+    /// <summary>
+    /// Counts the inputs (<c>-i</c>) of an ffmpeg command line, ignoring text inside quoted paths.
+    /// </summary>
+    /// <param name="arguments">The command line arguments.</param>
+    /// <returns>The number of inputs.</returns>
+    internal static int CountInputs(string arguments)
+    {
+        var count = 0;
+        var start = -1;
+        var quoted = false;
+        for (var i = 0; i <= arguments.Length; i++)
+        {
+            var c = i < arguments.Length ? arguments[i] : ' ';
+            if (quoted)
+            {
+                if (c == '\\')
+                {
+                    i++;
+                }
+                else if (c == '"')
+                {
+                    quoted = false;
+                }
+
+                continue;
+            }
+
+            if (char.IsWhiteSpace(c))
+            {
+                if (start >= 0 && arguments.AsSpan(start, i - start).SequenceEqual("-i"))
+                {
+                    count++;
+                }
+
+                start = -1;
+                continue;
+            }
+
+            if (start < 0)
+            {
+                start = i;
+            }
+
+            quoted = c == '"';
+        }
+
+        return count;
+    }
+
+    /// <summary>
+    /// Gets whether ffmpeg reads a media source as a local file, not from a remote server or a live tuner.
+    /// </summary>
+    /// <param name="source">The media source.</param>
+    /// <returns><c>true</c> for a local file.</returns>
+    internal static bool IsLocalFile(MediaSourceInfo source)
+        => source.Protocol == MediaProtocol.File && (source.EncoderProtocol is null || source.EncoderProtocol == MediaProtocol.File);
+
+    /// <summary>
+    /// Checks that the media file can still be read, so a storage outage that slows every stream at once is not
+    /// reported as the server's capacity. A hung network mount can block, so the read has a time limit.
+    /// </summary>
+    /// <param name="path">The local media file, or <c>null</c> for an input that is not a local file.</param>
+    /// <param name="timeout">How long the read may take.</param>
+    /// <returns>Why the file is unavailable, or <c>null</c> when it can be read or is not a local file.</returns>
+    internal static async Task<string?> DescribeUnavailableSourceAsync(string? path, TimeSpan timeout)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return null;
+        }
+
+        var read = Task.Run(() =>
+        {
+            using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 1);
+            return file.ReadByte();
+        });
+        try
+        {
+            return await read.WaitAsync(timeout).ConfigureAwait(false) < 0
+                ? "The media file became unavailable: it is now empty."
+                : null;
+        }
+        catch (TimeoutException)
+        {
+            _ = ObserveCompatibilityOutputAsync(read);
+            return FormatLog($"The media file became unavailable: reading it did not finish within {timeout.TotalSeconds:0} s.");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return "The media file became unavailable: " + ex.Message;
+        }
+    }
+
+    /// <summary>
+    /// Adds diagnostic flags and an optional input loop before playback's unchanged command.
+    /// </summary>
+    /// <param name="playbackArguments">The exact playback HLS command arguments.</param>
+    /// <param name="loopInput">Whether the finite local input should stay in one process.</param>
+    /// <returns>The stress-test arguments, with an input option before the first input.</returns>
+    internal static string StressArguments(string playbackArguments, bool loopInput)
+        => StressLogArguments + (loopInput ? "-stream_loop -1 " : string.Empty) + playbackArguments;
 
     /// <summary>
     /// Selects a finite positive source rate, falling back only when both metadata rates are absent.
@@ -1446,7 +1711,8 @@ public sealed class TranscodeTestManager : IDisposable
 
         foreach (var s in streams)
         {
-            s.DisposeProcess();
+            // The aggregate process deadline above is also the shutdown deadline.
+            s.DisposeProcess(false);
         }
     }
 

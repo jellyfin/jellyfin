@@ -234,7 +234,8 @@ namespace Jellyfin.Api.Tests.Helpers
             Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(12, Streams(30, null)).Action);
             Assert.Equal(0, controller.MaxStable);
             Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(13, Streams(30, 30)).Action);
-            Assert.Equal(TranscodeTestStressAction.AddStream, controller.Tick(16, Streams(30, 30)).Action);
+            Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(16, Streams(30, 30)).Action);
+            Assert.Equal(TranscodeTestStressAction.AddStream, controller.Tick(19, Streams(30, 30)).Action);
             Assert.Equal(2, controller.MaxStable);
         }
 
@@ -283,20 +284,20 @@ namespace Jellyfin.Api.Tests.Helpers
         }
 
         [Fact]
-        public void Tick_StreamThatKeptUpAtThisLoad_DoesNotHoldBackWhileDraining()
+        public void Tick_StreamThatKeptUpAtThisLoad_HoldsBackWhileDrainingOrRestarting()
         {
             var controller = Create(maxStreams: 3);
             controller.Tick(6, Streams(30, 30));
             controller.Tick(9, Streams(30, 30));
 
-            // Stream 2 drains at the end of the file, then starts again: it already kept up at this load.
+            // A healthy past process does not substitute for current concurrent load.
             var draining = new TranscodeTestStreamReading(2, null, 20, true, NearEnd: true);
-            Assert.Equal(TranscodeTestStressPhase.KeepingUp, controller.Tick(10, [new(1, 30, 20, true), draining]).Phase);
+            Assert.Equal(TranscodeTestStressPhase.WarmingUp, controller.Tick(10, [new(1, 30, 20, true), draining]).Phase);
             controller.StreamRestarted(2);
             var decision = controller.Tick(12, Streams(30, null));
 
-            Assert.Equal(TranscodeTestStressAction.AddStream, decision.Action);
-            Assert.Equal(2, controller.MaxStable);
+            Assert.Equal(TranscodeTestStressAction.Wait, decision.Action);
+            Assert.Equal(0, controller.MaxStable);
         }
 
         [Fact]
@@ -330,31 +331,24 @@ namespace Jellyfin.Api.Tests.Helpers
         }
 
         [Fact]
-        public void Tick_ShortProcessesRestartingForever_CertifyFromTheirWholeRuns()
+        public void Tick_ShortProcessesRestartingForever_DoNotCertifyFromPastWholeRuns()
         {
-            // A 13.8 s file at 7x real time: every process lives 2 s and never has a rate over a full window. Its
-            // whole run, from first frame to its end, still says whether it kept up.
+            // These reports do not establish physical concurrency. Local short inputs loop in a continuous
+            // process instead; an unloopable source must not manufacture capacity from past processes.
             var controller = Create(maxStreams: 3);
             var count = 1;
-            TranscodeTestStressDecision? last = null;
-            for (var t = 2.0; t <= 120 && last?.Action != TranscodeTestStressAction.MaxStreams; t += 2)
+            for (var t = 2.0; t <= 120; t += 2)
             {
                 for (var id = 1; id <= count; id++)
                 {
                     controller.StreamRestarted(id, new TranscodeTestRunRate(160, t - 1.5, t));
                 }
 
-                last = controller.Tick(t, Enumerable.Range(1, count).Select(id => new TranscodeTestStreamReading(id, null, 1, true, NearEnd: true)).ToArray());
-                Assert.NotEqual(TranscodeTestStressAction.LimitReached, last.Action);
-                if (last.Action == TranscodeTestStressAction.AddStream)
-                {
-                    controller.StreamAdded(t);
-                    count++;
-                }
+                var decision = controller.Tick(t, Enumerable.Range(1, count).Select(id => new TranscodeTestStreamReading(id, null, 1, true, NearEnd: true)).ToArray());
+                Assert.Equal(TranscodeTestStressAction.Wait, decision.Action);
             }
 
-            Assert.Equal(TranscodeTestStressAction.MaxStreams, last!.Action);
-            Assert.Equal(3, controller.MaxStable);
+            Assert.Equal(0, controller.MaxStable);
         }
 
         [Fact]
@@ -382,7 +376,8 @@ namespace Jellyfin.Api.Tests.Helpers
 
             Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(23, Streams(null, null)).Action);
             controller.StreamRestarted(1, new TranscodeTestRunRate(160, 23.5, 25));
-            Assert.Equal(TranscodeTestStressAction.AddStream, controller.Tick(25, Streams(null, null)).Action);
+            Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(25, Streams(null, null)).Action);
+            Assert.Equal(0, controller.MaxStable);
         }
 
         [Fact]
@@ -410,9 +405,85 @@ namespace Jellyfin.Api.Tests.Helpers
             Assert.Equal(TranscodeTestStressAction.Wait, decision.Action);
             Assert.Equal(0, controller.MaxStable);
 
-            // Keeping up again over a whole run counts again.
+            // Another ended process still cannot stand in for a currently measured physical stream.
             controller.StreamRestarted(1, new TranscodeTestRunRate(30, 13.5, 16));
-            Assert.Equal(TranscodeTestStressAction.MaxStreams, controller.Tick(16.5, Streams((double?)null)).Action);
+            Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(16.5, Streams((double?)null)).Action);
+            Assert.Equal(0, controller.MaxStable);
+        }
+
+        [Fact]
+        public void Tick_NonoverlappingHealthyEndedRuns_CannotCertifyConcurrency()
+        {
+            var controller = Create(maxStreams: 2);
+            controller.StreamRestarted(1, new TranscodeTestRunRate(30, 1, 5));
+            controller.StreamRestarted(2, new TranscodeTestRunRate(30, 6, 10));
+
+            var decision = controller.Tick(12, [new(1, null, 0, true, IsRunning: false), new(2, null, 0, true, IsRunning: false)]);
+
+            Assert.Equal(TranscodeTestStressAction.Wait, decision.Action);
+            Assert.Equal(0, controller.MaxStable);
+        }
+
+        [Fact]
+        public void Tick_HealthyEndedRunPendingRestart_CannotRequestAnotherLaunch()
+        {
+            var controller = Create();
+            controller.StreamRestarted(1, new TranscodeTestRunRate(30, 1, 5));
+
+            Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(12, [new(1, null, 0, true, IsRunning: false)]).Action);
+            Assert.Equal(0, controller.MaxStable);
+        }
+
+        [Fact]
+        public void Tick_ShortSlowRun_DoesNotMaskAnotherLongSlowRun()
+        {
+            var controller = Create();
+            controller.StreamRestarted(1, new TranscodeTestRunRate(10, 1, 3));
+            controller.StreamRestarted(2, new TranscodeTestRunRate(10, 1, 8));
+
+            var decision = controller.Tick(12, [new(1, null, 0, true, IsRunning: false), new(2, null, 0, true, IsRunning: false)]);
+
+            Assert.Equal(TranscodeTestStressAction.LimitReached, decision.Action);
+            Assert.Equal(2, decision.StreamId);
+        }
+
+        [Fact]
+        public void Tick_ContinuousPhysicalCohort_CertifiesSimultaneousLiveStreams()
+        {
+            var controller = Create(maxStreams: 2);
+            TranscodeTestStreamReading[] Running()
+                => [new(1, 30, 20, true, ProcessStartedAt: 0), new(2, 30, 20, true, ProcessStartedAt: 0)];
+            controller.Tick(6, Running());
+            controller.Tick(9, Running());
+
+            Assert.Equal(TranscodeTestStressAction.MaxStreams, controller.Tick(12, Running()).Action);
+            Assert.Equal(2, controller.MaxStable);
+        }
+
+        [Fact]
+        public void Tick_ReplacedPhysicalProcess_InvalidatesTheWholeCohortWindow()
+        {
+            var controller = Create(maxStreams: 2);
+            controller.Tick(6, [new(1, 30, 6, true, ProcessStartedAt: 0), new(2, 30, 6, true, ProcessStartedAt: 0)]);
+            controller.Tick(9, [new(1, 30, 9, true, ProcessStartedAt: 0), new(2, 30, 9, true, ProcessStartedAt: 0)]);
+            TranscodeTestStreamReading[] Replaced()
+                => [new(1, 30, 20, true, ProcessStartedAt: 0), new(2, 30, 10, true, ProcessStartedAt: 10)];
+
+            Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(12, Replaced()).Action);
+            Assert.Equal(0, controller.MaxStable);
+            Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(15, Replaced()).Action);
+            Assert.Equal(TranscodeTestStressAction.MaxStreams, controller.Tick(18, Replaced()).Action);
+        }
+
+        [Fact]
+        public void Tick_PendingPeer_PreservesOnlyThePreviouslyVerifiedLowerBound()
+        {
+            var controller = Create(maxStreams: 2);
+            controller.Tick(6, Streams(30));
+            Assert.Equal(TranscodeTestStressAction.AddStream, controller.Tick(12, Streams(30)).Action);
+            controller.StreamAdded(13);
+
+            Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(30, [new(1, 30, 30, true), new(2, null, 0, true, IsRunning: false)]).Action);
             Assert.Equal(1, controller.MaxStable);
         }
 
@@ -464,6 +535,23 @@ namespace Jellyfin.Api.Tests.Helpers
 
             Assert.Equal(TranscodeTestStressAction.Wait, decision.Action);
             Assert.Equal(TranscodeTestStressPhase.WarmingUp, decision.Phase);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(double.NaN)]
+        [InlineData(double.PositiveInfinity)]
+        public void Tick_MissingMeasurement_BreaksASustainedSlowdown(double? missing)
+        {
+            var controller = Create();
+            Assert.Equal(TranscodeTestStressPhase.FallingBehind, controller.Tick(1, [new(1, 20, 1, true)]).Phase);
+            Assert.Equal(TranscodeTestStressPhase.WarmingUp, controller.Tick(2, [new(1, missing, 2, true)]).Phase);
+
+            var resumed = controller.Tick(10, [new(1, 20, 10, true)]);
+            Assert.Equal(TranscodeTestStressAction.Wait, resumed.Action);
+            Assert.Equal(TranscodeTestStressPhase.FallingBehind, resumed.Phase);
+            Assert.Equal(15, resumed.EndsAt);
+            Assert.Equal(TranscodeTestStressAction.LimitReached, controller.Tick(15, [new(1, 20, 15, true)]).Action);
         }
     }
 }

@@ -23,7 +23,7 @@ public class TranscodeTestStressResult
     public int RunningStreams { get; set; }
 
     /// <summary>
-    /// Gets or sets the most streams that all kept up.
+    /// Gets or sets the most physically concurrent streams that all kept up over the qualifying interval.
     /// </summary>
     public int MaxStableStreams { get; set; }
 
@@ -134,7 +134,7 @@ public class TranscodeTestStressResult
 
     /// <summary>
     /// Gets or sets a value indicating whether the test ended because it ran for its time limit, rather than because a
-    /// stream fell behind for good. The kept-up count is the result.
+    /// stream fell behind for good. Without a verified requested maximum, the kept-up count is only a lower bound.
     /// </summary>
     public bool TimeLimitReached { get; set; }
 
@@ -170,10 +170,17 @@ public class TranscodeTestStressResult
     public TranscodeTestOutputInfo? Output { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the source is shorter than a minute. Each stream restarts at the end of
-    /// the file, which briefly disturbs the measurement, so a longer file gives steadier results.
+    /// Gets or sets a value indicating whether the source is shorter than a minute. A local file loops, and every pass
+    /// resets the decoder and repeats a few frames; other inputs restart at the end of the file. Either briefly
+    /// disturbs the measurement, so a longer file gives steadier results.
     /// </summary>
     public bool ShortSource { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the input is not a local file, such as a remote stream, so the result
+    /// also includes how fast its source delivers it.
+    /// </summary>
+    public bool RemoteSource { get; set; }
 
     /// <summary>
     /// Gets or sets the streams.

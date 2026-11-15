@@ -42,10 +42,14 @@ internal sealed partial class TranscodeTestStream
     private bool _exited;
     private int _exitCode = -1;
     private Task _reader = Task.CompletedTask;
+    private bool _outputReadFailed;
     private double? _position;
     private double? _drainingSince;
     private string? _sessionLimitLine;
     private string? _gpuMemoryLine;
+    private string? _prematureEndLine;
+    private string? _inputFailureLine;
+    private bool _videoEndOfFile;
     private bool _reportedFrames;
     private double? _firstFrameAt;
     private long _firstFrame;
@@ -76,6 +80,21 @@ internal sealed partial class TranscodeTestStream
             lock (_lock)
             {
                 return _reader.IsCompleted;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether stderr reached its end without a reader fault or an unexpected I/O failure.
+    /// Completion alone is not proof that the final diagnostics were read.
+    /// </summary>
+    public bool OutputSucceeded
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _reader.IsCompletedSuccessfully && !_outputReadFailed;
             }
         }
     }
@@ -281,9 +300,6 @@ internal sealed partial class TranscodeTestStream
     }
 
     /// <summary>
-    /// Gets a value indicating whether ffmpeg printed no line at all.
-    /// </summary>
-    /// <summary>
     /// Gets ffmpeg's last reported position in the source, in seconds, see <see cref="ProgressPosition"/>. Null before
     /// its first progress line. <see cref="NearEnd"/> uses the same value.
     /// </summary>
@@ -299,10 +315,10 @@ internal sealed partial class TranscodeTestStream
     }
 
     /// <summary>
-    /// Gets whether the process's last position was at the end of the source, for a clean exit: see
-    /// <see cref="TranscodeTestRules.IsAtEndOfFile"/>. Null when the run time or the position is not known. It reads
-    /// the same position as <see cref="NearEnd"/>, but not its margin: at a high speed that margin covers most of a
-    /// short file, and a stream that stops halfway did not reach the end.
+    /// Gets whether the process reached finite video EOF, either from an affirmative selected-video decoder
+    /// diagnostic or the strict position check in <see cref="TranscodeTestRules.IsAtEndOfFile"/>.
+    /// An incomplete-input diagnostic always vetoes EOF. Looped or unknown-duration inputs have no finite end.
+    /// The supervisor additionally requires a clean exit and completed stderr before allowing a restart.
     /// </summary>
     public bool? AtEndOfFile
     {
@@ -310,11 +326,51 @@ internal sealed partial class TranscodeTestStream
         {
             lock (_lock)
             {
-                return TranscodeTestRules.IsAtEndOfFile(_position, SourceSeconds);
+                if (_prematureEndLine is not null)
+                {
+                    return false;
+                }
+
+                // Looped inputs have no finite end. Otherwise affirmative video EOF avoids confusing a longer
+                // audio/container duration with an incomplete video; the supervisor also requires a clean exit.
+                return _videoEndOfFile && SourceSeconds is double duration && double.IsFinite(duration) && duration > 0
+                    ? true
+                    : TranscodeTestRules.IsAtEndOfFile(_position, SourceSeconds);
             }
         }
     }
 
+    /// <summary>
+    /// Gets the first diagnostic saying that ffmpeg could no longer read its input, such as a storage outage.
+    /// </summary>
+    public string? InputFailureLine
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _inputFailureLine;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the first affirmative incomplete-input diagnostic. A zero exit code cannot turn it into healthy EOF.
+    /// </summary>
+    public string? PrematureEndLine
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _prematureEndLine;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether ffmpeg printed no line at all.
+    /// </summary>
     public bool PrintedNothing
     {
         get
@@ -353,9 +409,9 @@ internal sealed partial class TranscodeTestStream
     }
 
     /// <summary>
-    /// Gets this process's frame rate from its first frame to its last progress line. Null before two progress lines
-    /// half a second apart. A process that played a short file to its end may never get a rate over a full window;
-    /// this rate still says whether it kept up.
+    /// Gets this process's frame rate from its first frame to its last progress line for slowdown evidence only.
+    /// Null before two progress lines half a second apart, or after an incomplete-input diagnostic.
+    /// A healthy whole-run rate cannot establish simultaneous capacity across restarted processes.
     /// </summary>
     public TranscodeTestRunRate? RunRate
     {
@@ -363,7 +419,7 @@ internal sealed partial class TranscodeTestStream
         {
             lock (_lock)
             {
-                if (_firstFrameAt is not double first || _points.Count == 0)
+                if (_prematureEndLine is not null || _firstFrameAt is not double first || _points.Count == 0)
                 {
                     return null;
                 }
@@ -420,10 +476,20 @@ internal sealed partial class TranscodeTestStream
                     }
                 }
             }
+
+            // The final diagnostic need not end with a newline or carriage return.
+            if (line.Length > 0)
+            {
+                OnLine(line.ToString(), clock.Elapsed.TotalSeconds);
+            }
         }
         catch (Exception ex) when (ex is IOException or InvalidOperationException)
         {
-            // The process was released while its output was read; ObjectDisposedException is an InvalidOperationException.
+            lock (_lock)
+            {
+                // Shutdown deliberately discards stderr. Otherwise an I/O failure cannot verify healthy EOF.
+                _outputReadFailed |= !_stopping && !_disposed;
+            }
         }
     }
 
@@ -432,8 +498,16 @@ internal sealed partial class TranscodeTestStream
     /// </summary>
     /// <param name="clock">The test's clock.</param>
     public void StartReading(Stopwatch clock)
+        => StartReading(() => ReadProgressAsync(clock));
+
+    /// <summary>
+    /// Owns an output-reading operation without blocking the process supervisor.
+    /// </summary>
+    /// <param name="read">The operation that finishes when the output pipe closes.</param>
+    internal void StartReading(Func<Task> read)
     {
-        var reader = Task.Run(() => ReadProgressAsync(clock), CancellationToken.None);
+        ArgumentNullException.ThrowIfNull(read);
+        var reader = Task.Run(read, CancellationToken.None);
         lock (_lock)
         {
             _reader = reader;
@@ -601,7 +675,7 @@ internal sealed partial class TranscodeTestStream
 
     private bool NearEndLocked()
     {
-        if (SourceSeconds is not double length || length <= 0 || _position is not double position)
+        if (_prematureEndLine is not null || SourceSeconds is not double length || length <= 0 || _position is not double position)
         {
             return false;
         }
@@ -662,7 +736,7 @@ internal sealed partial class TranscodeTestStream
     {
         lock (_lock)
         {
-            if (_points.Count == 0)
+            if (_prematureEndLine is not null || _points.Count == 0)
             {
                 return null;
             }
@@ -887,6 +961,18 @@ internal sealed partial class TranscodeTestStream
             lock (_lock)
             {
                 _lastLineAt = now;
+                if (_prematureEndLine is null && TranscodeTestRules.IsPrematureEndLine(trimmed))
+                {
+                    _prematureEndLine = trimmed;
+                }
+
+                if (_inputFailureLine is null && TranscodeTestRules.IsInputFailureLine(trimmed))
+                {
+                    _inputFailureLine = trimmed;
+                }
+
+                _videoEndOfFile |= TranscodeTestRules.IsVideoEndOfFileLine(trimmed);
+
                 if (_inputAt is null && trimmed.StartsWith("Input #0", StringComparison.Ordinal))
                 {
                     _inputAt = now;
