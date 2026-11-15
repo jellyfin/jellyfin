@@ -71,11 +71,7 @@ internal static class TranscodeTestClipValidation
     internal static bool? IsCompleteSoftwareDecode(int exitCode, int? frames, string? output)
     {
         // A format header may retain the original duration even after its packets have been truncated.
-        if (output is not null
-            && (output.Contains("File ended prematurely", StringComparison.OrdinalIgnoreCase)
-                || output.Contains("Invalid data found when processing input", StringComparison.OrdinalIgnoreCase)
-                || output.Contains("corrupt decoded frame", StringComparison.OrdinalIgnoreCase)
-                || output.Contains("Packet corrupt", StringComparison.OrdinalIgnoreCase)))
+        if (output is not null && output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).Any(IsSourceCorruptionLine))
         {
             return false;
         }
@@ -83,5 +79,35 @@ internal static class TranscodeTestClipValidation
         // Only a finished software decode proves that a short frame count is the source's end. A timeout,
         // unavailable decoder, or resource failure must not delete a potentially good cached clip.
         return exitCode == 0 && frames is int count ? count == ClipFrames : null;
+    }
+
+    private static bool IsSourceCorruptionLine(string line)
+    {
+        var diagnostic = line.AsSpan().Trim();
+        // FFmpeg may prefix a diagnostic with several namespaces and a log level. Match the diagnostic's
+        // beginning, not arbitrary text in a verbose input path, metadata title, or opening-file message.
+        while (!diagnostic.IsEmpty && diagnostic[0] == '[')
+        {
+            var end = diagnostic.IndexOf(']');
+            if (end < 0)
+            {
+                return false;
+            }
+
+            diagnostic = diagnostic[(end + 1)..].TrimStart();
+        }
+
+        const string InvalidInput = "Invalid data found when processing input";
+        return diagnostic.StartsWith("File ended prematurely", StringComparison.OrdinalIgnoreCase)
+            || diagnostic.StartsWith("corrupt decoded frame", StringComparison.OrdinalIgnoreCase)
+            || diagnostic.StartsWith("Packet corrupt", StringComparison.OrdinalIgnoreCase)
+            || diagnostic.Equals(InvalidInput, StringComparison.OrdinalIgnoreCase)
+            || (diagnostic.EndsWith(InvalidInput, StringComparison.OrdinalIgnoreCase)
+                && (diagnostic.StartsWith("Error opening input", StringComparison.OrdinalIgnoreCase)
+                    || diagnostic.StartsWith("Error while decoding stream", StringComparison.OrdinalIgnoreCase)
+                    || diagnostic.StartsWith("Error submitting packet to decoder", StringComparison.OrdinalIgnoreCase)
+                    // FFmpeg 8 wording of the decoder error above.
+                    || diagnostic.StartsWith("Error processing packet in decoder", StringComparison.OrdinalIgnoreCase)
+                    || diagnostic.StartsWith("Error during demuxing", StringComparison.OrdinalIgnoreCase)));
     }
 }
