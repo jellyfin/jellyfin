@@ -229,10 +229,14 @@ namespace Jellyfin.Server
                 }
 
                 mainApp.UseStaticFiles();
-                mainApp.UseAuthentication();
                 mainApp.UseJellyfinApiSwagger(_serverConfigurationManager);
                 mainApp.UseQueryStringDecoding();
                 mainApp.UseRouting();
+
+                // Routing must run before authentication: the share-link handler reads the
+                // endpoint metadata and the route item id to decide whether a share_token is a
+                // valid credential here, and both are only populated once routing has run.
+                mainApp.UseAuthentication();
                 mainApp.UseAuthorization();
 
                 mainApp.UseIPBasedAccessValidation();

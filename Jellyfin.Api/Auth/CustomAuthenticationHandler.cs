@@ -131,7 +131,7 @@ namespace Jellyfin.Api.Auth
         {
             // A share token is only a credential on endpoints explicitly marked as share-link
             // accessible; everywhere else the request must fall back to normal auth (401).
-            if (Context.GetEndpoint()?.Metadata.GetMetadata<ShareLinkAccessAttribute>() is null)
+            if (!ShareLinkAccessAttribute.IsMarked(Context.GetEndpoint()))
             {
                 return AuthenticateResult.NoResult();
             }
