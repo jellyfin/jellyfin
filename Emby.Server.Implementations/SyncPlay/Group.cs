@@ -301,6 +301,12 @@ namespace Emby.Server.Implementations.SyncPlay
                 var playlist = session.NowPlayingQueue.Select(item => item.Id).ToList();
                 PlayQueue.Reset();
                 PlayQueue.SetPlaylist(playlist);
+                foreach (var item in PlayQueue.GetPlaylist())
+                {
+                    item.AddedByUserId = session.UserId;
+                    item.AddedByUserName = session.UserName;
+                }
+
                 PlayQueue.SetPlayingItemById(session.FullNowPlayingItem.Id);
                 RunTimeTicks = session.FullNowPlayingItem.RunTimeTicks ?? 0;
                 PositionTicks = session.PlayState.PositionTicks ?? 0;

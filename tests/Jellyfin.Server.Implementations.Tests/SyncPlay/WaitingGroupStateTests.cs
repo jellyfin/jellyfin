@@ -323,6 +323,58 @@ public class WaitingGroupStateTests
         Assert.NotNull(group.GroupWaitDeadline);
     }
 
+    [Theory]
+    [InlineData(GroupQueueMode.Queue)]
+    [InlineData(GroupQueueMode.QueueNext)]
+    public void Queue_RecordsAddingUserWithoutChangingExistingEntries(GroupQueueMode mode)
+    {
+        var harness = new GroupHarness();
+        var state = new WaitingGroupState(NullLoggerFactory.Instance);
+        var original = Assert.Single(harness.Group.PlayQueue.GetPlaylist());
+        original.AddedByUserId = harness.First.UserId;
+        original.AddedByUserName = harness.First.UserName;
+        harness.Second.UserId = Guid.NewGuid();
+
+        // Enqueue the same media item twice: attribution belongs to each queue entry.
+        state.HandleRequest(
+            new QueueGroupRequest(new[] { original.ItemId, original.ItemId }, mode),
+            harness.Group,
+            GroupStateType.Waiting,
+            harness.Second,
+            CancellationToken.None);
+
+        var playlist = harness.Group.GetPlayQueueUpdate(PlayQueueUpdateReason.Queue).Playlist;
+        Assert.Equal(3, playlist.Count);
+        Assert.Equal(harness.First.UserId, original.AddedByUserId);
+        Assert.Equal(harness.First.UserName, original.AddedByUserName);
+        Assert.All(playlist.Where(item => !item.PlaylistItemId.Equals(original.PlaylistItemId)), item =>
+        {
+            Assert.Equal(harness.Second.UserId, item.AddedByUserId);
+            Assert.Equal(harness.Second.UserName, item.AddedByUserName);
+        });
+    }
+
+    [Fact]
+    public void Play_RecordsUserForReplacementQueue()
+    {
+        var harness = new GroupHarness();
+        var state = new WaitingGroupState(NullLoggerFactory.Instance);
+        state.HandleRequest(
+            new PlayGroupRequest(new[] { Guid.NewGuid(), Guid.NewGuid() }, 0, 0),
+            harness.Group,
+            GroupStateType.Waiting,
+            harness.Second,
+            CancellationToken.None);
+
+        var playlist = harness.Group.GetPlayQueueUpdate(PlayQueueUpdateReason.NewPlaylist).Playlist;
+        Assert.Equal(2, playlist.Count);
+        Assert.All(playlist, item =>
+        {
+            Assert.Equal(harness.Second.UserId, item.AddedByUserId);
+            Assert.Equal(harness.Second.UserName, item.AddedByUserName);
+        });
+    }
+
     private sealed class GroupHarness
     {
         private readonly ISessionManager _sessionManager;

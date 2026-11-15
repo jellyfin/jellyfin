@@ -1,5 +1,6 @@
 #nullable disable
 
+using System.Linq;
 using System.Threading;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay.PlaybackRequests;
@@ -113,7 +114,16 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         /// <inheritdoc />
         public virtual void HandleRequest(QueueGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
+            var existingEntries = context.PlayQueue.GetPlaylist().Select(item => item.PlaylistItemId).ToHashSet();
             var result = context.AddToPlayQueue(request.ItemIds, request.Mode);
+            if (result)
+            {
+                foreach (var item in context.PlayQueue.GetPlaylist().Where(item => !existingEntries.Contains(item.PlaylistItemId)))
+                {
+                    item.AddedByUserId = session.UserId;
+                    item.AddedByUserName = session.UserName;
+                }
+            }
 
             if (!result)
             {
