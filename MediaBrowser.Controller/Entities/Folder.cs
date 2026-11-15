@@ -808,7 +808,12 @@ namespace MediaBrowser.Controller.Entities
 
                     // Virtual seasons (episodes with no season folder on disk) never populate accessibleChildren,
                     // so refresh their loaded children instead. Other virtual folders keep the previous behaviour.
-                    var childrenToRefresh = IsFileProtocol || this is not Season ? accessibleChildren : validChildren;
+                    IList<BaseItem> childrenToRefresh = accessibleChildren;
+                    if (!IsFileProtocol && this is Season)
+                    {
+                        childrenToRefresh = validChildren;
+                    }
+
                     await RefreshMetadataRecursive(childrenToRefresh, refreshOptions, recursive, innerProgress, cancellationToken).ConfigureAwait(false);
                 }
             }
