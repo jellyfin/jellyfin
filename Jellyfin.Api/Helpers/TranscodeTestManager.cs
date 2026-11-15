@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Models.TranscodeTestDtos;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
@@ -30,9 +31,17 @@ namespace Jellyfin.Api.Helpers;
 /// </summary>
 public sealed class TranscodeTestManager : IDisposable
 {
+    /// <summary>
+    /// Seconds a compatibility process may take to start, or a clip probe may take to complete.
+    /// </summary>
+    internal const double StartTimeoutSeconds = 30;
+
     private const string FolderName = "transcode-test";
     private const int CheckFrames = 96;
     private const int MaxLogLines = 500;
+
+    private static readonly TimeSpan _outputDrainTimeout = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan _shutdownWaitTimeout = TimeSpan.FromSeconds(5);
 
     private static readonly string[] _allDecodeCodecs = ["h264", "hevc", "mpeg2video", "mpeg4", "vc1", "vp8", "vp9", "av1"];
 
@@ -53,6 +62,7 @@ public sealed class TranscodeTestManager : IDisposable
     private readonly EncodingHelper _encodingHelper;
     private readonly ISessionManager _sessionManager;
     private readonly ILogger<TranscodeTestManager> _logger;
+    private readonly TranscodeTestProcessOwner _compatibilityProcesses = new();
 
     private TranscodeTestState _state = TranscodeTestState.Idle;
     private TranscodeTestKind _kind;
@@ -63,6 +73,7 @@ public sealed class TranscodeTestManager : IDisposable
     private List<TranscodeTestCheckResult> _checks = [];
     private CancellationTokenSource? _cancellation;
     private Stopwatch _clock = new();
+    private bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TranscodeTestManager"/> class.
@@ -97,7 +108,7 @@ public sealed class TranscodeTestManager : IDisposable
         CancellationToken token;
         lock (_lock)
         {
-            if (_state == TranscodeTestState.Running)
+            if (_state == TranscodeTestState.Running || _disposed)
             {
                 return false;
             }
@@ -126,6 +137,11 @@ public sealed class TranscodeTestManager : IDisposable
     {
         lock (_lock)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             if (_state == TranscodeTestState.Running)
             {
                 _cancellation?.Cancel();
@@ -164,7 +180,19 @@ public sealed class TranscodeTestManager : IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
-        _cancellation?.Cancel();
+        lock (_lock)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _cancellation?.Cancel();
+        }
+
+        _compatibilityProcesses.Dispose();
+        // The test only reads the token, which stays cancelled after the source is released.
         _cancellation?.Dispose();
     }
 
@@ -277,33 +305,75 @@ public sealed class TranscodeTestManager : IDisposable
         var folder = Path.Combine(_configurationManager.ApplicationPaths.CachePath, FolderName);
         Directory.CreateDirectory(folder);
         var path = Path.Combine(folder, clip.FileName);
-        if (!File.Exists(path))
-        {
-            // Encoders are not in Jellyfin's capability list, so just try: a missing one makes ffmpeg fail.
-            var result = await RunFfmpegAsync(TranscodeTestRules.ClipArguments(clip.Encoder, clip.PixelFormat, clip.ExtraArgs, clip.Hdr, path, false), null, null, cancellationToken).ConfigureAwait(false);
-            if (result.ExitCode != 0 || !File.Exists(path))
-            {
-                Log($"  Could not create the {clip.FileName} test clip ({clip.Encoder}, {TranscodeTestRules.DescribeExit(result.ExitCode)}): {DescribeErrors(result)}. Trying again at 640x360, which needs far less memory …");
-                File.Delete(path);
-                result = await RunFfmpegAsync(TranscodeTestRules.ClipArguments(clip.Encoder, clip.PixelFormat, clip.ExtraArgs, clip.Hdr, path, true), null, null, cancellationToken).ConfigureAwait(false);
-            }
+        var (info, error) = await TranscodeTestClipCache.GetAsync(
+            path,
+            (newTemporary, token) => TranscodeTestClipCache.GenerateAsync(
+                newTemporary,
+                async (temporary, small, attemptToken) =>
+                {
+                    // Encoders are not in Jellyfin's capability list, so just try: a missing one makes ffmpeg fail.
+                    var result = await RunFfmpegAsync(TranscodeTestRules.ClipArguments(clip.Encoder, clip.PixelFormat, clip.ExtraArgs, clip.Hdr, temporary, small), null, null, attemptToken, temporary).ConfigureAwait(false);
+                    if (result.ExitCode == 0 && File.Exists(temporary) && new FileInfo(temporary).Length > 0)
+                    {
+                        return (true, true, string.Empty);
+                    }
 
-            if (result.ExitCode != 0 || !File.Exists(path))
-            {
-                var error = $"{TranscodeTestRules.DescribeExit(result.ExitCode)}: {DescribeErrors(result)}";
-                Log($"  Could not create the {clip.FileName} test clip at 640x360 either ({error})");
-                File.Delete(path);
-                return (null, error);
-            }
-        }
+                    var failure = $"{TranscodeTestRules.DescribeExit(result.ExitCode)}: {DescribeErrors(result)}";
+                    if (small)
+                    {
+                        Log($"  Could not create the {clip.FileName} test clip at 640x360 either ({failure})");
+                    }
+                    else if (!result.NotStarted)
+                    {
+                        Log($"  Could not create the {clip.FileName} test clip ({clip.Encoder}, {TranscodeTestRules.DescribeExit(result.ExitCode)}): {DescribeErrors(result)}. Trying again at 640x360, which needs far less memory …");
+                    }
 
-        var info = await _mediaEncoder.GetMediaInfo(
-            new MediaInfoRequest
+                    return (false, !result.NotStarted, result.NotStarted ? DescribeErrors(result) : failure);
+                },
+                token),
+            async (candidate, token) =>
             {
-                MediaSource = new MediaSourceInfo { Path = path, Protocol = MediaProtocol.File, VideoType = VideoType.VideoFile, Id = clip.FileName },
-                MediaType = DlnaProfileType.Video
+                try
+                {
+                    using var probeTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+                    probeTimeout.CancelAfter(TimeSpan.FromSeconds(StartTimeoutSeconds));
+                    var probeToken = probeTimeout.Token;
+                    // MediaEncoder starts ffprobe synchronously before its first await. Keep a blocked launch
+                    // off this task; its cancelled token stops a process that starts later.
+                    var probeTask = Task.Run(
+                        () => _mediaEncoder.GetMediaInfo(
+                        new MediaInfoRequest
+                        {
+                            MediaSource = new MediaSourceInfo { Path = candidate, Protocol = MediaProtocol.File, VideoType = VideoType.VideoFile, Id = clip.FileName },
+                            MediaType = DlnaProfileType.Video
+                        },
+                        probeToken),
+                        CancellationToken.None);
+                    try
+                    {
+                        var probed = await probeTask.WaitAsync(probeToken).ConfigureAwait(false);
+                        return TranscodeTestClipValidation.IsValid(probed, clip.Codec, clip.BitDepth, clip.Hdr) ? probed : null;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        _ = ObserveCompatibilityOutputAsync(probeTask);
+                        token.ThrowIfCancellationRequested();
+                        Log($"  Probing test clip {clip.FileName} timed out after {StartTimeoutSeconds:0} s.");
+                        return null;
+                    }
+                }
+                catch (FfmpegException ex)
+                {
+                    Log($"  Invalid test clip {clip.FileName}: {ex.Message}. It will not be kept in the cache.");
+                    return null;
+                }
             },
             cancellationToken).ConfigureAwait(false);
+        if (info is null)
+        {
+            return (null, error);
+        }
+
         info.Path = path;
         info.Protocol = MediaProtocol.File;
         info.VideoType = VideoType.VideoFile;
@@ -333,7 +403,7 @@ public sealed class TranscodeTestManager : IDisposable
         var job = CreateJob(source, options, "h264", 1280);
         var hasHardwareDecoder = TranscodeTestRules.UsesHardwareDecoder(_encodingHelper.GetInputArgument(job, options, null));
         var run = hasHardwareDecoder ? await RunJobAsync(job, options, cancellationToken).ConfigureAwait(false) : null;
-        if (run is { ExitCode: not 0 } && options.EnableHardwareEncoding)
+        if (run is { CheckExitCode: not 0 } && options.EnableHardwareEncoding)
         {
             // The pipeline also encodes on the GPU. Retry with the CPU encoder, so a broken hardware encoder is not blamed on the decoder.
             Log($"Decoding {clip.Codec} failed. Trying again with the CPU encoder to see whether the decoder is the cause …");
@@ -342,15 +412,15 @@ public sealed class TranscodeTestManager : IDisposable
             run = await RunJobAsync(job, options, cancellationToken).ConfigureAwait(false);
         }
 
-        (result.Outcome, result.Advice) = TranscodeTestRules.Decode(hasHardwareDecoder, run?.ExitCode, run?.InputPixelFormat, enabled);
-        result.Fps = run?.ExitCode == 0 ? run.Fps : null;
-        result.Error = run?.ExitCode is null or 0 ? null : run.Errors;
+        (result.Outcome, result.Advice) = TranscodeTestRules.Decode(hasHardwareDecoder, run?.CheckExitCode, run?.InputPixelFormat, enabled);
+        result.Fps = run?.CheckExitCode == 0 ? run.Fps : null;
+        result.Error = run?.CheckExitCode is null or 0 ? null : run.Errors;
         if (result.Outcome == TranscodeTestOutcome.Failed)
         {
-            // Not one frame decoded, with the CPU encoder, while H.264 decodes here: the GPU lacks this format. The
-            // advice to turn it off stays.
-            result.Outcome = TranscodeTestRules.FailedOutcome(ReferencePassed(TranscodeTestCheckKind.Decode), !options.EnableHardwareEncoding, run!.FramesDecoded, run.ResourceLine);
+            // Zero frames and a working reference do not prove missing format support without capability evidence.
+            result.Outcome = TranscodeTestRules.FailedOutcome(ReferencePassed(TranscodeTestCheckKind.Decode), !options.EnableHardwareEncoding, run!.FramesDecoded, run.ResourceLine, run.Output);
             result.ReferencePassed = result.Outcome == TranscodeTestOutcome.NotSupported;
+            result.Advice = result.Outcome == TranscodeTestOutcome.NotSupported && enabled ? TranscodeTestAdvice.TurnOff : TranscodeTestAdvice.None;
             NoteResourceFailure(result, run);
         }
 
@@ -383,15 +453,15 @@ public sealed class TranscodeTestManager : IDisposable
         var encoder = _encodingHelper.GetVideoEncoder(job, options);
         result.Method = encoder;
         var run = TranscodeTestRules.IsSoftwareEncoder(encoder) ? null : await RunJobAsync(job, options, cancellationToken).ConfigureAwait(false);
-        (result.Outcome, result.Advice) = TranscodeTestRules.Encode(encoder, run?.ExitCode, saved.EnableHardwareEncoding, TranscodeTestRules.IsEncodeAllowed(codec, saved));
-        result.Fps = run?.ExitCode == 0 ? run.Fps : null;
-        result.Error = run?.ExitCode is null or 0 ? null : run.Errors;
+        (result.Outcome, result.Advice) = TranscodeTestRules.Encode(encoder, run?.CheckExitCode, saved.EnableHardwareEncoding, TranscodeTestRules.IsEncodeAllowed(codec, saved));
+        result.Fps = run?.CheckExitCode == 0 ? run.Fps : null;
+        result.Error = run?.CheckExitCode is null or 0 ? null : run.Errors;
         if (result.Outcome == TranscodeTestOutcome.Failed)
         {
-            // Not one frame encoded, or the encoder failed before any output, from a clip decoded on the CPU, while
-            // H.264 encodes here: the GPU lacks this format. The advice to turn it off stays.
-            result.Outcome = TranscodeTestRules.FailedOutcome(ReferencePassed(TranscodeTestCheckKind.Encode), true, run!.FramesEncoded, run.ResourceLine);
+            // Initialization can fail for reasons other than format support, even when H.264 passed.
+            result.Outcome = TranscodeTestRules.FailedOutcome(ReferencePassed(TranscodeTestCheckKind.Encode), true, run!.FramesEncoded, run.ResourceLine, run.Output);
             result.ReferencePassed = result.Outcome == TranscodeTestOutcome.NotSupported;
+            result.Advice = result.Outcome == TranscodeTestOutcome.NotSupported && result.EnabledInSettings == true ? TranscodeTestAdvice.TurnOff : TranscodeTestAdvice.None;
             NoteResourceFailure(result, run);
         }
 
@@ -450,9 +520,9 @@ public sealed class TranscodeTestManager : IDisposable
             Method = filter?.Split('=')[0]
         };
         var run = filter is null ? null : await RunJobAsync(job, options, cancellationToken).ConfigureAwait(false);
-        (result.Outcome, result.Advice) = TranscodeTestRules.Tonemap(filter, run?.ExitCode, savedOn);
-        result.Fps = run?.ExitCode == 0 ? run.Fps : null;
-        result.Error = run?.ExitCode is null or 0 ? null : run.Errors;
+        (result.Outcome, result.Advice) = TranscodeTestRules.Tonemap(filter, run?.CheckExitCode, savedOn);
+        result.Fps = run?.CheckExitCode == 0 ? run.Fps : null;
+        result.Error = run?.CheckExitCode is null or 0 ? null : run.Errors;
         AddCheck(result);
     }
 
@@ -497,47 +567,116 @@ public sealed class TranscodeTestManager : IDisposable
         => JsonSerializer.Deserialize<EncodingOptions>(JsonSerializer.Serialize(options, JsonDefaults.Options), JsonDefaults.Options)
             ?? throw new InvalidOperationException("Could not copy the encoding options.");
 
-    private async Task<FfmpegRun> RunFfmpegAsync(string args, int? frames, string? encoder, CancellationToken cancellationToken)
+    private async Task<FfmpegRun> RunFfmpegAsync(string args, int? frames, string? encoder, CancellationToken cancellationToken, string? temporaryOutput = null)
     {
         _logger.LogDebug("Transcoding test: {Ffmpeg} {Args}", _mediaEncoder.EncoderPath, args);
-        using var process = new Process
-        {
-            StartInfo = new ProcessStartInfo(_mediaEncoder.EncoderPath, args)
-            {
-                RedirectStandardError = true,
-                RedirectStandardInput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            }
-        };
         var timer = Stopwatch.StartNew();
-        process.Start();
-        var stderr = process.StandardError.ReadToEndAsync(cancellationToken);
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(60));
+        using var process = await TranscodeTestLauncher.StartAsync(
+            () =>
+            {
+                var started = new Process
+                {
+                    StartInfo = new ProcessStartInfo(_mediaEncoder.EncoderPath, args)
+                    {
+                        RedirectStandardError = true,
+                        RedirectStandardInput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    }
+                };
+                try
+                {
+                    started.Start();
+                    if (!_compatibilityProcesses.TryAdd(started))
+                    {
+                        AbandonCompatibilityProcess(started, temporaryOutput);
+                        throw new OperationCanceledException("The server stopped while ffmpeg was starting.", cancellationToken);
+                    }
+
+                    return started;
+                }
+                catch
+                {
+                    started.Dispose();
+                    throw;
+                }
+            },
+            TimeSpan.FromSeconds(StartTimeoutSeconds),
+            late => AbandonCompatibilityProcess(late, temporaryOutput),
+            cancellationToken).ConfigureAwait(false);
+        if (process is null)
+        {
+            return new FfmpegRun(-1, null, null, "ffmpeg did not start within 30 s", null, null, null, NotStarted: true);
+        }
+
+        Task<string>? stderr = null;
         try
         {
-            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            timeout.CancelAfter(TimeSpan.FromSeconds(60));
+            cancellationToken.ThrowIfCancellationRequested();
+            stderr = process.StandardError.ReadToEndAsync(CancellationToken.None);
             await process.WaitForExitAsync(timeout.Token).ConfigureAwait(false);
+            var output = await stderr.WaitAsync(_outputDrainTimeout, timeout.Token).ConfigureAwait(false);
+            var elapsed = timer.Elapsed.TotalSeconds;
+            var pixelFormat = TranscodeTestRules.DecodedPixelFormat(output);
+            var encodedFrames = encoder is null ? TranscodeTestRules.FramesEncoded(output) : TranscodeTestRules.EncodedFrames(output, encoder);
+            var incomplete = frames.HasValue && encodedFrames is int actual && actual < frames.Value;
+            var errors = TranscodeTestRules.CheckErrors(process.ExitCode, encodedFrames, frames, TranscodeTestRules.ErrorLines(output));
+
+            return new FfmpegRun(
+                process.ExitCode,
+                frames.HasValue && encodedFrames.HasValue && elapsed > 0 && !incomplete ? Math.Round(encodedFrames.Value / elapsed, 1) : null,
+                pixelFormat,
+                errors,
+                TranscodeTestRules.FramesDecoded(output),
+                encodedFrames,
+                TranscodeTestRules.ResourceLine(output),
+                output,
+                !incomplete);
         }
         catch (OperationCanceledException)
         {
-            process.Kill(true);
             cancellationToken.ThrowIfCancellationRequested();
             return new FfmpegRun(-1, null, null, "timed out after 60 s", null, null, null);
         }
-
-        var output = await stderr.ConfigureAwait(false);
-        var elapsed = timer.Elapsed.TotalSeconds;
-        var pixelFormat = TranscodeTestRules.DecodedPixelFormat(output);
-        return new FfmpegRun(
-            process.ExitCode,
-            frames.HasValue && elapsed > 0 ? Math.Round(frames.Value / elapsed, 1) : null,
-            pixelFormat,
-            TranscodeTestRules.ErrorLines(output),
-            TranscodeTestRules.FramesDecoded(output),
-            encoder is null ? TranscodeTestRules.FramesEncoded(output) : TranscodeTestRules.EncodedFrames(output, encoder),
-            TranscodeTestRules.ResourceLine(output));
+        catch (TimeoutException)
+        {
+            return new FfmpegRun(-1, null, null, "ffmpeg output did not drain within 2 s", null, null, null);
+        }
+        finally
+        {
+            TranscodeTestProcessOwner.Kill(process);
+            TranscodeTestProcessOwner.WaitForExit(process, _shutdownWaitTimeout);
+            _compatibilityProcesses.Remove(process);
+            if (stderr is not null)
+            {
+                _ = ObserveCompatibilityOutputAsync(stderr);
+            }
+        }
     }
+
+    private void AbandonCompatibilityProcess(Process process, string? temporaryOutput)
+    {
+        TranscodeTestProcessOwner.Kill(process);
+        TranscodeTestProcessOwner.WaitForExit(process, _shutdownWaitTimeout);
+        _compatibilityProcesses.Remove(process);
+        process.Dispose();
+        if (temporaryOutput is not null)
+        {
+            try
+            {
+                File.Delete(temporaryOutput);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _logger.LogWarning(ex, "Could not remove late compatibility output {Path}", temporaryOutput);
+            }
+        }
+    }
+
+    private static async Task ObserveCompatibilityOutputAsync(Task output)
+        => await output.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 
     // ---- shared -----------------------------------------------------------------------------
 
@@ -580,5 +719,9 @@ public sealed class TranscodeTestManager : IDisposable
 
     private sealed record ClipSpec(string Codec, int BitDepth, bool Hdr, string FileName, string Encoder, string PixelFormat, string ExtraArgs);
 
-    private sealed record FfmpegRun(int ExitCode, double? Fps, string? InputPixelFormat, string Errors, int? FramesDecoded, int? FramesEncoded, string? ResourceLine);
+    private sealed record FfmpegRun(int ExitCode, double? Fps, string? InputPixelFormat, string Errors, int? FramesDecoded, int? FramesEncoded, string? ResourceLine, string? Output = null, bool Complete = true, bool NotStarted = false)
+    {
+        // Preserve ffmpeg's actual exit code, but an early clean EOF is not a completed 96-frame check.
+        public int CheckExitCode => ExitCode == 0 && !Complete ? -1 : ExitCode;
+    }
 }

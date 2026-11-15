@@ -44,7 +44,7 @@ namespace Jellyfin.Api.Tests.Helpers
         [InlineData(true, 0, "cuda", false, TranscodeTestOutcome.Passed, TranscodeTestAdvice.TurnOn)]
         [InlineData(true, 0, "yuv420p", true, TranscodeTestOutcome.Software, TranscodeTestAdvice.TurnOff)]
         [InlineData(true, 0, "yuv420p", false, TranscodeTestOutcome.Software, TranscodeTestAdvice.None)]
-        [InlineData(true, 1, null, true, TranscodeTestOutcome.Failed, TranscodeTestAdvice.TurnOff)]
+        [InlineData(true, 1, null, true, TranscodeTestOutcome.Failed, TranscodeTestAdvice.None)]
         [InlineData(false, null, null, true, TranscodeTestOutcome.NotSupported, TranscodeTestAdvice.TurnOff)]
         [InlineData(false, null, null, false, TranscodeTestOutcome.NotSupported, TranscodeTestAdvice.None)]
         public void Decode_AdvisesToMatchWhatTheHardwareDoes(bool hasDecoder, int? exitCode, string? pixelFormat, bool enabled, TranscodeTestOutcome outcome, TranscodeTestAdvice advice)
@@ -81,7 +81,7 @@ namespace Jellyfin.Api.Tests.Helpers
         [InlineData("hevc_nvenc", 0, false, true, TranscodeTestOutcome.Passed, TranscodeTestAdvice.TurnOn)]
         [InlineData("hevc_nvenc", 0, true, false, TranscodeTestOutcome.Passed, TranscodeTestAdvice.None)]
         [InlineData("av1_qsv", 0, false, false, TranscodeTestOutcome.Passed, TranscodeTestAdvice.None)]
-        [InlineData("hevc_qsv", 1, true, true, TranscodeTestOutcome.Failed, TranscodeTestAdvice.TurnOff)]
+        [InlineData("hevc_qsv", 1, true, true, TranscodeTestOutcome.Failed, TranscodeTestAdvice.None)]
         [InlineData("av1_qsv", 1, true, false, TranscodeTestOutcome.Failed, TranscodeTestAdvice.None)]
         [InlineData("h264_qsv", 1, false, true, TranscodeTestOutcome.Failed, TranscodeTestAdvice.None)]
         [InlineData("libsvtav1", null, true, true, TranscodeTestOutcome.NotSupported, TranscodeTestAdvice.None)]
@@ -122,13 +122,13 @@ namespace Jellyfin.Api.Tests.Helpers
         }
 
         [Theory]
-        [InlineData(true, true, 0, TranscodeTestOutcome.NotSupported)] // No frame, the other half ruled out, and H.264 passed.
+        [InlineData(true, true, 0, TranscodeTestOutcome.NotSupported)] // Explicit capability evidence is also supplied.
         [InlineData(false, true, 0, TranscodeTestOutcome.Failed)] // H.264 failed or was not tested: the setup may be broken.
         [InlineData(true, true, null, TranscodeTestOutcome.Failed)] // ffmpeg did not say how many frames.
         [InlineData(true, true, 5, TranscodeTestOutcome.Failed)] // Frames got through, so something else failed.
         [InlineData(true, false, 0, TranscodeTestOutcome.Failed)] // Decoding failed with the GPU encoder, which is not ruled out.
-        public void FailedOutcome_IsNotSupportedOnlyForNoFramesAfterAPassedReference(bool referencePassed, bool otherHalfRuledOut, int? frames, TranscodeTestOutcome expected)
-            => Assert.Equal(expected, TranscodeTestRules.FailedOutcome(referencePassed, otherHalfRuledOut, frames));
+        public void FailedOutcome_ExplicitFormatFailureStillNeedsNoFramesAndAPassedReference(bool referencePassed, bool otherHalfRuledOut, int? frames, TranscodeTestOutcome expected)
+            => Assert.Equal(expected, TranscodeTestRules.FailedOutcome(referencePassed, otherHalfRuledOut, frames, output: "[av1_nvenc @ 0x0] Codec not supported"));
 
         [Theory]
         [InlineData(0, true, TranscodeTestOutcome.NotSupported, false)]
@@ -140,13 +140,14 @@ namespace Jellyfin.Api.Tests.Helpers
             var (failed, advice) = TranscodeTestRules.Decode(true, 1, null, true);
 
             Assert.Equal(TranscodeTestOutcome.Failed, failed);
-            Assert.Equal(outcome, TranscodeTestRules.FailedOutcome(referencePassed, true, frames));
+            Assert.Equal(outcome, TranscodeTestRules.FailedOutcome(referencePassed, true, frames, output: "[hevc_cuvid @ 0x0] unsupported bit depth: 12"));
             Assert.Equal(failedAfterDecoding, TranscodeTestRules.FailedAfterDecoding(frames, null));
-            Assert.Equal(TranscodeTestAdvice.TurnOff, advice); // The advice to turn it off stays either way.
+            Assert.Equal(TranscodeTestAdvice.None, advice); // A generic failure alone does not justify changing settings.
         }
 
         [Theory]
-        [InlineData("Output stream #0:0 (video): 0 frames encoded; 0 packets muxed (0 bytes);", true, TranscodeTestOutcome.NotSupported)]
+        [InlineData("[av1_nvenc @ 0x0] Codec not supported\nOutput stream #0:0 (video): 0 frames encoded; 0 packets muxed (0 bytes);", true, TranscodeTestOutcome.NotSupported)]
+        [InlineData("Output stream #0:0 (video): 0 frames encoded; 0 packets muxed (0 bytes);", true, TranscodeTestOutcome.Failed)]
         [InlineData("Output stream #0:0 (video): 0 frames encoded; 0 packets muxed (0 bytes);", false, TranscodeTestOutcome.Failed)]
         [InlineData("[av1_nvenc @ 0x0] Error while opening encoder", true, TranscodeTestOutcome.Failed)]
         [InlineData("Output stream #0:0 (video): 40 frames encoded; 40 packets muxed (9000 bytes);", true, TranscodeTestOutcome.Failed)]
@@ -155,29 +156,30 @@ namespace Jellyfin.Api.Tests.Helpers
             var (failed, advice) = TranscodeTestRules.Encode("av1_nvenc", 1, true, true);
 
             Assert.Equal(TranscodeTestOutcome.Failed, failed);
-            Assert.Equal(outcome, TranscodeTestRules.FailedOutcome(referencePassed, true, TranscodeTestRules.FramesEncoded(output)));
-            Assert.Equal(TranscodeTestAdvice.TurnOff, advice);
+            Assert.Equal(outcome, TranscodeTestRules.FailedOutcome(referencePassed, true, TranscodeTestRules.FramesEncoded(output), output: output));
+            Assert.Equal(TranscodeTestAdvice.None, advice);
         }
 
         [Theory]
-        [InlineData(Rtx3070Av1Output, true, TranscodeTestOutcome.NotSupported)]
+        [InlineData("[av1_nvenc @ 0x0] Codec not supported\n" + Rtx3070Av1Output, true, TranscodeTestOutcome.NotSupported)]
+        [InlineData(Rtx3070Av1Output, true, TranscodeTestOutcome.Failed)]
         [InlineData(Rtx3070Av1Output, false, TranscodeTestOutcome.Failed)] // H.264 encoding did not pass.
-        [InlineData("frame=    0 fps=0.0 q=0.0 size=       0KiB\r" + Rtx3070Av1Output, true, TranscodeTestOutcome.NotSupported)]
-        [InlineData("[av1_nvenc @ 0x0] Error while opening encoder", true, TranscodeTestOutcome.NotSupported)]
-        [InlineData("[vost#0:0/av1_nvenc @ 0x0] [enc:av1_nvenc @ 0x1] Could not open encoder before EOF", true, TranscodeTestOutcome.NotSupported)]
-        [InlineData("Output stream #0:0 (video): 0 frames encoded; 0 packets muxed (0 bytes);", true, TranscodeTestOutcome.NotSupported)]
+        [InlineData("frame=    0 fps=0.0 q=0.0 size=       0KiB\r" + Rtx3070Av1Output, true, TranscodeTestOutcome.Failed)]
+        [InlineData("[av1_nvenc @ 0x0] Error while opening encoder", true, TranscodeTestOutcome.Failed)]
+        [InlineData("[vost#0:0/av1_nvenc @ 0x0] [enc:av1_nvenc @ 0x1] Could not open encoder before EOF", true, TranscodeTestOutcome.Failed)]
+        [InlineData("Output stream #0:0 (video): 0 frames encoded; 0 packets muxed (0 bytes);", true, TranscodeTestOutcome.Failed)]
         [InlineData("Output stream #0:0 (video): 12 frames encoded; 12 packets muxed (9000 bytes);\n" + Rtx3070Av1Output, true, TranscodeTestOutcome.Failed)]
         [InlineData("frame=   12 fps=0.0 q=0.0 size=       0KiB\r" + Rtx3070Av1Output, true, TranscodeTestOutcome.Failed)] // Frames got out first.
         [InlineData("[vost#0:1/aac @ 0x0] Task finished with error code: -22 (Invalid argument)\nConversion failed!", true, TranscodeTestOutcome.Failed)]
         [InlineData("[vost#0:0/h264_nvenc @ 0x0] Error while opening encoder\nConversion failed!", true, TranscodeTestOutcome.Failed)]
         [InlineData("[hevc @ 0x0] Error while decoding stream #0:0\nConversion failed!", true, TranscodeTestOutcome.Failed)]
-        public void FailedEncode_WithoutAFrameCount_IsNotSupportedOnlyWhenThisEncoderFailedBeforeAnyOutput(string output, bool referencePassed, TranscodeTestOutcome outcome)
+        public void FailedEncode_WithoutAFrameCount_NeedsExplicitFormatEvidenceAndNoOutput(string output, bool referencePassed, TranscodeTestOutcome outcome)
         {
             var (failed, advice) = TranscodeTestRules.Encode("av1_nvenc", 1, true, true);
 
             Assert.Equal(TranscodeTestOutcome.Failed, failed);
-            Assert.Equal(outcome, TranscodeTestRules.FailedOutcome(referencePassed, true, TranscodeTestRules.EncodedFrames(output, "av1_nvenc")));
-            Assert.Equal(TranscodeTestAdvice.TurnOff, advice);
+            Assert.Equal(outcome, TranscodeTestRules.FailedOutcome(referencePassed, true, TranscodeTestRules.EncodedFrames(output, "av1_nvenc"), output: output));
+            Assert.Equal(TranscodeTestAdvice.None, advice);
         }
 
         [Fact]
@@ -188,6 +190,19 @@ namespace Jellyfin.Api.Tests.Helpers
 
             Assert.Equal(string.Empty, TranscodeTestRules.ErrorLines(Output));
         }
+
+        [Theory]
+        // A clean exit after too few frames says so first.
+        [InlineData(0, 12, 96, "", "The check produced only 12 of 96 required frames.")]
+        [InlineData(0, 12, 96, "x", "The check produced only 12 of 96 required frames. x")]
+        // A failed run keeps its own diagnostic at the front: VP8 failed after decoding 2 frames.
+        [InlineData(1, 0, 96, "[vp8] Failed to decode", "[vp8] Failed to decode")]
+        [InlineData(-1, 0, 96, "timed out after 60 s", "timed out after 60 s")]
+        [InlineData(0, 96, 96, "", "")]
+        [InlineData(0, null, 96, "", "")]
+        [InlineData(0, 12, null, "", "")]
+        public void CheckErrors_CountsMissingFramesOnlyForACleanExit(int exitCode, int? encoded, int? required, string errors, string expected)
+            => Assert.Equal(expected, TranscodeTestRules.CheckErrors(exitCode, encoded, required, errors));
 
         [Fact]
         public void ErrorLines_KeepsTheLastThreeErrors()

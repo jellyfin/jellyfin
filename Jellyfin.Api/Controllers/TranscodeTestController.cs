@@ -35,7 +35,7 @@ public class TranscodeTestController : BaseJellyfinApiController
     /// <response code="409">A test is already running.</response>
     /// <returns>The status of the test that started.</returns>
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(typeof(TranscodeTestStatusDto), StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public ActionResult<TranscodeTestStatusDto> StartTest([FromBody, Required] TranscodeTestRequestDto request)

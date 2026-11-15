@@ -108,6 +108,7 @@ internal static partial class TranscodeTestRules
         {
             (TranscodeTestOutcome.Passed, false) => TranscodeTestAdvice.TurnOn,
             (TranscodeTestOutcome.Passed, true) => TranscodeTestAdvice.None,
+            (TranscodeTestOutcome.Failed, _) => TranscodeTestAdvice.None,
             (_, true) => TranscodeTestAdvice.TurnOff,
             _ => TranscodeTestAdvice.None
         };
@@ -217,7 +218,8 @@ internal static partial class TranscodeTestRules
     /// <summary>
     /// Concludes a decoding or encoding check that failed. It means the hardware lacks the format, not that the setup is
     /// broken, only when the H.264 8-bit check of the same kind passed in this run, the other half of the pipeline was
-    /// ruled out, and ffmpeg said it got not a single frame through.
+    /// ruled out, ffmpeg said it got not a single frame through, and a hardware codec explicitly rejected the format.
+    /// Generic initialization, parameter and device failures do not prove missing format support.
     /// </summary>
     /// <param name="referencePassed">Whether the H.264 8-bit check of the same kind passed earlier in this run.</param>
     /// <param name="otherHalfRuledOut">For decoding, whether the failed run encoded on the CPU; for encoding, always
@@ -225,10 +227,40 @@ internal static partial class TranscodeTestRules
     /// <param name="frames">The frames ffmpeg decoded or encoded, or <c>null</c> when it did not say.</param>
     /// <param name="resourceLine">The line in which ffmpeg said the GPU refused a session or ran out of memory, or
     /// null. Such a failure is never a missing format: the GPU was busy or full, for example with playback.</param>
+    /// <param name="output">ffmpeg's output, including any explicit format-capability diagnostic.</param>
     /// <returns><see cref="TranscodeTestOutcome.NotSupported"/> when the hardware lacks the format, otherwise
     /// <see cref="TranscodeTestOutcome.Failed"/>.</returns>
-    public static TranscodeTestOutcome FailedOutcome(bool referencePassed, bool otherHalfRuledOut, int? frames, string? resourceLine = null)
-        => referencePassed && otherHalfRuledOut && frames == 0 && resourceLine is null ? TranscodeTestOutcome.NotSupported : TranscodeTestOutcome.Failed;
+    public static TranscodeTestOutcome FailedOutcome(bool referencePassed, bool otherHalfRuledOut, int? frames, string? resourceLine = null, string? output = null)
+        => referencePassed && otherHalfRuledOut && frames == 0 && resourceLine is null && output is not null
+            && UnsupportedFormatLine(output) is not null && ResourceLine(output) is null
+            ? TranscodeTestOutcome.NotSupported
+            : TranscodeTestOutcome.Failed;
+
+    /// <summary>
+    /// Finds an explicit format-capability failure from a hardware codec. A generic "not supported" message may be
+    /// about a filter, optional encoder setting, driver or device, so it is not sufficient.
+    /// </summary>
+    /// <param name="output">ffmpeg's output.</param>
+    /// <returns>The capability diagnostic, or null when format support cannot be concluded.</returns>
+    public static string? UnsupportedFormatLine(string? output)
+    {
+        if (output is null)
+        {
+            return null;
+        }
+
+        foreach (var line in output.Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            // These messages come from NVENC/CUVID's codec, chroma and bit-depth capability checks.
+            if (HardwareCapabilityLogRegex().IsMatch(line)
+                && UnsupportedFormatMessageRegex().IsMatch(line[(line.LastIndexOf(']') + 1)..].Trim()))
+            {
+                return line;
+            }
+        }
+
+        return null;
+    }
 
     /// <summary>
     /// Finds the first line in which ffmpeg said the GPU refused an encoding session or ran out of memory.
@@ -294,7 +326,7 @@ internal static partial class TranscodeTestRules
             return (TranscodeTestOutcome.Passed, !hardwareEncodingOn && codecAllowed ? TranscodeTestAdvice.TurnOn : TranscodeTestAdvice.None);
         }
 
-        return (TranscodeTestOutcome.Failed, hardwareEncodingOn && codecAllowed ? TranscodeTestAdvice.TurnOff : TranscodeTestAdvice.None);
+        return (TranscodeTestOutcome.Failed, TranscodeTestAdvice.None);
     }
 
     /// <summary>
@@ -319,6 +351,20 @@ internal static partial class TranscodeTestRules
         var outcome = TonemapMode(filter) == TranscodeTestTonemapMode.Software ? TranscodeTestOutcome.Software : TranscodeTestOutcome.Passed;
         return (outcome, enabled ? TranscodeTestAdvice.None : TranscodeTestAdvice.TurnOn);
     }
+
+    /// <summary>
+    /// Describes a compatibility check's failure. A clean exit with too few frames says so first; a failed run's own
+    /// error lines say why, and the count would only push them out of view.
+    /// </summary>
+    /// <param name="exitCode">ffmpeg's exit code.</param>
+    /// <param name="encodedFrames">The frames ffmpeg encoded, or null when it did not say.</param>
+    /// <param name="requiredFrames">The frames the check needs, or null when it needs no count.</param>
+    /// <param name="errors">ffmpeg's error lines.</param>
+    /// <returns>The error text.</returns>
+    public static string CheckErrors(int exitCode, int? encodedFrames, int? requiredFrames, string errors)
+        => exitCode == 0 && encodedFrames is int actual && requiredFrames is int required && actual < required
+            ? string.Create(CultureInfo.InvariantCulture, $"The check produced only {actual} of {required} required frames. {errors}").TrimEnd()
+            : errors;
 
     /// <summary>
     /// Picks the lines of ffmpeg's output that explain a failure.
@@ -445,6 +491,12 @@ internal static partial class TranscodeTestRules
     // The output stream or encoder an ffmpeg line is about: "[vost#0:0/av1_nvenc @ 0x0]" or "[enc:av1_nvenc @ 0x0]".
     [GeneratedRegex(@"\[(?:vost#\d+:\d+/|enc:)([^ \]]+) @")]
     private static partial Regex StreamTagRegex();
+
+    [GeneratedRegex(@"^\[(?:vost#\d+:\d+/|enc:)?[a-z0-9]+_(?:nvenc|cuvid) @ [^\]]+\]", RegexOptions.IgnoreCase)]
+    private static partial Regex HardwareCapabilityLogRegex();
+
+    [GeneratedRegex(@"^(?:Codec not supported|10 bit encode not supported|YUV(?:444|422)P not supported|unsupported bit depth: \d+|Codec \w+ is not supported with this chroma format\.|Bit depth \d+ with this chroma format is not supported\.)$", RegexOptions.IgnoreCase)]
+    private static partial Regex UnsupportedFormatMessageRegex();
 
     [GeneratedRegex(@"-c:v \S+_(qsv|cuvid|rkmpp|v4l2m2m)\b")]
     private static partial Regex HardwareDecoderRegex();
