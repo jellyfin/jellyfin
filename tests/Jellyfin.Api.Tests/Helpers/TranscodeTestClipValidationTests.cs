@@ -105,6 +105,24 @@ namespace Jellyfin.Api.Tests.Helpers
             Assert.False(TranscodeTestClipValidation.IsValid(info, "h264", 8, false));
         }
 
+        [Theory]
+        [InlineData(0, 96, "", true)]
+        [InlineData(0, 84, "", false)]
+        [InlineData(0, 0, "", false)]
+        [InlineData(0, 96, "[matroska,webm @ 0x1] File ended prematurely", false)]
+        [InlineData(1, 84, "[matroska,webm @ 0x1] File ended prematurely", false)]
+        [InlineData(1, 84, "Invalid data found when processing input", false)]
+        [InlineData(1, 12, "[h264 @ 0x1] corrupt decoded frame", false)]
+        [InlineData(1, 12, "Packet corrupt (stream = 0, dts = 13)", false)]
+        [InlineData(-1, null, "timed out after 60 s", null)]
+        [InlineData(-1, null, "ffmpeg did not start within 30 s", null)]
+        [InlineData(1, 0, "Cannot allocate memory", null)]
+        [InlineData(1, 0, "Decoder not found", null)]
+        [InlineData(1, 0, "OpenEncodeSessionEx failed: out of memory (10)", null)]
+        [InlineData(0, null, "", null)]
+        public void IsCompleteSoftwareDecode_OnlyProvenSourceDamageInvalidatesTheCache(int exitCode, int? frames, string output, bool? expected)
+            => Assert.Equal(expected, TranscodeTestClipValidation.IsCompleteSoftwareDecode(exitCode, frames, output));
+
         private static MediaSourceInfo Clip(string codec, int bitDepth, bool hdr)
             => new()
             {

@@ -45,6 +45,8 @@ public sealed class TranscodeTestManager : IDisposable
 
     private static readonly string[] _allDecodeCodecs = ["h264", "hevc", "mpeg2video", "mpeg4", "vc1", "vp8", "vp9", "av1"];
 
+    private static readonly string[] _encodeCodecs = ["h264", "hevc", "av1"];
+
     private static readonly ClipSpec[] _clips =
     [
         new("h264", 8, false, "h264.mkv", "libx264", "yuv420p", string.Empty),
@@ -249,28 +251,21 @@ public sealed class TranscodeTestManager : IDisposable
         }
 
         Log("Creating test clips (once; they are kept in the cache folder) …");
-        var clips = new List<(ClipSpec Clip, MediaSourceInfo Source)>();
-        foreach (var clip in _clips)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var (source, error) = await GetClipAsync(clip, cancellationToken).ConfigureAwait(false);
-            if (source is null)
+        var clips = await GetClipsAsync(
+            _clips,
+            GetClipAsync,
+            (clip, error, notCreated) => AddCheck(new TranscodeTestCheckResult
             {
-                AddCheck(new TranscodeTestCheckResult
-                {
-                    Kind = clip.Hdr ? TranscodeTestCheckKind.Tonemap : TranscodeTestCheckKind.Decode,
-                    Codec = clip.Codec,
-                    BitDepth = clip.BitDepth,
-                    Hdr = clip.Hdr,
-                    Outcome = TranscodeTestOutcome.Skipped,
-                    Method = clip.Encoder,
-                    Error = error
-                });
-                continue;
-            }
-
-            clips.Add((clip, source));
-        }
+                Kind = clip.Hdr ? TranscodeTestCheckKind.Tonemap : TranscodeTestCheckKind.Decode,
+                Codec = clip.Codec,
+                BitDepth = clip.BitDepth,
+                Hdr = clip.Hdr,
+                Outcome = TranscodeTestOutcome.Skipped,
+                // The encoder names what could not create the clip. A clip that exists but could not be checked has none.
+                Method = notCreated ? clip.Encoder : null,
+                Error = error
+            }),
+            cancellationToken).ConfigureAwait(false);
 
         Log("Checking hardware decoding …");
         foreach (var (clip, source) in clips.Where(c => !c.Clip.Hdr))
@@ -282,9 +277,23 @@ public sealed class TranscodeTestManager : IDisposable
         if (h264 is not null)
         {
             Log("Checking hardware encoding …");
-            foreach (var codec in new[] { "h264", "hevc", "av1" })
+            foreach (var codec in _encodeCodecs)
             {
                 await CheckEncodeAsync(codec, h264, saved, cancellationToken).ConfigureAwait(false);
+            }
+        }
+        else
+        {
+            foreach (var codec in _encodeCodecs)
+            {
+                AddCheck(new TranscodeTestCheckResult
+                {
+                    Kind = TranscodeTestCheckKind.Encode,
+                    Codec = codec,
+                    BitDepth = 8,
+                    Outcome = TranscodeTestOutcome.Skipped,
+                    Error = "The encoders are checked with the h264.mkv test clip, which is not available."
+                });
             }
         }
 
@@ -294,6 +303,53 @@ public sealed class TranscodeTestManager : IDisposable
             Log("Checking HDR to SDR tone mapping …");
             await CheckTonemapAsync(hdr, saved, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    /// <summary>
+    /// Gets every test clip in turn. A clip that could not be created, or whose cache entry could not be verified or
+    /// probed in time, becomes a skipped row and the other clips are still checked, so one clip never ends the whole
+    /// check. A cache entry that could not be verified is kept: that failure says nothing about the clip.
+    /// </summary>
+    /// <typeparam name="T">The clip description.</typeparam>
+    /// <param name="clips">The clips to get.</param>
+    /// <param name="getClip">Gets one clip, or null and why ffmpeg could not create it; throws
+    /// <see cref="IOException"/> when its cache entry could not be verified.</param>
+    /// <param name="skip">Records a clip that is not available, with the reason and whether it could not be created.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The clips that are available, in order.</returns>
+    internal static async Task<List<(T Clip, MediaSourceInfo Source)>> GetClipsAsync<T>(
+        IEnumerable<T> clips,
+        Func<T, CancellationToken, Task<(MediaSourceInfo? Source, string? Error)>> getClip,
+        Action<T, string?, bool> skip,
+        CancellationToken cancellationToken)
+    {
+        var available = new List<(T Clip, MediaSourceInfo Source)>();
+        foreach (var clip in clips)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            MediaSourceInfo? source;
+            string? error;
+            try
+            {
+                (source, error) = await getClip(clip, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                skip(clip, ex.Message, false);
+                continue;
+            }
+
+            if (source is null)
+            {
+                skip(clip, error, true);
+                continue;
+            }
+
+            available.Add((clip, source));
+        }
+
+        return available;
     }
 
     /// <summary>
@@ -352,14 +408,36 @@ public sealed class TranscodeTestManager : IDisposable
                     try
                     {
                         var probed = await probeTask.WaitAsync(probeToken).ConfigureAwait(false);
-                        return TranscodeTestClipValidation.IsValid(probed, clip.Codec, clip.BitDepth, clip.Hdr) ? probed : null;
+                        if (!TranscodeTestClipValidation.IsValid(probed, clip.Codec, clip.BitDepth, clip.Hdr))
+                        {
+                            return null;
+                        }
+
+                        // Header metadata is not proof that all 96 frames survived. Decode with no hardware
+                        // acceleration before using or publishing this source; GPU test failures never evict it.
+                        var verifyArgs = string.Create(
+                            CultureInfo.InvariantCulture,
+                            $"-hide_banner -v verbose -xerror -nostdin -hwaccel none -i \"{candidate}\" -map 0:v:0 -an -sn -frames:v {TranscodeTestClipValidation.ClipFrames} -f null -");
+                        var verified = await RunFfmpegAsync(verifyArgs, TranscodeTestClipValidation.ClipFrames, null, token).ConfigureAwait(false);
+                        var complete = TranscodeTestClipValidation.IsCompleteSoftwareDecode(verified.ExitCode, verified.FramesEncoded, verified.Output);
+                        if (complete is null)
+                        {
+                            throw new IOException($"Could not verify test clip {clip.FileName}; its cache entry was preserved: {DescribeErrors(verified)}");
+                        }
+
+                        if (!complete.Value)
+                        {
+                            Log($"  Incomplete or corrupt test clip {clip.FileName}. It will not be kept in the cache.");
+                            return null;
+                        }
+
+                        return probed;
                     }
                     catch (OperationCanceledException)
                     {
                         _ = ObserveCompatibilityOutputAsync(probeTask);
                         token.ThrowIfCancellationRequested();
-                        Log($"  Probing test clip {clip.FileName} timed out after {StartTimeoutSeconds:0} s.");
-                        return null;
+                        throw new IOException($"Probing test clip {clip.FileName} timed out after {StartTimeoutSeconds:0} s; its cache entry was preserved.");
                     }
                 }
                 catch (FfmpegException ex)

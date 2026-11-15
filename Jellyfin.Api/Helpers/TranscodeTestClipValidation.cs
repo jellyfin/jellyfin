@@ -11,6 +11,7 @@ namespace Jellyfin.Api.Helpers;
 /// </summary>
 internal static class TranscodeTestClipValidation
 {
+    internal const int ClipFrames = 96;
     private const long ClipDurationTicks = 4 * TimeSpan.TicksPerSecond;
     private const long DurationToleranceTicks = TimeSpan.TicksPerSecond / 24;
 
@@ -58,5 +59,29 @@ internal static class TranscodeTestClipValidation
                 && string.Equals(stream.ColorPrimaries, "bt2020", StringComparison.OrdinalIgnoreCase)
                 && string.Equals(stream.ColorSpace, "bt2020nc", StringComparison.OrdinalIgnoreCase)
             : stream.VideoRangeType == VideoRangeType.SDR;
+    }
+
+    /// <summary>
+    /// Verifies the clip's actual frames using an independent software decode, not a hardware test's outcome.
+    /// </summary>
+    /// <param name="exitCode">The software decoder's exit code.</param>
+    /// <param name="frames">The frames it produced.</param>
+    /// <param name="output">The software decoder's diagnostic output.</param>
+    /// <returns>True for a complete clip, false for a proven invalid clip, or null when verification failed.</returns>
+    internal static bool? IsCompleteSoftwareDecode(int exitCode, int? frames, string? output)
+    {
+        // A format header may retain the original duration even after its packets have been truncated.
+        if (output is not null
+            && (output.Contains("File ended prematurely", StringComparison.OrdinalIgnoreCase)
+                || output.Contains("Invalid data found when processing input", StringComparison.OrdinalIgnoreCase)
+                || output.Contains("corrupt decoded frame", StringComparison.OrdinalIgnoreCase)
+                || output.Contains("Packet corrupt", StringComparison.OrdinalIgnoreCase)))
+        {
+            return false;
+        }
+
+        // Only a finished software decode proves that a short frame count is the source's end. A timeout,
+        // unavailable decoder, or resource failure must not delete a potentially good cached clip.
+        return exitCode == 0 && frames is int count ? count == ClipFrames : null;
     }
 }

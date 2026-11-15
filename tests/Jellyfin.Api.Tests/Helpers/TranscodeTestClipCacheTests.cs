@@ -89,6 +89,52 @@ namespace Jellyfin.Api.Tests.Helpers
         }
 
         [Fact]
+        public async Task GetAsync_HeaderValidButShortSoftwareDecode_RegeneratesAndNextRunReusesTheClip()
+        {
+            var path = Path.Combine(_folder, "h264.mkv");
+            await File.WriteAllBytesAsync(path, [84], TestContext.Current.CancellationToken);
+            var generations = 0;
+            async Task<string?> Probe(string candidate, CancellationToken token)
+            {
+                token.ThrowIfCancellationRequested();
+                // Both entries retain valid four-second metadata; only the full software decode tells them apart.
+                var frames = (await File.ReadAllBytesAsync(candidate, token))[0];
+                return TranscodeTestClipValidation.IsCompleteSoftwareDecode(0, frames, string.Empty) == true ? "video" : null;
+            }
+
+            async Task<(string? Output, string? Error)> GenerateComplete(Func<string> newTemporary, CancellationToken token)
+            {
+                generations++;
+                var temporary = newTemporary();
+                await File.WriteAllBytesAsync(temporary, [96], token);
+                return (temporary, null);
+            }
+
+            var result = await TranscodeTestClipCache.GetAsync(path, GenerateComplete, Probe, TestContext.Current.CancellationToken);
+            Assert.Equal("video", result.Value);
+            Assert.Null(result.Error);
+            result = await TranscodeTestClipCache.GetAsync(path, GenerateComplete, Probe, TestContext.Current.CancellationToken);
+            Assert.Equal("video", result.Value);
+            Assert.Equal(1, generations);
+            Assert.Equal([96], await File.ReadAllBytesAsync(path, TestContext.Current.CancellationToken));
+            Assert.Single(Directory.GetFiles(_folder));
+        }
+
+        [Fact]
+        public async Task GetAsync_InconclusiveVerificationPreservesTheExistingCacheEntry()
+        {
+            var path = Path.Combine(_folder, "h264.mkv");
+            await File.WriteAllBytesAsync(path, [96], TestContext.Current.CancellationToken);
+            await Assert.ThrowsAsync<IOException>(() => TranscodeTestClipCache.GetAsync<string>(
+                path,
+                (_, _) => throw new InvalidOperationException("must not regenerate"),
+                (_, _) => throw new IOException("Software verification could not run."),
+                TestContext.Current.CancellationToken));
+            Assert.Equal([96], await File.ReadAllBytesAsync(path, TestContext.Current.CancellationToken));
+            Assert.Single(Directory.GetFiles(_folder));
+        }
+
+        [Fact]
         public async Task GetAsync_UnprobeableGeneratedClipIsNotPublished()
         {
             var path = Path.Combine(_folder, "av1.mkv");
