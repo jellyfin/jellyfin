@@ -2053,6 +2053,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     // Fall back to per-item query when no batch data is available
                     var query = new InternalItemsQuery(user);
+                    LibraryManager?.ConfigureUserAccess(query, user);
 
                     if (LinkedChildren.Length > 0)
                     {

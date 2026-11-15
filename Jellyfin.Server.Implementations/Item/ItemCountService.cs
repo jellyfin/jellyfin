@@ -472,7 +472,7 @@ public class ItemCountService : IItemCountService
     }
 
     /// <inheritdoc/>
-    public Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, User? user)
+    public Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, User? user, IReadOnlyList<Guid>? topParentIds = null)
     {
         ArgumentNullException.ThrowIfNull(parentIds);
 
@@ -496,7 +496,7 @@ public class ItemCountService : IItemCountService
         }
         else
         {
-            accessibleItems = _queryHelpers.ApplyAccessFiltering(dbContext, accessibleItems, new InternalItemsQuery(user));
+            accessibleItems = _queryHelpers.ApplyAccessFiltering(dbContext, accessibleItems, CreateUserAccessFilter(user, topParentIds));
         }
 
         var hierarchicalCounts = accessibleItems
@@ -598,7 +598,7 @@ public class ItemCountService : IItemCountService
     }
 
     /// <inheritdoc/>
-    public Dictionary<Guid, (int Played, int Total)> GetPlayedAndTotalCountBatch(IReadOnlyList<Guid> folderIds, User user)
+    public Dictionary<Guid, (int Played, int Total)> GetPlayedAndTotalCountBatch(IReadOnlyList<Guid> folderIds, User user, IReadOnlyList<Guid>? topParentIds = null)
     {
         ArgumentNullException.ThrowIfNull(folderIds);
         ArgumentNullException.ThrowIfNull(user);
@@ -609,7 +609,7 @@ public class ItemCountService : IItemCountService
         }
 
         using var dbContext = _dbProvider.CreateDbContext();
-        var filter = new InternalItemsQuery(user);
+        var filter = CreateUserAccessFilter(user, topParentIds);
         var userId = user.Id;
 
         // Merged series and seasons are stored as one row per folder-item sharing a presentation key.
@@ -734,6 +734,17 @@ public class ItemCountService : IItemCountService
         }
 
         return groups;
+    }
+
+    private static InternalItemsQuery CreateUserAccessFilter(User user, IReadOnlyList<Guid>? topParentIds)
+    {
+        var filter = new InternalItemsQuery(user);
+        if (topParentIds is { Count: > 0 })
+        {
+            filter.TopParentIds = topParentIds as Guid[] ?? topParentIds.ToArray();
+        }
+
+        return filter;
     }
 
     private static (int Played, int Total) GetPlayedAndTotalCountFromQuery(IQueryable<BaseItemEntity> query, Guid userId)

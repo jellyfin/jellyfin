@@ -1825,13 +1825,23 @@ namespace Emby.Server.Implementations.Library
 
         public Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, User? user)
         {
-            return _countService.GetChildCountBatch(parentIds, user);
+            if (user is null)
+            {
+                return _countService.GetChildCountBatch(parentIds, user);
+            }
+
+            var filter = new InternalItemsQuery(user);
+            ConfigureUserAccess(filter, user);
+            return _countService.GetChildCountBatch(parentIds, user, filter.TopParentIds);
         }
 
         /// <inheritdoc/>
         public Dictionary<Guid, (int Played, int Total)> GetPlayedAndTotalCountBatch(IReadOnlyList<Guid> folderIds, User user)
         {
-            return _countService.GetPlayedAndTotalCountBatch(folderIds, user);
+            ArgumentNullException.ThrowIfNull(user);
+            var filter = new InternalItemsQuery(user);
+            ConfigureUserAccess(filter, user);
+            return _countService.GetPlayedAndTotalCountBatch(folderIds, user, filter.TopParentIds);
         }
 
         public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents)

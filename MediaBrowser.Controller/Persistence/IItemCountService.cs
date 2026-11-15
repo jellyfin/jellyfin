@@ -85,14 +85,16 @@ public interface IItemCountService
     /// </summary>
     /// <param name="folderIds">The list of folder item IDs to get counts for.</param>
     /// <param name="user">The user for access filtering and played status.</param>
+    /// <param name="topParentIds">Optional accessible top-parent library IDs for access filtering.</param>
     /// <returns>Dictionary mapping folder ID to (Played count, Total count).</returns>
-    Dictionary<Guid, (int Played, int Total)> GetPlayedAndTotalCountBatch(IReadOnlyList<Guid> folderIds, User user);
+    Dictionary<Guid, (int Played, int Total)> GetPlayedAndTotalCountBatch(IReadOnlyList<Guid> folderIds, User user, IReadOnlyList<Guid>? topParentIds = null);
 
     /// <summary>
     /// Batch-fetches child counts for multiple parent folders.
     /// </summary>
     /// <param name="parentIds">The list of parent folder IDs.</param>
     /// <param name="user">The user the counts are for, or null to count without a user's preferences.</param>
+    /// <param name="topParentIds">Optional accessible top-parent library IDs for access filtering.</param>
     /// <returns>Dictionary mapping parent ID to child count.</returns>
-    Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, User? user);
+    Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, User? user, IReadOnlyList<Guid>? topParentIds = null);
 }
