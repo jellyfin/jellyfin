@@ -549,26 +549,26 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 StartProcess(processWrapper);
                 using var reader = process.StandardOutput;
-                await reader.BaseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
-                memoryStream.Seek(0, SeekOrigin.Begin);
                 InternalMediaInfoResult result;
                 try
                 {
+                    await reader.BaseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+                    memoryStream.Seek(0, SeekOrigin.Begin);
                     result = await JsonSerializer.DeserializeAsync<InternalMediaInfoResult>(
                                         memoryStream,
                                         _jsonSerializerOptions,
                                         cancellationToken).ConfigureAwait(false);
+                    if (result is null || (result.Streams is null && result.Format is null))
+                    {
+                        throw new FfmpegException("ffprobe failed - streams and format are both null.");
+                    }
                 }
                 catch
                 {
+                    // Cancellation while copying stdout must stop the probe before the wrapper unregisters it.
                     StopProcess(processWrapper, 100);
 
                     throw;
-                }
-
-                if (result is null || (result.Streams is null && result.Format is null))
-                {
-                    throw new FfmpegException("ffprobe failed - streams and format are both null.");
                 }
 
                 if (result.Streams is not null)
