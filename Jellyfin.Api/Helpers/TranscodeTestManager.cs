@@ -1033,8 +1033,16 @@ public sealed class TranscodeTestManager : IDisposable
                         RetireStream(ended, _logger);
                         waitingForRestart.Enqueue(ended);
                         pendingIds.Add(ended.Id);
-                        controller.StreamRestarted(ended.Id);
+                        controller.StreamRestarted(ended.Id, ended.RunRate);
                         continue;
+                    }
+
+                    if (TranscodeTestRules.IsRestartLimit(ended.ExitCode, ended.ReportedFrames, ended.AtEndOfFile, ended.Restarts))
+                    {
+                        // A file this short ends the test, not the stream: the kept-up count is still the result.
+                        Log(TranscodeTestRules.DescribeRestartLimit(ended.Id, ended.Restarts, controller.MaxStable));
+                        run.End(TranscodeTestRules.TimeLimitEndReason(controller.MaxStable, request.MaxStreams), now);
+                        return;
                     }
 
                     EndStream(run, ended, TranscodeTestEndKind.Exited, controller.MaxStable, now, TranscodeTestRules.DescribeNoRestart(ended.ExitCode, ended.ReportedFrames, lived, ended.PositionSeconds, ended.SourceSeconds, ended.Restarts));
@@ -1047,7 +1055,7 @@ public sealed class TranscodeTestManager : IDisposable
                     pending = StartStreamAsync(run, request, codec, folder, prefix, options, itemName, launches.Token, previous);
                 }
 
-                var readings = run.GetStreams().Where(s => !s.HasExited).Select(s => new TranscodeTestStreamReading(s.Id, s.Fps(now), now - s.StartedAt, s.ReportedFrames, s.NearEnd)).ToList();
+                var readings = run.GetStreams().Where(s => !s.HasExited).Select(s => new TranscodeTestStreamReading(s.Id, s.Fps(now), now - s.StartedAt, s.ReportedFrames, s.NearEndAt(now))).ToList();
                 // A pending launch remains a logical stream, but no rate has yet been observed under the intended load.
                 readings.AddRange(pendingIds.Where(id => readings.All(s => s.Id != id)).Select(id => new TranscodeTestStreamReading(id, null, 0, true)));
                 var decision = controller.Tick(now, readings);
@@ -1183,9 +1191,21 @@ public sealed class TranscodeTestManager : IDisposable
             // hide the banner. They change only ffmpeg's log text, not the transcode.
             var args = StressLogArguments + _hlsCommandBuilder.GetCommandLineArguments(playlist, state, options, false, 0);
             _logger.LogDebug("Transcoding test stream {Id}: {Ffmpeg} {Args}", id, _mediaEncoder.EncoderPath, args);
-            var sourceFps = state.VideoStream?.ReferenceFrameRate ?? 24f;
+            var preferredFps = state.VideoStream?.ReferenceFrameRate;
+            if (preferredFps is null && state.VideoStream?.AverageFrameRate is not null)
+            {
+                // ReferenceFrameRate discarded an unusable average (for example 1000 fps or NaN).
+                preferredFps = float.NaN;
+            }
+
+            var sourceFps = SourceFrameRate(preferredFps, state.VideoStream?.RealFrameRate);
             if (run.Input is null)
             {
+                if (state.VideoStream?.AverageFrameRate is null && state.VideoStream?.RealFrameRate is null)
+                {
+                    Log("The source has no frame-rate metadata; the test uses 24 fps.");
+                }
+
                 DescribeStream(run, state, options, args, itemName, sourceFps);
             }
 
@@ -1252,6 +1272,32 @@ public sealed class TranscodeTestManager : IDisposable
             EndLaunch(run, id, previous is not null);
             return null;
         }
+    }
+
+    /// <summary>
+    /// Selects a finite positive source rate, falling back only when both metadata rates are absent.
+    /// </summary>
+    /// <param name="sourceFps">The preferred metadata rate.</param>
+    /// <param name="alternativeFps">The other metadata rate.</param>
+    /// <returns>The usable rate.</returns>
+    internal static float SourceFrameRate(float? sourceFps, float? alternativeFps = null)
+    {
+        if (sourceFps is float fps && float.IsFinite(fps) && fps > 0)
+        {
+            return fps;
+        }
+
+        if (alternativeFps is float alternate && float.IsFinite(alternate) && alternate > 0)
+        {
+            return alternate;
+        }
+
+        if (sourceFps is null && alternativeFps is null)
+        {
+            return 24f;
+        }
+
+        throw new InvalidOperationException("The source has an invalid frame rate. Select a source with a known positive frame rate.");
     }
 
     /// <summary>

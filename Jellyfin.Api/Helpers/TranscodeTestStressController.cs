@@ -10,25 +10,28 @@ namespace Jellyfin.Api.Helpers;
 /// </summary>
 /// <remarks>
 /// Every measured stream is judged on every tick, also right after a stream is added; only a new stream is excused
-/// until its first measurement. A stream is added at most every <see cref="RampSeconds"/>, once every running stream
-/// has kept up for <see cref="SettleSeconds"/> since any of them was last below the threshold, so brief dips at the
-/// limit delay the next stream without holding it back for good. A stream that stays below for
-/// <see cref="FailSeconds"/> ends the test.
+/// until its first measurement. A stream that stays below the threshold for <see cref="FailSeconds"/> ends the test.
+/// A stream is added at most every <see cref="RampSeconds"/>, once every stream has kept up for a full
+/// <see cref="SettleSeconds"/> at the current load and none is below the threshold, and not before
+/// <see cref="SettleSeconds"/> after the last dip. Each stream earns this on its own: a measured interval at or above
+/// the threshold, or a whole process that reached the end of the file at or above it. A stream that already kept up
+/// at this load and is now unmeasured, because it drains at the end of the file or is starting again, neither holds
+/// back the next stream nor counts as below. A stream that has not kept up at this load yet holds it back, so a stream
+/// that is never measured cannot certify capacity.
 /// Only a stream that never reported a frame stalls; one that reported frames and then went quiet reads 0 fps, so it
 /// gets the same grace as any stream that falls behind.
-/// A stream started again at the end of the file is judged afresh: its time below the threshold starts over, and
-/// until its new process is measured it neither counts as below nor holds back the next stream. A stream near the end
-/// of its source is not judged either.
 /// The test also ends after <see cref="TimeLimitSeconds"/>, so streams that keep dipping briefly cannot hold it at
 /// full load for good.
 /// </remarks>
 internal sealed class TranscodeTestStressController
 {
     private readonly Dictionary<int, double> _below = [];
-    private readonly HashSet<int> _restarted = [];
+    private readonly Dictionary<int, double> _keptUpSince = [];
+    private readonly HashSet<int> _keptUp = [];
     private readonly double _startedAt;
     private double _addedAt;
     private double? _belowAt;
+    private (int Id, double Fps, double Seconds)? _slowRun;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TranscodeTestStressController"/> class.
@@ -43,6 +46,11 @@ internal sealed class TranscodeTestStressController
     /// <param name="timeLimitSeconds">How long the test may run at most, or null for no limit.</param>
     public TranscodeTestStressController(double thresholdFps, double rampSeconds, double failSeconds, double startTimeoutSeconds, int maxStreams, double now, double settleSeconds = TranscodeTestStream.WindowSeconds, double? timeLimitSeconds = null)
     {
+        if (!double.IsFinite(thresholdFps) || thresholdFps <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(thresholdFps));
+        }
+
         TimeLimitSeconds = timeLimitSeconds;
         _startedAt = now;
         ThresholdFps = thresholdFps;
@@ -77,20 +85,43 @@ internal sealed class TranscodeTestStressController
     public int MaxStable { get; private set; }
 
     /// <summary>
-    /// Records that a stream was added, which starts a new interval.
+    /// Records that a stream was added, which starts a new interval: every stream must keep up again at the new load.
     /// </summary>
     /// <param name="now">Seconds since the test started.</param>
-    public void StreamAdded(double now) => _addedAt = now;
+    public void StreamAdded(double now)
+    {
+        _addedAt = now;
+        _keptUp.Clear();
+        _keptUpSince.Clear();
+    }
 
     /// <summary>
     /// Records that a stream reached the end of the file and was started again with the same id. Its time below the
-    /// threshold belonged to the old process, so it is forgotten.
+    /// threshold belonged to the old process, so it is forgotten. The old process's rate over its whole run counts
+    /// as a measurement when the whole run was at the current load.
     /// </summary>
     /// <param name="id">The stream number.</param>
-    public void StreamRestarted(int id)
+    /// <param name="run">The old process's rate from its first frame to its last progress line, with the times of
+    /// both, or null when it was not measured.</param>
+    public void StreamRestarted(int id, TranscodeTestRunRate? run = null)
     {
         _below.Remove(id);
-        _restarted.Add(id);
+        _keptUpSince.Remove(id);
+        if (run is null || !double.IsFinite(run.Fps) || run.From < _addedAt)
+        {
+            return;
+        }
+
+        if (run.Fps >= ThresholdFps)
+        {
+            _keptUp.Add(id);
+            return;
+        }
+
+        // A whole pass of the file below real time: the stream was behind for that long.
+        _keptUp.Remove(id);
+        _belowAt = Math.Max(_belowAt ?? run.To, run.To);
+        _slowRun ??= (id, run.Fps, run.To - run.From);
     }
 
     /// <summary>
@@ -113,44 +144,58 @@ internal sealed class TranscodeTestStressController
             return new(TranscodeTestStressAction.Stalled, TranscodeTestStressPhase.Finished, StreamId: stalled.Id);
         }
 
+        if (_slowRun is (int slowId, double slowFps, double slowSeconds) && slowSeconds >= FailSeconds)
+        {
+            return new(TranscodeTestStressAction.LimitReached, TranscodeTestStressPhase.Finished, StreamId: slowId, Fps: slowFps);
+        }
+
+        _slowRun = null;
         foreach (var gone in _below.Keys.Where(id => streams.All(s => s.Id != id)).ToList())
         {
             _below.Remove(gone);
         }
 
-        _restarted.RemoveWhere(id => streams.All(s => s.Id != id));
-
-        var measuring = false;
+        var unmeasured = streams.Count == 0;
         var wasBelow = _below.Count > 0;
+        var nextStreamAt = _addedAt + RampSeconds;
         foreach (var s in streams)
         {
-            if (s.NearEnd)
+            if (s.NearEnd || s.Fps is not double fps || !double.IsFinite(fps))
             {
-                // ffmpeg drains and flushes at the end of the file; the stream restarts and is judged afresh.
-                _below.Remove(s.Id);
+                // Draining at the end of the file, starting again, or not measured yet: only a stream that has not
+                // kept up at this load yet holds back the next one.
+                if (s.NearEnd)
+                {
+                    _below.Remove(s.Id);
+                }
+
+                _keptUpSince.Remove(s.Id);
+                unmeasured |= !_keptUp.Contains(s.Id);
                 continue;
             }
-
-            if (s.Fps is not double fps)
-            {
-                // A restarted stream was judged while its old process ran, so only a new stream holds back the next one.
-                measuring |= !_restarted.Contains(s.Id);
-                continue;
-            }
-
-            _restarted.Remove(s.Id);
 
             if (fps < ThresholdFps)
             {
+                _keptUp.Remove(s.Id);
+                _keptUpSince.Remove(s.Id);
                 var since = _below.TryGetValue(s.Id, out var t) ? t : _below[s.Id] = now;
                 if (now - since >= FailSeconds)
                 {
                     return new(TranscodeTestStressAction.LimitReached, TranscodeTestStressPhase.Finished, StreamId: s.Id, Fps: fps);
                 }
+
+                continue;
             }
-            else
+
+            _below.Remove(s.Id);
+            var keptUpSince = _keptUpSince.TryGetValue(s.Id, out var k) ? k : _keptUpSince[s.Id] = now;
+            if (now - keptUpSince >= SettleSeconds)
             {
-                _below.Remove(s.Id);
+                _keptUp.Add(s.Id);
+            }
+            else if (!_keptUp.Contains(s.Id))
+            {
+                nextStreamAt = Math.Max(nextStreamAt, keptUpSince + SettleSeconds);
             }
         }
 
@@ -168,13 +213,17 @@ internal sealed class TranscodeTestStressController
                 DipStarted: !wasBelow);
         }
 
-        var nextStreamAt = Math.Max(_addedAt + RampSeconds, _belowAt is double belowAt ? belowAt + SettleSeconds : 0);
-        if (measuring)
+        if (_belowAt is double belowAt)
+        {
+            nextStreamAt = Math.Max(nextStreamAt, belowAt + SettleSeconds);
+        }
+
+        if (unmeasured)
         {
             return new(TranscodeTestStressAction.Wait, TranscodeTestStressPhase.WarmingUp, NextStreamAt: nextStreamAt);
         }
 
-        if (now < nextStreamAt)
+        if (now < nextStreamAt || streams.Any(s => !_keptUp.Contains(s.Id)))
         {
             return new(TranscodeTestStressAction.Wait, TranscodeTestStressPhase.KeepingUp, NextStreamAt: nextStreamAt);
         }

@@ -13,10 +13,10 @@ namespace Jellyfin.Api.Tests.Helpers
     public class TranscodeTestEndOfFileTests
     {
         [Theory]
-        // Run time unknown: the process must have run a full measuring window.
-        [InlineData(0, true, 40, null, 0, true)]
-        [InlineData(0, true, 40, null, TranscodeTestRules.MaxRestartsPerStream - 1, true)]
-        [InlineData(0, true, 4, null, 0, true)]
+        // Run time unknown: lifetime is not proof that the source reached EOF.
+        [InlineData(0, true, 40, null, 0, false)]
+        [InlineData(0, true, 40, null, TranscodeTestRules.MaxRestartsPerStream - 1, false)]
+        [InlineData(0, true, 4, null, 0, false)]
         // Exited at once after a frame: too short to be the end of the file.
         [InlineData(0, true, 1.5, null, 0, false)]
         [InlineData(0, true, 2, null, 0, false)]
@@ -36,13 +36,38 @@ namespace Jellyfin.Api.Tests.Helpers
 
         [Theory]
         [InlineData(13.5, 13.5, true)]
-        [InlineData(12.2, 13.5, true)]
+        [InlineData(13.4, 13.5, true)]
+        // 327 real frames of a 13.5 s clip at 23.976 fps, without the duplicates ffmpeg may add.
+        [InlineData(13.64, 13.5, true)]
+        [InlineData(12.0, 13.5, true)]
+        [InlineData(11.4, 13.5, false)]
         [InlineData(25.0, 25.0, true)]
+        // A clean exit halfway through is not the end of the file.
         [InlineData(6.75, 13.5, false)]
-        [InlineData(12.0, 13.5, false)]
+        // 60 s of video in a 62 s container whose audio runs longer.
+        [InlineData(60.35, 62.0, true)]
+        [InlineData(59.9, 62.0, false)]
         [InlineData(null, 13.5, null)]
         [InlineData(13.5, null, null)]
         [InlineData(13.5, 0.0, null)]
+        [InlineData(6481.0, 7200.0, false)] // Ninety percent of a two-hour file is not EOF.
+        [InlineData(6552.0, 7200.0, false)] // Nor is 91 %.
+        [InlineData(3600.0, 7200.0, false)]
+        [InlineData(7189.9, 7200.0, false)]
+        [InlineData(7190.0, 7200.0, true)]
+        [InlineData(7199.0, 7200.0, true)]
+        [InlineData(297.0, 300.0, true)]
+        [InlineData(297.9, 300.0, true)]
+        [InlineData(297.99, 300.0, true)]
+        [InlineData(297.0, 300.5, false)]
+        [InlineData(0.0, 0.5, false)]
+        [InlineData(2.0, 4.0, false)] // Half of a 4 s clip.
+        [InlineData(3.0, 4.0, true)]
+        [InlineData(double.NaN, 13.5, null)]
+        [InlineData(double.PositiveInfinity, 13.5, null)]
+        [InlineData(13.5, double.NaN, null)]
+        [InlineData(13.5, double.PositiveInfinity, null)]
+        [InlineData(-1.0, 13.5, null)]
         public void IsAtEndOfFile_ComparesThePositionWithTheRunTime(double? position, double? source, bool? expected)
             => Assert.Equal(expected, TranscodeTestRules.IsAtEndOfFile(position, source));
 
@@ -51,7 +76,7 @@ namespace Jellyfin.Api.Tests.Helpers
         {
             Assert.Null(TranscodeTestRules.DescribeNoRestart(1, true, 40, 6.8, 13.5, 0));
             Assert.Equal("ffmpeg exited without encoding a frame.", TranscodeTestRules.DescribeNoRestart(0, false, 0.4, null, 13.5, 0));
-            Assert.Equal("ffmpeg exited after 1.5 s, too soon to be the end of the file.", TranscodeTestRules.DescribeNoRestart(0, true, 1.5, 1, null, 0));
+            Assert.Equal("ffmpeg exited cleanly, but its final position or the source duration is unknown, so the end of the file could not be verified.", TranscodeTestRules.DescribeNoRestart(0, true, 1.5, 1, null, 0));
             Assert.Equal("ffmpeg exited cleanly at 6.8 s of the 13.5 s file (50%), before the end of the file.", TranscodeTestRules.DescribeNoRestart(0, true, 2, 6.75, 13.5, 0));
             Assert.Equal("The stream reached the end of the file 100 times; use a longer file.", TranscodeTestRules.DescribeNoRestart(0, true, 40, 13.5, 13.5, 100));
         }
@@ -97,8 +122,9 @@ namespace Jellyfin.Api.Tests.Helpers
 
         [Theory]
         [InlineData(2.0, false)]
-        [InlineData(4.0, true)]
-        public void RunTimeUnknown_FallsBackToTheLifetime(double lived, bool expected)
+        [InlineData(4.0, false)]
+        [InlineData(40.0, false)]
+        public void RunTimeUnknown_CannotVerifyTheEndFromLifetime(double lived, bool expected)
         {
             var stream = NewStream(null);
             FeedFast(stream, 13.5, lived);
@@ -122,17 +148,20 @@ namespace Jellyfin.Api.Tests.Helpers
         public void NearEnd_AndEndOfFile_ReadTheSamePosition()
         {
             // Within the end margin the stream is no longer judged, but a clean exit there is the end of the file
-            // only once the position reaches the end-of-file share of the run time.
+            // only once the position reaches the narrow EOF tolerance.
             var stream = NewStream(60);
             Feed(stream, 0, 48);
 
             Assert.Equal(53, stream.PositionSeconds);
-            Assert.True(stream.NearEnd);
+            Assert.True(stream.NearEndAt(5));
             Assert.False(stream.AtEndOfFile);
 
             stream.OnLine("frame= 1308 fps=24 time=00:00:54.50 speed=1x", 6.5);
             Assert.Equal(54.5, stream.PositionSeconds);
-            Assert.True(stream.NearEnd);
+            Assert.True(stream.NearEndAt(6.5));
+            Assert.False(stream.AtEndOfFile);
+
+            stream.OnLine("frame= 1428 fps=24 time=00:00:59.50 speed=1x", 11.5);
             Assert.True(stream.AtEndOfFile);
         }
 
@@ -144,7 +173,7 @@ namespace Jellyfin.Api.Tests.Helpers
             var stream = NewStream(13.5);
             FeedFast(stream, 6.75, 1.0);
 
-            Assert.True(stream.NearEnd);
+            Assert.True(stream.NearEndAt(1));
             Assert.False(stream.AtEndOfFile);
         }
 
@@ -221,15 +250,50 @@ namespace Jellyfin.Api.Tests.Helpers
             var stream = NewStream(70);
             Feed(stream, 0, 50);
             Assert.NotNull(stream.Fps(5));
-            Assert.False(stream.NearEnd);
+            Assert.False(stream.NearEndAt(5));
 
             // Within the end margin at real time: ffmpeg is about to drain and flush.
             Feed(stream, 5, 60);
-            Assert.True(stream.NearEnd);
+            Assert.True(stream.NearEndAt(10));
             Assert.Null(stream.Fps(10));
 
-            // Then silent while it flushes: not a 0 fps dip.
-            Assert.Null(stream.Fps(20));
+            // Silence must become a stop after the bounded drain allowance.
+            Assert.False(stream.NearEndAt(20));
+            Assert.Equal(0, stream.Fps(20));
+        }
+
+        [Fact]
+        public void RunRate_ShortProcess_MeasuresFromTheFirstFrameToTheLastLine()
+        {
+            var stream = NewStream(13.8);
+            Assert.Null(stream.RunRate);
+            stream.OnLine("frame=0 fps=0 time=00:00:00.00 speed=0x", 0.5);
+            stream.OnLine("frame=80 fps=160 time=00:00:03.33 speed=7x", 1);
+            Assert.Null(stream.RunRate);
+            stream.OnLine("frame=240 fps=160 time=00:00:10.00 speed=7x", 2);
+            stream.OnLine("frame=331 fps=160 time=00:00:13.80 speed=7x", 2.5);
+
+            // Never measured over a full window, but its whole run kept up.
+            Assert.Null(stream.Fps(2.5));
+            var rate = stream.RunRate;
+            Assert.NotNull(rate);
+            Assert.Equal((331 - 80) / 1.5, rate.Fps, 3);
+            Assert.Equal(1, rate.From);
+            Assert.Equal(2.5, rate.To);
+        }
+
+        [Fact]
+        public void IsRestartLimit_OnlyACleanEndOfFileAtTheLimit()
+        {
+            Assert.True(TranscodeTestRules.IsRestartLimit(0, true, true, TranscodeTestRules.MaxRestartsPerStream));
+            Assert.False(TranscodeTestRules.IsRestartLimit(0, true, true, TranscodeTestRules.MaxRestartsPerStream - 1));
+            Assert.False(TranscodeTestRules.IsRestartLimit(0, true, false, TranscodeTestRules.MaxRestartsPerStream));
+            Assert.False(TranscodeTestRules.IsRestartLimit(0, true, null, TranscodeTestRules.MaxRestartsPerStream));
+            Assert.False(TranscodeTestRules.IsRestartLimit(1, true, true, TranscodeTestRules.MaxRestartsPerStream));
+            Assert.False(TranscodeTestRules.IsRestartLimit(0, false, true, TranscodeTestRules.MaxRestartsPerStream));
+            Assert.Equal(
+                "Stream 2 reached the end of the file 100 times, so the test stops; 3 streams kept up before that, which is the result. A longer file gives steadier results.",
+                TranscodeTestRules.DescribeRestartLimit(2, 100, 3));
         }
 
         [Fact]
@@ -247,20 +311,39 @@ namespace Jellyfin.Api.Tests.Helpers
             var stream = NewStream(null);
             Feed(stream, 0, 59.5);
 
-            Assert.False(stream.NearEnd);
+            Assert.False(stream.NearEndAt(5));
             Assert.NotNull(stream.Fps(5));
         }
 
         [Fact]
-        public void Tick_AStreamNearTheEndBelowTheThreshold_DoesNotEndTheTest()
+        public void Tick_AStreamWithinItsDrainAllowance_DoesNotEndTheTest()
         {
             var controller = new TranscodeTestStressController(24, 12, 5, 30, 8, 0, 3);
-            for (var now = 1.0; now <= 20; now += 0.5)
+            for (var now = 1.0; now <= 7.5; now += 0.5)
             {
                 var decision = controller.Tick(now, [new(1, 30, now, true), new(2, 10, now, true, NearEnd: true)]);
                 Assert.NotEqual(TranscodeTestStressAction.LimitReached, decision.Action);
                 Assert.NotEqual(TranscodeTestStressPhase.FallingBehind, decision.Phase);
             }
+        }
+
+        [Fact]
+        public void Tick_AuditCounterexample_SilentNearEofStreamCannotCertifyCapacity()
+        {
+            var stream = NewStream(120);
+            stream.OnLine("frame=2712 fps=24 time=00:01:53.00 speed=1x", 10);
+            var controller = new TranscodeTestStressController(24, 12, 5, 30, 1, 0, 3);
+            var draining = controller.Tick(10, [new(1, stream.Fps(10), 10, stream.ReportedFrames, stream.NearEndAt(10))]);
+            Assert.Equal(TranscodeTestStressAction.Wait, draining.Action);
+            Assert.Equal(0, controller.MaxStable);
+
+            Assert.Equal(0, stream.Fps(100));
+            Assert.False(stream.NearEndAt(100));
+            var stopped = controller.Tick(100, [new(1, stream.Fps(100), 100, stream.ReportedFrames, stream.NearEndAt(100))]);
+            Assert.Equal(TranscodeTestStressPhase.FallingBehind, stopped.Phase);
+            var failed = controller.Tick(105, [new(1, stream.Fps(105), 105, stream.ReportedFrames, stream.NearEndAt(105))]);
+            Assert.Equal(TranscodeTestStressAction.LimitReached, failed.Action);
+            Assert.Equal(0, controller.MaxStable);
         }
 
         // Progress lines at 24 fps from the start of the source to the given position, spread over the given seconds.

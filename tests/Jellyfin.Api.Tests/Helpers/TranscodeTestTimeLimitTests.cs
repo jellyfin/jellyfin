@@ -94,6 +94,30 @@ namespace Jellyfin.Api.Tests.Helpers
             Assert.Equal(540_672_000, TranscodeTestRules.NeededSpace(16, 8_000_000, 6));
         }
 
+        [Theory]
+        [InlineData(0f)]
+        [InlineData(-24f)]
+        [InlineData(float.NaN)]
+        [InlineData(float.PositiveInfinity)]
+        [InlineData(float.NegativeInfinity)]
+        public void SourceFrameRate_InvalidMetadataWithoutAnAlternative_IsRejected(float fps)
+            => Assert.Throws<InvalidOperationException>(() => TranscodeTestManager.SourceFrameRate(fps));
+
+        [Theory]
+        [InlineData(0f)]
+        [InlineData(float.NaN)]
+        [InlineData(float.PositiveInfinity)]
+        public void SourceFrameRate_InvalidAverageUsesAValidAlternative(float fps)
+            => Assert.Equal(23.976f, TranscodeTestManager.SourceFrameRate(fps, 23.976f));
+
+        [Fact]
+        public void SourceFrameRate_OnlyCompletelyAbsentMetadataUsesTheFallback()
+        {
+            Assert.Equal(24f, TranscodeTestManager.SourceFrameRate(null));
+            Assert.Equal(30f, TranscodeTestManager.SourceFrameRate(null, 30f));
+            Assert.Throws<InvalidOperationException>(() => TranscodeTestManager.SourceFrameRate(null, 0));
+        }
+
         [Fact]
         public void Results_SendTheStatusAndSurveyReasonAsEnumNames()
         {

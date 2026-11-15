@@ -45,11 +45,16 @@ internal static partial class TranscodeTestRules
     internal const int MaxRestartsPerStream = 100;
 
     /// <summary>
-    /// The share of the source's run time ffmpeg's last reported position must reach for a clean exit to be the end
-    /// of the file. A fast encoder can finish a short file in a second or two, so how long the process ran says
-    /// nothing; the position does. The rest allows for audio and video that end apart and for the last progress line.
+    /// The smallest gap, in seconds, between the source duration and the final encoded position accepted as the end
+    /// of the file. Audio often runs a little past the video, and the container duration covers both.
     /// </summary>
-    internal const double EndOfFileFraction = 0.9;
+    internal const double MinEndOfFileToleranceSeconds = 2;
+
+    /// <summary>
+    /// The largest gap, in seconds, between the source duration and the final encoded position accepted as the end
+    /// of the file. Between the two limits the allowance is one percent of the duration.
+    /// </summary>
+    internal const double MaxEndOfFileToleranceSeconds = 10;
 
     /// <summary>
     /// How many segments per stream the transcode folder must have room for: the ones kept, the one being written and
@@ -792,27 +797,31 @@ internal static partial class TranscodeTestRules
     public static bool IsAbandoned(double now, double lastCheckedAt) => now - lastCheckedAt >= IdleStopSeconds;
 
     /// <summary>
-    /// Gets whether ffmpeg's last reported position is at the end of the source: at least
-    /// <see cref="EndOfFileFraction"/> of its run time.
+    /// Gets whether ffmpeg's last reported position reaches the source's duration within a small, bounded allowance:
+    /// one percent of the duration, at least <see cref="MinEndOfFileToleranceSeconds"/> and at most
+    /// <see cref="MaxEndOfFileToleranceSeconds"/>, and never more than a quarter of the duration.
     /// </summary>
     /// <param name="positionSeconds">ffmpeg's last reported position in the source, or null before its first frame.</param>
     /// <param name="sourceSeconds">The source's run time, or null when it is not known.</param>
     /// <returns><c>true</c> or <c>false</c>, or null when either value is not known.</returns>
     public static bool? IsAtEndOfFile(double? positionSeconds, double? sourceSeconds)
     {
-        if (positionSeconds is not double position || sourceSeconds is not double length || length <= 0)
+        if (positionSeconds is not double position || sourceSeconds is not double length
+            || !double.IsFinite(position) || !double.IsFinite(length) || position < 0 || length <= 0)
         {
             return null;
         }
 
-        return position >= length * EndOfFileFraction;
+        // A file of a few seconds keeps three quarters of its length, so a stream that stopped halfway is not at its end.
+        var tolerance = Math.Min(Math.Clamp(length * 0.01, MinEndOfFileToleranceSeconds, MaxEndOfFileToleranceSeconds), length / 4);
+        return position >= length - tolerance;
     }
 
     /// <summary>
     /// Gets whether a stream that exited on its own reached the end of the file and should start again. It must have
     /// exited cleanly, produced frames itself and not have restarted too often. When its position and the source's
-    /// run time are known, the position must be at the end of the file, see <see cref="IsAtEndOfFile"/>; otherwise it
-    /// must have run a full measuring window, so a process that exits at once does not restart in a loop.
+    /// run time are known, the position must be at the end of the file, see <see cref="IsAtEndOfFile"/>. An unknown
+    /// duration or position cannot verify EOF; the process's lifetime alone is not evidence of it.
     /// </summary>
     /// <param name="exitCode">ffmpeg's exit code.</param>
     /// <param name="reportedFrames">Whether this process reported at least one encoded frame.</param>
@@ -823,8 +832,30 @@ internal static partial class TranscodeTestRules
     public static bool CanRestart(int exitCode, bool reportedFrames, double livedSeconds, bool? atEndOfFile, int restarts)
         => exitCode == 0
             && reportedFrames
-            && (atEndOfFile ?? livedSeconds >= TranscodeTestStream.WindowSeconds)
+            && atEndOfFile == true
             && restarts < MaxRestartsPerStream;
+
+    /// <summary>
+    /// Gets whether a stream reached the end of the file cleanly but has restarted <see cref="MaxRestartsPerStream"/>
+    /// times, so the file is too short to keep the test going.
+    /// </summary>
+    /// <param name="exitCode">ffmpeg's exit code.</param>
+    /// <param name="reportedFrames">Whether this process reported at least one encoded frame.</param>
+    /// <param name="atEndOfFile">Whether the process's position was at the end of the file, or null when not known.</param>
+    /// <param name="restarts">How often the stream restarted before.</param>
+    /// <returns><c>true</c> when only the restart limit stopped a restart.</returns>
+    public static bool IsRestartLimit(int exitCode, bool reportedFrames, bool? atEndOfFile, int restarts)
+        => exitCode == 0 && reportedFrames && atEndOfFile == true && restarts >= MaxRestartsPerStream;
+
+    /// <summary>
+    /// Describes a test that stopped because a stream restarted too often, for the log.
+    /// </summary>
+    /// <param name="streamId">The stream.</param>
+    /// <param name="restarts">How often it restarted.</param>
+    /// <param name="maxStable">The most streams that all kept up.</param>
+    /// <returns>The sentence for the log.</returns>
+    public static string DescribeRestartLimit(int streamId, int restarts, int maxStable)
+        => string.Create(CultureInfo.InvariantCulture, $"Stream {streamId} reached the end of the file {restarts} times, so the test stops; {StreamCount(maxStable)} kept up before that, which is the result. A longer file gives steadier results.");
 
     /// <summary>
     /// Describes why a stream that exited cleanly was not started again, for a failure that ffmpeg gave no error for.
@@ -860,7 +891,7 @@ internal static partial class TranscodeTestRules
                 $"ffmpeg exited cleanly at {positionSeconds:0.0} s of the {sourceSeconds:0.0} s file ({positionSeconds / sourceSeconds:0%}), before the end of the file.");
         }
 
-        return string.Create(CultureInfo.InvariantCulture, $"ffmpeg exited after {livedSeconds:0.0} s, too soon to be the end of the file.");
+        return "ffmpeg exited cleanly, but its final position or the source duration is unknown, so the end of the file could not be verified.";
     }
 
     /// <summary>

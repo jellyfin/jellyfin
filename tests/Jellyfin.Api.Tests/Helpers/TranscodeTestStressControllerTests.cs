@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.TranscodeTestDtos;
@@ -67,6 +68,7 @@ namespace Jellyfin.Api.Tests.Helpers
         public void Tick_BelowForTheFailTime_ReachesTheLimit()
         {
             var controller = Create();
+            controller.Tick(9, Streams(30));
             controller.Tick(12, Streams(30));
             controller.StreamAdded(12);
 
@@ -103,10 +105,10 @@ namespace Jellyfin.Api.Tests.Helpers
 
             var recovered = controller.Tick(12, Streams(25));
             Assert.Equal(TranscodeTestStressAction.Wait, recovered.Action);
-            Assert.Equal(14, recovered.NextStreamAt);
+            Assert.Equal(15, recovered.NextStreamAt);
 
             Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(13.5, Streams(25)).Action);
-            Assert.Equal(TranscodeTestStressAction.AddStream, controller.Tick(14, Streams(25)).Action);
+            Assert.Equal(TranscodeTestStressAction.AddStream, controller.Tick(15, Streams(25)).Action);
         }
 
         [Fact]
@@ -123,7 +125,7 @@ namespace Jellyfin.Api.Tests.Helpers
                 if (decision.Action == TranscodeTestStressAction.AddStream)
                 {
                     added = decision;
-                    Assert.Equal(13, t);
+                    Assert.Equal(14, t);
                 }
             }
 
@@ -195,8 +197,8 @@ namespace Jellyfin.Api.Tests.Helpers
 
             controller.StreamRestarted(1);
             var unmeasured = controller.Tick(34, Streams((double?)null));
-            Assert.Equal(TranscodeTestStressPhase.KeepingUp, unmeasured.Phase);
-            Assert.Equal(TranscodeTestStressPhase.KeepingUp, controller.Tick(35, Streams((double?)null)).Phase);
+            Assert.Equal(TranscodeTestStressPhase.WarmingUp, unmeasured.Phase);
+            Assert.Equal(TranscodeTestStressPhase.WarmingUp, controller.Tick(35, Streams((double?)null)).Phase);
             var keptUp = controller.Tick(35.5, Streams(27));
 
             Assert.Equal(TranscodeTestStressPhase.KeepingUp, keptUp.Phase);
@@ -222,14 +224,18 @@ namespace Jellyfin.Api.Tests.Helpers
         }
 
         [Fact]
-        public void Tick_RestartedStreamNotMeasuredYet_DoesNotHoldBackTheNextStream()
+        public void Tick_RestartedStreamNotMeasuredYet_CannotCertifyTheCurrentLoad()
         {
             var controller = Create();
             controller.Tick(6, Streams(30, 30));
 
             controller.StreamRestarted(2);
 
-            Assert.Equal(TranscodeTestStressAction.AddStream, controller.Tick(12, Streams(30, null)).Action);
+            Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(12, Streams(30, null)).Action);
+            Assert.Equal(0, controller.MaxStable);
+            Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(13, Streams(30, 30)).Action);
+            Assert.Equal(TranscodeTestStressAction.AddStream, controller.Tick(16, Streams(30, 30)).Action);
+            Assert.Equal(2, controller.MaxStable);
         }
 
         [Fact]
@@ -247,12 +253,176 @@ namespace Jellyfin.Api.Tests.Helpers
         public void Tick_StreamLimitWhileAllKeepUp_StopsAtMaxStreams()
         {
             var controller = Create(maxStreams: 2);
+            controller.Tick(9, Streams(30, 30));
 
             var decision = controller.Tick(12, Streams(30, 30));
 
             Assert.Equal(TranscodeTestStressAction.MaxStreams, decision.Action);
             Assert.Equal(2, controller.MaxStable);
         }
+
+        [Fact]
+        public void Tick_FirstHealthyReadingAfterTheRamp_DoesNotProveAStableInterval()
+        {
+            var controller = Create(maxStreams: 1);
+
+            Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(100, Streams(30)).Action);
+            Assert.Equal(0, controller.MaxStable);
+            Assert.Equal(TranscodeTestStressAction.MaxStreams, controller.Tick(103, Streams(30)).Action);
+        }
+
+        [Fact]
+        public void Tick_NeverMeasuredDrainingStream_DoesNotProveCapacity()
+        {
+            var controller = Create(maxStreams: 1);
+            var draining = new TranscodeTestStreamReading(1, null, 12, true, NearEnd: true);
+
+            Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(12, [draining]).Action);
+            Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(100, [draining]).Action);
+            Assert.Equal(0, controller.MaxStable);
+        }
+
+        [Fact]
+        public void Tick_StreamThatKeptUpAtThisLoad_DoesNotHoldBackWhileDraining()
+        {
+            var controller = Create(maxStreams: 3);
+            controller.Tick(6, Streams(30, 30));
+            controller.Tick(9, Streams(30, 30));
+
+            // Stream 2 drains at the end of the file, then starts again: it already kept up at this load.
+            var draining = new TranscodeTestStreamReading(2, null, 20, true, NearEnd: true);
+            Assert.Equal(TranscodeTestStressPhase.KeepingUp, controller.Tick(10, [new(1, 30, 20, true), draining]).Phase);
+            controller.StreamRestarted(2);
+            var decision = controller.Tick(12, Streams(30, null));
+
+            Assert.Equal(TranscodeTestStressAction.AddStream, decision.Action);
+            Assert.Equal(2, controller.MaxStable);
+        }
+
+        [Fact]
+        public void Tick_AddedStream_MakesEveryStreamKeepUpAgain()
+        {
+            var controller = Create();
+            controller.Tick(6, Streams(30));
+            Assert.Equal(TranscodeTestStressAction.AddStream, controller.Tick(12, Streams(30)).Action);
+            controller.StreamAdded(12);
+
+            // Stream 1 kept up alone, but not yet with two: while it drains it holds back the third stream.
+            var draining = new TranscodeTestStreamReading(1, null, 20, true, NearEnd: true);
+            Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(30, [draining, new(2, 30, 18, true)]).Action);
+            Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(40, [draining, new(2, 30, 28, true)]).Action);
+            Assert.Equal(1, controller.MaxStable);
+        }
+
+        [Fact]
+        public void Tick_StreamThatDips_MustKeepUpAgainBeforeItCounts()
+        {
+            var controller = Create(maxStreams: 2);
+            controller.Tick(6, Streams(30, 30));
+            controller.Tick(9, Streams(30, 30));
+            controller.Tick(10, Streams(30, 20));
+            controller.Tick(11, Streams(30, 30));
+
+            // Stream 2 drains before it has kept up again for the settle time.
+            var draining = new TranscodeTestStreamReading(2, null, 20, true, NearEnd: true);
+            Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(20, [new(1, 30, 20, true), draining]).Action);
+            Assert.Equal(0, controller.MaxStable);
+        }
+
+        [Fact]
+        public void Tick_ShortProcessesRestartingForever_CertifyFromTheirWholeRuns()
+        {
+            // A 13.8 s file at 7x real time: every process lives 2 s and never has a rate over a full window. Its
+            // whole run, from first frame to its end, still says whether it kept up.
+            var controller = Create(maxStreams: 3);
+            var count = 1;
+            TranscodeTestStressDecision? last = null;
+            for (var t = 2.0; t <= 120 && last?.Action != TranscodeTestStressAction.MaxStreams; t += 2)
+            {
+                for (var id = 1; id <= count; id++)
+                {
+                    controller.StreamRestarted(id, new TranscodeTestRunRate(160, t - 1.5, t));
+                }
+
+                last = controller.Tick(t, Enumerable.Range(1, count).Select(id => new TranscodeTestStreamReading(id, null, 1, true, NearEnd: true)).ToArray());
+                Assert.NotEqual(TranscodeTestStressAction.LimitReached, last.Action);
+                if (last.Action == TranscodeTestStressAction.AddStream)
+                {
+                    controller.StreamAdded(t);
+                    count++;
+                }
+            }
+
+            Assert.Equal(TranscodeTestStressAction.MaxStreams, last!.Action);
+            Assert.Equal(3, controller.MaxStable);
+        }
+
+        [Fact]
+        public void Tick_ShortProcessesRestartingForeverUnmeasured_NeverCertify()
+        {
+            var controller = Create(maxStreams: 1);
+            for (var t = 2.0; t <= 300; t += 2)
+            {
+                controller.StreamRestarted(1);
+                var decision = controller.Tick(t, [new TranscodeTestStreamReading(1, null, 1, true)]);
+                Assert.Equal(TranscodeTestStressAction.Wait, decision.Action);
+                Assert.Equal(TranscodeTestStressPhase.WarmingUp, decision.Phase);
+            }
+
+            Assert.Equal(0, controller.MaxStable);
+        }
+
+        [Fact]
+        public void Tick_RunThatStartedBeforeTheLastAdd_DoesNotCountAtTheNewLoad()
+        {
+            var controller = Create(maxStreams: 3);
+            controller.StreamAdded(10);
+            controller.StreamRestarted(1, new TranscodeTestRunRate(160, 9, 23));
+            controller.StreamRestarted(2, new TranscodeTestRunRate(160, 11, 23));
+
+            Assert.Equal(TranscodeTestStressAction.Wait, controller.Tick(23, Streams(null, null)).Action);
+            controller.StreamRestarted(1, new TranscodeTestRunRate(160, 23.5, 25));
+            Assert.Equal(TranscodeTestStressAction.AddStream, controller.Tick(25, Streams(null, null)).Action);
+        }
+
+        [Fact]
+        public void Tick_WholeRunBelowRealTimeForTheFailTime_ReachesTheLimit()
+        {
+            var controller = Create();
+            controller.StreamRestarted(1, new TranscodeTestRunRate(18, 1, 7));
+
+            var decision = controller.Tick(7.5, Streams((double?)null));
+
+            Assert.Equal(TranscodeTestStressAction.LimitReached, decision.Action);
+            Assert.Equal(1, decision.StreamId);
+            Assert.Equal(18, decision.Fps);
+            Assert.Equal(0, controller.MaxStable);
+        }
+
+        [Fact]
+        public void Tick_ShortWholeRunBelowRealTime_IsADipNotTheLimit()
+        {
+            var controller = Create(maxStreams: 1);
+            controller.StreamRestarted(1, new TranscodeTestRunRate(30, 1, 3));
+            controller.StreamRestarted(1, new TranscodeTestRunRate(18, 3.5, 6));
+
+            var decision = controller.Tick(13, Streams((double?)null));
+            Assert.Equal(TranscodeTestStressAction.Wait, decision.Action);
+            Assert.Equal(0, controller.MaxStable);
+
+            // Keeping up again over a whole run counts again.
+            controller.StreamRestarted(1, new TranscodeTestRunRate(30, 13.5, 16));
+            Assert.Equal(TranscodeTestStressAction.MaxStreams, controller.Tick(16.5, Streams((double?)null)).Action);
+            Assert.Equal(1, controller.MaxStable);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-24)]
+        [InlineData(double.NaN)]
+        [InlineData(double.PositiveInfinity)]
+        public void Create_InvalidThreshold_CannotCertifyAStalledZeroTarget(double threshold)
+            => Assert.Throws<ArgumentOutOfRangeException>(() => new TranscodeTestStressController(threshold, 12, 5, 30, 1, 0));
 
         [Fact]
         public void Tick_NoFramesForTooLong_Stalls()

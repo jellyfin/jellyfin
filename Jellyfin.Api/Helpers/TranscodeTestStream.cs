@@ -43,10 +43,12 @@ internal sealed partial class TranscodeTestStream
     private int _exitCode = -1;
     private Task _reader = Task.CompletedTask;
     private double? _position;
+    private double? _drainingSince;
     private string? _sessionLimitLine;
     private string? _gpuMemoryLine;
     private bool _reportedFrames;
     private double? _firstFrameAt;
+    private long _firstFrame;
     private double? _lastLineAt;
     private double? _inputAt;
     private bool _startedBefore;
@@ -158,8 +160,8 @@ internal sealed partial class TranscodeTestStream
     }
 
     /// <summary>
-    /// Gets a value indicating whether the stream is so close to the end of its source, at its current speed, that it
-    /// is not judged: see <see cref="EndMarginSeconds"/>.
+    /// Gets a value indicating whether the stream is close to the end of its source at its current speed.
+    /// The judgment exemption is bounded separately by <see cref="NearEndAt"/>.
     /// </summary>
     public bool NearEnd
     {
@@ -346,6 +348,28 @@ internal sealed partial class TranscodeTestStream
             lock (_lock)
             {
                 return _outputSegments > 0 ? Math.Round(_outputBytes * 8.0 / (_outputSegments * SegmentLength) / 1e6, 2) : null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets this process's frame rate from its first frame to its last progress line. Null before two progress lines
+    /// half a second apart. A process that played a short file to its end may never get a rate over a full window;
+    /// this rate still says whether it kept up.
+    /// </summary>
+    public TranscodeTestRunRate? RunRate
+    {
+        get
+        {
+            lock (_lock)
+            {
+                if (_firstFrameAt is not double first || _points.Count == 0)
+                {
+                    return null;
+                }
+
+                var (last, frame) = _points.Last();
+                return last - first >= 0.5 && frame > _firstFrame ? new((frame - _firstFrame) / (last - first), first, last) : null;
             }
         }
     }
@@ -604,23 +628,41 @@ internal sealed partial class TranscodeTestStream
     }
 
     /// <summary>
+    /// Gets whether this process is still within its bounded end-of-file drain allowance.
+    /// </summary>
+    /// <param name="now">Seconds since the test started.</param>
+    /// <returns>Whether the process may still be draining.</returns>
+    public bool NearEndAt(double now)
+    {
+        lock (_lock)
+        {
+            return NearEndAtLocked(now);
+        }
+    }
+
+    private bool NearEndAtLocked(double now)
+    {
+        if (!NearEndLocked())
+        {
+            return false;
+        }
+
+        _drainingSince ??= now;
+        return now - _drainingSince.Value < EndMarginSeconds;
+    }
+
+    /// <summary>
     /// Gets the frame rate over the last few seconds.
     /// </summary>
     /// <param name="now">Seconds since the test started.</param>
     /// <returns>The frame rate; 0 when ffmpeg reported frames but then went silent; <c>null</c> before it can be
     /// measured, which is until a full window has passed since the first frame, so the encoder's start is not
-    /// judged, and near the end of the source, see <see cref="NearEnd"/>.</returns>
+    /// judged, and during the bounded end-of-file drain allowance, see <see cref="NearEndAt"/>.</returns>
     public double? Fps(double now)
     {
         lock (_lock)
         {
             if (_points.Count == 0)
-            {
-                return null;
-            }
-
-            // ffmpeg drains and flushes at the end of the file: not a dip, as the stream restarts and is judged afresh.
-            if (NearEndLocked())
             {
                 return null;
             }
@@ -631,6 +673,12 @@ internal sealed partial class TranscodeTestStream
             {
                 // ffmpeg prints a progress line twice a second while it runs, so a started stream this quiet has stopped.
                 return _reportedFrames ? 0 : null;
+            }
+
+            // Drain is bounded independently of fresh progress; a silent process still reads zero above.
+            if (NearEndAtLocked(now))
+            {
+                return null;
             }
 
             // A new process, also one started again at the end of the file, warms up first: only readings from a
@@ -816,11 +864,17 @@ internal sealed partial class TranscodeTestStream
                 {
                     _reportedFrames = true;
                     _firstFrameAt = now;
+                    _firstFrame = frame;
                 }
 
                 while (_points.Count > 2 && now - _points.ElementAt(1).Time >= WindowSeconds)
                 {
                     _points.Dequeue();
+                }
+
+                if (NearEndLocked())
+                {
+                    _drainingSince ??= now;
                 }
             }
 
