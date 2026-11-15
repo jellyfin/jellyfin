@@ -33,5 +33,11 @@ public enum ShareLinkCreateErrorCode
     /// <summary>
     /// Media sharing is disabled for this user or for the whole server.
     /// </summary>
-    SharingDisabled
+    SharingDisabled,
+
+    /// <summary>
+    /// The item can be downloaded, but the creating user is not allowed to download it, so a
+    /// share link must not grant that capability on their behalf.
+    /// </summary>
+    DownloadNotAllowed
 }

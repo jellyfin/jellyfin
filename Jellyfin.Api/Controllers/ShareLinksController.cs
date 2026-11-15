@@ -103,6 +103,16 @@ public class ShareLinksController : BaseJellyfinApiController
             return StatusCode(StatusCodes.Status403Forbidden);
         }
 
+        // A share link is a delegated capability, so it must be created under exactly the
+        // rights its creator holds. Downloads are served by Items/{itemId}/Download, which a
+        // share token can reach, so the creator must actually be allowed to download this
+        // item - otherwise a link would grant a permission the creator never had.
+        if (!item.CanDownload(user))
+        {
+            Response.Headers[ShareLinkErrorHeader] = ShareLinkCreateErrorCode.DownloadNotAllowed.ToString();
+            return StatusCode(StatusCodes.Status403Forbidden);
+        }
+
         if (request is null || (!request.ExpiresAt.HasValue && !request.DurationSeconds.HasValue))
         {
             Response.Headers[ShareLinkErrorHeader] = ShareLinkCreateErrorCode.ExpirationOrDurationRequired.ToString();

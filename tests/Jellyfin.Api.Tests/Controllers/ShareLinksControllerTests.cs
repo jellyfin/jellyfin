@@ -213,11 +213,47 @@ namespace Jellyfin.Api.Tests.Controllers
             Assert.Equal(StatusCodes.Status201Created, Assert.IsType<ObjectResult>(result.Result).StatusCode);
         }
 
+        [Fact]
+        public async Task CreateShareLink_UserCannotDownload_ReturnsForbidden()
+        {
+            var controller = CreateController(userCanDownload: false);
+
+            var result = await controller.CreateShareLink(
+                _itemId,
+                new CreateShareLinkRequestDto { DurationSeconds = 3600 });
+
+            var statusResult = Assert.IsType<StatusCodeResult>(result.Result);
+            Assert.Equal(StatusCodes.Status403Forbidden, statusResult.StatusCode);
+            Assert.Equal(
+                ShareLinkCreateErrorCode.DownloadNotAllowed.ToString(),
+                controller.Response.Headers["X-ShareLink-Error"].ToString());
+        }
+
+        [Fact]
+        public async Task CreateShareLink_UserCanDownload_Creates()
+        {
+            _tokenService
+                .Setup(s => s.CreateAsync(_userId, _itemId, (long?)null, 3600, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ShareLinkCreationResult(
+                    "token-abc",
+                    new ShareLink("jti-1", _userId, _itemId, 1700000000) { DurationSeconds = 3600 },
+                    null));
+
+            var controller = CreateController(userCanDownload: true);
+
+            var result = await controller.CreateShareLink(
+                _itemId,
+                new CreateShareLinkRequestDto { DurationSeconds = 3600 });
+
+            Assert.Equal(StatusCodes.Status201Created, Assert.IsType<ObjectResult>(result.Result).StatusCode);
+        }
+
         private ShareLinksController CreateController(
             MediaSharingPolicy mediaSharingPolicy = MediaSharingPolicy.Enabled,
             UserMediaSharingPolicy userMediaSharingPolicy = UserMediaSharingPolicy.Default,
             bool itemExists = true,
-            bool itemVisible = true)
+            bool itemVisible = true,
+            bool userCanDownload = true)
         {
             _configurationManager
                 .Setup(c => c.Configuration)
@@ -235,6 +271,9 @@ namespace Jellyfin.Api.Tests.Controllers
             {
                 var item = new Mock<BaseItem>();
                 item.Setup(i => i.IsVisible(It.IsAny<User>(), It.IsAny<bool>())).Returns(itemVisible);
+                // CanDownload(user) is non-virtual; it is CanDownload() && IsAuthorizedToDownload(user).
+                item.Setup(i => i.CanDownload()).Returns(userCanDownload);
+                item.Setup(i => i.IsAuthorizedToDownload(It.IsAny<User>())).Returns(userCanDownload);
                 _libraryManager.Setup(m => m.GetItemById(_itemId)).Returns(item.Object);
             }
             else

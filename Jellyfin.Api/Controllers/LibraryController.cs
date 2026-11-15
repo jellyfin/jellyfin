@@ -666,8 +666,10 @@ public class LibraryController : BaseJellyfinApiController
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="FileResult"/> containing the media stream.</returns>
     /// <exception cref="ArgumentException">User can't download or item can't be downloaded.</exception>
-    [HttpGet("Items/{itemId}/Download")]
+    [ShareLinkAccess]
+    [Authorize(Policy = Policies.ShareLink)]
     [Authorize(Policy = Policies.Download)]
+    [HttpGet("Items/{itemId}/Download")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesFile("video/*", "audio/*")]
