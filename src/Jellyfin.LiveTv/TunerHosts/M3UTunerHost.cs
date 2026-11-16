@@ -104,6 +104,11 @@ namespace Jellyfin.LiveTv.TunerHosts
                     try
                     {
                         using var message = new HttpRequestMessage(HttpMethod.Head, mediaSource.Path);
+                        if (mediaSource.RequiredHttpHeaders.TryGetValue(HeaderNames.UserAgent, out var userAgent))
+                        {
+                            message.Headers.TryAddWithoutValidation(HeaderNames.UserAgent, userAgent);
+                        }
+
                         using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                             .SendAsync(message, cancellationToken)
                             .ConfigureAwait(false);
