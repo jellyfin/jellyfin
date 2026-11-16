@@ -629,8 +629,7 @@ namespace Jellyfin.LiveTv.Listings
 
             if (!_tokens.TryGetValue(username, out NameValuePair savedToken))
             {
-                savedToken = new NameValuePair();
-                _tokens.TryAdd(username, savedToken);
+                savedToken = _tokens.GetOrAdd(username, _ => new NameValuePair());
             }
 
             if (!string.IsNullOrEmpty(savedToken.Name)
