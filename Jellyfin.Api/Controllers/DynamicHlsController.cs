@@ -1717,6 +1717,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         if (!state.IsOutputVideo
             || !EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
             || _mediaEncoder.EncoderVersion < _minFFmpegSegmentTimesFromFirstPacket
+            || !CanWriteInitSegmentBeforePackets(state.Request.SegmentContainer, state.OutputAudioCodec, state.AudioStream?.Codec)
             || !_dynamicHlsPlaylistGenerator.TryGetKeyframeSegmentLengths(GetMainPlaylistRequest(state, string.Empty, string.Empty), out var segmentLengths)
             || segmentLengths.Count == 0)
         {
@@ -1733,6 +1734,18 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         segmentStarts = starts;
         return true;
+    }
+
+    internal static bool CanWriteInitSegmentBeforePackets(string? segmentContainer, string? outputAudioCodec, string? audioCodec)
+    {
+        // The segment muxer writes the fMP4 init segment before it gets the first packet. For these codecs the mp4 muxer
+        // takes the sample description from a packet and fails without one, so copying them into fMP4 keeps the hls muxer,
+        // which delays the init segment until the first packets are there.
+        return !string.Equals(segmentContainer, "mp4", StringComparison.OrdinalIgnoreCase)
+            || !EncodingHelper.IsCopyCodec(outputAudioCodec)
+            || !(string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(audioCodec, "eac3", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(audioCodec, "truehd", StringComparison.OrdinalIgnoreCase));
     }
 
     internal static string GetSegmentMuxerArguments(int startNumber, bool isSeeking, string cutArguments, string outputPrefix, string outputExtension)

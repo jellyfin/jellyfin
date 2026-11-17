@@ -111,6 +111,20 @@ namespace Jellyfin.Api.Tests.Controllers
             Assert.Equal(expected, DynamicHlsController.IsPlaylistSegment(segmentStarts, segmentId, runtimeTicks));
         }
 
+        [Theory]
+        [InlineData("mp4", "copy", "ac3", false)] // the mp4 muxer needs an AC-3 packet to write the init segment
+        [InlineData("mp4", "copy", "EAC3", false)]
+        [InlineData("mp4", "copy", "truehd", false)]
+        [InlineData("mp4", "copy", "aac", true)] // described by the stream's extradata
+        [InlineData("mp4", "aac", "ac3", true)] // transcoded: the encoder provides the description
+        [InlineData("ts", "copy", "ac3", true)] // MPEG-TS has no init segment
+        [InlineData(null, "copy", "eac3", true)] // no segment container means MPEG-TS
+        [InlineData("mp4", null, null, true)] // no audio
+        public void CanWriteInitSegmentBeforePackets_CopiedAudioInFmp4_DependsOnCodec(string? segmentContainer, string? outputAudioCodec, string? audioCodec, bool expected)
+        {
+            Assert.Equal(expected, DynamicHlsController.CanWriteInitSegmentBeforePackets(segmentContainer, outputAudioCodec, audioCodec));
+        }
+
         [Fact]
         public void GetSeekableSegment_UnknownRuntime_StartsOnRequestedSegment()
         {
