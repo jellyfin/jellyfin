@@ -136,6 +136,11 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool IsVideoRequest { get; set; }
 
+        /// <summary>
+        /// Gets or sets how far past the requested start an HLS remux seeks (see <see cref="EncodingHelper.GetFastSeekCommandLineParameter"/>).
+        /// </summary>
+        public long HlsRemuxSeekOffsetTicks { get; set; } = EncodingHelper.HlsRemuxSeekOffsetTicks;
+
         public TranscodingJobType TranscodingType { get; set; }
 
         public long? StartTimeTicks => BaseRequest.StartTimeTicks;

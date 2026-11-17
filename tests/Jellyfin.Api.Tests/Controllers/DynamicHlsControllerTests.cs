@@ -115,7 +115,7 @@ namespace Jellyfin.Api.Tests.Controllers
             CultureInfo.CurrentCulture = new CultureInfo("de-DE");
             try
             {
-                Assert.Equal("-segment_times 10.177,14.585 -segment_time_delta 0.5", DynamicHlsController.GetSegmentCutArguments(segmentStarts, 1));
+                Assert.Equal("-segment_times 10.177,14.585 -segment_time_delta 0.2", DynamicHlsController.GetSegmentCutArguments(segmentStarts, 1));
             }
             finally
             {
