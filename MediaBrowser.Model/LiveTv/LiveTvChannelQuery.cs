@@ -16,7 +16,19 @@ namespace MediaBrowser.Model.LiveTv
         {
             EnableUserData = true;
             SortBy = Array.Empty<ItemSortBy>();
+            ChannelGroups = Array.Empty<string>();
+            ChannelGroupIds = Array.Empty<Guid>();
         }
+
+        /// <summary>
+        /// Gets or sets the channel groups to match by name (any of). Case-insensitive.
+        /// </summary>
+        public string[] ChannelGroups { get; set; }
+
+        /// <summary>
+        /// Gets or sets the channel groups to match by id (any of); see <see cref="LiveTvChannelGroup.Id"/>.
+        /// </summary>
+        public Guid[] ChannelGroupIds { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the channel.

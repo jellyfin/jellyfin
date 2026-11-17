@@ -662,6 +662,13 @@ public sealed partial class BaseItemRepository
                     .Where(e => e.ItemValues!.AsQueryable().Where(f => f.ItemValue.Type == ItemValueType.Genre).Any(cleanGenres));
         }
 
+        if (filter.ChannelGroups.Count > 0)
+        {
+            var cleanGroups = filter.ChannelGroups.Select(e => e.GetCleanValue()).ToArray().OneOrManyExpressionBuilder<ItemValueMap, string>(f => f.ItemValue.CleanValue);
+            baseQuery = baseQuery
+                    .Where(e => e.ItemValues!.AsQueryable().Where(f => f.ItemValue.Type == ItemValueType.ChannelGroup).Any(cleanGroups));
+        }
+
         if (tags.Count > 0)
         {
             var cleanValues = tags.Select(e => e.GetCleanValue()).ToArray().OneOrManyExpressionBuilder<ItemValueMap, string>(f => f.ItemValue.CleanValue);

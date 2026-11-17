@@ -118,6 +118,22 @@ namespace Jellyfin.LiveTv
 
             var topFolder = GetInternalLiveTvFolder(cancellationToken);
 
+            var channelGroups = query.ChannelGroups.ToList();
+            if (query.ChannelGroupIds.Length > 0)
+            {
+                // Ids are derived from names, so resolve them against the groups this user can see.
+                channelGroups.AddRange(GetChannelGroups(user, topFolder)
+                    .Where(g => query.ChannelGroupIds.Contains(g.Id))
+                    .Select(g => g.Name));
+
+                if (channelGroups.Count == 0)
+                {
+                    // Every requested id is unknown: nothing can match. Without this the empty
+                    // list would read as "no group filter" and return every channel.
+                    return new QueryResult<BaseItem>();
+                }
+            }
+
             var internalQuery = new InternalItemsQuery(user)
             {
                 IsMovie = query.IsMovie,
@@ -129,6 +145,7 @@ namespace Jellyfin.LiveTv
                 TopParentIds = [topFolder.Id],
                 IsFavorite = query.IsFavorite,
                 IsLiked = query.IsLiked,
+                ChannelGroups = channelGroups,
                 StartIndex = query.StartIndex,
                 Limit = query.Limit,
                 DtoOptions = dtoOptions
@@ -151,6 +168,34 @@ namespace Jellyfin.LiveTv
             internalQuery.OrderBy = orderBy.ToArray();
 
             return _libraryManager.GetItemsResult(internalQuery);
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyList<LiveTvChannelGroup> GetChannelGroups(Guid userId, CancellationToken cancellationToken)
+        {
+            var user = userId.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId);
+
+            return GetChannelGroups(user, GetInternalLiveTvFolder(cancellationToken));
+        }
+
+        private IReadOnlyList<LiveTvChannelGroup> GetChannelGroups(User user, Folder topFolder)
+        {
+            var query = new InternalItemsQuery(user)
+            {
+                IncludeItemTypes = [BaseItemKind.LiveTvChannel],
+                TopParentIds = [topFolder.Id]
+            };
+
+            return _libraryManager.GetLiveTvChannelGroups(query)
+                .Select(g => new LiveTvChannelGroup
+                {
+                    Id = LiveTvChannelGroups.GetId(g.Name),
+                    Name = g.Name,
+                    ChannelCount = g.ChannelCount
+                })
+                .ToArray();
         }
 
         private ILiveTvService GetService(LiveTvChannel item)

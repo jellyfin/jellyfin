@@ -12,6 +12,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using Microsoft.EntityFrameworkCore;
@@ -806,6 +807,11 @@ public class ItemPersistenceService : IItemPersistenceService
         list.AddRange(item.Genres.Select(i => (ItemValueType.Genre, i)));
         list.AddRange(item.Studios.Select(i => (ItemValueType.Studios, i)));
         list.AddRange(item.Tags.Select(i => (ItemValueType.Tags, i)));
+
+        if (item is LiveTvChannel { ChannelGroup: { } channelGroup })
+        {
+            list.Add((ItemValueType.ChannelGroup, channelGroup));
+        }
 
         list.AddRange(inheritedTags.Select(i => (ItemValueType.InheritedTags, i)));
 

@@ -136,6 +136,13 @@ public interface IItemRepository
     IReadOnlyList<string> GetTagNames(InternalItemsQuery filter);
 
     /// <summary>
+    /// Gets the distinct live TV channel groups of the matching channels with the number of channels in each.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The groups, ordered by name.</returns>
+    IReadOnlyList<(string Name, int ChannelCount)> GetLiveTvChannelGroups(InternalItemsQuery filter);
+
+    /// <summary>
     /// Gets all artist names.
     /// </summary>
     /// <returns>The list of artist names.</returns>

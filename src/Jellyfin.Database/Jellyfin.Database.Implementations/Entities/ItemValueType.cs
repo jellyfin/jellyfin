@@ -35,4 +35,11 @@ public enum ItemValueType
     /// InheritedTags.
     /// </summary>
     InheritedTags = 6,
+
+    /// <summary>
+    /// The group a live TV channel belongs to (an M3U <c>group-title</c>).
+    /// 5 is left unused on purpose: databases migrated from the legacy item store may still carry
+    /// rows of that type, so a new type must not collide with them.
+    /// </summary>
+    ChannelGroup = 7,
 }
