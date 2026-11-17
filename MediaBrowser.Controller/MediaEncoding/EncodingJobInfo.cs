@@ -141,6 +141,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// </summary>
         public long HlsRemuxSeekOffsetTicks { get; set; } = EncodingHelper.HlsRemuxSeekOffsetTicks;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether an HLS remux seek keeps the audio from the keyframe it lands on instead of
+        /// trimming it to the seek time (see <see cref="EncodingHelper.GetFastSeekCommandLineParameter"/>).
+        /// </summary>
+        public bool HlsRemuxAudioFromKeyframe { get; set; }
+
         public TranscodingJobType TranscodingType { get; set; }
 
         public long? StartTimeTicks => BaseRequest.StartTimeTicks;

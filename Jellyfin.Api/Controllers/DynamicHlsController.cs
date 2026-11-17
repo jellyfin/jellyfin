@@ -1781,6 +1781,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         {
             var startSegment = GetSeekableSegment(segmentStarts, segmentId, state.RunTimeTicks ?? 0);
             state.HlsRemuxSeekOffsetTicks = EncodingHelper.SegmentMuxerSeekOffsetTicks;
+            state.HlsRemuxAudioFromKeyframe = true;
             return (startSegment, segmentStarts[startSegment], segmentStarts);
         }
 
