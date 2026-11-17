@@ -1790,10 +1790,13 @@ public class DynamicHlsController : BaseJellyfinApiController
     internal static int GetSeekableSegment(IReadOnlyList<long> segmentStarts, int segmentId, long runTimeTicks)
     {
         // Near the end of the file the seek is clamped (see GetFastSeekCommandLineParameter) and cannot reach the requested
-        // segment, so the run starts from the last segment it still reaches. An unknown runtime is not clamped.
-        var maxSeekTicks = runTimeTicks > 0 ? Math.Max(runTimeTicks - EncodingHelper.SeekMarginFromEndTicks, 0) : long.MaxValue;
+        // segment, so the run starts from the last segment it still reaches. The seek has to keep its whole offset past
+        // the segment start, a shorter one lands on the keyframe before it. An unknown runtime is not clamped.
+        var maxStartTicks = runTimeTicks > 0
+            ? Math.Max(runTimeTicks - EncodingHelper.SeekMarginFromEndTicks - EncodingHelper.SegmentMuxerSeekOffsetTicks, 0)
+            : long.MaxValue;
         var segment = Math.Min(segmentId, segmentStarts.Count - 1);
-        while (segment > 0 && segmentStarts[segment] > maxSeekTicks)
+        while (segment > 0 && segmentStarts[segment] > maxStartTicks)
         {
             segment--;
         }
