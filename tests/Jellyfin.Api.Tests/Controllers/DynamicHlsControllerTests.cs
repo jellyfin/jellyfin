@@ -98,6 +98,19 @@ namespace Jellyfin.Api.Tests.Controllers
             Assert.Equal(expected, DynamicHlsController.GetSeekableSegment(segmentStarts, segmentId, 1_800_000_000));
         }
 
+        [Theory]
+        [InlineData(0, 0L, true)] // the first segment, and the fMP4 init request that starts a run from it
+        [InlineData(2, 125_590_000L, true)] // a segment where this playlist has it
+        [InlineData(2, 120_000_000L, false)] // the client's playlist is an even 6 s grid: made without keyframe data
+        [InlineData(4, 240_000_000L, false)] // past the end: the client's playlist is from a longer file
+        public void IsPlaylistSegment_RequestFromAnotherPlaylist_IsRejected(int segmentId, long runtimeTicks, bool expected)
+        {
+            // Segment starts at 0, 6.123, 12.559 and 18.4 s
+            long[] segmentStarts = [0, 61_230_000, 125_590_000, 184_000_000];
+
+            Assert.Equal(expected, DynamicHlsController.IsPlaylistSegment(segmentStarts, segmentId, runtimeTicks));
+        }
+
         [Fact]
         public void GetSeekableSegment_UnknownRuntime_StartsOnRequestedSegment()
         {

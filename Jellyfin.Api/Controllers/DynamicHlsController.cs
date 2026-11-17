@@ -1777,14 +1777,21 @@ public class DynamicHlsController : BaseJellyfinApiController
 
     private (int SegmentId, long StartTimeTicks, long[]? SegmentStarts) GetRunStartPosition(StreamState state, int segmentId, long currentRuntimeTicks)
     {
-        // A segment past the playlist's end comes from a playlist written before the file changed, only the hls muxer can produce it
-        if (TryGetSegmentMuxerSegmentStarts(state, out var segmentStarts) && segmentId < segmentStarts.Length)
+        if (TryGetSegmentMuxerSegmentStarts(state, out var segmentStarts) && IsPlaylistSegment(segmentStarts, segmentId, currentRuntimeTicks))
         {
             var startSegment = GetSeekableSegment(segmentStarts, segmentId, state.RunTimeTicks ?? 0);
             return (startSegment, segmentStarts[startSegment], segmentStarts);
         }
 
         return (segmentId, currentRuntimeTicks, null);
+    }
+
+    internal static bool IsPlaylistSegment(IReadOnlyList<long> segmentStarts, int segmentId, long runtimeTicks)
+    {
+        // A request for a segment that this playlist does not have, or has at another position, comes from a playlist made
+        // from other keyframe data or from none: the file changed, or its keyframe data was saved after the client got its
+        // playlist. These cut times do not belong to that playlist, so such a run keeps the hls muxer.
+        return segmentId >= 0 && segmentId < segmentStarts.Count && segmentStarts[segmentId] == runtimeTicks;
     }
 
     internal static int GetSeekableSegment(IReadOnlyList<long> segmentStarts, int segmentId, long runTimeTicks)
