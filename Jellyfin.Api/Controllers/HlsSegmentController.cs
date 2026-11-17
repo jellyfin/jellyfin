@@ -100,7 +100,11 @@ public class HlsSegmentController : BaseJellyfinApiController
     /// <param name="playSessionId">The play session id.</param>
     /// <response code="204">Encoding stopped successfully.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+    // The segment routes in this controller are only fetched by players following a playlist, so the
+    // controller is kept out of the API spec. Stopping an encode is something clients call directly and
+    // SDKs generate from the spec, so this one operation stays visible.
     [HttpDelete("Videos/ActiveEncodings")]
+    [ApiExplorerSettings(IgnoreApi = false)]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult StopEncodingProcess(
