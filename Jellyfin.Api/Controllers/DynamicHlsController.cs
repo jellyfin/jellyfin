@@ -1509,6 +1509,15 @@ public class DynamicHlsController : BaseJellyfinApiController
 
                             var (startSegment, startTimeTicks, segmentStarts) = GetRunStartPosition(state, segmentId, streamingRequest.CurrentRuntimeTicks);
                             streamingRequest.StartTimeTicks = startTimeTicks;
+
+                            if (segmentStarts is not null)
+                            {
+                                // The segment muxer creates a segment's file when it starts writing it, and GetSegmentResult serves
+                                // segment N once N + 1 exists. A segment an earlier run left behind would make the new run's
+                                // unfinished segment before it look ready, so the new run starts without them.
+                                await DeleteSegmentFilesFrom(playlistPath, segmentExtension, startSegment).ConfigureAwait(false);
+                            }
+
                             state.WaitForPath = segmentPath;
 
                             // The shared FFmpeg job must outlive cancellation of any one HTTP request.
@@ -2242,6 +2251,34 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
 
         await DeleteFile(file.FullName, retryCount).ConfigureAwait(false);
+    }
+
+    private async Task DeleteSegmentFilesFrom(string playlistPath, string segmentExtension, int startSegment)
+    {
+        var folder = Path.GetDirectoryName(playlistPath) ?? throw new ArgumentException("Path can't be a root directory.", nameof(playlistPath));
+        var filePrefix = Path.GetFileNameWithoutExtension(playlistPath);
+
+        List<FileSystemMetadata> files;
+        try
+        {
+            files = _fileSystem.GetFiles(folder, new[] { segmentExtension }, true, false).ToList();
+        }
+        catch (IOException)
+        {
+            return;
+        }
+
+        foreach (var file in files)
+        {
+            // NumberStyles.None leaves out the fMP4 init file, "<prefix>-1"
+            var name = Path.GetFileNameWithoutExtension(file.Name);
+            if (name.StartsWith(filePrefix, StringComparison.OrdinalIgnoreCase)
+                && int.TryParse(name.AsSpan(filePrefix.Length), NumberStyles.None, CultureInfo.InvariantCulture, out var index)
+                && index >= startSegment)
+            {
+                await DeleteFile(file.FullName, 0).ConfigureAwait(false);
+            }
+        }
     }
 
     private async Task DeleteFile(string path, int retryCount)
