@@ -11,6 +11,7 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Server.Implementations.Item;
@@ -59,8 +60,8 @@ public static class OrderMapper
             (ItemSortBy.IsPlayed, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.Played,
             (ItemSortBy.IsUnplayed, _) => e => !e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.Played,
             (ItemSortBy.DateLastContentAdded, _) => e => e.DateLastMediaAdded,
-            (ItemSortBy.Artist, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.Artist).OrderBy(f => f.ItemValue.CleanValue).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
-            (ItemSortBy.AlbumArtist, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.AlbumArtist).OrderBy(f => f.ItemValue.CleanValue).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
+            (ItemSortBy.Artist, _) => MapMusicCreditSort(ItemValueType.Artist, jellyfinDbContext),
+            (ItemSortBy.AlbumArtist, _) => MapMusicCreditSort(ItemValueType.AlbumArtist, jellyfinDbContext),
             (ItemSortBy.Studio, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.Studios).OrderBy(f => f.ItemValue.CleanValue).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
             (ItemSortBy.OfficialRating, _) => e => e.InheritedParentalRatingValue,
             (ItemSortBy.SeriesSortName, _) => e => e.SeriesName,
@@ -119,5 +120,21 @@ public static class OrderMapper
         }
 
         return value.RemoveDiacritics().ToLowerInvariant();
+    }
+
+    private static Expression<Func<BaseItemEntity, object?>> MapMusicCreditSort(
+        ItemValueType creditType,
+        JellyfinDbContext jellyfinDbContext)
+    {
+        var musicArtistType = typeof(MusicArtist).FullName!;
+        return e => e.ItemValues!
+            .Where(f => f.ItemValue.Type == creditType)
+            .OrderBy(f => f.ItemValue.CleanValue)
+            .Select(f => jellyfinDbContext.BaseItems
+                .Where(b => b.Type == musicArtistType && b.CleanName == f.ItemValue.CleanValue)
+                .OrderBy(b => b.SortName)
+                .Select(b => b.SortName)
+                .FirstOrDefault() ?? f.ItemValue.CleanValue)
+            .FirstOrDefault();
     }
 }
