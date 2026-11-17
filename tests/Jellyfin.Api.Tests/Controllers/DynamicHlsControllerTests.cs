@@ -87,12 +87,13 @@ namespace Jellyfin.Api.Tests.Controllers
 
         [Theory]
         [InlineData(2, 2)] // mid-file: the run starts on the requested segment
-        [InlineData(3, 3)] // starts exactly at runtime - 5 s: the clamped seek still reaches it
-        [InlineData(4, 3)] // starts inside the final 5 s: the clamped seek lands before it, so the run starts one segment earlier
+        [InlineData(3, 3)] // starts 0.2 s before runtime - 5 s: the seek keeps its whole offset
+        [InlineData(4, 3)] // starts exactly at runtime - 5 s: the clamp would cut the seek offset, so the run starts one segment earlier
+        [InlineData(5, 3)] // starts inside the final 5 s: the clamped seek lands before it
         public void GetSeekableSegment_ClampedSeek_StartsOnReachableSegment(int segmentId, int expected)
         {
-            // Segment starts at 0, 60, 120, 175 and 178 s of a 180 s file
-            long[] segmentStarts = [0, 600_000_000, 1_200_000_000, 1_750_000_000, 1_780_000_000];
+            // Segment starts at 0, 60, 120, 174.8, 175 and 178 s of a 180 s file
+            long[] segmentStarts = [0, 600_000_000, 1_200_000_000, 1_748_000_000, 1_750_000_000, 1_780_000_000];
 
             Assert.Equal(expected, DynamicHlsController.GetSeekableSegment(segmentStarts, segmentId, 1_800_000_000));
         }
