@@ -87,9 +87,9 @@ namespace Jellyfin.Api.Tests.Controllers
 
         [Theory]
         [InlineData(2, 2)] // mid-file: the run starts on the requested segment
-        [InlineData(3, 3)] // starts 0.2 s before runtime - 5 s: the seek keeps its whole offset
-        [InlineData(4, 3)] // starts exactly at runtime - 5 s: the clamp would cut the seek offset, so the run starts one segment earlier
-        [InlineData(5, 3)] // starts inside the final 5 s: the clamped seek lands before it
+        [InlineData(3, 3)] // starts 0.2 s before runtime - 5 s
+        [InlineData(4, 4)] // starts exactly at runtime - 5 s: the seek still reaches it
+        [InlineData(5, 4)] // starts inside the final 5 s: the clamped seek lands before it
         public void GetSeekableSegment_ClampedSeek_StartsOnReachableSegment(int segmentId, int expected)
         {
             // Segment starts at 0, 60, 120, 174.8, 175 and 178 s of a 180 s file
@@ -129,12 +129,23 @@ namespace Jellyfin.Api.Tests.Controllers
             CultureInfo.CurrentCulture = new CultureInfo("de-DE");
             try
             {
-                Assert.Equal("-segment_times 10.177,14.585 -segment_time_delta 0.2", DynamicHlsController.GetSegmentCutArguments(segmentStarts, 1));
+                Assert.Equal("-segment_times 10.177,14.585 -segment_time_delta 0.001", DynamicHlsController.GetSegmentCutArguments(segmentStarts, 1));
             }
             finally
             {
                 CultureInfo.CurrentCulture = culture;
             }
+        }
+
+        [Theory]
+        [InlineData(true, true)] // a run that seeks drops the packets before the keyframe it seeks to
+        [InlineData(false, false)] // a run from the start of the file copies everything
+        public void GetSegmentMuxerArguments_SeekingRun_DropsPacketsBeforeStart(bool isSeeking, bool expected)
+        {
+            var args = DynamicHlsController.GetSegmentMuxerArguments(17, isSeeking, "-segment_time 86400", "/transcodes/abc", ".ts");
+
+            Assert.Equal(expected, args.StartsWith("-copypriorss 0 -f segment ", StringComparison.Ordinal));
+            Assert.Contains("-f segment -segment_format mpegts -segment_start_number 17 -segment_time 86400 -y", args, StringComparison.Ordinal);
         }
 
         [Fact]

@@ -1634,7 +1634,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             : "128";
 
         var muxerArguments = segmentStarts is not null
-            ? GetSegmentMuxerArguments(startNumber, GetSegmentCutArguments(segmentStarts, startNumber), outputPrefix, outputExtension)
+            ? GetSegmentMuxerArguments(startNumber, segmentStarts[startNumber] > 0, GetSegmentCutArguments(segmentStarts, startNumber), outputPrefix, outputExtension)
             : GetHlsMuxerArguments(state, isEventPlaylist, startNumber, outputPath, outputPrefix, outputExtension);
 
         return string.Format(
@@ -1735,8 +1735,13 @@ public class DynamicHlsController : BaseJellyfinApiController
         return true;
     }
 
-    private static string GetSegmentMuxerArguments(int startNumber, string cutArguments, string outputPrefix, string outputExtension)
+    internal static string GetSegmentMuxerArguments(int startNumber, bool isSeeking, string cutArguments, string outputPrefix, string outputExtension)
     {
+        // The seek goes to the start keyframe's own time, and ffmpeg lands on that keyframe or on an earlier one (in
+        // containers that seek by DTS it seeks 3/23 s early when a stream has B-frames). -copypriorss 0 drops the copied
+        // packets before the seek time, so the run starts on the keyframe itself, which the cut times are counted from.
+        var copyArguments = isSeeking ? "-copypriorss 0 " : string.Empty;
+
         var formatArguments = "-segment_format mpegts";
         if (string.Equals(outputExtension, ".mp4", StringComparison.OrdinalIgnoreCase))
         {
@@ -1749,7 +1754,8 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         return string.Format(
             CultureInfo.InvariantCulture,
-            "-f segment {0} -segment_start_number {1} {2} -y \"{3}\"",
+            "{0}-f segment {1} -segment_start_number {2} {3} -y \"{4}\"",
+            copyArguments,
             formatArguments,
             startNumber.ToString(CultureInfo.InvariantCulture),
             cutArguments,
@@ -1758,8 +1764,8 @@ public class DynamicHlsController : BaseJellyfinApiController
 
     internal static string GetSegmentCutArguments(IReadOnlyList<long> segmentStarts, int startSegment)
     {
-        // Cut times are relative to the first packet, the keyframe the seek lands on, which is at most the remux seek offset
-        // after the segment start. The same offset as segment_time_delta lets each cut still land on its own keyframe.
+        // Cut times are relative to the first packet, the keyframe the run starts on. They are rounded to the millisecond,
+        // so segment_time_delta allows a cut that much before its time: each cut is the first keyframe from there on.
         var startTicks = segmentStarts[startSegment];
         var cutTimes = segmentStarts
             .Skip(startSegment + 1)
@@ -1771,8 +1777,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             return "-segment_time 86400";
         }
 
-        var seekOffset = TimeSpan.FromTicks(EncodingHelper.SegmentMuxerSeekOffsetTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture);
-        return "-segment_times " + string.Join(',', cutTimes) + " -segment_time_delta " + seekOffset;
+        return "-segment_times " + string.Join(',', cutTimes) + " -segment_time_delta 0.001";
     }
 
     private (int SegmentId, long StartTimeTicks, long[]? SegmentStarts) GetRunStartPosition(StreamState state, int segmentId, long currentRuntimeTicks)
@@ -1797,10 +1802,9 @@ public class DynamicHlsController : BaseJellyfinApiController
     internal static int GetSeekableSegment(IReadOnlyList<long> segmentStarts, int segmentId, long runTimeTicks)
     {
         // Near the end of the file the seek is clamped (see GetFastSeekCommandLineParameter) and cannot reach the requested
-        // segment, so the run starts from the last segment it still reaches. The seek has to keep its whole offset past
-        // the segment start, a shorter one lands on the keyframe before it. An unknown runtime is not clamped.
+        // segment, so the run starts from the last segment it still reaches. An unknown runtime is not clamped.
         var maxStartTicks = runTimeTicks > 0
-            ? Math.Max(runTimeTicks - EncodingHelper.SeekMarginFromEndTicks - EncodingHelper.SegmentMuxerSeekOffsetTicks, 0)
+            ? Math.Max(runTimeTicks - EncodingHelper.SeekMarginFromEndTicks, 0)
             : long.MaxValue;
         var segment = Math.Min(segmentId, segmentStarts.Count - 1);
         while (segment > 0 && segmentStarts[segment] > maxStartTicks)
