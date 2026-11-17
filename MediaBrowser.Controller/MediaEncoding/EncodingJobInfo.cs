@@ -138,8 +138,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         /// <summary>
         /// Gets or sets a value indicating whether an HLS remux starts on a keyframe taken from the file's keyframe data.
-        /// The seek then uses <see cref="EncodingHelper.SegmentMuxerSeekOffsetTicks"/> and keeps the audio from that keyframe
-        /// instead of trimming it to the seek time.
+        /// The seek then goes to that keyframe's own time, without the offset of <see cref="EncodingHelper.HlsRemuxSeekOffsetTicks"/>.
         /// </summary>
         public bool HlsRemuxStartsOnKnownKeyframe { get; set; }
 

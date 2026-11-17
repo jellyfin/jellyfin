@@ -384,11 +384,10 @@ public class EncodingHelperTests
     }
 
     [Theory]
-    [InlineData(600_000_000L, 1_800_000_000L, false, true, "-ss 605000000")] // mid-file: 0.5 s past the segment start, so ffmpeg lands on the segment's own keyframe
-    [InlineData(1_780_000_000L, 1_800_000_000L, false, true, "-ss 1750000000")] // inside the final 5 s: clamped to runtime - 5 s
-    [InlineData(600_000_000L, 1_800_000_000L, true, true, "-noaccurate_seek -ss 602000000")] // start from the keyframe data: 0.2 s past it, audio from the keyframe
-    [InlineData(600_000_000L, 1_800_000_000L, true, false, "-ss 602000000")] // external input of such a run: same position, accurate seek
-    public void GetFastSeekCommandLineParameter_HlsRemux_OffsetsAndClampsSeek(long startTimeTicks, long runTimeTicks, bool startsOnKnownKeyframe, bool isMainInput, string expected)
+    [InlineData(600_000_000L, 1_800_000_000L, false, "-ss 605000000")] // mid-file: 0.5 s past the segment start, so ffmpeg lands on the segment's own keyframe
+    [InlineData(1_780_000_000L, 1_800_000_000L, false, "-ss 1750000000")] // inside the final 5 s: clamped to runtime - 5 s
+    [InlineData(600_000_000L, 1_800_000_000L, true, "-ss 600000000")] // start from the keyframe data: the keyframe's own time
+    public void GetFastSeekCommandLineParameter_HlsRemux_OffsetsAndClampsSeek(long startTimeTicks, long runTimeTicks, bool startsOnKnownKeyframe, string expected)
     {
         var state = BuildState(subtitle: null, deliveryMethod: null);
         state.TranscodingType = TranscodingJobType.Hls;
@@ -399,7 +398,7 @@ public class EncodingHelperTests
         var mediaEncoder = new Mock<IMediaEncoder>();
         mediaEncoder.Setup(e => e.GetTimeParameter(It.IsAny<long>())).Returns<long>(ticks => ticks.ToString(CultureInfo.InvariantCulture));
 
-        var args = CreateHelper(mediaEncoder).GetFastSeekCommandLineParameter(state, isMainInput);
+        var args = CreateHelper(mediaEncoder).GetFastSeekCommandLineParameter(state, new EncodingOptions(), "mp4");
 
         Assert.Equal(expected, args);
     }
