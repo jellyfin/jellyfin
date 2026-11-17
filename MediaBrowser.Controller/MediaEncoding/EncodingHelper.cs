@@ -3133,6 +3133,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                     seekTick = Math.Clamp(seekTick, 0, Math.Max(maxTime - SeekMarginFromEndTicks, 0));
                 }
 
+                // The copied video starts at the keyframe, but transcoded audio is trimmed to the seek time, so a run's audio
+                // starts the seek offset after its first segment. Without accurate seeking the audio starts where the
+                // demuxer landed, at the keyframe, and joins the previous segment of an earlier run without a hole.
+                if (isHlsRemuxing && state.HlsRemuxAudioFromKeyframe)
+                {
+                    seekParam += "-noaccurate_seek ";
+                }
+
                 seekParam += string.Format(CultureInfo.InvariantCulture, "-ss {0}", _mediaEncoder.GetTimeParameter(seekTick));
 
                 // Retain audio from the preceding keyframe to match copied video's start time.
