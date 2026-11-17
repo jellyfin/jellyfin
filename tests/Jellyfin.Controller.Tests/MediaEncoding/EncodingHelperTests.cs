@@ -384,21 +384,24 @@ public class EncodingHelperTests
     }
 
     [Theory]
-    [InlineData(600_000_000L, 1_800_000_000L, 605_000_000L)] // mid-file: 0.5 s past the segment start, so ffmpeg lands on the segment's own keyframe
-    [InlineData(1_780_000_000L, 1_800_000_000L, 1_750_000_000L)] // inside the final 5 s: clamped to runtime - 5 s
-    public void GetFastSeekCommandLineParameter_HlsRemux_OffsetsAndClampsSeek(long startTimeTicks, long runTimeTicks, long expectedSeekTicks)
+    [InlineData(600_000_000L, 1_800_000_000L, false, true, "-ss 605000000")] // mid-file: 0.5 s past the segment start, so ffmpeg lands on the segment's own keyframe
+    [InlineData(1_780_000_000L, 1_800_000_000L, false, true, "-ss 1750000000")] // inside the final 5 s: clamped to runtime - 5 s
+    [InlineData(600_000_000L, 1_800_000_000L, true, true, "-noaccurate_seek -ss 602000000")] // start from the keyframe data: 0.2 s past it, audio from the keyframe
+    [InlineData(600_000_000L, 1_800_000_000L, true, false, "-ss 602000000")] // external input of such a run: same position, accurate seek
+    public void GetFastSeekCommandLineParameter_HlsRemux_OffsetsAndClampsSeek(long startTimeTicks, long runTimeTicks, bool startsOnKnownKeyframe, bool isMainInput, string expected)
     {
         var state = BuildState(subtitle: null, deliveryMethod: null);
         state.TranscodingType = TranscodingJobType.Hls;
         state.OutputVideoCodec = "copy";
         state.RunTimeTicks = runTimeTicks;
         state.BaseRequest.StartTimeTicks = startTimeTicks;
+        state.HlsRemuxStartsOnKnownKeyframe = startsOnKnownKeyframe;
         var mediaEncoder = new Mock<IMediaEncoder>();
         mediaEncoder.Setup(e => e.GetTimeParameter(It.IsAny<long>())).Returns<long>(ticks => ticks.ToString(CultureInfo.InvariantCulture));
 
-        var args = CreateHelper(mediaEncoder).GetFastSeekCommandLineParameter(state, new EncodingOptions(), "mp4");
+        var args = CreateHelper(mediaEncoder).GetFastSeekCommandLineParameter(state, isMainInput);
 
-        Assert.Equal("-ss " + expectedSeekTicks.ToString(CultureInfo.InvariantCulture), args);
+        Assert.Equal(expected, args);
     }
 
     private static EncodingHelper CreateHelper(Mock<IMediaEncoder>? mediaEncoder = null)

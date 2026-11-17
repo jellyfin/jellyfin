@@ -1509,6 +1509,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
                             var (startSegment, startTimeTicks, segmentStarts) = GetRunStartPosition(state, segmentId, streamingRequest.CurrentRuntimeTicks);
                             streamingRequest.StartTimeTicks = startTimeTicks;
+                            state.HlsRemuxStartsOnKnownKeyframe = segmentStarts is not null;
 
                             if (segmentStarts is not null)
                             {
@@ -1780,8 +1781,6 @@ public class DynamicHlsController : BaseJellyfinApiController
         if (TryGetSegmentMuxerSegmentStarts(state, out var segmentStarts) && segmentId < segmentStarts.Length)
         {
             var startSegment = GetSeekableSegment(segmentStarts, segmentId, state.RunTimeTicks ?? 0);
-            state.HlsRemuxSeekOffsetTicks = EncodingHelper.SegmentMuxerSeekOffsetTicks;
-            state.HlsRemuxAudioFromKeyframe = true;
             return (startSegment, segmentStarts[startSegment], segmentStarts);
         }
 

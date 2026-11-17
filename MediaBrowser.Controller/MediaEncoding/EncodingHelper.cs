@@ -56,7 +56,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Seek offset for an HLS remux run that starts on a keyframe from the keyframe data. ffmpeg seeks 3/23 s before the
         /// requested time in containers that seek by DTS when a stream has B-frames (Matroska, AVI; not MP4), so the offset has
         /// to be larger than that to reach the keyframe, and as small as possible so that the next keyframe is rarely reached
-        /// instead and the transcoded audio, which starts at the requested time, starts close to the keyframe.
+        /// instead.
         /// </summary>
         public const long SegmentMuxerSeekOffsetTicks = TimeSpan.TicksPerSecond / 5;
 
@@ -1331,7 +1331,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 // Also seek the external subtitles stream.
-                var seekSubParam = GetFastSeekCommandLineParameter(state, options, segmentContainer);
+                var seekSubParam = GetFastSeekCommandLineParameter(state, false);
                 if (!string.IsNullOrEmpty(seekSubParam))
                 {
                     arg.Append(' ').Append(seekSubParam);
@@ -1348,7 +1348,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (state.AudioStream is not null && state.AudioStream.IsExternal)
             {
                 // Also seek the external audio stream.
-                var seekAudioParam = GetFastSeekCommandLineParameter(state, options, segmentContainer);
+                var seekAudioParam = GetFastSeekCommandLineParameter(state, false);
                 if (!string.IsNullOrEmpty(seekAudioParam))
                 {
                     arg.Append(' ').Append(seekAudioParam);
@@ -3113,6 +3113,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <value>The fast seek command line parameter.</value>
         public string GetFastSeekCommandLineParameter(EncodingJobInfo state, EncodingOptions options, string segmentContainer)
         {
+            return GetFastSeekCommandLineParameter(state, true);
+        }
+
+        internal string GetFastSeekCommandLineParameter(EncodingJobInfo state, bool isMainInput)
+        {
             var time = state.BaseRequest.StartTimeTicks ?? 0;
             var maxTime = state.RunTimeTicks ?? 0;
             var seekParam = string.Empty;
@@ -3121,10 +3126,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 // For direct streaming/remuxing, HLS segments start at keyframes.
                 // However, ffmpeg will seek to previous keyframe when the exact frame time is the input
-                // Workaround this by adding 0.5s offset to the seeking time to get the exact keyframe on most videos.
+                // Workaround this by adding an offset to the seeking time to get the exact keyframe on most videos.
                 // This will help subtitle syncing.
                 var isHlsRemuxing = state.IsVideoRequest && state.TranscodingType is TranscodingJobType.Hls && IsCopyCodec(state.OutputVideoCodec);
-                var seekTick = isHlsRemuxing ? time + state.HlsRemuxSeekOffsetTicks : time;
+                var seekOffsetTicks = state.HlsRemuxStartsOnKnownKeyframe ? SegmentMuxerSeekOffsetTicks : HlsRemuxSeekOffsetTicks;
+                var seekTick = isHlsRemuxing ? time + seekOffsetTicks : time;
 
                 // Seeking beyond EOF makes no sense in transcoding. Clamp the seekTick value to
                 // [0, RuntimeTicks - SeekMarginFromEndTicks], so that the muxer gets packets and avoid error codes.
@@ -3136,7 +3142,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // The copied video starts at the keyframe, but transcoded audio is trimmed to the seek time, so a run's audio
                 // starts the seek offset after its first segment. Without accurate seeking the audio starts where the
                 // demuxer landed, at the keyframe, and joins the previous segment of an earlier run without a hole.
-                if (isHlsRemuxing && state.HlsRemuxAudioFromKeyframe)
+                // Only the input with the video lands on that keyframe, so external inputs keep the accurate seek.
+                if (isHlsRemuxing && isMainInput && state.HlsRemuxStartsOnKnownKeyframe)
                 {
                     seekParam += "-noaccurate_seek ";
                 }
