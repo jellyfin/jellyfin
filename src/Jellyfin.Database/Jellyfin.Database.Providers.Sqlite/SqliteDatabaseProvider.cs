@@ -371,6 +371,9 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             return Task.CompletedTask;
         }
 
+        // Unlike MigrationBackupFast, copying the file directly is safe here: SQLite only deletes the write-ahead
+        // log when the last connection to the database closes, so once it is gone no connection in this process
+        // holds a lock on jellyfin.db that closing the copy's handle could drop.
         File.Copy(backupFile, path, true);
 
         return Task.CompletedTask;
