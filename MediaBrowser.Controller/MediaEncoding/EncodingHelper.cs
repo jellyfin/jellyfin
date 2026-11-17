@@ -53,6 +53,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         public const long HlsRemuxSeekOffsetTicks = TimeSpan.TicksPerSecond / 2;
 
         /// <summary>
+        /// Seek offset for an HLS remux run that starts on a keyframe from the keyframe data. ffmpeg seeks 3/23 s before the
+        /// requested time in containers that seek by DTS when a stream has B-frames (Matroska, AVI; not MP4), so the offset has
+        /// to be larger than that to reach the keyframe, and as small as possible so that the next keyframe is rarely reached
+        /// instead and the transcoded audio, which starts at the requested time, starts close to the keyframe.
+        /// </summary>
+        public const long SegmentMuxerSeekOffsetTicks = TimeSpan.TicksPerSecond / 5;
+
+        /// <summary>
         /// The distance from the end of the input that a seek is clamped to, so that the muxer still receives packets.
         /// </summary>
         public const long SeekMarginFromEndTicks = 5 * TimeSpan.TicksPerSecond;
@@ -3116,7 +3124,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // Workaround this by adding 0.5s offset to the seeking time to get the exact keyframe on most videos.
                 // This will help subtitle syncing.
                 var isHlsRemuxing = state.IsVideoRequest && state.TranscodingType is TranscodingJobType.Hls && IsCopyCodec(state.OutputVideoCodec);
-                var seekTick = isHlsRemuxing ? time + HlsRemuxSeekOffsetTicks : time;
+                var seekTick = isHlsRemuxing ? time + state.HlsRemuxSeekOffsetTicks : time;
 
                 // Seeking beyond EOF makes no sense in transcoding. Clamp the seekTick value to
                 // [0, RuntimeTicks - SeekMarginFromEndTicks], so that the muxer gets packets and avoid error codes.

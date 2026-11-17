@@ -1770,7 +1770,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             return "-segment_time 86400";
         }
 
-        var seekOffset = TimeSpan.FromTicks(EncodingHelper.HlsRemuxSeekOffsetTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture);
+        var seekOffset = TimeSpan.FromTicks(EncodingHelper.SegmentMuxerSeekOffsetTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture);
         return "-segment_times " + string.Join(',', cutTimes) + " -segment_time_delta " + seekOffset;
     }
 
@@ -1780,6 +1780,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         if (TryGetSegmentMuxerSegmentStarts(state, out var segmentStarts) && segmentId < segmentStarts.Length)
         {
             var startSegment = GetSeekableSegment(segmentStarts, segmentId, state.RunTimeTicks ?? 0);
+            state.HlsRemuxSeekOffsetTicks = EncodingHelper.SegmentMuxerSeekOffsetTicks;
             return (startSegment, segmentStarts[startSegment], segmentStarts);
         }
 
