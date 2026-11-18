@@ -606,6 +606,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IDtoService, DtoService>();
 
             serviceCollection.AddSingleton<IVideoPlaybackCoordinator>(_ => new VideoPlaybackCoordinator(TimeProvider.System, TimeSpan.FromMinutes(5)));
+            serviceCollection.AddSingleton<VideoPlaybackHelper>();
             serviceCollection.AddSingleton<ISessionManager, SessionManager>();
 
             serviceCollection.AddSingleton<ICollectionManager, CollectionManager>();

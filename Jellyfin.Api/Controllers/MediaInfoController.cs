@@ -35,6 +35,7 @@ public class MediaInfoController : BaseJellyfinApiController
     private readonly ILogger<MediaInfoController> _logger;
     private readonly MediaInfoHelper _mediaInfoHelper;
     private readonly IUserManager _userManager;
+    private readonly VideoPlaybackHelper _videoPlaybackHelper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MediaInfoController"/> class.
@@ -45,13 +46,15 @@ public class MediaInfoController : BaseJellyfinApiController
     /// <param name="logger">Instance of the <see cref="ILogger{MediaInfoController}"/> interface.</param>
     /// <param name="mediaInfoHelper">Instance of the <see cref="MediaInfoHelper"/>.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface..</param>
+    /// <param name="videoPlaybackHelper">The video playback admission helper.</param>
     public MediaInfoController(
         IMediaSourceManager mediaSourceManager,
         IDeviceManager deviceManager,
         ILibraryManager libraryManager,
         ILogger<MediaInfoController> logger,
         MediaInfoHelper mediaInfoHelper,
-        IUserManager userManager)
+        IUserManager userManager,
+        VideoPlaybackHelper videoPlaybackHelper)
     {
         _mediaSourceManager = mediaSourceManager;
         _deviceManager = deviceManager;
@@ -59,6 +62,7 @@ public class MediaInfoController : BaseJellyfinApiController
         _logger = logger;
         _mediaInfoHelper = mediaInfoHelper;
         _userManager = userManager;
+        _videoPlaybackHelper = videoPlaybackHelper;
     }
 
     /// <summary>
@@ -66,13 +70,17 @@ public class MediaInfoController : BaseJellyfinApiController
     /// </summary>
     /// <param name="itemId">The item id.</param>
     /// <param name="userId">The user id.</param>
+    /// <param name="playbackInstanceId">The stable playback identifier to reuse when changing encodings.</param>
     /// <response code="200">Playback info returned.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="Task"/> containing a <see cref="PlaybackInfoResponse"/> with the playback information.</returns>
     [HttpGet("Items/{itemId}/PlaybackInfo")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<PlaybackInfoResponse>> GetPlaybackInfo([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
+    public async Task<ActionResult<PlaybackInfoResponse>> GetPlaybackInfo(
+        [FromRoute, Required] Guid itemId,
+        [FromQuery] Guid? userId,
+        [FromQuery, MaxLength(128)] string? playbackInstanceId = null)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.IsNullOrEmpty()
@@ -84,7 +92,13 @@ public class MediaInfoController : BaseJellyfinApiController
             return NotFound();
         }
 
-        return await _mediaInfoHelper.GetPlaybackInfo(item, user, Request).ConfigureAwait(false);
+        var info = await _mediaInfoHelper.GetPlaybackInfo(item, user, Request).ConfigureAwait(false);
+        if (info.ErrorCode is null && info.PlaySessionId is not null)
+        {
+            info.PlaybackInstanceId = _videoPlaybackHelper.RegisterPlayback(HttpContext, item.Id, info.PlaySessionId, playbackInstanceId);
+        }
+
+        return info;
     }
 
     /// <summary>
@@ -110,6 +124,7 @@ public class MediaInfoController : BaseJellyfinApiController
     /// <param name="allowVideoStreamCopy">Whether to allow to copy the video stream. Default: true.</param>
     /// <param name="allowAudioStreamCopy">Whether to allow to copy the audio stream. Default: true.</param>
     /// <param name="playbackInfoDto">The playback info.</param>
+    /// <param name="playbackInstanceId">The stable playback identifier to reuse when changing encodings.</param>
     /// <response code="200">Playback info returned.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="Task"/> containing a <see cref="PlaybackInfoResponse"/> with the playback info.</returns>
@@ -132,7 +147,8 @@ public class MediaInfoController : BaseJellyfinApiController
         [FromQuery, ParameterObsolete] bool? enableTranscoding,
         [FromQuery, ParameterObsolete] bool? allowVideoStreamCopy,
         [FromQuery, ParameterObsolete] bool? allowAudioStreamCopy,
-        [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] PlaybackInfoDto? playbackInfoDto)
+        [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] PlaybackInfoDto? playbackInfoDto,
+        [FromQuery, ParameterObsolete, MaxLength(128)] string? playbackInstanceId = null)
     {
         var profile = playbackInfoDto?.DeviceProfile;
         _logger.LogDebug("GetPostedPlaybackInfo profile: {@Profile}", profile);
@@ -149,6 +165,7 @@ public class MediaInfoController : BaseJellyfinApiController
         // Copy params from posted body
         // TODO clean up when breaking API compatibility.
         userId ??= playbackInfoDto?.UserId;
+        playbackInstanceId ??= playbackInfoDto?.PlaybackInstanceId;
         userId = RequestHelpers.GetUserId(User, userId);
         maxStreamingBitrate ??= playbackInfoDto?.MaxStreamingBitrate;
         startTimeTicks ??= playbackInfoDto?.StartTimeTicks;
@@ -185,6 +202,11 @@ public class MediaInfoController : BaseJellyfinApiController
         if (info.ErrorCode is not null)
         {
             return info;
+        }
+
+        if (info.PlaySessionId is not null)
+        {
+            info.PlaybackInstanceId = _videoPlaybackHelper.RegisterPlayback(HttpContext, item.Id, info.PlaySessionId, playbackInstanceId);
         }
 
         if (profile is not null)

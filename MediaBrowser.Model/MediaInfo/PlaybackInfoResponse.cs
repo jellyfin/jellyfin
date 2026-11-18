@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 
@@ -29,6 +30,12 @@ namespace MediaBrowser.Model.MediaInfo
         /// </summary>
         /// <value>The play session identifier.</value>
         public string? PlaySessionId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the stable playback identifier to reuse when changing encodings.
+        /// </summary>
+        [MaxLength(128)]
+        public string? PlaybackInstanceId { get; set; }
 
         /// <summary>
         /// Gets or sets the error code.

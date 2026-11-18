@@ -28,7 +28,8 @@ namespace Jellyfin.Server.Configuration
             var corsHosts = _serverConfigurationManager.Configuration.CorsHosts;
             var builder = new CorsPolicyBuilder()
                 .AllowAnyMethod()
-                .AllowAnyHeader();
+                .AllowAnyHeader()
+                .WithExposedHeaders("X-Jellyfin-Error-Code");
 
             // No hosts configured or only default configured.
             if (corsHosts.Length == 0

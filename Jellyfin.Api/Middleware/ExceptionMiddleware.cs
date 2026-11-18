@@ -3,10 +3,13 @@ using System.IO;
 using System.Net.Mime;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.MediaInfo;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
@@ -90,6 +93,16 @@ public class ExceptionMiddleware
             }
 
             context.Response.StatusCode = GetStatusCode(ex);
+            if (ex is VideoPlaybackLimitException)
+            {
+                context.Response.Headers["X-Jellyfin-Error-Code"] = nameof(PlaybackErrorCode.MaxActiveVideoStreamsReached);
+                await context.Response.WriteAsJsonAsync(
+                    new PlaybackInfoResponse { ErrorCode = PlaybackErrorCode.MaxActiveVideoStreamsReached },
+                    JsonDefaults.PascalCaseOptions,
+                    context.RequestAborted).ConfigureAwait(false);
+                return;
+            }
+
             context.Response.ContentType = MediaTypeNames.Text.Plain;
 
             // Don't send exception unless the server is in a Development environment
