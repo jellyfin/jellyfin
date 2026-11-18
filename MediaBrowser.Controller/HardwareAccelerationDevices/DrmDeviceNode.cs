@@ -12,6 +12,12 @@ namespace MediaBrowser.Controller.HardwareAccelerationDevices
         public required string DrmDeviceNodeFileFullPath { get; init; }
 
         /// <summary>
+        /// Gets the full path to the symbolic link to a DRM device node, created by udev.
+        /// Example: "/dev/dri/by-path/pci-0000:00:02.0-render" (points to "/dev/dri/renderD128").
+        /// </summary>
+        public required string? UdevByPathDrmDeviceNodeSymbolicLinkFullPath { get; init; }
+
+        /// <summary>
         /// Gets PCI device directory full path. Uniquely identifies the device in the system.
         /// Example: "/sys/devices/pci0000:00/0000:00:01.0/0000:01:00.0/0000:02:00.0/0000:03:00.0".
         /// </summary>

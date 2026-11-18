@@ -78,7 +78,7 @@ public partial class LinuxVaapiDeviceDiscoverer : IHardwareAccelerationTypeDevic
                     {
                         HardwareAccelerationType = HardwareAccelerationType.vaapi,
                         HumanReadableName = vaapiDeviceInitializationResult.DriverName ?? "Unknown device",
-                        Identifier = renderNode.DrmDeviceNodeFileFullPath
+                        Identifier = renderNode.UdevByPathDrmDeviceNodeSymbolicLinkFullPath ?? renderNode.DrmDeviceNodeFileFullPath
                     });
 
                     continue;
@@ -95,7 +95,7 @@ public partial class LinuxVaapiDeviceDiscoverer : IHardwareAccelerationTypeDevic
                     {
                         HardwareAccelerationType = HardwareAccelerationType.vaapi,
                         HumanReadableName = vaapiDeviceInitializationResult.DriverName ?? "Unknown device",
-                        Identifier = primaryNode.DrmDeviceNodeFileFullPath
+                        Identifier = primaryNode.UdevByPathDrmDeviceNodeSymbolicLinkFullPath ?? primaryNode.DrmDeviceNodeFileFullPath
                     });
                 }
             }
