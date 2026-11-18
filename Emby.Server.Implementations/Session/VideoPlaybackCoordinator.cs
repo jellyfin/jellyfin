@@ -66,8 +66,74 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
                 _playbacks.Add(key, entry);
             }
 
-            _playSessions.Add(playSessionId, new PlaySession(entry, ++entry.LastRegistration));
+            var session = new PlaySession(entry, ++entry.LastRegistration, playSessionId);
+            _playSessions.Add(playSessionId, session);
+            entry.LastRegisteredSession = session;
+            entry.LastActivity = now;
             return VideoPlaybackStatus.Success;
+        }
+    }
+
+    /// <inheritdoc />
+    public VideoPlaybackStatus ResolvePlaySession(
+        Guid userId,
+        string sessionId,
+        Guid? itemId,
+        string playSessionId,
+        out VideoPlaybackContext playback)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sessionId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(playSessionId);
+        playback = default;
+        lock (_gate)
+        {
+            if (!_playSessions.TryGetValue(playSessionId, out var session))
+            {
+                return VideoPlaybackStatus.NotFound;
+            }
+
+            var context = session.Playback.Context;
+            if (!context.UserId.Equals(userId)
+                || !string.Equals(context.SessionId, sessionId, StringComparison.Ordinal)
+                || (itemId.HasValue && !context.ItemId.Equals(itemId.Value)))
+            {
+                return VideoPlaybackStatus.OwnershipMismatch;
+            }
+
+            var status = ResolveStatus(session.Playback, _timeProvider.GetTimestamp());
+            if (status == VideoPlaybackStatus.Success)
+            {
+                playback = context;
+            }
+
+            return status;
+        }
+    }
+
+    /// <inheritdoc />
+    public VideoPlaybackStatus ResolvePlayback(VideoPlaybackContext playback, out string? playSessionId)
+    {
+        ValidateContext(playback, playback.PlaybackInstanceId);
+        playSessionId = null;
+        lock (_gate)
+        {
+            if (!_playbacks.TryGetValue((playback.UserId, playback.PlaybackInstanceId), out var entry))
+            {
+                return VideoPlaybackStatus.NotFound;
+            }
+
+            if (!Matches(entry.Context, playback))
+            {
+                return VideoPlaybackStatus.OwnershipMismatch;
+            }
+
+            var status = ResolveStatus(entry, _timeProvider.GetTimestamp());
+            if (status == VideoPlaybackStatus.Success)
+            {
+                playSessionId = (entry.LastAcknowledgedSession ?? entry.LastRegisteredSession)!.Id;
+            }
+
+            return status;
         }
     }
 
@@ -105,7 +171,7 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
 
             entry.LastActivity = now;
             entry.References++;
-            request = new PlaybackRequest(this, entry, session.Registration);
+            request = new PlaybackRequest(this, session);
             return VideoPlaybackStatus.Success;
         }
     }
@@ -240,18 +306,17 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
             return VideoPlaybackStatus.OwnershipMismatch;
         }
 
-        if (entry.Status != VideoPlaybackStatus.Success)
-        {
-            return entry.Status;
-        }
+        return ResolveStatus(entry, now);
+    }
 
-        if (IsExpired(entry, now))
+    private VideoPlaybackStatus ResolveStatus(Playback entry, long now)
+    {
+        if (entry.Status == VideoPlaybackStatus.Success && IsExpired(entry, now))
         {
             Retire(entry, VideoPlaybackStatus.Expired, now);
-            return VideoPlaybackStatus.Expired;
         }
 
-        return VideoPlaybackStatus.Success;
+        return entry.Status;
     }
 
     private void RemoveCount(Playback entry)
@@ -295,7 +360,11 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
             if (request.Playback.Status == VideoPlaybackStatus.Success)
             {
                 request.Playback.Acknowledged = true;
-                request.Playback.LastAcknowledgedRegistration = Math.Max(request.Playback.LastAcknowledgedRegistration, request.Registration);
+                if (request.PlaySession.Registration > request.Playback.LastAcknowledgedRegistration)
+                {
+                    request.Playback.LastAcknowledgedSession = request.PlaySession;
+                }
+
                 request.Playback.LastActivity = _timeProvider.GetTimestamp();
             }
         }
@@ -312,7 +381,7 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
             }
 
             request.Playback.References++;
-            return new PlaybackRequest(this, request.Playback, request.Registration);
+            return new PlaybackRequest(this, request.PlaySession);
         }
     }
 
@@ -355,7 +424,11 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
 
         public long LastRegistration { get; set; }
 
-        public long LastAcknowledgedRegistration { get; set; }
+        public long LastAcknowledgedRegistration => LastAcknowledgedSession?.Registration ?? 0;
+
+        public PlaySession? LastAcknowledgedSession { get; set; }
+
+        public PlaySession? LastRegisteredSession { get; set; }
 
         public int References { get; set; }
 
@@ -364,13 +437,13 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
         public bool Acknowledged { get; set; }
     }
 
-    private sealed record PlaySession(Playback Playback, long Registration);
+    private sealed record PlaySession(Playback Playback, long Registration, string Id);
 
-    private sealed class PlaybackRequest(VideoPlaybackCoordinator coordinator, Playback playback, long registration) : IVideoPlaybackRequest
+    private sealed class PlaybackRequest(VideoPlaybackCoordinator coordinator, PlaySession playSession) : IVideoPlaybackRequest
     {
-        public Playback Playback { get; } = playback;
+        public Playback Playback => PlaySession.Playback;
 
-        public long Registration { get; } = registration;
+        public PlaySession PlaySession { get; } = playSession;
 
         public bool Released { get; set; }
 

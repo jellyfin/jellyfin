@@ -88,26 +88,29 @@ namespace MediaBrowser.Controller.Session
         /// Used to report that playback has started for an item.
         /// </summary>
         /// <param name="info">The info.</param>
+        /// <param name="playbackOwnerId">The authenticated, token-bound playback owner, if available.</param>
         /// <returns>Task.</returns>
-        Task OnPlaybackStart(PlaybackStartInfo info);
+        Task OnPlaybackStart(PlaybackStartInfo info, string playbackOwnerId = null);
 
         /// <summary>
         /// Used to report playback progress for an item.
         /// </summary>
         /// <param name="info">The info.</param>
+        /// <param name="playbackOwnerId">The authenticated, token-bound playback owner, if available.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">Throws if an argument is null.</exception>
-        Task OnPlaybackProgress(PlaybackProgressInfo info);
+        Task OnPlaybackProgress(PlaybackProgressInfo info, string playbackOwnerId = null);
 
-        Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated);
+        Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated, string playbackOwnerId = null);
 
         /// <summary>
         /// Used to report that playback has ended for an item.
         /// </summary>
         /// <param name="info">The info.</param>
+        /// <param name="playbackOwnerId">The authenticated, token-bound playback owner, if available.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">Throws if an argument is null.</exception>
-        Task OnPlaybackStopped(PlaybackStopInfo info);
+        Task OnPlaybackStopped(PlaybackStopInfo info, string playbackOwnerId = null);
 
         /// <summary>
         /// Reports the session ended.

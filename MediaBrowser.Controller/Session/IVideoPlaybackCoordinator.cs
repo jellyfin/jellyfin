@@ -1,3 +1,5 @@
+using System;
+
 namespace MediaBrowser.Controller.Session;
 
 /// <summary>
@@ -17,6 +19,30 @@ public interface IVideoPlaybackCoordinator
     /// fallback cannot distinguish multiple players of the same item on that session.
     /// </remarks>
     VideoPlaybackStatus RegisterPlaySession(VideoPlaybackContext playback, string playSessionId);
+
+    /// <summary>
+    /// Resolves a registered encoding identifier for its authenticated owner.
+    /// </summary>
+    /// <param name="userId">The authenticated user identifier.</param>
+    /// <param name="sessionId">The authenticated, token-bound playback owner identifier.</param>
+    /// <param name="itemId">The canonical item identifier, or null for a session ping.</param>
+    /// <param name="playSessionId">The registered encoding identifier.</param>
+    /// <param name="playback">The verified context when resolution succeeds.</param>
+    /// <returns>The resolution result without acquiring playback quota.</returns>
+    VideoPlaybackStatus ResolvePlaySession(
+        Guid userId,
+        string sessionId,
+        Guid? itemId,
+        string playSessionId,
+        out VideoPlaybackContext playback);
+
+    /// <summary>
+    /// Resolves the current encoding identifier for a verified logical playback.
+    /// </summary>
+    /// <param name="playback">The server-verified playback context.</param>
+    /// <param name="playSessionId">The last acknowledged identifier, or latest registered identifier before admission.</param>
+    /// <returns>The resolution result without acquiring playback quota.</returns>
+    VideoPlaybackStatus ResolvePlayback(VideoPlaybackContext playback, out string? playSessionId);
 
     /// <summary>
     /// Acquires one operation, atomically reserving quota for a new logical playback.

@@ -60,6 +60,7 @@ namespace Emby.Server.Implementations.Session
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerApplicationHost _appHost;
         private readonly IDeviceManager _deviceManager;
+        private readonly IVideoPlaybackCoordinator _videoPlaybackCoordinator;
         private readonly CancellationTokenRegistration _shutdownCallback;
         private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections
             = new(StringComparer.OrdinalIgnoreCase);
@@ -89,6 +90,7 @@ namespace Emby.Server.Implementations.Session
         /// <param name="deviceManager">Instance of <see cref="IDeviceManager"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="hostApplicationLifetime">Instance of <see cref="IHostApplicationLifetime"/> interface.</param>
+        /// <param name="videoPlaybackCoordinator">The video playback admission registry.</param>
         public SessionManager(
             ILogger<SessionManager> logger,
             IEventManager eventManager,
@@ -102,7 +104,8 @@ namespace Emby.Server.Implementations.Session
             IServerApplicationHost appHost,
             IDeviceManager deviceManager,
             IMediaSourceManager mediaSourceManager,
-            IHostApplicationLifetime hostApplicationLifetime)
+            IHostApplicationLifetime hostApplicationLifetime,
+            IVideoPlaybackCoordinator videoPlaybackCoordinator)
         {
             _logger = logger;
             _eventManager = eventManager;
@@ -116,6 +119,7 @@ namespace Emby.Server.Implementations.Session
             _appHost = appHost;
             _deviceManager = deviceManager;
             _mediaSourceManager = mediaSourceManager;
+            _videoPlaybackCoordinator = videoPlaybackCoordinator;
             _shutdownCallback = hostApplicationLifetime.ApplicationStopping.Register(OnApplicationStopping);
 
             _deviceManager.DeviceOptionsUpdated += OnDeviceManagerDeviceOptionsUpdated;
@@ -760,9 +764,10 @@ namespace Emby.Server.Implementations.Session
         /// Used to report that playback has started for an item.
         /// </summary>
         /// <param name="info">The info.</param>
+        /// <param name="playbackOwnerId">The authenticated, token-bound playback owner, if available.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException"><c>info</c> is <c>null</c>.</exception>
-        public async Task OnPlaybackStart(PlaybackStartInfo info)
+        public async Task OnPlaybackStart(PlaybackStartInfo info, string playbackOwnerId = null)
         {
             CheckDisposed();
 
@@ -775,6 +780,11 @@ namespace Emby.Server.Implementations.Session
                 : GetNowPlayingItem(session, info.ItemId);
 
             await UpdateNowPlayingItem(session, info, libraryItem, true).ConfigureAwait(false);
+
+            if (TryResolveVideoPlayback(session, info.ItemId, info.PlaySessionId, playbackOwnerId, out var playback, out var playSessionId))
+            {
+                _videoPlaybackCoordinator.ReportActivity(playback, playSessionId);
+            }
 
             if (!string.IsNullOrEmpty(session.DeviceId) && info.PlayMethod != PlayMethod.Transcode)
             {
@@ -863,9 +873,9 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public Task OnPlaybackProgress(PlaybackProgressInfo info)
+        public Task OnPlaybackProgress(PlaybackProgressInfo info, string playbackOwnerId = null)
         {
-            return OnPlaybackProgress(info, false);
+            return OnPlaybackProgress(info, false, playbackOwnerId);
         }
 
         private void UpdateLiveStreamActiveSessionMappings(string liveStreamId, string sessionId, string playSessionId)
@@ -899,8 +909,9 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="info">The playback progress info.</param>
         /// <param name="isAutomated">Whether this is an automated update.</param>
+        /// <param name="playbackOwnerId">The authenticated, token-bound playback owner, if available.</param>
         /// <returns>Task.</returns>
-        public async Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated)
+        public async Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated, string playbackOwnerId = null)
         {
             CheckDisposed();
 
@@ -917,6 +928,11 @@ namespace Emby.Server.Implementations.Session
                 : GetNowPlayingItem(session, info.ItemId);
 
             await UpdateNowPlayingItem(session, info, libraryItem, !isAutomated).ConfigureAwait(false);
+
+            if (!isAutomated && TryResolveVideoPlayback(session, info.ItemId, info.PlaySessionId, playbackOwnerId, out var playback, out var playSessionId))
+            {
+                _videoPlaybackCoordinator.ReportActivity(playback, playSessionId);
+            }
 
             if (!string.IsNullOrEmpty(session.DeviceId) && info.PlayMethod != PlayMethod.Transcode)
             {
@@ -1058,10 +1074,11 @@ namespace Emby.Server.Implementations.Session
         /// Used to report that playback has ended for an item.
         /// </summary>
         /// <param name="info">The info.</param>
+        /// <param name="playbackOwnerId">The authenticated, token-bound playback owner, if available.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException"><c>info</c> is <c>null</c>.</exception>
         /// <exception cref="ArgumentOutOfRangeException"><c>info.PositionTicks</c> is <c>null</c> or negative.</exception>
-        public async Task OnPlaybackStopped(PlaybackStopInfo info)
+        public async Task OnPlaybackStopped(PlaybackStopInfo info, string playbackOwnerId = null)
         {
             CheckDisposed();
 
@@ -1081,6 +1098,11 @@ namespace Emby.Server.Implementations.Session
                 }
 
                 throw new ArgumentOutOfRangeException(nameof(info), "The PlaybackStopInfo's PositionTicks was negative.");
+            }
+
+            if (TryResolveVideoPlayback(session, info.ItemId, info.PlaySessionId, playbackOwnerId, out var playback, out var playSessionId))
+            {
+                _videoPlaybackCoordinator.Stop(playback, playSessionId);
             }
 
             var libraryItem = info.ItemId.IsEmpty()
@@ -1171,6 +1193,31 @@ namespace Emby.Server.Implementations.Session
             await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
 
             EventHelper.QueueEventIfNotNull(PlaybackStopped, this, eventArgs, _logger);
+        }
+
+        private bool TryResolveVideoPlayback(SessionInfo session, Guid itemId, string playSessionId, string playbackOwnerId, out VideoPlaybackContext playback, out string resolvedPlaySessionId)
+        {
+            playback = default;
+            resolvedPlaySessionId = playSessionId;
+            if (session.UserId.IsEmpty() || string.IsNullOrWhiteSpace(playbackOwnerId))
+            {
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(resolvedPlaySessionId))
+            {
+                if (itemId.IsEmpty())
+                {
+                    return false;
+                }
+
+                var legacyId = VideoPlaybackContext.CreateLegacyId(session.UserId, playbackOwnerId, itemId);
+                playback = new VideoPlaybackContext(session.UserId, playbackOwnerId, itemId, legacyId);
+                return _videoPlaybackCoordinator.ResolvePlayback(playback, out resolvedPlaySessionId) == VideoPlaybackStatus.Success;
+            }
+
+            Guid? reportedItemId = itemId.IsEmpty() ? null : itemId;
+            return _videoPlaybackCoordinator.ResolvePlaySession(session.UserId, playbackOwnerId, reportedItemId, resolvedPlaySessionId, out playback) == VideoPlaybackStatus.Success;
         }
 
         private bool OnPlaybackStopped(User user, BaseItem item, long? positionTicks, bool playbackFailed)

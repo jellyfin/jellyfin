@@ -605,6 +605,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddTransient(provider => new Lazy<ILiveTvManager>(provider.GetRequiredService<ILiveTvManager>));
             serviceCollection.AddSingleton<IDtoService, DtoService>();
 
+            serviceCollection.AddSingleton<IVideoPlaybackCoordinator>(_ => new VideoPlaybackCoordinator(TimeProvider.System, TimeSpan.FromMinutes(5)));
             serviceCollection.AddSingleton<ISessionManager, SessionManager>();
 
             serviceCollection.AddSingleton<ICollectionManager, CollectionManager>();

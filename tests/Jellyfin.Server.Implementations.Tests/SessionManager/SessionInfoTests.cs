@@ -34,8 +34,8 @@ public class SessionInfoTests
         const long reportedPositionTicks = 123456789;
 
         sessionManager
-            .Setup(manager => manager.OnPlaybackProgress(It.IsAny<PlaybackProgressInfo>(), true))
-            .Callback<PlaybackProgressInfo, bool>((info, _) =>
+            .Setup(manager => manager.OnPlaybackProgress(It.IsAny<PlaybackProgressInfo>(), true, null))
+            .Callback<PlaybackProgressInfo, bool, string?>((info, _, _) =>
             {
                 session.PlayState.PositionTicks = info.PositionTicks;
                 automaticProgress.TrySetResult(info.PositionTicks);

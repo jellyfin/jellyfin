@@ -1,7 +1,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.Session;
 using Jellyfin.Data;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller;
@@ -13,6 +15,8 @@ using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -23,6 +27,8 @@ namespace Jellyfin.Server.Implementations.Tests.SessionManager;
 
 public class SessionManagerTests
 {
+    private const string PlaybackOwnerId = "authenticated-playback-owner";
+
     [Theory]
     [InlineData("", typeof(ArgumentException))]
     [InlineData(null, typeof(ArgumentNullException))]
@@ -41,7 +47,8 @@ public class SessionManagerTests
             Mock.Of<IServerApplicationHost>(),
             Mock.Of<IDeviceManager>(),
             Mock.Of<IMediaSourceManager>(),
-            Mock.Of<IHostApplicationLifetime>());
+            Mock.Of<IHostApplicationLifetime>(),
+            Mock.Of<IVideoPlaybackCoordinator>());
 
         await Assert.ThrowsAsync(exceptionType, () => sessionManager.GetAuthorizationToken(
             new User("test", "default", "default"),
@@ -68,7 +75,8 @@ public class SessionManagerTests
             Mock.Of<IServerApplicationHost>(),
             Mock.Of<IDeviceManager>(),
             Mock.Of<IMediaSourceManager>(),
-            Mock.Of<IHostApplicationLifetime>());
+            Mock.Of<IHostApplicationLifetime>(),
+            Mock.Of<IVideoPlaybackCoordinator>());
 
         await Assert.ThrowsAsync(exceptionType, () => sessionManager.AuthenticateNewSessionInternal(authenticationRequest, false));
     }
@@ -217,7 +225,154 @@ public class SessionManagerTests
         Assert.Throws<SecurityException>(() => sessionManager.ReportCapabilities(attackerSession.Id, victimSession.Id, new ClientCapabilities()));
     }
 
+    [Theory]
+    [InlineData("start", VideoPlaybackStatus.LimitReached)]
+    [InlineData("progress", VideoPlaybackStatus.LimitReached)]
+    [InlineData("progress-no-item", VideoPlaybackStatus.LimitReached)]
+    [InlineData("automated", VideoPlaybackStatus.Success)]
+    [InlineData("untrusted", VideoPlaybackStatus.Success)]
+    [InlineData("wrong-owner", VideoPlaybackStatus.Success)]
+    public async Task PlaybackReports_RenewOnlyRealClientActivity(string reportKind, VideoPlaybackStatus expectedAdmission)
+    {
+        var clock = new ManualTimeProvider();
+        var timeout = TimeSpan.FromMinutes(10);
+        var coordinator = new VideoPlaybackCoordinator(clock, timeout);
+        var user = new User("user", "default", "default");
+        await using var sessionManager = CreateSessionManager(coordinator, user);
+        var session = await LogSessionActivity(sessionManager, user);
+        var itemId = Guid.NewGuid();
+        var playback = new VideoPlaybackContext(user.Id, PlaybackOwnerId, itemId, "playback");
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.RegisterPlaySession(playback, "encoding"));
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.TryAcquire(playback, "encoding", 1, out var operation));
+        using (var request = Assert.IsAssignableFrom<IVideoPlaybackRequest>(operation))
+        {
+            request.Acknowledge();
+        }
+
+        clock.Advance(timeout / 2);
+        var info = CreatePlaybackInfo(session.Id, itemId, "encoding");
+        if (reportKind == "progress-no-item")
+        {
+            info.ItemId = Guid.Empty;
+            info.Item = null;
+        }
+
+        if (reportKind == "start")
+        {
+            await sessionManager.OnPlaybackStart(info, PlaybackOwnerId);
+        }
+        else
+        {
+            var ownerId = reportKind switch
+            {
+                "untrusted" => null,
+                "wrong-owner" => "other-token-owner",
+                _ => PlaybackOwnerId
+            };
+            await sessionManager.OnPlaybackProgress(info, reportKind == "automated", ownerId);
+        }
+
+        clock.Advance((timeout / 2) + TimeSpan.FromTicks(1));
+        coordinator.RemoveExpired();
+        var next = playback with { PlaybackInstanceId = "next" };
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.RegisterPlaySession(next, "next-encoding"));
+        Assert.Equal(expectedAdmission, coordinator.TryAcquire(next, "next-encoding", 1, out var nextOperation));
+        nextOperation?.Dispose();
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public async Task OnPlaybackStopped_ReleasesExactOrCanonicalLegacyAdmission(bool legacy, bool omitItemId)
+    {
+        var coordinator = new VideoPlaybackCoordinator(new ManualTimeProvider(), TimeSpan.FromMinutes(10));
+        var user = new User("user", "default", "default");
+        await using var sessionManager = CreateSessionManager(coordinator, user);
+        var session = await LogSessionActivity(sessionManager, user);
+        var itemId = Guid.NewGuid();
+        var playSessionId = Guid.NewGuid().ToString("N");
+        var instanceId = legacy ? VideoPlaybackContext.CreateLegacyId(user.Id, PlaybackOwnerId, itemId) : "playback";
+        var playback = new VideoPlaybackContext(user.Id, PlaybackOwnerId, itemId, instanceId);
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.RegisterPlaySession(playback, playSessionId));
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.TryAcquire(playback, playSessionId, 1, out var operation));
+        using (var request = Assert.IsAssignableFrom<IVideoPlaybackRequest>(operation))
+        {
+            request.Acknowledge();
+        }
+
+        await sessionManager.OnPlaybackStopped(
+            new PlaybackStopInfo
+            {
+                SessionId = session.Id,
+                ItemId = omitItemId ? Guid.Empty : itemId,
+                PlaySessionId = legacy ? null : playSessionId,
+                Item = omitItemId ? null : new BaseItemDto { Id = itemId, MediaType = MediaType.Video }
+            },
+            PlaybackOwnerId);
+
+        var next = playback with { PlaybackInstanceId = "next" };
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.RegisterPlaySession(next, "next-encoding"));
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.TryAcquire(next, "next-encoding", 1, out var nextOperation));
+        nextOperation?.Dispose();
+    }
+
+    [Fact]
+    public async Task OnPlaybackStopped_WithoutIdentifierDoesNotReleaseModernAdmission()
+    {
+        var coordinator = new VideoPlaybackCoordinator(new ManualTimeProvider(), TimeSpan.FromMinutes(10));
+        var user = new User("user", "default", "default");
+        await using var sessionManager = CreateSessionManager(coordinator, user);
+        var session = await LogSessionActivity(sessionManager, user);
+        var itemId = Guid.NewGuid();
+        var playback = new VideoPlaybackContext(user.Id, PlaybackOwnerId, itemId, "modern");
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.RegisterPlaySession(playback, "encoding"));
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.TryAcquire(playback, "encoding", 1, out var operation));
+        using (var request = Assert.IsAssignableFrom<IVideoPlaybackRequest>(operation))
+        {
+            request.Acknowledge();
+        }
+
+        await sessionManager.OnPlaybackStopped(new PlaybackStopInfo { SessionId = session.Id, ItemId = itemId }, PlaybackOwnerId);
+
+        var next = playback with { PlaybackInstanceId = "next" };
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.RegisterPlaySession(next, "next-encoding"));
+        Assert.Equal(VideoPlaybackStatus.LimitReached, coordinator.TryAcquire(next, "next-encoding", 1, out _));
+    }
+
+    [Fact]
+    public async Task OnPlaybackStart_DoesNotAdmitVideoFromClientReportAlone()
+    {
+        var coordinator = new VideoPlaybackCoordinator(new ManualTimeProvider(), TimeSpan.FromMinutes(10));
+        var user = new User("user", "default", "default");
+        await using var sessionManager = CreateSessionManager(coordinator, user);
+        var session = await LogSessionActivity(sessionManager, user);
+        var itemId = Guid.NewGuid();
+        var playback = new VideoPlaybackContext(user.Id, PlaybackOwnerId, itemId, "reported");
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.RegisterPlaySession(playback, "encoding"));
+
+        await sessionManager.OnPlaybackStart(CreatePlaybackInfo(session.Id, itemId, "encoding"), PlaybackOwnerId);
+
+        var next = playback with { PlaybackInstanceId = "next" };
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.RegisterPlaySession(next, "next-encoding"));
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.TryAcquire(next, "next-encoding", 1, out var operation));
+        operation?.Dispose();
+    }
+
+    private static PlaybackStartInfo CreatePlaybackInfo(string sessionId, Guid itemId, string playSessionId)
+        => new()
+        {
+            SessionId = sessionId,
+            ItemId = itemId,
+            PlaySessionId = playSessionId,
+            Item = new BaseItemDto { Id = itemId, MediaType = MediaType.Video },
+            IsPaused = true
+        };
+
     private static Emby.Server.Implementations.Session.SessionManager CreateSessionManager(params User[] users)
+        => CreateSessionManager(Mock.Of<IVideoPlaybackCoordinator>(), users);
+
+    private static Emby.Server.Implementations.Session.SessionManager CreateSessionManager(IVideoPlaybackCoordinator coordinator, params User[] users)
     {
         var userManager = new Mock<IUserManager>();
         foreach (var user in users)
@@ -229,7 +384,7 @@ public class SessionManagerTests
             NullLogger<Emby.Server.Implementations.Session.SessionManager>.Instance,
             Mock.Of<IEventManager>(),
             Mock.Of<IUserDataManager>(),
-            Mock.Of<IServerConfigurationManager>(),
+            Mock.Of<IServerConfigurationManager>(config => config.Configuration == new ServerConfiguration()),
             Mock.Of<ILibraryManager>(),
             userManager.Object,
             Mock.Of<IMusicManager>(),
@@ -238,11 +393,23 @@ public class SessionManagerTests
             Mock.Of<IServerApplicationHost>(),
             Mock.Of<IDeviceManager>(),
             Mock.Of<IMediaSourceManager>(),
-            Mock.Of<IHostApplicationLifetime>());
+            Mock.Of<IHostApplicationLifetime>(),
+            coordinator);
     }
 
     // All sessions are logged with the same client and device id on purpose, those values are taken
     // from the request headers and are not bound to the access token of the calling user.
     private static Task<SessionInfo> LogSessionActivity(ISessionManager sessionManager, User user)
         => sessionManager.LogSessionActivity("Jellyfin Web", "1.0.0", "victim-tv-01", "device_name", "127.0.0.1", user);
+
+    private sealed class ManualTimeProvider : TimeProvider
+    {
+        private long _timestamp;
+
+        public override long TimestampFrequency => TimeSpan.TicksPerSecond;
+
+        public override long GetTimestamp() => _timestamp;
+
+        public void Advance(TimeSpan elapsed) => _timestamp += elapsed.Ticks;
+    }
 }

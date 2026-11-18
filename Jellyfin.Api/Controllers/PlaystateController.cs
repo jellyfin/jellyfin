@@ -204,7 +204,7 @@ public class PlaystateController : BaseJellyfinApiController
     {
         playbackStartInfo.PlayMethod = ValidatePlayMethod(playbackStartInfo.PlayMethod, playbackStartInfo.PlaySessionId);
         playbackStartInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        await _sessionManager.OnPlaybackStart(playbackStartInfo).ConfigureAwait(false);
+        await _sessionManager.OnPlaybackStart(playbackStartInfo, User.GetPlaybackOwnerId()).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -220,7 +220,7 @@ public class PlaystateController : BaseJellyfinApiController
     {
         playbackProgressInfo.PlayMethod = ValidatePlayMethod(playbackProgressInfo.PlayMethod, playbackProgressInfo.PlaySessionId);
         playbackProgressInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        await _sessionManager.OnPlaybackProgress(playbackProgressInfo).ConfigureAwait(false);
+        await _sessionManager.OnPlaybackProgress(playbackProgressInfo, User.GetPlaybackOwnerId()).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -255,7 +255,7 @@ public class PlaystateController : BaseJellyfinApiController
         }
 
         playbackStopInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        await _sessionManager.OnPlaybackStopped(playbackStopInfo).ConfigureAwait(false);
+        await _sessionManager.OnPlaybackStopped(playbackStopInfo, User.GetPlaybackOwnerId()).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -300,7 +300,7 @@ public class PlaystateController : BaseJellyfinApiController
 
         playbackStartInfo.PlayMethod = ValidatePlayMethod(playbackStartInfo.PlayMethod, playbackStartInfo.PlaySessionId);
         playbackStartInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        await _sessionManager.OnPlaybackStart(playbackStartInfo).ConfigureAwait(false);
+        await _sessionManager.OnPlaybackStart(playbackStartInfo, User.GetPlaybackOwnerId()).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -388,7 +388,7 @@ public class PlaystateController : BaseJellyfinApiController
 
         playbackProgressInfo.PlayMethod = ValidatePlayMethod(playbackProgressInfo.PlayMethod, playbackProgressInfo.PlaySessionId);
         playbackProgressInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        await _sessionManager.OnPlaybackProgress(playbackProgressInfo).ConfigureAwait(false);
+        await _sessionManager.OnPlaybackProgress(playbackProgressInfo, User.GetPlaybackOwnerId()).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -471,7 +471,7 @@ public class PlaystateController : BaseJellyfinApiController
         }
 
         playbackStopInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        await _sessionManager.OnPlaybackStopped(playbackStopInfo).ConfigureAwait(false);
+        await _sessionManager.OnPlaybackStopped(playbackStopInfo, User.GetPlaybackOwnerId()).ConfigureAwait(false);
         return NoContent();
     }
 
