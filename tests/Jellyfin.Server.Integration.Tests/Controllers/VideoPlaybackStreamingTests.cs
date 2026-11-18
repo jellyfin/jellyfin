@@ -123,6 +123,39 @@ public sealed class VideoPlaybackStreamingTests : IClassFixture<VideoPlaybackStr
         _factory.VerifyNoEncoderChanges();
     }
 
+    [Fact]
+    public async Task Stream_CaseVariantAliasCannotBeReboundByAnotherTokenOrUsedToStopFirstPlayer()
+    {
+        var clients = await CreatePlaybackClientsAsync().ConfigureAwait(true);
+        using var first = clients.First;
+        using var second = clients.Second;
+        var movie = _factory.CreateMovie();
+        // Legacy clients can supply their encoding identifier before requesting playback metadata.
+        var originalAlias = "lowercase-" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+        var uppercaseAlias = originalAlias.ToUpperInvariant();
+        _factory.RegisterTranscodingJob(movie, originalAlias);
+        await AssertRangeAsync(first, movie.Id, originalAlias).ConfigureAwait(true);
+
+        var forgedHeader = Assert.Single(second.DefaultRequestHeaders.GetValues(AuthHelper.AuthHeaderName))
+            .Replace("video-device-b", "video-device-a", StringComparison.Ordinal);
+        second.DefaultRequestHeaders.Remove(AuthHelper.AuthHeaderName);
+        second.DefaultRequestHeaders.Add(AuthHelper.AuthHeaderName, forgedHeader);
+        using (var borrowed = await second.GetAsync(GetStaticPath(movie.Id, uppercaseAlias), TestContext.Current.CancellationToken).ConfigureAwait(true))
+        {
+            Assert.Equal(HttpStatusCode.Forbidden, borrowed.StatusCode);
+            Assert.False(borrowed.Headers.Contains("X-Jellyfin-Error-Code"));
+        }
+
+        using var stopped = await second.PostAsJsonAsync(
+            "Sessions/Playing/Stopped",
+            new PlaybackStopInfo { ItemId = movie.Id, PlaySessionId = uppercaseAlias },
+            JsonDefaults.Options,
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.Forbidden, stopped.StatusCode);
+        _factory.VerifyNoPlaybackControlChanges();
+        await AssertRangeAsync(first, movie.Id, originalAlias).ConfigureAwait(true);
+    }
+
     [Theory]
     [InlineData("stop")]
     [InlineData("legacy-stop")]
@@ -310,8 +343,8 @@ public sealed class VideoPlaybackStreamingTests : IClassFixture<VideoPlaybackStr
         public static readonly byte[] MediaBytes = Enumerable.Range(0, 256).Select(value => (byte)value).ToArray();
         private readonly string _mediaPath = Path.Combine(Path.GetTempPath(), $"jellyfin-video-quota-{Guid.NewGuid():N}");
         private readonly Mock<ITranscodeManager> _transcodes = new();
-        private readonly ConcurrentDictionary<string, TranscodingJob> _jobs = new(StringComparer.Ordinal);
-        private readonly ConcurrentDictionary<string, TranscodingJob> _playlistJobs = new(StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<string, TranscodingJob> _jobs = new(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, TranscodingJob> _playlistJobs = new(StringComparer.OrdinalIgnoreCase);
         private readonly ConcurrentBag<string> _cachedPaths = new();
 
         public Movie CreateMovie()
@@ -346,6 +379,7 @@ public sealed class VideoPlaybackStreamingTests : IClassFixture<VideoPlaybackStr
             {
                 PlaySessionId = playSessionId,
                 DeviceId = "video-device-a",
+                IsOutputVideo = true,
                 MediaSource = CreateSource(movie)
             };
             Assert.True(_jobs.TryAdd(playSessionId, job));
@@ -369,6 +403,7 @@ public sealed class VideoPlaybackStreamingTests : IClassFixture<VideoPlaybackStr
                 DeviceId = deviceId,
                 Path = playlistPath,
                 Type = TranscodingJobType.Hls,
+                IsOutputVideo = true,
                 MediaSource = CreateSource(movie)
             };
             Assert.True(_jobs.TryAdd(playSessionId, job));

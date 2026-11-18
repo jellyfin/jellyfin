@@ -1446,7 +1446,10 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         var cancellationToken = HttpContext.RequestAborted;
 
-        using var playback = _videoPlaybackHelper.Acquire(HttpContext, streamingRequest.Id, streamingRequest.PlaySessionId, out var resolvedPlaySessionId);
+        var resolvedPlaySessionId = streamingRequest.PlaySessionId;
+        using var playback = streamingRequest is VideoRequestDto
+            ? _videoPlaybackHelper.Acquire(HttpContext, streamingRequest.Id, streamingRequest.PlaySessionId, out resolvedPlaySessionId)
+            : null;
         streamingRequest.PlaySessionId = resolvedPlaySessionId;
 
         var state = await StreamingHelpers.GetStreamingState(

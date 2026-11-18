@@ -598,7 +598,8 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
                 Id = transcodingJobId,
                 PlaySessionId = playSessionId,
                 LiveStreamId = liveStreamId,
-                MediaSource = state.MediaSource
+                MediaSource = state.MediaSource,
+                IsOutputVideo = state.IsOutputVideo
             };
 
             _activeTranscodingJobs.Add(job);

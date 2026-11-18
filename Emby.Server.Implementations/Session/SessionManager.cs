@@ -775,13 +775,19 @@ namespace Emby.Server.Implementations.Session
 
             var session = GetSession(info.SessionId);
 
+            var playbackStatus = ResolveVideoPlayback(session, info.ItemId, info.PlaySessionId, playbackOwnerId, out var playback, out var playSessionId);
+            if (playbackStatus is not (VideoPlaybackStatus.Success or VideoPlaybackStatus.NotFound))
+            {
+                return;
+            }
+
             var libraryItem = info.ItemId.IsEmpty()
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
             await UpdateNowPlayingItem(session, info, libraryItem, true).ConfigureAwait(false);
 
-            if (TryResolveVideoPlayback(session, info.ItemId, info.PlaySessionId, playbackOwnerId, out var playback, out var playSessionId))
+            if (playbackStatus == VideoPlaybackStatus.Success)
             {
                 _videoPlaybackCoordinator.ReportActivity(playback, playSessionId);
             }
@@ -923,13 +929,23 @@ namespace Emby.Server.Implementations.Session
                 return;
             }
 
+            var playback = default(VideoPlaybackContext);
+            string playSessionId = null;
+            var playbackStatus = isAutomated
+                ? VideoPlaybackStatus.NotFound
+                : ResolveVideoPlayback(session, info.ItemId, info.PlaySessionId, playbackOwnerId, out playback, out playSessionId);
+            if (playbackStatus is not (VideoPlaybackStatus.Success or VideoPlaybackStatus.NotFound))
+            {
+                return;
+            }
+
             var libraryItem = info.ItemId.IsEmpty()
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
             await UpdateNowPlayingItem(session, info, libraryItem, !isAutomated).ConfigureAwait(false);
 
-            if (!isAutomated && TryResolveVideoPlayback(session, info.ItemId, info.PlaySessionId, playbackOwnerId, out var playback, out var playSessionId))
+            if (playbackStatus == VideoPlaybackStatus.Success)
             {
                 _videoPlaybackCoordinator.ReportActivity(playback, playSessionId);
             }
@@ -1086,10 +1102,27 @@ namespace Emby.Server.Implementations.Session
 
             var session = GetSession(info.SessionId);
 
-            session.StopAutomaticProgress();
+            var playbackStatus = ResolveVideoPlayback(session, info.ItemId, info.PlaySessionId, playbackOwnerId, out var playback, out var playSessionId);
+            if (playbackStatus is not (VideoPlaybackStatus.Success or VideoPlaybackStatus.NotFound))
+            {
+                return;
+            }
 
             if (info.PositionTicks.HasValue && info.PositionTicks.Value < 0)
             {
+                if (playbackStatus == VideoPlaybackStatus.Success)
+                {
+                    if (_videoPlaybackCoordinator.ResolvePlayback(playback, out var currentPlaySessionId) != VideoPlaybackStatus.Success
+                        || !string.Equals(currentPlaySessionId, playSessionId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return;
+                    }
+
+                    throw new ArgumentOutOfRangeException(nameof(info), "The PlaybackStopInfo's PositionTicks was negative.");
+                }
+
+                session.StopAutomaticProgress();
+
                 // Ensure live stream is cleaned up before throwing, to prevent tuner
                 // resource leaks when stalled clients report a negative PositionTicks.
                 if (!string.IsNullOrEmpty(info.LiveStreamId))
@@ -1100,10 +1133,13 @@ namespace Emby.Server.Implementations.Session
                 throw new ArgumentOutOfRangeException(nameof(info), "The PlaybackStopInfo's PositionTicks was negative.");
             }
 
-            if (TryResolveVideoPlayback(session, info.ItemId, info.PlaySessionId, playbackOwnerId, out var playback, out var playSessionId))
+            if (playbackStatus == VideoPlaybackStatus.Success
+                && _videoPlaybackCoordinator.Stop(playback, playSessionId) != VideoPlaybackStatus.Success)
             {
-                _videoPlaybackCoordinator.Stop(playback, playSessionId);
+                return;
             }
+
+            session.StopAutomaticProgress();
 
             var libraryItem = info.ItemId.IsEmpty()
                 ? null
@@ -1195,29 +1231,29 @@ namespace Emby.Server.Implementations.Session
             EventHelper.QueueEventIfNotNull(PlaybackStopped, this, eventArgs, _logger);
         }
 
-        private bool TryResolveVideoPlayback(SessionInfo session, Guid itemId, string playSessionId, string playbackOwnerId, out VideoPlaybackContext playback, out string resolvedPlaySessionId)
+        private VideoPlaybackStatus ResolveVideoPlayback(SessionInfo session, Guid itemId, string playSessionId, string playbackOwnerId, out VideoPlaybackContext playback, out string resolvedPlaySessionId)
         {
             playback = default;
             resolvedPlaySessionId = playSessionId;
             if (session.UserId.IsEmpty() || string.IsNullOrWhiteSpace(playbackOwnerId))
             {
-                return false;
+                return VideoPlaybackStatus.NotFound;
             }
 
             if (string.IsNullOrWhiteSpace(resolvedPlaySessionId))
             {
                 if (itemId.IsEmpty())
                 {
-                    return false;
+                    return VideoPlaybackStatus.NotFound;
                 }
 
                 var legacyId = VideoPlaybackContext.CreateLegacyId(session.UserId, playbackOwnerId, itemId);
                 playback = new VideoPlaybackContext(session.UserId, playbackOwnerId, itemId, legacyId);
-                return _videoPlaybackCoordinator.ResolvePlayback(playback, out resolvedPlaySessionId) == VideoPlaybackStatus.Success;
+                return _videoPlaybackCoordinator.ResolvePlayback(playback, out resolvedPlaySessionId);
             }
 
             Guid? reportedItemId = itemId.IsEmpty() ? null : itemId;
-            return _videoPlaybackCoordinator.ResolvePlaySession(session.UserId, playbackOwnerId, reportedItemId, resolvedPlaySessionId, out playback) == VideoPlaybackStatus.Success;
+            return _videoPlaybackCoordinator.ResolvePlaySession(session.UserId, playbackOwnerId, reportedItemId, resolvedPlaySessionId, out playback);
         }
 
         private bool OnPlaybackStopped(User user, BaseItem item, long? positionTicks, bool playbackFailed)

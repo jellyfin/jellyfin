@@ -17,6 +17,7 @@ public interface IVideoPlaybackCoordinator
     /// Callers resolve legacy requests to a canonical context before registration.
     /// A missing client identifier must not bypass admission. A session-and-item
     /// fallback cannot distinguish multiple players of the same item on that session.
+    /// Encoding identifiers are compared without case distinction, matching transcoding job lookup.
     /// </remarks>
     VideoPlaybackStatus RegisterPlaySession(VideoPlaybackContext playback, string playSessionId);
 
@@ -59,7 +60,7 @@ public interface IVideoPlaybackCoordinator
         out IVideoPlaybackRequest? request);
 
     /// <summary>
-    /// Renews an existing admission from an authenticated, real activity report.
+    /// Confirms and renews an acquired admission from an authenticated, real activity report.
     /// </summary>
     /// <param name="playback">The server-verified playback context.</param>
     /// <param name="playSessionId">A registered encoding identifier.</param>

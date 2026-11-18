@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Results;
 using MediaBrowser.Controller.Session;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
@@ -143,14 +144,113 @@ public sealed class VideoPlaybackResultTests
         request.Verify(r => r.Dispose(), Times.Once);
     }
 
-    private static ActionContext CreateContext()
-        => new() { HttpContext = new DefaultHttpContext() };
+    [Fact]
+    public async Task ExecuteResultAsync_StartedResponseThrows_ConfirmsBeforeDisposing()
+    {
+        var feature = new ControlledResponseFeature();
+        var context = CreateContext(feature);
+        var request = CreateConfirmedRequest();
+        var failure = new InvalidOperationException("The response failed after its headers were sent.");
+        var inner = new DelegateResult(_ =>
+        {
+            feature.Started = true;
+            return Task.FromException(failure);
+        });
+        var result = new VideoPlaybackResult(inner, request.Object);
+
+        var actual = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => result.ExecuteResultAsync(context)).ConfigureAwait(true);
+
+        Assert.Same(failure, actual);
+        request.Verify(r => r.Acknowledge(), Times.Once);
+        request.Verify(r => r.Dispose(), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecuteResultAsync_StartedResponseAborted_ConfirmsBeforeDisposing(bool throwCancellation)
+    {
+        using var cancellation = new CancellationTokenSource();
+        var feature = new ControlledResponseFeature();
+        var context = CreateContext(feature);
+        context.HttpContext.RequestAborted = cancellation.Token;
+        var request = CreateConfirmedRequest();
+        var inner = new DelegateResult(async _ =>
+        {
+            feature.Started = true;
+            await cancellation.CancelAsync().ConfigureAwait(true);
+            if (throwCancellation)
+            {
+                cancellation.Token.ThrowIfCancellationRequested();
+            }
+        });
+        var result = new VideoPlaybackResult(inner, request.Object);
+
+        if (throwCancellation)
+        {
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => result.ExecuteResultAsync(context)).ConfigureAwait(true);
+        }
+        else
+        {
+            await result.ExecuteResultAsync(context).ConfigureAwait(true);
+        }
+
+        request.Verify(r => r.Acknowledge(), Times.Once);
+        request.Verify(r => r.Dispose(), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteResultAsync_StartedErrorResponse_DoesNotConfirm()
+    {
+        var feature = new ControlledResponseFeature { StatusCode = StatusCodes.Status500InternalServerError };
+        var request = CreateUnconfirmedRequest();
+        var inner = new DelegateResult(_ =>
+        {
+            feature.Started = true;
+            return Task.CompletedTask;
+        });
+        var result = new VideoPlaybackResult(inner, request.Object);
+
+        await result.ExecuteResultAsync(CreateContext(feature)).ConfigureAwait(true);
+
+        request.Verify(r => r.Acknowledge(), Times.Never);
+        request.Verify(r => r.Dispose(), Times.Once);
+    }
+
+    private static ActionContext CreateContext(IHttpResponseFeature? feature = null)
+    {
+        var context = new DefaultHttpContext();
+        if (feature is not null)
+        {
+            context.Features.Set(feature);
+        }
+
+        return new ActionContext { HttpContext = context };
+    }
+
+    private static Mock<IVideoPlaybackRequest> CreateConfirmedRequest()
+    {
+        var request = new Mock<IVideoPlaybackRequest>(MockBehavior.Strict);
+        var sequence = new MockSequence();
+        request.InSequence(sequence).Setup(r => r.Acknowledge());
+        request.InSequence(sequence).Setup(r => r.Dispose());
+        return request;
+    }
 
     private static Mock<IVideoPlaybackRequest> CreateUnconfirmedRequest()
     {
         var request = new Mock<IVideoPlaybackRequest>(MockBehavior.Strict);
         request.Setup(r => r.Dispose());
         return request;
+    }
+
+    private sealed class ControlledResponseFeature : HttpResponseFeature
+    {
+        public bool Started { get; set; }
+
+        public override bool HasStarted => Started;
     }
 
     private sealed class DelegateResult : ActionResult

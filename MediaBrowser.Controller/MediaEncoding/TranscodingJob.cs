@@ -45,6 +45,15 @@ public sealed class TranscodingJob : IDisposable
     public bool IsLiveOutput { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the encoded output contains video.
+    /// </summary>
+    /// <remarks>
+    /// A null value indicates an unknown job. Input video streams do not imply
+    /// video output when the request extracts only audio.
+    /// </remarks>
+    public bool? IsOutputVideo { get; set; }
+
+    /// <summary>
     /// Gets or sets the path.
     /// </summary>
     public MediaSourceInfo? MediaSource { get; set; }

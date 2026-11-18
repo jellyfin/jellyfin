@@ -432,6 +432,63 @@ public class VideoPlaybackCoordinatorTests
     }
 
     [Fact]
+    public void PlaySessionIds_UseTranscoderCaseMatchingAndRetainOwnership()
+    {
+        var coordinator = CreateCoordinator();
+        var owner = NewPlayback();
+        var stranger = owner with { UserId = Guid.NewGuid(), PlaybackInstanceId = "other" };
+        const string encoding = "0123456789abcdef0123456789abcdef";
+        var upperCase = encoding.ToUpperInvariant();
+        Register(coordinator, owner, encoding);
+
+        Assert.Equal(VideoPlaybackStatus.OwnershipMismatch, coordinator.RegisterPlaySession(stranger, upperCase));
+        Assert.Equal(VideoPlaybackStatus.OwnershipMismatch, coordinator.ResolvePlaySession(stranger.UserId, stranger.SessionId, stranger.ItemId, upperCase, out _));
+        Assert.Equal(VideoPlaybackStatus.OwnershipMismatch, coordinator.TryAcquire(stranger, upperCase, 1, out _));
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.ResolvePlaySession(owner.UserId, owner.SessionId, owner.ItemId, upperCase, out var resolved));
+        Assert.Equal(owner, resolved);
+        using var request = Acquire(coordinator, owner, upperCase, 1);
+        using var duplicate = Acquire(coordinator, owner, encoding, 1);
+    }
+
+    [Fact]
+    public void Stop_CurrentMetadataOnlyAliasCanCancelWithoutConsumingQuota()
+    {
+        var coordinator = CreateCoordinator();
+        var owner = NewPlayback();
+        Register(coordinator, owner, "old-metadata");
+        Register(coordinator, owner, "current-metadata");
+
+        Assert.Equal(VideoPlaybackStatus.Superseded, coordinator.Stop(owner, "old-metadata"));
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.Stop(owner, "current-metadata"));
+        Assert.Equal(VideoPlaybackStatus.Stopped, coordinator.ResolvePlaySession(owner.UserId, owner.SessionId, owner.ItemId, "current-metadata", out _));
+        var other = owner with { PlaybackInstanceId = "other" };
+        Register(coordinator, other, "other-encoding");
+        using var request = Acquire(coordinator, other, "other-encoding", 1);
+    }
+
+    [Fact]
+    public void Stop_PendingReplacementProtectsCurrentPlaybackAndDrainsBeforeReleasingQuota()
+    {
+        var coordinator = CreateCoordinator();
+        var owner = NewPlayback();
+        Register(coordinator, owner, "old-encoding");
+        var original = Acquire(coordinator, owner, "old-encoding", 1);
+        original.Acknowledge();
+        Register(coordinator, owner, "pending-encoding");
+        var pending = Acquire(coordinator, owner, "pending-encoding", 1);
+
+        Assert.Equal(VideoPlaybackStatus.Superseded, coordinator.Stop(owner, "old-encoding"));
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.Stop(owner, "pending-encoding"));
+        var other = owner with { PlaybackInstanceId = "other" };
+        Register(coordinator, other, "other-encoding");
+        Assert.Equal(VideoPlaybackStatus.LimitReached, coordinator.TryAcquire(other, "other-encoding", 1, out _));
+        pending.Dispose();
+        Assert.Equal(VideoPlaybackStatus.LimitReached, coordinator.TryAcquire(other, "other-encoding", 1, out _));
+        original.Dispose();
+        using var next = Acquire(coordinator, other, "other-encoding", 1);
+    }
+
+    [Fact]
     public void FailedReplacement_DoesNotSupersedeCurrentPlaybackStop()
     {
         var coordinator = CreateCoordinator();
@@ -698,6 +755,40 @@ public class VideoPlaybackCoordinatorTests
         Assert.Equal(VideoPlaybackStatus.Expired, coordinator.TryAcquire(owner, "encoding", 1, out var request));
         Assert.Null(request);
         Assert.Equal(VideoPlaybackStatus.Expired, coordinator.RegisterPlaySession(owner, "encoding"));
+    }
+
+    [Fact]
+    public void ReportActivity_AcquiredBodyRemainsAdmittedAfterAbortWithoutCompletionAcknowledgement()
+    {
+        var coordinator = CreateCoordinator();
+        var owner = NewPlayback();
+        Register(coordinator, owner, "encoding");
+        var response = Acquire(coordinator, owner, "encoding", 1);
+
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.ReportActivity(owner, "encoding"));
+        response.Dispose();
+
+        var other = owner with { PlaybackInstanceId = "other" };
+        Register(coordinator, other, "other-encoding");
+        Assert.Equal(VideoPlaybackStatus.LimitReached, coordinator.TryAcquire(other, "other-encoding", 1, out _));
+        using var seek = Acquire(coordinator, owner, "encoding", 1);
+    }
+
+    [Fact]
+    public void ReportActivity_MetadataAliasCannotConfirmOrSupersedeAnExistingAdmission()
+    {
+        var coordinator = CreateCoordinator();
+        var owner = NewPlayback();
+        Register(coordinator, owner, "old-encoding");
+        var original = Acquire(coordinator, owner, "old-encoding", 1);
+        original.Acknowledge();
+        original.Dispose();
+        Register(coordinator, owner, "metadata-only-encoding");
+
+        Assert.Equal(VideoPlaybackStatus.NotFound, coordinator.ReportActivity(owner, "metadata-only-encoding"));
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.ResolvePlayback(owner, out var current));
+        Assert.Equal("old-encoding", current);
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.Stop(owner, "old-encoding"));
     }
 
     [Fact]

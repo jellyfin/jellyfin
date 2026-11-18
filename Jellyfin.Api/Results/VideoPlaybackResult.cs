@@ -31,22 +31,30 @@ public sealed class VideoPlaybackResult : ActionResult
     /// <inheritdoc />
     public override async Task ExecuteResultAsync(ActionContext context)
     {
+        var completed = false;
         try
         {
             await _inner.ExecuteResultAsync(context).ConfigureAwait(false);
-
-            // Confirm only after delivery succeeds. A failed or aborted first response
-            // rolls back its unconfirmed admission; disposing this operation never
-            // releases an admission already confirmed by another response.
-            if (context.HttpContext.Response.StatusCode < StatusCodes.Status400BadRequest
-                && !context.HttpContext.RequestAborted.IsCancellationRequested)
-            {
-                _request.Acknowledge();
-            }
+            completed = true;
         }
         finally
         {
-            _request.Dispose();
+            try
+            {
+                var response = context.HttpContext.Response;
+                // Once a successful response has started, a canceled transfer or seek
+                // must preserve the logical playback until stop or inactivity expiry.
+                // Failures before the response starts still roll back the admission.
+                if (response.StatusCode < StatusCodes.Status400BadRequest
+                    && (response.HasStarted || (completed && !context.HttpContext.RequestAborted.IsCancellationRequested)))
+                {
+                    _request.Acknowledge();
+                }
+            }
+            finally
+            {
+                _request.Dispose();
+            }
         }
     }
 }

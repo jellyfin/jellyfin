@@ -13,7 +13,7 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
     private readonly TimeProvider _timeProvider;
     private readonly TimeSpan _inactivityTimeout;
     private readonly Dictionary<(Guid UserId, string PlaybackInstanceId), Playback> _playbacks = new();
-    private readonly Dictionary<string, PlaySession> _playSessions = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, PlaySession> _playSessions = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<Guid, int> _activeCounts = new();
 
     /// <summary>
@@ -170,7 +170,8 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
             }
 
             entry.LastActivity = now;
-            entry.References++;
+            entry.ActiveRegistrations[session.Registration] = entry.ActiveRegistrations.GetValueOrDefault(session.Registration) + 1;
+            session.HasAcquired = true;
             request = new PlaybackRequest(this, session);
             return VideoPlaybackStatus.Success;
         }
@@ -189,12 +190,12 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
                 return status;
             }
 
-            if (!session!.Playback.Counted)
+            if (!session!.Playback.Counted || !session.HasAcquired)
             {
                 return VideoPlaybackStatus.NotFound;
             }
 
-            session.Playback.LastActivity = now;
+            Acknowledge(session, now);
             return VideoPlaybackStatus.Success;
         }
     }
@@ -213,18 +214,29 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
             }
 
             var entry = session!.Playback;
-            if (session.Registration < entry.LastAcknowledgedRegistration)
+            var currentRegistration = entry.LastAcknowledgedRegistration;
+            if (!entry.Counted && entry.ActiveRegistrations.Count == 0 && currentRegistration == 0)
+            {
+                currentRegistration = entry.LastRegisteredSession!.Registration;
+            }
+
+            foreach (var registration in entry.ActiveRegistrations.Keys)
+            {
+                currentRegistration = Math.Max(currentRegistration, registration);
+            }
+
+            if (session.Registration < currentRegistration)
             {
                 return VideoPlaybackStatus.Superseded;
             }
 
-            if (session.Registration > entry.LastAcknowledgedRegistration)
+            if (session.Registration > currentRegistration)
             {
                 return VideoPlaybackStatus.NotFound;
             }
 
             entry.Status = VideoPlaybackStatus.Stopped;
-            if (entry.References == 0)
+            if (entry.ActiveRegistrations.Count == 0)
             {
                 Retire(entry, VideoPlaybackStatus.Stopped, now);
             }
@@ -289,8 +301,19 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
             && string.Equals(left.SessionId, right.SessionId, StringComparison.Ordinal)
             && string.Equals(left.PlaybackInstanceId, right.PlaybackInstanceId, StringComparison.Ordinal);
 
+    private static void Acknowledge(PlaySession session, long timestamp)
+    {
+        session.Playback.Acknowledged = true;
+        if (session.Registration > session.Playback.LastAcknowledgedRegistration)
+        {
+            session.Playback.LastAcknowledgedSession = session;
+        }
+
+        session.Playback.LastActivity = timestamp;
+    }
+
     private bool IsExpired(Playback entry, long now)
-        => entry.References == 0
+        => entry.ActiveRegistrations.Count == 0
             && _timeProvider.GetElapsedTime(entry.LastActivity, now) >= _inactivityTimeout;
 
     private VideoPlaybackStatus Resolve(VideoPlaybackContext playback, string playSessionId, long now, out PlaySession? session)
@@ -359,13 +382,7 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
             ObjectDisposedException.ThrowIf(request.Released, request);
             if (request.Playback.Status == VideoPlaybackStatus.Success)
             {
-                request.Playback.Acknowledged = true;
-                if (request.PlaySession.Registration > request.Playback.LastAcknowledgedRegistration)
-                {
-                    request.Playback.LastAcknowledgedSession = request.PlaySession;
-                }
-
-                request.Playback.LastActivity = _timeProvider.GetTimestamp();
+                Acknowledge(request.PlaySession, _timeProvider.GetTimestamp());
             }
         }
     }
@@ -380,7 +397,8 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
                 throw new InvalidOperationException("A stopped playback cannot start another operation.");
             }
 
-            request.Playback.References++;
+            var registrations = request.Playback.ActiveRegistrations;
+            registrations[request.PlaySession.Registration]++;
             return new PlaybackRequest(this, request.PlaySession);
         }
     }
@@ -396,9 +414,19 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
 
             request.Released = true;
             var entry = request.Playback;
-            entry.References--;
+            var registration = request.PlaySession.Registration;
+            var references = entry.ActiveRegistrations[registration] - 1;
+            if (references == 0)
+            {
+                entry.ActiveRegistrations.Remove(registration);
+            }
+            else
+            {
+                entry.ActiveRegistrations[registration] = references;
+            }
+
             entry.LastActivity = _timeProvider.GetTimestamp();
-            if (entry.References == 0)
+            if (entry.ActiveRegistrations.Count == 0)
             {
                 if (entry.Status == VideoPlaybackStatus.Stopped)
                 {
@@ -430,14 +458,17 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
 
         public PlaySession? LastRegisteredSession { get; set; }
 
-        public int References { get; set; }
+        public Dictionary<long, int> ActiveRegistrations { get; } = new();
 
         public bool Counted { get; set; }
 
         public bool Acknowledged { get; set; }
     }
 
-    private sealed record PlaySession(Playback Playback, long Registration, string Id);
+    private sealed record PlaySession(Playback Playback, long Registration, string Id)
+    {
+        public bool HasAcquired { get; set; }
+    }
 
     private sealed class PlaybackRequest(VideoPlaybackCoordinator coordinator, PlaySession playSession) : IVideoPlaybackRequest
     {

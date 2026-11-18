@@ -341,6 +341,152 @@ public class SessionManagerTests
     }
 
     [Fact]
+    public async Task OnPlaybackStopped_MetadataOnlyCancellationCleansItsLiveInput()
+    {
+        var coordinator = new VideoPlaybackCoordinator(new ManualTimeProvider(), TimeSpan.FromMinutes(10));
+        var sources = new Mock<IMediaSourceManager>();
+        sources.Setup(source => source.CloseLiveStream("metadata-live")).Returns(Task.CompletedTask);
+        var user = new User("user", "default", "default");
+        await using var sessionManager = CreateSessionManager(coordinator, sources.Object, user);
+        var session = await LogSessionActivity(sessionManager, user);
+        var itemId = Guid.NewGuid();
+        var playback = new VideoPlaybackContext(user.Id, PlaybackOwnerId, itemId, "metadata");
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.RegisterPlaySession(playback, "encoding"));
+
+        await sessionManager.OnPlaybackStopped(
+            new PlaybackStopInfo
+            {
+                SessionId = session.Id,
+                ItemId = itemId,
+                PlaySessionId = "encoding",
+                LiveStreamId = "metadata-live"
+            },
+            PlaybackOwnerId);
+
+        sources.Verify(source => source.CloseLiveStream("metadata-live"), Times.Once);
+        Assert.Equal(VideoPlaybackStatus.Stopped, coordinator.ResolvePlaySession(user.Id, PlaybackOwnerId, itemId, "encoding", out _));
+    }
+
+    [Fact]
+    public async Task OnPlaybackStopped_NegativeCurrentVideoPositionDoesNotRevokeOrCloseInput()
+    {
+        var coordinator = new VideoPlaybackCoordinator(new ManualTimeProvider(), TimeSpan.FromMinutes(10));
+        var sources = new Mock<IMediaSourceManager>();
+        var user = new User("user", "default", "default");
+        await using var sessionManager = CreateSessionManager(coordinator, sources.Object, user);
+        var session = await LogSessionActivity(sessionManager, user);
+        var itemId = Guid.NewGuid();
+        var playback = new VideoPlaybackContext(user.Id, PlaybackOwnerId, itemId, "playback");
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.RegisterPlaySession(playback, "encoding"));
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.TryAcquire(playback, "encoding", 1, out var operation));
+        using (var request = Assert.IsAssignableFrom<IVideoPlaybackRequest>(operation))
+        {
+            request.Acknowledge();
+        }
+
+        var info = CreatePlaybackInfo(session.Id, itemId, "encoding");
+        info.LiveStreamId = "shared-live";
+        await sessionManager.OnPlaybackStart(info, PlaybackOwnerId);
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => sessionManager.OnPlaybackStopped(
+            new PlaybackStopInfo
+            {
+                SessionId = session.Id,
+                ItemId = itemId,
+                PlaySessionId = "encoding",
+                PositionTicks = -1,
+                LiveStreamId = "shared-live"
+            },
+            PlaybackOwnerId));
+
+        Assert.Same(info.Item, session.NowPlayingItem);
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.ReportActivity(playback, "encoding"));
+        sources.Verify(source => source.CloseLiveStream(It.IsAny<string>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(100L)]
+    [InlineData(-1L)]
+    public async Task OnPlaybackStopped_LateGenerationDoesNotClearOrCloseCurrentVideo(long? positionTicks)
+    {
+        var clock = new ManualTimeProvider();
+        var coordinator = new VideoPlaybackCoordinator(clock, TimeSpan.FromMinutes(10));
+        var sources = new Mock<IMediaSourceManager>();
+        var user = new User("user", "default", "default");
+        await using var sessionManager = CreateSessionManager(coordinator, sources.Object, user);
+        var session = await LogSessionActivity(sessionManager, user);
+        var itemId = Guid.NewGuid();
+        var playback = new VideoPlaybackContext(user.Id, PlaybackOwnerId, itemId, "playback");
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.RegisterPlaySession(playback, "old-encoding"));
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.TryAcquire(playback, "old-encoding", 1, out var originalOperation));
+        using (var request = Assert.IsAssignableFrom<IVideoPlaybackRequest>(originalOperation))
+        {
+            request.Acknowledge();
+        }
+
+        var original = CreatePlaybackInfo(session.Id, itemId, "old-encoding");
+        original.LiveStreamId = "shared-live";
+        await sessionManager.OnPlaybackStart(original, PlaybackOwnerId);
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.RegisterPlaySession(playback, "new-encoding"));
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.TryAcquire(playback, "new-encoding", 1, out var replacementOperation));
+        using (var request = Assert.IsAssignableFrom<IVideoPlaybackRequest>(replacementOperation))
+        {
+            request.Acknowledge();
+        }
+
+        var replacement = CreatePlaybackInfo(session.Id, itemId, "new-encoding");
+        replacement.LiveStreamId = "shared-live";
+        await sessionManager.OnPlaybackStart(replacement, PlaybackOwnerId);
+        var currentState = session.PlayState;
+        clock.Advance(TimeSpan.FromMinutes(1));
+
+        await sessionManager.OnPlaybackStopped(
+            new PlaybackStopInfo
+            {
+                SessionId = session.Id,
+                ItemId = itemId,
+                PlaySessionId = "old-encoding",
+                PositionTicks = positionTicks,
+                LiveStreamId = "shared-live"
+            },
+            PlaybackOwnerId);
+
+        Assert.Same(replacement.Item, session.NowPlayingItem);
+        Assert.Same(currentState, session.PlayState);
+        Assert.Equal("shared-live", session.PlayState.LiveStreamId);
+        sources.Verify(source => source.CloseLiveStream(It.IsAny<string>()), Times.Never);
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.ReportActivity(playback, "new-encoding"));
+        var other = playback with { PlaybackInstanceId = "other" };
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.RegisterPlaySession(other, "other-encoding"));
+        Assert.Equal(VideoPlaybackStatus.LimitReached, coordinator.TryAcquire(other, "other-encoding", 1, out _));
+    }
+
+    [Fact]
+    public async Task OnPlaybackStopped_NegativeUnregisteredPositionStillClosesLiveInput()
+    {
+        var coordinator = new VideoPlaybackCoordinator(new ManualTimeProvider(), TimeSpan.FromMinutes(10));
+        var sources = new Mock<IMediaSourceManager>();
+        sources.Setup(source => source.CloseLiveStream("audio-live")).Returns(Task.CompletedTask);
+        var user = new User("user", "default", "default");
+        await using var sessionManager = CreateSessionManager(coordinator, sources.Object, user);
+        var session = await LogSessionActivity(sessionManager, user);
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => sessionManager.OnPlaybackStopped(
+            new PlaybackStopInfo
+            {
+                SessionId = session.Id,
+                ItemId = Guid.NewGuid(),
+                PlaySessionId = "unregistered-audio",
+                PositionTicks = -1,
+                LiveStreamId = "audio-live"
+            },
+            PlaybackOwnerId));
+
+        sources.Verify(source => source.CloseLiveStream("audio-live"), Times.Once);
+    }
+
+    [Fact]
     public async Task OnPlaybackStart_DoesNotAdmitVideoFromClientReportAlone()
     {
         var coordinator = new VideoPlaybackCoordinator(new ManualTimeProvider(), TimeSpan.FromMinutes(10));
@@ -373,6 +519,9 @@ public class SessionManagerTests
         => CreateSessionManager(Mock.Of<IVideoPlaybackCoordinator>(), users);
 
     private static Emby.Server.Implementations.Session.SessionManager CreateSessionManager(IVideoPlaybackCoordinator coordinator, params User[] users)
+        => CreateSessionManager(coordinator, Mock.Of<IMediaSourceManager>(), users);
+
+    private static Emby.Server.Implementations.Session.SessionManager CreateSessionManager(IVideoPlaybackCoordinator coordinator, IMediaSourceManager mediaSourceManager, params User[] users)
     {
         var userManager = new Mock<IUserManager>();
         foreach (var user in users)
@@ -392,7 +541,7 @@ public class SessionManagerTests
             Mock.Of<IImageProcessor>(),
             Mock.Of<IServerApplicationHost>(),
             Mock.Of<IDeviceManager>(),
-            Mock.Of<IMediaSourceManager>(),
+            mediaSourceManager,
             Mock.Of<IHostApplicationLifetime>(),
             coordinator);
     }

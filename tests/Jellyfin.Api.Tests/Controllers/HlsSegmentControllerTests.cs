@@ -254,14 +254,22 @@ public sealed class HlsSegmentControllerTests
         _coordinator.Verify(value => value.Stop(It.IsAny<VideoPlaybackContext>(), It.IsAny<string>()), Times.Never);
     }
 
-    [Fact]
-    public void StopEncodingProcess_AudioJobPreservesExistingBehavior()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void StopEncodingProcess_AudioOutputPreservesExistingBehavior(bool videoInput)
     {
-        RegisterJob("audio", MediaStreamType.Audio);
+        var job = RegisterJob("audio", videoInput ? MediaStreamType.Video : MediaStreamType.Audio);
+        job.IsOutputVideo = false;
+        var playback = default(VideoPlaybackContext);
+        _coordinator.Setup(value => value.ResolvePlaySession(_userId, "verified-owner", It.IsAny<Guid?>(), "encoding", out playback))
+            .Returns(VideoPlaybackStatus.NotFound);
         var controller = CreateController("/Videos/ActiveEncodings");
 
         Assert.IsType<NoContentResult>(controller.StopEncodingProcess("device", "encoding"));
         _transcodeManager.Verify(value => value.KillTranscodingJobs("device", "encoding", It.IsAny<Func<string, bool>>()), Times.Once);
+        _coordinator.Verify(value => value.TryAcquire(It.IsAny<VideoPlaybackContext>(), It.IsAny<string>(), It.IsAny<int>(), out It.Ref<IVideoPlaybackRequest?>.IsAny), Times.Never);
+        _coordinator.Verify(value => value.Stop(It.IsAny<VideoPlaybackContext>(), It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
@@ -279,6 +287,7 @@ public sealed class HlsSegmentControllerTests
         var job = new TranscodingJob(NullLogger<TranscodingJob>.Instance)
         {
             PlaySessionId = "encoding",
+            IsOutputVideo = mediaType == MediaStreamType.Video,
             MediaSource = new MediaSourceInfo { MediaStreams = new[] { new MediaStream { Type = mediaType } } }
         };
         _transcodeManager.Setup(value => value.GetTranscodingJob(path, TranscodingJobType.Hls)).Returns(job);

@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Results;
 using Jellyfin.Data.Enums;
@@ -9,7 +8,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -229,7 +227,7 @@ public sealed class VideoPlaybackHelper
         // Audio jobs and absent jobs have no admission in the video registry.
         if (status is VideoPlaybackStatus.Stopped or VideoPlaybackStatus.Expired
             || (status == VideoPlaybackStatus.NotFound
-                && (job is null || (job.MediaSource is not null && !job.MediaSource.MediaStreams.Any(stream => stream.Type == MediaStreamType.Video)))))
+                && (job is null || job.IsOutputVideo == false)))
         {
             return;
         }
