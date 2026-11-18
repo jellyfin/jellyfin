@@ -52,5 +52,12 @@
     "NameExtraUnknown": "Ավելին",
     "NameInstallFailed": "{0} տեղադրումը ձախողվեց",
     "NameSeasonUnknown": "Անհայտ սեզոն",
-    "NewVersionIsAvailable": "Jellyfin սերվերի թարմացված տարբերակը հասանելի է տեղադրման համար"
+    "NewVersionIsAvailable": "Jellyfin սերվերի թարմացված տարբերակը հասանելի է տեղադրման համար",
+    "NotificationOptionApplicationUpdateAvailable": "Հավելվածի թարմացումը հասանելի է",
+    "NotificationOptionApplicationUpdateInstalled": "Հավելվածը թարմացված է",
+    "NotificationOptionAudioPlayback": "Աուդիոյի նվագարկումը սկսված է",
+    "NotificationOptionAudioPlaybackStopped": "Աուդիոյի նվագարկումը կանգնեցված է",
+    "NotificationOptionCameraImageUploaded": "տեսախցիկի նկարը ներբեռնված է",
+    "NotificationOptionInstallationFailed": "Տեղադրման խնդիր",
+    "NotificationOptionNewLibraryContent": "Նոր բովանդակություն ավելացվեց"
 }
