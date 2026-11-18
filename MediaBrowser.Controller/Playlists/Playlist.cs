@@ -149,9 +149,11 @@ namespace MediaBrowser.Controller.Playlists
             return [];
         }
 
-        public override IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
+        public override IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query, out int totalCount)
         {
-            return GetPlayableItems(user, query);
+            var items = GetPlayableItems(user, query);
+            totalCount = items.Count;
+            return items;
         }
 
         public IReadOnlyList<Tuple<LinkedChild, BaseItem>> GetManageableItems()
@@ -233,18 +235,18 @@ namespace MediaBrowser.Controller.Playlists
         {
             if (!IsSharedItem)
             {
-                return base.IsVisible(user, skipAllowedTagsCheck);
+                return base.IsVisible(user, skipAllowedTagsCheck) && HasParentalAllowedChild(user);
             }
 
             if (OpenAccess)
             {
-                return true;
+                return HasParentalAllowedChild(user);
             }
 
             var userId = user.Id;
             if (userId.Equals(OwnerUserId))
             {
-                return true;
+                return HasParentalAllowedChild(user);
             }
 
             var shares = Shares;
@@ -253,7 +255,19 @@ namespace MediaBrowser.Controller.Playlists
                 return false;
             }
 
-            return shares.Any(s => s.UserId.Equals(userId));
+            return shares.Any(s => s.UserId.Equals(userId)) && HasParentalAllowedChild(user);
+        }
+
+        private bool HasParentalAllowedChild(User user)
+        {
+            if (!user.MaxParentalRatingScore.HasValue)
+            {
+                return true;
+            }
+
+            var linkedItems = GetLinkedChildren();
+
+            return linkedItems.Count == 0 || linkedItems.Any(child => child.IsParentalAllowed(user, true));
         }
 
         public override bool CanDelete(User user)

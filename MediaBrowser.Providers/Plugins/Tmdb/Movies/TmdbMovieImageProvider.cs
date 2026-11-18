@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -59,8 +57,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var language = item.GetPreferredMetadataLanguage();
+            var countryCode = item.GetPreferredMetadataCountryCode();
 
-            var movieTmdbId = Convert.ToInt32(item.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
+            item.TryGetTmdbId(out var movieTmdbId);
             if (movieTmdbId <= 0)
             {
                 var movieImdbId = item.GetProviderId(MetadataProvider.Imdb);
@@ -69,7 +68,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     return Enumerable.Empty<RemoteImageInfo>();
                 }
 
-                var movieResult = await _tmdbClientManager.FindByExternalIdAsync(movieImdbId, FindExternalSource.Imdb, language, cancellationToken).ConfigureAwait(false);
+                var movieResult = await _tmdbClientManager.FindByExternalIdAsync(movieImdbId, FindExternalSource.Imdb, language, countryCode, cancellationToken).ConfigureAwait(false);
                 if (movieResult?.MovieResults is not null && movieResult.MovieResults.Count > 0)
                 {
                     movieTmdbId = movieResult.MovieResults[0].Id;
@@ -78,27 +77,38 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             if (movieTmdbId <= 0)
             {
-                return Enumerable.Empty<RemoteImageInfo>();
+                return [];
             }
 
             // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
             var movie = await _tmdbClientManager
-                .GetMovieAsync(movieTmdbId, null, null, cancellationToken)
+                .GetMovieAsync(movieTmdbId, null, null, null, cancellationToken)
                 .ConfigureAwait(false);
 
             if (movie?.Images is null)
             {
-                return Enumerable.Empty<RemoteImageInfo>();
+                return [];
             }
 
             var posters = movie.Images.Posters;
             var backdrops = movie.Images.Backdrops;
             var logos = movie.Images.Logos;
-            var remoteImages = new List<RemoteImageInfo>(posters.Count + backdrops.Count + logos.Count);
+            var remoteImages = new List<RemoteImageInfo>((posters?.Count ?? 0) + (backdrops?.Count ?? 0) + (logos?.Count ?? 0));
 
-            remoteImages.AddRange(_tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language));
-            remoteImages.AddRange(_tmdbClientManager.ConvertBackdropsToRemoteImageInfo(backdrops, language));
-            remoteImages.AddRange(_tmdbClientManager.ConvertLogosToRemoteImageInfo(logos, language));
+            if (posters is not null)
+            {
+                remoteImages.AddRange(_tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language));
+            }
+
+            if (backdrops is not null)
+            {
+                remoteImages.AddRange(_tmdbClientManager.ConvertBackdropsToRemoteImageInfo(backdrops, language));
+            }
+
+            if (logos is not null)
+            {
+                remoteImages.AddRange(_tmdbClientManager.ConvertLogosToRemoteImageInfo(logos, language));
+            }
 
             return remoteImages;
         }

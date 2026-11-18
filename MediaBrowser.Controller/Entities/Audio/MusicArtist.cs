@@ -154,11 +154,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             return "Artist-" + (Name ?? string.Empty).RemoveDiacritics();
         }
 
-        protected override bool GetBlockUnratedValue(User user)
-        {
-            return user.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Music);
-        }
-
         public override UnratedItem GetBlockUnratedType()
         {
             return UnratedItem.Music;
@@ -178,10 +173,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public static string GetPath(string name, bool normalizeName)
         {
-            // Trim the period at the end because windows will have a hard time with that
-            var validName = normalizeName ?
-                FileSystem.GetValidFilename(name).Trim().TrimEnd('.') :
-                name;
+            var validName = normalizeName ? GetItemByNameFolderName(name) : name;
 
             return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.ArtistsPath, validName);
         }

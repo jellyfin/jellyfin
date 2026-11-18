@@ -1,8 +1,7 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -14,6 +13,7 @@ using System.Threading.Tasks;
 using Jellyfin.Extensions;
 using Jellyfin.XmlTv;
 using Jellyfin.XmlTv.Entities;
+using Jellyfin.XmlTv.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -28,10 +28,13 @@ namespace Jellyfin.LiveTv.Listings
     public class XmlTvListingsProvider : IListingsProvider
     {
         private static readonly TimeSpan _maxCacheAge = TimeSpan.FromHours(1);
+        private static readonly TimeSpan _downloadTimeout = TimeSpan.FromMinutes(15);
 
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<XmlTvListingsProvider> _logger;
+
+        private readonly ConcurrentDictionary<string, DateTime> _lastDownloadFailures = new(StringComparer.Ordinal);
 
         public XmlTvListingsProvider(
             IServerConfigurationManager config,
@@ -62,50 +65,118 @@ namespace Jellyfin.LiveTv.Listings
             _logger.LogInformation("xmltv path: {Path}", info.Path);
 
             string cacheFilename = info.Id + ".xml";
-            string cacheFile = Path.Combine(_config.ApplicationPaths.CachePath, "xmltv", cacheFilename);
+            string cacheDir = Path.Join(_config.ApplicationPaths.CachePath, "xmltv");
+            string cacheFile = Path.Join(cacheDir, cacheFilename);
 
             if (File.Exists(cacheFile) && File.GetLastWriteTimeUtc(cacheFile) >= DateTime.UtcNow.Subtract(_maxCacheAge))
             {
                 return cacheFile;
             }
 
-            // Must check if file exists as parent directory may not exist.
-            if (File.Exists(cacheFile))
+            var isRemote = info.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase);
+
+            if (isRemote
+                && _lastDownloadFailures.TryGetValue(info.Path, out var lastFailure)
+                && DateTime.UtcNow - lastFailure < _maxCacheAge)
             {
-                File.Delete(cacheFile);
-            }
-            else
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(cacheFile));
+                if (File.Exists(cacheFile))
+                {
+                    return cacheFile;
+                }
+
+                throw new InvalidOperationException("Skipping the XMLTV download after a recent failure: " + info.Path);
             }
 
-            if (info.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            {
-                _logger.LogInformation("Downloading xmltv listings from {Path}", info.Path);
+            Directory.CreateDirectory(cacheDir);
 
-                using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(info.Path, cancellationToken).ConfigureAwait(false);
-                var redirectedUrl = response.RequestMessage?.RequestUri?.ToString() ?? info.Path;
-                var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                await using (stream.ConfigureAwait(false))
-                {
-                    return await UnzipIfNeededAndCopy(redirectedUrl, stream, cacheFile, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            else
+            var tempFile = cacheFile + ".tmp";
+
+            try
             {
-                var stream = AsyncFile.OpenRead(info.Path);
-                await using (stream.ConfigureAwait(false))
+                using var timeout = new CancellationTokenSource(_downloadTimeout);
+                using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+                var downloadCancellationToken = linkedTokenSource.Token;
+
+                if (isRemote)
                 {
-                    return await UnzipIfNeededAndCopy(info.Path, stream, cacheFile, cancellationToken).ConfigureAwait(false);
+                    _logger.LogInformation("Downloading xmltv listings from {Path}", info.Path);
+
+                    var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
+                    httpClient.Timeout = _downloadTimeout;
+
+                    using var response = await httpClient
+                        .GetAsync(info.Path, HttpCompletionOption.ResponseHeadersRead, downloadCancellationToken)
+                        .ConfigureAwait(false);
+                    response.EnsureSuccessStatusCode();
+                    var redirectedUrl = response.RequestMessage?.RequestUri?.ToString() ?? info.Path;
+                    var stream = await response.Content.ReadAsStreamAsync(downloadCancellationToken).ConfigureAwait(false);
+                    await using (stream.ConfigureAwait(false))
+                    {
+                        await UnzipIfNeededAndCopy(redirectedUrl, stream, tempFile, downloadCancellationToken).ConfigureAwait(false);
+                    }
                 }
+                else
+                {
+                    var stream = AsyncFile.OpenRead(info.Path);
+                    await using (stream.ConfigureAwait(false))
+                    {
+                        await UnzipIfNeededAndCopy(info.Path, stream, tempFile, downloadCancellationToken).ConfigureAwait(false);
+                    }
+                }
+
+                File.Move(tempFile, cacheFile, true);
+                _lastDownloadFailures.TryRemove(info.Path, out _);
+
+                return cacheFile;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                TryDeleteTempFile(tempFile);
+
+                throw;
+            }
+            catch (Exception ex)
+            {
+                TryDeleteTempFile(tempFile);
+                _lastDownloadFailures[info.Path] = DateTime.UtcNow;
+
+                _logger.LogError(ex, "Error downloading or processing XMLTV file from {Path}", info.Path);
+
+                if (File.Exists(cacheFile))
+                {
+                    _logger.LogWarning("Falling back to the previously downloaded XMLTV file for {Path}", info.Path);
+
+                    return cacheFile;
+                }
+
+                if (ex is OperationCanceledException)
+                {
+                    throw new TimeoutException(
+                        string.Format(CultureInfo.InvariantCulture, "Timed out downloading the XMLTV file from {0}", info.Path),
+                        ex);
+                }
+
+                throw;
             }
         }
 
-        private async Task<string> UnzipIfNeededAndCopy(string originalUrl, Stream stream, string file, CancellationToken cancellationToken)
+        private void TryDeleteTempFile(string tempFile)
+        {
+            try
+            {
+                File.Delete(tempFile);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _logger.LogWarning(ex, "Error deleting temporary XMLTV file {File}", tempFile);
+            }
+        }
+
+        private async Task UnzipIfNeededAndCopy(string originalUrl, Stream stream, string file, CancellationToken cancellationToken)
         {
             var fileStream = new FileStream(
                 file,
-                FileMode.CreateNew,
+                FileMode.Create,
                 FileAccess.Write,
                 FileShare.None,
                 IODefaults.FileStreamBufferSize,
@@ -130,8 +201,12 @@ namespace Jellyfin.LiveTv.Listings
                 {
                     await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
                 }
+            }
 
-                return file;
+            var fileInfo = new FileInfo(file);
+            if (!fileInfo.Exists || fileInfo.Length == 0)
+            {
+                throw new InvalidOperationException("Downloaded XMLTV file is empty: " + originalUrl);
             }
         }
 
@@ -149,38 +224,68 @@ namespace Jellyfin.LiveTv.Listings
             var reader = new XmlTvReader(path, GetLanguage(info));
 
             return reader.GetProgrammes(channelId, startDateUtc, endDateUtc, cancellationToken)
-                        .Select(p => GetProgramInfo(p, info));
+                        .Select(p => GetProgramInfoWithEtag(p, info));
+        }
+
+        private ProgramInfo GetProgramInfoWithEtag(XmlTvProgram program, ListingsProviderInfo info)
+        {
+            var programInfo = GetProgramInfo(program, info);
+
+            if (XmlTvProgramEtag.TryCreate(programInfo, out var etag, out var reason))
+            {
+                programInfo.Etag = etag;
+            }
+            else
+            {
+                _logger.LogDebug(
+                    "Unable to create XMLTV program ETag for program {ProgramId} on channel {ChannelId} from {StartDate} to {EndDate}: {Reason}. The program will be treated as updated on each guide refresh.",
+                    programInfo.Id,
+                    programInfo.ChannelId,
+                    programInfo.StartDate,
+                    programInfo.EndDate,
+                    reason);
+            }
+
+            return programInfo;
         }
 
         private static ProgramInfo GetProgramInfo(XmlTvProgram program, ListingsProviderInfo info)
         {
-            string episodeTitle = program.Episode.Title;
+            string? episodeTitle = program.Episode?.Title;
             var programCategories = program.Categories.Where(c => !string.IsNullOrWhiteSpace(c)).ToList();
+            var imageUrl = program.Icons.FirstOrDefault()?.Source;
+            var episodeImageUrl = program.Images?.FirstOrDefault(m => m.Type == ImageType.Still)?.Path;
+            var backgroundImageUrl = program.Images?.FirstOrDefault(m => m.Type == ImageType.Backdrop)?.Path;
+            var rating = program.Ratings.FirstOrDefault()?.Value;
+            var starRating = program.StarRatings?.FirstOrDefault()?.StarRating;
 
             var programInfo = new ProgramInfo
             {
                 ChannelId = program.ChannelId,
                 EndDate = program.EndDate.UtcDateTime,
-                EpisodeNumber = program.Episode.Episode,
+                EpisodeNumber = program.Episode?.Episode,
                 EpisodeTitle = episodeTitle,
                 Genres = programCategories,
                 StartDate = program.StartDate.UtcDateTime,
                 Name = program.Title,
                 Overview = program.Description,
                 ProductionYear = program.CopyrightDate?.Year,
-                SeasonNumber = program.Episode.Series,
-                IsSeries = program.Episode.Episode is not null,
+                SeasonNumber = program.Episode?.Series,
+                IsSeries = program.Episode?.Episode is not null,
                 IsRepeat = program.IsPreviouslyShown && !program.IsNew,
                 IsPremiere = program.Premiere is not null,
+                IsLive = program.IsLive,
                 IsKids = programCategories.Any(c => info.KidsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 IsMovie = programCategories.Any(c => info.MovieCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 IsNews = programCategories.Any(c => info.NewsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 IsSports = programCategories.Any(c => info.SportsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
-                ImageUrl = string.IsNullOrEmpty(program.Icon?.Source) ? null : program.Icon.Source,
-                HasImage = !string.IsNullOrEmpty(program.Icon?.Source),
-                OfficialRating = string.IsNullOrEmpty(program.Rating?.Value) ? null : program.Rating.Value,
-                CommunityRating = program.StarRating,
-                SeriesId = program.Episode.Episode is null ? null : program.Title?.GetMD5().ToString("N", CultureInfo.InvariantCulture)
+                ImageUrl = string.IsNullOrEmpty(imageUrl) ? null : imageUrl,
+                HasImage = !string.IsNullOrEmpty(imageUrl),
+                BackdropImageUrl = string.IsNullOrEmpty(backgroundImageUrl) ? null : backgroundImageUrl,
+                ThumbImageUrl = string.IsNullOrEmpty(episodeImageUrl) ? null : episodeImageUrl,
+                OfficialRating = string.IsNullOrEmpty(rating) ? null : rating,
+                CommunityRating = starRating is null ? null : (float)starRating.Value,
+                SeriesId = program.Episode?.Episode is null ? null : program.Title?.GetMD5().ToString("N", CultureInfo.InvariantCulture)
             };
 
             if (string.IsNullOrWhiteSpace(program.ProgramId))
@@ -227,6 +332,13 @@ namespace Jellyfin.LiveTv.Listings
 
         public Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
         {
+            // Saving the provider is an explicit retry, so the download backoff has to be dropped
+            // together with the cached file the listings manager deletes.
+            if (!string.IsNullOrEmpty(info.Path))
+            {
+                _lastDownloadFailures.TryRemove(info.Path, out _);
+            }
+
             // Assume all urls are valid. check files for existence
             if (!info.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase) && !File.Exists(info.Path))
             {
@@ -261,7 +373,7 @@ namespace Jellyfin.LiveTv.Listings
             {
                 Id = c.Id,
                 Name = c.DisplayName,
-                ImageUrl = string.IsNullOrEmpty(c.Icon?.Source) ? null : c.Icon.Source,
+                ImageUrl = string.IsNullOrEmpty(c.Icons.FirstOrDefault()?.Source) ? null : c.Icons.FirstOrDefault()!.Source,
                 Number = string.IsNullOrWhiteSpace(c.Number) ? c.Id : c.Number
             }).ToList();
         }

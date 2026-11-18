@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Model.IO;
@@ -60,5 +61,145 @@ public static class FileSystemHelper
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Resolves a single link hop for the specified path.
+    /// </summary>
+    /// <remarks>
+    /// Returns <c>null</c> if the path is not a symbolic link or the filesystem does not support link resolution (e.g., exFAT).
+    /// </remarks>
+    /// <param name="path">The file path to resolve.</param>
+    /// <returns>
+    /// A <see cref="FileInfo"/> representing the next link target if the path is a link; otherwise, <c>null</c>.
+    /// </returns>
+    private static FileInfo? Resolve(string path)
+    {
+        try
+        {
+            return File.ResolveLinkTarget(path, returnFinalTarget: false) as FileInfo;
+        }
+        catch (IOException)
+        {
+            // Filesystem doesn't support links (e.g., exFAT).
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Gets the target of the specified file link.
+    /// </summary>
+    /// <remarks>
+    /// This helper exists because of this upstream runtime issue; https://github.com/dotnet/runtime/issues/92128.
+    /// </remarks>
+    /// <param name="linkPath">The path of the file link.</param>
+    /// <param name="returnFinalTarget">true to follow links to the final target; false to return the immediate next link.</param>
+    /// <returns>
+    /// A <see cref="FileInfo"/> if the <paramref name="linkPath"/> is a link, regardless of if the target exists; otherwise, <c>null</c>.
+    /// </returns>
+    public static FileInfo? ResolveLinkTarget(string linkPath, bool returnFinalTarget = false)
+    {
+        // Check if the file exists so the native resolve handler won't throw at us.
+        if (!File.Exists(linkPath))
+        {
+            return null;
+        }
+
+        if (!returnFinalTarget)
+        {
+            return Resolve(linkPath);
+        }
+
+        var targetInfo = Resolve(linkPath);
+        if (targetInfo is null || !targetInfo.Exists)
+        {
+            return targetInfo;
+        }
+
+        var currentPath = targetInfo.FullName;
+        var visited = new HashSet<string>(StringComparer.Ordinal) { linkPath, currentPath };
+
+        while (true)
+        {
+            var linkInfo = Resolve(currentPath);
+            if (linkInfo is null)
+            {
+                break;
+            }
+
+            var targetPath = linkInfo.FullName;
+
+            // If an infinite loop is detected, return the file info for the
+            // first link in the loop we encountered.
+            if (!visited.Add(targetPath))
+            {
+                return new FileInfo(targetPath);
+            }
+
+            targetInfo = linkInfo;
+            currentPath = targetPath;
+
+            // Exit if the target doesn't exist, so the native resolve handler won't throw at us.
+            if (!targetInfo.Exists)
+            {
+                break;
+            }
+        }
+
+        return targetInfo;
+    }
+
+    /// <summary>
+    /// Gets the target of the specified file link.
+    /// </summary>
+    /// <remarks>
+    /// This helper exists because of this upstream runtime issue; https://github.com/dotnet/runtime/issues/92128.
+    /// </remarks>
+    /// <param name="fileInfo">The file info of the file link.</param>
+    /// <param name="returnFinalTarget">true to follow links to the final target; false to return the immediate next link.</param>
+    /// <returns>
+    /// A <see cref="FileInfo"/> if the <paramref name="fileInfo"/> is a link, regardless of if the target exists; otherwise, <c>null</c>.
+    /// </returns>
+    public static FileInfo? ResolveLinkTarget(FileInfo fileInfo, bool returnFinalTarget = false)
+    {
+        ArgumentNullException.ThrowIfNull(fileInfo);
+
+        return ResolveLinkTarget(fileInfo.FullName, returnFinalTarget);
+    }
+
+    /// <summary>
+    /// Combines a caller supplied name with a parent directory, making sure the name cannot escape that directory.
+    /// </summary>
+    /// <param name="parentPath">The directory the name has to resolve inside of.</param>
+    /// <param name="name">The name of the child.</param>
+    /// <returns>
+    /// The full path of the child, or <c>null</c> if <paramref name="name"/> is not the name of a direct child
+    /// of <paramref name="parentPath"/>.
+    /// </returns>
+    public static string? GetChildPath(string parentPath, string name)
+    {
+        if (string.IsNullOrWhiteSpace(name) || name.Contains('\0', StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        // Rejects directory separators, and on Windows also volume separators, as those make the name more than a single segment.
+        if (!string.Equals(Path.GetFileName(name), name, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var fullPath = Path.GetFullPath(Path.Combine(parentPath, name));
+        var fullParentPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(parentPath));
+
+        // Catches the remaining relative names, "." and "..", which are valid single segments.
+        if (!string.Equals(Path.GetDirectoryName(fullPath), fullParentPath, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        // Windows strips trailing dots and spaces, so a name like "..." resolves to the parent directory itself
+        // and a name like "Movies." to a different child. Reject anything normalization did not leave intact.
+        return string.Equals(Path.GetFileName(fullPath), name, StringComparison.Ordinal) ? fullPath : null;
     }
 }

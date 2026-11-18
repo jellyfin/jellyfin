@@ -43,8 +43,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool AllowAudioStreamCopy { get; set; }
 
-        public bool BreakOnNonKeyFrames { get; set; }
-
         /// <summary>
         /// Gets or sets the audio sample rate.
         /// </summary>
@@ -92,6 +90,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// </summary>
         /// <value>The codec tag.</value>
         public string CodecTag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the rotation.
+        /// </summary>
+        /// <value>The video rotation angle, usually 0 or +-90/180.</value>
+        public string Rotation { get; set; }
 
         /// <summary>
         /// Gets or sets the framerate.

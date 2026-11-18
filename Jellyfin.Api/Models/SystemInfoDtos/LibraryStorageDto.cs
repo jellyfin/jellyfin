@@ -10,7 +10,7 @@ namespace Jellyfin.Api.Models.SystemInfoDtos;
 /// </summary>
 public record LibraryStorageDto
 {
-      /// <summary>
+    /// <summary>
     /// Gets or sets the Library Id.
     /// </summary>
     public required Guid Id { get; set; }

@@ -95,7 +95,8 @@
             "tags": {
                 "creation_time": "2021-09-13T22:42:42.000000Z",
                 "language": "eng",
-                "handler_name": "Surround 6.1",
+                "handler_name": "SoundHandler",
+                "name": "Surround 6.1",
                 "vendor_id": "[0][0][0][0]"
             }
         },
@@ -215,7 +216,8 @@
             "tags": {
                 "creation_time": "2021-09-13T22:42:42.000000Z",
                 "language": "eng",
-                "handler_name": "SubtitleHandler"
+                "handler_name": "SubtitleHandler",
+                "name": "SDH"
             }
         },
         {

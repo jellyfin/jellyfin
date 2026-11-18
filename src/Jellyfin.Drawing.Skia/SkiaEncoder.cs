@@ -1,8 +1,10 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using BlurHashSharp.SkiaSharp;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
@@ -11,6 +13,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
+using Svg;
 using Svg.Skia;
 
 namespace Jellyfin.Drawing.Skia;
@@ -21,63 +24,31 @@ namespace Jellyfin.Drawing.Skia;
 public class SkiaEncoder : IImageEncoder
 {
     private const string SvgFormat = "svg";
+
+    // The light sharpening kernel applied after resizing, see ResizeImage.
+    private const float SharpenCenterWeight = 1.4f;
+    private const float SharpenNeighborWeight = -0.1f;
+
     private static readonly HashSet<string> _transparentImageTypes = new(StringComparer.OrdinalIgnoreCase) { ".png", ".gif", ".webp" };
     private readonly ILogger<SkiaEncoder> _logger;
     private readonly IApplicationPaths _appPaths;
-    private static readonly SKImageFilter _imageFilter;
-    private static readonly SKTypeface[] _typefaces;
+    private static readonly SKTypeface?[] _typefaces = InitializeTypefaces();
 
     /// <summary>
     /// The default sampling options, equivalent to old high quality filter settings when upscaling.
     /// </summary>
-    public static readonly SKSamplingOptions UpscaleSamplingOptions;
+    public static readonly SKSamplingOptions UpscaleSamplingOptions = new SKSamplingOptions(SKCubicResampler.Mitchell);
 
     /// <summary>
     /// The sampling options, used for downscaling images, equivalent to old high quality filter settings when not upscaling.
     /// </summary>
-    public static readonly SKSamplingOptions DefaultSamplingOptions;
+    public static readonly SKSamplingOptions DefaultSamplingOptions = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear);
 
-#pragma warning disable CA1810
     static SkiaEncoder()
-#pragma warning restore CA1810
     {
-        var kernel = new[]
-        {
-            0,    -.1f,    0,
-            -.1f, 1.4f, -.1f,
-            0,    -.1f,    0,
-        };
-
-        var kernelSize = new SKSizeI(3, 3);
-        var kernelOffset = new SKPointI(1, 1);
-        _imageFilter = SKImageFilter.CreateMatrixConvolution(
-            kernelSize,
-            kernel,
-            1f,
-            0f,
-            kernelOffset,
-            SKShaderTileMode.Clamp,
-            true);
-
-        // Initialize the list of typefaces
-        // We have to statically build a list of typefaces because MatchCharacter only accepts a single character or code point
-        // But in reality a human-readable character (grapheme cluster) could be multiple code points. For example, 🚵🏻‍♀️ is a single emoji but 5 code points (U+1F6B5 + U+1F3FB + U+200D + U+2640 + U+FE0F)
-        _typefaces =
-        [
-            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, '鸡'), // CJK Simplified Chinese
-            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, '雞'), // CJK Traditional Chinese
-            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, 'ノ'), // CJK Japanese
-            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, '각'), // CJK Korean
-            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, 128169), // Emojis, 128169 is the 💩emoji
-            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, 'ז'), // Hebrew
-            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, 'ي'), // Arabic
-            SKTypeface.FromFamilyName("sans-serif", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright) // Default font
-        ];
-
-        // use cubic for upscaling
-        UpscaleSamplingOptions = new SKSamplingOptions(SKCubicResampler.Mitchell);
-        // use bilinear for everything else
-        DefaultSamplingOptions = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear);
+        SvgDocument.ResolveExternalElements = ExternalType.None;
+        SvgDocument.ResolveExternalImages = ExternalType.None;
+        SvgDocument.ResolveExternalXmlEntites = ExternalType.None;
     }
 
     /// <summary>
@@ -132,7 +103,7 @@ public class SkiaEncoder : IImageEncoder
     /// <summary>
     /// Gets the default typeface to use.
     /// </summary>
-    public static SKTypeface DefaultTypeFace => _typefaces.Last();
+    public static SKTypeface? DefaultTypeFace => _typefaces.Last();
 
     /// <summary>
     /// Check if the native lib is available.
@@ -150,6 +121,40 @@ public class SkiaEncoder : IImageEncoder
         {
             return false;
         }
+    }
+
+    /// <summary>
+    /// Initialize the list of typefaces
+    /// We have to statically build a list of typefaces because MatchCharacter only accepts a single character or code point
+    /// But in reality a human-readable character (grapheme cluster) could be multiple code points. For example, 🚵🏻‍♀️ is a single emoji but 5 code points (U+1F6B5 + U+1F3FB + U+200D + U+2640 + U+FE0F).
+    /// </summary>
+    /// <returns>The list of typefaces.</returns>
+    private static SKTypeface?[] InitializeTypefaces()
+    {
+        int[] chars = [
+            '鸡', // CJK Simplified Chinese
+            '雞', // CJK Traditional Chinese
+            'ノ', // CJK Japanese
+            '각', // CJK Korean
+            128169, // Emojis, 128169 is the Pile of Poo (💩) emoji
+            'ז', // Hebrew
+            'ي' // Arabic
+        ];
+        var fonts = new List<SKTypeface>(chars.Length + 1);
+        foreach (var ch in chars)
+        {
+            var font = SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, ch);
+            if (font is not null)
+            {
+                fonts.Add(font);
+            }
+        }
+
+        // Default font
+        fonts.Add(SKTypeface.FromFamilyName("sans-serif", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright)
+            ?? SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, 'a'));
+
+        return fonts.ToArray();
     }
 
     /// <summary>
@@ -181,6 +186,12 @@ public class SkiaEncoder : IImageEncoder
         var extension = Path.GetExtension(path.AsSpan());
         if (extension.Equals(".svg", StringComparison.OrdinalIgnoreCase))
         {
+            if (!SvgSecurityValidator.IsSafe(path, out var reason))
+            {
+                _logger.LogError("Refusing to determine dimensions for SVG {FilePath}: {Reason}", path, reason);
+                return default;
+            }
+
             using var svg = new SKSvg();
             try
             {
@@ -209,39 +220,69 @@ public class SkiaEncoder : IImageEncoder
             return default;
         }
 
-        using var codec = SKCodec.Create(safePath, out var result);
-
-        switch (result)
+        SKCodec? codec = null;
+        bool isSafePathTemp = !string.Equals(Path.GetFullPath(safePath), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase);
+        try
         {
-            case SKCodecResult.Success:
-            // Skia/SkiaSharp edge‑case: when the image header is parsed but the actual pixel
-            // decode fails (truncated JPEG/PNG, exotic ICC/EXIF, CMYK without color‑transform, etc.)
-            // `SKCodec.Create` returns a *non‑null* codec together with
-            // SKCodecResult.InternalError.  The header still contains valid dimensions,
-            // which is all we need here – so we fall back to them instead of aborting.
-            // See e.g. Skia bugs #4139, #6092.
-            case SKCodecResult.InternalError when codec is not null:
-                var info = codec.Info;
-                return new ImageDimensions(info.Width, info.Height);
-
-            case SKCodecResult.Unimplemented:
-                _logger.LogDebug("Image format not supported: {FilePath}", path);
-                return default;
-
-            default:
+            codec = SKCodec.Create(safePath, out var result);
+            switch (result)
             {
-                var boundsInfo = SKBitmap.DecodeBounds(safePath);
+                case SKCodecResult.Success:
+                // Skia/SkiaSharp edge‑case: when the image header is parsed but the actual pixel
+                // decode fails (truncated JPEG/PNG, exotic ICC/EXIF, CMYK without color‑transform, etc.)
+                // `SKCodec.Create` returns a *non‑null* codec together with
+                // SKCodecResult.InternalError.  The header still contains valid dimensions,
+                // which is all we need here – so we fall back to them instead of aborting.
+                // See e.g. Skia bugs #4139, #6092.
+                case SKCodecResult.InternalError when codec is not null:
+                    var info = codec.Info;
+                    return new ImageDimensions(info.Width, info.Height);
 
-                if (boundsInfo.Width > 0 && boundsInfo.Height > 0)
+                case SKCodecResult.Unimplemented:
+                    _logger.LogDebug("Image format not supported: {FilePath}", path);
+                    return default;
+
+                default:
+                    {
+                        var boundsInfo = SKBitmap.DecodeBounds(safePath);
+                        if (boundsInfo.Width > 0 && boundsInfo.Height > 0)
+                        {
+                            return new ImageDimensions(boundsInfo.Width, boundsInfo.Height);
+                        }
+
+                        _logger.LogWarning(
+                            "Unable to determine image dimensions for {FilePath}: {SkCodecResult}",
+                            path,
+                            result);
+
+                        return default;
+                    }
+            }
+        }
+        finally
+        {
+            try
+            {
+                codec?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Error by closing codec for {FilePath}", safePath);
+            }
+
+            if (isSafePathTemp)
+            {
+                try
                 {
-                    return new ImageDimensions(boundsInfo.Width, boundsInfo.Height);
+                    if (File.Exists(safePath))
+                    {
+                        File.Delete(safePath);
+                    }
                 }
-
-                _logger.LogWarning(
-                    "Unable to determine image dimensions for {FilePath}: {SkCodecResult}",
-                    path,
-                    result);
-                return default;
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "Unable to remove temporary file '{TempPath}'", safePath);
+                }
             }
         }
     }
@@ -366,7 +407,7 @@ public class SkiaEncoder : IImageEncoder
 
         try
         {
-             // If we have to resize these they often end up distorted
+            // If we have to resize these they often end up distorted
             if (resultBitmap.ColorType == SKColorType.Gray8)
             {
                 using (resultBitmap)
@@ -411,6 +452,12 @@ public class SkiaEncoder : IImageEncoder
         if (!File.Exists(path))
         {
             throw new FileNotFoundException("File not found", path);
+        }
+
+        if (!SvgSecurityValidator.IsSafe(path, out var reason))
+        {
+            _logger.LogError("Refusing to render SVG {FilePath}: {Reason}", path, reason);
+            return null;
         }
 
         using var svg = SKSvg.CreateFromFile(path);
@@ -509,8 +556,15 @@ public class SkiaEncoder : IImageEncoder
     /// <returns>The resized image.</returns>
     internal static SKImage ResizeImage(SKBitmap source, SKImageInfo targetInfo, bool isAntialias = false, bool isDither = false)
     {
-        using var surface = SKSurface.Create(targetInfo);
-        using var canvas = surface.Canvas;
+        if (source.Width == targetInfo.Width && source.Height == targetInfo.Height)
+        {
+            return SKImage.FromBitmap(source);
+        }
+
+        var isDownscale = source.Width > targetInfo.Width || source.Height > targetInfo.Height;
+
+        using var target = new SKBitmap(targetInfo);
+        using var canvas = new SKCanvas(target);
         using var paint = new SKPaint();
         paint.IsAntialias = isAntialias;
         paint.IsDither = isDither;
@@ -518,11 +572,10 @@ public class SkiaEncoder : IImageEncoder
         // Historically, kHigh implied cubic filtering, but only when upsampling.
         // If specified kHigh, and were down-sampling, Skia used to switch back to kMedium (bilinear filtering plus mipmaps).
         // With current skia API, passing Mitchell cubic when down-sampling will cause serious quality degradation.
-        var samplingOptions = source.Width > targetInfo.Width || source.Height > targetInfo.Height
+        var samplingOptions = isDownscale
             ? DefaultSamplingOptions
             : UpscaleSamplingOptions;
 
-        paint.ImageFilter = _imageFilter;
         canvas.DrawBitmap(
             source,
             SKRect.Create(0, 0, source.Width, source.Height),
@@ -530,7 +583,78 @@ public class SkiaEncoder : IImageEncoder
             samplingOptions,
             paint);
 
-        return surface.Snapshot();
+        if (isDownscale)
+        {
+            SharpenInPlace(target);
+        }
+
+        return SKImage.FromBitmap(target);
+    }
+
+    /// <summary>
+    /// Applies the light 3x3 sharpening kernel to the bitmap in place.
+    ///
+    /// This is equivalent to the SKImageFilter.CreateMatrixConvolution paint filter that
+    /// was previously part of the resize draw call. Since the SkiaSharp 3 update that
+    /// filter no longer has a fast CPU path and takes multiple seconds per image on the
+    /// software rasterizer, so the same kernel is applied directly instead.
+    /// </summary>
+    /// <param name="bitmap">The bitmap to sharpen. Must use a color type with four bytes per pixel; other color types are returned unchanged.</param>
+    internal static void SharpenInPlace(SKBitmap bitmap)
+    {
+        if (bitmap.BytesPerPixel != 4)
+        {
+            return;
+        }
+
+        var width = bitmap.Width;
+        var height = bitmap.Height;
+        var stride = bitmap.RowBytes;
+        var pixels = bitmap.GetPixels();
+        if (width == 0 || height == 0 || pixels == IntPtr.Zero)
+        {
+            return;
+        }
+
+        var length = stride * height;
+        var source = ArrayPool<byte>.Shared.Rent(length);
+        var result = ArrayPool<byte>.Shared.Rent(length);
+        try
+        {
+            Marshal.Copy(pixels, source, 0, length);
+
+            for (var y = 0; y < height; y++)
+            {
+                // The kernel clamps at the edges: out-of-bounds taps reuse the edge pixel.
+                var row = y * stride;
+                var up = y == 0 ? row : row - stride;
+                var down = y == height - 1 ? row : row + stride;
+
+                for (var x = 0; x < width; x++)
+                {
+                    var col = x * 4;
+                    var left = x == 0 ? col : col - 4;
+                    var right = x == width - 1 ? col : col + 4;
+
+                    for (var channel = 0; channel < 4; channel++)
+                    {
+                        var value = (SharpenCenterWeight * source[row + col + channel])
+                            + (SharpenNeighborWeight * (source[up + col + channel]
+                                + source[down + col + channel]
+                                + source[row + left + channel]
+                                + source[row + right + channel]));
+                        result[row + col + channel] = (byte)Math.Clamp((int)(value + 0.5f), 0, 255);
+                    }
+                }
+            }
+
+            Marshal.Copy(result, 0, pixels, length);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(source);
+            ArrayPool<byte>.Shared.Return(result);
+        }
     }
 
     /// <inheritdoc/>
@@ -779,7 +903,7 @@ public class SkiaEncoder : IImageEncoder
     {
         foreach (var typeface in _typefaces)
         {
-            if (typeface.ContainsGlyphs(c))
+            if (typeface is not null && typeface.ContainsGlyphs(c))
             {
                 return typeface;
             }

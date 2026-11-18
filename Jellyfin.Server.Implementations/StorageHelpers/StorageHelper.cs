@@ -13,8 +13,7 @@ namespace Jellyfin.Server.Implementations.StorageHelpers;
 public static class StorageHelper
 {
     private const long TwoGigabyte = 2_147_483_647L;
-    private const long FiveHundredAndTwelveMegaByte = 536_870_911L;
-    private static readonly string[] _byteHumanizedSuffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB"];
+    private static readonly string[] _byteHumanizedSuffixes = ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"];
 
     /// <summary>
     /// Tests the available storage capacity on the jellyfin paths with estimated minimum values.
@@ -24,29 +23,49 @@ public static class StorageHelper
     public static void TestCommonPathsForStorageCapacity(IApplicationPaths applicationPaths, ILogger logger)
     {
         TestDataDirectorySize(applicationPaths.DataPath, logger, TwoGigabyte);
-        TestDataDirectorySize(applicationPaths.LogDirectoryPath, logger, FiveHundredAndTwelveMegaByte);
         TestDataDirectorySize(applicationPaths.CachePath, logger, TwoGigabyte);
         TestDataDirectorySize(applicationPaths.ProgramDataPath, logger, TwoGigabyte);
-        TestDataDirectorySize(applicationPaths.TempDirectory, logger, TwoGigabyte);
     }
 
     /// <summary>
-    /// Gets the free space of a specific directory.
+    /// Gets the free space of the parent filesystem of a specific directory.
     /// </summary>
     /// <param name="path">Path to a folder.</param>
-    /// <returns>The number of bytes available space.</returns>
+    /// <returns>Various details about the parent filesystem containing the directory.</returns>
     public static FolderStorageInfo GetFreeSpaceOf(string path)
     {
         try
         {
-            var driveInfo = new DriveInfo(path);
+            // Fully resolve the given path to an actual filesystem target, in case it's a symlink or similar.
+            var resolvedPath = ResolvePath(path);
+            // We iterate all filesystems reported by GetDrives() here, and attempt to find the best
+            // match that contains, as deep as possible, the given path.
+            // This is required because simply calling `DriveInfo` on a path returns that path as
+            // the Name and RootDevice, which is not at all how this should work.
+            var allDrives = DriveInfo.GetDrives();
+            DriveInfo? bestMatch = null;
+            foreach (DriveInfo d in allDrives)
+            {
+                if (resolvedPath.StartsWith(d.RootDirectory.FullName, StringComparison.InvariantCultureIgnoreCase) &&
+                    (bestMatch is null || d.RootDirectory.FullName.Length > bestMatch.RootDirectory.FullName.Length))
+                {
+                    bestMatch = d;
+                }
+            }
+
+            if (bestMatch is null)
+            {
+                throw new InvalidOperationException($"The path `{path}` has no matching parent device. Space check invalid.");
+            }
+
             return new FolderStorageInfo()
             {
                 Path = path,
-                FreeSpace = driveInfo.AvailableFreeSpace,
-                UsedSpace = driveInfo.TotalSize - driveInfo.AvailableFreeSpace,
-                StorageType = driveInfo.DriveType.ToString(),
-                DeviceId = driveInfo.Name,
+                ResolvedPath = resolvedPath,
+                FreeSpace = bestMatch.AvailableFreeSpace,
+                UsedSpace = bestMatch.TotalSize - bestMatch.AvailableFreeSpace,
+                StorageType = bestMatch.DriveType.ToString(),
+                DeviceId = bestMatch.Name,
             };
         }
         catch
@@ -54,12 +73,34 @@ public static class StorageHelper
             return new FolderStorageInfo()
             {
                 Path = path,
+                ResolvedPath = path,
                 FreeSpace = -1,
                 UsedSpace = -1,
                 StorageType = null,
                 DeviceId = null
             };
         }
+    }
+
+    /// <summary>
+    /// Walk a path and fully resolve any symlinks within it.
+    /// </summary>
+    private static string ResolvePath(string path)
+    {
+        var root = Path.GetPathRoot(path) ?? Path.DirectorySeparatorChar.ToString();
+        var parts = path.Substring(root.Length).Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+        var current = root;
+        foreach (var part in parts)
+        {
+            current = Path.Combine(current, part);
+            var resolved = new DirectoryInfo(current).ResolveLinkTarget(returnFinalTarget: true);
+            if (resolved is not null)
+            {
+                current = resolved.FullName;
+            }
+        }
+
+        return current;
     }
 
     /// <summary>
@@ -77,7 +118,7 @@ public static class StorageHelper
         var drive = new DriveInfo(path);
         if (threshold != -1 && drive.AvailableFreeSpace < threshold)
         {
-            throw new InvalidOperationException($"The path `{path}` has insufficient free space. Required: at least {HumanizeStorageSize(threshold)}.");
+            throw new InvalidOperationException($"The path `{path}` has insufficient free space. Available: {HumanizeStorageSize(drive.AvailableFreeSpace)}, Required: {HumanizeStorageSize(threshold)}.");
         }
 
         logger.LogInformation(

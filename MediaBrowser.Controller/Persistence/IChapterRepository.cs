@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Persistence;
@@ -13,7 +15,9 @@ public interface IChapterRepository
     /// Deletes the chapters.
     /// </summary>
     /// <param name="itemId">The item.</param>
-    void DeleteChapters(Guid itemId);
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Task.</returns>
+    Task DeleteChaptersAsync(Guid itemId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Saves the chapters.

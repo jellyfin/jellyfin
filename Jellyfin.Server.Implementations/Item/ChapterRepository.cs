@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Drawing;
@@ -53,6 +55,7 @@ public class ChapterRepository : IChapterRepository
     {
         using var context = _dbProvider.CreateDbContext();
         return context.Chapters.AsNoTracking().Where(e => e.ItemId.Equals(baseItemId))
+            .OrderBy(e => e.StartPositionTicks)
             .Select(e => new
             {
                 chapter = e,
@@ -67,26 +70,27 @@ public class ChapterRepository : IChapterRepository
     public void SaveChapters(Guid itemId, IReadOnlyList<ChapterInfo> chapters)
     {
         using var context = _dbProvider.CreateDbContext();
-        using (var transaction = context.Database.BeginTransaction())
+        using var transaction = context.Database.BeginTransaction();
+        context.Chapters.Where(e => e.ItemId.Equals(itemId)).ExecuteDelete();
+        for (var i = 0; i < chapters.Count; i++)
         {
-            context.Chapters.Where(e => e.ItemId.Equals(itemId)).ExecuteDelete();
-            for (var i = 0; i < chapters.Count; i++)
-            {
-                var chapter = chapters[i];
-                context.Chapters.Add(Map(chapter, i, itemId));
-            }
-
-            context.SaveChanges();
-            transaction.Commit();
+            var chapter = chapters[i];
+            context.Chapters.Add(Map(chapter, i, itemId));
         }
+
+        context.SaveChanges();
+        transaction.Commit();
     }
 
     /// <inheritdoc />
-    public void DeleteChapters(Guid itemId)
+    public async Task DeleteChaptersAsync(Guid itemId, CancellationToken cancellationToken)
     {
-        using var context = _dbProvider.CreateDbContext();
-        context.Chapters.Where(c => c.ItemId.Equals(itemId)).ExecuteDelete();
-        context.SaveChanges();
+        var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
+        {
+            await dbContext.Chapters.Where(c => c.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+            await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private Chapter Map(ChapterInfo chapterInfo, int index, Guid itemId)

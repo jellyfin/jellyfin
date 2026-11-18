@@ -20,7 +20,7 @@ public class PersonsControllerTests : IClassFixture<JellyfinApplicationFactory>
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        using var response = await client.GetAsync($"Persons/DoesntExist");
+        using var response = await client.GetAsync($"Persons/DoesntExist", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }

@@ -44,6 +44,31 @@ public class EpisodeMetadataService : MetadataService<Episode, EpisodeInfo>
     {
         var updatedType = base.BeforeSaveInternal(item, isFullRefresh, updateType);
 
+        // An episode cannot end before it starts.
+        if (item.IndexNumberEnd < item.IndexNumber)
+        {
+            Logger.LogWarning(
+                "Discarding episode range end {IndexNumberEnd} preceding episode number {IndexNumber} for {Path}",
+                item.IndexNumberEnd,
+                item.IndexNumber,
+                item.Path);
+
+            item.IndexNumberEnd = null;
+            updatedType |= ItemUpdateType.MetadataImport;
+        }
+        else if (item.IndexNumberEnd.HasValue && !item.IndexNumber.HasValue)
+        {
+            // Without a first episode the end does not describe a range. Promoting it to the episode number
+            // would invent an identity the metadata never supplied, so drop the orphaned value instead.
+            Logger.LogWarning(
+                "Discarding episode range end {IndexNumberEnd} without an episode number for {Path}",
+                item.IndexNumberEnd,
+                item.Path);
+
+            item.IndexNumberEnd = null;
+            updatedType |= ItemUpdateType.MetadataImport;
+        }
+
         var seriesName = item.FindSeriesName();
         if (!string.Equals(item.SeriesName, seriesName, StringComparison.Ordinal))
         {
@@ -108,6 +133,16 @@ public class EpisodeMetadataService : MetadataService<Episode, EpisodeInfo>
         if (replaceData || !targetItem.IndexNumberEnd.HasValue)
         {
             targetItem.IndexNumberEnd = sourceItem.IndexNumberEnd;
+        }
+
+        // Episode season numbers can be set from path parsing before local metadata is merged.
+        // When a provider supplies an explicit season, prefer it during provider->temp and temp->item merges,
+        // but avoid clobbering provider data when existing metadata is backfilled into temp.
+        if (mergeMetadataSettings
+            && sourceItem.ParentIndexNumber.HasValue
+            && targetItem.ParentIndexNumber != sourceItem.ParentIndexNumber)
+        {
+            targetItem.ParentIndexNumber = sourceItem.ParentIndexNumber;
         }
     }
 }

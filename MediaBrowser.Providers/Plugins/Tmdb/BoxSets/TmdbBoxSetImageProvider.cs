@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -56,7 +54,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var tmdbId = Convert.ToInt32(item.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
+            item.TryGetTmdbId(out var tmdbId);
 
             if (tmdbId <= 0)
             {
@@ -66,7 +64,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             var language = item.GetPreferredMetadataLanguage();
 
             // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
-            var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, null, null, cancellationToken).ConfigureAwait(false);
+            var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, null, null, null, cancellationToken).ConfigureAwait(false);
 
             if (collection?.Images is null)
             {
@@ -75,10 +73,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 
             var posters = collection.Images.Posters;
             var backdrops = collection.Images.Backdrops;
-            var remoteImages = new List<RemoteImageInfo>(posters.Count + backdrops.Count);
+            var remoteImages = new List<RemoteImageInfo>(posters?.Count ?? 0 + backdrops?.Count ?? 0);
 
-            remoteImages.AddRange(_tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language));
-            remoteImages.AddRange(_tmdbClientManager.ConvertBackdropsToRemoteImageInfo(backdrops, language));
+            if (posters is not null)
+            {
+                remoteImages.AddRange(_tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language));
+            }
+
+            if (backdrops is not null)
+            {
+                remoteImages.AddRange(_tmdbClientManager.ConvertBackdropsToRemoteImageInfo(backdrops, language));
+            }
 
             return remoteImages;
         }

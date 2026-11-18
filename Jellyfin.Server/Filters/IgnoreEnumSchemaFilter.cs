@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json.Nodes;
 using Jellyfin.Data.Attributes;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Jellyfin.Server.Filters;
@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Filters;
 public class IgnoreEnumSchemaFilter : ISchemaFilter
 {
     /// <inheritdoc />
-    public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+    public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
     {
         if (context.Type.IsEnum || (Nullable.GetUnderlyingType(context.Type)?.IsEnum ?? false))
         {
@@ -25,18 +25,23 @@ public class IgnoreEnumSchemaFilter : ISchemaFilter
                 return;
             }
 
-            var enumOpenApiStrings = new List<IOpenApiAny>();
+            if (schema is not OpenApiSchema concreteSchema)
+            {
+                return;
+            }
+
+            var enumOpenApiNodes = new List<JsonNode>();
 
             foreach (var enumName in Enum.GetNames(type))
             {
                 var member = type.GetMember(enumName)[0];
                 if (!member.GetCustomAttributes<OpenApiIgnoreEnumAttribute>().Any())
                 {
-                    enumOpenApiStrings.Add(new OpenApiString(enumName));
+                    enumOpenApiNodes.Add(JsonValue.Create(enumName)!);
                 }
             }
 
-            schema.Enum = enumOpenApiStrings;
+            concreteSchema.Enum = enumOpenApiNodes;
         }
     }
 }

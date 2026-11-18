@@ -11,7 +11,9 @@ namespace MediaBrowser.Controller.Drawing
             // Determine the output size based on incoming parameters
             var newSize = DrawingUtils.Resize(originalImageSize, options.Width ?? 0, options.Height ?? 0, options.MaxWidth ?? 0, options.MaxHeight ?? 0);
             newSize = DrawingUtils.ResizeFill(newSize, options.FillWidth, options.FillHeight);
-            return newSize;
+
+            // Never encode larger than the source.
+            return DrawingUtils.ScaleDownToFit(newSize, originalImageSize);
         }
     }
 }

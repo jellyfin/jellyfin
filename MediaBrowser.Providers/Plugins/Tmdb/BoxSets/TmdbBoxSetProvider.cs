@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -42,12 +41,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(BoxSetInfo searchInfo, CancellationToken cancellationToken)
         {
-            var tmdbId = Convert.ToInt32(searchInfo.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
+            searchInfo.TryGetTmdbId(out var tmdbId);
             var language = searchInfo.MetadataLanguage;
 
             if (tmdbId > 0)
             {
-                var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken).ConfigureAwait(false);
+                var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, language, TmdbUtils.GetImageLanguagesParam(language, searchInfo.MetadataCountryCode), searchInfo.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
 
                 if (collection is null)
                 {
@@ -67,10 +66,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 
                 result.SetProviderId(MetadataProvider.Tmdb, collection.Id.ToString(CultureInfo.InvariantCulture));
 
-                return new[] { result };
+                return [result];
             }
 
-            var collectionSearchResults = await _tmdbClientManager.SearchCollectionAsync(searchInfo.Name, language, cancellationToken).ConfigureAwait(false);
+            var collectionSearchResults = await _tmdbClientManager.SearchCollectionAsync(searchInfo.Name, language, searchInfo.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+            if (collectionSearchResults is null)
+            {
+                return [];
+            }
 
             var collections = new RemoteSearchResult[collectionSearchResults.Count];
             for (var i = 0; i < collectionSearchResults.Count; i++)
@@ -93,8 +96,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
         /// <inheritdoc />
         public async Task<MetadataResult<BoxSet>> GetMetadata(BoxSetInfo info, CancellationToken cancellationToken)
         {
-            var tmdbId = Convert.ToInt32(info.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
+            info.TryGetTmdbId(out var tmdbId);
             var language = info.MetadataLanguage;
+
             // We don't already have an Id, need to fetch it
             if (tmdbId <= 0)
             {
@@ -102,7 +106,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                 // Caller provides the filename with extension stripped and NOT the parsed filename
                 var parsedName = _libraryManager.ParseName(info.Name);
                 var cleanedName = TmdbUtils.CleanName(parsedName.Name);
-                var searchResults = await _tmdbClientManager.SearchCollectionAsync(cleanedName, language, cancellationToken).ConfigureAwait(false);
+                var searchResults = await _tmdbClientManager.SearchCollectionAsync(cleanedName, language, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
 
                 if (searchResults is not null && searchResults.Count > 0)
                 {
@@ -110,11 +114,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                 }
             }
 
-            var result = new MetadataResult<BoxSet>();
+            var result = new MetadataResult<BoxSet>
+            {
+                ResultLanguage = language
+            };
 
             if (tmdbId > 0)
             {
-                var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken).ConfigureAwait(false);
+                var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, language, TmdbUtils.GetImageLanguagesParam(language, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
 
                 if (collection is not null)
                 {

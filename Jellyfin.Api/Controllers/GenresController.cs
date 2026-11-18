@@ -25,6 +25,7 @@ namespace Jellyfin.Api.Controllers;
 /// The genres controller.
 /// </summary>
 [Authorize]
+[Tags("Genre")]
 public class GenresController : BaseJellyfinApiController
 {
     private readonly IUserManager _userManager;
@@ -94,8 +95,13 @@ public class GenresController : BaseJellyfinApiController
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, false, imageTypeLimit, enableImageTypes);
+
+        // Asking for a type filter has always implied wanting that type's counts back.
+        if (includeItemTypes.Length != 0 && !dtoOptions.ContainsField(ItemFields.ItemCounts))
+        {
+            dtoOptions.Fields = [.. dtoOptions.Fields, ItemFields.ItemCounts];
+        }
 
         User? user = userId.IsNullOrEmpty()
             ? null
@@ -143,8 +149,7 @@ public class GenresController : BaseJellyfinApiController
             result = _libraryManager.GetGenres(query);
         }
 
-        var shouldIncludeItemTypes = includeItemTypes.Length != 0;
-        return RequestHelpers.CreateQueryResult(result, dtoOptions, _dtoService, shouldIncludeItemTypes, user);
+        return RequestHelpers.CreateQueryResult(result, dtoOptions, _dtoService, user);
     }
 
     /// <summary>
@@ -159,8 +164,7 @@ public class GenresController : BaseJellyfinApiController
     public ActionResult<BaseItemDto> GetGenre([FromRoute, Required] string genreName, [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var dtoOptions = new DtoOptions()
-            .AddClientFields(User);
+        var dtoOptions = new DtoOptions();
 
         Genre? item;
         if (genreName.Contains(BaseItem.SlugChar, StringComparison.OrdinalIgnoreCase))

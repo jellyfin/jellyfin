@@ -22,7 +22,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-            var response = await client.GetAsync("Playback/BitrateTest");
+            var response = await client.GetAsync("Playback/BitrateTest", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(MediaTypeNames.Application.Octet, response.Content.Headers.ContentType?.MediaType);
@@ -36,7 +36,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-            var response = await client.GetAsync("Playback/BitrateTest?size=" + size.ToString(CultureInfo.InvariantCulture));
+            var response = await client.GetAsync("Playback/BitrateTest?size=" + size.ToString(CultureInfo.InvariantCulture), TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(MediaTypeNames.Application.Octet, response.Content.Headers.ContentType?.MediaType);
@@ -53,7 +53,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-            var response = await client.GetAsync("Playback/BitrateTest?size=" + size.ToString(CultureInfo.InvariantCulture));
+            var response = await client.GetAsync("Playback/BitrateTest?size=" + size.ToString(CultureInfo.InvariantCulture), TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }

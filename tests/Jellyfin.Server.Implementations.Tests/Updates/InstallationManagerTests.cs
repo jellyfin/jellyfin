@@ -51,7 +51,8 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
             PackageInfo[] packages = await _installationManager.GetPackages(
                 "Jellyfin Stable",
                 "https://repo.jellyfin.org/files/plugin/manifest.json",
-                false);
+                false,
+                TestContext.Current.CancellationToken);
 
             Assert.Equal(25, packages.Length);
         }
@@ -62,7 +63,8 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
             PackageInfo[] packages = await _installationManager.GetPackages(
                 "Jellyfin Stable",
                 "https://repo.jellyfin.org/files/plugin/manifest.json",
-                false);
+                false,
+                TestContext.Current.CancellationToken);
 
             packages = _installationManager.FilterPackages(packages, "Anime").ToArray();
             Assert.Single(packages);
@@ -74,7 +76,8 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
             PackageInfo[] packages = await _installationManager.GetPackages(
                 "Jellyfin Stable",
                 "https://repo.jellyfin.org/files/plugin/manifest.json",
-                false);
+                false,
+                TestContext.Current.CancellationToken);
 
             packages = _installationManager.FilterPackages(packages, id: new Guid("a4df60c5-6ab4-412a-8f79-2cab93fb2bc5")).ToArray();
             Assert.Single(packages);
@@ -105,6 +108,30 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
 
             var ex = await Record.ExceptionAsync(() => _installationManager.InstallPackage(packageInfo, CancellationToken.None));
             Assert.Null(ex);
+        }
+
+        [Theory]
+        [InlineData("../evil")]
+        [InlineData("..\\evil")]
+        [InlineData("../../escape_attempt")]
+        [InlineData("..")]
+        [InlineData(".")]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData("foo/bar")]
+        [InlineData("foo\\bar")]
+        [InlineData("/absolute")]
+        [InlineData("foo\0bar")]
+        public async Task InstallPackage_InvalidName_ThrowsInvalidDataException(string name)
+        {
+            var packageInfo = new InstallationInfo()
+            {
+                Name = name,
+                SourceUrl = "https://repo.jellyfin.org/releases/plugin/empty/empty.zip",
+                Checksum = "11b5b2f1a9ebc4f66d6ef19018543361"
+            };
+
+            await Assert.ThrowsAsync<InvalidDataException>(() => _installationManager.InstallPackage(packageInfo, CancellationToken.None));
         }
     }
 }

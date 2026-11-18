@@ -1,0 +1,173 @@
+using System;
+using System.Collections.Generic;
+using System.Data.Common;
+using System.Linq;
+using AutoFixture;
+using AutoFixture.AutoMoq;
+using Emby.Naming.Common;
+using Emby.Server.Implementations.Data;
+using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Extensions;
+using Jellyfin.Server.Implementations.Item;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Configuration;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Moq;
+using Xunit;
+using ServerLibraryManager = Emby.Server.Implementations.Library.LibraryManager;
+
+namespace Jellyfin.Server.Implementations.Tests.Item;
+
+public sealed class ArtistNameLookupTests : SqliteDbTestFixture
+{
+    private readonly CommandRecorder _recorder;
+
+    public ArtistNameLookupTests()
+        : this(new CommandRecorder())
+    {
+    }
+
+    private ArtistNameLookupTests(CommandRecorder recorder)
+        : base(recorder)
+    {
+        _recorder = recorder;
+    }
+
+    [Theory]
+    [InlineData("Björk", "bjork")]
+    [InlineData("AC/DC", "ac dc")]
+    [InlineData("An Artist", " AN   ARTIST ")]
+    [InlineData("Artist", "ARTIST")]
+    public void GetArtist_UsesSameNormalizedNameAsFindArtists(string storedName, string requestedName)
+    {
+        var lookup = new ItemTypeLookup();
+        var artistId = Guid.NewGuid();
+        using (var context = CreateDbContext())
+        {
+            context.BaseItems.AddRange(
+                new BaseItemEntity
+                {
+                    Id = artistId,
+                    Name = storedName,
+                    CleanName = storedName.GetCleanValue(),
+                    Type = lookup.BaseItemKindNames[BaseItemKind.MusicArtist]
+                },
+                new BaseItemEntity
+                {
+                    Id = Guid.NewGuid(),
+                    Name = storedName,
+                    CleanName = storedName.GetCleanValue(),
+                    Type = lookup.BaseItemKindNames[BaseItemKind.Person]
+                });
+            context.SaveChanges();
+        }
+
+        var manager = CreateLibraryManager(lookup);
+        _recorder.Commands.Clear();
+
+        Assert.Equal(artistId, manager.GetArtist(requestedName).Id);
+        var query = Assert.Single(_recorder.Commands, c => c.Sql.Contains("\"CleanName\" =", StringComparison.Ordinal));
+        Assert.Contains(Explain(query), line => line.Contains("IX_BaseItems_Type_CleanName (Type=? AND CleanName=?)", StringComparison.Ordinal));
+        Assert.Equal(artistId, Assert.Single(manager.GetArtists([requestedName])[requestedName]).Id);
+    }
+
+    [Fact]
+    public void GetArtist_PrefersFilesystemArtistWhenNormalizedNamesMatch()
+    {
+        var lookup = new ItemTypeLookup();
+        var parentId = Guid.NewGuid();
+        var artistId = Guid.NewGuid();
+        using (var context = CreateDbContext())
+        {
+            context.BaseItems.AddRange(
+                new BaseItemEntity
+                {
+                    Id = parentId,
+                    Name = "Music",
+                    Type = lookup.BaseItemKindNames[BaseItemKind.Folder]
+                },
+                new BaseItemEntity
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Bjork",
+                    CleanName = "Bjork".GetCleanValue(),
+                    Type = lookup.BaseItemKindNames[BaseItemKind.MusicArtist]
+                },
+                new BaseItemEntity
+                {
+                    Id = artistId,
+                    ParentId = parentId,
+                    Name = "Björk",
+                    CleanName = "Björk".GetCleanValue(),
+                    Type = lookup.BaseItemKindNames[BaseItemKind.MusicArtist]
+                });
+            context.SaveChanges();
+        }
+
+        Assert.Equal(artistId, CreateLibraryManager(lookup).GetArtist("Bjork").Id);
+    }
+
+    private ServerLibraryManager CreateLibraryManager(ItemTypeLookup lookup)
+    {
+        var repository = CreateBaseItemRepository(lookup);
+        var fixture = new Fixture().Customize(new AutoMoqCustomization());
+        fixture.Register(() => new NamingOptions());
+        var configuration = fixture.Freeze<Mock<IServerConfigurationManager>>();
+        configuration.Setup(c => c.Configuration).Returns(new ServerConfiguration());
+        configuration.Setup(c => c.ApplicationPaths.ProgramDataPath).Returns("/data");
+        fixture.Inject<IItemRepository>(repository);
+        fixture.Inject<ILinkedChildrenService>(new LinkedChildrenService(CreateDbContextFactory(), lookup, repository));
+        return fixture.Create<ServerLibraryManager>();
+    }
+
+    private string[] Explain(RecordedCommand query)
+    {
+        using var context = CreateDbContext();
+        using var command = context.Database.GetDbConnection().CreateCommand();
+#pragma warning disable CA2100 // query.Sql is generated by EF Core; query values remain bound parameters.
+        command.CommandText = "EXPLAIN QUERY PLAN " + query.Sql;
+#pragma warning restore CA2100
+        foreach (var value in query.Parameters)
+        {
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = value.Name;
+            parameter.Value = value.Value;
+            command.Parameters.Add(parameter);
+        }
+
+        using var reader = command.ExecuteReader();
+        var plan = new List<string>();
+        while (reader.Read())
+        {
+            plan.Add(reader.GetString(3));
+        }
+
+        return plan.ToArray();
+    }
+
+    private sealed record RecordedCommand(string Sql, (string Name, object? Value)[] Parameters);
+
+    private sealed class CommandRecorder : DbCommandInterceptor
+    {
+        public List<RecordedCommand> Commands { get; } = [];
+
+        public override InterceptionResult<DbDataReader> ReaderExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result)
+        {
+            Record(command);
+            return result;
+        }
+
+        public override InterceptionResult<int> NonQueryExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<int> result)
+        {
+            Record(command);
+            return result;
+        }
+
+        private void Record(DbCommand command) => Commands.Add(new RecordedCommand(
+            command.CommandText,
+            command.Parameters.Cast<DbParameter>().Select(p => (p.ParameterName, p.Value)).ToArray()));
+    }
+}

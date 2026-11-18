@@ -28,9 +28,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         /// <inheritdoc />
         [JsonIgnore]
-        public IReadOnlyList<BaseItem> LocalTrailers => GetExtras()
-            .Where(extra => extra.ExtraType == Model.Entities.ExtraType.Trailer)
-            .ToArray();
+        public IReadOnlyList<BaseItem> LocalTrailers => GetExtras([Model.Entities.ExtraType.Trailer]).ToArray();
 
         /// <summary>
         /// Gets or sets the season in which it aired.
@@ -49,7 +47,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public int? IndexNumberEnd { get; set; }
 
         [JsonIgnore]
-        protected override bool SupportsOwnedItems => IsStacked || MediaSourceCount > 1;
+        protected override bool SupportsOwnedItems => IsStacked || LocalAlternateVersions.Length > 0 || MediaSourceCount > 1;
 
         [JsonIgnore]
         public override bool SupportsInheritedParentImages => true;
@@ -153,6 +151,12 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             return 16.0 / 9;
+        }
+
+        /// <inheritdoc />
+        public override string GetInheritedOriginalLanguage()
+        {
+            return OriginalLanguage ?? Series?.GetInheritedOriginalLanguage();
         }
 
         public override List<string> GetUserDataKeys()

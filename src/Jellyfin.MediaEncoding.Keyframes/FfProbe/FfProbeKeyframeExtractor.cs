@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Text;
 
 namespace Jellyfin.MediaEncoding.Keyframes.FfProbe;
 
@@ -31,6 +32,7 @@ public static class FfProbeKeyframeExtractor
 
                 CreateNoWindow = true,
                 UseShellExecute = false,
+                StandardOutputEncoding = Encoding.UTF8,
                 RedirectStandardOutput = true,
 
                 WindowStyle = ProcessWindowStyle.Hidden,
@@ -42,6 +44,15 @@ public static class FfProbeKeyframeExtractor
         try
         {
             process.Start();
+            try
+            {
+                process.PriorityClass = ProcessPriorityClass.BelowNormal;
+            }
+            catch
+            {
+                // We do not care if process priority setting fails
+                // Ideally log a warning but this does not have a logger available
+            }
 
             return ParseStream(process.StandardOutput);
         }

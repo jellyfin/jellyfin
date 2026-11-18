@@ -20,6 +20,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using Genre = MediaBrowser.Controller.Entities.Genre;
+using LinkedChildType = MediaBrowser.Controller.Entities.LinkedChildType;
 using Person = MediaBrowser.Controller.Entities.Person;
 
 namespace MediaBrowser.Controller.Library
@@ -58,11 +59,29 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fileInfo">The file information.</param>
         /// <param name="parent">The parent.</param>
         /// <param name="directoryService">An instance of <see cref="IDirectoryService"/>.</param>
+        /// <param name="collectionType">The collection type of the library containing this item.</param>
         /// <returns>BaseItem.</returns>
         BaseItem? ResolvePath(
             FileSystemMetadata fileInfo,
             Folder? parent = null,
-            IDirectoryService? directoryService = null);
+            IDirectoryService? directoryService = null,
+            CollectionType? collectionType = null);
+
+        /// <summary>
+        /// Resolves a video file as an alternate version of a primary video, ensuring the result
+        /// has the same concrete type as the primary (e.g. Movie instead of generic Video).
+        /// Also cleans up any existing item with the wrong type from a previous scan.
+        /// </summary>
+        /// <param name="path">The file path of the alternate version.</param>
+        /// <param name="expectedVideoType">The expected concrete type (same as the primary video).</param>
+        /// <param name="parent">The parent folder.</param>
+        /// <param name="collectionType">The collection type of the library.</param>
+        /// <returns>A correctly-typed Video, or null if resolution fails.</returns>
+        Video? ResolveAlternateVersion(
+            string path,
+            Type expectedVideoType,
+            Folder? parent,
+            CollectionType? collectionType);
 
         /// <summary>
         /// Resolves a set of files into a list of BaseItem.
@@ -86,6 +105,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="name">The name of the person.</param>
         /// <returns>Task{Person}.</returns>
         Person? GetPerson(string name);
+
+        /// <summary>
+        /// Gets a Person, creating and persisting it if no item exists for the name yet.
+        /// </summary>
+        /// <param name="name">The name of the person.</param>
+        /// <returns>The person.</returns>
+        Person GetOrCreatePerson(string name);
 
         /// <summary>
         /// Finds the by path.
@@ -134,15 +160,6 @@ namespace MediaBrowser.Controller.Library
         Year GetYear(int value);
 
         /// <summary>
-        /// Validate and refresh the People sub-set of the IBN.
-        /// The items are stored in the db but not loaded into memory until actually requested by an operation.
-        /// </summary>
-        /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task ValidatePeopleAsync(IProgress<double> progress, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Reloads the root media folder.
         /// </summary>
         /// <param name="progress">The progress.</param>
@@ -157,6 +174,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="removeRoot">Is remove the library itself allowed.</param>
         /// <returns>Task.</returns>
         Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false);
+
+        /// <summary>
+        /// Clears the cached ignore rule directory lookups.
+        /// Call this before triggering a library scan or item refresh to ensure
+        /// any changes to .ignore files are picked up.
+        /// </summary>
+        void ClearIgnoreRuleCache();
 
         Task UpdateImagesAsync(BaseItem item, bool forceUpdate = false);
 
@@ -212,6 +236,38 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{System.String}.</returns>
         Task<IEnumerable<Video>> GetIntros(BaseItem item, User user);
+
+        /// <summary>
+        /// Gets the IDs of local alternate versions for a video.
+        /// Local alternate versions are alternate quality versions at different file paths.
+        /// </summary>
+        /// <param name="video">The video item.</param>
+        /// <returns>Enumerable of alternate version item IDs.</returns>
+        IEnumerable<Guid> GetLocalAlternateVersionIds(Video video);
+
+        /// <summary>
+        /// Gets the linked alternate versions for a video.
+        /// Linked alternate versions are different items representing the same content (e.g., Director's Cut).
+        /// </summary>
+        /// <param name="video">The video item.</param>
+        /// <returns>Enumerable of linked Video items.</returns>
+        IEnumerable<Video> GetLinkedAlternateVersions(Video video);
+
+        /// <summary>
+        /// Gets, in a single query, the subset of the supplied items that own at least one alternate
+        /// version (local or linked). Items absent from the result have no alternate versions.
+        /// </summary>
+        /// <param name="itemIds">The item IDs to check.</param>
+        /// <returns>The set of item IDs that have alternate versions.</returns>
+        IReadOnlySet<Guid> GetItemIdsWithAlternateVersions(IReadOnlyList<Guid> itemIds);
+
+        /// <summary>
+        /// Creates or updates a LinkedChild entry linking a parent to a child item.
+        /// </summary>
+        /// <param name="parentId">The parent item ID.</param>
+        /// <param name="childId">The child item ID.</param>
+        /// <param name="childType">The type of linked child relationship.</param>
+        void UpsertLinkedChild(Guid parentId, Guid childId, LinkedChildType childType);
 
         /// <summary>
         /// Adds the parts.
@@ -282,6 +338,14 @@ namespace MediaBrowser.Controller.Library
         Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Reattaches the user data to the item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A task that represents the asynchronous reattachment operation.</returns>
+        Task ReattachUserDataAsync(BaseItem item, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Retrieves the item.
         /// </summary>
         /// <param name="id">The id.</param>
@@ -335,6 +399,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">Item to delete.</param>
         /// <param name="options">Options to use for deletion.</param>
         void DeleteItem(BaseItem item, DeleteOptions options);
+
+        /// <summary>
+        /// Deletes items that are not having any children like Actors.
+        /// </summary>
+        /// <param name="items">Items to delete.</param>
+        /// <param name="deleteSourceFiles">Whether to delete source media files on disk. Defaults to false.</param>
+        /// <remarks>In comparison to <see cref="DeleteItem(BaseItem, DeleteOptions, BaseItem, bool)"/> this method skips a lot of steps assuming there are no children to recusively delete nor does it define the special handling for channels and alike.</remarks>
+        public void DeleteItemsUnsafeFast(IReadOnlyCollection<BaseItem> items, bool deleteSourceFiles = false);
 
         /// <summary>
         /// Deletes the item.
@@ -412,6 +484,15 @@ namespace MediaBrowser.Controller.Library
             string uniqueId);
 
         /// <summary>
+        /// Gets the identifier of a named user view.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="parentId">The parent identifier.</param>
+        /// <param name="viewType">Type of the view.</param>
+        /// <returns>The named view identifier.</returns>
+        Guid GetNamedViewId(User user, Guid parentId, CollectionType? viewType);
+
+        /// <summary>
         /// Gets the shadow view.
         /// </summary>
         /// <param name="parent">The parent.</param>
@@ -422,6 +503,15 @@ namespace MediaBrowser.Controller.Library
             BaseItem parent,
             CollectionType? viewType,
             string sortName);
+
+        /// <summary>
+        /// Gets the identifier of a shadow view.
+        /// </summary>
+        /// <param name="name">The view name.</param>
+        /// <param name="parentId">The parent identifier.</param>
+        /// <param name="viewType">Type of the view.</param>
+        /// <returns>The shadow view identifier.</returns>
+        Guid GetShadowViewId(string name, Guid parentId, CollectionType? viewType);
 
         /// <summary>
         /// Gets the season number from path.
@@ -499,7 +589,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>List&lt;Person&gt;.</returns>
-        IReadOnlyList<Person> GetPeopleItems(InternalPeopleQuery query);
+        QueryResult<BaseItem> GetPeopleItems(InternalPeopleQuery query);
 
         /// <summary>
         /// Updates the people.
@@ -530,6 +620,27 @@ namespace MediaBrowser.Controller.Library
         /// <param name="query">The query.</param>
         /// <returns>List&lt;System.String&gt;.</returns>
         IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery query);
+
+        /// <summary>
+        /// Deletes every credit that no item maps to any more.
+        /// </summary>
+        /// <returns>The number of credits that were deleted.</returns>
+        int DeleteOrphanedCredits();
+
+        /// <summary>
+        /// Gets the distinct people names per item for multiple items.
+        /// </summary>
+        /// <param name="itemIds">The item IDs.</param>
+        /// <param name="personTypes">The person types to include.</param>
+        /// <returns>A dictionary mapping each item ID to its distinct people names. Items with no matching people are omitted.</returns>
+        IReadOnlyDictionary<Guid, IReadOnlyList<string>> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes);
+
+        /// <summary>
+        /// Gets the people for multiple items in a single query, keyed by item id.
+        /// </summary>
+        /// <param name="itemIds">The item IDs.</param>
+        /// <returns>A dictionary mapping each item ID to its people. Items with no people are omitted.</returns>
+        IReadOnlyDictionary<Guid, IReadOnlyList<PersonInfo>> GetPeopleByItems(IReadOnlyList<Guid> itemIds);
 
         /// <summary>
         /// Queries the items.
@@ -586,6 +697,20 @@ namespace MediaBrowser.Controller.Library
         IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents, DateTime dateCutoff);
 
         /// <summary>
+        /// Gets next up episodes for multiple series in a single batched query.
+        /// </summary>
+        /// <param name="query">The query filter.</param>
+        /// <param name="seriesKeys">The series presentation unique keys to query.</param>
+        /// <param name="includeSpecials">Whether to include specials for aired episode order sorting.</param>
+        /// <param name="includeWatchedForRewatching">Whether to include watched episodes for rewatching mode.</param>
+        /// <returns>A dictionary mapping series key to batch result.</returns>
+        IReadOnlyDictionary<string, MediaBrowser.Controller.Persistence.NextUpEpisodeBatchResult> GetNextUpEpisodesBatch(
+            InternalItemsQuery query,
+            IReadOnlyList<string> seriesKeys,
+            bool includeSpecials,
+            bool includeWatchedForRewatching);
+
+        /// <summary>
         /// Gets the items result.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -599,6 +724,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parent">The parent.</param>
         /// <returns><c>true</c> if ignored, <c>false</c> otherwise.</returns>
         bool IgnoreFile(FileSystemMetadata file, BaseItem parent);
+
+        /// <summary>
+        /// Gets the id a <see cref="Person"/> item for the name would have, without looking it up
+        /// or creating it.
+        /// </summary>
+        /// <param name="name">The name of the person.</param>
+        /// <returns>The item id for the name.</returns>
+        Guid GetPersonId(string name);
 
         Guid GetStudioId(string name);
 
@@ -624,11 +757,63 @@ namespace MediaBrowser.Controller.Library
 
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery query);
 
+        IReadOnlyDictionary<string, MusicArtist[]> GetArtists(IReadOnlyList<string> names);
+
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery query);
 
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery query);
 
         int GetCount(InternalItemsQuery query);
+
+        ItemCounts GetItemCounts(InternalItemsQuery query);
+
+        /// <summary>
+        /// Gets item counts for a "by-name" item using an optimized query path.
+        /// </summary>
+        /// <param name="kind">The kind of the name item.</param>
+        /// <param name="id">The ID of the name item.</param>
+        /// <param name="relatedItemKinds">The item kinds to count.</param>
+        /// <param name="user">The user for access filtering.</param>
+        /// <returns>The item counts grouped by type.</returns>
+        ItemCounts GetItemCountsForNameItem(BaseItemKind kind, Guid id, BaseItemKind[] relatedItemKinds, User? user);
+
+        /// <summary>
+        /// Gets item counts for several "by-name" items of the same kind. Kinds keyed by a cleaned
+        /// item value - artists, genres and studios - are answered in one set of queries for the
+        /// whole batch; the rest fall back to one query per item.
+        /// </summary>
+        /// <param name="kind">The kind of the name items.</param>
+        /// <param name="ids">The IDs of the name items.</param>
+        /// <param name="relatedItemKinds">The item kinds to count.</param>
+        /// <param name="user">The user for access filtering.</param>
+        /// <returns>The item counts of each requested id.</returns>
+        Dictionary<Guid, ItemCounts> GetItemCountsForNameItems(BaseItemKind kind, IReadOnlyList<Guid> ids, BaseItemKind[] relatedItemKinds, User? user);
+
+        /// <summary>
+        /// Batch-fetches child counts for multiple parent folders.
+        /// Returns the count of immediate children (non-recursive) for each parent.
+        /// </summary>
+        /// <param name="parentIds">The list of parent folder IDs.</param>
+        /// <param name="user">The user the counts are for, or null to count without a user's preferences.</param>
+        /// <returns>Dictionary mapping parent ID to child count.</returns>
+        Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, User? user);
+
+        /// <summary>
+        /// Batch-fetches played and total counts for multiple folder items.
+        /// Avoids N+1 queries when building DTOs for lists of folder items.
+        /// </summary>
+        /// <param name="folderIds">The list of folder item IDs.</param>
+        /// <param name="user">The user for access filtering and played status.</param>
+        /// <returns>Dictionary mapping folder ID to (Played count, Total count).</returns>
+        Dictionary<Guid, (int Played, int Total)> GetPlayedAndTotalCountBatch(IReadOnlyList<Guid> folderIds, User user);
+
+        /// <summary>
+        /// Configures the query with user access settings including TopParentIds for library access.
+        /// Call this before passing a query to methods that need user access filtering.
+        /// </summary>
+        /// <param name="query">The query to configure.</param>
+        /// <param name="user">The user to configure access for.</param>
+        void ConfigureUserAccess(InternalItemsQuery query, User user);
 
         Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason);
 
@@ -641,5 +826,50 @@ namespace MediaBrowser.Controller.Library
         /// This exists so plugins can trigger a library scan.
         /// </remarks>
         void QueueLibraryScan();
+
+        /// <summary>
+        /// Add mblink file for a media path.
+        /// </summary>
+        /// <param name="virtualFolderPath">The path to the virtualfolder.</param>
+        /// <param name="pathInfo">The new virtualfolder.</param>
+        public void CreateShortcut(string virtualFolderPath, MediaPathInfo pathInfo);
+
+        /// <summary>
+        /// Re-routes LinkedChildren references from one child to another.
+        /// Used when video versions change to maintain playlist/BoxSet integrity.
+        /// </summary>
+        /// <param name="fromChildId">The child ID to re-route from.</param>
+        /// <param name="toChildId">The child ID to re-route to.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task RerouteLinkedChildReferencesAsync(Guid fromChildId, Guid toChildId);
+
+        /// <summary>
+        /// Gets legacy query filters for filtering UI.
+        /// </summary>
+        /// <param name="query">The query filter.</param>
+        /// <returns>Aggregated filter values.</returns>
+        QueryFiltersLegacy GetQueryFiltersLegacy(InternalItemsQuery query);
+
+        /// <summary>
+        /// Gets a list of all distinct tags of the matching items.
+        /// </summary>
+        /// <param name="query">The query filter.</param>
+        /// <returns>List of tags.</returns>
+        IReadOnlyList<string> GetTagNames(InternalItemsQuery query);
+
+        /// <summary>
+        /// Gets a list of all language codes of the provided stream type.
+        /// </summary>
+        /// <param name="mediaStreamType">The stream type.</param>
+        /// <returns>List of language codes.</returns>
+        IReadOnlyList<string> GetMediaStreamLanguages(MediaStreamType mediaStreamType);
+
+        /// <summary>
+        /// Gets a list of all language codes for the matching items and the the provided stream type.
+        /// </summary>
+        /// <param name="mediaStreamType">The stream type.</param>
+        /// <param name="query">The query filter.</param>
+        /// <returns>List of language codes.</returns>
+        IReadOnlyList<string> GetMediaStreamLanguages(MediaStreamType mediaStreamType, InternalItemsQuery query);
     }
 }

@@ -158,7 +158,7 @@ namespace Jellyfin.Server.Implementations.Devices
                 devices = devices.Skip(query.Skip.Value);
             }
 
-            if (query.Limit.HasValue)
+            if (query.Limit.HasValue && query.Limit.Value > 0)
             {
                 devices = devices.Take(query.Limit.Value);
             }
@@ -213,8 +213,10 @@ namespace Jellyfin.Server.Implementations.Devices
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                dbContext.Devices.Remove(device);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                await dbContext.Devices
+                    .Where(d => d.Id == device.Id)
+                    .ExecuteDeleteAsync()
+                    .ConfigureAwait(false);
             }
         }
 

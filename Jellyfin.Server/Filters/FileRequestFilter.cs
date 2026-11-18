@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Jellyfin.Api.Attributes;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Jellyfin.Server.Filters
@@ -28,10 +28,11 @@ namespace Jellyfin.Server.Filters
             {
                 Schema = new OpenApiSchema
                 {
-                    Type = "string",
+                    Type = JsonSchemaType.String,
                     Format = "binary"
                 }
             };
+            body.Content ??= new System.Collections.Generic.Dictionary<string, OpenApiMediaType>();
             foreach (var contentType in contentTypes)
             {
                 body.Content.Add(contentType, mediaType);

@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Sockets;
-using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 namespace MediaBrowser.Model.Net;
 
@@ -66,9 +65,9 @@ public class IPData
         {
             if (Address.Equals(IPAddress.None))
             {
-                return Subnet.Prefix.AddressFamily.Equals(IPAddress.None)
+                return Subnet.BaseAddress.AddressFamily.Equals(IPAddress.None)
                     ? AddressFamily.Unspecified
-                    : Subnet.Prefix.AddressFamily;
+                    : Subnet.BaseAddress.AddressFamily;
             }
             else
             {

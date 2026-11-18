@@ -32,7 +32,7 @@ public sealed class LiveTvControllerTests : IClassFixture<JellyfinApplicationFac
             Url = "Test Data/dummy.m3u8"
         };
 
-        var response = await client.PostAsJsonAsync("/LiveTv/TunerHosts", body, _jsonOptions);
+        var response = await client.PostAsJsonAsync("/LiveTv/TunerHosts", body, _jsonOptions, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -49,12 +49,12 @@ public sealed class LiveTvControllerTests : IClassFixture<JellyfinApplicationFac
             Url = "Test Data/dummy.m3u8"
         };
 
-        var response = await client.PostAsJsonAsync("/LiveTv/TunerHosts", body, _jsonOptions);
+        var response = await client.PostAsJsonAsync("/LiveTv/TunerHosts", body, _jsonOptions, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(MediaTypeNames.Application.Json, response.Content.Headers.ContentType?.MediaType);
         Assert.Equal(Encoding.UTF8.BodyName, response.Content.Headers.ContentType?.CharSet);
-        var responseBody = await response.Content.ReadFromJsonAsync<TunerHostInfo>();
+        var responseBody = await response.Content.ReadFromJsonAsync<TunerHostInfo>(TestContext.Current.CancellationToken);
         Assert.NotNull(responseBody);
         Assert.Equal(body.Type, responseBody.Type);
         Assert.Equal(body.Url, responseBody.Url);
@@ -72,7 +72,7 @@ public sealed class LiveTvControllerTests : IClassFixture<JellyfinApplicationFac
             Url = "Test Data/dummy.m3u8"
         };
 
-        var response = await client.PostAsJsonAsync("/LiveTv/TunerHosts", body, _jsonOptions);
+        var response = await client.PostAsJsonAsync("/LiveTv/TunerHosts", body, _jsonOptions, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -89,7 +89,7 @@ public sealed class LiveTvControllerTests : IClassFixture<JellyfinApplicationFac
             Url = "thisgoesnowhere"
         };
 
-        var response = await client.PostAsJsonAsync("/LiveTv/TunerHosts", body, _jsonOptions);
+        var response = await client.PostAsJsonAsync("/LiveTv/TunerHosts", body, _jsonOptions, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }

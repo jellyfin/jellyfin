@@ -267,22 +267,24 @@ namespace Emby.Server.Implementations.Images
         {
             var image = item.GetImageInfo(type, 0);
 
-            if (image is not null)
+            if (image is null)
             {
-                if (!image.IsLocalFile)
-                {
-                    return false;
-                }
+                return GetItemsWithImages(item).Count is not 0;
+            }
 
-                if (!FileSystem.ContainsSubPath(item.GetInternalMetadataPath(), image.Path))
-                {
-                    return false;
-                }
+            if (!image.IsLocalFile)
+            {
+                return false;
+            }
 
-                if (!HasChangedByDate(item, image))
-                {
-                    return false;
-                }
+            if (!FileSystem.ContainsSubPath(item.GetInternalMetadataPath(), image.Path))
+            {
+                return false;
+            }
+
+            if (!HasChangedByDate(item, image))
+            {
+                return false;
             }
 
             return true;

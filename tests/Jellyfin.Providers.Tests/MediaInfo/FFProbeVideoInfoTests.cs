@@ -3,7 +3,9 @@ using AutoFixture;
 using AutoFixture.AutoMoq;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Providers.MediaInfo;
 using Moq;
 using Xunit;
@@ -37,25 +39,241 @@ public class FFProbeVideoInfoTests
     {
         Assert.Throws<ArgumentException>(
             () => _fFProbeVideoInfo.CreateDummyChapters(new Video()
-                {
-                    RunTimeTicks = runtime
-                }));
+            {
+                RunTimeTicks = runtime
+            }));
     }
 
     [Theory]
     [InlineData(null, 0)]
     [InlineData(0L, 0)]
-    [InlineData(1L, 0)]
-    [InlineData(TimeSpan.TicksPerMinute * 5, 0)]
+    [InlineData(1L, 1)]
+    [InlineData(TimeSpan.TicksPerMinute * 3, 1)]
+    [InlineData(TimeSpan.TicksPerMinute * 5, 1)]
     [InlineData((TimeSpan.TicksPerMinute * 5) + 1, 1)]
     [InlineData(TimeSpan.TicksPerMinute * 50, 10)]
     public void CreateDummyChapters_ValidRuntime_CorrectChaptersCount(long? runtime, int chaptersCount)
     {
         var chapters = _fFProbeVideoInfo.CreateDummyChapters(new Video()
-                {
-                    RunTimeTicks = runtime
-                });
+        {
+            RunTimeTicks = runtime
+        });
 
         Assert.Equal(chaptersCount, chapters.Length);
     }
+
+    [Theory]
+    [InlineData(1L)]
+    [InlineData(TimeSpan.TicksPerMinute * 3)]
+    [InlineData(TimeSpan.TicksPerMinute * 5)]
+    [InlineData((TimeSpan.TicksPerMinute * 5) + 1)]
+    [InlineData((TimeSpan.TicksPerMinute * 50) + 1)]
+    public void CreateDummyChapters_PositiveRuntime_NoChapterBeyondRuntime(long runtime)
+    {
+        var chapters = _fFProbeVideoInfo.CreateDummyChapters(new Video()
+        {
+            RunTimeTicks = runtime
+        });
+
+        Assert.All(chapters, chapter => Assert.True(chapter.StartPositionTicks < runtime));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FetchEmbeddedInfo_NoExtra_AppliesContainerDates(bool replaceAllMetadata)
+    {
+        var video = new Video();
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, CreateMediaInfoWithDates(), CreateRefreshOptions(replaceAllMetadata), new LibraryOptions());
+
+        Assert.Equal(2016, video.ProductionYear);
+        Assert.Equal(new DateTime(2016, 5, 4, 0, 0, 0, DateTimeKind.Utc), video.PremiereDate);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FetchEmbeddedInfo_Extra_IgnoresContainerDates(bool replaceAllMetadata)
+    {
+        var video = new Video
+        {
+            ExtraType = ExtraType.Trailer,
+            ProductionYear = 1982,
+            PremiereDate = new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, CreateMediaInfoWithDates(), CreateRefreshOptions(replaceAllMetadata), new LibraryOptions());
+
+        Assert.Equal(1982, video.ProductionYear);
+        Assert.Equal(new DateTime(1982, 6, 25, 0, 0, 0, DateTimeKind.Utc), video.PremiereDate);
+    }
+
+    [Fact]
+    public void FetchEmbeddedInfo_ExtraWithoutDates_StaysWithoutDates()
+    {
+        var video = new Video
+        {
+            ExtraType = ExtraType.Trailer
+        };
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, CreateMediaInfoWithDates(), CreateRefreshOptions(false), new LibraryOptions());
+
+        Assert.Null(video.ProductionYear);
+        Assert.Null(video.PremiereDate);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FetchEmbeddedInfo_NoYear_AppliesContainerCreationDate(bool replaceAllMetadata)
+    {
+        var video = new Video();
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, CreateMediaInfoWithCreationDate(), CreateRefreshOptions(replaceAllMetadata), new LibraryOptions());
+
+        Assert.Equal(new DateTime(2025, 10, 24, 19, 38, 17, DateTimeKind.Utc), video.PremiereDate);
+        Assert.Equal(2025, video.ProductionYear);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FetchEmbeddedInfo_KnownYear_IgnoresContainerCreationDate(bool replaceAllMetadata)
+    {
+        var video = new Video
+        {
+            ProductionYear = 2007
+        };
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, CreateMediaInfoWithCreationDate(), CreateRefreshOptions(replaceAllMetadata), new LibraryOptions());
+
+        Assert.Equal(2007, video.ProductionYear);
+        Assert.Null(video.PremiereDate);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FetchEmbeddedInfo_MatchingYear_AppliesContainerCreationDate(bool replaceAllMetadata)
+    {
+        var video = new Video
+        {
+            ProductionYear = 2025
+        };
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, CreateMediaInfoWithCreationDate(), CreateRefreshOptions(replaceAllMetadata), new LibraryOptions());
+
+        Assert.Equal(2025, video.ProductionYear);
+        Assert.Equal(new DateTime(2025, 10, 24, 19, 38, 17, DateTimeKind.Utc), video.PremiereDate);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FetchEmbeddedInfo_KnownYear_StillAppliesTaggedPremiereDate(bool replaceAllMetadata)
+    {
+        var video = new Video
+        {
+            ProductionYear = 2007
+        };
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, CreateMediaInfoWithDates(), CreateRefreshOptions(replaceAllMetadata), new LibraryOptions());
+
+        Assert.Equal(new DateTime(2016, 5, 4, 0, 0, 0, DateTimeKind.Utc), video.PremiereDate);
+    }
+
+    [Fact]
+    public void FetchEmbeddedInfo_KnownYear_ReplacingAppliesTaggedProductionYear()
+    {
+        var video = new Video
+        {
+            ProductionYear = 2007
+        };
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, CreateMediaInfoWithDates(), CreateRefreshOptions(true), new LibraryOptions());
+
+        Assert.Equal(2016, video.ProductionYear);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FetchEmbeddedInfo_TaggedDateAndSameYearCreationDate_PrefersTaggedDate(bool replaceAllMetadata)
+    {
+        var video = new Video();
+        var mediaInfo = new MediaBrowser.Model.MediaInfo.MediaInfo
+        {
+            ProductionYear = 2025,
+            PremiereDate = new DateTime(2025, 5, 4, 0, 0, 0, DateTimeKind.Utc),
+            ContainerCreationDate = new DateTime(2025, 10, 24, 19, 38, 17, DateTimeKind.Utc)
+        };
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, mediaInfo, CreateRefreshOptions(replaceAllMetadata), new LibraryOptions());
+
+        Assert.Equal(new DateTime(2025, 5, 4, 0, 0, 0, DateTimeKind.Utc), video.PremiereDate);
+    }
+
+    [Fact]
+    public void FetchEmbeddedInfo_ExistingPremiereDate_KeepsItOverCreationDate()
+    {
+        var video = new Video
+        {
+            ProductionYear = 2025,
+            PremiereDate = new DateTime(2025, 3, 1, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, CreateMediaInfoWithCreationDate(), CreateRefreshOptions(false), new LibraryOptions());
+
+        Assert.Equal(new DateTime(2025, 3, 1, 0, 0, 0, DateTimeKind.Utc), video.PremiereDate);
+    }
+
+    [Fact]
+    public void FetchEmbeddedInfo_ExistingPremiereDate_ReplacingUsesCreationDate()
+    {
+        var video = new Video
+        {
+            ProductionYear = 2025,
+            PremiereDate = new DateTime(2025, 3, 1, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, CreateMediaInfoWithCreationDate(), CreateRefreshOptions(true), new LibraryOptions());
+
+        Assert.Equal(new DateTime(2025, 10, 24, 19, 38, 17, DateTimeKind.Utc), video.PremiereDate);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FetchEmbeddedInfo_ExtraWithCreationDate_StaysWithoutDates(bool replaceAllMetadata)
+    {
+        var video = new Video
+        {
+            ExtraType = ExtraType.Trailer
+        };
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, CreateMediaInfoWithCreationDate(), CreateRefreshOptions(replaceAllMetadata), new LibraryOptions());
+
+        Assert.Null(video.ProductionYear);
+        Assert.Null(video.PremiereDate);
+    }
+
+    private static MediaBrowser.Model.MediaInfo.MediaInfo CreateMediaInfoWithDates()
+        => new()
+        {
+            ProductionYear = 2016,
+            PremiereDate = new DateTime(2016, 5, 4, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+    private static MediaBrowser.Model.MediaInfo.MediaInfo CreateMediaInfoWithCreationDate()
+        => new()
+        {
+            ContainerCreationDate = new DateTime(2025, 10, 24, 19, 38, 17, DateTimeKind.Utc)
+        };
+
+    private static MetadataRefreshOptions CreateRefreshOptions(bool replaceAllMetadata)
+        => new(Mock.Of<IDirectoryService>())
+        {
+            ReplaceAllMetadata = replaceAllMetadata
+        };
 }

@@ -13,9 +13,9 @@ public class MediaStreamInfoConfiguration : IEntityTypeConfiguration<MediaStream
     public void Configure(EntityTypeBuilder<MediaStreamInfo> builder)
     {
         builder.HasKey(e => new { e.ItemId, e.StreamIndex });
-        builder.HasIndex(e => e.StreamIndex);
-        builder.HasIndex(e => e.StreamType);
-        builder.HasIndex(e => new { e.StreamIndex, e.StreamType });
-        builder.HasIndex(e => new { e.StreamIndex, e.StreamType, e.Language });
+
+        // Covering index for the stream filters. ItemId comes second because it is what they project and
+        // dedupe on; Language and IsExternal follow only to keep their predicates off the table.
+        builder.HasIndex(e => new { e.StreamType, e.ItemId, e.Language, e.IsExternal });
     }
 }

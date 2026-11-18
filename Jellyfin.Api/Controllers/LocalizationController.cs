@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -34,7 +36,14 @@ public class LocalizationController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<CultureDto>> GetCultures()
     {
-        return Ok(_localization.GetCultures());
+        var allCultures = _localization.GetCultures();
+
+        var distinctCultures = allCultures
+            .DistinctBy(c => c.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(c => c.DisplayName)
+            .AsEnumerable();
+
+        return Ok(distinctCultures);
     }
 
     /// <summary>

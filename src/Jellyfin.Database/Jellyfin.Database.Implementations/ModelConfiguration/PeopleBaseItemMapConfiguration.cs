@@ -12,9 +12,10 @@ public class PeopleBaseItemMapConfiguration : IEntityTypeConfiguration<PeopleBas
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<PeopleBaseItemMap> builder)
     {
-        builder.HasKey(e => new { e.ItemId, e.PeopleId });
+        builder.HasKey(e => new { e.ItemId, e.PeopleId, e.Role });
         builder.HasIndex(e => new { e.ItemId, e.SortOrder });
         builder.HasIndex(e => new { e.ItemId, e.ListOrder });
+        builder.HasIndex(e => new { e.PeopleId, e.ItemId });
         builder.HasOne(e => e.Item);
         builder.HasOne(e => e.People);
     }

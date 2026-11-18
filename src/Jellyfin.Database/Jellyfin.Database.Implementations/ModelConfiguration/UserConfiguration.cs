@@ -50,6 +50,10 @@ namespace Jellyfin.Database.Implementations.ModelConfiguration
             builder
                 .HasIndex(entity => entity.Username)
                 .IsUnique();
+
+            builder
+                .HasIndex(entity => entity.NormalizedUsername)
+                .IsUnique();
         }
     }
 }

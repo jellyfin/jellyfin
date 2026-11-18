@@ -11,7 +11,7 @@ namespace MediaBrowser.Model.Extensions
     public static class EnumerableExtensions
     {
         /// <summary>
-        /// Orders <see cref="RemoteImageInfo"/> by requested language in descending order, prioritizing "en" over other non-matches.
+        /// Orders <see cref="RemoteImageInfo"/> by requested language in descending order, then "en", then no language, over other non-matches.
         /// </summary>
         /// <param name="remoteImageInfos">The remote image infos.</param>
         /// <param name="requestedLanguage">The requested language for the images.</param>
@@ -28,9 +28,9 @@ namespace MediaBrowser.Model.Extensions
                 {
                     // Image priority ordering:
                     //  - Images that match the requested language
-                    //  - Images with no language
                     //  - TODO: Images that match the original language
                     //  - Images in English
+                    //  - Images with no language
                     //  - Images that don't match the requested language
 
                     if (string.Equals(requestedLanguage, i.Language, StringComparison.OrdinalIgnoreCase))
@@ -38,19 +38,19 @@ namespace MediaBrowser.Model.Extensions
                         return 4;
                     }
 
-                    if (string.IsNullOrEmpty(i.Language))
+                    if (string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase))
                     {
                         return 3;
                     }
 
-                    if (string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase))
+                    if (string.IsNullOrEmpty(i.Language))
                     {
                         return 2;
                     }
 
                     return 0;
                 })
-                .ThenByDescending(i => Math.Round(i.CommunityRating ?? 0, 1) )
+                .ThenByDescending(i => Math.Round(i.CommunityRating ?? 0, 1))
                 .ThenByDescending(i => i.VoteCount ?? 0);
         }
     }

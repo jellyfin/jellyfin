@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
@@ -29,7 +30,7 @@ namespace Jellyfin.Api.Controllers;
 [Authorize]
 public class SearchController : BaseJellyfinApiController
 {
-    private readonly ISearchEngine _searchEngine;
+    private readonly ISearchManager _searchManager;
     private readonly ILibraryManager _libraryManager;
     private readonly IDtoService _dtoService;
     private readonly IImageProcessor _imageProcessor;
@@ -37,17 +38,17 @@ public class SearchController : BaseJellyfinApiController
     /// <summary>
     /// Initializes a new instance of the <see cref="SearchController"/> class.
     /// </summary>
-    /// <param name="searchEngine">Instance of <see cref="ISearchEngine"/> interface.</param>
+    /// <param name="searchManager">Instance of <see cref="ISearchManager"/> interface.</param>
     /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/> interface.</param>
     /// <param name="dtoService">Instance of <see cref="IDtoService"/> interface.</param>
     /// <param name="imageProcessor">Instance of <see cref="IImageProcessor"/> interface.</param>
     public SearchController(
-        ISearchEngine searchEngine,
+        ISearchManager searchManager,
         ILibraryManager libraryManager,
         IDtoService dtoService,
         IImageProcessor imageProcessor)
     {
-        _searchEngine = searchEngine;
+        _searchManager = searchManager;
         _libraryManager = libraryManager;
         _dtoService = dtoService;
         _imageProcessor = imageProcessor;
@@ -79,7 +80,7 @@ public class SearchController : BaseJellyfinApiController
     [HttpGet]
     [Description("Gets search hints based on a search term")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<SearchHintResult> GetSearchHints(
+    public async Task<ActionResult<SearchHintResult>> GetSearchHints(
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery] Guid? userId,
@@ -100,7 +101,7 @@ public class SearchController : BaseJellyfinApiController
         [FromQuery] bool includeArtists = true)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var result = _searchEngine.GetSearchHints(new SearchQuery
+        var result = await _searchManager.GetSearchHintsAsync(new SearchQuery
         {
             Limit = limit,
             SearchTerm = searchTerm,
@@ -121,7 +122,7 @@ public class SearchController : BaseJellyfinApiController
             IsNews = isNews,
             IsSeries = isSeries,
             IsSports = isSports
-        });
+        }).ConfigureAwait(false);
 
         return new SearchHintResult(result.Items.Select(GetSearchHintResult).ToArray(), result.TotalRecordCount);
     }

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
@@ -37,9 +36,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(PersonLookupInfo searchInfo, CancellationToken cancellationToken)
         {
-            if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var personTmdbId))
+            if (searchInfo.TryGetTmdbId(out var personTmdbId))
             {
-                var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                var personResult = await _tmdbClientManager.GetPersonAsync(personTmdbId, searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
 
                 if (personResult is not null)
                 {
@@ -56,13 +55,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                     }
 
                     result.SetProviderId(MetadataProvider.Tmdb, personResult.Id.ToString(CultureInfo.InvariantCulture));
-                    result.TrySetProviderId(MetadataProvider.Imdb, personResult.ExternalIds.ImdbId);
+                    result.TrySetProviderId(MetadataProvider.Imdb, personResult.ExternalIds?.ImdbId);
 
-                    return new[] { result };
+                    return [result];
                 }
             }
 
             var personSearchResult = await _tmdbClientManager.SearchPersonAsync(searchInfo.Name, cancellationToken).ConfigureAwait(false);
+            if (personSearchResult is null)
+            {
+                return [];
+            }
 
             var remoteSearchResults = new RemoteSearchResult[personSearchResult.Count];
             for (var i = 0; i < personSearchResult.Count; i++)
@@ -85,23 +88,28 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         /// <inheritdoc />
         public async Task<MetadataResult<Person>> GetMetadata(PersonLookupInfo info, CancellationToken cancellationToken)
         {
-            var personTmdbId = Convert.ToInt32(info.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
+            // A person can carry another provider's id under the TMDb key, which is no more usable here
+            // than no id at all, so both take the search path and get the stored id repaired.
+            info.TryGetTmdbId(out var personTmdbId);
 
             // We don't already have an Id, need to fetch it
             if (personTmdbId <= 0)
             {
                 var personSearchResults = await _tmdbClientManager.SearchPersonAsync(info.Name, cancellationToken).ConfigureAwait(false);
-                if (personSearchResults.Count > 0)
+                if (personSearchResults?.Count > 0)
                 {
                     personTmdbId = personSearchResults[0].Id;
                 }
             }
 
-            var result = new MetadataResult<Person>();
+            var result = new MetadataResult<Person>
+            {
+                ResultLanguage = info.MetadataLanguage
+            };
 
             if (personTmdbId > 0)
             {
-                var person = await _tmdbClientManager.GetPersonAsync(personTmdbId, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                var person = await _tmdbClientManager.GetPersonAsync(personTmdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
                 if (person is null)
                 {
                     return result;

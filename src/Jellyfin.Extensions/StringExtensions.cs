@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using ICU4N.Text;
 
@@ -131,7 +132,7 @@ namespace Jellyfin.Extensions
         /// </summary>
         /// <param name="values">The enumerable of strings to trim.</param>
         /// <returns>The enumeration of trimmed strings.</returns>
-        public static IEnumerable<string> Trimmed(this IEnumerable<string> values)
+        public static IEnumerable<string> Trimmed(this IEnumerable<string?> values)
         {
             return values.Select(i => (i ?? string.Empty).Trim());
         }
@@ -147,6 +148,67 @@ namespace Jellyfin.Extensions
         public static string TruncateAtNull(this string text)
         {
             return string.IsNullOrEmpty(text) ? text : text.AsSpan().LeftPart('\0').ToString();
+        }
+
+        /// <summary>
+        /// Normalizes a string for comparison by removing diacritics, converting to lowercase,
+        /// replacing punctuation/special characters with spaces, and collapsing whitespace.
+        /// </summary>
+        /// <param name="value">The string to normalize.</param>
+        /// <returns>The normalized string, or the original if null/whitespace.</returns>
+        public static string GetCleanValue(this string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+
+            // Remove diacritics and convert to lowercase
+            var cleaned = value.RemoveDiacritics().ToLowerInvariant();
+
+            // Replace all punctuation and special characters with spaces
+            cleaned = Regex.Replace(cleaned, @"[^\p{L}\p{N}\s]", " ");
+
+            // Collapse multiple spaces into single space and trim
+            cleaned = Regex.Replace(cleaned, @"\s+", " ").Trim();
+
+            return cleaned;
+        }
+
+        /// <summary>
+        /// Escapes an argument so that it survives command line parsing as a single argument when it is wrapped in double quotes by the caller.
+        /// </summary>
+        /// <param name="value">The argument to escape.</param>
+        /// <returns>The escaped argument.</returns>
+        public static string EscapeProcessArgument(this string value)
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            var span = value.AsSpan();
+            if (!span.Contains('"'))
+            {
+                var trailing = span.Length - span.TrimEnd('\\').Length;
+                return trailing == 0 ? value : string.Concat(value, new string('\\', trailing));
+            }
+
+            var escaped = new StringBuilder(value.Length + 8);
+            var backslashes = 0;
+
+            foreach (var character in span)
+            {
+                if (character == '\\')
+                {
+                    backslashes++;
+                    continue;
+                }
+
+                escaped
+                    .Append('\\', character == '"' ? (backslashes * 2) + 1 : backslashes)
+                    .Append(character);
+                backslashes = 0;
+            }
+
+            return escaped.Append('\\', backslashes * 2).ToString();
         }
     }
 }

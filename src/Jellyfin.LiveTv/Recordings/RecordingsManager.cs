@@ -286,7 +286,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
 
         if (requiresRefresh)
         {
-            await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+            _libraryManager.QueueLibraryScan();
         }
     }
 
@@ -497,7 +497,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             // trim trailing period from the folder name
             var folderName = _fileSystem.GetValidFilename(timer.Name).Trim().TrimEnd('.').Trim();
 
-            if (metadata is not null && metadata.ProductionYear.HasValue)
+            if (metadata is not null && metadata.ProductionYear is not null)
             {
                 folderName += " (" + metadata.ProductionYear.Value.ToString(CultureInfo.InvariantCulture) + ")";
             }
@@ -532,7 +532,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             }
 
             var folderName = _fileSystem.GetValidFilename(timer.Name).Trim();
-            if (timer.ProductionYear.HasValue)
+            if (timer.ProductionYear is not null)
             {
                 folderName += " (" + timer.ProductionYear.Value.ToString(CultureInfo.InvariantCulture) + ")";
             }
@@ -550,7 +550,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             }
 
             var folderName = _fileSystem.GetValidFilename(timer.Name).Trim();
-            if (timer.ProductionYear.HasValue)
+            if (timer.ProductionYear is not null)
             {
                 folderName += " (" + timer.ProductionYear.Value.ToString(CultureInfo.InvariantCulture) + ")";
             }

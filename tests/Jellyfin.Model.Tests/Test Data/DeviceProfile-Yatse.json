@@ -52,7 +52,6 @@
             "MaxAudioChannels": "6",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -70,7 +69,6 @@
             "MaxAudioChannels": "6",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -88,7 +86,6 @@
             "MaxAudioChannels": "6",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         }
     ],

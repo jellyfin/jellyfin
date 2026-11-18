@@ -17,8 +17,8 @@ namespace Emby.Naming.Video
         {
             Name = name;
 
-            Files = Array.Empty<VideoFileInfo>();
-            AlternateVersions = Array.Empty<VideoFileInfo>();
+            Files = [];
+            AlternateVersions = [];
         }
 
         /// <summary>
@@ -40,10 +40,10 @@ namespace Emby.Naming.Video
         public IReadOnlyList<VideoFileInfo> Files { get; set; }
 
         /// <summary>
-        /// Gets or sets the alternate versions.
+        /// Gets or sets the alternate versions. Each alternate may itself span multiple files.
         /// </summary>
         /// <value>The alternate versions.</value>
-        public IReadOnlyList<VideoFileInfo> AlternateVersions { get; set; }
+        public IReadOnlyList<VideoInfo> AlternateVersions { get; set; }
 
         /// <summary>
         /// Gets or sets the extra type.

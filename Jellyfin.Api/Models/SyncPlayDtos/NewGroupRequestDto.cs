@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Jellyfin.Api.Models.SyncPlayDtos;
 
 /// <summary>
@@ -17,5 +19,6 @@ public class NewGroupRequestDto
     /// Gets or sets the group name.
     /// </summary>
     /// <value>The name of the new group.</value>
+    [StringLength(200, ErrorMessage = "Group name must not exceed 200 characters.")]
     public string GroupName { get; set; }
 }

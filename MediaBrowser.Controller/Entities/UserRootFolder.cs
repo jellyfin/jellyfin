@@ -69,8 +69,14 @@ namespace MediaBrowser.Controller.Entities
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
-            if (query.Recursive)
+            // The user root holds no items of its own - a plain listing returns the user's
+            // views. But a request carrying any filter is a search across the libraries, so
+            // resolve it through the recursive query path even when Recursive wasn't set;
+            // otherwise the filters would be silently dropped. Recursive is set so the
+            // downstream query (ancestor/top-parent scoping) treats it as a recursive search.
+            if (query.Recursive || query.HasFilters)
             {
+                query.Recursive = true;
                 return QueryRecursive(query);
             }
 

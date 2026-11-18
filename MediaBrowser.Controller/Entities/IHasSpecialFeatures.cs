@@ -1,12 +1,13 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
+    /// <summary>
+    /// Interface for items that have special features.
+    /// </summary>
     public interface IHasSpecialFeatures
     {
         /// <summary>

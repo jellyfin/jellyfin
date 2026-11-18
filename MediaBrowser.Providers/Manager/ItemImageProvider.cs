@@ -88,7 +88,15 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            singular.AddRange(item.GetImages(ImageType.Backdrop));
+            foreach (var backdrop in item.GetImages(ImageType.Backdrop))
+            {
+                var imageInMetadataFolder = backdrop.Path.StartsWith(itemMetadataPath, StringComparison.OrdinalIgnoreCase);
+                if (imageInMetadataFolder || canDeleteLocal || item.IsSaveLocalMetadataEnabled())
+                {
+                    singular.Add(backdrop);
+                }
+            }
+
             PruneImages(item, singular);
 
             return singular.Count > 0;
@@ -246,8 +254,9 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
+                result.Failures++;
                 result.ErrorMessage = ex.Message;
-                _logger.LogError(ex, "Error in {Provider}", provider.Name);
+                _logger.LogError(ex, "Error in {Provider} for {Item}", provider.Name, item.Path ?? item.Name);
             }
         }
 
@@ -330,8 +339,9 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
+                result.Failures++;
                 result.ErrorMessage = ex.Message;
-                _logger.LogError(ex, "Error in {Provider}", provider.Name);
+                _logger.LogError(ex, "Error in {Provider} for {Item}", provider.Name, item.Path ?? item.Name);
             }
         }
 
@@ -453,8 +463,9 @@ namespace MediaBrowser.Providers.Manager
                     {
                         var newDateModified = _fileSystem.GetLastWriteTimeUtc(image.FileInfo);
 
-                        // If date changed then we need to reset saved image dimensions
-                        if (currentImage.DateModified != newDateModified && (currentImage.Width > 0 || currentImage.Height > 0))
+                        // If date changed then we need to reset saved image dimensions. Stores such as PostgreSQL keep
+                        // only microseconds, so an exact comparison would treat every unchanged image as modified.
+                        if (Math.Abs((currentImage.DateModified - newDateModified).TotalSeconds) > 1 && (currentImage.Width > 0 || currentImage.Height > 0))
                         {
                             currentImage.Width = 0;
                             currentImage.Height = 0;
@@ -466,10 +477,36 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (UpdateMultiImages(item, images, ImageType.Backdrop))
+            bool hasBackdrop = false;
+            bool backdropStoredWithMedia = false;
+
+            foreach (var image in images)
             {
-                changed = true;
-                foundImageTypes.Add(ImageType.Backdrop);
+                if (image.Type != ImageType.Backdrop)
+                {
+                    continue;
+                }
+
+                hasBackdrop = true;
+
+                if (item.ContainingFolderPath is not null && item.ContainingFolderPath.Contains(Path.GetDirectoryName(image.FileInfo.FullName), StringComparison.OrdinalIgnoreCase))
+                {
+                    backdropStoredWithMedia = true;
+                    break;
+                }
+            }
+
+            if (hasBackdrop)
+            {
+                if (UpdateMultiImages(item, images, ImageType.Backdrop))
+                {
+                    changed = true;
+                }
+
+                if (backdropStoredWithMedia)
+                {
+                    foundImageTypes.Add(ImageType.Backdrop);
+                }
             }
 
             if (foundImageTypes.Count > 0)

@@ -23,12 +23,14 @@ namespace Jellyfin.Naming.Tests.Video
         [InlineData("Crouching.Tiger.Hidden.Dragon.BDrip.mkv", "Crouching.Tiger.Hidden.Dragon")]
         [InlineData("Crouching.Tiger.Hidden.Dragon.BDrip-HDC.mkv", "Crouching.Tiger.Hidden.Dragon")]
         [InlineData("Crouching.Tiger.Hidden.Dragon.4K.UltraHD.HDR.BDrip-HDC.mkv", "Crouching.Tiger.Hidden.Dragon")]
+        [InlineData("Last.Call.for.Nowhere.WEB-DL.1080p", "Last.Call.for.Nowhere")]
         [InlineData("[HorribleSubs] Made in Abyss - 13 [720p].mkv", "Made in Abyss")]
         [InlineData("[Tsundere] Kore wa Zombie Desu ka of the Dead [BDRip h264 1920x1080 FLAC]", "Kore wa Zombie Desu ka of the Dead")]
         [InlineData("[Erai-raws] Jujutsu Kaisen - 03 [720p][Multiple Subtitle].mkv", "Jujutsu Kaisen")]
         [InlineData("[OCN] 애타는 로맨스 720p-NEXT", "애타는 로맨스")]
         [InlineData("[tvN] 혼술남녀.E01-E16.720p-NEXT", "혼술남녀")]
         [InlineData("[tvN] 연애말고 결혼 E01~E16 END HDTV.H264.720p-WITH", "연애말고 결혼")]
+        [InlineData("2026年01月10日23時00分00秒-[新]TRIGUN　STARGAZE[字].mp4", "2026年01月10日23時00分00秒-[新]TRIGUN　STARGAZE")]
         // FIXME: [InlineData("After The Sunset - [0004].mkv", "After The Sunset")]
         public void CleanStringTest_NeedsCleaning_Success(string input, string expectedName)
         {
@@ -44,6 +46,7 @@ namespace Jellyfin.Naming.Tests.Video
         [InlineData("American.Psycho.mkv")]
         [InlineData("American Psycho.mkv")]
         [InlineData("Run lola run (lola rennt) (2009).mp4")]
+        [InlineData("2026年01月05日00時55分00秒-[新]違国日記【ＡＮｉＭｉＤＮｉＧＨＴ！！！】＃１.mp4")]
         public void CleanStringTest_DoesntNeedCleaning_False(string? input)
         {
             Assert.False(VideoResolver.TryCleanString(input, _namingOptions, out var newName));

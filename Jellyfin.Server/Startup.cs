@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -6,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
 using Emby.Server.Implementations.EntryPoints;
+using Emby.Server.Implementations.Localization;
 using Jellyfin.Api.Middleware;
 using Jellyfin.Database.Implementations;
 using Jellyfin.LiveTv.Extensions;
@@ -16,15 +18,14 @@ using Jellyfin.Networking.HappyEyeballs;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.HealthChecks;
 using Jellyfin.Server.Implementations.Extensions;
-using Jellyfin.Server.Infrastructure;
+using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.XbmcMetadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,8 +70,6 @@ namespace Jellyfin.Server
                 options.HttpsPort = _serverApplicationHost.HttpsPort;
             });
 
-            // TODO remove once this is fixed upstream https://github.com/dotnet/aspnetcore/issues/34371
-            services.AddSingleton<IActionResultExecutor<PhysicalFileResult>, SymlinkFollowingPhysicalFileResultExecutor>();
             services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
             services.AddJellyfinDbContext(_serverApplicationHost.ConfigurationManager, _configuration);
             services.AddJellyfinApiSwagger();
@@ -132,12 +131,32 @@ namespace Jellyfin.Server
             services.AddHlsPlaylistGenerator();
             services.AddLiveTvServices();
 
+            var serverUICulture = _serverConfigurationManager.Configuration.UICulture;
+            if (string.IsNullOrEmpty(serverUICulture))
+            {
+                serverUICulture = "en-US";
+            }
+
+            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(serverUICulture);
+
+            services.Configure<RequestLocalizationOptions>(options =>
+            {
+                var supportedUICultures = LocalizationManager.GetSupportedUICultures();
+                options.SupportedCultures = supportedUICultures;
+                options.SupportedUICultures = supportedUICultures;
+                options.DefaultRequestCulture = new RequestCulture(serverUICulture);
+                options.ApplyCurrentCultureToResponseHeaders = true;
+                options.FallBackToParentCultures = true;
+                options.FallBackToParentUICultures = true;
+            });
+
             services.AddHostedService<RecordingsHost>();
             services.AddHostedService<AutoDiscoveryHost>();
             services.AddHostedService<NfoUserDataSaver>();
             services.AddHostedService<LibraryChangedNotifier>();
             services.AddHostedService<UserDataChangeNotifier>();
             services.AddHostedService<RecordingNotifier>();
+            services.AddHostedService<DeviceAccessHost>();
         }
 
         /// <summary>
@@ -173,13 +192,12 @@ namespace Jellyfin.Server
 
                 mainApp.UseCors();
 
+                mainApp.UseRequestLocalization();
+
                 if (config.RequireHttps && _serverApplicationHost.ListenWithHttps)
                 {
                     mainApp.UseHttpsRedirection();
                 }
-
-                // This must be injected before any path related middleware.
-                mainApp.UsePathTrim();
 
                 if (appConfig.HostWebClient())
                 {

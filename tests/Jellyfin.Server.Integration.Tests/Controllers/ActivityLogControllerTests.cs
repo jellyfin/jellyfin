@@ -21,7 +21,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-            var response = await client.GetAsync("System/ActivityLog/Entries");
+            var response = await client.GetAsync("System/ActivityLog/Entries", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(MediaTypeNames.Application.Json, response.Content.Headers.ContentType?.MediaType);

@@ -10,11 +10,24 @@ namespace Emby.Naming.TV
     /// </summary>
     public static partial class SeasonPathParser
     {
-        [GeneratedRegex(@"^\s*((?<seasonnumber>(?>\d+))(?:st|nd|rd|th|\.)*(?!\s*[Ee]\d+))\s*(?:[[시즌]*|[シーズン]*|[sS](?:eason|æson|aison|taffel|eries|tagione|äsong|eizoen|easong|ezon|ezona|ezóna|ezonul)*|[tT](?:emporada)*|[kK](?:ausi)*|[Сс](?:езон)*)\s*(?<rightpart>.*)$")]
+        private const string SeasonKeywordPattern =
+            @"시즌|シーズン|сезон" +
+            @"|season|sæson|saison|staffel|series|stagione|säsong|seizoen|seasong" +
+            @"|sezon|sezona|sezóna|sezonul|série|séria|serie|seria|temporada|kausi";
+
+        private static readonly Regex CleanNameRegex = new(@"[ ._\-\[\]]", RegexOptions.Compiled);
+
+        [GeneratedRegex(@"^\s*((?<seasonnumber>(?>\d+))(?:st|nd|rd|th|\.)*(?!\s*[Ee]\d+))\s*(?:" + SeasonKeywordPattern + @")\s*(?<rightpart>.*)$", RegexOptions.IgnoreCase)]
         private static partial Regex ProcessPre();
 
-        [GeneratedRegex(@"^\s*(?:[[시즌]*|[シーズン]*|[sS](?:eason|æson|aison|taffel|eries|tagione|äsong|eizoen|easong|ezon|ezona|ezóna|ezonul)*|[tT](?:emporada)*|[kK](?:ausi)*|[Сс](?:езон)*)\s*(?<seasonnumber>(?>\d+)(?!\s*[Ee]\d+))(?<rightpart>.*)$")]
+        [GeneratedRegex(@"^\s*(?:" + SeasonKeywordPattern + @")\s*(?<seasonnumber>\d+?)(?=\d{3,4}p|[^\d]|$)(?!\s*[Ee]\d)(?<rightpart>.*)$", RegexOptions.IgnoreCase)]
         private static partial Regex ProcessPost();
+
+        [GeneratedRegex(@"[sS](\d{1,4})(?!\d|[eE]\d)(?=\.|_|-|\[|\]|\s|$)", RegexOptions.None)]
+        private static partial Regex SeasonPrefix();
+
+        [GeneratedRegex(SeasonKeywordPattern, RegexOptions.IgnoreCase)]
+        private static partial Regex SeasonKeyword();
 
         /// <summary>
         /// Attempts to parse season number from path.
@@ -56,54 +69,55 @@ namespace Emby.Naming.TV
             bool supportSpecialAliases,
             bool supportNumericSeasonFolders)
         {
-            string filename = Path.GetFileName(path);
-            filename = Regex.Replace(filename, "[ ._-]", string.Empty);
+            var fileName = Path.GetFileName(path);
+
+            var seasonPrefixMatch = SeasonPrefix().Match(fileName);
+            if (seasonPrefixMatch.Success &&
+                int.TryParse(seasonPrefixMatch.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
+            {
+                return (val, true);
+            }
+
+            string filename = CleanNameRegex.Replace(fileName, string.Empty);
 
             if (parentFolderName is not null)
             {
-                parentFolderName = Regex.Replace(parentFolderName, "[ ._-]", string.Empty);
-                filename = filename.Replace(parentFolderName, string.Empty, StringComparison.OrdinalIgnoreCase);
+                var cleanParent = CleanNameRegex.Replace(parentFolderName, string.Empty);
+                filename = filename.Replace(cleanParent, string.Empty, StringComparison.OrdinalIgnoreCase);
             }
 
-            if (supportSpecialAliases)
+            if (supportSpecialAliases &&
+                (filename.Equals("specials", StringComparison.OrdinalIgnoreCase) ||
+                 filename.Equals("extras", StringComparison.OrdinalIgnoreCase)))
             {
-                if (string.Equals(filename, "specials", StringComparison.OrdinalIgnoreCase))
-                {
-                    return (0, true);
-                }
-
-                if (string.Equals(filename, "extras", StringComparison.OrdinalIgnoreCase))
-                {
-                    return (0, true);
-                }
+                return (0, true);
             }
 
-            if (supportNumericSeasonFolders)
+            if (supportNumericSeasonFolders &&
+                int.TryParse(filename, NumberStyles.Integer, CultureInfo.InvariantCulture, out val))
             {
-                if (int.TryParse(filename, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
-                {
-                    return (val, true);
-                }
+                return (val, true);
             }
 
-            if (filename.StartsWith('s'))
-            {
-                var testFilename = filename.AsSpan()[1..];
-
-                if (int.TryParse(testFilename, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
-                {
-                    return (val, true);
-                }
-            }
-
+            bool isMixedLibrary = !supportNumericSeasonFolders && !supportSpecialAliases;
             var preMatch = ProcessPre().Match(filename);
             if (preMatch.Success)
             {
+                if (isMixedLibrary && !SeasonKeyword().IsMatch(fileName))
+                {
+                    return (null, false);
+                }
+
                 return CheckMatch(preMatch);
             }
             else
             {
                 var postMatch = ProcessPost().Match(filename);
+                if (postMatch.Success && isMixedLibrary && !SeasonKeyword().IsMatch(fileName))
+                {
+                    return (null, false);
+                }
+
                 return CheckMatch(postMatch);
             }
         }
@@ -113,8 +127,10 @@ namespace Emby.Naming.TV
             var numberString = match.Groups["seasonnumber"];
             if (numberString.Success)
             {
-                var seasonNumber = int.Parse(numberString.Value, CultureInfo.InvariantCulture);
-                return (seasonNumber, true);
+                if (int.TryParse(numberString.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var seasonNumber))
+                {
+                    return (seasonNumber, true);
+                }
             }
 
             return (null, false);

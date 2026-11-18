@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 
@@ -12,7 +13,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
     /// <summary>
     /// Plugin class for the TMDb library.
     /// </summary>
-    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
+    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages, IHasEmbeddedImage
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Plugin"/> class.
@@ -43,6 +44,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
         /// <inheritdoc/>
         public override string ConfigurationFileName => "Jellyfin.Plugin.Tmdb.xml";
+
+        /// <inheritdoc/>
+        public string ImageResourceName => GetType().Namespace + ".jellyfin-plugin-tmdb.svg";
 
         /// <summary>
         /// Return the plugin configuration page.

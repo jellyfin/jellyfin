@@ -5,7 +5,7 @@ using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Extensions;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Jellyfin.Server.Filters;
@@ -66,24 +66,10 @@ public class SecurityRequirementsOperationFilter : IOperationFilter
             return;
         }
 
-        if (!operation.Responses.ContainsKey("401"))
-        {
-            operation.Responses.Add("401", new OpenApiResponse { Description = "Unauthorized" });
-        }
+        operation.Responses?.TryAdd("401", new OpenApiResponse { Description = "Unauthorized" });
+        operation.Responses?.TryAdd("403", new OpenApiResponse { Description = "Forbidden" });
 
-        if (!operation.Responses.ContainsKey("403"))
-        {
-            operation.Responses.Add("403", new OpenApiResponse { Description = "Forbidden" });
-        }
-
-        var scheme = new OpenApiSecurityScheme
-        {
-            Reference = new OpenApiReference
-            {
-                Type = ReferenceType.SecurityScheme,
-                Id = AuthenticationSchemes.CustomAuthentication
-            },
-        };
+        var scheme = new OpenApiSecuritySchemeReference(AuthenticationSchemes.CustomAuthentication, null, null);
 
         // Add DefaultAuthorization scope to any endpoint that has a policy with a requirement that is a subset of DefaultAuthorization.
         if (!requiredScopes.Contains(DefaultAuthPolicy.AsSpan(), StringComparison.Ordinal))

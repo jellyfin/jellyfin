@@ -28,12 +28,12 @@ jobs:
           timeoutSeconds: 3600
 
       - name: Setup YQ
-        uses: chrisdickinson/setup-yq@latest
+        uses: chrisdickinson/setup-yq@fa3192edd79d6eb0e4e12de8dde3a0c26f2b853b # latest
         with:
           yq-version: v4.9.8
 
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ env.TAG_BRANCH }}
 
@@ -66,7 +66,7 @@ jobs:
       NEXT_VERSION: ${{ github.event.inputs.NEXT_VERSION }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ env.TAG_BRANCH }}
 

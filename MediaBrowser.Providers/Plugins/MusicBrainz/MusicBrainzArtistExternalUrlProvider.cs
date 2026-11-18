@@ -21,7 +21,7 @@ public class MusicBrainzArtistExternalUrlProvider : IExternalUrlProvider
         {
             switch (item)
             {
-                case MusicAlbum:
+                case MusicArtist:
                 case Person:
                     yield return Plugin.Instance!.Configuration.Server + $"/artist/{externalId}";
 

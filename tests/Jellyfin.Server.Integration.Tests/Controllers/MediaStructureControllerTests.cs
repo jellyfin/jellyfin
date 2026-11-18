@@ -29,7 +29,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
             using var postContent = new ByteArrayContent(Array.Empty<byte>());
-            var response = await client.PostAsync("Library/VirtualFolders/Name?name=+&newName=test", postContent);
+            var response = await client.PostAsync("Library/VirtualFolders/Name?name=+&newName=test", postContent, TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
@@ -41,7 +41,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
             using var postContent = new ByteArrayContent(Array.Empty<byte>());
-            var response = await client.PostAsync("Library/VirtualFolders/Name?name=test&newName=+", postContent);
+            var response = await client.PostAsync("Library/VirtualFolders/Name?name=test&newName=+", postContent, TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
@@ -53,7 +53,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
             using var postContent = new ByteArrayContent(Array.Empty<byte>());
-            var response = await client.PostAsync("Library/VirtualFolders/Name?name=doesnt+exist&newName=test", postContent);
+            var response = await client.PostAsync("Library/VirtualFolders/Name?name=doesnt+exist&newName=test", postContent, TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
@@ -70,7 +70,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 Path = "/this/path/doesnt/exist"
             };
 
-            var response = await client.PostAsJsonAsync("Library/VirtualFolders/Paths", data, _jsonOptions);
+            var response = await client.PostAsJsonAsync("Library/VirtualFolders/Paths", data, _jsonOptions, TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
@@ -87,7 +87,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 PathInfo = new MediaPathInfo("test")
             };
 
-            var response = await client.PostAsJsonAsync("Library/VirtualFolders/Paths/Update", data, _jsonOptions);
+            var response = await client.PostAsJsonAsync("Library/VirtualFolders/Paths/Update", data, _jsonOptions, TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
@@ -98,7 +98,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-            var response = await client.DeleteAsync("Library/VirtualFolders/Paths?name=+");
+            var response = await client.DeleteAsync("Library/VirtualFolders/Paths?name=+", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
@@ -109,7 +109,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-            var response = await client.DeleteAsync("Library/VirtualFolders/Paths?name=none&path=%2Fthis%2Fpath%2Fdoesnt%2Fexist");
+            var response = await client.DeleteAsync("Library/VirtualFolders/Paths?name=none&path=%2Fthis%2Fpath%2Fdoesnt%2Fexist", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }

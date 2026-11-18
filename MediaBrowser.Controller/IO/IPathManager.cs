@@ -22,30 +22,30 @@ public interface IPathManager
     /// <param name="mediaSourceId">The media source id.</param>
     /// <param name="streamIndex">The stream index.</param>
     /// <param name="extension">The subtitle file extension.</param>
-    /// <returns>The absolute path.</returns>
-    public string GetSubtitlePath(string mediaSourceId, int streamIndex, string extension);
+    /// <returns>The absolute path, or <c>null</c> if <paramref name="mediaSourceId"/> is not a valid GUID.</returns>
+    public string? GetSubtitlePath(string mediaSourceId, int streamIndex, string extension);
 
     /// <summary>
     /// Gets the path to the subtitle file.
     /// </summary>
     /// <param name="mediaSourceId">The media source id.</param>
-    /// <returns>The absolute path.</returns>
-    public string GetSubtitleFolderPath(string mediaSourceId);
+    /// <returns>The absolute path, or <c>null</c> if <paramref name="mediaSourceId"/> is not a valid GUID.</returns>
+    public string? GetSubtitleFolderPath(string mediaSourceId);
 
     /// <summary>
     /// Gets the path to the attachment file.
     /// </summary>
     /// <param name="mediaSourceId">The media source id.</param>
     /// <param name="fileName">The attachmentFileName index.</param>
-    /// <returns>The absolute path.</returns>
-    public string GetAttachmentPath(string mediaSourceId, string fileName);
+    /// <returns>The absolute path, or <c>null</c> if <paramref name="mediaSourceId"/> is not a valid GUID.</returns>
+    public string? GetAttachmentPath(string mediaSourceId, string fileName);
 
     /// <summary>
     /// Gets the path to the attachment folder.
     /// </summary>
     /// <param name="mediaSourceId">The media source id.</param>
-    /// <returns>The absolute path.</returns>
-    public string GetAttachmentFolderPath(string mediaSourceId);
+    /// <returns>The absolute path, or <c>null</c> if <paramref name="mediaSourceId"/> is not a valid GUID.</returns>
+    public string? GetAttachmentFolderPath(string mediaSourceId);
 
     /// <summary>
     /// Gets the chapter images data path.

@@ -3,35 +3,35 @@
     "supportsSubScores": false,
     "ratings": [
         {
-            "ratingStrings": ["0+"],
+            "ratingStrings": ["0+", "普遍級", "普"],
             "ratingScore": {
                 "score": 0,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["6+"],
+            "ratingStrings": ["6+", "保護級", "護"],
             "ratingScore": {
                 "score": 6,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["12+"],
+            "ratingStrings": ["12+", "輔12級", "輔導12歲級", "輔導級"],
             "ratingScore": {
                 "score": 12,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["15+"],
+            "ratingStrings": ["15+", "輔15級", "輔導15歲級"],
             "ratingScore": {
                 "score": 15,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["18+"],
+            "ratingStrings": ["18+", "限制級", "限"],
             "ratingScore": {
                 "score": 18,
                 "subScore": null

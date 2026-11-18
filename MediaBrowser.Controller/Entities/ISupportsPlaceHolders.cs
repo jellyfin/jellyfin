@@ -1,7 +1,8 @@
-#pragma warning disable CS1591
-
 namespace MediaBrowser.Controller.Entities
 {
+    /// <summary>
+    /// Interface for items that can be placeholders.
+    /// </summary>
     public interface ISupportsPlaceHolders
     {
         /// <summary>

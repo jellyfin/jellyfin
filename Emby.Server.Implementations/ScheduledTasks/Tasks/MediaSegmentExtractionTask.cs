@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -68,6 +68,7 @@ public class MediaSegmentExtractionTask : IScheduledTask
             DtoOptions = new DtoOptions(true),
             SourceTypes = [SourceType.Library],
             Recursive = true,
+            IncludeOwnedItems = true,
             Limit = pagesize
         };
 

@@ -7,39 +7,23 @@
 <img alt="Logo Banner" src="https://raw.githubusercontent.com/jellyfin/jellyfin-ux/master/branding/SVG/banner-logo-solid.svg?sanitize=true"/>
 <br/>
 <br/>
-<a href="https://github.com/jellyfin/jellyfin">
-<img alt="GPL 2.0 License" src="https://img.shields.io/github/license/jellyfin/jellyfin.svg"/>
-</a>
-<a href="https://github.com/jellyfin/jellyfin/releases">
-<img alt="Current Release" src="https://img.shields.io/github/release/jellyfin/jellyfin.svg"/>
-</a>
-<a href="https://translate.jellyfin.org/projects/jellyfin/jellyfin-core/?utm_source=widget">
-<img alt="Translation Status" src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-core/svg-badge.svg"/>
-</a>
-<a href="https://hub.docker.com/r/jellyfin/jellyfin">
-<img alt="Docker Pull Count" src="https://img.shields.io/docker/pulls/jellyfin/jellyfin.svg"/>
-</a>
+<a href="https://github.com/jellyfin/jellyfin"><img alt="GPL 2.0 License" src="https://img.shields.io/github/license/jellyfin/jellyfin.svg"/></a>
+<a href="https://github.com/jellyfin/jellyfin/releases"><img alt="Current Release" src="https://img.shields.io/github/release/jellyfin/jellyfin.svg"/></a>
+<a href="https://translate.jellyfin.org/projects/jellyfin/jellyfin-core/?utm_source=widget"><img alt="Translation Status" src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-core/svg-badge.svg"/></a>
+<a href="https://hub.docker.com/r/jellyfin/jellyfin"><img alt="Docker Pull Count" src="https://img.shields.io/docker/pulls/jellyfin/jellyfin.svg"/></a>
 <br/>
-<a href="https://opencollective.com/jellyfin">
-<img alt="Donate" src="https://img.shields.io/opencollective/all/jellyfin.svg?label=backers"/>
-</a>
-<a href="https://features.jellyfin.org">
-<img alt="Submit Feature Requests" src="https://img.shields.io/badge/fider-vote%20on%20features-success.svg"/>
-</a>
-<a href="https://matrix.to/#/#jellyfinorg:matrix.org">
-<img alt="Chat on Matrix" src="https://img.shields.io/matrix/jellyfinorg:matrix.org.svg?logo=matrix"/>
-</a>
-<a href="https://github.com/jellyfin/jellyfin/releases.atom">
-<img alt="Release RSS Feed" src="https://img.shields.io/badge/rss-releases-ffa500?logo=rss" />
-</a>
-<a href="https://github.com/jellyfin/jellyfin/commits/master.atom">
-<img alt="Master Commits RSS Feed" src="https://img.shields.io/badge/rss-commits-ffa500?logo=rss" />
-</a>
+<a href="https://opencollective.com/jellyfin"><img alt="Donate" src="https://img.shields.io/opencollective/all/jellyfin.svg?label=backers"/></a>
+<a href="https://features.jellyfin.org"><img alt="Submit Feature Requests" src="https://img.shields.io/badge/fider-vote%20on%20features-success.svg"/></a>
+<a href="https://matrix.to/#/#jellyfinorg:matrix.org"><img alt="Chat on Matrix" src="https://img.shields.io/matrix/jellyfinorg:matrix.org.svg?logo=matrix"/></a>
+<a href="https://github.com/jellyfin/jellyfin/releases.atom"><img alt="Release RSS Feed" src="https://img.shields.io/badge/rss-releases-ffa500?logo=rss" /></a>
+<a href="https://github.com/jellyfin/jellyfin/commits/master.atom"><img alt="Master Commits RSS Feed" src="https://img.shields.io/badge/rss-commits-ffa500?logo=rss" /></a>
 </p>
 
 ---
 
-Jellyfin is a Free Software Media System that puts you in control of managing and streaming your media. It is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET Core framework to enable full cross-platform support. There are no strings attached, no premium licenses or features, and no hidden agendas: just a team who want to build something better and work together to achieve it. We welcome anyone who is interested in joining us in our quest!
+Jellyfin is a Free Software Media System that puts you in control of managing and streaming your media. It is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET platform to enable full cross-platform support.
+
+There are no strings attached, no premium licenses or features, and no hidden agendas: just a team that wants to build something better and work together to achieve it. We welcome anyone who is interested in joining us in our quest!
 
 For further details, please see [our documentation page](https://jellyfin.org/docs/). To receive the latest updates, get help with Jellyfin, and join the community, please visit [one of our communication channels](https://jellyfin.org/docs/general/getting-help). For more information about the project, please see our [about page](https://jellyfin.org/docs/general/about).
 
@@ -74,7 +58,7 @@ These instructions will help you get set up with a local development environment
 
 ### Prerequisites
 
-Before the project can be built, you must first install the [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet) on your system.
+Before the project can be built, you must first install the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet) on your system.
 
 Instructions to run this project from the command line are included here, but you will also need to install an IDE if you want to debug the server while it is running. Any IDE that supports .NET 6 development will work, but two options are recent versions of [Visual Studio](https://visualstudio.microsoft.com/downloads/) (at least 2022) and [Visual Studio Code](https://code.visualstudio.com/Download).
 
@@ -92,13 +76,12 @@ git clone https://github.com/jellyfin/jellyfin.git
 
 The server is configured to host the static files required for the [web client](https://github.com/jellyfin/jellyfin-web) in addition to serving the backend by default. Before you can run the server, you will need to get a copy of the web client since they are not included in this repository directly.
 
-Note that it is also possible to [host the web client separately](#hosting-the-web-client-separately) from the web server with some additional configuration, in which case you can skip this step.
+Note that it is recommended for development to [host the web client separately](#hosting-the-web-client-separately) from the web server with some additional configuration, in which case you can skip this step.
 
-There are three options to get the files for the web client.
+There are two options to get the files for the web client.
 
-1. Download one of the finished builds from the [Azure DevOps pipeline](https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=27). You can download the build for a specific release by looking at the [branches tab](https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=27&_a=summary&repositoryFilter=6&view=branches) of the pipelines page.
-2. Build them from source following the instructions on the [jellyfin-web repository](https://github.com/jellyfin/jellyfin-web)
-3. Get the pre-built files from an existing installation of the server. For example, with a Windows server installation the client files are located at `C:\Program Files\Jellyfin\Server\jellyfin-web`
+1. Build them from source following the instructions on the [jellyfin-web repository](https://github.com/jellyfin/jellyfin-web)
+2. Get the pre-built files from an existing installation of the server. For example, with a Windows server installation the client files are located at `C:\Program Files\Jellyfin\Server\jellyfin-web`
 
 ### Running The Server
 
@@ -106,7 +89,7 @@ The following instructions will help you get the project up and running via the 
 
 #### Running With Visual Studio
 
-To run the project with Visual Studio you can open the Solution (`.sln`) file and then press `F5` to run the server.
+To run the project with Visual Studio you can open the solution (`.slnx`) file and then press `F5` to run the server.
 
 #### Running With Visual Studio Code
 
@@ -131,7 +114,7 @@ A second option is to build the project and then run the resulting executable fi
 
 ```bash
 dotnet build                       # Build the project
-cd Jellyfin.Server/bin/Debug/net9.0 # Change into the build output directory
+cd Jellyfin.Server/bin/Debug/net10.0 # Change into the build output directory
 ```
 
 2. Execute the build output. On Linux, Mac, etc. use `./jellyfin` and on Windows use `jellyfin.exe`.
@@ -183,7 +166,7 @@ The following sections describe some more advanced scenarios for running the ser
 It is not necessary to host the frontend web client as part of the backend server. Hosting these two components separately may be useful for frontend developers who would prefer to host the client in a separate webpack development server for a tighter development loop. See the [jellyfin-web](https://github.com/jellyfin/jellyfin-web#getting-started) repo for instructions on how to do this.
 
 To instruct the server not to host the web content, there is a `nowebclient` configuration flag that must be set. This can be specified using the command line
-switch `--nowebclient` or the environment variable `JELLYFIN_NOWEBCONTENT=true`.
+switch `--nowebclient` or the environment variable `JELLYFIN_HOSTWEBCLIENT=false`.
 
 Since this is a common scenario, there is also a separate launch profile defined for Visual Studio called `Jellyfin.Server (nowebcontent)` that can be selected from the 'Start Debugging' dropdown in the main toolbar.
 
@@ -194,7 +177,5 @@ Since this is a common scenario, there is also a separate launch profile defined
 This project is supported by:
 <br/>
 <br/>
-<a href="https://www.digitalocean.com"><img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" height="50px" alt="DigitalOcean"></a>
-    &nbsp;
-<a href="https://www.jetbrains.com"><img src="https://gist.githubusercontent.com/anthonylavado/e8b2403deee9581e0b4cb8cd675af7db/raw/fa104b7d73f759d7262794b94569f1b89df41c0b/jetbrains.svg" height="50px" alt="JetBrains logo"></a>
+<a href="https://www.jetbrains.com"><img src="https://gist.githubusercontent.com/anthonylavado/e8b2403deee9581e0b4cb8cd675af7db/raw/199ae22980ef5da64882ec2de3e8e5c03fe535b8/jetbrains.svg" height="50px" alt="JetBrains logo"></a>
 </p>

@@ -85,9 +85,17 @@ namespace Emby.Server.Implementations.Serialization
         /// <returns>System.Object.</returns>
         public object? DeserializeFromFile(Type type, string file)
         {
-            using (var stream = File.OpenRead(file))
+            try
             {
-                return DeserializeFromStream(type, stream);
+                using (var stream = File.OpenRead(file))
+                {
+                    return DeserializeFromStream(type, stream);
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.Data.Add("Filename", file);
+                throw;
             }
         }
 

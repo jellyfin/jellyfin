@@ -58,7 +58,7 @@ for subproject in ${jellyfin_subprojects[@]}; do
 done
 
 # Set the version in the GitHub issue template file
-sed -i "s|${old_version}|${new_version_sed}|g" ${issue_template_file}
+sed -i "s|${old_version}|${new_version_sed}|g" "${issue_template_file}"
 
 # Stage the changed files for commit
 git add .

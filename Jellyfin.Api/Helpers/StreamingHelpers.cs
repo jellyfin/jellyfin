@@ -17,9 +17,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Helpers;
@@ -146,6 +144,15 @@ public static class StreamingHelpers
             mediaSource = liveStreamInfo.Item1;
             state.DirectStreamProvider = liveStreamInfo.Item2;
 
+            // The requested live stream is no longer open. This commonly happens when a client keeps
+            // polling the HLS playlist (e.g. live.m3u8) after the stream was disposed because its
+            // consumer count dropped to zero. GetLiveStreamWithDirectStreamProvider returns a null
+            // MediaSource in that case, so return 404 instead of dereferencing it below.
+            if (mediaSource is null)
+            {
+                throw new ResourceNotFoundException($"The live stream with id {streamingRequest.LiveStreamId} could not be found or is no longer available.");
+            }
+
             // Cap the max bitrate when it is too high. This is usually due to ffmpeg is unable to probe the source liveTV streams' bitrate.
             if (mediaSource.FallbackMaxStreamingBitrate is not null && streamingRequest.VideoBitRate is not null)
             {
@@ -158,6 +165,13 @@ public static class StreamingHelpers
         encodingHelper.AttachMediaSourceInfo(state, encodingOptions, mediaSource, url);
 
         string? containerInternal = Path.GetExtension(state.RequestedUrl);
+
+        if (string.IsNullOrEmpty(containerInternal)
+            && (!string.IsNullOrWhiteSpace(streamingRequest.LiveStreamId)
+                || (mediaSource != null && mediaSource.IsInfiniteStream)))
+        {
+            containerInternal = ".ts";
+        }
 
         if (!string.IsNullOrEmpty(streamingRequest.Container))
         {
@@ -184,17 +198,12 @@ public static class StreamingHelpers
             state.OutputAudioBitrate = encodingHelper.GetAudioBitrateParam(streamingRequest.AudioBitRate, streamingRequest.AudioCodec, state.AudioStream, state.OutputAudioChannels) ?? 0;
         }
 
-        if (outputAudioCodec.StartsWith("pcm_", StringComparison.Ordinal))
-        {
-            containerInternal = ".pcm";
-        }
-
         if (state.VideoRequest is not null)
         {
             state.OutputVideoCodec = state.Request.VideoCodec;
             state.OutputVideoBitrate = encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
 
-            encodingHelper.TryStreamCopy(state);
+            encodingHelper.TryStreamCopy(state, encodingOptions);
 
             if (!EncodingHelper.IsCopyCodec(state.OutputVideoCodec) && state.OutputVideoBitrate.HasValue)
             {
@@ -261,7 +270,7 @@ public static class StreamingHelpers
         Dictionary<string, string?> streamOptions = new Dictionary<string, string?>();
         foreach (var param in queryString)
         {
-            if (char.IsLower(param.Key[0]))
+            if (param.Key.Length > 0 && char.IsLower(param.Key[0]))
             {
                 // This was probably not parsed initially and should be a StreamOptions
                 // or the generated URL should correctly serialize it
@@ -415,14 +424,18 @@ public static class StreamingHelpers
                     request.Static = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                     break;
                 case 4:
-                    if (videoRequest is not null)
+                    if (videoRequest is not null && IsValidCodecName(val))
                     {
                         videoRequest.VideoCodec = val;
                     }
 
                     break;
                 case 5:
-                    request.AudioCodec = val;
+                    if (IsValidCodecName(val))
+                    {
+                        request.AudioCodec = val;
+                    }
+
                     break;
                 case 6:
                     if (videoRequest is not null)
@@ -476,7 +489,7 @@ public static class StreamingHelpers
                     request.StartTimeTicks = long.Parse(val, CultureInfo.InvariantCulture);
                     break;
                 case 15:
-                    if (videoRequest is not null)
+                    if (videoRequest is not null && EncodingHelper.LevelValidationRegex().IsMatch(val))
                     {
                         videoRequest.Level = val;
                     }
@@ -497,7 +510,7 @@ public static class StreamingHelpers
 
                     break;
                 case 18:
-                    if (videoRequest is not null)
+                    if (videoRequest is not null && IsValidCodecName(val))
                     {
                         videoRequest.Profile = val;
                     }
@@ -556,7 +569,11 @@ public static class StreamingHelpers
 
                     break;
                 case 30:
-                    request.SubtitleCodec = val;
+                    if (IsValidCodecName(val))
+                    {
+                        request.SubtitleCodec = val;
+                    }
+
                     break;
                 case 31:
                     if (videoRequest is not null)
@@ -577,6 +594,11 @@ public static class StreamingHelpers
                     break;
             }
         }
+    }
+
+    private static bool IsValidCodecName(string val)
+    {
+        return EncodingHelper.ContainerValidationRegex().IsMatch(val);
     }
 
     /// <summary>

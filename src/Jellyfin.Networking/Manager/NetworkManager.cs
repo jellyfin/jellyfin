@@ -16,7 +16,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
-using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 namespace Jellyfin.Networking.Manager;
 
@@ -115,7 +114,7 @@ public class NetworkManager : INetworkManager, IDisposable
     public static string MockNetworkSettings { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets a value indicating whether IP4 is enabled.
+    /// Gets a value indicating whether IPv4 is enabled.
     /// </summary>
     public bool IsIPv4Enabled => _configurationManager.GetNetworkConfiguration().EnableIPv4;
 
@@ -317,7 +316,7 @@ public class NetworkManager : INetworkManager, IDisposable
             var subnets = config.LocalNetworkSubnets;
 
             // If no LAN addresses are specified, all private subnets and Loopback are deemed to be the LAN
-            if (!NetworkUtils.TryParseToSubnets(subnets, out var lanSubnets, false) || lanSubnets.Count == 0)
+            if (!NetworkUtils.TryParseToSubnets(subnets, out var lanSubnets, false, _logger) || lanSubnets.Count == 0)
             {
                 _logger.LogDebug("Using LAN interface addresses as user provided no LAN details.");
 
@@ -341,12 +340,12 @@ public class NetworkManager : INetworkManager, IDisposable
             }
             else
             {
-                _lanSubnets = lanSubnets;
+                _lanSubnets = lanSubnets.Select(x => x.Subnet).ToArray();
             }
 
-            _excludedSubnets = NetworkUtils.TryParseToSubnets(subnets, out var excludedSubnets, true)
-                ? excludedSubnets
-                : new List<IPNetwork>();
+            _excludedSubnets = NetworkUtils.TryParseToSubnets(subnets, out var excludedSubnets, true, _logger)
+                ? excludedSubnets.Select(x => x.Subnet).ToArray()
+                : Array.Empty<IPNetwork>();
         }
     }
 
@@ -357,12 +356,12 @@ public class NetworkManager : INetworkManager, IDisposable
     {
         lock (_initLock)
         {
-           _interfaces = FilterBindSettings(config, _interfaces, IsIPv4Enabled, IsIPv6Enabled).ToList();
+            _interfaces = FilterBindSettings(config, _interfaces, IsIPv4Enabled, IsIPv6Enabled).ToList();
         }
     }
 
     /// <summary>
-    /// Filteres a list of bind addresses and exclusions on available interfaces.
+    /// Filters a list of bind addresses and exclusions on available interfaces.
     /// </summary>
     /// <param name="config">The network config to be filtered by.</param>
     /// <param name="interfaces">A list of possible interfaces to be filtered.</param>
@@ -376,7 +375,7 @@ public class NetworkManager : INetworkManager, IDisposable
         if (localNetworkAddresses.Length > 0 && !string.IsNullOrWhiteSpace(localNetworkAddresses[0]))
         {
             var bindAddresses = localNetworkAddresses.Select(p => NetworkUtils.TryParseToSubnet(p, out var network)
-                    ? network.Prefix
+                    ? network.Address
                     : (interfaces.Where(x => x.Name.Equals(p, StringComparison.OrdinalIgnoreCase))
                         .Select(x => x.Address)
                         .FirstOrDefault() ?? IPAddress.None))
@@ -445,7 +444,7 @@ public class NetworkManager : INetworkManager, IDisposable
                 var remoteFilteredSubnets = remoteIPFilter.Where(x => x.Contains('/', StringComparison.OrdinalIgnoreCase)).ToArray();
                 if (NetworkUtils.TryParseToSubnets(remoteFilteredSubnets, out var remoteAddressFilterResult, false))
                 {
-                    remoteAddressFilter = remoteAddressFilterResult.ToList();
+                    remoteAddressFilter = remoteAddressFilterResult.Select(x => x.Subnet).ToList();
                 }
 
                 // Parse everything else as an IP and construct subnet with a single IP
@@ -492,6 +491,7 @@ public class NetworkManager : INetworkManager, IDisposable
                         startupOverrideKey,
                         true,
                         true));
+                WarnIfPublishedUrlBasePathDiffers(publishedServerUrls, config.BaseUrl);
                 _publishedServerUrls = publishedServerUrls;
                 return;
             }
@@ -545,7 +545,7 @@ public class NetworkManager : INetworkManager, IDisposable
                 {
                     foreach (var lan in _lanSubnets)
                     {
-                        var lanPrefix = lan.Prefix;
+                        var lanPrefix = lan.BaseAddress;
                         publishedServerUrls.Add(
                             new PublishedServerUriOverride(
                                 new IPData(lanPrefix, new IPNetwork(lanPrefix, lan.PrefixLength)),
@@ -554,12 +554,11 @@ public class NetworkManager : INetworkManager, IDisposable
                                 false));
                     }
                 }
-                else if (NetworkUtils.TryParseToSubnet(identifier, out var result) && result is not null)
+                else if (NetworkUtils.TryParseToSubnet(identifier, out var result))
                 {
-                    var data = new IPData(result.Prefix, result);
                     publishedServerUrls.Add(
                         new PublishedServerUriOverride(
-                            data,
+                            result,
                             replacement,
                             true,
                             true));
@@ -582,7 +581,50 @@ public class NetworkManager : INetworkManager, IDisposable
                 }
             }
 
+            WarnIfPublishedUrlBasePathDiffers(publishedServerUrls, config.BaseUrl);
             _publishedServerUrls = publishedServerUrls;
+        }
+    }
+
+    /// <summary>
+    /// Warns when a full-URL published server override uses a public path that differs from the configured base
+    /// URL. Jellyfin appends the base URL to generated Live TV client URLs in this case, which can conflict with
+    /// reverse proxies that translate public request paths. Bare host/IP overrides are exempt because the base URL
+    /// is appended when the API URL is built from them.
+    /// </summary>
+    /// <param name="publishedServerUrls">The parsed published server URL overrides.</param>
+    /// <param name="baseUrl">The configured base URL, if any.</param>
+    private void WarnIfPublishedUrlBasePathDiffers(List<PublishedServerUriOverride> publishedServerUrls, string baseUrl)
+    {
+        if (string.IsNullOrEmpty(baseUrl))
+        {
+            return;
+        }
+
+        foreach (var overrideUri in publishedServerUrls.Select(x => x.OverrideUri).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            if (!overrideUri.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                && !overrideUri.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (!Uri.TryCreate(overrideUri, UriKind.Absolute, out var uri))
+            {
+                continue;
+            }
+
+            var path = Uri.UnescapeDataString(uri.AbsolutePath).TrimEnd('/');
+            if (path.EndsWith(baseUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var publishedServerHost = uri.GetComponents(UriComponents.HostAndPort, UriFormat.Unescaped);
+            _logger.LogWarning(
+                "The published server URL for host '{PublishedServerHost}' does not end with the configured base URL '{BaseUrl}'. Jellyfin will append this base URL when generating Live TV client URLs. If your reverse proxy translates public paths, this may cause Live TV playback to fail. Update the Published Server URIs setting on the Networking page of the admin dashboard, the JELLYFIN_PublishedServerUrl environment variable / --published-server-url option, or the reverse proxy path mapping accordingly.",
+                publishedServerHost,
+                baseUrl);
         }
     }
 
@@ -621,16 +663,12 @@ public class NetworkManager : INetworkManager, IDisposable
             foreach (var details in interfaceList)
             {
                 var parts = details.Split(',');
-                if (NetworkUtils.TryParseToSubnet(parts[0], out var subnet))
+                if (NetworkUtils.TryParseToSubnet(parts[0], out var data))
                 {
-                    var address = subnet.Prefix;
-                    var index = int.Parse(parts[1], CultureInfo.InvariantCulture);
-                    if (address.AddressFamily == AddressFamily.InterNetwork || address.AddressFamily == AddressFamily.InterNetworkV6)
+                    data.Index = int.Parse(parts[1], CultureInfo.InvariantCulture);
+                    if (data.AddressFamily == AddressFamily.InterNetwork || data.AddressFamily == AddressFamily.InterNetworkV6)
                     {
-                        var data = new IPData(address, subnet, parts[2])
-                        {
-                            Index = index
-                        };
+                        data.Name = parts[2];
                         interfaces.Add(data);
                     }
                 }
@@ -753,12 +791,13 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <inheritdoc/>
     public IReadOnlyList<IPData> GetAllBindInterfaces(bool individualInterfaces = false)
     {
-        return NetworkManager.GetAllBindInterfaces(individualInterfaces, _configurationManager, _interfaces, IsIPv4Enabled, IsIPv6Enabled);
+        return NetworkManager.GetAllBindInterfaces(_logger, individualInterfaces, _configurationManager, _interfaces, IsIPv4Enabled, IsIPv6Enabled);
     }
 
     /// <summary>
     /// Reads the jellyfin configuration of the configuration manager and produces a list of interfaces that should be bound.
     /// </summary>
+    /// <param name="logger">Logger to use for messages.</param>
     /// <param name="individualInterfaces">Defines that only known interfaces should be used.</param>
     /// <param name="configurationManager">The ConfigurationManager.</param>
     /// <param name="knownInterfaces">The known interfaces that gets returned if possible or instructed.</param>
@@ -766,6 +805,7 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <param name="readIpv6">Include IPV6 type interfaces.</param>
     /// <returns>A list of ip address of which jellyfin should bind to.</returns>
     public static IReadOnlyList<IPData> GetAllBindInterfaces(
+        ILogger<NetworkManager> logger,
         bool individualInterfaces,
         IConfigurationManager configurationManager,
         IReadOnlyList<IPData> knownInterfaces,
@@ -777,6 +817,13 @@ public class NetworkManager : INetworkManager, IDisposable
         if ((localNetworkAddresses.Length > 0 && !string.IsNullOrWhiteSpace(localNetworkAddresses[0]) && knownInterfaces.Count > 0) || individualInterfaces)
         {
             return knownInterfaces;
+        }
+
+        // TODO: remove when upgrade to dotnet 11 is done
+        if (readIpv6 && !Socket.OSSupportsIPv6)
+        {
+            logger.LogWarning("IPv6 Unsupported by OS, not listening on IPv6");
+            readIpv6 = false;
         }
 
         // No bind address and no exclusions, so listen on all interfaces.
@@ -848,7 +895,7 @@ public class NetworkManager : INetworkManager, IDisposable
             bool isExternal = !IsInLocalNetwork(source);
             _logger.LogDebug("Trying to get bind address for source {Source} - External: {IsExternal}", source, isExternal);
 
-            if (!skipOverrides && MatchesPublishedServerUrl(source, isExternal, out result))
+            if (!skipOverrides && MatchesPublishedServerUrl(source, isExternal, out result, out port))
             {
                 return result;
             }
@@ -875,7 +922,20 @@ public class NetworkManager : INetworkManager, IDisposable
         if (availableInterfaces.Count == 0)
         {
             // There isn't any others, so we'll use the loopback.
-            result = IsIPv4Enabled && !IsIPv6Enabled ? "127.0.0.1" : "::1";
+            // Prefer loopback address matching the source's address family
+            if (source is not null && source.AddressFamily == AddressFamily.InterNetwork && IsIPv4Enabled)
+            {
+                result = "127.0.0.1";
+            }
+            else if (source is not null && source.AddressFamily == AddressFamily.InterNetworkV6 && IsIPv6Enabled)
+            {
+                result = "::1";
+            }
+            else
+            {
+                result = IsIPv4Enabled ? "127.0.0.1" : "::1";
+            }
+
             _logger.LogWarning("{Source}: Only loopback {Result} returned, using that as bind address.", source, result);
             return result;
         }
@@ -900,9 +960,19 @@ public class NetworkManager : INetworkManager, IDisposable
             }
         }
 
-        // Fallback to first available interface
+        // Fallback to an interface matching the source's address family, or first available
+        var preferredInterface = availableInterfaces
+            .FirstOrDefault(x => x.Address.AddressFamily == source.AddressFamily);
+
+        if (preferredInterface is not null)
+        {
+            result = NetworkUtils.FormatIPString(preferredInterface.Address);
+            _logger.LogDebug("{Source}: No matching subnet found, using interface with matching address family: {Result}", source, result);
+            return result;
+        }
+
         result = NetworkUtils.FormatIPString(availableInterfaces[0].Address);
-        _logger.LogDebug("{Source}: No matching interfaces found, using preferred interface as bind address: {Result}", source, result);
+        _logger.LogDebug("{Source}: No matching interfaces found, using first available interface as bind address: {Result}", source, result);
         return result;
     }
 
@@ -920,7 +990,7 @@ public class NetworkManager : INetworkManager, IDisposable
     {
         if (NetworkUtils.TryParseToSubnet(address, out var subnet))
         {
-            return IsInLocalNetwork(subnet.Prefix);
+            return IsInLocalNetwork(subnet.Address);
         }
 
         return NetworkUtils.TryParseHost(address, out var addresses, IsIPv4Enabled, IsIPv6Enabled)
@@ -991,11 +1061,12 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <param name="source">IP source address to use.</param>
     /// <param name="isInExternalSubnet">True if the source is in an external subnet.</param>
     /// <param name="bindPreference">The published server URL that matches the source address.</param>
+    /// <param name="port">The explicit port parsed from the override, if any.</param>
     /// <returns><c>true</c> if a match is found, <c>false</c> otherwise.</returns>
-    private bool MatchesPublishedServerUrl(IPAddress source, bool isInExternalSubnet, out string bindPreference)
+    private bool MatchesPublishedServerUrl(IPAddress source, bool isInExternalSubnet, out string bindPreference, out int? port)
     {
         bindPreference = string.Empty;
-        int? port = null;
+        port = null;
 
         // Only consider subnets including the source IP, preferring specific overrides
         List<PublishedServerUriOverride> validPublishedServerUrls;
@@ -1037,22 +1108,40 @@ public class NetworkManager : INetworkManager, IDisposable
             return false;
         }
 
-        // Handle override specifying port
-        var parts = bindPreference.Split(':');
-        if (parts.Length > 1)
+        // Handle override specifying an explicit port.
+        (bindPreference, port) = ParseHostAndPort(bindPreference);
+
+        if (port.HasValue)
         {
-            if (int.TryParse(parts[1], out int p))
-            {
-                bindPreference = parts[0];
-                port = p;
-                _logger.LogDebug("{Source}: Matching bind address override found: {Address}:{Port}", source, bindPreference, port);
-                return true;
-            }
+            _logger.LogDebug("{Source}: Matching bind address override found: {Address}:{Port}", source, bindPreference, port);
+        }
+        else
+        {
+            _logger.LogDebug("{Source}: Matching bind address override found: {Address}", source, bindPreference);
         }
 
-        _logger.LogDebug("{Source}: Matching bind address override found: {Address}", source, bindPreference);
-
         return true;
+    }
+
+    /// <summary>
+    /// Splits a published server URL override into its host and explicit port, if any.
+    /// Full URLs (containing "://") are returned whole, with any port left embedded.
+    /// </summary>
+    /// <param name="value">The override value, e.g. "host:port", "[::1]:port", or a full URL.</param>
+    /// <returns>The parsed host (or the original value if not split) and the explicit port, if any.</returns>
+    private static (string Host, int? Port) ParseHostAndPort(string value)
+    {
+        if (value.Contains("://", StringComparison.Ordinal))
+        {
+            return (value, null);
+        }
+
+        if (Uri.TryCreate("any://" + value, UriKind.Absolute, out var parsed) && parsed.Port != -1)
+        {
+            return (parsed.DnsSafeHost, parsed.Port);
+        }
+
+        return (value, null);
     }
 
     /// <summary>
@@ -1171,13 +1260,13 @@ public class NetworkManager : INetworkManager, IDisposable
         var logLevel = debug ? LogLevel.Debug : LogLevel.Information;
         if (_logger.IsEnabled(logLevel))
         {
-            _logger.Log(logLevel, "Defined LAN subnets: {Subnets}", _lanSubnets.Select(s => s.Prefix + "/" + s.PrefixLength));
-            _logger.Log(logLevel, "Defined LAN exclusions: {Subnets}", _excludedSubnets.Select(s => s.Prefix + "/" + s.PrefixLength));
-            _logger.Log(logLevel, "Used LAN subnets: {Subnets}", _lanSubnets.Where(s => !_excludedSubnets.Contains(s)).Select(s => s.Prefix + "/" + s.PrefixLength));
+            _logger.Log(logLevel, "Defined LAN subnets: {Subnets}", _lanSubnets.Select(s => s.BaseAddress + "/" + s.PrefixLength));
+            _logger.Log(logLevel, "Defined LAN exclusions: {Subnets}", _excludedSubnets.Select(s => s.BaseAddress + "/" + s.PrefixLength));
+            _logger.Log(logLevel, "Used LAN subnets: {Subnets}", _lanSubnets.Where(s => !_excludedSubnets.Contains(s)).Select(s => s.BaseAddress + "/" + s.PrefixLength));
             _logger.Log(logLevel, "Filtered interface addresses: {Addresses}", _interfaces.OrderByDescending(x => x.AddressFamily == AddressFamily.InterNetwork).Select(x => x.Address));
             _logger.Log(logLevel, "Bind Addresses {Addresses}", GetAllBindInterfaces(false).OrderByDescending(x => x.AddressFamily == AddressFamily.InterNetwork).Select(x => x.Address));
             _logger.Log(logLevel, "Remote IP filter is {Type}", config.IsRemoteIPFilterBlacklist ? "Blocklist" : "Allowlist");
-            _logger.Log(logLevel, "Filtered subnets: {Subnets}", _remoteAddressFilter.Select(s => s.Prefix + "/" + s.PrefixLength));
+            _logger.Log(logLevel, "Filtered subnets: {Subnets}", _remoteAddressFilter.Select(s => s.BaseAddress + "/" + s.PrefixLength));
         }
     }
 }

@@ -2,6 +2,7 @@
 <movie>
   <title>Lilo &amp; Stitch</title>
   <originaltitle>Lilo &amp; Stitch</originaltitle>
+  <uniqueid type="tmdbcol" default="false">97020</uniqueid>
   <set>Lilo &amp; Stitch Collection</set>
   <plot>&gt;&gt;As Stitch, a runaway genetic experiment from a faraway planet, wreaks havoc on the Hawaiian Islands, he becomes the mischievous adopted alien "puppy" of an independent little girl named Lilo and learns about loyalty, friendship, and ʻohana, the Hawaiian tradition of family.&lt;&lt;</plot>
 </movie>

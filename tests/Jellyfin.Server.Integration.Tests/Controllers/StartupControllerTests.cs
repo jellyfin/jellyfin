@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Models.StartupDtos;
 using Jellyfin.Extensions.Json;
 using Xunit;
-using Xunit.Priority;
+using Xunit.v3.Priority;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers
 {
-    [TestCaseOrderer(PriorityOrderer.Name, PriorityOrderer.Assembly)]
+    [TestCaseOrderer(typeof(PriorityOrderer))]
     public sealed class StartupControllerTests : IClassFixture<JellyfinApplicationFactory>
     {
         private readonly JellyfinApplicationFactory _factory;
@@ -37,14 +37,14 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 PreferredMetadataLanguage = "nl"
             };
 
-            using var postResponse = await client.PostAsJsonAsync("/Startup/Configuration", config, _jsonOptions);
+            using var postResponse = await client.PostAsJsonAsync("/Startup/Configuration", config, _jsonOptions, TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.NoContent, postResponse.StatusCode);
 
-            using var getResponse = await client.GetAsync("/Startup/Configuration");
+            using var getResponse = await client.GetAsync("/Startup/Configuration", TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
             Assert.Equal(MediaTypeNames.Application.Json, getResponse.Content.Headers.ContentType?.MediaType);
 
-            var newConfig = await getResponse.Content.ReadFromJsonAsync<StartupConfigurationDto>(_jsonOptions);
+            var newConfig = await getResponse.Content.ReadFromJsonAsync<StartupConfigurationDto>(_jsonOptions, TestContext.Current.CancellationToken);
             Assert.Equal(config.ServerName, newConfig!.ServerName);
             Assert.Equal(config.UICulture, newConfig.UICulture);
             Assert.Equal(config.MetadataCountryCode, newConfig.MetadataCountryCode);
@@ -57,11 +57,11 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         {
             var client = _factory.CreateClient();
 
-            using var response = await client.GetAsync("/Startup/User");
+            using var response = await client.GetAsync("/Startup/User", TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(MediaTypeNames.Application.Json, response.Content.Headers.ContentType?.MediaType);
 
-            var user = await response.Content.ReadFromJsonAsync<StartupUserDto>(_jsonOptions);
+            var user = await response.Content.ReadFromJsonAsync<StartupUserDto>(_jsonOptions, TestContext.Current.CancellationToken);
             Assert.NotNull(user);
             Assert.NotNull(user.Name);
             Assert.NotEmpty(user.Name);
@@ -80,14 +80,14 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 Password = "NewPassword"
             };
 
-            var postResponse = await client.PostAsJsonAsync("/Startup/User", user, _jsonOptions);
+            var postResponse = await client.PostAsJsonAsync("/Startup/User", user, _jsonOptions, TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.NoContent, postResponse.StatusCode);
 
-            var getResponse = await client.GetAsync("/Startup/User");
+            var getResponse = await client.GetAsync("/Startup/User", TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
             Assert.Equal(MediaTypeNames.Application.Json, getResponse.Content.Headers.ContentType?.MediaType);
 
-            var newUser = await getResponse.Content.ReadFromJsonAsync<StartupUserDto>(_jsonOptions);
+            var newUser = await getResponse.Content.ReadFromJsonAsync<StartupUserDto>(_jsonOptions, TestContext.Current.CancellationToken);
             Assert.NotNull(newUser);
             Assert.Equal(user.Name, newUser.Name);
             Assert.Null(newUser.Password);
@@ -99,7 +99,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         {
             var client = _factory.CreateClient();
 
-            var response = await client.PostAsync("/Startup/Complete", new ByteArrayContent(Array.Empty<byte>()));
+            var response = await client.PostAsync("/Startup/Complete", new ByteArrayContent(Array.Empty<byte>()), TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         }
 
@@ -109,7 +109,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         {
             var client = _factory.CreateClient();
 
-            using var response = await client.GetAsync("/Startup/User");
+            using var response = await client.GetAsync("/Startup/User", TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
     }

@@ -1,3 +1,10 @@
 {
-    "Books": "کتابیں"
+    "Books": "کتابیں",
+    "AppDeviceValues": "ایپ: {0}، ڈیوائس: {1}",
+    "Artists": "فنکار",
+    "AuthenticationSucceededWithUserName": "{0} کی کامیابی سے تصدیق ہو چکی ہے",
+    "ChapterNameValue": "باب {0}",
+    "Collections": "مجموعے",
+    "Default": "ڈیفالٹ",
+    "External": "بیرونی"
 }

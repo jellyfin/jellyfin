@@ -24,6 +24,8 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
+using PDFtoImage;
+using SharpCompress.Archives;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -37,6 +39,7 @@ namespace MediaBrowser.Providers.MediaInfo
         ICustomMetadataProvider<Video>,
         ICustomMetadataProvider<Audio>,
         ICustomMetadataProvider<AudioBook>,
+        ICustomMetadataProvider<Book>,
         IHasOrder,
         IForcedProvider,
         IPreRefreshProvider,
@@ -110,7 +113,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 libraryManager,
                 _lyricResolver,
                 lyricManager,
-                mediaStreamRepository);
+                mediaStreamRepository,
+                chapterManager);
         }
 
         /// <inheritdoc />
@@ -130,12 +134,18 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (!string.IsNullOrWhiteSpace(path) && item.IsFileProtocol)
                 {
                     var file = directoryService.GetFile(path);
-                    if (file is not null && item.HasChanged(file.LastWriteTimeUtc) && file.Length != item.Size)
+                    if (file is not null && item.HasChanged(file.LastWriteTimeUtc))
                     {
                         _logger.LogDebug("Refreshing {ItemPath} due to file system modification.", path);
                         return true;
                     }
                 }
+            }
+
+            if (IsMissingMediaInfo(item))
+            {
+                _logger.LogDebug("Refreshing {ItemPath} because it has no media information.", item.Path);
+                return true;
             }
 
             if (video is not null
@@ -169,6 +179,25 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             return false;
+        }
+
+        private static bool IsMissingMediaInfo(BaseItem item)
+        {
+            if (item.RunTimeTicks.HasValue
+                || item.TotalBitrate.HasValue
+                || item.IsVirtualItem
+                || item.IsShortcut
+                || !item.IsFileProtocol)
+            {
+                return false;
+            }
+
+            return item switch
+            {
+                Video video => !video.IsPlaceHolder && video.IsCompleteMedia,
+                Audio => true,
+                _ => false
+            };
         }
 
         /// <inheritdoc />
@@ -211,6 +240,57 @@ namespace MediaBrowser.Providers.MediaInfo
         public Task<ItemUpdateType> FetchAsync(AudioBook item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             return FetchAudioInfo(item, options, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public Task<ItemUpdateType> FetchAsync(Book item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        {
+            if (item.IsVirtualItem || !item.IsFileProtocol)
+            {
+                return _cachedTask;
+            }
+
+            long pageCount;
+            switch (Path.GetExtension(item.Path).ToLowerInvariant())
+            {
+                case ".cb7":
+                case ".cbr":
+                case ".cbt":
+                case ".cbz":
+                    using (var stream = File.OpenRead(item.Path))
+                    using (var archive = ArchiveFactory.OpenArchive(stream))
+                    {
+                        pageCount = archive.Entries.Count(e => !e.IsDirectory);
+                    }
+
+                    break;
+
+#pragma warning disable CA1416
+                case ".pdf":
+                    using (var stream = File.OpenRead(item.Path))
+                    {
+                        pageCount = Conversion.GetPageCount(stream);
+                    }
+
+                    break;
+#pragma warning restore CA1416
+
+                case ".epub":
+                    // TODO process CFI and store as a string when multiple progress types are supported
+                    // current progress value is percentage stored as a proportion of one second worth of ticks
+                    item.RunTimeTicks = TimeSpan.TicksPerSecond;
+
+                    return Task.FromResult(ItemUpdateType.MetadataImport);
+
+                default:
+                    return _cachedTask;
+            }
+
+            // TODO use page count without modification when multiple progress types are supported
+            // book players report page count and the web client multiplies that value by 10000 to convert the expected milliseconds into ticks
+            item.RunTimeTicks = pageCount * 10000;
+
+            return Task.FromResult(ItemUpdateType.MetadataImport);
         }
 
         /// <summary>
@@ -262,9 +342,28 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private void FetchShortcutInfo(BaseItem item)
         {
-            item.ShortcutPath = File.ReadAllLines(item.Path)
+            var shortcutPath = File.ReadAllLines(item.Path)
                 .Select(NormalizeStrmLine)
                 .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i) && !i.StartsWith('#'));
+
+            if (string.IsNullOrWhiteSpace(shortcutPath))
+            {
+                return;
+            }
+
+            // Only allow remote URLs in .strm files to prevent local file access
+            if (Uri.TryCreate(shortcutPath, UriKind.Absolute, out var uri)
+                && (string.Equals(uri.Scheme, "http", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(uri.Scheme, "https", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(uri.Scheme, "rtsp", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(uri.Scheme, "rtp", StringComparison.OrdinalIgnoreCase)))
+            {
+                item.ShortcutPath = shortcutPath;
+            }
+            else
+            {
+                _logger.LogWarning("Ignoring invalid or non-remote .strm path in {File}: {Path}", item.Path, shortcutPath);
+            }
         }
 
         /// <summary>

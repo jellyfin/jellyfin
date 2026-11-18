@@ -27,15 +27,20 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasMany(e => e.Provider);
         builder.HasMany(e => e.Parents);
         builder.HasMany(e => e.Children);
+        builder.HasMany(e => e.DirectChildren).WithOne(e => e.DirectParent).HasForeignKey(e => e.ParentId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasMany(e => e.Extras).WithOne(e => e.Owner).HasForeignKey(e => e.OwnerId).OnDelete(DeleteBehavior.NoAction);
         builder.HasMany(e => e.LockedFields);
         builder.HasMany(e => e.TrailerTypes);
         builder.HasMany(e => e.Images);
 
         builder.HasIndex(e => e.Path);
         builder.HasIndex(e => e.ParentId);
+        builder.HasIndex(e => e.OwnerId)
+            .HasFilter("\"OwnerId\" IS NOT NULL");
+        builder.HasIndex(e => e.Name);
+        builder.HasIndex(e => new { e.ExtraType, e.OwnerId })
+            .HasFilter("\"ExtraType\" IS NOT NULL");
         builder.HasIndex(e => e.PresentationUniqueKey);
-        builder.HasIndex(e => new { e.Id, e.Type, e.IsFolder, e.IsVirtualItem });
-
         // covering index
         builder.HasIndex(e => new { e.TopParentId, e.Id });
         // series
@@ -52,14 +57,38 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         // latest items
         builder.HasIndex(e => new { e.Type, e.TopParentId, e.IsVirtualItem, e.PresentationUniqueKey, e.DateCreated });
         builder.HasIndex(e => new { e.IsFolder, e.TopParentId, e.IsVirtualItem, e.PresentationUniqueKey, e.DateCreated });
+        // latest items - optimized for sorting by DateCreated (no PresentationUniqueKey breaking the sort)
+        builder.HasIndex(e => new { e.TopParentId, e.Type, e.IsVirtualItem, e.DateCreated });
+        builder.HasIndex(e => new { e.TopParentId, e.IsFolder, e.IsVirtualItem, e.DateCreated });
+        builder.HasIndex(e => new { e.TopParentId, e.MediaType, e.IsVirtualItem, e.DateCreated });
         // resume
         builder.HasIndex(e => new { e.MediaType, e.TopParentId, e.IsVirtualItem, e.PresentationUniqueKey });
+        // alternate versions of an item, e.g. resolving the played date of a version onto its primary.
+        // Filtered: almost no item has a primary version, and an index covering those rows too would tempt
+        // the planner into serving "PrimaryVersionId IS NULL" - true for the whole library - out of it.
+        builder.HasIndex(e => e.PrimaryVersionId)
+            .HasFilter("\"PrimaryVersionId\" IS NOT NULL");
+        // sorted library queries (e.g., Series sorted by SortName)
+        builder.HasIndex(e => new { e.Type, e.TopParentId, e.SortName });
+        // NextUp: per-series episode ordering (index seek + range scan on season/episode)
+        builder.HasIndex(e => new { e.Type, e.SeriesPresentationUniqueKey, e.ParentIndexNumber, e.IndexNumber });
+        // ByName queries: WHERE Type = X AND CleanName IN (...)
+        builder.HasIndex(e => new { e.Type, e.CleanName });
+        // Latest TV: GROUP BY SeriesName
+        builder.HasIndex(e => e.SeriesName);
+        // Latest TV: episode count per season, season count per series
+        builder.HasIndex(e => e.SeasonId);
+        builder.HasIndex(e => e.SeriesId);
+
+        // Items/Counts: SELECT Type, COUNT(*) GROUP BY Type filtered by TopParentId.
+        builder.HasIndex(e => new { e.TopParentId, e.Type, e.IsVirtualItem })
+            .HasFilter("\"PrimaryVersionId\" IS NULL AND (\"OwnerId\" IS NULL OR \"ExtraType\" IS NOT NULL)");
 
         builder.HasData(new BaseItemEntity()
         {
             Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
             Type = "PLACEHOLDER",
-            Name = "This is a placeholder item for UserData that has been detacted from its original item",
+            Name = "This is a placeholder item for UserData that has been detached from its original item",
         });
     }
 }

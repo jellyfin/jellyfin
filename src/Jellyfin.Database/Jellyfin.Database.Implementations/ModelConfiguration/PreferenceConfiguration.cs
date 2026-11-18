@@ -14,7 +14,6 @@ namespace Jellyfin.Database.Implementations.ModelConfiguration
         {
             builder
                 .HasIndex(p => new { p.UserId, p.Kind })
-                .HasFilter("[UserId] IS NOT NULL")
                 .IsUnique();
         }
     }

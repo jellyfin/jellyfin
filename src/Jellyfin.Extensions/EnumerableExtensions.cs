@@ -64,13 +64,13 @@ public static class EnumerableExtensions
     /// <typeparam name="T">The type of item.</typeparam>
     /// <returns>The IEnumerable{Enum}.</returns>
     public static IEnumerable<T> GetUniqueFlags<T>(this T flags)
-        where T : Enum
+        where T : struct, Enum
     {
-        foreach (Enum value in Enum.GetValues(flags.GetType()))
+        foreach (T value in Enum.GetValues<T>())
         {
             if (flags.HasFlag(value))
             {
-                yield return (T)value;
+                yield return value;
             }
         }
     }

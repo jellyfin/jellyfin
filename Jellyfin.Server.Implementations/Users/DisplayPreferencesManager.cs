@@ -1,109 +1,153 @@
-#pragma warning disable CA1307
-#pragma warning disable CA1309
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller;
 using Microsoft.EntityFrameworkCore;
 
-namespace Jellyfin.Server.Implementations.Users
+namespace Jellyfin.Server.Implementations.Users;
+
+/// <summary>
+/// Manages the storage and retrieval of display preferences through Entity Framework.
+/// </summary>
+public sealed class DisplayPreferencesManager : IDisplayPreferencesManager
 {
+    private const int MaxSaveAttempts = 3;
+
+    private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
+
     /// <summary>
-    /// Manages the storage and retrieval of display preferences through Entity Framework.
+    /// Initializes a new instance of the <see cref="DisplayPreferencesManager"/> class.
     /// </summary>
-    public sealed class DisplayPreferencesManager : IDisplayPreferencesManager, IAsyncDisposable
+    /// <param name="dbContextFactory">The database context factory.</param>
+    public DisplayPreferencesManager(IDbContextFactory<JellyfinDbContext> dbContextFactory)
     {
-        private readonly JellyfinDbContext _dbContext;
+        _dbContextFactory = dbContextFactory;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DisplayPreferencesManager"/> class.
-        /// </summary>
-        /// <param name="dbContextFactory">The database context factory.</param>
-        public DisplayPreferencesManager(IDbContextFactory<JellyfinDbContext> dbContextFactory)
+    /// <inheritdoc />
+    public DisplayPreferences GetDisplayPreferences(Guid userId, Guid itemId, string client)
+    {
+        using var dbContext = _dbContextFactory.CreateDbContext();
+        var prefs = FindDisplayPreferences(dbContext, userId, itemId, client);
+        if (prefs is not null)
         {
-            _dbContext = dbContextFactory.CreateDbContext();
-        }
-
-        /// <inheritdoc />
-        public DisplayPreferences GetDisplayPreferences(Guid userId, Guid itemId, string client)
-        {
-            var prefs = _dbContext.DisplayPreferences
-                .Include(pref => pref.HomeSections)
-                .FirstOrDefault(pref =>
-                    pref.UserId.Equals(userId) && string.Equals(pref.Client, client) && pref.ItemId.Equals(itemId));
-
-            if (prefs is null)
-            {
-                prefs = new DisplayPreferences(userId, itemId, client);
-                _dbContext.DisplayPreferences.Add(prefs);
-            }
-
             return prefs;
         }
 
-        /// <inheritdoc />
-        public ItemDisplayPreferences GetItemDisplayPreferences(Guid userId, Guid itemId, string client)
+        prefs = new DisplayPreferences(userId, itemId, client);
+        dbContext.DisplayPreferences.Add(prefs);
+        try
         {
-            var prefs = _dbContext.ItemDisplayPreferences
-                .FirstOrDefault(pref => pref.UserId.Equals(userId) && pref.ItemId.Equals(itemId) && string.Equals(pref.Client, client));
-
-            if (prefs is null)
+            dbContext.SaveChanges();
+        }
+        catch (DbUpdateException)
+        {
+            // Another request may have stored the preferences between the lookup and the insert, and the unique index
+            // rejected this one. Return the stored preferences; if there are none, the insert failed for another reason.
+            using var retryContext = _dbContextFactory.CreateDbContext();
+            var stored = FindDisplayPreferences(retryContext, userId, itemId, client);
+            if (stored is null)
             {
-                prefs = new ItemDisplayPreferences(userId, Guid.Empty, client);
-                _dbContext.ItemDisplayPreferences.Add(prefs);
+                throw;
             }
 
-            return prefs;
+            return stored;
         }
 
-        /// <inheritdoc />
-        public IList<ItemDisplayPreferences> ListItemDisplayPreferences(Guid userId, string client)
+        return prefs;
+    }
+
+    /// <inheritdoc />
+    public ItemDisplayPreferences GetItemDisplayPreferences(Guid userId, Guid itemId, string client)
+    {
+        using var dbContext = _dbContextFactory.CreateDbContext();
+        var prefs = dbContext.ItemDisplayPreferences
+            .FirstOrDefault(pref => pref.UserId.Equals(userId) && pref.ItemId.Equals(itemId) && pref.Client == client);
+
+        if (prefs is null)
         {
-            return _dbContext.ItemDisplayPreferences
-                .Where(prefs => prefs.UserId.Equals(userId) && !prefs.ItemId.Equals(default) && string.Equals(prefs.Client, client))
-                .ToList();
+            prefs = new ItemDisplayPreferences(userId, itemId, client);
+            dbContext.ItemDisplayPreferences.Add(prefs);
+            dbContext.SaveChanges();
         }
 
-        /// <inheritdoc />
-        public Dictionary<string, string?> ListCustomItemDisplayPreferences(Guid userId, Guid itemId, string client)
+        return prefs;
+    }
+
+    /// <inheritdoc />
+    public IList<ItemDisplayPreferences> ListItemDisplayPreferences(Guid userId, string client)
+    {
+        using var dbContext = _dbContextFactory.CreateDbContext();
+        return dbContext.ItemDisplayPreferences
+            .Where(prefs => prefs.UserId.Equals(userId) && !prefs.ItemId.Equals(default) && prefs.Client == client)
+            .ToList();
+    }
+
+    /// <inheritdoc />
+    public Dictionary<string, string?> ListCustomItemDisplayPreferences(Guid userId, Guid itemId, string client)
+    {
+        using var dbContext = _dbContextFactory.CreateDbContext();
+        return dbContext.CustomItemDisplayPreferences
+            .Where(prefs => prefs.UserId.Equals(userId)
+                            && prefs.ItemId.Equals(itemId)
+                            && prefs.Client == client)
+            .ToDictionary(prefs => prefs.Key, prefs => prefs.Value);
+    }
+
+    /// <inheritdoc />
+    public void SetCustomItemDisplayPreferences(Guid userId, Guid itemId, string client, Dictionary<string, string?> customPreferences)
+    {
+        // Another request can store one of these keys after this one's delete, and the unique index then rejects the
+        // insert. Replacing the set again gives the same result, so the replace is repeated.
+        for (var attempt = 1; ; attempt++)
         {
-            return _dbContext.CustomItemDisplayPreferences
-                .Where(prefs => prefs.UserId.Equals(userId)
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            using var transaction = dbContext.Database.BeginTransaction();
+            dbContext.CustomItemDisplayPreferences.Where(prefs => prefs.UserId.Equals(userId)
                                 && prefs.ItemId.Equals(itemId)
-                                && string.Equals(prefs.Client, client))
-                .ToDictionary(prefs => prefs.Key, prefs => prefs.Value);
-        }
-
-        /// <inheritdoc />
-        public void SetCustomItemDisplayPreferences(Guid userId, Guid itemId, string client, Dictionary<string, string?> customPreferences)
-        {
-            var existingPrefs = _dbContext.CustomItemDisplayPreferences
-                .Where(prefs => prefs.UserId.Equals(userId)
-                                && prefs.ItemId.Equals(itemId)
-                                && string.Equals(prefs.Client, client));
-            _dbContext.CustomItemDisplayPreferences.RemoveRange(existingPrefs);
+                                && prefs.Client == client)
+                                .ExecuteDelete();
 
             foreach (var (key, value) in customPreferences)
             {
-                _dbContext.CustomItemDisplayPreferences
+                dbContext.CustomItemDisplayPreferences
                     .Add(new CustomItemDisplayPreferences(userId, itemId, client, key, value));
             }
-        }
 
-        /// <inheritdoc />
-        public void SaveChanges()
-        {
-            _dbContext.SaveChanges();
-        }
+            try
+            {
+                dbContext.SaveChanges();
+            }
+            catch (DbUpdateException) when (attempt < MaxSaveAttempts)
+            {
+                continue;
+            }
 
-        /// <inheritdoc />
-        public async ValueTask DisposeAsync()
-        {
-            await _dbContext.DisposeAsync().ConfigureAwait(false);
+            transaction.Commit();
+            return;
         }
     }
+
+    /// <inheritdoc/>
+    public void UpdateDisplayPreferences(DisplayPreferences displayPreferences)
+    {
+        using var dbContext = _dbContextFactory.CreateDbContext();
+        dbContext.DisplayPreferences.Attach(displayPreferences).State = EntityState.Modified;
+        dbContext.SaveChanges();
+    }
+
+    /// <inheritdoc/>
+    public void UpdateItemDisplayPreferences(ItemDisplayPreferences itemDisplayPreferences)
+    {
+        using var dbContext = _dbContextFactory.CreateDbContext();
+        dbContext.ItemDisplayPreferences.Attach(itemDisplayPreferences).State = EntityState.Modified;
+        dbContext.SaveChanges();
+    }
+
+    private static DisplayPreferences? FindDisplayPreferences(JellyfinDbContext dbContext, Guid userId, Guid itemId, string client)
+        => dbContext.DisplayPreferences
+            .Include(pref => pref.HomeSections)
+            .FirstOrDefault(pref => pref.UserId.Equals(userId) && pref.Client == client && pref.ItemId.Equals(itemId));
 }

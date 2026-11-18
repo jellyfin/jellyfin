@@ -107,6 +107,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             // Additional Mappings
             _validProviderIds.Add("collectionnumber", "TmdbCollection");
             _validProviderIds.Add("tmdbcolid", "TmdbCollection");
+            _validProviderIds.Add("tmdbcol", "TmdbCollection");
             _validProviderIds.Add("imdb_id", "Imdb");
 
             Fetch(item, metadataFile, GetXmlReaderSettings(), cancellationToken);
@@ -315,7 +316,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             if (userData is not null)
                             {
                                 userData.Played = played;
-                                _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+
+                                if (!item.Id.IsEmpty())
+                                {
+                                    _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                                }
                             }
                         }
                     }
@@ -332,7 +337,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             if (userData is not null)
                             {
                                 userData.PlayCount = count;
-                                _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+
+                                if (!item.Id.IsEmpty())
+                                {
+                                    _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                                }
                             }
                         }
                     }
@@ -349,7 +358,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             if (userData is not null)
                             {
                                 userData.LastPlayedDate = lastPlayed;
-                                _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+
+                                if (!item.Id.IsEmpty())
+                                {
+                                    _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                                }
                             }
                         }
                     }
@@ -530,6 +543,16 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "ratings":
                     FetchFromRatingsNode(reader, item);
                     break;
+                // For NFO files that have a separate community rating tag instead of using the ratings node with a name, or standard rating tag
+                case "communityrating":
+                    var communityRatingText = reader.ReadElementContentAsString().Replace(',', '.');
+                    if (float.TryParse(communityRatingText, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var communityRatingValue)
+                    && communityRatingValue >= 0 && communityRatingValue <= 10)
+                    {
+                        item.CommunityRating = communityRatingValue;
+                    }
+
+                    break;
                 case "aired":
                 case "formed":
                 case "premiered":
@@ -590,7 +613,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                     var provider = reader.GetAttribute("type");
                     var providerId = reader.ReadElementContentAsString();
-                    item.TrySetProviderId(provider, providerId);
+
+                    if (!string.IsNullOrEmpty(provider))
+                    {
+                        if (_validProviderIds.TryGetValue(provider, out string? normalizedProvider))
+                        {
+                            item.TrySetProviderId(normalizedProvider, providerId);
+                        }
+                        else
+                        {
+                            item.TrySetProviderId(provider, providerId);
+                        }
+                    }
 
                     break;
                 case "thumb":

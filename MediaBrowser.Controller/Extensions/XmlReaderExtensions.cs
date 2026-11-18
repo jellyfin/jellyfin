@@ -167,12 +167,12 @@ public static class XmlReaderExtensions
 
         // Only split by comma if there is no pipe in the string
         // We have to be careful to not split names like Matthew, Jr.
-        var separator = !value.Contains('|', StringComparison.Ordinal)
+        ReadOnlySpan<char> separator = !value.Contains('|', StringComparison.Ordinal)
             && !value.Contains(';', StringComparison.Ordinal)
-                ? new[] { ',' }
-                : new[] { '|', ';' };
+                ? stackalloc[] { ',' }
+                : stackalloc[] { '|', ';' };
 
-        foreach (var part in value.Trim().Trim(separator).Split(separator))
+        foreach (var part in value.AsSpan().Trim().Trim(separator).ToString().Split(separator))
         {
             if (!string.IsNullOrWhiteSpace(part))
             {

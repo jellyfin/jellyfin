@@ -68,12 +68,15 @@ namespace MediaBrowser.XbmcMetadata.Providers
         {
             var file = GetXmlFile(new ItemInfo(item), directoryService);
 
-            if (file is null)
+            if (file?.Exists is not true)
             {
                 return false;
             }
 
-            return file.Exists && _fileSystem.GetLastWriteTimeUtc(file) > item.DateLastSaved;
+            var fileTime = _fileSystem.GetLastWriteTimeUtc(file);
+
+            // 1 minute tolerance to avoid detecting our own file writes
+            return (fileTime - item.DateLastSaved) > TimeSpan.FromMinutes(1);
         }
 
         protected abstract void Fetch(MetadataResult<T> result, string path, CancellationToken cancellationToken);

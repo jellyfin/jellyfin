@@ -1,1 +1,15 @@
-{}
+{
+    "AppDeviceValues": "ඇප්: {0}, උපාංග: {1}",
+    "Artists": "කලාකරුවන්",
+    "AuthenticationSucceededWithUserName": "{0} සාර්ථකව තහවුරු කරන ලදී",
+    "Books": "පොත්",
+    "ChapterNameValue": "{0} වෙනි පරිච්ඡේදය",
+    "Collections": "සංහිතා",
+    "Default": "පෙරනිමි",
+    "External": "බාහිර",
+    "FailedLoginAttemptWithUserName": "{0} වෙතින් සිදුකළ පිවිසීමේ උත්සාහය අසාර්ථක විය",
+    "Favorites": "ප්‍රියතමයන්",
+    "Folders": "ෆෝල්ඩර",
+    "Forced": "නියමිත",
+    "Genres": "ප්‍රභේද"
+}

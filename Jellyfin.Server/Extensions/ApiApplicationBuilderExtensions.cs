@@ -3,7 +3,7 @@ using Jellyfin.Api.Middleware;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace Jellyfin.Server.Extensions
 {
@@ -48,6 +48,7 @@ namespace Jellyfin.Server.Extensions
                     c.SwaggerEndpoint($"/{baseUrl}api-docs/openapi.json", "Jellyfin API");
                     c.InjectStylesheet($"/{baseUrl}api-docs/swagger/custom.css");
                     c.RoutePrefix = "api-docs/swagger";
+                    c.UseRequestInterceptor("""(req) => { req.headers['Authorization'] = `MediaBrowser Token=\"${req.headers['Authorization']}\"`; return req; }""");
                 })
                 .UseReDoc(c =>
                 {
@@ -116,19 +117,6 @@ namespace Jellyfin.Server.Extensions
         public static IApplicationBuilder UseRobotsRedirection(this IApplicationBuilder appBuilder)
         {
             return appBuilder.UseMiddleware<RobotsRedirectionMiddleware>();
-        }
-
-        /// <summary>
-        /// Adds /emby and /mediabrowser route trimming to the application pipeline.
-        /// </summary>
-        /// <remarks>
-        /// This must be injected before any path related middleware.
-        /// </remarks>
-        /// <param name="appBuilder">The application builder.</param>
-        /// <returns>The updated application builder.</returns>
-        public static IApplicationBuilder UsePathTrim(this IApplicationBuilder appBuilder)
-        {
-            return appBuilder.UseMiddleware<LegacyEmbyRouteRewriteMiddleware>();
         }
     }
 }

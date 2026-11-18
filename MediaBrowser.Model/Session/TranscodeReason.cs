@@ -24,6 +24,7 @@ namespace MediaBrowser.Model.Session
         VideoResolutionNotSupported = 1 << 8,
         VideoBitDepthNotSupported = 1 << 9,
         VideoFramerateNotSupported = 1 << 10,
+        VideoRotationNotSupported = 1 << 27,
         RefFramesNotSupported = 1 << 11,
         AnamorphicVideoNotSupported = 1 << 12,
         InterlacedVideoNotSupported = 1 << 13,

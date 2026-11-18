@@ -12,7 +12,7 @@ public class OrderMapperTests
     [Fact]
     public void ShouldReturnMappedOrderForSortingByPremierDate()
     {
-        var orderFunc = OrderMapper.MapOrderByField(ItemSortBy.PremiereDate, new InternalItemsQuery()).Compile();
+        var orderFunc = OrderMapper.MapOrderByField(ItemSortBy.PremiereDate, new InternalItemsQuery(), null!).Compile();
 
         var expectedDate = new DateTime(1, 2, 3);
         var expectedProductionYearDate = new DateTime(4, 1, 1);

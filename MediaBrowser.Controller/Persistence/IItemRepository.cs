@@ -1,14 +1,13 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Persistence;
@@ -18,21 +17,6 @@ namespace MediaBrowser.Controller.Persistence;
 /// </summary>
 public interface IItemRepository
 {
-    /// <summary>
-    /// Deletes the item.
-    /// </summary>
-    /// <param name="id">The identifier.</param>
-    void DeleteItem(Guid id);
-
-    /// <summary>
-    /// Saves the items.
-    /// </summary>
-    /// <param name="items">The items.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    void SaveItems(IReadOnlyList<BaseItem> items, CancellationToken cancellationToken);
-
-    void SaveImages(BaseItem item);
-
     /// <summary>
     /// Retrieves the item.
     /// </summary>
@@ -70,44 +54,106 @@ public interface IItemRepository
     IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery filter, CollectionType collectionType);
 
     /// <summary>
-    /// Gets the list of series presentation keys for next up.
-    /// </summary>
-    /// <param name="filter">The query.</param>
-    /// <param name="dateCutoff">The minimum date for a series to have been most recently watched.</param>
-    /// <returns>The list of keys.</returns>
-    IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery filter, DateTime dateCutoff);
-
-    /// <summary>
-    /// Updates the inherited values.
-    /// </summary>
-    void UpdateInheritedValues();
-
-    int GetCount(InternalItemsQuery filter);
-
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery filter);
-
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery filter);
-
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery filter);
-
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery filter);
-
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery filter);
-
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery filter);
-
-    IReadOnlyList<string> GetMusicGenreNames();
-
-    IReadOnlyList<string> GetStudioNames();
-
-    IReadOnlyList<string> GetGenreNames();
-
-    IReadOnlyList<string> GetAllArtistNames();
-
-    /// <summary>
     /// Checks if an item has been persisted to the database.
     /// </summary>
     /// <param name="id">The id to check.</param>
     /// <returns>True if the item exists, otherwise false.</returns>
     Task<bool> ItemExistsAsync(Guid id);
+
+    /// <summary>
+    /// Gets genres with item counts.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The genres and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery filter);
+
+    /// <summary>
+    /// Gets music genres with item counts.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The music genres and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery filter);
+
+    /// <summary>
+    /// Gets studios with item counts.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The studios and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery filter);
+
+    /// <summary>
+    /// Gets artists with item counts.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The artists and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery filter);
+
+    /// <summary>
+    /// Gets album artists with item counts.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The album artists and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery filter);
+
+    /// <summary>
+    /// Gets all artists with item counts.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>All artists and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery filter);
+
+    /// <summary>
+    /// Gets all music genre names.
+    /// </summary>
+    /// <returns>The list of music genre names.</returns>
+    IReadOnlyList<string> GetMusicGenreNames();
+
+    /// <summary>
+    /// Gets all studio names.
+    /// </summary>
+    /// <returns>The list of studio names.</returns>
+    IReadOnlyList<string> GetStudioNames();
+
+    /// <summary>
+    /// Gets all genre names.
+    /// </summary>
+    /// <returns>The list of genre names.</returns>
+    IReadOnlyList<string> GetGenreNames();
+
+    /// <summary>
+    /// Gets all language codes of the matching base items and the provided stream type.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <param name="mediaStreamType">The type of the media stream.</param>
+    /// <returns>List of language codes.</returns>
+    public IReadOnlyList<string> GetMediaStreamLanguages(InternalItemsQuery filter, MediaStreamType mediaStreamType);
+
+    /// <summary>
+    /// Gets all distinct tags of the matching base items.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The list of tags.</returns>
+    IReadOnlyList<string> GetTagNames(InternalItemsQuery filter);
+
+    /// <summary>
+    /// Gets all artist names.
+    /// </summary>
+    /// <returns>The list of artist names.</returns>
+    IReadOnlyList<string> GetAllArtistNames();
+
+    /// <summary>
+    /// Gets legacy query filters aggregated from the database.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>Aggregated filter values.</returns>
+    QueryFiltersLegacy GetQueryFiltersLegacy(InternalItemsQuery filter);
+
+    /// <summary>
+    /// Gets whether all children of the requested item have been played.
+    /// </summary>
+    /// <param name="user">The user to check against.</param>
+    /// <param name="id">The top item id to check.</param>
+    /// <param name="recursive">Whether the check should be done recursively.</param>
+    /// <returns>A value indicating whether all children have been played.</returns>
+    bool GetIsPlayed(User user, Guid id, bool recursive);
 }

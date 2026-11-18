@@ -1,8 +1,10 @@
 #nullable disable
 
 using System;
+using System.IO;
 using System.Linq;
 using Emby.Naming.Common;
+using Emby.Server.Implementations.Library;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -81,10 +83,34 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                     episode.ParentIndexNumber = 1;
                 }
 
+                SetProviderIdFromPath(episode, args.Path);
+
                 return episode;
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Sets provider ids from the episode file name.
+        /// </summary>
+        /// <param name="item">The episode.</param>
+        /// <param name="path">The episode file path.</param>
+        private static void SetProviderIdFromPath(Episode item, string path)
+        {
+            var justName = Path.GetFileNameWithoutExtension(path.AsSpan());
+
+            var imdbId = justName.GetAttributeValue("imdbid");
+            item.TrySetProviderId(MetadataProvider.Imdb, imdbId);
+
+            var tvdbId = justName.GetAttributeValue("tvdbid");
+            item.TrySetProviderId(MetadataProvider.Tvdb, tvdbId);
+
+            var tvmazeId = justName.GetAttributeValue("tvmazeid");
+            item.TrySetProviderId(MetadataProvider.TvMaze, tvmazeId);
+
+            var tmdbId = justName.GetAttributeValue("tmdbid");
+            item.TrySetProviderId(MetadataProvider.Tmdb, tmdbId);
         }
     }
 }

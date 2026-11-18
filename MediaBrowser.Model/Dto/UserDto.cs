@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.ComponentModel;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Users;
 
@@ -54,20 +55,22 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets a value indicating whether this instance has password.
         /// </summary>
         /// <value><c>true</c> if this instance has password; otherwise, <c>false</c>.</value>
-        public bool HasPassword { get; set; }
+        [Obsolete("This information is no longer provided")]
+        public bool? HasPassword { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has configured password.
         /// </summary>
         /// <value><c>true</c> if this instance has configured password; otherwise, <c>false</c>.</value>
-        public bool HasConfiguredPassword { get; set; }
+        [Obsolete("This is always true")]
+        public bool? HasConfiguredPassword { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has configured easy password.
         /// </summary>
         /// <value><c>true</c> if this instance has configured easy password; otherwise, <c>false</c>.</value>
         [Obsolete("Easy Password has been replaced with Quick Connect")]
-        public bool HasConfiguredEasyPassword { get; set; }
+        public bool? HasConfiguredEasyPassword { get; set; } = false;
 
         /// <summary>
         /// Gets or sets whether async login is enabled or not.

@@ -49,7 +49,6 @@
             "MaxAudioChannels": " 2",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -66,7 +65,6 @@
             "MaxAudioChannels": "2",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -83,7 +81,6 @@
             "MaxAudioChannels": "2",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -100,7 +97,6 @@
             "MaxAudioChannels": " 2",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -118,7 +114,6 @@
             "MaxAudioChannels": " 2",
             "MinSegments": 1,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -135,7 +130,6 @@
             "EnableSubtitlesInManifest": false,
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         }
     ],

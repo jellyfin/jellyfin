@@ -6,7 +6,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using Jellyfin.Extensions;
-using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
+using MediaBrowser.Model.Net;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Common.Net;
 
@@ -166,8 +167,9 @@ public static partial class NetworkUtils
     /// <param name="values">Input string array to be parsed.</param>
     /// <param name="result">Collection of <see cref="IPNetwork"/>.</param>
     /// <param name="negated">Boolean signaling if negated or not negated values should be parsed.</param>
+    /// <param name="logger">Optional logger used to warn about entries that fail to parse.</param>
     /// <returns><c>True</c> if parsing was successful.</returns>
-    public static bool TryParseToSubnets(string[] values, [NotNullWhen(true)] out IReadOnlyList<IPNetwork>? result, bool negated = false)
+    public static bool TryParseToSubnets(string[] values, [NotNullWhen(true)] out IReadOnlyList<IPData>? result, bool negated = false, ILogger? logger = null)
     {
         if (values is null || values.Length == 0)
         {
@@ -175,28 +177,68 @@ public static partial class NetworkUtils
             return false;
         }
 
-        var tmpResult = new List<IPNetwork>();
+        List<IPData>? tmpResult = null;
         for (int a = 0; a < values.Length; a++)
         {
+            // Skip entries whose '!' polarity doesn't match this pass
+            var trimmed = values[a].AsSpan().Trim();
+            if (trimmed.StartsWith('!') != negated)
+            {
+                continue;
+            }
+
             if (TryParseToSubnet(values[a], out var innerResult, negated))
             {
-                tmpResult.Add(innerResult);
+                (tmpResult ??= []).Add(innerResult);
+            }
+            else
+            {
+                LogInvalidSubnet(logger, values[a]);
             }
         }
 
         result = tmpResult;
-        return tmpResult.Count > 0;
+        return result is not null;
+    }
+
+    private static void LogInvalidSubnet(ILogger? logger, string value)
+    {
+        if (logger is null)
+        {
+            return;
+        }
+
+        var trimmed = value.AsSpan().Trim();
+        if (trimmed.StartsWith('!'))
+        {
+            trimmed = trimmed[1..];
+        }
+
+        var slash = trimmed.IndexOf('/');
+        if (slash != -1
+            && trimmed.Contains(':')
+            && trimmed.IndexOf("::", StringComparison.Ordinal) == -1)
+        {
+            logger.LogWarning(
+                "Invalid IPv6 subnet '{Subnet}': IPv6 prefix-only notation is not supported. Use the full notation including '::' (e.g. '{Example}::/{Prefix}').",
+                value,
+                trimmed[..slash].ToString(),
+                trimmed[(slash + 1)..].ToString());
+            return;
+        }
+
+        logger.LogWarning("Invalid subnet '{Subnet}' will be ignored.", value);
     }
 
     /// <summary>
-    /// Try parsing a string into an <see cref="IPNetwork"/>, respecting exclusions.
-    /// Inputs without a subnet mask will be represented as <see cref="IPNetwork"/> with a single IP.
+    /// Try parsing a string into an <see cref="IPData"/>, respecting exclusions.
+    /// Inputs without a subnet mask will be represented as <see cref="IPData"/> with a single IP.
     /// </summary>
     /// <param name="value">Input string to be parsed.</param>
-    /// <param name="result">An <see cref="IPNetwork"/>.</param>
+    /// <param name="result">An <see cref="IPData"/>.</param>
     /// <param name="negated">Boolean signaling if negated or not negated values should be parsed.</param>
     /// <returns><c>True</c> if parsing was successful.</returns>
-    public static bool TryParseToSubnet(ReadOnlySpan<char> value, [NotNullWhen(true)] out IPNetwork? result, bool negated = false)
+    public static bool TryParseToSubnet(ReadOnlySpan<char> value, [NotNullWhen(true)] out IPData? result, bool negated = false)
     {
         // If multiple IP addresses are in a comma-separated string, the individual addresses may contain leading and/or trailing whitespace
         value = value.Trim();
@@ -210,14 +252,16 @@ public static partial class NetworkUtils
 
         if (isAddressNegated != negated)
         {
-            result = null;
+            result = default;
             return false;
         }
 
-        if (value.Contains('/'))
+        var index = value.IndexOf('/');
+        if (index != -1)
         {
-            if (IPNetwork.TryParse(value, out result))
+            if (IPAddress.TryParse(value[..index], out var address) && IPNetwork.TryParse(value, out var subnet))
             {
+                result = new IPData(address, subnet);
                 return true;
             }
         }
@@ -225,17 +269,17 @@ public static partial class NetworkUtils
         {
             if (address.AddressFamily == AddressFamily.InterNetwork)
             {
-                result = address.Equals(IPAddress.Any) ? NetworkConstants.IPv4Any : new IPNetwork(address, NetworkConstants.MinimumIPv4PrefixSize);
+                result = address.Equals(IPAddress.Any) ? new IPData(IPAddress.Any, NetworkConstants.IPv4Any) : new IPData(address, new IPNetwork(address, NetworkConstants.MinimumIPv4PrefixSize));
                 return true;
             }
             else if (address.AddressFamily == AddressFamily.InterNetworkV6)
             {
-                result = address.Equals(IPAddress.IPv6Any) ? NetworkConstants.IPv6Any : new IPNetwork(address, NetworkConstants.MinimumIPv6PrefixSize);
+                result = address.Equals(IPAddress.IPv6Any) ? new IPData(IPAddress.IPv6Any, NetworkConstants.IPv6Any) : new IPData(address, new IPNetwork(address, NetworkConstants.MinimumIPv6PrefixSize));
                 return true;
             }
         }
 
-        result = null;
+        result = default;
         return false;
     }
 
@@ -330,7 +374,7 @@ public static partial class NetworkUtils
     /// <returns>The broadcast address.</returns>
     public static IPAddress GetBroadcastAddress(IPNetwork network)
     {
-        var addressBytes = network.Prefix.GetAddressBytes();
+        var addressBytes = network.BaseAddress.GetAddressBytes();
         uint ipAddress = BitConverter.ToUInt32(addressBytes, 0);
         uint ipMaskV4 = BitConverter.ToUInt32(CidrToMask(network.PrefixLength, AddressFamily.InterNetwork).GetAddressBytes(), 0);
         uint broadCastIPAddress = ipAddress | ~ipMaskV4;
@@ -347,7 +391,6 @@ public static partial class NetworkUtils
     public static bool SubnetContainsAddress(IPNetwork network, IPAddress address)
     {
         ArgumentNullException.ThrowIfNull(address);
-        ArgumentNullException.ThrowIfNull(network);
 
         if (address.IsIPv4MappedToIPv6)
         {

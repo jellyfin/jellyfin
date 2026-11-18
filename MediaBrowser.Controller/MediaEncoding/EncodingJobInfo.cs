@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Data.Enums;
@@ -22,8 +21,7 @@ namespace MediaBrowser.Controller.MediaEncoding
     // For now, a common base class until the API and MediaEncoding classes are unified
     public class EncodingJobInfo
     {
-        public int? OutputAudioBitrate;
-        public int? OutputAudioChannels;
+        private static readonly char[] _separators = ['|', ','];
 
         private TranscodeReason? _transcodeReasons = null;
 
@@ -35,6 +33,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             SupportedVideoCodecs = Array.Empty<string>();
             SupportedSubtitleCodecs = Array.Empty<string>();
         }
+
+        public int? OutputAudioBitrate { get; set; }
+
+        public int? OutputAudioChannels { get; set; }
 
         public TranscodeReason TranscodeReasons
         {
@@ -513,19 +515,13 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public int HlsListSize => 0;
 
-        public bool EnableBreakOnNonKeyFrames(string videoCodec)
+        /// <summary>
+        /// Adds the specified reason(s) to <see cref="TranscodeReasons"/>.
+        /// </summary>
+        /// <param name="reason">The transcode reason(s) to add.</param>
+        public void AddTranscodeReason(TranscodeReason reason)
         {
-            if (TranscodingType != TranscodingJobType.Progressive)
-            {
-                if (IsSegmentedLiveStream)
-                {
-                    return false;
-                }
-
-                return BaseRequest.BreakOnNonKeyFrames && EncodingHelper.IsCopyCodec(videoCodec);
-            }
-
-            return false;
+            _transcodeReasons = TranscodeReasons | reason;
         }
 
         private int? GetMediaStreamCount(MediaStreamType type, int limit)
@@ -584,62 +580,50 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string[] GetRequestedProfiles(string codec)
         {
-            if (!string.IsNullOrEmpty(BaseRequest.Profile))
+            var profile = BaseRequest.Profile;
+
+            if (string.IsNullOrEmpty(profile) && !string.IsNullOrEmpty(codec))
             {
-                return BaseRequest.Profile.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                profile = BaseRequest.GetOption(codec, "profile");
             }
 
-            if (!string.IsNullOrEmpty(codec))
-            {
-                var profile = BaseRequest.GetOption(codec, "profile");
-
-                if (!string.IsNullOrEmpty(profile))
-                {
-                    return profile.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
-                }
-            }
-
-            return Array.Empty<string>();
+            return (profile ?? string.Empty).Split(_separators, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public string[] GetRequestedRangeTypes(string codec)
         {
-            if (!string.IsNullOrEmpty(BaseRequest.VideoRangeType))
+            var rangetype = BaseRequest.VideoRangeType;
+
+            if (string.IsNullOrEmpty(rangetype) && !string.IsNullOrEmpty(codec))
             {
-                return BaseRequest.VideoRangeType.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                rangetype = BaseRequest.GetOption(codec, "rangetype");
             }
 
-            if (!string.IsNullOrEmpty(codec))
-            {
-                var rangetype = BaseRequest.GetOption(codec, "rangetype");
-
-                if (!string.IsNullOrEmpty(rangetype))
-                {
-                    return rangetype.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
-                }
-            }
-
-            return Array.Empty<string>();
+            return (rangetype ?? string.Empty).Split(_separators, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public string[] GetRequestedCodecTags(string codec)
         {
-            if (!string.IsNullOrEmpty(BaseRequest.CodecTag))
+            var codectag = BaseRequest.CodecTag;
+
+            if (string.IsNullOrEmpty(codectag) && !string.IsNullOrEmpty(codec))
             {
-                return BaseRequest.CodecTag.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                codectag = BaseRequest.GetOption(codec, "codectag");
             }
 
-            if (!string.IsNullOrEmpty(codec))
-            {
-                var codectag = BaseRequest.GetOption(codec, "codectag");
+            return (codectag ?? string.Empty).Split(_separators, StringSplitOptions.RemoveEmptyEntries);
+        }
 
-                if (!string.IsNullOrEmpty(codectag))
-                {
-                    return codectag.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
-                }
+        public string[] GetRequestedRotations(string codec)
+        {
+            var rotation = BaseRequest.Rotation;
+
+            if (string.IsNullOrEmpty(rotation) && !string.IsNullOrEmpty(codec))
+            {
+                rotation = BaseRequest.GetOption(codec, "rotation");
             }
 
-            return Array.Empty<string>();
+            return (rotation ?? string.Empty).Split(_separators, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public string GetRequestedLevel(string codec)
